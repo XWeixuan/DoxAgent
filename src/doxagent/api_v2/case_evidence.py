@@ -23,16 +23,23 @@ class CaseEvidence:
             "fact": ("current_case_fact", "case_fact_evidence"),
             "policy_detail": ("current_case_policy", "case_policy_evidence"),
             "native:runtime_v2_candidates": (
-                "current_case_provisional", "case_provisional_evidence"
+                "current_case_provisional",
+                "case_provisional_evidence",
             ),
         }.get(kind, ("current_parent", "objects_parent"))
         # Include the literal kind in each branch so partial lookup indexes
         # remain usable even when the outer query has LIMIT/aggregation.
         where = " WHERE kind='" + kind + "'" if kind else ""
         return (
-            "(SELECT * FROM object_current INDEXED BY " + current + where +
-            " UNION ALL SELECT * FROM " + self.store.history_table +
-            " INDEXED BY " + history + where + ")"
+            "(SELECT * FROM object_current INDEXED BY "
+            + current
+            + where
+            + " UNION ALL SELECT * FROM "
+            + self.store.history_table
+            + " INDEXED BY "
+            + history
+            + where
+            + ")"
         )
 
     def fields(self, kind, identity, paths):
@@ -44,18 +51,24 @@ class CaseEvidence:
             ).fetchone()
             expressions = []
             for path in paths:
-                root, _, tail = path.partition('.')
+                root, _, tail = path.partition(".")
                 direct = "json_extract(o.payload,'$." + path + "')"
-                if normalized and root in {'fact', 'event', 'policy'}:
+                if normalized and root in {"fact", "event", "policy"}:
                     marker = "json_extract(o.payload,'$." + root + ".$doxagent_definition_v4')"
-                    selected = "json_extract(d.payload,'$." + tail + "')" if tail else 'd.payload'
+                    selected = "json_extract(d.payload,'$." + tail + "')" if tail else "d.payload"
                     direct = (
-                        "CASE WHEN " + marker + " IS NOT NULL THEN (SELECT "
-                        + selected + " FROM definitions d WHERE d.sha256=" + marker
-                        + ") ELSE " + direct + " END"
+                        "CASE WHEN "
+                        + marker
+                        + " IS NOT NULL THEN (SELECT "
+                        + selected
+                        + " FROM definitions d WHERE d.sha256="
+                        + marker
+                        + ") ELSE "
+                        + direct
+                        + " END"
                     )
                 expressions.append(direct)
-            columns = ','.join(expressions)
+            columns = ",".join(expressions)
             row = db.execute(
                 "SELECT " + columns + " FROM objects o WHERE kind=? AND ticker=? AND id=? "
                 "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
@@ -83,6 +96,7 @@ class CaseEvidence:
                         "w3_trade_decision",
                         "w3_operations_result",
                         "frozen_inputs.policy_watch_followup",
+                        "frozen_inputs.w3_execution_state",
                         "output",
                         "candidate",
                     }
@@ -166,8 +180,9 @@ class CaseEvidence:
     def latest_success(self, node, round_name):
         with self.store.connect() as db:
             row = db.execute(
-                "SELECT id FROM " + self.members +
-                " WHERE kind='attempt' AND ticker=? AND parent=? AND route=? "
+                "SELECT id FROM "
+                + self.members
+                + " WHERE kind='attempt' AND ticker=? AND parent=? AND route=? "
                 "AND json_extract(payload,'$.round')=? "
                 "AND json_extract(payload,'$.status')='SUCCEEDED' "
                 "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "

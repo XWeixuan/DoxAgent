@@ -15,6 +15,9 @@ for (const width of [1262, 1559]) {
         page.getByText("NO_TRADE · 原W2命中仍保留，当前无交易机会"),
       ).toBeVisible();
       await expect(page.getByText("展开W2 Policy 判断依据")).toBeVisible();
+      await expect(page.getByText("接纳至决策 / 结束（秒）")).toBeVisible();
+      await expect(page.getByText("1726.85", { exact: true })).toBeVisible();
+      await expect(page.getByText("调用并集 / 未覆盖（秒）")).toBeVisible();
       await expect(page.getByText("专家交易判定", { exact: true })).toHaveCount(
         0,
       );

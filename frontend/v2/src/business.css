@@ -1281,3 +1281,7 @@
 .cost-report-table .model-name {
   white-space: normal;
 }
+
+.case-details dl.case-lifecycle-timing {
+  grid-template-columns: 220px 1fr;
+}

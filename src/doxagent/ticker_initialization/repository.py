@@ -33,11 +33,13 @@ from .schema import (
 class InitializationRepository:
     def __init__(self, path: str | Path, *, initialize: bool = True) -> None:
         self.path = Path(path).resolve()
+        self.busy_timeout_seconds = 30 if initialize else 0.1
         from doxagent.v2_read.native_content import NativeContent
 
         self.content = NativeContent(self.path)
         if not initialize:
-            if not self.path.is_file():raise ValueError('Initialization database has not been migrated')
+            if not self.path.is_file():
+                raise ValueError("Initialization database has not been migrated")
             return
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as db:
@@ -176,9 +178,9 @@ class InitializationRepository:
 
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
-        db = sqlite3.connect(self.path, timeout=30)
+        db = sqlite3.connect(self.path, timeout=self.busy_timeout_seconds)
         db.row_factory = self.content.row
-        db.execute("PRAGMA busy_timeout=30000")
+        db.execute(f"PRAGMA busy_timeout={round(self.busy_timeout_seconds * 1000)}")
         db.execute("PRAGMA synchronous=FULL")
         try:
             yield db
@@ -324,10 +326,7 @@ class InitializationRepository:
             query += " AND COALESCE(json_extract(payload,'$.inputs.managed_by'),'')=''"
         query += " ORDER BY rowid"
         with self._connection() as db:
-            nodes = [
-                NodeRecord.model_validate_json(row[0])
-                for row in db.execute(query, (run_id,))
-            ]
+            nodes = [NodeRecord.model_validate_json(row[0]) for row in db.execute(query, (run_id,))]
         # Large inputs may themselves be native-content references. Keep the
         # original ownership semantics after hydrating those rare candidates.
         return [n for n in nodes if not n.inputs.get("managed_by")] if top_level_only else nodes
@@ -1590,6 +1589,19 @@ class InitializationRepository:
                 (ticker.upper(), worker, revision_id, time.time()),
             )
             return True
+
+    def current_revision_admitted(self, ticker: str, revision_id: str, worker: str) -> bool:
+        """Latest installed revision only; never a historical Case recovery gate."""
+        with self._connection() as db:
+            return (
+                db.execute(
+                    "SELECT 1 FROM activation_worker_ack a JOIN ticker_active_revision r "
+                    "ON r.ticker=a.ticker AND r.revision_id=a.revision_id "
+                    "WHERE a.ticker=? AND a.worker=? AND a.revision_id=?",
+                    (ticker.upper(), worker, revision_id),
+                ).fetchone()
+                is not None
+            )
 
     def revision_acknowledged(
         self,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 from datetime import UTC, datetime, time
 from typing import Any
@@ -162,13 +163,23 @@ class UnifiedRuntimeSchedulerService:
         event_limit: int = 100,
         include_detail: bool = True,
     ) -> list[TickerRunDetail]:
+        recover = getattr(self, "_recover_existing_once", None)
+        if recover is not None:
+            recover()
         control_path = getattr(self, "initialization_control_path", None)
         admitted: set[str] | None = None
         if control_path:
             from doxagent.ticker_initialization.consumers import admit_runtime_revisions
             from doxagent.ticker_initialization.repository import InitializationRepository
 
-            admitted = admit_runtime_revisions(InitializationRepository(control_path), self)
+            try:
+                admitted = admit_runtime_revisions(
+                    InitializationRepository(control_path, initialize=False), self
+                )
+            except Exception:
+                logging.getLogger(__name__).exception("runtime new admission deferred")
+                self.admission_degraded_reason = "INITIALIZATION_CONTROL_UNAVAILABLE"
+                admitted = set()
         from doxagent.ticker_initialization.consumers import consumer_heartbeat
 
         def usable(revision: dict[str, Any]) -> bool:
@@ -179,8 +190,14 @@ class UnifiedRuntimeSchedulerService:
                 and state.metadata.get("activation_revision_id") == revision["revision_id"]
             )
 
+        if getattr(self, "_lifetime_heartbeat", False):
+            return self._run_admitted_once(
+                admitted, now=now, event_limit=event_limit, include_detail=include_detail
+            )
         with consumer_heartbeat(
-            InitializationRepository(control_path) if control_path else None, "runtime", usable
+            InitializationRepository(control_path, initialize=False) if control_path else None,
+            "runtime",
+            usable,
         ):
             return self._run_admitted_once(
                 admitted, now=now, event_limit=event_limit, include_detail=include_detail

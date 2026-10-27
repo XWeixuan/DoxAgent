@@ -61,6 +61,14 @@ export default function CaseDetails({
             {d.summary.source_name ?? d.summary.source.name} ·{" "}
             {d.summary.source.kind === "api" ? "API" : "爬虫"}
           </p>
+          {d.lifecycle_timing && (
+            <dl className="case-lifecycle-timing">
+              <dt>{d.lifecycle_timing.settled ? "接纳至决策 / 结束（秒）" : "截至视图已等待（秒）"}</dt>
+              <dd>{d.lifecycle_timing.elapsed_seconds.toFixed(2)}</dd>
+              <dt>调用并集 / 未覆盖（秒）</dt>
+              <dd>{d.lifecycle_timing.invocation_union_seconds.toFixed(2)} / {d.lifecycle_timing.uncovered_seconds.toFixed(2)}{d.lifecycle_timing.partial ? " · 记录不完整" : ""}</dd>
+            </dl>
+          )}
           {d.failures.map((f) => (
             <Notice key={f.failure_id} danger>
               {f.stage} · {f.status} · {f.error.message}
@@ -380,7 +388,7 @@ export default function CaseDetails({
                       {d.w3.data.operations_error &&
                         ` · ${d.w3.data.operations_error}`}
                     </dd>
-                    <dt>决策 / 后置（秒）</dt>
+                    <dt>调用（秒）</dt>
                     <dd>
                       {d.w3.data.trade_timing
                         ? valueText(d.w3.data.trade_timing.wall_seconds)
@@ -693,7 +701,7 @@ export function RoundRows({
           </td>
           <td>{a.attempt_number}</td>
           <td>{a.status}</td>
-          <td>{valueText(a.timing.wall_seconds, (v) => v.toFixed(2))}</td>
+          <td>{valueText(a.timing.wall_seconds, (v) => v.toFixed(2))}{a.node_id === "W3" && <> · SDK {a.sdk_seconds ? valueText(a.sdk_seconds, (v) => v.toFixed(2)) : "未记录"}</>}</td>
         </tr>
       ))}
     </>

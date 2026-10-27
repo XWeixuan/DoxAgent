@@ -1,8 +1,10 @@
 """Managed V2 scheduler assembly. No legacy workflow or execution service is constructed."""
 
 import argparse
+import json
 import logging
 import signal
+import time
 from pathlib import Path
 from threading import Event
 
@@ -16,6 +18,61 @@ from .service import UnifiedRuntimeSchedulerService
 
 
 class V2Scheduler(UnifiedRuntimeSchedulerService):
+    def _recover_existing_once(self):
+        from datetime import UTC, datetime
+
+        from doxagent.v2_control.repository import ControlRepository
+
+        journal = self.runtime_v2_service.journal
+        coordinator = self.runtime_v2_service.coordinator
+        with journal.transaction(write=False, operation="recovery.tickers", expand=False) as db:
+            tickers = [
+                r[0]
+                for r in db.execute(
+                    "SELECT DISTINCT ticker FROM runtime_tasks WHERE status IN ('PENDING','RUNNING') "
+                    "UNION SELECT DISTINCT c.ticker FROM runtime_v2_effects e JOIN runtime_v2_cases c "
+                    "ON c.case_id=e.case_id WHERE e.status IN ('PENDING','PENDING_RETRY','RUNNING')"
+                )
+            ]
+        for ticker in tickers:
+            try:
+                state = ControlRepository(journal).get(ticker)
+                if state and state["analysis_allowed"]:
+                    coordinator.tick_existing(ticker)
+            except Exception:
+                logging.getLogger(__name__).exception(
+                    "existing-work recovery deferred ticker=%s", ticker
+                )
+        self.last_recovery_tick = datetime.now(UTC).isoformat()
+        if time.monotonic() >= getattr(self, "_health_next", 0):
+            self._health_next = time.monotonic() + 15
+            try:
+                with journal.transaction(
+                    write=False, expand=False, operation="recovery.health"
+                ) as db:
+                    oldest = db.execute(
+                        "SELECT min(due_at) FROM runtime_tasks WHERE status='PENDING'"
+                    ).fetchone()[0]
+                target = journal.path.with_suffix(".scheduler-health.json")
+                temporary = target.with_suffix(".tmp")
+                temporary.write_text(
+                    json.dumps(
+                        dict(
+                            last_recovery_tick=self.last_recovery_tick,
+                            last_successful_tick=getattr(self, "last_successful_tick", None),
+                            existing_tickers=tickers,
+                            oldest_due=oldest,
+                            admission_degraded_reason=getattr(
+                                self, "admission_degraded_reason", None
+                            ),
+                        )
+                    ),
+                    encoding="utf8",
+                )
+                temporary.replace(target)
+            except Exception:
+                logging.getLogger(__name__).warning("scheduler health snapshot unavailable")
+
     def _run_admitted_once(self, admitted, *, now, event_limit, include_detail=True):
         from doxagent.v2_control.repository import ControlRepository
 
@@ -33,6 +90,9 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
                     result.append(detail)
             except Exception:
                 logging.getLogger(__name__).exception("V2 ticker tick deferred: %s", ticker)
+        from datetime import UTC, datetime
+
+        self.last_successful_tick = datetime.now(UTC).isoformat()
         return result
 
 
@@ -81,12 +141,31 @@ def main():
     settings = DoxAgentSettings()
     with WriterLock(Path(str(settings.runtime_scheduler_sqlite_path) + ".v2-scheduler")):
         scheduler = build(settings)
+        from doxagent.ticker_initialization.consumers import consumer_heartbeat
+        from doxagent.ticker_initialization.repository import InitializationRepository
+
+        def usable(revision):
+            state = scheduler.repository.get_state(revision["ticker"])
+            return bool(
+                state
+                and state.metadata.get("activation_revision_id") == revision["revision_id"]
+                and str(state.status) in {"RUNNING", "DEGRADED"}
+            )
+
+        scheduler._lifetime_heartbeat = True
         try:
-            while not stop.is_set():
-                scheduler.run_due_once(event_limit=args.limit, include_detail=False)
-                if args.once:
-                    break
-                stop.wait(args.interval)
+            with consumer_heartbeat(
+                InitializationRepository(
+                    settings.ticker_initialization_control_path, initialize=False
+                ),
+                "runtime",
+                usable,
+            ):
+                while not stop.is_set():
+                    scheduler.run_due_once(event_limit=args.limit, include_detail=False)
+                    if args.once:
+                        break
+                    stop.wait(args.interval)
         finally:
             scheduler.runtime_v2_service.close()
 

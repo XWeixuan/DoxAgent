@@ -371,11 +371,13 @@ class W3Execution:
             )
             saved_state = self.journal.get("w3_global_input", case.case_id)
             if saved_state is None:
-                with self.journal.transaction() as db:
+                with self.journal.transaction(
+                    write=False, operation="case.global_input.read"
+                ) as db:
                     saved_state = (replay or {}).get("global_state") or global_snapshot(
                         db, case.ticker, self.journal.clock()
                     )
-                    policy_consumption.put_value(db, "w3_global_input", case.case_id, saved_state)
+                self.journal.set("w3_global_input", case.case_id, saved_state)
             context = self.agent.prepare_case(case)
             new_entry = getattr(self.agent, "entry_enabled", lambda c: False)(case)
             research = None if new_entry else research_assets(context, self.journal)

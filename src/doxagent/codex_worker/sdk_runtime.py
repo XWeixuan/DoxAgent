@@ -8,7 +8,9 @@ import json
 import os
 import sqlite3
 import sys
+import time
 from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol
 from uuid import uuid4
@@ -42,6 +44,7 @@ class WorkerTurnResult:
     error_message: str | None = None
     telemetry: WorkerTurnTelemetry | None = None
     observation: dict[str, Any] | None = None
+    execution_timing: dict[str, Any] | None = None
 
 
 class TurnHandle(Protocol):
@@ -126,10 +129,22 @@ class _SdkTurnHandle:
                     )
             return replace(result, observation=observation)
         result = await self._handle.run()
+        self.sdk_completed_monotonic = time.monotonic()
+        self.sdk_completed_at = datetime.now(UTC).isoformat()
         error = getattr(result, "error", None)
         error_message = str(error) if error is not None else None
         status = getattr(result.status, "value", str(result.status))
         telemetry = None
+        self.sdk_completed_result = WorkerTurnResult(
+            thread_id=self._thread_id,
+            turn_id=result.id,
+            status=status,
+            final_response=result.final_response,
+            error_message=error_message,
+        )
+        callback = getattr(self, "sdk_completion_callback", None)
+        if callback is not None:
+            await callback(self.sdk_completed_result)
         if any(hasattr(result, name) for name in ("items", "usage", "duration_ms")):
             telemetry = project_turn_telemetry(
                 items=getattr(result, "items", ()),
@@ -215,6 +230,19 @@ class _SdkTurnHandle:
                     and payload.turn.id == self.turn_id
                 ):
                     completed = payload.turn
+                    self.sdk_completed_monotonic = time.monotonic()
+                    self.sdk_completed_at = datetime.now(UTC).isoformat()
+                    self.sdk_completed_result = WorkerTurnResult(
+                        self.thread_id,
+                        completed.id,
+                        completed.status.value,
+                        final if final is not None else fallback,
+                        str(completed.error) if completed.error else None,
+                        summary,
+                    )
+                    callback = getattr(self, "sdk_completion_callback", None)
+                    if callback is not None:
+                        await callback(self.sdk_completed_result)
         if completed is None:
             raise RuntimeError("turn completed event not received")
         projected = project_turn_telemetry(items=(), usage=usage, duration_ms=completed.duration_ms)
@@ -738,6 +766,8 @@ class OpenAICodexRuntime:
             self.receipt_callback(thread.id, None)
         if request.w3_entry_version:
             self._resident_thread = (thread, scope, sdk_config)
+        dispatched_monotonic = time.monotonic()
+        dispatched_at = datetime.now(UTC).isoformat()
         handle = await measured(
             "sdk.turn_start",
             thread.turn(
@@ -765,7 +795,7 @@ class OpenAICodexRuntime:
         await asyncio.sleep(0)
         if self.receipt_callback is not None:
             self.receipt_callback(thread.id, getattr(handle, "id", None))
-        return _SdkTurnHandle(
+        result_handle = _SdkTurnHandle(
             thread_id=thread.id,
             handle=handle,
             audit_path=cwd / "attempts" / request.attempt_id / "audit" / "sdk_loop.jsonl",
@@ -773,6 +803,10 @@ class OpenAICodexRuntime:
             request=request,
             cwd=cwd,
         )
+        result_handle.sdk_dispatched_monotonic = dispatched_monotonic
+        result_handle.sdk_dispatched_at = dispatched_at
+        result_handle.sdk_deadline = dispatched_monotonic + request.timeout_seconds
+        return result_handle
 
 
 def _write_atomic_text(path: Path, content: str) -> None:

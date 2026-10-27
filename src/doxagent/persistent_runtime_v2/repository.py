@@ -51,7 +51,7 @@ def retry_sqlite_write(method):
     def run(*args, **kwargs):
         from .journal import retry_write
 
-        token = _write_timeout.set(2)
+        token = _write_timeout.set(0.1)
         try:
             return retry_write(lambda: method(*args, **kwargs))
         finally:
@@ -985,70 +985,69 @@ class SQLitePersistentRuntimeV2Repository:
             )
         return effect
 
+    @retry_sqlite_write
     def claim_effects(self, *, limit: int = 20) -> list[RuntimeEffect]:
         if limit < 1:
             return []
         now = utc_now()
-        with self._lock, self._connect() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            rows = connection.execute(
-                """
-                SELECT effect_id, payload_json FROM runtime_v2_effects
-                WHERE (status IN ('PENDING', 'PENDING_RETRY') AND available_at <= ?)
-                   OR (status='RUNNING' AND updated_at <= ?)
-                ORDER BY available_at, rowid LIMIT ?
-                """,
-                (now.isoformat(), (now - timedelta(seconds=120)).isoformat(), limit),
+        with self._lock, self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            rows = db.execute(
+                "SELECT effect_id FROM runtime_v2_effects "
+                "WHERE (status IN ('PENDING','PENDING_RETRY') AND available_at<=?) "
+                "OR (status='RUNNING' AND (json_extract(payload_json,'$.lease_until')<=? "
+                "OR (json_extract(payload_json,'$.lease_until') IS NULL AND updated_at<=?))) "
+                "ORDER BY available_at,rowid LIMIT ?",
+                (
+                    now.isoformat(),
+                    now.isoformat(),
+                    (now - timedelta(seconds=120)).isoformat(),
+                    limit,
+                ),
             ).fetchall()
-            claimed: list[RuntimeEffect] = []
+            payloads = []
             for row in rows:
-                effect = RuntimeEffect.model_validate_json(row["payload_json"])
-                running = effect.model_copy(
-                    update={
-                        "status": RuntimeEffectStatus.RUNNING,
-                        "updated_at": now,
-                        "lease_token": effect.lease_token + 1,
-                        "lease_until": now + timedelta(seconds=120),
-                    }
-                )
-                connection.execute(
-                    "UPDATE runtime_v2_effects SET status=?, payload_json=?, updated_at=? "
-                    "WHERE effect_id=?",
+                db.execute(
+                    "UPDATE runtime_v2_effects SET status='RUNNING',updated_at=?,"
+                    "payload_json=json_set(payload_json,'$.status','RUNNING','$.updated_at',?,"
+                    "'$.lease_token',coalesce(json_extract(payload_json,'$.lease_token'),0)+1,"
+                    "'$.lease_until',?) WHERE effect_id=?",
                     (
-                        running.status.value,
-                        self.content.encode(running.model_dump(mode="json")),
                         now.isoformat(),
-                        running.effect_id,
+                        now.isoformat(),
+                        (now + timedelta(seconds=120)).isoformat(),
+                        row[0],
                     ),
                 )
-                claimed.append(running)
-            connection.commit()
-            return claimed
+                payloads.append(
+                    db.execute(
+                        "SELECT payload_json AS raw_json FROM runtime_v2_effects WHERE effect_id=?",
+                        (row[0],),
+                    ).fetchone()[0]
+                )
+        return [RuntimeEffect.model_validate_json(self.content.text(raw)) for raw in payloads]
 
+    @retry_sqlite_write
     def renew_effect(self, effect: RuntimeEffect) -> None:
+        from .journal import LeaseLost
+
+        now = utc_now()
         with self._connect() as db:
-            db.execute("BEGIN IMMEDIATE")
-            row = db.execute(
-                "SELECT payload_json FROM runtime_v2_effects WHERE effect_id=?", (effect.effect_id,)
-            ).fetchone()
-            current = RuntimeEffect.model_validate_json(row[0])
-            if (
-                current.lease_token != effect.lease_token
-                or current.status is not RuntimeEffectStatus.RUNNING
-                or current.lease_until is None
-                or current.lease_until <= utc_now()
-            ):
-                raise RuntimeError("effect lease lost")
-            current.lease_until = utc_now() + timedelta(seconds=120)
-            current.updated_at = utc_now()
-            db.execute(
-                "UPDATE runtime_v2_effects SET payload_json=?,updated_at=? WHERE effect_id=?",
+            changed = db.execute(
+                "UPDATE runtime_v2_effects SET updated_at=?,payload_json=json_set(payload_json,"
+                "'$.updated_at',?,'$.lease_until',?) WHERE effect_id=? AND status='RUNNING' "
+                "AND json_extract(payload_json,'$.lease_token')=? AND json_extract(payload_json,'$.lease_until')>?",
                 (
-                    self.content.encode(current.model_dump(mode="json")),
-                    current.updated_at.isoformat(),
+                    now.isoformat(),
+                    now.isoformat(),
+                    (now + timedelta(seconds=120)).isoformat(),
                     effect.effect_id,
+                    effect.lease_token,
+                    now.isoformat(),
                 ),
-            )
+            ).rowcount
+            if not changed:
+                raise LeaseLost("effect lease lost")
 
     @retry_sqlite_write
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect:
@@ -1056,10 +1055,24 @@ class SQLitePersistentRuntimeV2Repository:
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             old = connection.execute(
-                "SELECT payload_json FROM runtime_v2_effects WHERE effect_id=?", (effect.effect_id,)
+                "SELECT status,json_extract(payload_json,'$.lease_token'),json_extract(payload_json,'$.lease_until') "
+                "FROM runtime_v2_effects WHERE effect_id=?",
+                (effect.effect_id,),
             ).fetchone()
-            if old and RuntimeEffect.model_validate_json(old[0]).lease_token != effect.lease_token:
-                raise RuntimeError("effect lease lost")
+            if old and (
+                old[1] != effect.lease_token
+                or (
+                    effect.lease_token
+                    and (
+                        old[0] != "RUNNING"
+                        or not old[2]
+                        or datetime.fromisoformat(old[2]) <= utc_now()
+                    )
+                )
+            ):
+                from .journal import LeaseLost
+
+                raise LeaseLost("effect lease lost")
             connection.execute(
                 """
                 UPDATE runtime_v2_effects SET

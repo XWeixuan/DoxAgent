@@ -234,6 +234,23 @@ class W3ResearchStore:
                 raise FileNotFoundError("research source not registered")
             target = self.packs / identity
             if (target / "manifest.json").is_file():
+                meta = json.loads((target / "manifest.json").read_bytes())
+                if not meta.get("index_sha"):
+                    # Upgrade derived metadata once, preserving the frozen source,
+                    # component identity and exact business objects.
+                    content = (target / "objects.json").read_bytes()
+                    if sha(content) != meta["objects_sha"]:
+                        raise ValueError("compiled research checksum mismatch")
+                    index = [
+                        {k: v for k, v in obj.items() if k not in {"body", "sources"}}
+                        for obj in json.loads(content)
+                    ]
+                    encoded = compact(index).encode()
+                    atomic(target / "index.json", encoded)
+                    atomic(
+                        target / "manifest.json",
+                        compact({**meta, "index_sha": sha(encoded)}).encode(),
+                    )
                 return identity
             try:
                 raw = Path(row["source_path"]).read_bytes()
@@ -275,6 +292,7 @@ class W3ResearchStore:
                             source_sha=row["source_sha"],
                             renderer=RENDERER,
                             objects_sha=sha(content),
+                            index_sha=sha(compact(index).encode()),
                             source_path=row["source_path"],
                             index_status="READY" if index_error is None else "INDEX_UNAVAILABLE",
                             index_error=index_error,
@@ -311,6 +329,11 @@ class W3ResearchStore:
         }
 
     def bind(self, case_id, phase, manifest):
+        manifest = dict(manifest)
+        manifest["snapshot_catalog"] = [
+            {k: v for k, v in obj.items() if k not in {"body", "sources"}}
+            for obj in self.objects({**manifest, "components": {}})
+        ]
         manifest = dict(manifest)
         refs = {}
         for key in ("policy_usage", "history", "state", "events", "evidence", "market_view"):
@@ -376,7 +399,7 @@ class W3ResearchStore:
                         direct.append({"kind": "d2_unit", "id": name, "shell": shell})
         return {"context_ref": token, "context_manifest_sha": identity, "direct_objects": direct}
 
-    def context(self, token):
+    def context(self, token, *, snapshot_keys=None):
         with closing(self.connect()) as db:
             row = db.execute(
                 "SELECT * FROM w3_case_contexts WHERE token_hash=?", (sha(token),)
@@ -390,26 +413,62 @@ class W3ResearchStore:
             raise ValueError("context checksum mismatch")
         manifest = json.loads(data)
         for key, identity in manifest.pop("snapshot_refs", {}).items():
+            if snapshot_keys is not None and key not in snapshot_keys:
+                continue
             raw = (self.contexts / "snapshots" / (identity + ".json")).read_bytes()
             if sha(raw) != identity:
                 raise ValueError("frozen state checksum mismatch")
             manifest[key] = json.loads(raw)
         return row["manifest_sha"], manifest
 
-    def objects(self, manifest):
+    def objects(self, manifest, *, kinds=None, raw_ids=None, metadata=False):
         result = []
-        for identity in manifest.get("components", {}).values():
-            if identity not in self._cache:
+        component_kinds = {
+            "d1": {"d1_section", "source"},
+            "d2": {"d2_unit", "source"},
+            "policy": {"policy", "source"},
+            "reference": {"reference", "reference_event", "source"},
+        }
+        for component, identity in manifest.get("components", {}).items():
+            if kinds and not (
+                component_kinds.get(component, set()) & kinds
+                or ("raw_document" in kinds and (not raw_ids or component in raw_ids))
+            ):
+                continue
+            if metadata:
+                self.build(identity)
+                root = self.packs / identity
+                index = (root / "index.json").read_bytes()
+                meta = json.loads((root / "manifest.json").read_bytes())
+                if meta.get("index_sha") and sha(index) != meta["index_sha"]:
+                    raise ValueError("research index checksum mismatch")
+                if meta.get("index_sha"):
+                    result.extend(json.loads(index))
+                    continue
+                # Legacy index was not checksummed. Verify original objects once
+                # through the existing bounded cache, rather than trusting it.
+
+            cached = self._cache.get(identity)
+            if cached is None:
                 self.build(identity)
                 root = self.packs / identity
                 data = (root / "objects.json").read_bytes()
                 meta = json.loads((root / "manifest.json").read_bytes())
                 if sha(data) != meta["objects_sha"]:
                     raise ValueError("compiled research checksum mismatch")
-                if len(self._cache) >= 16:
-                    self._cache.pop(next(iter(self._cache)))
-                self._cache[identity] = json.loads(data)
-            result.extend(self._cache[identity])
+                loaded = json.loads(data)
+                with self._lock:
+                    cached = self._cache.get(identity)
+                    if cached is None:
+                        if len(self._cache) >= 16:
+                            self._cache.pop(next(iter(self._cache)))
+                        cached = self._cache[identity] = loaded
+            # Keep a local immutable reference: another ticker may evict this
+            # cache entry while its reader still projects the selected objects.
+            result.extend(
+                ({k: v for k, v in o.items() if k not in {"body", "sources"}} if metadata else o)
+                for o in cached
+            )
         usage = manifest.get("policy_usage", [])
         result.extend(dict(kind="policy_usage", id=v["policy_id"], body=v) for v in usage)
         for key, val in manifest.get("state", {}).items():
@@ -430,6 +489,8 @@ class W3ResearchStore:
             )
         for key, val in manifest.get("evidence", {}).items():
             result.append(dict(kind="raw_document", id=key, body=val))
+        if metadata:
+            result.extend(manifest.get("snapshot_catalog", []))
         return result
 
     def page(self, context_sha, identity, text, *, cursor=None, max_bytes=None, reserved_bytes=0):
@@ -486,8 +547,34 @@ class W3ResearchStore:
         return envelope(lo)
 
     def call(self, name, arguments):
-        context_sha, manifest = self.context(arguments["context_ref"])
-        objects = self.objects(manifest)
+        kinds = (
+            {o["kind"] for o in arguments.get("objects", [])}
+            if name == "read"
+            else ({arguments["kind"]} if arguments.get("kind") else None)
+        )
+        snapshot_kinds = {
+            "policy_usage": "policy_usage",
+            "runtime_state": "state",
+            "reference_event": "events",
+            "trade_intent": "history",
+            "historical_message": "history",
+            "raw_document": "evidence",
+        }
+        keys = (
+            set(snapshot_kinds.values())
+            if not kinds
+            else {v for k, v in snapshot_kinds.items() if k in kinds}
+        )
+        if name == "read" and kinds and "policy" in kinds:
+            keys.add("policy_usage")
+        context_sha, manifest = self.context(
+            arguments["context_ref"], snapshot_keys=() if name == "catalog" else keys
+        )
+        # Old frozen manifests retain full discovery through the original path.
+        if name == "catalog" and "snapshot_catalog" not in manifest:
+            context_sha, manifest = self.context(arguments["context_ref"])
+        raw_ids = {o["id"] for o in arguments.get("objects", []) if o["kind"] == "raw_document"}
+        objects = self.objects(manifest, kinds=kinds, raw_ids=raw_ids, metadata=name == "catalog")
         if name == "read":
             selected = []
             for wanted in arguments.get("objects", []):
@@ -558,7 +645,9 @@ class W3ResearchStore:
                 }
                 from .w3_contracts import is_unified_contract
 
-                if wanted["kind"] == "policy" and not is_unified_contract(manifest.get("w3_contract_version")):
+                if wanted["kind"] == "policy" and not is_unified_contract(
+                    manifest.get("w3_contract_version")
+                ):
                     item["frozen_usage"] = next(
                         (
                             u
@@ -577,7 +666,7 @@ class W3ResearchStore:
                     continue
                 if arguments.get("shell") and obj.get("shell") != arguments["shell"]:
                     continue
-                body = compact(obj["body"])
+                body = compact(obj["body"]) if name == "search" else ""
                 if name == "search" and query not in compact(obj).casefold():
                     continue
                 meta = {k: v for k, v in obj.items() if k not in {"body", "sources"}}

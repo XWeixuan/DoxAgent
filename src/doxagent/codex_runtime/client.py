@@ -282,7 +282,13 @@ class HttpCodexWorkerClient:
                     job = WorkerJob.model_validate(response.json())
                     current_status = (job.job_id, job.status, job.execution_phase)
                     if on_update is not None and current_status != observed_status:
-                        on_update(job)
+                        import inspect
+
+                        from doxagent.control_io import read_io
+
+                        update = await read_io(on_update, job)
+                        if inspect.isawaitable(update):
+                            await update
                         observed_status = current_status
                     unavailable_since = None
                     if job.status in {"queued", "running"}:

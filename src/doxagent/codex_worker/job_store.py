@@ -43,7 +43,9 @@ class JobStore:
                 db.execute("INSERT INTO metadata VALUES('legacy_imported','1')")
 
     def connect(self) -> sqlite3.Connection:
-        db = sqlite3.connect(self.path, timeout=30)
+        from doxagent.control_io import SHORT_WRITE
+
+        db = sqlite3.connect(self.path, timeout=0.1 if SHORT_WRITE.get() else 30)
         db.execute("PRAGMA synchronous=FULL")
         return db
 
@@ -54,10 +56,16 @@ class JobStore:
 
     def save(self, job: WorkerJob, request: WorkerRunRequest | None = None) -> None:
         with closing(self.connect()) as db, db:
-            db.execute('BEGIN IMMEDIATE')
-            if request is not None and not db.execute('SELECT 1 FROM jobs WHERE id=?',(job.job_id,)).fetchone():
-                if db.execute("SELECT 1 FROM metadata WHERE key=?",('workspace_retirement:'+request.run_id,)).fetchone():
-                    raise ValueError('PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN')
+            db.execute("BEGIN IMMEDIATE")
+            if (
+                request is not None
+                and not db.execute("SELECT 1 FROM jobs WHERE id=?", (job.job_id,)).fetchone()
+            ):
+                if db.execute(
+                    "SELECT 1 FROM metadata WHERE key=?",
+                    ("workspace_retirement:" + request.run_id,),
+                ).fetchone():
+                    raise ValueError("PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN")
             db.execute(
                 """INSERT INTO jobs(id,status,payload,request,priority) VALUES(?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET status=excluded.status,payload=excluded.payload,
@@ -93,15 +101,18 @@ class JobStore:
         if job is None or job.status not in {"succeeded", "failed", "cancelled"}:
             raise ValueError("only a terminal persisted job may be acknowledged")
         if request is not None and request.task_phase not in {
-            "w3_template", "trade_decision", "post_decision_operations",
+            "w3_template",
+            "trade_decision",
+            "post_decision_operations",
         }:
             raise ValueError("payload compaction is restricted to W3 Case phases")
         if job.telemetry:
             job.telemetry.events = []
         job.final_response = None
         with closing(self.connect()) as db, db:
-            db.execute("UPDATE jobs SET request=NULL,payload=? WHERE id=?",
-                       (job.model_dump_json(), job_id))
+            db.execute(
+                "UPDATE jobs SET request=NULL,payload=? WHERE id=?", (job.model_dump_json(), job_id)
+            )
             db.execute("DELETE FROM events WHERE job_id=?", (job_id,))
         if request is not None:
             from .result_receipt import receipt_path
@@ -150,9 +161,7 @@ class JobStore:
         with closing(self.connect()) as db:
             return [
                 r[0]
-                for r in db.execute(
-                    f"SELECT id FROM jobs WHERE {where} ORDER BY {order}", values
-                )
+                for r in db.execute(f"SELECT id FROM jobs WHERE {where} ORDER BY {order}", values)
             ]
 
     def queued_counts(self) -> dict[str, int]:

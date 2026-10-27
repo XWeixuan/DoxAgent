@@ -80,23 +80,30 @@ class SlowStartRuntime(Runtime):
 
 
 async def settle():
-    for _ in range(12):
+    # Real FULL-durability I/O now runs off-loop; allow the physical writes to
+    # settle instead of assuming twelve event-loop ticks also finish fsync.
+    for _ in range(60):
         await asyncio.sleep(0.005)
 
 
 @pytest.mark.asyncio
-async def test_new_message_reserve_defers_research_and_keeps_persistent_owner_admission(tmp_path,monkeypatch):
-    monkeypatch.setattr('doxagent.message_bus_v2.pressure.background_allowed',lambda:False)
-    runtime=Runtime()
-    manager=WorkerJobManager(runtime,LocalWorkspaceStore(tmp_path))
+async def test_new_message_reserve_defers_research_and_keeps_persistent_owner_admission(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr("doxagent.message_bus_v2.pressure.background_allowed", lambda: False)
+    runtime = Runtime()
+    manager = WorkerJobManager(runtime, LocalWorkspaceStore(tmp_path))
     try:
-        deferred=await manager.submit(request(100))
-        protected=await manager.submit(request(101,research_lane=ResearchLane.PERSISTENT_RUNTIME))
+        deferred = await manager.submit(request(100))
+        protected = await manager.submit(
+            request(101, research_lane=ResearchLane.PERSISTENT_RUNTIME)
+        )
         await settle()
-        assert manager.get(deferred.job_id).wait_reason=='MESSAGE_PIPELINE_RESOURCE_RESERVE'
-        assert manager.get(protected.job_id).status=='running'
-        assert [r.run_id for r in runtime.started]==['run-101']
-    finally:await manager.close()
+        assert manager.get(deferred.job_id).wait_reason == "MESSAGE_PIPELINE_RESOURCE_RESERVE"
+        assert manager.get(protected.job_id).status == "running"
+        assert [r.run_id for r in runtime.started] == ["run-101"]
+    finally:
+        await manager.close()
 
 
 @pytest.mark.asyncio
@@ -118,7 +125,7 @@ async def test_burst_20_has_no_fixed_active_capacity_and_queue_is_durable(tmp_pa
         assert manager.store.request(jobs[-1].job_id).attempt_id == "attempt-19"
         for _ in range(20):
             manager._next_launch_at = 0
-            manager._schedule()
+            await manager._schedule()
             await settle()
             if len(runtime.started) == 20:
                 break
@@ -127,7 +134,7 @@ async def test_burst_20_has_no_fixed_active_capacity_and_queue_is_durable(tmp_pa
         runtime.gate.set()
         for _ in range(40):
             await settle()
-            manager._schedule()
+            await manager._schedule()
             if all(manager.get(j.job_id).status == "succeeded" for j in jobs):
                 break
         assert all(manager.get(j.job_id).status == "succeeded" for j in jobs)
@@ -185,7 +192,7 @@ async def test_distinct_attempts_in_same_run_launch_concurrently(tmp_path):
         await manager.submit(request(2).model_copy(update={"run_id": "shared-run"}))
         await settle()
         manager._next_launch_at = 0
-        manager._schedule()
+        await manager._schedule()
         await settle()
         assert len(runtime.started) == 2
         assert {item.attempt_id for item in runtime.started} == {"attempt-1", "attempt-2"}
@@ -201,7 +208,7 @@ async def test_native_subagent_does_not_reserve_global_weight(tmp_path):
         await manager.submit(request(0, allow_subagents=True, max_subagents=2))
         await manager.submit(request(1))
         manager._next_launch_at = 0
-        manager._schedule()
+        await manager._schedule()
         await settle()
         assert len(runtime.started) == 2
         assert runtime.started[0].max_subagents == 1
@@ -237,7 +244,7 @@ async def test_pressure_pauses_background_but_realtime_keeps_launching(tmp_path)
             encoding="utf-8",
         )
         manager._next_launch_at = 0
-        manager._schedule()
+        await manager._schedule()
         await settle()
         assert {item.run_id for item in runtime.started} == {"run-0", "run-1"}
     finally:
@@ -264,7 +271,7 @@ async def test_aged_background_gets_one_position_in_realtime_wave(tmp_path):
         )
         manager.store.save(old)
         manager._next_launch_at = 0
-        manager._schedule()
+        await manager._schedule()
         await settle()
         assert background.job_id in manager._tasks
         assert sum(job.job_id in manager._tasks for job in realtime) == 2
@@ -284,13 +291,13 @@ async def test_cancellation_cleanup_quarantine_does_not_block_other_execution(tm
         cancelled = asyncio.create_task(manager.cancel(first.job_id))
         await runtime.cleaning.wait()
         manager._next_launch_at = 0
-        manager._schedule()
+        await manager._schedule()
         await settle()
         assert len(runtime.started) == 2
         assert manager.get(first.job_id).execution_phase == "CLEANING"
         runtime.clean_gate.set()
         await cancelled
-        manager._schedule()
+        await manager._schedule()
         assert len(runtime.started) == 2
         assert manager.get(first.job_id).execution_phase == "CLEANUP_QUARANTINED"
     finally:
@@ -328,7 +335,7 @@ async def test_infrastructure_budget_two_then_manual_and_no_new_request(tmp_path
                 assert current.execution_phase == "QUEUED"
                 manager.store.save(current.model_copy(update={"next_retry_at": 0}))
                 manager._next_launch_at = 0
-                manager._schedule()
+                await manager._schedule()
         assert manager.get(job.job_id).error_code == "WORKER_INFRA_RECOVERY_EXHAUSTED"
         assert len({r.idempotency_key for r in runtime.started}) == 1
     finally:
@@ -341,9 +348,7 @@ async def test_queued_restart_preserves_budget_and_adopts_committed_result(tmp_p
     safety = tmp_path / "safety.json"
     import time
 
-    safety.write_text(
-        '{"level":"CRITICAL","observed_at":' + str(time.time()) + ',"reasons":[]}'
-    )
+    safety.write_text('{"level":"CRITICAL","observed_at":' + str(time.time()) + ',"reasons":[]}')
     manager = WorkerJobManager(Runtime(), workspace, safety_state_path=safety)
     req = request()
     job = await manager.submit(req)
@@ -372,12 +377,16 @@ def test_resource_aware_queue_honors_non_runtime_fairness_turn(tmp_path, monkeyp
     runtime_request = request(1, research_lane=ResearchLane.PERSISTENT_RUNTIME)
     init_request = request(2)
     runtime_job = WorkerJob(
-        job_id="runtime", run_id=runtime_request.run_id,
-        attempt_id=runtime_request.attempt_id, status="queued",
+        job_id="runtime",
+        run_id=runtime_request.run_id,
+        attempt_id=runtime_request.attempt_id,
+        status="queued",
     )
     init_job = WorkerJob(
-        job_id="init", run_id=init_request.run_id,
-        attempt_id=init_request.attempt_id, status="queued",
+        job_id="init",
+        run_id=init_request.run_id,
+        attempt_id=init_request.attempt_id,
+        status="queued",
     )
     store.save(runtime_job, runtime_request)
     store.save(init_job, init_request)
@@ -388,9 +397,7 @@ def test_resource_aware_queue_honors_non_runtime_fairness_turn(tmp_path, monkeyp
 
 def test_maintenance_is_background_and_runtime_case_is_realtime():
     child = request(3).model_copy(
-        update={
-            "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-o2-rklb-c8b8aac84957f2e1"
-        }
+        update={"run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-o2-rklb-c8b8aac84957f2e1"}
     )
     assert _execution_lane(child) == "background"
     runtime = request(4, research_lane=ResearchLane.PERSISTENT_RUNTIME)
@@ -508,6 +515,7 @@ def test_server_resource_envelope():
     root = Path(__file__).resolve().parents[1]
     overlay = yaml.safe_load((root / "deploy/docker-compose.server.yml").read_text())
     services = overlay["services"]
+
     def mib(value):
         text = str(value).lower()
         return int(float(text[:-1]) * (1024 if text.endswith("g") else 1))

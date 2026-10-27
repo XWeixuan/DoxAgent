@@ -7,13 +7,16 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 
+from doxagent.persistent_runtime_v2.case_outcomes import (
+    decision_direction,
+    effective_novelty,
+    effective_policy,
+)
 from doxagent.persistent_runtime_v2.router import alignment_flags
 from doxagent.persistent_runtime_v2.schema import (
     normalize_w2_result,
 )
-
 from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
-from doxagent.persistent_runtime_v2.case_outcomes import effective_novelty, effective_policy, decision_direction
 
 from .case_evidence import CaseEvidence
 from .dto import available, coverage, missing
@@ -27,6 +30,55 @@ def resource(data: Any, reason: str = "NOT_RECORDED") -> dict:
         "reason": None if data is not None else reason,
         "coverage": coverage(),
     }
+
+
+def lifecycle_timing(evidence, case, summary, as_of):
+    from datetime import datetime
+
+    start = case.get("created_at") or summary["received_at"]
+    final = (
+        case.get("decision_completed_at")
+        or case.get("completed_at")
+        or (case.get("updated_at") if case.get("status") in {"FAILED", "UNAVAILABLE"} else None)
+    )
+    end = final or as_of
+    begin, finish = datetime.fromisoformat(start), datetime.fromisoformat(end)
+    elapsed = max(0, (finish - begin).total_seconds())
+    with evidence.store.connect() as db:
+        rows = db.execute(
+            "SELECT json_extract(payload,'$.timing.first_started_at.value'),"
+            "json_extract(payload,'$.timing.completed_at.value') FROM "
+            + evidence.members
+            + " WHERE kind='attempt' AND ticker=? AND parent=? AND valid_from<=? "
+            "AND (valid_to IS NULL OR valid_to>?) "
+            "AND coalesce(json_extract(payload,'$.phase'),'')<>'post_decision_operations' "
+            "ORDER BY sort_key,id LIMIT 257",
+            (evidence.ticker, evidence.case_id, evidence.seq, evidence.seq),
+        ).fetchall()
+    intervals = []
+    partial = len(rows) > 256
+    for a, b in rows[:256]:
+        if not a or not b:
+            partial = True
+            continue
+        a, b = max(begin, datetime.fromisoformat(a)), min(finish, datetime.fromisoformat(b))
+        if b > a:
+            intervals.append((a, b))
+    merged = []
+    for a, b in sorted(intervals):
+        if merged and a <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(b, merged[-1][1]))
+        else:
+            merged.append((a, b))
+    covered = sum((b - a).total_seconds() for a, b in merged)
+    return dict(
+        elapsed_seconds=elapsed,
+        invocation_union_seconds=covered,
+        uncovered_seconds=max(0, elapsed - covered),
+        partial=partial,
+        settled=bool(final),
+        as_of=as_of,
+    )
 
 
 def install(app: FastAPI) -> None:
@@ -81,8 +133,9 @@ def install(app: FastAPI) -> None:
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
         with store.connect() as db:
             row = db.execute(
-                "SELECT payload FROM " + evidence.relation("policy_detail") +
-                " WHERE kind='policy_detail' AND ticker=? AND parent=? "
+                "SELECT payload FROM "
+                + evidence.relation("policy_detail")
+                + " WHERE kind='policy_detail' AND ticker=? AND parent=? "
                 "AND json_extract(payload,'$.summary.policy_id')=? AND valid_from<=? "
                 "AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                 (
@@ -145,6 +198,9 @@ def install(app: FastAPI) -> None:
                 "error_code",
                 "error_message",
                 "updated_at",
+                "created_at",
+                "completed_at",
+                "decision_completed_at",
                 "frozen_inputs.w3_execution_state",
                 "status",
             ],
@@ -227,8 +283,9 @@ def install(app: FastAPI) -> None:
                 if event is None:
                     with store.connect() as db:
                         provisional = db.execute(
-                            "SELECT id FROM " + evidence.relation("native:runtime_v2_candidates") +
-                            " WHERE kind='native:runtime_v2_candidates' "
+                            "SELECT id FROM "
+                            + evidence.relation("native:runtime_v2_candidates")
+                            + " WHERE kind='native:runtime_v2_candidates' "
                             "AND ticker=? AND json_extract(payload,'$.provisional_event_id')=? "
                             "AND json_extract(payload,'$.trading_date')=? "
                             "AND json_extract(payload,'$.snapshot_version')<=? "
@@ -262,9 +319,9 @@ def install(app: FastAPI) -> None:
                             (ticker, parent, fact_id, seq, seq),
                         ).fetchone()
                         fields = (
-                            evidence.fields('fact', row[0], ['fact.proposition']) if row else None
+                            evidence.fields("fact", row[0], ["fact.proposition"]) if row else None
                         )
-                        value = fields.get('fact.proposition') if fields else None
+                        value = fields.get("fact.proposition") if fields else None
                         facts.append(
                             {
                                 "fact_id": fact_id,
@@ -306,8 +363,9 @@ def install(app: FastAPI) -> None:
                         "SELECT json_extract(payload,'$.summary.title') AS title, "
                         "json_extract(payload,'$.summary.policy_activation_revision') AS revision, "
                         "json_extract(payload,'$.summary.policy_revision_id') AS content_revision "
-                        "FROM " + evidence.relation("policy_detail") +
-                        " WHERE kind='policy_detail' AND ticker=? "
+                        "FROM "
+                        + evidence.relation("policy_detail")
+                        + " WHERE kind='policy_detail' AND ticker=? "
                         "AND parent=? AND json_extract(payload,'$.summary.policy_id')=? "
                         "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                         (ticker, activation["policy_set"]["artifact_id"], identity, seq, seq),
@@ -567,17 +625,40 @@ def install(app: FastAPI) -> None:
                 ),
                 novelty=available(final_novelty["result"]) if final_novelty else missing(),
                 references=references(final_novelty) if final_novelty else [],
-                policy_hit=available(final_policy.get("policy_hit", bool(final_policy.get("policy_ids")))) if final_policy else missing(),
-                policies=policies(final_policy, "hit_condition_ids" if unified else "matched_condition_ids") if final_policy else [],
-                expert_trade_evaluated=missing("NOT_APPLICABLE", "NOT_APPLICABLE") if unified else available(decision["decision"] == "EXPERT_TRADE"),
-                expert_trade=missing("NOT_APPLICABLE", "NOT_APPLICABLE") if unified else available(decision["decision"] == "EXPERT_TRADE"),
-                direction=available(direction) if direction in {"LONG", "SHORT"} else available(expert["direction"]) if expert.get("direction") else missing(),
-                prior_expectation=available(expert["prior_expectation"]) if expert.get("prior_expectation") else missing(),
-                expectation_delta=available(expert["expectation_delta"]) if expert.get("expectation_delta") else missing(),
+                policy_hit=available(
+                    final_policy.get("policy_hit", bool(final_policy.get("policy_ids")))
+                )
+                if final_policy
+                else missing(),
+                policies=policies(
+                    final_policy, "hit_condition_ids" if unified else "matched_condition_ids"
+                )
+                if final_policy
+                else [],
+                expert_trade_evaluated=missing("NOT_APPLICABLE", "NOT_APPLICABLE")
+                if unified
+                else available(decision["decision"] == "EXPERT_TRADE"),
+                expert_trade=missing("NOT_APPLICABLE", "NOT_APPLICABLE")
+                if unified
+                else available(decision["decision"] == "EXPERT_TRADE"),
+                direction=available(direction)
+                if direction in {"LONG", "SHORT"}
+                else available(expert["direction"])
+                if expert.get("direction")
+                else missing(),
+                prior_expectation=available(expert["prior_expectation"])
+                if expert.get("prior_expectation")
+                else missing(),
+                expectation_delta=available(expert["expectation_delta"])
+                if expert.get("expectation_delta")
+                else missing(),
                 timing=interval("W3"),
                 attempts=page("attempt", "W3"),
                 reasoning={
-                    **{k: resource(reasons.get("w3_" + k)) for k in ("novelty", "policy", "expert_trade")},
+                    **{
+                        k: resource(reasons.get("w3_" + k))
+                        for k in ("novelty", "policy", "expert_trade")
+                    },
                     "trade": resource(reasons.get("w3_trade") or reasons.get("w3_expert_trade")),
                 },
             )
@@ -610,9 +691,9 @@ def install(app: FastAPI) -> None:
             failures.append(
                 {
                     "failure_id": case_id + ":terminal",
-                    "stage": case.get("frozen_inputs", {})
-                    .get("w3_execution_state", {})
-                    .get("phase", "CASE"),
+                    "stage": (case.get("frozen_inputs.w3_execution_state") or {}).get(
+                        "phase", "CASE"
+                    ),
                     "status": summary.get("w3_status") or case["status"],
                     "error": {
                         **ApiFailure(
@@ -646,6 +727,7 @@ def install(app: FastAPI) -> None:
             "policy_set": activation["policy_set"],
             "provisional_snapshot_version": pin["provisional_snapshot_version"],
             "hot_path": interval(None),
+            "lifecycle_timing": lifecycle_timing(evidence, case, summary, view["as_of"]),
             "w1": partial(first, w1),
             "w2": partial(
                 second,

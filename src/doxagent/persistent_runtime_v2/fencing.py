@@ -1,11 +1,10 @@
 """Fence business writes on the same SQLite transaction as their lease check."""
 
-import json
 import sqlite3
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any
 
 from .journal import LeaseLost
@@ -42,13 +41,17 @@ def assert_write_lease(db: sqlite3.Connection) -> None:
         )
     else:
         row = sqlite3.Connection.execute(
-            db, "SELECT payload_json FROM runtime_v2_effects WHERE effect_id=?", (value.effect_id,)
+            db,
+            "SELECT status,json_extract(payload_json,'$.lease_token'),"
+            "json_extract(payload_json,'$.lease_until') FROM runtime_v2_effects WHERE effect_id=?",
+            (value.effect_id,),
         ).fetchone()
-        current = json.loads(row[0]) if row else {}
-        valid = (
-            current.get("status") == "RUNNING"
-            and current.get("lease_token") == value.lease_token
-            and datetime.fromisoformat(current["lease_until"]) > datetime.now(UTC)
+        valid = bool(
+            row
+            and row[0] == "RUNNING"
+            and row[1] == value.lease_token
+            and row[2]
+            and datetime.fromisoformat(row[2]) > clock()
         )
     if not valid:
         raise LeaseLost("business write rejected after lease loss")

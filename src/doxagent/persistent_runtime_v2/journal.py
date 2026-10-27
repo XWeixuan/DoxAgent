@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import logging
 import os
 import random
 import sqlite3
@@ -39,6 +38,10 @@ class RuntimeStopping(RuntimeError):
 
 def retry_write(call, *, seconds=30):
     """Replay a short, rollback-safe SQL transaction, never an external call."""
+    from doxagent.control_io import SHORT_WRITE
+
+    if SHORT_WRITE.get():
+        return call()  # The async caller retries outside the database owner.
     deadline = time.monotonic() + seconds
     delay = 0.05
     while True:
@@ -53,11 +56,16 @@ def retry_write(call, *, seconds=30):
 
 def is_sqlite_contention(exc: BaseException) -> bool:
     from doxagent.message_bus_v2.storage_lane import WriteAdmissionBusy
+
     if isinstance(exc, WriteAdmissionBusy):
         return True
-    return isinstance(exc, sqlite3.OperationalError) and (
-        getattr(exc, "sqlite_errorcode", 0) & 255
-    ) in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
+    return (
+        isinstance(exc, sqlite3.OperationalError)
+        and (getattr(exc, "sqlite_errorcode", 0) & 255)
+        in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
+        or isinstance(exc, sqlite3.OperationalError)
+        and str(exc) in {"database is locked", "database table is locked"}
+    )
 
 
 class MaintenancePhaseFailure(RuntimeError):
@@ -141,25 +149,65 @@ class RuntimeJournal:
 
     @contextmanager
     def transaction(
-        self, *, write: bool = True, operation: str = "transaction", timeout: float | None = None
+        self,
+        *,
+        write: bool = True,
+        operation: str = "transaction",
+        timeout: float | None = None,
+        expand: bool = True,
     ) -> Iterator[sqlite3.Connection]:
+        from doxagent.control_io import SHORT_WRITE
+
+        if write and SHORT_WRITE.get():
+            timeout = min(0.1, timeout if timeout is not None else self.busy_timeout_seconds)
         started = time.monotonic()
         acquired = None
         primary_code = None
+        commit_started = None
+        if operation == "transaction":
+            import sys
+
+            caller = sys._getframe(2)
+            operation = (
+                f"{Path(caller.f_code.co_filename).stem}.{caller.f_code.co_name}:{caller.f_lineno}"
+            )
         from doxagent.w3_timing import span
 
         with span("journal.connect"):
             db = sqlite3.connect(
                 self.path, timeout=self.busy_timeout_seconds if timeout is None else timeout
             )
-        db.row_factory = self.content.row
+        db.row_factory = self.content.row if expand else sqlite3.Row
+        from doxagent.control_io import write_lock
+
+        gate = write_lock(self.path) if write else None
+        held = False
         try:
             with span("journal.begin", write=write):
                 if write:
                     db.execute("PRAGMA synchronous=FULL")
-                db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
+                if write:
+                    deadline = started + (self.busy_timeout_seconds if timeout is None else timeout)
+                    db.execute("PRAGMA busy_timeout=100")
+                    while True:
+                        held = gate.acquire(timeout=0.1)
+                        if held:
+                            try:
+                                db.execute("BEGIN IMMEDIATE")
+                                break
+                            except sqlite3.OperationalError as exc:
+                                gate.release()
+                                held = False
+                                if not is_sqlite_contention(exc) or time.monotonic() >= deadline:
+                                    raise
+                        if time.monotonic() >= deadline:
+                            raise sqlite3.OperationalError("database is locked")
+                        time.sleep(0.025)
+                else:
+                    db.execute("BEGIN")
             acquired = time.monotonic()
             yield db
+            commit_started = time.monotonic()
             with span("journal.commit", write=write):
                 db.commit()
         except BaseException as exc:
@@ -168,16 +216,29 @@ class RuntimeJournal:
             raise
         finally:
             db.close()
+            if held:
+                gate.release()
             elapsed = time.monotonic() - started
             if elapsed >= 0.25 or primary_code:
-                logging.getLogger(__name__).warning(
-                    "runtime_transaction pid=%s operation=%s write=%s elapsed_ms=%s wait_ms=%s sqlite_code=%s",
+                from doxagent.control_io import diagnostic_warning
+
+                diagnostic_warning(
+                    __name__,
+                    "runtime_transaction pid=%s operation=%s write=%s elapsed_ms=%s wait_ms=%s sqlite_code=%s hold_ms=%s commit_ms=%s db=%s",
                     os.getpid(),
                     operation,
                     write,
                     round(elapsed * 1000),
                     round(((acquired or time.monotonic()) - started) * 1000),
                     primary_code,
+                    round(
+                        ((commit_started or time.monotonic()) - (acquired or time.monotonic()))
+                        * 1000
+                    )
+                    if acquired
+                    else 0,
+                    round((time.monotonic() - commit_started) * 1000) if commit_started else 0,
+                    self.path.name,
                 )
 
     @staticmethod
@@ -272,9 +333,9 @@ class RuntimeJournal:
         return recovered
 
     def get_task(self, identity: str) -> dict[str, Any] | None:
-        with self.transaction(write=False) as db:
+        with self.transaction(write=False, expand=False, operation="task.get") as db:
             row = db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
-            return self._task(row) if row else None
+        return self._task(self.content.source_row(dict(row))) if row else None
 
     def tasks(
         self,
@@ -294,14 +355,33 @@ class RuntimeJournal:
         if sweep_id is not None:
             clauses.append("json_extract(inputs,'$.sweep_id')=?")
             parameters.append(sweep_id)
-        with self.transaction(write=False) as db:
+        with self.transaction(write=False, expand=False, operation="task.list") as db:
             rows = db.execute(
                 "SELECT * FROM runtime_tasks"
                 + (" WHERE " + " AND ".join(clauses) if clauses else "")
                 + " ORDER BY due_at,id",
                 parameters,
             ).fetchall()
-            return [self._task(row) for row in rows]
+        return [self._task(self.content.source_row(dict(row))) for row in rows]
+
+    def task_controls(self, ticker):
+        """Dispatch candidates without dereferencing frozen bodies or receipts."""
+        with self.transaction(write=False, expand=False, operation="task.controls") as db:
+            rows = db.execute(
+                "SELECT id,ticker,kind,status,due_at,lease_until,"
+                "json_extract(inputs,'$.mode') AS mode,json_extract(inputs,'$.sweep_id') AS sweep_id,"
+                "json_extract(receipt,'$.infrastructure_recovery') IS NOT NULL AS recovering "
+                "FROM runtime_tasks WHERE ticker=? AND status IN ('PENDING','RUNNING') ORDER BY due_at,id",
+                (ticker,),
+            ).fetchall()
+        return [
+            {
+                **dict(r),
+                "inputs": {"mode": r["mode"], "sweep_id": r["sweep_id"]},
+                "receipt": {"infrastructure_recovery": r["recovering"]},
+            }
+            for r in rows
+        ]
 
     def task_highwater(self, ticker: str) -> int:
         with self.transaction(write=False) as db:
@@ -320,7 +400,7 @@ class RuntimeJournal:
         prepare_inputs: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     ) -> dict[str, Any] | None:
         now = self.clock()
-        with self.transaction() as db:
+        with self.transaction(operation="task.claim", expand=False) as db:
             row = db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
             if not row or row["status"] in {"SUCCEEDED", "FAILED", "HELD"}:
                 return None
@@ -344,14 +424,6 @@ class RuntimeJournal:
                 >= cap
             ):
                 return None
-            if prepare_inputs is not None and row["kind"] == "CASE" and row["token"] == 0:
-                # Freeze content in the same fenced transaction as first ownership.
-                # A reclaimed/retried task never refreshes model-visible inputs.
-                inputs = prepare_inputs(json.loads(row["inputs"]))
-                db.execute(
-                    "UPDATE runtime_tasks SET inputs=? WHERE id=?",
-                    (self.content.encode(inputs), identity),
-                )
             db.execute(
                 "UPDATE runtime_tasks SET status='RUNNING',owner=?,token=token+1,"
                 "lease_until=?,updated_at=? WHERE id=?",
@@ -362,12 +434,57 @@ class RuntimeJournal:
                     identity,
                 ),
             )
-            return self._task(
+            if row["kind"] == "CASE" and row["token"] == 0:
+                receipt = json.loads(self.content.text(row["receipt"]))
+                receipt["inputs_preparing"] = True
+                db.execute(
+                    "UPDATE runtime_tasks SET receipt=? WHERE id=?", (encode(receipt), identity)
+                )
+            claimed = dict(
                 db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
             )
+        task = self._task(self.content.source_row(claimed))
+        return self.prepare_claimed(task, prepare_inputs) if prepare_inputs is not None else task
+
+    def prepare_claimed(self, task, prepare_inputs):
+        if (
+            task["kind"] != "CASE"
+            or task["receipt"].get("inputs_ready")
+            or not task["receipt"].get("inputs_preparing")
+        ):
+            return task  # Includes legacy tasks frozen before this migration.
+        with self.transaction(write=False, expand=False, operation="task.frozen_ref") as db:
+            row = db.execute(
+                "SELECT inputs FROM runtime_tasks WHERE id=?", (task["id"],)
+            ).fetchone()
+            raw_inputs = row[0]
+        # Keep the raw frozen reference as the CAS comparison; never refreeze a
+        # reclaimed task that already published its original inputs.
+        from .heartbeat import heartbeat
+
+        with heartbeat(lambda: self.renew(task)):
+            inputs = prepare_inputs(task["inputs"])
+            prepared = self.content.encode(inputs)
+            receipt = self.content.encode(
+                {**task["receipt"], "inputs_ready": self.clock().isoformat()}
+            )
+            with self.transaction(operation="task.inputs_ready", expand=False) as db:
+                self.fence(db, task)
+                changed = db.execute(
+                    "UPDATE runtime_tasks SET inputs=?,receipt=? WHERE id=? AND inputs=?",
+                    (prepared, receipt, task["id"], raw_inputs),
+                ).rowcount
+                if not changed:
+                    raise LeaseLost(task["id"])
+            task["inputs"] = inputs
+            task["receipt"]["inputs_ready"] = self.clock().isoformat()
+        return task
 
     def fence(self, db: sqlite3.Connection, task: dict[str, Any]) -> sqlite3.Row:
-        row = db.execute("SELECT * FROM runtime_tasks WHERE id=?", (task["id"],)).fetchone()
+        row = db.execute(
+            "SELECT id,kind,status,owner,token,lease_until,receipt,failures,max_failures FROM runtime_tasks WHERE id=?",
+            (task["id"],),
+        ).fetchone()
         if (
             not row
             or row["status"] != "RUNNING"
@@ -379,7 +496,7 @@ class RuntimeJournal:
         return cast(sqlite3.Row, row)
 
     def renew(self, task: dict[str, Any], seconds: float = 120) -> None:
-        with self.transaction() as db:
+        with self.transaction(operation="task.renew", expand=False, timeout=0.1) as db:
             self.fence(db, task)
             db.execute(
                 "UPDATE runtime_tasks SET lease_until=?,updated_at=? WHERE id=?",
@@ -490,11 +607,11 @@ class RuntimeJournal:
             )
 
     def get(self, namespace: str, key: str, default: Any = None) -> Any:
-        with self.transaction(write=False) as db:
+        with self.transaction(write=False, expand=False, operation="value.read." + namespace) as db:
             row = db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace=? AND key=?", (namespace, key)
             ).fetchone()
-            return json.loads(row[0]) if row else default
+        return json.loads(self.content.text(row[0])) if row else default
 
     def set(self, namespace: str, key: str, value: Any) -> None:
         payload = (

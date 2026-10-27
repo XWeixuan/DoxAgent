@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import base64
 import hashlib
 import hmac
@@ -106,47 +105,47 @@ class ResearchMcp:
             self.ready[self.capsule.get()] = time.monotonic()
         return types.ListToolsResult(tools=self.tools)
 
+    def _market_read(self, args):
+        identity, manifest = self.store.context(args["context_ref"], snapshot_keys=("market_view",))
+        if args.get("cursor"):
+            cursor = json.loads(base64.urlsafe_b64decode(args["cursor"]))
+            resource = cursor.get("resource", "")
+            if not re.fullmatch(r"market:[a-f0-9]{64}", resource):
+                raise ValueError("invalid market continuation")
+            view = json.loads(
+                (self.store.root / ".w3-market-evidence" / (resource[7:] + ".json")).read_bytes()
+            )
+        else:
+            view = self.market.view(manifest, args) if self.market else {"status": "UNAVAILABLE"}
+        from doxagent.persistent_runtime_v2.w3_research_store import sha
+
+        snapshot = sha(compact(view))
+        if not view.get("unchanged"):
+            path = self.store.root / ".w3-market-evidence" / (snapshot + ".json")
+            if not path.exists():
+                atomic(path, compact(view).encode())
+        result = self.store.page(
+            identity,
+            "market:" + snapshot,
+            compact(view),
+            cursor=args.get("cursor"),
+            max_bytes=args.get("max_bytes"),
+            reserved_bytes=128,
+        )
+        result["read_at"] = datetime.now(UTC).isoformat()
+        return result
+
     async def call_tool(self, ctx, params):
         try:
             args = params.arguments or {}
             if params.name == "market_view":
-                identity, manifest = await asyncio.to_thread(
-                    self.store.context, args["context_ref"]
-                )
-                if args.get("cursor"):
-                    cursor = json.loads(base64.urlsafe_b64decode(args["cursor"]))
-                    resource = cursor.get("resource", "")
-                    if not re.fullmatch(r"market:[a-f0-9]{64}", resource):
-                        raise ValueError("invalid market continuation")
-                    view = json.loads(
-                        (
-                            self.store.root / ".w3-market-evidence" / (resource[7:] + ".json")
-                        ).read_bytes()
-                    )
-                else:
-                    view = (
-                        self.market.view(manifest, args)
-                        if self.market
-                        else {"status": "UNAVAILABLE"}
-                    )
-                from doxagent.persistent_runtime_v2.w3_research_store import sha
+                from doxagent.control_io import read_io
 
-                snapshot = sha(compact(view))
-                if not view.get("unchanged"):
-                    path = self.store.root / ".w3-market-evidence" / (snapshot + ".json")
-                    if not path.exists():
-                        atomic(path, compact(view).encode())
-                result = self.store.page(
-                    identity,
-                    "market:" + snapshot,
-                    compact(view),
-                    cursor=args.get("cursor"),
-                    max_bytes=args.get("max_bytes"),
-                    reserved_bytes=128,
-                )
-                result["read_at"] = datetime.now(UTC).isoformat()
+                result = await read_io(self._market_read, args)
             else:
-                result = await asyncio.to_thread(self.store.call, params.name, args)
+                from doxagent.control_io import read_io
+
+                result = await read_io(self.store.call, params.name, args)
             self.calls += 1
             return types.CallToolResult(
                 content=[types.TextContent(type="text", text=compact(result))]

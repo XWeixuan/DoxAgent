@@ -86,9 +86,11 @@ class RuntimeCoordinator:
         at = now or self.journal.clock()
         day = semantic_day(at)
         previous_state = self.journal.get("schedule", ticker)
-        state = dict(previous_state) if previous_state is not None else {
-            "last_boundary": day.isoformat(), "started_at": at.isoformat()
-        }
+        state = (
+            dict(previous_state)
+            if previous_state is not None
+            else {"last_boundary": day.isoformat(), "started_at": at.isoformat()}
+        )
         last = date.fromisoformat(state["last_boundary"])
         # Bound catch-up per tick; never shift an existing schedule's cutoff.
         for offset in range(1, min((day - last).days, 32) + 1):
@@ -318,7 +320,12 @@ class RuntimeCoordinator:
         with self._dispatch_lock:
             self._tick(ticker)
 
-    def _tick(self, ticker: str) -> None:
+    def tick_existing(self, ticker: str) -> None:
+        """Recover original durable work without consuming Stream or creating sweeps."""
+        with self._dispatch_lock:
+            self._tick(ticker, existing_only=True)
+
+    def _tick(self, ticker: str, *, existing_only=False) -> None:
         if self._closed:
             return
         if ticker not in self._reconciled:
@@ -345,55 +352,62 @@ class RuntimeCoordinator:
         if self.journal.get("pause", ticker):
             return
         self.wake_effects()
-        try:
-            self.reconcile(ticker)
-        except Exception as exc:
-            self.journal.gap(f"calendar:{ticker}", ticker, "CALENDAR_UNAVAILABLE", str(exc))
-        if getattr(self.runtime, "_w3_agent", None) is not None and hasattr(
-            self.runtime._w3_agent, "prepare_public_assets"
-        ):
-            now = perf_counter()
-            previous = self._public_futures.get(ticker)
-            active_bundle = self.journal.get("execution", "active")
-            if self._public_bundle.get(ticker) != active_bundle:
-                self._public_next[ticker] = 0
-                self._public_bundle[ticker] = active_bundle
-            if now >= self._public_next.get(ticker, 0) and (previous is None or previous.done()):
+        if not existing_only:
+            try:
+                self.reconcile(ticker)
+            except Exception as exc:
+                self.journal.gap(f"calendar:{ticker}", ticker, "CALENDAR_UNAVAILABLE", str(exc))
+            if getattr(self.runtime, "_w3_agent", None) is not None and hasattr(
+                self.runtime._w3_agent, "prepare_public_assets"
+            ):
+                now = perf_counter()
+                previous = self._public_futures.get(ticker)
+                active_bundle = self.journal.get("execution", "active")
+                if self._public_bundle.get(ticker) != active_bundle:
+                    self._public_next[ticker] = 0
+                    self._public_bundle[ticker] = active_bundle
+                if now >= self._public_next.get(ticker, 0) and (
+                    previous is None or previous.done()
+                ):
 
-                def prepare_public():
+                    def prepare_public():
+                        try:
+                            self.runtime._v4_execution().prepare_public(ticker)
+                        except Exception as exc:
+                            self.journal.gap(
+                                "w3-public-prepare", ticker, type(exc).__name__, str(exc)[:1000]
+                            )
+
+                    self._public_futures[ticker] = self._background.submit(prepare_public)
+                    self._public_next[ticker] = now + 30
+            maintenance = getattr(self.runtime, "maintain_w3_threads", None)
+            if (
+                maintenance
+                and getattr(self.runtime, "_w3_agent", None) is not None
+                and (self._w3_maintenance_future is None or self._w3_maintenance_future.done())
+            ):
+                if self._w3_maintenance_future is not None:
                     try:
-                        self.runtime._v4_execution().prepare_public(ticker)
+                        self._w3_maintenance_future.result()
                     except Exception as exc:
                         self.journal.gap(
-                            "w3-public-prepare", ticker, type(exc).__name__, str(exc)[:1000]
+                            "w3-housekeeping", ticker, type(exc).__name__, str(exc)[:1000]
                         )
-
-                self._public_futures[ticker] = self._background.submit(prepare_public)
-                self._public_next[ticker] = now + 30
-        maintenance = getattr(self.runtime, "maintain_w3_threads", None)
-        if (
-            maintenance
-            and getattr(self.runtime, "_w3_agent", None) is not None
-            and (self._w3_maintenance_future is None or self._w3_maintenance_future.done())
-        ):
-            if self._w3_maintenance_future is not None:
-                try:
-                    self._w3_maintenance_future.result()
-                except Exception as exc:
-                    self.journal.gap("w3-housekeeping", ticker, type(exc).__name__, str(exc)[:1000])
-            next_at = self.journal.get("w3_housekeeping", "next_at")
-            if not next_at or next_at <= self.journal.clock().isoformat():
-                self._w3_maintenance_future = self._background.submit(maintenance)
-        if not self.external_delivery and (
-            self._delivery_future is None or self._delivery_future.done()
-        ):
-            if self._delivery_future is not None:
-                try:
-                    self._delivery_future.result()
-                except Exception as exc:
-                    self.journal.gap("delivery-pump", ticker, type(exc).__name__, str(exc)[:1000])
-            self._delivery_future = self._delivery.submit(self._pump_delivery)
-        self._schedule_supplements(ticker)
+                next_at = self.journal.get("w3_housekeeping", "next_at")
+                if not next_at or next_at <= self.journal.clock().isoformat():
+                    self._w3_maintenance_future = self._background.submit(maintenance)
+            if not self.external_delivery and (
+                self._delivery_future is None or self._delivery_future.done()
+            ):
+                if self._delivery_future is not None:
+                    try:
+                        self._delivery_future.result()
+                    except Exception as exc:
+                        self.journal.gap(
+                            "delivery-pump", ticker, type(exc).__name__, str(exc)[:1000]
+                        )
+                self._delivery_future = self._delivery.submit(self._pump_delivery)
+            self._schedule_supplements(ticker)
         for identity, future in list(self._futures.items()):
             if future.done():
                 try:
@@ -402,18 +416,24 @@ class RuntimeCoordinator:
                     self.journal.gap(identity, ticker, type(exc).__name__, str(exc)[:1000])
                 del self._futures[identity]
                 self._leases.pop(identity, None)
-        for task in self.journal.tasks(ticker=ticker, active_only=True):
+        for task in self.journal.task_controls(ticker):
             if task["id"] in self._futures or task["status"] in {"SUCCEEDED", "FAILED", "HELD"}:
                 continue
             kind = task["kind"]
+            if task["due_at"] > self.journal.clock().isoformat():
+                continue
+            if kind != "CASE":
+                task = self.journal.get_task(task["id"])
             if kind not in {"CASE", "MAINTENANCE", "SWEEP", "SELECTION"}:
                 continue
             closed_recovery = False
             if kind == "CASE" and task["inputs"]["mode"] == "CLOSED":
                 closed_recovery = self._orphan_closed_recovery(task)
                 if not closed_recovery or any(
-                    lease["ticker"] == ticker and lease["inputs"].get("mode") == "CLOSED"
-                    and identity in self._futures and not self._futures[identity].done()
+                    lease["ticker"] == ticker
+                    and lease["inputs"].get("mode") == "CLOSED"
+                    and identity in self._futures
+                    and not self._futures[identity].done()
                     for identity, lease in self._leases.items()
                 ):
                     continue  # Live sweeps retain their wave ownership and ordering.
@@ -446,7 +466,6 @@ class RuntimeCoordinator:
             lease = self.journal.claim(
                 task["id"],
                 seconds=120,
-                prepare_inputs=self.prepare_case_inputs,
             )
             if lease:
                 self._leases[task["id"]] = lease
@@ -512,8 +531,11 @@ class RuntimeCoordinator:
     def _execute(self, task: dict[str, Any]) -> None:
         from .heartbeat import heartbeat
 
-        with heartbeat(lambda: self.journal.renew(task)):
+        if task["kind"] == "CASE":
             self._execute_owned(task)
+        else:
+            with heartbeat(lambda: self.journal.renew(task)):
+                self._execute_owned(task)
 
     def _execute_owned(self, task: dict[str, Any]) -> None:
         try:
@@ -522,6 +544,7 @@ class RuntimeCoordinator:
                 f"{task['id']}:{task['token']}", task["ticker"], case_id=task["id"]
             )
             if kind == "CASE":
+                self.journal.prepare_claimed(task, self.prepare_case_inputs)
                 self._case(task)
             elif kind == "SWEEP":
                 self._sweep(task)

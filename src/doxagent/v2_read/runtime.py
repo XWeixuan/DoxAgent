@@ -29,7 +29,11 @@ def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
                     (ticker, identity),
                 )
             ]
-        turns = [turn for turn in turns if turn["round"] in {"R1", "R2"} or (turn["node_id"] == "W2" and turn["round"] == "R3")]
+        turns = [
+            turn
+            for turn in turns
+            if turn["round"] in {"R1", "R2"} or (turn["node_id"] == "W2" and turn["round"] == "R3")
+        ]
         if (
             turns
             and {turn["node_id"] for turn in turns} == {"W1", "W2"}
@@ -102,16 +106,37 @@ def turn_records(turn: dict[str, Any], case: dict[str, Any]) -> tuple[list[dict]
         }
     ]
     day = semantic_day(datetime.fromisoformat(turn.get("started_at") or turn["created_at"]))
-    usage = {key: turn.get(key) for key in (
-        "input_tokens", "output_tokens", "cached_input_tokens", "cache_write_input_tokens",
-        "cache_write_5m_input_tokens", "cache_write_1h_input_tokens", "provider_usage",
-        "reasoning_tokens", "cache_ttl", "provider_endpoint", "region", "normalization_version",
-    )}
-    normalized, money = accounting(turn["model"], turn["provider"], "API", turn.get("started_at"), usage)
-    price = available(format(money["total_cost_usd"], "f")) if money["total_cost_usd"] is not None else missing(money["reason"] or "NOT_RECORDED")
+    usage = {
+        key: turn.get(key)
+        for key in (
+            "input_tokens",
+            "output_tokens",
+            "cached_input_tokens",
+            "cache_write_input_tokens",
+            "cache_write_5m_input_tokens",
+            "cache_write_1h_input_tokens",
+            "provider_usage",
+            "reasoning_tokens",
+            "cache_ttl",
+            "provider_endpoint",
+            "region",
+            "normalization_version",
+        )
+    }
+    normalized, money = accounting(
+        turn["model"], turn["provider"], "API", turn.get("started_at"), usage
+    )
+    price = (
+        available(format(money["total_cost_usd"], "f"))
+        if money["total_cost_usd"] is not None
+        else missing(money["reason"] or "NOT_RECORDED")
+    )
     dimensions = {
-        "scope": "API", "node": turn["lane"], "round": turn["round_name"],
-        "model": turn["model"], "provider": turn["provider"],
+        "scope": "API",
+        "node": turn["lane"],
+        "round": turn["round_name"],
+        "model": turn["model"],
+        "provider": turn["provider"],
     }
     records.append(
         {
@@ -129,14 +154,15 @@ def turn_records(turn: dict[str, Any], case: dict[str, Any]) -> tuple[list[dict]
                 "round": turn["round_name"],
                 "normalization_version": normalized["normalization_version"],
                 "usage": normalized,
-                "accounting": {key: format(value, "f") if isinstance(value, Decimal) else value for key, value in money.items()},
+                "accounting": {
+                    key: format(value, "f") if isinstance(value, Decimal) else value
+                    for key, value in money.items()
+                },
                 "upstream_provider": (turn.get("provider_usage") or {}).get("response_provider"),
                 "attribution_basis": "STARTED_AT" if turn.get("started_at") else "CREATED_AT",
                 "cost_usd": price,
                 "timing": attempt["timing"],
-                "coverage": "COMPLETE"
-                if normalized["total_tokens"] is not None
-                else "PARTIAL",
+                "coverage": "COMPLETE" if normalized["total_tokens"] is not None else "PARTIAL",
             },
         }
     )
@@ -180,6 +206,9 @@ def worker_records(value: dict) -> tuple[list[dict], list[dict]]:
                 "cancelled": "CANCELLED",
             }[job["status"]],
             "timing": interval,
+            "sdk_seconds": available(job["telemetry"]["sdk_duration_ms"] / 1000)
+            if (job.get("telemetry") or {}).get("sdk_duration_ms") is not None
+            else missing(),
             "error": ApiFailure(job["error_code"]).payload(job["job_id"])["error"]
             if job.get("error_code")
             else None,
@@ -215,7 +244,8 @@ def worker_records(value: dict) -> tuple[list[dict], list[dict]]:
                 "cost_usd": missing("CODEX_SUBSCRIPTION_NOT_PRICED", "NOT_APPLICABLE"),
                 "coverage": "COMPLETE"
                 if (job.get("telemetry") or {}).get("usage_complete", False)
-                and usage and all(v is not None for v in usage.values())
+                and usage
+                and all(v is not None for v in usage.values())
                 else "PARTIAL",
             },
         },
@@ -274,7 +304,8 @@ def worker_usage(value):
             "cost_usd": missing("CODEX_SUBSCRIPTION_NOT_PRICED", "NOT_APPLICABLE"),
             "coverage": "COMPLETE"
             if (job.get("telemetry") or {}).get("usage_complete", False)
-            and usage and all(v is not None for v in usage.values())
+            and usage
+            and all(v is not None for v in usage.values())
             else "PARTIAL",
         },
     }

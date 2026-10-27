@@ -372,9 +372,12 @@ class PersistentRuntimeV2Service:
                     thread_name_prefix=f"prv2-hot-{case.ticker}",
                 )
                 self._hot_executors[case.ticker] = executor
+            from contextvars import copy_context
+
             submitted = perf_counter()
             return (
                 executor.submit(
+                    copy_context().run,
                     self._run_hot_lane,
                     case,
                     "W1",
@@ -382,6 +385,7 @@ class PersistentRuntimeV2Service:
                     lambda: self._run_w1_hot(case, index),
                 ),
                 executor.submit(
+                    copy_context().run,
                     self._run_hot_lane,
                     case,
                     "W2",
@@ -748,6 +752,10 @@ class PersistentRuntimeV2Service:
                     w2_r1, w2_final, w2_response_id = self._run_w2_hot(case, projection)
             else:
                 w1_future, w2_future = self._submit_hot_lanes(case, index, projection)
+                from concurrent.futures import wait
+
+                # Keep the lease/owner until both physical lanes settle, even if one fails.
+                wait((w1_future, w2_future))
                 w1_r1, w1_final, w1_response_id = w1_future.result()
                 w2_r1, w2_final, w2_response_id = w2_future.result()
             case.w1_round1, case.w1_final = w1_r1, w1_final
@@ -1441,7 +1449,11 @@ class PersistentRuntimeV2Service:
                 replay_parent = (
                     self._parent_replay(case, lane) if recovery or stateless_parent else None
                 )
-                result = self.responses.complete(
+                from .round_receipt import complete as complete_with_receipt
+
+                result = complete_with_receipt(
+                    self.journal,
+                    self.responses,
                     RuntimeResponsesRequest(
                         model=model_settings["model"],
                         reasoning_effort=model_settings["reasoning_effort"],
@@ -1472,7 +1484,8 @@ class PersistentRuntimeV2Service:
                             "lane": lane,
                             "round": round_name,
                         },
-                    )
+                    ),
+                    f"{round_key}:{attempt}",
                 )
                 if output_model in {W2PolicyAssessmentResultV2, W2NovelFactAlignmentResultV2}:
                     from dataclasses import replace
@@ -1639,6 +1652,12 @@ class PersistentRuntimeV2Service:
         model_settings: dict[str, Any],
         context_mode: str = "EXPLICIT",
     ) -> None:
+        from .round_receipt import completion_times
+
+        recorded = completion_times(self.journal, f"{case.case_id}:{lane}:{round_name}:{attempt}")
+        finished_at = utc_now()
+        if recorded:
+            started_at, finished_at = recorded
         self.repository.append_turn(
             RuntimeModelTurn(
                 case_id=case.case_id,
@@ -1659,7 +1678,7 @@ class PersistentRuntimeV2Service:
                 prefix_fingerprint=result.prefix_fingerprint,
                 latency_ms=result.latency_ms,
                 started_at=started_at,
-                finished_at=utc_now(),
+                finished_at=finished_at,
                 output=result.value.model_dump(mode="json"),
                 raw_output=result.raw_output,
                 validation_warnings=list(result.validation_warnings),
@@ -1864,6 +1883,7 @@ class PersistentRuntimeV2Service:
             if getattr(exc, "code", None) in {
                 "w3_template_initializing",
                 "w3_prepare_pending",
+                "w3_pending_external",
                 "w3_provider_paused",
             }:
                 available_at = utc_now() + timedelta(seconds=5)

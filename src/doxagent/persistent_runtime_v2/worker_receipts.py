@@ -1,3 +1,5 @@
+from doxagent.control_io import read_io, write_io
+
 """Reuse Codex worker idempotency and durable completed receipts for runtime nodes."""
 
 import hashlib
@@ -55,8 +57,8 @@ class ReceiptWorker:
         if request.task_phase is not None and self.case_id:
             identity += f":{self.case_id}"
         self.last_identity = identity
-        rejected = self.journal.get("worker_rejected", identity, False)
-        frozen = self.journal.get("worker_requests", identity)
+        rejected = await read_io(self.journal.get, "worker_rejected", identity, False)
+        frozen = await read_io(self.journal.get, "worker_requests", identity)
         if frozen is None:
             match = re.fullmatch(r"(.+)-retry-(\d+)", phase)
             if match:
@@ -67,34 +69,60 @@ class ReceiptWorker:
                 )
                 timeout = self._recovery_timeout(
                     request.timeout_seconds,
-                    self.journal.get("worker_receipts", prior_identity),
+                    (await read_io(self.journal.get, "worker_receipts", prior_identity)),
                 )
                 request = request.model_copy(update={"timeout_seconds": timeout})
             frozen = request.model_copy(update={"idempotency_key": digest(identity)}).model_dump(
                 mode="json"
             )
-            self.journal.set("worker_requests", identity, frozen)
-        receipt = self.journal.get("worker_receipts", identity)
+            (
+                await write_io(
+                    self.journal.path,
+                    self.journal.set,
+                    "worker_requests",
+                    identity,
+                    frozen,
+                    retry=True,
+                )
+            )
+        receipt = await read_io(self.journal.get, "worker_receipts", identity)
         if receipt is not None:
             job = WorkerJob.model_validate(receipt)
             if str(job.status) in {"SUCCEEDED", "completed", "succeeded"}:
                 recovered = await self._recover_o3_patch(identity, frozen, job)
                 if not rejected or recovered:
                     if recovered:
-                        self.journal.set("worker_rejected", identity, False)
+                        (
+                            await write_io(
+                                self.journal.path,
+                                self.journal.set,
+                                "worker_rejected",
+                                identity,
+                                False,
+                                retry=True,
+                            )
+                        )
                     return WorkerJob.model_validate(job)
         if frozen.get("retired_process"):
             raise ValueError("WORKER_REQUEST_RETIRED_REBUILD_FROM_PINNED_ARTIFACTS")
         if request.task_phase is not None:
-            self._check_quota(job if receipt is not None else None, observed=False)
+            (
+                await write_io(
+                    self.journal.path,
+                    self._check_quota,
+                    job if receipt is not None else None,
+                    observed=False,
+                    retry=True,
+                )
+            )
         if rejected or (receipt is not None and str(job.status) in {"failed", "cancelled"}):
             # Only a confirmed terminal failure may mint a new remote dispatch key.
-            generation = self.journal.get("worker_generation", identity, 0) + 1
+            generation = (await read_io(self.journal.get, "worker_generation", identity, 0)) + 1
             updates = []
             if rejected and self.repair_output:
                 from doxagent.codex_runtime.errors import W3PreparationError
 
-                if self.journal.get("worker_output_repairs", identity, 0) >= 1:
+                if (await read_io(self.journal.get, "worker_output_repairs", identity, 0)) >= 1:
                     raise W3PreparationError("w3_output_repair_exhausted", str(rejected))
                 updates.append(("worker_output_repairs", identity, 1))
                 updates.append(
@@ -130,19 +158,33 @@ class ReceiptWorker:
                     ("worker_rejected", identity, False),
                 ]
             )
-            prepared = [(ns, key, self.journal.content.encode(value)) for ns, key, value in updates]
+            prepared = [
+                (ns, key, (await read_io(self.journal.content.encode, value)))
+                for ns, key, value in updates
+            ]
             from .fencing import assert_write_lease
 
-            with self.journal.transaction(operation="worker.dispatch_generation") as db:
-                assert_write_lease(db)
-                db.executemany(
-                    "INSERT INTO runtime_values VALUES(?,?,?) ON CONFLICT(namespace,key) "
-                    "DO UPDATE SET payload=excluded.payload",
-                    prepared,
-                )
+            def save_generation():
+                with self.journal.transaction(operation="worker.dispatch_generation") as db:
+                    assert_write_lease(db)
+                    db.executemany(
+                        "INSERT INTO runtime_values VALUES(?,?,?) ON CONFLICT(namespace,key) "
+                        "DO UPDATE SET payload=excluded.payload",
+                        prepared,
+                    )
+
+            await write_io(self.journal.path, save_generation, retry=True)
         from doxagent.v2_control.repository import ControlRepository
 
-        ControlRepository(self.journal).dispatch(frozen["idempotency_key"], request.ticker)
+        (
+            await write_io(
+                self.journal.path,
+                ControlRepository(self.journal).dispatch,
+                frozen["idempotency_key"],
+                request.ticker,
+                retry=True,
+            )
+        )
         dispatched_request = WorkerRunRequest.model_validate(frozen)
         try:
             if self.on_update is not None and hasattr(self.worker, "run_with_observer"):
@@ -153,29 +195,44 @@ class ReceiptWorker:
             if str(request.node) == "persistent_runtime_w3":
                 exc.w3_step = "MODEL"
             raise
-        self.journal.set(
-            "worker_invocations",
-            job.job_id,
-            {
-                "job": job.model_dump(mode="json"),
-                "ticker": request.ticker,
-                "node": str(request.node),
-                "model": codex_execution_model(
-                    dispatched_request.model, dispatched_request.model_provider
-                ),
-                "requested_model": dispatched_request.model,
-                "task_phase": request.task_phase,
-                "provider": dispatched_request.model_provider,
-                "case_id": self.case_id,
-                "source_case_id": self.source_case_id,
-                "control_epoch": self.control_epoch,
-                "run_id": request.run_id,
-                "ordinal": self.journal.get("worker_generation", identity, 0) + 1,
-            },
+        (
+            await write_io(
+                self.journal.path,
+                self.journal.set,
+                "worker_invocations",
+                job.job_id,
+                {
+                    "job": job.model_dump(mode="json"),
+                    "ticker": request.ticker,
+                    "node": str(request.node),
+                    "model": codex_execution_model(
+                        dispatched_request.model, dispatched_request.model_provider
+                    ),
+                    "requested_model": dispatched_request.model,
+                    "task_phase": request.task_phase,
+                    "provider": dispatched_request.model_provider,
+                    "case_id": self.case_id,
+                    "source_case_id": self.source_case_id,
+                    "control_epoch": self.control_epoch,
+                    "run_id": request.run_id,
+                    "ordinal": (await read_io(self.journal.get, "worker_generation", identity, 0))
+                    + 1,
+                },
+                retry=True,
+            )
         )
-        self.journal.set("worker_receipts", identity, job.model_dump(mode="json"))
+        (
+            await write_io(
+                self.journal.path,
+                self.journal.set,
+                "worker_receipts",
+                identity,
+                job.model_dump(mode="json"),
+                retry=True,
+            )
+        )
         if request.task_phase is not None:
-            self._check_quota(job)
+            (await write_io(self.journal.path, self._check_quota, job, retry=True))
         await self._recover_o3_patch(identity, frozen, job)
         return WorkerJob.model_validate(job)
 
@@ -273,16 +330,21 @@ class ReceiptWorker:
             return False
         content = patch.model_dump_json(indent=2)
         await self.worker.write_text(request["run_id"], target, content)
-        self.journal.set(
-            "worker_artifact_recovery",
-            identity,
-            {
-                "job_id": job.job_id,
-                "source": source,
-                "target": target,
-                "source_sha256": hashlib.sha256((response.content or "").encode()).hexdigest(),
-                "target_sha256": hashlib.sha256(content.encode()).hexdigest(),
-            },
+        (
+            await write_io(
+                self.journal.path,
+                self.journal.set,
+                "worker_artifact_recovery",
+                identity,
+                {
+                    "job_id": job.job_id,
+                    "source": source,
+                    "target": target,
+                    "source_sha256": hashlib.sha256((response.content or "").encode()).hexdigest(),
+                    "target_sha256": hashlib.sha256(content.encode()).hexdigest(),
+                },
+                retry=True,
+            )
         )
         return True
 

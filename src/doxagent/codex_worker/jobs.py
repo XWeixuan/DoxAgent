@@ -26,6 +26,7 @@ from doxagent.codex_worker.schema import (
 )
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime, TurnHandle
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+from doxagent.control_io import read_io, write_io
 from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 from doxagent.w3_timing import BoundaryTrace, save_trace, snapshot_current, span
 
@@ -127,13 +128,21 @@ class WorkerJobManager:
 
         self.thread_lifecycle = WorkerThreadLifecycle(self, workspaces)
         self.session_retention = None
-        self._retention_settings=session_retention_settings
+        self._retention_settings = session_retention_settings
         self._session_gc_task = None
         if session_retention_settings is not None:
             from .session_retention import TerminalSessions, business_holds
-            self.session_retention=TerminalSessions(self,self.thread_lifecycle.transport,
-                owner_holds=partial(business_holds,session_retention_settings))
+
+            self.session_retention = TerminalSessions(
+                self,
+                self.thread_lifecycle.transport,
+                owner_holds=partial(business_holds, session_retention_settings),
+            )
         self._condition = asyncio.Condition()
+        self._submit_locks = {}
+        self._schedule_lock = asyncio.Lock()
+        self.loop_lag = {}
+        self._lag_task = None
         self._recover_snapshots()
         if hasattr(runtime, "receipt_callback"):
             runtime.receipt_callback = self._capture_identity
@@ -142,12 +151,24 @@ class WorkerJobManager:
         self, request: WorkerRunRequest, thread: str, turn: str | None
     ) -> None:
         for key in self._active:
-            job = self._jobs[key]
+            job = await read_io(self.store.get, key)
             if job.run_id == request.run_id and job.attempt_id == request.attempt_id:
                 await self._update(key, thread_id=thread, turn_id=turn)
                 return
 
     async def submit(self, request: WorkerRunRequest) -> WorkerJob:
+        key = (request.run_id, request.idempotency_key or request.attempt_id)
+        entry = self._submit_locks.setdefault(key, [asyncio.Lock(), 0])
+        entry[1] += 1
+        try:
+            async with entry[0]:
+                return await self._submit_owned(request)
+        finally:
+            entry[1] -= 1
+            if not entry[1]:
+                self._submit_locks.pop(key, None)
+
+    async def _submit_owned(self, request: WorkerRunRequest) -> WorkerJob:
         hash_payload = request.model_dump(mode="json")
         for name in ("task_phase", "web_search_mode"):
             if hash_payload.get(name) is None:
@@ -160,19 +181,21 @@ class WorkerJobManager:
             if request.idempotency_key
             else uuid4().hex
         )
-        existing = self._jobs.get(job_id)
+        existing = await read_io(self.store.get, job_id)
         if existing is not None:
             if existing.request_sha256 != request_sha256:
                 raise ValueError("idempotency key reused for a different worker request")
             self.start()
             return existing.model_copy(deep=True)
-        if self._closed or len(self.store.queued()) >= self.queue_high_watermark:
+        if self._closed or len(await read_io(self.store.queued)) >= self.queue_high_watermark:
             raise QueueHighWatermark("QUEUE_STORAGE_HIGH_WATERMARK")
         self.thread_lifecycle.validate_run(request)
         if self.session_retention is not None:
             self.session_retention.validate_submit(request)
-            if (self._workspaces.root/request.run_id/'audit'/'retained-assets.json').is_file():
-                raise ValueError('PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN')
+            if (
+                self._workspaces.root / request.run_id / "audit" / "retained-assets.json"
+            ).is_file():
+                raise ValueError("PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN")
         job = WorkerJob(
             job_id=job_id,
             run_id=request.run_id,
@@ -182,10 +205,10 @@ class WorkerJobManager:
             wait_reason="LAUNCH_RAMP",
         )
         # Persist before the first await: duplicate HTTP submissions cannot dispatch twice.
-        self.store.save(job, request)
+        (await write_io(self.store.path, self.store.save, job, request, retry=True))
         await blocking(self._persist, job)
         await self._emit(job.job_id, "job.queued", {"node": request.node.value})
-        self._schedule()
+        await self._schedule()
         self.start()
         return job.model_copy(deep=True)
 
@@ -268,12 +291,18 @@ class WorkerJobManager:
             logging.getLogger(__name__).warning("Observation GC failed: %s", task.exception())
 
     async def _dispatch_attempt(self):
+        if self._lag_task is None:
+            from doxagent.control_io import loop_watch
+
+            self._lag_task = asyncio.create_task(loop_watch(self.loop_lag))
         if not self._processes_recovered:
             self._dispatcher_state = "RECOVERING"
             recover = getattr(self._runtime, "recover", None)
             if recover is not None:
                 await recover()
-            self._recover_snapshots()  # Completions may commit during old-process cleanup.
+            await read_io(
+                self._recover_snapshots
+            )  # Original completions may commit during cleanup.
             self._processes_recovered = True
         while not self._closed:
             if (
@@ -284,9 +313,25 @@ class WorkerJobManager:
                 if self._session_gc_task is not None:
                     try:
                         if not self._session_gc_task.cancelled():
-                            self.store.metadata("session_retention", self._session_gc_task.result())
+                            (
+                                await write_io(
+                                    self.store.path,
+                                    self.store.metadata,
+                                    "session_retention",
+                                    self._session_gc_task.result(),
+                                    retry=True,
+                                )
+                            )
                     except Exception as exc:
-                        self.store.metadata("session_retention", {"error": str(exc)[:250]})
+                        (
+                            await write_io(
+                                self.store.path,
+                                self.store.metadata,
+                                "session_retention",
+                                {"error": str(exc)[:250]},
+                                retry=True,
+                            )
+                        )
                 self._session_gc_task = asyncio.create_task(self._collect_owned_resources())
                 self._session_gc_at = time.monotonic() + 600
             if time.monotonic() >= self._observation_gc_at and (
@@ -300,14 +345,19 @@ class WorkerJobManager:
                 self._observation_gc_task.add_done_callback(self._observation_done)
                 self._observation_gc_at = time.monotonic() + 3600
             snapshot = self.safety.read()
-            self.store.metadata(
-                "safety",
-                {
-                    "level": snapshot.level.value,
-                    "observed_at": snapshot.observed_at,
-                    "reasons": list(snapshot.reasons),
-                    "stale": snapshot.stale,
-                },
+            (
+                await write_io(
+                    self.store.path,
+                    self.store.metadata,
+                    "safety",
+                    {
+                        "level": snapshot.level.value,
+                        "observed_at": snapshot.observed_at,
+                        "reasons": list(snapshot.reasons),
+                        "stale": snapshot.stale,
+                    },
+                    retry=True,
+                )
             )
             if snapshot.level is not SafetyLevel.CRITICAL:
                 self._critical_intervened = False
@@ -320,18 +370,20 @@ class WorkerJobManager:
                     key
                     for key in self._tasks
                     if self._active_lanes.get(key) == "background"
-                    and self._jobs[key].execution_phase in {"STARTING", "RUNNING"}
+                    and (await read_io(self.store.get, key)).execution_phase
+                    in {"STARTING", "RUNNING"}
                 ]
                 if candidates:
                     measure = getattr(self._runtime, "memory_for", lambda _request: 0)
-                    victim = max(
-                        candidates,
-                        key=lambda key: (
-                            measure(self.store.request(key))
-                            if self.store.request(key) is not None
+                    sizes = {}
+                    for key in candidates:
+                        active_request = await read_io(self.store.request, key)
+                        sizes[key] = (
+                            await read_io(measure, active_request)
+                            if active_request is not None
                             else 0
-                        ),
-                    )
+                        )
+                    victim = max(candidates, key=sizes.get)
                     self._critical_intervened = True
                     self._forced_reason[victim] = "WORKER_RESOURCE_CRITICAL"
                     self._tasks[victim].cancel()
@@ -358,29 +410,35 @@ class WorkerJobManager:
                 reconcile = getattr(helper, "reconcile_cleanup", None)
                 if reconcile is not None:
                     await reconcile()
-            self._schedule()
+            await self._schedule()
             self._dispatcher_state = "RUNNING"
             self._dispatcher_progress = time.monotonic()
             self._dispatcher_retry_at = None
             self._dispatch_failures = 0
             await asyncio.sleep(0.25)
 
-    def _schedule(self) -> None:
+    async def _schedule(self) -> None:
+        async with self._schedule_lock:
+            await self._schedule_owned()
+
+    async def _schedule_owned(self) -> None:
         if self._closed or not self._processes_recovered:
             return
         now = time.monotonic()
         snapshot = self.safety.read()
-        realtime = self.store.queued(lane="realtime")
-        background = self.store.queued(lane="background")
+        realtime = await read_io(self.store.queued, lane="realtime")
+        background = await read_io(self.store.queued, lane="background")
         if snapshot.level is SafetyLevel.CRITICAL:
-            self._mark_waiting(realtime + background, "SAFETY_CRITICAL")
+            await self._mark_waiting(realtime + background, "SAFETY_CRITICAL")
             return
         if snapshot.level is SafetyLevel.PRESSURE:
-            self._mark_waiting(background, "SAFETY_PRESSURE")
+            await self._mark_waiting(background, "SAFETY_PRESSURE")
             queued = realtime
             wave_size = 1
         else:
-            oldest_background = self._jobs.get(background[0]) if background else None
+            oldest_background = (
+                (await read_io(self.store.get, background[0])) if background else None
+            )
             aged = bool(
                 oldest_background
                 and (utc_now() - oldest_background.created_at).total_seconds()
@@ -400,18 +458,19 @@ class WorkerJobManager:
         for job_id in queued:
             if job_id in self._tasks or job_id in self._settle_retries or job_id in self._settling:
                 continue
-            job = self._jobs[job_id]
+            job = await read_io(self.store.get, job_id)
             if job.next_retry_at > time.time():
                 continue
-            request = self.store.request(job_id)
+            request = await read_io(self.store.request, job_id)
             if request is None:
                 continue
             # W1/W2/W3 and their required preparation keep the existing
             # admission policy. Only deferrable research/initialization waits.
-            if request.research_lane.value != 'persistent_runtime':
+            if request.research_lane.value != "persistent_runtime":
                 from doxagent.message_bus_v2.pressure import background_allowed
+
                 if not background_allowed():
-                    self._mark_waiting([job_id],'MESSAGE_PIPELINE_RESOURCE_RESERVE')
+                    await self._mark_waiting([job_id], "MESSAGE_PIPELINE_RESOURCE_RESERVE")
                     continue
             warm = str(request.node) == "persistent_runtime_w3" and getattr(
                 self._runtime,
@@ -432,19 +491,21 @@ class WorkerJobManager:
             identity = effective_thread or f"{request.run_id}:{request.attempt_id}"
             if identity in set(self._active.values()):
                 continue
-            self._active[job_id] = identity
-            self._active_lanes[job_id] = lane
-            self._jobs[job_id] = job.model_copy(
-                update={
-                    "wait_reason": None,
-                    "resource_receipt": {
-                        **job.resource_receipt,
-                        "execution_lane": lane,
-                        "dispatch_safety_level": snapshot.level.value,
-                    },
-                }
+            await write_io(
+                self.store.path,
+                self.store.save,
+                job.model_copy(
+                    update={
+                        "wait_reason": None,
+                        "resource_receipt": {
+                            **job.resource_receipt,
+                            "execution_lane": lane,
+                            "dispatch_safety_level": snapshot.level.value,
+                        },
+                    }
+                ),
+                retry=True,
             )
-            self.store.save(self._jobs[job_id])
             effective = request.model_copy(
                 update={
                     "allow_subagents": bool(effective_subagents),
@@ -452,6 +513,8 @@ class WorkerJobManager:
                     "thread_id": effective_thread,
                 }
             )
+            self._active[job_id] = identity
+            self._active_lanes[job_id] = lane
             task = asyncio.create_task(self._execute(job_id, effective))
             self._tasks[job_id] = task
             self._starting.add(job_id)
@@ -460,17 +523,21 @@ class WorkerJobManager:
         if launched:
             self._next_launch_at = now + self.launch_interval_seconds
 
-    def _mark_waiting(self, job_ids: list[str], reason: str) -> None:
+    async def _mark_waiting(self, job_ids: list[str], reason: str) -> None:
         for job_id in job_ids:
-            job = self._jobs.get(job_id)
+            job = await read_io(self.store.get, job_id)
             if job is not None and job.wait_reason != reason:
-                self._jobs[job_id] = job.model_copy(update={"wait_reason": reason})
-                self.store.save(self._jobs[job_id])
+                await write_io(
+                    self.store.path,
+                    self.store.save,
+                    job.model_copy(update={"wait_reason": reason}),
+                    retry=True,
+                )
 
     def _task_done(self, job_id: str, task: asyncio.Task[None]) -> None:
         self._tasks.pop(job_id, None)
         # Cancellation before the coroutine's first instruction has no finally block.
-        if task.cancelled() and self._jobs[job_id].execution_phase == "QUEUED":
+        if task.cancelled() and (self.store.get(job_id)).execution_phase == "QUEUED":
             self._active.pop(job_id, None)
             self._active_lanes.pop(job_id, None)
         self._starting.discard(job_id)
@@ -483,6 +550,11 @@ class WorkerJobManager:
     async def _execute_leased(self, job_id: str, request: WorkerRunRequest) -> None:
         try:
             await self._run(job_id, request)
+        except asyncio.CancelledError:
+            # Off-loop preflight may be cancelled before _run_observed enters
+            # its try/finally. Keep that cancellation in the same owner scope.
+            self._pending_finish.setdefault(job_id, {"status": "cancelled"})
+            raise
         finally:
             await await_owned(self._launch_settlement(job_id, request))
 
@@ -507,10 +579,10 @@ class WorkerJobManager:
             request = self.store.request(job_id)
             if request is not None:
                 self._launch_settlement(job_id, request)
-            elif self._jobs[job_id].status in {"succeeded", "failed", "cancelled"}:
+            elif (self.store.get(job_id)).status in {"succeeded", "failed", "cancelled"}:
                 # ACK can remove the request after the terminal SQL commit but
                 # before a failed mirror/event acknowledgement is retried.
-                if self._jobs[job_id].execution_phase == "SETTLED":
+                if (self.store.get(job_id)).execution_phase == "SETTLED":
                     self._active.pop(job_id, None)
                     self._active_lanes.pop(job_id, None)
                 self._settle_retries.pop(job_id, None)
@@ -521,7 +593,7 @@ class WorkerJobManager:
         if complete is None:
             return
         for job_id, key in list(self._cleanup_quarantines.items()):
-            request = self.store.request(job_id)
+            request = await read_io(self.store.request, job_id)
             complete_key = getattr(self._runtime, "cleanup_complete_key", None)
             gone = (
                 complete(request)
@@ -567,7 +639,7 @@ class WorkerJobManager:
                     "error_message": "owned process cleanup failed; "
                     "slot quarantined until owned-process exit is confirmed",
                 }
-            current = self._jobs[job_id]
+            current = await read_io(self.store.get, job_id)
             startup_failure = getattr(self._runtime, "failure_for", lambda _: None)(request)
             if startup_failure:
                 await self._update(
@@ -577,7 +649,7 @@ class WorkerJobManager:
                         "startup_failure": startup_failure,
                     },
                 )
-                current = self._jobs[job_id]
+                current = await read_io(self.store.get, job_id)
             safe_start_retry = (
                 finish.get("error_code") == "CODEX_START_TIMEOUT"
                 and startup_failure is not None
@@ -641,7 +713,9 @@ class WorkerJobManager:
             self._pending_finish.pop(job_id, None)
             self._settle_retries.pop(job_id, None)
             try:
-                await blocking(self._persist_telemetry, request, self._jobs[job_id])
+                await blocking(
+                    self._persist_telemetry, request, (await read_io(self.store.get, job_id))
+                )
             except Exception:
                 logging.getLogger(__name__).warning("Terminal job telemetry failed for %s", job_id)
         except Exception as exc:
@@ -655,6 +729,9 @@ class WorkerJobManager:
             raise
 
     async def close(self) -> None:
+        if self._lag_task is not None:
+            self._lag_task.cancel()
+            await asyncio.gather(self._lag_task, return_exceptions=True)
         self._closed = True
         self._dispatcher_state = "STOPPED"
         if self._observation_gc_task is not None:
@@ -667,7 +744,7 @@ class WorkerJobManager:
             self._pump.cancel()
             await asyncio.gather(self._pump, return_exceptions=True)
         for key, task in list(self._tasks.items()):
-            if self._jobs[key].execution_phase != "CLEANING":
+            if (await read_io(self.store.get, key)).execution_phase != "CLEANING":
                 task.cancel()
         await asyncio.gather(*list(self._tasks.values()), return_exceptions=True)
         await self.thread_lifecycle.close()
@@ -678,10 +755,12 @@ class WorkerJobManager:
             await close()
 
     def get(self, job_id: str) -> WorkerJob | None:
-        job = self._jobs.get(job_id)
+        job = self.store.get(job_id)
         return job.model_copy(deep=True) if job else None
 
     def resources(self) -> dict[str, object]:
+        from doxagent.control_io import diagnostic_status
+
         snapshot = self.safety.read()
         now = utc_now()
         admission = getattr(self._runtime, "admission", None)
@@ -692,6 +771,8 @@ class WorkerJobManager:
         }
         return {
             "dispatcher": "elastic",
+            "event_loop_lag": dict(self.loop_lag),
+            "diagnostics": diagnostic_status(),
             "active_executions": len(self._active),
             "cold_starts": len(self._starting),
             "active_by_lane": active_by_lane,
@@ -732,7 +813,7 @@ class WorkerJobManager:
         }
 
     async def cancel(self, job_id: str) -> WorkerJob | None:
-        job = self._jobs.get(job_id)
+        job = await read_io(self.store.get, job_id)
         if job is None:
             return None
         if job.status in {"succeeded", "failed", "cancelled"}:
@@ -742,7 +823,7 @@ class WorkerJobManager:
             if job.execution_phase != "CLEANING":
                 task.cancel()
             await asyncio.gather(task, return_exceptions=True)
-            if self._jobs[job_id].status == "queued":
+            if (await read_io(self.store.get, job_id)).status == "queued":
                 self._active.pop(job_id, None)
                 self._active_lanes.pop(job_id, None)
                 await self._update(
@@ -752,19 +833,23 @@ class WorkerJobManager:
             await self._update(
                 job_id, status="cancelled", execution_phase="SETTLED", finished_at=utc_now()
             )
-        return self._jobs[job_id].model_copy(deep=True)
+        return (await read_io(self.store.get, job_id)).model_copy(deep=True)
 
     async def events(self, job_id: str, after_sequence: int = -1) -> AsyncIterator[WorkerEvent]:
         while True:
-            if self._jobs.get(job_id) is None:
+            if await read_io(self.store.get, job_id) is None:
                 return
-            pending = self.store.events(job_id, after_sequence)
+            pending = await read_io(self.store.events, job_id, after_sequence)
             for event in pending:
                 after_sequence = event.sequence
                 yield event
             if len(pending) == 128:
                 continue
-            if self._jobs[job_id].status in {"succeeded", "failed", "cancelled"}:
+            if (await read_io(self.store.get, job_id)).status in {
+                "succeeded",
+                "failed",
+                "cancelled",
+            }:
                 return
             async with self._condition:
                 timed_out = False
@@ -786,17 +871,22 @@ class WorkerJobManager:
             phase=request.task_phase,
             worker_generation=self.generation,
             worker_queue_to_run_ms=max(
-                0, round((utc_now() - self._jobs[job_id].created_at).total_seconds() * 1000, 3)
+                0,
+                round(
+                    (utc_now() - (await read_io(self.store.get, job_id)).created_at).total_seconds()
+                    * 1000,
+                    3,
+                ),
             ),
         )
         with trace.activate():
             try:
                 return await self._run_observed(job_id, request)
             finally:
-                save_trace(trace, self.store.root / "boundary-timing")
+                await read_io(save_trace, trace, self.store.root / "boundary-timing")
 
     async def _run_observed(self, job_id: str, request: WorkerRunRequest) -> None:
-        job = self._jobs[job_id]
+        job = await read_io(self.store.get, job_id)
         started = time.monotonic()
         phase = "START_THREAD"
         try:
@@ -823,7 +913,7 @@ class WorkerJobManager:
                 try:
                     with span("worker.runtime_start"):
                         async with asyncio.timeout(
-                            max(.001, min(120, request.timeout_seconds) - (15 if managed else 0))
+                            max(0.001, min(120, request.timeout_seconds) - (15 if managed else 0))
                         ):
                             handle = await self._runtime.start(request, run_root)
                 finally:
@@ -858,8 +948,25 @@ class WorkerJobManager:
                 },
             )
             phase = "RUN_TURN"
-            async with asyncio.timeout(request.timeout_seconds):
+            # Capsule owns the SDK timer. Parent supervises the same deadline
+            # plus physical handoff, never starts another full budget after SQL.
+            deadline = getattr(handle, "sdk_deadline", None)
+            remaining = (
+                max(0.001, deadline + 15 - time.monotonic())
+                if deadline
+                else request.timeout_seconds
+            )
+            async with asyncio.timeout(remaining):
                 result = await handle.run()
+            if getattr(result, "execution_timing", None):
+                current = await read_io(self.store.get, job_id)
+                await self._update(
+                    job_id,
+                    resource_receipt={
+                        **current.resource_receipt,
+                        "execution_timing": result.execution_timing,
+                    },
+                )
             telemetry = result.telemetry
             if telemetry is not None:
                 telemetry = telemetry.model_copy(
@@ -895,6 +1002,39 @@ class WorkerJobManager:
             await self._finish(job_id, status="cancelled")
             raise
         except TimeoutError:
+            # Completion is authoritative even if RUNNING/event persistence or
+            # pipe delivery crossed the caller's deadline. Never repeat that turn.
+            def completed_receipt():
+                path = receipt_path(self._workspaces.root, request)
+                if not path.is_file():
+                    return None
+                data = json.loads(path.read_text(encoding="utf8"))
+                timing = data.get("execution_timing") or {}
+                before_deadline = (
+                    timing.get("sdk_completed_monotonic") is not None
+                    and timing.get("sdk_deadline_monotonic") is not None
+                    and timing["sdk_completed_monotonic"] <= timing["sdk_deadline_monotonic"]
+                )
+                return (
+                    data
+                    if data.get("status") in {"completed", "succeeded", "success"}
+                    and before_deadline
+                    else None
+                )
+
+            recovered = await read_io(completed_receipt)
+            if recovered is not None:
+                await self._finish(
+                    job_id,
+                    status="succeeded",
+                    thread_id=recovered["thread_id"],
+                    turn_id=recovered["turn_id"],
+                    final_response=recovered.get("final_response"),
+                    telemetry=WorkerTurnTelemetry.model_validate(recovered["telemetry"])
+                    if recovered.get("telemetry")
+                    else None,
+                )
+                return
             active_handle = self._handles.get(job_id)
             if active_handle is not None:
                 with suppress(Exception):
@@ -931,8 +1071,12 @@ class WorkerJobManager:
             self._handles.pop(job_id, None)
 
     async def _update(self, job_id: str, **updates: object) -> None:
-        job = self._jobs[job_id].model_copy(update={**updates, "updated_at": utc_now()})
-        self._jobs[job_id] = job
+        def update_record():
+            job = self.store.get(job_id).model_copy(update={**updates, "updated_at": utc_now()})
+            self.store.save(job)
+            return job
+
+        job = await write_io(self.store.path, update_record, priority=0, retry=True)
         await blocking(self._persist, job)
         await self._emit(
             job_id,
@@ -944,7 +1088,9 @@ class WorkerJobManager:
         self._pending_finish[job_id] = updates
 
     async def _emit(self, job_id: str, event_type: str, payload: dict[str, object]) -> None:
-        self.store.event(job_id, event_type, payload)
+        from doxagent.control_io import write_io
+
+        await write_io(self.store.path, self.store.event, job_id, event_type, payload, retry=True)
         async with self._condition:
             self._condition.notify_all()
 

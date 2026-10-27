@@ -375,12 +375,18 @@ def create_worker_app(
 
     @app.get("/healthz")
     async def healthz() -> dict[str, object]:
-        return {"ok": True, "service": "codex-worker", "data_mcp_enabled": True,
-                "dispatcher": jobs.dispatcher_status()}
+        return {
+            "ok": True,
+            "service": "codex-worker",
+            "data_mcp_enabled": True,
+            "dispatcher": jobs.dispatcher_status(),
+        }
 
     @app.get("/v1/resources", dependencies=[Depends(require_service_auth)])
     async def resources() -> dict[str, object]:
-        return jobs.resources()
+        from doxagent.control_io import read_io
+
+        return await read_io(jobs.resources)
 
     @app.get("/v1/capabilities", dependencies=[Depends(require_service_auth)])
     async def worker_capabilities() -> dict[str, object]:
@@ -458,7 +464,9 @@ def create_worker_app(
         "/v1/jobs/{job_id}", response_model=WorkerJob, dependencies=[Depends(require_service_auth)]
     )
     async def get_job(job_id: str) -> WorkerJob:
-        job = jobs.get(job_id)
+        from doxagent.control_io import read_io
+
+        job = await read_io(jobs.get, job_id)
         if job is None:
             raise HTTPException(status_code=404, detail="job not found")
         return job
@@ -476,7 +484,9 @@ def create_worker_app(
     async def stream_events(
         job_id: str, after: int = Query(default=-1, ge=-1)
     ) -> StreamingResponse:
-        if jobs.get(job_id) is None:
+        from doxagent.control_io import read_io
+
+        if await read_io(jobs.get, job_id) is None:
             raise HTTPException(status_code=404, detail="job not found")
 
         async def generate() -> AsyncIterator[str]:

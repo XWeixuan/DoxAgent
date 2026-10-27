@@ -7,7 +7,7 @@ import json
 import os
 import sys
 import time
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Any
 
@@ -97,22 +97,60 @@ async def main() -> None:
                 sdk_start=trace.snapshot(),
             )
             used = True
+            deadline = getattr(
+                handle, "sdk_deadline", time.monotonic() + payload["request"]["timeout_seconds"]
+            )
             send(
                 {
                     "type": "started",
+                    "sdk_deadline": deadline,
                     "thread_id": handle.thread_id,
                     "turn_id": handle.turn_id,
                     "startup_timing": startup,
                 }
             )
-            result = await handle.run()
+            from .turn_deadline import run_with_deadline
+
+            async def save_completed_fact(completed):
+                if getattr(handle, "sdk_completed_monotonic", float("inf")) > deadline:
+                    return
+                from doxagent.control_io import read_io
+
+                from .result_receipt import commit
+
+                data = asdict(completed)
+                data["telemetry"] = (
+                    completed.telemetry.model_dump(mode="json") if completed.telemetry else None
+                )
+                data["execution_timing"] = dict(
+                    sdk_dispatched_at=getattr(handle, "sdk_dispatched_at", None),
+                    sdk_completed_at=getattr(handle, "sdk_completed_at", None),
+                    sdk_completed_monotonic=handle.sdk_completed_monotonic,
+                    sdk_deadline_monotonic=deadline,
+                )
+                await read_io(commit, Path(payload["receipt_path"]), data)
+
+            handle.sdk_completion_callback = save_completed_fact
+            result = await run_with_deadline(handle, deadline)
+            result = replace(
+                result,
+                execution_timing=dict(
+                    sdk_dispatched_at=getattr(handle, "sdk_dispatched_at", None),
+                    sdk_completed_at=getattr(handle, "sdk_completed_at", None),
+                    sdk_deadline_monotonic=deadline,
+                    sdk_completed_monotonic=getattr(handle, "sdk_completed_monotonic", None),
+                    result_ready_monotonic=time.monotonic(),
+                ),
+            )
             data = asdict(result)
             data["telemetry"] = (
                 result.telemetry.model_dump(mode="json") if result.telemetry else None
             )
+            from doxagent.control_io import read_io
+
             from .result_receipt import commit
 
-            commit(Path(payload["receipt_path"]), data)
+            await read_io(commit, Path(payload["receipt_path"]), data)
             send({"type": "result", "result": data})
         except Exception as exc:
             send(

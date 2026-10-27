@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "ad8a9a3d63f55fdf242ef89d2f2b779ca2e22b1916ec5eeca145219a1f2bd6e3",
+  "source_sha256": "a581a70a23a33903d322af8d2206c07222aa0fe2e6d0b2ee396b05625114f671",
   "$defs": {
     "Id": {
       "type": "string"
@@ -8331,33 +8331,27 @@
     "ModelAttempt": {
       "type": "object",
       "properties": {
+        "sdk_seconds": {
+          "$ref": "#/$defs/Value%3Cnumber%3E"
+        },
         "phase": {
-          "anyOf": [
-            {
-              "const": "w3_template"
-            },
-            {
-              "const": "trade_decision"
-            },
-            {
-              "const": "post_decision_operations"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "w3_template",
+            "trade_decision",
+            "post_decision_operations",
+            null
           ]
         },
         "context_mode": {
-          "anyOf": [
-            {
-              "const": "EXPLICIT"
-            },
-            {
-              "const": "PREVIOUS_RESPONSE"
-            },
-            {
-              "const": "REPLAY_PARENT"
-            }
+          "type": "string",
+          "enum": [
+            "EXPLICIT",
+            "PREVIOUS_RESPONSE",
+            "REPLAY_PARENT"
           ]
         },
         "attempt_id": {
@@ -8374,32 +8368,20 @@
           ]
         },
         "node_id": {
-          "anyOf": [
-            {
-              "const": "W1"
-            },
-            {
-              "const": "W2"
-            },
-            {
-              "const": "W3"
-            }
+          "type": "string",
+          "enum": [
+            "W1",
+            "W2",
+            "W3"
           ]
         },
         "round": {
-          "anyOf": [
-            {
-              "const": "R1"
-            },
-            {
-              "const": "R2"
-            },
-            {
-              "const": "R3"
-            },
-            {
-              "const": "AGENT"
-            }
+          "type": "string",
+          "enum": [
+            "R1",
+            "R2",
+            "R3",
+            "AGENT"
           ]
         },
         "ordinal": {
@@ -8409,22 +8391,13 @@
           "$ref": "#/$defs/Count"
         },
         "status": {
-          "anyOf": [
-            {
-              "const": "PENDING"
-            },
-            {
-              "const": "RUNNING"
-            },
-            {
-              "const": "SUCCEEDED"
-            },
-            {
-              "const": "FAILED"
-            },
-            {
-              "const": "CANCELLED"
-            }
+          "type": "string",
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
           ]
         },
         "timing": {
@@ -9541,6 +9514,38 @@
     "CaseDetail": {
       "type": "object",
       "properties": {
+        "lifecycle_timing": {
+          "type": "object",
+          "properties": {
+            "elapsed_seconds": {
+              "type": "number"
+            },
+            "invocation_union_seconds": {
+              "type": "number"
+            },
+            "uncovered_seconds": {
+              "type": "number"
+            },
+            "partial": {
+              "type": "boolean"
+            },
+            "settled": {
+              "type": "boolean"
+            },
+            "as_of": {
+              "$ref": "#/$defs/Instant"
+            }
+          },
+          "required": [
+            "elapsed_seconds",
+            "invocation_union_seconds",
+            "uncovered_seconds",
+            "partial",
+            "settled",
+            "as_of"
+          ],
+          "additionalProperties": false
+        },
         "w3_state": {
           "type": "object",
           "properties": {
@@ -9629,13 +9634,13 @@
           "$ref": "#/$defs/CaseSummary"
         },
         "runtime_activation_id": {
-          "$ref": "#/$defs/Value__2b242cfa317b"
+          "$ref": "#/$defs/Value%3CId%3E"
         },
         "document1": {
-          "$ref": "#/$defs/Value__63bf59fe5d07"
+          "$ref": "#/$defs/Value%3CDocumentRef%3E"
         },
         "document2": {
-          "$ref": "#/$defs/Value__63bf59fe5d07"
+          "$ref": "#/$defs/Value%3CDocumentRef%3E"
         },
         "library": {
           "$ref": "#/$defs/LibraryRef"
@@ -9650,16 +9655,16 @@
           "$ref": "#/$defs/Timing"
         },
         "w1": {
-          "$ref": "#/$defs/Resource__13f6e845d369"
+          "$ref": "#/$defs/Resource%3CW1Detail%3E"
         },
         "w2": {
-          "$ref": "#/$defs/Resource__8068b34d6888"
+          "$ref": "#/$defs/Resource%3CW2Detail%3E"
         },
         "w3": {
-          "$ref": "#/$defs/Resource__73970d2ee78d"
+          "$ref": "#/$defs/Resource%3CW3Detail%3E"
         },
         "messages": {
-          "$ref": "#/$defs/Page__ff6728e052f6"
+          "$ref": "#/$defs/Page%3CMessageSummary%3E"
         },
         "failures": {
           "type": "array",
@@ -9693,10 +9698,10 @@
           }
         },
         "candidate_count": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
+          "$ref": "#/$defs/Value%3CCount%3E"
         },
         "execution_count": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
+          "$ref": "#/$defs/Value%3CCount%3E"
         },
         "results": {
           "type": "array",
@@ -27718,6 +27723,369 @@
         "valid_observations",
         "invalid_observations",
         "confirmation"
+      ],
+      "additionalProperties": false
+    },
+    "Value<DocumentRef>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "$ref": "#/$defs/DocumentRef"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Resource<W1Detail>": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "EMPTY",
+            "PARTIAL",
+            "NOT_PRODUCED",
+            "UNAVAILABLE",
+            "FORBIDDEN",
+            "ERROR"
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/W1Detail"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "state",
+        "data",
+        "reason",
+        "coverage"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "AVAILABLE",
+                  "EMPTY",
+                  "PARTIAL"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "NOT_PRODUCED",
+                  "UNAVAILABLE",
+                  "FORBIDDEN",
+                  "ERROR"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Resource<W2Detail>": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "EMPTY",
+            "PARTIAL",
+            "NOT_PRODUCED",
+            "UNAVAILABLE",
+            "FORBIDDEN",
+            "ERROR"
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/W2Detail"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "state",
+        "data",
+        "reason",
+        "coverage"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "AVAILABLE",
+                  "EMPTY",
+                  "PARTIAL"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "NOT_PRODUCED",
+                  "UNAVAILABLE",
+                  "FORBIDDEN",
+                  "ERROR"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Resource<W3Detail>": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "EMPTY",
+            "PARTIAL",
+            "NOT_PRODUCED",
+            "UNAVAILABLE",
+            "FORBIDDEN",
+            "ERROR"
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/W3Detail"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "state",
+        "data",
+        "reason",
+        "coverage"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "AVAILABLE",
+                  "EMPTY",
+                  "PARTIAL"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "NOT_PRODUCED",
+                  "UNAVAILABLE",
+                  "FORBIDDEN",
+                  "ERROR"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Page<MessageSummary>": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MessageSummary"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
       ],
       "additionalProperties": false
     }

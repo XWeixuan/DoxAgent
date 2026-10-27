@@ -740,6 +740,7 @@ export interface Timing {
   basis: "RECORDED" | "DERIVED_FROM_RECORDED_INTERVALS" | "UNAVAILABLE";
 }
 export interface ModelAttempt {
+  sdk_seconds?: Value<number>;
   phase?: "w3_template" | "trade_decision" | "post_decision_operations" | null;
   context_mode?: "EXPLICIT" | "PREVIOUS_RESPONSE" | "REPLAY_PARENT";
   attempt_id: Id; turn_id: Id | null; node_id: "W1" | "W2" | "W3";
@@ -834,6 +835,7 @@ export interface Candidate {
   provisional_event_id: Id | null; created_at: Instant;
 }
 export interface CaseDetail {
+  lifecycle_timing?: { elapsed_seconds: number; invocation_union_seconds: number; uncovered_seconds: number; partial: boolean; settled: boolean; as_of: Instant };
   w3_state?: {watch: JsonObject | null; pins: JsonObject | null; receipt: JsonObject | null};
   policy_watch?: {followup: JsonObject[]; actions: JsonObject[]; receipt: JsonObject | null};
   policy_execution?: JsonObject | null;

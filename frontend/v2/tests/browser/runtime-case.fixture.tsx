@@ -232,6 +232,7 @@ const details = {
         })
       : noReason,
 } as unknown as CaseDetail;
+details.lifecycle_timing = { elapsed_seconds: 1726.85, invocation_union_seconds: 683.2, uncovered_seconds: 1043.65, partial: true, settled: true, as_of: "2026-10-27T13:51:34Z" };
 const runtime = createRuntime(createTestAuth());
 if (mode === "v4") {
   details.summary.source_name = "Reuters";

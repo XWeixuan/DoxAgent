@@ -27,6 +27,7 @@ from doxagent.codex_runtime.schema import (
     ResearchLane,
 )
 from doxagent.codex_worker.schema import WorkerRunRequest
+from doxagent.control_io import read_io, write_io
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.w3_timing import measured, observed, span
 from doxagent.workflows.codex_document2.schema import (
@@ -493,6 +494,8 @@ class CodexW3AgentRunner:
         self._loop_thread.start()
         self._closed = False
         self._asset_preparations = {}
+        self._pending_v4 = {}
+        self._pending_v4_lock = threading.Lock()
 
     def entry_enabled(self, case):
         return case.frozen_inputs.get("w3_contracts", {}).get(
@@ -522,7 +525,16 @@ class CodexW3AgentRunner:
                     else set(_EVENT_ID.findall(context.reference_view))
                 ),
             )
-            self._journal.set("w3_research_v2", research_pin_key(case), saved)
+            (
+                await write_io(
+                    self._journal.path,
+                    self._journal.set,
+                    "w3_research_v2",
+                    research_pin_key(case),
+                    saved,
+                    retry=True,
+                )
+            )
             return saved
 
         return self._wait_v4(install())
@@ -626,17 +638,52 @@ class CodexW3AgentRunner:
 
     def _run_loop(self) -> None:
         asyncio.set_event_loop(self._loop)
+        from doxagent.control_io import loop_watch
+
+        self.loop_lag = {}
+        self._lag_task = self._loop.create_task(loop_watch(self.loop_lag))
         self._loop.run_forever()
+        self._lag_task.cancel()
+        self._loop.run_until_complete(asyncio.gather(self._lag_task, return_exceptions=True))
 
     def bind_case_repository(self, repository):
         self._case_repository = repository
 
-    def _wait_v4(self, coroutine):
+    def _wait_v4(self, coroutine, *, key=None):
         if self._closed:
+            coroutine.close()
             raise W3Error("w3_runner_closed", "W3 runner is closed")
-        return asyncio.run_coroutine_threadsafe(coroutine, self._loop).result(
-            timeout=self._timeout_seconds + 90
-        )
+        with self._pending_v4_lock:
+            pending = self._pending_v4.get(key) if key is not None else None
+            if pending is None:
+                pending = asyncio.run_coroutine_threadsafe(coroutine, self._loop)
+                if key is not None:
+                    self._pending_v4[key] = pending
+            else:
+                coroutine.close()
+        try:
+            return pending.result(timeout=self._timeout_seconds + 90)
+        except TimeoutError:
+            if pending.done():
+                raise  # The coroutine itself failed, rather than caller wait expired.
+            if key is None:
+                pending.cancel()
+                raise
+            self._journal.set(
+                "w3_pending_external",
+                key,
+                {"status": "PENDING_EXTERNAL", "at": self._journal.clock().isoformat()},
+            )
+            raise W3Error(
+                "w3_pending_external",
+                "Original W3 execution remains owned; reconnect to it",
+                step="MODEL",
+            )
+        finally:
+            if key is not None and pending.done():
+                with self._pending_v4_lock:
+                    if self._pending_v4.get(key) is pending:
+                        del self._pending_v4[key]
 
     def prepare_public_assets(self, case):
         if self.entry_enabled(case):
@@ -825,7 +872,8 @@ class CodexW3AgentRunner:
                 payload=payload,
                 context=context,
                 research=research,
-            )
+            ),
+            key=f"{case.case_id}:{record['record_id']}:{phase}",
         )
 
     @observed("phase.materialize_and_model")
@@ -843,9 +891,9 @@ class CodexW3AgentRunner:
         from .journal import digest
         from .w3_contracts import (
             OPERATIONS_PHASE,
+            W3_LEGACY_CONTRACT,
             contract_models,
             is_unified_contract,
-            W3_LEGACY_CONTRACT,
             parse_w3_operations,
             parse_w3_trade_decision,
         )
@@ -883,10 +931,21 @@ class CodexW3AgentRunner:
             if batch:
                 await self._workspace.ensure_research_pack(asset_key, research_files)
                 packs[f"context/research/{asset_key}"] = asset_key
-            elif not self._journal.get("w3_workspace_assets", digest([run_id, asset_key])):
+            elif not (
+                await read_io(self._journal.get, "w3_workspace_assets", digest([run_id, asset_key]))
+            ):
                 for path, content in research_files.items():
                     await write(run_id, f"context/research/{asset_key}/{path}", content)
-                self._journal.set("w3_workspace_assets", digest([run_id, asset_key]), True)
+                (
+                    await write_io(
+                        self._journal.path,
+                        self._journal.set,
+                        "w3_workspace_assets",
+                        digest([run_id, asset_key]),
+                        True,
+                        retry=True,
+                    )
+                )
         reference_pack = ""
         if context is not None and phase != "w3_template" and not new_entry:
             if batch and phase != OPERATIONS_PHASE:
@@ -912,7 +971,9 @@ class CodexW3AgentRunner:
             }
             template = assets["w3/template.md"] if not single_skill else ""
         else:
-            trade_model, operations_model = contract_models(case.w3_contract_version or W3_LEGACY_CONTRACT)
+            trade_model, operations_model = contract_models(
+                case.w3_contract_version or W3_LEGACY_CONTRACT
+            )
             model = operations_model if phase == OPERATIONS_PHASE else trade_model
             schema = strict_json_schema(model.model_json_schema())
             frozen = case.frozen_inputs.get("w3_contracts", {})
@@ -947,14 +1008,16 @@ class CodexW3AgentRunner:
             )
             if phase != "w3_template":
                 frozen_key = case.case_id + ":" + phase
-                binding = self._journal.get("w3_context_v2", frozen_key)
+                binding = await read_io(self._journal.get, "w3_context_v2", frozen_key)
                 if binding is None:
-                    manifest = self._journal.get("w3_context_manifest_v2", frozen_key)
+                    manifest = await read_io(
+                        self._journal.get, "w3_context_manifest_v2", frozen_key
+                    )
                     from doxagent.v2_read.native_content import NativeContent
 
                     codec = NativeContent(self._journal.path)
                     if manifest is not None:
-                        manifest = codec.decode(manifest)
+                        manifest = await read_io(codec.decode, manifest)
                     if manifest is None:
                         manifest = dict(
                             case_id=case.case_id,
@@ -967,8 +1030,11 @@ class CodexW3AgentRunner:
                             or case.source.message_bus_event_time.isoformat(),
                             version_pin=context.version_pin.model_dump(mode="json"),
                             components=context.components,
-                            **({} if is_unified_contract(case.w3_contract_version)
-                               else dict(policy_usage=case.frozen_inputs.get("policy_usage", []))),
+                            **(
+                                {}
+                                if is_unified_contract(case.w3_contract_version)
+                                else dict(policy_usage=case.frozen_inputs.get("policy_usage", []))
+                            ),
                             state={
                                 k: payload[k]
                                 for k in (
@@ -1004,14 +1070,30 @@ class CodexW3AgentRunner:
                             manifest["market_view"] = offline_market_view(
                                 manifest["evidence"], manifest["cutoff_at"], case.ticker
                             )
-                        self._journal.set(
-                            "w3_context_manifest_v2", frozen_key, json.loads(codec.encode(manifest))
+                        (
+                            await write_io(
+                                self._journal.path,
+                                self._journal.set,
+                                "w3_context_manifest_v2",
+                                frozen_key,
+                                json.loads(await read_io(codec.encode, manifest)),
+                                retry=True,
+                            )
                         )
                     binding = await measured(
                         "case.context_bind",
                         self._worker.bind_w3_context(case.case_id, phase, manifest),
                     )
-                    self._journal.set("w3_context_v2", frozen_key, binding)
+                    (
+                        await write_io(
+                            self._journal.path,
+                            self._journal.set,
+                            "w3_context_v2",
+                            frozen_key,
+                            binding,
+                            retry=True,
+                        )
+                    )
                 task.update(binding)
                 payload.pop("ibkr_history", None)
                 payload.pop("research_path", None)
@@ -1170,7 +1252,7 @@ class CodexW3AgentRunner:
                 },
             )
             registry = W3ThreadRegistry(self._journal)
-            stage = registry.stage(case.case_id, phase)
+            stage = await read_io(registry.stage, case.case_id, phase)
             refs = stage.get("input_refs") or {}
             saved = refs.get("prepare_request")
             if saved:
@@ -1181,14 +1263,26 @@ class CodexW3AgentRunner:
                     operation_key=request.operation_key,
                     prepare_request=request.model_dump(mode="json"),
                 )
-                with self._journal.transaction() as db:
-                    db.execute(
-                        "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
-                        (json.dumps(refs), case.case_id, phase),
-                    )
+
+                def save_prepare():
+                    with self._journal.transaction(operation="stage.prepare_request") as db:
+                        db.execute(
+                            "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                            (json.dumps(refs), case.case_id, phase),
+                        )
+
+                await write_io(self._journal.path, save_prepare, retry=True)
             prepared = await self._worker.prepare_thread(request)
             record["thread_id"] = prepared["thread_id"]
-            registry.set_thread(record["record_id"], record["thread_id"])
+            (
+                await write_io(
+                    self._journal.path,
+                    registry.set_thread,
+                    record["record_id"],
+                    record["thread_id"],
+                    retry=True,
+                )
+            )
 
         def observe_job(job):
             if (
@@ -1205,7 +1299,9 @@ class CodexW3AgentRunner:
                 step=job.execution_phase,
                 worker_job_id=job.job_id,
             )
-            self._case_repository.save_case(case)
+            self._journal.set(
+                "w3_job_state", case.case_id, case.frozen_inputs["w3_execution_state"]
+            )
 
         worker = ReceiptWorker(
             self._worker,
@@ -1269,21 +1365,40 @@ class CodexW3AgentRunner:
                     raise ValueError("template initialization did not return ready=true")
                 result = {"ready": True}
             elif phase == OPERATIONS_PHASE:
-                result, issues = parse_w3_operations(job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT)
-                self._journal.set("w3_action_parse_issues", case.case_id, issues)
+                result, issues = parse_w3_operations(
+                    job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT
+                )
+                (
+                    await write_io(
+                        self._journal.path,
+                        self._journal.set,
+                        "w3_action_parse_issues",
+                        case.case_id,
+                        issues,
+                        retry=True,
+                    )
+                )
             else:
-                result = parse_w3_trade_decision(job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT)
+                result = parse_w3_trade_decision(
+                    job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT
+                )
             if context is not None and phase != "w3_template":
                 known = {
                     p.policy_id: {c.condition_id for c in p.activation_conditions}
                     for p in context.policy_set.policies
                 }
                 if phase == OPERATIONS_PHASE:
-                    if not is_unified_contract(case.w3_contract_version) and not set(result.policy.policy_ids).issubset(known):
+                    if not is_unified_contract(case.w3_contract_version) and not set(
+                        result.policy.policy_ids
+                    ).issubset(known):
                         raise ValueError(
                             "final Policy references must be present in the frozen PolicySet"
                         )
-                    for group in (() if is_unified_contract(case.w3_contract_version) else result.policy.matched_condition_ids):
+                    for group in (
+                        ()
+                        if is_unified_contract(case.w3_contract_version)
+                        else result.policy.matched_condition_ids
+                    ):
                         if not set(group.condition_ids).issubset(known.get(group.policy_id, set())):
                             raise ValueError(
                                 "final Condition attribution is outside the frozen PolicySet"
@@ -1297,8 +1412,11 @@ class CodexW3AgentRunner:
                         raise ValueError(
                             "novelty references must be present in the pinned Reference View"
                         )
-                elif not is_unified_contract(case.w3_contract_version) and result.policy_trade and result.policy_trade.condition_id not in known.get(
-                    result.policy_trade.policy_id, set()
+                elif (
+                    not is_unified_contract(case.w3_contract_version)
+                    and result.policy_trade
+                    and result.policy_trade.condition_id
+                    not in known.get(result.policy_trade.policy_id, set())
                 ):
                     raise ValueError("selected Condition must be present in the frozen PolicySet")
         except (ValueError, ValidationError) as exc:
@@ -1389,8 +1507,15 @@ class CodexW3AgentRunner:
 
             case.frozen_inputs["w3_output_schema_hash"] = digest(schema)
             if self._journal:
-                self._journal.set(
-                    "w3_case_contract", case.case_id, {"schema": schema, "sha256": digest(schema)}
+                (
+                    await write_io(
+                        self._journal.path,
+                        self._journal.set,
+                        "w3_case_contract",
+                        case.case_id,
+                        {"schema": schema, "sha256": digest(schema)},
+                        retry=True,
+                    )
                 )
         event_boundary = (
             case.source.published_at
@@ -1522,10 +1647,15 @@ class CodexW3AgentRunner:
                 job.final_response, revision=case.orchestration_revision
             )
             if self._journal and watch_issues:
-                self._journal.set(
-                    "policy_watch_validation",
-                    case.case_id,
-                    {"ticker": case.ticker, "case_id": case.case_id, "issues": watch_issues},
+                (
+                    await write_io(
+                        self._journal.path,
+                        self._journal.set,
+                        "policy_watch_validation",
+                        case.case_id,
+                        {"ticker": case.ticker, "case_id": case.case_id, "issues": watch_issues},
+                        retry=True,
+                    )
                 )
         except ValidationError as exc:
             if self._journal:

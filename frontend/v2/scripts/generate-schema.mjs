@@ -92,6 +92,8 @@ if (existsSync(backendPath)) {
     "BusMetrics",
     "MessageSummary",
     "ExecutionSummary",
+    "ModelAttempt",
+    "CaseDetail",
   ])
     add(name, true);
   backend.source_sha256 = createHash("sha256").update(contract).digest("hex");

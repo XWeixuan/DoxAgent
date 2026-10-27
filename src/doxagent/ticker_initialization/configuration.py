@@ -24,11 +24,33 @@ def candidate_bus_path(live_path: str | Path, initialization_id: str) -> Path:
 class CandidateConfiguration:
     """Copies configuration only; never copies stream/raw data or runtime offsets."""
 
-    def __init__(self, live_path: str | Path, initialization_id: str, ticker: str) -> None:
-        self.live = MessageBusV2Repository(live_path)
-        self.candidate = MessageBusV2Repository(candidate_bus_path(live_path, initialization_id))
+    def __init__(
+        self, live_path: str | Path, initialization_id: str, ticker: str, *, initialize: bool = True
+    ) -> None:
+        candidate_path = candidate_bus_path(live_path, initialization_id)
+        if not initialize and (not Path(live_path).is_file() or not candidate_path.is_file()):
+            raise FileNotFoundError("candidate configuration must be prepared before admission")
+        self.live = MessageBusV2Repository(live_path, initialize=None if initialize else False)
+        self.candidate = MessageBusV2Repository(
+            candidate_path, initialize=None if initialize else False
+        )
+        if initialize:
+            self.migrate_install_schema(live_path)
         self.ticker = ticker.strip().upper()
         self.initialization_id = initialization_id
+
+    @staticmethod
+    def migrate_install_schema(live_path):
+        """Explicit candidate-preparation/startup migration, never admission/heartbeat."""
+        repository = MessageBusV2Repository(live_path, initialize=False)
+        with repository._connect() as db:
+            db.executescript("""
+                CREATE TABLE IF NOT EXISTS initialization_config_receipts (
+                    initialization_id TEXT PRIMARY KEY, ticker TEXT NOT NULL,
+                    previous_bindings TEXT NOT NULL, previous_operation TEXT);
+                CREATE TABLE IF NOT EXISTS initialization_config_head (
+                    ticker TEXT PRIMARY KEY, initialization_id TEXT NOT NULL);
+            """)
 
     def prepare(self, *, snapshot_from: str | Path | None = None) -> Path:
         self._snapshot(snapshot_from=snapshot_from)
@@ -99,7 +121,14 @@ class CandidateConfiguration:
         bindings = valid_bindings
         if not any(binding.enabled and binding.tombstoned_at is None for binding in bindings):
             raise ValueError("candidate has no usable monitoring binding")
+        expected_head = self.current_head()
         with self.live.transaction() as db:
+            row = db.execute(
+                "SELECT initialization_id FROM initialization_config_head WHERE ticker=?",
+                (self.ticker,),
+            ).fetchone()
+            if (row[0] if row else None) != expected_head:
+                raise ValueError("configuration head changed during preparation")
             from doxagent.v2_control.mirror import state_in
 
             control = state_in(db, self.ticker)
@@ -111,11 +140,6 @@ class CandidateConfiguration:
                 and (control.get("initialization_id") != self.initialization_id)
             ):
                 raise ValueError("V2 configuration belongs to a removed initialization")
-            db.execute("""CREATE TABLE IF NOT EXISTS initialization_config_receipts (
-                initialization_id TEXT PRIMARY KEY, ticker TEXT NOT NULL,
-                previous_bindings TEXT NOT NULL, previous_operation TEXT)""")
-            db.execute("""CREATE TABLE IF NOT EXISTS initialization_config_head (
-                ticker TEXT PRIMARY KEY, initialization_id TEXT NOT NULL)""")
             old_receipt = db.execute(
                 "SELECT previous_operation FROM initialization_config_receipts "
                 "WHERE initialization_id=?",

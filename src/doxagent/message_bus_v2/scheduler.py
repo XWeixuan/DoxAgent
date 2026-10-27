@@ -205,32 +205,49 @@ class GlobalPollScheduler:
             return saved
 
     async def run_once(self) -> list[PollExecutionResult]:
-        if getattr(self, 'collection_plane_enabled', False):
+        if getattr(self, "collection_plane_enabled", False):
             self.intake.start()
             self.capture_bridge.start()
             if self.distribution_worker is not None:
                 self.distribution_worker.start()
-        admission = getattr(self, "activation_admission", None)
-        if admission is not None:
-            await self.storage_call(admission, _lane_priority=0)
         from doxagent.ticker_initialization.consumers import bus_revision_usable, consumer_heartbeat
 
-        heartbeat = consumer_heartbeat(
-            getattr(self, "initialization_control", None),
-            "bus",
-            lambda revision: bus_revision_usable(self.service, revision),
-        )
-        # This lifecycle reads/writes the initialization owner, not Bus business
-        # state. It must not wait behind every intake shard or occupy its writer.
-        await asyncio.to_thread(heartbeat.__enter__)
-        try:
-            return await self._run_admitted_once()
-        finally:
-            await asyncio.to_thread(heartbeat.__exit__, None, None, None)
+        if not getattr(self, "_activation_heartbeat", None):
+            heartbeat = consumer_heartbeat(
+                getattr(self, "initialization_control", None),
+                "bus",
+                lambda revision: bus_revision_usable(self.service, revision),
+            )
+            await asyncio.to_thread(heartbeat.__enter__)
+            self._activation_heartbeat = heartbeat
+        admission = getattr(self, "activation_admission", None)
+        if admission is not None:
+            # Exactly one control task; slow install cannot block business reads
+            # or the independent pulse. Never replay the whole admission callback.
+            previous = getattr(self, "_activation_task", None)
+            if previous is None or previous.done():
+                if previous is not None:
+                    try:
+                        previous.result()
+                    except Exception:
+                        logging.getLogger(__name__).exception("bus admission control deferred")
+                from doxagent.codex_worker.io_budget import blocking
+
+                from .storage_lane import WRITE_ADMISSION
+
+                async def control_work():
+                    token = WRITE_ADMISSION.set(True)
+                    try:
+                        await blocking(admission)
+                    finally:
+                        WRITE_ADMISSION.reset(token)
+
+                self._activation_task = asyncio.create_task(control_work())
+        return await self._run_admitted_once()
 
     async def _run_admitted_once(self) -> list[PollExecutionResult]:
         self.intake.start()
-        if getattr(self, 'collection_plane_enabled', False):
+        if getattr(self, "collection_plane_enabled", False):
             if self.runtime_orchestration is not None:
                 return await self.runtime_orchestration.run_once(self, collect=False)
             await self.storage_call(self.service.flush_due_buffers, now=utc_now())
@@ -255,7 +272,7 @@ class GlobalPollScheduler:
                 source,
                 binding,
                 options["acquisition_unit"],
-                self.schedule_epoch(poll_states[binding.binding_id], options['acquisition_unit']),
+                self.schedule_epoch(poll_states[binding.binding_id], options["acquisition_unit"]),
                 True,
             )
             for source, binding in eligible
@@ -341,7 +358,10 @@ class GlobalPollScheduler:
                 if not is_sqlite_contention(exc):
                     raise
                 logging.getLogger(__name__).warning(
-                    "bus runtime lock contention; preserving durable leases and retrying next loop"
+                    "bus runtime lock contention error=%s sqlite_code=%s sqlite_name=%s; preserving durable leases",
+                    type(exc).__name__,
+                    getattr(exc, "sqlite_errorcode", None),
+                    getattr(exc, "sqlite_errorname", None),
                 )
             try:
                 self._wake.clear()
@@ -360,7 +380,12 @@ class GlobalPollScheduler:
                 await asyncio.gather(stop_task, wake_task, return_exceptions=True)
 
     async def close(self) -> None:
-        if getattr(self, 'capture_bridge', None) is not None:
+        if getattr(self, "_activation_heartbeat", None):
+            await asyncio.to_thread(self._activation_heartbeat.__exit__, None, None, None)
+            self._activation_heartbeat = None
+        if getattr(self, "_activation_task", None):
+            await asyncio.gather(self._activation_task, return_exceptions=True)
+        if getattr(self, "capture_bridge", None) is not None:
             await self.capture_bridge.close()
         tasks = list(getattr(self, "_standalone_inflight", {}).values())
         for task in tasks:
@@ -463,11 +488,21 @@ class GlobalPollScheduler:
                     ),
                 )
             with self.repository._connect() as db:
-                term_heads = tuple(tuple(r) for r in db.execute(
-                    'SELECT ticker,current_revision FROM ticker_monitoring_terms ORDER BY ticker'))
-            plan_signature = (term_heads, tuple((s.source_id,s.version,b.ticker)
-                for s,b in eligible if s.acquisition_mode is AcquisitionMode.BY_SEARCH))
-            if getattr(self, '_query_plan_signature', None) != plan_signature:
+                term_heads = tuple(
+                    tuple(r)
+                    for r in db.execute(
+                        "SELECT ticker,current_revision FROM ticker_monitoring_terms ORDER BY ticker"
+                    )
+                )
+            plan_signature = (
+                term_heads,
+                tuple(
+                    (s.source_id, s.version, b.ticker)
+                    for s, b in eligible
+                    if s.acquisition_mode is AcquisitionMode.BY_SEARCH
+                ),
+            )
+            if getattr(self, "_query_plan_signature", None) != plan_signature:
                 self._query_plans = {}
                 terms = {}
                 for source, binding in eligible:
@@ -478,7 +513,9 @@ class GlobalPollScheduler:
                         if found:
                             try:
                                 self._query_plans[(source.source_id, binding.ticker)] = (
-                                    build_query_plan(source, found[1], found[0]).model_dump(mode="json")
+                                    build_query_plan(source, found[1], found[0]).model_dump(
+                                        mode="json"
+                                    )
                                 )
                             except ValueError:
                                 pass  # The individual source poll records CONFIG_INCOMPLETE.
@@ -528,8 +565,12 @@ class GlobalPollScheduler:
 
     @staticmethod
     def schedule_epoch(state, unit):
-        value = state.target_due_at if unit == 'SHARED' else state.units.get(unit, {}).get('target_due_at') or state.target_due_at
-        return datetime.fromisoformat(value) if isinstance(value,str) else value
+        value = (
+            state.target_due_at
+            if unit == "SHARED"
+            else state.units.get(unit, {}).get("target_due_at") or state.target_due_at
+        )
+        return datetime.fromisoformat(value) if isinstance(value, str) else value
 
     def work_units(self, source, binding, state, now, *, include_all=False):
         from .pressure import background_allowed
@@ -590,21 +631,34 @@ class GlobalPollScheduler:
                     )
                     for query in plan["queries"]
                 ]
-                if source.source_id == 'reuters_site_search':
-                    for query in plan['queries']:
-                        head_cp=state.units.get('QUERY:'+query['query_key'],{}).get('checkpoint',{})
-                        saved=head_cp.get('queries',{}).get(query['query_key'],{})
-                        if not saved.get('tail_pending'):
+                if source.source_id == "reuters_site_search":
+                    for query in plan["queries"]:
+                        head_cp = state.units.get("QUERY:" + query["query_key"], {}).get(
+                            "checkpoint", {}
+                        )
+                        saved = head_cp.get("queries", {}).get(query["query_key"], {})
+                        if not saved.get("tail_pending"):
                             continue
-                        unit='TAIL:'+query['query_key']
-                        old=state.units.get(unit,{}).get('checkpoint',{})
-                        tail=old.get('queries',{}).get(query['query_key'],{})
-                        if tail.get('done') and tail.get('head_at')==saved.get('head_at'):
+                        unit = "TAIL:" + query["query_key"]
+                        old = state.units.get(unit, {}).get("checkpoint", {})
+                        tail = old.get("queries", {}).get(query["query_key"], {})
+                        if tail.get("done") and tail.get("head_at") == saved.get("head_at"):
                             continue
-                        checkpoint=old if tail and not tail.get('done') else {
-                            'queries':{query['query_key']:{**saved,'done':False}}}
-                        units.append((unit,{'freeze_query_plan':True,
-                            'query_plan_override':{**plan,'queries':[query]},'checkpoint':checkpoint}))
+                        checkpoint = (
+                            old
+                            if tail and not tail.get("done")
+                            else {"queries": {query["query_key"]: {**saved, "done": False}}}
+                        )
+                        units.append(
+                            (
+                                unit,
+                                {
+                                    "freeze_query_plan": True,
+                                    "query_plan_override": {**plan, "queries": [query]},
+                                    "checkpoint": checkpoint,
+                                },
+                            )
+                        )
                 if source.source_id == "globenewswire_search":
                     for query in plan["queries"]:
                         head = state.units.get("QUERY:" + query["query_key"], {})
@@ -682,7 +736,9 @@ class GlobalPollScheduler:
             return
         due = {}
         for binding in bindings:
-            for _, options in self.work_units(source, binding, poll_states[binding.binding_id], now):
+            for _, options in self.work_units(
+                source, binding, poll_states[binding.binding_id], now
+            ):
                 due.setdefault(options["acquisition_unit"], []).append(binding)
         for unit, targets in due.items():
             yield "shared:" + source.source_id + "#" + unit, targets, {"acquisition_unit": unit}
@@ -692,9 +748,13 @@ class GlobalPollScheduler:
             return self.repository.get_poll_state(binding)
         state = self.repository.get_poll_unit_state(binding, unit)
         if unit not in self.repository.get_poll_state(binding).units:
-            state = state.model_copy(update={
-                "last_attempt_at": None, "target_due_at": None, "next_dispatch_at": None,
-            })
+            state = state.model_copy(
+                update={
+                    "last_attempt_at": None,
+                    "target_due_at": None,
+                    "next_dispatch_at": None,
+                }
+            )
         return state
 
     def _initialize_due_slots(
@@ -734,9 +794,9 @@ class GlobalPollScheduler:
                 / max(1, len(physical_units))
                 for index, (_, b, unit) in enumerate(physical_units)
             }
-            power_feeds = sorted({
-                unit for s, _, unit in physical_units if s.source_id == "power_magazine_energy"
-            })
+            power_feeds = sorted(
+                {unit for s, _, unit in physical_units if s.source_id == "power_magazine_energy"}
+            )
             for index, (s, b, unit) in enumerate(physical_units):
                 current = (
                     poll_states[b.binding_id]
@@ -750,7 +810,9 @@ class GlobalPollScheduler:
                 phase = b.polling.target_interval_seconds * index / max(1, len(physical_units))
                 if s.source_id == "power_magazine_energy":
                     phase = (
-                        b.polling.target_interval_seconds * power_feeds.index(unit) / len(power_feeds)
+                        b.polling.target_interval_seconds
+                        * power_feeds.index(unit)
+                        / len(power_feeds)
                     )
                 snapshot = self.repository.get_poll_unit_state(b, unit).model_copy(
                     update={
@@ -882,9 +944,10 @@ class GlobalPollScheduler:
         error = None
         try:
             states = await self.read_call(
-                lambda: [self._distribution_state(
-                    binding, kwargs.get("acquisition_unit", "SHARED")
-                ) for binding in bindings]
+                lambda: [
+                    self._distribution_state(binding, kwargs.get("acquisition_unit", "SHARED"))
+                    for binding in bindings
+                ]
             )
             ids = [new_id("poll") for _ in bindings]
 
@@ -892,8 +955,17 @@ class GlobalPollScheduler:
                 with self.repository.atomic_intake():
                     for run_id, binding, state in zip(ids, bindings, states, strict=True):
                         self.repository.polling.start(
-                            run_id, source, binding, self._current_due(state.target_due_at, attempted_at, binding.polling.target_interval_seconds),
-                            attempted_at, "TAIL:SHARED" if kwargs.get("window_cutoff")
+                            run_id,
+                            source,
+                            binding,
+                            self._current_due(
+                                state.target_due_at,
+                                attempted_at,
+                                binding.polling.target_interval_seconds,
+                            ),
+                            attempted_at,
+                            "TAIL:SHARED"
+                            if kwargs.get("window_cutoff")
                             else kwargs.get("acquisition_unit", "SHARED"),
                         )
 
@@ -902,8 +974,10 @@ class GlobalPollScheduler:
             return result
         except CollectionStopped:
             result = PollExecutionResult(
-                binding_id=f"shared:{source.source_id}", site_access_deferred=True,
-                site_access_deferred_reason="TEMPORARY_COLLECTION_ENDED", window_done=False,
+                binding_id=f"shared:{source.source_id}",
+                site_access_deferred=True,
+                site_access_deferred_reason="TEMPORARY_COLLECTION_ENDED",
+                window_done=False,
             )
             return result
         except BaseException as exc:
@@ -922,9 +996,16 @@ class GlobalPollScheduler:
                 with self.repository.atomic_intake():
                     for run_id in ids:
                         self.repository.polling.update_run(
-                            run_id, status=status, reason=error or (
-                                result.error_code or result.site_access_deferred_reason if result else None
-                            ), requests=requests, shared_run_id=result.poll_run_id if result else None,
+                            run_id,
+                            status=status,
+                            reason=error
+                            or (
+                                result.error_code or result.site_access_deferred_reason
+                                if result
+                                else None
+                            ),
+                            requests=requests,
+                            shared_run_id=result.poll_run_id if result else None,
                         )
 
             if ids:
@@ -986,7 +1067,10 @@ class GlobalPollScheduler:
             self.repository.polling.pending, run["run_id"]
         ):
             await self.storage_call(
-                self._record_distribution_poll, source, roster, run,
+                self._record_distribution_poll,
+                source,
+                roster,
+                run,
                 _lane_priority=0,
                 acquisition_unit=acquisition_unit,
                 acquisition_checkpoint=__import__("json").loads(run["checkpoint_json"]),
@@ -997,7 +1081,9 @@ class GlobalPollScheduler:
                 window_done=True,
                 window_coverage=run["coverage"],
             )
-        token = await self.service.storage.call(self.distribution.claim_run, run["run_id"], _lane_priority=0)
+        token = await self.service.storage.call(
+            self.distribution.claim_run, run["run_id"], _lane_priority=0
+        )
         if token is None:
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
@@ -1342,8 +1428,10 @@ class GlobalPollScheduler:
             return result
         except CollectionStopped:
             result = PollExecutionResult(
-                binding_id=binding.binding_id, poll_run_id=run_id,
-                site_access_deferred=True, site_access_deferred_reason="TEMPORARY_COLLECTION_ENDED",
+                binding_id=binding.binding_id,
+                poll_run_id=run_id,
+                site_access_deferred=True,
+                site_access_deferred_reason="TEMPORARY_COLLECTION_ENDED",
                 window_done=False,
             )
             return result
@@ -1366,6 +1454,7 @@ class GlobalPollScheduler:
                 else (result.error_code or result.site_access_deferred_reason if result else None)
             )
             scope_state = run_details.pop("_scope_state", None)
+
             def finish():
                 with self.repository.atomic_intake():
                     if scope_state:
@@ -1373,6 +1462,7 @@ class GlobalPollScheduler:
                     self.repository.polling.update_run(
                         run_id, status=status, reason=reason, requests=requests, **run_details
                     )
+
             try:
                 await self.service.storage.call(finish, _lane_priority=0)
             finally:
@@ -1401,8 +1491,13 @@ class GlobalPollScheduler:
         # Snapshot source and binding for this poll. Updates become visible on the next poll.
         state = await self.read_call(self.repository.get_poll_unit_state, binding, acquisition_unit)
         state = state.model_copy(
-            update={"source_definition_version": source.version, "binding_version": binding.version,
-                    "target_due_at": self._current_due(state.target_due_at, attempted_at, binding.polling.target_interval_seconds)}
+            update={
+                "source_definition_version": source.version,
+                "binding_version": binding.version,
+                "target_due_at": self._current_due(
+                    state.target_due_at, attempted_at, binding.polling.target_interval_seconds
+                ),
+            }
         )
         if source.source_id == "yahoo_finance_news" and acquisition_unit == "TAIL:YAHOO_TIME":
             primary = await self.read_call(
@@ -1450,8 +1545,7 @@ class GlobalPollScheduler:
                 else (
                     build_query_plan(source, found[1], found[0]).model_dump(mode="json")
                     if source.acquisition_mode is AcquisitionMode.BY_SEARCH
-                    and (found := await self.read_call(self.terms.get, binding.ticker))
-                    is not None
+                    and (found := await self.read_call(self.terms.get, binding.ticker)) is not None
                     else None
                 )
             )
@@ -1503,8 +1597,13 @@ class GlobalPollScheduler:
                 run_id=poll_run_id,
                 admission_context=admission_context,
                 checkpoint=checkpoint if window_cutoff is None else None,
-                bootstrap=(evidence['bootstrap'] if isinstance(evidence.get('bootstrap'), bool) else
-                    window_cutoff is None and acquisition_unit != 'TAIL:YAHOO_TIME' and not state.bootstrap_complete),
+                bootstrap=(
+                    evidence["bootstrap"]
+                    if isinstance(evidence.get("bootstrap"), bool)
+                    else window_cutoff is None
+                    and acquisition_unit != "TAIL:YAHOO_TIME"
+                    and not state.bootstrap_complete
+                ),
                 unit="HEAD" if acquisition_unit == "ALL" else acquisition_unit,
             )
             await self.service.storage.call(
@@ -1606,7 +1705,11 @@ class GlobalPollScheduler:
             if source.source_id != "corporate_ir_press_releases" and (
                 result.messages
                 or (valid_list and not page_captures)
-                or (not page_captures and result.next_checkpoint and result.next_checkpoint != last_checkpoint)
+                or (
+                    not page_captures
+                    and result.next_checkpoint
+                    and result.next_checkpoint != last_checkpoint
+                )
             ):
                 # Final non-paged inputs use the same durable receipt as early pages.
                 await on_page(
@@ -1712,7 +1815,7 @@ class GlobalPollScheduler:
                 ),
             }
             if run_details is not None:
-                run_details['stages_ms'] = timing
+                run_details["stages_ms"] = timing
             captures = [
                 a.capture_acquired_at for a in accesses if a.capture_acquired_at
             ] + page_captures
@@ -1729,53 +1832,57 @@ class GlobalPollScheduler:
             if result.site_access_retry_not_before:
                 next_dispatch = max(next_dispatch, result.site_access_retry_not_before)
             final_state = refreshed.model_copy(
-                    update={
-                        "target_due_at": target_due,
-                        "next_dispatch_at": next_dispatch,
-                        "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
-                        "last_stage_timings": timing,
-                        "last_attempt_at": attempted_at,
-                        "last_dispatch_at": attempted_at,
-                        "status": PollStatus.PARTIAL
-                        if result.site_access_deferred
-                        else PollStatus.PARTIAL
-                        if result.failures and page_captures
-                        else PollStatus.FAILED
-                        if result.failures
-                        else PollStatus.SUCCEEDED,
-                        "bootstrap_complete": valid_list or refreshed.bootstrap_complete,
-                        "last_error_code": None if valid_list else refreshed.last_error_code,
-                        "last_error_message": None if valid_list else refreshed.last_error_message,
-                        "failure_since": None if valid_list else refreshed.failure_since,
-                        "consecutive_failures": 0 if valid_list else refreshed.consecutive_failures,
-                        "last_success_at": utc_now() if valid_list else refreshed.last_success_at,
-                        "last_first_capture_at": refreshed.last_first_capture_at
-                        if deferred_intake
-                        else page_captures[0]
-                        if page_captures
-                        else max(captures)
-                        if captures
-                        else None,
-                        "last_first_intake_at": refreshed.last_first_intake_at
-                        if deferred_intake
-                        else page_intakes[0]
-                        if page_intakes
-                        else utc_now(),
-                        "last_final_intake_at": refreshed.last_final_intake_at
-                        if deferred_intake
-                        else utc_now(),
-                        "last_capture_at": max(
-                            [at for at in [refreshed.last_capture_at, *captures] if at],
-                            default=None,
-                        ),
-                        "updated_at": attempted_at,
-                    }
-                )
+                update={
+                    "target_due_at": target_due,
+                    "next_dispatch_at": next_dispatch,
+                    "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
+                    "last_stage_timings": timing,
+                    "last_attempt_at": attempted_at,
+                    "last_dispatch_at": attempted_at,
+                    "status": PollStatus.PARTIAL
+                    if result.site_access_deferred
+                    else PollStatus.PARTIAL
+                    if result.failures and page_captures
+                    else PollStatus.FAILED
+                    if result.failures
+                    else PollStatus.SUCCEEDED,
+                    "bootstrap_complete": valid_list or refreshed.bootstrap_complete,
+                    "last_error_code": None if valid_list else refreshed.last_error_code,
+                    "last_error_message": None if valid_list else refreshed.last_error_message,
+                    "failure_since": None if valid_list else refreshed.failure_since,
+                    "consecutive_failures": 0 if valid_list else refreshed.consecutive_failures,
+                    "last_success_at": utc_now() if valid_list else refreshed.last_success_at,
+                    "last_first_capture_at": refreshed.last_first_capture_at
+                    if deferred_intake
+                    else page_captures[0]
+                    if page_captures
+                    else max(captures)
+                    if captures
+                    else None,
+                    "last_first_intake_at": refreshed.last_first_intake_at
+                    if deferred_intake
+                    else page_intakes[0]
+                    if page_intakes
+                    else utc_now(),
+                    "last_final_intake_at": refreshed.last_final_intake_at
+                    if deferred_intake
+                    else utc_now(),
+                    "last_capture_at": max(
+                        [at for at in [refreshed.last_capture_at, *captures] if at],
+                        default=None,
+                    ),
+                    "updated_at": attempted_at,
+                }
+            )
             if run_details is not None:
                 run_details["_scope_state"] = (final_state, acquisition_unit, source, binding)
             else:
                 await self.storage_call(
-                    self._save_poll_scope_state, final_state, acquisition_unit, source, binding,
+                    self._save_poll_scope_state,
+                    final_state,
+                    acquisition_unit,
+                    source,
+                    binding,
                     _lane_priority=0,
                 )
             return execution
@@ -1835,11 +1942,17 @@ class GlobalPollScheduler:
         value = previous_due or now
         # Missing old slots remain in the durable SCHEDULE denominator. A new
         # physical request belongs to the current grid slot, never an hours-old retry.
-        return value + timedelta(seconds=max(0, int((now-value).total_seconds() // interval_seconds))*interval_seconds)
+        return value + timedelta(
+            seconds=max(0, int((now - value).total_seconds() // interval_seconds))
+            * interval_seconds
+        )
 
     @staticmethod
     def _next_due(previous_due: datetime, now: datetime, interval_seconds: int) -> datetime:
-        return previous_due + timedelta(seconds=max(0, int((now-previous_due).total_seconds() // interval_seconds)+1)*interval_seconds)
+        return previous_due + timedelta(
+            seconds=max(0, int((now - previous_due).total_seconds() // interval_seconds) + 1)
+            * interval_seconds
+        )
 
     def _limiter(self, source: SourceDefinition, unit="ALL") -> SchedulerGroupLimiter:
         key = (
@@ -1965,12 +2078,16 @@ class GlobalPollScheduler:
     def _update_capacity_alerts(
         self, bindings: list[tuple[SourceDefinition, TickerSourceBinding]]
     ) -> None:
-        signature = (tuple((s.source_id,s.version,b.binding_id,b.version) for s,b in bindings),
-                     getattr(self, '_intake_backlogged', False))
+        signature = (
+            tuple((s.source_id, s.version, b.binding_id, b.version) for s, b in bindings),
+            getattr(self, "_intake_backlogged", False),
+        )
         now = time.monotonic()
-        if signature == getattr(self, '_capacity_alert_signature', None) and now < getattr(self, '_capacity_alert_at', 0):
+        if signature == getattr(self, "_capacity_alert_signature", None) and now < getattr(
+            self, "_capacity_alert_at", 0
+        ):
             return
-        self._capacity_alert_signature, self._capacity_alert_at = signature, now+60
+        self._capacity_alert_signature, self._capacity_alert_at = signature, now + 60
         with self.repository.atomic_intake():
             self._write_capacity_alerts(bindings)
 

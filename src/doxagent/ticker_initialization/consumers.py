@@ -35,23 +35,31 @@ def consumer_heartbeat(
     if control is None:
         yield
         return
-    revisions = [
-        revision
-        for revision in control.active_revisions()
-        if control.revision_acknowledged(revision["ticker"], revision["revision_id"], worker)
-    ]
     stop = Event()
 
     def pulse() -> None:
-        while not stop.wait(interval):
-            for revision in revisions:
-                try:
-                    if usable(revision):
+        # A process-lifetime pulse must discover new installed revisions as well
+        # as recover an expired heartbeat; it must never install configuration.
+        while not stop.is_set():
+            try:
+                for revision in control.active_revisions():
+                    if (
+                        control.current_revision_admitted(
+                            revision["ticker"], revision["revision_id"], worker
+                        )
+                        and usable(revision)
+                        and not control.revision_acknowledged(
+                            revision["ticker"], revision["revision_id"], worker, max_age=interval
+                        )
+                    ):
                         control.acknowledge_revision(
                             revision["ticker"], revision["revision_id"], worker
                         )
-                except Exception:
-                    logging.getLogger(__name__).warning("%s heartbeat deferred", worker)
+            except Exception:
+                logging.getLogger(__name__).exception(
+                    "activation heartbeat deferred worker=%s", worker
+                )
+            stop.wait(interval)
 
     thread = Thread(target=pulse, name=f"initialization-{worker}-heartbeat", daemon=True)
     thread.start()
@@ -91,9 +99,17 @@ def admit_bus_revisions(control: InitializationRepository, bus: MessageBusV2Serv
         try:
             _admit_bus(control, bus, revision)
         except Exception as exc:
-            control.admission_error(revision["ticker"], revision["revision_id"], "bus", exc)
+            try:
+                control.admission_error(revision["ticker"], revision["revision_id"], "bus", exc)
+            except Exception:
+                pass
             logging.getLogger(__name__).warning(
-                "bus activation pending for %s: %s", revision["ticker"], type(exc).__name__
+                "bus activation pending ticker=%s operation=admit_bus db=%s error=%s sqlite_code=%s sqlite_name=%s",
+                revision["ticker"],
+                bus.repository.path.name,
+                type(exc).__name__,
+                getattr(exc, "sqlite_errorcode", None),
+                getattr(exc, "sqlite_errorname", None),
             )
 
 
@@ -104,11 +120,13 @@ def _admit_bus(
     head = _bus_configuration_head(bus, revision["ticker"])
     if head != refs["initialization_id"]:
         candidate = CandidateConfiguration(
-            bus.repository.path, refs["initialization_id"], revision["ticker"]
+            bus.repository.path, refs["initialization_id"], revision["ticker"], initialize=False
         )
         if head and candidate.installed():
             # An automatic rollback restores the immediately preceding portfolio.
-            current = CandidateConfiguration(bus.repository.path, head, revision["ticker"])
+            current = CandidateConfiguration(
+                bus.repository.path, head, revision["ticker"], initialize=False
+            )
             if current.previous_head() == candidate.initialization_id:
                 current.rollback()
         candidate.install()
@@ -129,7 +147,9 @@ def _admit_bus(
         )
     ):
         state = bus.start_ticker(revision["ticker"])
-    if state.status is TickerMonitoringStatus.RUNNING:
+    if state.status is TickerMonitoringStatus.RUNNING and not control.revision_acknowledged(
+        revision["ticker"], revision["revision_id"], "bus", max_age=15
+    ):
         control.acknowledge_revision(revision["ticker"], revision["revision_id"], "bus")
 
 
@@ -143,7 +163,7 @@ def admit_runtime_revisions(
         proofs = scheduler._runtime_admission_proofs = {}
     for revision in control.active_revisions():
         ticker, identity = revision["ticker"], revision["revision_id"]
-        if not control.revision_acknowledged(ticker, identity, "bus"):
+        if not control.current_revision_admitted(ticker, identity, "bus"):
             continue
         state = scheduler.repository.get_state(ticker)
         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
@@ -171,7 +191,7 @@ def admit_runtime_revisions(
                 and state.metadata.get("v2_control_epoch") == proof[1]
                 and state.metadata.get("v2_control_mode") == proof[2]
                 and proofs.get(ticker) == proof
-                and control.revision_acknowledged(ticker, identity, "runtime")
+                and control.current_revision_admitted(ticker, identity, "runtime")
             )
             if current and isinstance(journal, RuntimeJournal):
                 from doxagent.persistent_runtime_v2.policy_consumption import get_value
@@ -189,12 +209,17 @@ def admit_runtime_revisions(
                 proofs.pop(ticker, None)
                 scheduler.admit_activation(ticker, identity)
         except Exception as exc:
-            control.admission_error(ticker, identity, "runtime", exc)
+            try:
+                control.admission_error(ticker, identity, "runtime", exc)
+            except Exception:
+                pass
             logging.getLogger(__name__).warning(
                 "runtime activation pending for %s: %s", ticker, type(exc).__name__
             )
             continue
-        if control.acknowledge_revision(ticker, identity, "runtime"):
+        if control.revision_acknowledged(
+            ticker, identity, "runtime", max_age=15
+        ) or control.acknowledge_revision(ticker, identity, "runtime"):
             proofs[ticker] = proof
             ready.add(ticker)
     return ready
