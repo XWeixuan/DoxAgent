@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from contextlib import closing, contextmanager
+import threading
+import time
+from functools import wraps
+from contextlib import closing, contextmanager, nullcontext
 from pathlib import Path
 
 from ..schema import canonical_json, new_id, utc_now
@@ -14,9 +17,27 @@ def path_for(bus_path):
     return Path(bus_path).parent / "acquisition.sqlite3"
 
 
+def durable_write(function):
+    @wraps(function)
+    def run(*args, **kwargs):
+        for attempt in range(4):
+            try:
+                return function(*args, **kwargs)
+            except sqlite3.OperationalError as exc:
+                busy = (getattr(exc, "sqlite_errorcode", 0) & 255) in {5, 6} or "locked" in str(
+                    exc
+                ).lower()
+                if not busy or attempt == 3:
+                    raise
+                time.sleep(0.025 * 2**attempt)
+
+    return run
+
+
 class AcquisitionStore:
     def __init__(self, path, *, initialize=False):
         self.path = Path(path)
+        self._writer = threading.RLock()
         if initialize:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with closing(sqlite3.connect(self.path, isolation_level=None)) as db:
@@ -52,32 +73,36 @@ class AcquisitionStore:
 
     @contextmanager
     def connect(self, *, write=False):
-        db = sqlite3.connect(
-            self.path if write else self.path.resolve().as_uri() + "?mode=ro",
-            uri=not write,
-            timeout=0.2,
-            isolation_level=None,
-        )
-        db.row_factory = sqlite3.Row
-        db.execute("PRAGMA synchronous=NORMAL")
-        try:
-            if write:
-                db.execute("BEGIN IMMEDIATE")
-            yield db
-            if write:
-                db.commit()
-        except BaseException:
-            if write:
-                db.rollback()
-            raise
-        finally:
-            db.close()
+        # SQLite has one physical writer. Queue only these short durable
+        # commits, never a request permit, browser visit or business admission.
+        with self._writer if write else nullcontext():
+            db = sqlite3.connect(
+                self.path if write else self.path.resolve().as_uri() + "?mode=ro",
+                uri=not write,
+                timeout=1.0 if write else 0.2,
+                isolation_level=None,
+            )
+            db.row_factory = sqlite3.Row
+            db.execute("PRAGMA synchronous=NORMAL")
+            try:
+                if write:
+                    db.execute("BEGIN IMMEDIATE")
+                yield db
+                if write:
+                    db.commit()
+            except BaseException:
+                if write:
+                    db.rollback()
+                raise
+            finally:
+                db.close()
 
     def get_meta(self, key, default=None):
         with self.connect() as db:
             r = db.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
         return json.loads(r[0]) if r else default
 
+    @durable_write
     def meta(self, key, value):
         with self.connect(write=True) as db:
             db.execute(
@@ -92,12 +117,14 @@ class AcquisitionStore:
                 for r in db.execute("SELECT * FROM units")
             }
 
+    @durable_write
     def disable_unit(self, binding_id, unit):
         with self.connect(write=True) as db:
             db.execute(
                 "UPDATE units SET required=-1 WHERE binding_id=? AND unit=?", (binding_id, unit)
             )
 
+    @durable_write
     def save_unit(
         self, source, binding, unit, state, generation, *, required=True, input_key=None, db=None
     ):
@@ -156,6 +183,7 @@ class AcquisitionStore:
             with self.connect(write=True) as conn:
                 conn.execute(sql, args)
 
+    @durable_write
     def schedule(self, source, binding, unit, epoch, enabled, at):
         identity = "schedule:" + new_id("epoch")
         with self.connect(write=True) as db:
@@ -179,6 +207,7 @@ class AcquisitionStore:
                 ),
             )
 
+    @durable_write
     def finish(
         self,
         source,
@@ -272,6 +301,7 @@ class AcquisitionStore:
                     db, source, targets, unit, payload, input_key, observed, run_id, winning, now
                 )
 
+    @durable_write
     def start(self, source, targets, unit, run_id, due, dispatched, interval):
         with self.connect(write=True) as db:
             db.executemany(
@@ -372,6 +402,7 @@ class AcquisitionStore:
             [(input_key, b.binding_id, unit, payload.get("generation", "")) for b in targets],
         )
 
+    @durable_write
     def normalize_unknown(self, source_id, messages, observed):
         from ..schema import identity_key_for
         from datetime import datetime
@@ -429,6 +460,7 @@ class AcquisitionStore:
             with self.connect(write=True) as db:
                 db.executemany("DELETE FROM captures WHERE capture_id=?", [(x,) for x in captures])
 
+    @durable_write
     def capture_page(self, source, targets, unit, payload, input_key, observed, run_id, requests):
         listing = [
             r
@@ -467,6 +499,14 @@ class AcquisitionStore:
                 utc_now().isoformat(),
             )
 
+    @durable_write
+    def recover_previous_owner(self):
+        with self.connect(write=True) as db:
+            return db.execute(
+                "UPDATE cycles SET status='ABANDONED_GENERATION',reason='PREVIOUS_COLLECTOR_EXIT',finished_at=? WHERE status='DISPATCHED'",
+                (utc_now().isoformat(),),
+            ).rowcount
+
     def pending(self, *, limit=8):
         with self.connect() as db:
             return [
@@ -477,6 +517,7 @@ class AcquisitionStore:
                 )
             ]
 
+    @durable_write
     def acknowledge(self, capture_id):
         with self.connect(write=True) as db:
             db.execute(
@@ -484,6 +525,7 @@ class AcquisitionStore:
                 (utc_now().isoformat(), capture_id),
             )
 
+    @durable_write
     def retry(self, capture_id, exc):
         from datetime import timedelta
 

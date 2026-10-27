@@ -196,7 +196,7 @@ def _cadence_summary(result, capture_rows, limited):
         "gap_p95_seconds": result["fresh_gap_seconds"]["p95"],
         "deferred": sum(u["statuses"].get("DEFERRED", 0) for u in result["units"]),
         "failed": sum(
-            u["statuses"].get("FAILED", 0) + u["statuses"].get("CANCELLED", 0)
+            u["statuses"].get("FAILED", 0) + u["statuses"].get("CANCELLED", 0) + u["statuses"].get("ABANDONED_GENERATION",0)
             for u in result["units"]
         ),
         "worst_request_p95_seconds": max(late) if late else None,

@@ -2282,3 +2282,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 Site采集契约修复：独立采集的DEMAND补充真实due_at，与Site客户端的周期隔离/合并契约一致；实测多个浏览器来源的KeyError由该缺字段造成。增加collector→真实SiteClient序列化集成测试并保留启动失败样本。
 2026-10-28 采集角色滚动发布边界：首次启用执行显式迁移和采集Owner切换；已登记角色后续代码更新不再重复迁移、停止Bus及BODY。首次切换必须同时选择两业务角色，后续collector独立更新保持业务连续。正式发布工具回归通过。
 2026-10-28 发布收尾资源修复：实测镜像清退在I/O高压下持续持发布锁、增加磁盘负载并阻塞紧急修复；磁盘仍有20GiB余量时，重库存/镜像与builder GC按CPU/IO/内存压力延后，保留cleanup_pending及原回滚保护，空间不足仍执行必要回收。新增延后且不做库存扫描回归。
+2026-10-28 采集账本实测修复：确认并发短写导致SQLITE_BUSY，终态提交失败又使内存due保持过去，触发100ms重复取网放大。账本改为进程内单写短事务、幂等事务边界重试；无论持久提交是否成功，调度时钟都推进，checkpoint及新鲜度仍只在持久成功后推进；重启将旧DISPATCHED标记ABANDONED_GENERATION。账本与时效23项回归、持锁不重复网络/百路短写/失败不重取网3项关键测试通过。

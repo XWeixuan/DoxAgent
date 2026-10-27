@@ -260,6 +260,7 @@ class Collector:
             await asyncio.sleep(1)
 
     async def run(self, stop):
+        await asyncio.to_thread(self.store.recover_previous_owner)
         await self.refresh(seeds=True)
         refresh = asyncio.create_task(self._refresh_loop())
         try:
@@ -271,7 +272,7 @@ class Collector:
                             log.error(
                                 "collector unit failed unit=%s error=%s",
                                 key,
-                                type(task.exception()).__name__,
+                                str(task.exception()),
                             )
                         del self.inflight[key]
                 for key, (s, targets, unit, options) in list(self.desired.items()):
@@ -324,7 +325,7 @@ class Collector:
         due = epoch + timedelta(
             seconds=max(0, int((now - epoch).total_seconds() // period)) * period
         )
-        DEMAND.get()['due_at']=due.isoformat()
+        DEMAND.get()["due_at"] = due.isoformat()
         run_id = new_id("collect")
         pages = []
         seen = set()
@@ -501,6 +502,15 @@ class Collector:
                 last_error_code=reason,
                 status="succeeded" if valid else "partial" if pages else "failed",
             )
+            # A failed persistence attempt must not leave the network clock due
+            # and refetch the same unit every 100ms. Only scheduling moves here;
+            # checkpoints/freshness advance after the durable commit below.
+            for target in targets:
+                record = self.states.get((target.binding_id, unit))
+                if record and record["generation"] == generation:
+                    record["state"].update(
+                        next_dispatch_at=dispatch.isoformat(), last_attempt_at=now.isoformat()
+                    )
             try:
                 await registration
                 await asyncio.to_thread(

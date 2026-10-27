@@ -326,3 +326,46 @@ async def test_collector_passes_real_due_and_demand_through_site_client(tmp_path
         assert wire[0]['recipe_parameters']['_poll_rate']>0
         assert wire[0]['work_class']=='foreground'
     finally:await client.close()
+
+
+async def test_acquisition_commit_contention_does_not_repeat_the_network(tmp_path):
+    import asyncio
+    repo,bus,worker,adapter,store=setup_plane(tmp_path)
+    await worker.refresh(seeds=True)
+    lock=sqlite3.connect(store.path,isolation_level=None);lock.execute('BEGIN IMMEDIATE')
+    task=asyncio.create_task(worker.acquire(*next(iter(worker.desired.values()))))
+    try:
+        await asyncio.sleep(.1)
+        assert adapter.calls==1  # Request starts before its thin start record commits.
+        assert not task.done()
+    finally:lock.rollback();lock.close()
+    await asyncio.wait_for(task,3)
+    assert adapter.calls==1 and len(store.pending())==1
+
+
+async def test_small_ledger_writes_serialize_without_losing_cycles_and_restart_fences_old_runs(tmp_path):
+    import asyncio
+    repo,bus,worker,adapter,store=setup_plane(tmp_path)
+    await worker.refresh(seeds=True)
+    source,targets,unit,options=next(iter(worker.desired.values()))
+    await asyncio.gather(*(asyncio.to_thread(store.start,source,targets,unit,'run-'+str(i),utc_now(),utc_now(),60) for i in range(100)))
+    assert store.recover_previous_owner()==100
+    assert store.recover_previous_owner()==0
+    with store.connect() as db:
+        assert db.execute("SELECT count(*) FROM cycles WHERE status='ABANDONED_GENERATION'").fetchone()[0]==100
+
+
+async def test_failed_terminal_commit_does_not_turn_the_unit_into_a_100ms_refetch_loop(tmp_path,monkeypatch):
+    import asyncio
+    from unittest.mock import AsyncMock
+    repo,bus,worker,adapter,store=setup_plane(tmp_path)
+    await worker.refresh(seeds=True)
+    for row in worker.states.values():row['state']['next_dispatch_at']=(utc_now()-timedelta(seconds=1)).isoformat()
+    monkeypatch.setattr(worker,'refresh',AsyncMock())
+    def failed(*a,**kw):raise sqlite3.OperationalError('database is locked')
+    monkeypatch.setattr(store,'finish',failed)
+    stop=asyncio.Event();run=asyncio.create_task(worker.run(stop))
+    try:
+        await asyncio.sleep(.45)
+        assert adapter.calls==1
+    finally:stop.set();await run
