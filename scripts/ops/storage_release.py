@@ -550,6 +550,9 @@ def prepare_inputs(root, state):
 
 def release_components(root, state, repo, commit, components):
     if not components:raise ValueError('release requires explicit --component selections')
+    collection_cutover=('v2-message-collector' in components and 'v2-message-collector' not in state.get('components',{}))
+    if collection_cutover and not {'v2-message-bus','v2-content-enrichment'}.issubset(components):
+        raise ValueError('initial collection cutover must include Bus and BODY owners')
     unknown=set(components)-set(state.get('components',{}))
     # This is a permanent Compose role, registered only after its first healthy
     # deployment. All other unknown role names remain errors.
@@ -576,7 +579,7 @@ def release_components(root, state, repo, commit, components):
             candidate.setdefault('environment',{})['DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED']='true'
         if kind=='guardian':candidate.setdefault('environment',{})['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=built['images']['repair-agent']['tag']
         candidate['schema']=current.get('schema');manifest['components'][component]=candidate
-    if 'v2-message-collector' in components:
+    if collection_cutover:
         # Cut over acquisition ownership once. Use the existing formal migration
         # service, never a one-off temporary runtime or an in-container code patch.
         override=root/'compose.current.json'

@@ -2280,3 +2280,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 退出策略模块开发交付（10-27开始）：新增exit_strategy，固定默认50%MFE+2.5ATR、5%激活、5秒观察/30秒5-of-6确认；接入真实fills/allocations、净组合收益/ATR、持久高水位和同事务提前EXIT，支持残余ENTRY取消、发送前禁补仓、提前退出与未成交剩余量恢复、迟到成交及显式多腿残量处理。共享IBKR完整BBO、size-only刷新/代次/引用计数、受限后台I/O和分钟ATR缓存；交易详情及契约增加低频退出状态。96项交易/投影回归、12项前端单元、2项桌面浏览器检查通过；远端真实SDK禁网适配及20组40合约隔离压力重放通过。实现记录docs/exit-strategy-module-implementation-20261027.md；未部署生产、未启用账户绑定、未发送券商订单，PAPER真实闭环及对冲ENTRY仍需部署验收。
 2026-10-28 Site异步边界收尾：恢复轮询、浏览器运行时、导航域校验及页面所有权RPC的同步Registry访问移出事件循环，必要事务仍按原代际校验；共享请求包含缓存发布整个生命周期，修复异步配置读期间重复发起同一查询的竞态。170项恢复/身份/运行时回归通过，1 skip；更新旧Investing测试夹具以接入既有fetch-anchor状态，未削弱403同frame业务验证。
 2026-10-28 Site采集契约修复：独立采集的DEMAND补充真实due_at，与Site客户端的周期隔离/合并契约一致；实测多个浏览器来源的KeyError由该缺字段造成。增加collector→真实SiteClient序列化集成测试并保留启动失败样本。
+2026-10-28 采集角色滚动发布边界：首次启用执行显式迁移和采集Owner切换；已登记角色后续代码更新不再重复迁移、停止Bus及BODY。首次切换必须同时选择两业务角色，后续collector独立更新保持业务连续。正式发布工具回归通过。
