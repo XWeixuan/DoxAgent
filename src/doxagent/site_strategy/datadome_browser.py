@@ -360,6 +360,20 @@ class NativeChallenge:
             await call("Page.bringToFront")
             await call("Page.reload", {"ignoreCache": False})
 
+    async def reload_unresponsive_document(self):
+        """One owner-reserved reload when renderer DOM is unavailable.
+
+        Browser-level target metadata remains readable even when its renderer
+        has stopped answering. Never invent a URL or replace the native tab.
+        """
+        async with self.connection() as call:
+            info = (await call('Target.getTargetInfo', {'targetId':self.target.target_id}))['targetInfo']
+            url = info.get('url', '')
+            if (info.get('type') != 'page' or urlsplit(url).scheme not in {'http','https'}
+                    or self.coordinator.service.resolve(url).site_id != self.recovery.site_id):
+                raise RuntimeError('solver_document_changed')
+            await call('Page.reload', {'ignoreCache':False})
+
     async def apply(self, cookie, website):
         async with self.connection() as call:
             root = (await call("DOM.getDocument", {"depth": 0}))["root"]

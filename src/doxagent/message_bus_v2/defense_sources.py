@@ -58,12 +58,14 @@ CATALOG = (
         ("RKLB",),
         "aviation",
         AcquisitionMode.BY_TICKER,
+        route="us-standard-5",
     ),
     Endpoint(
         "aviationweek_rss",
         "Aviation Week",
         ("https://aviationweek.com/awn/rss-feed-by-content-source",),
         ("RKLB",),
+        route="us-standard-5",
     ),
     Endpoint(
         "breakingdefense_space",

@@ -514,6 +514,46 @@ class BrowserRecoveryCoordinator:
                 expected_generation=current.generation,
             ))
 
+    async def _recover_unreadable_document(self, recovery, identity, exc):
+        """One same-target reload after repeated renderer failures, never a loop."""
+        from .schema import BrowserRuntimeKind
+        if (identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME
+                or recovery.page_status == 'LOST'
+                or not (isinstance(exc, TimeoutError) or str(exc) == 'original_document_present_but_unreadable')
+                or (utc_now()-recovery.opened_at).total_seconds() < 180):
+            return recovery, False
+        state = dict(recovery.document_recovery)
+        if state.get('reserved_at'):
+            return recovery, False
+        state['observation_failures'] = int(state.get('observation_failures',0)) + 1
+        recovery = recovery.model_copy(update={'document_recovery':state, 'page_status':'PRESENT_BUT_UNREADABLE'})
+        await registry_io(self.store.save_recovery, recovery, expected_generation=recovery.generation)
+        if state['observation_failures'] < 2:
+            return recovery, False
+        if any(job['status'] in {'SUBMITTING','PENDING','APPLYING'}
+               for job in await registry_io(self.datadome_solver.jobs, recovery.recovery_id)):
+            return recovery, False  # A paid request owns its exact scene until it terminates.
+        async with self.service.profile_use.recovery(identity, recovery.recovery_id, recovery.generation):
+            from .datadome_browser import NativeChallenge
+            browser = NativeChallenge(self,recovery,identity)
+            browser.check()  # Also rejects an OPEN human Viewer and stale lease/ownership.
+            state.update(reserved_at=utc_now().isoformat(), instance_id=recovery.original_instance_id,
+                         target_id=recovery.original_target_id, result='UNCERTAIN')
+            recovery = recovery.model_copy(update={'document_recovery':state})
+            await registry_io(self.store.save_recovery, recovery, expected_generation=recovery.generation)
+            await registry_io(self.event,recovery,'UNREADABLE_DOCUMENT_RELOAD_STARTED',
+                              target_id=recovery.original_target_id)
+            try:
+                await browser.reload_unresponsive_document()
+                result='ACKNOWLEDGED'
+            except Exception:
+                result='UNCERTAIN'  # Never replay an interrupted reload or discard the original.
+            state={**state,'result':result,'finished_at':utc_now().isoformat()}
+            recovery=recovery.model_copy(update={'document_recovery':state})
+            await registry_io(self.store.save_recovery,recovery,expected_generation=recovery.generation)
+            await registry_io(self.event,recovery,'UNREADABLE_DOCUMENT_RELOAD_FINISHED',result=result)
+        return recovery, True
+
     async def _run(self, identity_id):
         async with self.slots:
             claimed = (await registry_io(self.store.claim_recovery, identity_id, owner=self.owner))
@@ -633,6 +673,10 @@ class BrowserRecoveryCoordinator:
                                         "page_checked_at": utc_now(),
                                     }
                                 )
+                                recovery, refreshed = await self._recover_unreadable_document(recovery,identity,exc)
+                                if refreshed:
+                                    await self._defer(recovery,'unreadable_document_reloaded',delay=60)
+                                    return
                     if (
                         capture is None
                         and recovery.assessment.get('policy_reason') != 'auth_recovery'

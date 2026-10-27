@@ -25,3 +25,10 @@
 首批整合回归 91 通过、1 条有条件跳过。`cc628390` 于 UTC 2026-10-27 18:24:21 完成 Site Access/Collector 窄发布，Supervisor 容器 ID 未变，Collector 的 `host.docker.internal:host-gateway` 保留。更新后 public-markets-nl 从 5 page/122 iframe 降为 2 page/无 iframe，RSS 求和从约 4GiB 降至约 0.4GiB；Reuters 备用原页与 Chrome PID/instance 未变，但 DOM 仍超时，不能宣称其已恢复。
 
 进一步移除 Challenge 的 Open Original 对 Playwright attach 的依赖：已保留的 external 原页经持久所有权、OPEN 会话、精确 instance/target 校验后，直接选择 Supervisor Viewer 并激活该页；只对该页尝试解除调试等待、恢复 active 生命周期，不导航、不重新建页、不作 CAPTCHA 输入。渲染器不可读不再阻止 Viewer 开放。正常新建登录和 Managed 路径不变，Verify 仍要求真实原页和业务合同通过。相关 85 条回归通过。
+
+## 原生对照与第二批修复
+
+- UTC18:31 native Open Original 在 8 秒内 DONE/VIEWER_READY，原页保持同 target/instance。原页 `Runtime.runIfWaitingForDebugger`、`Page.getFrameTree`、`Runtime.evaluate`、`DOM.getDocument` 均超时，同 Chrome 空白页对应命令正常；不是一张已确认可操作的 RETRY。解除调试等待/active 不能修复该原页。
+- 在本轮创建的 OPEN 维护会话独占期间，对该原页执行**一次** `Page.reload(ignoreCache=false)`，ACK 成功，target/instance/PID 不变。随后 DOM 81ms/OuterHTML367ms/截图202ms，未见活动验证；UTC18:34 主备 recovery 均 RESOLVED。此恢复属于人工操作触发的普通刷新恢复，**不是打码成功**。已释放本轮 Viewer；继续采集自然业务证据。
+- 永久修复：外部原页连续两轮不可读、事件已超过180秒时，在现有 Profile 独占锁和 recovery generation/lease/target 校验内，允许一次同原页普通刷新；先持久保留 UNCERTAIN 预约，重启或响应丢失不重放。OPEN人工会话、PENDING/SUBMITTING/APPLYING付费任务、已丢页、已用过刷新均禁止。保留独立 `document_recovery` 账，不覆盖 RETRY 点击额度、不清 Cookie、不创造验证码 URL。重新观察与业务验收才能恢复，刷新 ACK 本身不是恢复证明。
+- AviationWeek：普通 Managed CfT 实测两个入口均 Cloudflare403；现有 us-standard-5 与 de-standard-1 均取得列表25条、RSS100条。选定固定 us-standard-5 同时供采集与正文，不按403自动轮换、不新增 Chrome。实测两篇最新文章 HTTP200，但明确 subscription_required/PARTIAL，无订阅正文，不伪报FULL。正常免费文章仍沿现有正文识别器；付费内容需要实际账号权限。

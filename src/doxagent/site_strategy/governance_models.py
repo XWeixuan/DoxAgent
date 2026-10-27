@@ -108,6 +108,7 @@ class BrowserRecovery(SiteModel):
     fingerprint: str | None = None
     cleanup_pending: bool = False
     scene_preparation: dict = Field(default_factory=dict)
+    document_recovery: dict = Field(default_factory=dict)
 
 
 class MaintenanceSession(SiteModel):

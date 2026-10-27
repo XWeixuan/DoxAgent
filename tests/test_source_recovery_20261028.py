@@ -59,6 +59,61 @@ def solver_setup(setup):
 
 
 @pytest.mark.asyncio
+async def test_unreadable_original_reload_is_bounded(setup,monkeypatch):
+    from doxagent.site_strategy.datadome_browser import NativeChallenge
+    repo,service,store,scope=setup
+    recovery,_,_=base.retained(setup,human=True)
+    recovery=recovery.model_copy(update={'opened_at':utc_now()-timedelta(minutes=10)})
+    store.save_recovery(recovery,expected_generation=recovery.generation)
+    recovery=store.claim_recovery(recovery.identity_id,owner=service.recovery.owner)
+    from doxagent.site_strategy.schema import BrowserRuntimeKind
+    identity=repo.get_identity(recovery.identity_id).model_copy(update={'runtime_kind':BrowserRuntimeKind.EXTERNAL_CHROME})
+    monkeypatch.setattr(NativeChallenge,'check',lambda self:None)
+    reload=AsyncMock()
+    monkeypatch.setattr(NativeChallenge,'reload_unresponsive_document',reload)
+    coordinator=service.recovery
+    value,changed=await coordinator._recover_unreadable_document(recovery,identity,TimeoutError())
+    assert not changed and value.document_recovery['observation_failures']==1
+    value,changed=await coordinator._recover_unreadable_document(value,identity,TimeoutError())
+    assert changed and value.document_recovery['result']=='ACKNOWLEDGED'
+    value,changed=await coordinator._recover_unreadable_document(value,identity,TimeoutError())
+    assert not changed
+    reload.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_unreadable_original_does_not_refresh_an_outstanding_paid_scene(setup,monkeypatch):
+    repo,service,store,_=setup
+    recovery,_,_=base.retained(setup,human=True)
+    recovery=recovery.model_copy(update={'opened_at':utc_now()-timedelta(minutes=10),
+        'document_recovery':{'observation_failures':2}})
+    from doxagent.site_strategy.schema import BrowserRuntimeKind
+    identity=repo.get_identity(recovery.identity_id).model_copy(update={'runtime_kind':BrowserRuntimeKind.EXTERNAL_CHROME})
+    monkeypatch.setattr(service.recovery.datadome_solver,'jobs',lambda _: [{'status':'PENDING'}])
+    value,changed=await service.recovery._recover_unreadable_document(recovery,identity,TimeoutError())
+    assert not changed and 'reserved_at' not in value.document_recovery
+
+
+@pytest.mark.asyncio
+async def test_unreadable_original_does_not_refresh_a_human_open_viewer(setup):
+    from doxagent.site_strategy.governance_models import MaintenanceSession
+    from doxagent.site_strategy.schema import BrowserRuntimeKind
+    from doxagent.site_strategy.service import ProfileUnavailableError
+    repo,service,store,scope=setup
+    recovery,_,_=base.retained(setup,human=True)
+    recovery=recovery.model_copy(update={'opened_at':utc_now()-timedelta(minutes=10),
+        'document_recovery':{'observation_failures':2}})
+    store.save_recovery(recovery,expected_generation=recovery.generation)
+    recovery=store.claim_recovery(recovery.identity_id,owner=service.recovery.owner)
+    identity=repo.get_identity(recovery.identity_id).model_copy(update={'runtime_kind':BrowserRuntimeKind.EXTERNAL_CHROME})
+    store.save_session(MaintenanceSession(kind='CHALLENGE',scope_id=scope.scope_id,site_id=scope.owner_site_id,
+        identity_id=identity.identity_id,task_id=recovery.challenge_task_id))
+    with pytest.raises(ProfileUnavailableError,match='user_maintenance'):
+        await service.recovery._recover_unreadable_document(recovery,identity,TimeoutError())
+    assert 'reserved_at' not in store.get_recovery(identity.identity_id).document_recovery
+
+
+@pytest.mark.asyncio
 async def test_cold_attach_reconciles_owned_business_before_playwright(monkeypatch):
     import doxagent.site_strategy.external_runtime as module
 
