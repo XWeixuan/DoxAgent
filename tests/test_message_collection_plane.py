@@ -56,6 +56,12 @@ def setup_plane(tmp_path):
     return repo, bus, worker, adapter, store
 
 
+def test_production_switch_is_loaded_from_the_compose_environment(monkeypatch):
+    from doxagent.settings import DoxAgentSettings
+    monkeypatch.setenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','true')
+    assert DoxAgentSettings(_env_file=None).message_bus_v2_collection_plane_enabled
+
+
 async def test_acquisition_does_not_wait_for_business_writer_and_repeated_lists_are_thin(tmp_path):
     repo, bus, worker, adapter, store = setup_plane(tmp_path)
     await worker.refresh(seeds=True)
@@ -255,3 +261,32 @@ def test_retired_transport_headers_do_not_skip_business_and_archive_remains_comp
     assert outbox.coordinates(before)==[business,end]
     assert outbox.event(end)['row']=={}
     assert 'payload' in outbox.event(end,decode=False)
+
+
+async def test_shared_capture_bridge_creates_one_article_body_job_and_frozen_target(tmp_path):
+    from doxagent.message_bus_v2.schema import AcquisitionMode
+    from doxagent.message_bus_v2.polling import CaptureIntake
+    repo,bus,worker,adapter,store=setup_plane(tmp_path)
+    source=next(iter(worker.config_loader(None).sources.values())).model_copy(update={'acquisition_mode':AcquisitionMode.BY_DISTRIBUTION})
+    repo.save_source(source)
+    cfg=worker.config_loader(None);cfg.sources[source.source_id]=source
+    async def poll_shared(context):
+        async with context.request_permit():
+            event=request_started('GET','https://example.test/shared')
+            event.update(status_code=200,response_received_at=utc_now().isoformat())
+        return PollResult(messages=[_message(610)])
+    adapter.poll_shared=poll_shared
+    await worker.refresh(seeds=True)
+    await worker.acquire(*next(iter(worker.desired.values())))
+    bridge=CaptureBridge(bus,store=store)
+    assert await bridge.once()==1
+    with repo._connect() as db:run_id=db.execute('SELECT run_id FROM distribution_runs').fetchone()[0]
+    intake=CaptureIntake(bus)
+    try:
+        await intake.wait(run_id)
+        jobs=repo.list_enrichment_jobs()
+        assert len(jobs)==1 and jobs[0].owner_kind=='distribution_article'
+        with repo._connect() as db:
+            assert db.execute('SELECT count(*) FROM distribution_articles').fetchone()[0]==1
+            assert db.execute('SELECT count(*) FROM distribution_deliveries').fetchone()[0]==1
+    finally:await intake.close()
