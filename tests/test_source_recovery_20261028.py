@@ -14,6 +14,40 @@ from tests import test_datadome_solver as paid
 from tests import test_browser_recovery as base
 
 
+@pytest.mark.asyncio
+async def test_original_viewer_does_not_depend_on_renderer_or_playwright(monkeypatch):
+    from doxagent.site_strategy.maintenance_document import present_original_document
+    import doxagent.site_strategy.runtime as module
+    from doxagent.site_strategy.schema import BrowserRuntimeKind
+    calls=[]
+    class CDP:
+        def __init__(self,url): pass
+        async def start(self,**kwargs):assert kwargs=={'manage_popups':False}
+        async def detach_transport(self):calls.append('detach')
+        async def send(self,method,params=None,**kwargs):
+            calls.append(method)
+            if method=='Target.getTargetInfo':return {'targetInfo':{'type':'page'}}
+            if method=='Target.attachToTarget':return {'sessionId':'child'}
+            if method=='Runtime.runIfWaitingForDebugger':raise TimeoutError('renderer')
+            return {}
+    monkeypatch.setattr(module,'_RawBrowserCDP',CDP)
+    client=SimpleNamespace(status=AsyncMock(return_value={'running':True,'instance_id':'i',
+        'cdp_websocket_url':'ws://127.0.0.1:9222/browser'}),select_maintenance=AsyncMock())
+    identity=SimpleNamespace(identity_id='reuters',runtime_kind=BrowserRuntimeKind.EXTERNAL_CHROME)
+    session=SimpleNamespace(kind='CHALLENGE',state='OPEN',task_id='task',browser_instance_id='i',
+        target_id='t',control_token='private')
+    target=SimpleNamespace(owner_kind='CHALLENGE',state='LIVE',owner_ref='task',identity_id='reuters',
+        browser_instance_id='i',target_id='t',allocation_id='a')
+    result=await present_original_document(client,identity,session,target)
+    assert result['target_id']=='t'
+    client.select_maintenance.assert_awaited_once_with('reuters')
+    assert 'Target.activateTarget' in calls and 'Target.detachFromTarget' in calls
+    assert not any('DOM.' in method or 'navigate' in method for method in calls)
+    target.owner_ref='new-task'
+    with pytest.raises(RuntimeError,match='ownership'):
+        await present_original_document(client,identity,session,target)
+
+
 @pytest.fixture
 def setup(tmp_path):
     yield from base.setup.__wrapped__(tmp_path)

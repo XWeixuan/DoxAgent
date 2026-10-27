@@ -526,6 +526,15 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         from .supervisor_client import ChromeSupervisorClient
 
         store = GovernanceRepository(self.repository)
+        session = next((s for s in store.list_sessions() if s.control_token == token), None)
+        if (session and session.kind == 'CHALLENGE'
+                and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME):
+            from .maintenance_document import present_original_document
+            result = await present_original_document(
+                ChromeSupervisorClient(self.supervisor_socket, owner_id=self.controller_id),
+                identity, session, store.get_target(session.allocation_id))
+            self._tokens[token] = (site_id, identity.identity_id)
+            return result
         task = store.current_challenge(identity.identity_id)
         if task and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
             status = await ChromeSupervisorClient(

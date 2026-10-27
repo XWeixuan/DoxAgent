@@ -21,3 +21,7 @@
 ## 验证与发布
 
 第一批核心回归 70 通过、1 条有条件跳过；新增适配/控制回归 29 通过（批次有重叠，不累加去重总数）。后续补记生产精确版本、保留现场、paid task/费用/应用/原页通关/正式列表/正文/复发与剩余人工事项。
+
+首批整合回归 91 通过、1 条有条件跳过。`cc628390` 于 UTC 2026-10-27 18:24:21 完成 Site Access/Collector 窄发布，Supervisor 容器 ID 未变，Collector 的 `host.docker.internal:host-gateway` 保留。更新后 public-markets-nl 从 5 page/122 iframe 降为 2 page/无 iframe，RSS 求和从约 4GiB 降至约 0.4GiB；Reuters 备用原页与 Chrome PID/instance 未变，但 DOM 仍超时，不能宣称其已恢复。
+
+进一步移除 Challenge 的 Open Original 对 Playwright attach 的依赖：已保留的 external 原页经持久所有权、OPEN 会话、精确 instance/target 校验后，直接选择 Supervisor Viewer 并激活该页；只对该页尝试解除调试等待、恢复 active 生命周期，不导航、不重新建页、不作 CAPTCHA 输入。渲染器不可读不再阻止 Viewer 开放。正常新建登录和 Managed 路径不变，Verify 仍要求真实原页和业务合同通过。相关 85 条回归通过。

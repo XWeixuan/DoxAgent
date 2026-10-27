@@ -145,6 +145,59 @@ async def close_original_document(client, identity, session, target):
                 raise RuntimeError("original_document_close_pending")
 
 
+async def present_original_document(client, identity, session, target):
+    """Present an owned Challenge without initializing all Playwright pages.
+
+    The owner has reserved the Viewer and excluded solver/business writers.
+    A suspended or unreadable renderer must not prevent access to that Viewer.
+    """
+    if (not target or session.kind != 'CHALLENGE' or session.state != 'OPEN'
+            or target.owner_kind != 'CHALLENGE' or target.state != 'LIVE'
+            or target.owner_ref != session.task_id
+            or (target.identity_id, target.browser_instance_id, target.target_id)
+            != (identity.identity_id, session.browser_instance_id, session.target_id)):
+        raise RuntimeError('exact_maintenance_target_ownership_required')
+    async with asyncio.timeout(8):
+        status = await client.status(identity.identity_id)
+        if not status.get('running') or status.get('instance_id') != session.browser_instance_id:
+            raise RuntimeError('original_browser_state_unverified')
+        endpoint = str(status['cdp_websocket_url'])
+        parsed = urlsplit(endpoint)
+        if parsed.scheme != 'ws' or parsed.hostname != '127.0.0.1':
+            raise RuntimeError('untrusted_original_document_endpoint')
+        from .runtime import _RawBrowserCDP
+        cdp = _RawBrowserCDP(endpoint)
+        child = None
+        try:
+            await cdp.start(manage_popups=False)
+            info = (await cdp.send('Target.getTargetInfo', {'targetId': target.target_id}))['targetInfo']
+            if info.get('type') != 'page':
+                raise RuntimeError('original_document_unavailable')
+            await client.select_maintenance(identity.identity_id)
+            await cdp.send('Target.activateTarget', {'targetId': target.target_id})
+            # Best effort wake of this exact human-owned page, never navigation,
+            # debugger bypass, CAPTCHA input, or a global autoAttach policy.
+            try:
+                async with asyncio.timeout(2):
+                    child = (await cdp.send('Target.attachToTarget',
+                        {'targetId':target.target_id,'flatten':True}))['sessionId']
+                    await cdp.send('Runtime.runIfWaitingForDebugger', session_id=child)
+                    await cdp.send('Page.setWebLifecycleState', {'state':'active'}, session_id=child)
+            except Exception:
+                pass  # Viewer still works even when the renderer needs human inspection.
+            return {'login_token':session.control_token, 'identity_id':identity.identity_id,
+                    'runtime_kind':identity.runtime_kind.value,'target_id':target.target_id,
+                    'allocation_id':target.allocation_id,'browser_instance_id':target.browser_instance_id}
+        finally:
+            if child:
+                try:
+                    async with asyncio.timeout(1):
+                        await cdp.send('Target.detachFromTarget', {'sessionId':child})
+                except Exception:
+                    pass
+            await cdp.detach_transport()
+
+
 async def read_original_document(client, identity, session, target, *, evidence_store=None):
     """Observation only: no ensure, controller claim, navigation or Viewer selection."""
     if (
