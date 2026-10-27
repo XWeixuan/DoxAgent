@@ -1,0 +1,56 @@
+{
+  "commit": "416fb2fae526473892eb92bce8e25a9995e51323",
+  "components": {
+    "codex-worker": {
+      "container": "857a190a58749250cb870c4c12e6656d6a88f1081d294d42a95b6bac81c91cc2",
+      "image": "sha256:e41360625f486086b6adea28fdbc395a81f822d12a48d55ba12b50303bc60f02",
+      "source_files_verified": 34,
+      "health": "healthy",
+      "restarts": 0
+    },
+    "v2-scheduler": {
+      "container": "be750c94dff437510df61d8ddb5a58e7ff3c550e059b405def79b48634a494c2",
+      "image": "sha256:e41360625f486086b6adea28fdbc395a81f822d12a48d55ba12b50303bc60f02",
+      "source_files_verified": 34,
+      "health": null,
+      "restarts": 0
+    }
+  },
+  "forced_by_explicit_user_request": [
+    {
+      "component": "codex-worker",
+      "container": "6a42fd44b3845abb1c477b9e2cf91234fc9ae0b6d52912cd10129e03d0326e0b",
+      "revision": "24a5fde508e5196f04ca135b50ec8409b85d8596"
+    },
+    {
+      "component": "v2-scheduler",
+      "container": "dacbb280fdc54924151954ed17ec2d942de00fb45ba9c4d48a46103b5668fe46",
+      "revision": "24a5fde508e5196f04ca135b50ec8409b85d8596"
+    }
+  ],
+  "stopped_deployment_waiters": [
+    2467054
+  ],
+  "unrelated_services_unchanged": {
+    "v2-web": true,
+    "v2-message-bus": true,
+    "v2-api": true,
+    "v2-projector": true,
+    "v2-executor": true,
+    "v2-content-enrichment": true,
+    "v2-message-collector": true,
+    "v2-site-access": true,
+    "v2-initialization": true,
+    "v2-transport-maintenance": true,
+    "v2-maintenance": true,
+    "v2-control": true,
+    "v2-migrate": true,
+    "null": true,
+    "initialization-guardian": true,
+    "v2-o4": true,
+    "v2-cdecr-executor": true,
+    "v2-delivery": true,
+    "v2-chrome-supervisor": true,
+    "captcha-proxy": true
+  }
+}

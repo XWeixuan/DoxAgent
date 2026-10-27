@@ -2306,3 +2306,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 W3 P0 收口：ReadySlot readiness/configure/operation API 的剩余 SQL 与 ACK 统一 offload；Worker 结算重试异步读取，任务取消回调用进程内 entered 标记识别尚未启动的协程，避免在事件循环回调里等 SQLite。
 
 2026-10-28 Runtime P0 发布收口：同类活动任务检查直接复用内存租约，避免在调度控制循环反复 get_task/展开正文；SIGTERM 在 ticker/task 调度边界停止新增派发，已提交 provider/Worker 执行仍按原 owner 收束。
+
+2026-10-28 Runtime/W3 P0 发布验收：全链补齐版 24a5fde5 已上线；按用户明确强停指令替换旧 Worker/Scheduler，收口版 416fb2fa 两组件各 34 源文件摘要核验通过，Worker dispatcher 已恢复 RUNNING，保留原任务与已落盘回执；验收见 docs/runtime-p0-repair-20261028.md。

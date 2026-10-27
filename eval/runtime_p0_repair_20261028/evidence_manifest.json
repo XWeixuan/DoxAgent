@@ -1,0 +1,46 @@
+{
+  "release-followup.json": {
+    "bytes": 2420,
+    "sha256": "d149cbfb4d5d908e5c9f8a5941f74ea3e765d2bc9eba887a437fa5c9c4e4f44c"
+  },
+  "release-final.json": {
+    "bytes": 1786,
+    "sha256": "d1d0d18055d8161c251c0b47562278d126c406e5e411122c6303d68b7e7ed5d0"
+  },
+  "accept-final.json": {
+    "bytes": 22304,
+    "sha256": "497f330c08fba489502511a42ffdc4f28264a67b07bef902984e5af3b87c21a4"
+  },
+  "accept-first.json": {
+    "bytes": 21743,
+    "sha256": "a8f737f2fe81808b6941203a2549077ce3f3634d4e8458246624a3528c12fadb"
+  },
+  "accept-before-followup.json": {
+    "bytes": 19870,
+    "sha256": "907a65d9da66a0aef282831805141d571bbf19a8768f237baa927f8d5a608b64"
+  },
+  "followup-tests.txt": {
+    "bytes": 205,
+    "sha256": "90131aca22111a1fa4202001e33d7b4c7452af656446db946c2a5fdcb33b2a10"
+  },
+  "final-api-tests.txt": {
+    "bytes": 116,
+    "sha256": "640ca852a1520fc3558d5defe8b1ee63b872a6b586dc11dc36a5df30376783ab"
+  },
+  "final-scheduler-tests.txt": {
+    "bytes": 101,
+    "sha256": "d8da075ae47b99aaca746ac3353b32e4ffe7cddea153c58a7706864b5c6eaac8"
+  },
+  "scheduler-stop.json": {
+    "bytes": 405,
+    "sha256": "90988e1c306f8c9bc8efedc186151593eaea2e5ccb0d574ca78ee574c7df663c"
+  },
+  "remote-session-failure.json": {
+    "bytes": 711,
+    "sha256": "e51b7ed1142c6b020e816dac1460af117e2989ef1e51b805594e5e1e3b3d8179"
+  },
+  "final-release-launcher.json": {
+    "bytes": 161,
+    "sha256": "56af8db4fc5645fcb75babbb076b3d953119cf93f8a123dc70c12bf08b825511"
+  }
+}

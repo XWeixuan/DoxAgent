@@ -1,0 +1,17 @@
+{
+  "observed_local_time": "2026-10-28T04:24..04:30+08:00",
+  "host": "doxagent-sg",
+  "checks": [
+    "default SSH route: server not responding",
+    "direct route: public key authentication succeeds, session channel never opens",
+    "direct TCP22: OpenSSH banner returned",
+    "direct SSH command true: server-alive timeout",
+    "SSH read-only forwarding localhost8082: timeout"
+  ],
+  "code_on_origin_main": "24a5fde508e5196f04ca135b50ec8409b85d8596",
+  "last_verified_production_commit": "43ef103c43bc90348aae4f3d11cc2b5621e88a77",
+  "supplement_release_complete": false,
+  "host_reboot_requested": false,
+  "reconnected": true,
+  "reconnected_remote_utc": "2026-10-27T20:29:47+00:00"
+}

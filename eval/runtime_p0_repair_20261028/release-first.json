@@ -1,0 +1,65 @@
+{
+  "commit": "43ef103c43bc90348aae4f3d11cc2b5621e88a77",
+  "components": {
+    "codex-worker": {
+      "id": "2b7a9ae28f25d1ed5d11cea841a5021eb688b9144f9535ad9e6a191a82653633",
+      "image": "sha256:31ae1650eca02af33a17aee55b761c159f32f0e077f65935a0ce8e3273eaa30d",
+      "restart_count": 0,
+      "health": "healthy",
+      "source_files_verified": 30
+    },
+    "v2-projector": {
+      "id": "9c048538f7e7d6aad5d93e15d364727d50bed190e088407978eee410a139a88f",
+      "image": "sha256:31ae1650eca02af33a17aee55b761c159f32f0e077f65935a0ce8e3273eaa30d",
+      "restart_count": 0,
+      "health": null,
+      "source_files_verified": 30
+    },
+    "v2-api": {
+      "id": "74e78c89eb297823988d4db620322c34dbc4c544fabee3cb4719c563cf5d420e",
+      "image": "sha256:31ae1650eca02af33a17aee55b761c159f32f0e077f65935a0ce8e3273eaa30d",
+      "restart_count": 0,
+      "health": "healthy",
+      "source_files_verified": 30
+    },
+    "v2-message-bus": {
+      "id": "0c2181a9929fbfd95459242c867d41f8fa37264b70ede7666f718dfd2b3fe152",
+      "image": "sha256:31ae1650eca02af33a17aee55b761c159f32f0e077f65935a0ce8e3273eaa30d",
+      "restart_count": 0,
+      "health": null,
+      "source_files_verified": 30
+    },
+    "v2-scheduler": {
+      "id": "8184d5997893d112de4a8314f4cdd51dd12b88aada93bc77c2ba364d1f930e49",
+      "image": "sha256:31ae1650eca02af33a17aee55b761c159f32f0e077f65935a0ce8e3273eaa30d",
+      "restart_count": 0,
+      "health": null,
+      "source_files_verified": 30
+    },
+    "v2-web": {
+      "id": "ae4acb2b62d717317bb3e5f2025578e037ce0f933889d2d7fae9acd8a60a848f",
+      "image": "sha256:a881209172e2b52e2db1eed02bbea25392eb1b67531ccb5c167c3503345c024d",
+      "restart_count": 0,
+      "health": "healthy",
+      "source_files_verified": null
+    }
+  },
+  "unrelated_services_unchanged": {
+    "v2-executor": true,
+    "v2-content-enrichment": true,
+    "v2-message-collector": true,
+    "v2-site-access": true,
+    "v2-initialization": true,
+    "v2-transport-maintenance": true,
+    "v2-maintenance": true,
+    "v2-control": true,
+    "v2-migrate": true,
+    "initialization-guardian": true,
+    "v2-o4": true,
+    "v2-cdecr-executor": true,
+    "v2-delivery": true,
+    "v2-chrome-supervisor": true
+  },
+  "empty_running_worker_queue_before_release": true,
+  "audit_directory": "/var/lib/doxagent/releases/runtime-p0-43ef103c43bc"
+}
