@@ -3,13 +3,17 @@
 from .governance_models import ChallengeTask, OwnedBrowserTarget
 from .governance_repository import GovernanceRepository
 from .schema import utc_now
+from .storage import registry_io
 
 
 class TargetOwner:
     def __init__(self, repository):
         self.store = GovernanceRepository(repository)
 
-    async def event(self, action, payload):
+    async def event(self,action,payload):
+        return await registry_io(self._event,action,payload)
+
+    def _event(self, action, payload):
         if action == "allocate":
             return self.allocate(**payload).model_dump(mode="json")
         if action == "bind":
@@ -115,29 +119,29 @@ class TargetOwner:
         result = await cdp.send("Target.getTargets")
         live = {str(t["targetId"]): t for t in result["targetInfos"]}
         outcomes = []
-        for target in self.list_for_instance(identity_id, instance_id):
+        for target in (await registry_io(self.list_for_instance, identity_id, instance_id)):
             if not target.target_id:
                 matched = [key for key, info in live.items() if info.get("url") == target.marker]
                 if len(matched) == 1:
-                    target = self.bind(target.allocation_id, matched[0])
+                    target = (await registry_io(self.bind, target.allocation_id, matched[0]))
             if target.target_id not in live:
                 target = target.model_copy(update={"state": "LOST", "updated_at": utc_now()})
-                self.store.save_target(target)
-                task = self.store.current_challenge(identity_id)
+                (await registry_io(self.store.save_target, target))
+                task = (await registry_io(self.store.current_challenge, identity_id))
                 if task and task.allocation_id == target.allocation_id:
-                    self.store.save_challenge(task.model_copy(update={"state": "TARGET_LOST"}))
+                    (await registry_io(self.store.save_challenge, task.model_copy(update={"state": "TARGET_LOST"})))
             elif target.owner_kind == "BUSINESS" or target.state == "CLOSE_PENDING":
                 claimed = await self.event("close_claim", {"allocation_id": target.allocation_id,
                     "owner_ref": target.owner_ref if target.state == "CLOSE_PENDING" else None})
                 if not claimed["claimed"]:
                     continue
-                pending = self.store.get_target(target.allocation_id)
+                pending = (await registry_io(self.store.get_target, target.allocation_id))
                 try:
                     await cdp.send("Target.closeTarget", {"targetId": target.target_id})
                 except Exception:
                     pass  # Durable pending record survives this connection.
                 else:
-                    target = self.store.save_target(pending.model_copy(update={"state": "CLOSED"}))
+                    target = (await registry_io(self.store.save_target, pending.model_copy(update={"state": "CLOSED"})))
             outcomes.append(target)
         return outcomes
 

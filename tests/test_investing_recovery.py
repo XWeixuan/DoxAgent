@@ -280,6 +280,9 @@ async def test_bootstrap_403_requires_observed_same_frame_200_not_just_normal_do
         provenance=SimpleNamespace(instance_id="chrome"),
     )
     runtime = module.SiteAccessRuntime.__new__(module.SiteAccessRuntime)
+    from doxagent.site_strategy.fetch_anchors import FetchAnchors
+    runtime.fetch_anchors=FetchAnchors()
+    runtime._listing_urls={}
     runtime.resolver = object()
     runtime.repository = SimpleNamespace(
         get_identity_runtime=lambda _: SimpleNamespace(
@@ -299,7 +302,7 @@ async def test_bootstrap_403_requires_observed_same_frame_200_not_just_normal_do
             egress_id="proxy",
             runtime_kind="external_chrome",
         ),
-        object(),
+        SimpleNamespace(egress_id="proxy"),
     )
     assert result.status_code == (200 if same_frame else 403)
     assert result.body == LISTING

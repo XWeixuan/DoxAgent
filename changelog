@@ -2276,3 +2276,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 发布切换补测：修复 collection_plane_enabled 遗漏环境变量别名，正式Compose已传入开关但Settings仍取false，导致collector准入检查拒绝启动；补真实生产变量映射测试并重新发布。身份/数据未重置，首次失败切换与正式验收窗口分开记录。
 2026-10-28 采集配置只读恢复：监测词服务按已安装Repository模式跳过构造时DDL，配置快照在业务库持写锁下仍可加载；新增真实loader集成回归，修复第一次独立角色上线时由隐式迁移导致的readonly启动失败。
 2026-10-28 显式安装补全：监测词两张表归入Repository正式初始化，确保全新安装与运行态只读路径一致；真实配置加载与重复安装两项回归通过。
+
+2026-10-28 退出策略模块开发交付（10-27开始）：新增exit_strategy，固定默认50%MFE+2.5ATR、5%激活、5秒观察/30秒5-of-6确认；接入真实fills/allocations、净组合收益/ATR、持久高水位和同事务提前EXIT，支持残余ENTRY取消、发送前禁补仓、提前退出与未成交剩余量恢复、迟到成交及显式多腿残量处理。共享IBKR完整BBO、size-only刷新/代次/引用计数、受限后台I/O和分钟ATR缓存；交易详情及契约增加低频退出状态。96项交易/投影回归、12项前端单元、2项桌面浏览器检查通过；远端真实SDK禁网适配及20组40合约隔离压力重放通过。实现记录docs/exit-strategy-module-implementation-20261027.md；未部署生产、未启用账户绑定、未发送券商订单，PAPER真实闭环及对冲ENTRY仍需部署验收。
+2026-10-28 Site异步边界收尾：恢复轮询、浏览器运行时、导航域校验及页面所有权RPC的同步Registry访问移出事件循环，必要事务仍按原代际校验；共享请求包含缓存发布整个生命周期，修复异步配置读期间重复发起同一查询的竞态。170项恢复/身份/运行时回归通过，1 skip；更新旧Investing测试夹具以接入既有fetch-anchor状态，未削弱403同frame业务验证。

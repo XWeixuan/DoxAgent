@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .storage import registry_io
+
 import asyncio
 import importlib.metadata
 import inspect
@@ -988,7 +990,7 @@ class _DocumentNavigationGate:
             await public_url(url, trusted_proxy_dns=True)
         except ValueError:
             return False
-        target = self.resolver.resolve(url)
+        target = (await registry_io(self.resolver.resolve, url))
         host = parsed.hostname or ""
         original = self.resolved.match_evidence.get('host', '')
         if (self.resolved.site_id == 'generic' and original
@@ -996,9 +998,9 @@ class _DocumentNavigationGate:
             # Public publisher canonical www redirects are the same publisher,
             # not a cross-site navigation. public_url validation still applies.
             return True
-        return target.runtime_key == self.resolved.runtime_key or self.resolver.supports_host(
+        return target.runtime_key == self.resolved.runtime_key or (await registry_io(self.resolver.supports_host,
             self.resolved.site_id, host
-        )
+        ))
 
     async def _handle(self, event: dict[str, Any]) -> None:
         assert self.session is not None
@@ -1208,7 +1210,7 @@ class SiteAccessRuntime:
     ) -> RuntimeResponse:
         if request.mode is AccessMode.HTTP_PUBLIC:
             return await self._http(request, resolved, combination, egress)
-        identity = self._identity(combination, profile, egress)
+        identity = (await registry_io(self._identity, combination, profile, egress))
         return await self._browser(request, resolved, identity, egress)
 
     def _identity(
@@ -1335,13 +1337,13 @@ class SiteAccessRuntime:
         _BROWSER_TIMINGS.get()["page_acquire_ms"] = int((time.monotonic()-lease_started)*1000)
         _BROWSER_TIMINGS.get()["fetch_anchor_reused"] = int(anchor is not None)
         _BROWSER_TIMINGS.get()['fetch_anchor_thawed'] = int(bool(anchor and anchor.thawed))
-        current_runtime = self.repository.get_identity_runtime(identity.identity_id)
+        current_runtime = (await registry_io(self.repository.get_identity_runtime, identity.identity_id))
         if (
             current_runtime.instance_id != lease.provenance.instance_id
             or current_runtime.operational_state is not IdentityOperationalState.AVAILABLE
         ):
             try:
-                self.repository.save_identity_runtime(
+                (await registry_io(self.repository.save_identity_runtime,
                     current_runtime.model_copy(
                         update={
                             "operational_state": IdentityOperationalState.AVAILABLE,
@@ -1351,7 +1353,7 @@ class SiteAccessRuntime:
                         }
                     ),
                     expected_generation=current_runtime.generation,
-                )
+                ))
             except RuntimeError:
                 pass
         page = anchor.page if anchor else await lease.__aenter__()
@@ -2244,7 +2246,7 @@ class SiteAccessRuntime:
         """Optional regular login, using the same identity and no Viewer claim."""
         from .recovery import reuters_login_form
 
-        resolved = self.resolver.resolve(request.url)
+        resolved = (await registry_io(self.resolver.resolve, request.url))
         if resolved.site_id != "reuters":
             raise ValueError("auto_login_site_not_supported")
         if request.origin_scope_id:
@@ -2279,7 +2281,7 @@ class SiteAccessRuntime:
         request = request.model_copy(update={"recipe_parameters": {
             **request.recipe_parameters, "_maintenance_canary": True, "_recovery_probe": True,
         }})
-        resolved = self.resolver.resolve(request.url)
+        resolved = (await registry_io(self.resolver.resolve, request.url))
         if request.origin_scope_id:
             resolved = resolved.model_copy(update={"match_evidence": {
                 **resolved.match_evidence, "scope_id": request.origin_scope_id}})
@@ -2297,7 +2299,7 @@ class SiteAccessRuntime:
         from .governance_repository import GovernanceRepository
         from .recovery import retained_token
         _, maintained = retained_entry(self._maintenance_pages, identity.identity_id, recovery.original_instance_id,
-            recovery.original_target_id, retained_token(GovernanceRepository(self.repository), recovery))
+            recovery.original_target_id, (await registry_io(retained_token, GovernanceRepository(self.repository), recovery)))
         if not maintained or maintained.page.is_closed():
             raise RuntimeError("original_challenge_target_lost")
         if maintained.identity_id != identity.identity_id:
@@ -2310,7 +2312,7 @@ class SiteAccessRuntime:
         from .recovery import retained_token
         store = GovernanceRepository(self.repository)
         token, maintained = retained_entry(self._maintenance_pages, identity.identity_id, recovery.original_instance_id,
-            recovery.original_target_id, retained_token(store, recovery))
+            recovery.original_target_id, (await registry_io(retained_token, store, recovery)))
         target = store.get_target(recovery.original_allocation_id or '')
         if maintained and target:
             maintained.page._doxagent_owner_ref = target.owner_ref
@@ -2345,17 +2347,17 @@ class SiteAccessRuntime:
         await public_url(url, trusted_proxy_dns=True)
         host = urlsplit(url).hostname or ""
         target_site_id = site_id or profile.site_id
-        initial = self.resolver.resolve(url)
-        if initial.site_id != target_site_id and not self.resolver.supports_host(
+        initial = (await registry_io(self.resolver.resolve, url))
+        if initial.site_id != target_site_id and not (await registry_io(self.resolver.supports_host,
             target_site_id, host
-        ):
+        )):
             raise ValueError("maintenance URL does not belong to the profile site")
-        site_spec = self.repository.get_strategy(target_site_id)
+        site_spec = (await registry_io(self.repository.get_strategy, target_site_id))
         if site_spec is None:
             raise ValueError("profile site strategy is unavailable")
-        resolved = self.resolver.resolve(
+        resolved = (await registry_io(self.resolver.resolve,
             next((f"https://{rule.host}/" for rule in site_spec.domains if not rule.exclude), url)
-        )
+        ))
         effective_identity = identity or BrowserIdentitySpec(
             identity_id=profile.profile_id,
             revision=1,
@@ -2544,15 +2546,15 @@ class SiteAccessRuntime:
             except Exception:
                 pass
             await previous.lease.abandon()
-        site_spec = self.repository.get_strategy(site_id)
+        site_spec = (await registry_io(self.repository.get_strategy, site_id))
         if site_spec is None:
             raise ValueError("site strategy is unavailable")
-        resolved = self.resolver.resolve(
+        resolved = (await registry_io(self.resolver.resolve,
             next(
                 (f"https://{rule.host}/" for rule in site_spec.domains if not rule.exclude),
                 site_spec.auth.login_url or "",
             )
-        )
+        ))
         lease = await self.browser_runtimes.recover_page(
             identity, egress, target_id=profile.challenge_target_id
         )
@@ -2630,10 +2632,10 @@ class SiteAccessRuntime:
         if maintained is None:
             raise KeyError(token)
         await public_url(article_url, trusted_proxy_dns=True)
-        identity = self.repository.get_identity(maintained.identity_id)
+        identity = (await registry_io(self.repository.get_identity, maintained.identity_id))
         if identity is None:
             raise KeyError(maintained.identity_id)
-        resolved = self.resolver.resolve(article_url)
+        resolved = (await registry_io(self.resolver.resolve, article_url))
         if resolved.site_id != maintained.site_id:
             raise ValueError("verification URL belongs to another publisher")
         original_html = await self._maintenance_document(maintained)
@@ -2663,7 +2665,7 @@ class SiteAccessRuntime:
             request,
             resolved,
             identity,
-            self.repository.get_egress(identity.egress_id),
+            (await registry_io(self.repository.get_egress, identity.egress_id)),
         )
         recognized = original.page_kind in {"article", "listing", "quote"} or (
             original.access_reason in {"subscription_required", "login_required"}
@@ -2712,9 +2714,9 @@ class SiteAccessRuntime:
         )
         info = inspect_html(html, maintained.page.url, "", generic_extraction=False)
         if info.access_reason == "challenge_required" and hasattr(self, "evidence_store"):
-            identity = self.repository.get_identity(maintained.identity_id)
+            identity = (await registry_io(self.repository.get_identity, maintained.identity_id))
             url = maintained.challenge_url or maintained.page.url
-            resolved = self.resolver.resolve(url).model_copy(update={"site_id": maintained.site_id})
+            resolved = (await registry_io(self.resolver.resolve(url).model_copy, update={"site_id": maintained.site_id}))
             await self._capture_challenge_evidence(
                 maintained.lease, maintained.page, maintained.gate, identity, resolved,
                 AccessRequest(operation_id=f"maintenance-inspect:{token}", purpose="LOGIN",
@@ -2744,8 +2746,8 @@ class SiteAccessRuntime:
         maintained = self._maintenance_pages.get(token)
         if maintained is None:
             raise KeyError(token)
-        identity = self.repository.get_identity(maintained.identity_id)
-        resolved = self.resolver.resolve(request.url)
+        identity = (await registry_io(self.repository.get_identity, maintained.identity_id))
+        resolved = (await registry_io(self.resolver.resolve, request.url))
         if resolved.site_id != maintained.site_id:
             raise ValueError("crawler canary belongs to another site")
         request = request.model_copy(
@@ -2757,7 +2759,7 @@ class SiteAccessRuntime:
             }
         )
         return await self._browser(
-            request, resolved, identity, self.repository.get_egress(identity.egress_id)
+            request, resolved, identity, (await registry_io(self.repository.get_egress, identity.egress_id))
         )
 
     async def close_login(self, token: str) -> str:

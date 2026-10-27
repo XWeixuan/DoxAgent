@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from .challenge_detection import assess
 from .governance_repository import GovernanceRepository, capability_fingerprint
+from .storage import registry_io
 from .schema import (
     AccessEvent,
     AccessRequest,
@@ -418,25 +419,25 @@ class BrowserRecoveryCoordinator:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
+    def _legacy_enabled(self):
+        with self.service.repository._lock:
+            return bool(self.service.repository._connection.execute(
+                "select 1 from site_recovery_migrations where name='challenge-autorecovery-v1'").fetchone())
+
     async def run_once(self):
         if self._billing_task is None or self._billing_task.done():
             self._billing_task = asyncio.create_task(self.datadome_solver.collect_orphan_results())
         if time.monotonic() - self._last_legacy_scan >= 60:
             # An OPEN user session is deferred by migration, never stolen. Once
             # released, the same bounded scan brings it under autonomous recovery.
-            with self.service.repository._lock:
-                self._legacy_migration_enabled = bool(
-                    self.service.repository._connection.execute(
-                        "select 1 from site_recovery_migrations where name='challenge-autorecovery-v1'"
-                    ).fetchone()
-                )
+            self._legacy_migration_enabled=await registry_io(self._legacy_enabled)
             if self._legacy_migration_enabled:
                 await asyncio.to_thread(
                     migrate_recoveries, self.service, apply=True, update_policies=False
                 )
             self._last_legacy_scan = time.monotonic()
         # Claim only once a slot is available; queued leases must not expire in RAM.
-        for recovery in self.store.list_recoveries(active_only=False):
+        for recovery in (await registry_io(self.store.list_recoveries, active_only=False)):
             if recovery.phase == "RESOLVED" and not recovery.cleanup_pending:
                 continue
             if recovery.identity_id in self.tasks or recovery.next_due_at > utc_now():
@@ -462,7 +463,7 @@ class BrowserRecoveryCoordinator:
             )
 
     async def _observe(self, recovery, identity):
-        target = self.store.get_target(recovery.original_allocation_id or "")
+        target = (await registry_io(self.store.get_target, recovery.original_allocation_id or ""))
         if not target or target.state in {"CLOSED", "LOST"}:
             raise RuntimeError("original_challenge_target_lost")
         if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
@@ -479,31 +480,31 @@ class BrowserRecoveryCoordinator:
         return await self.service.runtime.observe_recovery(recovery, identity)
 
     async def _close_page(self, recovery, identity):
-        target = self.store.get_target(recovery.original_allocation_id or "")
+        target = (await registry_io(self.store.get_target, recovery.original_allocation_id or ""))
         if not target or target.state in {"CLOSED", "LOST"}:
             return
         if any(
             s.identity_id == identity.identity_id and s.state == "OPEN"
-            for s in self.store.list_sessions()
+            for s in (await registry_io(self.store.list_sessions))
         ):
             return
-        task = self.store.current_challenge(identity.identity_id)
+        task = (await registry_io(self.store.current_challenge, identity.identity_id))
         if task and task.allocation_id == target.allocation_id:
             return  # A different capability's live human original is still needed.
         await self.service.runtime.close_recovery(recovery, identity)
 
     async def _cleanup(self, recovery):
-        identity = self.service.repository.get_identity(recovery.identity_id)
+        identity = (await registry_io(self.service.repository.get_identity, recovery.identity_id))
         try:
             async with self.slots, asyncio.timeout(10):
                 await self._close_page(recovery, identity)
-            target = self.store.get_target(recovery.original_allocation_id or "")
+            target = (await registry_io(self.store.get_target, recovery.original_allocation_id or ""))
             done = target is None or target.state in {"CLOSED", "LOST"}
         except Exception:
             done = False
-        current = self.store.get_recovery(recovery.identity_id)
+        current = (await registry_io(self.store.get_recovery, recovery.identity_id))
         if current and current.recovery_id == recovery.recovery_id and current.phase == "RESOLVED":
-            self.store.save_recovery(
+            (await registry_io(self.store.save_recovery,
                 current.model_copy(
                     update={
                         "cleanup_pending": not done,
@@ -511,11 +512,11 @@ class BrowserRecoveryCoordinator:
                     }
                 ),
                 expected_generation=current.generation,
-            )
+            ))
 
     async def _run(self, identity_id):
         async with self.slots:
-            claimed = self.store.claim_recovery(identity_id, owner=self.owner)
+            claimed = (await registry_io(self.store.claim_recovery, identity_id, owner=self.owner))
             if claimed is None:
                 return
             recovery = claimed
@@ -528,13 +529,13 @@ class BrowserRecoveryCoordinator:
             capture = None
             try:
                 async with asyncio.timeout_at(deadline):
-                    scope = self.store.maintenance_scope(recovery.scope_id)
-                    identity = self.service.repository.get_identity(identity_id)
-                    spec = self.service.repository.get_strategy(recovery.site_id)
-                    egress = self.service.repository.get_egress(identity.egress_id)
-                    fingerprint = capability_fingerprint(
+                    scope = (await registry_io(self.store.maintenance_scope, recovery.scope_id))
+                    identity = (await registry_io(self.service.repository.get_identity, identity_id))
+                    spec = (await registry_io(self.service.repository.get_strategy, recovery.site_id))
+                    egress = (await registry_io(self.service.repository.get_egress, identity.egress_id))
+                    fingerprint = (await registry_io(capability_fingerprint,
                         self.service.repository, scope, identity, egress
-                    )
+                    ))
                     configuration_changed = fingerprint != recovery.fingerprint
                     if configuration_changed:
                         # New config requires a new probe, not acceptance of an old observation.
@@ -545,7 +546,7 @@ class BrowserRecoveryCoordinator:
                                 "next_probe_at": utc_now(),
                             }
                         )
-                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                        (await registry_io(self.store.save_recovery, recovery, expected_generation=claimed.generation))
                     context = next(
                         (c for c in recovery.affected_contexts if c["purpose"] == "CRAWLER"),
                         recovery.affected_contexts[0] if recovery.affected_contexts else None,
@@ -556,14 +557,14 @@ class BrowserRecoveryCoordinator:
                     solver_pending = await self.datadome_solver.tick(
                         recovery, scope, identity, egress
                     )
-                    latest=self.store.get_recovery(identity_id)
+                    latest=(await registry_io(self.store.get_recovery, identity_id))
                     if latest and latest.generation == recovery.generation:
                         recovery=latest  # Preserve durable scene actions saved by the solver.
                     if (
                         solver_pending
                         or recovery.recovery_id in self.datadome_solver.provider_ticks
                     ):
-                        self.service.failover.schedule(scope, SitePurpose(context["purpose"]))
+                        (await self.service.failover.schedule_async(scope, SitePurpose(context["purpose"])))
                         recovery = recovery.model_copy(update={"next_probe_at": utc_now()})
                         delay=5
                         preparation=recovery.scene_preparation
@@ -584,7 +585,7 @@ class BrowserRecoveryCoordinator:
                         recovery = recovery.model_copy(
                             update={"affected_contexts": [context, *recovery.affected_contexts[1:]]}
                         )
-                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                        (await registry_io(self.store.save_recovery, recovery, expected_generation=claimed.generation))
                     capture = None
                     if recovery.page_status != "LOST" and not configuration_changed:
                         try:
@@ -595,24 +596,24 @@ class BrowserRecoveryCoordinator:
                         except Exception as exc:
                             reason = str(exc)
                             if reason == "original_challenge_target_lost":
-                                target = self.store.get_target(
+                                target = (await registry_io(self.store.get_target,
                                     recovery.original_allocation_id or ""
-                                )
+                                ))
                                 if target and target.state not in {"LOST", "CLOSED"}:
-                                    self.store.save_target(
+                                    (await registry_io(self.store.save_target,
                                         target.model_copy(
                                             update={"state": "LOST", "updated_at": utc_now()}
                                         )
-                                    )
-                                task = self.store.current_challenge(identity_id)
+                                    ))
+                                task = (await registry_io(self.store.current_challenge, identity_id))
                                 if (
                                     task
                                     and task.allocation_id == recovery.original_allocation_id
                                     and task.state != "TARGET_LOST"
                                 ):
-                                    self.store.save_challenge(
+                                    (await registry_io(self.store.save_challenge,
                                         task.model_copy(update={"state": "TARGET_LOST"})
-                                    )
+                                    ))
                                 recovery = recovery.model_copy(
                                     update={
                                         "page_status": "LOST",
@@ -622,7 +623,7 @@ class BrowserRecoveryCoordinator:
                                         ),
                                     }
                                 )
-                                self.event(recovery, "TARGET_LOST", reason="exact_original_absent")
+                                (await registry_io(self.event, recovery, "TARGET_LOST", reason="exact_original_absent"))
                             else:
                                 recovery = recovery.model_copy(
                                     update={
@@ -649,14 +650,14 @@ class BrowserRecoveryCoordinator:
                                 "manual_review_at": recovery.manual_review_at or utc_now(),
                             }
                         )
-                        self.event(
+                        (await registry_io(self.event,
                             recovery,
                             "CLASSIFICATION_CHANGED",
                             kind=recovery.assessment.get("kind", "UNKNOWN"),
                             handling_mode="HUMAN",
                             reason=recovery.manual_review_reason,
-                        )
-                        self.store.save_recovery(recovery, expected_generation=recovery.generation)
+                        ))
+                        (await registry_io(self.store.save_recovery, recovery, expected_generation=recovery.generation))
                     if capture is not None:
                         recovery = recovery.model_copy(
                             update={
@@ -666,7 +667,7 @@ class BrowserRecoveryCoordinator:
                                 "page_checked_at": utc_now(),
                             }
                         )
-                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                        (await registry_io(self.store.save_recovery, recovery, expected_generation=claimed.generation))
                         report = verify_capture(
                             self.service, scope, context, capture, observed=True
                         )
@@ -678,7 +679,7 @@ class BrowserRecoveryCoordinator:
                                 recovery, report, context, "original_document", identity
                             )
                             return
-                        recovery = self._classify(recovery, capture, spec, report)
+                        recovery = (await registry_io(self._classify, recovery, capture, spec, report))
                         if confirmation_delay:
                             await self._defer(
                                 recovery, "solver_original_confirmation", delay=confirmation_delay
@@ -693,7 +694,7 @@ class BrowserRecoveryCoordinator:
                             return
                     open_writer = any(
                         s.identity_id == identity_id and s.state == "OPEN"
-                        for s in self.store.list_sessions()
+                        for s in (await registry_io(self.store.list_sessions))
                     )
                     age = (utc_now() - recovery.opened_at).total_seconds()
                     if (
@@ -702,9 +703,9 @@ class BrowserRecoveryCoordinator:
                         and recovery.next_probe_at <= utc_now()
                     ):
                         if deadline - time.monotonic() < 20:
-                            self.event(
+                            (await registry_io(self.event,
                                 recovery, "PROBE_DEFERRED", reason="BUDGET", request_sent=False
-                            )
+                            ))
                             await self._defer(recovery, "probe_budget_unavailable", delay=60)
                             return
                         safety = self.service.runtime.browser_pool._safety.read()
@@ -715,7 +716,7 @@ class BrowserRecoveryCoordinator:
                         self.datadome_solver.bind_confirmation_probe(recovery, probe)
                         stage = "QUEUE"
                         stage_started = time.monotonic()
-                        self.event(
+                        (await registry_io(self.event,
                             recovery,
                             "PROBE_STARTED",
                             probe_id=probe,
@@ -726,7 +727,7 @@ class BrowserRecoveryCoordinator:
                                 0, int((utc_now() - recovery.next_due_at).total_seconds() * 1000)
                             ),
                             resources=resource_observation(safety),
-                        )
+                        ))
                         recovery = recovery.model_copy(
                             update={
                                 "attempt_count": recovery.attempt_count + 1,
@@ -737,7 +738,7 @@ class BrowserRecoveryCoordinator:
                                 "probe_finished_at": None,
                             }
                         )
-                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                        (await registry_io(self.store.save_recovery, recovery, expected_generation=claimed.generation))
                         parameters = {
                             **context.get("recipe_parameters", {}),
                             "_retain_recovery_probe": True,
@@ -802,9 +803,9 @@ class BrowserRecoveryCoordinator:
                             stage = "CONTROL"
                             stage_started = time.monotonic()
                             recovery = recovery.model_copy(update={"probe_stage": stage})
-                            self.store.save_recovery(
+                            (await registry_io(self.store.save_recovery,
                                 recovery, expected_generation=claimed.generation
-                            )
+                            ))
                             await stack.enter_async_context(
                                 self.service.profile_use.recovery(
                                     identity,
@@ -827,9 +828,9 @@ class BrowserRecoveryCoordinator:
                             stage, request_sent = "SITE", "unknown"
                             stage_started = time.monotonic()
                             recovery = recovery.model_copy(update={"probe_stage": stage})
-                            self.store.save_recovery(
+                            (await registry_io(self.store.save_recovery,
                                 recovery, expected_generation=claimed.generation
-                            )
+                            ))
                             capture = await self.service.runtime.probe_recovery(
                                 request, identity, egress
                             )
@@ -839,7 +840,7 @@ class BrowserRecoveryCoordinator:
                             probe_timing["site_ms"] = int((time.monotonic() - stage_started) * 1000)
                             stage = "PARSER"
                             probe_result = "STILL_BLOCKED"
-                        latest = self.store.get_recovery(identity_id)
+                        latest = (await registry_io(self.store.get_recovery, identity_id))
                         if not latest or latest.generation != recovery.generation:
                             return
                         # A lost original may have been replaced atomically by this probe.
@@ -850,7 +851,7 @@ class BrowserRecoveryCoordinator:
                                 else latest.last_real_probe_at
                             }
                         )
-                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                        (await registry_io(self.store.save_recovery, recovery, expected_generation=claimed.generation))
                         if (
                             discovery
                             and verify_capture(
@@ -894,7 +895,7 @@ class BrowserRecoveryCoordinator:
                                         "next_probe_at": utc_now() + timedelta(seconds=60),
                                     }
                                 )
-                                self.event(recovery, "BODY_VERIFICATION_URL_SELECTED")
+                                (await registry_io(self.event, recovery, "BODY_VERIFICATION_URL_SELECTED"))
                                 await self._defer(
                                     recovery, "body_article_selected_pending_proof", delay=60
                                 )
@@ -923,7 +924,7 @@ class BrowserRecoveryCoordinator:
                             probe_result = "BUSINESS_READY"
                             await self._commit(recovery, report, context, "fresh_probe", identity)
                             return
-                        recovery = self._classify(recovery, capture, spec, report)
+                        recovery = (await registry_io(self._classify, recovery, capture, spec, report))
                         delay = (
                             600
                             if recovery.handling_mode == "HUMAN"
@@ -932,7 +933,7 @@ class BrowserRecoveryCoordinator:
                         recovery = recovery.model_copy(
                             update={"next_probe_at": utc_now() + timedelta(seconds=delay)}
                         )
-                    original = self.store.get_target(recovery.original_allocation_id or "")
+                    original = (await registry_io(self.store.get_target, recovery.original_allocation_id or ""))
                     page_age = (
                         (utc_now() - original.created_at).total_seconds() if original else age
                     )
@@ -940,7 +941,7 @@ class BrowserRecoveryCoordinator:
                         await self._close_page(recovery, identity)
                         recovery = recovery.model_copy(update={"page_status": "LOST"})
                     if age >= spec.challenge.automatic_wait_seconds:
-                        self.service.failover.schedule(scope, SitePurpose(context["purpose"]))
+                        (await self.service.failover.schedule_async(scope, SitePurpose(context["purpose"])))
                     await self._defer(
                         recovery,
                         "user_maintenance"
@@ -993,7 +994,7 @@ class BrowserRecoveryCoordinator:
                     }.get(stage)
                     if timing_key:
                         probe_timing[timing_key] = int((time.monotonic() - stage_started) * 1000)
-                    self.event(
+                    (await registry_io(self.event,
                         recovery,
                         "PROBE_FINISHED",
                         probe_id=probe,
@@ -1004,10 +1005,10 @@ class BrowserRecoveryCoordinator:
                         http_status=capture.status_code if capture else None,
                         retained=bool(capture and capture.recovery_id),
                         total_ms=int((time.monotonic() - started) * 1000),
-                    )
-                    current = self.store.get_recovery(identity_id)
+                    ))
+                    current = (await registry_io(self.store.get_recovery, identity_id))
                     if current and current.generation == claimed.generation:
-                        self.store.save_recovery(
+                        (await registry_io(self.store.save_recovery,
                             current.model_copy(
                                 update={
                                     "probe_finished_at": utc_now(),
@@ -1015,7 +1016,7 @@ class BrowserRecoveryCoordinator:
                                 }
                             ),
                             expected_generation=claimed.generation,
-                        )
+                        ))
 
     def _classify(self, recovery, capture, spec, report):
         from .challenge_detection import VerificationAssessment
@@ -1067,7 +1068,7 @@ class BrowserRecoveryCoordinator:
         return self.store.save_recovery(value, expected_generation=recovery.generation)
 
     async def _defer(self, recovery, reason, *, delay):
-        current = self.store.get_recovery(recovery.identity_id)
+        current = (await registry_io(self.store.get_recovery, recovery.identity_id))
         if not current or current.generation != recovery.generation or current.phase == "RESOLVED":
             return
         value = recovery.model_copy(
@@ -1080,11 +1081,11 @@ class BrowserRecoveryCoordinator:
                 "updated_at": utc_now(),
             }
         )
-        self.store.save_recovery(value, expected_generation=recovery.generation)
+        (await registry_io(self.store.save_recovery, value, expected_generation=recovery.generation))
 
     async def _commit(self, recovery, report, context, resolved_by, identity):
-        spec = self.service.repository.get_strategy(recovery.site_id)
-        scope = self.store.maintenance_scope(recovery.scope_id)
+        spec = (await registry_io(self.service.repository.get_strategy, recovery.site_id))
+        scope = (await registry_io(self.store.maintenance_scope, recovery.scope_id))
         if (
             recovery.site_id == "reuters"
             and spec.auth.auto_login
@@ -1093,21 +1094,21 @@ class BrowserRecoveryCoordinator:
         ):
             credential_id = (
                 identity.credential_ref
-                or self.service.repository.get_profile(identity.profile_id).credential_ref
+                or (await registry_io(self.service.repository.get_profile, identity.profile_id)).credential_ref
             )
             credentials = getattr(self.service, "credential_store", None)
             if (
                 credential_id
                 and credentials
                 and credentials.status(credential_id)["available"]
-                and self.store.claim_auto_login(credential_id)
+                and (await registry_io(self.store.claim_auto_login, credential_id))
             ):
                 async with self.service.profile_use.recovery(
                     identity, recovery.recovery_id, recovery.generation
                 ):
                     outcome = await self.service.runtime.auto_login_reuters(
                         identity,
-                        self.service.repository.get_egress(identity.egress_id),
+                        (await registry_io(self.service.repository.get_egress, identity.egress_id)),
                         credentials.get(credential_id),
                         AccessRequest(
                             operation_id=recovery.recovery_id,
@@ -1119,11 +1120,11 @@ class BrowserRecoveryCoordinator:
                         ),
                     )
                 status = outcome.get("status", "LOGIN_ATTEMPT_FAILED")
-                self.store.finish_auto_login(credential_id, status)
-                self.event(recovery, "AUTO_LOGIN_RESULT", result=status)
+                (await registry_io(self.store.finish_auto_login, credential_id, status))
+                (await registry_io(self.event, recovery, "AUTO_LOGIN_RESULT", result=status))
                 # Neither a submitted form nor a login label replaces business verification.
                 # Stop on CAPTCHA/MFA; a later due probe provides independent proof.
-                latest = self.store.get_recovery(identity.identity_id)
+                latest = (await registry_io(self.store.get_recovery, identity.identity_id))
                 await self._defer(
                     latest.model_copy(update={"next_probe_at": utc_now() + timedelta(seconds=60)}),
                     status,
@@ -1132,19 +1133,19 @@ class BrowserRecoveryCoordinator:
                 return
             await self._defer(recovery,'auth_credentials_or_retry_pending',delay=600)
             return
-        value = self.store.finish_recovery(
+        value = (await registry_io(self.store.finish_recovery,
             recovery, report, context=context, resolved_by=resolved_by
-        )
+        ))
         from .datadome_solver import mark_solver_outcome
 
         if resolved_by == "original_document":
-            mark_solver_outcome(
+            (await registry_io(mark_solver_outcome,
                 self.service.repository,
                 identity.identity_id,
                 "original_cleared_at",
                 recovery_id=recovery.recovery_id,
-            )
-        mark_solver_outcome(
+            ))
+        (await registry_io(mark_solver_outcome,
             self.service.repository,
             identity.identity_id,
             "business_verified_at",
@@ -1152,12 +1153,12 @@ class BrowserRecoveryCoordinator:
             purpose=context["purpose"],
             probe_id=recovery.probe_id,
             recovered_by='original_observation' if resolved_by == 'original_document' else 'background_probe',
-        )
+        ))
         self.service.failover.reconcile(scope, SitePurpose(context["purpose"]))
         await self.service.profile_use.release_recovered(identity)
         self.service._cache.clear()
         self.service._cache_bytes = 0
-        self.event(
+        (await registry_io(self.event,
             value,
             "RECOVERY_RESOLVED" if value.phase == "RESOLVED" else "CAPABILITY_RECOVERED",
             purpose=context["purpose"],
@@ -1165,21 +1166,21 @@ class BrowserRecoveryCoordinator:
             crawler=report.crawler,
             body=report.body,
             authentication=report.authentication,
-        )
+        ))
         try:
             await self._close_page(recovery, identity)
-            target = self.store.get_target(value.original_allocation_id or "")
+            target = (await registry_io(self.store.get_target, value.original_allocation_id or ""))
             if value.phase == "RESOLVED" and target and target.state not in {"CLOSED", "LOST"}:
-                self.store.save_recovery(
+                (await registry_io(self.store.save_recovery,
                     value.model_copy(update={"cleanup_pending": True}),
                     expected_generation=value.generation,
-                )
+                ))
         except Exception:
-            current = self.store.get_recovery(value.identity_id)
-            self.store.save_recovery(
+            current = (await registry_io(self.store.get_recovery, value.identity_id))
+            (await registry_io(self.store.save_recovery,
                 current.model_copy(update={"cleanup_pending": True}),
                 expected_generation=current.generation,
-            )
+            ))
 
 
 def migrate_recoveries(service, *, apply=False, update_policies=True):

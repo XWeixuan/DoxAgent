@@ -263,7 +263,7 @@ class FailoverCoordinator:
                     (await registry_io(self.service.repository.get_runtime, before.runtime_key)).active_combination_id
                     == identity_id
                 ):
-                    mark_solver_outcome(self.service.repository, identity_id, "route_activated_at")
+                    (await registry_io(mark_solver_outcome, self.service.repository, identity_id, "route_activated_at"))
                 return {
                     "ready": True,
                     "identity_id": identity_id,

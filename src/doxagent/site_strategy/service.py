@@ -1423,7 +1423,7 @@ class SiteStrategyService:
                 result, shared = cached[2], True
             else:
                 if task is None:
-                    task = asyncio.create_task(self._execute_idempotent(request))
+                    task = asyncio.create_task(self._acquire_shared_capture(request))
                     self._shared_inflight[key] = task
                     task.add_done_callback(lambda t, k=key: self._shared_inflight.pop(k, None))
                 else:
@@ -1431,12 +1431,6 @@ class SiteStrategyService:
                 result = None
         if result is None:
             result = await asyncio.shield(task)
-            if result.disposition is AccessDisposition.SUCCESS:
-                result = result.model_copy(
-                    update={"capture_id": result.capture_id or result.request_id,
-                            "capture_acquired_at": result.capture_acquired_at or utc_now()}
-                )
-                await self._put_cache(result, cache_key=(await registry_io(self._shared_key, request)), ttl=15)
         if shared:
             (await self._append_diagnostic(
                 AccessEvent(
@@ -1461,6 +1455,17 @@ class SiteStrategyService:
                 "capture_age_ms": max(0, int((utc_now() - result.capture_acquired_at).total_seconds()*1000)) if result.capture_acquired_at else None,
             }
         )
+
+    async def _acquire_shared_capture(self,request):
+        # The shared flight owns publication too: removing it before the async
+        # configuration lookup/cache commit creates a duplicate-request gap.
+        result=await self._execute_idempotent(request)
+        if result.disposition is AccessDisposition.SUCCESS:
+            result=result.model_copy(update={'capture_id':result.capture_id or result.request_id,
+                'capture_acquired_at':result.capture_acquired_at or utc_now()})
+            key=await registry_io(self._shared_key,request)
+            await self._put_cache(result,cache_key=key,ttl=15)
+        return result
 
     async def _execute_idempotent(self, request: AccessRequest) -> AccessResult:
         if self.repository.storage.diagnostics()["unavailable"]:
@@ -2362,12 +2367,12 @@ class SiteStrategyService:
                     )
                 from .datadome_solver import mark_solver_outcome
 
-                mark_solver_outcome(
+                (await registry_io(mark_solver_outcome,
                     self.repository,
                     identity.identity_id,
                     "natural_success_at",
                     purpose=request.purpose.value,
-                )
+                ))
                 identity_state = (await registry_io(self.repository.get_identity_runtime, identity.identity_id))
                 windows={k:dict(v) for k,v in identity_state.capability_windows.items()}
                 window=windows.get(request.purpose.value)
@@ -2553,7 +2558,7 @@ class SiteStrategyService:
                 from .failure_shapes import record_failure_shape
 
                 try:
-                    record_failure_shape(
+                    (await registry_io(record_failure_shape,
                         self.repository,
                         request,
                         resolved,
@@ -2561,7 +2566,7 @@ class SiteStrategyService:
                         response,
                         category,
                         reason,
-                    )
+                    ))
                 except (ValueError, sqlite3.Error):
                     pass  # Optional evidence cannot override the actual access outcome.
             if category is not None and resolved.match_evidence.get("scope_id"):
@@ -3466,14 +3471,14 @@ class SiteStrategyService:
             from .datadome_solver import mark_solver_outcome
 
             if report.crawler == "READY" or report.body in {"FULL", "SHORT_FULL"}:
-                mark_solver_outcome(
+                (await registry_io(mark_solver_outcome,
                     self.repository,
                     session.identity_id,
                     "business_verified_at",
                     recovery_id=current.recovery_id,
                     purpose="CRAWLER" if report.crawler == "READY" else "BODY",
                     recovered_by='manual',
-                )
+                ))
             jobs = self.recovery.datadome_solver.jobs(current.recovery_id)
             if jobs:
                 report.solver_state = jobs[-1].get("solver_verification",jobs[-1].get("verification_state", "INDETERMINATE"))
