@@ -1,0 +1,15 @@
+{
+  "commit": "6de0ac32734fca5291ef36eefe924d33cfa00a89",
+  "components": {
+    "v2-executor": {
+      "before": "sha256:6740d049b937b358f537dd05421128fff5e0b3f350c293a0f0ef77c0636fe424",
+      "image": "sha256:971e3013d62f72db17085e5b8d34f352e26fe9e7b9ca1390709e44b26061e215"
+    }
+  },
+  "files": {
+    "trade_execution/recovery.py": "5f2788988b94065959f00755c00af8fc721816636a8a59ed2fad7bf5b48c9afd",
+    "trade_execution/executor.py": "5d56fcd4d59e41063851c84220359028d6c95892ada8a164d856d537f9a7407a",
+    "trade_execution/worker.py": "e0f726187bac6362f4d7b1e110527f37065d04a969117b3954956f5238d8097f",
+    "trade_execution/repository.py": "2d4ee413a766f45272d6f5d6556a08421e9fd7723305b4965894ef22d6840d13"
+  }
+}

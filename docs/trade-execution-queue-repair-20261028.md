@@ -26,4 +26,11 @@
 
 ## 发布验收
 
-待补实际提交、镜像、运行源码哈希、Runtime任务/仓位/游标/连接、运行日志及资源快照。无在途交易时不人为新开PAPER订单制造生产验收成交；故障路径由离线回归验证。
+- 代码提交：`6de0ac32734fca5291ef36eefe924d33cfa00a89`，已推送origin main，远端`/home/ubuntu/doxagent`已fast-forward；保留远端已有Compose修改。
+- 仅更新`v2-executor`。旧镜像`6740d049…`；新镜像`sha256:971e3013d62f72db17085e5b8d34f352e26fe9e7b9ca1390709e44b26061e215`。发布清单保留前一镜像与Compose回退状态。
+- 北京时间**03:50:50**启动，至**03:51:52**二次核验running、重启0。容器内四个模块源码SHA-256逐一匹配提交及manifest；真实基镜像无网络导入检查通过。
+- 两个配置revision均`CONNECTED`；账户恢复状态已清空；事件head=cursor=**31618**、事件缺口0。两轮业务健康采样持续更新，无逾期退出或旧ENTRY。当前未完成jobs=0、自有非零lots=0、未决attempts=0。
+- **03:51:23**独立只读IBKR客户端`reqPositions`：完整快照，SNOW=0、无其他非零仓位，0下单。指定COHR仍`DONE / FAILED / USER_ABANDONED_STALE_INTENT`，SNOW仍`DONE / EXIT_FILLED`，没有复活旧意图。
+- 启动后约62秒日志无异常输出。资源单次采样约**52.69 MiB、7 PIDs**；该短窗口不能证明整日负载或长期稳定性。当前无在途交易，未人为新开PAPER订单制造生产验收成交；故障路径由上述离线回归验证。
+
+验收证据：`manifest.json`、`release.json`、`postdeploy_first.json`、`postdeploy_final.json`、`broker_positions_after.json`、`postdeploy_logs.txt`、`resource_after.json`。结论是本次调度故障传播路径已修复并部署；外部Runtime若持续占有SQLite物理写锁，真实订单落账仍需等待锁释放，不能声称所有写锁来源已消失。
