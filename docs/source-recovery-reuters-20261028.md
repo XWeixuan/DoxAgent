@@ -38,3 +38,30 @@
 Investing primary 的旧业务页没有持久所有权记录（0C06E304…），另一个空白页也不可读；不把这些页当已登记 Challenge 或擅自清除。一次控制器 detach + 同页刷新 ACK 后，两个页仍不可读。对该身份先通过受限管理 API 预约 Profile 为 MAINTENANCE、排空在途、断开 Python/Node 控制器，核实没有 LOGIN/CHALLENGE/RECOVERY 活页，再执行一次正常 `:drain`。Chrome正常SIGTERM退出，未强杀、清理Cookie或重建Supervisor。随后撤销本轮操作预约，交给自然轮询使用原Profile重新启动；是否业务恢复仍需后续回执。
 
 同时修正容器PID容量与合法身份并发不匹配：Supervisor允许最多16个External身份，原2304 task/thread限额低于16个Chrome的常见线程总量；Site Access还同时承载控制Worker与最多8个Managed Chrome，原1024也不足。实际已观察 pids.events max282及OCI spawn EAGAIN，且清理活页后旧Chrome仍可能留在不可读状态。保留内存限制，分别将PID上限调整为4096/2048；使用Docker live update生效，不为此重建Supervisor或其他身份。Compose保留相同值供后续正常发布。此举与遗留业务页清理一起降低反复线程创建失败风险，不以提高限额替代页面收尾或内存治理；实际每个来源的业务与资源增量继续独立验收。
+
+## 收尾验收与未完成分支
+
+按用户要求尽快收尾，不新增长时间监测或制造验证码。最终运行源码为 `30a2a184`，配置为 `b548b658`；随后提交的本文验收记录不需要再构建镜像。Site Access、Collector、Content Enrichment 已通过标准窄发布更新，12个相关文件的Git blob与实际容器SHA256全部匹配；Supervisor仍为 `d00bf01c2738…`。仅Investing主身份正常退出并使用原Profile启动为新instance `1b80d5b3557d4fe4b43ec34eefb689bb`，Reuters主备instance均保持。Collector原有host-gateway修改保留，没有纳入本轮提交；其他会话的本地改动同样保留。
+
+核心恢复/solver/维护/适配回归183通过；最终新增人工隔离等覆盖批次50通过（与前批有重叠，不相加）。初始整合91通过、1条件跳过。详细脱敏证据在 `eval/source_recovery_20261028/`。
+
+最终发布后的完整短窗为 **UTC2026-10-27 18:44:38–18:53:45**（北京时间10-28 02:44:38–02:53:45），`window-final-first.json` 不混充一小时或一天：
+
+|来源|正式采集回执|窗口结束时必需单元|说明|
+|---|---|---|---|
+|Reuters|218 CAPTURED、1次site_queue_timeout|23成功、1失败|全部查询单元分别记录；不是218篇新增新闻，也不是零延期|
+|Investing|68 CAPTURED、13次失败/延期|9 ticker均成功|前段包含旧Chrome退出及恢复过程，不称全窗无失败|
+|TrendForce News|45 CAPTURED|5 ticker均成功|共享抓取回执按订阅目标计数，不等同45次独立物理HTTP|
+|CTEE|18 CAPTURED|2 ticker均成功|已不再停于零请求游标|
+|Yahoo|329 CAPTURED|18单元均成功|含9个RSS HEAD及9个浏览器SUPPLEMENT_HEAD|
+|AviationWeek Rocket Lab|7 CAPTURED、2次失败|1单元成功|固定代理生效；与RSS分别维护|
+|AviationWeek RSS|9 CAPTURED|1单元成功|正文付费权益另列|
+|IBKR|81 CAPTURED|9 ticker均成功|另一会话修复host-gateway，本轮保留并验收|
+
+随后针对当前失败单元只读复核仅见 InvestorsHub 一次site_queue_timeout，最近成功为18:47:40；之前发现的 Newswire、TheFly、Army、Calcalist、DoD、能源/技术RSS等均存在新的成功回执，不能把历史失败计数或一次endpoint backoff当作仍然永久失效。偶发网络/预算延期仍保留真实失败，不抹成绿色，也不对已恢复端点无证据换路由。
+
+独立正文验收（不写假业务回执、不publish）：实际Bus文章经正式 `body_v2.2` 抽取器，Reuters《Constellation gets conditional $5 billion US DOE loan commitment…》HTTP200/FULL/1560字符/约5.1秒；Investing《Oracle, Avago among market cap stock movers on Tuesday》HTTP200/FULL/1946字符/约6.4秒。两条是受控canary，不能代替生产正式BODY成功率或全天延迟统计。AviationWeek两篇抽样付费文章均明确PARTIAL/subscription_required，需要订阅权限才能取得其付费正文。
+
+Reuters备用另执行一次真实注册搜索，确认由 `reuters-backup` 原instance返回200/SUCCESS、无共享capture复用、rows=0；空结果仅证明该次搜索合同，不证明所有关键词召回。付费配置确认为enabled、主备均有绑定、daily_tasks=20。**本轮没有新paid task，也没有真实RETRY→slider→provider ready→应用→业务恢复的完整实证，因此这条端到端能力仍未验收，不能声称已打通。** 没有主动制造挑战、循环购买或将普通刷新恢复归因2Captcha。
+
+**仍需后续处理的备用风险**：Investing备用 `investing-backup` 保留的旧原页/Chrome仍不可读，一次新自动刷新ACK后仍有CDP attach失败，未冒充已可接替；主身份9 ticker已恢复。本轮未为该备用丢弃人工原页或重建Chrome。Reuters本窗无新challenge，但短窗不能证明长期稳定；后续真实RETRY发生时，仍应分别核对原生输入回执、paid任务、费用、Cookie作用域、原页通关、自然CRAWLER与FULL以及复发，不用单个200/APPLIED替代结论。
