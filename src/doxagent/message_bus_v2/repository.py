@@ -321,6 +321,8 @@ class MessageBusV2Repository:
             connection.execute('CREATE TABLE IF NOT EXISTS collection_acceptances '
                                '(capture_id TEXT PRIMARY KEY,accepted_at TEXT NOT NULL)')
             connection.executescript(collection_schema)
+            from .monitoring_terms import migrate as migrate_terms
+            migrate_terms(connection)
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS ir_endpoint_states "
                 "(id TEXT PRIMARY KEY, binding_id TEXT NOT NULL, endpoint_id TEXT NOT NULL, "
