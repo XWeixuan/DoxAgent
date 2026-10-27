@@ -302,3 +302,27 @@ async def test_shared_capture_bridge_creates_one_article_body_job_and_frozen_tar
             assert db.execute('SELECT count(*) FROM distribution_articles').fetchone()[0]==1
             assert db.execute('SELECT count(*) FROM distribution_deliveries').fetchone()[0]==1
     finally:await intake.close()
+
+
+async def test_collector_passes_real_due_and_demand_through_site_client(tmp_path):
+    import httpx,json
+    from tests.test_site_strategy_client import _client_with_transport,_access_request
+    repo,bus,worker,adapter,store=setup_plane(tmp_path)
+    wire=[]
+    def respond(request):
+        value=json.loads(request.read());wire.append(value)
+        return httpx.Response(200,json={'request_id':value['request_id'],'operation_id':value['operation_id'],
+            'disposition':'SUCCESS','site_id':'trendforce','runtime_key':'trendforce','strategy_revision':1})
+    client=await _client_with_transport(httpx.MockTransport(respond))
+    async def poll(context):
+        await client.execute(_access_request())
+        return PollResult()
+    adapter.poll=poll
+    try:
+        await worker.refresh(seeds=True)
+        await worker.acquire(*next(iter(worker.desired.values())))
+        assert len(wire)==1
+        assert wire[0]['recipe_parameters']['_poll_due_at']
+        assert wire[0]['recipe_parameters']['_poll_rate']>0
+        assert wire[0]['work_class']=='foreground'
+    finally:await client.close()

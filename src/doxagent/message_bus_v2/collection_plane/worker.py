@@ -324,6 +324,7 @@ class Collector:
         due = epoch + timedelta(
             seconds=max(0, int((now - epoch).total_seconds() // period)) * period
         )
+        DEMAND.get()['due_at']=due.isoformat()
         run_id = new_id("collect")
         pages = []
         seen = set()
@@ -469,10 +470,11 @@ class Collector:
         except Exception as exc:
             reason = type(exc).__name__
             log.warning(
-                "collector request failed source=%s unit=%s reason=%s",
+                "collector request failed source=%s unit=%s reason=%s detail=%s",
                 source.source_id,
                 unit,
                 reason,
+                str(exc),
             )
         finally:
             finished = utc_now()
