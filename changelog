@@ -2289,3 +2289,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 采集相位实测修复：逐源时点对账发现全部单元同秒启动，原因是refresh计算相位误用上一循环遗留key，所有任务hash相同。改为实际物理unit key；phase版本一次迁移只调整时钟并保留checkpoint/基线，后续refresh与重启保持稳定，不重复抖动。补双ticker分相位、稳定刷新及游标保留回归。
 
 2026-10-28 BODY实测退出修复：Site结果outbox确认SQLITE_BUSY经异步任务result上抛，导致整个正文进程退出；回执交付边界恢复瞬时写竞争，保留pending及Site execution幂等重放。已确认回执按主键删除，正文/任务/Site事实仍保留，不再从BODY热路径扫描七天CONFIRMED历史（实测占写事务11秒）；列表只读不占writer。补确认竞争不退出、队列重放和确认后零残留回归。
+
+2026-10-28 结构修复生产验收记录：正式组件已发布，56分40.56秒真实窗口包含失败/重启；30秒三来源27绑定短测结束并全部CAS恢复。完整新鲜周期58.07%，错峰后84.38%；错峰后11个首见正文key中10个FULL标签、10个可消费key中9个<=10秒，仍不作为全量/长期达标。API健康、Read追平，最新BODY实例无重启；Yahoo/Reuters/IBKR等能力和容量缺口保留。详见message-pipeline-structural-redesign-implementation-and-production-test-20261027.md及逐源汇总。
