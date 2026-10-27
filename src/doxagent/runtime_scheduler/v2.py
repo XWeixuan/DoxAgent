@@ -18,6 +18,14 @@ from .service import UnifiedRuntimeSchedulerService
 
 
 class V2Scheduler(UnifiedRuntimeSchedulerService):
+    def revision_usable(self, revision):
+        state = self.repository.get_state(revision["ticker"])
+        return bool(
+            state
+            and state.metadata.get("activation_revision_id") == revision["revision_id"]
+            and str(state.status) in {"running", "degraded"}
+        )
+
     def _recover_existing_once(self):
         from datetime import UTC, datetime
 
@@ -144,14 +152,6 @@ def main():
         from doxagent.ticker_initialization.consumers import consumer_heartbeat
         from doxagent.ticker_initialization.repository import InitializationRepository
 
-        def usable(revision):
-            state = scheduler.repository.get_state(revision["ticker"])
-            return bool(
-                state
-                and state.metadata.get("activation_revision_id") == revision["revision_id"]
-                and str(state.status) in {"RUNNING", "DEGRADED"}
-            )
-
         scheduler._lifetime_heartbeat = True
         try:
             with consumer_heartbeat(
@@ -159,7 +159,7 @@ def main():
                     settings.ticker_initialization_control_path, initialize=False
                 ),
                 "runtime",
-                usable,
+                scheduler.revision_usable,
             ):
                 while not stop.is_set():
                     scheduler.run_due_once(event_limit=args.limit, include_detail=False)

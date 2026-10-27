@@ -189,9 +189,9 @@ class WorkerJobManager:
             return existing.model_copy(deep=True)
         if self._closed or len(await read_io(self.store.queued)) >= self.queue_high_watermark:
             raise QueueHighWatermark("QUEUE_STORAGE_HIGH_WATERMARK")
-        self.thread_lifecycle.validate_run(request)
+        await read_io(self.thread_lifecycle.validate_run, request)
         if self.session_retention is not None:
-            self.session_retention.validate_submit(request)
+            await read_io(self.session_retention.validate_submit, request)
             if (
                 self._workspaces.root / request.run_id / "audit" / "retained-assets.json"
             ).is_file():

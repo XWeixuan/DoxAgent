@@ -20,11 +20,15 @@ def startup_scope(*, key, priority=0, deadline=None, progress=None):
         _scope.reset(token)
 
 
-def progress(stage, **values):
+async def progress(stage, **values):
     scope = _scope.get() or {}
     callback = scope.get("progress")
     if callback:
-        callback(stage, **values)
+        import inspect
+
+        result = callback(stage, **values)
+        if inspect.isawaitable(result):
+            await result
 
 
 def remaining(limit):
@@ -154,7 +158,7 @@ class StartupAdmission:
             if callable(rank)
             else lambda: priority if priority is not None else scope.get("priority", 0)
         )
-        progress("WAIT_BOOT_SLOT")
+        await progress("WAIT_BOOT_SLOT")
         async with self.cold.acquire(
             rank,
             lambda: (

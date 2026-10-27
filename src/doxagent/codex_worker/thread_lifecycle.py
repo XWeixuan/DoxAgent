@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict
 
+from doxagent.control_io import read_io, write_io
 from doxagent.w3_timing import file_trace, observed, span
 
 from .cleanup import await_owned
@@ -319,6 +320,21 @@ class WorkerThreadLifecycle:
             )
 
     async def prepare(self, request):
+        value, legacy, recover = await write_io(
+            self.jobs.store.path, self._accept_prepare, request, retry=True
+        )
+        key = request.operation_key
+        if (
+            value["status"] not in {"COMPLETED", "FAILED"}
+            and key not in self.preparations
+            and float(value.get("next_retry_at") or 0) <= time.time()
+        ):
+            task = asyncio.create_task(self._prepare_operation(request, legacy, recover))
+            self.preparations[key] = task
+            task.add_done_callback(lambda _: self.preparations.pop(key, None))
+        return value
+
+    def _accept_prepare(self, request):
         from datetime import UTC, datetime
 
         raw = request.model_dump(mode="json")
@@ -352,15 +368,18 @@ class WorkerThreadLifecycle:
                 (key, canonical, datetime.now(UTC).isoformat(), datetime.now(UTC).isoformat()),
             )
         value = self.operation(key)
-        if (
-            value["status"] not in {"COMPLETED", "FAILED"}
-            and key not in self.preparations
-            and float(value.get("next_retry_at") or 0) <= time.time()
-        ):
-            task = asyncio.create_task(self._prepare_operation(request, legacy, bool(old)))
-            self.preparations[key] = task
-            task.add_done_callback(lambda _: self.preparations.pop(key, None))
-        return value
+        if request.source_case_id is not None and not value.get("prepare_deadline_at"):
+            accepted = (
+                datetime.fromisoformat(value["created_at"]).timestamp()
+                if value.get("created_at")
+                else time.time()
+            )
+            self._operation_update(
+                key,
+                prepare_deadline_at=str(accepted + getattr(self.jobs, "w3_prepare_timeout", 180)),
+            )
+            value = self.operation(key)
+        return value, legacy, bool(old)
 
     async def _prepare_operation(self, request, legacy, recover):
         with file_trace(
@@ -376,14 +395,17 @@ class WorkerThreadLifecycle:
 
         key = request.operation_key
         owner = uuid4().hex
-        self._operation_update(
+        await write_io(
+            self.jobs.store.path,
+            self._operation_update,
             key,
             owner_token=owner,
             step="PREPARING",
             execution_generation=getattr(self.jobs, "generation", None),
+            retry=True,
         )
         started = time.time()
-        initial = self.operation(key)
+        initial = await read_io(self.operation, key)
         binding = {
             "deadline": initial.get("prepare_deadline_at"),
             "checked": 0.0,
@@ -396,36 +418,47 @@ class WorkerThreadLifecycle:
             accepted = datetime.fromisoformat(accepted).timestamp() if accepted else started
             binding["deadline"] = str(accepted + getattr(self.jobs, "w3_prepare_timeout", 180))
 
-        def refresh_binding():
+        async def refresh_binding():
             if binding["priority"] == 0 or time.monotonic() - binding["checked"] < 0.25:
                 return
             binding["checked"] = time.monotonic()
             if key.startswith("w3-slot-fork:"):
-                with closing(self.jobs.store.connect()) as db:
-                    row = db.execute(
-                        "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
-                        (request.record_id,),
-                    ).fetchone()
+
+                def read_slot_binding():
+                    with closing(self.jobs.store.connect()) as db:
+                        row = db.execute(
+                            "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
+                            (request.record_id,),
+                        ).fetchone()
+                    return row
+
+                row = await read_io(read_slot_binding)
                 if row and row[1]:
                     binding.update(priority=0, deadline=row[0])
 
-        def budget():
-            refresh_binding()
+        async def budget():
+            await refresh_binding()
             deadline = binding["deadline"]
             if deadline and initial.get("prepare_deadline_at") != str(deadline):
-                self._operation_update(key, owner=owner, prepare_deadline_at=str(deadline))
+                await write_io(
+                    self.jobs.store.path,
+                    self._operation_update,
+                    key,
+                    owner=owner,
+                    prepare_deadline_at=str(deadline),
+                    retry=True,
+                )
                 initial["prepare_deadline_at"] = str(deadline)
             return float(deadline) if deadline else None
 
         def priority():
-            refresh_binding()
             return binding["priority"]
 
-        def checkpoint(stage, **values):
-            current = self.operation(key)
+        async def checkpoint(stage, **values):
+            current = await read_io(self.operation, key)
             if current.get("owner_token") != owner:
                 raise asyncio.CancelledError("prepare owner replaced")
-            deadline = budget()
+            deadline = await budget()
             if deadline and time.time() >= deadline - 15:
                 raise TimeoutError("bound prepare deadline exceeded")
             update = {"step": stage}
@@ -442,26 +475,34 @@ class WorkerThreadLifecycle:
                 update["thread_id"] = values["thread_id"]
             if "startup_receipt" in values:
                 update["startup_receipt"] = json.dumps(values["startup_receipt"])
-            self._operation_update(key, owner=owner, **update)
+            await write_io(
+                self.jobs.store.path, self._operation_update, key, owner=owner, **update, retry=True
+            )
 
         async def execute():
             while not getattr(self.jobs, "_processes_recovered", True):
-                checkpoint("WAIT_PROCESS_RECOVERY")
+                await checkpoint("WAIT_PROCESS_RECOVERY")
                 await asyncio.sleep(0.05)
             if legacy:
-                with closing(self.jobs.store.connect()) as db:
-                    prior = json.loads(
-                        db.execute(
-                            "SELECT request FROM w3_thread_operations WHERE operation_key=?", (key,)
-                        ).fetchone()[0]
-                    )
+
+                def legacy_prepare():
+                    with closing(self.jobs.store.connect()) as db:
+                        prior = json.loads(
+                            db.execute(
+                                "SELECT request FROM w3_thread_operations WHERE operation_key=?",
+                                (key,),
+                            ).fetchone()[0]
+                        )
+                    return prior
+
+                prior = await read_io(legacy_prepare)
                 return (await self.fork(ThreadForkRequest.model_validate(prior)))["thread_id"]
             cwd = await asyncio.to_thread(self.workspaces.ensure_run, request.run_id)
-            current = self.operation(key)
+            current = await read_io(self.operation, key)
             if current.get("thread_id"):
                 return current["thread_id"]
             if recover and current.get("fork_dispatched_at") != "":
-                checkpoint("RECONCILING")
+                await checkpoint("RECONCILING")
                 receipt = cwd / ".w3-fork-receipt.json"
                 if receipt.is_file():
                     value = json.loads(receipt.read_text())
@@ -477,13 +518,18 @@ class WorkerThreadLifecycle:
                 found = {}
                 for fast in (True, False):
                     if not fast:
-                        if self.operation(key).get("full_query_started_at"):
+                        if (await read_io(self.operation, key)).get("full_query_started_at"):
                             raise RuntimeError(
                                 "full recovery query already attempted; "
                                 "awaiting receipt/state index"
                             )
-                        self._operation_update(
-                            key, owner=owner, full_query_started_at=str(time.time())
+                        await write_io(
+                            self.jobs.store.path,
+                            self._operation_update,
+                            key,
+                            owner=owner,
+                            full_query_started_at=str(time.time()),
+                            retry=True,
                         )
                     cursor = None
                     async with asyncio.timeout(10):
@@ -507,7 +553,14 @@ class WorkerThreadLifecycle:
                     raise ValueError("ambiguous persisted prepare")
                 if found:
                     return next(iter(found))
-                self._operation_update(key, owner=owner, fork_dispatched_at="")
+                await write_io(
+                    self.jobs.store.path,
+                    self._operation_update,
+                    key,
+                    owner=owner,
+                    fork_dispatched_at="",
+                    retry=True,
+                )
             profile = request.profile
             execution = WorkerRunRequest(
                 workflow_version="persistent_runtime_w3_v1",
@@ -535,18 +588,21 @@ class WorkerThreadLifecycle:
             if getattr(runtime, "manages_startup_capacity", False):
                 return await runtime.prepare_fork(execution, cwd, request.parent_thread_id)
             # Embedded/legacy runtimes lack stage callbacks; conservatively mark dispatch.
-            checkpoint("FORK_DISPATCHED")
+            await checkpoint("FORK_DISPATCHED")
             async with self.jobs._startup:
                 return await runtime.prepare_fork(execution, cwd, request.parent_thread_id)
 
+        timer = None
         try:
             # This task owns execution directly: cancelling it awaits capsule cleanup.
-            with startup_scope(key=key, priority=priority, deadline=budget(), progress=checkpoint):
+            with startup_scope(
+                key=key, priority=priority, deadline=await budget(), progress=checkpoint
+            ):
                 async with asyncio.timeout(None) as timer:
 
                     async def monitor():
                         while True:
-                            deadline = budget()
+                            deadline = await budget()
                             if deadline:
                                 timer.reschedule(
                                     asyncio.get_running_loop().time()
@@ -561,19 +617,25 @@ class WorkerThreadLifecycle:
                     finally:
                         watcher.cancel()
                         await asyncio.gather(watcher, return_exceptions=True)
-            if self.operation(key).get("owner_token") != owner:
+            if (await read_io(self.operation, key)).get("owner_token") != owner:
                 return
-            with closing(self.jobs.store.connect()) as db, db:
-                db.execute(
-                    "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?,'ACTIVE')",
-                    (
-                        thread_id,
-                        "PREPARED" if request.source_case_id is None else "CASE",
-                        request.parent_thread_id,
-                        request.run_id,
-                    ),
-                )
-            self._operation_update(
+
+            def register_prepared_child():
+                with closing(self.jobs.store.connect()) as db, db:
+                    db.execute(
+                        "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?,'ACTIVE')",
+                        (
+                            thread_id,
+                            "PREPARED" if request.source_case_id is None else "CASE",
+                            request.parent_thread_id,
+                            request.run_id,
+                        ),
+                    )
+
+            await write_io(self.jobs.store.path, register_prepared_child, retry=True)
+            await write_io(
+                self.jobs.store.path,
+                self._operation_update,
                 key,
                 owner=owner,
                 thread_id=thread_id,
@@ -583,10 +645,11 @@ class WorkerThreadLifecycle:
                 error_message=None,
                 last_error=None,
                 next_retry_at=None,
+                retry=True,
             )
         except BaseException as exc:
-            current = self.operation(key)
-            deadline = budget()
+            current = await read_io(self.operation, key)
+            deadline = await budget()
             terminal = (
                 isinstance(exc, ValueError)
                 or any(
@@ -599,13 +662,16 @@ class WorkerThreadLifecycle:
                     )
                 )
                 or (deadline and time.time() >= deadline - 15)
+                or (isinstance(exc, TimeoutError) and timer is not None and timer.expired())
                 or (
                     int(current.get("startup_attempts") or 0) >= 2
                     and current.get("fork_dispatched_at") == ""
                 )
                 or getattr(exc, "code", None) == "CAPSULE_CLEANUP_QUARANTINED"
             )
-            self._operation_update(
+            await write_io(
+                self.jobs.store.path,
+                self._operation_update,
                 key,
                 owner=owner,
                 status="FAILED" if terminal else "CREATING",
@@ -618,6 +684,7 @@ class WorkerThreadLifecycle:
                 else current.get("startup_receipt"),
                 error_code=getattr(exc, "code", type(exc).__name__),
                 error_message=str(exc) or type(exc).__name__,
+                retry=True,
             )
             if isinstance(exc, asyncio.CancelledError):
                 raise
@@ -657,15 +724,21 @@ class WorkerThreadLifecycle:
         task = self.preparations.get(key)
         if task is not None and not task.done():
             raise ValueError("prepare still has a live owner")
-        with closing(self.jobs.store.connect()) as db:
-            row = db.execute(
-                "SELECT request,thread_id FROM w3_thread_operations WHERE operation_key=?", (key,)
-            ).fetchone()
+
+        def retirement_operation():
+            with closing(self.jobs.store.connect()) as db:
+                row = db.execute(
+                    "SELECT request,thread_id FROM w3_thread_operations WHERE operation_key=?",
+                    (key,),
+                ).fetchone()
+            return row
+
+        row = await read_io(retirement_operation)
         if row is None:
             raise ValueError("missing retirement operation")
         request = json.loads(row[0])
         parent = request.get("parent_thread_id")
-        registered_parent = self._row(parent)
+        registered_parent = await read_io(self._row, parent)
         if (
             request.get("run_id") != run_id
             or not registered_parent
@@ -684,7 +757,7 @@ class WorkerThreadLifecycle:
         if receipt_matches and child and child != recorded["thread_id"]:
             raise ValueError("retirement receipt conflicts with the recorded child")
         child = child or (recorded["thread_id"] if receipt_matches else None)
-        registered = self._row(child) if child else None
+        registered = await read_io(self._row, child) if child else None
         if registered:
             if (
                 registered["kind"] == "TEMPLATE"
@@ -702,14 +775,18 @@ class WorkerThreadLifecycle:
             if len(matches) != 1:
                 raise ValueError("retirement unresolved; no unique child in receipt/state index")
             child = matches[0]["id"]
-        if self.active(child):
+        if await read_io(self.active, child):
             raise ValueError("retirement child has an active or queued job")
-        with closing(self.jobs.store.connect()) as db, db:
-            db.execute(
-                "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?, 'ACTIVE')",
-                (child, "CASE" if case else "PREPARED", parent, run_id),
-            )
-        registered = self._row(child)
+
+        def register_retirement_child():
+            with closing(self.jobs.store.connect()) as db, db:
+                db.execute(
+                    "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?, 'ACTIVE')",
+                    (child, "CASE" if case else "PREPARED", parent, run_id),
+                )
+
+        await write_io(self.jobs.store.path, register_retirement_child, retry=True)
+        registered = await read_io(self._row, child)
         if (
             registered["run_id"] != run_id
             or registered["parent_id"] != parent
@@ -749,8 +826,8 @@ class WorkerThreadLifecycle:
             )
 
     async def register_template(self, job_id):
-        job = self.jobs.get(job_id)
-        request = self.jobs.store.request(job_id)
+        job = await read_io(self.jobs.get, job_id)
+        request = await read_io(self.jobs.store.request, job_id)
         if (
             not job
             or job.status != "succeeded"
@@ -759,19 +836,23 @@ class WorkerThreadLifecycle:
             or (request.task_phase != "w3_template")
         ):
             raise ValueError("only a successful template initialization may register a template")
-        old = self._row(job.thread_id)
+        old = await read_io(self._row, job.thread_id)
         if old and old["kind"] != "TEMPLATE":
             raise ValueError("cannot promote a Case thread to a template")
-        with closing(self.jobs.store.connect()) as db, db:
-            db.execute(
-                "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,'TEMPLATE',NULL,?,'ACTIVE')",
-                (job.thread_id, job.run_id),
-            )
-        return self._row(job.thread_id)
+
+        def register_template_row():
+            with closing(self.jobs.store.connect()) as db, db:
+                db.execute(
+                    "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,'TEMPLATE',NULL,?,'ACTIVE')",
+                    (job.thread_id, job.run_id),
+                )
+
+        await write_io(self.jobs.store.path, register_template_row, retry=True)
+        return await read_io(self._row, job.thread_id)
 
     async def register_legacy(self, job_id):
-        job = self.jobs.get(job_id)
-        request = self.jobs.store.request(job_id)
+        job = await read_io(self.jobs.get, job_id)
+        request = await read_io(self.jobs.store.request, job_id)
         if (
             not job
             or not job.thread_id
@@ -780,15 +861,19 @@ class WorkerThreadLifecycle:
             or (str(request.node) != "persistent_runtime_w3")
         ):
             raise ValueError("legacy registration requires a recorded W3 job")
-        old = self._row(job.thread_id)
+        old = await read_io(self._row, job.thread_id)
         if old and old["kind"] == "TEMPLATE":
             raise ValueError("cannot demote a protected template")
-        with closing(self.jobs.store.connect()) as db, db:
-            db.execute(
-                "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,'LEGACY_CASE',NULL,?,'ACTIVE')",
-                (job.thread_id, job.run_id),
-            )
-        return self._row(job.thread_id)
+
+        def register_legacy_row():
+            with closing(self.jobs.store.connect()) as db, db:
+                db.execute(
+                    "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,'LEGACY_CASE',NULL,?,'ACTIVE')",
+                    (job.thread_id, job.run_id),
+                )
+
+        await write_io(self.jobs.store.path, register_legacy_row, retry=True)
+        return await read_io(self._row, job.thread_id)
 
     async def fork(self, request):
         raw = request.model_dump(mode="json") if hasattr(request, "model_dump") else dict(request)
@@ -805,28 +890,34 @@ class WorkerThreadLifecycle:
         raw = request.model_dump(mode="json") if hasattr(request, "model_dump") else dict(request)
         key = raw["idempotency_key"]
         async with self.locks.setdefault(key, asyncio.Lock()):
-            parent = self._row(raw["parent_thread_id"])
+            parent = await read_io(self._row, raw["parent_thread_id"])
             if not parent or parent["kind"] != "TEMPLATE" or parent["status"] != "ACTIVE":
                 raise ValueError("Fork requires a registered active W3 template")
-            if self.active(parent["thread_id"]):
+            if await read_io(self.active, parent["thread_id"]):
                 raise ValueError("template initialization is still active")
-            with closing(self.jobs.store.connect()) as db, db:
-                prior = db.execute(
-                    "SELECT request,thread_id FROM w3_thread_operations WHERE operation_key=?",
-                    (key,),
-                ).fetchone()
-                canonical = json.dumps(raw, sort_keys=True)
-                if prior and prior[0] != canonical:
-                    raise ValueError("Fork idempotency key reused with different parameters")
-                if prior and prior[1]:
-                    return self._row(prior[1])
-                db.execute(
-                    "INSERT OR IGNORE INTO w3_thread_operations"
-                    "(operation_key,request,thread_id,status) "
-                    "VALUES(?,?,NULL,'CREATING')",
-                    (key, canonical),
-                )
-            cwd = str(self.workspaces.ensure_run(raw["run_id"]))
+
+            def accept_fork():
+                with closing(self.jobs.store.connect()) as db, db:
+                    prior = db.execute(
+                        "SELECT request,thread_id FROM w3_thread_operations WHERE operation_key=?",
+                        (key,),
+                    ).fetchone()
+                    canonical = json.dumps(raw, sort_keys=True)
+                    if prior and prior[0] != canonical:
+                        raise ValueError("Fork idempotency key reused with different parameters")
+                    if prior and prior[1]:
+                        return prior[1]
+                    db.execute(
+                        "INSERT OR IGNORE INTO w3_thread_operations"
+                        "(operation_key,request,thread_id,status) "
+                        "VALUES(?,?,NULL,'CREATING')",
+                        (key, canonical),
+                    )
+
+            prior_thread = await write_io(self.jobs.store.path, accept_fork, retry=True)
+            if prior_thread:
+                return await read_io(self._row, prior_thread)
+            cwd = str(await read_io(self.workspaces.ensure_run, raw["run_id"]))
             listed = await self.transport.request("thread/list", {"cwd": cwd, "limit": 100})
             recovered = [
                 t
@@ -850,17 +941,21 @@ class WorkerThreadLifecycle:
                     },
                 )
                 thread = response["thread"]
-            with closing(self.jobs.store.connect()) as db, db:
-                db.execute(
-                    "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,'CASE',?,?,'ACTIVE')",
-                    (thread["id"], parent["thread_id"], raw["run_id"]),
-                )
-                db.execute(
-                    "UPDATE w3_thread_operations SET thread_id=?,status='COMPLETED' "
-                    "WHERE operation_key=?",
-                    (thread["id"], key),
-                )
-            return self._row(thread["id"])
+
+            def publish_fork():
+                with closing(self.jobs.store.connect()) as db, db:
+                    db.execute(
+                        "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,'CASE',?,?,'ACTIVE')",
+                        (thread["id"], parent["thread_id"], raw["run_id"]),
+                    )
+                    db.execute(
+                        "UPDATE w3_thread_operations SET thread_id=?,status='COMPLETED' "
+                        "WHERE operation_key=?",
+                        (thread["id"], key),
+                    )
+
+            await write_io(self.jobs.store.path, publish_fork, retry=True)
+            return await read_io(self._row, thread["id"])
 
     async def status(self, thread_id):
         root = getattr(self.jobs.store, "root", None)
@@ -873,10 +968,10 @@ class WorkerThreadLifecycle:
             return await self._status_observed(thread_id)
 
     async def _status_observed(self, thread_id):
-        row = self._row(thread_id)
+        row = await read_io(self._row, thread_id)
         if not row:
             raise KeyError(thread_id)
-        row["active"] = self.active(thread_id)
+        row["active"] = await read_io(self.active, thread_id)
         row["exists"] = row["status"] != "DELETED"
         if row["exists"]:
             try:
@@ -918,12 +1013,12 @@ class WorkerThreadLifecycle:
 
     async def _delete_observed(self, thread_id):
         async with self.locks.setdefault("delete:" + thread_id, asyncio.Lock()):
-            row = self._row(thread_id)
+            row = await read_io(self._row, thread_id)
             if not row or row["kind"] == "TEMPLATE":
                 raise ValueError("only registered W3 Case threads may be deleted")
             if row["status"] == "DELETED":
                 if row["run_id"].startswith("w3-case-"):
-                    self.workspaces.delete_w3_workspace(row["run_id"])
+                    await read_io(self.workspaces.delete_w3_workspace, row["run_id"])
                 elif row["run_id"].startswith("w3-ready-"):
                     await asyncio.to_thread(
                         self.workspaces.retire_w3_ready_workspace,
@@ -931,20 +1026,28 @@ class WorkerThreadLifecycle:
                         preserve_evidence=row["kind"] == "CASE",
                     )
                 return dict(thread_id=thread_id, status="DELETED")
-            if self.active(thread_id):
+            if await read_io(self.active, thread_id):
                 raise ValueError("cannot delete a thread with an active or queued job")
-            with closing(self.jobs.store.connect()) as db, db:
-                db.execute(
-                    "UPDATE w3_thread_registry SET status='DELETING' WHERE thread_id=?",
-                    (thread_id,),
-                )
-            state = await self.status(thread_id)
-            if state["active"]:
+
+            def mark_deleting():
                 with closing(self.jobs.store.connect()) as db, db:
                     db.execute(
-                        "UPDATE w3_thread_registry SET status='ACTIVE' WHERE thread_id=?",
+                        "UPDATE w3_thread_registry SET status='DELETING' WHERE thread_id=?",
                         (thread_id,),
                     )
+
+            await write_io(self.jobs.store.path, mark_deleting, retry=True)
+            state = await self.status(thread_id)
+            if state["active"]:
+
+                def restore_active():
+                    with closing(self.jobs.store.connect()) as db, db:
+                        db.execute(
+                            "UPDATE w3_thread_registry SET status='ACTIVE' WHERE thread_id=?",
+                            (thread_id,),
+                        )
+
+                await write_io(self.jobs.store.path, restore_active, retry=True)
                 raise ValueError("cannot delete a thread with an active or queued job")
             release = getattr(self.jobs._runtime, "release_thread", None)
             if release:
@@ -955,10 +1058,15 @@ class WorkerThreadLifecycle:
                 except Exception as exc:
                     if not self._missing(exc):
                         raise
-            with closing(self.jobs.store.connect()) as db, db:
-                db.execute(
-                    "UPDATE w3_thread_registry SET status='DELETED' WHERE thread_id=?", (thread_id,)
-                )
+
+            def mark_deleted():
+                with closing(self.jobs.store.connect()) as db, db:
+                    db.execute(
+                        "UPDATE w3_thread_registry SET status='DELETED' WHERE thread_id=?",
+                        (thread_id,),
+                    )
+
+            await write_io(self.jobs.store.path, mark_deleted, retry=True)
             if row["run_id"].startswith("w3-case-"):
                 await asyncio.to_thread(self.workspaces.delete_w3_workspace, row["run_id"])
             elif row["run_id"].startswith("w3-ready-"):

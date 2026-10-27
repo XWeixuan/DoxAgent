@@ -92,7 +92,7 @@ class Capsule:
             ),
             encoding="utf-8",
         )
-        progress("BOOTING", capsule_id=self.identity)
+        await progress("BOOTING", capsule_id=self.identity)
         self.boot_timing = dict(
             capsule_id=self.identity, pid=self.process.pid, stage="PROCESS_STARTED"
         )
@@ -102,7 +102,7 @@ class Capsule:
                     boot = await self.receive()
                     if boot.get("type") == "boot_progress":
                         self.boot_timing.update(boot)
-                        progress(
+                        await progress(
                             "BOOTING", capsule_id=self.identity, startup_receipt=self.boot_timing
                         )
                         continue
@@ -113,7 +113,7 @@ class Capsule:
                         timing=boot.get("timing"),
                         boot_slow=(boot.get("timing", {}).get("sdk_ready_ms", 0) > 30000),
                     )
-                    progress(
+                    await progress(
                         "SDK_READY", capsule_id=self.identity, startup_receipt=self.boot_timing
                     )
                     break
@@ -400,14 +400,14 @@ class CapsuleRuntime:
             capsule.boot_timeout = self.boot_timeout
             self.pool.append(capsule)
             try:
-                progress("BOOT_ATTEMPT", capsule_id=getattr(capsule, "identity", None))
+                await progress("BOOT_ATTEMPT", capsule_id=getattr(capsule, "identity", None))
                 await capsule.launch()
             except BaseException as exc:
                 await self._dispose(capsule, cold=True)
                 capsule.boot_timing = getattr(capsule, "boot_timing", None) or {}
                 capsule.boot_timing["run_command_sent"] = False
                 exc.startup_receipt = capsule.boot_timing
-                progress(
+                await progress(
                     "BOOT_FAILED",
                     capsule_id=getattr(capsule, "identity", None),
                     startup_receipt=capsule.boot_timing,
@@ -470,7 +470,7 @@ class CapsuleRuntime:
         capsule = await self._take(None)
         try:
             async with self.admission.handshake:
-                progress(
+                await progress(
                     "FORK_DISPATCHED" if parent_thread_id else "RESUMING_CHILD",
                     capsule_id=getattr(capsule, "identity", None),
                 )
@@ -485,7 +485,7 @@ class CapsuleRuntime:
                 )
                 ready = await asyncio.wait_for(capsule.receive(), remaining(self.prepare_timeout))
             capsule.thread_id = ready["thread_id"]
-            progress("CHILD_KNOWN", thread_id=capsule.thread_id)
+            await progress("CHILD_KNOWN", thread_id=capsule.thread_id)
             capsule.prepared = True
             capsule.healthy, capsule.busy = True, False
             capsule.idle_at = time.monotonic()

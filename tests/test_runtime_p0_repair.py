@@ -239,3 +239,85 @@ def test_hot_lanes_inherit_independent_lease_context():
     finally:
         _lease.reset(token)
         service._hot_executors["MU"].shutdown()
+
+
+def test_runtime_heartbeat_uses_real_status_values():
+    from doxagent.runtime_scheduler.schema import TickerRunStatus
+    from doxagent.runtime_scheduler.v2 import V2Scheduler
+
+    scheduler = V2Scheduler.__new__(V2Scheduler)
+    state = SimpleNamespace(
+        status=TickerRunStatus.RUNNING, metadata={"activation_revision_id": "r1"}
+    )
+    scheduler.repository = SimpleNamespace(get_state=lambda _: state)
+    assert scheduler.revision_usable({"ticker": "MU", "revision_id": "r1"})
+    state.status = TickerRunStatus.DEGRADED
+    assert scheduler.revision_usable({"ticker": "MU", "revision_id": "r1"})
+    assert not scheduler.revision_usable({"ticker": "MU", "revision_id": "r2"})
+
+
+@pytest.mark.asyncio
+async def test_ready_claim_sql_contention_does_not_freeze_worker_loop(tmp_path):
+    import sqlite3
+    from contextlib import closing
+
+    from doxagent.codex_worker.job_store import JobStore
+    from doxagent.codex_worker.thread_lifecycle import WorkerThreadLifecycle
+    from doxagent.codex_worker.w3_ready import W3ReadySlots
+    from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+
+    class Runtime:
+        async def prepare_fork(self, request, cwd, parent):
+            return "child"
+
+    store = JobStore(tmp_path)
+    workspaces = LocalWorkspaceStore(tmp_path)
+    jobs = SimpleNamespace(store=store, _runtime=Runtime(), _startup=asyncio.Semaphore(1))
+    jobs.thread_lifecycle = WorkerThreadLifecycle(jobs, workspaces)
+    with closing(store.connect()) as db, db:
+        db.execute(
+            "INSERT INTO w3_thread_registry VALUES('parent','TEMPLATE',NULL,'mother','ACTIVE')"
+        )
+    slots = W3ReadySlots(
+        jobs,
+        workspaces,
+        SimpleNamespace(w3_ready_luna=0, w3_ready_sol=0),
+        SimpleNamespace(ready={}),
+    )
+    profile = dict(model="gpt-6-luna", provider=None, effort="max")
+    await slots.configure(
+        dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "contract"})
+    )
+    lock = sqlite3.connect(store.path, check_same_thread=False)
+    lock.execute("BEGIN IMMEDIATE")
+
+    def release():
+        time.sleep(0.5)
+        lock.rollback()
+        lock.close()
+
+    owner = threading.Thread(target=release)
+    owner.start()
+    try:
+        task = asyncio.create_task(
+            slots.claim(
+                dict(case_id="case", record_id="record", parent_thread_id="parent", profile=profile)
+            )
+        )
+        start = time.monotonic()
+        for _ in range(5):
+            await asyncio.sleep(0.02)
+        assert time.monotonic() - start < 0.4
+        result = await task
+        assert result["status"] == "CREATING"
+        while slots.tasks:
+            await asyncio.gather(*list(slots.tasks.values()))
+        assert (
+            await slots.claim(
+                dict(case_id="case", record_id="record", parent_thread_id="parent", profile=profile)
+            )
+        )["slot_id"] == result["slot_id"]
+    finally:
+        owner.join()
+        await slots.close()
+        await jobs.thread_lifecycle.close()

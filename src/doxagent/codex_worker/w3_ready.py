@@ -9,6 +9,7 @@ from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+from doxagent.control_io import read_io, write_io
 from doxagent.persistent_runtime_v2.w3_research_store import ENTRY, compact, sha
 
 from .schema import W3PrepareRequest, WorkerRunRequest
@@ -72,12 +73,16 @@ class W3ReadySlots:
                 and previous["profile"]["model"] == config["profile"]["model"]
             ):
                 self.configs.pop(old)
-                with closing(self.jobs.store.connect()) as db, db:
-                    db.execute(
-                        "UPDATE w3_ready_slots SET state='RETIRING' "
-                        "WHERE scope=? AND case_id IS NULL",
-                        (old,),
-                    )
+
+                def retire_superseded():
+                    with closing(self.jobs.store.connect()) as db, db:
+                        db.execute(
+                            "UPDATE w3_ready_slots SET state='RETIRING' "
+                            "WHERE scope=? AND case_id IS NULL",
+                            (old,),
+                        )
+
+                await write_io(self.jobs.store.path, retire_superseded, retry=True)
         self.configs[key] = config
         # Count these as the existing warm inventory, not in addition to it.
         self.jobs._runtime.w3_warm_target = 1
@@ -89,53 +94,65 @@ class W3ReadySlots:
         if admission is not None and not admission.allow_speculation():
             return
         async with self.lock:
-            self.reconcile_residents()
-            config = self.configs[key]
-            if not config.get("active_public", True):
+            await write_io(self.jobs.store.path, self.reconcile_residents, retry=True)
+            config = self.configs.get(key)
+            if config is None:
                 return
-            target = (
-                self.settings.w3_ready_sol
-                if config["profile"]["model"] in {"gpt-6-sol", "gpt-6.1-sol"}
-                else self.settings.w3_ready_luna
-            )
-            with closing(self.jobs.store.connect()) as db, db:
-                failures = db.execute(
-                    "SELECT error,failed_at FROM w3_ready_slots "
-                    "WHERE scope=? AND error IS NOT NULL AND failed_at IS NOT NULL "
-                    "AND failed_at > COALESCE((SELECT max(ready_at) FROM w3_ready_slots "
-                    "WHERE scope=?), '') ORDER BY failed_at DESC LIMIT 2",
-                    (key, key),
-                ).fetchall()
-                if failures:
-                    error, failed_at = failures[0]
-                    if any(
-                        word in error.lower()
-                        for word in (
-                            "invalid transport",
-                            "invalid configuration",
-                            "authentication",
-                            "unauthorized",
-                        )
-                    ):
-                        # A changed configuration has a different scope.
-                        return
-                    cooldown = 60 if len(failures) > 1 else 30
-                    if datetime.now(UTC) < datetime.fromisoformat(failed_at) + timedelta(
-                        seconds=cooldown
-                    ):
-                        return
-                count = db.execute(
-                    "SELECT count(*) FROM w3_ready_slots "
-                    "WHERE scope=? AND state IN ('BUILDING','READY')",
-                    (key,),
-                ).fetchone()[0]
-                building = db.execute(
-                    "SELECT 1 FROM w3_ready_slots WHERE scope=? AND state='BUILDING' "
-                    "AND case_id IS NULL LIMIT 1",
-                    (key,),
-                ).fetchone()
-                if count < target and not building:
-                    self._insert(db, key, config)
+            identity = await write_io(self.jobs.store.path, self._fill, key, config, retry=True)
+            if identity:
+                self._start_build(identity, config)
+
+    def _start_build(self, identity, config):
+        # Publish the physical owner only after the slot transaction has committed.
+        if identity not in self.tasks and not self.closed:
+            self.tasks[identity] = asyncio.create_task(self.build(identity, config))
+
+    def _fill(self, key, config):
+        if not config.get("active_public", True):
+            return
+        target = (
+            self.settings.w3_ready_sol
+            if config["profile"]["model"] in {"gpt-6-sol", "gpt-6.1-sol"}
+            else self.settings.w3_ready_luna
+        )
+        with closing(self.jobs.store.connect()) as db, db:
+            failures = db.execute(
+                "SELECT error,failed_at FROM w3_ready_slots "
+                "WHERE scope=? AND error IS NOT NULL AND failed_at IS NOT NULL "
+                "AND failed_at > COALESCE((SELECT max(ready_at) FROM w3_ready_slots "
+                "WHERE scope=?), '') ORDER BY failed_at DESC LIMIT 2",
+                (key, key),
+            ).fetchall()
+            if failures:
+                error, failed_at = failures[0]
+                if any(
+                    word in error.lower()
+                    for word in (
+                        "invalid transport",
+                        "invalid configuration",
+                        "authentication",
+                        "unauthorized",
+                    )
+                ):
+                    # A changed configuration has a different scope.
+                    return
+                cooldown = 60 if len(failures) > 1 else 30
+                if datetime.now(UTC) < datetime.fromisoformat(failed_at) + timedelta(
+                    seconds=cooldown
+                ):
+                    return
+            count = db.execute(
+                "SELECT count(*) FROM w3_ready_slots "
+                "WHERE scope=? AND state IN ('BUILDING','READY')",
+                (key,),
+            ).fetchone()[0]
+            building = db.execute(
+                "SELECT 1 FROM w3_ready_slots WHERE scope=? AND state='BUILDING' "
+                "AND case_id IS NULL LIMIT 1",
+                (key,),
+            ).fetchone()
+            if count < target and not building:
+                return self._insert(db, key, config)
 
     def reconcile_residents(self):
         """Resource safety may reap an unused SDK; never advertise that slot ready."""
@@ -172,7 +189,6 @@ class W3ReadySlots:
                 getattr(self.jobs, "generation", None),
             ),
         )
-        self.tasks[identity] = asyncio.create_task(self.build(identity, config))
         return identity
 
     async def build(self, identity, config):
@@ -203,11 +219,16 @@ class W3ReadySlots:
                 capability_contract_version=ENTRY,
                 cutoff_at=datetime.now(UTC),
             )
-            with closing(self.jobs.store.connect()) as db:
-                original = db.execute(
-                    "SELECT request FROM w3_thread_operations WHERE operation_key=?",
-                    (request.operation_key,),
-                ).fetchone()
+
+            def original_prepare():
+                with closing(self.jobs.store.connect()) as db:
+                    original = db.execute(
+                        "SELECT request FROM w3_thread_operations WHERE operation_key=?",
+                        (request.operation_key,),
+                    ).fetchone()
+                return original
+
+            original = await read_io(original_prepare)
             if original:
                 # Includes the original cutoff and profile. Never regenerate an
                 # operation payload after restart or a lost binding response.
@@ -215,12 +236,19 @@ class W3ReadySlots:
             operation = await self.jobs.thread_lifecycle.prepare(request)
             while not self.closed and operation["status"] not in {"COMPLETED", "FAILED"}:
                 await asyncio.sleep(0.1)
-                operation = self.jobs.thread_lifecycle.operation(request.operation_key)
+                operation = await read_io(
+                    self.jobs.thread_lifecycle.operation, request.operation_key
+                )
                 if operation.get("step") == "RECONCILING":
-                    with closing(self.jobs.store.connect()) as db:
-                        bound = db.execute(
-                            "SELECT case_id FROM w3_ready_slots WHERE id=?", (identity,)
-                        ).fetchone()
+
+                    def read_binding():
+                        with closing(self.jobs.store.connect()) as db:
+                            bound = db.execute(
+                                "SELECT case_id FROM w3_ready_slots WHERE id=?", (identity,)
+                            ).fetchone()
+                        return bound
+
+                    bound = await read_io(read_binding)
                     if not bound or not bound[0]:
                         raise RuntimeError(
                             operation.get("last_error") or "speculative prepare failed"
@@ -264,24 +292,36 @@ class W3ReadySlots:
                     )
 
                 op_key = request.operation_key
-                with closing(self.jobs.store.connect()) as db:
-                    bound = db.execute(
-                        "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
-                        (identity,),
-                    ).fetchone()
+
+                def resume_binding():
+                    with closing(self.jobs.store.connect()) as db:
+                        bound = db.execute(
+                            "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
+                            (identity,),
+                        ).fetchone()
+                    return bound
+
+                bound = await read_io(resume_binding)
                 deadline = float(bound[0]) if bound and bound[0] else time.time() + 150
                 work_deadline = deadline - 15
-                previous_owner = self.jobs.thread_lifecycle.operation(op_key).get("owner_token")
+                previous_owner = (await read_io(self.jobs.thread_lifecycle.operation, op_key)).get(
+                    "owner_token"
+                )
                 owner = uuid4().hex
-                self.jobs.thread_lifecycle._operation_update(
-                    op_key,
-                    owner=previous_owner,
-                    owner_token=owner,
-                    execution_generation=getattr(self.jobs, "generation", None),
+                (
+                    await write_io(
+                        self.jobs.store.path,
+                        self.jobs.thread_lifecycle._operation_update,
+                        op_key,
+                        owner=previous_owner,
+                        owner_token=owner,
+                        execution_generation=getattr(self.jobs, "generation", None),
+                        retry=True,
+                    )
                 )
 
-                def resume_progress(stage, **values):
-                    operation = self.jobs.thread_lifecycle.operation(op_key)
+                async def resume_progress(stage, **values):
+                    operation = await read_io(self.jobs.thread_lifecycle.operation, op_key)
                     if operation.get("owner_token") != owner:
                         raise asyncio.CancelledError("resume owner replaced")
                     update = {"step": stage}
@@ -290,7 +330,16 @@ class W3ReadySlots:
                         if count >= 2:
                             raise ValueError("prepare exhausted two physical boot attempts")
                         update["startup_attempts"] = str(count + 1)
-                    self.jobs.thread_lifecycle._operation_update(op_key, owner=owner, **update)
+                    (
+                        await write_io(
+                            self.jobs.store.path,
+                            self.jobs.thread_lifecycle._operation_update,
+                            op_key,
+                            owner=owner,
+                            **update,
+                            retry=True,
+                        )
+                    )
 
                 with startup_scope(
                     key=op_key,
@@ -303,10 +352,14 @@ class W3ReadySlots:
                 capsule = next(c for c in runtime.pool if c.thread_id == thread_id)
             if capsule:
                 # tools/list must come from this resident SDK, not a second client.
-                with closing(self.jobs.store.connect()) as db:
-                    bound_deadline = db.execute(
-                        "SELECT prepare_deadline_at FROM w3_ready_slots WHERE id=?", (identity,)
-                    ).fetchone()[0]
+                def bound_deadline():
+                    with closing(self.jobs.store.connect()) as db:
+                        bound_deadline = db.execute(
+                            "SELECT prepare_deadline_at FROM w3_ready_slots WHERE id=?", (identity,)
+                        ).fetchone()[0]
+                    return bound_deadline
+
+                bound_deadline = await read_io(bound_deadline)
                 for _ in range(100):
                     if capsule.identity in self.mcp.ready:
                         break
@@ -317,62 +370,79 @@ class W3ReadySlots:
                     raise RuntimeError("research MCP tools not ready in prepared capsule")
                 capsule.ready_slot = True
                 capsule.ready_profile = profile["model"]
-            with closing(self.jobs.store.connect()) as db, db:
-                db.execute(
-                    "UPDATE w3_ready_slots SET ready_at=?,capsule_id=? WHERE id=?",
-                    (
-                        datetime.now(UTC).isoformat(),
-                        capsule.identity if capsule else None,
-                        identity,
-                    ),
-                )
-                db.execute(
-                    "UPDATE w3_ready_slots SET thread_id=?,state=CASE "
-                    "WHEN state IN ('RETIRING','ABANDONED') THEN state "
-                    "WHEN case_id IS NULL THEN 'READY' "
-                    "ELSE 'BOUND' END WHERE id=?",
-                    (thread_id, identity),
-                )
+
+            def publish_ready():
+                with closing(self.jobs.store.connect()) as db, db:
+                    db.execute(
+                        "UPDATE w3_ready_slots SET ready_at=?,capsule_id=? WHERE id=?",
+                        (
+                            datetime.now(UTC).isoformat(),
+                            capsule.identity if capsule else None,
+                            identity,
+                        ),
+                    )
+                    db.execute(
+                        "UPDATE w3_ready_slots SET thread_id=?,state=CASE "
+                        "WHEN state IN ('RETIRING','ABANDONED') THEN state "
+                        "WHEN case_id IS NULL THEN 'READY' "
+                        "ELSE 'BOUND' END WHERE id=?",
+                        (thread_id, identity),
+                    )
+
+            await write_io(self.jobs.store.path, publish_ready, retry=True)
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + identity)
-            with closing(self.jobs.store.connect()) as db, db:
-                bound = db.execute(
-                    "SELECT case_id,prepare_deadline_at FROM w3_ready_slots WHERE id=?", (identity,)
-                ).fetchone()
-                retry = bool(
-                    bound
-                    and bound[0]
-                    and operation
-                    and operation["status"] != "FAILED"
-                    and not isinstance(exc, ValueError)
-                    and int(operation.get("startup_attempts") or 0) < 2
-                    and float(bound[1] or 0) > time.time() + 15
-                    and getattr(exc, "code", None) != "CAPSULE_CLEANUP_QUARANTINED"
-                )
-                db.execute(
-                    "UPDATE w3_ready_slots SET state=?,error=?,recovery_error=?,failed_at=? "
-                    "WHERE id=?",
-                    (
-                        "BOUND" if retry else "RETIRING",
-                        None if retry else str(exc),
-                        str(exc),
-                        datetime.now(UTC).isoformat(),
-                        identity,
-                    ),
-                )
+            operation = await read_io(
+                self.jobs.thread_lifecycle.operation, "w3-slot-fork:" + identity
+            )
+
+            def record_build_failure(exc=exc):
+                with closing(self.jobs.store.connect()) as db, db:
+                    bound = db.execute(
+                        "SELECT case_id,prepare_deadline_at FROM w3_ready_slots WHERE id=?",
+                        (identity,),
+                    ).fetchone()
+                    retry = bool(
+                        bound
+                        and bound[0]
+                        and operation
+                        and operation["status"] != "FAILED"
+                        and not isinstance(exc, ValueError)
+                        and int(operation.get("startup_attempts") or 0) < 2
+                        and float(bound[1] or 0) > time.time() + 15
+                        and getattr(exc, "code", None) != "CAPSULE_CLEANUP_QUARANTINED"
+                    )
+                    db.execute(
+                        "UPDATE w3_ready_slots SET state=?,error=?,recovery_error=?,failed_at=? "
+                        "WHERE id=?",
+                        (
+                            "BOUND" if retry else "RETIRING",
+                            None if retry else str(exc),
+                            str(exc),
+                            datetime.now(UTC).isoformat(),
+                            identity,
+                        ),
+                    )
+                return bound, retry
+
+            bound, retry = await write_io(self.jobs.store.path, record_build_failure, retry=True)
             if (
                 operation
                 and not retry
                 and (bound and bound[0] or operation.get("fork_dispatched_at") == "")
             ):
-                self.jobs.thread_lifecycle._operation_update(
-                    "w3-slot-fork:" + identity,
-                    owner=operation.get("owner_token"),
-                    status="FAILED",
-                    last_error=str(exc),
-                    error_message=str(exc),
+                (
+                    await write_io(
+                        self.jobs.store.path,
+                        self.jobs.thread_lifecycle._operation_update,
+                        "w3-slot-fork:" + identity,
+                        owner=operation.get("owner_token"),
+                        status="FAILED",
+                        last_error=str(exc),
+                        error_message=str(exc),
+                        retry=True,
+                    )
                 )
         finally:
             self.tasks.pop(identity, None)
@@ -391,25 +461,30 @@ class W3ReadySlots:
     async def retire(self, *, dry_run=False):
         if not getattr(self.jobs, "_processes_recovered", True):
             return []
-        with closing(self.jobs.store.connect()) as db:
-            db.row_factory = __import__("sqlite3").Row
-            rows = db.execute(
-                "SELECT id,run_id,thread_id,case_id,retire_next_at FROM w3_ready_slots "
-                "WHERE ((state='RETIRING' AND case_id IS NULL) OR state='ABANDONED') "
-                "AND id>? ORDER BY id LIMIT 4",
-                (self._retire_cursor,),
-            ).fetchall()
-            if not rows and self._retire_cursor:
-                self._retire_cursor = ""
+
+        def retirement_candidates():
+            with closing(self.jobs.store.connect()) as db:
+                db.row_factory = __import__("sqlite3").Row
                 rows = db.execute(
                     "SELECT id,run_id,thread_id,case_id,retire_next_at FROM w3_ready_slots "
-                    "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED' "
-                    "ORDER BY id LIMIT 4"
+                    "WHERE ((state='RETIRING' AND case_id IS NULL) OR state='ABANDONED') "
+                    "AND id>? ORDER BY id LIMIT 4",
+                    (self._retire_cursor,),
                 ).fetchall()
+                if not rows and self._retire_cursor:
+                    self._retire_cursor = ""
+                    rows = db.execute(
+                        "SELECT id,run_id,thread_id,case_id,retire_next_at FROM w3_ready_slots "
+                        "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED' "
+                        "ORDER BY id LIMIT 4"
+                    ).fetchall()
+            return rows
+
+        rows = await read_io(retirement_candidates)
         preview = [dict(row) for row in rows]
         for value in preview:
             key = "w3-slot-fork:" + value["id"]
-            op = self.jobs.thread_lifecycle.operation(key) or {}
+            op = (await read_io(self.jobs.thread_lifecycle.operation, key)) or {}
             task = self.jobs.thread_lifecycle.preparations.get(key)
             build = self.tasks.get(value["id"])
             value.update(
@@ -423,7 +498,13 @@ class W3ReadySlots:
             return preview
         # A bounded preview precedes each batch; no prompt/research bodies retained.
         if preview:
-            self.jobs.store.metadata("w3_retirement_preview", preview)
+            await write_io(
+                self.jobs.store.path,
+                self.jobs.store.metadata,
+                "w3_retirement_preview",
+                preview,
+                retry=True,
+            )
         retired = deferred = 0
         for row in rows:
             identity, thread_id = row["id"], row["thread_id"]
@@ -435,7 +516,7 @@ class W3ReadySlots:
                 deferred += 1
                 continue
             key = "w3-slot-fork:" + identity
-            operation = self.jobs.thread_lifecycle.operation(key)
+            operation = await read_io(self.jobs.thread_lifecycle.operation, key)
             owner = self.jobs.thread_lifecycle.preparations.get(key)
             if owner is not None and not owner.done():
                 deferred += 1
@@ -458,13 +539,18 @@ class W3ReadySlots:
                     await self.jobs.thread_lifecycle.delete(thread_id)
                 else:
                     if operation:
-                        self.jobs.thread_lifecycle._operation_update(
-                            key,
-                            owner=operation.get("owner_token"),
-                            status="FAILED",
-                            step="RETIRED",
-                            error_code="W3_RETIRED_BEFORE_FORK",
-                            error_message="Unowned inventory retired before Fork dispatch",
+                        (
+                            await write_io(
+                                self.jobs.store.path,
+                                self.jobs.thread_lifecycle._operation_update,
+                                key,
+                                owner=operation.get("owner_token"),
+                                status="FAILED",
+                                step="RETIRED",
+                                error_code="W3_RETIRED_BEFORE_FORK",
+                                error_message="Unowned inventory retired before Fork dispatch",
+                                retry=True,
+                            )
                         )
                     await asyncio.to_thread(
                         self.workspaces.retire_w3_ready_workspace,
@@ -472,31 +558,44 @@ class W3ReadySlots:
                         preserve_evidence=bool(row["case_id"]),
                     )
             except Exception as exc:
-                with closing(self.jobs.store.connect()) as db, db:
-                    db.execute(
-                        "UPDATE w3_ready_slots SET retire_next_at=?,retire_checked_at=?,"
-                        "retire_error=? WHERE id=?",
-                        (
-                            str(time.time() + 60),
-                            datetime.now(UTC).isoformat(),
-                            str(exc)[:500],
-                            identity,
-                        ),
-                    )
+
+                def defer_retirement(exc=exc):
+                    with closing(self.jobs.store.connect()) as db, db:
+                        db.execute(
+                            "UPDATE w3_ready_slots SET retire_next_at=?,retire_checked_at=?,"
+                            "retire_error=? WHERE id=?",
+                            (
+                                str(time.time() + 60),
+                                datetime.now(UTC).isoformat(),
+                                str(exc)[:500],
+                                identity,
+                            ),
+                        )
+
+                await write_io(self.jobs.store.path, defer_retirement, retry=True)
                 deferred += 1
                 continue
-            with closing(self.jobs.store.connect()) as db, db:
-                db.execute(
-                    "UPDATE w3_ready_slots SET state='RETIRED',thread_id=?,retire_checked_at=?,"
-                    "retire_error=NULL,retire_next_at=NULL WHERE id=?",
-                    (thread_id, datetime.now(UTC).isoformat(), identity),
-                )
+
+            def mark_retired():
+                with closing(self.jobs.store.connect()) as db, db:
+                    db.execute(
+                        "UPDATE w3_ready_slots SET state='RETIRED',thread_id=?,retire_checked_at=?,"
+                        "retire_error=NULL,retire_next_at=NULL WHERE id=?",
+                        (thread_id, datetime.now(UTC).isoformat(), identity),
+                    )
+
+            await write_io(self.jobs.store.path, mark_retired, retry=True)
             retired += 1
-        with closing(self.jobs.store.connect()) as db:
-            count, oldest = db.execute(
-                "SELECT count(*),min(created_at) FROM w3_ready_slots "
-                "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED'"
-            ).fetchone()
+
+        def retirement_totals():
+            with closing(self.jobs.store.connect()) as db:
+                count, oldest = db.execute(
+                    "SELECT count(*),min(created_at) FROM w3_ready_slots "
+                    "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED'"
+                ).fetchone()
+            return count, oldest
+
+        count, oldest = await read_io(retirement_totals)
         self.retirement_status = dict(
             pending=count,
             oldest_created_at=oldest,
@@ -520,102 +619,99 @@ class W3ReadySlots:
     async def claim(self, request):
         key = sha(compact([request["parent_thread_id"], request["profile"], ENTRY]))
         async with self.lock:
-            self.reconcile_residents()
-            with closing(self.jobs.store.connect()) as db, db:
-                db.row_factory = __import__("sqlite3").Row
-                db.execute("BEGIN IMMEDIATE")
-                row = db.execute(
-                    "SELECT * FROM w3_ready_slots WHERE case_id=? AND record_id=?",
-                    (request["case_id"], request["record_id"]),
-                ).fetchone()
-                if row and row["scope"] != key:
-                    raise ReadySlotError(
-                        "w3_ready_identity_conflict", "ready-slot claim parameters changed"
-                    )
-                if row and row["error"]:
-                    operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + row["id"])
-                    if not operation or operation["status"] == "FAILED":
-                        raise ReadySlotError(
-                            "w3_ready_prepare_failed",
-                            "ready-slot preparation failed: " + row["error"],
-                        )
-                    # Transient operations retain their identity and physical startup budget.
-                    db.execute(
-                        "UPDATE w3_ready_slots SET state='BOUND',error=NULL WHERE id=?",
-                        (row["id"],),
-                    )
-                    row = db.execute(
-                        "SELECT * FROM w3_ready_slots WHERE id=?", (row["id"],)
-                    ).fetchone()
-                if row and not row["thread_id"] and row["id"] not in self.tasks:
-                    # Restart/lost claim response: continue this original durable
-                    # operation, even if its old Template is no longer the default.
-                    self.tasks[row["id"]] = asyncio.create_task(
-                        self.build(row["id"], json.loads(row["config"]))
-                    )
-                if row is None:
-                    row = db.execute(
-                        "SELECT * FROM w3_ready_slots WHERE scope=? "
-                        "AND state IN ('READY','BUILDING') AND case_id IS NULL "
-                        "ORDER BY state DESC LIMIT 1",
-                        (key,),
-                    ).fetchone()
-                    if row is None:
-                        config = self.configs.get(key)
-                        if config is None:
-                            raise ReadySlotError(
-                                "w3_ready_unconfigured",
-                                "public Template has not configured this profile",
-                            )
-                        identity = self._insert(db, key, config)
-                    else:
-                        identity = row["id"]
-                    db.execute(
-                        "UPDATE w3_ready_slots SET state='BOUND',case_id=?,record_id=?,"
-                        "bound_at=?,claim_kind=? WHERE id=?",
-                        (
-                            request["case_id"],
-                            request["record_id"],
-                            datetime.now(UTC).isoformat(),
-                            "POOL_HIT" if row and row["state"] == "READY" else "POOL_MISS",
-                            identity,
-                        ),
-                    )
-                    row = db.execute(
-                        "SELECT * FROM w3_ready_slots WHERE id=?", (identity,)
-                    ).fetchone()
-                if not row["prepare_deadline_at"]:
-                    db.execute(
-                        "UPDATE w3_ready_slots SET prepare_deadline_at=? WHERE id=?",
-                        (
-                            str(
-                                time.time()
-                                + getattr(self.settings, "w3_prepare_timeout_seconds", 180)
-                            ),
-                            row["id"],
-                        ),
-                    )
-                if row["thread_id"]:
-                    db.execute(
-                        "UPDATE w3_thread_registry SET kind='CASE' WHERE thread_id=?",
-                        (row["thread_id"],),
-                    )
-                result = dict(
-                    status="COMPLETED" if row["thread_id"] else "CREATING",
-                    thread_id=row["thread_id"],
-                    run_id=row["run_id"],
-                    slot_id=row["id"],
-                    error=row["error"],
-                    capsule_id=row["capsule_id"],
-                    claim_kind=row["claim_kind"],
-                    bind_operation_key="w3-slot-bind:"
-                    + request["case_id"]
-                    + ":"
-                    + request["record_id"],
-                )
+            await write_io(self.jobs.store.path, self.reconcile_residents, retry=True)
+            result, config = await write_io(
+                self.jobs.store.path, self._claim, request, key, retry=True
+            )
+            if not result["thread_id"]:
+                self._start_build(result["slot_id"], config)
         if key in self.configs:
             await self.fill(key)
         return result
+
+    def _claim(self, request, key):
+        with closing(self.jobs.store.connect()) as db, db:
+            db.row_factory = __import__("sqlite3").Row
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT * FROM w3_ready_slots WHERE case_id=? AND record_id=?",
+                (request["case_id"], request["record_id"]),
+            ).fetchone()
+            if row and row["scope"] != key:
+                raise ReadySlotError(
+                    "w3_ready_identity_conflict", "ready-slot claim parameters changed"
+                )
+            if row and row["error"]:
+                operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + row["id"])
+                if not operation or operation["status"] == "FAILED":
+                    raise ReadySlotError(
+                        "w3_ready_prepare_failed",
+                        "ready-slot preparation failed: " + row["error"],
+                    )
+                # Transient operations retain their identity and physical startup budget.
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='BOUND',error=NULL WHERE id=?",
+                    (row["id"],),
+                )
+                row = db.execute("SELECT * FROM w3_ready_slots WHERE id=?", (row["id"],)).fetchone()
+            if row is None:
+                row = db.execute(
+                    "SELECT * FROM w3_ready_slots WHERE scope=? "
+                    "AND state IN ('READY','BUILDING') AND case_id IS NULL "
+                    "ORDER BY state DESC LIMIT 1",
+                    (key,),
+                ).fetchone()
+                if row is None:
+                    config = self.configs.get(key)
+                    if config is None:
+                        raise ReadySlotError(
+                            "w3_ready_unconfigured",
+                            "public Template has not configured this profile",
+                        )
+                    identity = self._insert(db, key, config)
+                else:
+                    identity = row["id"]
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='BOUND',case_id=?,record_id=?,"
+                    "bound_at=?,claim_kind=? WHERE id=?",
+                    (
+                        request["case_id"],
+                        request["record_id"],
+                        datetime.now(UTC).isoformat(),
+                        "POOL_HIT" if row and row["state"] == "READY" else "POOL_MISS",
+                        identity,
+                    ),
+                )
+                row = db.execute("SELECT * FROM w3_ready_slots WHERE id=?", (identity,)).fetchone()
+            if not row["prepare_deadline_at"]:
+                db.execute(
+                    "UPDATE w3_ready_slots SET prepare_deadline_at=? WHERE id=?",
+                    (
+                        str(
+                            time.time() + getattr(self.settings, "w3_prepare_timeout_seconds", 180)
+                        ),
+                        row["id"],
+                    ),
+                )
+            if row["thread_id"]:
+                db.execute(
+                    "UPDATE w3_thread_registry SET kind='CASE' WHERE thread_id=?",
+                    (row["thread_id"],),
+                )
+            result = dict(
+                status="COMPLETED" if row["thread_id"] else "CREATING",
+                thread_id=row["thread_id"],
+                run_id=row["run_id"],
+                slot_id=row["id"],
+                error=row["error"],
+                capsule_id=row["capsule_id"],
+                claim_kind=row["claim_kind"],
+                bind_operation_key="w3-slot-bind:"
+                + request["case_id"]
+                + ":"
+                + request["record_id"],
+            )
+        return result, json.loads(row["config"])
 
     async def close(self):
         self.closed = True

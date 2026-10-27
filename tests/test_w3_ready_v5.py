@@ -173,7 +173,7 @@ async def test_restart_reclaims_original_bound_slot_and_completed_fork(tmp_path)
     async def prepare_resume(request, cwd):
         from doxagent.codex_worker.startup_admission import progress
 
-        progress("BOOT_ATTEMPT")
+        await progress("BOOT_ATTEMPT")
         runtime.pool.append(
             SimpleNamespace(
                 thread_id=request.thread_id,

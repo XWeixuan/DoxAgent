@@ -183,18 +183,24 @@ def compact_one(journal,control_path,identity,run,path,versions,now):
             w=wal.stat() if wal.exists() else None
             return (stat.st_size,stat.st_mtime_ns,(w.st_size,w.st_mtime_ns) if w and w.st_size else None)
         stat=fingerprint();proof=build(path,staging,ticker,versions)
-        with journal.transaction() as db:
+        # Detect any committed Runtime change while checking references. Heavy
+        # decoding, /proc scanning and fsync must never own the business writer.
+        with closing(sqlite3.connect(journal.path)) as watch:
+            revision=watch.execute('PRAGMA data_version').fetchone()[0]
             newrefs,newprotected,_=referenced(journal,control_path,now=now,only_root=identity)
             current=newrefs.get(identity,{}).get(ticker,set())|newrefs.get(identity,{}).get(None,set())
             if identity in newprotected or not (current-{0})<=set(proof['versions']) or opened_below(path) or fingerprint()!=stat:
                 staging.unlink(missing_ok=True);Path(str(staging)+'.native-retained.json').unlink(missing_ok=True);return None
             before=path.stat();size=getattr(before,'st_blocks',(before.st_size+511)//512)*512
             with staging.open('rb+') as stream:os.fsync(stream.fileno())
-            wal=Path(str(path)+'-wal')
-            if wal.exists() and wal.stat().st_size:
-                raise ValueError('immutable branch still has a committed WAL; checkpoint at its owner before retirement')
-            os.replace(staging,path)
-            for suffix in ('-wal','-shm'):Path(str(path)+suffix).unlink(missing_ok=True)
+            with journal.transaction(operation='resource.compact.publish'):
+                if watch.execute('PRAGMA data_version').fetchone()[0]!=revision or fingerprint()!=stat:
+                    staging.unlink(missing_ok=True);Path(str(staging)+'.native-retained.json').unlink(missing_ok=True);return None
+                wal=Path(str(path)+'-wal')
+                if wal.exists() and wal.stat().st_size:
+                    raise ValueError('immutable branch still has a committed WAL; checkpoint at its owner before retirement')
+                os.replace(staging,path)
+                for suffix in ('-wal','-shm'):Path(str(path)+suffix).unlink(missing_ok=True)
             proof.update(target=str(path),retired_allocated=size,retained_allocated=getattr(path.stat(),'st_blocks',(path.stat().st_size+511)//512)*512,at=now.isoformat())
             atomic_json(str(path)+'.native-retained.json',proof);Path(str(staging)+'.native-retained.json').unlink(missing_ok=True)
             return proof
@@ -226,14 +232,16 @@ def compact_process(journal,runs,protected,now,*,limit=64):
             if not receipt or receipt.get('status') not in {'succeeded','failed','cancelled'}:continue
             compact={k:request[k] for k in ('run_id','attempt_id','idempotency_key','node','ticker','thread_id','workflow_version','model','model_provider','effort') if k in request}
             compact.update(retired_process=True,request_sha256=hashlib.sha256(json.dumps(request,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest())
-            with journal.transaction() as db:
+            payload=journal.content.encode(compact)
+            telemetry=receipt.get('telemetry');encoded_receipt=None
+            if isinstance(telemetry,dict):
+                telemetry['events']=[]
+                encoded_receipt=journal.content.encode(receipt)
+            with journal.transaction(operation='resource.process.publish') as db:
                 if not terminal(db):continue
-                payload=journal.content.encode(compact)
                 db.execute("UPDATE runtime_values SET payload=? WHERE namespace='worker_requests' AND key=?",(payload,key))
-                telemetry=receipt.get('telemetry')
-                if isinstance(telemetry,dict):
-                    telemetry['events']=[]
-                    db.execute("UPDATE runtime_values SET payload=? WHERE namespace='worker_receipts' AND key=?",(journal.content.encode(receipt),key))
+                if encoded_receipt is not None:
+                    db.execute("UPDATE runtime_values SET payload=? WHERE namespace='worker_receipts' AND key=?",(encoded_receipt,key))
                 changed.append(key)
     return changed
 
@@ -248,6 +256,9 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False):
         for run in sorted(root.iterdir()):
             if len(report['retired'])+len(report['compacted'])>=limit:break
             if not run.is_dir() or run.is_symlink():continue
+            if run.name.startswith('.retiring-'):
+                if not dry_run:shutil.rmtree(run)
+                continue
             events=run/'events';identity=str(events);info=runs.get(run.name)
             if identity in protected:continue
             # An old superseded frame may no longer be in current receipts. It
@@ -262,12 +273,19 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False):
                 if dry_run:report['retired'].append(dict(run=run.name,allocated=allocated(run)));continue
                 # Admission and task-frame changes are fenced by the Runtime
                 # writer. Recheck current pointers before the actual exit.
-                with journal.transaction() as db:
+                with closing(sqlite3.connect(journal.path)) as watch:
+                    revision=watch.execute('PRAGMA data_version').fetchone()[0]
                     _refs,_protected,_runs=referenced(journal,control_path,now=now,only_root=identity)
                     if identity in _refs or identity in _protected or opened_below(run):continue
-                    size=allocated(run);shutil.rmtree(run)
+                    size=allocated(run)
+                    tombstone=run.with_name('.retiring-'+run.name)
                     receipt=dict(run=run.name,allocated=size,at=now.isoformat())
-                    db.execute("INSERT OR REPLACE INTO runtime_values VALUES('resource_retired',?,?)",(run.name,json.dumps(receipt)))
+                    with journal.transaction(operation='resource.retire.publish') as db:
+                        if watch.execute('PRAGMA data_version').fetchone()[0]!=revision:continue
+                        os.replace(run,tombstone)
+                        db.execute("INSERT OR REPLACE INTO runtime_values VALUES('resource_retired',?,?)",(run.name,json.dumps(receipt)))
+                    # Removal owns only the retired name, after the writer ends.
+                    shutil.rmtree(tombstone)
                     report['retired'].append(receipt)
                 continue
             for path in events.glob('US/*/event_library.sqlite3'):

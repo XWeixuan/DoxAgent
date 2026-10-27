@@ -33,6 +33,7 @@ from doxagent.codex_worker.schema import (
 )
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+from doxagent.control_io import write_io
 from doxagent.observations.models import PersistedObservation
 
 
@@ -176,17 +177,21 @@ def create_worker_app(
     @app.post("/v1/w3/market/stop", dependencies=[Depends(require_service_auth)])
     async def stop_market(payload: dict):
         market.stop(payload["case_id"])
-        with __import__("contextlib").closing(jobs.store.connect()) as db, db:
-            db.execute(
-                "UPDATE w3_ready_slots SET state='USED' WHERE case_id=? "
-                "AND state='BOUND' AND thread_id IS NOT NULL",
-                (payload["case_id"],),
-            )
-            db.execute(
-                "UPDATE w3_ready_slots SET state='ABANDONED' "
-                "WHERE case_id=? AND (error IS NOT NULL OR thread_id IS NULL)",
-                (payload["case_id"],),
-            )
+
+        def mark_consumed():
+            with __import__("contextlib").closing(jobs.store.connect()) as db, db:
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='USED' WHERE case_id=? "
+                    "AND state='BOUND' AND thread_id IS NOT NULL",
+                    (payload["case_id"],),
+                )
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='ABANDONED' "
+                    "WHERE case_id=? AND (error IS NOT NULL OR thread_id IS NULL)",
+                    (payload["case_id"],),
+                )
+
+        await write_io(jobs.store.path, mark_consumed, retry=True)
         return {"stopped": True}
 
     @app.post("/v1/w3/market/start", dependencies=[Depends(require_service_auth)])

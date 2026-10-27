@@ -78,7 +78,7 @@ async def test_cancelled_prepare_awaits_actual_execution_and_rejects_old_owner(t
         async def prepare_fork(self, *args):
             from doxagent.codex_worker.startup_admission import progress
 
-            progress(stage, **({"thread_id": "child"} if stage == "CHILD_KNOWN" else {}))
+            await progress(stage, **({"thread_id": "child"} if stage == "CHILD_KNOWN" else {}))
             entered.set()
             try:
                 await asyncio.Event().wait()
@@ -182,7 +182,7 @@ async def test_boot_only_failure_skips_queries_and_exhausts_one_shared_budget(tm
         async def prepare_fork(self, *args):
             from doxagent.codex_worker.startup_admission import progress
 
-            progress("BOOT_ATTEMPT")
+            await progress("BOOT_ATTEMPT")
             self.calls += 1
             raise TimeoutError("boot before Fork")
 
