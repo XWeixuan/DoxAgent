@@ -13,8 +13,8 @@ G3按本次“严格按照方案”授权采用：首24小时30分钟条件重�
 |W4 正文/收尾|代码及必要质量/崩溃回归完成|最多两条可执行路线、5秒普通重试、结果spool；正文与本地交付分离、wrapper在途合并、公开正文复用|
 |W5 Site/Chrome|主体实现，未做生产容量实验|公开HTTP薄入口、独立只读连接、catalog缓存、取消与anchor回收；综合回归78项通过|
 |W6 生命周期/健康|代码与96小时等效保留期验证完成|48小时原始证明/7天小时摘要、失败分母保留、输入与receipt到期、过期checkpoint代际回收；真实列表进度健康、薄BODY cohort及按需展示状态|
-|W7 全量验收|本地组合回归及受控成本试验进行中，生产待上线|本地与生产、自然24h/72h增长分别记录；不以合成replay代替真实容量|
-|最终review|本地逐包review已执行，组合与上线复核继续|修复Native正文重复写、旧文章伪新建/重复发布/版本递增、旧结果覆盖新owner、语言推断、无效Reader拒绝、HTTP Timeout对象兼容；相关源码通过F821检查|
+|W7 全量验收|本地组合、受控成本试验及生产短检查完成；长期验收未完成|自然24h/72h与20ticker生产容量仍待验证；短窗口目标未全达，不以合成replay代替真实容量|
+|最终review|本地逐包与组合review完成，发布必需修正已复测上线|修复Native重复写、旧文章身份/修订、owner覆盖、Reader/HTTP契约、新稿优先级及旧snapshot任务转交；长期稳定性仍未证明|
 
 执行证据：`eval/message-bus-lean-implementation-20261028/`。未完成项不标为已实现；本地测试不替代生产时效和持续稳定性验收。
 
@@ -24,7 +24,7 @@ G3按本次“严格按照方案”授权采用：首24小时30分钟条件重�
 - 20 ticker共享一次正文、正文实际更新不增加stream、提交失败接回spool、Native缓存变更检测、curl真实socket发送、旧任务一次性转交、业务wire/正文cohort已有必要回归。
 - `test_message_bus_v2_deduplication::test_prepare_failure_does_not_claim_or_mutate_pending_task`暴露基线RuntimeJournal的先claim后prepare语义与旧测试不一致；该RuntimeJournal文件本轮未改，单列，不为通过消息管线测试去改W1/W2/W3行为。
 - HTTP起始角色配额明确拆到实际进程/loop：Collector直连5、Yahoo专用loop1、Bus sweep直连1、其Yahoo loop1、Site CRAWLER HTTP4，共12；BODY直取2、Site BODY/Reader2，共4。普通publisher2；不把每进程各自的容量误称全局容量。此分配须经生产容量数据复核。
-- 生产仍未切换本轮代码；已读核对远端角色版本和健康，W7生产自然窗口及长期增长尚未验收。
+- 此处为发布前验证边界；生产已按下文完成切换。W7自然完整窗口及长期增长尚未验收。
 
 ### 2026-10-29 整体review与发布准备
 
@@ -50,6 +50,15 @@ G3按本次“严格按照方案”授权采用：首24小时30分钟条件重�
 - 此时Read位置与Bus head同为9329028，最新5个发布项均可读；capture PENDING已为0、result spool为0，本地旧分发PENDING/L2_DUE已消化。仍有真实站点403、IBKR超时和BODY访问失败。
 - 检查发现BODY转交旧By Distribution任务时，binding_json为`$snapshot`，直接当完整binding读取触发`KeyError: binding_id`并导致容器重启。已补锁外展开和单项失败隔离：5秒标量重试不重写完整job，不结束整个BODY。真实旧snapshot夹具与故障隔离4项回归通过，仅需重建BODY。
 - 已按运行容器、正式compose、模板/repair引用及当前/回退版本核对，保护35个镜像依赖，清退4个明确无引用旧镜像，错误0；未删volume/Profile或运行/回退镜像。未触发全局builder prune。
+
+### 最终交付与未关闭项
+
+- 最后代码提交`ca43d6d6`已推送origin/main；BODY正式重建发布退出0，17:55:03 UTC启动，初检运行、重启0、OOM=false，最近日志未再出现旧snapshot转交异常。最后相关组合60项通过（`snapshot-shipped.xml`），4项旧任务专项通过（`legacy-last.xml`）。
+- 六个消息相关角色均已使用正式生产服务上线，镜像按实际代码依赖分别为Collector/Site/API/Projector=`976dafa7`，Bus=`df46c7f3`，BODY=`ca43d6d6`；不是临时容器替代。未为了hash相同重启Worker/Supervisor。
+- 最后健康检查不能报全绿：Collector报告配置刷新陈旧，Site健康HTTP超时；二者仍运行但unhealthy，最终pipeline只读探针也超时。此时IO PSI avg60约97.5%、memory PSI约18.2%。已使用正式compose重启这两个停滞组件进行发布收尾恢复，结果另附；不将重启等同于结构问题已经彻底消除。
+- 本轮按用户追加要求即时上线，不扩展先前主机崩溃取证，不等待完整交易日/72小时。**代码落地与发布完成，不等于W7业务目标验收完成**：全来源周期接近100%、正文>80%、≤10秒与长期资源平台仍未证实，已有失败、延期和未完成样本保留。下一轮验收须使用方案H4及真实自然数据，不能沿用启动期3篇样本宣称达标。
+- 其它会话未提交的退出策略、交易与UI工作及远端compose原差异均保留；本轮没有打包或覆盖这些工作。
+- 收尾重启后Site恢复健康、MemAvailable约6.2GiB，IO PSI avg10降至7.3%；Bus head继续到9329458，17:58:47 UTC有真实COHR交付。但Collector短时间再次重启，继续定位到本轮PublisherSession新增DEBUGFUNCTION触发curl_cffi原生崩溃：上游release先清空`_debug_handle`再`curl_multi_remove_handle`，后者仍可触发已释放的CFFI回调。已在detach/reset/异常close期间保持句柄强引用，之后立即释放；不是扩大池或重试掩盖。真实CFFI弱引用夹具和取网/坏池相关6项通过，重新构建所有实际引用该模块的Collector/Bus/BODY/Site四角色。
 
 - 正常链路为：物理采集并持久化delta → Bridge锁外准备 → 一次薄文章/交付接纳 → BODY共享结果 → 本地相关性/发布。慢L2不会阻塞直接命中，BODY提交失败接回spool，不重新下载。新实时工作不再产生旧PollJournal/DistributionRun/EnrichmentJob副本。
 - 同篇旧文章按强URL别名跨发现来源接回已有发布；原Raw/Standard/Stream ID、first_seen、源归属及控制origin保持。未变化只关联交付，不新增业务修订；真实变化更新原文，已消费过的下游不会再次触发。原发布更新无需再做一次新稿L1/L2准入。

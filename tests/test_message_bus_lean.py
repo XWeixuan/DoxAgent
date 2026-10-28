@@ -104,6 +104,38 @@ async def test_curl_cleanup_failure_discards_handle_without_losing_slot():
     await session.close()
 
 
+async def test_curl_callback_survives_upstream_cleanup_until_detach(monkeypatch):
+    import gc
+    import weakref
+    from curl_cffi import Curl
+    from curl_cffi.requests import AsyncSession
+
+    session = PublisherSession(max_clients=1)
+    curl = Curl()
+    from curl_cffi import CurlOpt
+
+    curl.setopt(CurlOpt.DEBUGFUNCTION, lambda *_: None)
+    callback = weakref.ref(curl._debug_handle)
+
+    def upstream_release(self, handle):
+        handle.clean_handles_and_buffers()
+        gc.collect()
+        # libcurl can call DEBUGDATA during multi removal, after upstream has
+        # dropped its Python reference. The owner must retain that reference.
+        assert callback() is not None
+        handle.reset()
+
+    monkeypatch.setattr(AsyncSession, "release_curl", upstream_release)
+    try:
+        session.release_curl(curl)
+        assert not session.broken
+        gc.collect()
+        assert callback() is None
+    finally:
+        curl.close()
+        await session.close()
+
+
 async def test_publisher_client_recovery_does_not_replace_unrelated_publisher():
     class Session:
         broken = False

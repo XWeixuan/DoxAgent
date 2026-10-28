@@ -2345,3 +2345,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 ## 2026-10-29 BODY旧快照转交兼容修正
 - 修复旧By Distribution任务binding_json为$snapshot引用时的KeyError，锁外展开后接入同一live入口。旧任务单项转交异常只做5秒标量重试，不写完整job/正文，不再结束整个BODY进程。真实旧snapshot夹具、故障隔离及旧recheck续作4项回归通过。
+
+## 2026-10-29 curl取网证据回调生命周期修正
+- 修复curl_cffi先清空CFFI引用、再移除multi句柄时仍调用DEBUGFUNCTION导致Collector原生崩溃的问题：detach/reset及异常close完成前保留回调句柄。真实CFFI弱引用回归验证清理期间存活且之后释放；curl/publisher相关6项通过，保留真实取网证明。

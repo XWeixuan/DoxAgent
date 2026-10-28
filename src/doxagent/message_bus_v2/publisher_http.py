@@ -87,6 +87,13 @@ class PublisherSession(AsyncSession):
             if lease.get("released"):
                 return
             lease["released"] = True
+        # curl_cffi clears these before curl_multi_remove_handle, which can
+        # still invoke DEBUGFUNCTION. Keep CFFI handles alive until detach/reset
+        # (or exceptional close) finishes; a dangling DEBUGDATA aborts Python.
+        callbacks = tuple(
+            getattr(curl, name, None)
+            for name in ("_debug_handle", "_write_handle", "_header_handle", "_read_handle", "_body_handle")
+        )
         try:
             super().release_curl(curl)
         except Exception as exc:
@@ -98,6 +105,8 @@ class PublisherSession(AsyncSession):
             if not self._closed:
                 self.push_curl(None)
             log.warning("publisher curl discarded after cleanup failure: %s", type(exc).__name__)
+        finally:
+            del callbacks
 
     async def _request_once(self, **kwargs):
         from .poll_trace import REQUESTS
