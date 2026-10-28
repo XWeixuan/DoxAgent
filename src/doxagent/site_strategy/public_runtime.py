@@ -114,6 +114,7 @@ class PublicExecution:
         self.options = dict(options)
         self.options["profile_root"] = str(options["profile_root"]) + "/.public-runtime"
         self.options["supervisor_socket"] = None
+        self.options["browser_headless"] = True
         self.lock = asyncio.Lock()
         self.users = 0
         self.runtime = None
