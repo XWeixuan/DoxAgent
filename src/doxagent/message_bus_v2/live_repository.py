@@ -100,7 +100,16 @@ class LiveRepository:
             db.execute("INSERT OR IGNORE INTO artifact_ref VALUES(?,?,?)", (owner, key, digest))
 
     def prepare_input(
-        self, source, targets, messages, *, observed_at, unit, bootstrap=False, admission=None
+        self,
+        source,
+        targets,
+        messages,
+        *,
+        observed_at,
+        unit,
+        bootstrap=False,
+        admission=None,
+        recheck=False,
     ):
         from .schema import RawMessageInput
 
@@ -154,10 +163,6 @@ class LiveRepository:
                     "LEFT JOIN live_origins o ON o.origin_key=? WHERE a.article_key=?",
                     (origin, key),
                 ).fetchone()
-            if prior and (prior[1] is None or prior[1] == hint or observed_at < prior[2]):
-                ref, refs = prior[0], set()
-            else:
-                ref, refs = self.put(message.model_dump(mode="json"))
             reason = evaluate_admission(
                 message.published_at, context, utc_now(), message.publication_time_basis
             )
@@ -165,6 +170,12 @@ class LiveRepository:
             if targets and not prior:
                 first = self.bus.get_binding(targets[0][0])
                 legacy_known = self.bus.known_published_article(first, message) if first else None
+            if reason and not prior and not legacy_known and not recheck:
+                continue  # The durable list/delta is proof enough for expired, never-admitted input.
+            if prior and (prior[1] is None or prior[1] == hint or observed_at < prior[2]):
+                ref, refs = prior[0], set()
+            else:
+                ref, refs = self.put(message.model_dump(mode="json"))
             from .deduplication import text, stable_fields
 
             old_fields = (

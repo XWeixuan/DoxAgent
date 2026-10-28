@@ -258,6 +258,7 @@ class LiveQueue:
                 unit="LEGACY_CONTINUATION",
                 bootstrap=job.bootstrap and job.work_kind != "recheck",
                 admission=job.message.admission_context,
+                recheck=job.work_kind == "recheck",
             )
             if job.work_kind == "recheck":
                 previous = (
@@ -279,6 +280,20 @@ class LiveQueue:
             with self.bus.repository.atomic_intake() as db:
                 self.bus.repository._assert_enrichment_claim(db, job.job_id, job.claim_token)
                 keys = self.repository.accept(prepared)
+                if not keys:
+                    db.execute(
+                        "UPDATE content_enrichment_jobs SET status='completed',lease_expires_at=NULL,"
+                        "data_json=json_set(data_json,'$.status','completed','$.claim_token',NULL,'$.lease_expires_at',NULL,"
+                        "'$.result',json(?)) WHERE job_id=?",
+                        (canonical_json({"outcome": "ADMISSION_REJECTED"}), job.job_id),
+                    )
+                    if job.owner_kind == "distribution_article":
+                        db.execute(
+                            "UPDATE distribution_deliveries SET state='ADMISSION_REJECTED',claim_token=NULL,lease_until=NULL "
+                            "WHERE article_id=? AND state IN ('WAIT_BODY','PENDING','L2_WAIT')",
+                            (job.article_id,),
+                        )
+                    return []
                 key = keys[0].removeprefix("live:")
                 if job.work_kind == "recheck":
                     db.execute(

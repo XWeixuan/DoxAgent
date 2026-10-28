@@ -862,3 +862,35 @@ async def test_old_unpublished_recheck_executes_once_without_publishing_expired_
     assert await LiveDeliveryWorker(bus).run_available() == 0
     assert repo.latest_stream_offset("MU") == 0
     assert await hub.run_once() == 0
+
+
+def test_expired_unadmitted_input_does_not_publish_native_or_article_work(tmp_path, monkeypatch):
+    from datetime import timedelta
+    from tests.test_content_enrichment_hub import _setup, _message
+    from doxagent.message_bus_v2.live import LiveQueue
+    from doxagent.message_bus_v2.schema import utc_now
+
+    repo, bus, source, binding = _setup(tmp_path)
+    bus.live_queue = LiveQueue(bus)
+    live = bus.live_queue.repository
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("expired input created a Native document")
+
+    monkeypatch.setattr(live, "put", forbidden)
+    rows = live.prepare_input(
+        source,
+        [(binding.binding_id, "MU", 0)],
+        [
+            _message(198, body="Old article body " * 20000).model_copy(
+                update={"published_at": utc_now() - timedelta(days=2)}
+            )
+        ],
+        observed_at=utc_now().isoformat(),
+        unit="HEAD",
+    )
+    assert rows == []
+    live.accept(rows, capture_id="expired-acked")
+    with repo._connect() as db:
+        assert db.execute("SELECT count(*) FROM live_articles").fetchone()[0] == 0
+        assert db.execute("SELECT count(*) FROM collection_acceptances").fetchone()[0] == 1

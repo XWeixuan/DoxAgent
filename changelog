@@ -2335,3 +2335,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 已有Collector checkpoint的绑定不再于重启展开旧Native轮询历史；正式增量迁移同包停止所选API/Projector，避免旧投影器抢消费新契约。
 - 标题实质更正参与内容修订，正文未变也更新原消息；别名晚到不取消已有重要更新。旧未发布文章的到期recheck实际执行一次，仍保留原发布时效门禁，不把旧文重新发布。
 - 558项组合、72项语义及后续针对回归通过；最终启动/旧任务衔接15项通过。仍保留其它会话未提交工作；生产长期目标不据本地测试提前宣布达标。
+
+## 2026-10-29 Message Bus 过期候选减法
+- 过期且从未被接纳的候选在Native文件发布及文章建账前退出，仅保留已有持久化列表/delta与接纳ACK；旧已发布文章更新和旧recheck仍独立续作。过期大正文零Native写、旧未发布recheck实际执行及ARTICLE_ONCE针对回归通过。

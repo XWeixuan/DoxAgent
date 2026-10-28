@@ -32,6 +32,8 @@ G3按本次“严格按照方案”授权采用：首24小时30分钟条件重�
 
 上线边界追加：启动不再读取已有Collector绑定的旧Native轮询历史；旧未发布正文recheck与新稿发布分离，实际检查一次并保持原first_seen和原发布门禁；迁移时停止所选旧API/Projector，防止旧投影器消费新契约。针对回归15 passed（`launch-final.xml`）。本地未提交交易/退出策略/UI与远端原compose差异均保留，不混入本轮镜像提交。
 
+最终减法复核：过期、从未接纳且无旧发布的候选在Native发布前退出，持久化列表/delta与ACK足以续作，不再写一套永远不会发布的文章/交付。旧发布更新及旧recheck保留；过期大正文Native写0、旧recheck实际执行等针对验证通过。后续仅做发布必需问题修复，不再扩大范围。
+
 - 正常链路为：物理采集并持久化delta → Bridge锁外准备 → 一次薄文章/交付接纳 → BODY共享结果 → 本地相关性/发布。慢L2不会阻塞直接命中，BODY提交失败接回spool，不重新下载。新实时工作不再产生旧PollJournal/DistributionRun/EnrichmentJob副本。
 - 同篇旧文章按强URL别名跨发现来源接回已有发布；原Raw/Standard/Stream ID、first_seen、源归属及控制origin保持。未变化只关联交付，不新增业务修订；真实变化更新原文，已消费过的下游不会再次触发。原发布更新无需再做一次新稿L1/L2准入。
 - Source/binding纯配置版本和roster变化不重抓旧正文；新增共享订阅触发一次当前列表刷新，只关联新目标。旧wrapper与已运行canonical工作合并，保留已有owner。BODY/公开复用仍检查语言及真实访问scope。
