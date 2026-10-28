@@ -140,6 +140,11 @@ class ScopeResolver:
             )
         }
         profile = repository.get_profile(template.profile_id)
+        protected = (resolved.auth.requirement == "required"
+                     or resolved.auth.body_requirement == "required"
+                     or bool(template.credential_ref or (profile and profile.credential_ref)))
+        execution_mode = ("identity" if protected else
+                          "public_context" if resolved.site_id == "generic" else "public_identity")
         if (
             resolved.site_id != "generic"
             and template.identity_id not in claimed
@@ -152,6 +157,7 @@ class ScopeResolver:
             identity = template.model_copy(
                 update={
                     "owner_scope_id": scope_id,
+                    "execution_mode": execution_mode,
                     "lifecycle": template.lifecycle.model_copy(
                         update={
                             "residency": BrowserResidency.ON_DEMAND,
@@ -187,6 +193,7 @@ class ScopeResolver:
                 "profile_id": identity_id,
                 "revision": 0,
                 "owner_scope_id": scope_id,
+                "execution_mode": execution_mode,
                 "lifecycle": template.lifecycle.model_copy(
                     update={
                         "residency": BrowserResidency.ON_DEMAND,

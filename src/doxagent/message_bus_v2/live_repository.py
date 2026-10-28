@@ -6,8 +6,11 @@ poll/distribution run or durable copy of an EnrichmentJob is created here.
 
 from __future__ import annotations
 
+import copy
 import json
 import os
+import threading
+from collections import OrderedDict
 from datetime import datetime, timedelta
 
 from .admission import AdmissionContext, evaluate_admission
@@ -15,6 +18,7 @@ from .body_results import article_key, update_hint
 from .schema import canonical_json, new_id, sha256_text, utc_now
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS live_migrations(name TEXT PRIMARY KEY,completed_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS live_articles(
  article_key TEXT PRIMARY KEY,source_id TEXT NOT NULL,url TEXT NOT NULL,publisher TEXT NOT NULL DEFAULT '',
  material_hint TEXT NOT NULL,first_seen_at TEXT NOT NULL,input_ref TEXT NOT NULL,
@@ -49,6 +53,9 @@ class LiveRepository:
         self.bus = bus_repository
         self.path = self.bus.path
         self.spool = self.path.parent / "live-results"
+        self._loaded = OrderedDict()
+        self._loaded_bytes = 0
+        self._loaded_lock = threading.Lock()
 
     def install(self):
         with self.bus.transaction() as db:
@@ -73,8 +80,8 @@ class LiveRepository:
 
     def put(self, value):
         """Prepare an immutable document and all of its refs before BEGIN."""
-        from doxagent.v2_read.source_lifecycle import native_hashes
         from doxagent.v2_read.native_content import MARKER
+        from doxagent.v2_read.source_lifecycle import native_hashes
 
         encoded = self.bus.content.encode(value)
         raw = encoded.encode()
@@ -85,8 +92,23 @@ class LiveRepository:
     def load(self, ref):
         # The root is an immutable encoded JSON document; expand its explicit
         # nested refs once, not by selecting data_json on a scalar queue query.
+        with self._loaded_lock:
+            cached = self._loaded.get(ref)
+            if cached is not None:
+                self._loaded.move_to_end(ref)
+                return copy.deepcopy(cached[1])
         value = self.bus.content.decode(json.loads(ref))
-        return self.bus.content.decode(value)
+        value = self.bus.content.decode(value)
+        size = len(canonical_json(value).encode())
+        if size <= 2 * 1024 * 1024:
+            with self._loaded_lock:
+                prior = self._loaded.pop(ref, None)
+                self._loaded_bytes += size - (prior[0] if prior else 0)
+                self._loaded[ref] = (size, copy.deepcopy(value))
+                while self._loaded_bytes > 2 * 1024 * 1024 or len(self._loaded) > 16:
+                    _, removed = self._loaded.popitem(last=False)
+                    self._loaded_bytes -= removed[0]
+        return value
 
     @staticmethod
     def _refs(db, owner, key, refs):
@@ -176,7 +198,7 @@ class LiveRepository:
                 ref, refs = prior[0], set()
             else:
                 ref, refs = self.put(message.model_dump(mode="json"))
-            from .deduplication import text, stable_fields
+            from .deduplication import stable_fields, text
 
             old_fields = (
                 legacy_known.metadata.get("content_evidence", {}).get("input_fields", {})
@@ -250,7 +272,7 @@ class LiveRepository:
                         ("legacy_body:" + item["legacy_body_key"], key, item["first_seen"]),
                     )
                 old = db.execute(
-                    "SELECT state,result_ref,material_hint,input_revision,material_observed_at,checked_at,body_digest,work_kind FROM live_articles "
+                    "SELECT state,result_ref,material_hint,input_revision,material_observed_at,checked_at,body_digest,work_kind,next_check_at FROM live_articles "
                     "WHERE article_key=?",
                     (key,),
                 ).fetchone()
@@ -311,6 +333,8 @@ class LiveRepository:
                     old["state"] == "READY"
                     and old["body_digest"]
                     and old["checked_at"]
+                    and old["next_check_at"]
+                    and old["next_check_at"] <= item["observed"]
                     and (
                         datetime.fromisoformat(item["observed"])
                         - datetime.fromisoformat(old["checked_at"])
@@ -988,8 +1012,9 @@ class LiveRepository:
 
     def prepare_publication(self, bus, row, source, binding, message):
         """All models, full reads and Native publication happen before BEGIN."""
-        from .schema import RawProcessingStatus, StreamItem, StreamMember, IngestResult
         from doxagent.v2_control.mirror import state_in
+
+        from .schema import IngestResult, RawProcessingStatus, StreamItem, StreamMember
 
         key, ticker = row["article_key"], row["ticker"]
         known = (
@@ -1151,8 +1176,9 @@ class LiveRepository:
         )
 
     def publish(self, prepared):
-        from .schema import PublicationMode
         from doxagent.v2_control.mirror import state_in
+
+        from .schema import PublicationMode
 
         row = prepared["row"]
         key = row["article_key"]

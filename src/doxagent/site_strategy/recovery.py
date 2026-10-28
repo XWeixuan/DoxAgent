@@ -427,9 +427,9 @@ class BrowserRecoveryCoordinator:
     async def run_once(self):
         if self._billing_task is None or self._billing_task.done():
             self._billing_task = asyncio.create_task(self.datadome_solver.collect_orphan_results())
-        if time.monotonic() - self._last_legacy_scan >= 60:
+        if not self._last_legacy_scan:
             # An OPEN user session is deferred by migration, never stolen. Once
-            # released, the same bounded scan brings it under autonomous recovery.
+            # released, the normal session callback registers its recovery.
             self._legacy_migration_enabled=await registry_io(self._legacy_enabled)
             if self._legacy_migration_enabled:
                 await asyncio.to_thread(
@@ -438,6 +438,23 @@ class BrowserRecoveryCoordinator:
             self._last_legacy_scan = time.monotonic()
         # Claim only once a slot is available; queued leases must not expire in RAM.
         for recovery in (await registry_io(self.store.list_recoveries, active_only=False)):
+            from .recovery_policy import demand_only, public_identity
+
+            identity = await registry_io(self.service.repository.get_identity, recovery.identity_id)
+            if demand_only(recovery.scope_id) and public_identity(identity) and recovery.phase != "RESOLVED":
+                sessions = await registry_io(self.store.list_sessions)
+                human = any(s.identity_id == recovery.identity_id and s.state == "OPEN"
+                            for s in sessions)
+                paid = await registry_io(self._paid_pending, recovery.recovery_id)
+                if not human and not paid:
+                    if recovery.automation_active:
+                        await registry_io(self.store.save_recovery, recovery.model_copy(update={
+                            "automation_active": False, "lease_owner": None, "lease_until": None,
+                            "last_error": "demand_only_recovery",
+                        }), expected_generation=recovery.generation)
+                    continue
+            if not recovery.automation_active and recovery.phase != "RESOLVED":
+                continue
             if recovery.phase == "RESOLVED" and not recovery.cleanup_pending:
                 continue
             if recovery.identity_id in self.tasks or recovery.next_due_at > utc_now():
@@ -452,6 +469,14 @@ class BrowserRecoveryCoordinator:
             task = asyncio.create_task(work, name="browser-recovery:" + recovery.identity_id)
             self.tasks[recovery.identity_id] = task
             task.add_done_callback(lambda t, key=recovery.identity_id: self._finished(key, t))
+
+    def _paid_pending(self, recovery_id):
+        with self.service.repository._lock:
+            return bool(self.service.repository._connection.execute(
+                "SELECT 1 FROM datadome_solver_jobs WHERE recovery_id=? "
+                "AND json_extract(data_json,'$.status') IN ('PENDING','SUBMITTING','APPLYING') LIMIT 1",
+                (recovery_id,),
+            ).fetchone())
 
     def _finished(self, key, task):
         self.tasks.pop(key, None)

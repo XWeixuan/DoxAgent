@@ -1673,7 +1673,8 @@ class MessageBusV2Repository:
 
     def enqueue_enrichment_job(self, job: EnrichmentJob) -> tuple[EnrichmentJob, bool]:
         """Insert one active intake job, or return the already queued equivalent."""
-
+        if getattr(self, "live_queue", None) is not None:
+            return self.live_queue.enqueue_frozen(job)
         with self.transaction() as connection:
             existing_row = connection.execute(
                 "select data_json from content_enrichment_jobs where intake_key=?",
@@ -2419,83 +2420,58 @@ class MessageBusV2Repository:
                 ),
             )
 
-    def finalize_standard(
-        self,
-        *,
-        raw: RawMessage,
-        message: StandardMessage,
-        streaming: StreamingConfig,
-    ) -> StreamItem | None:
-        """Atomically persist Standard + publication target + completed Raw state."""
-
+    def prepare_finalization(self, *, raw, message, streaming):
         completed = raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED})
-        with self.transaction() as connection:
-            completed = self._retain_concurrent_evidence(connection, completed)
-            message = message.model_copy(
-                update={
-                    "metadata": completed.metadata,
-                    "title": completed.title,
-                    "body": completed.body,
-                }
-            )
-            connection.execute(
-                """insert into standard_messages(
-                     standard_message_id,raw_message_id,ticker,source_id,binding_id,published_at,data_json)
-                   values(?,?,?,?,?,?,?) on conflict(raw_message_id) do nothing""",
-                (
-                    message.standard_message_id,
-                    message.raw_message_id,
-                    message.ticker,
-                    message.source_id,
-                    message.binding_id,
-                    message.published_at.isoformat(),
-                    self._json(message),
-                ),
-            )
-            stored_row = connection.execute(
-                "select data_json from standard_messages where raw_message_id=?",
-                (raw.raw_message_id,),
-            ).fetchone()
-            stored = StandardMessage.model_validate_json(stored_row["data_json"])
-            item: StreamItem | None = None
-            if streaming.publication_mode is PublicationMode.IMMEDIATE:
-                existing_row = connection.execute(
-                    """select si.data_json from stream_items si
-                       join stream_members sm on sm.stream_item_id=si.stream_item_id
-                       where sm.standard_message_id=?""",
-                    (stored.standard_message_id,),
-                ).fetchone()
-                if existing_row is not None:
-                    item = StreamItem.model_validate_json(existing_row["data_json"])
-                else:
-                    item = self._publish_in_transaction(
-                        connection, stored.ticker, [stored], PublicationMode.IMMEDIATE
-                    )
+        with self._connect() as db:
+            old = db.execute("SELECT data_json AS payload_token FROM raw_messages WHERE raw_message_id=?",
+                             (raw.raw_message_id,)).fetchone()
+            completed = self._retain_concurrent_evidence(db, completed)
+        message = message.model_copy(update={"metadata": completed.metadata,
+            "title": completed.title, "body": completed.body})
+        stored = self.get_standard_for_raw(raw.raw_message_id) or message
+        return {"raw": completed, "raw_json": self._json(completed),
+                "token": old[0] if old else None, "message": stored,
+                "message_json": self._json(stored), "streaming": streaming}
+
+    def commit_finalization(self, prepared):
+        raw, message = prepared["raw"], prepared["message"]
+        with self.transaction() as db:
+            current = db.execute("SELECT data_json AS payload_token FROM raw_messages WHERE raw_message_id=?",
+                                 (raw.raw_message_id,)).fetchone()
+            if (current[0] if current else None) != prepared["token"]:
+                raise RuntimeError("raw_changed_during_preparation")
+            db.execute("INSERT INTO standard_messages(standard_message_id,raw_message_id,ticker,source_id,"
+                       "binding_id,published_at,data_json) VALUES(?,?,?,?,?,?,?) "
+                       "ON CONFLICT(raw_message_id) DO NOTHING",
+                       (message.standard_message_id, message.raw_message_id, message.ticker,
+                        message.source_id, message.binding_id, message.published_at.isoformat(),
+                        prepared["message_json"]))
+            actual = db.execute("SELECT standard_message_id FROM standard_messages WHERE raw_message_id=?",
+                                (raw.raw_message_id,)).fetchone()
+            if actual[0] != message.standard_message_id:
+                raise RuntimeError("standard_changed_during_preparation")
+            item = None
+            if prepared["streaming"].publication_mode is PublicationMode.IMMEDIATE:
+                item = self._publish_in_transaction(db, message.ticker, [message], PublicationMode.IMMEDIATE)
             else:
-                added_at = utc_now()
-                connection.execute(
-                    """insert into buffer_entries(
-                         standard_message_id,binding_id,ticker,source_id,added_at,data_json)
-                       values(?,?,?,?,?,?) on conflict(standard_message_id) do nothing""",
-                    (
-                        stored.standard_message_id,
-                        stored.binding_id,
-                        stored.ticker,
-                        stored.source_id,
-                        added_at.isoformat(),
-                        self._json(stored),
-                    ),
-                )
-            connection.execute(
-                """update raw_messages set processing_status=?,data_json=?
-                   where raw_message_id=?""",
-                (
-                    completed.processing_status.value,
-                    self._json(completed),
-                    completed.raw_message_id,
-                ),
-            )
+                db.execute("INSERT INTO buffer_entries(standard_message_id,binding_id,ticker,source_id,added_at,data_json) "
+                           "VALUES(?,?,?,?,?,?) ON CONFLICT(standard_message_id) DO NOTHING",
+                           (message.standard_message_id, message.binding_id, message.ticker,
+                            message.source_id, utc_now().isoformat(), prepared["message_json"]))
+            db.execute("UPDATE raw_messages SET processing_status=?,data_json=? WHERE raw_message_id=?",
+                       (raw.processing_status.value, prepared["raw_json"], raw.raw_message_id))
         return item
+
+    def finalize_standard(self, *, raw, message, streaming):
+        # Compatibility callers prepare outside the SQLite writer. Live delivery
+        # already uses its own prepare/commit boundary and never calls this path.
+        for attempt in range(3):
+            prepared = self.prepare_finalization(raw=raw, message=message, streaming=streaming)
+            try:
+                return self.commit_finalization(prepared)
+            except RuntimeError as exc:
+                if str(exc) not in {"raw_changed_during_preparation", "standard_changed_during_preparation"} or attempt == 2:
+                    raise
 
     def get_standard(self, standard_message_id: str) -> StandardMessage | None:
         with self._connect() as connection:

@@ -80,7 +80,9 @@ class ProjectionWorker:
                     "DELETE FROM gaps WHERE source=? AND event='source-unavailable'",
                     (source.source,),
                 )
-            reader = source.event_reader() if hasattr(source, "event_reader") else nullcontext(getattr(source, "event", None))
+            reader = (source.event_reader(serving=True) if isinstance(source, SourceOutbox)
+                      else source.event_reader() if hasattr(source, "event_reader")
+                      else nullcontext(getattr(source, "event", None)))
             with reader as load_event:
                 # Capture/health SQL can already consume the entire old one-
                 # second allowance. Budget actual event work, not setup time.
@@ -208,7 +210,8 @@ class ProjectionWorker:
             if source is None or not gap[1].isdigit():
                 continue
             try:
-                event = source.event(int(gap[1]))
+                event = (source.event(int(gap[1]), serving=True) if isinstance(source, SourceOutbox)
+                         else source.event(int(gap[1])))
             except sqlite3.OperationalError:
                 continue
             if event is None:

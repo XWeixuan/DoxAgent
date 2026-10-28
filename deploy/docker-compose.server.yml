@@ -96,6 +96,8 @@ services:
     pids_limit: 384
     shm_size: 512m
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-message-collector:
+    extra_hosts: ["host.docker.internal:host-gateway"]
   v2-content-enrichment:
     <<: *cgroup-boundary
     volumes: ["/run/doxagent-resources:/run/doxagent-resources:ro"]

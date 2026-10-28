@@ -634,6 +634,17 @@ class MaintenanceController:
                     current_session = self.store.get_session(session.session_id)
                     self.store.save_session(current_session.model_copy(update={"state": "CLOSED"}))
                     report.session_closed = True
+                # A verified anonymous Profile is real state, even without a
+                # login. Keep it for cold reuse instead of an empty Context.
+                if identity.execution_mode == "public_context" and report.body in {"FULL", "SHORT_FULL"}:
+                    await self.service.runtime.browser_runtimes.stop_identity(
+                        identity, reason="verified_public_profile"
+                    )
+                    self.service.repository.apply_identity(
+                        identity.model_copy(update={"execution_mode": "public_identity"}),
+                        expected_revision=identity.revision,
+                        actor="verified-public-profile",
+                    )
                 self.service.failover.reconcile(
                     scope, SitePurpose.CRAWLER if report.crawler == "READY" else SitePurpose.BODY
                 )

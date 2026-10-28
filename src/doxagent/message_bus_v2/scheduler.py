@@ -253,7 +253,8 @@ class GlobalPollScheduler:
             if self.runtime_orchestration is not None:
                 return await self.runtime_orchestration.run_once(self, collect=False)
             await self.storage_call(self.service.flush_due_buffers, now=utc_now())
-            await self.storage_call(self.service.retry_pending_raw)
+            if self.service.live_queue is None:
+                await self.storage_call(self.service.retry_pending_raw)
             return []
         if self._request_starts:
             starts, self._request_starts = self._request_starts, {}
@@ -346,7 +347,8 @@ class GlobalPollScheduler:
             )
             self._distribution_task = asyncio.create_task(pump())
         await self.storage_call(self.service.flush_due_buffers, now=now)
-        await self.storage_call(self.service.retry_pending_raw)
+        if self.service.live_queue is None:
+            await self.storage_call(self.service.retry_pending_raw)
         return [*completed, *results]
 
     async def run_forever(self, *, loop_sleep_seconds: float, stop: asyncio.Event) -> None:

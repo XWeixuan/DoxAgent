@@ -837,7 +837,7 @@ class PersistentBrowserPool:
             pass
         connection = getattr(getattr(self._playwright, "_impl_obj", None), "_connection", None)
         node = getattr(getattr(connection, "_transport", None), "_proc", None)
-        root = next(
+        root = None if clean_shutdown else next(
             (
                 p
                 for p in profile_browser_processes(directory)
@@ -899,9 +899,7 @@ async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: 
             raise RuntimeError("browser_page_cleanup_timeout") from None
         logger.warning("page close timed out; closing owned CDP target %s", target_id)
         async with asyncio.timeout(5):
-            result = await cdp.send("Target.closeTarget", {"targetId": target_id})
-        if not result.get("success"):
-            raise RuntimeError("browser_page_cleanup_failed") from None
+            await cdp.send("Target.closeTarget", {"targetId": target_id})
 
 
 class _PageLease:
@@ -928,14 +926,20 @@ class _PageLease:
     async def __aexit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         if self._closed:
             return
-        self._closed = True
         try:
             await _close_owned_page(self.page, self.entry.cdp)
-        finally:
-            async with self.pool._lock:
-                self.entry.active_pages -= 1
-                self.entry.last_used = time.monotonic()
-            self.pool._page_slots.release()
+        except BaseException:
+            owner = getattr(self.page, "_doxagent_target_owner", None)
+            allocation = getattr(self.page, "_doxagent_allocation_id", None)
+            if owner and allocation:
+                await owner.event("state", {"allocation_id": allocation,
+                    "state": "CLOSE_PENDING", "cleanup_failed": True})
+            raise
+        self._closed = True
+        async with self.pool._lock:
+            self.entry.active_pages -= 1
+            self.entry.last_used = time.monotonic()
+        self.pool._page_slots.release()
 
 
 class _DocumentNavigationGate:
@@ -1378,6 +1382,11 @@ class SiteAccessRuntime:
                 pass
         page = anchor.page if anchor else await lease.__aenter__()
         gate = anchor.gate if anchor else _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        if hasattr(lease, "on_closed"):
+            lease.on_closed = gate.close
+        interval = request.recipe_parameters.get("_poll_interval_seconds", 0)
+        if isinstance(interval, (float, int)) and interval > 0:
+            page._doxagent_idle_seconds = max(90, min(900, interval * 1.25))
         retained = False
         keep_anchor = False
         response = anchor.response if anchor else None
@@ -1469,8 +1478,8 @@ class SiteAccessRuntime:
                                       recipe_result={"rows": rows}):
                 page._doxagent_challenge_html = html
                 token = None
-                if (not request.recipe_parameters.get("_maintenance_canary")
-                        or request.recipe_parameters.get("_retain_recovery_probe")):
+                if (not request.recipe_parameters.get("_public_ephemeral") and (not request.recipe_parameters.get("_maintenance_canary")
+                        or request.recipe_parameters.get("_retain_recovery_probe"))):
                     token = await self._retain_challenge(
                         lease, page, gate, identity, resolved, request
                     )
@@ -1606,7 +1615,7 @@ class SiteAccessRuntime:
                             capture_timestamp_rows,
                             page_http_failure,
                         )
-                        if not anchor:
+                        if not anchor or page.url != request.url:
                             response = await page.goto(request.url,wait_until='commit',
                                                        timeout=min(request.remaining_budget_ms,10000))
                             if response is not None and response.status>=400:
@@ -1891,17 +1900,18 @@ class SiteAccessRuntime:
                     from doxagent.content_enrichment.quality import choose_candidate
 
                     content_deadline = min(deadline, time.monotonic() + 12)
-                    while True:
-                        info = inspect_html(
-                            html, page.url, "", strategy_ref=resolved.body.ref,
-                            strategy_parameters=resolved.body.parameters, generic_extraction=False,
-                        )
-                        candidate, quality, _ = choose_candidate(info, "")
-                        if info.access_reason or (candidate and quality in {"FULL", "SHORT_FULL"}):
-                            break
-                        if time.monotonic() >= content_deadline:
-                            break
-                        await asyncio.sleep(.5)
+                    info = inspect_html(html, page.url, "", strategy_ref=resolved.body.ref,
+                        strategy_parameters=resolved.body.parameters, generic_extraction=False)
+                    candidate, quality, _ = choose_candidate(info, "")
+                    if not info.access_reason and not (candidate and quality in {"FULL", "SHORT_FULL"}):
+                        try:
+                            await page.wait_for_function("""() => {
+                                const node=document.querySelector('[data-testid="ArticleBody"], [itemprop="articleBody"], article');
+                                return node && node.innerText.trim().length > 500;
+                            }""", polling=250, timeout=max(1,int((content_deadline-time.monotonic())*1000)))
+                        except Exception as exc:
+                            if "timeout" not in type(exc).__name__.lower():
+                                raise
                         html = await page.content()
                 if len(html.encode("utf-8")) > request.max_response_bytes:
                     return RuntimeResponse(
@@ -1937,7 +1947,7 @@ class SiteAccessRuntime:
                     )
                 token = (
                     uuid4().hex
-                    if (challenge and (not request.recipe_parameters.get("_maintenance_canary")
+                    if (challenge and not request.recipe_parameters.get("_public_ephemeral") and (not request.recipe_parameters.get("_maintenance_canary")
                                        or request.recipe_parameters.get("_retain_recovery_probe")))
                     else None
                 )
@@ -2027,6 +2037,7 @@ class SiteAccessRuntime:
                         _verification_document(html, page.url,
                             int(getattr(exc, "status_code", 0) or (response.status if response else 0)),
                             getattr(exc, "response_headers", {}), resolved, request, inspection=inspection)
+                        and not request.recipe_parameters.get("_public_ephemeral")
                         and (not request.recipe_parameters.get("_maintenance_canary")
                              or request.recipe_parameters.get("_retain_recovery_probe"))
                     ):
@@ -2080,9 +2091,6 @@ class SiteAccessRuntime:
                             provenance=lease.provenance,
                         )
                 raise
-            finally:
-                if not retained and not keep_anchor and not getattr(page, "_doxagent_handoff_pending", False):
-                    await gate.close()
         finally:
             if hasattr(page, "remove_listener"):
                 page.remove_listener("request", observe_request)
@@ -2091,6 +2099,8 @@ class SiteAccessRuntime:
                 page.remove_listener("response", observe_response)
             if not retained and not keep_anchor and not getattr(page, "_doxagent_handoff_pending", False):
                 await lease.__aexit__(None, None, None)
+                if not hasattr(lease, "on_closed"):
+                    await gate.close()
 
     async def _wait_automatic_document(self, lease, page, gate, resolved, html, deadline):
         from .challenge_detection import assess

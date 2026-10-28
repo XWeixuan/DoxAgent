@@ -67,7 +67,7 @@ class ChromeSupervisorClient:
             "ensure",
             {
                 # Metadata is owner-only until the supervisor advertises v2.
-                "identity": identity.model_dump(mode="json", exclude={"owner_scope_id"}),
+                "identity": identity.model_dump(mode="json", exclude={"owner_scope_id", "execution_mode"}),
                 # Probe telemetry belongs to Site Access, not the supervisor
                 # wire contract. Older long-lived supervisors reject extra fields.
                 "egress": egress.model_dump(

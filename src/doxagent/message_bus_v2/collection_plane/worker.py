@@ -365,6 +365,7 @@ class Collector:
             seconds=max(0, int((now - epoch).total_seconds() // period)) * period
         )
         DEMAND.get()["due_at"] = due.isoformat()
+        DEMAND.get()["interval_seconds"] = period
         run_id = new_id("collect")
         pages = []
         page_committed = False

@@ -80,7 +80,7 @@ class Capsule:
             limit=16 * 1024 * 1024,
         )
         self._stderr_task = asyncio.create_task(self._drain_stderr())
-        owned = await asyncio.to_thread(owned_processes, self.identity)
+        owned = await asyncio.to_thread(owned_processes, self.identity, refresh=True)
         (directory / "owner.json").write_text(
             json.dumps(
                 {
@@ -212,6 +212,8 @@ class Capsule:
                 temporary = target.with_suffix(".tmp")
                 temporary.write_text(json.dumps(value), encoding="utf-8")
                 temporary.replace(target)
+                if self.cleanup_state == "CLOSED":
+                    target.replace(target.with_suffix(".closed"))
         except (OSError, ValueError):
             pass
 
@@ -274,20 +276,33 @@ class CapsuleRuntime:
 
     async def recover(self) -> None:
         import signal
+        from .process_tree import process_owners
 
         # The caller already holds the exclusive worker-directory OS lock.
         owners = list((self.root / "capsules").glob("*/owner.json"))
         owners += list((self.root / "lifecycle-owners").glob("*.json"))
+        pending = {}
         for owner in owners:
-            identity = json.loads(owner.read_text(encoding="utf-8"))["identity"]
-            for _ in range(50):
-                remaining = await asyncio.to_thread(owned_processes, identity)
-                if not remaining:
-                    break
-                await asyncio.to_thread(signal_owned, remaining, signal.SIGKILL)
-                await asyncio.sleep(0.1)
-            else:
-                raise CapsuleError("CAPSULE_CLEANUP_QUARANTINED", "old execution still exists")
+            value = json.loads(owner.read_text(encoding="utf-8"))
+            if value.get("cleanup_state") == "CLOSED":
+                owner.replace(owner.with_suffix(".closed"))
+                continue
+            pending[value["identity"]] = (owner, value)
+        for _ in range(6):
+            snapshot = await asyncio.to_thread(process_owners, refresh=True)
+            for identity, (owner, value) in tuple(pending.items()):
+                remaining = snapshot.get(identity, {})
+                if remaining:
+                    await asyncio.to_thread(signal_owned, remaining, signal.SIGKILL)
+                else:
+                    value["cleanup_state"] = "CLOSED"
+                    owner.write_text(json.dumps(value), encoding="utf-8")
+                    owner.replace(owner.with_suffix(".closed"))
+                    pending.pop(identity)
+            if not pending:
+                return
+            await asyncio.sleep(1)
+        raise CapsuleError("CAPSULE_CLEANUP_QUARANTINED", "old execution still exists")
 
     def memory_for(self, request: WorkerRunRequest) -> int:
         capsule = self.active.get(self.key(request))

@@ -87,22 +87,28 @@ class CombinationHealthManager:
                     from .governance_repository import GovernanceRepository
 
                     recovery = (await registry_io(GovernanceRepository(self.repository).get_recovery, item.identity_id or item.profile_id or ""))
-                    recovering = recovery is not None and recovery.phase != "RESOLVED"
+                    from .recovery_policy import background_recovery
+
+                    recovering = background_recovery(recovery)
+                    on_demand = runtime_key.startswith("scope:publisher:") or (
+                        recovery is not None and not recovery.automation_active)
                     if recovering and (purpose is None or any(
                         c["purpose"] == purpose.value for c in recovery.affected_contexts
                     )):
                         next_retry = min(next_retry or recovery.next_due_at, recovery.next_due_at)
                         continue
-                    if runtime.manual_attention_required and not recovering:
+                    if runtime.manual_attention_required and not recovering and not on_demand:
                         continue
-                    if runtime.state == "COOLDOWN" and not recovering:
-                        if runtime.cooldown_until and (
-                            next_retry is None or runtime.cooldown_until < next_retry
-                        ):
-                            next_retry = runtime.cooldown_until
-                        continue
-                    if runtime.state == "HALF_OPEN":
-                        continue
+                    if runtime.state in {"COOLDOWN", "HALF_OPEN"} and not recovering:
+                        if runtime.cooldown_until and runtime.cooldown_until > instant:
+                            next_retry = min(next_retry or runtime.cooldown_until, runtime.cooldown_until)
+                            continue
+                        # The due business request is the half-open attempt.
+                        # Normal identity capacity still serializes maintenance.
+                        if not read_only:
+                            runtime.state = "READY"
+                            runtime.probe_in_flight = False
+                            changed = True
                 ready.append(item)
             if changed and not read_only:
                 prior = state.generation

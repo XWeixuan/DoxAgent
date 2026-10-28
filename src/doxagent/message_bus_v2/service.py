@@ -1099,6 +1099,16 @@ class MessageBusV2Service:
 
         if google_news_message_blocked(source.source_id, message):
             return None, False
+        if self.live_queue is not None:
+            now = collected_at or utc_now()
+            job = EnrichmentJob(job_id=new_id("compat"), intake_key=new_id("compat-input"),
+                poll_run_id=poll_run_id, source=source, binding=binding, message=message,
+                provider_raw_hash=sha256_text(canonical_json(message.raw_payload)),
+                bootstrap=bootstrap, created_at=now, updated_at=now, last_seen_at=now,
+                not_before=now, deadline_at=now + timedelta(seconds=self.enrichment_retry_deadline_seconds),
+                pipeline_version=self.enrichment_pipeline_version,
+                fetch_budget_seconds=self.enrichment_retry_deadline_seconds)
+            return self.live_queue.enqueue_frozen(job)
         with self.repository.atomic_intake():
             now = collected_at or utc_now()
             if source.source_id == "sec_edgar" and message.published_at >= binding.created_at:
@@ -1608,7 +1618,7 @@ class MessageBusV2Service:
         messages = [message for message, _ in entries]
         from doxagent.v2_control.mirror import state_in
 
-        with self.repository.transaction() as db:
+        with self.repository._connect() as db:
             control = state_in(db, binding.ticker)
         boundary = (control or {}).get("mode_effective_at")
         if boundary:

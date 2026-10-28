@@ -560,7 +560,7 @@ async def test_distribution_fills_freed_slot_before_slow_article_finishes():
     from doxagent.message_bus_v2.distribution import DistributionWorker
     from doxagent.message_bus_v2.storage_lane import StorageLane
 
-    repo = SimpleNamespace(expire_runs=lambda: 0, claim_deliveries=lambda **kw: [], claim_decisions=lambda limit: [], ready_work=lambda: (True,False))
+    repo = SimpleNamespace(expire_runs=lambda **kw: 0, claim_deliveries=lambda **kw: [], claim_decisions=lambda limit: [], ready_work=lambda: (True,False))
     worker = DistributionWorker(repo, SimpleNamespace(storage=StorageLane(),repository=SimpleNamespace(
         read_only=lambda operation,*args: operation(*args))), None, concurrency=2)
 
@@ -590,7 +590,7 @@ async def test_distribution_fills_freed_slot_before_slow_article_finishes():
 
 
 @pytest.mark.parametrize("mode", ["cpu", "intake"])
-async def test_cpu_pressure_preserves_new_articles_and_leaves_rechecks_pending(
+async def test_cpu_pressure_does_not_permanently_starve_rechecks(
     tmp_path, monkeypatch, mode
 ):
     from doxagent.message_bus_v2 import pressure
@@ -629,13 +629,9 @@ async def test_cpu_pressure_preserves_new_articles_and_leaves_rechecks_pending(
             )
         assert repo.polling.backlogged()
     monkeypatch.setattr(pressure, "cpu_pressure", lambda: 30 if mode == "cpu" else 0)
-    assert pressure.background_allowed() is (mode == "intake")
+    assert pressure.background_allowed() is True
     claimed = repo.claim_enrichment_jobs(limit=8, allow_rechecks=pressure.background_allowed())
-    assert [job.job_id for job in claimed] == [jobs[1].job_id]
-    assert (
-        next(j for j in repo.list_enrichment_jobs() if j.job_id == jobs[0].job_id).status.value
-        == "queued"
-    )
+    assert {job.job_id for job in claimed} == {job.job_id for job in jobs}
 
 
 def test_new_head_intake_precedes_older_history_without_losing_history(tmp_path):

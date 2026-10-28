@@ -210,6 +210,9 @@ class Worker:
                 egress,
             )
             return encode_response(response)
+        if action == "cleanup":
+            await self.runtime.browser_runtimes.close_idle()
+            return {"cleanup_pending": len(self.runtime.browser_runtimes._pending_closes)}
         if action == "auto_login_reuters":
             return await self.runtime.auto_login_reuters(
                 identity, egress, command.pop("credentials"), AccessRequest.model_validate(command["request"]),

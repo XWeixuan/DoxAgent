@@ -56,19 +56,25 @@ class _ExternalLease:
     async def __aexit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         if self._closed:
             return
-        self._closed = True
         try:
             await _close_owned_page(self.page, self.entry.cdp)
-        finally:
-            async with self.adapter._lock:
-                self.entry.active_pages -= 1
-                self.entry.last_used = time.monotonic()
-            self.adapter._page_slots.release()
-            if self.adapter._rotation_due and not self.adapter.rotation_paused:
-                try:
-                    await self.adapter.maintain_driver()
-                except Exception:
-                    logger.exception("deferred external driver rotation failed")
+        except BaseException:
+            owner = getattr(self.page, "_doxagent_target_owner", None)
+            allocation = getattr(self.page, "_doxagent_allocation_id", None)
+            if owner and allocation:
+                await owner.event("state", {"allocation_id": allocation,
+                    "state": "CLOSE_PENDING", "cleanup_failed": True})
+            raise
+        self._closed = True
+        async with self.adapter._lock:
+            self.entry.active_pages -= 1
+            self.entry.last_used = time.monotonic()
+        self.adapter._page_slots.release()
+        if self.adapter._rotation_due and not self.adapter.rotation_paused:
+            try:
+                await self.adapter.maintain_driver()
+            except Exception:
+                logger.exception("deferred external driver rotation failed")
 
     async def abandon(self) -> None:
         """Release the controller lease while leaving the real Chrome page open."""

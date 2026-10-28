@@ -62,6 +62,7 @@ class BrowserRuntimeManager:
         self.relay_target_path = Path(relay_target_path) if relay_target_path else None
         self._page_slots = asyncio.Semaphore(max(1, max_pages))
         self._locks: dict[str, asyncio.Lock] = {}
+        self._pending_closes = set()
 
     def adapter(self, identity: BrowserIdentitySpec) -> BrowserRuntimeAdapter:
         if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
@@ -83,6 +84,11 @@ class BrowserRuntimeManager:
 
     async def close_idle(self) -> int:
         closed = 0
+        for lease in tuple(self._pending_closes):
+            try:
+                await lease.__aexit__(None, None, None)
+            except Exception:
+                continue  # Still physically occupied; never report a free slot.
         for adapter in (self.managed, self.external):
             if adapter is None:
                 continue
@@ -92,6 +98,10 @@ class BrowserRuntimeManager:
     async def page(
         self, identity: BrowserIdentitySpec, egress: ProxyEgress, *, deadline: float | None = None
     ) -> PageLease:
+        for lease in tuple(self._pending_closes):
+            if lease.identity_id == identity.identity_id:
+                async with asyncio.timeout_at(deadline):
+                    await lease.__aexit__(None, None, None)
         if deadline is None:
             await self._page_slots.acquire()
         else:
@@ -102,7 +112,7 @@ class BrowserRuntimeManager:
             async with asyncio.timeout_at(deadline):
                 async with lock:
                     inner = await self.adapter(identity).page(identity, egress, deadline=deadline)
-            return _ManagerLease(inner, self._page_slots)
+            return _ManagerLease(inner, self._page_slots, self, identity.identity_id)
         except BaseException:
             self._page_slots.release()
             raise
@@ -174,13 +184,15 @@ class BrowserRuntimeManager:
 
 
 class _ManagerLease:
-    def __init__(self, inner: PageLease, semaphore: asyncio.Semaphore) -> None:
+    def __init__(self, inner: PageLease, semaphore: asyncio.Semaphore, manager=None, identity_id=None) -> None:
         self.inner = inner
         self.page = inner.page
         self.browser_cdp = inner.browser_cdp
         self.provenance = inner.provenance
         self.semaphore = semaphore
         self._released = False
+        self.manager, self.identity_id = manager, identity_id
+        self.on_closed = None
 
     async def __aenter__(self) -> Any:
         return await self.inner.__aenter__()
@@ -188,7 +200,13 @@ class _ManagerLease:
     async def __aexit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         try:
             await self.inner.__aexit__(exc_type, exc, traceback)
-        finally:
+            if self.on_closed is not None:
+                await self.on_closed()
+        except BaseException:
+            if self.manager is not None:
+                self.manager._pending_closes.add(self)
+            raise
+        else:
             self._release()
 
     async def abandon(self) -> None:
@@ -205,6 +223,8 @@ class _ManagerLease:
         if not self._released:
             self._released = True
             self.semaphore.release()
+            if self.manager is not None:
+                self.manager._pending_closes.discard(self)
 
 
 __all__ = [

@@ -86,11 +86,20 @@ class ContentEnrichmentHub:
         self.distribution = DistributionRepository(repository)
         self.live = getattr(bus, "live_queue", None)
         self._legacy_claim_round = 0
+        self._legacy_migrated = None
 
     async def _claim_jobs(self, *, limit, now):
         if self.live is None:
             return await self.bus.storage.call(self.repository.claim_enrichment_jobs,
                 limit=limit,now=now,lease_seconds=60,allow_rechecks=True)
+        if self._legacy_migrated is None:
+            def completed():
+                with self.repository._connect() as db:
+                    exists = db.execute("SELECT 1 FROM sqlite_master WHERE name='live_migrations'").fetchone()
+                    return bool(exists and db.execute("SELECT 1 FROM live_migrations WHERE name='legacy-body-complete'").fetchone())
+            self._legacy_migrated = await self.bus.storage.read(completed)
+        if self._legacy_migrated:
+            return await self.live.claim(limit, allow_background=not await self.bus.storage.read(self.live.background_active))
         self._legacy_claim_round += 1
         background=not await self.bus.storage.read(self.live.background_active)
         jobs=[]
@@ -810,7 +819,7 @@ class ContentEnrichmentHub:
 
     def _retry_after(self, attempts: Sequence[FetchAttempt]) -> float:
         values = [item.retry_after_seconds for item in attempts if item.retry_after_seconds]
-        return min(max(values, default=float(self.retry_delay_seconds)), 180.0)
+        return max(values, default=float(self.retry_delay_seconds))
 
     @staticmethod
     def _retryable(result: MediaExtractionResult) -> bool:

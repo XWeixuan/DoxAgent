@@ -59,6 +59,8 @@ class IdentityWorkerManager:
         self._locks = {}
         self.owner = TargetOwner(repository)
         self._snapshot_cache = {}
+        self.retired_profiles = set()
+        self.pending_targets = {}
 
     def snapshot(self, identity, egress):
         profile = self.repository.get_profile(identity.profile_id)
@@ -311,6 +313,12 @@ class IdentityWorkerManager:
                             result = {"registered": True}
                         else:
                             result = await self.owner.event(message["action"], payload)
+                            allocation = payload.get("allocation_id")
+                            if message["action"] == "state" and allocation:
+                                if payload.get("cleanup_failed"):
+                                    self.pending_targets[allocation] = handle.identity_id
+                                elif payload.get("state") in {"CLOSED", "LOST"}:
+                                    self.pending_targets.pop(allocation, None)
                         ack = {"ok": True, "result": result}
                     except Exception as exc:
                         pending = isinstance(exc, sqlite3.Error)
@@ -452,8 +460,22 @@ class IdentityWorkerManager:
                 continue
 
     async def graceful_drain_managed(self, identity, *, timeout=10, allow_maintenance=False):
+        stopped = await self._drain_managed(identity, timeout=timeout, allow_maintenance=allow_maintenance)
+        if stopped:
+            self.clear_pending(identity.identity_id)
+        return stopped
+
+    def clear_pending(self, identity_id):
+        for allocation, owner in tuple(self.pending_targets.items()):
+            if owner == identity_id:
+                self.pending_targets.pop(allocation, None)
+
+    async def _drain_managed(self, identity, *, timeout=10, allow_maintenance=False):
         """Only a recorded app-owned native PID may receive graceful SIGTERM."""
-        if os.name != "posix" or self.owner.store.current_challenge(identity.identity_id):
+        from .recovery_policy import public_identity
+        if os.name != "posix" or (
+            self.owner.store.current_challenge(identity.identity_id) and not public_identity(identity)
+        ):
             return False
         profile = self.repository.get_profile(identity.profile_id)
         if not profile or (profile.maintenance_session_id and not allow_maintenance):
@@ -493,6 +515,9 @@ class IdentityWorkerManager:
         return False
 
     async def retire(self, identity_id, *, graceful=True):
+        identity = self.repository.get_identity(identity_id)
+        if identity:
+            self.retired_profiles.add(identity.profile_id)
         handle = self.workers.get(identity_id)
         if not handle:
             return

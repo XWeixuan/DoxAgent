@@ -137,7 +137,8 @@ class SiteAccessClient:
         if demand:
             request = request.model_copy(update={"work_class": demand["work_class"],
                 "recipe_parameters": {**request.recipe_parameters, "_poll_due_at": demand['due_at'],
-                                      "_poll_rate": demand['rate']}})
+                                      "_poll_rate": demand['rate'],
+                                      "_poll_interval_seconds": demand.get('interval_seconds', 60)}})
 
         context = current_routing()
         if request.origin_scope_id is None and context is not None:

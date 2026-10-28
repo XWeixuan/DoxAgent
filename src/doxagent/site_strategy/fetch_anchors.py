@@ -27,7 +27,7 @@ class FetchAnchor:
 
 
 class FetchAnchors:
-    def __init__(self, *, idle_seconds=30):
+    def __init__(self, *, idle_seconds=90):
         self.idle_seconds = idle_seconds
         self.idle = {}
 
@@ -48,7 +48,7 @@ class FetchAnchors:
                 or anchor.egress_id != egress.egress_id
                 or anchor.page.is_closed()
                 or anchor.gate.blocked
-                or time.monotonic() - anchor.created_at > 300
+                or time.monotonic() - anchor.created_at > max(300, getattr(anchor.page, "_doxagent_idle_seconds", self.idle_seconds) * 2)
             ):
                 await self._close(anchor)
                 return None
@@ -86,9 +86,9 @@ class FetchAnchors:
                 except Exception:
                     pass
 
-    def put(self, identity, anchor, *, freeze=True, limit=None):
+    def put(self, identity, anchor, *, freeze=False, limit=None):
         bucket = self.idle.setdefault(identity.identity_id, [])
-        limit = limit or 1
+        limit = limit or identity.access.max_concurrency
         if len(bucket) >= limit:
             return False
         bucket.append(anchor)
@@ -105,7 +105,7 @@ class FetchAnchors:
         return True
 
     async def _expire(self, key, anchor):
-        await asyncio.sleep(self.idle_seconds)
+        await asyncio.sleep(getattr(anchor.page, "_doxagent_idle_seconds", self.idle_seconds))
         bucket = self.idle.get(key, [])
         if anchor in bucket:
             bucket.remove(anchor)
@@ -119,14 +119,13 @@ class FetchAnchors:
     @staticmethod
     async def _close(anchor):
         if anchor.closed:return
-        anchor.closed=True
         if anchor.lifecycle_task and not anchor.lifecycle_task.done():
             anchor.lifecycle_task.cancel()
             await asyncio.gather(anchor.lifecycle_task, return_exceptions=True)
-        try:
+        await anchor.lease.__aexit__(None, None, None)
+        if not hasattr(anchor.lease, "on_closed"):
             await anchor.gate.close()
-        finally:
-            await anchor.lease.__aexit__(None, None, None)
+        anchor.closed = True
 
     async def close(self, identity_id=None):
         for key, bucket in tuple(self.idle.items()):

@@ -229,6 +229,8 @@ class ReadStore:
                     PRIMARY KEY(source,event));
                 CREATE TABLE IF NOT EXISTS contents (id TEXT PRIMARY KEY,ticker TEXT,kind TEXT,
                     sha256 TEXT,size INTEGER,body BLOB NOT NULL);
+                CREATE TABLE IF NOT EXISTS content_search (digest TEXT PRIMARY KEY, text TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS contents_digest ON contents(sha256);
                 CREATE TABLE IF NOT EXISTS views (id TEXT PRIMARY KEY,owner TEXT,seq INTEGER,
                     scope TEXT,payload TEXT,expires_at TEXT);
                 CREATE TABLE IF NOT EXISTS cursors (id TEXT PRIMARY KEY,owner TEXT,scope TEXT,
@@ -879,7 +881,11 @@ class ReadStore:
             # directly, without requiring a backfill or including message bodies.
             where.append(
                 "instr(casefold(json_extract(payload,'$.title.value')),?)>0"
-                if kind == "case" else "instr(search_text,?)>0"
+                if kind == "case" else
+                "instr(CASE WHEN substr(search_text,1,6)='@body:' THEN "
+                "coalesce(casefold(json_extract(payload,'$.title.value')),'')||char(10)||"
+                "coalesce((SELECT text FROM content_search WHERE digest=substr(search_text,7)),'') "
+                "ELSE search_text END,?)>0"
             )
             params.append(q.casefold())
         if originating_node is not None:
@@ -913,7 +919,7 @@ class ReadStore:
             where.append("(sort_key,id)<(?,?)")
             params.extend(after)
         with self.connect() as db:
-            if q and kind == "case":
+            if q:
                 db.create_function("casefold", 1, lambda text: (text or "").casefold(), deterministic=True)
             if result == "POLICY_RECALLED" and kind == "case":
                 def policy_recalled(raw):
@@ -954,6 +960,24 @@ class ReadStore:
                 }
                 for r in rows
             ]
+
+    def search_content(self, ticker, reference, body=None):
+        digest = reference["sha256"]
+        with self.connect() as db:
+            found = db.execute("SELECT 1 FROM content_search WHERE digest=?", (digest,)).fetchone()
+        if not found:
+            if body is None:
+                chunks, offset = [], 0
+                while offset < reference["size_bytes"]:
+                    _, text, end = self.content(ticker, reference["content_id"], offset, 131072)
+                    if end <= offset:
+                        raise ValueError("message content did not advance")
+                    chunks.append(text)
+                    offset = end
+                body = "".join(chunks)
+            with self.connect(write=True) as db:
+                db.execute("INSERT OR IGNORE INTO content_search VALUES(?,?)", (digest, body.casefold()))
+        return "@body:" + digest
 
     def put_content(self, ticker: str, body: str, kind: str = "text/plain") -> dict[str, Any]:
         raw = body.encode("utf-8")

@@ -694,6 +694,9 @@ class SiteStrategyService:
             controller_id=controller_id,
         )
         self._inflight: dict[str, asyncio.Task[AccessResult]] = {}
+        if hasattr(self.runtime, "workers"):
+            self.budgets.joint.pending_physical = lambda: (
+                len(self.runtime.workers.pending_targets) + int(self.runtime.public_execution.cleanup_pending))
         self._inflight_started: dict[str, tuple[float, float]] = {}
         self._cache: OrderedDict[str, tuple[float, int, AccessResult]] = OrderedDict()
         self._cache_bytes = 0
@@ -743,11 +746,14 @@ class SiteStrategyService:
         root = self.runtime.browser_pool.root
         # Preserve the production retention fix: retired identities still own
         # profiles, and the shared owner lock fences both browser runtime types.
-        for profile in (await registry_io(self.repository.list_profiles)):
-            if not profile.maintenance_session_id:
+        dirty = getattr(getattr(self.runtime, "workers", None), "retired_profiles", set())
+        for profile_id in tuple(dirty):
+            profile = await registry_io(self.repository.get_profile, profile_id)
+            if profile and not profile.maintenance_session_id:
                 await asyncio.to_thread(
                     maintain_profile, root, profile.directory_key, allow_cache=True
                 )
+                dirty.discard(profile_id)
         await asyncio.to_thread(self.profile_storage.maintain)
         await asyncio.to_thread(self.runtime.evidence_store.prune)
 
@@ -977,58 +983,7 @@ class SiteStrategyService:
                 logger.exception("egress maintenance probe failed: %s", egress.egress_id)
 
         await asyncio.gather(*(check_egress(e) for e in self.repository.list_egresses()))
-        from .governance_repository import GovernanceRepository
-
-        scopes = (await registry_io(GovernanceRepository(self.repository).list_scopes))
-        if scopes:
-            for scope in scopes:
-                if not scope.enabled:
-                    continue
-                key = f"scope:{scope.scope_id}"
-                state = (await registry_io(self.repository.get_runtime, key))
-                target = state.active_combination_id or scope.primary_identity_id
-                if (await registry_io(GovernanceRepository(self.repository).current_challenge, target)):
-                    continue
-                claimed = await self.health.claim_due_probe(
-                    key,
-                    [
-                        AccessCombination(id=target, identity_id=target),
-                    ],
-                )
-                if claimed:
-                    purpose = (
-                        SitePurpose.CRAWLER
-                        if scope.verification_plan.get("crawler")
-                        else SitePurpose.BODY
-                    )
-                    try:
-                        outcome = await self.failover.activate(
-                            scope, purpose, primary=target == scope.primary_identity_id
-                        )
-                    except Exception:
-                        outcome = {"ready": False}
-                    if not outcome.get("ready"):
-                        await self.health.mark_probe_uncertain(key, target)
-            return  # Never probe retired legacy combinations after source routing activates.
-        for head, spec in (await registry_io(self.repository.list_active_strategies)):
-            if not head.enabled or spec.site_id == "generic" or not self._recovery_probe_url(spec):
-                continue
-            claimed = await self.health.claim_due_probe(spec.site_id, spec.access.combinations)
-            if claimed is None:
-                continue
-            combination, assigned_generation = claimed
-            try:
-                await self._probe_combination(spec, combination, assigned_generation)
-            except asyncio.CancelledError:
-                await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
-                raise
-            except Exception:
-                await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
-                logger.exception(
-                    "combination maintenance probe failed: %s/%s",
-                    spec.site_id,
-                    combination.combination_id,
-                )
+        # Real business requests perform half-open access; no cold scope canaries.
 
     def _recovery_probe_url(self, spec: SiteStrategySpec) -> str | None:
         # Older strategies sometimes omitted probe_url. Reuse only an existing

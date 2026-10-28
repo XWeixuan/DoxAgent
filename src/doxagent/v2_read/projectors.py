@@ -105,6 +105,8 @@ class DomainProjectors:
         }
 
     def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        if event.get("serving_skipped"):
+            return [], []
         from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
         if enabled() and event['table_name'] in RETIRED_TABLES:
             return [],[]
@@ -862,22 +864,9 @@ class DomainProjectors:
         }
 
     def message_search(self, ticker: str, message: dict[str, Any]) -> str:
-        # Thin native state owns a BodyRef, not a second inline body. Reuse the
-        # content object when building/updating the search index, including UTF-8
-        # bodies larger than one API chunk.
-        body = message.get("body")
-        if body is None:
-            reference = message.get("body_ref")
-            chunks = []
-            offset = 0
-            while reference and offset < reference["size_bytes"]:
-                _, text, end = self.store.content(ticker, reference["content_id"], offset, 131072)
-                if end <= offset:
-                    raise ValueError("message content did not advance")
-                chunks.append(text)
-                offset = end
-            body = "".join(chunks)
-        return (message.get("title") or "") + "\n" + body
+        if message.get("body_ref"):
+            return self.store.search_content(ticker, message["body_ref"], message.get("body"))
+        return (message.get("title") or "") + "\n" + (message.get("body") or "")
 
     def message(self, member: dict[str, Any], revision: int, *, override_message=None) -> list[dict[str, Any]]:
         # stream_members has no ticker; the stream identity is indexed on publication.

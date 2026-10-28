@@ -61,7 +61,11 @@ class FailoverCoordinator:
         if not egress or not egress.enabled or egress.status in {"CONFIG_MISSING", "UNAVAILABLE"}:
             reasons.append("egress_unavailable")
         recovery = self.store.get_recovery(identity_id)
-        recovering = recovery and recovery.phase != "RESOLVED"
+        from .recovery_policy import background_recovery
+
+        recovering = background_recovery(recovery)
+        on_demand = scope.scope_id.startswith("publisher:") or (
+            recovery is not None and not recovery.automation_active)
         if recovering and any(c["purpose"] == purpose.value for c in recovery.affected_contexts):
             reasons.append("recovery_pending")
         state = repo.get_runtime(f"scope:{scope.scope_id}")
@@ -69,9 +73,10 @@ class FailoverCoordinator:
         if member:
             if member.purpose_rejected_until.get(purpose.value, utc_now()) > utc_now():
                 reasons.append("purpose_cooldown")
-            if not recovering and member.manual_attention_required:
+            if not recovering and member.manual_attention_required and not on_demand:
                 reasons.append("manual_attention")
-            if not recovering and member.state in {"COOLDOWN", "HALF_OPEN"}:
+            if (not recovering and member.state in {"COOLDOWN", "HALF_OPEN"}
+                    and member.cooldown_until and member.cooldown_until > utc_now()):
                 reasons.append("cooldown")
         spec = repo.get_strategy(scope.owner_site_id)
         required = (
@@ -101,7 +106,8 @@ class FailoverCoordinator:
         proof = bool(identity and self.usable(scope, identity_id, purpose))
         eligible = not reasons
         if (
-            identity_id != state.active_combination_id
+            not scope.scope_id.startswith("publisher:")
+            and identity_id != state.active_combination_id
             and not proof
             and (
                 identity_id == scope.fallback_identity_id or state.active_combination_id is not None

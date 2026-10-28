@@ -107,6 +107,7 @@ class BrowserRecovery(SiteModel):
     lease_until: datetime | None = None
     fingerprint: str | None = None
     cleanup_pending: bool = False
+    automation_active: bool = True
     scene_preparation: dict = Field(default_factory=dict)
     document_recovery: dict = Field(default_factory=dict)
 

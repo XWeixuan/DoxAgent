@@ -229,8 +229,8 @@ async def test_trendforce_news_public_contract_does_not_require_browser():
     from doxagent.message_bus_v2.industry_sources import IndustryListingAdapter
     html='<div class="insight-list-item"><a class="title-link" href="https://www.trendforce.com/news/2026/10/28/news-memory-demand/">Memory demand improves</a></div>'
     adapter=IndustryListingAdapter(SimpleNamespace(get=AsyncMock()),'trendforce_news')
-    adapter._public_session=SimpleNamespace(get=AsyncMock(return_value=SimpleNamespace(
-        status_code=200,url='https://www.trendforce.com/news/',text=html)))
+    adapter._public_get=AsyncMock(return_value=SimpleNamespace(
+        status_code=200,url='https://www.trendforce.com/news/',text=html))
     context=SimpleNamespace(request_permit=permit,requested_at=utc_now(),window_start=None)
     result=await adapter._get(context,'https://www.trendforce.com/news/')
     assert len(result.messages)==1

@@ -84,7 +84,7 @@ class AppServerThreads:
                             if proc is not None:
                                 from .process_tree import owned_processes
 
-                                owned = await asyncio.to_thread(owned_processes, identity)
+                                owned = await asyncio.to_thread(owned_processes, identity, refresh=True)
                                 self.identities[client].update(
                                     pid=proc.pid, start_ticks=owned.get(proc.pid, (None, 0))[0]
                                 )
@@ -149,6 +149,8 @@ class AppServerThreads:
                 temporary = target.with_suffix(".tmp")
                 temporary.write_text(json.dumps(value), encoding="utf-8")
                 temporary.replace(target)
+                if stage == "CLOSED":
+                    target.replace(target.with_suffix(".closed"))
             except OSError:
                 pass
 

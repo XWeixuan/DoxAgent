@@ -64,11 +64,16 @@ def main():
                 "--env-file",
                 str(REPO / ".env.v2"),
             ]
-            for name in (
+            files = items[0]["Config"].get("Labels", {}).get(
+                "com.docker.compose.project.config_files", ""
+            )
+            # Rebind the same formal stack, including pinned release and private
+            # overrides. A three-file reconstruction can silently lose them.
+            for name in (files.split(",") if files else (
                 "docker-compose.v2-production.yml",
                 "deploy/docker-compose.server.yml",
                 "deploy/docker-compose.initialization-repair.yml",
-            ):
+            )):
                 command.extend(["-f", str(REPO / name)])
             run(["docker", "stop", "--time", "-1", SITE])
             run(

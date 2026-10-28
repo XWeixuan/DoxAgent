@@ -426,7 +426,7 @@ class SourceOutbox:
         finally:
             db.close()
 
-    def event_reader(self):
+    def event_reader(self, *, serving=False):
         """Reuse connection/schema caches for a bounded batch, without BEGIN.
 
         Each SELECT finishes before the next event is mapped/committed; no
@@ -437,15 +437,36 @@ class SourceOutbox:
         @contextmanager
         def reader():
             with closing(self.connection()) as db:
-                yield lambda sequence: self.event(sequence, connection=db)
+                yield lambda sequence: self.event(sequence, connection=db, serving=serving)
 
         return reader()
 
-    def event(self, sequence: int, *, decode: bool = True, connection=None, pack_cache=None) -> dict[str, Any] | None:
+    def event(self, sequence: int, *, decode: bool = True, connection=None, pack_cache=None, serving=False) -> dict[str, Any] | None:
         def packet(value):
-            return {**value,'row':self.content.source_row(json.loads(value['payload']))} if decode else dict(value)
+            if serving and value["table_name"] == "runtime_v2_effects":
+                return {**value, "row": {}, "serving_skipped": True}
+            if not decode:
+                return dict(value)
+            row = json.loads(value['payload'])
+            if serving and value['table_name'] == 'runtime_values':
+                from .serving_fields import VALUE_NAMES
+                used = VALUE_NAMES | {'policy_direction_usage', 'worker_invocations',
+                                      'trade_intents', 'analysis_trade_decisions', 'candidates'}
+                if row['namespace'] not in used:
+                    return {**value, 'row': {}, 'serving_skipped': True}
+            if serving and value['table_name'] == 'runtime_tasks':
+                # Neither task summaries nor the Serving native task contract
+                # consume execution inputs/receipts. Frozen owner inputs remain.
+                row = {**row, 'inputs': '{}', 'receipt': '{}'}
+            return {**value, 'row': self.content.source_row(row)}
         db = connection if connection is not None else self.connection()
         try:
+            if serving and self.source == "runtime":
+                header = db.execute("SELECT * FROM v2_source_outbox WHERE seq=?", (sequence,)).fetchone()
+                if header and header["table_name"] == "runtime_v2_effects":
+                    # No Serving consumer uses effect payloads. Source receipts
+                    # and Worker/W3 inputs remain untouched and fully readable.
+                    return {**dict(header), "row": {}, "serving_skipped": True}
             from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
             if decode and self.source=='bus' and enabled():
                 header=db.execute('SELECT * FROM v2_source_outbox WHERE seq=?',(sequence,)).fetchone()

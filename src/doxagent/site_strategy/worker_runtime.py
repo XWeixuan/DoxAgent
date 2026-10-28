@@ -32,17 +32,29 @@ class WorkerRuntimeFacade:
 
     async def close(self):
         try:
+            await self.runtime.public_execution.close()
             await self.runtime.workers.close()
         finally:
             self.runtime.browser_pool._owner_lock.release()
 
     def diagnostics(self):
-        return {"ready": True, "mode": "identity_workers", "workers": self.runtime.workers.status()}
+        return {"ready": True, "mode": "identity_workers", "workers": self.runtime.workers.status(),
+                "public_cleanup_pending": self.runtime.public_execution.cleanup_pending,
+                "public_active": self.runtime.public_execution.users}
 
     async def close_idle(self):
         from .governance_repository import GovernanceRepository
 
         closed = 0
+        for identity_id in set(self.runtime.workers.pending_targets.values()):
+            identity = await registry_io(self.runtime.repository.get_identity, identity_id)
+            if identity:
+                try:
+                    await self.runtime.workers.command(identity,
+                        await registry_io(self.runtime.repository.get_egress, identity.egress_id),
+                        "cleanup", {}, timeout=8)
+                except Exception:
+                    pass  # Keep the actual occupancy visible until recovered.
         await registry_io(self.runtime.workers.sample_resources)
         store = GovernanceRepository(self.runtime.repository)
         viewer_identities = {
@@ -73,7 +85,8 @@ class WorkerRuntimeFacade:
             profile = await registry_io(self.runtime.repository.get_profile, identity.profile_id)
             recovery = await registry_io(store.get_recovery, identity_id)
             recovering_page = bool(
-                recovery and recovery.phase != "RESOLVED" and recovery.page_status != "LOST"
+                recovery and recovery.automation_active and recovery.phase != "RESOLVED"
+                and recovery.page_status != "LOST"
             )
             challenge = await registry_io(store.current_challenge, identity_id)
             lost_scene = challenge is not None and challenge.state == "TARGET_LOST"
@@ -108,6 +121,7 @@ class WorkerRuntimeFacade:
             recovery = await registry_io(store.get_recovery, identity.identity_id)
             if (
                 recovery
+                and recovery.automation_active
                 and recovery.phase != "RESOLVED"
                 and (
                     recovery.page_status != "LOST"
@@ -163,6 +177,7 @@ class WorkerRuntimeFacade:
                 return status.get("known_missing") is not False
             stopped = await client.stop(identity.identity_id, reason=reason)
             if stopped:
+                self.runtime.workers.clear_pending(identity.identity_id)
                 from .governance_repository import GovernanceRepository
 
                 await registry_io(
@@ -195,6 +210,9 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         self._recovery_slots = asyncio.Semaphore(1)
         self._tokens = {}
         self._reserved_recovery = ContextVar("reserved_recovery", default=False)
+        from .public_runtime import PublicExecution
+
+        self.public_execution = PublicExecution(repository, resolver, options)
 
     @asynccontextmanager
     async def recovery_capacity(self, *, deadline):
@@ -221,7 +239,15 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 await slots.acquire()
         slot_wait_ms = int((time.monotonic()-admitted_at)*1000)
         worker_started = time.monotonic()
+        from .recovery_policy import public_identity
+        if public_identity(identity):
+            request = request.model_copy(update={"recipe_parameters": {
+                **request.recipe_parameters, "_public_ephemeral": True}})
         try:
+            if getattr(identity, "execution_mode", "identity") == "public_context":
+                if not (identity.owner_scope_id or "").startswith("publisher:"):
+                    raise ValueError("public_context_requires_publisher_scope")
+                return await self.public_execution.execute(request, resolved, identity, egress)
             for recovery in range(2):
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
@@ -300,6 +326,10 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         finally:
             if not reserved:
                 slots.release()
+            if getattr(identity, "execution_mode", "identity") == "public_identity":
+                handle = self.workers.workers.get(identity.identity_id)
+                if handle and handle.stage == "IDLE" and not handle.pending:
+                    await self.browser_runtimes.stop_identity(identity, reason="publisher_work_complete")
 
     def _binding(self, token):
         binding = self._tokens.get(token)

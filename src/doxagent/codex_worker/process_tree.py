@@ -5,23 +5,45 @@ from __future__ import annotations
 import asyncio
 import os
 import signal
+import threading
+import time
 from pathlib import Path
 
+_snapshot = {}
+_sampled_at = 0.0
+_snapshot_lock = threading.Lock()
 
-def owned_processes(identity: str) -> dict[int, tuple[str, int]]:
-    result: dict[int, tuple[str, int]] = {}
+
+def process_owners(*, refresh=False):
+    """One host scan serves all owners; signals still check PID start ticks."""
+    global _snapshot, _sampled_at
+    with _snapshot_lock:
+        if refresh or time.monotonic() - _sampled_at >= 1:
+            _snapshot = _scan_owners()
+            _sampled_at = time.monotonic()
+        return _snapshot
+
+
+def owned_processes(identity: str, *, refresh=False) -> dict[int, tuple[str, int]]:
+    return process_owners(refresh=refresh).get(identity, {}).copy()
+
+
+def _scan_owners():
+    result = {}
     if os.name != "posix" or not Path("/proc").is_dir():
         return result
-    marker = ("DOXAGENT_CAPSULE_ID=" + identity).encode()
+    marker = b"DOXAGENT_CAPSULE_ID="
     for directory in Path("/proc").iterdir():
         if not directory.name.isdecimal():
             continue
         try:
-            if marker not in (directory / "environ").read_bytes().split(b"\0"):
+            identity = next((part[len(marker):].decode() for part in
+                (directory / "environ").read_bytes().split(b"\0") if part.startswith(marker)), None)
+            if not identity:
                 continue
             fields = (directory / "stat").read_text().rsplit(")", 1)[1].split()
             if fields[0] != "Z":
-                result[int(directory.name)] = (
+                result.setdefault(identity, {})[int(directory.name)] = (
                     fields[19],
                     int(fields[21]) * os.sysconf("SC_PAGE_SIZE"),
                 )

@@ -2348,3 +2348,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 ## 2026-10-29 curl取网证据回调生命周期修正
 - 修复curl_cffi先清空CFFI引用、再移除multi句柄时仍调用DEBUGFUNCTION导致Collector原生崩溃的问题：detach/reset及异常close完成前保留回调句柄。真实CFFI弱引用回归验证清理期间存活且之后释放；curl/publisher相关6项通过，保留真实取网证明。
+
+2026-10-29 全局资源精益修复（R1—R6，待正式发布验收）：普通publisher恢复改按需、删除定时冷canary和重复旧恢复扫描；必要身份保留独立driver，增加显式public_context按需执行并随真实工作退出；页面关闭确认后归还容量，失败清理保留占用；保留Reuters不冻结及活动Chrome语义；移除BODY重试180秒对provider期限的截断；live兼容入队收敛、支持一次迁移完成后退出旧领取；Raw/Standard完成预编码与薄提交；Serving跳过无消费effect展开、正文搜索按digest复用；Worker归属扫描共享、关闭owner退出启动恢复集合，Profile缓存维护仅处理已退休实例。未修改W1/W2/W3业务容量、ARTICLE_ONCE或正文质量定义。

@@ -361,7 +361,7 @@ async def test_barrons_public_channels_and_one_browser_fallback(tmp_path, fallba
         return 200,url,{},render_news_feeds([{'status':200,'text':payload(channel)}],channels=[channel])
     browser=SimpleNamespace(get=AsyncMock(side_effect=browser_get))
     adapter=IndustryListingAdapter(browser,'barrons')
-    adapter._public_session=SimpleNamespace(get=get)
+    adapter._public_get=get
     for unit in ('HEAD','OTHER_HEAD'):
         result=await adapter.poll(context.model_copy(update={'acquisition_unit':unit}))
         assert result.messages == []
@@ -509,7 +509,7 @@ async def test_trendforce_press_public_list_does_not_require_unhealthy_browser(t
     adapter=IndustryListingAdapter(None,'trendforce_press')
     url='https://www.trendforce.com/presscenter/news'
     html='<title>Press Center</title><div><h3><a href="/presscenter/news/20260922-13249.html">DRAM module revenue increases on AI demand</a></h3></div>'
-    adapter._public_session=SimpleNamespace(get=AsyncMock(return_value=SimpleNamespace(status_code=200,url=url,text=html)))
+    adapter._public_get=AsyncMock(return_value=SimpleNamespace(status_code=200,url=url,text=html))
     result=await adapter._get(context,url)
     assert len(result.messages)==1 and result.acquisition_metadata['listing_transport']=='public_http'
 
@@ -640,11 +640,11 @@ async def test_idle_fetch_documents_match_identity_slots_and_freeze_then_resume(
         session=SimpleNamespace(send=send,detach=AsyncMock())
         page=SimpleNamespace(context=SimpleNamespace(new_cdp_session=AsyncMock(return_value=session)),is_closed=lambda:False)
         anchors.append(FetchAnchor(SimpleNamespace(__aexit__=AsyncMock()),page,SimpleNamespace(blocked=False,close=AsyncMock()),None,1,"approved",time.monotonic()))
-    assert pool.put(identity,anchors[0]) and pool.put(identity,anchors[1])
+    assert pool.put(identity,anchors[0],freeze=True) and pool.put(identity,anchors[1],freeze=True)
     assert not pool.put(identity,anchors[2])
     taken=await pool.take(identity,egress)
     assert taken in anchors[:2] and not taken.frozen
     assert ("Page.setWebLifecycleState","active") in commands
-    assert pool.put(identity,taken)
+    assert pool.put(identity,taken,freeze=True)
     await pool.close()
     for anchor in anchors[:2]:anchor.lease.__aexit__.assert_awaited_once()

@@ -143,6 +143,7 @@ class JointBudget:
         self.identity_interval = lambda identity_id, configured: configured
         self.body_max_concurrency = 2
         self.body_borrow = False
+        self.pending_physical = lambda: 0
         self.max_concurrency = max_concurrency
         self._active = 0
         self._body_active = 0
@@ -226,13 +227,13 @@ class JointBudget:
                             item
                             for item in self._waiters
                             if self._site_active.get(item.site_key, 0) < item.site_limit
-                            and self._active < self.max_concurrency
+                            and self._active + self.pending_physical() < self.max_concurrency
                             and (
                                 item.purpose is not SitePurpose.BODY
                                 or (
                                     self._identity_body.get(item.identity_id, 0) < max(1,item.identity_limit-int(any(
                                         w.purpose is SitePurpose.CRAWLER and w.identity_id==item.identity_id for w in self._waiters)))
-                                    and self._body_active < min(self.body_max_concurrency+2 if self.body_borrow and not any(
+                                    and self._body_active < min(self.max_concurrency if self.body_borrow and not any(
                                         w.purpose is SitePurpose.CRAWLER for w in self._waiters
                                     ) else self.body_max_concurrency, max(1, self.max_concurrency - 1))
                                 )

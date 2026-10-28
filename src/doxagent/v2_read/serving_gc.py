@@ -25,6 +25,14 @@ def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
         for table in ('object_history','contributions_history','metric_buckets_history'):
             counts[table]=db.execute('DELETE FROM '+table+' WHERE rowid IN (SELECT rowid FROM '+table+' WHERE valid_to<=? ORDER BY valid_to LIMIT ?)',(floor,limit)).rowcount
         counts['changes']=db.execute('DELETE FROM changes WHERE rowid IN (SELECT rowid FROM changes WHERE seq<? ORDER BY seq LIMIT ?)',(floor,limit)).rowcount
+        cursor=db.execute("SELECT value FROM read_meta WHERE key='search_gc_cursor'").fetchone()
+        search=[r[0] for r in db.execute('SELECT digest FROM content_search WHERE digest>? ORDER BY digest LIMIT ?',
+                                         (cursor[0] if cursor else '',limit))]
+        counts['content_search']=db.execute('DELETE FROM content_search WHERE digest IN '
+            '(SELECT value FROM json_each(?)) AND NOT EXISTS '
+            '(SELECT 1 FROM contents c WHERE c.sha256=content_search.digest)',(json.dumps(search),)).rowcount
+        db.execute("INSERT INTO read_meta VALUES('search_gc_cursor',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                   (search[-1] if search else '',))
         exiting=[r[0] for r in db.execute('SELECT sha256 FROM definition_exit LIMIT ?',(limit,))]
         counts['definitions']=0
         for digest in exiting:

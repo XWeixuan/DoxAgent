@@ -27,6 +27,28 @@ class LiveQueue:
         self._sources = {}
         self._claim_round = 0
         self._spool_replay_at = 0
+        self.bus.repository.live_queue = self
+
+    def enqueue_frozen(self, job):
+        """Compatibility producers enter the same live article queue directly."""
+        targets = []
+        if job.binding:
+            targets = [(job.binding.binding_id, job.binding.ticker, 0)]
+        elif job.article_id:
+            from .distribution_repository import DistributionRepository
+            with self.bus.repository._connect() as db:
+                rows = db.execute("SELECT binding_json,terms_revision FROM distribution_deliveries "
+                                  "WHERE article_id=?", (job.article_id,)).fetchall()
+                targets = [(binding["binding_id"], binding["ticker"], row[1])
+                           for row in rows
+                           for binding in [json.loads(DistributionRepository._expand(db, row[0]))]]
+        prepared = self.repository.prepare_input(job.source, targets, [job.message],
+            observed_at=job.created_at.isoformat(), unit="compatibility", bootstrap=job.bootstrap,
+            admission=job.message.admission_context)
+        keys = self.repository.accept(prepared)
+        key = keys[0].removeprefix("live:") if keys else job.job_id
+        return job.model_copy(update={"job_id": "live:" + key, "article_id": key,
+            "owner_kind": "live_article", "result": {"continuation_id": "live:" + key}}), bool(keys)
 
     def source(self, identity):
         with self.bus.repository._connect() as db:
@@ -342,6 +364,8 @@ class LiveQueue:
                         )
                     return []
                 key = keys[0].removeprefix("live:")
+                db.execute("UPDATE live_articles SET due_at=max(due_at,?) WHERE article_key=? "
+                           "AND state='FETCH_DUE'", (job.not_before.isoformat(), key))
                 if job.work_kind == "recheck":
                     db.execute(
                         "UPDATE live_articles SET state='FETCH_DUE',work_kind='recheck',due_at=?,attempt=0,"

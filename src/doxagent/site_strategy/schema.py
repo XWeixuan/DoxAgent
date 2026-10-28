@@ -323,6 +323,7 @@ class BrowserIdentitySpec(SiteModel):
     revision: int = Field(default=0, ge=0)
     enabled: bool = True
     runtime_kind: BrowserRuntimeKind = BrowserRuntimeKind.MANAGED_PLAYWRIGHT
+    execution_mode: Literal["identity", "public_context", "public_identity"] = "identity"
     profile_id: str
     egress_id: str
     environment: BrowserEnvironment = Field(default_factory=BrowserEnvironment)

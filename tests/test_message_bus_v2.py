@@ -54,6 +54,10 @@ from tests.fixtures.message_bus_v2 import (
 
 @pytest.fixture(autouse=True)
 def _publication_clock(monkeypatch):
+    # Import before patching the exporting module: a lazy import during a
+    # frozen-clock test must not retain that lambda for later live-path tests.
+    from doxagent.message_bus_v2 import live_repository  # noqa: F401
+
     monkeypatch.setattr("doxagent.message_bus_v2.service.utc_now", lambda: NOW)
     monkeypatch.setattr("doxagent.message_bus_v2.schema.utc_now", lambda: NOW)
     monkeypatch.setattr("doxagent.message_bus_v2.repository.utc_now", lambda: NOW)
@@ -61,11 +65,14 @@ def _publication_clock(monkeypatch):
 
 def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -> None:
     from doxagent.message_bus_v2.defense_sources import CATALOG
+    from doxagent.message_bus_v2.energy_catalog import CATALOG as ENERGY_CATALOG
+    from doxagent.message_bus_v2.technology_sources import CATALOG as TECHNOLOGY_CATALOG
 
     repository, service = _bus(tmp_path / "bus.sqlite3")
 
     assert {source.source_id for source in repository.list_sources()} == {
         "corporate_ir_press_releases",
+        "thefly_ticker_news",
         "sec_edgar",
         "benzinga_news",
         "finnhub_company_news",
@@ -91,7 +98,7 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "globenewswire_search",
         "investing_ticker_news",
         "globenewswire_semiconductors_rss",
-    } | {entry.source_id for entry in CATALOG}
+    } | {entry.source_id for entry in (*CATALOG, *ENERGY_CATALOG, *TECHNOLOGY_CATALOG)}
     profile = repository.get_default_profile("default")
     assert profile is not None
     assert [entry.source_id for entry in profile.entries] == [
