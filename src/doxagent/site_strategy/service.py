@@ -947,7 +947,8 @@ class SiteStrategyService:
             driver_before = external.diagnostics() if maintenance_enabled() and external else None
             try:
                 await self.runtime.browser_runtimes.close_idle()
-                await self._prewarm_identities()
+                # Real browser demand creates the runtime; periodic maintenance
+                # must not cold-start otherwise unused source identities.
                 external = self.runtime.browser_runtimes.external
                 if external is not None and not hasattr(self.runtime, "workers"):
                     external.rotation_paused = any(

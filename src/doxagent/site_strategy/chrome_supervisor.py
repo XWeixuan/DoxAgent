@@ -69,6 +69,7 @@ class ChromeSupervisor:
         self.display_start = display_start
         self.max_instances = max(1, max_instances)
         self._instances: dict[str, ChromeInstance] = {}
+        self._starting = {}  # port/display/VNC claims exist before the first await.
         self._locks: dict[str, asyncio.Lock] = {}
         self._server: asyncio.AbstractServer | None = None
         self._stopping = False
@@ -387,6 +388,12 @@ class ChromeSupervisor:
             raise ValueError("invalid_egress_binding")
         lock = self._locks.setdefault(identity.identity_id, asyncio.Lock())
         async with lock:
+            pending = self._starting.get(identity.identity_id)
+            if pending:
+                if any(p.returncode is None for p in pending[4]):
+                    raise RuntimeError("chrome_start_cleanup_pending")
+                pending[3].release()
+                self._starting.pop(identity.identity_id)
             existing = self._instances.get(identity.identity_id)
             if existing and existing.chrome.returncode is None:
                 if (
@@ -421,7 +428,7 @@ class ChromeSupervisor:
                 self._record_exit(existing, "unexpected_exit")
                 await self._finalize(existing)
                 self._instances.pop(identity.identity_id, None)
-            if len(self._instances) >= self.max_instances:
+            if len(self._instances) + len(self._starting) >= self.max_instances:
                 raise RuntimeError("chrome_process_capacity_exhausted")
             port = self._reserve_port()
             display_number = self._reserve_display()
@@ -445,6 +452,7 @@ class ChromeSupervisor:
             xvfb: asyncio.subprocess.Process | None = None
             chrome: asyncio.subprocess.Process | None = None
             vnc: asyncio.subprocess.Process | None = None
+            self._starting[identity.identity_id] = (port, display_number, vnc_port, profile_lock, [])
             try:
                 xvfb = await asyncio.create_subprocess_exec(
                     "/usr/bin/Xvfb",
@@ -515,20 +523,23 @@ class ChromeSupervisor:
                     stderr=asyncio.subprocess.DEVNULL,
                 )
                 websocket_url = await self._wait_for_cdp(port, chrome)
-            except Exception:
-                if chrome and chrome.returncode is None:
-                    chrome.terminate()
-                    with contextlib.suppress(Exception):
-                        await asyncio.wait_for(chrome.wait(), timeout=5)
-                if xvfb and xvfb.returncode is None:
-                    xvfb.terminate()
-                    with contextlib.suppress(Exception):
-                        await asyncio.wait_for(xvfb.wait(), timeout=5)
-                if vnc and vnc.returncode is None:
-                    vnc.terminate()
-                    with contextlib.suppress(Exception):
-                        await asyncio.wait_for(vnc.wait(), timeout=5)
-                profile_lock.release()
+            except BaseException:
+                owned = [p for p in (chrome, xvfb, vnc) if p is not None]
+                self._starting[identity.identity_id][4].extend(owned)
+                for process in owned:
+                    if process.returncode is None:
+                        with contextlib.suppress(ProcessLookupError):
+                            process.terminate()
+                        try:
+                            await asyncio.wait_for(process.wait(), timeout=5)
+                        except TimeoutError:
+                            with contextlib.suppress(ProcessLookupError):
+                                process.kill()
+                            with contextlib.suppress(Exception):
+                                await asyncio.wait_for(process.wait(), timeout=2)
+                if all(p.returncode is not None for p in owned):
+                    profile_lock.release()
+                    self._starting.pop(identity.identity_id, None)
                 raise
             instance = ChromeInstance(
                 identity=identity,
@@ -546,6 +557,7 @@ class ChromeSupervisor:
                 controller_id=owner_id,
             )
             self._instances[identity.identity_id] = instance
+            self._starting.pop(identity.identity_id)
             self._persist_instance(instance)
             return instance
 
@@ -627,7 +639,7 @@ class ChromeSupervisor:
                 raise RuntimeError("profile_busy_unknown_singleton")
 
     def _reserve_port(self) -> int:
-        used = {item.port for item in self._instances.values()}
+        used = {item.port for item in self._instances.values()} | {v[0] for v in self._starting.values()}
         for port in range(self.port_start, self.port_end + 1):
             if port in used:
                 continue
@@ -640,14 +652,14 @@ class ChromeSupervisor:
         raise RuntimeError("chrome_port_capacity_exhausted")
 
     def _reserve_display(self) -> int:
-        used = {item.display_number for item in self._instances.values()}
+        used = {item.display_number for item in self._instances.values()} | {v[1] for v in self._starting.values()}
         value = self.display_start
         while value in used:
             value += 1
         return value
 
     def _reserve_vnc_port(self) -> int:
-        used = {item.vnc_port for item in self._instances.values()}
+        used = {item.vnc_port for item in self._instances.values()} | {v[2] for v in self._starting.values()}
         for port in range(5920, 5980):
             if port in used:
                 continue
@@ -676,6 +688,7 @@ class ChromeSupervisor:
                     raise RuntimeError("chrome_release_mismatch")
                 websocket_url = str(payload.get("webSocketDebuggerUrl") or "")
                 if websocket_url.startswith(f"ws://127.0.0.1:{port}/devtools/browser/"):
+                    await ChromeSupervisor._verify_cdp_owner(websocket_url, process.pid)
                     return websocket_url
             except RuntimeError:
                 raise
@@ -683,6 +696,21 @@ class ChromeSupervisor:
                 pass
             await asyncio.sleep(0.1)
         raise RuntimeError("chrome_cdp_start_timeout")
+
+    @staticmethod
+    async def _verify_cdp_owner(url, expected_pid):
+        from websockets.asyncio.client import connect
+        async with asyncio.timeout(3):
+            async with connect(url, open_timeout=2, close_timeout=1) as socket:
+                await socket.send(json.dumps({'id':1,'method':'SystemInfo.getProcessInfo'}))
+                while True:
+                    value=json.loads(await socket.recv())
+                    if value.get('id') == 1:
+                        roots=[int(p['id']) for p in value.get('result',{}).get('processInfo',[])
+                               if p.get('type')=='browser']
+                        if roots != [expected_pid]:
+                            raise RuntimeError('chrome_cdp_owner_mismatch')
+                        return
 
     @staticmethod
     def _describe(instance: ChromeInstance | None) -> dict[str, object]:

@@ -385,3 +385,15 @@ async def test_budget_exhaustion_does_not_launch_cold_browser_failover(recovery_
     )
     assert result.reason_code == "access_budget_exhausted"
     service.failover.schedule_async.assert_not_awaited()
+
+
+async def test_idle_maintenance_does_not_cold_start_source_browsers(recovery_setup, monkeypatch):
+    _, service, _, _ = recovery_setup
+    monkeypatch.setattr(service.repository.storage, "diagnostics", lambda: {"unavailable": False})
+    prewarm = AsyncMock(side_effect=AssertionError("idle cold allocation"))
+    monkeypatch.setattr(service.runtime.browser_runtimes, "prewarm", prewarm)
+    monkeypatch.setattr(service.runtime.browser_runtimes, "close_idle", AsyncMock(return_value=0))
+    monkeypatch.setattr(service, "_run_due_probes", AsyncMock(side_effect=asyncio.CancelledError))
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.wait_for(service._maintenance_loop(), 1)
+    prewarm.assert_not_awaited()
