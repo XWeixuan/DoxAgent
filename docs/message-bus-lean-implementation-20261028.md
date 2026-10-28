@@ -44,6 +44,13 @@ G3按本次“严格按照方案”授权采用：首24小时30分钟条件重�
 - 初检资源：Collector约116MiB、Bus189MiB、BODY192MiB、Site4.11GiB、API475MiB、Projector541MiB；全机MemAvailable约2.4GiB，CPU/IO/内存PSI仍高。此为启动和历史工作衔接期快照，不能声称持续稳定或性能目标已达。
 - 后续自然24h/完整交易峰值/72h资源增长、全部必需频道独立对照和FULL最终publisher抽查仍未完成。用户要求即时上线，本轮不等待这些窗口；失败及未完成样本全部保留，不用小样本或统计修补代替性能提升。
 
+后续短检查与发布必需修复：
+
+- `df46c7f3` Bus/BODY已正式重建完成，退出0。17:29:49—17:31:49 UTC片段：792 expected、636 fresh（80.30%）、16 missing、29 pending；3个应交付项均完成，平均5.541秒、最大10.005秒，2/3严格小于等于10秒。3篇eligible中2篇程序标FULL（66.67%）。样本仍不足且目标未全达，不能取整或仅保留成功项。
+- 此时Read位置与Bus head同为9329028，最新5个发布项均可读；capture PENDING已为0、result spool为0，本地旧分发PENDING/L2_DUE已消化。仍有真实站点403、IBKR超时和BODY访问失败。
+- 检查发现BODY转交旧By Distribution任务时，binding_json为`$snapshot`，直接当完整binding读取触发`KeyError: binding_id`并导致容器重启。已补锁外展开和单项失败隔离：5秒标量重试不重写完整job，不结束整个BODY。真实旧snapshot夹具与故障隔离4项回归通过，仅需重建BODY。
+- 已按运行容器、正式compose、模板/repair引用及当前/回退版本核对，保护35个镜像依赖，清退4个明确无引用旧镜像，错误0；未删volume/Profile或运行/回退镜像。未触发全局builder prune。
+
 - 正常链路为：物理采集并持久化delta → Bridge锁外准备 → 一次薄文章/交付接纳 → BODY共享结果 → 本地相关性/发布。慢L2不会阻塞直接命中，BODY提交失败接回spool，不重新下载。新实时工作不再产生旧PollJournal/DistributionRun/EnrichmentJob副本。
 - 同篇旧文章按强URL别名跨发现来源接回已有发布；原Raw/Standard/Stream ID、first_seen、源归属及控制origin保持。未变化只关联交付，不新增业务修订；真实变化更新原文，已消费过的下游不会再次触发。原发布更新无需再做一次新稿L1/L2准入。
 - Source/binding纯配置版本和roster变化不重抓旧正文；新增共享订阅触发一次当前列表刷新，只关联新目标。旧wrapper与已运行canonical工作合并，保留已有owner。BODY/公开复用仍检查语言及真实访问scope。

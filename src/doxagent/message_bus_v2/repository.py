@@ -1792,6 +1792,14 @@ class MessageBusV2Repository:
                 (job.status.value, job.not_before.isoformat(), packet, job.job_id),
             )
 
+    def defer_legacy_transfer(self,job,error):
+        due=(utc_now()+timedelta(seconds=5)).isoformat()
+        with self.transaction() as db:
+            db.execute("UPDATE content_enrichment_jobs SET status='retry_wait',not_before=?,lease_expires_at=NULL,"
+                "data_json=json_set(data_json,'$.status','retry_wait','$.not_before',?,'$.claim_token',NULL,"
+                "'$.lease_expires_at',NULL,'$.result.transfer_error',?) WHERE job_id=? AND status='running' "
+                "AND json_extract(data_json,'$.claim_token')=?",(due,due,error,job.job_id,job.claim_token))
+
     def start_enrichment_fetch(self, job):
         if job.budget_started_at is not None:return job
         now=utc_now()

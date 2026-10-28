@@ -2342,3 +2342,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 ## 2026-10-29 Message Bus 上线快交付修正
 - 实测发现新稿FULL后的5个交付仍被旧本地工作阻挡119秒；正文领取、交付及L2候选改为新稿/重要更新优先，并保留每8轮旧工作机会。生产交付循环采用250ms时间片，避免一次32个旧文准备挡住后来新稿。
 - 通过质量、URL与权益/语言检查的旧Raw完整正文直接复用，正文证据中更早的首次观察时间沿用，避免旧文制造新稿cohort。旧队列40项、新稿优先、原发布复用和时间片针对测试通过；不将短样本FULL当成生产80%以上达标。
+
+## 2026-10-29 BODY旧快照转交兼容修正
+- 修复旧By Distribution任务binding_json为$snapshot引用时的KeyError，锁外展开后接入同一live入口。旧任务单项转交异常只做5秒标量重试，不写完整job/正文，不再结束整个BODY进程。真实旧snapshot夹具、故障隔离及旧recheck续作4项回归通过。

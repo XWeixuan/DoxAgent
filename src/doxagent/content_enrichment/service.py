@@ -96,15 +96,23 @@ class ContentEnrichmentHub:
         jobs=[]
         if self._legacy_claim_round % 8 == 0:
             legacy=await self._legacy_claim(limit=1,now=now,allow_rechecks=background)
-            for job in legacy:await self.live.adopt(job)
+            await self._adopt_legacy(legacy)
         if len(jobs)<limit:
             jobs+=await self.live.claim(limit-len(jobs),allow_background=background)
             if any(j.work_kind=='recheck' for j in jobs):background=False
         if len(jobs)<limit:
             legacy=await self._legacy_claim(limit=limit-len(jobs),now=now,allow_rechecks=background)
-            for job in legacy:await self.live.adopt(job)
+            await self._adopt_legacy(legacy)
             jobs+=await self.live.claim(limit-len(jobs),allow_background=background)
         return jobs
+
+    async def _adopt_legacy(self,jobs):
+        for job in jobs:
+            try:
+                await self.live.adopt(job)
+            except Exception as exc:
+                logger.warning('legacy BODY transfer deferred job_id=%s reason=%s',job.job_id,type(exc).__name__)
+                await self.bus.storage.call(self.repository.defer_legacy_transfer,job,type(exc).__name__)
 
     async def _legacy_claim(self,**kwargs):
         packets=await self.bus.storage.call(self.repository.claim_enrichment_jobs,**kwargs,packets_only=True)

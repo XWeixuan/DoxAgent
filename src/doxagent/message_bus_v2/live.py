@@ -283,17 +283,20 @@ class LiveQueue:
             if job.binding:
                 targets = [(job.binding.binding_id, job.binding.ticker, 0)]
             elif job.article_id:
+                from .distribution_repository import DistributionRepository
+
                 with self.bus.repository._connect() as db:
                     rows = db.execute(
                         "SELECT binding_json,terms_revision FROM distribution_deliveries WHERE article_id=?",
                         (job.article_id,),
                     ).fetchall()
-                targets = list(
-                    {
-                        (json.loads(row[0])["binding_id"], json.loads(row[0])["ticker"], row[1])
-                        for row in rows
-                    }
-                )
+                    targets = list(
+                        {
+                            (binding["binding_id"], binding["ticker"], row[1])
+                            for row in rows
+                            for binding in [json.loads(DistributionRepository._expand(db, row[0]))]
+                        }
+                    )
             prepared = self.repository.prepare_input(
                 job.source,
                 targets,

@@ -984,3 +984,80 @@ async def test_delivery_time_slice_yields_before_a_new_article_arrives(tmp_path,
     monkeypatch.setattr(worker, "process", slow)
     assert await worker.run_available(max_seconds=0.01) == 1
     assert calls == ["0"]
+
+
+async def test_snapshot_backed_distribution_body_transfers_without_binding_key_error(tmp_path):
+    from tests.test_content_enrichment_hub import _setup, _message, _GovernedExtractor
+    from doxagent.content_enrichment.service import ContentEnrichmentHub
+    from doxagent.message_bus_v2.live import LiveQueue
+    from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+    from doxagent.message_bus_v2.admission import AdmissionContext
+    from doxagent.message_bus_v2.schema import UpdateActor, utc_now
+
+    repo, bus, _, _ = _setup(tmp_path)
+    source = bus.update_source("ctee_semiconductor", {"enabled": True}, actor=UpdateActor.SYSTEM)
+    binding = bus.configure_binding(
+        ticker="MU", source_id=source.source_id, actor=UpdateActor.SYSTEM
+    )
+    distribution = DistributionRepository(repo)
+    run = distribution.get_or_create_run(
+        work_key="snapshot-transfer",
+        source=source,
+        mode="REALTIME",
+        window_start=None,
+        cutoff=None,
+        roster=[(binding, 0, AdmissionContext(observed_at=utc_now()).model_dump(mode="json"))],
+    )
+    token = distribution.claim_run(run["run_id"])
+    distribution.ingest(
+        run["run_id"],
+        token,
+        source,
+        [_message(4500)],
+        checkpoint={},
+        coverage="COMPLETE",
+        done=True,
+        deadline_seconds=180,
+        pipeline_version="body_v2.2",
+    )
+    with repo._connect() as db:
+        assert (
+            "$snapshot"
+            in db.execute("SELECT binding_json FROM distribution_deliveries").fetchone()[0]
+        )
+    bus.live_queue = LiveQueue(bus)
+    assert await ContentEnrichmentHub(repo, bus, extractor=_GovernedExtractor()).run_once() == 1
+    with repo._connect() as db:
+        assert db.execute("SELECT status FROM content_enrichment_jobs").fetchone()[0] == "completed"
+        assert db.execute("SELECT state FROM live_articles").fetchone()[0] == "READY"
+        assert db.execute("SELECT ticker FROM live_deliveries").fetchone()[0] == "MU"
+
+
+async def test_failed_legacy_adoption_does_not_abort_current_body_worker(tmp_path, monkeypatch):
+    from tests.test_content_enrichment_hub import _setup, _message, _GovernedExtractor
+    from doxagent.content_enrichment.service import ContentEnrichmentHub
+    from doxagent.message_bus_v2.live import LiveQueue
+
+    repo, bus, source, binding = _setup(tmp_path)
+    job, _ = bus.enqueue_enrichment(
+        source=source,
+        binding=binding,
+        message=_message(4600),
+        bootstrap=False,
+        poll_run_id="legacy",
+    )
+    bus.live_queue = LiveQueue(bus)
+
+    async def broken(job):
+        raise KeyError("binding_id")
+
+    monkeypatch.setattr(bus.live_queue, "adopt", broken)
+    hub = ContentEnrichmentHub(repo, bus, extractor=_GovernedExtractor())
+    assert await hub.run_once() == 0
+    with repo._connect() as db:
+        assert (
+            db.execute(
+                "SELECT status FROM content_enrichment_jobs WHERE job_id=?", (job.job_id,)
+            ).fetchone()[0]
+            == "retry_wait"
+        )
