@@ -59,6 +59,9 @@ G3按本次“严格按照方案”授权采用：首24小时30分钟条件重�
 - 本轮按用户追加要求即时上线，不扩展先前主机崩溃取证，不等待完整交易日/72小时。**代码落地与发布完成，不等于W7业务目标验收完成**：全来源周期接近100%、正文>80%、≤10秒与长期资源平台仍未证实，已有失败、延期和未完成样本保留。下一轮验收须使用方案H4及真实自然数据，不能沿用启动期3篇样本宣称达标。
 - 其它会话未提交的退出策略、交易与UI工作及远端compose原差异均保留；本轮没有打包或覆盖这些工作。
 - 收尾重启后Site恢复健康、MemAvailable约6.2GiB，IO PSI avg10降至7.3%；Bus head继续到9329458，17:58:47 UTC有真实COHR交付。但Collector短时间再次重启，继续定位到本轮PublisherSession新增DEBUGFUNCTION触发curl_cffi原生崩溃：上游release先清空`_debug_handle`再`curl_multi_remove_handle`，后者仍可触发已释放的CFFI回调。已在detach/reset/异常close期间保持句柄强引用，之后立即释放；不是扩大池或重试掩盖。真实CFFI弱引用夹具和取网/坏池相关6项通过，重新构建所有实际引用该模块的Collector/Bus/BODY/Site四角色。
+- **最终生产代码版本**：上述四角色均为`7026fc21`，正式发布退出0；API/Projector保留契约兼容的`976dafa7`。18:04 UTC检查六角色均运行，Collector/Site/API健康，四个新容器重启0、OOM=false。滚动期间BODY出现Site连接失败，正常按既有机制续作；不将发布期这些失败抹掉。
+- 最终Bus head与Read checkpoint均为9330088，18:04:00 UTC最新MU交付已在Read可查。资源瞬时值：Collector约251MiB/13.8% CPU，Bus147MiB/154.2%，BODY187MiB/12.8%，Site3.52GiB/20.9%、680 PIDs（Docker CPU以单核100%计）；MemAvailable约4.64GiB，IO PSI avg10=3.57%、memory avg10=0。CPU PSI avg60仍48.3%，Chrome长期增长仍未验收，不能用瞬时恢复替代持续稳定性。
+- 最后精益化全组29项通过（`callback-shipped.xml`），此前组合558 passed/1 skipped及最后BODY组合60项的证据保留。最后代码通过F821检查。本轮整体review与发布收尾结束；自然完整窗口及未达标指标继续明确保留为未关闭验收项。
 
 - 正常链路为：物理采集并持久化delta → Bridge锁外准备 → 一次薄文章/交付接纳 → BODY共享结果 → 本地相关性/发布。慢L2不会阻塞直接命中，BODY提交失败接回spool，不重新下载。新实时工作不再产生旧PollJournal/DistributionRun/EnrichmentJob副本。
 - 同篇旧文章按强URL别名跨发现来源接回已有发布；原Raw/Standard/Stream ID、first_seen、源归属及控制origin保持。未变化只关联交付，不新增业务修订；真实变化更新原文，已消费过的下游不会再次触发。原发布更新无需再做一次新稿L1/L2准入。
