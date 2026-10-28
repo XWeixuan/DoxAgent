@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
+from tests.test_browser_recovery import setup as recovery_setup
 
 
 async def test_failed_physical_close_keeps_lease_and_capacity():
@@ -361,3 +362,26 @@ async def test_startup_accepts_persisted_delta_once_without_fetching(tmp_path):
     await cleanup.run()
     with repo._connect() as db:
         assert db.execute("SELECT count(*) FROM live_articles").fetchone()[0] == 1
+
+
+async def test_budget_exhaustion_does_not_launch_cold_browser_failover(recovery_setup, monkeypatch):
+    from doxagent.site_strategy.schema import AccessRequest
+
+    _, service, _, _ = recovery_setup
+
+    async def exhausted(*args, **kwargs):
+        await asyncio.sleep(0.05)
+
+    monkeypatch.setattr(service, "_execute_uncached", exhausted)
+    monkeypatch.setattr(service.failover, "schedule_async", AsyncMock())
+    result = await service._execute_deadlined(
+        AccessRequest(
+            operation_id="http-timeout",
+            url="https://www.investing.com/equities/vector-acquisition-news",
+            purpose="CRAWLER",
+            mode="HTTP_PUBLIC",
+            remaining_budget_ms=10,
+        )
+    )
+    assert result.reason_code == "access_budget_exhausted"
+    service.failover.schedule_async.assert_not_awaited()

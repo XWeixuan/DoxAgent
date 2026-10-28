@@ -28,7 +28,7 @@ from doxagent.message_bus_v2.reuters_sources import (
     wait_for_native_document_redirect,
 )
 from doxagent.message_bus_v2.yahoo_sources import capture_latest_news
-from doxagent.resource_safety import SafetyLevel, SafetyStateReader
+from doxagent.resource_safety import SafetyStateReader
 
 from .browser_runtime import BrowserRuntimeManager, RuntimeProvenance
 from .repository import SiteStrategyRepository
@@ -715,8 +715,8 @@ class PersistentBrowserPool:
                 continue
             break
         try:
-            while self._safety.read().level is not SafetyLevel.NORMAL:
-                await asyncio.sleep(0.25)
+            # Site/identity admission already bounds actual browser work. A
+            # global pressure flag must not hold an admitted cold start forever.
             assert self._playwright is not None
             directory = self.root / profile.directory_key
             directory.mkdir(parents=True, exist_ok=True)

@@ -2352,3 +2352,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 全局资源精益修复（R1—R6，待正式发布验收）：普通publisher恢复改按需、删除定时冷canary和重复旧恢复扫描；必要身份保留独立driver，增加显式public_context按需执行并随真实工作退出；页面关闭确认后归还容量，失败清理保留占用；保留Reuters不冻结及活动Chrome语义；移除BODY重试180秒对provider期限的截断；live兼容入队收敛、支持一次迁移完成后退出旧领取；Raw/Standard完成预编码与薄提交；Serving跳过无消费effect展开、正文搜索按digest复用；Worker归属扫描共享、关闭owner退出启动恢复集合，Profile缓存维护仅处理已退休实例。未修改W1/W2/W3业务容量、ARTICLE_ONCE或正文质量定义。
 
 2026-10-29 精益发布前review：Site先回收再预热，预热仅读取必要source热身份，取消隔离worker路径无效的全Profile轮换扫描；非External身份不再逐个查询原生回收状态。56项生命周期/Reuters/精益回归通过，1项平台相关跳过。正式发布及90分钟实测结果追加host-resource-lean-implementation-20261029.md。
+
+2026-10-29 生产实测修复：移除Site预算耗尽后无条件启动备用Browser canary（包括HTTP/本地等待超时）的路径；实际访问失败仍按既有原因码处理。取消Managed冷建中的全局PSI无限等待；仅对Barrons/InvestorsHub/Investing已验证列表anchor恢复空闲冻结，Reuters强制排除，取网前解冻。73项相关回归通过，实测窗口保留修复前失败和资源峰值。

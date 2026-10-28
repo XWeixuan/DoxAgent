@@ -1715,13 +1715,8 @@ class SiteStrategyService:
             async with asyncio.timeout_at(ACCESS_DEADLINE.get() or started + request.remaining_budget_ms / 1000):
                 return await self._execute_uncached(request,resolved=resolved)
         except TimeoutError:
-            if resolved.match_evidence.get("scope_id"):
-                from .governance_repository import GovernanceRepository
-
-                scope = (await registry_io(GovernanceRepository(self.repository).get_scope,
-                    resolved.match_evidence["scope_id"]
-                ))
-                (await self.failover.schedule_async(scope, request.purpose))
+            # Queue/storage/HTTP budget exhaustion is not browser capability
+            # evidence. Real typed access failures own fallback activation.
             return self._result(
                 request,
                 resolved,

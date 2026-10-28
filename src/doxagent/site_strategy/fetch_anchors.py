@@ -86,7 +86,12 @@ class FetchAnchors:
                 except Exception:
                     pass
 
-    def put(self, identity, anchor, *, freeze=False, limit=None):
+    def put(self, identity, anchor, *, freeze=None, limit=None):
+        site = getattr(getattr(anchor.gate, "resolved", None), "site_id", None)
+        if freeze is None:
+            freeze = site in {"barrons", "investorshub", "investing"}
+        if site == "reuters":
+            freeze = False
         bucket = self.idle.setdefault(identity.identity_id, [])
         limit = limit or identity.access.max_concurrency
         if len(bucket) >= limit:
