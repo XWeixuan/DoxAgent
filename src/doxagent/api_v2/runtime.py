@@ -166,6 +166,8 @@ def install(app: FastAPI) -> None:
             limit=int(args.get("limit", 20)),
             cursor=args.get("cursor"),
         )
+        from .news_timeliness import message_update_states
+        message_update_states(views.store,ticker,view['seq'],value['items'])
         return respond(request, "MessageSummaryPage", value, view_id=args["view_id"])
 
     @app.get(prefix + "/cases/{case_id}/candidates")

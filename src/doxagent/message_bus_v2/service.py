@@ -9,6 +9,10 @@ from urllib.parse import urlparse
 from doxagent.content_enrichment.schema import EnrichmentJob
 from doxagent.message_bus_v2 import deduplication as dedup
 from doxagent.message_bus_v2.compiler import compiled_body_length_for_members
+from doxagent.message_bus_v2.google_news_rules import (
+    filter_google_news_result,
+    google_news_message_blocked,
+)
 from doxagent.message_bus_v2.manifests import initial_default_profile, initial_sources
 from doxagent.message_bus_v2.news_policy import HiddenNewsIngressPolicy
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
@@ -77,6 +81,7 @@ class MessageBusV2Service:
         from .storage_lane import StorageLane
 
         self.storage = StorageLane()
+        self.live_queue = None
 
     def bootstrap(self) -> None:
         for source in initial_sources():
@@ -784,6 +789,9 @@ class MessageBusV2Service:
         attempted_at: datetime | None = None,
         admission_context: AdmissionContext | None = None,
     ) -> PollExecutionResult:
+        if self.live_queue is not None:
+            return await self.accept_live_result(source=source,bindings=[binding],result=result,
+                attempted_at=attempted_at,admission_context=admission_context)
         return await self.storage.call(
             self._accept_poll_result,
             source=source,
@@ -792,6 +800,36 @@ class MessageBusV2Service:
             attempted_at=attempted_at,
             admission_context=admission_context,
         )
+
+    async def accept_live_result(self, *, source, bindings, result, attempted_at=None,
+                                 admission_context=None, bootstrap=False, unit='HEAD'):
+        """Shared entry for Collector-compatible closed sweeps; no legacy intake/run."""
+        result=filter_google_news_result(source.source_id,result)
+        result=self.hidden_news_policy.apply(source.source_id,result)
+        observed=attempted_at or utc_now()
+        def prepare():
+            from .monitoring_terms import MonitoringTermsService
+            terms=MonitoringTermsService(self.repository)
+            targets=[]
+            for binding in bindings:
+                found=terms.get(binding.ticker)
+                targets.append((binding.binding_id,binding.ticker,found[0] if found else 0))
+            return self.live_queue.repository.prepare_input(source,targets,result.messages,
+                observed_at=observed.isoformat(),unit=unit,bootstrap=bootstrap,admission=admission_context)
+        prepared=await self.storage.prepare(prepare)
+        keys=await self.storage.call(self.live_queue.repository.accept,prepared,_lane_priority=0)
+        keys=[key+':'+binding.ticker for key in keys for binding in bindings]
+        for failure in result.failures:
+            await self.storage.call(self.repository.save_failure,failure)
+        return PollExecutionResult(binding_id=bindings[0].binding_id,
+            poll_run_id=str(result.acquisition_metadata.get('poll_run_id') or new_id('live-page')),
+            collected_count=len(result.messages),queued_count=len(keys),enrichment_job_ids=keys,
+            next_checkpoint=result.next_checkpoint,window_done=result.window_done,
+            window_coverage='PARTIAL' if result.failures else result.window_coverage,
+            error_code=result.failures[0].error_code if result.failures else None,
+            site_access_deferred=result.site_access_deferred,
+            site_access_deferred_reason=result.site_access_deferred_reason,
+            site_access_retry_not_before=result.site_access_retry_not_before)
 
     def accept_observations(self, *, source, binding, messages, observed_at, poll_run_id,
                             admission_context=None, checkpoint=None, bootstrap=False):
@@ -828,6 +866,7 @@ class MessageBusV2Service:
         bootstrap_override: bool | None = None,
         strict_intake: bool = False,
     ) -> PollExecutionResult:
+        result = filter_google_news_result(source.source_id, result)
         result = self.hidden_news_policy.apply(source.source_id, result)
         now = attempted_at or utc_now()
         state = self.repository.get_poll_state(binding)
@@ -1058,6 +1097,8 @@ class MessageBusV2Service:
     ) -> tuple[EnrichmentJob | None, bool]:
         """Durably stage provider output before any network enrichment work."""
 
+        if google_news_message_blocked(source.source_id, message):
+            return None, False
         with self.repository.atomic_intake():
             now = collected_at or utc_now()
             if source.source_id == "sec_edgar" and message.published_at >= binding.created_at:
@@ -1232,7 +1273,7 @@ class MessageBusV2Service:
             ),
         )
 
-    def _accept_message(
+    def prepare_raw_message(
         self,
         *,
         source: SourceDefinition,
@@ -1244,9 +1285,12 @@ class MessageBusV2Service:
         enrichment_input: RawMessageInput | None = None,
         enrichment_claim: tuple[str, str] | None = None,
         known_article_raw_id: str | None = None,
-    ) -> IngestResult:
+        first_seen_resolved: bool = False,
+        published_article_update: bool = False,
+    ) -> RawMessage | IngestResult:
         now = collected_at or utc_now()
-        message = self.repository.resolve_first_seen(message, binding.binding_id)
+        if not first_seen_resolved:
+            message = self.repository.resolve_first_seen(message, binding.binding_id)
         reason = evaluate_admission(
             message.published_at,
             message.admission_context,
@@ -1261,7 +1305,7 @@ class MessageBusV2Service:
                     or not live_source or not live_source.enabled
                     or not known or known.raw_message_id != known_article_raw_id):
                 raise RuntimeError("known_article_revision_not_authorized")
-        if reason and not known_article_raw_id:
+        if reason and not known_article_raw_id and not published_article_update:
             self.repository.record_admission(message, reason, "RAW_INTAKE", binding.binding_id)
             return IngestResult(decision=IngestDecision.FILTERED, error_code=reason)
         # Provider metadata cannot forge internal completion-attempt evidence. Network
@@ -1349,6 +1393,29 @@ class MessageBusV2Service:
             last_seen_at=now,
             bootstrap_suppressed=bootstrap,
         )
+        return raw
+
+    def _accept_message(
+        self,
+        *,
+        source: SourceDefinition,
+        binding: TickerSourceBinding,
+        message: RawMessageInput,
+        bootstrap: bool,
+        collected_at: datetime | None = None,
+        trusted_enrichment: bool = False,
+        enrichment_input: RawMessageInput | None = None,
+        enrichment_claim: tuple[str, str] | None = None,
+        known_article_raw_id: str | None = None,
+    ) -> IngestResult:
+        prepared = self.prepare_raw_message(source=source,binding=binding,message=message,
+            bootstrap=bootstrap,collected_at=collected_at,trusted_enrichment=trusted_enrichment,
+            enrichment_input=enrichment_input,enrichment_claim=enrichment_claim,
+            known_article_raw_id=known_article_raw_id)
+        if isinstance(prepared, IngestResult):
+            return prepared
+        raw = prepared
+        now = collected_at or utc_now()
         decision, persisted = (
             self.repository.record_raw(raw, enrichment_claim=enrichment_claim,
                 **({"known_article_raw_id":known_article_raw_id} if known_article_raw_id else {}))

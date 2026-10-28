@@ -86,7 +86,7 @@ def test_cycle_uses_one_connection_and_refreshes_configuration_and_rephased_due(
         opened[0].execute("SELECT 1")
 
 
-def test_capacity_constraints_include_stricter_sibling_and_refresh_each_cycle(tmp_path):
+def test_stricter_sibling_does_not_constrain_an_unrelated_source(tmp_path):
     repo, bus = _bus(tmp_path / "bus.db")
     bus.start_ticker("MU")
     scheduler = GlobalPollScheduler(repo, bus, None)
@@ -103,8 +103,11 @@ def test_capacity_constraints_include_stricter_sibling_and_refresh_each_cycle(tm
             ),
         }
     )
-    value = scheduler._effective_constraints(source.scheduler_group, sources=[source, strict])
-    assert value.minimum_request_gap_seconds >= 19 and value.max_concurrency == 1
+    first=scheduler._limiter(source)
+    second=scheduler._limiter(strict)
+    assert first is not second
+    assert first.constraints.minimum_request_gap_seconds==source.scheduler_constraints.minimum_request_gap_seconds
+    assert second.constraints.max_concurrency==1
 
 
 @pytest.mark.asyncio
@@ -124,11 +127,13 @@ async def test_completed_poll_due_is_read_after_inflight_settlement(tmp_path):
     await finished
     owner._inflight[binding.binding_id] = finished
     poll = Mock()
+    repository,_=_bus(tmp_path/'bus.db')
     scheduler = SimpleNamespace(
+        repository=repository,
         _prepare_poll_cycle=lambda at: (
             [(source, binding)],
             [(source, binding)],
-            {binding.binding_id: SimpleNamespace(next_dispatch_at=next_due[0])},
+            {binding.binding_id: SimpleNamespace(next_dispatch_at=next_due[0],last_success_at=None)},
         ),
         distribution_worker=None,
         _poll=poll,

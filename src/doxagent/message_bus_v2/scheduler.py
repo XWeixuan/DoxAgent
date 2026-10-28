@@ -208,6 +208,8 @@ class GlobalPollScheduler:
         if getattr(self, "collection_plane_enabled", False):
             self.intake.start()
             self.capture_bridge.start()
+            if getattr(self, "live_worker", None) is not None:
+                self.live_worker.start()
             if self.distribution_worker is not None:
                 self.distribution_worker.start()
         from doxagent.ticker_initialization.consumers import bus_revision_usable, consumer_heartbeat
@@ -387,6 +389,8 @@ class GlobalPollScheduler:
             await asyncio.gather(self._activation_task, return_exceptions=True)
         if getattr(self, "capture_bridge", None) is not None:
             await self.capture_bridge.close()
+        if getattr(self, "live_worker", None) is not None:
+            await self.live_worker.close()
         tasks = list(getattr(self, "_standalone_inflight", {}).values())
         for task in tasks:
             task.cancel()
@@ -466,12 +470,6 @@ class GlobalPollScheduler:
                 sources = self.repository.list_sources()
                 self._configuration_cache = (signature, roster, sources)
             self._configured_sources = sources
-            self.group_limits = {
-                source.scheduler_group: self._effective_constraints(
-                    source.scheduler_group, sources=sources
-                ).max_concurrency
-                for source in sources
-            }
             eligible = [(s, b) for s, b in roster if b.polling.active_at(now)]
             demand = defaultdict(float)
             for source, binding in eligible:
@@ -1024,9 +1022,19 @@ class GlobalPollScheduler:
         window_cutoff: datetime | None = None,
         admission_context: AdmissionContext | None = None,
         acquisition_unit: str = "SHARED",
+        checkpoint: dict | None = None,
     ) -> PollExecutionResult:
         if not bindings:
             return PollExecutionResult(binding_id=f"shared:{source.source_id}")
+        if self.service.live_queue is not None:
+            adapter=self.adapters.resolve(source.adapter_ref,source_version=source.version)
+            result=await adapter.poll_shared(SharedPollContext(
+                run_id=new_id('live-sweep'),source=source,acquisition_unit=acquisition_unit,
+                checkpoint=checkpoint or {},
+                requested_at=attempted_at,window_start=window_start,window_cutoff=window_cutoff,
+                request_permit=self._limiter(source,acquisition_unit).permit))
+            return await self.service.accept_live_result(source=source,bindings=bindings,result=result,
+                attempted_at=attempted_at,admission_context=admission_context,unit=acquisition_unit)
         mode = "CLOSED_SWEEP" if window_cutoff else "REALTIME"
         if mode == "REALTIME":
             interval = min(b.polling.target_interval_seconds for b in bindings)
@@ -1588,6 +1596,19 @@ class GlobalPollScheduler:
             )
             from .schema import PollResult
 
+            if self.service.live_queue is not None:
+                receipt=await self.service.accept_live_result(source=source,bindings=[binding],
+                    result=PollResult(messages=messages),attempted_at=captured_at,
+                    admission_context=admission_context,unit=acquisition_unit,
+                    bootstrap=bool(evidence.get('bootstrap',window_cutoff is None and not state.bootstrap_complete)))
+                page_receipts.append(receipt)
+                page_captures.append(captured_at)
+                page_intakes.append(utc_now())
+                accept_elapsed_ms+=int((self._clock()-intake_started)*1000)
+                last_checkpoint=checkpoint
+                observed.update((m.external_id,m.url) for m in messages)
+                return receipt
+
             prepared = await self.service.storage.prepare(
                 self.repository.polling.prepare,
                 source=source,
@@ -1721,7 +1742,11 @@ class GlobalPollScheduler:
                 )
                 result = result.model_copy(update={"messages": []})
             if source.source_id == "corporate_ir_press_releases":
-                execution = await self.storage_call(
+                if self.service.live_queue is not None:
+                    execution=await self.service.accept_live_result(source=source,bindings=[binding],result=result,
+                        attempted_at=attempted_at,admission_context=admission_context,unit=acquisition_unit)
+                else:
+                    execution = await self.storage_call(
                     self.service._accept_poll_result,
                     source=source,
                     binding=binding,
@@ -1749,7 +1774,11 @@ class GlobalPollScheduler:
                     else None,
                 )
             else:
-                execution = await self.storage_call(
+                if self.service.live_queue is not None:
+                    execution=await self.service.accept_live_result(source=source,bindings=[binding],result=result,
+                        attempted_at=attempted_at,admission_context=admission_context,unit=acquisition_unit)
+                else:
+                    execution = await self.storage_call(
                     self.service._accept_poll_result,
                     source=source,
                     binding=binding,
@@ -1955,35 +1984,22 @@ class GlobalPollScheduler:
         )
 
     def _limiter(self, source: SourceDefinition, unit="ALL") -> SchedulerGroupLimiter:
-        key = (
-            source.source_id if source.scheduler_group == "newswire_rss" else source.scheduler_group
-        )
+        key = source.source_id
         if source.source_id == "yahoo_finance_news":
             key += ":browser" if unit in {"SUPPLEMENT_HEAD", "TAIL:YAHOO_TIME"} else ":rss"
         current = self._limiters.get(key)
-        constraints = self._effective_constraints(source.scheduler_group)
+        constraints = source.scheduler_constraints
         if source.scheduler_constraints.capacity_mode == "adaptive":
-            ceiling = (
-                min(
-                    s.scheduler_constraints.max_concurrency
-                    for s in self._configured_sources
-                    if s.scheduler_group == source.scheduler_group
-                )
-                if hasattr(self, "_configured_sources")
-                else source.scheduler_constraints.max_concurrency
-            )
-            rate = self._source_demand.get(
+            ceiling = source.scheduler_constraints.max_concurrency
+            rate = getattr(self,"_limiter_demand",{}).get(key,self._source_demand.get(
                 source.source_id, self._group_demand.get(source.scheduler_group, 0)
-            )
-            if source.source_id == "yahoo_finance_news":
-                rate /= 2
+            ))
             capacity, _ = required_capacity(
                 rate, current[1].cost.seconds if current else 1, ceiling=ceiling
             )
             constraints = constraints.model_copy(update={"max_concurrency": capacity})
         if (
             source.kind.value == "crawler"
-            and source.source_id != "globenewswire_search"
             and (
                 source.source_id != "yahoo_finance_news"
                 or unit in {"SUPPLEMENT_HEAD", "TAIL:YAHOO_TIME"}
@@ -2045,36 +2061,6 @@ class GlobalPollScheduler:
             for group, started in starts.items():
                 self.repository.record_scheduler_request_start(group, started)
 
-    def _effective_constraints(
-        self, group: str, *, sources: list[SourceDefinition] | None = None
-    ) -> SchedulerConstraints:
-        sources = [
-            source
-            for source in (
-                getattr(self, "_configured_sources", None) or self.repository.list_sources()
-                if sources is None
-                else sources
-            )
-            if source.scheduler_group == group
-        ]
-        if not sources:
-            return SchedulerConstraints()
-        configured = min(source.scheduler_constraints.max_concurrency for source in sources)
-        adaptive = all(
-            source.scheduler_constraints.capacity_mode == "adaptive" for source in sources
-        )
-        current = self._limiters.get(group)
-        cost = current[1].cost.seconds if current else 1.0
-        requested, shortfall = required_capacity(
-            self._group_demand.get(group, 0), cost, ceiling=configured, floor=1
-        )
-        return SchedulerConstraints(
-            minimum_request_gap_seconds=max(
-                source.scheduler_constraints.minimum_request_gap_seconds for source in sources
-            ),
-            max_concurrency=requested if adaptive else configured,
-        )
-
     def _update_capacity_alerts(
         self, bindings: list[tuple[SourceDefinition, TickerSourceBinding]]
     ) -> None:
@@ -2112,32 +2098,34 @@ class GlobalPollScheduler:
                     alert_key="news_capture_intake_backlog",
                     severity=AlertSeverity.WARNING,
                     code="capture_intake_delayed",
-                    message="Durable intake exceeds 3 seconds; optional history is paused, realtime heads remain scheduled",
+                    message="Durable intake exceeds 3 seconds; acquisition continues with bounded fair admission",
                 )
             )
         else:
             self.repository.resolve_alert("news_capture_intake_backlog")
         grouped: dict[str, list[TickerSourceBinding]] = defaultdict(list)
         for source, binding in bindings:
-            grouped[source.scheduler_group].append(binding)
+            grouped[source.source_id].append(binding)
         sources = self.repository.list_sources()
-        for group, values in grouped.items():
-            constraints = self._effective_constraints(group, sources=sources)
-            demand = self._group_demand.get(
-                group, sum(1 / value.polling.target_interval_seconds for value in values)
+        for group in {s.scheduler_group for s in sources if s.scheduler_group!=s.source_id}:
+            self.repository.resolve_alert(f'scheduler_capacity:{group}')
+        for source in sources:
+            values=grouped.get(source.source_id)
+            if not values:continue
+            demand = self._source_demand.get(
+                source.source_id, sum(1 / value.polling.target_interval_seconds for value in values)
             )
-            gap = constraints.minimum_request_gap_seconds
-            group_sources = [s for s in sources if s.scheduler_group == group]
-            ceiling = min(s.scheduler_constraints.max_concurrency for s in group_sources)
+            gap = 0 if source.kind.value=='crawler' else source.scheduler_constraints.minimum_request_gap_seconds
+            ceiling = source.scheduler_constraints.max_concurrency
             costs = [
                 limiter.cost.seconds
                 for key, (_, limiter) in self._limiters.items()
-                if key.startswith(group) or any(key.startswith(s.source_id) for s in group_sources)
+                if key==source.source_id or key.startswith(source.source_id+':')
             ]
             cost = max(costs, default=1)
             needed = __import__("math").ceil(demand * cost / 0.75)
             capacity = min(float("inf") if gap == 0 else 1 / gap, ceiling * 0.75 / max(0.01, cost))
-            key = f"scheduler_capacity:{group}"
+            key = f"scheduler_capacity:{source.source_id}"
             if demand > capacity:
                 self.repository.upsert_alert(
                     OperationalAlert(
@@ -2145,10 +2133,11 @@ class GlobalPollScheduler:
                         severity=AlertSeverity.WARNING,
                         code="scheduler_capacity_insufficient",
                         message=(
-                            f"scheduler group {group} demand {demand:.4f} req/s exceeds "
+                            f"source {source.source_id} demand {demand:.4f} req/s exceeds "
                             f"safe capacity {capacity:.4f} req/s"
                         ),
-                        scheduler_group=group,
+                        scheduler_group=source.scheduler_group,
+                        source_id=source.source_id,
                         metadata={
                             "demand_requests_per_second": demand,
                             "capacity_requests_per_second": capacity,

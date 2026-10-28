@@ -72,6 +72,30 @@ class ContentFiles:
         except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
             raise ContentUnavailable() from exc
 
+    def read_all(self, identity: str) -> bytes:
+        """One manifest and one pass for a whole immutable value."""
+        from .query_budget import check_deadline
+        try:
+            path = self._path(identity)
+            manifest = json.loads((path / "manifest.json").read_text(encoding="utf-8"))
+            if manifest["version"] != 1 or manifest["sha256"] != identity:
+                raise ContentUnavailable()
+            chunks = []
+            digest = hashlib.sha256()
+            for index, expected in enumerate(manifest["chunks"]):
+                check_deadline()
+                chunk = gzip.decompress((path / str(index)).read_bytes())
+                if hashlib.sha256(chunk).hexdigest() != expected:
+                    raise ContentUnavailable()
+                digest.update(chunk)
+                chunks.append(chunk)
+            raw = b"".join(chunks)
+            if len(raw) != manifest["size"] or digest.hexdigest() != identity:
+                raise ContentUnavailable()
+            return raw
+        except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+            raise ContentUnavailable() from exc
+
     def _read(self, identity: str, offset: int, size: int) -> bytes:
         from .query_budget import check_deadline
         if offset < 0 or not 0 < size <= CHUNK:

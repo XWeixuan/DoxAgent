@@ -229,10 +229,7 @@ async def test_cdp_reconnect_discards_contexts_from_disconnected_operator_browse
     old.close.assert_not_called()
 
 
-@pytest.mark.parametrize("failure", [
-    "browser_unavailable", "browser_runtime_missing", "render_timeout",
-])
-async def test_public_reader_still_runs_when_optional_browser_runtime_fails(failure):
+async def test_public_reader_fallback_does_not_depend_on_optional_browser_runtime():
     url = "https://www.benzinga.com/news/free-article"
     reader = "https://r.jina.ai/" + url
     session = Session({
@@ -240,12 +237,15 @@ async def test_public_reader_still_runs_when_optional_browser_runtime_fails(fail
         reader: response(reader, f'Title: {TITLE}\nURL Source: {url}\nMarkdown Content:\n\n{BODY}'),
     })
     browser = AsyncMock()
-    browser.read.return_value = (Observation(url, "", 0, failure), {})
+    browser.read.side_effect=AssertionError('public Reader policy must not open Chrome')
+    resolved=SimpleNamespace(body=SimpleNamespace(ref='builtin:generic@1',parameters={},access_order=['http_public','reader']),
+        auth=SimpleNamespace(body_requirement='none',requirement='none'),site_id='generic',strategy_revision=1,runtime_key='generic')
+    client=SimpleNamespace(resolve=AsyncMock(return_value=resolved))
     result = await ArticlePipeline(
-        PublicTransport(session, DomainFetchController(), validate_urls=False), browser=browser
+        PublicTransport(session, DomainFetchController(), validate_urls=False), browser=browser,site_client=client
     ).extract(MediaEnrichmentRecord("id", "id", "source", "MU", TITLE, "", url))
-    assert result.succeeded and session.calls == [url, reader]
-    assert result.diagnostics["browser_failure_reason"] == failure
+    assert result.succeeded and session.calls == [url, reader],(result.reason,result.diagnostics,session.calls)
+    browser.read.assert_not_awaited()
 
 
 @pytest.mark.parametrize("status", [200, 401])

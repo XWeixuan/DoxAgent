@@ -39,7 +39,7 @@ def setup_plane(tmp_path):
         async def poll(self, context):
             async with context.request_permit():
                 self.calls += 1
-                event = request_started("GET", "https://example.com/list")
+                event = request_started("GET", "https://example.com/list",admitted=True)
                 event.update(status_code=200, response_received_at=utc_now().isoformat())
             return PollResult(messages=[message])
 
@@ -133,8 +133,10 @@ async def test_bridge_crash_between_business_commit_and_ack_is_idempotent(tmp_pa
             db.execute(
                 "SELECT count(*) FROM poll_captures WHERE capture_id=?", (row["capture_id"],)
             ).fetchone()[0]
-            == 1
+            == 0
         )
+        assert db.execute("SELECT count(*) FROM live_articles").fetchone()[0] == 1
+        assert db.execute("SELECT count(*) FROM live_deliveries").fetchone()[0] == 1
 
 
 def test_existing_repository_opens_without_writing_or_ddl_under_writer_lock(tmp_path):
@@ -213,8 +215,8 @@ def test_schema_install_is_explicit_and_idempotent(tmp_path, monkeypatch):
     repo, *_ = setup_plane(tmp_path)
     monkeypatch.setenv("DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED", "true")
     settings = SimpleNamespace(message_bus_v2_sqlite_path=repo.path)
-    assert install(settings)["schema"] == 1
-    assert install(settings)["schema"] == 1
+    assert install(settings)["schema"] == 2
+    assert install(settings)["schema"] == 2
     with repo._connect() as db:
         assert not db.execute(
             "SELECT 1 FROM sqlite_master WHERE type='trigger' AND name='v2_capture_poll_runs_INSERT'"
@@ -259,7 +261,7 @@ async def test_validated_page_survives_later_failure_and_has_live_cadence_proof(
     store.schedule(source,targets[0],unit,epoch,True,epoch)
     class PartialAdapter:
         async def poll(self,context):
-            event=request_started('GET','https://example.test/list')
+            event=request_started('GET','https://example.test/list',admitted=True)
             event.update(status_code=200,response_received_at=utc_now().isoformat())
             await context.on_page([_message(314)])
             raise TimeoutError('archive failed after a valid head')
@@ -294,16 +296,15 @@ def test_retired_transport_headers_do_not_skip_business_and_archive_remains_comp
     assert 'payload' in outbox.event(end,decode=False)
 
 
-async def test_shared_capture_bridge_creates_one_article_body_job_and_frozen_target(tmp_path):
+async def test_shared_capture_bridge_creates_one_article_and_target_without_run_relay(tmp_path):
     from doxagent.message_bus_v2.schema import AcquisitionMode
-    from doxagent.message_bus_v2.polling import CaptureIntake
     repo,bus,worker,adapter,store=setup_plane(tmp_path)
     source=next(iter(worker.config_loader(None).sources.values())).model_copy(update={'acquisition_mode':AcquisitionMode.BY_DISTRIBUTION})
     repo.save_source(source)
     cfg=worker.config_loader(None);cfg.sources[source.source_id]=source
     async def poll_shared(context):
         async with context.request_permit():
-            event=request_started('GET','https://example.test/shared')
+            event=request_started('GET','https://example.test/shared',admitted=True)
             event.update(status_code=200,response_received_at=utc_now().isoformat())
         return PollResult(messages=[_message(610)])
     adapter.poll_shared=poll_shared
@@ -311,16 +312,12 @@ async def test_shared_capture_bridge_creates_one_article_body_job_and_frozen_tar
     await worker.acquire(*next(iter(worker.desired.values())))
     bridge=CaptureBridge(bus,store=store)
     assert await bridge.once()==1
-    with repo._connect() as db:run_id=db.execute('SELECT run_id FROM distribution_runs').fetchone()[0]
-    intake=CaptureIntake(bus)
-    try:
-        await intake.wait(run_id)
-        jobs=repo.list_enrichment_jobs()
-        assert len(jobs)==1 and jobs[0].owner_kind=='distribution_article'
-        with repo._connect() as db:
-            assert db.execute('SELECT count(*) FROM distribution_articles').fetchone()[0]==1
-            assert db.execute('SELECT count(*) FROM distribution_deliveries').fetchone()[0]==1
-    finally:await intake.close()
+    assert repo.list_enrichment_jobs()==[]
+    with repo._connect() as db:
+        assert db.execute('SELECT count(*) FROM live_articles').fetchone()[0]==1
+        target=db.execute('SELECT ticker,binding_id,state FROM live_deliveries').fetchone()
+        assert target['ticker']=='MU' and target['state']=='WAIT_BODY'
+        assert not db.execute("SELECT 1 FROM sqlite_master WHERE name='distribution_runs'").fetchone()
 
 
 async def test_collector_passes_real_due_and_demand_through_site_client(tmp_path):

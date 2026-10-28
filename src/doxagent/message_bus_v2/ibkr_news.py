@@ -6,6 +6,7 @@ import asyncio
 import re
 import threading
 from collections import OrderedDict, defaultdict
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from html import unescape
 from typing import Any, Protocol, cast
@@ -13,6 +14,8 @@ from typing import Any, Protocol, cast
 from doxagent.message_bus_v2.schema import JsonObject, PollContext, PollResult, RawMessageInput, utc_now
 from doxagent.settings import DoxAgentSettings
 from .collection_override import CollectionStopped, REQUEST_GATE
+
+_NEWS_SEND=ContextVar('ibkr_news_send',default=None)
 
 
 class IbkrNewsGatewayProtocol(Protocol):
@@ -63,6 +66,20 @@ class IbkrNewsGateway:
         owner = self
 
         class App(EWrapper, EClient):  # type: ignore[misc]
+            def sendMsg(self,msg):
+                # EClient discards Connection.sendMsg's byte count. Timestamp
+                # the socket write under its existing lock, not the SDK caller.
+                from ibapi import comm
+                packet=comm.make_msg(msg)
+                with self.conn.lock:
+                    if not self.conn.isConnected():raise ConnectionError('ibkr_news_disconnected')
+                    started=utc_now().isoformat()
+                    sent=self.conn.socket.send(packet)
+                trace=_NEWS_SEND.get()
+                if trace is not None:
+                    trace.update(request_started_at=started,proof_basis='TRANSPORT_SEND')
+                if sent!=len(packet):raise ConnectionError('ibkr_news_incomplete_socket_write')
+
             def __init__(self) -> None:
                 EWrapper.__init__(self)
                 EClient.__init__(self, self)
@@ -254,18 +271,16 @@ class IbkrNewsGateway:
             raise RuntimeError("IBKR returned no subscribed news providers")
         from .poll_trace import request_started
 
+        conid=self._conid(app,ticker)
         trace = request_started("SDK", f"ibkr://news/{ticker}", "ibkr_sdk")
         if trace is not None:
             trace["sdk_request_id"] = request_id
-        app.reqHistoricalNews(
-            request_id,
-            self._conid(app, ticker),
-            providers,
-            since.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),
-            until.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),
-            300,
-            [],
-        )
+        token=_NEWS_SEND.set(trace)
+        try:
+            app.reqHistoricalNews(request_id,conid,providers,
+                since.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),
+                until.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),300,[])
+        finally:_NEWS_SEND.reset(token)
         if not event.wait(self.settings.ibkr_tws_timeout_seconds):
             raise RuntimeError("IBKR historical news request timed out")
         if trace is not None:

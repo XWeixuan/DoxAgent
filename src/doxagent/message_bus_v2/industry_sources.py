@@ -367,17 +367,23 @@ class IndustryListingAdapter:
         self.browser = browser
         self.variant = variant
         self._public_session = None
-        self._public_slots = asyncio.Semaphore(4)
+        self._public_clients = None
         self._public_retry_at = 0.0
 
     async def close(self):
-        if self._public_session is not None:
+        if self._public_clients is not None:
+            await self._public_clients.close()
+        elif self._public_session is not None:
             await self._public_session.close()
 
+    async def _public_get(self,url,**options):
+        from .publisher_http import PublisherClients
+        if self._public_clients is None:
+            self._public_clients=PublisherClients(session=self._public_session)
+        return await self._public_clients.request(urlparse(url).hostname,'GET',url,**options)
+
     async def _barrons_http(self, context):
-        from curl_cffi.requests import AsyncSession
         from .barrons_sources import render_news_feeds
-        from .poll_trace import request_started
         from .schema import utc_now
 
         channel = {"HEAD": "Barrons", "OTHER_HEAD": "BarronsDowJonesNetwork"}.get(
@@ -385,8 +391,6 @@ class IndustryListingAdapter:
         )
         if channel is None:
             return None
-        if self._public_session is None:
-            self._public_session = AsyncSession(impersonate="chrome", trust_env=False)
         url = (
             "https://www.barrons.com/market-data/api/news?channel="
             + channel
@@ -394,9 +398,8 @@ class IndustryListingAdapter:
             + quote(context.ticker.lower(), safe="")
             + "&pageNumber=0&count=40"
         )
-        async with self._public_slots, context.request_permit():
-            event = request_started("GET", url, "curl_cffi")
-            response = await self._public_session.get(
+        async with context.request_permit():
+            response = await self._public_get(
                 url,
                 proxy=HTTP_EGRESSES["us-standard-5"],
                 timeout=8,
@@ -404,6 +407,7 @@ class IndustryListingAdapter:
                 headers={"Cache-Control": "no-cache"},
             )
             received = utc_now()
+            event=getattr(response,'bus_request_event',None)
             if event is not None:
                 event.update(
                     response_received_at=received.isoformat(),
@@ -435,14 +439,10 @@ class IndustryListingAdapter:
         deadline = time.monotonic() + 45
         if self.variant in {'trendforce_press', 'trendforce_news'} and time.monotonic() >= self._public_retry_at:
             try:
-                from curl_cffi.requests import AsyncSession
-                from .poll_trace import request_started
                 from .schema import utc_now
-                if self._public_session is None:
-                    self._public_session = AsyncSession(impersonate='chrome', trust_env=False)
-                async with self._public_slots, context.request_permit():
-                    event = request_started('GET', url, 'curl_cffi')
-                    response = await self._public_session.get(url, proxy=HTTP_EGRESSES['server-direct'],timeout=8)
+                async with context.request_permit():
+                    response = await self._public_get(url, proxy=HTTP_EGRESSES['server-direct'],timeout=8)
+                    event=getattr(response,'bus_request_event',None)
                     if event is not None:
                         event.update(response_received_at=utc_now().isoformat(),status_code=response.status_code)
                 if response.status_code != 200 or urlparse(response.url).hostname != urlparse(url).hostname:
@@ -691,10 +691,8 @@ class SharedFeedAdapter:
                     if route_proxy:
                         client = self._route_clients.get(str(route_proxy))
                         if client is None:
-                            client = httpx.AsyncClient(proxy=str(route_proxy), timeout=timeout,
-                                limits=httpx.Limits(max_connections=4, max_keepalive_connections=4))
-                            from .poll_trace import install
-                            install(client)
+                            from .publisher_http import PublisherHttpx
+                            client = PublisherHttpx(proxy=str(route_proxy), timeout=12)
                             self._route_clients[str(route_proxy)] = client
                         return await client.get(source.entry_url)
                     return await self.client.get(source.entry_url, timeout=timeout)

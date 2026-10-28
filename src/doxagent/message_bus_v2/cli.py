@@ -31,6 +31,8 @@ async def _run_worker(settings: DoxAgentSettings, *, once: bool) -> int:
         print("Message Bus v2 is disabled; worker is idle.")
         await stop.wait()
         return 0
+    from . import publisher_http
+    publisher_http.PROCESS_ROLE='sweep' if settings.message_bus_v2_collection_plane_enabled else 'collector'
     runtime = build_message_bus_v2_runtime(settings)
     try:
         if once:

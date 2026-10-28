@@ -23,10 +23,11 @@ class FetchAnchor:
     lifecycle_task: asyncio.Task | None = None
     frozen: bool = False
     thawed: bool = False
+    closed: bool = False
 
 
 class FetchAnchors:
-    def __init__(self, *, idle_seconds=90):
+    def __init__(self, *, idle_seconds=30):
         self.idle_seconds = idle_seconds
         self.idle = {}
 
@@ -41,6 +42,7 @@ class FetchAnchors:
             anchor.expiry.cancel()
             if anchor.lifecycle_task:
                 await anchor.lifecycle_task
+            if anchor.closed:return None
             if (
                 anchor.revision != identity.revision
                 or anchor.egress_id != egress.egress_id
@@ -86,12 +88,19 @@ class FetchAnchors:
 
     def put(self, identity, anchor, *, freeze=True, limit=None):
         bucket = self.idle.setdefault(identity.identity_id, [])
-        limit = limit or min(2, max(1, getattr(getattr(identity, 'access', None), 'max_concurrency', 1)))
+        limit = limit or 1
         if len(bucket) >= limit:
             return False
         bucket.append(anchor)
         if freeze:
-            anchor.lifecycle_task = asyncio.create_task(self._lifecycle(anchor, 'frozen'))
+            async def freeze_or_close():
+                if not await self._lifecycle(anchor,'frozen'):
+                    if anchor in bucket:bucket.remove(anchor)
+                    if not bucket and self.idle.get(identity.identity_id) is bucket:self.idle.pop(identity.identity_id,None)
+                    anchor.lifecycle_task=None
+                    if anchor.expiry:anchor.expiry.cancel()
+                    await self._close(anchor)
+            anchor.lifecycle_task = asyncio.create_task(freeze_or_close())
         anchor.expiry = asyncio.create_task(self._expire(identity.identity_id, anchor))
         return True
 
@@ -109,6 +118,8 @@ class FetchAnchors:
 
     @staticmethod
     async def _close(anchor):
+        if anchor.closed:return
+        anchor.closed=True
         if anchor.lifecycle_task and not anchor.lifecycle_task.done():
             anchor.lifecycle_task.cancel()
             await asyncio.gather(anchor.lifecycle_task, return_exceptions=True)

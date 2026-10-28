@@ -266,111 +266,67 @@ class Capture:
 
 
 class TechnologyHttp:
-    """A pooled client and two slots per publisher, shared across all its columns."""
+    """Reuse inside a publisher; isolate failures between unrelated publishers."""
 
     def __init__(self, session=None):
-        self.session = session
-        self.slots = asyncio.Semaphore(4)
-        self.host_slots, self.host_locks, self.started = {}, {}, {}
+        from .publisher_http import PublisherClients
+        self.clients = PublisherClients(session=session)
+        self.session = session  # Injection compatibility; production clients are publisher-local.
+        self.stdlib_slots = asyncio.Semaphore(4)
 
     async def fetch(self, url, spec, *, headers=None, method="GET", json_body=None):
         from .http_routes import HTTP_EGRESSES
-        from .poll_trace import request_started
+        from .publisher_http import http_budget
         from .schema import utc_now
+        from .storage_lane import StorageLane
 
-        slots = self.host_slots.setdefault(spec.domain, asyncio.Semaphore(2))
-        lock = self.host_locks.setdefault(spec.domain, asyncio.Lock())
-        async with slots, self.slots:
-            async with asyncio.timeout(15):
-                for _ in range(4):
-                    if not spec.accepts(url):
-                        raise ValueError("technology_redirect_host_not_approved")
-                    async with lock:
-                        await asyncio.sleep(
-                            max(0, self.started.get(spec.domain, 0) + 0.5 - time.monotonic())
-                        )
-                        self.started[spec.domain] = time.monotonic()
-                    if spec.transport == "urllib":
-                        from .corporate_ir.http import PublicHttp
-
-                        # Drain the exact socket thread on cancellation before releasing its permit.
-                        work = asyncio.create_task(
-                            asyncio.to_thread(
-                                PublicHttp._stdlib_read,
-                                url,
-                                {"User-Agent": "Mozilla/5.0", **(headers or {})},
-                                HTTP_EGRESSES[spec.route],
-                            )
-                        )
-                        try:
-                            result = await asyncio.shield(work)
-                        except asyncio.CancelledError:
-                            while not work.done():
-                                try:
-                                    await asyncio.shield(work)
-                                except asyncio.CancelledError:
-                                    continue
-                                except Exception:
-                                    break
-                            await asyncio.gather(work, return_exceptions=True)
-                            raise
-                        capture = Capture(result.status, result.url, result.body, result.headers)
-                    else:
-                        if self.session is None:
-                            from curl_cffi.requests import AsyncSession
-
-                            self.session = AsyncSession(impersonate="chrome", trust_env=False)
-                        event = request_started(method, url, "technology_curl")
-                        data, oversized = bytearray(), False
-
-                        def receive(chunk, buffer=data):
-                            nonlocal oversized
-                            if len(buffer) + len(chunk) > 4 * 1024 * 1024:
-                                oversized = True
-                                return 0
-                            buffer.extend(chunk)
-                            return len(chunk)
-
-                        # curl_cffi 0.15's stream error path releases a failed handle
-                        # both inline and from its task callback. Non-stream request
-                        # has one finally-owned release; the callback still bounds RAM.
-                        try:
-                            response = await self.session.request(
-                                method,
-                                url,
-                                timeout=8,
-                                allow_redirects=False,
-                                proxy=HTTP_EGRESSES[spec.route],
-                                headers=headers or None,
-                                content_callback=receive,
-                                **({"json": json_body} if json_body is not None else {}),
-                            )
-                        except Exception:
-                            if oversized:
-                                raise ValueError("technology_response_exceeds_4mib") from None
-                            raise
+        async with asyncio.timeout(15):
+            for _ in range(4):
+                if not spec.accepts(url):
+                    raise ValueError("technology_redirect_host_not_approved")
+                if spec.transport == "urllib":
+                    from .corporate_ir.http import PublicHttp
+                    async with self.stdlib_slots, http_budget("collector"):
+                        result = await StorageLane._execute(PublicHttp._stdlib_read,
+                            (url, {"User-Agent": "Mozilla/5.0", **(headers or {})},
+                             HTTP_EGRESSES[spec.route]), {})
+                    capture = Capture(result.status, result.url, result.body, result.headers)
+                else:
+                    data, oversized = bytearray(), False
+                    def receive(chunk):
+                        nonlocal oversized
+                        if len(data) + len(chunk) > 4 * 1024 * 1024:
+                            oversized = True
+                            return 0
+                        data.extend(chunk)
+                        return len(chunk)
+                    try:
+                        response = await self.clients.request(
+                            (spec.domain, spec.route), method, url,
+                            proxy=HTTP_EGRESSES[spec.route], headers=headers or None,
+                            allow_redirects=False, content_callback=receive,
+                            **({"json": json_body} if json_body is not None else {}))
+                    except Exception:
                         if oversized:
-                            raise ValueError("technology_response_exceeds_4mib")
-                        capture = Capture(
-                            response.status_code,
-                            url,
-                            bytes(data).decode("utf-8", errors="replace"),
-                            {key.lower(): value for key, value in response.headers.items()},
-                        )
-                        if event is not None:
-                            event.update(
-                                response_received_at=utc_now().isoformat(),
-                                status_code=capture.status,
-                            )
-                    if capture.status in {301, 302, 303, 307, 308}:
-                        url = urljoin(url, capture.headers["location"])
-                        continue
-                    return capture
+                            raise ValueError("technology_response_exceeds_4mib") from None
+                        raise
+                    if oversized:
+                        raise ValueError("technology_response_exceeds_4mib")
+                    capture = Capture(response.status_code, url,
+                        bytes(data).decode("utf-8", errors="replace"),
+                        {k.lower(): v for k, v in response.headers.items()})
+                    event = getattr(response, "bus_request_event", None)
+                    if event is not None:
+                        event.update(response_received_at=utc_now().isoformat(),
+                                     status_code=capture.status)
+                if capture.status in {301, 302, 303, 307, 308}:
+                    url = urljoin(url, capture.headers["location"])
+                    continue
+                return capture
         raise ValueError("technology_redirect_limit")
 
     async def close(self):
-        if self.session is not None:
-            await self.session.close()
+        await self.clients.close()
 
 
 def plain(text):
@@ -480,10 +436,17 @@ class TechnologyAdapter:
             state = states.setdefault(url, {})
             from datetime import datetime
 
+            if state.get('retry_at') and str(state.get('error','')).startswith(('TimeoutError:','RequestsError:','ConnectionError:')):
+                # Previous program/transport backoffs could silence an otherwise
+                # healthy publisher for fifteen minutes after client recovery.
+                state['retry_at']=min(datetime.fromisoformat(state['retry_at']),now+timedelta(seconds=5)).isoformat()
+
             if state.get("retry_at") and now < datetime.fromisoformat(state["retry_at"]):
                 receipts.append({"url": url, "status": "backoff", "retry_at": state["retry_at"]})
                 return
             refresh = (
+                context.force_refresh
+                or
                 context.window_cutoff is not None
                 or not state.get("refresh_at")
                 or now >= datetime.fromisoformat(state["refresh_at"])
@@ -584,7 +547,7 @@ class TechnologyAdapter:
                 state.setdefault("retry_at", None)
                 if not state["retry_at"] or datetime.fromisoformat(state["retry_at"]) <= now:
                     state["retry_at"] = (
-                        now + timedelta(seconds=min(900, 60 * 2 ** min(4, state["failures"] - 1)))
+                        now + timedelta(seconds=5)
                     ).isoformat()
                 failures.append(
                     AcquisitionFailure(
@@ -607,6 +570,8 @@ class TechnologyAdapter:
         return PollResult(
             messages=list(messages.values()),
             next_checkpoint={"endpoints": states},
+            recovery_delta={'endpoints':{url:{k:value for k,value in state.items()
+                if k in {'failures','error','retry_at'}} for url,state in states.items()}},
             failures=failures,
             acquisition_metadata={
                 "endpoints": receipts,

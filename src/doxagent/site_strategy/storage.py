@@ -7,12 +7,28 @@ import shutil
 import sqlite3
 import time
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
+_READS=ThreadPoolExecutor(max_workers=4,thread_name_prefix="site-read")
 
 
 async def registry_io(function, *args, **kwargs):
-    """Keep the async owner/health gate until its synchronous work really ends."""
+    """Cancelable bounded reads; actual owner mutations drain their commit."""
+    name=getattr(function,"__name__","")
+    readonly=(name.startswith(("get_","list_","resolve")) and not name.startswith("get_or_create")) or name in {
+        "snapshot","candidate_status","effective_candidates","_resolve_request","_shared_key","_cache_key",
+        "_profile","_auth_state","_identity_for","_purpose_combinations","_materialize_combination"}
+    if readonly:
+        owner=getattr(function,"__self__",None)
+        repository=getattr(owner,"repository",owner)
+        import contextvars
+        context=contextvars.copy_context()
+        def read():
+            if hasattr(repository,"read_scope"):
+                with repository.read_scope():return function(*args,**kwargs)
+            return function(*args,**kwargs)
+        return await asyncio.get_running_loop().run_in_executor(_READS,context.run,read)
     work=asyncio.create_task(asyncio.to_thread(function,*args,**kwargs))
     try:
         return await asyncio.shield(work)

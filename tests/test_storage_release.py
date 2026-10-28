@@ -171,3 +171,18 @@ def test_collector_registration_uses_formal_migration_and_stops_old_acquisition(
     assert any(c[-3:]==['stop','v2-message-bus','v2-content-enrichment'] for c in calls)
     assert any(c[-1]=='v2-migrate' and '--force-recreate' in c for c in calls)
     assert not any('run' in c for c in calls)
+
+
+def test_registered_collection_schema_upgrade_stops_all_three_owners(tmp_path,monkeypatch):
+    components=['v2-message-bus','v2-content-enrichment','v2-message-collector']
+    state={'compose_base_command':['docker','compose','-f','base.yml'],
+           'components':{c:{'current':{'image':'old','compose':{}}} for c in components}}
+    release.atomic(tmp_path/'state.json',state)
+    calls=[]
+    monkeypatch.setattr(release,'build',lambda *a:{'commit':'new','images':{'backend':{'image':'new-backend'}}})
+    monkeypatch.setattr(release.subprocess,'run',lambda c,**kw:calls.append(c))
+    monkeypatch.setattr(release,'run',lambda c,**kw:'0' if c[:2]==['docker','wait'] else 'formal-migration-id')
+    monkeypatch.setattr(release,'deploy',lambda *a:True)
+    assert release.release_components(tmp_path,state,tmp_path,'new',components,collection_migration=True)
+    assert any(c[-4:]==['stop','v2-message-collector','v2-message-bus','v2-content-enrichment'] for c in calls)
+    assert not any('run' in c for c in calls)

@@ -17,22 +17,27 @@ def install(settings):
     DistributionRepository(repo)
     store = AcquisitionStore(path_for(repo.path), initialize=True)
     # Only transport subscriptions change. No source epoch reset or history replay.
+    from ..live_repository import LiveRepository
+    LiveRepository(repo).install()
     SourceOutbox(repo.path, "bus").migrate()
-    store.meta("schema", {"version": 1, "installed_at": utc_now().isoformat()})
-    return {"schema": 1, "path": str(store.path)}
+    store.meta("schema", {"version": 2, "installed_at": utc_now().isoformat()})
+    return {"schema": 2, "path": str(store.path)}
 
 
 def main():
     settings = DoxAgentSettings()
     if len(sys.argv) > 1 and sys.argv[1] == "health":
-        cfg = AcquisitionStore(path_for(settings.message_bus_v2_sqlite_path)).get_meta(
+        store=AcquisitionStore(path_for(settings.message_bus_v2_sqlite_path))
+        cfg = store.get_meta(
             "configuration", {}
         )
         if not cfg.get("at") or utc_now() - datetime.fromisoformat(cfg["at"]) > timedelta(
             seconds=60
         ):
             raise SystemExit("collector configuration refresh is stale")
-        print("ready")
+        health=store.health()
+        print(json.dumps(health))
+        if health['required_units'] and len(health['stalled_units'])==health['required_units']:raise SystemExit(1)
         return
     print(json.dumps(install(settings)))
 

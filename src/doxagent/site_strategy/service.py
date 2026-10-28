@@ -1344,7 +1344,8 @@ class SiteStrategyService:
         )
 
     def _identity_navigation_interval(self, identity_id, configured):
-        state = self.repository.get_identity_runtime(identity_id)
+        with self.repository.read_scope():
+            state = self.repository.get_identity_runtime(identity_id)
         if state.probation_until and (
             state.probation_until > utc_now() or not state.natural_success_at
         ):
@@ -1359,29 +1360,21 @@ class SiteStrategyService:
         ):
             return None
         resolved = self._resolve_request(request)
-        binding = []
+        if any(k.startswith(("_maintenance","_recovery")) for k in request.recipe_parameters):
+            return None
+        binding=[]
         for combination in resolved.access.combinations:
-            identity = self.repository.get_identity(combination.identity_id or "")
-            if not identity:
-                continue
-            runtime = self.repository.get_identity_runtime(identity.identity_id)
-            egress = self.repository.get_egress(identity.egress_id)
-            binding.append(
-                (
-                    identity.model_dump(mode="json"),
-                    runtime.instance_id,
-                    runtime.session_revision,
-                    egress.generation,
-                    egress.observed_ip,
-                )
-            )
-        wire = request.model_dump(mode='json',exclude={
-            'request_id','operation_id','parent_id','remaining_budget_ms'})
-        wire["recipe_parameters"] = {
-            key: value
-            for key, value in wire["recipe_parameters"].items()
-            if key not in {"_poll_rate", "_work_class"}
-        }
+            identity=self.repository.get_identity(combination.identity_id or "")
+            if not identity:continue
+            runtime=self.repository.get_identity_runtime(identity.identity_id)
+            egress=self.repository.get_egress(identity.egress_id)
+            binding.append((identity.identity_id,identity.revision,runtime.instance_id,
+                            runtime.session_revision,egress.generation))
+        wire={"url":request.url,"method":request.method,"mode":request.mode.value,
+              "recipe_ref":request.recipe_ref,"parameters":request.parameters,
+              "allowed_headers":request.allowed_headers,
+              "recipe_parameters":{k:v for k,v in request.recipe_parameters.items()
+                  if k not in {"_poll_rate","_poll_due_at","_work_class"}}}
         return "capture:" + digest_json(
             {
                 "request": wire,
@@ -1393,11 +1386,108 @@ class SiteStrategyService:
         )
 
     async def execute(self, request: AccessRequest) -> AccessResult:
-        token=ACCESS_DEADLINE.set(time.monotonic()+request.remaining_budget_ms/1000)
+        started=time.monotonic()
+        deadline=started+request.remaining_budget_ms/1000
+        token=ACCESS_DEADLINE.set(deadline)
         try:
-            return await self._execute_entry(request)
+            async with asyncio.timeout_at(deadline):
+                result=(await self._execute_http_public(request) if request.mode is AccessMode.HTTP_PUBLIC
+                        else await self._execute_entry(request))
+            return result.model_copy(update={"stage_timings":{**result.stage_timings,
+                "total_elapsed_ms":int((time.monotonic()-started)*1000)}})
+        except TimeoutError:
+            return AccessResult(request_id=request.request_id,operation_id=request.operation_id,
+                site_id="unknown",runtime_key="unknown",strategy_revision=0,
+                disposition=AccessDisposition.BUDGET_DEFERRED,failure_category=FailureCategory.BUDGET_DEFERRED,
+                reason_code="access_budget_exhausted",stage_timings={"total_elapsed_ms":int((time.monotonic()-started)*1000)})
         finally:
             ACCESS_DEADLINE.reset(token)
+
+    async def _execute_http_public(self,request):
+        """Public network work has no Chrome/profile/session admission gates."""
+        started=time.monotonic()
+        resolved=await registry_io(self._resolve_request,request)
+        resolve_ms=int((time.monotonic()-started)*1000)
+        if not resolved.enabled:
+            return self._result(request,resolved,AccessDisposition.SITE_DISABLED,reason="site_disabled",started=started)
+        policy=resolved
+        publisher=request.parameters.get("publisher_url")
+        if publisher:
+            original=request.model_copy(update={"url":publisher})
+            policy=await registry_io(self._resolve_request,original)
+        if self._auth_required(policy,request.purpose):
+            return self._result(request,resolved,AccessDisposition.AUTH_REQUIRED,
+                category=FailureCategory.AUTH_REQUIRED,reason="auth_required",started=started)
+        cooldowns=getattr(self,"_http_cooldowns",None)
+        if cooldowns is None:self._http_cooldowns=cooldowns={}
+        publisher_key=urlsplit(request.url).hostname
+        retry=cooldowns.get(publisher_key)
+        if retry and retry>utc_now():
+            return self._result(request,resolved,AccessDisposition.BUDGET_DEFERRED,
+                category=FailureCategory.ACCESS_RATE_LIMIT,reason="publisher_retry_after",
+                retry_not_before=retry,started=started)
+        combinations=await registry_io(self._purpose_combinations,resolved,request.purpose)
+        if not combinations:
+            return self._result(request,resolved,AccessDisposition.ACCESS_EXHAUSTED,
+                reason="access_combinations_unavailable",started=started)
+        preferred=getattr(self,"_http_preferred",None)
+        if preferred is None:self._http_preferred=preferred={}
+        key=(resolved.runtime_key,request.purpose.value)
+        if key not in preferred:
+            state=await registry_io(self.repository.get_runtime,resolved.runtime_key)
+            preferred[key]=state.active_combination_id
+        combinations=sorted(combinations,key=lambda c:(c.combination_id!=preferred[key],c.priority))
+        result=None
+        for original in combinations[:1 if request.purpose is SitePurpose.BODY else 2]:
+            combination=await registry_io(self._materialize_combination,original)
+            if not combination:continue
+            egress=await registry_io(self.repository.get_egress,combination.egress_id)
+            if not egress or not egress.enabled or egress.status in {"UNAVAILABLE","CONFIG_MISSING"}:continue
+            remaining=max(.001,(ACCESS_DEADLINE.get() or started+15)-time.monotonic())
+            try:
+                response=await self.runtime.execute(request.model_copy(update={"remaining_budget_ms":int(remaining*1000)}),
+                    resolved,combination,None,egress)
+                # HTTP owns transport/status, not a second full body extraction.
+                category,reason=classify_response(RuntimeResponse(response.status_code,response.final_url,
+                    response.headers,reason=response.reason))
+                if response.status_code<=0:
+                    category,reason=FailureCategory.TRANSIENT_TRANSPORT,response.reason or 'http_no_response'
+            except Exception as exc:
+                category,reason=classify_exception(exc)
+                response=RuntimeResponse(0,request.url,{},reason=reason)
+            disposition=(AccessDisposition.SUCCESS if category is None else
+                AccessDisposition.CONTENT_ERROR if category in {FailureCategory.CONTENT_ERROR,FailureCategory.EXTRACTION_ERROR}
+                else AccessDisposition.AUTH_REQUIRED if category in {FailureCategory.AUTH_REQUIRED,FailureCategory.ENTITLEMENT_MISSING}
+                else AccessDisposition.SERVICE_UNAVAILABLE if category in {FailureCategory.TRANSIENT_TRANSPORT,FailureCategory.RUNTIME_UNAVAILABLE}
+                else AccessDisposition.ACCESS_EXHAUSTED)
+            if category is FailureCategory.ACCESS_RATE_LIMIT:
+                retry=utc_now()+timedelta(seconds=response.retry_after_seconds or 5)
+                cooldowns[publisher_key]=retry
+            timings={**response.stage_timings,"resolve_ms":resolve_ms,
+                "total_elapsed_ms":int((time.monotonic()-started)*1000)}
+            result=AccessResult(request_id=request.request_id,operation_id=request.operation_id,
+                site_id=resolved.site_id,runtime_key=resolved.runtime_key,strategy_revision=resolved.strategy_revision,
+                body_strategy_ref=resolved.body.ref,effective_scope_id=resolved.match_evidence.get("scope_id"),
+                disposition=disposition,status_code=response.status_code,final_url=response.final_url,
+                headers=response.headers,body=response.body,redirect_url=response.redirect_url,
+                combination_id=combination.combination_id,egress_id=egress.egress_id,
+                reason_code=reason,failure_category=category,network_ms=timings["total_elapsed_ms"],stage_timings=timings,
+                retry_not_before=retry if category is FailureCategory.ACCESS_RATE_LIMIT else None)
+            if category is None:
+                preferred[key]=combination.combination_id
+            # Only an approved transport fallback; a real refusal/429 is not
+            # permission to rotate a publisher's access route.
+            if category is not FailureCategory.TRANSIENT_TRANSPORT:
+                break
+        if result is None:
+            return self._result(request,resolved,AccessDisposition.SERVICE_UNAVAILABLE,
+                reason="egress_unavailable",started=started)
+        await self._append_diagnostic(AccessEvent(operation_id=request.operation_id,site_id=result.site_id,
+            combination_id=result.combination_id,category="ACCESS_RESULT",payload={
+                "purpose":request.purpose.value,"disposition":result.disposition.value,"reason":result.reason_code,
+                "network_ms":result.network_ms,"queue_wait_ms":0,"stage_timings":result.stage_timings,
+                "work_class":request.work_class,"strategy_ref":result.body_strategy_ref}))
+        return result
 
     async def _append_diagnostic(self,event):
         if self.diagnostic_events is not None and event.category in {'ACCESS_RESULT','CAPTURE_CONSUMED'}:
@@ -1463,8 +1553,7 @@ class SiteStrategyService:
         if result.disposition is AccessDisposition.SUCCESS:
             result=result.model_copy(update={'capture_id':result.capture_id or result.request_id,
                 'capture_acquired_at':result.capture_acquired_at or utc_now()})
-            key=await registry_io(self._shared_key,request)
-            await self._put_cache(result,cache_key=key,ttl=15)
+            # Only overlap shares a capture; a later poll must perform a new request.
         return result
 
     async def _execute_idempotent(self, request: AccessRequest) -> AccessResult:
@@ -1658,7 +1747,7 @@ class SiteStrategyService:
         self._scope_inflight[key] = self._scope_inflight.get(key, 0) + 1
         try:
             async with asyncio.timeout_at(ACCESS_DEADLINE.get() or started + request.remaining_budget_ms / 1000):
-                return await self._execute_uncached(request)
+                return await self._execute_uncached(request,resolved=resolved)
         except TimeoutError:
             if resolved.match_evidence.get("scope_id"):
                 from .governance_repository import GovernanceRepository
@@ -1772,9 +1861,9 @@ class SiteStrategyService:
             )
         return rows
 
-    async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
+    async def _execute_uncached(self, request: AccessRequest, *, resolved=None) -> AccessResult:
         started = time.monotonic()
-        resolved = (await registry_io(self._resolve_request, request))
+        resolved = resolved or (await registry_io(self._resolve_request, request))
         if resolved.runtime_key in self._switching_scopes:
             return self._result(
                 request,
@@ -1794,10 +1883,9 @@ class SiteStrategyService:
                 started=started,
             )
         combinations = (await registry_io(self._purpose_combinations, resolved, request.purpose))
-        view = await self.effective_candidates(
-            resolved, request.purpose, request.mode, set(request.excluded_combinations)
-        )
-        skips = [row for row in view if row["skip_reasons"]]
+        # Complete candidate explanations belong to diagnostics, not every
+        # request's critical path. Actual selection below remains authoritative.
+        skips = []
         route, candidates, next_retry = await self.health.candidates(
             resolved.runtime_key,
             combinations,

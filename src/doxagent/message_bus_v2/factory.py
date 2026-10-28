@@ -60,6 +60,9 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
     scheduler.distribution_worker = DistributionWorker(
         scheduler.distribution, service, scheduler.terms, jev=jev,
     )
+    if scheduler.collection_plane_enabled:
+        from .live import LiveDeliveryWorker
+        scheduler.live_worker = LiveDeliveryWorker(service, jev=jev)
     if settings.ticker_initialization_control_path:
         from doxagent.persistent_runtime_v2.bus_orchestration import BusOrchestration
         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
@@ -124,6 +127,9 @@ def build_message_bus_v2_service(
     )
     if repository.initialize or not settings.message_bus_v2_collection_plane_enabled:
         service.bootstrap()
+    if settings.message_bus_v2_collection_plane_enabled:
+        from .live import LiveQueue
+        service.live_queue = LiveQueue(service)
     return repository, service
 
 

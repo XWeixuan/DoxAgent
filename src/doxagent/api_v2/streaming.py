@@ -102,6 +102,8 @@ class MessageStreams:
             **filters,
         )
         scope = self.scope(ticker, identity, filters, limit)
+        from .news_timeliness import message_update_states
+        message_update_states(self.store,ticker,view['seq'],page['items'])
         token = self.store.save_token(
             owner,
             scope,
@@ -193,6 +195,8 @@ class MessageStreams:
             "row": None,
         }
         if action == "UPSERT":
+            from .news_timeliness import message_update_states
+            message_update_states(self.store,ticker,state['seq'],[row])
             payload.update(row_revision=row["row_revision"], row=row)
         validate("MessageDelta", payload)
         remainder = {**state, "pending": state["pending"][1:], "ordinal": state["ordinal"] + 1}
@@ -342,6 +346,8 @@ def install(app: FastAPI) -> None:
         row = streams.store.get("message", ticker, standard_message_id, seq)
         if not row or row["revision"] != revision:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
+        from .news_timeliness import message_update_states
+        message_update_states(streams.store,ticker,seq,[row])
         return respond(request, "MessageSummary", row, view_id=view_id, read_seq=seq)
 
     @app.get(PREFIX + "/tickers/{ticker}/messages/{standard_message_id}/revisions/{revision}/body")

@@ -726,7 +726,8 @@ class DistributionRepository:
         # Three days also covers DATE/UNKNOWN inputs' today+yesterday admission.
         before = (now - timedelta(days=3)).isoformat()
         count = 0
-        with self.bus.transaction() as db:
+        prepared = []
+        with self.bus._connect() as db:
             runs = db.execute(
                 "SELECT run_id,checkpoint_json FROM distribution_runs "
                 "WHERE status IN ('PENDING','RUNNING') AND mode='REALTIME' "
@@ -766,21 +767,24 @@ class DistributionRepository:
                         "retired_at": now.isoformat(),
                         "retirement_reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED",
                     }
-                    db.execute(
-                        "UPDATE distribution_runs SET status='EXPIRED',claim_token=NULL,"
-                        "lease_until=NULL,checkpoint_json=? WHERE run_id=?",
-                        (canonical_json(audit), run["run_id"]),
-                    )
-                    for delivery_id in expired:
-                        db.execute(
-                            "UPDATE distribution_deliveries SET state='EXPIRED',claim_token=NULL,"
-                            "lease_until=NULL,result_json=? WHERE delivery_id=?",
-                            (
-                                canonical_json({"reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED"}),
-                                delivery_id,
-                            ),
-                        )
-                    count += 1
+                    prepared.append((run["run_id"], canonical_json(audit), expired))
+        for run_id, audit, expired in prepared:
+            with self.bus.transaction() as db:
+                changed = db.execute(
+                    "UPDATE distribution_runs SET status='EXPIRED',claim_token=NULL,"
+                    "lease_until=NULL,checkpoint_json=? WHERE run_id=? AND mode='REALTIME' "
+                    "AND status IN ('PENDING','RUNNING') AND (claim_token IS NULL OR lease_until<=?)",
+                    (audit,run_id,now.isoformat())).rowcount
+                if not changed:
+                    continue
+                for delivery_id in expired:
+                    db.execute("UPDATE distribution_deliveries SET state='EXPIRED',claim_token=NULL,"
+                        "lease_until=NULL,result_json=? WHERE delivery_id=? "
+                        "AND (claim_token IS NULL OR lease_until<=?)",
+                        (canonical_json({"reason":"ORIGINAL_REALTIME_WINDOW_EXPIRED"}),
+                         delivery_id,now.isoformat()))
+                count += 1
+
         return count
 
     def finish_delivery(
@@ -940,7 +944,11 @@ class DistributionRepository:
                 "AND state IN ('WAIT_BODY','PENDING','RUNNING','L2_WAIT')",
                 (run_id, ticker),
             ).fetchall()
-        return [row[0] for row in rows]
+            continuations=[r[0] for r in db.execute("SELECT json_extract(result_json,'$.continuation_id') "
+                "FROM distribution_deliveries WHERE run_id=? AND ticker=? "
+                "AND json_extract(result_json,'$.continuation_id') IS NOT NULL",(run_id,ticker))]
+        from .live_repository import LiveRepository
+        return [row[0] for row in rows]+LiveRepository(self.bus).pending_ids(continuations)
 
     def failures_for_run(self, run_id: str, ticker: str) -> list[str]:
         with self.bus._connect() as db:
@@ -949,7 +957,11 @@ class DistributionRepository:
                 "AND state IN ('FAILED','CONFIG_INCOMPLETE','EMPTY_CONTENT')",
                 (run_id, ticker),
             ).fetchall()
-        return [row[0] for row in rows]
+            continuations=[r[0] for r in db.execute("SELECT json_extract(result_json,'$.continuation_id') "
+                "FROM distribution_deliveries WHERE run_id=? AND ticker=? "
+                "AND json_extract(result_json,'$.continuation_id') IS NOT NULL",(run_id,ticker))]
+        from .live_repository import LiveRepository
+        return [row[0] for row in rows]+LiveRepository(self.bus).failures_for_work(continuations)
 
     def status(self, source_id: str) -> list[dict[str, Any]]:
         with self.bus._connect() as db:

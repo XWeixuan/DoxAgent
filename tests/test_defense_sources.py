@@ -183,10 +183,10 @@ async def test_date_only_today_does_not_prove_complete_intraday_coverage():
     assert result.messages and result.window_coverage == "PARTIAL"
 
 
-async def test_host_wait_never_holds_global_slot_or_consumes_network_timer(monkeypatch):
+async def test_host_wait_never_holds_global_slot_or_consumes_network_timer():
     import asyncio
 
-    from doxagent.message_bus_v2 import defense_sources
+    from doxagent.message_bus_v2.publisher_http import PublisherClients,http_budget
 
     active = 0
     entered = asyncio.Event()
@@ -197,48 +197,32 @@ async def test_host_wait_never_holds_global_slot_or_consumes_network_timer(monke
         headers = {}
         encoding = "utf8"
 
-        async def aiter_content(self):
-            await release.wait()
-            yield b"valid"
-
     class Session:
-        @asynccontextmanager
-        async def stream(self, *args, **kwargs):
+        async def request(self,method,url,**kwargs):
             nonlocal active
             active += 1
             if active == 2:
                 entered.set()
             try:
-                yield Response()
+                await release.wait()
+                kwargs['content_callback'](b'valid')
+                return Response()
             finally:
                 active -= 1
+        async def close(self):pass
 
-    async def paced(delay):
-        await asyncio.sleep(min(delay, 0.001))
-
-    @asynccontextmanager
-    async def network_budget(_):
-        assert client.global_slots._value < 4
-        assert client.host_slots[e.host]._value < 2
-        yield
-
-    monkeypatch.setattr(
-        defense_sources,
-        "asyncio",
-        SimpleNamespace(
-            Semaphore=asyncio.Semaphore,
-            Lock=asyncio.Lock,
-            timeout=network_budget,
-            sleep=paced,
-        ),
-    )
-    client = DefenseHttp(Session())
+    client = DefenseHttp()
+    client.clients=PublisherClients(factory=Session)
     e = ENDPOINTS["defensescoop_space"]
     tasks = [asyncio.create_task(client.fetch(e.urls[0], e)) for _ in range(5)]
-    await entered.wait()
-    assert client.global_slots._value == 2
-    release.set()
-    results = await asyncio.gather(*tasks)
+    try:
+        await asyncio.wait_for(entered.wait(),1)
+        assert http_budget('collector')._value==3  # only the two actual sends hold capacity
+        assert active==2
+    finally:
+        release.set()
+        results = await asyncio.gather(*tasks)
+        await client.close()
     assert len(results) == 5 and all(r.status == 200 for r in results)
 
 

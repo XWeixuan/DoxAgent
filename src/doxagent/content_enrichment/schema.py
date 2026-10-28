@@ -31,7 +31,7 @@ class EnrichmentJob(BusModel):
     poll_run_id: str
     source: SourceDefinition
     binding: TickerSourceBinding | None = None
-    owner_kind: Literal["ticker_binding", "distribution_article"] = "ticker_binding"
+    owner_kind: Literal["ticker_binding", "distribution_article", "live_article"] = "ticker_binding"
     article_id: str | None = None
     message: RawMessageInput
     provider_raw_hash: str | None = None
@@ -58,6 +58,8 @@ class EnrichmentJob(BusModel):
 
     @property
     def execution_id(self) -> str:
+        if self.owner_kind=="live_article":
+            return f"{self.job_id}:{self.claim_token}"
         return f"{self.job_id}:{self.execution_seq}"
 
     @model_validator(mode="after")
@@ -68,6 +70,8 @@ class EnrichmentJob(BusModel):
             self.binding is not None or not self.article_id
         ):
             raise ValueError("shared enrichment requires article_id and no binding")
+        if self.owner_kind == "live_article" and not self.article_id:
+            raise ValueError("live article requires article_id")
         return self
 
 

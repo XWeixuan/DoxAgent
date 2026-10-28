@@ -76,8 +76,8 @@ class AdapterRegistry:
     ) -> None:
         self.settings = settings
         self.adapter_root = Path(adapter_root).resolve()
-        self.client = client or httpx.AsyncClient(timeout=settings.tool_http_timeout_seconds,
-                                                limits=httpx.Limits(max_connections=16, max_keepalive_connections=16))
+        from .publisher_http import PublisherHttpx
+        self.client = client or PublisherHttpx(timeout=settings.tool_http_timeout_seconds,trust_env=False)
         from .poll_trace import install
 
         install(self.client)
@@ -902,8 +902,8 @@ class NewswireRSSAdapter(_BaseAdapter):
                     return await self.client.get(url, headers=headers, timeout=10)
                 client = self._route_clients.get(proxy)
                 if client is None:
-                    client = httpx.AsyncClient(proxy=proxy, timeout=10, follow_redirects=True, trust_env=False,
-                                              limits=httpx.Limits(max_connections=4, max_keepalive_connections=4))
+                    from .publisher_http import PublisherHttpx
+                    client = PublisherHttpx(proxy=proxy,timeout=10,follow_redirects=True,trust_env=False)
                     from .poll_trace import install
                     install(client)
                     self._route_clients[proxy] = client

@@ -52,7 +52,6 @@ class SiteAccessTransport:
         phase: str = "direct",
         publisher_url: str | None = None,
     ) -> Observation:
-        del publisher_url
         started = time.monotonic()
         result = await self.client.execute(
             AccessRequest(
@@ -61,6 +60,7 @@ class SiteAccessTransport:
                 work_class=WORK_CLASS.get(),
                 work_age_seconds=WORK_AGE.get(),
                 url=url,
+                parameters={"publisher_url":publisher_url} if publisher_url else {},
                 mode=AccessMode.HTTP_PUBLIC,
                 remaining_budget_ms=max(1, int(remaining(180) * 1000)),
                 allowed_headers=(
@@ -98,7 +98,10 @@ class SiteAccessTransport:
         )
         if result.redirect_url:
             # The owner intentionally stops before crossing a publisher boundary.
-            return await self.fetch(result.redirect_url, attempts, phase=phase)
+            visited={a.url for a in attempts if a.phase==phase}
+            if result.redirect_url in visited or len(visited)>=8:
+                return Observation(result.redirect_url,"",0,"publisher_loop")
+            return await self.fetch(result.redirect_url, attempts, phase=phase,publisher_url=publisher_url)
         return Observation(result.final_url or url, result.body, result.status_code or 0, reason,result.headers)
 
 

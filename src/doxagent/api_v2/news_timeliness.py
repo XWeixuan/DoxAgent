@@ -6,6 +6,30 @@ from datetime import date, datetime, timedelta
 from doxagent.semantic_clock import boundary, semantic_day
 
 
+def message_update_states(store,ticker,seq,messages):
+    """One bounded read at the view watermark; no per-ticker check-state writes."""
+    if not messages:return messages
+    from doxagent.v2_read.repository import instant
+    table=store.snapshot_table(seq)
+    with store.connect() as db:
+        rows=db.execute(f"SELECT s.id,a.payload FROM {table} s JOIN {table} a "
+            "ON a.kind='native:live_articles' AND a.ticker='' AND a.id=json_extract(s.payload,'$.live_article_key') "
+            "AND a.valid_from<=? AND (a.valid_to IS NULL OR a.valid_to>?) "
+            "WHERE s.kind='native:standard_messages' AND s.ticker=? AND s.id IN (SELECT value FROM json_each(?)) "
+            "AND s.valid_from<=? AND (s.valid_to IS NULL OR s.valid_to>?)",
+            (seq,seq,ticker,json.dumps([v['standard_message_id'] for v in messages]),seq,seq)).fetchall()
+    states={identity:json.loads(payload) for identity,payload in rows}
+    for message in messages:
+        state=states.get(message['standard_message_id'])
+        if state:
+            message['content_update']={**message['content_update'],
+                'pending':state['state'] in {'FETCH_DUE','FETCHING','COMMIT_DUE'},
+                'last_error':state.get('last_error'),
+                'last_checked_at':instant(datetime.fromisoformat(state['checked_at'])) if state.get('checked_at') else None,
+                'body_acquired_at':instant(datetime.fromisoformat(state['acquired_at'])) if state.get('acquired_at') else None}
+    return messages
+
+
 def body_cohort(store, ticker, seq, filters, days):
     table = store.snapshot_table(seq)
     where = [
@@ -35,8 +59,8 @@ def body_cohort(store, ticker, seq, filters, days):
         where.append("o.source_id=?")
         args.append(filters["source_id"])
     if filters.get("q"):
-        where.append("instr(o.search_text,?)>0")
-        args.append(filters["q"].casefold())
+        where.append("(instr(o.search_text,?)>0 OR instr(lower(json_extract(b.payload,'$.title')),?)>0)")
+        args.extend([filters["q"].casefold()]*2)
     if filters.get("source_kind"):
         where.append(
             f"EXISTS(SELECT 1 FROM {table} s WHERE s.kind='native:source_definitions' AND s.id=o.source_id AND s.valid_from<=? AND (s.valid_to IS NULL OR s.valid_to>?) AND json_extract(s.payload,'$.kind')=?)"
@@ -52,13 +76,19 @@ def body_cohort(store, ticker, seq, filters, days):
             [seq, seq, *args],
         ).fetchall()
     unique = {}
+    with store.connect() as db:
+        aliases=dict(db.execute(f"SELECT id,parent FROM {table} WHERE kind='article_alias' AND ticker='' "
+            "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) AND id IN (SELECT value FROM json_each(?))",
+            (seq,seq,json.dumps([r[0] for r in rows]))))
     for key, payload in rows:
         value = json.loads(payload)
         if not value.get("eligible", True) or value.get("legacy_result"):
             continue
         day = semantic_day(datetime.fromisoformat(value["first_observed_at"])).isoformat()
         if days is None or day in days:
-            unique[key] = value
+            key=aliases.get(key,key)
+            if key not in unique or value.get('live'):
+                unique[key] = value
     full = sum(v.get("outcome") in {"FULL", "SHORT_FULL"} for v in unique.values())
     pending = sum(v.get("status") == "PENDING" for v in unique.values())
     with store.connect() as db:
@@ -74,7 +104,7 @@ def body_cohort(store, ticker, seq, filters, days):
                 " WHERE kind='body_attempt' AND ticker=? AND valid_from<=? "
                 "AND json_extract(payload,'$.body_result_key') IN "
                 "(SELECT value FROM json_each(?))"+history,
-                [ticker,seq,json.dumps(list(unique)),*([seq] if history else [])]
+                [ticker,seq,json.dumps(sorted(set(unique)|{key for key,_ in rows if aliases.get(key,key) in unique})),*([seq] if history else [])]
             ).fetchone()
             attempts=[a+b for a,b in zip(attempts,values)]
     return {
@@ -83,9 +113,9 @@ def body_cohort(store, ticker, seq, filters, days):
         "pending": pending,
         "failed": len(unique) - full - pending,
         "ratio": full / len(unique) if unique else None,
-        "network_attempts": attempts[0],
-        "network_succeeded": attempts[1],
-        "cache_reuses": attempts[2],
+        "network_attempts": attempts[0]+sum(v.get("fetch_total",0) for v in unique.values()),
+        "network_succeeded": attempts[1]+sum(v.get("full_total",0) for v in unique.values()),
+        "cache_reuses": attempts[2]+sum(v.get("cache_total",0) for v in unique.values()),
         "basis": "FIRST_OBSERVED_ARTICLE",
         "legacy_excluded": True,
     }

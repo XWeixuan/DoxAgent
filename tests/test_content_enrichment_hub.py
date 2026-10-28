@@ -610,7 +610,7 @@ async def test_capability_wait_resumes_browser_without_repeating_http(tmp_path,d
     hub=ContentEnrichmentHub(repo,bus,extractor=Extractor())
     before=utc_now();await hub.run_once()
     job=repo.list_enrichment_jobs()[0]
-    assert (job.not_before-before).total_seconds()>=(delay or 60)-1
+    assert (job.not_before-before).total_seconds()>=(delay or 5)-1
     await hub.run_once(now=job.not_before+timedelta(seconds=1))
     assert stages==[None,'browser']
 

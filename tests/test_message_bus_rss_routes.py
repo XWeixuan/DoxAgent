@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from contextlib import asynccontextmanager
 
 import httpx
 import pytest
@@ -34,6 +35,10 @@ async def test_rss_approved_fallback_only_for_transport_errors(monkeypatch, dire
             return httpx.Response(
                 200, text="<rss><channel/></rss>", request=httpx.Request("GET", url)
             )
+
+        @asynccontextmanager
+        async def stream(self,method,url,**kwargs):
+            yield await self.get(url,**kwargs)
 
     monkeypatch.setattr("doxagent.message_bus_v2.adapters.httpx.AsyncClient", ProxyClient)
     adapter = NewswireRSSAdapter(

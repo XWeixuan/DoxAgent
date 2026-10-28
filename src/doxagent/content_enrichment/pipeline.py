@@ -85,6 +85,9 @@ class ArticlePipeline:
         self.pipeline_version = pipeline_version
 
     async def _managed_browser_read(self, url, info, parameters, stage):
+        if getattr(self.browser,"site_managed",False):
+            return await self.browser.read(url,expand=info.expansion_required,parameters=parameters,
+                **({"mode":"BROWSER_FETCH"} if stage=="browser_fetch" else {}))
         slots = _BROWSER_SLOTS.setdefault(asyncio.get_running_loop(), asyncio.Semaphore(2))
         if slots.locked():
             return Observation(url, "", 0, "site_budget_deferred"), {}
@@ -146,6 +149,15 @@ class ArticlePipeline:
             if identity_path:
                 diagnostics["access_path"] = "publisher_identity_browser"
                 access_order = [stage for stage in access_order if stage in {"browser", "browser_fetch"}]
+            elif strategy_parameters.get("primary"):
+                access_order=[strategy_parameters["primary"],strategy_parameters.get("fallback")]
+                access_order=[s for s in access_order if s in {"http_public","browser","browser_fetch","reader"}]
+            elif self.site_client is not None and resolved.site_id=="generic":
+                access_order=["http_public","reader"] if self.reader_enabled else ["http_public","browser"]
+            # Count executable routes, not unavailable adapters, against the two-route budget.
+            access_order=[s for s in dict.fromkeys(access_order)
+                if not (s in {"browser","browser_fetch"} and self.browser is None)
+                and not (s=="reader" and not self.reader_enabled)][:2]
             follow = None
             resume = RESUME_STAGE.get() if hop == 0 else None
             if resume in access_order:
@@ -168,7 +180,7 @@ class ArticlePipeline:
                 phase_started = time.monotonic()
                 article_deadline = DEADLINE.get()
                 cap = float(strategy_parameters.get(stage + "_timeout_seconds", {
-                    "http_public": 8, "browser": 25, "browser_fetch": 8, "reader": 12,
+                    "http_public": 5, "browser": 8, "browser_fetch": 8, "reader": 8,
                 }[stage]))
                 auth = {}
                 try:

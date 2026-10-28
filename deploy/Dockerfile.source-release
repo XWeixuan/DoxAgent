@@ -17,6 +17,7 @@ COPY src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY scripts/ops/migrate_source_access_scopes.py /app/scripts/ops/migrate_source_access_scopes.py
+COPY scripts/ops/message_bus_lean_acceptance.py /app/scripts/ops/message_bus_lean_acceptance.py
 RUN --mount=type=cache,target=/root/.cache/uv uv pip install --no-deps --python /app/.venv/bin/python -e /app
 RUN find /app/src /app/prompts /app/dev_plan /app/scripts -type d ! -perm -005 -exec chmod a+rx {} + \
     && find /app/src /app/prompts /app/dev_plan /app/scripts -type f ! -perm -004 -exec chmod a+r {} +

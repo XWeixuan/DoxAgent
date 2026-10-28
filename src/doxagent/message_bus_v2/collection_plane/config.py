@@ -13,6 +13,51 @@ from ..schema import utc_now
 from doxagent.semantic_clock import semantic_day
 
 
+def install_revision(repo):
+    """Only configuration mutations invalidate compiled collection plans."""
+    tables={"source_definitions":"OLD.version IS NOT NEW.version OR OLD.enabled IS NOT NEW.enabled",
+        "ticker_source_bindings":"OLD.version IS NOT NEW.version OR OLD.enabled IS NOT NEW.enabled OR OLD.tombstoned_at IS NOT NEW.tombstoned_at",
+        "ticker_monitoring_states":"OLD.status IS NOT NEW.status",
+        "ticker_monitoring_terms":"OLD.current_revision IS NOT NEW.current_revision",
+        "bus_collection_control":"OLD.revision IS NOT NEW.revision OR OLD.data_json IS NOT NEW.data_json"}
+    with repo.transaction() as db:
+        db.execute("CREATE TABLE IF NOT EXISTS bus_configuration(id INTEGER PRIMARY KEY CHECK(id=1),revision INTEGER NOT NULL)")
+        db.execute("INSERT OR IGNORE INTO bus_configuration VALUES(1,0)")
+        for table,condition in tables.items():
+            for event in ("INSERT","UPDATE","DELETE"):
+                when=" WHEN "+condition if event=="UPDATE" else ""
+                db.execute(f"CREATE TRIGGER IF NOT EXISTS bus_config_{table}_{event} AFTER {event} ON {table}{when} "
+                           "BEGIN UPDATE bus_configuration SET revision=revision+1 WHERE id=1; END")
+
+
+class ConfigurationLoader:
+    def __init__(self):
+        self.current=None
+        self.key=None
+
+    def __call__(self,settings,*,seeds=False):
+        import sqlite3
+        from datetime import timedelta
+        path=Path(settings.message_bus_v2_sqlite_path).resolve()
+        with sqlite3.connect(path.as_uri()+"?mode=ro",uri=True,timeout=.2) as db:
+            revision=db.execute("SELECT revision FROM bus_configuration WHERE id=1").fetchone()[0]
+        runtime=Path(settings.persistent_runtime_v2_sqlite_path).resolve()
+        external=[]
+        if runtime.is_file():
+            with sqlite3.connect(runtime.as_uri()+"?mode=ro",uri=True,timeout=.2) as db:
+                external=db.execute("SELECT namespace,key,payload FROM runtime_values "
+                    "WHERE namespace IN ('pause','calendar_overrides') ORDER BY namespace,key").fetchall()
+        now=utc_now();day=semantic_day(now)
+        # The one-minute first-open transition is independent of config writes.
+        from doxagent.semantic_clock import boundary
+        key=(revision,day,now>=boundary(day,minute=1),tuple(external))
+        if seeds or self.current is None or key!=self.key:
+            self.current=load(settings,seeds=seeds)
+            self.key=key
+        self.current.at=now.isoformat()
+        return self.current
+
+
 @dataclass
 class Configuration:
     sources: dict = field(default_factory=dict)

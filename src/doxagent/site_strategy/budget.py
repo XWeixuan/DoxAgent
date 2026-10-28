@@ -146,6 +146,8 @@ class JointBudget:
         self.max_concurrency = max_concurrency
         self._active = 0
         self._body_active = 0
+        self._background_active=0
+        self._last_background=0.0
         self._identity_body: dict[str, int] = {}
         self._costs: dict[str, float] = {}
 
@@ -153,12 +155,12 @@ class JointBudget:
     async def control_navigation(self, identity_id, *, interval_ms, deadline):
         """Same pacing clock, no second business-capacity queue. Profile is drained."""
         async with asyncio.timeout_at(deadline):
+            interval = await asyncio.to_thread(self.identity_interval, identity_id, interval_ms)
             async with self._condition:
                 while True:
                     now = time.monotonic()
                     delay = self._identity_next.get(identity_id, 0) - now
                     if delay <= 0:
-                        interval = self.identity_interval(identity_id, interval_ms)
                         self._identity_next[identity_id] = now + interval / 1000
                         break
                     try:
@@ -194,6 +196,12 @@ class JointBudget:
                 ceil(expected_rate * self._costs.get(site_key, 1.0) / .75) + self._identity_body.get(identity_id, 0)))
         try:
             async with asyncio.timeout(timeout_seconds):
+                # Resolve external state before touching any admission counters.
+                # In particular SQLite failure/cancellation must not leak capacity
+                # or block every unrelated identity under the joint condition.
+                interval = await asyncio.to_thread(
+                    self.identity_interval, identity_id, identity_min_interval_ms
+                )
                 async with self._condition:
                     self._sequence += 1
                     waiter = _JointWaiter(
@@ -222,8 +230,9 @@ class JointBudget:
                             and (
                                 item.purpose is not SitePurpose.BODY
                                 or (
-                                    self._identity_body.get(item.identity_id, 0) < 1
-                                    and self._body_active < min(self.body_max_concurrency+1 if self.body_borrow and not any(
+                                    self._identity_body.get(item.identity_id, 0) < max(1,item.identity_limit-int(any(
+                                        w.purpose is SitePurpose.CRAWLER and w.identity_id==item.identity_id for w in self._waiters)))
+                                    and self._body_active < min(self.body_max_concurrency+2 if self.body_borrow and not any(
                                         w.purpose is SitePurpose.CRAWLER for w in self._waiters
                                     ) else self.body_max_concurrency, max(1, self.max_concurrency - 1))
                                 )
@@ -237,6 +246,9 @@ class JointBudget:
                                   and w.work_class != 'recheck' and now-w.enqueued_at >= 1]
                         if bodies and self._body_active == 0:
                             best = min(bodies, key=lambda item: item.sequence)
+                        background=[w for w in eligible if w.work_class in {'backfill','recheck'}]
+                        if background and not self._background_active and now-self._last_background>=5:
+                            best=min(background,key=lambda item:item.sequence)
                         capacity = (
                             self._site_active.get(site_key, 0) < site_max_concurrency
                             and self._identity_active.get(identity_id, 0) < identity_max_concurrency
@@ -251,6 +263,9 @@ class JointBudget:
                         if best is waiter and capacity and delay <= 0:
                             self._waiters.remove(waiter)
                             self._active += 1
+                            if work_class in {'backfill','recheck'}:
+                                self._background_active+=1
+                                self._last_background=now
                             if purpose is SitePurpose.BODY:
                                 self._body_active += 1
                                 self._identity_body[identity_id] = self._identity_body.get(identity_id, 0) + 1
@@ -261,7 +276,7 @@ class JointBudget:
                             self._site_next[site_key] = now + site_min_interval_ms / 1000
                             self._identity_next[identity_id] = (
                                 now
-                                + self.identity_interval(identity_id, identity_min_interval_ms)
+                                + interval
                                 / 1000
                             )
                             acquired = True
@@ -290,6 +305,7 @@ class JointBudget:
                         elapsed = time.monotonic() - executing_at
                         self._costs[site_key] = .8*self._costs.get(site_key, elapsed) + .2*elapsed
                     self._active -= 1
+                    if work_class in {'backfill','recheck'}:self._background_active-=1
                     if purpose is SitePurpose.BODY:
                         self._body_active -= 1
                         self._identity_body[identity_id] -= 1

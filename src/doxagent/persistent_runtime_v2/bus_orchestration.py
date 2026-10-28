@@ -525,6 +525,9 @@ class BusOrchestration:
             window_start=start,
             cutoff=cutoff,
         )
+        if (getattr(scheduler.service,'live_queue',None) is not None
+                and not task['receipt'].get('distribution_run_id')):
+            return await self._live_distribution_source(scheduler,task,source,binding,context,start,cutoff)
         receipt = task["receipt"]
         if not receipt.get("poll_done"):
             result = await asyncio.wait_for(
@@ -604,4 +607,35 @@ class BusOrchestration:
                 scheduler, scheduler.repository.latest_stream_offset, task["ticker"]
             ),
         )
+        return result
+
+    async def _live_distribution_source(self,scheduler,task,source,binding,context,start,cutoff):
+        receipt=task['receipt']
+        result=None
+        if not receipt.get('poll_done'):
+            result=await asyncio.wait_for(scheduler._poll_distribution(source,[binding],self.journal.clock(),
+                window_start=start,window_cutoff=cutoff,admission_context=context,
+                checkpoint=receipt.get('page_cursor',{})),timeout=600)
+            await self._journal_call(self.journal.checkpoint,task,
+                job_ids=sorted(set(receipt.get('job_ids',[]))|set(result.enrichment_job_ids)),
+                page_cursor=result.next_checkpoint,
+                poll_done=(result.window_done or bool(result.error_code)) and not result.site_access_deferred,
+                coverage='PARTIAL' if result.error_code else result.window_coverage)
+            if result.site_access_deferred or not result.window_done and not result.error_code:
+                await self._journal_call(self._yield_source,task,result.site_access_retry_not_before)
+                return result
+        keys=task['receipt'].get('job_ids',[])
+        pending=await self._storage(scheduler,scheduler.repository.pending_enrichment_ids,keys)
+        if pending:
+            await self._journal_call(self._yield_source,task)
+            return result
+        failures=await self._storage(scheduler,scheduler.service.live_queue.repository.failures_for_work,keys)
+        if failures:
+            await self._journal_call(self.journal.checkpoint,task,coverage='PARTIAL')
+            await self._journal_call(self.journal.gap,'distribution:'+task['id'],binding.ticker,
+                'DISTRIBUTION_DELIVERY_FAILED',f'{len(failures)} terminal delivery failures')
+        await self._storage(scheduler,scheduler.service.flush_binding,binding.binding_id,force=True)
+        await self._journal_call(self.journal.finish,task,coverage=task['receipt'].get('coverage','UNKNOWN'),
+            settlement='INTAKE_TERMINAL',attempted_cutoff=cutoff.isoformat(),
+            stream_highwater=await self._storage(scheduler,scheduler.repository.latest_stream_offset,task['ticker']))
         return result

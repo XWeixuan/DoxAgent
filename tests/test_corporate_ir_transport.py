@@ -19,7 +19,7 @@ async def test_fixed_public_stdlib_recipe_uses_no_browser_or_httpx(monkeypatch):
         return Capture(304, url, "", {}, 0)
 
     monkeypatch.setattr(http, "_stdlib_read", read)
-    http.client.stream = lambda *a, **k: (_ for _ in ()).throw(AssertionError("wrong HTTP family"))
+    http._client = lambda *a: (_ for _ in ()).throw(AssertionError("wrong HTTP family"))
     http.browser.fetch = AsyncMock(side_effect=AssertionError("public feed must not create Chrome"))
     try:
         result = await http.fetch(spec, headers={"If-None-Match": "known"})
@@ -49,10 +49,10 @@ async def test_cancelled_stdlib_request_drains_before_releasing_permit(monkeypat
         await asyncio.sleep(0.03)
         task.cancel()
         await asyncio.sleep(0.01)
-        assert not task.done() and http.slots._value == 5
+        assert not task.done() and next(iter(http.host_slots.values()))._value == 1
         release.set()
         await asyncio.gather(task, return_exceptions=True)
-        assert task.cancelled() and http.slots._value == 6
+        assert task.cancelled() and next(iter(http.host_slots.values()))._value == 2
     finally:
         release.set()
         await http.close()

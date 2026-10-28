@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import copy
 from collections import defaultdict
 from datetime import datetime, timedelta
 from types import SimpleNamespace
@@ -12,7 +13,6 @@ from types import SimpleNamespace
 from ..admission import AdmissionContext
 from ..collection_override import CollectionStopped, REQUEST_GATE
 from ..poll_trace import REQUESTS, DEMAND
-from ..polling import article_input_keys
 from ..schema import (
     AcquisitionMode,
     PollContext,
@@ -26,10 +26,22 @@ from ..schema import (
 )
 from ..scheduler import GlobalPollScheduler
 from ..search_plan import build_query_plan
-from .config import Configuration, load
+from .config import Configuration, ConfigurationLoader, load
 from .store import AcquisitionStore, path_for
 
 log = logging.getLogger(__name__)
+
+
+def recovery_checkpoint(previous, proposed):
+    """Old adapter bridge: carry recovery scalars, never uncommitted page cursors."""
+    recovery={'failures','consecutive_failures','retry_at','retry_not_before','next_eligible',
+        'error','last_error','last_error_code','last_error_message','recovery_token','status',
+        'last_attempt_at','next_due_at','next_dispatch_at'}
+    result=dict(previous)
+    for key,value in proposed.items():
+        if key in recovery:result[key]=value
+        elif isinstance(value,dict):result[key]=recovery_checkpoint(previous.get(key,{}) if isinstance(previous.get(key),dict) else {},value)
+    return result
 
 
 class SnapshotGate:
@@ -38,6 +50,8 @@ class SnapshotGate:
 
     def check(self):
         config = self.owner.config
+        if config.at and (utc_now()-datetime.fromisoformat(config.at)).total_seconds()>5:
+            raise CollectionStopped('COLLECTION_CONFIGURATION_STALE')
         source = config.sources.get(self.source.source_id)
         if (
             not source
@@ -51,7 +65,7 @@ class Collector:
     def __init__(self, settings, adapters, *, store=None, config_loader=load):
         self.settings, self.adapters = settings, adapters
         self.store = store or AcquisitionStore(path_for(settings.message_bus_v2_sqlite_path))
-        self.config_loader = config_loader
+        self.config_loader = ConfigurationLoader() if config_loader is load else config_loader
         self.config = Configuration()
         self.inflight = {}
         self.states = {}
@@ -70,6 +84,14 @@ class Collector:
 
     async def refresh(self, *, seeds=False):
         config = await asyncio.to_thread(self.config_loader, self.settings, seeds=seeds)
+        scope=tuple(b.binding_id for b in config.bindings.values() if config.allowed(b,utc_now()))
+        if (isinstance(self.config_loader,ConfigurationLoader) and config is self.config
+                and not seeds and scope==getattr(self,"_active_config_scope",None)):
+            await asyncio.to_thread(self.store.meta,"configuration",{
+                "at":config.at,"override_revision":config.override.get("revision",0),
+                "units":len(self.desired),"physical_demand":dict(self.planner._source_demand)})
+            return
+        self._active_config_scope=scope
         self.config = config
         if seeds:
             self.states = await asyncio.to_thread(self.store.states)
@@ -138,7 +160,12 @@ class Collector:
         # Demand is physical endpoints/queries/channels, never a fixed ticker count.
         rates = defaultdict(float)
         groups = defaultdict(float)
+        limiter_rates=defaultdict(float)
         for key, (s, targets, unit, options) in desired.items():
+            if s.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                options['roster']=sha256_text(canonical_json(sorted(b.binding_id for b in targets)))
+                prior=self.states.get((targets[0].binding_id,unit),{}).get('state',{})
+                options['force_refresh']=prior.get('association_roster')!=options['roster']
             period = (
                 options["ir_spec"].target_interval_seconds
                 if "ir_spec" in options
@@ -147,10 +174,15 @@ class Collector:
             if not unit.startswith("TAIL:"):
                 rates[s.source_id] += 1 / period
                 groups[s.scheduler_group] += 1 / period
+                limiter_key=s.source_id
+                if s.source_id=="yahoo_finance_news":
+                    limiter_key+=":browser" if unit=="SUPPLEMENT_HEAD" else ":rss"
+                limiter_rates[limiter_key]+=1/period
             generation = self.generation(s, targets, options)
             for b in targets:
                 state = self.states.get((b.binding_id, unit))
                 if (state and state["generation"] == generation and state.get("required", 0) >= 0
+                    and state["state"].get("schedule_interval_seconds")==period
                     and state["state"].get("schedule_phase_version") == 2):
                     continue
                 seed = config.seeds.get(b.binding_id)
@@ -208,6 +240,7 @@ class Collector:
                     await asyncio.to_thread(self.store.disable_unit, b.binding_id, unit)
         self.desired = desired
         p._source_demand, p._group_demand = dict(rates), dict(groups)
+        p._limiter_demand=dict(limiter_rates)
         await asyncio.to_thread(
             self.store.meta,
             "configuration",
@@ -224,8 +257,10 @@ class Collector:
         return sha256_text(
             canonical_json(
                 [
-                    source.version,
-                    sorted((b.binding_id, b.version) for b in targets),
+                    source.adapter_ref,
+                    source.default_parameters,
+                    None if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
+                    else targets[0].source_parameters,
                     options.get("query_plan_override"),
                     options["ir_spec"].fingerprint if "ir_spec" in options else None,
                 ]
@@ -253,7 +288,7 @@ class Collector:
                 log.exception(
                     "collector configuration refresh failed; retaining last verified snapshot"
                 )
-            if time.monotonic() - maintained > 10:
+            if time.monotonic() - maintained > 1:
                 try:
                     await asyncio.to_thread(self.store.maintain)
                 except Exception:
@@ -312,7 +347,9 @@ class Collector:
         gate = REQUEST_GATE.set(SnapshotGate(self, source, targets))
         demand = DEMAND.set(
             {
-                "rate": self.planner._source_demand.get(source.source_id, 0),
+                "rate": self.planner._limiter_demand.get(source.source_id+(
+                    ':browser' if unit=='SUPPLEMENT_HEAD' else ':rss') if source.source_id=='yahoo_finance_news'
+                    else source.source_id,0),
                 "work_class": "backfill" if unit.startswith("TAIL:") else "foreground",
             }
         )
@@ -330,6 +367,9 @@ class Collector:
         DEMAND.get()["due_at"] = due.isoformat()
         run_id = new_id("collect")
         pages = []
+        page_committed = False
+        page_event_offset=0
+        committed_checkpoint=options.get('checkpoint',old.get('checkpoint',{}))
         seen = set()
         reason = None
         valid = False
@@ -337,9 +377,13 @@ class Collector:
             asyncio.to_thread(self.store.start, source, targets, unit, run_id, due, now, period)
         )
         state = dict(old)
-        checkpoint = options.get("checkpoint", old.get("checkpoint", {}))
+        checkpoint = copy.deepcopy(options.get("checkpoint", old.get("checkpoint", {})))
 
         async def on_page(messages, *, checkpoint=None, observed_at=None, **evidence):
+            nonlocal page_committed,page_event_offset,committed_checkpoint
+            from ..poll_trace import validate_listing
+            validate_listing(events,evidence.get('validated_request_ids'),since=page_event_offset)
+            page_event_offset=len(events)
             listings = [
                 e
                 for e in events
@@ -379,6 +423,10 @@ class Collector:
                     run_id,
                     events,
                 )
+                page_committed = True
+            if checkpoint is not None:
+                committed_checkpoint=copy.deepcopy(checkpoint)
+                state['checkpoint']=committed_checkpoint
             pages.clear()
             seen.update((m.external_id, m.url) for m in messages)
 
@@ -408,6 +456,7 @@ class Collector:
                                 source=source,
                                 acquisition_unit=unit,
                                 checkpoint=checkpoint,
+                                force_refresh=bool(options.get('force_refresh')),
                                 requested_at=now,
                                 request_permit=self.planner._limiter(source, unit).permit,
                             )
@@ -439,13 +488,25 @@ class Collector:
                     reason = result.site_access_deferred_reason or (
                         result.failures[0].error_code if result.failures else None
                     )
-                    if valid or pages:
-                        state.update(
-                            checkpoint=result.next_checkpoint or checkpoint, bootstrap_complete=True
-                        )
+                    # A failed response still carries recovery progress. Adapters
+                    # advance a page cursor only after their page callback commits.
+                    # Never discard failure counts/Retry-After for an empty list.
+                    # Successful cursors belong to persisted pages. Failure-only
+                    # recovery fields may advance without a successful cursor.
+                    if not valid:
+                        state['checkpoint']=recovery_checkpoint(committed_checkpoint,
+                            result.recovery_delta or result.next_checkpoint)
+                    if valid or page_committed:
+                        state["bootstrap_complete"] = True
                     remaining = [m for m in result.messages if (m.external_id, m.url) not in seen]
                     if remaining:
                         await on_page(remaining)
+                    if valid:
+                        state['checkpoint']=result.next_checkpoint or committed_checkpoint
+                        if options.get('roster'):
+                            state['association_roster']=options['roster']
+                        from ..poll_trace import validate_listing
+                        validate_listing(events,result.acquisition_metadata.get('validated_request_ids'),since=page_event_offset)
                     if options.get("recovery") and valid:
                         head = self.states.get(
                             (b.binding_id, "IR:" + options["ir_spec"].endpoint_id)
@@ -483,6 +544,7 @@ class Collector:
             finished = utc_now()
             valid = valid and any(
                 e.get("role", "listing") == "listing"
+                and e.get('list_validated') and e.get('proof_basis')=='TRANSPORT_SEND'
                 and e.get("response_received_at")
                 and not e.get("error_type")
                 and (e.get("status_code") is None or 200 <= e["status_code"] < 400)
@@ -502,7 +564,7 @@ class Collector:
                 last_attempt_at=now.isoformat(),
                 last_latency_ms=round((time.monotonic() - started) * 1000),
                 last_error_code=reason,
-                status="succeeded" if valid else "partial" if pages else "failed",
+                status="succeeded" if valid else "partial" if page_committed else "failed",
             )
             # A failed persistence attempt must not leave the network clock due
             # and refetch the same unit every 100ms. Only scheduling moves here;
@@ -557,33 +619,25 @@ class Collector:
         if not messages:
             return
         context = AdmissionContext(observed_at=datetime.fromisoformat(observed))
-        roster = [
-            {
-                "binding": b.model_dump(mode="json"),
-                "terms_revision": (self.config.terms.get(b.ticker) or (0, None))[0],
-                "admission": context.model_dump(mode="json"),
-            }
-            for b in targets
-        ]
+        from ..body_results import article_key, update_hint
+        target_refs = [{"binding_id":b.binding_id,"ticker":b.ticker,
+            "terms_revision":(self.config.terms.get(b.ticker) or (0,None))[0]} for b in targets]
         payload = {
             "generation": self.states[(targets[0].binding_id, unit)]["generation"],
-            "source": source.model_dump(mode="json"),
-            "binding": targets[0].model_dump(mode="json"),
-            "result": PollResult(messages=messages).model_dump(mode="json"),
-            "bootstrap": bootstrap,
-            "admission": context.model_dump(mode="json"),
-            "distribution": {"roster": roster}
-            if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
-            else None,
-        }
-        keys = article_input_keys(payload, unit, payload["result"]["messages"])
-        revision_scope = [
-            (b.binding_id, (self.config.terms.get(b.ticker) or (0, None))[0]) for b in targets
-        ]
-        keys = [sha256_text(canonical_json([k, revision_scope])) for k in keys]
+            "source_id": source.source_id,
+            "targets":target_refs,
+            "result":{"messages":[m.model_dump(mode="json") for m in messages]},
+            "bootstrap":bootstrap,"admission":context.model_dump(mode="json")}
+        target_scope=sorted({b.ticker for b in targets})
+        keys=[sha256_text(canonical_json([source.source_id,article_key(m,source.source_id),
+              update_hint(m),target_scope])) for m in messages]
         payload["input_keys"] = keys
-        fingerprint = sha256_text(canonical_json(keys)) if keys else ""
-        pages.append((payload, fingerprint, observed))
+        fingerprint = sha256_text(canonical_json(sorted(keys))) if keys else ""
+        for offset in range(0,len(messages),32):
+            part={**payload,"result":{"messages":payload["result"]["messages"][offset:offset+32]},
+                  "input_keys":keys[offset:offset+32]}
+            part_key=sha256_text(canonical_json(sorted(keys[offset:offset+32])))
+            pages.append((part,part_key,observed))
 
     async def ir(self, adapter, spec, binding, checkpoint, *, recovery=False):
         from ..corporate_ir.schema import IrEndpointState

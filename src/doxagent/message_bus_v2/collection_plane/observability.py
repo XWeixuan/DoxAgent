@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime,timedelta
 from pathlib import Path
 
 from .store import AcquisitionStore, path_for
@@ -91,10 +91,25 @@ def window(ticker, since, until, binding_id=None, *, by_binding=False):
                 "SELECT * FROM cycles WHERE " + where + " ORDER BY dispatch_at", args
             )
         ]
+        archived=[dict(r) for r in db.execute(
+            "SELECT h.* FROM unit_hours h JOIN units u USING(binding_id,unit) "
+            "WHERE u.ticker=? AND h.hour>=? AND h.hour<?"+
+            (" AND h.binding_id=?" if binding_id else ""),
+            [ticker,start,end,*([binding_id] if binding_id else [])])
+            if datetime.fromisoformat(r['hour'])+timedelta(hours=1)<=datetime.fromisoformat(end)]
+        archived_keys={(r['binding_id'],r['unit'],r['hour']) for r in archived}
+        rows=[r for r in rows if r['status']=='SCHEDULE' or
+              (r['binding_id'],r['unit'],datetime.fromisoformat(r['dispatch_at']).replace(
+                  minute=0,second=0,microsecond=0).isoformat()) not in archived_keys]
+        physical_ids={json.loads(r['data_json']).get('physical_run_id') for r in rows}
+        physical={r[0]:json.loads(r[1]) for r in db.execute(
+            'SELECT run_id,requests_json FROM physical_cycles WHERE run_id IN (SELECT value FROM json_each(?))',
+            (json.dumps(list(physical_ids)),))}
     runs = []
     receipts = []
     for row in rows:
         proof = json.loads(row.pop("data_json"))
+        if proof.get('physical_run_id'):proof['requests']=physical.get(proof['physical_run_id'],[])
         row.update(proof)
         runs.append(row)
         if not proof.get("list_validated"):
@@ -129,16 +144,42 @@ def window(ticker, since, until, binding_id=None, *, by_binding=False):
     if by_binding:
         return {
             bid: (
-                cadence(
+                _include_archives(cadence(
                     [r for r in runs if r["binding_id"] == bid],
                     [r for r in receipts if r["binding_id"] == bid],
                     datetime.fromisoformat(start),
                     datetime.fromisoformat(end),
-                ),
+                ),[r for r in archived if r['binding_id']==bid]),
                 [r for r in receipts if r["binding_id"] == bid],
             )
             for bid in {r["binding_id"] for r in runs}
         }
-    return cadence(
+    return _include_archives(cadence(
         runs, receipts, datetime.fromisoformat(start), datetime.fromisoformat(end)
-    ), receipts
+    ),archived), receipts
+
+
+def _include_archives(result, archives):
+    """Counts combine exactly; hourly percentiles are not a global percentile."""
+    units={(r['binding_id'],r['unit']):r for r in result['units']}
+    counters=('dispatched_cycles','request_cycles','fresh_cycles','late_recovered_cycles')
+    for archive in archives:
+        for prior in json.loads(archive['data_json'])['units']:
+            current=units.get((prior['binding_id'],prior['unit']))
+            if current is None:continue
+            for field in counters:current[field]+=prior[field]
+            current['missing_cycles']=max(0,current['missing_cycles']-prior['dispatched_cycles'])
+            for status,count in prior['statuses'].items():
+                current['statuses'][status]=current['statuses'].get(status,0)+count
+            for field in ('fresh_gap_seconds','request_late_seconds','dispatch_late_seconds'):
+                current[field]={'samples':0,'mean':None,'p95':None,'max':None}
+            current['all_cycle_coverage']=current['fresh_cycles']/current['expected_cycles'] if current['expected_cycles'] else None
+            current['coverage']=current['fresh_cycles']/current['settled_cycles'] if current['settled_cycles'] else None
+    if archives:
+        result.update(archive_basis='HOURLY_COUNTS_NO_MERGED_PERCENTILES',archived_hours=len(archives),
+            fresh_cycles=sum(r['fresh_cycles'] for r in units.values()),
+            missing_cycles=sum(r['missing_cycles'] for r in units.values()),
+            fresh_gap_seconds={'samples':0,'mean':None,'p95':None,'max':None})
+        result['all_cycle_coverage']=result['fresh_cycles']/result['expected_cycles'] if result['expected_cycles'] else None
+        result['coverage']=result['fresh_cycles']/result['settled_cycles'] if result['settled_cycles'] else None
+    return result

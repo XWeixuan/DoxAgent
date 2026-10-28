@@ -239,10 +239,9 @@ class DefenseHttp:
 
     def __init__(self, session=None):
         self.session = session
-        self.global_slots = asyncio.Semaphore(4)
+        from .publisher_http import PublisherClients
+        self.clients=PublisherClients()
         self.host_slots = {}
-        self.host_locks = {}
-        self.started = {}
 
     async def fetch(self, url, endpoint, *, headers=None):
         for attempt in range(2):
@@ -267,34 +266,22 @@ class DefenseHttp:
             host = urlsplit(url).hostname
             if urlsplit(url).scheme != "https" or host not in allowed:
                 raise ValueError("defense_redirect_host_not_approved")
-            if self.session is None:
-                from curl_cffi.requests import AsyncSession
-
-                self.session = AsyncSession(impersonate="chrome", trust_env=False)
             slots = self.host_slots.setdefault(host, asyncio.Semaphore(2))
-            lock = self.host_locks.setdefault(host, asyncio.Lock())
-            async with slots, self.global_slots, asyncio.timeout(12):
-                async with lock:
-                    await asyncio.sleep(max(0, self.started.get(host, 0) + 0.5 - time.monotonic()))
-                    self.started[host] = time.monotonic()
+            async with asyncio.timeout(12):
                 from .poll_trace import request_started
                 from .schema import utc_now
 
-                event = request_started(
-                    "GET", url, "curl_cffi" if host != "spacenews.com" else "stdlib"
-                )
+                event = None
                 if host == "spacenews.com":
                     # Its public origin accepts standard-library TLS while the
                     # Chrome TLS fingerprint is challenged. Keep a fixed route.
                     from .corporate_ir.http import PublicHttp
 
+                    from .publisher_http import http_budget
                     work = asyncio.create_task(
-                        asyncio.to_thread(
-                            PublicHttp._stdlib_read,
-                            url,
-                            {"User-Agent": "Mozilla/5.0", **(headers or {})},
-                            HTTP_EGRESSES[endpoint.route],
-                        )
+                        self._stdlib(slots,http_budget('collector'),
+                            PublicHttp._stdlib_read,url,
+                            {"User-Agent": "Mozilla/5.0", **(headers or {})},HTTP_EGRESSES[endpoint.route])
                     )
                     try:
                         result = await asyncio.shield(work)
@@ -316,6 +303,24 @@ class DefenseHttp:
                         url = urljoin(url, result.headers["location"])
                         continue
                     return Capture(result.status, result.url, result.body, result.headers)
+                if self.session is None:
+                    data=bytearray()
+                    def receive(chunk):
+                        if len(data)+len(chunk)>4*1024*1024:raise ValueError('defense_response_exceeds_4mib')
+                        data.extend(chunk);return len(chunk)
+                    response=await self.clients.request((endpoint.host,endpoint.route),'GET',url,
+                        timeout=8,allow_redirects=False,proxy=HTTP_EGRESSES[endpoint.route],
+                        headers={'Accept':'*/*','Accept-Language':'en-US,en;q=0.8,he;q=0.7',**(headers or {})},
+                        content_callback=receive)
+                    event=getattr(response,'bus_request_event',None)
+                    if event is not None:event.update(response_received_at=utc_now().isoformat(),
+                        status_code=response.status_code,validators={k:v for k,v in response.headers.items()
+                        if k.lower() in {'date','age','etag','last-modified'}})
+                    if response.status_code in {301,302,303,307,308}:
+                        url=urljoin(url,response.headers['location']);continue
+                    return Capture(response.status_code,url,bytes(data).decode(response.encoding or 'utf-8',errors='replace'),
+                        {k.lower():v for k,v in response.headers.items()})
+                event=request_started('GET',url,'injected_transport')
                 async with self.session.stream(
                     "GET",
                     url,
@@ -359,8 +364,13 @@ class DefenseHttp:
         raise ValueError("defense_redirect_limit")
 
     async def close(self):
+        await self.clients.close()
         if self.session is not None:
             await self.session.close()
+
+    @staticmethod
+    async def _stdlib(host,budget,read,*args):
+        async with host,budget:return await asyncio.to_thread(read,*args)
 
 
 def _plain(value):
@@ -616,6 +626,8 @@ class DefenseAdapter:
             state = dict(states.get(key, {}))
             try:
                 refresh = (
+                    getattr(context, 'force_refresh', False)
+                    or
                     getattr(context, "window_cutoff", None) is not None
                     or not state.get("next_refresh_at")
                     or "oldest_basis" not in state

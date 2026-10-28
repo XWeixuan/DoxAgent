@@ -66,6 +66,9 @@ TABLES = {
         "article_body_results",
         "message_observations",
         "content_enrichment_jobs",
+        "live_articles",
+        "live_deliveries",
+        "live_origins",
     ),
     "research": ("codex_runtime_records",),
     "events": (
@@ -288,6 +291,14 @@ class SourceOutbox:
                             )
                         if table == "content_enrichment_jobs":
                             changed = "OLD.status IS NOT NEW.status"
+                        if table=="live_articles":
+                            changed=" OR ".join(f"OLD.{field} IS NOT NEW.{field}" for field in (
+                                "material_hint","outcome","body_digest","checked_at","last_error"))
+                            pending="state IN ('FETCH_DUE','FETCHING','COMMIT_DUE')"
+                            changed+=f" OR (OLD.{pending}) IS NOT (NEW.{pending})"
+                        if table=="live_deliveries":
+                            changed=" OR ".join(f"OLD.{field} IS NOT NEW.{field}" for field in (
+                                "state","terms_revision","decision_digest","raw_id","standard_id","consumable_at"))
                         if table == 'poll_runs':
                             changed = f"({changed}) AND (NEW.status!='DISPATCHED' OR OLD.status IS NOT NEW.status)"
                         if table == "poll_captures":

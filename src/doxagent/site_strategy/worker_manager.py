@@ -68,10 +68,10 @@ class IdentityWorkerManager:
         # and strategy for every command. Any committed configuration invalidates.
         with self.repository._lock:
             generation = self.repository._connection.execute(
-                'SELECT (SELECT coalesce(sum(active_revision),0) FROM site_strategy_heads),'
-                '(SELECT coalesce(sum(revision),0) FROM source_access_scopes)'
+                'SELECT revision FROM site_catalog_revision WHERE id=1'
             ).fetchone()
-        key = (tuple(generation), identity.model_dump_json(), egress.model_dump_json(),profile.model_dump_json())
+        key = (tuple(generation),identity.identity_id,identity.revision,egress.egress_id,
+               egress.generation,profile.operational_revision,profile.maintenance_session_id)
         cached = self._snapshot_cache.get(identity.identity_id)
         if cached and cached[0] == key:
             return cached[1]
@@ -374,7 +374,7 @@ class IdentityWorkerManager:
         except (TimeoutError, asyncio.CancelledError):
             # Cancel only the command actually sent. Admission waiters never reach here.
             await self._write(handle, {"action": "cancel", "command_id": operation_id})
-            done, _ = await asyncio.wait({future}, timeout=3)
+            done, _ = await asyncio.wait({future}, timeout=1)
             if not done and not handle.ownership_pending:
                 await self.retire(handle.identity_id, graceful=False)
             elif done and not future.cancelled():

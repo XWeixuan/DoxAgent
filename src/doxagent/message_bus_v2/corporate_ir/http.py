@@ -32,19 +32,21 @@ class Capture:
 
 class PublicHttp:
     def __init__(self, client=None):
-        self.client = client or httpx.AsyncClient(
-            headers=HEADERS,
-            trust_env=False,
-            follow_redirects=False,
-            timeout=httpx.Timeout(8, connect=3, pool=1),
-            limits=httpx.Limits(max_connections=10, max_keepalive_connections=6),
-        )
+        self.client = client
+        self.clients={}
         self.owns_client = client is None
-        self.slots = asyncio.Semaphore(6)
         self.host_slots = {}
-        self.host_locks = {}
-        self.host_started = {}
         self.browser = PublicBrowserPool()
+
+    def _client(self,host):
+        if self.client is not None:return self.client
+        if host not in self.clients:
+            from ..poll_trace import httpx_request
+            self.clients[host]=httpx.AsyncClient(headers=HEADERS,trust_env=False,follow_redirects=False,
+                timeout=httpx.Timeout(8,connect=3,pool=1),
+                limits=httpx.Limits(max_connections=2,max_keepalive_connections=2,keepalive_expiry=30),
+                event_hooks={'request':[httpx_request]})
+        return self.clients[host]
 
     async def _stdlib(self, url, headers):
         work = asyncio.create_task(asyncio.to_thread(self._stdlib_read, url, headers))
@@ -65,13 +67,27 @@ class PublicHttp:
 
     @staticmethod
     def _stdlib_read(url, headers, proxy=None):
+        import http.client
+        from ..poll_trace import request_started
+        events=[]
+        class WireSend:
+            def send(self,data):
+                if isinstance(data,(bytes,bytearray)) and data.startswith(b'GET ') and not events:
+                    events.append(request_started('GET',url,'stdlib',admitted=True))
+                return super().send(data)
+        class Http(WireSend,http.client.HTTPConnection):pass
+        class Https(WireSend,http.client.HTTPSConnection):pass
+        class HttpHandler(urllib.request.HTTPHandler):
+            def http_open(self,request):return self.do_open(Http,request)
+        class HttpsHandler(urllib.request.HTTPSHandler):
+            def https_open(self,request):return self.do_open(Https,request,context=self._context)
         class NoRedirect(urllib.request.HTTPRedirectHandler):
             def redirect_request(self, *args, **kwargs):
                 return None
 
         deadline = time.monotonic() + 12
         proxies = {"http": proxy, "https": proxy} if proxy else {}
-        opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxies), NoRedirect())
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxies),HttpHandler(),HttpsHandler(), NoRedirect())
         request = urllib.request.Request(
             url,
             headers={
@@ -81,9 +97,9 @@ class PublicHttp:
                 **headers,
             },
         )
-        from ..poll_trace import request_started
         from ..schema import utc_now
-        event = request_started("GET", url, "ir_urllib")
+        from ..collection_override import check_request_allowed
+        check_request_allowed()
         try:
             response = opener.open(request, timeout=3)
         except urllib.error.HTTPError as exc:
@@ -105,8 +121,10 @@ class PublicHttp:
                 if len(raw) > 4 * 1024 * 1024:
                     raise ValueError("IR response exceeds 4 MiB")
             charset = response.headers.get_content_charset() or "utf-8"
+            event=events[-1] if events else None
             if event is not None:
-                event.update(response_received_at=utc_now().isoformat(), status_code=response.status)
+                event.update(response_received_at=utc_now().isoformat(), status_code=response.status,
+                    validators={k.lower():v for k,v in response.headers.items() if k.lower() in {'date','age','etag','last-modified'}})
             return Capture(
                 response.status,
                 response.url,
@@ -126,13 +144,8 @@ class PublicHttp:
                 if host not in spec.allowed_article_hosts:
                     raise ValueError("IR redirect host not approved")
                 slots = self.host_slots.setdefault(host, asyncio.Semaphore(2))
-                lock = self.host_locks.setdefault(host, asyncio.Lock())
-                async with self.slots, slots:
-                    async with lock:
-                        await asyncio.sleep(
-                            max(0, self.host_started.get(host, 0) + 0.5 - time.monotonic())
-                        )
-                        self.host_started[host] = time.monotonic()
+                from ..publisher_http import http_budget
+                async with slots,http_budget('body' if url!=spec.entry_url else 'collector'):
                     if host in spec.parser_parameters.get("urllib_hosts", []):
                         capture = await self._stdlib(url, headers or {})
                         if capture.status in {301, 302, 303, 307, 308}:
@@ -141,10 +154,8 @@ class PublicHttp:
                             url = urljoin(url, capture.headers["location"])
                             continue
                         return capture
-                    from ..poll_trace import request_started
                     from ..schema import utc_now
-                    event = request_started("GET", url, "ir_http")
-                    async with self.client.stream(
+                    async with self._client(host).stream(
                         "GET", url, headers={**HEADERS, **(headers or {})}
                     ) as response:
                         if response.status_code in {301, 302, 303, 307, 308}:
@@ -158,6 +169,7 @@ class PublicHttp:
                             if len(raw) > 4 * 1024 * 1024:
                                 raise ValueError("IR response exceeds 4 MiB")
                         body = bytes(raw).decode(response.encoding or "utf-8", errors="replace")
+                        event=response.request.extensions.get('_bus_poll_event')
                         if event is not None:
                             event.update(response_received_at=utc_now().isoformat(),status_code=response.status_code)
                         return Capture(
@@ -171,5 +183,5 @@ class PublicHttp:
 
     async def close(self):
         await self.browser.close()
-        if self.owns_client:
-            await self.client.aclose()
+        for client in self.clients.values():await client.aclose()
+        self.clients.clear()

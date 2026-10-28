@@ -15,6 +15,7 @@ import time
 from collections import OrderedDict
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlsplit
@@ -1203,6 +1204,8 @@ class SiteAccessRuntime:
             closed = session.close()
             if inspect.isawaitable(closed):
                 await closed
+        if getattr(self,"_publisher_http_clients",None) is not None:
+            await self._publisher_http_clients.close()
         await self.browser_runtimes.close()
 
     async def execute(
@@ -1249,30 +1252,41 @@ class SiteAccessRuntime:
     ) -> RuntimeResponse:
         del combination
         await public_url(request.url, trusted_proxy_dns=True)
-        key = (resolved.runtime_key, egress.egress_id)
-        session = self._http_sessions.get(key)
-        if session is None:
-            from curl_cffi.requests import AsyncSession
-
-            session = AsyncSession(impersonate="chrome", timeout=15, proxy=egress.endpoint)
-            self._http_sessions[key] = session
+        from doxagent.message_bus_v2.publisher_http import PublisherClients
+        publisher=urlsplit(request.parameters.get("publisher_url") or request.url).hostname or ""
+        key=(publisher.removeprefix("www."),egress.egress_id)
+        clients=getattr(self,"_publisher_http_clients",None)
+        if clients is None:
+            self._publisher_http_clients=clients=PublisherClients()
         kwargs: Any = {
-            "headers": {
-                "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9",
-                **request.allowed_headers,
-            },
-            "allow_redirects": False,
-        }
-        if "query" in request.parameters:
-            kwargs["params"] = request.parameters["query"]
-        if "json" in request.parameters:
-            kwargs["json"] = request.parameters["json"]
-        requested_epoch_ms = int(time.time() * 1000)
-        response = await session.request(request.method, request.url, **kwargs)
-        raw = bytes(response.content)
-        if len(raw) > request.max_response_bytes:
-            return RuntimeResponse(0, request.url, {}, reason="response_too_large")
+            "headers": {"Accept":"text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+                        "Accept-Language":"en-US,en;q=0.9",**request.allowed_headers},
+            "allow_redirects":False,"proxy":egress.endpoint}
+        if "query" in request.parameters:kwargs["params"]=request.parameters["query"]
+        if "json" in request.parameters:kwargs["json"]=request.parameters["json"]
+        data=bytearray();oversized=False
+        def receive(chunk):
+            nonlocal oversized
+            if len(data)+len(chunk)>request.max_response_bytes:
+                oversized=True;return 0
+            data.extend(chunk);return len(chunk)
+        kwargs["content_callback"]=receive
+        try:
+            injected=self._http_sessions.get((resolved.runtime_key,egress.egress_id))
+            if injected is not None:
+                response=await injected.request(request.method,request.url,**kwargs)
+            else:
+                response=await clients.request(key,request.method,request.url,
+                    role="site_body" if request.purpose is SitePurpose.BODY else "site_crawler",
+                    timeout=min(8,request.remaining_budget_ms/1000),**kwargs)
+        except Exception:
+            if oversized:return RuntimeResponse(0,request.url,{},reason="response_too_large")
+            raise
+        raw=bytes(data) if data else bytes(response.content)
+        if oversized or len(raw)>request.max_response_bytes:
+            return RuntimeResponse(0,request.url,{},reason="response_too_large")
+        sent_at=getattr(response,"bus_sent_at",None)
+        requested_epoch_ms=int(datetime.fromisoformat(sent_at).timestamp()*1000) if sent_at else None
         headers = {str(key).lower(): str(value) for key, value in response.headers.items()}
         status = int(response.status_code)
         final_url = str(response.url)
@@ -1288,8 +1302,9 @@ class SiteAccessRuntime:
             raw.decode(response.encoding or "utf-8", errors="replace"),
             redirect_url=redirect,
             retry_after_seconds=_retry_after(headers.get("retry-after")),
-            stage_timings={"request_started_epoch_ms": requested_epoch_ms,
-                           "headers_received_epoch_ms": int(time.time() * 1000)},
+            stage_timings={**({"request_started_epoch_ms": requested_epoch_ms} if requested_epoch_ms else {}),
+                           "headers_received_epoch_ms": int(time.time() * 1000),
+                           "capture_acquired_epoch_ms": int(time.time() * 1000)},
         )
 
     async def _browser(
@@ -1444,6 +1459,11 @@ class SiteAccessRuntime:
                     reason="cross_site_navigation",
                     provenance=lease.provenance,
                 )
+            if rows:
+                # Valid recipe rows are the consumed payload. Do not download and
+                # parse an ad-heavy full DOM a second time merely for diagnostics.
+                return RuntimeResponse(200,page.url,{},body="",provenance=lease.provenance,
+                    recipe_result={"rows":rows,**({"metadata":metadata} if metadata else {})})
             html = await page.content()
             if _verification_document(html, page.url, 200, {}, resolved, request,
                                       recipe_result={"rows": rows}):

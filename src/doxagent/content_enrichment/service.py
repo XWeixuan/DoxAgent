@@ -60,7 +60,7 @@ class ContentEnrichmentHub:
         *,
         extractor: ExtractorLike | None = None,
         concurrency: int = 8,
-        retry_delay_seconds: int = 30,
+        retry_delay_seconds: int = 5,
         site_access_client: SiteAccessClient | None = None,
     ) -> None:
         self.repository = repository
@@ -84,17 +84,40 @@ class ContentEnrichmentHub:
         from doxagent.message_bus_v2.distribution_repository import DistributionRepository
 
         self.distribution = DistributionRepository(repository)
+        self.live = getattr(bus, "live_queue", None)
+        self._legacy_claim_round = 0
+
+    async def _claim_jobs(self, *, limit, now):
+        if self.live is None:
+            return await self.bus.storage.call(self.repository.claim_enrichment_jobs,
+                limit=limit,now=now,lease_seconds=60,allow_rechecks=True)
+        self._legacy_claim_round += 1
+        background=not await self.bus.storage.read(self.live.background_active)
+        jobs=[]
+        if self._legacy_claim_round % 8 == 0:
+            legacy=await self._legacy_claim(limit=1,now=now,allow_rechecks=background)
+            for job in legacy:await self.live.adopt(job)
+        if len(jobs)<limit:
+            jobs+=await self.live.claim(limit-len(jobs),allow_background=background)
+            if any(j.work_kind=='recheck' for j in jobs):background=False
+        if len(jobs)<limit:
+            legacy=await self._legacy_claim(limit=limit-len(jobs),now=now,allow_rechecks=background)
+            for job in legacy:await self.live.adopt(job)
+            jobs+=await self.live.claim(limit-len(jobs),allow_background=background)
+        return jobs
+
+    async def _legacy_claim(self,**kwargs):
+        packets=await self.bus.storage.call(self.repository.claim_enrichment_jobs,**kwargs,packets_only=True)
+        return await self.bus.storage.prepare(self.repository.decode_enrichment_packets,packets)
+
+    async def _requeue(self, job):
+        operation = self.live.repository.defer if job.owner_kind == "live_article" else self.repository.requeue_enrichment_job
+        await self.bus.storage.call(operation, job)
 
     async def run_once(self, *, now: datetime | None = None) -> int:
         await self._flush_outcomes(force=True)
         current = (now or utc_now()).astimezone(UTC)
-        jobs = await self.bus.storage.call(
-            self.repository.claim_enrichment_jobs,
-            limit=self.concurrency,
-            now=current,
-            lease_seconds=60,
-            allow_rechecks=background_allowed(),
-        )
+        jobs = await self._claim_jobs(limit=self.concurrency,now=current)
         if not jobs:
             return 0
         await asyncio.gather(*(self._process_guarded(job, current) for job in jobs))
@@ -104,6 +127,8 @@ class ContentEnrichmentHub:
     async def _process_guarded(self, job: EnrichmentJob, now: datetime) -> None:
         work_token = WORK_CLASS.set("recheck" if job.work_kind == "recheck" else "backfill" if job.bootstrap else "foreground")
         age_token = WORK_AGE.set(max(0, (utc_now() - job.created_at).total_seconds()))
+        from doxagent.message_bus_v2.publisher_http import HTTP_CONTEXT
+        http_token=HTTP_CONTEXT.set('body')
         heartbeat = asyncio.create_task(self._renew(job))
         processing = asyncio.create_task(self._process(job,now))
         try:
@@ -127,6 +152,7 @@ class ContentEnrichmentHub:
             raise
         finally:
             WORK_CLASS.reset(work_token)
+            HTTP_CONTEXT.reset(http_token)
             WORK_AGE.reset(age_token)
             heartbeat.cancel()
             processing.cancel()
@@ -147,8 +173,12 @@ class ContentEnrichmentHub:
             await asyncio.sleep(20)
             for attempt in range(3):
                 try:
-                    await self.bus.storage.call(self.repository.renew_enrichment_claim,
-                        job.job_id,job.claim_token, _lane_priority=0)
+                    if job.owner_kind == "live_article":
+                        await self.bus.storage.call(self.live.repository.renew,
+                            job.article_id,job.claim_token,_lane_priority=0)
+                    else:
+                        await self.bus.storage.call(self.repository.renew_enrichment_claim,
+                            job.job_id,job.claim_token, _lane_priority=0)
                     break
                 except TimeoutError as exc:
                     raise RuntimeError('enrichment_lease_lost') from exc
@@ -167,7 +197,11 @@ class ContentEnrichmentHub:
             while not stop.is_set():
                 if time.monotonic()-self._last_recheck_pump>10 and background_allowed():
                     from .rechecks import enqueue_due
-                    try:await self.bus.storage.call(enqueue_due,self.repository,_lane_priority=2)
+                    try:
+                        if self.live:
+                            await self.live.checks()
+                        else:
+                            await self.bus.storage.call(enqueue_due,self.repository,_lane_priority=2)
                     except (sqlite3.OperationalError,WriteAdmissionBusy) as exc:
                         if not _storage_busy(exc):raise
                     self._last_recheck_pump=time.monotonic()
@@ -177,15 +211,14 @@ class ContentEnrichmentHub:
                     self._outcome_task = asyncio.create_task(self._flush_outcomes())
                 finished = {task for task in active if task.done()}
                 for task in finished:
-                    task.result()
+                    try:task.result()
+                    except Exception:
+                        logger.exception("isolated body task failed; other article work continues")
                 active -= finished
                 if len(active) < self.concurrency:
                     now = utc_now()
                     try:
-                        jobs = await self.bus.storage.call(
-                            self.repository.claim_enrichment_jobs,
-                            limit=self.concurrency - len(active), now=now,
-                            lease_seconds=60, allow_rechecks=background_allowed())
+                        jobs = await self._claim_jobs(limit=self.concurrency-len(active),now=now)
                     except (sqlite3.OperationalError, WriteAdmissionBusy) as exc:
                         if not _storage_busy(exc):
                             raise
@@ -270,7 +303,7 @@ class ContentEnrichmentHub:
 
         reason = (
             None
-            if job.owner_kind == "distribution_article"
+            if job.owner_kind in {"distribution_article", "live_article"}
             else evaluate_admission(
                 job.message.published_at,
                 job.message.admission_context,
@@ -329,12 +362,16 @@ class ContentEnrichmentHub:
         body_results = ArticleBodyResults(self.repository)
         cached = None
         reused = False
+        if job.owner_kind == "live_article" and job.result.get("live_cached"):
+            cached, reused = job.result["live_cached"], True
+        elif job.owner_kind == "live_article" and job.result.get("live_revalidation"):
+            cached = job.result["live_revalidation"]
         if job.body_result_key:
             cached, reused, acquired = await self.bus.storage.call(
                 body_results.prepare, job.body_result_key, job.execution_id, job.message
             )
             if not acquired and not reused:
-                await self.bus.storage.call(self.repository.requeue_enrichment_job, job.model_copy(update={
+                await self._requeue(job.model_copy(update={
                     "status": EnrichmentJobStatus.RETRY_WAIT,
                     "attempt_count": max(0, job.attempt_count - 1),
                     "not_before": utc_now() + timedelta(seconds=1), "lease_expires_at": None,
@@ -355,7 +392,7 @@ class ContentEnrichmentHub:
             # Queue lateness is an SLO breach, not evidence the article cannot
             # be downloaded. Its original publication/admission proof survives.
             queue_expired = False
-            if not reused and job.claim_token and not queue_expired:
+            if not reused and job.claim_token and not queue_expired and job.owner_kind != "live_article":
                 job = await self.bus.storage.call(self.repository.start_enrichment_fetch,job)
                 seconds = (job.deadline_at-utc_now()).total_seconds()
             if queue_expired:
@@ -445,7 +482,14 @@ class ContentEnrichmentHub:
                             ):
                                 raise ValueError("domain_constraint_unresolved")
                             record = replace(record, url=target)
-                            alias_body = await self.bus.storage.read(body_results.resolved_reuse, job.message, job.source.source_id, target)
+                            if job.owner_kind == 'live_article' and job.work_kind == 'new_article':
+                                joined = await self.bus.storage.call(self.live.repository.reserve_resolved,
+                                    job,job.message.model_copy(update={'url':target}),_lane_priority=0)
+                                if joined:
+                                    return
+                            alias_body = await self.bus.storage.read(
+                                self.live.resolved_reuse if job.owner_kind=='live_article' and job.work_kind=='new_article'
+                                else body_results.resolved_reuse,job.message,job.source.source_id,target)
                         else:
                             alias_body = None
                         if alias_body:
@@ -494,16 +538,16 @@ class ContentEnrichmentHub:
             RESUME_STAGE.reset(continuation_token)
 
         finished_at = utc_now()
-        await self.bus.storage.call(self.repository.record_enrichment_execution,
-            job, result, started_at=now, reused=reused)
+        if job.owner_kind != "live_article":
+            await self.bus.storage.call(self.repository.record_enrichment_execution,
+                job, result, started_at=now, reused=reused)
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
         if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred"}:
             delay = max((item.retry_after_seconds for item in result.attempts
-                         if item.retry_after_seconds and item.retry_after_seconds > 0), default=60)
-            not_before = finished_at + timedelta(seconds=max(10, delay) if result.reason == "site_recovery_pending" else 1 if result.reason == "site_budget_deferred" else 60)
+                         if item.retry_after_seconds and item.retry_after_seconds > 0), default=5)
+            not_before = finished_at + timedelta(seconds=max(5,delay))
             if not_before < job.deadline_at:
-                await self.bus.storage.call(
-                    self.repository.requeue_enrichment_job,
+                await self._requeue(
                     job.model_copy(
                         update={
                             "status": EnrichmentJobStatus.RETRY_WAIT,
@@ -520,6 +564,8 @@ class ContentEnrichmentHub:
             not result.succeeded
             and job.attempt_count == 1
             and self._retryable(result)
+            and len([a for a in attempts if a.get("reason") not in {
+                "site_budget_deferred","site_recovery_pending","storage_unavailable","domain_cooldown"}]) < 2
             and finished_at < job.deadline_at
         ):
             retry_after = self._retry_after(result.attempts)
@@ -537,7 +583,7 @@ class ContentEnrichmentHub:
                         "updated_at": finished_at,
                     }
                 )
-                await self.bus.storage.call(self.repository.requeue_enrichment_job, requeued)
+                await self._requeue(requeued)
                 return
 
         if job.body_result_key and not reused:
@@ -623,6 +669,9 @@ class ContentEnrichmentHub:
         await self._finalize(job, message)
 
     async def _finalize(self, job: EnrichmentJob, message: RawMessageInput) -> None:
+        if job.owner_kind == "live_article":
+            await self.live.finish(job, message,self._outcome_payload(job,message))
+            return
         from doxagent.source_maintenance.signals import body
 
         if (

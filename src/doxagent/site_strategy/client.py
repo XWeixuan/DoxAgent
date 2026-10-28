@@ -56,6 +56,7 @@ def _observed(result):
                         ).hexdigest(),
                         "endpoint": result.site_id,
                         "transport": "site_access",
+                        "proof_basis": "TRANSPORT_SEND",
                         "request_started_at": datetime.fromtimestamp(
                             started / 1000, UTC
                         ).isoformat(),

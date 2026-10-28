@@ -2308,3 +2308,25 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 Runtime P0 发布收口：同类活动任务检查直接复用内存租约，避免在调度控制循环反复 get_task/展开正文；SIGTERM 在 ticker/task 调度边界停止新增派发，已提交 provider/Worker 执行仍按原 owner 收束。
 
 2026-10-28 Runtime/W3 P0 发布验收：全链补齐版 24a5fde5 已上线；按用户明确强停指令替换旧 Worker/Scheduler，收口版 416fb2fa 两组件各 34 源文件摘要核验通过，Worker dispatcher 已恢复 RUNNING，保留原任务与已落盘回执；验收见 docs/runtime-p0-repair-20261028.md。
+
+## 2026-10-28 Message Bus 精益化 W1/W2
+- 修复联合许可读取异常造成槽位泄漏；外部身份状态读取移出联合队列锁。失败 checkpoint 与部分已提交页面独立推进。
+- 无关 publisher 分池，curl setup/cleanup 异常归还真实容量；传输层记录取网起点，不记录请求头。停用 PSI 业务硬门禁，保留资源容量。
+- BODY 续租改为标量 CAS，Native 整值一次读取与有界缓存，历史分发过期对象准备移出写事务；增加相关故障回归。
+
+## 2026-10-28 Message Bus 精益化 W3—W6（实施中）
+- 新实时路径收敛为文章、交付、来源三类薄事实，Collector直接交接，不再创建旧实时poll/distribution/jobs接力；ARTICLE_ONCE及原消息修订保留。旧BODY任务以续作引用转交同一入口，CLOSED_SWEEP等待当前页工作。
+- 正文结果先持久化，可独立续提；FULL公开正文跨发现源复用；固定最多两条可执行路线，普通重试5秒。正文未变复用原不可变产物；通用Reader支持标题及URL来源一致的官方响应模板。
+- Site公开HTTP退出Chrome/Profile门禁，独立只读连接与目录revision缓存，缩短坏控制器取消等待及自有anchor驻留；同身份BODY可在无CRAWLER等待时使用空闲页，后台有有界服务机会。
+- 物理取网证明与共享checkpoint只存一份，失败恢复状态不推进未持久化cursor；技术证明48小时、小时摘要7天，稳定输入及接纳receipt到期。Read/UI从薄文章状态派生BODY口径，展示状态按需批读，避免逐ticker复查写放大。
+- 测试与发布/验收状态记录于docs/message-bus-lean-implementation-20261028.md；当前尚未据本地测试宣称生产时效或长期稳定性达标。
+
+## 2026-10-29 Message Bus 精益化整体review与上线准备
+- 修正Raw/Standard全文重复写与Native引用生命周期；不变正文复查不新增产物。强URL接回跨源旧发布，保留ARTICLE_ONCE、原身份与首次发现时间，真实变化更新原文。
+- wrapper在途合并不抢占canonical owner；新增共享订阅只刷新当前列表；配置修复续作本地决策，不重抓BODY；sweep终态失败如实计PARTIAL。
+- publisher HTTP补齐httpx.Timeout对象、真实curl/httpx/SDK发送证据与坏池代际回收；移除无实际执行意义的group最小并发计算，容量告警按source实际需求/成本解释。
+- 增加100轮未变输入、20ticker大正文/事务内无Native I/O、96小时保留期与正式三角色迁移回归；本地writer69次max/P99约32ms，不能替代生产性能验收。
+- 正式release支持已注册Collector的显式增量迁移；新增只读全周期/逐文章交付验收脚本。按用户追加授权先停止旧消息四角色，再从提交重建上线；持续自然窗口指标不提前宣布达标。
+
+## 2026-10-29 既有Google规则的消息入口整合
+- 同步本地已存在的Google RSS公司主体查询及独立域名黑名单；新Bridge和旧兼容入口沿用同一规则，独立Yahoo源不受影响。相关规则回归通过，未覆盖或丢弃其它会话交易/UI开发。

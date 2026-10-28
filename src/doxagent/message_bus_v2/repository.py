@@ -47,6 +47,7 @@ from doxagent.message_bus_v2.schema import (
     TickerMonitoringState,
     TickerSourceBinding,
     UpdateActor,
+    canonical_json,
     new_id,
     utc_now,
 )
@@ -55,6 +56,18 @@ ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
 class _ClosingConnection(sqlite3.Connection):
+    def execute(self, sql, parameters=(), /):
+        from .storage_lane import WRITE_TIMINGS
+        metrics = WRITE_TIMINGS.get()
+        if metrics is None:
+            return super().execute(sql, parameters)
+        started = time.monotonic()
+        try:
+            return super().execute(sql, parameters)
+        finally:
+            metrics["sql_execute_ms"] = metrics.get("sql_execute_ms", 0) + round(
+                (time.monotonic() - started) * 1000, 3)
+            metrics["sql_statements"] = metrics.get("sql_statements", 0) + 1
     def __exit__(
         self,
         exc_type: type[BaseException] | None,
@@ -98,7 +111,7 @@ class MessageBusV2Repository:
             not self.path.exists() or self.path.stat().st_size == 0)
         from doxagent.v2_read.native_content import NativeContent
 
-        self.content = NativeContent(self.path)
+        self.content = NativeContent(self.path, cache_bytes=32 * 1024 * 1024)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         # WAL is persistent database state. Reissuing journal_mode on every
         # short read/write connection adds schema-lock negotiation under load.
@@ -106,6 +119,8 @@ class MessageBusV2Repository:
             with self._connect() as connection:
                 connection.execute("pragma journal_mode = WAL")
             self._initialize()
+            from .collection_plane.config import install_revision
+            install_revision(self)
         from .polling import PollJournal
 
         self.polling = PollJournal(self)
@@ -321,6 +336,10 @@ class MessageBusV2Repository:
             connection.execute('CREATE TABLE IF NOT EXISTS collection_acceptances '
                                '(capture_id TEXT PRIMARY KEY,accepted_at TEXT NOT NULL)')
             connection.executescript(collection_schema)
+            from .live_repository import SCHEMA as live_schema
+            connection.executescript(live_schema)
+            from doxagent.v2_read.artifact_registry import migrate as migrate_artifacts
+            migrate_artifacts(connection)
             from .monitoring_terms import migrate as migrate_terms
             migrate_terms(connection)
             connection.execute(
@@ -1263,7 +1282,7 @@ class MessageBusV2Repository:
         return candidate, None
 
     def _json(self, model: BaseModel) -> str:
-        if isinstance(model, (RawMessage, EnrichmentJob)):
+        if isinstance(model, (RawMessage, StandardMessage, EnrichmentJob)):
             return self.content.encode(model.model_dump(mode="json"), keep=(
                 "message", "metadata", "message.metadata", "metadata.content_evidence",
                 "message.metadata.content_evidence", "metadata.content_evidence.input_fields",
@@ -1566,8 +1585,26 @@ class MessageBusV2Repository:
 
     def known_published_article(self, binding, message):
         from .schema import identity_key_for
+        from .body_results import access_scope
+
+        evidence = message.metadata.get("identity_evidence", {})
+        urls = [message.url, evidence.get("original_url"), *evidence.get("verified_urls", [])]
+        aliases = sorted({"url:" + url for value in urls if isinstance(value, str)
+                          and (url := dedup.article_url(value, evidence.get("url_kind", "unknown")))})
 
         with self._connect() as db:
+            # Strong URL aliases are ticker-wide: discovery source is not an
+            # article identity. Use the existing indexed alias map, never title
+            # matching or a scan/hydration of historical messages.
+            shared = db.execute(
+                "SELECT DISTINCT r.data_json FROM message_identity_aliases a "
+                "JOIN logical_message_versions v ON v.ticker=a.ticker AND v.logical_message_id=a.logical_message_id "
+                "JOIN raw_messages r ON r.raw_message_id=v.raw_message_id "
+                "JOIN standard_messages s ON s.raw_message_id=r.raw_message_id "
+                "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                "WHERE a.ticker=? AND a.alias IN (SELECT value FROM json_each(?)) LIMIT 8",
+                (binding.ticker, json.dumps(aliases)),
+            ).fetchall() if aliases else []
             rows = db.execute(
                 """SELECT r.data_json FROM raw_messages r JOIN standard_messages s
                    ON s.raw_message_id=r.raw_message_id JOIN stream_members sm
@@ -1576,8 +1613,13 @@ class MessageBusV2Repository:
                    ORDER BY r.revision DESC LIMIT 4""",
                 (binding.ticker, binding.source_id, binding.binding_id, identity_key_for(binding.source_id, message)),
             ).fetchall()
-        for row in rows:
+        for row in [*shared, *rows]:
             raw = RawMessage.model_validate_json(row[0])
+            language = message.metadata.get("language") or evidence.get("language")
+            old_language = raw.metadata.get("language") or raw.metadata.get("identity_evidence", {}).get("language")
+            if (access_scope(raw, raw.source_id) != access_scope(message, binding.source_id)
+                    or (language and old_language and language != old_language)):
+                continue
             comparable = message.model_copy(update={"identity_key": identity_key_for(binding.source_id, message)})
             if not dedup.context_conflict(raw, comparable):
                 return raw
@@ -1685,145 +1727,94 @@ class MessageBusV2Repository:
 
     def claim_enrichment_jobs(
         self, *, limit: int, now: datetime | None = None, lease_seconds: int = 60,
-        allow_rechecks: bool = True,
+        allow_rechecks: bool = True, packets_only: bool = False,
     ) -> list[EnrichmentJob]:
-        """Atomically claim ready jobs and recover expired worker leases."""
+        """Drain legacy work with scalar claims; hydrate only claimed packets."""
+        current=(now or utc_now()).astimezone(UTC)
+        stamp=current.isoformat()
+        lease=(current+timedelta(seconds=lease_seconds)).isoformat()
+        with self._connect() as db:
+            rows=list(db.execute("SELECT job_id,data_json AS job_packet FROM content_enrichment_jobs "
+                "WHERE status IN ('queued','retry_wait') AND not_before<=? "
+                "AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
+                "ORDER BY created_at LIMIT ?",(stamp,max(64,limit))))
+            # Expired owners must be recovered even when the foreground lookahead is full.
+            rows=list(db.execute("SELECT job_id,data_json AS job_packet FROM content_enrichment_jobs "
+                "WHERE status='running' AND lease_expires_at<=? ORDER BY lease_expires_at LIMIT ?",
+                (stamp,limit)))+rows
+            rechecking=db.execute("SELECT 1 FROM content_enrichment_jobs WHERE status='running' "
+                "AND lease_expires_at>? AND json_extract(data_json,'$.work_kind')='recheck' LIMIT 1",(stamp,)).fetchone()
+            if allow_rechecks and not rechecking and len(rows)<limit:
+                rows+=list(db.execute("SELECT job_id,data_json AS job_packet FROM content_enrichment_jobs "
+                    "WHERE status IN ('queued','retry_wait') AND not_before<=? "
+                    "AND json_extract(data_json,'$.work_kind')='recheck' ORDER BY created_at LIMIT 1",(stamp,)))
+        if not rows:return []
+        counts={}
+        candidates=[(row,urlparse(json.loads(row['job_packet']).get('message',{}).get('url','')).hostname or '') for row in rows]
+        selected=[]
+        while candidates and len(selected)<limit:
+            row,host=min(candidates,key=lambda pair:counts.get(pair[1],0))
+            candidates.remove((row,host));selected.append(row)
+            counts[host]=counts.get(host,0)+1
+        rows=selected
+        prepared=[]
+        for row in rows:
+            packet=json.loads(row['job_packet'])
+            deadline=packet['deadline_at']
+            if not packet.get('budget_started_at') and not packet.get('attempt_count',0):
+                span=datetime.fromisoformat(deadline.replace('Z','+00:00'))-datetime.fromisoformat(packet['created_at'].replace('Z','+00:00'))
+                deadline=(current+max(timedelta(seconds=1),span)).isoformat()
+            prepared.append((row['job_id'],new_id('claim'),deadline))
+        packets=[]
+        with self.transaction() as db:
+            for identity,token,deadline in prepared:
+                changed=db.execute("UPDATE content_enrichment_jobs SET status='running',lease_expires_at=?,"
+                    "data_json=json_set(data_json,'$.status','running','$.lease_expires_at',?,'$.claim_token',?,"
+                    "'$.updated_at',?,'$.deadline_at',?,'$.attempt_count',coalesce(json_extract(data_json,'$.attempt_count'),0)+1,"
+                    "'$.execution_seq',coalesce(json_extract(data_json,'$.execution_seq'),0)+1) WHERE job_id=? "
+                    "AND ((status IN ('queued','retry_wait') AND not_before<=?) OR (status='running' AND lease_expires_at<=?))",
+                    (lease,lease,token,stamp,deadline,identity,stamp,stamp)).rowcount
+                if changed:
+                    packets.append(db.execute("SELECT data_json AS job_packet FROM content_enrichment_jobs WHERE job_id=?",(identity,)).fetchone()[0])
+        return packets if packets_only else self.decode_enrichment_packets(packets)
 
-        current = (now or utc_now()).astimezone(UTC)
-        lease_until = current + timedelta(seconds=lease_seconds)
-        allow_rechecks = allow_rechecks and not self.polling.backlogged(now=current)
-        foreground_filter = " AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
-        # An idle BODY loop must not reserve the shared DB writer just to learn
-        # that only paused background checks remain. A new enqueue after this
-        # snapshot is picked up on the next loop; real claims still recheck below.
-        with self._connect() as probe:
-            due = probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status IN (?,?) "
-                "AND not_before<=?" + foreground_filter + "LIMIT 1",
-                (EnrichmentJobStatus.QUEUED.value,EnrichmentJobStatus.RETRY_WAIT.value,current.isoformat())).fetchone()
-            expired = probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status=? "
-                "AND lease_expires_at<=? LIMIT 1",(EnrichmentJobStatus.RUNNING.value,current.isoformat())).fetchone()
-            rechecking=probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status='running' AND json_extract(data_json,'$.work_kind')='recheck' LIMIT 1").fetchone()
-            background=probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status IN ('queued','retry_wait') AND not_before<=? AND json_extract(data_json,'$.work_kind')='recheck' LIMIT 1",(current.isoformat(),)).fetchone() if allow_rechecks and not rechecking else None
-        if not due and not expired and not background:
-            return []
-        with self.transaction() as connection:
-            expired = connection.execute(
-                """select data_json from content_enrichment_jobs
-                   where status=? and lease_expires_at is not null and lease_expires_at<=?""",
-                (EnrichmentJobStatus.RUNNING.value, current.isoformat()),
-            ).fetchall()
-            for row in expired:
-                job = EnrichmentJob.model_validate_json(row["data_json"])
-                recovered = job.model_copy(
-                    update={
-                        "status": EnrichmentJobStatus.QUEUED,
-                        "lease_expires_at": None,
-                        "updated_at": current,
-                    }
-                )
-                connection.execute(
-                    """update content_enrichment_jobs
-                       set status=?,lease_expires_at=null,data_json=? where job_id=?""",
-                    (recovered.status.value, self._json(recovered), recovered.job_id),
-                )
-            rows = connection.execute(
-                """select data_json from content_enrichment_jobs
-                   where status in (?,?) and not_before<=?
-                """ + foreground_filter + "order by created_at limit ?",
-                (
-                    EnrichmentJobStatus.QUEUED.value,
-                    EnrichmentJobStatus.RETRY_WAIT.value,
-                    current.isoformat(),
-                    max(64, min(1024, limit * 128)),
-                ),
-            ).fetchall()
-            # A bounded ready window spreads claims across publishers; the HTTP
-            # controller still enforces actual request pacing after redirects.
-            ready = [EnrichmentJob.model_validate_json(row["data_json"]) for row in rows]
-            if background and len(ready)<limit:
-                background_row=connection.execute("SELECT data_json FROM content_enrichment_jobs WHERE status IN ('queued','retry_wait') AND not_before<=? AND json_extract(data_json,'$.work_kind')='recheck' ORDER BY created_at LIMIT 1",(current.isoformat(),)).fetchone()
-                if background_row:ready.append(EnrichmentJob.model_validate_json(background_row[0]))
-            host_counts: dict[str, int] = {}
-            running = connection.execute(
-                "select data_json from content_enrichment_jobs where status=?",
-                (EnrichmentJobStatus.RUNNING.value,),
-            ).fetchall()
-            for row in running:
-                active = EnrichmentJob.model_validate_json(row["data_json"])
-                host = urlparse(active.message.url).hostname or ""
-                host_counts[host] = host_counts.get(host, 0) + 1
-            selected: list[EnrichmentJob] = []
-            while ready and len(selected) < max(1, limit):
-                existing = min(
-                    ready,
-                    key=lambda item: (item.work_kind == "recheck", host_counts.get(urlparse(item.message.url).hostname or "", 0)),
-                )
-                ready.remove(existing)
-                selected.append(existing)
-                host = urlparse(existing.message.url).hostname or ""
-                host_counts[host] = host_counts.get(host, 0) + 1
-            claimed = []
-            for existing in selected:
-                # Closed sweeps can enqueue a large batch. Queue waiting must
-                # not consume the entire finite fetch/retry budget before the
-                # first claim. Reclaims/retries never renew this deadline;
-                # original publication-window admission remains unchanged.
-                deadline_at = existing.deadline_at
-                budget_started_at = existing.budget_started_at
-                if budget_started_at is None and existing.attempt_count == 0:
-                    retry_budget = max(
-                        timedelta(seconds=1), existing.deadline_at - existing.created_at
-                    )
-                    deadline_at = current + retry_budget
-                job = existing.model_copy(
-                    update={
-                        "status": EnrichmentJobStatus.RUNNING,
-                        "attempt_count": existing.attempt_count + 1,
-                        "claim_token": new_id("claim"),
-                        "lease_expires_at": lease_until,
-                        "updated_at": current,
-                        "deadline_at": deadline_at,
-                        "budget_started_at": budget_started_at,
-                        "execution_seq": existing.execution_seq + 1,
-                    }
-                )
-                connection.execute(
-                    """update content_enrichment_jobs
-                       set status=?,lease_expires_at=?,data_json=? where job_id=?""",
-                    (
-                        job.status.value,
-                        lease_until.isoformat(),
-                        self._json(job),
-                        job.job_id,
-                    ),
-                )
-                claimed.append(job)
-        return claimed
+    def decode_enrichment_packets(self,packets):
+        return [EnrichmentJob.model_validate_json(self.content.text(packet)) for packet in packets]
 
     def requeue_enrichment_job(self, job: EnrichmentJob) -> None:
+        packet=self._json(job)
         with self.transaction() as connection:
             if job.claim_token:
                 self._assert_enrichment_claim(connection, job.job_id, job.claim_token)
             connection.execute(
                 """update content_enrichment_jobs
                    set status=?,not_before=?,lease_expires_at=null,data_json=? where job_id=?""",
-                (job.status.value, job.not_before.isoformat(), self._json(job), job.job_id),
+                (job.status.value, job.not_before.isoformat(), packet, job.job_id),
             )
 
     def start_enrichment_fetch(self, job):
+        if job.budget_started_at is not None:return job
+        now=utc_now()
+        started=job.model_copy(update={'budget_started_at':now,'first_fetch_at':now,
+            'deadline_at':now+timedelta(seconds=job.fetch_budget_seconds)})
         with self.transaction() as db:
-            current = self._assert_enrichment_claim(db, job.job_id, job.claim_token)
-            if current.budget_started_at is not None:
-                return current
-            now = utc_now()
-            started = current.model_copy(update={"budget_started_at":now,"first_fetch_at":now,
-                "deadline_at":now+timedelta(seconds=current.fetch_budget_seconds)})
-            db.execute("UPDATE content_enrichment_jobs SET data_json=? WHERE job_id=?", (self._json(started),job.job_id))
-            return started
+            self._assert_enrichment_claim(db,job.job_id,job.claim_token)
+            db.execute("UPDATE content_enrichment_jobs SET data_json=json_set(data_json,"
+                "'$.budget_started_at',?,'$.first_fetch_at',?,'$.deadline_at',?) WHERE job_id=?",
+                (now.isoformat(),now.isoformat(),started.deadline_at.isoformat(),job.job_id))
+        return started
 
     def pending_enrichment_ids(self, identities: list[str]) -> list[str]:
+        from .live_repository import LiveRepository
+        if identities:
+            with self._connect() as db:
+                identities=identities+[r[0] for r in db.execute("SELECT json_extract(data_json,'$.result.continuation_id') "
+                    "FROM content_enrichment_jobs WHERE job_id IN (SELECT value FROM json_each(?)) "
+                    "AND json_extract(data_json,'$.result.continuation_id') IS NOT NULL",(json.dumps(identities),))]
+        live_ids = LiveRepository(self).pending_ids(identities) if any(
+            v.startswith("live:") for v in identities) else []
         with self._connect() as connection:
-            return [
+            return live_ids + [
                 row[0]
                 for row in connection.execute(
                     "select job_id from content_enrichment_jobs where job_id in "
@@ -1837,26 +1828,20 @@ class MessageBusV2Repository:
         self.complete_enrichment_job_with_outcome(job_id, claim_token, None)
 
     def _finish_enrichment(self, connection, job_id, payload=None):
-        row = connection.execute(
-            "SELECT data_json FROM content_enrichment_jobs WHERE job_id=?", (job_id,)
-        ).fetchone()
+        row = connection.execute('SELECT status FROM content_enrichment_jobs WHERE job_id=?',(job_id,)).fetchone()
         if row is None:
             return
-        job = EnrichmentJob.model_validate_json(row[0])
-        if job.status in {EnrichmentJobStatus.COMPLETED, EnrichmentJobStatus.FAILED}:
+        if row[0] in {'completed','failed'}:
             return
         if not self.terminal_receipts_enabled:
             connection.execute("DELETE FROM content_enrichment_jobs WHERE job_id=?",(job_id,))
             return
         succeeded = payload and payload.get("outcome") in {"FULL", "SHORT_FULL", "SKIPPED"}
-        final = job.model_copy(update={
-            "status": EnrichmentJobStatus.COMPLETED if succeeded else EnrichmentJobStatus.FAILED,
-            "lease_expires_at": None, "claim_token": None,
-            "updated_at": utc_now(), "result": payload or {},
-        })
+        status='completed' if succeeded else 'failed'
         connection.execute(
-            "UPDATE content_enrichment_jobs SET status=?,lease_expires_at=NULL,data_json=? WHERE job_id=?",
-            (final.status.value, self._json(final), job_id),
+            "UPDATE content_enrichment_jobs SET status=?,lease_expires_at=NULL,data_json=json_set(data_json,"
+            "'$.status',?,'$.lease_expires_at',NULL,'$.claim_token',NULL,'$.updated_at',?,'$.result',json(?)) WHERE job_id=?",
+            (status,status,utc_now().isoformat(),canonical_json(payload or {}),job_id),
         )
 
     def list_site_strategy_outbox(self, *, limit: int = 100) -> list[dict[str, Any]]:
@@ -1992,32 +1977,29 @@ class MessageBusV2Repository:
         connection: sqlite3.Connection,
         job_id: str,
         claim_token: str,
-    ) -> EnrichmentJob:
+    ) -> None:
         row = connection.execute(
-            "select data_json,lease_expires_at from content_enrichment_jobs where job_id=?",
+            "select status,lease_expires_at,json_extract(data_json,'$.claim_token') token from content_enrichment_jobs where job_id=?",
             (job_id,),
         ).fetchone()
-        job = EnrichmentJob.model_validate_json(row["data_json"]) if row else None
-        if job and row['lease_expires_at']:
-            job=job.model_copy(update={'lease_expires_at':datetime.fromisoformat(row['lease_expires_at'])})
         if (
-            job is None
-            or job.status is not EnrichmentJobStatus.RUNNING
-            or job.claim_token != claim_token
-            or job.lease_expires_at is None
+            row is None
+            or row['status'] != 'running'
+            or row['token'] != claim_token
+            or row['lease_expires_at'] is None
         ):
             raise RuntimeError("enrichment_lease_lost")
-        return job
 
     def renew_enrichment_claim(self, job_id: str, claim_token: str) -> None:
         with self.transaction() as connection:
-            job = self._assert_enrichment_claim(connection, job_id, claim_token)
-            renewed = job.model_copy(update={"lease_expires_at": utc_now() + timedelta(seconds=60)})
-            assert renewed.lease_expires_at is not None
-            connection.execute(
-                "update content_enrichment_jobs set lease_expires_at=? where job_id=?",
-                (renewed.lease_expires_at.isoformat(), job_id),
-            )
+            changed = connection.execute(
+                "UPDATE content_enrichment_jobs SET lease_expires_at=? "
+                "WHERE job_id=? AND status='running' AND lease_expires_at IS NOT NULL "
+                "AND json_extract(data_json,'$.claim_token')=?",
+                ((utc_now() + timedelta(seconds=60)).isoformat(), job_id, claim_token),
+            ).rowcount
+            if not changed:
+                raise RuntimeError("enrichment_lease_lost")
 
     def list_enrichment_jobs(self, *, limit: int = 100, include_terminal: bool = False) -> list[EnrichmentJob]:
         where = "" if include_terminal else "where status in ('queued','running','retry_wait')"

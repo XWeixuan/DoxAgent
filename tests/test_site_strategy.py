@@ -332,7 +332,7 @@ def test_strategy_apply_is_revision_cas_and_profile_binding_is_immutable(
 
 
 @pytest.mark.asyncio
-async def test_single_http_429_switches_candidate_without_freezing_browser_identity(
+async def test_http_429_retains_publisher_retry_after_without_mutating_browser_identity(
     site_service: SiteStrategyService,
 ) -> None:
     calls: list[str] = []
@@ -359,18 +359,16 @@ async def test_single_http_429_switches_candidate_without_freezing_browser_ident
         )
     )
 
-    if result.disposition is AccessDisposition.BUDGET_DEFERRED:
-        assert result.reason_code == "site_queue_timeout" and result.queue_wait_ms >= 2900
-        # Resume on a later scheduler turn; this unit test isolates routing from wall-clock pacing.
-        site_service.budgets.get("yahoo_finance",max_concurrency=2,min_interval_ms=0)._next_start = 0
-        result = await site_service.execute(AccessRequest(operation_id="poll-next",purpose=SitePurpose.CRAWLER,
-            url="https://finance.yahoo.com/story",mode=AccessMode.HTTP_PUBLIC))
-    assert result.disposition is AccessDisposition.SUCCESS
-    assert calls == ["yahoo_finance-1", "yahoo_finance-2"]
+    assert result.disposition is AccessDisposition.ACCESS_EXHAUSTED
+    assert result.failure_category is FailureCategory.ACCESS_RATE_LIMIT
+    assert calls == ["yahoo_finance-1"]
+    again = await site_service.execute(AccessRequest(operation_id="poll-next",purpose=SitePurpose.CRAWLER,
+        url="https://finance.yahoo.com/story",mode=AccessMode.HTTP_PUBLIC))
+    assert again.disposition is AccessDisposition.BUDGET_DEFERRED
+    assert again.reason_code == "publisher_retry_after"
+    assert calls == ["yahoo_finance-1"]
     state = site_service.repository.get_runtime("yahoo_finance")
-    assert state.active_combination_id == "yahoo_finance-1"  # HTTP fallback preserves the browser identity route.
-    assert state.combinations["yahoo_finance-1"].state == "READY"
-    assert state.combinations["yahoo_finance-1"].http_state == "COOLDOWN"
+    assert state.active_combination_id is None and not state.combinations
 
 
 @pytest.mark.asyncio
@@ -395,7 +393,7 @@ async def test_content_404_does_not_switch_egress(site_service: SiteStrategyServ
     assert result.disposition is AccessDisposition.CONTENT_ERROR
     assert calls == ["yahoo_finance-1"]
     state = site_service.repository.get_runtime("yahoo_finance")
-    assert state.combinations["yahoo_finance-1"].state == "READY"
+    assert not state.combinations
 
 
 @pytest.mark.asyncio
@@ -723,7 +721,7 @@ async def test_body_v22_uses_registry_strategy_and_records_access_provenance(
 
 
 @pytest.mark.asyncio
-async def test_crawler_honors_configured_queue_instead_of_hidden_three_second_cap(site_service):
+async def test_public_http_does_not_occupy_or_wait_for_browser_pacing(site_service):
     import time
     async def execute_runtime(request, resolved, combination, profile, egress):
         return RuntimeResponse(200,request.url,{"content-type":"text/html"},"<html><article><h1>Story</h1><p>Body.</p></article></html>")
@@ -732,7 +730,8 @@ async def test_crawler_honors_configured_queue_instead_of_hidden_three_second_ca
     budget._next_start=time.monotonic()+3.2
     result=await site_service.execute(AccessRequest(operation_id="queue-configured",purpose=SitePurpose.CRAWLER,url="https://finance.yahoo.com/story",mode=AccessMode.HTTP_PUBLIC,remaining_budget_ms=6000))
     assert result.disposition is AccessDisposition.SUCCESS
-    assert result.queue_wait_ms>=3000
+    assert result.queue_wait_ms==0
+    assert budget._next_start>time.monotonic()
 
 
 @pytest.mark.asyncio

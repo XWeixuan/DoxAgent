@@ -56,6 +56,13 @@ class AcquisitionStore:
                     CREATE INDEX IF NOT EXISTS cycles_time ON cycles(dispatch_at,run_id);
                     CREATE INDEX IF NOT EXISTS cycles_ticker_time ON cycles(ticker,dispatch_at);
                     CREATE INDEX IF NOT EXISTS cycles_schedule ON cycles(status,binding_id,unit,dispatch_at);
+                    CREATE TABLE IF NOT EXISTS physical_cycles(run_id TEXT PRIMARY KEY,finished_at TEXT,requests_json TEXT NOT NULL);
+                    CREATE INDEX IF NOT EXISTS physical_cycles_time ON physical_cycles(finished_at,run_id);
+                    CREATE INDEX IF NOT EXISTS cycles_unit_time ON cycles(binding_id,unit,dispatch_at);
+                    CREATE TABLE IF NOT EXISTS unit_hours(binding_id TEXT,unit TEXT,hour TEXT,data_json TEXT NOT NULL,
+                        PRIMARY KEY(binding_id,unit,hour));
+                    CREATE INDEX IF NOT EXISTS unit_hours_time ON unit_hours(hour);
+                    CREATE TABLE IF NOT EXISTS physical_checkpoints(identity TEXT PRIMARY KEY,checkpoint TEXT NOT NULL);
                     CREATE TABLE IF NOT EXISTS captures(
                         capture_id TEXT PRIMARY KEY,run_id TEXT,binding_id TEXT,source_id TEXT,
                         ticker TEXT,unit TEXT,observed_at TEXT,committed_at TEXT,
@@ -63,6 +70,7 @@ class AcquisitionStore:
                         targets_json TEXT,status TEXT,payload TEXT NOT NULL,accepted_at TEXT,
                         not_before TEXT,last_error TEXT);
                     CREATE INDEX IF NOT EXISTS captures_pending ON captures(status,not_before,observed_at);
+                    CREATE INDEX IF NOT EXISTS captures_source_ready ON captures(status,source_id,not_before,observed_at);
                     CREATE INDEX IF NOT EXISTS captures_time ON captures(observed_at,capture_id);
                     CREATE TABLE IF NOT EXISTS inputs(input_key TEXT PRIMARY KEY,observed_at TEXT NOT NULL);
                     CREATE INDEX IF NOT EXISTS inputs_time ON inputs(observed_at);
@@ -112,10 +120,15 @@ class AcquisitionStore:
 
     def states(self):
         with self.connect() as db:
-            return {
+            result={
                 (r["binding_id"], r["unit"]): dict(r) | {"state": json.loads(r["state"])}
                 for r in db.execute("SELECT * FROM units")
             }
+            checkpoints={r[0]:json.loads(r[1]) for r in db.execute('SELECT * FROM physical_checkpoints')}
+        for row in result.values():
+            ref=row['state'].pop('checkpoint_ref',None)
+            if ref:row['state']['checkpoint']=checkpoints.get(ref,{})
+        return result
 
     @durable_write
     def disable_unit(self, binding_id, unit):
@@ -163,6 +176,10 @@ class AcquisitionStore:
                     "last_error_message": state.get("last_error_code"),
                 }
                 head["ir_endpoint"].pop("checkpoint", None)
+        checkpoint=None
+        if source.acquisition_mode.value=='by_distribution' and 'checkpoint' in state:
+            checkpoint=(source.source_id+':'+unit+':'+generation,canonical_json(state['checkpoint']))
+            state={k:v for k,v in state.items() if k!='checkpoint'}|{'checkpoint_ref':checkpoint[0]}
         args = (
             binding.binding_id,
             unit,
@@ -178,9 +195,13 @@ class AcquisitionStore:
                required=excluded.required,generation=excluded.generation,state=excluded.state,
                input_key=coalesce(excluded.input_key,units.input_key),head_json=excluded.head_json"""
         if db is not None:
+            if checkpoint:db.execute('INSERT INTO physical_checkpoints VALUES(?,?) ON CONFLICT(identity) DO UPDATE SET '
+                'checkpoint=excluded.checkpoint WHERE checkpoint!=excluded.checkpoint',checkpoint)
             db.execute(sql, args)
         else:
             with self.connect(write=True) as conn:
+                if checkpoint:conn.execute('INSERT INTO physical_checkpoints VALUES(?,?) ON CONFLICT(identity) DO UPDATE SET '
+                    'checkpoint=excluded.checkpoint WHERE checkpoint!=excluded.checkpoint',checkpoint)
                 conn.execute(sql, args)
 
     @durable_write
@@ -229,19 +250,22 @@ class AcquisitionStore:
             r
             for r in requests
             if r.get("role", "listing") == "listing"
+            and r.get('list_validated') and r.get('proof_basis')=='TRANSPORT_SEND'
             and r.get("response_received_at")
             and not r.get("error_type")
             and (r.get("status_code") is None or 200 <= r["status_code"] < 400)
         ]
         winning = listing[-1] if valid and listing else None
         proof = {
-            "requests": requests,
+            "physical_run_id": run_id,
             "required": not unit.startswith("TAIL:"),
             "list_validated": bool(valid and winning),
             "winning_request_id": winning.get("physical_request_id") if winning else None,
             "listing_received_at": winning.get("response_received_at") if winning else None,
         }
         with self.connect(write=True) as db:
+            db.execute('INSERT INTO physical_cycles VALUES(?,?,?) ON CONFLICT(run_id) DO UPDATE SET '
+                'finished_at=excluded.finished_at,requests_json=excluded.requests_json',(run_id,now,canonical_json(requests)))
             for target in targets:
                 previous = db.execute(
                     "SELECT data_json FROM cycles WHERE run_id=?",
@@ -288,6 +312,9 @@ class AcquisitionStore:
                 if prior and (prior["generation"] != generation or prior["required"] < 0):
                     continue
                 current = json.loads(prior[0]) if prior else {}
+                if current.get('checkpoint_ref'):
+                    cp=db.execute('SELECT checkpoint FROM physical_checkpoints WHERE identity=?',(current.pop('checkpoint_ref'),)).fetchone()
+                    current['checkpoint']=json.loads(cp[0]) if cp else {}
                 current.update(state)
                 if target_proof["list_validated"]:
                     current.update(
@@ -409,56 +436,42 @@ class AcquisitionStore:
 
         if not any(m.publication_time_basis == "UNKNOWN_FIRST_SEEN" for m in messages):
             return messages
-        normalized = []
-        with self.connect(write=True) as db:
-            for m in messages:
-                if m.publication_time_basis == "UNKNOWN_FIRST_SEEN":
-                    key = source_id + ":" + identity_key_for(source_id, m)
-                    db.execute("INSERT OR IGNORE INTO first_seen VALUES(?,?)", (key, observed))
-                    first = db.execute(
-                        "SELECT observed_at FROM first_seen WHERE identity=?", (key,)
-                    ).fetchone()[0]
-                    m = m.model_copy(update={"published_at": datetime.fromisoformat(first)})
-                normalized.append(m)
-        return normalized
+        keys={source_id+':'+identity_key_for(source_id,m) for m in messages
+              if m.publication_time_basis=='UNKNOWN_FIRST_SEEN'}
+        with self.connect() as db:
+            existing=dict(db.execute('SELECT identity,observed_at FROM first_seen WHERE identity IN '
+                '(SELECT value FROM json_each(?))',(canonical_json(list(keys)),)))
+        missing=keys-existing.keys()
+        if missing:
+            with self.connect(write=True) as db:
+                db.executemany('INSERT OR IGNORE INTO first_seen VALUES(?,?)',[(k,observed) for k in missing])
+                existing.update(db.execute('SELECT identity,observed_at FROM first_seen WHERE identity IN '
+                    '(SELECT value FROM json_each(?))',(canonical_json(list(missing)),)))
+        return [m.model_copy(update={'published_at':datetime.fromisoformat(existing[source_id+':'+identity_key_for(source_id,m)])})
+            if m.publication_time_basis=='UNKNOWN_FIRST_SEEN' else m for m in messages]
+
+    def health(self, *, now=None):
+        from datetime import datetime
+        instant=now or utc_now();stalled=[];unknown=[];required=0
+        with self.connect() as db:
+            rows=db.execute('SELECT source_id,binding_id,unit,state,head_json FROM units WHERE required=1').fetchall()
+        for row in rows:
+            required+=1;head=json.loads(row['head_json']);state=json.loads(row['state'])
+            interval=state.get('schedule_interval_seconds',30)
+            started=state.get('target_due_at')
+            if started and instant<datetime.fromisoformat(started):continue
+            captured=head.get('last_capture_at')
+            if not captured:unknown.append(dict(source_id=row['source_id'],binding_id=row['binding_id'],unit=row['unit']))
+            basis=captured or started
+            if basis and (instant-datetime.fromisoformat(basis)).total_seconds()>max(90,3*interval):
+                stalled.append(dict(source_id=row['source_id'],binding_id=row['binding_id'],unit=row['unit'],
+                    last_fresh=captured,error=head.get('last_error_code')))
+        return {'status':'degraded' if stalled else 'ok','required_units':required,'unproven_units':len(unknown),
+            'stalled_units':stalled,'basis':'VALIDATED_TRANSPORT_LIST_PROGRESS'}
 
     def maintain(self):
-        """Indexed candidate reads, tiny deletes. No business writer or online VACUUM."""
-        from datetime import timedelta
-
-        cutoff = (utc_now() - timedelta(days=3)).isoformat()
-        with self.connect() as db:
-            # SCHEDULE is a configuration boundary, retained for cadence arithmetic.
-            cycles = [
-                r[0]
-                for r in db.execute(
-                    "SELECT run_id FROM cycles WHERE dispatch_at<? AND status!='SCHEDULE' ORDER BY dispatch_at LIMIT 512",
-                    (cutoff,),
-                )
-            ]
-            captures = [
-                r[0]
-                for r in db.execute(
-                    "SELECT capture_id FROM captures WHERE observed_at<? AND status='ACCEPTED' ORDER BY observed_at LIMIT 32",
-                    (cutoff,),
-                )
-            ]
-        if not cycles and not captures:
-            return
-        import time
-
-        started = time.monotonic()
-        for offset in range(0, len(cycles), 32):
-            with self.connect(write=True) as db:
-                db.executemany(
-                    "DELETE FROM cycles WHERE run_id=?",
-                    [(x,) for x in cycles[offset : offset + 32]],
-                )
-            if time.monotonic() - started > 0.05:
-                break
-        if captures:
-            with self.connect(write=True) as db:
-                db.executemany("DELETE FROM captures WHERE capture_id=?", [(x,) for x in captures])
+        from .maintenance import maintain
+        maintain(self)
 
     @durable_write
     def capture_page(self, source, targets, unit, payload, input_key, observed, run_id, requests):
@@ -466,6 +479,7 @@ class AcquisitionStore:
             r
             for r in requests
             if r.get("role", "listing") == "listing" and r.get("response_received_at")
+            and r.get('list_validated') and r.get('proof_basis')=='TRANSPORT_SEND'
         ]
         with self.connect(write=True) as db:
             winning = listing[-1] if listing else None
@@ -475,7 +489,7 @@ class AcquisitionStore:
                 and not winning.get("error_type")
             ):
                 proof = {
-                    "requests": requests,
+                    "physical_run_id": run_id,
                     "required": not unit.startswith("TAIL:"),
                     "list_validated": True,
                     "winning_request_id": winning.get("physical_request_id"),
@@ -486,6 +500,9 @@ class AcquisitionStore:
                     "UPDATE cycles SET status='CAPTURED',data_json=? WHERE run_id=?",
                     [(canonical_json(proof), run_id + ":" + b.binding_id) for b in targets],
                 )
+            db.execute('INSERT INTO physical_cycles VALUES(?,?,?) ON CONFLICT(run_id) DO UPDATE SET '
+                'finished_at=excluded.finished_at,requests_json=excluded.requests_json',
+                (run_id,utc_now().isoformat(),canonical_json(requests)))
             self._capture(
                 db,
                 source,
@@ -508,14 +525,22 @@ class AcquisitionStore:
             ).rowcount
 
     def pending(self, *, limit=8):
+        # Round-robin publishers. A large older delta backlog cannot keep a new
+        # source's head outside the global eight-row handoff window.
         with self.connect() as db:
-            return [
-                dict(r)
-                for r in db.execute(
-                    "SELECT * FROM captures WHERE status='PENDING' AND not_before<=? ORDER BY observed_at LIMIT ?",
-                    (utc_now().isoformat(), limit),
-                )
-            ]
+            sources=[r[0] for r in db.execute("SELECT DISTINCT source_id FROM captures WHERE status='PENDING' ORDER BY source_id")]
+            cursor=getattr(self,"_pending_source","")
+            sources=[s for s in sources if s>cursor]+[s for s in sources if s<=cursor]
+            rows=[]
+            self._pending_round=getattr(self,"_pending_round",0)+1
+            order="ASC" if self._pending_round%8==0 else "DESC"
+            for source in sources:
+                row=db.execute("SELECT * FROM captures WHERE status='PENDING' AND source_id=? "
+                    "AND not_before<=? ORDER BY observed_at "+order+" LIMIT 1",(source,utc_now().isoformat())).fetchone()
+                if row:
+                    rows.append(dict(row));self._pending_source=source
+                if len(rows)>=limit:break
+            return rows
 
     @durable_write
     def acknowledge(self, capture_id):

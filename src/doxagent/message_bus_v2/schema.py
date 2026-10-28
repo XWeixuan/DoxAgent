@@ -674,6 +674,7 @@ class PollResult(BusModel):
 
     messages: list[RawMessageInput] = Field(default_factory=list)
     next_checkpoint: JsonObject = Field(default_factory=dict)
+    recovery_delta: JsonObject = Field(default_factory=dict)
     acquisition_metadata: JsonObject = Field(default_factory=dict)
     optional_next_poll_hint: datetime | None = None
     failures: list[AcquisitionFailure] = Field(default_factory=list)
@@ -709,6 +710,7 @@ class SharedPollContext(BusModel):
     source: SourceDefinition
     acquisition_unit: str = "SHARED"
     checkpoint: JsonObject = Field(default_factory=dict)
+    force_refresh: bool = False
     window_start: datetime | None = None
     window_cutoff: datetime | None = None
     requested_at: datetime = Field(default_factory=utc_now)

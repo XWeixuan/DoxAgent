@@ -17,6 +17,10 @@ from zoneinfo import ZoneInfo
 import httpx
 
 from cdecr.kb_v2 import V2KnowledgeBase
+from doxagent.message_bus_v2.google_news_rules import (
+    filter_google_news_result,
+    google_narrow_query,
+)
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
     JsonObject,
@@ -594,7 +598,7 @@ class GoogleNewsSearchRssAdapter:
     async def poll(self, context: PollContext) -> PollResult:
         plan = context.query_plan
         terms = (
-            [str(item).strip() for item in context.binding.source_parameters["search_terms"]]
+            [str(item).strip() for item in context.binding.source_parameters.get("search_terms", [])]
             if plan is None
             else []
         )
@@ -605,10 +609,8 @@ class GoogleNewsSearchRssAdapter:
         query = (
             str(plan["queries"][0]["query"])
             if plan
-            else " OR ".join(f'"{term}"' if " " in term else term for term in terms)
+            else google_narrow_query(context.ticker, terms[0] if terms else "")
         )
-        if not plan and len(terms) > 1:
-            query = f"({query})"
         if domains:
             query += " (" + " OR ".join(f"site:{item}" for item in domains) + ")"
         query += " when:1d"
@@ -704,7 +706,7 @@ class GoogleNewsSearchRssAdapter:
                     },
                 )
             )
-        return PollResult(
+        result = PollResult(
             messages=messages,
             failures=failures,
             window_coverage="PARTIAL" if failures else "COMPLETE",
@@ -714,8 +716,11 @@ class GoogleNewsSearchRssAdapter:
                 "window_hours": 24,
                 "terms_revision": plan["terms_revision"] if plan else None,
                 "query_source": "monitoring_terms" if plan else "LEGACY_TERMS",
+                "query_rule": "first_l1_only",
+                "rss_received_count": len(rows),
             },
         )
+        return filter_google_news_result(context.source.source_id, result)
 
 
 def _reuters_date(value: object) -> date | None:

@@ -697,7 +697,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_RETRY_DEADLINE_SECONDS",
     )
     content_enrichment_retry_delay_seconds: int = Field(
-        default=30,
+        default=5,
         ge=0,
         le=180,
         validation_alias="DOXAGENT_CONTENT_ENRICHMENT_RETRY_DELAY_SECONDS",

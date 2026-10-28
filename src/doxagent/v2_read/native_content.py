@@ -5,24 +5,32 @@ content is business evidence and is never eligible for diagnostic age deletion.
 """
 import json
 import sqlite3
+import copy
+import threading
+from collections import OrderedDict
 from pathlib import Path
 from .content_files import ContentFiles, ContentUnavailable, CHUNK
 
 MARKER = "$doxagent_content_v1"
+_CACHE = OrderedDict()
+_CACHE_BYTES = 0
+_CACHE_LOCK = threading.Lock()
 
 
 class NativeContent:
-    def __init__(self, database):
+    def __init__(self, database, *, cache_bytes=0):
         self.database = Path(database).resolve()
         self.definition_connection = None
         self.files = ContentFiles(Path(database).resolve().parent / "native-files")
+        self.cache_bytes = cache_bytes
 
     def encode(self, value, *, keep=()):
         def pack(item, root=False, path=""):
             root = root or path in keep
-            raw = json.dumps(item, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
-            if not root and len(raw) >= 16384:
-                return {MARKER: self.files.put(raw), "bytes": len(raw)}
+            if not root:
+                raw = json.dumps(item, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
+                if len(raw) >= 16384:
+                    return {MARKER: self.files.put(raw), "bytes": len(raw)}
             if isinstance(item, dict):
                 if MARKER in item:
                     raise ValueError("reserved native content marker")
@@ -60,17 +68,45 @@ class NativeContent:
             if MARKER in value:
                 if set(value) != {MARKER, "bytes"} or not isinstance(value["bytes"], int) or value["bytes"] < 0:
                     raise ContentUnavailable()
-                raw = b"".join(self.files.read(value[MARKER], offset, CHUNK) for offset in range(0, value["bytes"], CHUNK))
+                global _CACHE_BYTES
+                identity = value[MARKER]
+                try:
+                    stamp = (self.files._path(identity) / "manifest.json").stat().st_mtime_ns
+                except OSError as exc:
+                    raise ContentUnavailable() from exc
+                key = (str(self.files.root), identity, stamp)
+                with _CACHE_LOCK:
+                    cached = _CACHE.get(key) if self.cache_bytes else None
+                    if cached is not None:
+                        _CACHE.move_to_end(key)
+                if cached is not None:
+                    try:
+                        unchanged=all((stat.st_mtime_ns,stat.st_size)==stamp for path,stamp in cached[2]
+                                      for stat in [path.stat()])
+                    except OSError:unchanged=False
+                    if unchanged:return copy.deepcopy(cached[1])
+                    with _CACHE_LOCK:
+                        prior=_CACHE.pop(key,None)
+                        if prior:_CACHE_BYTES-=prior[0]
+                raw = self.files.read_all(identity)
                 if len(raw) != value["bytes"]:
-                    raise ContentUnavailable()
-                import hashlib
-                if hashlib.sha256(raw).hexdigest() != value[MARKER]:
                     raise ContentUnavailable()
                 check_deadline()
                 try:
-                    return json.loads(raw)
+                    result = json.loads(raw)
                 except ValueError as exc:
                     raise ContentUnavailable() from exc
+                if self.cache_bytes and len(raw) <= self.cache_bytes:
+                    with _CACHE_LOCK:
+                        prior = _CACHE.pop(key, None)
+                        _CACHE_BYTES += len(raw) - (prior[0] if prior else 0)
+                        chunks=[self.files._path(identity)/str(i) for i in range((len(raw)+CHUNK-1)//CHUNK)]
+                        signature=[(path,(stat.st_mtime_ns,stat.st_size)) for path in chunks for stat in [path.stat()]]
+                        _CACHE[key] = (len(raw), result, signature)
+                        while _CACHE_BYTES > self.cache_bytes or len(_CACHE) > 64:
+                            _, item = _CACHE.popitem(last=False)
+                            _CACHE_BYTES -= item[0]
+                return copy.deepcopy(result) if self.cache_bytes else result
             return {key: self.decode(child,expand_definitions=expand_definitions) for key, child in value.items()}
         if isinstance(value, list):
             return [self.decode(child,expand_definitions=expand_definitions) for child in value]

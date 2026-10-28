@@ -25,14 +25,6 @@ def cpu_pressure():
 
 
 def background_allowed():
-    pressure = cpu_pressure()
-    if pressure is not None and pressure >= 10:
-        return False
-    for kind, ceiling in [('io', 10), ('memory', 2)]:
-        try:
-            line = Path('/proc/pressure', kind).read_text().splitlines()[0]
-            if float(dict(x.split('=') for x in line.split()[1:])['avg60']) >= ceiling:
-                return False
-        except (OSError, ValueError, KeyError, IndexError):
-            pass
+    # PSI is telemetry, not a business admission rule. Actual bounded pools and
+    # fair queues own capacity; a sustained signal must not starve work forever.
     return True

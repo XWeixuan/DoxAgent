@@ -100,7 +100,7 @@ class DistributionWorker:
             self._active_decisions.update(asyncio.create_task(self._continue_decisions(*row)) for row in decisions)
         if time.monotonic() >= self._retirement_at:
             self._retirement_at = time.monotonic() + 60
-            await self.bus.storage.call(self.repository.expire_runs)
+            await self.bus.storage.prepare(self.repository.expire_runs, limit=8)
         return len(rows)
 
     async def close(self):
@@ -115,7 +115,7 @@ class DistributionWorker:
     async def run_once(self) -> int:
         if time.monotonic() >= self._retirement_at:
             self._retirement_at = time.monotonic() + 60
-            retired = await self.bus.storage.call(self.repository.expire_runs)
+            retired = await self.bus.storage.prepare(self.repository.expire_runs, limit=8)
             if retired:
                 logger.info("retired expired realtime distribution runs count=%s", retired)
         rows = await self.bus.storage.call(self.repository.claim_deliveries, limit=16)

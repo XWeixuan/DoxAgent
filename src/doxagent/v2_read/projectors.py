@@ -199,6 +199,15 @@ class DomainProjectors:
         if table == "article_body_results":
             identity = value["fetch_key"]
             value = {k:v for k,v in value.items() if k not in {"content", "diagnostics"}}
+        if table=="live_articles":
+            identity=value["article_key"]
+            value={k:v for k,v in value.items() if k not in {'input_ref','result_ref','attempts_json','validators_json','claim_token','lease_until'}}
+            ticker=""
+        if table=="live_origins":
+            identity=value["origin_key"]
+            ticker=""
+        if table=="live_deliveries":
+            identity=value["article_key"]+":"+value["ticker"]
         if table in {"message_observations", "content_enrichment_jobs"}:
             identity = event["entity_id"]
             ticker = row.get("ticker") or (value.get("binding") or {}).get("ticker", "")
@@ -240,6 +249,28 @@ class DomainProjectors:
             "source_id": value.get("source_id"),
         }
         records, metrics = [record], []
+        if table=='live_deliveries':record['parent']=value['article_key']
+        if table=="live_articles":
+            full=value.get("outcome") in {"FULL","SHORT_FULL"}
+            eligible=value.get("state") not in {"MERGED","NOT_APPLICABLE"} and value.get("outcome")!='NOT_APPLICABLE'
+            status="READY" if full else "PENDING" if value.get("state") in {"FETCH_DUE","FETCHING","COMMIT_DUE"} else "FAILED"
+            records.append({"kind":"native:article_body_results","ticker":"","id":value["article_key"],
+                "source_id":value["source_id"],"data":{
+                    "fetch_key":value["article_key"],"source_id":value["source_id"],"first_observed_at":value["first_seen_at"],
+                    "title":value.get("title"),"url":value["url"],"status":status,"outcome":value.get("outcome"),
+                    "eligible":eligible,"acquired_at":value.get("acquired_at"),"checked_at":value.get("checked_at"),
+                    "last_error":value.get("last_error"),"fetch_total":value.get("fetch_total",0),
+                    "full_total":value.get("full_total",0),"cache_total":value.get("cache_total",0),
+                    "live":True}})
+        if table=='live_origins' and value['origin_key'].startswith('legacy_body:'):
+            records.append({'kind':'article_alias','ticker':'','id':value['origin_key'].removeprefix('legacy_body:'),
+                'parent':value['article_key'],'data':{'article_key':value['article_key']}})
+        if table=="live_origins" and value["source_id"]!="resolved":
+            for target in json.loads(value.get("targets_json","[]")):
+                records.append({"kind":"article_observation","ticker":target,
+                    "id":value["source_id"]+":"+value["article_key"],"parent":value["article_key"],
+                    "source_id":value["source_id"],"data":{"fetch_key":value["article_key"],
+                        "source_id":value["source_id"],"first_observed_at":value["first_seen_at"]}})
         if table == "content_enrichment_jobs":
             records.append({"kind":"body_job","ticker":ticker,"id":value["job_id"],
                 "parent":value.get("body_result_key"), "source_id":value["source"]["source_id"],
@@ -498,6 +529,8 @@ class DomainProjectors:
         elif table == "standard_messages":
             content = self.store.put_content(ticker, value["body"], "text/plain")
             record["data"] = {**value, "body_ref": content}
+            if value.get('metadata',{}).get('live_article_key'):
+                record['data']['live_article_key']=value['metadata']['live_article_key']
             current_message = self.store.get("message",ticker,value["standard_message_id"])
             if current_message:
                 records.extend(self.message({"standard_message_id":value["standard_message_id"],

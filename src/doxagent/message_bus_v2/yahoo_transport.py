@@ -16,7 +16,8 @@ from email.utils import parsedate_to_datetime
 from typing import Any
 
 import httpx
-from curl_cffi.requests import AsyncSession, RequestsError
+from curl_cffi.requests import RequestsError
+from .publisher_http import PublisherSession as AsyncSession,http_budget
 
 from .http_routes import approved_routes, transport_routes
 
@@ -53,6 +54,7 @@ class YahooTransport:
         self._spacing_locks = {}
         self._http_routes = approved_routes(http_routes) if http_routes is not None else None
         self._route_sessions = {}
+        self._session_active = {}
         self.last_http_route = "legacy"
         self._next_start = {}
         self._circuit_versions = {}
@@ -89,7 +91,7 @@ class YahooTransport:
     async def _request_impl(self, method: str, url: str, *, rate_scope="api", **kwargs: Any):
         if self._lock is None:
             self._lock = asyncio.Lock()
-        async with self._scope_locks.setdefault(rate_scope, asyncio.Semaphore(4 if rate_scope == "rss" else 1)):
+        async with asyncio.timeout(float(kwargs.get('timeout') or 15)),self._scope_locks.setdefault(rate_scope, asyncio.Semaphore(4 if rate_scope == "rss" else 1)),http_budget('yahoo_collector'):
             endpoint_until, endpoint_status = self._endpoint_circuits.get(url, (0, 0))
             if self._clock() < endpoint_until:
                 raise YahooEndpointUnavailable(
@@ -125,8 +127,8 @@ class YahooTransport:
                             self._public_session = self._factory(**options)
                         session = self._public_session
                     from .poll_trace import request_started
-                    event = request_started(method, url, 'yahoo_curl')
-                    response = await session.request(method, url, **kwargs)
+                    response = await self._send(session, method, url, **kwargs)
+                    event=getattr(response,'bus_request_event',None)
                     if event is not None:
                         from .schema import utc_now
                         event.update(response_received_at=utc_now().isoformat(), status_code=response.status_code)
@@ -144,8 +146,8 @@ class YahooTransport:
                         options = {**kwargs, "timeout": min(10, float(kwargs.get("timeout") or 30))}
                         from .poll_trace import request_started
                         from .schema import utc_now
-                        event = request_started(method, url, 'yahoo_curl')
-                        response = await self._route_sessions[key].request(method, url, **options)
+                        response = await self._send(self._route_sessions[key],method,url,**options)
+                        event=getattr(response,'bus_request_event',None)
                         if event is not None:
                             event.update(response_received_at=utc_now().isoformat(), status_code=response.status_code)
                         return response
@@ -192,6 +194,22 @@ class YahooTransport:
             if self._circuit_versions.get(rate_scope, 0) == version:
                 self._circuits.pop(rate_scope, None)
             return response
+
+    async def _send(self, session, method, url, **options):
+        identity=id(session)
+        self._session_active[identity]=self._session_active.get(identity,0)+1
+        try:
+            return await session.request(method,url,**options)
+        finally:
+            remaining=self._session_active[identity]-1
+            if remaining:self._session_active[identity]=remaining
+            else:self._session_active.pop(identity,None)
+            if getattr(session,'broken',False):
+                if self._session is session:self._session=None
+                if self._public_session is session:self._public_session=None
+                self._route_sessions={k:v for k,v in self._route_sessions.items() if v is not session}
+                if not remaining:
+                    await (getattr(session,'aclose',None) or session.close)()
 
     async def _close(self):
         if self._public_session is not None:

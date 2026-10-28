@@ -489,12 +489,12 @@ def inspect_reader(
     ]
     matching = [(i, h) for i, h in heads if expected_title and title_match(h, expected_title)]
     strategy = strategy_ref or legacy_strategy_ref(url)
-    if not matching and strategy in READER_HEADER_STRATEGIES:
+    if not matching and (strategy in READER_HEADER_STRATEGIES or strategy=='builtin:generic@1'):
         # These observed reader templates start directly with the article after their headers.
         title_header = next((line[7:].strip() for line in lines if line.startswith("Title: ")), "")
         marker = next((i for i, line in enumerate(lines) if line == "Markdown Content:"), None)
         source = next((line[12:].strip() for line in lines if line.startswith("URL Source: ")), "")
-        trusted_header = strategy != "builtin:benzinga@1" or source == url
+        trusted_header = strategy not in {'builtin:benzinga@1','builtin:generic@1'} or source == url
         if (
             marker is not None
             and expected_title

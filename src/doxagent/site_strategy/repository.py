@@ -9,6 +9,7 @@ import threading
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -29,9 +30,43 @@ from .schema import (
     utc_now,
 )
 from .storage import StorageMonitor, storage_failure
+_READ_SESSION = ContextVar("site_registry_read_session", default=None)
 
 
 class SiteStrategyRepository:
+    @property
+    def _connection(self):
+        scoped=_READ_SESSION.get()
+        return scoped[1] if scoped and scoped[0] is self else self._writer_connection
+
+    @_connection.setter
+    def _connection(self,value):
+        self._writer_connection=value
+
+    @property
+    def _lock(self):
+        scoped=_READ_SESSION.get()
+        return scoped[2] if scoped and scoped[0] is self else self._writer_lock
+
+    @_lock.setter
+    def _lock(self,value):
+        self._writer_lock=value
+
+    @contextmanager
+    def read_scope(self, *, seconds=3):
+        scoped=_READ_SESSION.get()
+        if scoped and scoped[0] is self:
+            yield
+            return
+        db=sqlite3.connect(self.path.resolve().as_uri()+"?mode=ro",uri=True,timeout=.1)
+        db.row_factory=sqlite3.Row
+        deadline=time.monotonic()+seconds
+        db.set_progress_handler(lambda:time.monotonic()>deadline,1000)
+        token=_READ_SESSION.set((self,db,threading.RLock()))
+        try:yield
+        finally:
+            _READ_SESSION.reset(token)
+            db.close()
     def __init__(self, path: str | Path, *, read_only: bool = False) -> None:
         self.path = Path(path)
         if not read_only:
@@ -189,6 +224,12 @@ class SiteStrategyRepository:
             from .governance_repository import migrate_governance
 
             migrate_governance(connection)
+            connection.execute("CREATE TABLE IF NOT EXISTS site_catalog_revision(id INTEGER PRIMARY KEY CHECK(id=1),revision INTEGER NOT NULL)")
+            connection.execute("INSERT OR IGNORE INTO site_catalog_revision VALUES(1,0)")
+            for table in ("site_strategy_heads","source_access_scopes"):
+                for event in ("INSERT","UPDATE","DELETE"):
+                    connection.execute(f"CREATE TRIGGER IF NOT EXISTS site_catalog_{table}_{event} AFTER {event} ON {table} "
+                        "BEGIN UPDATE site_catalog_revision SET revision=revision+1 WHERE id=1; END")
             from .retention import migrate_retention
 
             migrate_retention(connection)
@@ -500,13 +541,20 @@ class SiteStrategyRepository:
 
     def list_active_strategies(self) -> list[tuple[SiteStrategyHead, SiteStrategySpec]]:
         with self._lock:
+            has_revision=getattr(self,'_has_catalog_revision',None)
+            if has_revision is None:
+                has_revision=bool(self._connection.execute("SELECT 1 FROM sqlite_master WHERE name='site_catalog_revision'").fetchone())
+                self._has_catalog_revision=has_revision
+            generation=self._connection.execute("SELECT revision FROM site_catalog_revision WHERE id=1").fetchone()[0] if has_revision else None
+            cached=getattr(self,"_active_catalog",None)
+            if generation is not None and cached and cached[0]==generation:return cached[1]
             rows = self._connection.execute(
                 """select h.site_id,h.active_revision,h.enabled,h.updated_at,r.spec_json
                    from site_strategy_heads h join site_strategy_revisions r
                      on r.site_id=h.site_id and r.revision=h.active_revision
                    order by h.site_id"""
             ).fetchall()
-        return [
+        result = [
             (
                 SiteStrategyHead(
                     site_id=row["site_id"],
@@ -518,6 +566,8 @@ class SiteStrategyRepository:
             )
             for row in rows
         ]
+        self._active_catalog=(generation,result)
+        return result
 
     def list_revisions(self, site_id: str) -> list[dict[str, object]]:
         with self._lock:

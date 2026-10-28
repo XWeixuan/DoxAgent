@@ -61,6 +61,9 @@ class SecHttp:
             limits=httpx.Limits(max_connections=3, max_keepalive_connections=3),
         )
         self.owns_client = client is None
+        if self.owns_client:
+            from ..poll_trace import httpx_request
+            self.client.event_hooks['request'].append(httpx_request)
         self.lane = lane
         self.root = Path(
             rate_root
@@ -98,19 +101,13 @@ class SecHttp:
         parsed = urlsplit(url)
         if parsed.scheme != "https" or parsed.hostname not in {"www.sec.gov", "data.sec.gov"}:
             raise ValueError("sec_unapproved_url")
-        async with self.slots:
+        from ..publisher_http import http_budget
+        async with self.slots,http_budget('collector' if self.lane=='discovery' else 'body'):
             await asyncio.sleep(await asyncio.to_thread(self._reserve))
-            from ..poll_trace import request_started
             from ..schema import utc_now
-
-            event = request_started("GET", url, "sec_official_http")
             async with asyncio.timeout(20):
                 async with self.client.stream("GET", url, headers=headers or {}) as response:
-                    if event is not None:
-                        event.update(
-                            response_received_at=utc_now().isoformat(),
-                            status_code=response.status_code,
-                        )
+                    event=response.request.extensions.get('_bus_poll_event')
                     if response.status_code in {403, 429}:
                         delay = max(60, retry_after(response.headers.get("retry-after")) or 0)
                         await asyncio.to_thread(self._cooldown, delay)
@@ -120,6 +117,7 @@ class SecHttp:
                             retry_seconds=delay,
                         )
                     if response.status_code == 304:
+                        if event is not None:event.update(response_received_at=utc_now().isoformat(),status_code=304)
                         return response.status_code, dict(response.headers), b""
                     if response.status_code != 200:
                         raise SecHttpError(
@@ -132,6 +130,8 @@ class SecHttp:
                             raise SecHttpError("sec_document_size_limit")
                     if not data:
                         raise SecHttpError("sec_empty_response")
+                    if event is not None:event.update(response_received_at=utc_now().isoformat(),status_code=200,
+                        validators={k:v for k,v in response.headers.items() if k.lower() in {'date','age','etag','last-modified'}})
                     return 200, dict(response.headers), bytes(data)
 
     async def close(self):

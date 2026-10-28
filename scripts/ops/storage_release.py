@@ -338,6 +338,10 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
     allowed = ['Dockerfile.v2','.dockerignore','deploy','src','prompts','pyproject.toml',
                'uv.lock','README.md','dev_plan/workflow_v2/api_contract',
                'scripts/ops/migrate_source_access_scopes.py','frontend/v2']
+    probe='scripts/ops/message_bus_lean_acceptance.py'
+    if subprocess.run(['git','-C',str(repo),'cat-file','-e',commit+':'+probe],
+                      stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
+        allowed.append(probe)
     staging_root=root/'staging';staging_root.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=commit[:12]+'-',dir=staging_root) as temporary:
         context=Path(temporary)
@@ -567,9 +571,11 @@ def prepare_inputs(root, state):
     return receipt
 
 
-def release_components(root, state, repo, commit, components):
+def release_components(root, state, repo, commit, components, *, collection_migration=False):
     if not components:raise ValueError('release requires explicit --component selections')
     collection_cutover=('v2-message-collector' in components and 'v2-message-collector' not in state.get('components',{}))
+    if collection_migration and not {'v2-message-collector','v2-message-bus','v2-content-enrichment'}.issubset(components):
+        raise ValueError('collection schema upgrade requires Collector, Bus and BODY owners')
     if collection_cutover and not {'v2-message-bus','v2-content-enrichment'}.issubset(components):
         raise ValueError('initial collection cutover must include Bus and BODY owners')
     unknown=set(components)-set(state.get('components',{}))
@@ -598,7 +604,7 @@ def release_components(root, state, repo, commit, components):
             candidate.setdefault('environment',{})['DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED']='true'
         if kind=='guardian':candidate.setdefault('environment',{})['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=built['images']['repair-agent']['tag']
         candidate['schema']=current.get('schema');manifest['components'][component]=candidate
-    if collection_cutover:
+    if collection_cutover or collection_migration:
         # Cut over acquisition ownership once. Use the existing formal migration
         # service, never a one-off temporary runtime or an in-container code patch.
         override=root/'compose.current.json'
@@ -609,7 +615,9 @@ def release_components(root, state, repo, commit, components):
             'environment':{'DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED':'true'}}
         atomic(override,configuration)
         command=[*base,'-f',str(override)]
-        subprocess.run([*command,'stop','v2-message-bus','v2-content-enrichment'],check=True)
+        stop=['v2-message-bus','v2-content-enrichment']
+        if not collection_cutover:stop.insert(0,'v2-message-collector')
+        subprocess.run([*command,'stop',*stop],check=True)
         subprocess.run([*command,'up','-d','--no-deps','--no-build','--force-recreate','v2-migrate'],check=True)
         container=run([*command,'ps','-a','-q','v2-migrate'])
         exit_code=run(['docker','wait',container])
@@ -631,6 +639,8 @@ def main():
     parser.add_argument('--commit')
     parser.add_argument('--kind',action='append',choices=tuple(REPOSITORIES))
     parser.add_argument('--component',action='append')
+    parser.add_argument('--collection-migration',action='store_true',
+                        help='explicit bounded collection/lean schema upgrade before replacing the three message owners')
     parser.add_argument('--manifest',type=Path)
     parser.add_argument('--resume-dependencies',action='store_true',
                         help='resume a completed/cancelled dependency build from BuildKit cache; the write reserve still applies')
@@ -647,7 +657,8 @@ def main():
             result=build(args.repo,args.commit,args.root,args.kind or ['backend','site','supervisor'],resume_dependencies=args.resume_dependencies)
         elif args.command=='release':
             if not args.commit:parser.error('release requires an exact commit')
-            result=release_components(args.root,state,args.repo,args.commit,args.component)
+            result=release_components(args.root,state,args.repo,args.commit,args.component,
+                                      collection_migration=args.collection_migration)
         elif args.command=='prepare-inputs':result=prepare_inputs(args.root,state)
         elif args.command=='bootstrap':
             if state:raise ValueError('release state already exists')
