@@ -268,7 +268,9 @@ class LiveRepository:
                             item["hint"],
                             item["first_seen"],
                             item["ref"],
-                            "NOT_APPLICABLE" if rejected or baseline else "FETCH_DUE",
+                            "NOT_APPLICABLE"
+                            if (rejected or baseline) and not item.get("recheck")
+                            else "FETCH_DUE",
                             now,
                             item["title"],
                             item["observed"],
@@ -276,7 +278,8 @@ class LiveRepository:
                         ),
                     )
                 elif changed or (
-                    old["state"] == "NOT_APPLICABLE" and not rejected and not baseline
+                    old["state"] == "NOT_APPLICABLE"
+                    and (item.get("recheck") or (not rejected and not baseline))
                 ):
                     changed = True
                     db.execute(
@@ -380,8 +383,13 @@ class LiveRepository:
                             else "SUPPRESSED"
                             if baseline
                             else "PENDING"
-                            if old and old["result_ref"] and not changed and not (
-                                old['state'] in {'FETCH_DUE','FETCHING'} and old['work_kind']=='content_update')
+                            if old
+                            and old["result_ref"]
+                            and not changed
+                            and not (
+                                old["state"] in {"FETCH_DUE", "FETCHING"}
+                                and old["work_kind"] == "content_update"
+                            )
                             else "WAIT_BODY",
                             now,
                             now,

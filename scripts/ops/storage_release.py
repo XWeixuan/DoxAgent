@@ -617,6 +617,7 @@ def release_components(root, state, repo, commit, components, *, collection_migr
         command=[*base,'-f',str(override)]
         stop=['v2-message-bus','v2-content-enrichment']
         if not collection_cutover:stop.insert(0,'v2-message-collector')
+        stop += [c for c in ('v2-projector','v2-api') if c in components]
         subprocess.run([*command,'stop',*stop],check=True)
         subprocess.run([*command,'up','-d','--no-deps','--no-build','--force-recreate','v2-migrate'],check=True)
         container=run([*command,'ps','-a','-q','v2-migrate'])

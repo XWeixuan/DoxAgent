@@ -2330,3 +2330,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 ## 2026-10-29 既有Google规则的消息入口整合
 - 同步本地已存在的Google RSS公司主体查询及独立域名黑名单；新Bridge和旧兼容入口沿用同一规则，独立Yahoo源不受影响。相关规则回归通过，未覆盖或丢弃其它会话交易/UI开发。
+
+## 2026-10-29 Message Bus 上线边界复核
+- 已有Collector checkpoint的绑定不再于重启展开旧Native轮询历史；正式增量迁移同包停止所选API/Projector，避免旧投影器抢消费新契约。
+- 标题实质更正参与内容修订，正文未变也更新原消息；别名晚到不取消已有重要更新。旧未发布文章的到期recheck实际执行一次，仍保留原发布时效门禁，不把旧文重新发布。
+- 558项组合、72项语义及后续针对回归通过；最终启动/旧任务衔接15项通过。仍保留其它会话未提交工作；生产长期目标不据本地测试提前宣布达标。

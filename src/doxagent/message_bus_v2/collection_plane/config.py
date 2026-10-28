@@ -106,6 +106,14 @@ def load(settings, *, seeds=False):
 
     repo = MessageBusV2Repository(settings.message_bus_v2_sqlite_path, initialize=False)
     result = Configuration(at=utc_now().isoformat())
+    existing=set()
+    if seeds:
+        import sqlite3
+        from .store import path_for
+        acquisition=path_for(repo.path)
+        if acquisition.is_file():
+            with sqlite3.connect(acquisition.resolve().as_uri()+'?mode=ro',uri=True,timeout=.2) as acquisition_db:
+                existing={r[0] for r in acquisition_db.execute('SELECT DISTINCT binding_id FROM units')}
     # WAL read snapshot, never an initialization or heartbeat write.
     with repo.connection_scope() as db:
         db.execute("PRAGMA query_only=ON")
@@ -120,6 +128,8 @@ def load(settings, *, seeds=False):
         result.override = CollectionControl(repo).status()
         if seeds:
             for b in result.bindings.values():
+                if b.binding_id in existing:
+                    continue  # Already owned by Collector; do not hydrate obsolete Native poll state at restart.
                 result.seeds[b.binding_id] = repo.get_poll_state(b)
                 s = result.sources.get(b.source_id)
                 if s and s.source_id == "corporate_ir_press_releases":

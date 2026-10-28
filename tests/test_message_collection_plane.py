@@ -60,6 +60,22 @@ def test_production_switch_is_loaded_from_the_compose_environment(monkeypatch):
     assert DoxAgentSettings(_env_file=None).message_bus_v2_collection_plane_enabled
 
 
+def test_restart_uses_collector_checkpoint_without_hydrating_legacy_history(tmp_path,monkeypatch):
+    from doxagent.message_bus_v2.collection_plane.config import load
+    from doxagent.message_bus_v2.collection_plane.store import path_for
+    from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    repo,bus,_,_= _setup(tmp_path)
+    store=AcquisitionStore(path_for(repo.path),initialize=True)
+    for binding in repo.list_bindings(active_only=True):
+        source=repo.get_source(binding.source_id)
+        store.save_unit(source,binding,'HEAD',{'checkpoint':{'cursor':'owned'}},'stable',required=True)
+    def forbidden(*args,**kwargs):
+        raise AssertionError('restart hydrated obsolete legacy poll history')
+    monkeypatch.setattr(MessageBusV2Repository,'get_poll_state',forbidden)
+    settings=SimpleNamespace(message_bus_v2_sqlite_path=str(repo.path),persistent_runtime_v2_sqlite_path=str(tmp_path/'missing.db'))
+    assert load(settings,seeds=True).seeds=={}
+
+
 async def test_physical_units_have_distinct_stable_phases_without_losing_checkpoints(tmp_path):
     _, _, worker, _, _ = setup_plane(tmp_path)
     cfg = worker.config_loader()

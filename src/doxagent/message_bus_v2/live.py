@@ -250,7 +250,7 @@ class LiveQueue:
                         for row in rows
                     }
                 )
-            return self.repository.prepare_input(
+            prepared = self.repository.prepare_input(
                 job.source,
                 targets,
                 [job.message],
@@ -259,6 +259,19 @@ class LiveQueue:
                 bootstrap=job.bootstrap and job.work_kind != "recheck",
                 admission=job.message.admission_context,
             )
+            if job.work_kind == "recheck":
+                previous = (
+                    ArticleBodyResults(self.bus.repository).get(job.body_result_key)
+                    if job.body_result_key
+                    else None
+                )
+                for item in prepared:
+                    item["recheck"] = True
+                    item["kind"] = "recheck"
+                    if previous and previous.get("first_observed_at"):
+                        item["first_seen"] = previous["first_observed_at"]
+                        item["legacy_body_key"] = job.body_result_key
+            return prepared
 
         prepared = await self.bus.storage.prepare(prepare)
 

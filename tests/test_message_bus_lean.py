@@ -402,16 +402,20 @@ async def test_twenty_tickers_share_one_body_and_article_once_update(
         assert db.execute("SELECT count(*) FROM stream_items").fetchone()[0] == 20
         assert db.execute("SELECT count(*) FROM raw_messages").fetchone()[0] == 20
         assert db.execute("SELECT count(*) FROM message_content_revisions").fetchone()[0] == 40
-    corrected=message.model_copy(update={'title':'Corrected material headline'})
-    live.accept(live.prepare_input(source,targets,[corrected],observed_at=utc_now().isoformat(),unit='SHARED'))
-    owner=(await bus.live_queue.claim(1))[0]
-    fixed=updated.model_copy(update={'title':corrected.title})
-    await bus.live_queue.finish(owner,fixed)
-    assert await worker.run_available()==20
+    corrected = message.model_copy(update={"title": "Corrected material headline"})
+    live.accept(
+        live.prepare_input(
+            source, targets, [corrected], observed_at=utc_now().isoformat(), unit="SHARED"
+        )
+    )
+    owner = (await bus.live_queue.claim(1))[0]
+    fixed = updated.model_copy(update={"title": corrected.title})
+    await bus.live_queue.finish(owner, fixed)
+    assert await worker.run_available() == 20
     with repo._connect() as db:
-        assert db.execute('SELECT count(*) FROM stream_items').fetchone()[0]==20
-        assert db.execute('SELECT count(*) FROM message_content_revisions').fetchone()[0]==60
-    assert repo.get_standard(standard_id).title==corrected.title
+        assert db.execute("SELECT count(*) FROM stream_items").fetchone()[0] == 20
+        assert db.execute("SELECT count(*) FROM message_content_revisions").fetchone()[0] == 60
+    assert repo.get_standard(standard_id).title == corrected.title
     ordered = sorted(durations)
     record_property("writer_transactions", len(durations))
     record_property("writer_max_ms", max(durations))
@@ -629,29 +633,50 @@ async def test_resolved_wrapper_joins_existing_body_owner(tmp_path):
 
 
 async def test_late_alias_result_preserves_active_material_update(tmp_path):
-    from tests.test_content_enrichment_hub import _setup,_message
+    from tests.test_content_enrichment_hub import _setup, _message
     from doxagent.message_bus_v2.live import LiveQueue
     from doxagent.message_bus_v2.schema import utc_now
-    repo,bus,source,binding=_setup(tmp_path)
-    bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
-    direct=_message(195)
-    wrapped=direct.model_copy(update={'url':'https://news.google.com/rss/articles/late','external_id':'late'})
-    live.accept(live.prepare_input(source,[(binding.binding_id,'MU',0)],[direct,wrapped],
-        observed_at=utc_now().isoformat(),unit='HEAD'))
-    owners=await bus.live_queue.claim(2)
-    original=next(j for j in owners if j.message.url==direct.url)
-    alias=next(j for j in owners if j.message.url==wrapped.url)
+
+    repo, bus, source, binding = _setup(tmp_path)
+    bus.live_queue = LiveQueue(bus)
+    live = bus.live_queue.repository
+    direct = _message(195)
+    wrapped = direct.model_copy(
+        update={"url": "https://news.google.com/rss/articles/late", "external_id": "late"}
+    )
+    live.accept(
+        live.prepare_input(
+            source,
+            [(binding.binding_id, "MU", 0)],
+            [direct, wrapped],
+            observed_at=utc_now().isoformat(),
+            unit="HEAD",
+        )
+    )
+    owners = await bus.live_queue.claim(2)
+    original = next(j for j in owners if j.message.url == direct.url)
+    alias = next(j for j in owners if j.message.url == wrapped.url)
     with repo.transaction() as db:
-        db.execute("UPDATE live_articles SET work_kind='content_update' WHERE article_key=?",(original.article_id,))
-    completed=original.message.model_copy(update={'body':'Complete publisher body',
-        'metadata':{**original.message.metadata,'media_enrichment':{'succeeded':True,'outcome':'FULL'}}})
-    await bus.live_queue.finish(alias,completed)
-    target=live.get(original.article_id)
-    assert target['state']=='FETCHING' and target['claim_token']==original.claim_token
-    assert target['result_ref'] is None
-    assert live.pending_ids(['live:'+alias.article_id+':MU'])
-    await bus.live_queue.finish(original,completed)
-    assert live.get(original.article_id)['outcome']=='FULL'
+        db.execute(
+            "UPDATE live_articles SET work_kind='content_update' WHERE article_key=?",
+            (original.article_id,),
+        )
+    completed = original.message.model_copy(
+        update={
+            "body": "Complete publisher body",
+            "metadata": {
+                **original.message.metadata,
+                "media_enrichment": {"succeeded": True, "outcome": "FULL"},
+            },
+        }
+    )
+    await bus.live_queue.finish(alias, completed)
+    target = live.get(original.article_id)
+    assert target["state"] == "FETCHING" and target["claim_token"] == original.claim_token
+    assert target["result_ref"] is None
+    assert live.pending_ids(["live:" + alias.article_id + ":MU"])
+    await bus.live_queue.finish(original, completed)
+    assert live.get(original.article_id)["outcome"] == "FULL"
 
 
 async def test_unchanged_recheck_retains_result_ref_and_native_files(tmp_path):
@@ -784,3 +809,56 @@ def test_ibkr_news_wire_evidence_is_inside_socket_lock(monkeypatch):
     finally:
         _NEWS_SEND.reset(token)
         gateway._thread.join(1)
+
+
+async def test_old_unpublished_recheck_executes_once_without_publishing_expired_news(tmp_path):
+    from datetime import timedelta
+    from tests.test_content_enrichment_hub import _setup, _message, _GovernedExtractor
+    from doxagent.content_enrichment.schema import EnrichmentJob
+    from doxagent.content_enrichment.service import ContentEnrichmentHub
+    from doxagent.message_bus_v2.live import LiveQueue, LiveDeliveryWorker
+    from doxagent.message_bus_v2.schema import utc_now
+    import json
+
+    repo, bus, source, binding = _setup(tmp_path)
+    now = utc_now()
+    old = now - timedelta(days=2)
+    message = _message(197).model_copy(update={"published_at": old})
+    with repo.transaction() as db:
+        db.execute(
+            "INSERT INTO article_body_results VALUES(?,?,?,?,?)",
+            (
+                "legacy-recheck",
+                old.isoformat(),
+                "READY",
+                now.isoformat(),
+                json.dumps({"first_observed_at": old.isoformat()}),
+            ),
+        )
+    repo.enqueue_enrichment_job(
+        EnrichmentJob(
+            job_id="old-recheck",
+            intake_key="old-recheck",
+            poll_run_id="old",
+            source=source,
+            binding=binding,
+            message=message,
+            work_kind="recheck",
+            body_result_key="legacy-recheck",
+            not_before=now,
+            deadline_at=now + timedelta(seconds=180),
+        )
+    )
+    bus.live_queue = LiveQueue(bus)
+    hub = ContentEnrichmentHub(repo, bus, extractor=_GovernedExtractor())
+    assert await hub.run_once() == 1
+    with repo._connect() as db:
+        article = db.execute(
+            "SELECT state,outcome,first_seen_at,fetch_total FROM live_articles"
+        ).fetchone()
+        assert article["state"] == "READY" and article["outcome"] == "FULL"
+        assert article["first_seen_at"] == old.isoformat() and article["fetch_total"] == 1
+        assert db.execute("SELECT state FROM live_deliveries").fetchone()[0] == "ADMISSION_REJECTED"
+    assert await LiveDeliveryWorker(bus).run_available() == 0
+    assert repo.latest_stream_offset("MU") == 0
+    assert await hub.run_once() == 0
