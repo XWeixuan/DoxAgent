@@ -2338,3 +2338,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 ## 2026-10-29 Message Bus 过期候选减法
 - 过期且从未被接纳的候选在Native文件发布及文章建账前退出，仅保留已有持久化列表/delta与接纳ACK；旧已发布文章更新和旧recheck仍独立续作。过期大正文零Native写、旧未发布recheck实际执行及ARTICLE_ONCE针对回归通过。
+
+## 2026-10-29 Message Bus 上线快交付修正
+- 实测发现新稿FULL后的5个交付仍被旧本地工作阻挡119秒；正文领取、交付及L2候选改为新稿/重要更新优先，并保留每8轮旧工作机会。生产交付循环采用250ms时间片，避免一次32个旧文准备挡住后来新稿。
+- 通过质量、URL与权益/语言检查的旧Raw完整正文直接复用，正文证据中更早的首次观察时间沿用，避免旧文制造新稿cohort。旧队列40项、新稿优先、原发布复用和时间片针对测试通过；不将短样本FULL当成生产80%以上达标。

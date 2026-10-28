@@ -583,14 +583,20 @@ async def test_legacy_cross_source_keeps_publication_and_unchanged_revision(tmp_
     rows = live.prepare_input(
         source,
         [(binding.binding_id, "MU", 0)],
-        [original],
+        [original.model_copy(update={"body": None, "summary": "Discovery summary only"})],
         observed_at=utc_now().isoformat(),
         unit="HEAD",
     )
     live.accept(rows)
     assert live.get(rows[0]["key"])["first_seen_at"] == known.first_seen_at.isoformat()
-    job = (await bus.live_queue.claim(1))[0]
-    await bus.live_queue.finish(job, original)
+    from doxagent.content_enrichment.service import ContentEnrichmentHub
+
+    class NoFetch:
+        async def extract(self, record):
+            raise AssertionError("legacy FULL body was downloaded again")
+
+    assert await ContentEnrichmentHub(repo, bus, extractor=NoFetch()).run_once() == 1
+    assert live.get(rows[0]["key"])["cache_total"] == 1
     await LiveDeliveryWorker(bus).run_available()
     with repo._connect() as db:
         assert db.execute("SELECT count(*) FROM stream_items").fetchone()[0] == 1
@@ -894,3 +900,87 @@ def test_expired_unadmitted_input_does_not_publish_native_or_article_work(tmp_pa
     with repo._connect() as db:
         assert db.execute("SELECT count(*) FROM live_articles").fetchone()[0] == 0
         assert db.execute("SELECT count(*) FROM collection_acceptances").fetchone()[0] == 1
+
+
+async def test_new_article_bypasses_old_body_and_delivery_backlog(tmp_path):
+    from datetime import timedelta
+    from tests.test_content_enrichment_hub import _setup, _message
+    from tests.test_message_bus_v2_deduplication import BODY
+    from doxagent.message_bus_v2.live import LiveQueue, LiveDeliveryWorker
+    from doxagent.message_bus_v2.schema import utc_now
+
+    repo, bus, source, binding = _setup(tmp_path)
+    bus.live_queue = LiveQueue(bus)
+    live = bus.live_queue.repository
+    old = utc_now() - timedelta(days=1)
+    backlog = [
+        _message(3000 + i, body=BODY).model_copy(update={"published_at": old}) for i in range(40)
+    ]
+    live.accept(
+        live.prepare_input(
+            source,
+            [(binding.binding_id, "MU", 0)],
+            backlog,
+            observed_at=old.isoformat(),
+            unit="HEAD",
+        )
+    )
+    message = _message(4000, body=BODY)
+    new = live.prepare_input(
+        source,
+        [(binding.binding_id, "MU", 0)],
+        [message],
+        observed_at=utc_now().isoformat(),
+        unit="HEAD",
+    )
+    live.accept(new)
+    claim = (await bus.live_queue.claim(1, allow_background=False))[0]
+    assert claim.article_id == new[0]["key"]
+    with repo.transaction() as db:
+        db.execute(
+            "UPDATE live_articles SET state='READY',result_ref=input_ref,body_digest=article_key,revision=1,outcome='FULL',claim_token=NULL,lease_until=NULL"
+        )
+        db.execute("UPDATE live_deliveries SET state='PENDING'")
+        db.execute(
+            "UPDATE live_deliveries SET due_at=? WHERE article_key!=?",
+            (old.isoformat(), new[0]["key"]),
+        )
+    rows = live.deliveries()
+    assert rows[0]["article_key"] == new[0]["key"] and rows[0]["foreground"]
+    worker = LiveDeliveryWorker(bus)
+    assert await worker.run_available() == 2
+    with repo._connect() as db:
+        assert (
+            db.execute(
+                "SELECT state FROM live_deliveries WHERE article_key=?", (new[0]["key"],)
+            ).fetchone()[0]
+            == "PUBLISHED"
+        )
+        assert (
+            db.execute("SELECT count(*) FROM live_deliveries WHERE state='PUBLISHED'").fetchone()[0]
+            == 2
+        )
+
+
+async def test_delivery_time_slice_yields_before_a_new_article_arrives(tmp_path, monkeypatch):
+    from tests.test_content_enrichment_hub import _setup
+    from doxagent.message_bus_v2.live import LiveQueue, LiveDeliveryWorker
+
+    repo, bus, _, _ = _setup(tmp_path)
+    bus.live_queue = LiveQueue(bus)
+    worker = LiveDeliveryWorker(bus)
+    rows = [{"foreground": 1, "article_key": str(i), "ticker": "MU"} for i in range(32)]
+    monkeypatch.setattr(
+        worker.repository,
+        "deliveries",
+        lambda state="PENDING", **kw: rows if state == "PENDING" else [],
+    )
+    calls = []
+
+    async def slow(row):
+        calls.append(row["article_key"])
+        await asyncio.sleep(0.03)
+
+    monkeypatch.setattr(worker, "process", slow)
+    assert await worker.run_available(max_seconds=0.01) == 1
+    assert calls == ["0"]

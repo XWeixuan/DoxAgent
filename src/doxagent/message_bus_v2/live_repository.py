@@ -415,6 +415,7 @@ class LiveRepository:
     def claim(self, *, limit, background=False):
         now = utc_now()
         stamp = now.isoformat()
+        recent = (now - timedelta(minutes=30)).isoformat()
         claimed = []
         with self.bus._connect() as db:
             if background:
@@ -434,10 +435,10 @@ class LiveRepository:
                 )
             }
             publishers = db.execute(
-                "SELECT publisher,min(due_at) first_due FROM live_articles "
+                "SELECT publisher,min(due_at) first_due,max(first_seen_at) newest,max(first_seen_at>=? OR work_kind='content_update') urgent FROM live_articles "
                 "WHERE state='FETCH_DUE' AND due_at<=? AND (work_kind='recheck')=? "
-                "GROUP BY publisher ORDER BY first_due LIMIT 64",
-                (stamp, int(background)),
+                "GROUP BY publisher ORDER BY urgent DESC,newest DESC,first_due LIMIT 64",
+                (recent, stamp, int(background)),
             ).fetchall()
             rows = []
             for publisher in publishers:
@@ -445,8 +446,9 @@ class LiveRepository:
                 if available:
                     rows += db.execute(
                         "SELECT article_key,input_revision FROM live_articles WHERE state='FETCH_DUE' "
-                        "AND publisher=? AND due_at<=? AND (work_kind='recheck')=? ORDER BY due_at LIMIT ?",
-                        (publisher[0], stamp, int(background), available),
+                        "AND publisher=? AND due_at<=? AND (work_kind='recheck')=? "
+                        "ORDER BY (first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at LIMIT ?",
+                        (publisher[0], stamp, int(background), recent, available),
                     ).fetchall()
                 if len(rows) >= limit:
                     break
@@ -476,6 +478,13 @@ class LiveRepository:
         with self.bus._connect() as db:
             row = db.execute("SELECT * FROM live_articles WHERE article_key=?", (key,)).fetchone()
         return dict(row) if row else None
+
+    def adopt_first_seen(self, key, observed):
+        with self.bus.transaction() as db:
+            db.execute(
+                "UPDATE live_articles SET first_seen_at=? WHERE article_key=? AND first_seen_at>?",
+                (observed, key, observed),
+            )
 
     def renew(self, key, token):
         with self.bus.transaction() as db:
@@ -779,14 +788,21 @@ class LiveRepository:
                 )
         return len(rows)
 
-    def deliveries(self, state="PENDING", *, limit=32):
+    def deliveries(self, state="PENDING", *, limit=32, old_only=False):
+        now = utc_now()
+        recent = (now - timedelta(minutes=30)).isoformat()
         with self.bus._connect() as db:
             rows = db.execute(
-                "SELECT d.*,a.result_ref,a.input_ref,a.body_digest,a.revision,a.first_seen_at "
+                "SELECT d.*,a.result_ref,a.input_ref,a.body_digest,a.revision,a.first_seen_at,"
+                "(a.first_seen_at>=? OR a.work_kind='content_update') foreground "
                 "FROM live_deliveries d JOIN live_articles a USING(article_key) "
                 "WHERE d.state=? AND d.due_at<=? AND a.result_ref IS NOT NULL "
-                "ORDER BY d.due_at,d.article_key LIMIT ?",
-                (state, utc_now().isoformat(), limit),
+                + (
+                    "ORDER BY d.due_at,d.article_key LIMIT ?"
+                    if old_only
+                    else "ORDER BY foreground DESC,a.first_seen_at DESC,d.due_at,d.article_key LIMIT ?"
+                ),
+                (recent, state, now.isoformat(), limit),
             ).fetchall()
         return [dict(r) for r in rows]
 

@@ -89,6 +89,20 @@ class LiveQueue:
                 continue
             job = await self.bus.storage.prepare(self._job, key, revision, token)
             if job:
+                cached = job.result.get("live_cached") or {}
+                observed = cached.get("first_observed_at")
+                if observed and datetime.fromisoformat(observed) < job.created_at:
+                    await self.bus.storage.call(self.repository.adopt_first_seen, key, observed)
+                    job = job.model_copy(
+                        update={
+                            "created_at": datetime.fromisoformat(observed),
+                            "message": job.message.model_copy(
+                                update={"published_at": datetime.fromisoformat(observed)}
+                            )
+                            if job.message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
+                            else job.message,
+                        }
+                    )
                 jobs.append(job)
         return jobs
 
@@ -154,6 +168,36 @@ class LiveQueue:
                     value = ArticleBodyResults(self.bus.repository).get(old_key)
                     if value and ArticleBodyResults.compatible(value, message, source.source_id):
                         candidate = value
+                if not candidate and known and known.body:
+                    from doxagent.monitoring.media_enrichment import assess_media_body
+                    from doxagent.content_enrichment.quality import short_subscription_preview
+
+                    meta = known.metadata.get("media_enrichment", {})
+                    full = (
+                        meta.get("outcome") in {"FULL", "SHORT_FULL"}
+                        or known.metadata.get("content_evidence", {}).get("kind") == "FULL"
+                    )
+                    if (
+                        full
+                        and assess_media_body(known.body, known.title).complete_like
+                        and not short_subscription_preview(known.body)
+                    ):
+                        kind = (
+                            meta.get("outcome")
+                            if meta.get("outcome") in {"FULL", "SHORT_FULL"}
+                            else "FULL"
+                        )
+                        candidate = {
+                            "content": known.body,
+                            "outcome": kind,
+                            "diagnostics": {**meta, "outcome": kind},
+                            "final_url": known.url,
+                            "url": known.url,
+                            "acquired_at": meta.get("body_acquired_at")
+                            or known.collected_at.isoformat(),
+                            "execution_id": "legacy_raw:" + known.raw_message_id,
+                            "first_observed_at": known.first_seen_at.isoformat(),
+                        }
             if (
                 candidate
                 and candidate.get("content")
@@ -358,6 +402,7 @@ class LiveDeliveryWorker:
         self.active_articles = set()
         self.configuration_revision = None
         self.configuration_checked_at = 0
+        self.delivery_round = 0
 
     def start(self):
         if self.task is None:
@@ -489,7 +534,8 @@ class LiveDeliveryWorker:
         with self.bus.repository._connect() as db:
             return db.execute("SELECT revision FROM bus_configuration WHERE id=1").fetchone()[0]
 
-    async def run_available(self):
+    async def run_available(self, *, max_seconds=None):
+        started = time.monotonic()
         if time.monotonic() - self.configuration_checked_at >= 1:
             revision = await self.bus.storage.read(self._configuration_revision)
             if revision != self.configuration_revision:
@@ -506,6 +552,19 @@ class LiveDeliveryWorker:
                 if not task.cancelled() and task.exception():
                     log.error("live L2 continuation failed: %s", type(task.exception()).__name__)
         rows = await self.bus.storage.read(self.repository.deliveries)
+        self.delivery_round += 1
+        foreground = [r for r in rows if r["foreground"]]
+        background = [r for r in rows if not r["foreground"]]
+        if foreground and not background and self.delivery_round % 8 == 0:
+            background = await self.bus.storage.read(
+                self.repository.deliveries, old_only=True, limit=1
+            )
+            selected = {(r["article_key"], r["ticker"]) for r in foreground}
+            background = [r for r in background if (r["article_key"], r["ticker"]) not in selected]
+        # A loop filled with old local fanout must not hold a newly arrived
+        # article behind 32 full preparations. Keep one old item progressing.
+        rows = foreground + background[:1]
+        processed = 0
         for row in rows:
             try:
                 await self.process(row)
@@ -514,6 +573,9 @@ class LiveDeliveryWorker:
                 await self.bus.storage.call(
                     self.repository.decision, row, "PENDING", error=type(exc).__name__, retry=True
                 )
+            processed += 1
+            if max_seconds is not None and time.monotonic() - started >= max_seconds:
+                break
         if len(self.decisions) < 2:
             pending = await self.bus.storage.read(self.repository.deliveries, "L2_DUE")
             groups = defaultdict(list)
@@ -523,12 +585,12 @@ class LiveDeliveryWorker:
             for key, group in list(groups.items())[: 2 - len(self.decisions)]:
                 self.active_articles.add(key)
                 self.decisions.add(asyncio.create_task(self.classify(group)))
-        return len(rows)
+        return processed
 
     async def run(self):
         while True:
             try:
-                await self.run_available()
+                await self.run_available(max_seconds=0.25)
             except asyncio.CancelledError:
                 raise
             except Exception:
