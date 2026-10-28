@@ -118,6 +118,9 @@ class WorkerRuntimeFacade:
         # A detached controller is not a reason to leave an inactive native Chrome forever.
         live = self.runtime.workers.status()
         for identity in identities.values():
+            if (identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME
+                    or identity.identity_id in viewer_identities):
+                continue
             recovery = await registry_io(store.get_recovery, identity.identity_id)
             if (
                 recovery

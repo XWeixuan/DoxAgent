@@ -763,6 +763,8 @@ class SiteStrategyService:
         scopes = (await registry_io(GovernanceRepository(self.repository).list_scopes))
         hot = set()
         for scope in scopes:
+            if not scope.enabled or not scope.source_id:
+                continue
             primary = (await registry_io(self.repository.get_identity, scope.primary_identity_id))
             if (
                 scope.enabled
@@ -771,7 +773,16 @@ class SiteStrategyService:
             ):
                 route = (await registry_io(self.repository.get_runtime, f"scope:{scope.scope_id}"))
                 hot.add(route.active_combination_id or scope.primary_identity_id)
-        for head, identity in (await registry_io(self.repository.list_active_identities)):
+        candidates = []
+        if scopes:
+            for identity_id in hot:
+                head = await registry_io(self.repository.get_identity_head, identity_id)
+                identity = await registry_io(self.repository.get_identity, identity_id)
+                if head and identity:
+                    candidates.append((head, identity))
+        else:
+            candidates = await registry_io(self.repository.list_active_identities)
+        for head, identity in candidates:
             if (
                 not head.enabled
                 or not identity.enabled
@@ -935,14 +946,14 @@ class SiteStrategyService:
 
             driver_before = external.diagnostics() if maintenance_enabled() and external else None
             try:
+                await self.runtime.browser_runtimes.close_idle()
                 await self._prewarm_identities()
                 external = self.runtime.browser_runtimes.external
-                if external is not None:
+                if external is not None and not hasattr(self.runtime, "workers"):
                     external.rotation_paused = any(
                         profile.maintenance_session_id
                         for profile in self.repository.list_profiles()
                     )
-                await self.runtime.browser_runtimes.close_idle()
                 from doxagent.source_maintenance.runtime_signals import observe
 
                 observe(self, driver_before, external.diagnostics() if driver_before else None)
