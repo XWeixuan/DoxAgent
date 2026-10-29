@@ -1,0 +1,58 @@
+{
+  "collected_at": "2026-10-29T22:00:56.370971+00:00",
+  "window": {
+    "start": "2026-10-29T21:15:39.017039+00:00",
+    "end": "2026-10-29T22:00:39.017039+00:00",
+    "duration_seconds": 2700
+  },
+  "checks": [
+    {
+      "probe": "probe_interval.py",
+      "seconds": 1.3599999999860302,
+      "returncode": 0,
+      "bytes": 281049
+    },
+    {
+      "probe": "probe_t0.py",
+      "seconds": 2.297000000020489,
+      "returncode": 0,
+      "bytes": 73622
+    },
+    {
+      "probe": "probe_article_metadata.py",
+      "seconds": 1.25,
+      "returncode": 0,
+      "bytes": 71577
+    },
+    {
+      "probe": "probe_orchestration.py",
+      "seconds": 1.0929999999934807,
+      "returncode": 0,
+      "bytes": 386414
+    },
+    {
+      "probe": "probe_job_census.py",
+      "seconds": 1.0630000000819564,
+      "returncode": 0,
+      "bytes": 96126
+    },
+    {
+      "probe": "probe_site_stages.py",
+      "seconds": 1.9219999999040738,
+      "returncode": 0,
+      "bytes": 3216636
+    },
+    {
+      "probe": "export_cadence.py",
+      "seconds": 6.406000000075437,
+      "returncode": 0,
+      "bytes": 25170761
+    },
+    {
+      "probe": "export_schedule_heads.py",
+      "seconds": 1.9689999999245629,
+      "returncode": 0,
+      "bytes": 3968794
+    }
+  ]
+}

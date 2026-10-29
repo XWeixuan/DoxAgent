@@ -1,0 +1,1230 @@
+{
+  "all_terminal_attempts": {
+    "n": 19299,
+    "mean": 1.038902215192496,
+    "p50": 0.406579,
+    "p95": 3.856609,
+    "max": 64.007518
+  },
+  "physical_terminal_attempts": {
+    "n": 15208,
+    "mean": 1.1103292681483394,
+    "p50": 0.435814,
+    "p95": 4.009845,
+    "max": 64.007518
+  },
+  "dispatch_overdue_seconds": {
+    "n": 19310,
+    "mean": 0.1008793216468157,
+    "p50": 0.057536,
+    "p95": 0.133625,
+    "max": 13.981725
+  },
+  "unfinished_at_cutoff": 11,
+  "sources": {
+    "ctee_semiconductor": {
+      "n": 90,
+      "mean": 2.167974044444444,
+      "p50": 1.181926,
+      "p95": 9.746131,
+      "max": 15.290135
+    },
+    "yahoo_finance_news": {
+      "n": 1714,
+      "mean": 1.2334243360560082,
+      "p50": 0.783558,
+      "p95": 2.354069,
+      "max": 35.404212
+    },
+    "reuters_site_search": {
+      "n": 1753,
+      "mean": 2.938383889903021,
+      "p50": 2.960071,
+      "p95": 5.100171,
+      "max": 13.422505
+    },
+    "enterprise_apps_official_rss": {
+      "n": 135,
+      "mean": 0.9207756518518516,
+      "p50": 0.597916,
+      "p95": 2.00356,
+      "max": 2.149054
+    },
+    "finnhub_company_news": {
+      "n": 450,
+      "mean": 0.678948871111111,
+      "p50": 0.532303,
+      "p95": 1.393856,
+      "max": 5.770257
+    },
+    "globenewswire_search": {
+      "n": 1125,
+      "mean": 0.45114203022222216,
+      "p50": 0.420605,
+      "p95": 0.902606,
+      "max": 3.787053
+    },
+    "siliconangle_software": {
+      "n": 135,
+      "mean": 0.3598761037037037,
+      "p50": 0.269546,
+      "p95": 0.678176,
+      "max": 4.668656
+    },
+    "corporate_ir_press_releases": {
+      "n": 1080,
+      "mean": 0.28078226574074083,
+      "p50": 0.233155,
+      "p95": 0.659655,
+      "max": 8.061988
+    },
+    "newswire_rss": {
+      "n": 630,
+      "mean": 1.1101247190476187,
+      "p50": 0.348544,
+      "p95": 6.547899,
+      "max": 10.007348
+    },
+    "benzinga_news": {
+      "n": 450,
+      "mean": 0.8093804377777777,
+      "p50": 0.508628,
+      "p95": 1.565785,
+      "max": 11.208264
+    },
+    "power_magazine_energy": {
+      "n": 405,
+      "mean": 0.32182681481481473,
+      "p50": 0.232028,
+      "p95": 0.740072,
+      "max": 5.716908
+    },
+    "sec_edgar": {
+      "n": 855,
+      "mean": 0.15794126315789472,
+      "p50": 0.038571,
+      "p95": 0.361515,
+      "max": 7.707874
+    },
+    "barrons_ticker_news": {
+      "n": 899,
+      "mean": 0.5421049810901003,
+      "p50": 0.406709,
+      "p95": 0.98807,
+      "max": 8.422531
+    },
+    "power_engineering_energy": {
+      "n": 315,
+      "mean": 0.29159447619047646,
+      "p50": 0.231225,
+      "p95": 0.404395,
+      "max": 4.392042
+    },
+    "utility_dive": {
+      "n": 90,
+      "mean": 0.24208188888888887,
+      "p50": 0.231513,
+      "p95": 0.289338,
+      "max": 0.396806
+    },
+    "ionq_quantum_actors_rss": {
+      "n": 135,
+      "mean": 0.4670403407407406,
+      "p50": 0.265149,
+      "p95": 1.015536,
+      "max": 4.536364
+    },
+    "investorshub_ticker_news": {
+      "n": 449,
+      "mean": 4.56303634298441,
+      "p50": 4.174153,
+      "p95": 6.754846,
+      "max": 45.004859
+    },
+    "ibkr_news": {
+      "n": 446,
+      "mean": 3.276177910313901,
+      "p50": 0.556221,
+      "p95": 30.303728,
+      "max": 64.007518
+    },
+    "dcd_infrastructure_rss": {
+      "n": 270,
+      "mean": 0.2555322666666668,
+      "p50": 0.231984,
+      "p95": 0.325552,
+      "max": 0.787765
+    },
+    "venturebeat_software": {
+      "n": 135,
+      "mean": 0.08091901481481481,
+      "p50": 0.029601,
+      "p95": 0.176622,
+      "max": 3.077823
+    },
+    "ionq_nautilus_rss": {
+      "n": 45,
+      "mean": 0.2034261111111111,
+      "p50": 0.135979,
+      "p95": 0.534815,
+      "max": 0.570737
+    },
+    "thefly_ticker_news": {
+      "n": 405,
+      "mean": 0.8214075283950614,
+      "p50": 0.627926,
+      "p95": 2.388367,
+      "max": 8.003966
+    },
+    "investing_ticker_news": {
+      "n": 449,
+      "mean": 1.5763432004454339,
+      "p50": 1.309009,
+      "p95": 3.086362,
+      "max": 14.817196
+    },
+    "calcalist_search": {
+      "n": 135,
+      "mean": 0.7063951481481482,
+      "p50": 0.724015,
+      "p95": 1.006279,
+      "max": 3.964521
+    },
+    "aws_platform_marketplace_rss": {
+      "n": 135,
+      "mean": 0.3191903777777779,
+      "p50": 0.246708,
+      "p95": 0.668548,
+      "max": 2.294841
+    },
+    "register_software_cloud_security": {
+      "n": 135,
+      "mean": 0.3580368148148148,
+      "p50": 0.293418,
+      "p95": 0.457535,
+      "max": 4.293175
+    },
+    "technews_hardware": {
+      "n": 450,
+      "mean": 0.05556051111111112,
+      "p50": 0.019496,
+      "p95": 0.081888,
+      "max": 2.15691
+    },
+    "doe_energy_news": {
+      "n": 315,
+      "mean": 0.22072736190476183,
+      "p50": 0.157532,
+      "p95": 0.28176,
+      "max": 4.541478
+    },
+    "nrc_event_notifications": {
+      "n": 45,
+      "mean": 0.20536104444444445,
+      "p50": 0.073152,
+      "p95": 0.630638,
+      "max": 3.098653
+    },
+    "aviationweek_rss": {
+      "n": 45,
+      "mean": 0.9137402666666669,
+      "p50": 0.536974,
+      "p95": 1.880621,
+      "max": 5.180919
+    },
+    "nbis_official_actor_rss": {
+      "n": 90,
+      "mean": 0.6163687,
+      "p50": 0.615392,
+      "p95": 1.565359,
+      "max": 1.872684
+    },
+    "aviationweek_rocketlab": {
+      "n": 45,
+      "mean": 0.5975419555555556,
+      "p50": 0.337957,
+      "p95": 1.04114,
+      "max": 4.030051
+    },
+    "dod_releases": {
+      "n": 90,
+      "mean": 0.3733785111111111,
+      "p50": 0.27673,
+      "p95": 0.443536,
+      "max": 3.376401
+    },
+    "crn_cloud_security_datacenter": {
+      "n": 135,
+      "mean": 0.1298115407407407,
+      "p50": 0.066087,
+      "p95": 0.281538,
+      "max": 3.491304
+    },
+    "shephard_uncrewed": {
+      "n": 45,
+      "mean": 1.9144587777777777,
+      "p50": 1.665775,
+      "p95": 3.11478,
+      "max": 5.758753
+    },
+    "wccftech_hardware": {
+      "n": 675,
+      "mean": 0.30105080740740653,
+      "p50": 0.245293,
+      "p95": 0.580236,
+      "max": 3.044952
+    },
+    "dcd_energy_ticker": {
+      "n": 90,
+      "mean": 0.27994597777777774,
+      "p50": 0.227893,
+      "p95": 0.344806,
+      "max": 2.698383
+    },
+    "ans_nuclear_newswire": {
+      "n": 45,
+      "mean": 1.1693254666666666,
+      "p50": 1.029103,
+      "p95": 1.934442,
+      "max": 3.585913
+    },
+    "observability_vendors_official_rss": {
+      "n": 90,
+      "mean": 0.3702665,
+      "p50": 0.382334,
+      "p95": 0.709038,
+      "max": 1.602935
+    },
+    "canary_media": {
+      "n": 90,
+      "mean": 0.24210506666666667,
+      "p50": 0.125064,
+      "p95": 0.391634,
+      "max": 4.311386
+    },
+    "thelec_semiconductors_rss": {
+      "n": 225,
+      "mean": 0.4543877333333333,
+      "p50": 0.352157,
+      "p95": 0.548737,
+      "max": 4.331816
+    },
+    "lakehouse_platform_official_rss": {
+      "n": 90,
+      "mean": 0.6501891222222224,
+      "p50": 0.842296,
+      "p95": 1.115284,
+      "max": 4.211888
+    },
+    "etnews_rss": {
+      "n": 225,
+      "mean": 0.557780222222222,
+      "p50": 0.470237,
+      "p95": 0.649193,
+      "max": 4.182679
+    },
+    "sdxcentral_news": {
+      "n": 225,
+      "mean": 0.24566735555555577,
+      "p50": 0.10593,
+      "p95": 1.13429,
+      "max": 2.883785
+    },
+    "google_news_search_rss": {
+      "n": 90,
+      "mean": 0.24468502222222227,
+      "p50": 0.187613,
+      "p95": 0.541782,
+      "max": 2.663322
+    },
+    "world_nuclear_news": {
+      "n": 45,
+      "mean": 0.34387979999999996,
+      "p50": 0.21614,
+      "p95": 0.524832,
+      "max": 2.950918
+    },
+    "digitimes_semiconductors": {
+      "n": 225,
+      "mean": 1.1738719111111104,
+      "p50": 0.779426,
+      "p95": 1.954911,
+      "max": 9.138867
+    },
+    "defensescoop_drones": {
+      "n": 45,
+      "mean": 0.5869548666666666,
+      "p50": 0.522394,
+      "p95": 0.63405,
+      "max": 2.663424
+    },
+    "optical_systems_official_rss": {
+      "n": 45,
+      "mean": 0.13298333333333334,
+      "p50": 0.058166,
+      "p95": 0.308272,
+      "max": 2.042697
+    },
+    "siliconangle_ai": {
+      "n": 225,
+      "mean": 0.4125425111111106,
+      "p50": 0.317158,
+      "p95": 0.659264,
+      "max": 2.64246
+    },
+    "airspaceforces_space": {
+      "n": 45,
+      "mean": 0.06967757777777778,
+      "p50": 0.017462,
+      "p95": 0.096042,
+      "max": 1.91738
+    },
+    "nrc_news_releases": {
+      "n": 45,
+      "mean": 0.10985804444444446,
+      "p50": 0.035659,
+      "p95": 0.342026,
+      "max": 1.066155
+    },
+    "defensescoop_space": {
+      "n": 45,
+      "mean": 0.05639837777777777,
+      "p50": 0.039786,
+      "p95": 0.198332,
+      "max": 0.363788
+    },
+    "breakingdefense_space": {
+      "n": 45,
+      "mean": 0.31098344444444437,
+      "p50": 0.256446,
+      "p95": 0.43926,
+      "max": 0.966606
+    },
+    "national_quantum_initiative": {
+      "n": 45,
+      "mean": 0.22949775555555554,
+      "p50": 0.030824,
+      "p95": 1.589352,
+      "max": 2.188913
+    },
+    "army_news_rss": {
+      "n": 45,
+      "mean": 0.4854622000000001,
+      "p50": 0.250992,
+      "p95": 0.36492,
+      "max": 6.102591
+    },
+    "darpa_news": {
+      "n": 225,
+      "mean": 0.526708066666667,
+      "p50": 0.216389,
+      "p95": 1.594,
+      "max": 6.002162
+    },
+    "digitimes_tw_rss": {
+      "n": 225,
+      "mean": 4.473069577777779,
+      "p50": 1.832909,
+      "p95": 12.012089,
+      "max": 12.079183
+    },
+    "globenewswire_semiconductors_rss": {
+      "n": 225,
+      "mean": 1.424215422222222,
+      "p50": 1.089335,
+      "p95": 2.801412,
+      "max": 11.008533
+    },
+    "tomshardware_rss": {
+      "n": 225,
+      "mean": 1.092349511111112,
+      "p50": 1.055632,
+      "p95": 1.334111,
+      "max": 1.492127
+    },
+    "venturebeat_ai": {
+      "n": 225,
+      "mean": 0.053582933333333256,
+      "p50": 0.032801,
+      "p95": 0.2,
+      "max": 0.253725
+    },
+    "dod_contracts": {
+      "n": 90,
+      "mean": 0.07898557777777777,
+      "p50": 0.060805,
+      "p95": 0.182669,
+      "max": 0.325753
+    },
+    "data_center_frontier": {
+      "n": 270,
+      "mean": 0.28465637777777825,
+      "p50": 0.24972,
+      "p95": 0.441965,
+      "max": 0.798089
+    },
+    "ssc_newsroom": {
+      "n": 45,
+      "mean": 0.5005615555555555,
+      "p50": 0.233274,
+      "p95": 0.507777,
+      "max": 5.756482
+    },
+    "trendforce_news": {
+      "n": 225,
+      "mean": 0.14829555555555546,
+      "p50": 0.108734,
+      "p95": 0.343127,
+      "max": 0.433852
+    },
+    "unmannedairspace_counteruas": {
+      "n": 45,
+      "mean": 1.1666176888888888,
+      "p50": 0.6926,
+      "p95": 4.057562,
+      "max": 7.025429
+    },
+    "iridium_press_releases": {
+      "n": 45,
+      "mean": 0.09076419999999999,
+      "p50": 0.064248,
+      "p95": 0.210287,
+      "max": 0.45014
+    },
+    "spacenews_rss": {
+      "n": 45,
+      "mean": 0.7605228666666667,
+      "p50": 0.80207,
+      "p95": 0.915922,
+      "max": 1.198333
+    },
+    "trendforce_press_releases": {
+      "n": 225,
+      "mean": 0.2887247111111111,
+      "p50": 0.234778,
+      "p95": 0.574114,
+      "max": 0.854745
+    },
+    "huggingnews_rss": {
+      "n": 220,
+      "mean": 4.114260181818179,
+      "p50": 1.165384,
+      "p95": 12.03597,
+      "max": 12.03924
+    },
+    "nasa_2026_releases": {
+      "n": 45,
+      "mean": 0.14412973333333332,
+      "p50": 0.118748,
+      "p95": 0.37832,
+      "max": 0.573586
+    },
+    "army_news_releases": {
+      "n": 45,
+      "mean": 0.32153995555555553,
+      "p50": 0.276815,
+      "p95": 0.56954,
+      "max": 0.728496
+    },
+    "spacecom_launches": {
+      "n": 45,
+      "mean": 0.3933838222222222,
+      "p50": 0.367075,
+      "p95": 0.83148,
+      "max": 0.960922
+    },
+    "tikhub_x_user_posts": {
+      "n": 4,
+      "mean": 3.1499699999999997,
+      "p50": 3.009785,
+      "p95": 3.683625,
+      "max": 3.683625
+    }
+  },
+  "status_reasons": [
+    {
+      "source": "ctee_semiconductor",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 64
+    },
+    {
+      "source": "yahoo_finance_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1584
+    },
+    {
+      "source": "reuters_site_search",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1455
+    },
+    {
+      "source": "enterprise_apps_official_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 135
+    },
+    {
+      "source": "finnhub_company_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 449
+    },
+    {
+      "source": "globenewswire_search",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1119
+    },
+    {
+      "source": "siliconangle_software",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 135
+    },
+    {
+      "source": "corporate_ir_press_releases",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1079
+    },
+    {
+      "source": "newswire_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 616
+    },
+    {
+      "source": "benzinga_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 450
+    },
+    {
+      "source": "power_magazine_energy",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 405
+    },
+    {
+      "source": "sec_edgar",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 853
+    },
+    {
+      "source": "barrons_ticker_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 896
+    },
+    {
+      "source": "power_engineering_energy",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 315
+    },
+    {
+      "source": "utility_dive",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "reuters_site_search",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 246
+    },
+    {
+      "source": "ionq_quantum_actors_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 135
+    },
+    {
+      "source": "investorshub_ticker_news",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 7
+    },
+    {
+      "source": "ibkr_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 15
+    },
+    {
+      "source": "dcd_infrastructure_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 270
+    },
+    {
+      "source": "venturebeat_software",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 135
+    },
+    {
+      "source": "ionq_nautilus_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "thefly_ticker_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 399
+    },
+    {
+      "source": "investing_ticker_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 446
+    },
+    {
+      "source": "calcalist_search",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 57
+    },
+    {
+      "source": "aws_platform_marketplace_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 135
+    },
+    {
+      "source": "register_software_cloud_security",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 135
+    },
+    {
+      "source": "technews_hardware",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 450
+    },
+    {
+      "source": "doe_energy_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 315
+    },
+    {
+      "source": "nrc_event_notifications",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "aviationweek_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "investorshub_ticker_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 439
+    },
+    {
+      "source": "nbis_official_actor_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "aviationweek_rocketlab",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "dod_releases",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "crn_cloud_security_datacenter",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 135
+    },
+    {
+      "source": "shephard_uncrewed",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "wccftech_hardware",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 675
+    },
+    {
+      "source": "dcd_energy_ticker",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "ans_nuclear_newswire",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "observability_vendors_official_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "canary_media",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "thelec_semiconductors_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "lakehouse_platform_official_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "etnews_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 220
+    },
+    {
+      "source": "sdxcentral_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "google_news_search_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "world_nuclear_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "digitimes_semiconductors",
+      "status": "FAILED",
+      "reason": "SiteAccessError",
+      "n": 65
+    },
+    {
+      "source": "defensescoop_drones",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "optical_systems_official_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "siliconangle_ai",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "airspaceforces_space",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "nrc_news_releases",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "defensescoop_space",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "breakingdefense_space",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "national_quantum_initiative",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "army_news_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "darpa_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "digitimes_tw_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 165
+    },
+    {
+      "source": "globenewswire_semiconductors_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "tomshardware_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "venturebeat_ai",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "dod_contracts",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 90
+    },
+    {
+      "source": "data_center_frontier",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 270
+    },
+    {
+      "source": "ssc_newsroom",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "trendforce_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "unmannedairspace_counteruas",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "iridium_press_releases",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "spacenews_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 31
+    },
+    {
+      "source": "trendforce_press_releases",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 225
+    },
+    {
+      "source": "huggingnews_rss",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 155
+    },
+    {
+      "source": "nasa_2026_releases",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "army_news_releases",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "spacecom_launches",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 45
+    },
+    {
+      "source": "reuters_site_search",
+      "status": "FAILED",
+      "reason": "UNPROVEN_LISTING",
+      "n": 34
+    },
+    {
+      "source": "ibkr_news",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 7
+    },
+    {
+      "source": "thefly_ticker_news",
+      "status": "FAILED",
+      "reason": "ValueError",
+      "n": 1
+    },
+    {
+      "source": "reuters_site_search",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 5
+    },
+    {
+      "source": "finnhub_company_news",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1
+    },
+    {
+      "source": "yahoo_finance_news",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 2
+    },
+    {
+      "source": "sec_edgar",
+      "status": "FAILED",
+      "reason": "UNPROVEN_LISTING",
+      "n": 2
+    },
+    {
+      "source": "ibkr_news",
+      "status": "FAILED",
+      "reason": "RuntimeError",
+      "n": 2
+    },
+    {
+      "source": "digitimes_semiconductors",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 160
+    },
+    {
+      "source": "ibkr_news",
+      "status": "FAILED",
+      "reason": "UNPROVEN_LISTING",
+      "n": 56
+    },
+    {
+      "source": "thefly_ticker_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 5
+    },
+    {
+      "source": "investorshub_ticker_news",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1
+    },
+    {
+      "source": "newswire_rss",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1
+    },
+    {
+      "source": "etnews_rss",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 5
+    },
+    {
+      "source": "ibkr_news",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 366
+    },
+    {
+      "source": "tikhub_x_user_posts",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 4
+    },
+    {
+      "source": "yahoo_finance_news",
+      "status": "FAILED",
+      "reason": "UNPROVEN_LISTING",
+      "n": 4
+    },
+    {
+      "source": "reuters_site_search",
+      "status": "FAILED",
+      "reason": "search_query_failed",
+      "n": 13
+    },
+    {
+      "source": "globenewswire_search",
+      "status": "FAILED",
+      "reason": "ConnectError",
+      "n": 6
+    },
+    {
+      "source": "investing_ticker_news",
+      "status": "FAILED",
+      "reason": "ConnectError",
+      "n": 2
+    },
+    {
+      "source": "barrons_ticker_news",
+      "status": "FAILED",
+      "reason": "ConnectError",
+      "n": 4
+    },
+    {
+      "source": "ctee_semiconductor",
+      "status": "FAILED",
+      "reason": "ConnectError",
+      "n": 2
+    },
+    {
+      "source": "yahoo_finance_news",
+      "status": "FAILED",
+      "reason": "browser_coverage_pending",
+      "n": 4
+    },
+    {
+      "source": "investorshub_ticker_news",
+      "status": "FAILED",
+      "reason": "ConnectError",
+      "n": 2
+    },
+    {
+      "source": "yahoo_finance_news",
+      "status": "FAILED",
+      "reason": "access_budget_exhausted",
+      "n": 1
+    },
+    {
+      "source": "investing_ticker_news",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 2
+    },
+    {
+      "source": "investorshub_ticker_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source": "calcalist_search",
+      "status": "FAILED",
+      "reason": "RuntimeError",
+      "n": 78
+    },
+    {
+      "source": "corporate_ir_press_releases",
+      "status": "FAILED",
+      "reason": "ReadTimeout",
+      "n": 1
+    },
+    {
+      "source": "reuters_site_search",
+      "status": "CAPTURED",
+      "reason": "site_queue_timeout",
+      "n": 1
+    },
+    {
+      "source": "spacenews_rss",
+      "status": "FAILED",
+      "reason": "RuntimeError",
+      "n": 14
+    },
+    {
+      "source": "huggingnews_rss",
+      "status": "FAILED",
+      "reason": "ConnectError",
+      "n": 5
+    },
+    {
+      "source": "newswire_rss",
+      "status": "FAILED",
+      "reason": "ConnectError",
+      "n": 2
+    },
+    {
+      "source": "huggingnews_rss",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 65
+    },
+    {
+      "source": "ctee_semiconductor",
+      "status": "FAILED",
+      "reason": "SiteAccessError",
+      "n": 24
+    },
+    {
+      "source": "digitimes_tw_rss",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 60
+    },
+    {
+      "source": "newswire_rss",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 11
+    },
+    {
+      "source": "yahoo_finance_news",
+      "status": "FAILED",
+      "reason": "RuntimeError",
+      "n": 88
+    },
+    {
+      "source": "yahoo_finance_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 33
+    }
+  ]
+}

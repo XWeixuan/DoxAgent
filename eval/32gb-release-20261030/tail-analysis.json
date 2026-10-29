@@ -1,0 +1,1665 @@
+{
+  "samples": 29,
+  "since": "2026-10-29T21:32:48.271618+00:00",
+  "until": "2026-10-29T22:00:39.064499+00:00",
+  "elapsed_seconds": 1670.792913323,
+  "available_MiB": {
+    "min": 14164.9140625,
+    "max": 17794.48828125,
+    "mean": 15880.371363146553,
+    "last": 16784.83203125
+  },
+  "swap_used_MiB": {
+    "min": 0.00390625,
+    "max": 0.24609375,
+    "mean": 0.16514008620689655,
+    "last": 0.24609375
+  },
+  "roles": {
+    "/doxagent-v2-codex-worker-1": {
+      "current_MiB": {
+        "min": 2681.86328125,
+        "max": 4839.03515625,
+        "mean": 3648.4799299568967,
+        "last": 3374.80859375
+      },
+      "anon_MiB": {
+        "min": 1460.55859375,
+        "max": 4083.88671875,
+        "mean": 2726.0309806034484,
+        "last": 2129.4296875
+      },
+      "file_MiB": {
+        "min": 546.35546875,
+        "max": 1186.4375,
+        "mean": 852.6227101293103,
+        "last": 1186.4375
+      },
+      "working_set_MiB": {
+        "min": 1574.13671875,
+        "max": 4192.1953125,
+        "mean": 2845.334994612069,
+        "last": 2252.82421875
+      },
+      "pids": {
+        "min": 163,
+        "max": 1080,
+        "mean": 619.1724137931035,
+        "last": 353
+      }
+    },
+    "/doxagent-v2-v2-site-access-1": {
+      "current_MiB": {
+        "min": 2271.42578125,
+        "max": 4680.35546875,
+        "mean": 3685.851697198276,
+        "last": 4307.2578125
+      },
+      "anon_MiB": {
+        "min": 2106.703125,
+        "max": 3735.4453125,
+        "mean": 3057.8844288793102,
+        "last": 3284.02734375
+      },
+      "file_MiB": {
+        "min": 95.1796875,
+        "max": 849.73046875,
+        "mean": 499.51144935344826,
+        "last": 849.73046875
+      },
+      "working_set_MiB": {
+        "min": 2236.58984375,
+        "max": 4395.25,
+        "mean": 3499.634698275862,
+        "last": 4009.44140625
+      },
+      "pids": {
+        "min": 390,
+        "max": 944,
+        "mean": 677.2413793103449,
+        "last": 772
+      }
+    },
+    "/doxagent-v2-v2-chrome-supervisor-1": {
+      "current_MiB": {
+        "min": 3976.36328125,
+        "max": 5533.5390625,
+        "mean": 4672.5631734913795,
+        "last": 4305.14453125
+      },
+      "anon_MiB": {
+        "min": 2603.35546875,
+        "max": 3978.703125,
+        "mean": 3198.7485183189656,
+        "last": 2865.91796875
+      },
+      "file_MiB": {
+        "min": 1130.984375,
+        "max": 1303.79296875,
+        "mean": 1227.1557112068965,
+        "last": 1203.6640625
+      },
+      "working_set_MiB": {
+        "min": 3491.03515625,
+        "max": 5029.62109375,
+        "mean": 4130.042429956897,
+        "last": 3718.20703125
+      },
+      "pids": {
+        "min": 1326,
+        "max": 1707,
+        "mean": 1493.9310344827586,
+        "last": 1385
+      }
+    },
+    "/doxagent-v2-v2-scheduler-1": {
+      "current_MiB": {
+        "min": 1570.94921875,
+        "max": 2197.80078125,
+        "mean": 1981.5941540948277,
+        "last": 2095.5
+      },
+      "anon_MiB": {
+        "min": 1178.95703125,
+        "max": 1473.98046875,
+        "mean": 1310.2742456896551,
+        "last": 1202.81640625
+      },
+      "file_MiB": {
+        "min": 355.09765625,
+        "max": 848.2421875,
+        "mean": 633.2303340517242,
+        "last": 848.2421875
+      },
+      "working_set_MiB": {
+        "min": 1215.8515625,
+        "max": 1513.61328125,
+        "mean": 1348.3714978448277,
+        "last": 1247.2578125
+      },
+      "pids": {
+        "min": 72,
+        "max": 117,
+        "mean": 91.72413793103448,
+        "last": 78
+      }
+    },
+    "/doxagent-v2-v2-message-collector-1": {
+      "current_MiB": {
+        "min": 285.09765625,
+        "max": 437.49609375,
+        "mean": 360.5522629310345,
+        "last": 437.49609375
+      },
+      "anon_MiB": {
+        "min": 266.140625,
+        "max": 317.3203125,
+        "mean": 293.4334590517241,
+        "last": 299.9140625
+      },
+      "file_MiB": {
+        "min": 13.71875,
+        "max": 129.8359375,
+        "mean": 60.56775323275862,
+        "last": 129.8359375
+      },
+      "working_set_MiB": {
+        "min": 271.40234375,
+        "max": 325.703125,
+        "mean": 300.9942079741379,
+        "last": 309.296875
+      },
+      "pids": {
+        "min": 25,
+        "max": 26,
+        "mean": 25.103448275862068,
+        "last": 25
+      }
+    },
+    "/doxagent-v2-v2-message-bus-1": {
+      "current_MiB": {
+        "min": 177.03125,
+        "max": 201.765625,
+        "mean": 191.11597521551724,
+        "last": 201.765625
+      },
+      "anon_MiB": {
+        "min": 136.95703125,
+        "max": 147.77734375,
+        "mean": 142.76804956896552,
+        "last": 147.77734375
+      },
+      "file_MiB": {
+        "min": 34.12890625,
+        "max": 47.0,
+        "mean": 42.26077586206897,
+        "last": 47.0
+      },
+      "working_set_MiB": {
+        "min": 142.79296875,
+        "max": 154.94921875,
+        "mean": 148.88927801724137,
+        "last": 154.8203125
+      },
+      "pids": {
+        "min": 19,
+        "max": 19,
+        "mean": 19.0,
+        "last": 19
+      }
+    },
+    "/doxagent-v2-v2-content-enrichment-1": {
+      "current_MiB": {
+        "min": 217.6328125,
+        "max": 243.859375,
+        "mean": 228.56236530172413,
+        "last": 235.609375
+      },
+      "anon_MiB": {
+        "min": 190.44140625,
+        "max": 208.0625,
+        "mean": 200.21888469827587,
+        "last": 206.50390625
+      },
+      "file_MiB": {
+        "min": 12.3125,
+        "max": 29.98828125,
+        "mean": 20.850080818965516,
+        "last": 20.7265625
+      },
+      "working_set_MiB": {
+        "min": 197.8046875,
+        "max": 215.7109375,
+        "mean": 207.71322737068965,
+        "last": 214.8828125
+      },
+      "pids": {
+        "min": 13,
+        "max": 13,
+        "mean": 13.0,
+        "last": 13
+      }
+    }
+  },
+  "warm_attribution": [
+    {
+      "at": "2026-10-29T21:32:48.271618+00:00",
+      "groups": [
+        {
+          "identity": "lifecycle-f697a3a4c4b54b9aa4b900809f9e04ea",
+          "category": "lifecycle_controller",
+          "Pss_MiB": 101.466796875,
+          "Pss_Anon_MiB": 93.78515625,
+          "Pss_File_MiB": 7.681640625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "80b6bb46008f426597abdbc32a9c3638",
+          "category": "active_job",
+          "Pss_MiB": 167.775390625,
+          "Pss_Anon_MiB": 153.39453125,
+          "Pss_File_MiB": 14.380859375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "07f6fc5263b54039810de1acb634da41",
+          "category": "retained_used",
+          "Pss_MiB": 160.396484375,
+          "Pss_Anon_MiB": 144.28125,
+          "Pss_File_MiB": 16.115234375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "f3928354ff28404d8ea4418dd9046bf4",
+          "category": "active_job",
+          "Pss_MiB": 169.201171875,
+          "Pss_Anon_MiB": 153.85546875,
+          "Pss_File_MiB": 15.345703125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "4e47fb88bf6e482eb041400a5b66a5ca",
+          "category": "active_job",
+          "Pss_MiB": 174.13671875,
+          "Pss_Anon_MiB": 158.76953125,
+          "Pss_File_MiB": 15.3671875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "3cbaa970007444dbad18453d01eded88",
+          "category": "active_job",
+          "Pss_MiB": 189.1396484375,
+          "Pss_Anon_MiB": 174.51953125,
+          "Pss_File_MiB": 14.6201171875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "46035b7bbf5443c2bf32cd9575009720",
+          "category": "active_job",
+          "Pss_MiB": 182.693359375,
+          "Pss_Anon_MiB": 168.296875,
+          "Pss_File_MiB": 14.396484375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "af797ec22cd24fba81e8ed5457ab6040",
+          "category": "active_job",
+          "Pss_MiB": 174.1669921875,
+          "Pss_Anon_MiB": 159.55859375,
+          "Pss_File_MiB": 14.6083984375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "df7d2346024e4ccf8d61d50e05c2bd63",
+          "category": "idle_or_unmapped",
+          "Pss_MiB": 200.65625,
+          "Pss_Anon_MiB": 186.2734375,
+          "Pss_File_MiB": 14.3828125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "f01ef31011554ed08c92cbbd4f82220f",
+          "category": "active_job",
+          "Pss_MiB": 170.205078125,
+          "Pss_Anon_MiB": 156.03125,
+          "Pss_File_MiB": 14.173828125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "a462b549bac54ceca2fc9fc08563ba23",
+          "category": "idle_or_unmapped",
+          "Pss_MiB": 191.3994140625,
+          "Pss_Anon_MiB": 176.54296875,
+          "Pss_File_MiB": 14.8564453125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "ce97daa7a2e14399a31e34c756920ae2",
+          "category": "active_job",
+          "Pss_MiB": 171.4521484375,
+          "Pss_Anon_MiB": 157.296875,
+          "Pss_File_MiB": 14.1552734375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "babae8aac7044081820210eccd2bb3f8",
+          "category": "active_job",
+          "Pss_MiB": 181.0517578125,
+          "Pss_Anon_MiB": 165.51953125,
+          "Pss_File_MiB": 15.5322265625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        }
+      ],
+      "totals": {
+        "lifecycle_controller": {
+          "Pss": 101.466796875,
+          "Pss_Anon": 93.78515625,
+          "Pss_File": 7.681640625,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        },
+        "active_job": {
+          "Pss": 1579.822265625,
+          "Pss_Anon": 1447.2421875,
+          "Pss_File": 132.580078125,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 9
+        },
+        "retained_used": {
+          "Pss": 160.396484375,
+          "Pss_Anon": 144.28125,
+          "Pss_File": 16.115234375,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        },
+        "idle_or_unmapped": {
+          "Pss": 392.0556640625,
+          "Pss_Anon": 362.81640625,
+          "Pss_File": 29.2392578125,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 2
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T21:42:48.271703+00:00",
+      "groups": [
+        {
+          "identity": "lifecycle-f697a3a4c4b54b9aa4b900809f9e04ea",
+          "category": "lifecycle_controller",
+          "Pss_MiB": 60.0986328125,
+          "Pss_Anon_MiB": 54.0546875,
+          "Pss_File_MiB": 6.0439453125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "0255c446a0e049b7b8cd0c77c3b6d891",
+          "category": "idle_or_unmapped",
+          "Pss_MiB": 165.0263671875,
+          "Pss_Anon_MiB": 153.1875,
+          "Pss_File_MiB": 11.8388671875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "35159c84735843af921aecf53fc7cde8",
+          "category": "active_job",
+          "Pss_MiB": 166.5078125,
+          "Pss_Anon_MiB": 155.296875,
+          "Pss_File_MiB": 11.2109375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "885b8589101b4f4588de0d05045dc853",
+          "category": "active_job",
+          "Pss_MiB": 173.9599609375,
+          "Pss_Anon_MiB": 162.5546875,
+          "Pss_File_MiB": 11.4052734375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "ae6e32bacfa740e6b529639605cd38b3",
+          "category": "active_job",
+          "Pss_MiB": 186.7138671875,
+          "Pss_Anon_MiB": 175.10546875,
+          "Pss_File_MiB": 11.6083984375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "4e6cc55704f54044a8a849cb40125371",
+          "category": "retained_used",
+          "Pss_MiB": 170.671875,
+          "Pss_Anon_MiB": 158.85546875,
+          "Pss_File_MiB": 11.81640625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "38bfd5fd3a3d4a419c30e013fb8ec2ae",
+          "category": "retained_used",
+          "Pss_MiB": 159.7626953125,
+          "Pss_Anon_MiB": 146.5859375,
+          "Pss_File_MiB": 13.1767578125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "2c4265d19ef444fdae266db8b3b57e45",
+          "category": "active_job",
+          "Pss_MiB": 169.7158203125,
+          "Pss_Anon_MiB": 158.08984375,
+          "Pss_File_MiB": 11.6259765625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "51591f4a1568428fb93410abf607f010",
+          "category": "active_job",
+          "Pss_MiB": 173.6630859375,
+          "Pss_Anon_MiB": 161.62109375,
+          "Pss_File_MiB": 12.0419921875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "95c8431f6e9a4b7e8c9a54c66ffe5073",
+          "category": "active_job",
+          "Pss_MiB": 172.8994140625,
+          "Pss_Anon_MiB": 161.10546875,
+          "Pss_File_MiB": 11.7939453125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "bed9e67b5ef440169eb332e181011190",
+          "category": "active_job",
+          "Pss_MiB": 190.728515625,
+          "Pss_Anon_MiB": 179.12109375,
+          "Pss_File_MiB": 11.607421875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "cf25daa89fed40aaa1f8a60eee99b2a7",
+          "category": "active_job",
+          "Pss_MiB": 231.11328125,
+          "Pss_Anon_MiB": 219.73046875,
+          "Pss_File_MiB": 11.3828125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "d7bc7d5e99c548ddbfbe8d0f0435775c",
+          "category": "idle_or_unmapped",
+          "Pss_MiB": 153.9736328125,
+          "Pss_Anon_MiB": 142.30078125,
+          "Pss_File_MiB": 11.6728515625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "018a5616307241e1a7317b65a569c1e4",
+          "category": "active_job",
+          "Pss_MiB": 164.12890625,
+          "Pss_Anon_MiB": 152.83203125,
+          "Pss_File_MiB": 11.296875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "b48645fdcc3a4f448c94dbf72252d1b5",
+          "category": "active_job",
+          "Pss_MiB": 232.9609375,
+          "Pss_Anon_MiB": 223.33203125,
+          "Pss_File_MiB": 9.62890625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "f9c9e569acaa4991a334906e384cc0c6",
+          "category": "bound_waiting",
+          "Pss_MiB": 191.5517578125,
+          "Pss_Anon_MiB": 182.33203125,
+          "Pss_File_MiB": 9.2197265625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "1ed0475caf44483ea4b3e89e64a5eaad",
+          "category": "bound_waiting",
+          "Pss_MiB": 230.66015625,
+          "Pss_Anon_MiB": 221.40234375,
+          "Pss_File_MiB": 9.2578125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "a203f8de98c54e829bea415689f94fd3",
+          "category": "idle_or_unmapped",
+          "Pss_MiB": 50.11328125,
+          "Pss_Anon_MiB": 49.78515625,
+          "Pss_File_MiB": 0.328125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        }
+      ],
+      "totals": {
+        "lifecycle_controller": {
+          "Pss": 60.0986328125,
+          "Pss_Anon": 54.0546875,
+          "Pss_File": 6.0439453125,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        },
+        "idle_or_unmapped": {
+          "Pss": 369.11328125,
+          "Pss_Anon": 345.2734375,
+          "Pss_File": 23.83984375,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 3
+        },
+        "active_job": {
+          "Pss": 1862.3916015625,
+          "Pss_Anon": 1748.7890625,
+          "Pss_File": 113.6025390625,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 10
+        },
+        "retained_used": {
+          "Pss": 330.4345703125,
+          "Pss_Anon": 305.44140625,
+          "Pss_File": 24.9931640625,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 2
+        },
+        "bound_waiting": {
+          "Pss": 422.2119140625,
+          "Pss_Anon": 403.734375,
+          "Pss_File": 18.4775390625,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 2
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T21:52:48.271722+00:00",
+      "groups": [
+        {
+          "identity": "lifecycle-f697a3a4c4b54b9aa4b900809f9e04ea",
+          "category": "lifecycle_controller",
+          "Pss_MiB": 63.0498046875,
+          "Pss_Anon_MiB": 50.75,
+          "Pss_File_MiB": 12.2998046875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "c0593ebbe71b4d7ea19045c0fe3a78b9",
+          "category": "active_job",
+          "Pss_MiB": 213.3828125,
+          "Pss_Anon_MiB": 184.17578125,
+          "Pss_File_MiB": 29.20703125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "40771563e5474d7cb7632c7fc11a64a9",
+          "category": "retained_used",
+          "Pss_MiB": 184.2919921875,
+          "Pss_Anon_MiB": 155.01171875,
+          "Pss_File_MiB": 29.2802734375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "5e5d2e63027d45be890d8f83d95f11f0",
+          "category": "ready_prewarm",
+          "Pss_MiB": 301.7685546875,
+          "Pss_Anon_MiB": 279.296875,
+          "Pss_File_MiB": 22.4716796875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "f40a362d1fc54bf99eacbb7ec21e4d09",
+          "category": "ready_prewarm",
+          "Pss_MiB": 239.8125,
+          "Pss_Anon_MiB": 219.77734375,
+          "Pss_File_MiB": 20.03515625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "403cb2468bcc41b198583b8003380854",
+          "category": "active_job",
+          "Pss_MiB": 185.759765625,
+          "Pss_Anon_MiB": 151.86328125,
+          "Pss_File_MiB": 33.896484375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "3f478e0860e54307a4657a6a6bf82428",
+          "category": "ready_prewarm",
+          "Pss_MiB": 142.724609375,
+          "Pss_Anon_MiB": 122.72265625,
+          "Pss_File_MiB": 20.001953125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "e10d0875098a4a7cbab926f790229d41",
+          "category": "idle_or_unmapped",
+          "Pss_MiB": 196.171875,
+          "Pss_Anon_MiB": 184.5234375,
+          "Pss_File_MiB": 11.6484375,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        }
+      ],
+      "totals": {
+        "lifecycle_controller": {
+          "Pss": 63.0498046875,
+          "Pss_Anon": 50.75,
+          "Pss_File": 12.2998046875,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        },
+        "active_job": {
+          "Pss": 399.142578125,
+          "Pss_Anon": 336.0390625,
+          "Pss_File": 63.103515625,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 2
+        },
+        "retained_used": {
+          "Pss": 184.2919921875,
+          "Pss_Anon": 155.01171875,
+          "Pss_File": 29.2802734375,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        },
+        "ready_prewarm": {
+          "Pss": 684.3056640625,
+          "Pss_Anon": 621.796875,
+          "Pss_File": 62.5087890625,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 3
+        },
+        "idle_or_unmapped": {
+          "Pss": 196.171875,
+          "Pss_Anon": 184.5234375,
+          "Pss_File": 11.6484375,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T22:00:39.064499+00:00",
+      "groups": [
+        {
+          "identity": "lifecycle-f697a3a4c4b54b9aa4b900809f9e04ea",
+          "category": "lifecycle_controller",
+          "Pss_MiB": 129.2587890625,
+          "Pss_Anon_MiB": 116.97265625,
+          "Pss_File_MiB": 12.2861328125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "5e5d2e63027d45be890d8f83d95f11f0",
+          "category": "ready_prewarm",
+          "Pss_MiB": 254.6826171875,
+          "Pss_Anon_MiB": 232.015625,
+          "Pss_File_MiB": 22.6669921875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "f40a362d1fc54bf99eacbb7ec21e4d09",
+          "category": "ready_prewarm",
+          "Pss_MiB": 183.3388671875,
+          "Pss_Anon_MiB": 163.0859375,
+          "Pss_File_MiB": 20.2529296875,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "3f478e0860e54307a4657a6a6bf82428",
+          "category": "active_job",
+          "Pss_MiB": 173.6025390625,
+          "Pss_Anon_MiB": 144.52734375,
+          "Pss_File_MiB": 29.0751953125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "e10d0875098a4a7cbab926f790229d41",
+          "category": "active_job",
+          "Pss_MiB": 189.6845703125,
+          "Pss_Anon_MiB": 160.328125,
+          "Pss_File_MiB": 29.3564453125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "7852c212d55a49e09961c5ec1ed95d13",
+          "category": "ready_prewarm",
+          "Pss_MiB": 297.984375,
+          "Pss_Anon_MiB": 277.99609375,
+          "Pss_File_MiB": 19.98828125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "f112c5da440e4a6498abe0d159990565",
+          "category": "active_job",
+          "Pss_MiB": 179.22265625,
+          "Pss_Anon_MiB": 148.90234375,
+          "Pss_File_MiB": 30.3203125,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        },
+        {
+          "identity": "67572c2cb1cb4ae0b8c3cfaceca80642",
+          "category": "idle_or_unmapped",
+          "Pss_MiB": 191.1015625,
+          "Pss_Anon_MiB": 177.6875,
+          "Pss_File_MiB": 13.4140625,
+          "Pss_Shmem_MiB": 0.0,
+          "SwapPss_MiB": 0.0
+        }
+      ],
+      "totals": {
+        "lifecycle_controller": {
+          "Pss": 129.2587890625,
+          "Pss_Anon": 116.97265625,
+          "Pss_File": 12.2861328125,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        },
+        "ready_prewarm": {
+          "Pss": 736.005859375,
+          "Pss_Anon": 673.09765625,
+          "Pss_File": 62.908203125,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 3
+        },
+        "active_job": {
+          "Pss": 542.509765625,
+          "Pss_Anon": 453.7578125,
+          "Pss_File": 88.751953125,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 3
+        },
+        "idle_or_unmapped": {
+          "Pss": 191.1015625,
+          "Pss_Anon": 177.6875,
+          "Pss_File": 13.4140625,
+          "Pss_Shmem": 0.0,
+          "SwapPss": 0.0,
+          "groups": 1
+        }
+      }
+    }
+  ],
+  "intervals": [
+    {
+      "since": "2026-10-29T21:32:48.271618+00:00",
+      "until": "2026-10-29T21:33:48.271708+00:00",
+      "seconds": 60.00009,
+      "cpu_busy_percent": 93.61273676924046,
+      "iowait_percent": 0.42162230193191114,
+      "read_MiB_s": 0.2544267016932808,
+      "write_MiB_s": 18.569991676262486,
+      "iops": 1401.5312310364868,
+      "await_ms": 1.230426199876326,
+      "util_percent": 11.993315343360319,
+      "avg_queue": 1.7244807466122134,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.00027833291583395956,
+      "io_some_stall_percent": 1.9271771092343362
+    },
+    {
+      "since": "2026-10-29T21:33:48.271708+00:00",
+      "until": "2026-10-29T21:34:48.271700+00:00",
+      "seconds": 59.999992,
+      "cpu_busy_percent": 95.64780295731579,
+      "iowait_percent": 0.34557868721987184,
+      "read_MiB_s": 0.40755213767361836,
+      "write_MiB_s": 23.309964045495207,
+      "iops": 1539.1168718822496,
+      "await_ms": 1.4532578210445386,
+      "util_percent": 12.088334945111326,
+      "avg_queue": 2.2367169648955953,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0003633333817777842,
+      "io_some_stall_percent": 2.017570269009369
+    },
+    {
+      "since": "2026-10-29T21:34:48.271700+00:00",
+      "until": "2026-10-29T21:35:48.271706+00:00",
+      "seconds": 60.000006,
+      "cpu_busy_percent": 93.91156676520536,
+      "iowait_percent": 0.44447239868335536,
+      "read_MiB_s": 0.24733070443359623,
+      "write_MiB_s": 22.100827868042213,
+      "iops": 1625.0498374950162,
+      "await_ms": 1.4291047454950103,
+      "util_percent": 12.404998759500124,
+      "avg_queue": 2.322383101095023,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.9545064712160194
+    },
+    {
+      "since": "2026-10-29T21:35:48.271706+00:00",
+      "until": "2026-10-29T21:36:48.271713+00:00",
+      "seconds": 60.000007,
+      "cpu_busy_percent": 96.01983803126373,
+      "iowait_percent": 0.3703936216962772,
+      "read_MiB_s": 0.6416665918055643,
+      "write_MiB_s": 20.179945562339686,
+      "iops": 1604.2164795080776,
+      "await_ms": 1.6346399592739966,
+      "util_percent": 13.8533317171113,
+      "avg_queue": 2.6222996940650356,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0012499998541666837,
+      "io_some_stall_percent": 2.557021368347507
+    },
+    {
+      "since": "2026-10-29T21:36:48.271713+00:00",
+      "until": "2026-10-29T21:37:48.271702+00:00",
+      "seconds": 59.999989,
+      "cpu_busy_percent": 92.06119061127572,
+      "iowait_percent": 0.516926180419845,
+      "read_MiB_s": 0.3382813120182405,
+      "write_MiB_s": 22.759021099570536,
+      "iops": 1391.2835884019912,
+      "await_ms": 1.550415084394504,
+      "util_percent": 13.180002416333776,
+      "avg_queue": 2.1570837287986837,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.00018833336786111746,
+      "io_some_stall_percent": 2.154207061604628
+    },
+    {
+      "since": "2026-10-29T21:37:48.271702+00:00",
+      "until": "2026-10-29T21:38:48.271738+00:00",
+      "seconds": 60.000036,
+      "cpu_busy_percent": 92.27525437952376,
+      "iowait_percent": 0.5056120843386133,
+      "read_MiB_s": 0.6015621390627165,
+      "write_MiB_s": 20.880391117598663,
+      "iops": 1513.699091780545,
+      "await_ms": 1.4906740657549933,
+      "util_percent": 13.019992188004688,
+      "avg_queue": 2.2564319794741454,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.016723323299339354,
+      "io_some_stall_percent": 2.049822103440071
+    },
+    {
+      "since": "2026-10-29T21:38:48.271738+00:00",
+      "until": "2026-10-29T21:39:48.271702+00:00",
+      "seconds": 59.999964,
+      "cpu_busy_percent": 92.98069060947229,
+      "iowait_percent": 0.5828458812923245,
+      "read_MiB_s": 0.38580752315118055,
+      "write_MiB_s": 19.036306994700865,
+      "iops": 1267.8840940637897,
+      "await_ms": 1.8710843531870702,
+      "util_percent": 15.223342467338814,
+      "avg_queue": 2.372318090057521,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.006630003978002386,
+      "io_some_stall_percent": 2.650006590003954
+    },
+    {
+      "since": "2026-10-29T21:39:48.271702+00:00",
+      "until": "2026-10-29T21:40:48.271676+00:00",
+      "seconds": 59.999974,
+      "cpu_busy_percent": 88.70157442246652,
+      "iowait_percent": 0.7756500536018329,
+      "read_MiB_s": 3.04869923776967,
+      "write_MiB_s": 21.148576872716646,
+      "iops": 1861.2174731942384,
+      "await_ms": 1.4612663759368871,
+      "util_percent": 15.063339860780605,
+      "avg_queue": 2.719734511884955,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.004443335258778612,
+      "io_some_stall_percent": 2.499649416514747
+    },
+    {
+      "since": "2026-10-29T21:40:48.271676+00:00",
+      "until": "2026-10-29T21:41:48.271702+00:00",
+      "seconds": 60.000026,
+      "cpu_busy_percent": 94.9913101744247,
+      "iowait_percent": 0.6156165588290722,
+      "read_MiB_s": 1.3380853576630116,
+      "write_MiB_s": 19.126326347341916,
+      "iops": 1793.9158893031147,
+      "await_ms": 1.8040135643610349,
+      "util_percent": 16.24832629239194,
+      "avg_queue": 3.236248597625608,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.07421875,
+      "memory_some_stall_percent": 0.031536653000783704,
+      "io_some_stall_percent": 3.338125220145738
+    },
+    {
+      "since": "2026-10-29T21:41:48.271702+00:00",
+      "until": "2026-10-29T21:42:48.271703+00:00",
+      "seconds": 60.000001,
+      "cpu_busy_percent": 96.16704326721901,
+      "iowait_percent": 0.3389404971127291,
+      "read_MiB_s": 2.6177733938704435,
+      "write_MiB_s": 23.16451784309137,
+      "iops": 1641.6666393055561,
+      "await_ms": 1.4902233502538071,
+      "util_percent": 12.96499978391667,
+      "avg_queue": 2.446449959225834,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.16796875,
+      "memory_some_stall_percent": 0.052444999125916686,
+      "io_some_stall_percent": 2.217281629711973
+    },
+    {
+      "since": "2026-10-29T21:42:48.271703+00:00",
+      "until": "2026-10-29T21:43:48.271717+00:00",
+      "seconds": 60.000014,
+      "cpu_busy_percent": 98.00506053825725,
+      "iowait_percent": 0.20493088810355284,
+      "read_MiB_s": 0.7992185635156686,
+      "write_MiB_s": 21.199767188804323,
+      "iops": 1743.1829265906504,
+      "await_ms": 1.433478980026962,
+      "util_percent": 13.256663573445167,
+      "avg_queue": 2.498799416946803,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0001549999638333418,
+      "io_some_stall_percent": 2.3592461161759064
+    },
+    {
+      "since": "2026-10-29T21:43:48.271717+00:00",
+      "until": "2026-10-29T21:44:48.271708+00:00",
+      "seconds": 59.999991,
+      "cpu_busy_percent": 96.42632703506641,
+      "iowait_percent": 0.26184590891951903,
+      "read_MiB_s": 3.020052536341214,
+      "write_MiB_s": 26.668884208665965,
+      "iops": 1397.666876316698,
+      "await_ms": 1.3518840925351776,
+      "util_percent": 12.416668529166946,
+      "avg_queue": 1.8894836167558757,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.04075833944708425,
+      "io_some_stall_percent": 2.079121978534963
+    },
+    {
+      "since": "2026-10-29T21:44:48.271708+00:00",
+      "until": "2026-10-29T21:45:48.271704+00:00",
+      "seconds": 59.999996,
+      "cpu_busy_percent": 94.50990275765022,
+      "iowait_percent": 0.37174721189591076,
+      "read_MiB_s": 5.0477216906814455,
+      "write_MiB_s": 21.09241677074445,
+      "iops": 1786.2001190800079,
+      "await_ms": 1.4499869368865002,
+      "util_percent": 13.113334207555612,
+      "avg_queue": 2.5899835059989003,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 8.83333392222226e-05,
+      "io_some_stall_percent": 2.0739951382663424
+    },
+    {
+      "since": "2026-10-29T21:45:48.271704+00:00",
+      "until": "2026-10-29T21:46:48.271712+00:00",
+      "seconds": 60.000008,
+      "cpu_busy_percent": 97.42489270386267,
+      "iowait_percent": 0.2261069820998639,
+      "read_MiB_s": 1.2070310890625215,
+      "write_MiB_s": 22.7920542527261,
+      "iops": 1606.666452444473,
+      "await_ms": 1.3175207468879668,
+      "util_percent": 13.249998233333569,
+      "avg_queue": 2.1167997177600375,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.011471665137111314,
+      "io_some_stall_percent": 2.1675130443315944
+    },
+    {
+      "since": "2026-10-29T21:46:48.271712+00:00",
+      "until": "2026-10-29T21:47:48.271747+00:00",
+      "seconds": 60.000035,
+      "cpu_busy_percent": 93.55788234304697,
+      "iowait_percent": 0.5781926748244397,
+      "read_MiB_s": 1.796548431180082,
+      "write_MiB_s": 20.542924214544207,
+      "iops": 2118.8654306618323,
+      "await_ms": 1.5557688072239877,
+      "util_percent": 17.353323210561463,
+      "avg_queue": 3.2964647437288996,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.000139999918333381,
+      "io_some_stall_percent": 2.9176166313902985
+    },
+    {
+      "since": "2026-10-29T21:47:48.271747+00:00",
+      "until": "2026-10-29T21:48:48.271697+00:00",
+      "seconds": 59.99995,
+      "cpu_busy_percent": 93.31945495836487,
+      "iowait_percent": 0.39952897636470686,
+      "read_MiB_s": 0.9568367348639457,
+      "write_MiB_s": 19.749039895033246,
+      "iops": 1490.7012422510352,
+      "await_ms": 1.3488629502918092,
+      "util_percent": 13.161677634731364,
+      "avg_queue": 2.0107516756263966,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0003566669638891366,
+      "io_some_stall_percent": 2.1431334526112105
+    },
+    {
+      "since": "2026-10-29T21:48:48.271697+00:00",
+      "until": "2026-10-29T21:49:48.271705+00:00",
+      "seconds": 60.000008,
+      "cpu_busy_percent": 89.3033565547815,
+      "iowait_percent": 0.5003166561114629,
+      "read_MiB_s": 0.4495442108941052,
+      "write_MiB_s": 16.241697053190393,
+      "iops": 1243.4165008777998,
+      "await_ms": 1.245278466590711,
+      "util_percent": 11.521665130444648,
+      "avg_queue": 1.5483997935466942,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.6950681073242522
+    },
+    {
+      "since": "2026-10-29T21:49:48.271705+00:00",
+      "until": "2026-10-29T21:50:48.271706+00:00",
+      "seconds": 60.000001,
+      "cpu_busy_percent": 85.62702120014373,
+      "iowait_percent": 0.6763754729344127,
+      "read_MiB_s": 6.161653543139108,
+      "write_MiB_s": 15.389778389337028,
+      "iops": 1491.666641805556,
+      "await_ms": 1.434122905027933,
+      "util_percent": 13.273333112111114,
+      "avg_queue": 2.139249964345834,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 2.1666666305555563e-05,
+      "io_some_stall_percent": 1.8827899686201672
+    },
+    {
+      "since": "2026-10-29T21:50:48.271706+00:00",
+      "until": "2026-10-29T21:51:48.271706+00:00",
+      "seconds": 60.0,
+      "cpu_busy_percent": 88.91535283702892,
+      "iowait_percent": 0.5459067532248546,
+      "read_MiB_s": 1.4149088541666666,
+      "write_MiB_s": 10.65595703125,
+      "iops": 939.9666666666667,
+      "await_ms": 0.8284690946487464,
+      "util_percent": 11.195,
+      "avg_queue": 0.7787166666666666,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.5626066666666667
+    },
+    {
+      "since": "2026-10-29T21:51:48.271706+00:00",
+      "until": "2026-10-29T21:52:48.271722+00:00",
+      "seconds": 60.000016,
+      "cpu_busy_percent": 87.3421997044543,
+      "iowait_percent": 0.426430230103441,
+      "read_MiB_s": 0.22330723211807144,
+      "write_MiB_s": 8.180271256094331,
+      "iops": 643.4164950889347,
+      "await_ms": 0.675845097785261,
+      "util_percent": 8.996664267556195,
+      "avg_queue": 0.43484988404003094,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.2811796583520911
+    },
+    {
+      "since": "2026-10-29T21:52:48.271722+00:00",
+      "until": "2026-10-29T21:53:48.271708+00:00",
+      "seconds": 59.999986,
+      "cpu_busy_percent": 90.03602199237429,
+      "iowait_percent": 0.387605064144425,
+      "read_MiB_s": 0.2949219438151202,
+      "write_MiB_s": 8.279136046381744,
+      "iops": 681.5501590283704,
+      "await_ms": 0.7387327904531338,
+      "util_percent": 10.110002359000552,
+      "avg_queue": 0.5035001174833608,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.466478675511691
+    },
+    {
+      "since": "2026-10-29T21:53:48.271708+00:00",
+      "until": "2026-10-29T21:54:48.271700+00:00",
+      "seconds": 59.999992,
+      "cpu_busy_percent": 82.18566988731263,
+      "iowait_percent": 0.5560371255206241,
+      "read_MiB_s": 0.368099007413201,
+      "write_MiB_s": 7.5865244490365935,
+      "iops": 605.4334140577886,
+      "await_ms": 0.5132136761548203,
+      "util_percent": 8.601667813555709,
+      "avg_queue": 0.3107000414266722,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 8.833334511111268e-05,
+      "io_some_stall_percent": 1.2053884940517992
+    },
+    {
+      "since": "2026-10-29T21:54:48.271700+00:00",
+      "until": "2026-10-29T21:55:48.271695+00:00",
+      "seconds": 59.999995,
+      "cpu_busy_percent": 76.998137329608,
+      "iowait_percent": 0.6540513081026162,
+      "read_MiB_s": 0.18776043231336936,
+      "write_MiB_s": 8.212207715600643,
+      "iops": 660.250055020838,
+      "await_ms": 0.5270730783794018,
+      "util_percent": 9.126667427222285,
+      "avg_queue": 0.348016695668058,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.2916584409715368
+    },
+    {
+      "since": "2026-10-29T21:55:48.271695+00:00",
+      "until": "2026-10-29T21:56:48.272459+00:00",
+      "seconds": 60.000764,
+      "cpu_busy_percent": 75.47133838918782,
+      "iowait_percent": 0.7117739270431724,
+      "read_MiB_s": 0.6085860006715915,
+      "write_MiB_s": 10.720257375597752,
+      "iops": 990.8040504284246,
+      "await_ms": 1.0348029403354135,
+      "util_percent": 9.726542815354819,
+      "avg_queue": 1.0252869446795712,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.3994071808818969
+    },
+    {
+      "since": "2026-10-29T21:56:48.272459+00:00",
+      "until": "2026-10-29T21:57:48.271703+00:00",
+      "seconds": 59.999244,
+      "cpu_busy_percent": 80.02203529885374,
+      "iowait_percent": 0.6377523995169184,
+      "read_MiB_s": 0.783994253327592,
+      "write_MiB_s": 9.376713198669638,
+      "iops": 884.2111410603774,
+      "await_ms": 0.8173867149212094,
+      "util_percent": 10.69346807103103,
+      "avg_queue": 0.722742439888076,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.00019833583236482114,
+      "io_some_stall_percent": 1.4989588868819748
+    },
+    {
+      "since": "2026-10-29T21:57:48.271703+00:00",
+      "until": "2026-10-29T21:58:48.271663+00:00",
+      "seconds": 59.99996,
+      "cpu_busy_percent": 79.25783152945164,
+      "iowait_percent": 0.9171202846673586,
+      "read_MiB_s": 1.3140633760422507,
+      "write_MiB_s": 11.93614076992718,
+      "iops": 1218.3841455894303,
+      "await_ms": 0.8658468188720025,
+      "util_percent": 13.486675657783772,
+      "avg_queue": 1.0549340366226911,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0007166671444447629,
+      "io_some_stall_percent": 1.9578229718819813
+    },
+    {
+      "since": "2026-10-29T21:58:48.271663+00:00",
+      "until": "2026-10-29T21:59:48.271695+00:00",
+      "seconds": 60.000032,
+      "cpu_busy_percent": 79.42761725602925,
+      "iowait_percent": 0.7101942465811334,
+      "read_MiB_s": 0.6979813985765875,
+      "write_MiB_s": 10.768646600471813,
+      "iops": 972.3661480713878,
+      "await_ms": 0.878629460765829,
+      "util_percent": 10.60332767822524,
+      "avg_queue": 0.8543495443469098,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.520500855732877
+    },
+    {
+      "since": "2026-10-29T21:59:48.271695+00:00",
+      "until": "2026-10-29T22:00:39.064499+00:00",
+      "seconds": 50.792804,
+      "cpu_busy_percent": 85.11913682002098,
+      "iowait_percent": 0.5170088416004796,
+      "read_MiB_s": 0.2953174233105934,
+      "write_MiB_s": 13.0209220311011,
+      "iops": 896.7018241402858,
+      "await_ms": 1.009265358099504,
+      "util_percent": 9.828163847776548,
+      "avg_queue": 0.9049903998212031,
+      "swapin_MiB": 0.0,
+      "swapout_MiB": 0.0,
+      "memory_some_stall_percent": 0.0,
+      "io_some_stall_percent": 1.3984126570370086
+    }
+  ],
+  "jobs": [
+    {
+      "at": "2026-10-29T21:32:48.271618+00:00",
+      "states": {
+        "running": 9
+      },
+      "nodes": {
+        "persistent_runtime_w3": 9
+      },
+      "phases": {
+        "RUNNING": 9
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:33:48.271708+00:00",
+      "states": {
+        "running": 11
+      },
+      "nodes": {
+        "persistent_runtime_w3": 11
+      },
+      "phases": {
+        "RUNNING": 11
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:34:48.271700+00:00",
+      "states": {
+        "running": 12
+      },
+      "nodes": {
+        "persistent_runtime_w3": 12
+      },
+      "phases": {
+        "RUNNING": 12
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:35:48.271706+00:00",
+      "states": {
+        "running": 13
+      },
+      "nodes": {
+        "persistent_runtime_w3": 13
+      },
+      "phases": {
+        "RUNNING": 13
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:36:48.271713+00:00",
+      "states": {
+        "running": 11
+      },
+      "nodes": {
+        "persistent_runtime_w3": 11
+      },
+      "phases": {
+        "RUNNING": 11
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:37:48.271702+00:00",
+      "states": {
+        "running": 13
+      },
+      "nodes": {
+        "persistent_runtime_w3": 13
+      },
+      "phases": {
+        "RUNNING": 13
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:38:48.271738+00:00",
+      "states": {
+        "running": 12
+      },
+      "nodes": {
+        "persistent_runtime_w3": 12
+      },
+      "phases": {
+        "RUNNING": 12
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:39:48.271702+00:00",
+      "states": {
+        "running": 13
+      },
+      "nodes": {
+        "persistent_runtime_w3": 13
+      },
+      "phases": {
+        "RUNNING": 13
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:40:48.271676+00:00",
+      "states": {
+        "running": 13
+      },
+      "nodes": {
+        "persistent_runtime_w3": 13
+      },
+      "phases": {
+        "RUNNING": 13
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:41:48.271702+00:00",
+      "states": {
+        "running": 13
+      },
+      "nodes": {
+        "persistent_runtime_w3": 13
+      },
+      "phases": {
+        "RUNNING": 12,
+        "STARTING": 1
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:42:48.271703+00:00",
+      "states": {
+        "running": 12
+      },
+      "nodes": {
+        "persistent_runtime_w3": 12
+      },
+      "phases": {
+        "RUNNING": 10,
+        "STARTING": 2
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:43:48.271717+00:00",
+      "states": {
+        "running": 7
+      },
+      "nodes": {
+        "persistent_runtime_w3": 7
+      },
+      "phases": {
+        "RUNNING": 7
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:44:48.271708+00:00",
+      "states": {
+        "running": 16
+      },
+      "nodes": {
+        "persistent_runtime_w3": 16
+      },
+      "phases": {
+        "RUNNING": 15,
+        "STARTING": 1
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:45:48.271704+00:00",
+      "states": {
+        "running": 11
+      },
+      "nodes": {
+        "persistent_runtime_w3": 11
+      },
+      "phases": {
+        "RUNNING": 11
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:46:48.271712+00:00",
+      "states": {
+        "running": 12
+      },
+      "nodes": {
+        "persistent_runtime_w3": 12
+      },
+      "phases": {
+        "RUNNING": 12
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:47:48.271747+00:00",
+      "states": {
+        "running": 6
+      },
+      "nodes": {
+        "persistent_runtime_w3": 6
+      },
+      "phases": {
+        "RUNNING": 6
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:48:48.271697+00:00",
+      "states": {
+        "running": 10
+      },
+      "nodes": {
+        "persistent_runtime_w3": 10
+      },
+      "phases": {
+        "RUNNING": 10
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:49:48.271705+00:00",
+      "states": {
+        "running": 5
+      },
+      "nodes": {
+        "persistent_runtime_w3": 5
+      },
+      "phases": {
+        "RUNNING": 5
+      },
+      "ready": 0
+    },
+    {
+      "at": "2026-10-29T21:50:48.271706+00:00",
+      "states": {
+        "running": 2
+      },
+      "nodes": {
+        "persistent_runtime_w3": 2
+      },
+      "phases": {
+        "RUNNING": 2
+      },
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:51:48.271706+00:00",
+      "states": {
+        "running": 3
+      },
+      "nodes": {
+        "persistent_runtime_w3": 3
+      },
+      "phases": {
+        "RUNNING": 3
+      },
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:52:48.271722+00:00",
+      "states": {
+        "running": 2
+      },
+      "nodes": {
+        "persistent_runtime_w3": 2
+      },
+      "phases": {
+        "RUNNING": 2
+      },
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:53:48.271708+00:00",
+      "states": {},
+      "nodes": {},
+      "phases": {},
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:54:48.271700+00:00",
+      "states": {},
+      "nodes": {},
+      "phases": {},
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:55:48.271695+00:00",
+      "states": {},
+      "nodes": {},
+      "phases": {},
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:56:48.272459+00:00",
+      "states": {},
+      "nodes": {},
+      "phases": {},
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:57:48.271703+00:00",
+      "states": {},
+      "nodes": {},
+      "phases": {},
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T21:58:48.271663+00:00",
+      "states": {},
+      "nodes": {},
+      "phases": {},
+      "ready": 2
+    },
+    {
+      "at": "2026-10-29T21:59:48.271695+00:00",
+      "states": {
+        "running": 2
+      },
+      "nodes": {
+        "persistent_runtime_w3": 2
+      },
+      "phases": {
+        "RUNNING": 2
+      },
+      "ready": 3
+    },
+    {
+      "at": "2026-10-29T22:00:39.064499+00:00",
+      "states": {
+        "running": 3
+      },
+      "nodes": {
+        "persistent_runtime_w3": 3
+      },
+      "phases": {
+        "RUNNING": 3
+      },
+      "ready": 3
+    }
+  ]
+}
