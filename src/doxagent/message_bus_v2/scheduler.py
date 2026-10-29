@@ -90,7 +90,15 @@ class SchedulerGroupLimiter:
             # Site owns real browser/site/identity admission. A second source
             # semaphore would remain occupied throughout that same wait.
             check_request_allowed()
-            yield
+            from doxagent.site_strategy.client import ACCESS_RESULTS
+            accesses=ACCESS_RESULTS.get()
+            position=len(accesses) if accesses is not None else 0
+            try:
+                yield
+            finally:
+                physical=sum(a.network_ms for a in (accesses[position:] if accesses is not None else [])
+                    if a.attempts and not a.served_from_shared_capture)/1000
+                if physical>0:self.cost.observe(physical)
             return
         waiting_at = self._clock()
         acquired = False
