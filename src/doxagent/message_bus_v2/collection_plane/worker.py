@@ -44,6 +44,26 @@ def recovery_checkpoint(previous, proposed):
     return result
 
 
+def balanced_phases(desired):
+    """Spread current physical HEAD work; transient tails never reshuffle it."""
+    groups = defaultdict(list)
+    for key, (source, targets, unit, options) in desired.items():
+        if unit.startswith('TAIL:'):
+            continue
+        period = options['ir_spec'].target_interval_seconds if 'ir_spec' in options else min(b.polling.target_interval_seconds for b in targets)
+        route = ('browser' if unit == 'SUPPLEMENT_HEAD' else 'rss') if source.source_id == 'yahoo_finance_news' else 'all'
+        groups[(source.source_id, period, route)].append(key)
+    phases = {}
+    for group, members in groups.items():
+        members.sort(key=lambda key: sha256_text(':'.join(key)))
+        spacing = group[1] / len(members)
+        offset = int(sha256_text(canonical_json(group))[:8], 16) / 2**32 * spacing
+        signature = sha256_text(canonical_json([group, members]))
+        for rank, key in enumerate(members):
+            phases[key] = (offset + rank * spacing, signature)
+    return phases
+
+
 class SnapshotGate:
     def __init__(self, owner, source, bindings):
         self.owner, self.source, self.bindings = owner, source, bindings
@@ -171,6 +191,7 @@ class Collector:
                 if key not in desired:
                     desired[key] = [s, [], unit, options]
                 desired[key][1].append(b)
+        phases = balanced_phases(desired)
         # Demand is physical endpoints/queries/channels, never a fixed ticker count.
         rates = defaultdict(float)
         groups = defaultdict(float)
@@ -193,6 +214,7 @@ class Collector:
                     limiter_key+=":browser" if unit=="SUPPLEMENT_HEAD" else ":rss"
                 limiter_rates[limiter_key]+=1/period
             generation = self.generation(s, targets, options)
+            phase, phase_key = phases.get(key, ((int(sha256_text(':'.join(key))[:8], 16) % max(1, period * 1000)) / 1000, None))
             for b in targets:
                 state = self.states.get((b.binding_id, unit))
                 required=options.get('coverage_required',not unit.startswith('TAIL:'))
@@ -202,7 +224,8 @@ class Collector:
                     await asyncio.to_thread(self.store.schedule,s,b,unit,now,True,now)
                 if (state and state["generation"] == generation and state.get("required", 0) >= 0
                     and state["state"].get("schedule_interval_seconds")==period
-                    and state["state"].get("schedule_phase_version") == 2):
+                    and state["state"].get("schedule_phase_version") == 3
+                    and state["state"].get("schedule_phase_key") == phase_key):
                     continue
                 seed = config.seeds.get(b.binding_id)
                 old = (
@@ -222,10 +245,11 @@ class Collector:
                             bootstrap_complete=ir.bootstrap_complete,
                         )
                 epoch = now + timedelta(
-                    seconds=(int(sha256_text(":".join(key))[:8], 16) % max(1, period * 1000)) / 1000
+                    seconds=phase
                 )
                 old.update(
-                    schedule_phase_version=2,
+                    schedule_phase_version=3,
+                    schedule_phase_key=phase_key,
                     target_due_at=epoch.isoformat(),
                     next_dispatch_at=epoch.isoformat(),
                     schedule_interval_seconds=period,

@@ -443,3 +443,19 @@ async def test_sec_collector_head_always_revalidates_instead_of_reusing_ttl_resu
     next_c=c.model_copy(update={'checkpoint':first.next_checkpoint,'requested_at':c.requested_at+timedelta(seconds=30)})
     await adapter.poll(next_c)
     assert len(http.calls) == 2
+
+
+@pytest.mark.parametrize('count',[9,10,20])
+def test_physical_head_phases_are_even_and_ignore_tail_and_shared_roster_size(count):
+    from doxagent.message_bus_v2.collection_plane.worker import balanced_phases
+    source=SimpleNamespace(source_id='investorshub_ticker_news')
+    binding=SimpleNamespace(polling=SimpleNamespace(target_interval_seconds=60))
+    desired={(f'T{n}:source','HEAD'):[source,[binding],'HEAD',{}] for n in range(count)}
+    first=balanced_phases(desired)
+    times=sorted(v[0] for v in first.values())
+    gaps=[b-a for a,b in zip(times,times[1:])]+[60+times[0]-times[-1]]
+    assert all(abs(g-60/count)<.00001 for g in gaps)
+    assert balanced_phases(dict(reversed(list(desired.items())))) == first
+    desired[('old','TAIL:page')]=[source,[binding],'TAIL:page',{}]
+    for row in desired.values():row[1]=[binding]*20
+    assert balanced_phases(desired) == first

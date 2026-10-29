@@ -114,7 +114,7 @@ async def test_physical_units_have_distinct_stable_phases_without_losing_checkpo
     worker.states[first_key]['state'].pop('schedule_phase_version')
     await worker.refresh()
     assert worker.states[first_key]['state']['checkpoint'] == {'anchor': 'keep'}
-    assert worker.states[first_key]['state']['schedule_phase_version'] == 2
+    assert worker.states[first_key]['state']['schedule_phase_version'] == 3
 
 
 def test_real_configuration_loader_is_read_only_under_a_business_writer(tmp_path):

@@ -331,6 +331,7 @@ def initial_sources() -> list[SourceDefinition]:
                         ("ONDS", "NASDAQ"),
                         ("CEG", "NASDAQ"),
                         ("SNOW", "NYSE"),
+                        ("IONQ", "NYSE"),
                     ]
                 }
             },
@@ -372,6 +373,7 @@ def initial_sources() -> list[SourceDefinition]:
                         ("ONDS", "ondas"),
                         ("CEG", "constellation-energy"),
                         ("SNOW", "snowflake-inc"),
+                        ("IONQ", "dmy-technology-group-iii"),
                     ]
                 }
             },
