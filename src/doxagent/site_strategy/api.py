@@ -925,11 +925,14 @@ def create_app(
     ) -> dict[str, object]:
         del group_by
         start = since or datetime.now(UTC) - timedelta(hours=24)
-        return {
-            "since": start.isoformat(),
-            "body": service.repository.body_stats(since=start, site_id=site_id),
-            "access": service.repository.access_stats(since=start, site_id=site_id),
-        }
+        def read():
+            with service.repository.read_scope():
+                return {
+                    "since": start.isoformat(),
+                    "body": service.repository.body_stats(since=start, site_id=site_id),
+                    "access": service.repository.access_stats(since=start, site_id=site_id),
+                }
+        return await asyncio.to_thread(read)
 
     return app
 

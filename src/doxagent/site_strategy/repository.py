@@ -779,11 +779,12 @@ class SiteStrategyRepository:
         if site_id:
             site_clause = " and final_site_id=?"
             params.append(site_id)
-        with self._lock:
+        index = 'body_outcomes_site_time' if site_id else 'body_outcomes_utc_time'
+        with self.read_scope(), self._lock:
             rows = self._connection.execute(
                 f"""select final_site_id,strategy_ref,coalesce(combination_id,'') combination_id,
                            outcome,coalesce(reason,'') reason,count(*) count
-                    from body_outcomes indexed by body_outcomes_utc_time
+                    from body_outcomes indexed by {index}
                     where julianday(completed_at)>=julianday(?){site_clause}
                     group by final_site_id,strategy_ref,combination_id,outcome,reason
                     order by final_site_id,count desc""",
@@ -799,7 +800,8 @@ class SiteStrategyRepository:
         if site_id:
             site_clause = " and site_id=?"
             params.append(site_id)
-        with self._lock:
+        index = 'access_events_site_time' if site_id else 'access_events_utc_time'
+        with self.read_scope(), self._lock:
             rows = self._connection.execute(
                 f"""select site_id,
                            coalesce(json_extract(payload_json,'$.strategy_ref'),'') strategy_ref,
@@ -808,7 +810,7 @@ class SiteStrategyRepository:
                            coalesce(json_extract(payload_json,'$.disposition'),'') disposition,
                            coalesce(json_extract(payload_json,'$.reason'),'') reason,
                            count(*) count
-                    from access_events indexed by access_events_utc_time
+                    from access_events indexed by {index}
                     where julianday(occurred_at)>=julianday(?){site_clause}
                     group by site_id,strategy_ref,combination_id,category,purpose,disposition,reason
                     order by site_id,count desc""",

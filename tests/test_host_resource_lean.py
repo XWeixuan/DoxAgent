@@ -398,7 +398,8 @@ async def test_idle_maintenance_does_not_cold_start_source_browsers(recovery_set
         await asyncio.wait_for(service._maintenance_loop(), 1)
     prewarm.assert_not_awaited()
 
-def test_site_stats_use_existing_utc_time_indexes_and_preserve_timezone_counts(tmp_path):
+def test_site_stats_use_existing_utc_time_indexes_and_preserve_timezone_counts(tmp_path,monkeypatch):
+    from contextlib import contextmanager
     from datetime import datetime, UTC
     from doxagent.site_strategy.repository import SiteStrategyRepository
     from doxagent.site_strategy.schema import AccessEvent
@@ -409,7 +410,13 @@ def test_site_stats_use_existing_utc_time_indexes_and_preserve_timezone_counts(t
         occurred_at=datetime(2026,10,29,0,0,tzinfo=UTC),payload={'purpose':'CRAWLER'}))
     repo.append_event(AccessEvent(operation_id='offset-old',site_id='sample',category='ACCESS_RESULT',
         occurred_at=datetime.fromisoformat('2026-10-29T01:00:00+02:00'),payload={'purpose':'CRAWLER'}))
-    statements=[];repo._connection.set_trace_callback(statements.append)
+    statements=[];scope=repo.read_scope
+    @contextmanager
+    def traced_scope(**kwargs):
+        with scope(**kwargs):
+            repo._connection.set_trace_callback(statements.append)
+            yield
+    monkeypatch.setattr(repo,'read_scope',traced_scope)
     try:
         rows=repo.access_stats(since=datetime(2026,10,28,23,59,tzinfo=UTC))
         assert sum(row['count'] for row in rows)==1
@@ -419,4 +426,23 @@ def test_site_stats_use_existing_utc_time_indexes_and_preserve_timezone_counts(t
         for q in queries:
             plan=' '.join(str(r[3]) for r in repo._connection.execute('EXPLAIN QUERY PLAN '+q))
             assert 'SEARCH' in plan and '_utc_time' in plan
+        assert sum(r['count'] for r in repo.access_stats(since=datetime(2026,10,28,23,59,tzinfo=UTC),site_id='sample'))==1
+        assert 'indexed by access_events_site_time' in statements[-1]
+    finally:repo.close()
+
+
+def test_stats_reader_does_not_wait_for_registry_writer_or_see_uncommitted_events(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from datetime import datetime, UTC
+    from doxagent.site_strategy.repository import SiteStrategyRepository
+    from doxagent.site_strategy.schema import AccessEvent
+    repo=SiteStrategyRepository(tmp_path/'stats-wal.db');at=datetime.now(UTC)
+    repo.append_event(AccessEvent(operation_id='committed',site_id='sample',category='ACCESS_RESULT',occurred_at=at,payload={}))
+    try:
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            with repo.transaction() as db:
+                db.execute('INSERT INTO access_events VALUES(?,?,?,?,?,?,?)',
+                    ('pending','pending','sample',None,at.isoformat(),'ACCESS_RESULT','{}'))
+                rows=pool.submit(repo.access_stats,since=at).result(timeout=1)
+                assert sum(r['count'] for r in rows)==1
     finally:repo.close()
