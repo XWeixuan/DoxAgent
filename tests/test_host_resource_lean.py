@@ -397,3 +397,26 @@ async def test_idle_maintenance_does_not_cold_start_source_browsers(recovery_set
     with pytest.raises(asyncio.CancelledError):
         await asyncio.wait_for(service._maintenance_loop(), 1)
     prewarm.assert_not_awaited()
+
+def test_site_stats_use_existing_utc_time_indexes_and_preserve_timezone_counts(tmp_path):
+    from datetime import datetime, UTC
+    from doxagent.site_strategy.repository import SiteStrategyRepository
+    from doxagent.site_strategy.schema import AccessEvent
+    repo=SiteStrategyRepository(tmp_path/'stats.db')
+    repo.append_event(AccessEvent(operation_id='old',site_id='sample',category='ACCESS_RESULT',
+        occurred_at=datetime(2026,10,28,0,0,tzinfo=UTC),payload={'purpose':'CRAWLER'}))
+    repo.append_event(AccessEvent(operation_id='new',site_id='sample',category='ACCESS_RESULT',
+        occurred_at=datetime(2026,10,29,0,0,tzinfo=UTC),payload={'purpose':'CRAWLER'}))
+    repo.append_event(AccessEvent(operation_id='offset-old',site_id='sample',category='ACCESS_RESULT',
+        occurred_at=datetime.fromisoformat('2026-10-29T01:00:00+02:00'),payload={'purpose':'CRAWLER'}))
+    statements=[];repo._connection.set_trace_callback(statements.append)
+    try:
+        rows=repo.access_stats(since=datetime(2026,10,28,23,59,tzinfo=UTC))
+        assert sum(row['count'] for row in rows)==1
+        assert repo.body_stats(since=datetime(2026,10,28,23,59,tzinfo=UTC))==[]
+        queries=[q for q in statements if 'indexed by' in q.lower()]
+        assert len(queries)==2
+        for q in queries:
+            plan=' '.join(str(r[3]) for r in repo._connection.execute('EXPLAIN QUERY PLAN '+q))
+            assert 'SEARCH' in plan and '_utc_time' in plan
+    finally:repo.close()

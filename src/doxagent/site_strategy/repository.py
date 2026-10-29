@@ -783,7 +783,8 @@ class SiteStrategyRepository:
             rows = self._connection.execute(
                 f"""select final_site_id,strategy_ref,coalesce(combination_id,'') combination_id,
                            outcome,coalesce(reason,'') reason,count(*) count
-                    from body_outcomes where completed_at>=?{site_clause}
+                    from body_outcomes indexed by body_outcomes_utc_time
+                    where julianday(completed_at)>=julianday(?){site_clause}
                     group by final_site_id,strategy_ref,combination_id,outcome,reason
                     order by final_site_id,count desc""",
                 tuple(params),
@@ -807,7 +808,8 @@ class SiteStrategyRepository:
                            coalesce(json_extract(payload_json,'$.disposition'),'') disposition,
                            coalesce(json_extract(payload_json,'$.reason'),'') reason,
                            count(*) count
-                    from access_events where occurred_at>=?{site_clause}
+                    from access_events indexed by access_events_utc_time
+                    where julianday(occurred_at)>=julianday(?){site_clause}
                     group by site_id,strategy_ref,combination_id,category,purpose,disposition,reason
                     order by site_id,count desc""",
                 tuple(params),
