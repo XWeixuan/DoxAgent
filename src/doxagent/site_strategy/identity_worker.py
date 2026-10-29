@@ -54,6 +54,9 @@ class SnapshotRepository:
             for v in snapshot["strategies"]
         ]
         self._snapshot.set((identity, profile, egress, strategies))
+        # New commands inherit the most recent validated immutable configuration;
+        # concurrent commands keep their own ContextVar snapshot until completion.
+        self._base_snapshot = self._snapshot.get()
 
     def _view(self):
         return self._snapshot.get() or getattr(self, "_base_snapshot", None)

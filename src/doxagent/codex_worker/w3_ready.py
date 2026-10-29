@@ -53,6 +53,10 @@ class W3ReadySlots:
             ):
                 if column not in columns:
                     db.execute(f"ALTER TABLE w3_ready_slots ADD COLUMN {column} TEXT")
+            db.execute("CREATE INDEX IF NOT EXISTS w3_ready_state_scope ON "
+                       "w3_ready_slots(state,scope,id,thread_id,case_id)")
+            db.execute("CREATE INDEX IF NOT EXISTS w3_ready_scope_times ON "
+                       "w3_ready_slots(scope,failed_at DESC,ready_at)")
             # Old unclaimed slots lost their resident SDK on Worker restart.
             db.execute(
                 "UPDATE w3_ready_slots SET state='RETIRING' WHERE state IN ('READY','BUILDING')"
@@ -141,14 +145,10 @@ class W3ReadySlots:
                     seconds=cooldown
                 ):
                     return
-            count = db.execute(
-                "SELECT count(*) FROM w3_ready_slots "
+            count, building = db.execute(
+                "SELECT count(*),coalesce(max(state='BUILDING' AND case_id IS NULL),0) "
+                "FROM w3_ready_slots "
                 "WHERE scope=? AND state IN ('BUILDING','READY')",
-                (key,),
-            ).fetchone()[0]
-            building = db.execute(
-                "SELECT 1 FROM w3_ready_slots WHERE scope=? AND state='BUILDING' "
-                "AND case_id IS NULL LIMIT 1",
                 (key,),
             ).fetchone()
             if count < target and not building:

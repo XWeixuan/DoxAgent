@@ -29,6 +29,21 @@ class _Match:
 class SiteResolver:
     def __init__(self, repository: SiteStrategyRepository) -> None:
         self.repository = repository
+        self._catalog = None
+        self._exact = {}
+        self._suffix = []
+
+    def _index(self, catalog):
+        if catalog is self._catalog:return
+        exact, suffix = {}, []
+        for head,spec in catalog:
+            if spec.site_id=='generic':continue
+            for rule in spec.domains:
+                if rule.exclude:continue
+                match=_Match(head,spec,rule,rule.match is MatchType.EXACT,len(rule.host))
+                if match.exact:exact.setdefault(rule.host,[]).append(match)
+                else:suffix.append(match)
+        self._catalog,self._exact,self._suffix=catalog,exact,suffix
 
     def validate_no_conflicts(self, candidate: SiteStrategySpec) -> None:
         strategies = [
@@ -54,24 +69,9 @@ class SiteResolver:
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
             raise ValueError("url must be absolute HTTP(S)")
         host = normalize_host(parsed.hostname)
-        matches: list[_Match] = []
-        for head, spec in self.repository.list_active_strategies():
-            if spec.site_id == "generic":
-                continue
-            excluded = any(rule.exclude and rule.matches(host) for rule in spec.domains)
-            if excluded:
-                continue
-            for rule in spec.domains:
-                if not rule.exclude and rule.matches(host):
-                    matches.append(
-                        _Match(
-                            head=head,
-                            spec=spec,
-                            rule=rule,
-                            exact=rule.match is MatchType.EXACT,
-                            length=len(rule.host),
-                        )
-                    )
+        self._index(self.repository.list_active_strategies())
+        candidates=[*self._exact.get(host,()),*(m for m in self._suffix if m.rule.matches(host))]
+        matches=[m for m in candidates if not any(rule.exclude and rule.matches(host) for rule in m.spec.domains)]
         if matches:
             matches.sort(key=lambda item: (item.exact, item.length), reverse=True)
             top = matches[0]

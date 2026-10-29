@@ -9,11 +9,15 @@ def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
     if not 1 <= limit <= 5000:
         raise ValueError('GC limit must be 1..5000')
     now=now or datetime.now(UTC)
-    with store.connect() as reader:
-        row=reader.execute('SELECT min(seq) FROM commit_retention WHERE projected_at>=?',
-                           (instant(now-timedelta(minutes=Limits.load().stream_minutes)),)).fetchone()
-        floor=row[0] if row[0] is not None else store.highwater(reader)
-    counts={};started=time.monotonic()
+    started=time.monotonic()
+    if time_floor is None:
+        with store.connect() as reader:
+            reader.set_progress_handler(lambda:time.monotonic()-started>=budget,1000)
+            row=reader.execute('SELECT min(seq) FROM commit_retention WHERE projected_at>=?',
+                               (instant(now-timedelta(minutes=Limits.load().stream_minutes)),)).fetchone()
+            time_floor=row[0] if row[0] is not None else store.highwater(reader)
+    floor=time_floor
+    counts={}
     with store.connect(write=True,timeout=.05) as db:
         db.set_progress_handler(lambda:time.monotonic()-started>=budget,1000)
         for sql in ('SELECT min(seq) FROM views WHERE expires_at>?',
@@ -44,6 +48,8 @@ def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
         counts['commit_retention']=db.execute('DELETE FROM commit_retention WHERE seq IN (SELECT r.seq FROM commit_retention r WHERE r.seq<? AND NOT EXISTS(SELECT 1 FROM commits c WHERE c.seq=r.seq) LIMIT ?)',(floor,limit)).rowcount
         db.execute("UPDATE read_meta SET value=CAST(max(CAST(value AS INTEGER),?) AS TEXT) WHERE key='retained_floor'",(floor,))
         gaps=[tuple(r) for r in db.execute('SELECT source,event,reason FROM gaps')]
-    return {'deleted':counts,'retention_floor':floor,'time_floor':floor,'protected':False,
+    return {'deleted':counts,'retention_floor':floor,'time_floor':time_floor,'protected':False,
             'policy':'SCOPED_PROTOCOL','protected_sources':[],
-            'repair_scope':gaps,'scanned':sum(counts.values()),'physical_space_reclaimed':False}
+            'repair_scope':gaps,'scanned':len(search)+len(exiting),
+            'cycle_complete':len(search)<limit and not exiting and not any(counts.values()),
+            'next_cursor':search[-1] if search else '', 'physical_space_reclaimed':False}

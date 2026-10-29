@@ -1,6 +1,7 @@
 """Bounded access-owner retention, independent of browser prewarm/probe loops."""
 
 import asyncio
+import sqlite3
 import time
 from datetime import timedelta
 
@@ -22,6 +23,11 @@ def migrate_retention(connection):
         create index if not exists access_failure_shape_time on access_failure_shapes(last_seen);
         create index if not exists owned_target_retention_utc
             on owned_browser_targets(julianday(updated_at)) where state in ('CLOSED','LOST');
+        create index if not exists owned_target_active_instance
+            on owned_browser_targets(identity_id,browser_instance_id)
+            where state not in ('CLOSED','LOST');
+        create index if not exists legacy_success_retention_utc
+            on access_events(julianday(occurred_at)) where category='ACCESS_SUCCEEDED';
         create index if not exists operation_retention_utc
             on maintenance_operations(julianday(updated_at))
             where state in ('DONE','FAILED','CANCELLED','INTERRUPTED');
@@ -37,6 +43,12 @@ def migrate_retention(connection):
         create index if not exists success_event_retention_utc
             on access_events(julianday(occurred_at)) where category='ACCESS_RESULT'
             and json_extract(payload_json,'$.disposition')='SUCCESS';
+        create index if not exists live_challenge_allocation
+            on challenge_tasks(json_extract(data_json,'$.allocation_id'))
+            where state<>'RESOLVED' and superseded_by is null;
+        create index if not exists live_recovery_allocation
+            on browser_recoveries(json_extract(data_json,'$.original_allocation_id'))
+            where phase<>'RESOLVED';
     """)
 
 
@@ -47,6 +59,16 @@ class RetentionWorker:
         self.seconds = min(2, max(0.01, seconds))
         self.metrics = {}
         self.resource_cleanup = None
+
+    def _delete(self, connection, table, column, condition, threshold, deadline):
+        connection.set_progress_handler(lambda:time.monotonic()>=deadline,1000)
+        try:
+            return connection.execute(
+                f"delete from {table} where rowid in (select rowid from {table} "
+                f"where julianday({column})<julianday(?) and ({condition}) limit ?)",
+                (threshold,self.batch_size)).rowcount
+        finally:
+            connection.set_progress_handler(None,0)
 
     def run_once(self, now=None):
         instant = now or utc_now()
@@ -124,7 +146,11 @@ class RetentionWorker:
                     "delete from access_events where rowid=?", [(row["rowid"],) for row in rows]
                 )
             deleted["success_events"] = len(rows)
-        rules.insert(0, ("access_events", "occurred_at", 7, "category='ACCESS_SUCCEEDED'"))
+        with self.repository.transaction() as connection:
+            legacy_done=connection.execute("SELECT 1 FROM site_recovery_migrations "
+                "WHERE name='legacy-success-retention-complete'").fetchone()
+        if not legacy_done:
+            rules.insert(0, ("access_events", "occurred_at", 7, "category='ACCESS_SUCCEEDED'"))
         rules.append(
             (
                 "access_events",
@@ -141,26 +167,21 @@ class RetentionWorker:
             threshold = (instant - timedelta(days=days)).isoformat()
             with self.repository.transaction() as connection:
                 # julianday normalizes old ISO UTC offsets instead of comparing strings.
-                cursor = connection.execute(
-                    f"delete from {table} where rowid in (select rowid from {table} "
-                    f"where julianday({column})<julianday(?) and ({condition}) limit ?)",
-                    (threshold, self.batch_size),
-                )
-                deleted[table] = cursor.rowcount
-                # Limit the backlog scan too: >batch is an honest lower bound,
-                # not an unbounded COUNT(*) over a million JSON records.
-                backlog = connection.execute(
-                    "select count(*) as n,strftime('%Y-%m-%dT%H:%M:%SZ',"
-                    f"min(julianday(stamp))) as oldest from (select {column} as stamp "
-                    f"from {table} where julianday({column})<julianday(?) "
-                    f"and ({condition}) order by julianday({column}) limit ?)",
-                    (threshold, self.batch_size + 1),
-                ).fetchone()
+                try:
+                    count=self._delete(connection,table,column,condition,threshold,started+self.seconds)
+                except sqlite3.OperationalError as exc:
+                    if getattr(exc,'sqlite_errorcode',None)!=sqlite3.SQLITE_INTERRUPT:raise
+                    break
+                deleted[table] = count
                 pending[f"{table}:{days}"] = {
-                    "rows_at_least": backlog["n"],
-                    "oldest_eligible": backlog["oldest"],
-                    "truncated": backlog["n"] > self.batch_size,
+                    "rows_at_least": 0,
+                    "oldest_eligible": None,
+                    "truncated": count == self.batch_size,
                 }
+                if condition == "category='ACCESS_SUCCEEDED'" and count < self.batch_size:
+                    if not connection.execute("SELECT 1 FROM access_events WHERE category='ACCESS_SUCCEEDED' LIMIT 1").fetchone():
+                        connection.execute("INSERT OR IGNORE INTO site_recovery_migrations VALUES(?,?)",
+                            ('legacy-success-retention-complete',instant.isoformat()))
         self.metrics = {
             "at": instant.isoformat(),
             "deleted": deleted,

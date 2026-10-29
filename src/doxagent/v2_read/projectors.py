@@ -263,6 +263,9 @@ class DomainProjectors:
                     "eligible":eligible,"acquired_at":value.get("acquired_at"),"checked_at":value.get("checked_at"),
                     "last_error":value.get("last_error"),"fetch_total":value.get("fetch_total",0),
                     "full_total":value.get("full_total",0),"cache_total":value.get("cache_total",0),
+                    "initial_request_at":value.get('initial_request_at'),
+                    "initial_result_at":value.get('initial_result_at'),
+                    "initial_outcome":value.get('initial_outcome'),
                     "live":True}})
         if table=='live_origins' and value['origin_key'].startswith('legacy_body:'):
             records.append({'kind':'article_alias','ticker':'','id':value['origin_key'].removeprefix('legacy_body:'),

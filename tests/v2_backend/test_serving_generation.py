@@ -136,10 +136,10 @@ def test_definition_noop_compares_references_without_reloading_large_body(tmp_pa
     record=dict(kind='fact',ticker='MU',id='fact',data=dict(fact=dict(fact_id='F1',title='kept',body='x'*200000),observations=[{'note':'y'*200}]*300))
     first=store.ingest('fixture','first',[record])
     decode=NativeContent.decode
-    def guard(self,value,*,expand_definitions=True):
+    def guard(self,value,*,expand_definitions=True,shared=False):
         if isinstance(value,dict) and DEFINITION_MARKER in value and expand_definitions:
             raise AssertionError('unchanged definition body should not be read by the writer')
-        return decode(self,value,expand_definitions=expand_definitions)
+        return decode(self,value,expand_definitions=expand_definitions,shared=shared)
     monkeypatch.setattr(NativeContent,'decode',guard)
     assert store.ingest('fixture','same',[record])==first
     with store.connect() as db:

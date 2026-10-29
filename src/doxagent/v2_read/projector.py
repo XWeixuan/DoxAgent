@@ -153,6 +153,12 @@ class ProjectionWorker:
                     position=event["seq"],
                     at=event["recorded_at"],
                 )
+            except sqlite3.IntegrityError as exc:
+                if str(exc) != 'ARTIFACT_RECLAIM_IN_PROGRESS':
+                    raise
+                # The business owner/receipt still owns the bytes. Retry this
+                # coordinate and rematerialize after local GC finishes; never BODY.
+                break
             except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError) as exc:
                 self.store.ingest(
                     source.source,
@@ -229,6 +235,10 @@ class ProjectionWorker:
                     resolved_gap=gap[1],
                 )
                 repaired += 1
+            except sqlite3.IntegrityError as exc:
+                if str(exc) != 'ARTIFACT_RECLAIM_IN_PROGRESS':
+                    raise
+                continue
             except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError):
                 continue
         return repaired

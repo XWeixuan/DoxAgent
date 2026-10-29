@@ -447,7 +447,7 @@ def run_gc(store, *, once=False, interval=15, budget=2):
                     continue
                 for name, count in result["deleted"].items():
                     total[name] = total.get(name, 0) + count
-                if not any(result["deleted"].values()) and not result.get("scanned"):
+                if result.get('cycle_complete') or (not any(result["deleted"].values()) and not result.get("scanned")):
                     break
                 batch = min(500, batch * 2)
             print(json.dumps({"maintenance": "gc", "deleted": total, "errors": errors,

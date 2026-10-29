@@ -266,10 +266,16 @@ class ChromeSupervisor:
         identity_id = str(request.get("identity_id") or "")
         if not re.fullmatch(r"[a-z0-9][a-z0-9_.-]{0,127}", identity_id):
             raise ValueError("invalid_identity_id")
-        if command == "status":
+        if command in {"status", "probe"}:
             instance = self._instances.get(identity_id)
             if instance:
                 result = self._describe(instance)
+                if command == 'probe' and result['running']:
+                    try:
+                        await self._verify_cdp_owner(instance.websocket_url, instance.chrome.pid)
+                        result['cdp_ready'] = True
+                    except Exception:
+                        result['cdp_ready'] = False
                 if instance.chrome.returncode is not None:
                     self._record_exit(instance, "unexpected_exit")
                 return result
@@ -466,20 +472,7 @@ class ChromeSupervisor:
                     stderr=asyncio.subprocess.DEVNULL,
                 )
                 await asyncio.sleep(0.2)
-                vnc = await asyncio.create_subprocess_exec(
-                    "/usr/bin/x11vnc",
-                    "-display",
-                    f":{display_number}",
-                    "-forever",
-                    "-shared",
-                    "-listen",
-                    "127.0.0.1",
-                    "-rfbport",
-                    str(vnc_port),
-                    "-nopw",
-                    stdout=asyncio.subprocess.DEVNULL,
-                    stderr=asyncio.subprocess.DEVNULL,
-                )
+                vnc = MissingProcess()  # Viewer starts on maintenance_select.
                 environment = {
                     key: value
                     for key, value in os.environ.items()
@@ -517,6 +510,8 @@ class ChromeSupervisor:
                     "--no-first-run",
                     "--no-default-browser-check",
                     "--disk-cache-size=268435456",
+                    "--disable-domain-reliability",
+                    "--disable-features=Ukm,SegmentationPlatform,OptimizationHints,OptimizationGuideModelDownloading,OptimizationTargetPrediction",
                     "about:blank",
                     env=environment,
                     stdout=asyncio.subprocess.DEVNULL,

@@ -249,6 +249,7 @@ class LiveQueue:
             claim_token=token,
             status="running",
             attempt_count=row["attempt"],
+            fetch_round=row['fetch_round'],
             execution_seq=row["attempt"],
             work_kind=row["work_kind"],
             pipeline_version="body_v2.2",
@@ -368,7 +369,7 @@ class LiveQueue:
                            "AND state='FETCH_DUE'", (job.not_before.isoformat(), key))
                 if job.work_kind == "recheck":
                     db.execute(
-                        "UPDATE live_articles SET state='FETCH_DUE',work_kind='recheck',due_at=?,attempt=0,"
+                        "UPDATE live_articles SET state='FETCH_DUE',work_kind='recheck',due_at=?,attempt=0,fetch_round=0,"
                         "first_fetch_at=NULL,attempts_json='[]' WHERE article_key=? AND state IN ('READY','FETCH_DUE') "
                         "AND (checked_at IS NULL OR checked_at<?)",
                         (utc_now().isoformat(), key, job.created_at.isoformat()),
@@ -441,20 +442,39 @@ class LiveDeliveryWorker:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
 
-    def _prepare(self, row):
-        message = RawMessageInput.model_validate(self.repository.load(row["result_ref"]))
-        source = self.queue.source(row["source_id"]) or self.bus.repository.get_source(
-            row["source_id"]
-        )
+    def _prepare(self, row, *, messages=None, sources=None, terms=None):
+        messages = {} if messages is None else messages
+        sources = {} if sources is None else sources
+        terms = {} if terms is None else terms
+        ref=row['result_ref']
+        if ref not in messages:
+            messages[ref]=RawMessageInput.model_validate(self.repository.load(ref, shared=True))
+        message=messages[ref]
+        if row['source_id'] not in sources:
+            sources[row['source_id']]=self.queue.source(row['source_id']) or self.bus.repository.get_source(row['source_id'])
+        source=sources[row['source_id']]
         binding = self.bus.repository.get_binding(row["binding_id"])
         if binding and not row.get("raw_id"):
             known = self.bus.repository.known_published_article(binding, message)
             if known:
                 row["raw_id"] = known.raw_message_id
-        found = self.terms.get(row["ticker"])
+        if row['ticker'] not in terms:
+            terms[row['ticker']]=self.terms.get(row['ticker'])
+        found = terms[row['ticker']]
         if found:
             row["terms_revision"] = found[0]
         return message, source, binding, found
+
+    def _prepare_batch(self, rows):
+        messages, sources, terms = {}, {}, {}
+        prepared=[]
+        for row in rows:
+            try:
+                prepared.append((row,*self._prepare(row,messages=messages,sources=sources,terms=terms)))
+            except Exception as exc:
+                row['_prepare_error']=exc
+                prepared.append((row,None,None,None,None))
+        return prepared
 
     async def publish(self, row, source, binding, message):
         prepared = await self.bus.storage.prepare(
@@ -462,9 +482,11 @@ class LiveDeliveryWorker:
         )
         await self.bus.storage.call(self.repository.publish, prepared, _lane_priority=0)
 
-    async def process(self, row):
+    async def process(self, row, prepared=None):
+        if row.get('_prepare_error'):
+            raise row['_prepare_error']
         decision_terms = row["terms_revision"]
-        message, source, binding, found = await self.bus.storage.prepare(self._prepare, row)
+        message, source, binding, found = prepared or await self.bus.storage.prepare(self._prepare, row)
         if not source or not binding or not binding.enabled:
             await self.bus.storage.call(self.repository.decision, row, "CANCELLED")
             return
@@ -500,9 +522,13 @@ class LiveDeliveryWorker:
     async def classify(self, rows):
         key = rows[0]["article_key"]
         try:
-            prepared = [
-                (row, *(await self.bus.storage.prepare(self._prepare, row))) for row in rows
-            ]
+            prepared = await self.bus.storage.prepare(self._prepare_batch, rows)
+            failed = [r for r in prepared if r[0].get('_prepare_error')]
+            for row, *_ in failed:
+                await self.bus.storage.call(self.repository.decision,row,'L2_DUE',
+                    error=type(row['_prepare_error']).__name__,retry=True)
+            prepared = [r for r in prepared if not r[0].get('_prepare_error')]
+            if not prepared:return
             definitions = {
                 row["ticker"]: found[1]
                 for row, message, source, binding, found in prepared
@@ -592,16 +618,21 @@ class LiveDeliveryWorker:
         # article behind 32 full preparations. Keep one old item progressing.
         rows = foreground + background[:1]
         processed = 0
-        for row in rows:
-            try:
-                await self.process(row)
-            except Exception as exc:
-                log.warning("live delivery awaiting local recovery: %s", type(exc).__name__)
-                await self.bus.storage.call(
-                    self.repository.decision, row, "PENDING", error=type(exc).__name__, retry=True
-                )
-            processed += 1
-            if max_seconds is not None and time.monotonic() - started >= max_seconds:
+        from itertools import groupby
+        for _, article_rows in groupby(rows,key=lambda r:r['article_key']):
+            prepared = await self.bus.storage.prepare(self._prepare_batch,list(article_rows))
+            for row, *facts in prepared:
+                try:
+                    await self.process(row, facts)
+                except Exception as exc:
+                    log.warning("live delivery awaiting local recovery: %s", type(exc).__name__)
+                    await self.bus.storage.call(
+                        self.repository.decision, row, "PENDING", error=type(exc).__name__, retry=True
+                    )
+                processed += 1
+                if max_seconds is not None and time.monotonic() - started >= max_seconds:
+                    break
+            if max_seconds is not None and time.monotonic()-started>=max_seconds:
                 break
         if len(self.decisions) < 2:
             pending = await self.bus.storage.read(self.repository.deliveries, "L2_DUE")

@@ -2370,3 +2370,13 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 Site stats isolation: statistics reuse the existing bounded read scope instead of the Registry writer lock, run off the API event loop, and use the existing site/time index for per-site requests. WAL regression proves reads complete during an uncommitted writer and do not expose its pending event.
 
 2026-10-29 Lean release audit: formal builds deployed, historical cleanup receipted, original 90-minute window retained including the 16.6-minute repair pause. Acceptance remains FAILED: 24667/35593 on-time cycles, 16/29 complete bodies, 23/43 deliveries within 10s. Post-window redirect/lifecycle/statistics fixes verified separately; 15 unreferenced transition tags retired, profiles/data/W1-W3 retained. See docs/host-resource-lean-implementation-20261029.md.
+
+2026-10-29 统一I/O修复 A：Worker READY/BUILDING覆盖索引与合并查询，Site非终态实例索引；匿名Context删除逐页持久化和逐publisher实例失效历史扫描，真实Context/进程所有权保留。旧Site成功事件使用部分索引并在结清后退出兼容维护，删除同范围backlog复查。
+
+2026-10-29 统一I/O修复 B：Read退出GC先限量选ID并沿read_meta游标推进；删除锁内文件hash/rename，DELETING原子声明后锁外处理，Native触发器禁止复活DELETING。复用retention floor，Acquisition只读连接可靠关闭、checkpoint引用索引、归档只读生效schedule；Native不可变缓存取消逐chunk复核并按展开堆计费，提供显式raw读取。
+
+2026-10-29 统一I/O修复 C/D：Collector删除5秒技术年龄全源停机，独立小控制watch和30秒维护；HTTP联合预留source/publisher/role，解析及客户端关闭退出执行占槽；Browser容量由Site负责。控制器失败通过Supervisor独立CDP证据判断native，保留健康Chrome；匿名2秒burst复用、freeze失败保留暖页、VNC按需，关闭非业务优化后台功能。默认Finnhub允许最多2在途，存量配置待CAS迁移核验。
+
+2026-10-29 统一I/O修复 E（验证中）：首次获取轮次与领取/延期区分，普通一次短重试不再按跳转/fallback条数截断；真实provider等待不再落入30分钟首次恢复。正文更新重置当前轮次但保留首态；同批多ticker共享一次正文物化，304复用已验证digest，已有结果spool和ARTICLE_ONCE保留。
+
+2026-10-29 统一I/O修复 F/Review：首次结果与decision纳入现有CDC薄行，Projector和API同时支持initial指标，旧缺证据保留UNKNOWN；Projector遇本地GC重取引用竞争保留原坐标，不重抓BODY。checkpoint续页变化独立触发计划，必需TAIL从生效边界计入分母。采集交付148、正文契约114、Site/Worker/GC66、专项10项及前端67项通过；生产窗口待验，不宣称性能达标。其它会话未提交交易语义冲突保留隔离。

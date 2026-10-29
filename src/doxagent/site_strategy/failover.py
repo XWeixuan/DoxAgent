@@ -19,15 +19,15 @@ class FailoverCoordinator:
         self.tasks = {}
         self._locks = {}
 
-    def usable(self, scope, identity_id, purpose):
-        state = self.service.repository.get_runtime(f"scope:{scope.scope_id}")
+    def usable(self, scope, identity_id, purpose, *, state=None, identity=None, egress=None, spec=None, runtime=None):
+        state = state or self.service.repository.get_runtime(f"scope:{scope.scope_id}")
         member = state.combinations.get(identity_id)
         capability = member.capabilities.get(purpose.value, {}) if member else {}
-        identity = self.service.repository.get_identity(identity_id)
-        egress = self.service.repository.get_egress(identity.egress_id)
-        expected = capability_fingerprint(self.service.repository, scope, identity, egress)
+        identity = identity or self.service.repository.get_identity(identity_id)
+        egress = egress or self.service.repository.get_egress(identity.egress_id)
+        runtime = runtime or self.service.repository.get_identity_runtime(identity_id)
+        expected = capability_fingerprint(self.service.repository, scope, identity, egress, site=spec, runtime=runtime)
         checked = capability.get("checked_at")
-        runtime = self.service.repository.get_identity_runtime(identity_id)
         return (
             capability.get("state") in {"VERIFIED_COLD", "VERIFIED_WARM"}
             and capability.get("result") in {"READY", "FULL", "SHORT_FULL"}
@@ -86,9 +86,9 @@ class FailoverCoordinator:
         )
         if required == "inherit":
             required = spec.auth.requirement
+        runtime = repo.get_identity_runtime(identity_id) if identity else None
         if identity and required == "required":
             auth = repo.get_site_identity_auth(scope.owner_site_id, identity_id)
-            runtime = repo.get_identity_runtime(identity_id)
             if (
                 auth.auth_state.value != "VALID"
                 or auth.observed_session_revision != runtime.session_revision
@@ -103,7 +103,8 @@ class FailoverCoordinator:
                 )
             ):
                 reasons.append("two_subscription_article_checks_required")
-        proof = bool(identity and self.usable(scope, identity_id, purpose))
+        proof = bool(identity and self.usable(scope, identity_id, purpose, state=state,
+            identity=identity, egress=egress, spec=spec, runtime=runtime))
         eligible = not reasons
         if (
             not scope.scope_id.startswith("publisher:")

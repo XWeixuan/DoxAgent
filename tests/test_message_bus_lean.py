@@ -455,7 +455,7 @@ async def test_twenty_tickers_share_one_body_and_article_once_update(
     assert max(durations) < 1000
 
 
-def test_native_cache_does_not_repeat_decode_and_detects_changed_chunk(tmp_path, monkeypatch):
+def test_native_cache_does_not_repeat_decode_and_checks_integrity_on_cold_load(tmp_path, monkeypatch):
     import json
     from doxagent.v2_read.native_content import NativeContent, MARKER
     from doxagent.v2_read.content_files import ContentUnavailable
@@ -473,7 +473,7 @@ def test_native_cache_does_not_repeat_decode_and_detects_changed_chunk(tmp_path,
     monkeypatch.setattr(codec.files, "read_all", read)
     (codec.files._path(identity) / "0").write_bytes(b"corrupt")
     with pytest.raises(ContentUnavailable):
-        codec.decode(ref)
+        NativeContent(codec.database, cache_bytes=0).decode(ref)
 
 
 def test_caller_observation_and_ambiguous_requests_do_not_prove_freshness():
@@ -1009,7 +1009,7 @@ async def test_delivery_time_slice_yields_before_a_new_article_arrives(tmp_path,
     )
     calls = []
 
-    async def slow(row):
+    async def slow(row, prepared=None):
         calls.append(row["article_key"])
         await asyncio.sleep(0.03)
 

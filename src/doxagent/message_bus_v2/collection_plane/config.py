@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from contextlib import closing
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -35,16 +36,35 @@ class ConfigurationLoader:
         self.current=None
         self.key=None
 
+    @staticmethod
+    def control(settings):
+        """Small revocation facts, independent of plan compilation and maintenance."""
+        import sqlite3, json
+        path=Path(settings.message_bus_v2_sqlite_path).resolve()
+        with closing(sqlite3.connect(path.as_uri()+'?mode=ro',uri=True,timeout=.2)) as db:
+            db.execute('BEGIN')
+            sources={r[0]:(r[1],bool(r[2])) for r in db.execute('SELECT source_id,version,enabled FROM source_definitions')}
+            bindings={r[0]:(r[1],bool(r[2]) and r[3] is None) for r in db.execute('SELECT binding_id,version,enabled,tombstoned_at FROM ticker_source_bindings')}
+            row=db.execute('SELECT data_json FROM bus_collection_control ORDER BY revision DESC LIMIT 1').fetchone()
+            override=json.loads(row[0]) if row else {'revision':0,'enabled':False}
+            running={r[0] for r in db.execute("SELECT ticker FROM ticker_monitoring_states WHERE status='running'")}
+        runtime=Path(settings.persistent_runtime_v2_sqlite_path).resolve()
+        pauses={}
+        if runtime.is_file():
+            with closing(sqlite3.connect(runtime.as_uri()+'?mode=ro',uri=True,timeout=.2)) as db:
+                pauses={r[0]:json.loads(r[1]) for r in db.execute("SELECT key,payload FROM runtime_values WHERE namespace='pause'")}
+        return dict(sources=sources,bindings=bindings,override=override,pauses=pauses,running=running)
+
     def __call__(self,settings,*,seeds=False):
         import sqlite3
         from datetime import timedelta
         path=Path(settings.message_bus_v2_sqlite_path).resolve()
-        with sqlite3.connect(path.as_uri()+"?mode=ro",uri=True,timeout=.2) as db:
+        with closing(sqlite3.connect(path.as_uri()+"?mode=ro",uri=True,timeout=.2)) as db:
             revision=db.execute("SELECT revision FROM bus_configuration WHERE id=1").fetchone()[0]
         runtime=Path(settings.persistent_runtime_v2_sqlite_path).resolve()
         external=[]
         if runtime.is_file():
-            with sqlite3.connect(runtime.as_uri()+"?mode=ro",uri=True,timeout=.2) as db:
+            with closing(sqlite3.connect(runtime.as_uri()+"?mode=ro",uri=True,timeout=.2)) as db:
                 external=db.execute("SELECT namespace,key,payload FROM runtime_values "
                     "WHERE namespace IN ('pause','calendar_overrides') ORDER BY namespace,key").fetchall()
         now=utc_now();day=semantic_day(now)
@@ -71,7 +91,7 @@ class Configuration:
     at: str = ""
     calendar_day: str = ""
 
-    def allowed(self, binding, now):
+    def allowed(self, binding, now, *, control=None):
         current = self.bindings.get(binding.binding_id)
         source = self.sources.get(binding.source_id)
         return bool(
@@ -82,7 +102,10 @@ class Configuration:
             and current.polling.enabled
             and source.enabled
             and current.polling.active_at(now)
-            and self.pauses.get(binding.ticker) != "all"
+            and (not control or (control['sources'].get(binding.source_id)==(source.version, True)
+                and control['bindings'].get(binding.binding_id)==(binding.version, True)
+                and binding.ticker in control['running']))
+            and (control['pauses'] if control else self.pauses).get(binding.ticker) != "all"
             and (
                 source.source_id in {"corporate_ir_press_releases", "sec_edgar"}
                 or (
@@ -91,7 +114,7 @@ class Configuration:
                         not self.calendar_day or self.calendar_day == semantic_day(now).isoformat()
                     )
                 )
-                or matches(self.override, binding.ticker, binding.source_id, now)
+                or matches(control['override'] if control else self.override, binding.ticker, binding.source_id, now)
             )
         )
 
@@ -125,7 +148,7 @@ def load(settings, *, seeds=False):
         }
         terms = MonitoringTermsService(repo)
         result.terms = {t: terms.get(t) for t in running}
-        result.override = CollectionControl(repo).status()
+        result.override = CollectionControl(repo).status(include_applied=False)
         if seeds:
             for b in result.bindings.values():
                 if b.binding_id in existing:

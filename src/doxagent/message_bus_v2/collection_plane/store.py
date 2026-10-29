@@ -17,6 +17,11 @@ def path_for(bus_path):
     return Path(bus_path).parent / "acquisition.sqlite3"
 
 
+def required_unit(source_id, unit):
+    return (not unit.startswith('TAIL:') or unit=='TAIL:YAHOO_TIME' or unit.startswith('TAIL:IR:')
+            or source_id in {'reuters_site_search','globenewswire_search','calcalist_search'})
+
+
 def durable_write(function):
     @wraps(function)
     def run(*args, **kwargs):
@@ -78,6 +83,7 @@ class AcquisitionStore:
                 """)
                 if "head_json" not in {r[1] for r in db.execute("PRAGMA table_info(units)")}:
                     db.execute("ALTER TABLE units ADD COLUMN head_json TEXT NOT NULL DEFAULT '{}'")
+                db.execute("CREATE INDEX IF NOT EXISTS units_checkpoint ON units(json_extract(state,'$.checkpoint_ref'))")
 
     @contextmanager
     def connect(self, *, write=False):
@@ -90,10 +96,10 @@ class AcquisitionStore:
                 timeout=1.0 if write else 0.2,
                 isolation_level=None,
             )
-            db.row_factory = sqlite3.Row
-            db.execute("PRAGMA synchronous=NORMAL")
             try:
+                db.row_factory = sqlite3.Row
                 if write:
+                    db.execute("PRAGMA synchronous=NORMAL")
                     db.execute("BEGIN IMMEDIATE")
                 yield db
                 if write:
@@ -114,7 +120,8 @@ class AcquisitionStore:
     def meta(self, key, value):
         with self.connect(write=True) as db:
             db.execute(
-                "INSERT INTO meta VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                "INSERT INTO meta VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value "
+                "WHERE meta.value<>excluded.value",
                 (key, canonical_json(value)),
             )
 
@@ -124,7 +131,8 @@ class AcquisitionStore:
                 (r["binding_id"], r["unit"]): dict(r) | {"state": json.loads(r["state"])}
                 for r in db.execute("SELECT * FROM units")
             }
-            checkpoints={r[0]:json.loads(r[1]) for r in db.execute('SELECT * FROM physical_checkpoints')}
+            checkpoints={r[0]:json.loads(r[1]) for r in db.execute("SELECT identity,checkpoint FROM physical_checkpoints "
+                "WHERE identity IN (SELECT json_extract(state,'$.checkpoint_ref') FROM units)")}
         for row in result.values():
             ref=row['state'].pop('checkpoint_ref',None)
             if ref:row['state']['checkpoint']=checkpoints.get(ref,{})
@@ -235,7 +243,7 @@ class AcquisitionStore:
                     "SCHEDULE",
                     "ENABLED" if enabled else "DISABLED",
                     None,
-                    canonical_json({"epoch_at": epoch.isoformat()}),
+                    canonical_json({"epoch_at": epoch.isoformat(), 'required':required_unit(source.source_id,unit)}),
                 ),
             )
 
@@ -269,7 +277,7 @@ class AcquisitionStore:
         winning = listing[-1] if valid and listing else None
         proof = {
             "physical_run_id": run_id,
-            "required": not unit.startswith("TAIL:"),
+            "required": required_unit(source.source_id,unit),
             "list_validated": bool(valid and winning),
             "winning_request_id": winning.get("physical_request_id") if winning else None,
             "listing_received_at": winning.get("response_received_at") if winning else None,
@@ -360,7 +368,7 @@ class AcquisitionStore:
                         None,
                         None,
                         canonical_json(
-                            {"required": not unit.startswith("TAIL:"), "list_validated": False}
+                            {"required": required_unit(source.source_id,unit), "list_validated": False}
                         ),
                     )
                     for b in targets
@@ -501,7 +509,7 @@ class AcquisitionStore:
             ):
                 proof = {
                     "physical_run_id": run_id,
-                    "required": not unit.startswith("TAIL:"),
+                    "required": required_unit(source.source_id,unit),
                     "list_validated": True,
                     "winning_request_id": winning.get("physical_request_id"),
                     "listing_received_at": winning["response_received_at"],

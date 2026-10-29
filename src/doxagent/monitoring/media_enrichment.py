@@ -185,6 +185,7 @@ class FetchAttempt:
     response_bytes: int | None = None
     retry_after_seconds: float | None = None
     transient_hint: bool = False
+    request_started_at: str | None = None
 
     def to_payload(self) -> JsonObject:
         return {
@@ -199,6 +200,7 @@ class FetchAttempt:
             "response_bytes": self.response_bytes,
             "retry_after_seconds": self.retry_after_seconds,
             "transient_hint": self.transient_hint,
+            "request_started_at": self.request_started_at,
         }
 
 

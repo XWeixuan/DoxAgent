@@ -7,6 +7,7 @@ import logging
 import time
 from contextvars import ContextVar
 from dataclasses import dataclass
+from contextlib import asynccontextmanager
 from weakref import WeakKeyDictionary
 
 from curl_cffi import CurlOpt
@@ -16,7 +17,55 @@ log = logging.getLogger(__name__)
 _LEASE = ContextVar("publisher_curl_lease", default=None)
 _BUDGETS = WeakKeyDictionary()
 HTTP_CONTEXT = ContextVar("message_http_context", default=None)
+HTTP_SOURCE = ContextVar("message_http_source", default=None)
 PROCESS_ROLE = "collector"
+
+
+@asynccontextmanager
+async def joint_permits(*slots, source=None):
+    """Reserve the current loop's capacities together, never hold one while waiting."""
+    slots = (*slots, source._semaphore) if source else slots
+    while True:
+        if source:
+            delay = source._next_request_at-source._clock()
+            if delay>0:
+                await source._sleep(delay)
+                continue
+        blocked = next((slot for slot in slots if slot.locked()), None)
+        if blocked is not None:
+            await blocked.acquire()
+            blocked.release()
+            continue
+        # No await: reservation is atomic within the owning event loop.
+        for slot in slots:
+            slot._value -= 1
+        break
+    try:
+        if source:
+            source._next_request_at=source._clock()+source.constraints.minimum_request_gap_seconds
+            if source._on_request:
+                source._on_request()
+        yield
+    finally:
+        for slot in slots:
+            if source and slot is source._semaphore and source._shrink_debt:
+                source._shrink_debt-=1
+            else:
+                slot.release()
+
+
+@asynccontextmanager
+async def source_http_scope(permit):
+    limiter = getattr(permit, '__self__', None)
+    if limiter is None or not hasattr(limiter, 'cost'):
+        async with permit():
+            yield
+        return
+    token = HTTP_SOURCE.set(limiter)
+    try:
+        yield
+    finally:
+        HTTP_SOURCE.reset(token)
 
 
 def http_budget(role):
@@ -171,11 +220,31 @@ class PublisherClients:
             lambda: PublisherSession(impersonate="chrome", trust_env=False, max_clients=2)
         )
         self._maintenance_at = 0
+        self._closing = set()
+
+    def _close_later(self, client):
+        if getattr(client, 'closing', False):
+            return
+        client.closing = True
+        async def close():
+            try:
+                async with asyncio.timeout(8):
+                    await client.session.close()
+            except Exception:
+                log.exception('publisher client close failed')
+        task = asyncio.create_task(close())
+        self._closing.add(task)
+        task.add_done_callback(self._closing.discard)
 
     async def request(self, key, method, url, *, role="collector", timeout=8, **kwargs):
         if time.monotonic() - self._maintenance_at > 60:
             self._maintenance_at = time.monotonic()
-            await self.close_idle()
+            # Retirement is a small in-memory inventory; close runs independently.
+            for name, idle in list(self.clients.items()):
+                if not idle.active and time.monotonic()-idle.used_at>180:
+                    self.clients.pop(name)
+                    idle.retired=True
+                    self._close_later(idle)
         async with asyncio.timeout(timeout):
             while True:
                 client = self.clients.get(key)
@@ -185,13 +254,21 @@ class PublisherClients:
                         asyncio.Semaphore(2),
                         used_at=time.monotonic(),
                     )
-                async with client.slots, http_budget(role):
+                source = HTTP_SOURCE.get()
+                waiting = time.monotonic()
+                async with joint_permits(client.slots, http_budget(role), source=source):
                     if client.retired:
                         continue
                     from .collection_override import check_request_allowed
 
                     check_request_allowed()
                     client.active += 1
+                    executing = time.monotonic()
+                    if source:
+                        from .scheduler import POLL_TIMINGS
+                        timings=POLL_TIMINGS.get()
+                        if timings is not None:
+                            timings['source_http_wait_ms']=timings.get('source_http_wait_ms',0)+int((executing-waiting)*1000)
                     try:
                         return await client.session.request(method, url, timeout=timeout, **kwargs)
                     except TimeoutError:
@@ -202,12 +279,14 @@ class PublisherClients:
                     finally:
                         client.active -= 1
                         client.used_at = time.monotonic()
+                        if source:
+                            source.cost.observe(max(.001,time.monotonic()-executing))
                         if client.retired or getattr(client.session, "broken", False):
                             if self.clients.get(key) is client:
                                 self.clients.pop(key)
                             client.retired = True
                         if client.retired and not client.active:
-                            await client.session.close()
+                            self._close_later(client)
 
     async def close_idle(self, seconds=180):
         for key, client in list(self.clients.items()):
@@ -221,6 +300,8 @@ class PublisherClients:
         self.clients.clear()
         for session in {id(c.session): c.session for c in clients}.values():
             await session.close()
+        if self._closing:
+            await asyncio.gather(*self._closing)
 
 
 class _HttpxSession:

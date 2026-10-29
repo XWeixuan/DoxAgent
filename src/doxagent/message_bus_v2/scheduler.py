@@ -82,9 +82,16 @@ class SchedulerGroupLimiter:
         self._on_request = on_request
         self.cost = RequestCost()
         self._shrink_debt = 0
+        self.execution_owned_by_site = False
 
     @asynccontextmanager
     async def permit(self) -> AsyncIterator[None]:
+        if self.execution_owned_by_site:
+            # Site owns real browser/site/identity admission. A second source
+            # semaphore would remain occupied throughout that same wait.
+            check_request_allowed()
+            yield
+            return
         waiting_at = self._clock()
         acquired = False
         try:
@@ -2000,13 +2007,14 @@ class GlobalPollScheduler:
                 rate, current[1].cost.seconds if current else 1, ceiling=ceiling
             )
             constraints = constraints.model_copy(update={"max_concurrency": capacity})
-        if (
+        browser_owned = (
             source.kind.value == "crawler"
             and (
                 source.source_id != "yahoo_finance_news"
                 or unit in {"SUPPLEMENT_HEAD", "TAIL:YAHOO_TIME"}
             )
-        ):
+        )
+        if browser_owned:
             constraints = constraints.model_copy(update={"minimum_request_gap_seconds": 0})
         if current is not None:
             limiter = current[1]
@@ -2022,6 +2030,7 @@ class GlobalPollScheduler:
                 limiter._semaphore._value -= available
                 limiter._shrink_debt -= available
             limiter.constraints = constraints
+            limiter.execution_owned_by_site = browser_owned
             self._limiters[key] = (constraints, limiter)
             return limiter
 
@@ -2055,6 +2064,7 @@ class GlobalPollScheduler:
             on_request=on_request,
             initial_delay_seconds=remaining_gap,
         )
+        limiter.execution_owned_by_site = browser_owned
         self._limiters[key] = (constraints, limiter)
         return limiter
 

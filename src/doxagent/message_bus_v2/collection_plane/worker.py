@@ -27,7 +27,7 @@ from ..schema import (
 from ..scheduler import GlobalPollScheduler
 from ..search_plan import build_query_plan
 from .config import Configuration, ConfigurationLoader, load
-from .store import AcquisitionStore, path_for
+from .store import AcquisitionStore, path_for, required_unit
 
 log = logging.getLogger(__name__)
 
@@ -50,15 +50,28 @@ class SnapshotGate:
 
     def check(self):
         config = self.owner.config
-        if config.at and (utc_now()-datetime.fromisoformat(config.at)).total_seconds()>5:
-            raise CollectionStopped('COLLECTION_CONFIGURATION_STALE')
         source = config.sources.get(self.source.source_id)
-        if (
-            not source
-            or source.version != self.source.version
-            or not all(config.allowed(b, utc_now()) for b in self.bindings)
-        ):
-            raise CollectionStopped("COLLECTION_CONFIGURATION_CHANGED")
+        control=getattr(self.owner,'_control',None)
+        if not source or not source.enabled or (control and not control['sources'].get(source.source_id,(0,False))[1]):
+            raise CollectionStopped('COLLECTION_SOURCE_DISABLED')
+        if source.version!=self.source.version or (control and control['sources'].get(source.source_id,(0,False))[0]!=source.version):
+            raise CollectionStopped('COLLECTION_SOURCE_CONFIGURATION_CHANGED')
+        now=utc_now()
+        for binding in self.bindings:
+            if config.allowed(binding,now,control=control):continue
+            current=config.bindings.get(binding.binding_id)
+            if not current or not current.enabled or (control and not control['bindings'].get(binding.binding_id,(0,False))[1]):
+                reason='COLLECTION_BINDING_DISABLED'
+            elif current.version!=binding.version or (control and control['bindings'].get(binding.binding_id,(0,False))[0]!=binding.version):
+                reason='COLLECTION_BINDING_CONFIGURATION_CHANGED'
+            elif (control['pauses'] if control else config.pauses).get(binding.ticker)=='all':
+                reason='COLLECTION_TICKER_PAUSED'
+            elif control and binding.ticker not in control['running']:
+                reason='COLLECTION_TICKER_STOPPED'
+            else:
+                override=control['override'] if control else config.override
+                reason='COLLECTION_OVERRIDE_EXPIRED' if override.get('enabled') and override.get('expires_at') and now>=datetime.fromisoformat(override['expires_at']) else 'COLLECTION_CALENDAR_OR_SCHEDULE_CLOSED'
+            raise CollectionStopped(reason)
 
 
 class Collector:
@@ -71,6 +84,8 @@ class Collector:
         self.states = {}
         self.desired = {}
         self._stop = False
+        self._control = None
+        self._plan_dirty = False
         # Reuse the tested unit definitions and actual-request limiter without
         # constructing its business Repository, intake worker or orchestration.
         self.planner = object.__new__(GlobalPollScheduler)
@@ -86,11 +101,9 @@ class Collector:
         config = await asyncio.to_thread(self.config_loader, self.settings, seeds=seeds)
         scope=tuple(b.binding_id for b in config.bindings.values() if config.allowed(b,utc_now()))
         if (isinstance(self.config_loader,ConfigurationLoader) and config is self.config
-                and not seeds and scope==getattr(self,"_active_config_scope",None)):
-            await asyncio.to_thread(self.store.meta,"configuration",{
-                "at":config.at,"override_revision":config.override.get("revision",0),
-                "units":len(self.desired),"physical_demand":dict(self.planner._source_demand)})
+                and not seeds and not self._plan_dirty and scope==getattr(self,"_active_config_scope",None)):
             return
+        self._plan_dirty = False
         self._active_config_scope=scope
         self.config = config
         if seeds:
@@ -143,7 +156,7 @@ class Collector:
                         "checkpoint", {}
                     ).get("recovery_url"):
                         units.append(
-                            ("TAIL:IR:" + spec.endpoint_id, {"ir_spec": spec, "recovery": True})
+                            ("TAIL:IR:" + spec.endpoint_id, {"ir_spec": spec, "recovery": True, "coverage_required": True})
                         )
             else:
                 state = self.binding_state(b)
@@ -152,6 +165,7 @@ class Collector:
                     for _, o in p.work_units(s, b, state, now, include_all=True)
                 ]
             for unit, options in units:
+                options={**options,'coverage_required':required_unit(s.source_id,unit)}
                 shared = s.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
                 key = (s.source_id if shared else b.binding_id, unit)
                 if key not in desired:
@@ -171,7 +185,7 @@ class Collector:
                 if "ir_spec" in options
                 else min(b.polling.target_interval_seconds for b in targets)
             )
-            if not unit.startswith("TAIL:"):
+            if options.get('coverage_required', not unit.startswith("TAIL:")):
                 rates[s.source_id] += 1 / period
                 groups[s.scheduler_group] += 1 / period
                 limiter_key=s.source_id
@@ -181,6 +195,11 @@ class Collector:
             generation = self.generation(s, targets, options)
             for b in targets:
                 state = self.states.get((b.binding_id, unit))
+                required=options.get('coverage_required',not unit.startswith('TAIL:'))
+                if state and state.get('required',0)>=0 and bool(state['required'])!=required:
+                    state['required']=required
+                    await asyncio.to_thread(self.store.save_unit,s,b,unit,state['state'],state['generation'],required=required)
+                    await asyncio.to_thread(self.store.schedule,s,b,unit,now,True,now)
                 if (state and state["generation"] == generation and state.get("required", 0) >= 0
                     and state["state"].get("schedule_interval_seconds")==period
                     and state["state"].get("schedule_phase_version") == 2):
@@ -215,7 +234,7 @@ class Collector:
                     "state": old,
                     "generation": generation,
                     "input_key": None,
-                    "required": not unit.startswith("TAIL:"),
+                    "required": options.get('coverage_required', not unit.startswith("TAIL:")),
                 }
                 self.states[(b.binding_id, unit)] = state
                 clock_binding = b.model_copy(
@@ -244,7 +263,7 @@ class Collector:
             "configuration",
             {
                 "at": config.at,
-                "override_revision": config.override.get("revision", 0),
+                "override_revision": (self._control['override'] if self._control else config.override).get("revision", 0),
                 "units": len(desired),
                 "physical_demand": dict(rates),
             },
@@ -278,7 +297,6 @@ class Collector:
         return state.model_copy(update={"units": units})
 
     async def _refresh_loop(self):
-        maintained = 0
         while not self._stop:
             try:
                 await self.refresh()
@@ -286,18 +304,40 @@ class Collector:
                 log.exception(
                     "collector configuration refresh failed; retaining last verified snapshot"
                 )
-            if time.monotonic() - maintained > 1:
-                try:
-                    await asyncio.to_thread(self.store.maintain)
-                except Exception:
-                    log.exception("acquisition retirement deferred")
-                maintained = time.monotonic()
+            await asyncio.sleep(1)
+
+    async def _maintenance_loop(self):
+        while not self._stop:
+            await asyncio.sleep(30)
+            try:
+                await asyncio.to_thread(self.store.maintain)
+            except Exception:
+                log.exception("acquisition retirement deferred")
+
+    async def _control_loop(self):
+        published_revision = None
+        summary_at = 0
+        while not self._stop:
+            try:
+                control=await asyncio.to_thread(ConfigurationLoader.control,self.settings)
+                self._control=control
+                revision=control['override'].get('revision',0)
+                if published_revision!=revision or time.monotonic()-summary_at>=30:
+                    applied=await asyncio.to_thread(self.store.get_meta,'configuration',{})
+                    await asyncio.to_thread(self.store.meta,'configuration',{**applied,
+                        'at':utc_now().isoformat(),'override_revision':revision})
+                    published_revision=revision
+                    summary_at=time.monotonic()
+            except Exception:
+                log.exception('collector control read failed; retaining explicit authorization')
             await asyncio.sleep(1)
 
     async def run(self, stop):
         await asyncio.to_thread(self.store.recover_previous_owner)
         await self.refresh(seeds=True)
         refresh = asyncio.create_task(self._refresh_loop())
+        maintenance = asyncio.create_task(self._maintenance_loop())
+        control = asyncio.create_task(self._control_loop()) if isinstance(self.config_loader,ConfigurationLoader) else None
         try:
             while not stop.is_set():
                 now = utc_now()
@@ -331,9 +371,11 @@ class Collector:
         finally:
             self._stop = True
             refresh.cancel()
+            maintenance.cancel()
+            if control:control.cancel()
             for t in self.inflight.values():
                 t.cancel()
-            await asyncio.gather(refresh, *self.inflight.values(), return_exceptions=True)
+            await asyncio.gather(refresh, maintenance, *([control] if control else []), *self.inflight.values(), return_exceptions=True)
 
     async def acquire(self, source, targets, unit, options):
         from doxagent.site_strategy.scope import AccessRoutingContext, access_routing
@@ -525,8 +567,8 @@ class Collector:
                         if result.site_access_retry_not_before
                         else None
                     )
-        except CollectionStopped:
-            reason = "COLLECTION_CONFIGURATION_CHANGED"
+        except CollectionStopped as exc:
+            reason = str(exc) or "COLLECTION_CONFIGURATION_CHANGED"
         except asyncio.CancelledError:
             reason = "CANCELLED"
             raise
@@ -594,6 +636,8 @@ class Collector:
                 for target in targets:
                     record = self.states.get((target.binding_id, unit))
                     if record and record["generation"] == generation:
+                        if self._continuations(record['state'].get('checkpoint',{})) != self._continuations(state.get('checkpoint',{})):
+                            self._plan_dirty = True
                         record["state"].update(state)
                         if valid:
                             listings = [
@@ -613,6 +657,13 @@ class Collector:
                 ACCESS_RESULTS.reset(access)
                 REQUEST_GATE.reset(gate)
                 DEMAND.reset(demand)
+
+    @staticmethod
+    def _continuations(value):
+        if not isinstance(value,dict):return ()
+        keys={'tail_pending','done','head_at','recovery_url','pending_timestamp_rows'}
+        return tuple((k,canonical_json(v) if k in keys else Collector._continuations(v))
+                     for k,v in sorted(value.items()) if k in keys or isinstance(v,dict))
 
     def add_payload(self, pages, source, targets, unit, messages, observed, run_id, bootstrap):
         if not messages:

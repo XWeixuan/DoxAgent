@@ -481,7 +481,8 @@ class _BaseAdapter:
         params: dict[str, object | None] | None = None,
         headers: dict[str, str] | None = None,
     ) -> object:
-        async with context.request_permit():
+        from .publisher_http import source_http_scope
+        async with source_http_scope(context.request_permit):
             response = await self.client.get(
                 url,
                 params=cast(
@@ -491,15 +492,16 @@ class _BaseAdapter:
                 headers=headers,
             )
             response.raise_for_status()
-            return response.json()
+        return response.json()
 
     async def _text(
         self, context: PollContext, url: str, *, headers: dict[str, str] | None = None
     ) -> str:
-        async with context.request_permit():
+        from .publisher_http import source_http_scope
+        async with source_http_scope(context.request_permit):
             response = await self.client.get(url, headers=headers)
             response.raise_for_status()
-            return response.text
+        return response.text
 
     @staticmethod
     def _failure(

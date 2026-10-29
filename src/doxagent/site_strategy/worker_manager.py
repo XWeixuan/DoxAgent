@@ -47,6 +47,7 @@ class WorkerHandle:
     started_at: float = field(default_factory=time.monotonic)
     node_rss: int = 0
     high_rss_samples: int = 0
+    snapshot: dict | None = None
 
 
 class IdentityWorkerManager:
@@ -232,11 +233,12 @@ class IdentityWorkerManager:
             self.workers[identity.identity_id] = handle
             handle.reader_task = asyncio.create_task(self._read(handle))
             try:
+                snapshot = self.snapshot(identity, egress)
                 await self._roundtrip(
                     handle,
                     "configure",
                     {
-                        "snapshot": self.snapshot(identity, egress),
+                        "snapshot": snapshot,
                         "runtime_options": self.runtime_options,
                     },
                     # Cold configure includes Python/import startup, not only
@@ -245,6 +247,7 @@ class IdentityWorkerManager:
                     # still bounds startup + the actual operation together.
                     timeout=20,
                 )
+                handle.snapshot = snapshot
             except BaseException:
                 await self.retire(identity.identity_id, graceful=False)
                 raise
@@ -419,8 +422,9 @@ class IdentityWorkerManager:
                         from .storage import registry_io
                         snapshot=await registry_io(self.snapshot,identity,egress)
                         value = await self._roundtrip(handle,action,
-                            {**payload,"snapshot":snapshot},
+                            {**payload, **({'snapshot':snapshot} if snapshot is not handle.snapshot else {})},
                             timeout=deadline-time.monotonic())
+                        handle.snapshot = snapshot
                         if action == "execute" and isinstance(value,dict) and "status_code" in value:
                             value.setdefault("stage_timings",{})["worker_wait_ms"] = wait_ms
                         return value

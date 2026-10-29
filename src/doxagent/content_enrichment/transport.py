@@ -207,6 +207,8 @@ class PublicTransport:
                             response_bytes=len(text.encode()),
                             retry_after_seconds=delay,
                             transient_hint=status in {408, 425, 429, 500, 502, 503, 504},
+                            request_started_at=getattr(response,'bus_sent_at',None) or
+                                getattr(getattr(response,'request',None),'extensions',{}).get('_bus_poll_event',{}).get('request_started_at'),
                         )
                     )
                     if reason:

@@ -45,6 +45,8 @@ def migrate_governance(connection):
         create unique index if not exists owned_target_instance
             on owned_browser_targets(browser_instance_id, target_id) where target_id is not null;
         create index if not exists owned_target_cleanup on owned_browser_targets(state,updated_at);
+        create index if not exists owned_target_active_instance
+            on owned_browser_targets(identity_id,browser_instance_id) where state not in ('CLOSED','LOST');
         create table if not exists maintenance_sessions (
             session_id text primary key, identity_id text not null, state text not null,
             data_json text not null, updated_at text not null);
@@ -80,10 +82,11 @@ def safe_display_url(url: str) -> str:
     return urlunsplit((parsed.scheme, parsed.hostname or "", parsed.path, "", ""))
 
 
-def capability_fingerprint(repository, scope, identity, egress):
+def capability_fingerprint(repository, scope, identity, egress, *, site=None, runtime=None):
     from .schema import digest_json
 
-    site = repository.get_strategy(scope.owner_site_id)
+    site = site or repository.get_strategy(scope.owner_site_id)
+    runtime = runtime or repository.get_identity_runtime(identity.identity_id)
     return digest_json(
         [
             identity.model_dump(mode="json"),
@@ -92,7 +95,7 @@ def capability_fingerprint(repository, scope, identity, egress):
             scope.revision,
             site.revision if site else 0,
             scope.verification_plan.get("contract", "body_v2.2/listing_v1"),
-            repository.get_identity_runtime(identity.identity_id).session_revision,
+            runtime.session_revision,
         ]
     )
 

@@ -72,6 +72,8 @@ async def test_public_burst_shares_execution_and_exits_after_last_task(monkeypat
     assert not runtimes[0].closed
     release.set()
     await asyncio.gather(*tasks)
+    assert not runtimes[0].closed  # Short idle burst, not request-path cleanup.
+    await backend._idle_task
     assert runtimes[0].closed and backend.runtime is None
 
 
@@ -98,6 +100,7 @@ async def test_public_cleanup_error_does_not_lose_successful_download(monkeypatc
         None,
     )
     assert value == "downloaded full article"
+    await backend._idle_task
     assert backend.cleanup_pending and backend.runtime is not None
 
 

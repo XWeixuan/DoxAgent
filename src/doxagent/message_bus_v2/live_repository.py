@@ -56,27 +56,38 @@ class LiveRepository:
         self._loaded = OrderedDict()
         self._loaded_bytes = 0
         self._loaded_lock = threading.Lock()
+        self._spool_iterator = None
 
     def install(self):
         with self.bus.transaction() as db:
             db.executescript(SCHEMA)
-            for table, fields in {
-                "live_articles": {
-                    "material_observed_at": "TEXT NOT NULL DEFAULT ''",
-                    "attempts_json": "TEXT NOT NULL DEFAULT '[]'",
-                    "validators_json": "TEXT NOT NULL DEFAULT '{}'",
-                    "title": "TEXT NOT NULL DEFAULT ''",
-                    "last_result_id": "TEXT",
-                    "fetch_total": "INTEGER NOT NULL DEFAULT 0",
-                    "full_total": "INTEGER NOT NULL DEFAULT 0",
-                    "cache_total": "INTEGER NOT NULL DEFAULT 0",
-                },
-                "live_origins": {"targets_json": "TEXT NOT NULL DEFAULT '[]'"},
-            }.items():
-                existing = {r[1] for r in db.execute("PRAGMA table_info(" + table + ")")}
-                for field, definition in fields.items():
-                    if field not in existing:
-                        db.execute(f"ALTER TABLE {table} ADD COLUMN {field} {definition}")
+
+            self.migrate(db)
+
+    @staticmethod
+    def migrate(db):
+        for table, fields in {
+            "live_articles": {
+                "material_observed_at": "TEXT NOT NULL DEFAULT ''",
+                "attempts_json": "TEXT NOT NULL DEFAULT '[]'",
+                "validators_json": "TEXT NOT NULL DEFAULT '{}'",
+                "title": "TEXT NOT NULL DEFAULT ''",
+                "last_result_id": "TEXT",
+                "fetch_total": "INTEGER NOT NULL DEFAULT 0",
+                "full_total": "INTEGER NOT NULL DEFAULT 0",
+                "cache_total": "INTEGER NOT NULL DEFAULT 0",
+                "fetch_round": "INTEGER NOT NULL DEFAULT 0",
+                "initial_request_at": "TEXT",
+                "initial_result_at": "TEXT",
+                "initial_outcome": "TEXT",
+            },
+            "live_origins": {"targets_json": "TEXT NOT NULL DEFAULT '[]'"},
+            "live_deliveries": {"initial_decision_at": "TEXT", "initial_decision": "TEXT"},
+        }.items():
+            existing = {r[1] for r in db.execute("PRAGMA table_info(" + table + ")")}
+            for field, definition in fields.items():
+                if field not in existing:
+                    db.execute(f"ALTER TABLE {table} ADD COLUMN {field} {definition}")
 
     def put(self, value):
         """Prepare an immutable document and all of its refs before BEGIN."""
@@ -89,26 +100,27 @@ class LiveRepository:
         ref = canonical_json({MARKER: digest, "bytes": len(raw)})
         return ref, {digest, *native_hashes(encoded)}
 
-    def load(self, ref):
+    def load(self, ref, *, shared=False):
         # The root is an immutable encoded JSON document; expand its explicit
         # nested refs once, not by selecting data_json on a scalar queue query.
         with self._loaded_lock:
             cached = self._loaded.get(ref)
             if cached is not None:
                 self._loaded.move_to_end(ref)
-                return copy.deepcopy(cached[1])
+                return cached[1] if shared else copy.deepcopy(cached[1])
         value = self.bus.content.decode(json.loads(ref))
         value = self.bus.content.decode(value)
-        size = len(canonical_json(value).encode())
+        from doxagent.v2_read.native_content import decoded_size
+        size = decoded_size(value)
         if size <= 2 * 1024 * 1024:
             with self._loaded_lock:
                 prior = self._loaded.pop(ref, None)
                 self._loaded_bytes += size - (prior[0] if prior else 0)
-                self._loaded[ref] = (size, copy.deepcopy(value))
+                self._loaded[ref] = (size, value)
                 while self._loaded_bytes > 2 * 1024 * 1024 or len(self._loaded) > 16:
                     _, removed = self._loaded.popitem(last=False)
                     self._loaded_bytes -= removed[0]
-        return value
+        return value if shared else copy.deepcopy(value)
 
     @staticmethod
     def _refs(db, owner, key, refs):
@@ -317,7 +329,7 @@ class LiveRepository:
                     changed = True
                     db.execute(
                         "UPDATE live_articles SET material_hint=?,input_ref=?,input_revision=input_revision+1,"
-                        "source_id=?,state='FETCH_DUE',due_at=?,attempt=0,first_fetch_at=NULL,title=?,attempts_json='[]',"
+                        "source_id=?,state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,first_fetch_at=NULL,title=?,attempts_json='[]',"
                         "work_kind='content_update',material_observed_at=? WHERE article_key=?",
                         (
                             item["hint"],
@@ -344,7 +356,7 @@ class LiveRepository:
                     # This is a durable re-entry/TAIL delta, not every unchanged
                     # poll. Check once in the background; existing FULL stays readable.
                     db.execute(
-                        "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,first_fetch_at=NULL,"
+                        "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,first_fetch_at=NULL,"
                         "work_kind='recheck',attempts_json='[]',next_check_at=NULL WHERE article_key=?",
                         (now, key),
                     )
@@ -524,24 +536,37 @@ class LiveRepository:
         attempts = [
             {
                 k: a.get(k)
-                for k in ("phase", "reason", "latency_ms", "status_code", "retry_after_seconds")
+                for k in ("phase", "reason", "latency_ms", "status_code", "retry_after_seconds", "request_started_at")
                 if a.get(k) is not None
             }
             for a in job.prior_attempts[-4:]
         ]
         with self.bus.transaction() as db:
+            sent=min((a['request_started_at'] for a in job.prior_attempts if a.get('request_started_at')),default=None)
+            if sent and job.work_kind=='new_article':
+                db.execute("UPDATE live_articles SET initial_request_at=coalesce(initial_request_at,?) "
+                    "WHERE article_key=? AND claim_token=?",(sent,key,job.claim_token))
             db.execute(
                 "UPDATE live_articles SET state='FETCH_DUE',due_at=?,claim_token=NULL,lease_until=NULL,"
-                "last_error=?,attempt=?,attempts_json=? WHERE article_key=? AND claim_token=?",
+                "last_error=?,attempt=?,attempts_json=?,fetch_round=? WHERE article_key=? AND claim_token=?",
                 (
                     job.not_before.isoformat(),
                     "awaiting_capability" if job.attempt_count == 0 else "retry",
                     job.attempt_count,
                     canonical_json(attempts),
+                    job.fetch_round,
                     key,
                     job.claim_token,
                 ),
             )
+
+    def begin_fetch(self, job):
+        with self.bus.transaction() as db:
+            row=db.execute("UPDATE live_articles SET fetch_round=fetch_round+1 "
+                "WHERE article_key=? AND claim_token=? AND state='FETCHING' RETURNING fetch_round",
+                (job.article_id,job.claim_token)).fetchone()
+            if not row:raise RuntimeError('enrichment_lease_lost')
+        return job.model_copy(update={'fetch_round':row[0]})
 
     def prepare_result(self, job, message, *, outcome=None):
         meta = message.metadata.get("media_enrichment", {})
@@ -555,12 +580,14 @@ class LiveRepository:
 
         # Publication revisions include material title corrections as well as
         # body changes; a body-only digest would silently lose headline fixes.
-        digest = (
+        previous = self.get(job.article_id)
+        unchanged = (success and meta.get('http_not_modified') and previous
+                     and previous['body_digest'] and text(message.title)==text(previous['title']))
+        digest = previous['body_digest'] if unchanged else (
             sha256_text(canonical_json([text(message.title), text(message.body or "")]))
             if success
             else None
         )
-        previous = self.get(job.article_id)
         reuse_ref = bool(
             previous
             and previous["result_ref"]
@@ -587,6 +614,8 @@ class LiveRepository:
             url=message.url,
             acquired=meta.get("body_acquired_at") or utc_now().isoformat(),
             checked=utc_now().isoformat(),
+            work_kind=job.work_kind,
+            initial_request_at=min((a['request_started_at'] for a in meta.get('attempts',[]) if a.get('request_started_at')),default=None),
         )
         completion = message.metadata.get("v2_body_completion", {})
         value.update(
@@ -637,7 +666,7 @@ class LiveRepository:
                 columns = (
                     "ticker,source_id,binding_id,terms_revision,admission_json,bootstrap,state,due_at,"
                     "claim_token,lease_until,decision_digest,published_digest,regex_result,jev_result,last_error,"
-                    "raw_id,standard_id,consumable_at,created_at"
+                    "raw_id,standard_id,consumable_at,created_at,initial_decision_at,initial_decision"
                 )
                 db.execute(
                     "INSERT OR IGNORE INTO live_deliveries(article_key,"
@@ -647,6 +676,7 @@ class LiveRepository:
                     + " FROM live_deliveries WHERE article_key=?",
                     (target, key),
                 )
+                self._merge_initial(db,key,target)
                 db.execute("DELETE FROM live_deliveries WHERE article_key=?", (key,))
                 db.execute(
                     "UPDATE live_origins SET article_key=? WHERE article_key=?", (target, key)
@@ -689,6 +719,7 @@ class LiveRepository:
                 if (
                     now - datetime.fromisoformat(current[4]) < timedelta(hours=24)
                     and value["outcome"] != "NOT_APPLICABLE"
+                    and (value['success'] or current['body_digest'])
                 )
                 else None
             )
@@ -699,7 +730,10 @@ class LiveRepository:
                 "body_digest=CASE WHEN ? THEN coalesce(?,body_digest) ELSE body_digest END,acquired_at=CASE WHEN ? THEN ? ELSE acquired_at END,"
                 "checked_at=?,revision=revision+?,last_error=?,next_check_at=?,url=CASE WHEN ? THEN ? ELSE url END,last_result_id=?,"
                 "fetch_total=fetch_total+?,full_total=full_total+?,cache_total=cache_total+?,"
-                "validators_json=CASE WHEN ? THEN ? ELSE validators_json END WHERE article_key=?",
+                "validators_json=CASE WHEN ? THEN ? ELSE validators_json END,"
+                "initial_request_at=CASE WHEN ?='new_article' THEN coalesce(initial_request_at,?) ELSE initial_request_at END,"
+                "initial_result_at=CASE WHEN ?='new_article' THEN coalesce(initial_result_at,?) ELSE initial_result_at END,"
+                "initial_outcome=CASE WHEN ?='new_article' THEN coalesce(initial_outcome,?) ELSE initial_outcome END WHERE article_key=?",
                 (
                     int(preserve_owner),
                     int(preserve_owner),
@@ -724,6 +758,9 @@ class LiveRepository:
                     int(value["reused"]),
                     int(value["success"] and usable),
                     canonical_json(value.get("validators", {})),
+                    value.get('work_kind'),value.get('initial_request_at'),
+                    value.get('work_kind'),value['checked'],
+                    value.get('work_kind'),value['outcome'],
                     key,
                 ),
             )
@@ -758,10 +795,18 @@ class LiveRepository:
             return []
         from itertools import islice
 
-        return [
-            json.loads(p.read_text(encoding="utf-8")) | {"spool_path": str(p)}
-            for p in islice(self.spool.glob(key + ".*.json" if key else "*.json"), 32)
-        ]
+        if key:
+            paths=list(islice(self.spool.glob(key+'.*.json'),32))
+        else:
+            if self._spool_iterator is None:
+                self._spool_iterator=iter(self.spool.glob('*.json'))
+            paths=list(islice(self._spool_iterator,32))
+            if len(paths)<32:self._spool_iterator=None
+        values=[]
+        for path in paths:
+            try:values.append(json.loads(path.read_text(encoding='utf-8'))|{'spool_path':str(path)})
+            except FileNotFoundError:pass  # A targeted local commit already removed it.
+        return values
 
     def retire_acceptances(self):
         cutoff = (utc_now() - timedelta(hours=48)).isoformat()
@@ -806,7 +851,7 @@ class LiveRepository:
             )
             for row in rows:
                 db.execute(
-                    "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,"
+                    "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,"
                     "first_fetch_at=NULL,work_kind='recheck',attempts_json='[]',next_check_at=NULL WHERE article_key=? AND state='READY'",
                     (stamp, row[0]),
                 )
@@ -848,7 +893,10 @@ class LiveRepository:
         with self.bus.transaction() as db:
             changed = db.execute(
                 "UPDATE live_deliveries SET state=?,regex_result=?,jev_result=?,last_error=?,"
-                "decision_digest=?,due_at=?,terms_revision=? WHERE article_key=? AND ticker=? AND binding_id=? "
+                "decision_digest=?,due_at=?,terms_revision=?,"
+                "initial_decision_at=CASE WHEN ? THEN coalesce(initial_decision_at,?) ELSE initial_decision_at END,"
+                "initial_decision=CASE WHEN ? THEN coalesce(initial_decision,?) ELSE initial_decision END "
+                "WHERE article_key=? AND ticker=? AND binding_id=? "
                 "AND EXISTS(SELECT 1 FROM live_articles a WHERE a.article_key=live_deliveries.article_key "
                 "AND a.revision=? AND a.result_ref=?) AND state IN ('PENDING','WAIT_BODY','L2_DUE') "
                 "AND NOT EXISTS(SELECT 1 FROM ticker_monitoring_terms t WHERE t.ticker=live_deliveries.ticker "
@@ -861,6 +909,8 @@ class LiveRepository:
                     row["body_digest"],
                     (utc_now() + timedelta(seconds=5 if retry else 0)).isoformat(),
                     row["terms_revision"],
+                    state not in {'PENDING','L2_DUE'} and not retry,utc_now().isoformat(),
+                    state not in {'PENDING','L2_DUE'} and not retry,state,
                     row["article_key"],
                     row["ticker"],
                     row["binding_id"],
@@ -974,7 +1024,7 @@ class LiveRepository:
             columns = (
                 "ticker,source_id,binding_id,terms_revision,admission_json,bootstrap,state,due_at,"
                 "claim_token,lease_until,decision_digest,published_digest,regex_result,jev_result,last_error,"
-                "raw_id,standard_id,consumable_at,created_at"
+                "raw_id,standard_id,consumable_at,created_at,initial_decision_at,initial_decision"
             )
             db.execute(
                 "INSERT OR IGNORE INTO live_deliveries(article_key,"
@@ -984,6 +1034,7 @@ class LiveRepository:
                 + " FROM live_deliveries WHERE article_key=?",
                 (target, key),
             )
+            self._merge_initial(db,key,target)
             db.execute("DELETE FROM live_deliveries WHERE article_key=?", (key,))
             db.execute("UPDATE live_origins SET article_key=? WHERE article_key=?", (target, key))
             db.execute(
@@ -1009,6 +1060,17 @@ class LiveRepository:
                     (stamp, target),
                 )
         return True
+
+    @staticmethod
+    def _merge_initial(db,source,target):
+        old=db.execute('SELECT initial_request_at,initial_result_at,initial_outcome FROM live_articles WHERE article_key=?',(source,)).fetchone()
+        if old:
+            if old[0]:
+                db.execute('UPDATE live_articles SET initial_request_at=? WHERE article_key=? AND (initial_request_at IS NULL OR initial_request_at>?)',(old[0],target,old[0]))
+            if old[1]:
+                db.execute('UPDATE live_articles SET initial_result_at=?,initial_outcome=? WHERE article_key=? AND (initial_result_at IS NULL OR initial_result_at>?)',(old[1],old[2],target,old[1]))
+        for ticker,at,state in db.execute('SELECT ticker,initial_decision_at,initial_decision FROM live_deliveries WHERE article_key=? AND initial_decision_at IS NOT NULL',(source,)).fetchall():
+            db.execute('UPDATE live_deliveries SET initial_decision_at=?,initial_decision=? WHERE article_key=? AND ticker=? AND (initial_decision_at IS NULL OR initial_decision_at>?)',(at,state,target,ticker,at))
 
     def prepare_publication(self, bus, row, source, binding, message):
         """All models, full reads and Native publication happen before BEGIN."""
@@ -1233,13 +1295,16 @@ class LiveRepository:
             if prepared.get("unchanged"):
                 db.execute(
                     "UPDATE live_deliveries SET state='PUBLISHED',raw_id=?,standard_id=?,decision_digest=?,"
-                    "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL WHERE article_key=? AND ticker=?",
+                    "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL,"
+                    "initial_decision=coalesce(initial_decision,'PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?) "
+                    "WHERE article_key=? AND ticker=?",
                     (
                         raw.raw_message_id,
                         standard.standard_message_id,
                         row["body_digest"],
                         row["body_digest"],
                         prepared.get("known_consumable_at"),
+                        utc_now().isoformat(),
                         key,
                         ticker,
                     ),
@@ -1348,7 +1413,9 @@ class LiveRepository:
                     published = True
             db.execute(
                 "UPDATE live_deliveries SET state=?,raw_id=?,standard_id=?,decision_digest=?,"
-                "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL WHERE article_key=? AND ticker=?",
+                "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL,"
+                "initial_decision=coalesce(initial_decision,?),initial_decision_at=coalesce(initial_decision_at,?) "
+                "WHERE article_key=? AND ticker=?",
                 (
                     "PUBLISHED"
                     if published
@@ -1360,6 +1427,7 @@ class LiveRepository:
                     row["body_digest"],
                     row["body_digest"],
                     (prepared.get("known_consumable_at") or stamp) if published else None,
+                    'PUBLISHED' if published else 'SUPPRESSED' if raw.bootstrap_suppressed else 'BUFFERED',stamp,
                     key,
                     ticker,
                 ),

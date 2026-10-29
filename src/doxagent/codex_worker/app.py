@@ -223,7 +223,8 @@ def create_worker_app(
         def ready_counts():
             with closing(jobs.store.connect()) as db:
                 return db.execute(
-                    "SELECT scope,state,count(*) FROM w3_ready_slots GROUP BY scope,state"
+                    "SELECT scope,state,count(*) FROM w3_ready_slots "
+                    "WHERE state='READY' GROUP BY scope,state"
                 ).fetchall()
 
         rows = await read_io(ready_counts)

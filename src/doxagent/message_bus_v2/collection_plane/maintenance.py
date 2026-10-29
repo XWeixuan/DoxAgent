@@ -39,8 +39,12 @@ def maintain(store):
                     dict(r)
                     for r in db.execute(
                         "SELECT * FROM cycles WHERE status='SCHEDULE' AND binding_id=? "
-                        "AND unit=? AND dispatch_at<? ORDER BY dispatch_at",
-                        (binding, unit, end.isoformat()),
+                        "AND unit=? AND dispatch_at=(SELECT max(dispatch_at) FROM cycles "
+                        "WHERE status='SCHEDULE' AND binding_id=? AND unit=? AND dispatch_at<=?) "
+                        "UNION ALL SELECT * FROM cycles WHERE status='SCHEDULE' AND binding_id=? "
+                        "AND unit=? AND dispatch_at>? AND dispatch_at<? ORDER BY dispatch_at",
+                        (binding, unit, binding, unit, start.isoformat(),
+                         binding, unit, start.isoformat(), end.isoformat()),
                     )
                 ]
                 physical = {

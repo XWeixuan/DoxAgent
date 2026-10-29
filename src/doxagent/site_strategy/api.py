@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .storage import registry_io
+
 import asyncio
 import base64
 import hmac
@@ -379,7 +381,7 @@ def create_app(
         x_site_access_capture_metadata: Annotated[str | None, Header()] = None,
     ):
         try:
-            value = service.resolve(url, revision=revision)
+            value = await registry_io(service.resolve, url, revision=revision)
             data = value.model_dump(
                 mode="json", exclude=set() if x_site_access_protocol == "3" else {"challenge"}
             )

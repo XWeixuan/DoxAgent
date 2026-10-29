@@ -97,12 +97,9 @@ class FetchAnchors:
         bucket.append(anchor)
         if freeze:
             async def freeze_or_close():
-                if not await self._lifecycle(anchor,'frozen'):
-                    if anchor in bucket:bucket.remove(anchor)
-                    if not bucket and self.idle.get(identity.identity_id) is bucket:self.idle.pop(identity.identity_id,None)
-                    anchor.lifecycle_task=None
-                    if anchor.expiry:anchor.expiry.cancel()
-                    await self._close(anchor)
+                # Failure of an optional CPU optimization does not invalidate a
+                # successful warm business document or justify another cold visit.
+                await self._lifecycle(anchor,'frozen')
             anchor.lifecycle_task = asyncio.create_task(freeze_or_close())
         anchor.expiry = asyncio.create_task(self._expire(identity.identity_id, anchor))
         return True

@@ -21,7 +21,7 @@ async def test_idle_inventory_does_not_block_independent_requests(monkeypatch):
     monkeypatch.setattr(GovernanceRepository, 'list_scopes', lambda self: [])
     runtime = SimpleNamespace(
         repository=SimpleNamespace(list_active_identities=lambda: []),
-        workers=SimpleNamespace(sample_resources=lambda: None, status=lambda: {}),
+        workers=SimpleNamespace(sample_resources=lambda: None, status=lambda: {}, pending_targets={}),
     )
     facade = WorkerRuntimeFacade(runtime)
 

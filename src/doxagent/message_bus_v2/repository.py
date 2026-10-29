@@ -338,6 +338,8 @@ class MessageBusV2Repository:
             connection.executescript(collection_schema)
             from .live_repository import SCHEMA as live_schema
             connection.executescript(live_schema)
+            from .live_repository import LiveRepository
+            LiveRepository.migrate(connection)
             from doxagent.v2_read.artifact_registry import migrate as migrate_artifacts
             migrate_artifacts(connection)
             from .monitoring_terms import migrate as migrate_terms

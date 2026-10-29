@@ -7,14 +7,26 @@ import json
 import sqlite3
 import copy
 import threading
+import sys
 from collections import OrderedDict
 from pathlib import Path
-from .content_files import ContentFiles, ContentUnavailable, CHUNK
+from .content_files import ContentFiles, ContentUnavailable
 
 MARKER = "$doxagent_content_v1"
 _CACHE = OrderedDict()
 _CACHE_BYTES = 0
 _CACHE_LOCK = threading.Lock()
+
+
+def decoded_size(value):
+    """Account the retained Python graph once, without serializing another copy."""
+    seen=set()
+    def size(item):
+        if id(item) in seen:return 0
+        seen.add(id(item))
+        return sys.getsizeof(item)+(sum(size(k)+size(v) for k,v in item.items())
+            if isinstance(item,dict) else sum(map(size,item)) if isinstance(item,list) else 0)
+    return size(value)
 
 
 class NativeContent:
@@ -23,6 +35,7 @@ class NativeContent:
         self.definition_connection = None
         self.files = ContentFiles(Path(database).resolve().parent / "native-files")
         self.cache_bytes = cache_bytes
+        self._definitions = OrderedDict()
 
     def encode(self, value, *, keep=()):
         def pack(item, root=False, path=""):
@@ -41,7 +54,7 @@ class NativeContent:
             return item
         return json.dumps(pack(value, root=isinstance(value, dict)), ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
-    def decode(self, value, *, expand_definitions=True):
+    def decode(self, value, *, expand_definitions=True, shared=False):
         from .query_budget import check_deadline
         check_deadline()
         if isinstance(value, dict):
@@ -50,6 +63,10 @@ class NativeContent:
                 if not expand_definitions:
                     return {k:self.decode(v,expand_definitions=False) for k,v in value.items()}
                 identity = value[DEFINITION_MARKER]
+                if identity in self._definitions:
+                    self._definitions.move_to_end(identity)
+                    result = self._definitions[identity]
+                    return result if shared else copy.deepcopy(result)
                 db = self.definition_connection
                 owned = db is None
                 if owned:
@@ -62,7 +79,12 @@ class NativeContent:
                     import hashlib
                     if hashlib.sha256(row[0].encode()).hexdigest() != identity:
                         raise ContentUnavailable()
-                    return self.decode(result,expand_definitions=expand_definitions)
+                    result = self.decode(result,expand_definitions=expand_definitions,shared=shared)
+                    if len(row[0]) <= 65536:
+                        self._definitions[identity] = copy.deepcopy(result)
+                        while len(self._definitions)>32:
+                            self._definitions.popitem(last=False)
+                    return result
                 finally:
                     if owned:db.close()
             if MARKER in value:
@@ -70,24 +92,13 @@ class NativeContent:
                     raise ContentUnavailable()
                 global _CACHE_BYTES
                 identity = value[MARKER]
-                try:
-                    stamp = (self.files._path(identity) / "manifest.json").stat().st_mtime_ns
-                except OSError as exc:
-                    raise ContentUnavailable() from exc
-                key = (str(self.files.root), identity, stamp)
+                key = (str(self.files.root), identity, value['bytes'])
                 with _CACHE_LOCK:
                     cached = _CACHE.get(key) if self.cache_bytes else None
                     if cached is not None:
                         _CACHE.move_to_end(key)
                 if cached is not None:
-                    try:
-                        unchanged=all((stat.st_mtime_ns,stat.st_size)==stamp for path,stamp in cached[2]
-                                      for stat in [path.stat()])
-                    except OSError:unchanged=False
-                    if unchanged:return copy.deepcopy(cached[1])
-                    with _CACHE_LOCK:
-                        prior=_CACHE.pop(key,None)
-                        if prior:_CACHE_BYTES-=prior[0]
+                    return cached[1] if shared else copy.deepcopy(cached[1])
                 raw = self.files.read_all(identity)
                 if len(raw) != value["bytes"]:
                     raise ContentUnavailable()
@@ -97,19 +108,18 @@ class NativeContent:
                 except ValueError as exc:
                     raise ContentUnavailable() from exc
                 if self.cache_bytes and len(raw) <= self.cache_bytes:
+                    size=decoded_size(result)
                     with _CACHE_LOCK:
                         prior = _CACHE.pop(key, None)
-                        _CACHE_BYTES += len(raw) - (prior[0] if prior else 0)
-                        chunks=[self.files._path(identity)/str(i) for i in range((len(raw)+CHUNK-1)//CHUNK)]
-                        signature=[(path,(stat.st_mtime_ns,stat.st_size)) for path in chunks for stat in [path.stat()]]
-                        _CACHE[key] = (len(raw), result, signature)
+                        _CACHE_BYTES += size - (prior[0] if prior else 0)
+                        _CACHE[key] = (size, result)
                         while _CACHE_BYTES > self.cache_bytes or len(_CACHE) > 64:
                             _, item = _CACHE.popitem(last=False)
                             _CACHE_BYTES -= item[0]
-                return copy.deepcopy(result) if self.cache_bytes else result
-            return {key: self.decode(child,expand_definitions=expand_definitions) for key, child in value.items()}
+                return copy.deepcopy(result) if self.cache_bytes and not shared else result
+            return {key: self.decode(child,expand_definitions=expand_definitions,shared=shared) for key, child in value.items()}
         if isinstance(value, list):
-            return [self.decode(child,expand_definitions=expand_definitions) for child in value]
+            return [self.decode(child,expand_definitions=expand_definitions,shared=shared) for child in value]
         return value
 
     def text(self, raw):
@@ -120,6 +130,11 @@ class NativeContent:
         values = tuple(self.text(value) if column[0] in {"payload_json", "payload", "inputs", "receipt", "data_json"}
                        and isinstance(value, str) and (MARKER in value or '$doxagent_definition_v4' in value) else value
                        for column, value in zip(cursor.description, values))
+        return sqlite3.Row(cursor, values)
+
+    @staticmethod
+    def raw_row(cursor, values):
+        """Thin/status consumers explicitly retain native references without expansion."""
         return sqlite3.Row(cursor, values)
 
     def source_row(self, row):

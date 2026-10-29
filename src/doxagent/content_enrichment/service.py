@@ -474,7 +474,7 @@ class ContentEnrichmentHub:
                         "candidate_summary": [native.summary()],
                     },
                 )
-            elif seconds <= 0 or job.attempt_count > 2:
+            elif seconds <= 0 or (job.fetch_round >= 2 if job.owner_kind=='live_article' else job.attempt_count > 2):
                 result = MediaExtractionResult(
                     record=record,
                     reason="deadline_exceeded" if seconds <= 0 else "attempt_limit_exceeded",
@@ -485,6 +485,8 @@ class ContentEnrichmentHub:
                     },
                 )
             else:
+                if job.owner_kind == 'live_article':
+                    job = await self.bus.storage.call(self.live.repository.begin_fetch, job, _lane_priority=0)
                 token = DEADLINE.set(time.monotonic() + seconds)
                 try:
                     async with asyncio.timeout(seconds):
@@ -559,16 +561,17 @@ class ContentEnrichmentHub:
             await self.bus.storage.call(self.repository.record_enrichment_execution,
                 job, result, started_at=now, reused=reused)
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
-        if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred"}:
+        if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred", "domain_cooldown"}:
             delay = max((item.retry_after_seconds for item in result.attempts
                          if item.retry_after_seconds and item.retry_after_seconds > 0), default=5)
             not_before = finished_at + timedelta(seconds=max(5,delay))
-            if not_before < job.deadline_at:
+            if job.owner_kind == 'live_article' or not_before < job.deadline_at:
                 await self._requeue(
                     job.model_copy(
                         update={
                             "status": EnrichmentJobStatus.RETRY_WAIT,
                             "attempt_count": max(0, job.attempt_count - 1),
+                            "fetch_round": max(0, job.fetch_round - 1),
                             "prior_attempts": attempts,
                             "not_before": not_before,
                             "lease_expires_at": None,
@@ -579,18 +582,13 @@ class ContentEnrichmentHub:
                 return
         if (
             not result.succeeded
-            and job.attempt_count == 1
+            and (job.fetch_round == 1 if job.owner_kind=='live_article' else job.attempt_count == 1)
             and self._retryable(result)
-            and len([a for a in attempts if a.get("reason") not in {
-                "site_budget_deferred","site_recovery_pending","storage_unavailable","domain_cooldown"}]) < 2
             and finished_at < job.deadline_at
         ):
             retry_after = self._retry_after(result.attempts)
-            not_before = min(
-                finished_at + timedelta(seconds=retry_after),
-                job.deadline_at,
-            )
-            if not_before < job.deadline_at:
+            not_before = finished_at + timedelta(seconds=retry_after)
+            if job.owner_kind == 'live_article' or not_before < job.deadline_at:
                 requeued = job.model_copy(
                     update={
                         "status": EnrichmentJobStatus.RETRY_WAIT,

@@ -25,12 +25,12 @@ def cadence(runs, captures, since, until):
     for capture in captures:
         shared_captures[capture['run_id']].append(capture)
     for row in runs:
-        if row["unit"].startswith("TAIL:"):
+        if not row.get('required', not row["unit"].startswith("TAIL:")):
             continue
         key = row["binding_id"], row["unit"]
         groups[key]["schedule" if row["status"] == "SCHEDULE" else "runs"].append(row)
     for row in captures:
-        if not row["unit"].startswith("TAIL:"):
+        if row.get('required', not row["unit"].startswith("TAIL:")):
             groups[(row["binding_id"], row["unit"])]["captures"].append(row)
     for data in groups.values():
         seen = {r.get('capture_id') or (r['run_id'], r['observed_at']) for r in data['captures']}

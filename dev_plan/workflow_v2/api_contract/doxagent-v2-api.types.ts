@@ -576,6 +576,7 @@ export interface ArticleBodyCohort {
   total: Count; full: Count; pending: Count; failed: Count; ratio: number | null;
   network_attempts: Count; network_succeeded: Count; cache_reuses: Count;
   basis: "FIRST_OBSERVED_ARTICLE"; legacy_excluded: boolean;
+  initial?: { full: Count; pending: Count; failed: Count; unknown: Count; ratio: number | null };
 }
 export interface PollTimeliness {
   window_seconds: Count; samples: Count; mean_seconds: number | null; p95_seconds: number | null;

@@ -751,6 +751,8 @@ class PersistentBrowserPool:
                         "--webrtc-ip-handling-policy=disable_non_proxied_udp",
                         "--remote-debugging-port=0",
                         "--disk-cache-size=268435456",
+                        "--disable-domain-reliability",
+                        "--disable-features=Ukm,SegmentationPlatform,OptimizationHints,OptimizationGuideModelDownloading,OptimizationTargetPrediction",
                     ],
                 )
                 cdp = await self._connect_profile_cdp(directory)

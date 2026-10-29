@@ -2573,7 +2573,9 @@ class SiteStrategyService:
                     if status and not getattr(exc, "diagnostics", None)
                     else classify_exception(exc)
                 )
-                if category is FailureCategory.RUNTIME_UNAVAILABLE:
+                control_failure = reason in {'browser_cdp_attach_failed', 'browser_driver_unavailable',
+                    'identity_worker_disconnected', 'identity_worker_deadline'}
+                if category is FailureCategory.RUNTIME_UNAVAILABLE and not control_failure:
                     identity_id = combination.identity_id or profile.profile_id
                     identity_runtime = (await registry_io(self.repository.get_identity_runtime, identity_id))
                     try:
@@ -2589,11 +2591,13 @@ class SiteStrategyService:
                         ))
                     except RuntimeError:
                         pass
+                if category is FailureCategory.RUNTIME_UNAVAILABLE:
                     if getattr(exc, "control_recovery_attempted", False) and reason in {
                         "browser_cdp_attach_failed",
                         "browser_driver_unavailable",
                         "identity_worker_disconnected",
                     }:
+                        identity_id = combination.identity_id or profile.profile_id
                         identity = (await registry_io(self.repository.get_identity, identity_id))
                         if identity and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
                             self._schedule_native_drain(identity)
@@ -2645,6 +2649,16 @@ class SiteStrategyService:
         async def drain():
             reserved_revision = None
             try:
+                # Independent native evidence, not a second failed driver command.
+                from .supervisor_client import ChromeSupervisorClient
+                client = ChromeSupervisorClient(self.runtime.supervisor_socket,
+                    owner_id=self.runtime.controller_id)
+                async with asyncio.timeout(5):
+                    native = await client._request('probe', {'identity_id': identity.identity_id})
+                if native.get('running') and native.get('cdp_ready'):
+                    return  # Replace/reattach the controller; keep native and warm pages.
+                if not native.get('running'):
+                    return  # ensure owns actual missing-process recreation, not drain.
                 async with asyncio.timeout(5), self.profile_use._condition:
                     while self.profile_use._active.get(identity.profile_id, 0):
                         await self.profile_use._condition.wait()
@@ -2681,7 +2695,7 @@ class SiteStrategyService:
                 )
             finally:
                 async with self.profile_use._condition:
-                    profile = self.repository.get_profile(identity.profile_id)
+                    profile = self.repository.get_profile(identity.profile_id) if reserved_revision is not None else None
                     if (
                         profile
                         and profile.operational_revision == reserved_revision

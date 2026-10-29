@@ -35,13 +35,10 @@ class _ContextLease:
     async def __aexit__(self, *_):
         if self.closed:
             return
-        owner = self.adapter.pool.target_owner
-        await owner.event("state", {"allocation_id": self.allocation, "state": "CLOSE_PENDING"})
         async with asyncio.timeout(5):
             await self.context.close()
         self.closed = True
         self.entry.active_pages -= 1
-        await owner.event("state", {"allocation_id": self.allocation, "state": "CLOSED"})
 
 
 class PublicContexts:
@@ -72,28 +69,10 @@ class PublicContexts:
                 viewport={"width": env.window_width, "height": env.window_height},
                 accept_downloads=False,
             )
-            owner = self.pool.target_owner
-            allocation = await owner.event(
-                "allocate",
-                {
-                    "identity_id": identity.identity_id,
-                    "instance_id": "public:" + entry.instance_id,
-                    "epoch": egress.generation,
-                },
-            )
             page = await context.new_page()
-            session = await context.new_cdp_session(page)
-            try:
-                target_id = (await session.send("Target.getTargetInfo"))["targetInfo"]["targetId"]
-            finally:
-                await session.detach()
-            await owner.event(
-                "bind", {"allocation_id": allocation["allocation_id"], "target_id": target_id}
-            )
-            page._doxagent_target_id = target_id
-            page._doxagent_allocation_id = allocation["allocation_id"]
-            page._doxagent_target_owner = owner
-            return _ContextLease(self, entry, context, page, identity, allocation["allocation_id"])
+            # The context is the physical owner. Anonymous pages have no durable
+            # identity lifecycle and cannot become retained login/challenge pages.
+            return _ContextLease(self, entry, context, page, identity, None)
         except BaseException:
             if context is not None:
                 async with asyncio.timeout(5):
@@ -121,30 +100,7 @@ class PublicExecution:
         self.cleanup_pending = False
         self._closing_task = None
         self._cleanup_owner = None
-        self._identities = set()
-
-    async def _closed_facts(self):
-        from .governance_repository import GovernanceRepository
-        from .schema import IdentityOperationalState, utc_now
-        from .storage import registry_io
-
-        store = GovernanceRepository(self.repository)
-        for identity_id in self._identities:
-            state = await registry_io(self.repository.get_identity_runtime, identity_id)
-            if state.instance_id and state.instance_id.startswith("public:"):
-                await registry_io(store.mark_instance_lost, identity_id, state.instance_id)
-                await registry_io(
-                    self.repository.save_identity_runtime,
-                    state.model_copy(
-                        update={
-                            "operational_state": IdentityOperationalState.STOPPED,
-                            "generation": state.generation + 1,
-                            "updated_at": utc_now(),
-                        }
-                    ),
-                    expected_generation=state.generation,
-                )
-        self._identities.clear()
+        self._idle_task = None
 
     async def _close_runtime(self, runtime):
         """Only this anonymous burst's processes may be force-released."""
@@ -177,8 +133,6 @@ class PublicExecution:
         self.cleanup_pending = True
         done, _ = await asyncio.wait({closing}, timeout=5)
         if done and not closing.cancelled() and closing.exception() is None:
-            await self._closed_facts()
-            self.cleanup_pending = False
             self._closing_task = self._cleanup_owner = None
             return True
         # A stuck SDK cancellation does not own a right to keep public Chrome.
@@ -212,8 +166,6 @@ class PublicExecution:
                 ):
                     entry.owner_lock.release()
                 pool._owner_lock.release()
-                await self._closed_facts()
-                self.cleanup_pending = False
                 self._closing_task = self._cleanup_owner = None
                 closing.add_done_callback(
                     lambda task: task.exception() if not task.cancelled() else None
@@ -228,11 +180,22 @@ class PublicExecution:
         return False
 
     async def execute(self, request, resolved, identity, egress):
+        # Wait for a close already in progress without holding the owner lock.
+        # There is never a second anonymous runtime to hide an unconfirmed close.
+        if self._idle_task and self.cleanup_pending:
+            async with self.lock:
+                closing = None
+                if self.cleanup_pending:
+                    if self._idle_task is None or self._idle_task.done():
+                        self._idle_task=asyncio.create_task(self._finish_cleanup(self.runtime))
+                    closing=self._idle_task
+            if closing:await asyncio.shield(closing)
         async with self.lock:
+            if self._idle_task and not self.cleanup_pending:
+                self._idle_task.cancel()
+                self._idle_task = None
             if self.cleanup_pending:
-                if not await self._close_runtime(self.runtime):
-                    raise RuntimeError("public_browser_cleanup_pending")
-                self.runtime = None
+                raise RuntimeError("public_browser_cleanup_pending")
             if self.runtime is None:
                 runtime = SiteAccessRuntime(self.repository, self.resolver, **self.options)
                 runtime.browser_runtimes = BrowserRuntimeManager(
@@ -243,8 +206,6 @@ class PublicExecution:
                 self.runtime = runtime
             runtime = self.runtime
             self.users += 1
-            if identity is not None:
-                self._identities.add(identity.identity_id)
         try:
             request = request.model_copy(
                 update={
@@ -256,17 +217,33 @@ class PublicExecution:
             async with self.lock:
                 self.users -= 1
                 if not self.users:
-                    try:
-                        if await self._close_runtime(runtime):
-                            self.runtime = None
-                    except Exception:
-                        # A completed download is not invalidated by its local
-                        # cleanup ledger. Retain this runtime for a later retry.
-                        self.cleanup_pending = True
-                        logging.getLogger(__name__).exception("public_browser_cleanup_pending")
+                    self._idle_task = asyncio.create_task(self._retire_idle(runtime))
+
+    async def _retire_idle(self, runtime):
+        await asyncio.sleep(2)
+        async with self.lock:
+            if self.users or self.runtime is not runtime:
+                return
+            self.cleanup_pending = True
+        await self._finish_cleanup(runtime)
+
+    async def _finish_cleanup(self, runtime):
+        try:
+            closed = await self._close_runtime(runtime)
+            async with self.lock:
+                if closed and self.runtime is runtime:
+                    self.runtime = None
+                    self.cleanup_pending=False
+        except Exception:
+            logging.getLogger(__name__).exception("public_browser_cleanup_pending")
 
     async def close(self):
+        if self._idle_task:
+            if not self.cleanup_pending:
+                self._idle_task.cancel()
+            await asyncio.gather(self._idle_task, return_exceptions=True)
         async with self.lock:
             if self.runtime is not None:
                 if await self._close_runtime(self.runtime):
                     self.runtime = None
+                    self.cleanup_pending=False

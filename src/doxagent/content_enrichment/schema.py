@@ -38,6 +38,7 @@ class EnrichmentJob(BusModel):
     bootstrap: bool = False
     status: EnrichmentJobStatus = EnrichmentJobStatus.QUEUED
     attempt_count: int = Field(default=0, ge=0)
+    fetch_round: int = Field(default=0, ge=0)
     prior_attempts: list[dict[str, object]] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)

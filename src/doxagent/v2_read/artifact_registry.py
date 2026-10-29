@@ -41,8 +41,8 @@ def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
         db.execute("DROP TRIGGER "+quoted(name))
     assert classification in {'BUSINESS', 'SERVING'}
     old_identity=identity.replace('NEW.','OLD.')
-    conflict=("ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.class='SERVING'"
-              if classification=='SERVING' else "ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.codec='json-chunks-v1' AND artifact.location='native-files/'||substr(excluded.id,1,2)||'/'||excluded.id")
+    conflict=("ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.class='SERVING' AND artifact.state<>'DELETING'"
+              if classification=='SERVING' else "ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.state<>'DELETING' AND artifact.codec='json-chunks-v1' AND artifact.location='native-files/'||substr(excluded.id,1,2)||'/'||excluded.id")
     queries=["SELECT value FROM json_tree(NEW."+quoted(c)+") WHERE key='$doxagent_content_v1'" for c in columns]
     if table=='v2_source_receipts':
         # Capture serializes an entire SQL row; its JSON columns are strings in
@@ -83,8 +83,18 @@ def collect_diagnostics(store, *, now, limit=10):
     with store.connect(write=True, timeout=.05) as db:
         queue = db.execute("SELECT 1 FROM sqlite_master WHERE name='serving_content_exit'").fetchone()
         if queue:
-            db.execute("UPDATE artifact SET state='MARKED' WHERE id IN (SELECT a.id FROM serving_content_exit e JOIN artifact a ON a.id=e.id WHERE a.class='SERVING' AND a.state='LIVE' AND NOT ("+protected+") LIMIT ?)",(limit,))
-            db.execute("DELETE FROM serving_content_exit WHERE id IN (SELECT e.id FROM serving_content_exit e LEFT JOIN artifact a ON a.id=e.id WHERE a.id IS NULL OR a.state<>'LIVE' LIMIT ?)",(limit,))
+            cursor = db.execute("SELECT value FROM read_meta WHERE key='artifact_exit_cursor'").fetchone()
+            exiting = [r[0] for r in db.execute(
+                "SELECT id FROM serving_content_exit WHERE id>? ORDER BY id LIMIT ?",
+                (cursor[0] if cursor else '', limit))]
+            for identity in exiting:
+                db.execute("UPDATE artifact AS a SET state='MARKED' WHERE id=? AND class='SERVING' "
+                           "AND state='LIVE' AND NOT ("+protected+")", (identity,))
+                db.execute("DELETE FROM serving_content_exit WHERE id=? AND NOT EXISTS("
+                           "SELECT 1 FROM artifact WHERE id=? AND state='LIVE')",(identity,identity))
+            db.execute("INSERT INTO read_meta VALUES('artifact_exit_cursor',?) "
+                       "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                       (exiting[-1] if len(exiting)==limit else '',))
         db.execute("UPDATE artifact SET state='MARKED' WHERE id IN (SELECT id FROM artifact a WHERE class='DIAGNOSTIC' AND state='LIVE' AND created_at<? AND NOT ("+protected+") LIMIT ?)",
                    (instant(now-timedelta(days=Limits.load().diagnostic_days)),limit))
     with store.connect() as db:
@@ -95,43 +105,39 @@ def collect_diagnostics(store, *, now, limit=10):
         quarantine = root / "quarantine" / digest
         if not source.is_relative_to(root) or source == root or source.is_symlink():
             raise ValueError("artifact escaped owned storage")
+        manifest = {"id": identity, "sha256": digest, "original": location, "quarantine": str(quarantine.relative_to(root))}
+        # Validate producer-owned diagnostics before claiming, never while holding
+        # the SQLite writer. Trusted immutable SERVING CAS needs no deletion hash.
+        if stage == 'MARKED' and source.is_file() and classification != 'SERVING':
+            with source.open('rb') as stream:
+                if hashlib.file_digest(stream, 'sha256').hexdigest() != digest:
+                    raise ValueError('diagnostic checksum mismatch')
         with store.connect(write=True, timeout=.05) as db:
             current = db.execute('SELECT state FROM artifact WHERE id=?',(identity,)).fetchone()
             if current is None or current[0] != stage:
                 continue
             if db.execute("SELECT 1 FROM artifact a WHERE a.id=? AND ("+protected+")", (identity,)).fetchone():
                 continue
-            manifest = {"id": identity, "sha256": digest, "original": location, "quarantine": str(quarantine.relative_to(root))}
-            if stage == "MARKED":
-                quarantine.parent.mkdir(exist_ok=True)
-                if source.exists():
-                    if quarantine.exists():
-                        if classification != 'SERVING':
-                            raise ValueError("quarantine collision")
-                        # A regenerated CAS value can reacquire an owner while
-                        # the old unreferenced quarantine awaits its next pass.
-                        if quarantine.is_symlink() or quarantine.resolve().parent != (root/'quarantine').resolve():
-                            raise ValueError('quarantine escaped owned storage')
-                        shutil.rmtree(quarantine)
-                    if source.is_file():
-                        with source.open("rb") as stream:
-                            if hashlib.file_digest(stream,"sha256").hexdigest() != digest:
-                                raise ValueError("diagnostic checksum mismatch")
-                    else:
-                        from .content_files import ContentFiles
-                        info = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
-                        if info["sha256"] != digest:
-                            raise ValueError("diagnostic manifest mismatch")
-                    source.replace(quarantine)
-                elif not quarantine.exists():
-                    raise ValueError("marked artifact missing from source and quarantine")
-                db.execute("INSERT OR REPLACE INTO artifact_deletions VALUES(?,?,?)", (identity,encode(manifest),instant(now)))
+            db.execute("INSERT OR REPLACE INTO artifact_deletions VALUES(?,?,?)", (identity,encode(manifest),instant(now)))
+            db.execute("UPDATE artifact SET state='DELETING' WHERE id=?", (identity,))
+        # DELETING fences both references and holds throughout physical work.
+        # A restart after claim/rename resumes using the same original location.
+        if stage == 'MARKED' or (stage == 'DELETING' and source.exists()):
+            quarantine.parent.mkdir(exist_ok=True)
+            if source.exists():
+                if quarantine.exists():
+                    if classification != 'SERVING':
+                        raise ValueError('quarantine collision')
+                    if quarantine.is_symlink() or quarantine.resolve().parent != (root/'quarantine').resolve():
+                        raise ValueError('quarantine escaped owned storage')
+                    shutil.rmtree(quarantine) if quarantine.is_dir() else quarantine.unlink()
+                source.replace(quarantine)
+            elif not quarantine.exists():
+                raise ValueError('marked artifact missing from source and quarantine')
+            with store.connect(write=True, timeout=.05) as db:
                 db.execute("UPDATE artifact SET state='QUARANTINED' WHERE id=?", (identity,))
-                changed.append(manifest)
-            else:
-                # Persist the intent first; an interrupted unlink resumes on the next pass.
-                db.execute("UPDATE artifact SET state='DELETING' WHERE id=?", (identity,))
-        if stage in {"QUARANTINED","DELETING"}:
+            changed.append(manifest)
+        else:
             if quarantine.exists():
                 if quarantine.resolve().parent != (root / "quarantine").resolve() or quarantine.is_symlink():
                     raise ValueError("quarantine escaped owned storage")

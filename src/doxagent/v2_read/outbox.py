@@ -293,12 +293,14 @@ class SourceOutbox:
                             changed = "OLD.status IS NOT NEW.status"
                         if table=="live_articles":
                             changed=" OR ".join(f"OLD.{field} IS NOT NEW.{field}" for field in (
-                                "material_hint","outcome","body_digest","checked_at","last_error"))
+                                "material_hint","outcome","body_digest","checked_at","last_error",
+                                "initial_request_at","initial_result_at","initial_outcome"))
                             pending="state IN ('FETCH_DUE','FETCHING','COMMIT_DUE')"
                             changed+=f" OR (OLD.{pending}) IS NOT (NEW.{pending})"
                         if table=="live_deliveries":
                             changed=" OR ".join(f"OLD.{field} IS NOT NEW.{field}" for field in (
-                                "state","terms_revision","decision_digest","raw_id","standard_id","consumable_at"))
+                                "state","terms_revision","decision_digest","raw_id","standard_id","consumable_at",
+                                "initial_decision_at","initial_decision"))
                         if table == 'poll_runs':
                             changed = f"({changed}) AND (NEW.status!='DISPATCHED' OR OLD.status IS NOT NEW.status)"
                         if table == "poll_captures":

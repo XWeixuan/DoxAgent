@@ -45,7 +45,7 @@ class CollectionControl:
         self.repository = repository
         self.clock = clock
 
-    def status(self):
+    def status(self, *, include_applied=True):
         with self.repository._connect() as db:
             row = db.execute(
                 "SELECT data_json FROM bus_collection_control ORDER BY revision DESC LIMIT 1"
@@ -72,7 +72,7 @@ class CollectionControl:
             "state": "DISABLED" if not state["enabled"] else "EXPIRED" if expired else "ACTIVE",
         }
         import os
-        if os.getenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','').lower() in {'true','1'}:
+        if include_applied and os.getenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','').lower() in {'true','1'}:
             from .collection_plane.store import AcquisitionStore,path_for
             path=path_for(self.repository.path)
             applied=AcquisitionStore(path).get_meta('configuration',{}) if path.is_file() else {}

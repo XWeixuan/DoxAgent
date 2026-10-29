@@ -91,6 +91,10 @@ def body_cohort(store, ticker, seq, filters, days):
                 unique[key] = value
     full = sum(v.get("outcome") in {"FULL", "SHORT_FULL"} for v in unique.values())
     pending = sum(v.get("status") == "PENDING" for v in unique.values())
+    initial_full=sum(v.get('initial_outcome') in {'FULL','SHORT_FULL'} for v in unique.values())
+    initial_pending=sum(not v.get('initial_result_at') and v.get('status')=='PENDING' for v in unique.values())
+    initial_known=sum(bool(v.get('initial_result_at')) for v in unique.values())
+    initial_unknown=len(unique)-initial_known-initial_pending
     with store.connect() as db:
         from doxagent.v2_read.serving_schema import history_relation
         attempts=[0,0,0]
@@ -117,6 +121,9 @@ def body_cohort(store, ticker, seq, filters, days):
         "network_succeeded": attempts[1]+sum(v.get("full_total",0) for v in unique.values()),
         "cache_reuses": attempts[2]+sum(v.get("cache_total",0) for v in unique.values()),
         "basis": "FIRST_OBSERVED_ARTICLE",
+        "initial": {'full':initial_full,'pending':initial_pending,
+            'failed':initial_known-initial_full,'unknown':initial_unknown,
+            'ratio':initial_full/(initial_known+initial_pending) if initial_known+initial_pending else None},
         "legacy_excluded": True,
     }
 

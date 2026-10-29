@@ -535,7 +535,7 @@ def test_api_separates_worker_and_admin_tokens(site_service: SiteStrategyService
 
 
 @pytest.mark.asyncio
-async def test_expired_cooldown_requires_half_open_probe_and_does_not_steal_active(
+async def test_expired_cooldown_allows_business_half_open_and_does_not_steal_active(
     site_service: SiteStrategyService,
 ) -> None:
     spec = site_service.repository.get_strategy("yahoo_finance")
@@ -560,16 +560,12 @@ async def test_expired_cooldown_requires_half_open_probe_and_does_not_steal_acti
     )
     site_service.repository.save_runtime(runtime, expected_generation=runtime.generation)
 
-    _, ready, _ = await site_service.health.candidates(
+    state, ready, _ = await site_service.health.candidates(
         "yahoo_finance", spec.access.combinations, excluded=set()
     )
-    assert first.combination_id not in {item.combination_id for item in ready}
-    claimed = await site_service.health.claim_due_probe("yahoo_finance", spec.access.combinations)
-    assert claimed is not None
-    combination, generation = claimed
-    assert combination.combination_id == first.combination_id
+    assert first.combination_id in {item.combination_id for item in ready}
     await site_service.health.mark_success(
-        "yahoo_finance", combination.combination_id, assigned_generation=generation
+        "yahoo_finance", first.combination_id, assigned_generation=state.generation
     )
     assert site_service.repository.get_runtime("yahoo_finance").active_combination_id == second_id
 
