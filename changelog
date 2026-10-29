@@ -2404,3 +2404,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 生产配置缺口修复：当前新增IONQ缺Investing列表定位导致每轮失败，已通过既有身份及正式MarketTickerAdapter分别实测Investing旧SPAC slug与InvestorsHub NYSE页面（10/13条有效记录）；补默认精确URL，由已有增量locator迁移合入，保留用户自定义URL及既有周期、身份与正文质量。
 
 2026-10-29 生产调度聚簇修复：同源10个HEAD原随机hash相位有5个挤在约5秒，触发3秒准入取消并漏掉整个60秒周期；按当前真实物理单元数在源/路线/周期组内均匀错峰，动态TAIL不重排HEAD，共享roster不倍增物理任务。不增并发、不延时、不降覆盖；相位v3一次迁移可能重排至下一个配置周期，切换缺口保留，checkpoint/去重/ARTICLE_ONCE不动。新增9/10/20单元公平间隔与TAIL不扰动测试。
+
+2026-10-29 采集计划契约修复：内部unit generation纳入真实Source/binding版本与物理相位roster签名，防止纯调度版本更新后计划仍保留旧版本而实际请求已是新版（Finnhub历史有真取网却版本证据不匹配），以及ticker数量改变后旧在途结果覆写新相位。迁移保留checkpoint/input去重与完整正文，历史缺证据不回填为新鲜。
+
+2026-10-29 正文重复工作修复：实测Yahoo同篇video的?.tsrc=rss与无追踪参数形成两个canonical任务，增加失败及更新复查。仅对finance.yahoo.com去除已验证的.tsrc追踪参数，其它真实参数不变，保留其它publisher与文章选择参数；新输入及既有续作自然归一，不扫描历史回填FULL或删交付事实。

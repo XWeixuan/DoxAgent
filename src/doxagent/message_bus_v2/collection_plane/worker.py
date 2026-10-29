@@ -213,8 +213,9 @@ class Collector:
                 if s.source_id=="yahoo_finance_news":
                     limiter_key+=":browser" if unit=="SUPPLEMENT_HEAD" else ":rss"
                 limiter_rates[limiter_key]+=1/period
-            generation = self.generation(s, targets, options)
             phase, phase_key = phases.get(key, ((int(sha256_text(':'.join(key))[:8], 16) % max(1, period * 1000)) / 1000, None))
+            options['schedule_phase_key'] = phase_key
+            generation = self.generation(s, targets, options)
             for b in targets:
                 state = self.states.get((b.binding_id, unit))
                 required=options.get('coverage_required',not unit.startswith('TAIL:'))
@@ -299,6 +300,9 @@ class Collector:
             canonical_json(
                 [
                     source.adapter_ref,
+                    source.version,
+                    sorted((b.binding_id,b.version) for b in targets),
+                    options.get('schedule_phase_key'),
                     source.default_parameters,
                     None if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
                     else targets[0].source_parameters,

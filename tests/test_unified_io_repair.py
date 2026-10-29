@@ -459,3 +459,36 @@ def test_physical_head_phases_are_even_and_ignore_tail_and_shared_roster_size(co
     desired[('old','TAIL:page')]=[source,[binding],'TAIL:page',{}]
     for row in desired.values():row[1]=[binding]*20
     assert balanced_phases(desired) == first
+
+
+async def test_source_version_and_phase_membership_refresh_plan_without_losing_checkpoint(tmp_path):
+    from tests.test_message_collection_plane import setup_plane
+    repo,bus,worker,adapter,store=setup_plane(tmp_path)
+    await worker.refresh(seeds=True)
+    key=next(iter(worker.states))
+    worker.states[key]['state']['checkpoint']={'anchor':'keep'}
+    previous=worker.states[key]['generation']
+    cfg=worker.config_loader()
+    sid=key[0].split(':',1)[1]
+    cfg.sources[sid]=cfg.sources[sid].model_copy(update={'version':cfg.sources[sid].version+1})
+    await worker.refresh()
+    assert worker.states[key]['generation'] != previous
+    assert worker.states[key]['state']['checkpoint'] == {'anchor':'keep'}
+    with store.connect() as db:
+        latest=db.execute("SELECT source_version FROM cycles WHERE binding_id=? AND unit=? AND status='SCHEDULE' ORDER BY dispatch_at DESC LIMIT 1",key).fetchone()[0]
+    assert latest == cfg.sources[sid].version
+    previous=worker.states[key]['generation']
+    binding=next(iter(cfg.bindings.values()))
+    second=binding.model_copy(update={'binding_id':'SECOND:'+binding.source_id})
+    cfg.bindings[second.binding_id]=second
+    await worker.refresh()
+    assert worker.states[key]['generation'] != previous
+    assert worker.states[key]['state']['checkpoint'] == {'anchor':'keep'}
+
+
+def test_yahoo_rss_tracking_query_is_same_article_without_collapsing_publisher_selectors():
+    from doxagent.message_bus_v2.deduplication import article_url
+    base='https://finance.yahoo.com/video/nasdaq-100-falls-ai-trade-144750708.html'
+    assert article_url(base+'?.tsrc=rss') == article_url(base)
+    assert article_url('https://other.test/story.html?.tsrc=business') != article_url('https://other.test/story.html')
+    assert article_url(base+'?id=other') != article_url(base)
