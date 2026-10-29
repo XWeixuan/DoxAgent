@@ -60,6 +60,7 @@ class IdentityWorkerManager:
         self._locks = {}
         self.owner = TargetOwner(repository)
         self._snapshot_cache = {}
+        self._fingerprints = {}
         self.retired_profiles = set()
         self.pending_targets = {}
 
@@ -130,7 +131,12 @@ class IdentityWorkerManager:
             raise IdentityOperationError("RUNTIME_UNAVAILABLE","identity_configuration_changed_requires_drain")
         lock = self._locks.setdefault(identity.identity_id, asyncio.Lock())
         async with lock:
-            fingerprint = digest_json([identity.model_dump(mode="json"), egress.generation])
+            key = (identity.revision, egress.egress_id, egress.generation)
+            cached = self._fingerprints.get(identity.identity_id)
+            if cached is None or cached[0] != key:
+                cached = (key, digest_json([identity.model_dump(mode="json"), egress.generation]))
+                self._fingerprints[identity.identity_id] = cached
+            fingerprint = cached[1]
             handle = self.workers.get(identity.identity_id)
             if (
                 handle and handle.process.returncode is None

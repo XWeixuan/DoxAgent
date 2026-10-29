@@ -2408,3 +2408,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 采集计划契约修复：内部unit generation纳入真实Source/binding版本与物理相位roster签名，防止纯调度版本更新后计划仍保留旧版本而实际请求已是新版（Finnhub历史有真取网却版本证据不匹配），以及ticker数量改变后旧在途结果覆写新相位。迁移保留checkpoint/input去重与完整正文，历史缺证据不回填为新鲜。
 
 2026-10-29 正文重复工作修复：实测Yahoo同篇video的?.tsrc=rss与无追踪参数形成两个canonical任务，增加失败及更新复查。仅对finance.yahoo.com去除已验证的.tsrc追踪参数，其它真实参数不变，保留其它publisher与文章选择参数；新输入及既有续作自然归一，不扫描历史回填FULL或删交付事实。
+
+2026-10-29 最终全链路Review：Identity Worker的ensure仍每请求序列化整个已验证identity生成同一指纹，改按identity revision及egress generation复用原指纹，只保留每身份当前一项；实际配置/出口变化仍按原冲突处理，不新增门禁或放松绑定校验。

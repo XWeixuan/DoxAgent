@@ -492,3 +492,25 @@ def test_yahoo_rss_tracking_query_is_same_article_without_collapsing_publisher_s
     assert article_url(base+'?.tsrc=rss') == article_url(base)
     assert article_url('https://other.test/story.html?.tsrc=business') != article_url('https://other.test/story.html')
     assert article_url(base+'?id=other') != article_url(base)
+
+
+async def test_identity_controller_fingerprint_is_serialized_only_on_config_version_change(monkeypatch):
+    import doxagent.site_strategy.worker_manager as module
+    from doxagent.site_strategy.schema import BrowserIdentitySpec,ProxyEgress,digest_json
+    identity=BrowserIdentitySpec(identity_id='test',profile_id='test',egress_id='e')
+    egress=ProxyEgress(egress_id='e',endpoint='http://127.0.0.1:1080',node_ref='n',node_fingerprint='n',listener_port=1080)
+    manager=object.__new__(module.IdentityWorkerManager)
+    manager.repository=SimpleNamespace(get_identity=lambda _:identity)
+    manager._locks={};manager._fingerprints={}
+    process=SimpleNamespace(returncode=None,stdin=SimpleNamespace(is_closing=lambda:False))
+    handle=module.WorkerHandle('test',1,process,digest_json([identity.model_dump(mode='json'),egress.generation]))
+    manager.workers={'test':handle}
+    calls=[]
+    def fingerprint(value):calls.append(True);return digest_json(value)
+    monkeypatch.setattr(module,'digest_json',fingerprint)
+    assert await manager.ensure(identity,egress) is handle
+    assert await manager.ensure(identity,egress) is handle
+    assert len(calls)==1
+    with pytest.raises(RuntimeError,match='identity_configuration_changed_requires_drain'):
+        await manager.ensure(identity,egress.model_copy(update={'generation':egress.generation+1}))
+    assert len(calls)==2

@@ -62,3 +62,14 @@ Finnhub实际只读探针HTTP200，响应声明`x-ratelimit-limit=60`、remainin
 - Globe HEAD的内部head_at周期与Collector相位冲突导致空转；正式HEAD改由Collector单一节奏触发，TAIL义务保留。SEC正式HEAD去掉2秒结果TTL捷径，继续条件请求，不变更申报/表格/正文质量合同。
 - 30秒eBPF窗口（15:07:52Z起）只统计实际提交BIO并按首vector归文件：Site约0.23MiB、Supervisor约7.25MiB、Worker约0.20MiB、Collector约1.17MiB、Maintenance约0.38MiB；主要有swrast_dri.so、acquisition.sqlite3、site_strategy.sqlite3与SDK日志WAL。该短样本不是90分钟峰值，也不能与容器累计字节重复相加。完整cgroup/磁盘差分另行报告。
 - W1/W2/W3容量/模型/业务入口保持原配置，Worker运行作业及3个READY已有实测；未以暂停这些能力换消息指标。
+
+## 观察后半程的调度与剩余问题
+
+- 物理HEAD随机hash相位在IHub有5/10单元挤入约5秒；同身份2并发真实恢复后仍触发3秒准入失败。88ad4250采用按当前物理单元数均匀错峰，9/10/20测试及共享roster/动态TAIL测试通过，不提高并发和超时。生产15:36–15:41窗口IHub已无失败（此前5分钟有约14–24失败），不将其等同20ticker/30秒容量证明。
+- 相位/配置变化纳入现有unit generation，旧在途不能覆写新时钟；保留checkpoint和inputs去重，不新增恢复台账。也修复纯调度Source版本变化而SCHEDULE仍旧版，导致Finnhub有真实响应但新鲜证明因版本不一致失败的问题；旧窗口不补填取网/版本证据。
+- IONQ现有启用订阅缺定位：真实Investing URL为`https://www.investing.com/equities/dmy-technology-group-iii-news`（[官方新闻页](https://www.investing.com/equities/dmy-technology-group-iii-news)），普通名称slug实测404。通过原身份及正式MarketTickerAdapter验证10条记录；IHub NYSE验证13条。已有增量locator迁移将两个Source版本4→5，不覆盖自定义URL、周期和身份。
+- Yahoo相同video有带`?.tsrc=rss`与无参数两个canonical任务；仅对finance.yahoo.com去除已验证追踪参数，保留其它查询选择参数与其它publisher。既有事实不批量删除/重写，不把unsupported视频记FULL。
+- IBKR 7496代理接收到连接并不代表上游API健康：socat转到127.0.0.1:4002，而4002实测没有监听；交易Executor也已有连接失败和逾期EXIT报告。未重启交易、修改持仓/交易规则或新增W门禁，属于需恢复上游API的既存基础设施缺口。
+- Reuters仍human_challenge_pending；Shephard有明确端点失败；Finnhub仍有真实慢响应/读错误；RKLB updates有上游TLS/读超时。均留在全部应执行周期分母，不能靠其它频道成功抵消。
+- 15:00–15:30中段口径：12781应执行、10847新鲜，全部覆盖84.87%（非达标）；22篇适用新canonical中首次FULL18，50个应交付article×ticker中44个≤10秒，已完成48个均值5.56秒/max34.35秒。该中段混合多个版本，尚未包含最终修复的完整观察。
+- 去重专项20通过、1条`RuntimeJournal.claim`旧合同测试失败；在之前fc2e8a9a冻结归档中单独复现相同失败，当前RuntimeJournal代码与该归档一致，和Yahoo追踪URL修改无关。没有通过改W1/W2/W3领取规则让该断言变绿；该既有差异作为剩余检查项保留。其余182项冻结组合、21项计划generation/采集、68项市场/SEC及双worker13项等证据分别保留，不能把重复测试累加成独立总数。
