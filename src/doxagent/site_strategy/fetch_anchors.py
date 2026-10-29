@@ -6,7 +6,6 @@ temporary pages; no command waits for an anchor owned by a sibling.
 
 import asyncio
 import logging
-import time
 from dataclasses import dataclass
 
 
@@ -48,7 +47,6 @@ class FetchAnchors:
                 or anchor.egress_id != egress.egress_id
                 or anchor.page.is_closed()
                 or anchor.gate.blocked
-                or time.monotonic() - anchor.created_at > max(300, getattr(anchor.page, "_doxagent_idle_seconds", self.idle_seconds) * 2)
             ):
                 await self._close(anchor)
                 return None

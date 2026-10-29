@@ -810,6 +810,24 @@ def test_lightweight_site_http_uses_its_wire_timestamps_without_identity_attempt
         REQUESTS.reset(token)
 
 
+def test_browser_redirect_is_not_a_second_validated_listing():
+    from doxagent.message_bus_v2.poll_trace import REQUESTS, validate_listing
+    from doxagent.site_strategy.client import _observed
+    stages={f'request_{i}_{key}':value for i,status in enumerate((302,200))
+        for key,value in {'started_epoch_ms':1700000000000+i*100,
+                          'body_epoch_ms':1700000000100+i*100,'status_code':status}.items()}
+    result=SimpleNamespace(attempts=[SimpleNamespace(stage_timings=stages,status_code=200)],
+        operation_id='redirect',served_from_shared_capture=False,site_id='investorshub',identity_id='identity',
+        disposition=SimpleNamespace(value='SUCCESS'))
+    events=[];token=REQUESTS.set(events)
+    try:
+        _observed(result)
+        assert [r['status_code'] for r in events]==[302,200]
+        assert validate_listing(events)==[events[1]]
+        assert validate_listing([events[0]])==[]
+    finally:REQUESTS.reset(token)
+
+
 def test_retention_keeps_unresolved_replayed_input_and_last_fresh_boundary(tmp_path):
     from dataclasses import replace
 

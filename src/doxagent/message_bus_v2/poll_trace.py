@@ -19,7 +19,8 @@ def validate_listing(events, request_ids=None, *, since=0):
     """Bind parser validation to an unambiguous transport, never a caller timestamp."""
     candidates=[r for r in events[since:] if r.get('role','listing')=='listing'
         and r.get('proof_basis')=='TRANSPORT_SEND' and r.get('response_received_at')
-        and not r.get('error_type') and (r.get('status_code') is None or 200<=r['status_code']<400)]
+        and not r.get('error_type') and (r.get('status_code') is None
+            or 200<=r['status_code']<300 or r['status_code']==304)]
     if request_ids is not None:
         candidates=[r for r in candidates if r['physical_request_id'] in request_ids]
     elif len({r['physical_request_id'] for r in candidates})!=1:

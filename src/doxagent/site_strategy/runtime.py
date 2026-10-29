@@ -1445,7 +1445,9 @@ class SiteAccessRuntime:
             nonlocal observed_response
             try:
                 if id(value.request) in tracked_requests:
-                    command_timings[f'request_{tracked_requests[id(value.request)]}_headers_epoch_ms'] = int(time.time()*1000)
+                    index = tracked_requests[id(value.request)]
+                    command_timings[f'request_{index}_headers_epoch_ms'] = int(time.time()*1000)
+                    command_timings[f'request_{index}_status_code'] = value.status
                 if value.request.is_navigation_request() and value.frame == page.main_frame:
                     observed_response = value
                     command_timings.setdefault("headers_received_epoch_ms",int(time.time()*1000))

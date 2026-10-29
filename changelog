@@ -2364,3 +2364,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 Site lifecycle review: retire only a confirmed replaced instance target ledger for both External and Managed runtimes; same-instance health recovery keeps current targets. This removes old External target accumulation without clearing a live Managed document.
 
 2026-10-29 Site stats: reuse existing UTC expression indexes for access/body time windows, removing full-history payload scans from diagnostic requests and normalizing offset timestamp comparisons. Indexed query-plan/count regression passed; no schema rebuild or added projection.
+
+2026-10-29 Post-window IHub diagnosis: record each browser response status independently and exclude redirects from parsed-list proof; a final 200 no longer relabels prior 302 hops. Remove fixed five-minute age rebuild of actively reused business documents; retain idle expiry, revision/egress/closed/challenge checks. 85 cadence/freshness/Investing regressions passed. Original 90-minute failures remain in acceptance.

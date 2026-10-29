@@ -72,7 +72,7 @@ def _observed(result):
                         else None,
                         "identity_id": result.identity_id,
                         "status": result.disposition.value,
-                        "status_code": getattr(attempt, "status_code", None),
+                        "status_code": stages.get(f'request_{physical}_status_code', getattr(attempt, "status_code", None)),
                     }
                 )
     return result

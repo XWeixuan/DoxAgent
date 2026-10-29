@@ -648,3 +648,20 @@ async def test_idle_fetch_documents_match_identity_slots_and_freeze_then_resume(
     assert pool.put(identity,taken,freeze=True)
     await pool.close()
     for anchor in anchors[:2]:anchor.lease.__aexit__.assert_awaited_once()
+
+
+async def test_active_fetch_document_has_no_fixed_age_rebuild_but_real_idle_still_expires():
+    import time
+    from doxagent.site_strategy.fetch_anchors import FetchAnchor,FetchAnchors
+    pool=FetchAnchors();identity=SimpleNamespace(identity_id='hot',revision=1,
+        access=SimpleNamespace(max_concurrency=1));egress=SimpleNamespace(egress_id='exit')
+    lease=SimpleNamespace(__aexit__=AsyncMock())
+    page=SimpleNamespace(is_closed=lambda:False,_doxagent_idle_seconds=.02)
+    anchor=FetchAnchor(lease,page,SimpleNamespace(blocked=False,close=AsyncMock()),None,1,'exit',time.monotonic()-3600)
+    assert pool.put(identity,anchor,freeze=False)
+    assert await pool.take(identity,egress) is anchor
+    lease.__aexit__.assert_not_awaited()
+    assert pool.put(identity,anchor,freeze=False)
+    await asyncio.sleep(.05)
+    await pool.close()
+    lease.__aexit__.assert_awaited_once()
