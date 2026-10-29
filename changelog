@@ -2398,3 +2398,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 HTTP预算生命周期修复：网络timeout从真实取得联合许可后开始，而非从排队前开始；Collector45秒/Site/BODY外层总预算不变。实测Finnhub等待13.5秒后发网仅1.5秒即被错误取消，避免未完成响应重复下载；正常网络仍受原15秒预算限制，新增准入等待与真实执行超时测试。
 
 2026-10-29 生产隐藏串行修复：配置snapshot按版本复用后，Identity Worker对无snapshot execute仍默认并发1，实际把已配置同身份2并发退化为串行；改读已验证的当前identity容量，不扩大任何配置上限，新增双命令实际重叠回归，并记录worker内部准入等待跨度。
+
+2026-10-29 有效采集执行修复：Globe普通HEAD由Collector单一周期负责，取消适配器按上次head_at再次跳过已到期任务的双重节奏；必要续页仍由独立TAIL及checkpoint保证。SEC正式HEAD不再复用2秒进程TTL结果，仍用条件请求、保持原表格/正文/申报类型合同，避免重启/相邻轮无真实取网证据。

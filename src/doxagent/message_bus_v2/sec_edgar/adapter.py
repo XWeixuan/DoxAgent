@@ -111,7 +111,7 @@ class SecEdgarAdapter:
         headers = {} if heartbeat or context.window_cutoff else cp.get("validators", {})
         async with self.cik_locks.setdefault(cik, asyncio.Lock()):
             cached = self.recent.get(cik)
-            if cached and time.monotonic() - cached[0] < 2:
+            if cached and context.acquisition_unit != "HEAD" and time.monotonic() - cached[0] < 2:
                 status, response_headers, raw = cached[1]
             else:
                 async with context.request_permit():

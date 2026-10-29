@@ -301,7 +301,9 @@ class GlobeNewswireSearchAdapter:
         successes = int(context.checkpoint.get("page_success_seq", 0))
         rows, failures, outcomes = {}, [], []
         retry_at, deferred = None, False
-        head_only = context.acquisition_unit.startswith("QUERY:")
+        head_only = context.acquisition_unit.startswith("QUERY:") or (
+            context.acquisition_unit == "HEAD" and not context.is_gap_recovery
+        )
         tail_only = context.acquisition_unit.startswith("TAIL:")
         while requests < (1 if head_only or tail_only else 2) and time.monotonic() - started < 15:
             heads, tails = [], []

@@ -419,3 +419,27 @@ async def test_snapshot_reuse_preserves_actual_identity_worker_parallelism():
         await asyncio.gather(*tasks)
     assert len(entered)==2
     assert all(call.args[0]['result']['stage_timings']['worker_command_wait_ms'] < 500 for call in worker.send.await_args_list)
+
+
+async def test_globe_collector_head_never_self_defers_on_adapter_clock():
+    from tests.test_message_bus_market_sources import context
+    from doxagent.message_bus_v2.market_sources import GlobeNewswireSearchAdapter
+    c=context('globenewswire_search',acquisition_unit='HEAD')
+    c=c.model_copy(update={'checkpoint':{'queries':{'legacy-ticker':{'head_at':(c.requested_at-timedelta(seconds=10)).isoformat(),'done':True}}}})
+    adapter=GlobeNewswireSearchAdapter(None)
+    adapter._page=AsyncMock(return_value=([],'http'))
+    result=await adapter.poll(c)
+    assert adapter._page.await_count == 1
+    assert result.acquisition_metadata['query_attempt_count'] == 1
+
+
+async def test_sec_collector_head_always_revalidates_instead_of_reusing_ttl_result():
+    from tests.test_sec_edgar import context,FakeHttp,submissions
+    from doxagent.message_bus_v2.sec_edgar.adapter import SecEdgarAdapter
+    http=FakeHttp(lambda _:json.dumps(submissions()).encode())
+    adapter=SecEdgarAdapter(http)
+    c=context().model_copy(update={'acquisition_unit':'HEAD'})
+    first=await adapter.poll(c)
+    next_c=c.model_copy(update={'checkpoint':first.next_checkpoint,'requested_at':c.requested_at+timedelta(seconds=30)})
+    await adapter.poll(next_c)
+    assert len(http.calls) == 2
