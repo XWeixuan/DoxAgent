@@ -9,6 +9,7 @@ import type {
   MessageSummary,
   Candidate,
   ExecutionSummary,
+  ExitStrategySummary,
   EventLink,
   PolicyLink,
   RuntimeRound,
@@ -1022,6 +1023,9 @@ function Executions({
                 <dt>首次成交</dt>
                 <dd>{valueText(e.first_fill_at, formatInstant)}</dd>
               </dl>
+              {e.exit_strategy && (
+                <ExitStrategyStatus value={e.exit_strategy} />
+              )}
               {e.entry_reason && <p>{e.entry_reason}</p>}
               {e.execution_reason_codes.length > 0 && (
                 <p>原因码：{e.execution_reason_codes.join("、")}</p>
@@ -1034,5 +1038,73 @@ function Executions({
         <LoadMore onClick={() => void q.fetchNextPage()}>更多执行</LoadMore>
       )}
     </section>
+  );
+}
+
+export function ExitStrategyStatus({ value }: { value: ExitStrategySummary }) {
+  return (
+    <dl>
+      <dt>退出策略</dt>
+      <dd>
+        {
+          {
+            TRACKING: "跟踪中",
+            ARMED: "止盈已激活",
+            EXIT_REQUESTED: "退出已触发，等待平仓",
+            CLOSED: "已平仓",
+          }[value.phase]
+        }
+      </dd>
+      <dt>行情状态</dt>
+      <dd>
+        {(
+          {
+            OK: "正常",
+            WARMING_ATR: "ATR预热中",
+            QUOTE_GAP: "报价缺失",
+            STALE: "报价过期",
+            STATE_GAP: "持仓依据待核对",
+            PAUSED: "止盈评估已暂停",
+            CLOSED_SESSION: "当前市场休市",
+            WIDE_SPREAD: "买卖价差过宽",
+            INVALID_PRICE: "报价无效",
+            INVALID_SIZE: "盘口数量无效",
+          } as Record<string, string>
+        )[value.data_health ?? ""] ??
+          value.data_health ??
+          "—"}
+      </dd>
+      <dt>净浮盈 / MFE</dt>
+      <dd>
+        {value.pnl == null ? "—" : "$" + decimal(String(value.pnl), 2)} /{" "}
+        {value.mfe == null ? "—" : "$" + decimal(String(value.mfe), 2)}
+      </dd>
+      <dt>ATR / 止盈线</dt>
+      <dd>
+        {value.atr == null ? "—" : decimal(String(value.atr), 2)} /{" "}
+        {value.stop_net == null ? "—" : decimal(String(value.stop_net), 2)}
+      </dd>
+      <dt>30秒确认</dt>
+      <dd>
+        {value.confirmation
+          .map((v) => (v == null ? "?" : v ? "✓" : "·"))
+          .join(" ") || "—"}
+      </dd>
+      <dt>余量 / 原因</dt>
+      <dd>
+        {value.remaining_quantity} /{" "}
+        {(
+          {
+            TRAILING_PROFIT: "滑动止盈",
+            SESSION_CUTOFF: "定时退出",
+            HARD_RISK: "硬风险退出",
+            MESSAGE_INVALID: "消息失效",
+            RESIDUAL_GROUP_EXIT: "组内剩余仓位退出",
+          } as Record<string, string>
+        )[value.exit_reason ?? ""] ??
+          value.exit_reason ??
+          "—"}
+      </dd>
+    </dl>
   );
 }

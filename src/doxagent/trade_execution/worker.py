@@ -200,7 +200,11 @@ def scheduler_health(executor):
 
 
 async def run_worker(executor: Any, *, once: Any = False) -> Any:
+    from doxagent.exit_strategy.runner import ExitRunner
     from .acceptance import tick_suites
+
+    exit_runner = ExitRunner(executor)
+    exit_task = asyncio.create_task(exit_runner.run()) if not once else None
 
     pending: dict[tuple[Any, ...], asyncio.Task[Any]] = {}
     stop = asyncio.Event()
@@ -259,6 +263,7 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
                     for name, operation, interval in lanes
                 ]
             if once:
+                await exit_runner.tick()
                 await asyncio.gather(*pending.values(), *maintenance)
                 return
             await asyncio.sleep(0.2)
@@ -266,4 +271,8 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
         stop.set()
         # Do not cancel physical socket/SQLite work or release the sole writer early.
         await asyncio.gather(*pending.values(), *maintenance, return_exceptions=True)
+        if exit_task:
+            exit_task.cancel()
+            await asyncio.gather(exit_task, return_exceptions=True)
+        await exit_runner.close()
         executor.close()

@@ -1,3 +1,5 @@
+# 8 CPU / 32GB: per-role elastic ceilings, not additive reservations.
+# The aggregate slice is 28G high / 30G max; existing startup/concurrency stays unchanged.
 x-cgroup-boundary: &cgroup-boundary
   cgroup_parent: doxagent-app.slice
 
@@ -7,8 +9,8 @@ services:
     build:
       args:
         BASE_IMAGE: ${DOXAGENT_BACKEND_DEPS_IMAGE:-doxagent-deps:backend}
-    mem_limit: 6g
-    memswap_limit: 7g
+    mem_limit: 10g
+    memswap_limit: 11g
     pids_limit: 2048
     shm_size: 1g
     image: ${DOXAGENT_SITE_ACCESS_IMAGE:-doxagent-site-access:server}
@@ -22,8 +24,8 @@ services:
         GOOGLE_CHROME_VERSION: ${DOXAGENT_GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
         DOXAGENT_BUILD_COMMIT: ${DOXAGENT_BUILD_COMMIT:-unversioned}
     image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:server}
-    mem_limit: 8g
-    memswap_limit: 9g
+    mem_limit: 10g
+    memswap_limit: 11g
     pids_limit: 4096
   v2-migrate:
     <<: *cgroup-boundary
@@ -34,8 +36,8 @@ services:
   v2-api:
     <<: *cgroup-boundary
     extra_hosts: ["host.docker.internal:host-gateway"]
-    mem_limit: 15g
-    memswap_limit: 16g
+    mem_limit: 4g
+    memswap_limit: 5g
     pids_limit: 512
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-control:
@@ -49,8 +51,8 @@ services:
   codex-worker:
     <<: *cgroup-boundary
     volumes: ["/run/doxagent-resources:/run/doxagent-resources:ro"]
-    mem_limit: 15g
-    memswap_limit: 16g
+    mem_limit: 20g
+    memswap_limit: 21g
     pids_limit: 4096
     environment:
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json
@@ -91,18 +93,22 @@ services:
     environment:
       DOXAGENT_MESSAGE_BUS_V2_YAHOO_HTTP_ROUTES: '["de-standard-1","tr-standard-1"]'
     extra_hosts: ["host.docker.internal:host-gateway"]
-    mem_limit: 15g
-    memswap_limit: 16g
+    mem_limit: 4g
+    memswap_limit: 5g
     pids_limit: 384
     shm_size: 512m
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-message-collector:
+    <<: *cgroup-boundary
+    mem_limit: 4g
+    memswap_limit: 5g
+    pids_limit: 384
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-content-enrichment:
     <<: *cgroup-boundary
     volumes: ["/run/doxagent-resources:/run/doxagent-resources:ro"]
-    mem_limit: 15g
-    memswap_limit: 16g
+    mem_limit: 4g
+    memswap_limit: 5g
     pids_limit: 512
     shm_size: 512m
     environment:
@@ -118,8 +124,8 @@ services:
   v2-scheduler:
     stop_grace_period: 20m
     <<: *cgroup-boundary
-    mem_limit: 15g
-    memswap_limit: 16g
+    mem_limit: 8g
+    memswap_limit: 9g
     pids_limit: 384
     # Existing W3 Cases retain provenance; execution uses the approved GPT-6 tier.
     environment:
@@ -128,8 +134,8 @@ services:
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-projector:
     <<: *cgroup-boundary
-    mem_limit: 15g
-    memswap_limit: 16g
+    mem_limit: 4g
+    memswap_limit: 5g
     pids_limit: 64
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-delivery:

@@ -524,16 +524,14 @@ def test_server_resource_envelope():
         assert mib(service["memswap_limit"]) >= mib(service["mem_limit"])
         assert 0 < service["pids_limit"] <= 4096
         assert service["cgroup_parent"] == "doxagent-app.slice"
-    for name in (
-        "v2-api",
-        "codex-worker",
-        "v2-message-bus",
-        "v2-content-enrichment",
-        "v2-scheduler",
-        "v2-projector",
-    ):
-        assert mib(services[name]["mem_limit"]) == 15 * 1024
-        assert mib(services[name]["memswap_limit"]) == 16 * 1024
+    for name, gib in {
+        "v2-api": 4, "codex-worker": 20, "v2-site-access": 10,
+        "v2-chrome-supervisor": 10, "v2-message-bus": 4,
+        "v2-message-collector": 4, "v2-content-enrichment": 4,
+        "v2-scheduler": 8, "v2-projector": 4,
+    }.items():
+        assert mib(services[name]["mem_limit"]) == gib * 1024
+        assert mib(services[name]["memswap_limit"]) == (gib + 1) * 1024
     assert mib(services["v2-cdecr-executor"]["mem_limit"]) == 6 * 1024
     assert mib(services["v2-cdecr-executor"]["memswap_limit"]) == 7 * 1024
     assert "DOXAGENT_CODEX_WORKER_CAPACITY" not in services["codex-worker"]["environment"]

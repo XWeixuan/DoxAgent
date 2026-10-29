@@ -96,6 +96,24 @@ def test_missing_safety_controller_fails_open():
     assert snapshot.stale
 
 
+def test_32gb_safety_scales_with_live_aggregate_boundary(tmp_path):
+    from dataclasses import replace
+    module = _safety_module()
+    controller = module.SafetyController(tmp_path, tmp_path / "safety.json")
+    sample = module.Sample(observed_at=1, memory_current=20*module.GIB,
+        memory_max=30*module.GIB, memory_swap_current=0, host_available=8*module.GIB,
+        psi_some_avg10=6, psi_full_avg10=3, swap_io_bytes_per_minute=0,
+        high_events=0, oom_events=0)
+    assert controller.evaluate(sample, now=0)[0] == "NORMAL"
+    assert controller.evaluate(sample, now=20)[0] == "NORMAL"
+    sample = replace(sample, memory_current=int(28.2*module.GIB))
+    assert controller.evaluate(sample, now=21)[0] == "NORMAL"
+    assert controller.evaluate(sample, now=37)[0] == "PRESSURE"
+    sample = replace(sample, memory_current=int(29.6*module.GIB))
+    assert controller.evaluate(sample, now=38)[0] == "PRESSURE"
+    assert controller.evaluate(sample, now=44)[0] == "CRITICAL"
+
+
 def _safety_module():
     path = Path(__file__).resolve().parents[1] / "scripts/resource_safety_controller.py"
     spec = importlib.util.spec_from_file_location("resource_safety_controller", path)
@@ -149,11 +167,11 @@ def test_safety_controller_uses_actual_pressure_and_hysteresis(tmp_path):
     assert controller.evaluate(critical, now=87)[0] == "CRITICAL"
 
 
-def test_application_slice_uses_approved_4c16g_boundary():
+def test_application_slice_uses_approved_8c32g_boundary():
     root = Path(__file__).resolve().parents[1]
     text = (root / "deploy/doxagent-app.slice").read_text()
-    assert "MemoryHigh=14G" in text
-    assert "MemoryMax=15G" in text
+    assert "MemoryHigh=28G" in text
+    assert "MemoryMax=30G" in text
     assert "MemorySwapMax=1G" in text
 
 

@@ -75,3 +75,9 @@
 当前SDK驻留削减与内存路径仍待用户选择。观察只读：跟踪Worker实际active job与capsule环境、BOUND/READY/USED及回收进展，不以进程数差直接断言全部泄漏，不限制W或清任务；INTC历史积压与最终实时消费继续核对。Owner T1、consumer cursor/inbox、实际case及Read/API必须分开，reader能解析不代表游标及时推进。
 
 **sysstat时区**：宿主Asia/Shanghai；所有UTC区间显式`TZ=UTC`调用sar，UTC10月29日16点后读取sa30。误取同名本地时段的文件已标invalid保留，不用于指标；跨本地日和boot/容器epoch分段。采用直接cgroup差分交叉核对，不混淆逻辑读、共享RSS和物理读。
+
+## 用户授权恢复与10分钟复核（覆盖之前的浏览器暂停状态）
+
+用户明确指出此前Worker峰值处于积压集中消费期，要求恢复服务后再测，不接受无依据削减W3预热。2026-10-29T19:36:08Z已启动既有正式Site/Chrome Supervisor，保留身份/Profile及全部W能力；19:37:23–19:47:23Z完成600秒实测。Worker3.36→2.41GiB，可用内存最低2.34/结束3.88GiB，未重现持续内存/I/O抖动。已验证READY预热约519–610MiB，另1组通用候选123–232MiB，合计约0.7–0.8GiB；不将此前9.9GiB等同正常预热占用，不修改预热策略。详见[本轮人工观察](site-access-restoration-and-worker-warm-memory-observation-20261030.md)。
+
+上一个19:22:19Z定时任务被用户明确忽略，不作为正常生产基线；其已有原始诊断文件保留，不据其非正常状态作容量决策。后续只读观察以最新用户授权和当前运行状态为准，不再沿用“Site/Supervisor仍暂停”的过期判断，不改变交易日历或自动操纵服务。

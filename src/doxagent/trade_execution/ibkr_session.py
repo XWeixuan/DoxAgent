@@ -55,6 +55,9 @@ class IbkrSession:
         self.orders: dict[int, dict[str, Any]] = {}
         self.quotes: dict[tuple[Any, ...], dict[str, Any]] = {}
         self.quote_ids: dict[int, tuple[Any, ...]] = {}
+        self.quote_lock = threading.RLock()
+        self.quote_owners: dict[tuple, set[str]] = {}
+        self.quote_refresh_after: dict[tuple, float] = {}
         self.contracts: dict[tuple[Any, ...], dict[str, Any]] = {}
         self.positions: dict[int, str] = {}
         self.account_values: dict[str, Any] = {}
@@ -84,8 +87,9 @@ class IbkrSession:
             self.ready.clear()
             self.accounts_ready.clear()
             self.accounts = []
-            self.quotes.clear()
-            self.quote_ids.clear()
+            with self.quote_lock:
+                self.quotes.clear()
+                self.quote_ids.clear()
             self.orders.clear()
             self.account_values.clear()
             self.portfolio.clear()
@@ -199,64 +203,106 @@ class IbkrSession:
             self.app.reqMarketRule(identity)
         return list(self._wait(identity))
 
-    def quote(self, contract: dict[str, Any], side: str, *, strategy: Any = None) -> dict[str, Any]:
+    def subscribe_quote(self, contract, owner, *, refresh=False):
+        """Shared streaming L1; only socket setup runs on a background thread."""
         self.connect()
-        strategy = strategy or self.profile.strategy
         key = (contract["con_id"], contract["exchange"])
-        with self.request_lock:
-            if key not in self.quotes:
+        with self.quote_lock:
+            self.quote_owners.setdefault(key, set()).add(owner)
+            if refresh and time.monotonic() >= self.quote_refresh_after.get(key, 0):
+                self._cancel_quote(key)
+                self.quote_refresh_after[key] = time.monotonic() + 30
+            if key in self.quotes:
+                return
+            with self.request_lock:
                 self.serial += 1
                 request = self.serial
-                self.quotes[key] = {"market_data_type": None, "venue": contract["exchange"]}
-                self.quotes[key]["request_id"] = request
-                self.quote_ids[request] = key
-                self.app.reqMarketDataType(1)
-                self.app.reqMktData(request, self._contract_object(contract), "", False, False, [])
-        deadline = time.monotonic() + strategy.request_timeout_seconds
-        required = "ask" if side == "BUY" else "bid"
-        while time.monotonic() < deadline:
-            value = dict(self.quotes[key])
-            if value.get("error"):
-                self._emit(
-                    "quote_gap",
-                    {
-                        "con_id": contract["con_id"],
-                        "side": side,
-                        **value,
-                    },
-                )
-                request = value.get("request_id")
-                if request is not None:
-                    self.app.cancelMktData(request)
-                    self.quote_ids.pop(request, None)
-                self.quotes.pop(key, None)
-                raise RuntimeError(value["error"])
-            stamp = value.get(required + "_at", 0)
-            if (
-                value.get("market_data_type") == 1
-                and value.get(required, 0) > 0
-                and time.time() - stamp <= strategy.quote_max_age_seconds
-            ):
-                return {**value, "captured_at": datetime.now(UTC).isoformat()}
-            time.sleep(0.02)
-        value = dict(self.quotes.get(key, {}))
-        value["bid_age_seconds"] = time.time() - value["bid_at"] if value.get("bid_at") else None
-        value["ask_age_seconds"] = time.time() - value["ask_at"] if value.get("ask_at") else None
-        self._emit(
-            "quote_gap",
-            {
-                "con_id": contract["con_id"],
-                "side": side,
-                **value,
-                "reason": "FRESH_QUOTE_UNAVAILABLE",
-            },
-        )
+            self.quotes[key] = dict(
+                market_data_type=None,
+                venue=contract["exchange"],
+                generation=(self.connection_generation, request),
+                request_id=request,
+            )
+            self.quote_ids[request] = key
+            self.app.reqMarketDataType(1)
+            self.app.reqMktData(request, self._contract_object(contract), "", False, False, [])
+
+    def _cancel_quote(self, key):
+        value = self.quotes.pop(key, {})
         request = value.get("request_id")
         if request is not None:
-            self.app.cancelMktData(request)
             self.quote_ids.pop(request, None)
-        self.quotes.pop(key, None)
-        raise TimeoutError("FRESH_QUOTE_UNAVAILABLE")
+            if self.app and self.app.isConnected():
+                self.app.cancelMktData(request)
+
+    def release_quote(self, contract, owner):
+        key = (contract["con_id"], contract["exchange"])
+        with self.quote_lock:
+            owners = self.quote_owners.get(key, set())
+            owners.discard(owner)
+            if not owners:
+                self.quote_owners.pop(key, None)
+                self._cancel_quote(key)
+                self.quote_refresh_after.pop(key, None)
+
+    def quote_snapshot(self, contract):
+        # Never reset received times on a cache read or account heartbeat.
+        if not self.healthy:
+            return None
+        with self.quote_lock:
+            value = self.quotes.get((contract["con_id"], contract["exchange"]))
+            return dict(value) if value else None
+
+    def quote(self, contract: dict[str, Any], side: str, *, strategy: Any = None) -> dict[str, Any]:
+        strategy = strategy or self.profile.strategy
+        owner = "order:" + str(threading.get_ident())
+        self.subscribe_quote(contract, owner)
+        try:
+            deadline = time.monotonic() + strategy.request_timeout_seconds
+            required = "ask" if side == "BUY" else "bid"
+            while time.monotonic() < deadline:
+                value = self.quote_snapshot(contract) or {}
+                if value.get("error"):
+                    raise RuntimeError(value["error"])
+                stamp = value.get(required + "_received_mono", float("-inf"))
+                if (
+                    value.get("market_data_type") == 1
+                    and value.get(required, 0) > 0
+                    and float(value.get(required + "_size", 0)) > 0
+                    and not value.get(required + "_pending")
+                    and 0 <= time.monotonic() - stamp <= strategy.quote_max_age_seconds
+                ):
+                    return {**value, "captured_at": datetime.now(UTC).isoformat()}
+                time.sleep(0.02)
+            self._emit(
+                "quote_gap",
+                dict(con_id=contract["con_id"], side=side, reason="FRESH_QUOTE_UNAVAILABLE"),
+            )
+            raise TimeoutError("FRESH_QUOTE_UNAVAILABLE")
+        finally:
+            self.release_quote(contract, owner)
+
+    def atr_seed(self, contract, side, end, bar_size="1 min"):
+        """One bounded historical request; bars seed ATR, never historical MFE."""
+        self.connect()
+        request = self._request()
+        try:
+            self.app.reqHistoricalData(
+                request,
+                self._contract_object(contract),
+                end,
+                "1800 S",
+                bar_size,
+                side,
+                0,
+                2,
+                False,
+                [],
+            )
+            return self._wait(request)
+        finally:
+            self.app.cancelHistoricalData(request)
+            self.requests.pop(request, None)
 
     def positions_snapshot(self) -> dict[str, Any]:
         self.connect()
@@ -457,6 +503,11 @@ class IbkrSession:
                     session.retry_after = (
                         time.monotonic() + DELAYS[min(session.connection_failures - 1, 4)]
                     )
+                if errorCode == 1101:
+                    # Market data was lost; old cached sides cannot survive this generation.
+                    with session.quote_lock:
+                        for key in list(session.quotes):
+                            session._cancel_quote(key)
                 if errorCode in INFO_CODES:
                     session.informational_counts[errorCode] = (
                         session.informational_counts.get(errorCode, 0) + 1
@@ -466,9 +517,10 @@ class IbkrSession:
                 if request:
                     request["error"] = f"IBKR_{errorCode}: {errorString}"
                     request["event"].set()
-                key = session.quote_ids.get(reqId)
-                if key:
-                    session.quotes[key]["error"] = f"IBKR_{errorCode}: {errorString}"
+                with session.quote_lock:
+                    key = session.quote_ids.get(reqId)
+                    if key:
+                        session.quotes[key]["error"] = f"IBKR_{errorCode}: {errorString}"
                 if request or key:
                     return
                 session._emit(
@@ -520,14 +572,44 @@ class IbkrSession:
                     request["event"].set()
 
             def marketDataType(self, reqId: Any, marketDataType: Any) -> Any:
-                if reqId in session.quote_ids:
-                    session.quotes[session.quote_ids[reqId]]["market_data_type"] = marketDataType
+                with session.quote_lock:
+                    key = session.quote_ids.get(reqId)
+                    if key:
+                        session.quotes[key]["market_data_type"] = marketDataType
 
             def tickPrice(self, reqId: Any, tickType: Any, price: Any, attrib: Any) -> Any:
-                if reqId in session.quote_ids and tickType in {1, 2}:
-                    value = session.quotes[session.quote_ids[reqId]]
-                    field = "bid" if tickType == 1 else "ask"
-                    value[field], value[field + "_at"] = price, time.time()
+                with session.quote_lock:
+                    key = session.quote_ids.get(reqId)
+                    if key and tickType in {1, 2}:
+                        value = session.quotes[key]
+                        field = "bid" if tickType == 1 else "ask"
+                        value[field] = price
+                        value[field + "_at"] = time.time()
+                        value[field + "_pending"] = True
+
+            def tickSize(self, reqId, tickType, size):
+                with session.quote_lock:
+                    key = session.quote_ids.get(reqId)
+                    if key and tickType in {0, 3}:
+                        value = session.quotes[key]
+                        field = "bid" if tickType == 0 else "ask"
+                        value[field + "_size"] = str(size)
+                        if field in value:
+                            value[field + "_pending"] = False
+                            value[field + "_received_mono"] = time.monotonic()
+                            value[field + "_received_at"] = time.time()
+
+            def historicalData(self, reqId, bar):
+                request = session.requests.get(reqId)
+                if request:
+                    request["rows"].append(
+                        dict(date=bar.date, high=bar.high, low=bar.low, close=bar.close)
+                    )
+
+            def historicalDataEnd(self, reqId, start, end):
+                request = session.requests.get(reqId)
+                if request:
+                    request["event"].set()
 
             def openOrder(self, orderId: Any, contract: Any, order: Any, orderState: Any) -> Any:
                 if order.whatIf and orderId in session.requests:

@@ -3,6 +3,6 @@ Description=DoxAgent aggregate application memory isolation
 
 [Slice]
 MemoryAccounting=yes
-MemoryHigh=14G
-MemoryMax=15G
+MemoryHigh=28G
+MemoryMax=30G
 MemorySwapMax=1G

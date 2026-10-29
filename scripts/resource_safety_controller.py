@@ -121,7 +121,9 @@ class SafetyController:
         self._previous_oom = sample.oom_events
 
         pressure_reasons = []
-        if sample.memory_current >= 14 * GIB and pressure_signal:
+        # Keep the former 14/15 and 14.75/15 margins, scaled to the live
+        # aggregate cgroup boundary instead of treating a 32GB host as 16GB.
+        if sample.memory_current >= sample.memory_max * 14 / 15 and pressure_signal:
             pressure_reasons.append("cgroup_high_with_pressure")
         if sample.host_available < GIB and pressure_signal:
             pressure_reasons.append("low_available_with_pressure")
@@ -136,7 +138,7 @@ class SafetyController:
         )
 
         critical_reasons = []
-        if sample.memory_current >= int(14.75 * GIB):
+        if sample.memory_current >= sample.memory_max * 59 / 60:
             critical_reasons.append("cgroup_near_hard_boundary")
         if oom_increased:
             critical_reasons.append("oom_event_increased")

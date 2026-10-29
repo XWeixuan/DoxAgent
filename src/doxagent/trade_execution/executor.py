@@ -16,10 +16,10 @@ from .recovery import (
     ENTRY_ABANDONED,
     ENTRY_FAILURE_LIMIT,
     ENTRY_QUEUE_EXPIRED,
-    AccountRecovery,
-    RecoveryDeferred,
     entry_queue_expired,
     storage_busy,
+    AccountRecovery,
+    RecoveryDeferred,
     transient,
 )
 from .repository import TERMINAL_ORDERS, ExecutionRepository
@@ -38,10 +38,10 @@ class Executor:
         self.repository = repository
         self.journal = repository.journal
         self.sessions = Sessions(self.journal)
-        self.broker_lock = threading.Lock()
         self.broker_factory = broker_factory or IbkrSession
         self.write_guard = write_guard
         self.brokers: dict[tuple[Any, ...], Any] = {}
+        self.broker_lock = threading.Lock()
         self.locks: dict[tuple[Any, ...], asyncio.Lock] = {}
         self.account_locks: dict[str, asyncio.Lock] = {}
         self.recovery = AccountRecovery(self.journal, on_failure=self.enforce_entry_failure_limits)
@@ -127,6 +127,15 @@ class Executor:
                 self.repository.apply_fill(value, exit_at)
         elif row["kind"] == "fees":
             self.journal.set("execution_fees", row["account"] + ":" + value["exec_id"], value)
+            from doxagent.exit_strategy.repository import refresh_books
+
+            with self.repository.transaction() as db:
+                fill = db.execute(
+                    "SELECT con_id FROM te_fills WHERE account=? AND exec_id=?",
+                    (row["account"], value["exec_id"]),
+                ).fetchone()
+                if fill:
+                    refresh_books(db, row["account"], fill[0], self.journal.clock)
 
     def abandon_entry(self, job: dict) -> bool:
         """Stop a stale entry permanently; sent orders retain their reconciliation duty."""
@@ -385,6 +394,13 @@ class Executor:
         profile = repo.profile(execution["profile_revision"])
         strategy = profile.strategy
         entry = job["leg"] == "ENTRY"
+        if entry:
+            from doxagent.exit_strategy.repository import entry_blocked
+
+            with self.repository.transaction(write=False) as db:
+                closing = entry_blocked(db, job["account"], job["ticker"])
+            if closing and not job.get("exit_requested_at"):
+                job = repo.update_job(job, exit_requested_at=self.journal.clock().isoformat())
         direction = execution["intent"]["trade"]["decision"]
         attempts = [
             a
@@ -425,6 +441,7 @@ class Executor:
             now >= datetime.fromisoformat(execution["intent"]["expires_at"])
             or cycle_ended
             or bool(job.get("entry_abandoned_at"))
+            or bool(job.get("exit_requested_at"))
         )
         active = next((a for a in reversed(attempts) if a["state"] != "SETTLED"), None)
         if active:
@@ -435,6 +452,8 @@ class Executor:
                 expired,
                 job.get("entry_abandon_reason", ENTRY_ABANDONED)
                 if job.get("entry_abandoned_at")
+                else "POSITION_EXIT_REQUESTED"
+                if job.get("exit_requested_at")
                 else "CYCLE_CLOSED"
                 if cycle_ended
                 else "EXPIRED_SEMANTIC_DAY",
@@ -445,6 +464,8 @@ class Executor:
                 job,
                 job.get("entry_abandon_reason", ENTRY_ABANDONED)
                 if job.get("entry_abandoned_at")
+                else "POSITION_EXIT_REQUESTED"
+                if job.get("exit_requested_at")
                 else "CYCLE_CLOSED"
                 if cycle_ended
                 else "EXPIRED_SEMANTIC_DAY",
@@ -572,7 +593,8 @@ class Executor:
             async with self.account_locks.setdefault(job["account"], asyncio.Lock()):
                 sync = await self._sync(broker, job["account"])
                 self._position_check(job, contract, sync)
-                side_stamp = quote.get(("ask" if side == "BUY" else "bid") + "_at")
+                field = "ask" if side == "BUY" else "bid"
+                side_stamp = quote.get(field + "_received_at", quote.get(field + "_at"))
                 if side_stamp and time.time() - side_stamp > strategy.quote_max_age_seconds:
                     repo.update_job(
                         job, state="WAIT_QUOTE", delay=0, error="FRESH_QUOTE_UNAVAILABLE"

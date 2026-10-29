@@ -69,14 +69,18 @@ class ExecutionRepository:
             """)
             if version and version[0] == "1":
                 db.execute("UPDATE te_meta SET value='2' WHERE key='version'")
+            from doxagent.exit_strategy.repository import initialize
 
-    def transaction(self, *, write=True):
-        return self.journal.transaction(write=write, timeout=0.2)
+            initialize(db)
+
+    def transaction(self, *, write=True, timeout=0.2):
+        # A contended Runtime writer must defer, not block the shared loop for 30s.
+        return self.journal.transaction(write=write, timeout=timeout)
 
     def import_profile(self, profile: ExecutionProfile) -> str:
         payload = profile.model_dump(mode="json")
         revision = "ep_" + digest(payload)[:24]
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             if (
                 profile.quote_profile_revision
                 and not db.execute(
@@ -166,6 +170,11 @@ class ExecutionRepository:
         }
         with self.transaction() as db:
             old = db.execute("SELECT payload FROM te_executions WHERE id=?", (identity,)).fetchone()
+            from doxagent.exit_strategy.repository import policy_pin
+
+            value["exit_policy_revision"] = policy_pin(
+                db, account, profile.environment, intent["ticker"]
+            )
             if old:
                 previous = json.loads(old[0])
                 if (
@@ -613,6 +622,7 @@ class ExecutionRepository:
             if value["state"] != "PREPARED" or job["state"] in {"DONE", "FAILED"}:
                 return None
             if job["leg"] == "ENTRY":
+                from doxagent.exit_strategy.repository import entry_blocked
                 from .recovery import entry_queue_expired
 
                 execution = json.loads(
@@ -621,6 +631,8 @@ class ExecutionRepository:
                     ).fetchone()[0]
                 )
                 if entry_queue_expired(execution, self.journal.clock()):
+                    return None
+                if job.get("exit_requested_at") or entry_blocked(db, job["account"], job["ticker"]):
                     return None
                 recovery = db.execute(
                     "SELECT payload FROM runtime_values "
@@ -663,7 +675,7 @@ class ExecutionRepository:
         return value
 
     def event(self, account: str, kind: str, payload: dict[str, Any]) -> None:
-        # SDK callbacks run off-loop; do not shorten their durable-write window.
+        # Off-loop broker callbacks retain the durable write window.
         with self.journal.transaction() as db:
             db.execute(
                 "INSERT INTO te_events(account,kind,payload,created_at) VALUES(?,?,?,?)",
@@ -987,6 +999,10 @@ class ExecutionRepository:
                     },
                 )
 
+        from doxagent.exit_strategy.repository import refresh_books
+
+        refresh_books(db, account, con_id, self.journal.clock)
+
     def adjust_lot(
         self,
         identity: str,
@@ -1140,36 +1156,64 @@ class ExecutionRepository:
         )
 
     def recover_failed_exits(self) -> int:
-        """Resume only overdue transient failures, preserving all attempt identities."""
+        """Resume transient/remaining exit obligations without idle writer ownership."""
         from .recovery import transient
 
-        # Idle maintenance must not acquire the shared SQLite write lock.
         with self.transaction(write=False) as db:
-            candidates = [
+            identities = [
                 r[0]
                 for r in db.execute("SELECT id FROM te_jobs WHERE leg='EXIT' AND state='FAILED'")
             ]
         recovered = 0
-        for identity in candidates:
+        for identity in identities:
             with self.transaction() as db:
                 row = db.execute(
-                    "SELECT j.payload,l.payload FROM te_jobs j JOIN te_lots l "
-                    "ON l.id=j.execution_id WHERE j.id=? AND j.state='FAILED'",
+                    "SELECT j.payload,l.payload FROM te_jobs j JOIN te_lots l ON l.id=j.execution_id WHERE j.id=? AND j.state='FAILED'",
                     (identity,),
                 ).fetchone()
-                if not row:
+                if row is None:
                     continue
                 job, lot = map(json.loads, row)
                 if not (
                     decimal(lot["remaining_qty"]) > 0
-                    and datetime.fromisoformat(lot["scheduled_exit"]) <= self.journal.clock()
-                    and transient(RuntimeError(job.get("reason", "")))
+                    and (
+                        job.get("exit_requested_at")
+                        or datetime.fromisoformat(lot["scheduled_exit"]) <= self.journal.clock()
+                    )
                 ):
                     continue
+                is_transient = transient(RuntimeError(job.get("reason", "")))
+                retry_remaining = job.get("reason") == "RETRY_BUDGET_EXHAUSTED"
+                if not is_transient and not retry_remaining:
+                    continue
+                if retry_remaining:
+                    attempts = [
+                        json.loads(r[0])
+                        for r in db.execute(
+                            "SELECT payload FROM te_attempts WHERE job_id=?", (job["id"],)
+                        )
+                    ]
+                    if any(a["state"] not in {"SETTLED", "NOT_SENT"} for a in attempts) or any(
+                        a.get("rejection") for a in attempts
+                    ):
+                        continue
+                    latest = max(
+                        (
+                            datetime.fromisoformat(a["settled_at"])
+                            for a in attempts
+                            if a.get("settled_at")
+                        ),
+                        default=self.journal.clock(),
+                    )
+                    if (self.journal.clock() - latest).total_seconds() < 60:
+                        continue
+                    job["generation"] = job.get("generation", 0) + 1
                 job.update(
-                    state="RECONCILE_REQUIRED",
+                    state="READY" if retry_remaining else "RECONCILE_REQUIRED",
                     due_at=self.journal.clock().isoformat(),
-                    recovery_reason="TRANSIENT_EXIT_AUTO_RECOVERY",
+                    recovery_reason="REMAINING_EXIT_NEXT_ROUND"
+                    if retry_remaining
+                    else "TRANSIENT_EXIT_AUTO_RECOVERY",
                     recovered_at=self.journal.clock().isoformat(),
                 )
                 db.execute(

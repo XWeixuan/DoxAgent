@@ -153,9 +153,13 @@ mstsc -> 127.0.0.1:14389 -> SSH doxagent-sg-rdp
 ```
 
 Clash 全局 `profiles/Script.js` 创建回环专用入口和 `DoxAgent-RDP` 选择组；
-该入口直接使用代理组，普通 `doxagent-sg` 的直连规则不会覆盖它。首次验证通过的
-桌面节点为“香港高级 IEPL 专线 1”，主 `Proxies` 仍保留“新加坡高级 3”。
-桌面代理组可以独立更换节点，但新节点必须能够连接服务器 TCP 22。
+该入口直接使用代理组，普通 `doxagent-sg` 的直连规则不会覆盖它。
+桌面代理组只允许选择新加坡节点，不能主动切换到其他地区；新节点必须能够连接服务器 TCP 22。
+
+2026-10-30：新加坡高级 2、3 的桌面 SSH 握手均超时，普通 `doxagent-sg` 正常，
+远端 xrdp 与 xrdp-sesman 均 active。订阅显示 `150.01 GB | 150 GB`，疑似额度耗尽。
+两个启动脚本现在优先尝试专用代理，建立隧道失败则回退 `doxagent-sg`，通过现有
+Clash DIRECT 规则连接同一新加坡服务器。不会自动选择其他地区节点。
 
 继续使用 `deploy/start-sg-desktop.ps1` 或 `deploy/connect-sg-desktop.ps1` 打开桌面。
 已有的旧隧道需要重建才能使用新别名；仅切换规则不会迁移已经建立的 TCP 连接。

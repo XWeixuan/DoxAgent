@@ -2291,15 +2291,29 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 BODY实测退出修复：Site结果outbox确认SQLITE_BUSY经异步任务result上抛，导致整个正文进程退出；回执交付边界恢复瞬时写竞争，保留pending及Site execution幂等重放。已确认回执按主键删除，正文/任务/Site事实仍保留，不再从BODY热路径扫描七天CONFIRMED历史（实测占写事务11秒）；列表只读不占writer。补确认竞争不退出、队列重放和确认后零残留回归。
 
 2026-10-28 结构修复生产验收记录：正式组件已发布，56分40.56秒真实窗口包含失败/重启；30秒三来源27绑定短测结束并全部CAS恢复。完整新鲜周期58.07%，错峰后84.38%；错峰后11个首见正文key中10个FULL标签、10个可消费key中9个<=10秒，仍不作为全量/长期达标。API健康、Read追平，最新BODY实例无重启；Yahoo/Reuters/IBKR等能力和容量缺口保留。详见message-pipeline-structural-redesign-implementation-and-production-test-20261027.md及逐源汇总。
+
+2026-10-28 Google News Search RSS专项规则：所有ticker固定ticker代码OR第一个L1/旧配置首搜索词，其他消息源不变；新增用户确认12站（13匹配域）的跨ticker黑名单，在列表、持久接纳及正文入队前过滤，支持子域边界、BigGo/AOL泛化及过滤计数/策略哈希。人工保留12站单独记白名单文档；JSON进程级缓存，无新增浏览器/数据库/后台扫描。85项不同回归分批通过，6次真实RSS验证；历史实际接纳粗估164降至96条/交易日（忽略ticker增量、受留存文本限制），详见docs/google-news-search-rss-rules-20261028.md。仅本地实现，未提交或发布。
+
+2026-10-28 IB Gateway API客户端连接恢复：确认Gateway登录、4002监听及API容器只读探针正常，新闻采集容器缺失host.docker.internal映射导致IBKR持续超时。为server overlay的v2-message-collector补充host-gateway，远端备份后用现有完整Compose链仅重建采集容器；镜像、环境及命令一致性预检通过。恢复常驻7496→4002连接，容器healthy，只读API握手与新闻提供商回调通过（8项、无错误码）；未发送订单。执行器另有SQLite锁等待告警，未将API连通性等同于交易执行就绪。
+
+2026-10-28 Google News RSS五ticker历史Site治理抽取：RKLB/ONDS/NBIS/CEG/SNOW按当前ticker OR首L1做150次正式日窗口查询，保留RSS及哈希；4773篇去重消息，排除既有黑白名单后2947篇，未判定Top30计995篇。固定随机种子抽取576篇（不足20按用户确认全量），每5站分6组JSON；434篇正文/文本非空（含6篇明确预览），142篇未取得原文保留null及原因。复用正文核对发布域名，剔除同标题转载混用、安全验证/404/导航伪正文；HTTP、Reader及本地临时浏览器补取，不修改生产身份、订阅或黑白名单。150份RSS哈希/去重排名/随机抽样/ZIP分组校验通过；26次100条触顶及SNOW、CEG裸代码歧义明确记入docs/google-news-five-ticker-top30-site-extraction-20261028.md。
+
 2026-10-28 消息源恢复首批：External Chrome改为Playwright attach前经无autoAttach的原生CDP核对并收尾遗留业务页，热连接低频重试CLOSE_PENDING且保留人工原页；RETRY区分前置失败与实际输入不确定性，同原页可见RETRY有界复核且不重复购买。修复CTEE实时分页游标越界后永久零请求，补抓按批续页；TrendForce News复用已实证200/7条的轻量公开列表HTTP优先。回归、生产版本及真实solver/业务验收见docs/source-recovery-reuters-20261028.md；不将离线通过或provider ready当稳定验收。
 2026-10-28 Challenge原页维护解耦：External Open Original经OPEN会话和精确持久所有权校验直接开放Viewer，不再依赖Playwright初始化其他活页；仅激活/唤醒该原页，不导航、不重新建Chrome或丢失现场。85条维护/恢复/控制回归通过，生产证据继续记录在本轮修复文档。
 2026-10-28 不可读原页有界恢复与AviationWeek路由：实证Reuters同Chrome空白页正常、原页DOM/JS挂起，一次同target普通刷新后恢复；新增连续两轮不可读且180秒以上的独占单次刷新，付费未结束/人工Viewer/丢页均不触碰，预约持久化防重复。AviationWeek直连/Managed403而固定代理列表与RSS200，统一采集/正文使用实测有效us-standard-5；付费文章仍明确PARTIAL，未冒充打码或订阅全文成功。
 2026-10-28 浏览器线程容量与Investing旧运行体恢复：实际确认Supervisor PID限额触发EAGAIN，按合法身份/Worker数量将Supervisor/SiteAccess限额2304/1024调整为4096/2048并live update，保留内存边界及所有其他Chrome。Investing旧主Chrome的两个页均不可读且普通刷新无效，独占排空后仅正常退出该身份并保留Profile供自然启动；不把无账本旧页当人工Challenge，不强杀或清Cookie，业务验收另列。
 2026-10-28 消息源修复收尾验收：Site Access/Collector/正文容器12个源码哈希匹配，Supervisor未重建，183条核心及50条补充回归通过（重叠不累加）。最终9分钟窗Reuters218次采集成功/1次队列延期、Investing九ticker及CTEE/TrendForce/Yahoo/IBKR等恢复；独立真实Reuters与Investing正文canary均FULL。未出现新paid任务，明确RETRY付费端到端尚未验收；Investing备用旧页不可读和AviationWeek订阅正文权限作为剩余边界记录，不伪报全部稳定。按用户要求结束，不扩大测试。
 
+2026-10-28 Google News五ticker治理公司名修订版：仅SNOW=Snowflake、CEG=Constellation Energy各重查30个日窗口，RKLB/ONDS/NBIS的90份RSS及查询原样复用并逐字节校验；保持共同历史范围和冻结截止。GUID/同标题日/真实URL去重并归一Invezz的3个地区路径副本后3279篇，排除既有黑白名单后1520篇、517站。Top30随机/不足20全取共465篇，6组JSON（100/100/94/71/55/45）；387篇正文文本非空含9篇原站预览，78篇缺正文保留null。新增样本HTTP/Reader补取及只读标题/URL索引复用缓存，隔离安全验证、404、视频列表和截断预览；未改生产查询、订阅或黑白名单。150窗口哈希、60次公司名重查/90份原样复用、随机种子及ZIP校验通过，详见docs/google-news-five-ticker-company-only-top30-site-extraction-20261028.md。
+
+2026-10-28 Runtime/W3 P0 read-only audit: reconstruct 915 real-time Cases and all correlated attempts, quantify pre-model/round/pre-job/post-job waits, and inspect the Corning 644.69s timeout against native records. Confirm shared SQLite long transactions, stale Bus ACK gating existing-work recovery, blocking async-loop I/O and late parent timeout, plus ownership/receipt gaps; preserve uncertain attribution. Add six private mechanism reproductions, evidence under eval/runtime_p0_latency_20261028, and executable R0-R6 plan dev_plan/workflow_v2/runtime_case_latency_w3_timeout_root_cause_and_repair_plan_20261028.md. Final 02:13 Beijing snapshot still stalled; no production code/config/database changes, model calls, broker calls, replay or deployment.
+
+2026-10-28 By Distribution GOLD v2 1800条交付：记录用户七条Recall-first标注规则及12个权威改判，保留原80案/旧审计；真实留存池只读抽取并区分采集、入库、判定和分发时钟。按用户缩量要求，每ticker每集均匀随机100条，调试/验证各900；CEG/SNOW验证从10月26日晚启用池补抽，按文章/已识别事件隔离，排除80案校准组，并留存2条后续事件换样。全部由gpt-6.1-terra/high逐条GOLD标注，176对精确输入复用、1624对新标注，6对独立仲裁；1800配额、全覆盖/无重复、逐输入哈希、原文引文及集合隔离校验通过。调试292相关/573不相关/35信息不足，验证266/590/44；分别提供900条JSONL、浏览MD及二分类可评分子集。详见docs/by-distribution-gold-v2-dataset-delivery-20261028.md。未修改生产正则/Decision Model提示词/分发逻辑，未部署。
+
+2026-10-28 Runtime/W3 P0 plan review: incorporate all four Message Bus review points after source verification. Separate lightweight revision-scoped heartbeat from single-owner configuration installation and move runtime DDL to explicit preparation; acknowledge that ACK rows retain only the latest ticker/worker revision and recover old Cases from frozen execution identity. Remove the proposed 795s phase deadline and shared 600s multi-attempt budget; preserve existing recovery policy and use actual SDK completion time for late receipts. Specify per-database write owners, side-effect-aware short-transaction retry, and cancellation containment until physical writes settle. Update dev_plan/workflow_v2/runtime_case_latency_w3_timeout_root_cause_and_repair_plan_20261028.md only; no implementation or production changes.
+2026-10-28 交易执行近一周审计及用户授权PAPER处置：核对20条正式意图、实际运行源码/带时间日志/读侧和券商持仓，发现SNOW退出逾期、COHR零尝试旧ENTRY及SQLite争用导致全局退避风险；13条额度拦截、2条账户失败预算终止与实际成交分开统计。按用户明确授权永久废弃指定COHR旧意图（USER_ABANDONED_STALE_INTENT，0订单0成交），沿原EXIT任务卖出PAPER账户SNOW 52股@$338.04，券商复核持仓0；完成单写者交接并恢复原执行器。报告docs/trade-execution-case-audit-20261028.md，证据eval/trade_execution_audit_20261028/。未修改生产交易代码、未部署新退出策略、未进行通用调度修复。
+
 2026-10-28 Runtime/W3 P0 implementation: decouple original-work recovery from latest activation ACK/liveness; isolate Bus install and heartbeat with explicit migrations. Freeze inputs outside writer and dispatcher, read skinny task controls, preserve lease context and original phase Futures, unify Effect lease CAS, and persist provider completion before SQL indexing. Move synchronous W3/Worker I/O off loops with database-scoped cancellation-safe SQL owners; enforce the original SDK execution deadline in the same Capsule task, preserve actual completed receipts before optional accounting/probes, and expose interval-union/uncovered time plus missing SDK coverage. Keep existing retry/budget/model/prompt/trade policy. Basic regression, Worker cancellation and four desktop browser checks passed; deployment/source verification recorded in docs/runtime-p0-repair-20261028.md.
-2026-10-28 Trade execution queue robustness: isolate order dispatch from periodic maintenance, with per-lane/per-ticker deferral; bound ordinary ledger lock waits to 0.2s while preserving durable SDK callbacks and event-cursor ordering. SQLite contention no longer consumes broker recovery/ENTRY failure budgets. Add monotonic five-minute intent-release queue-age abandonment with atomic final-send check; reconcile sent/unknown/partial orders and retain EXIT obligations. Add overdue/zero-attempt business health, avoid idle recovery write locks, and synchronize shared broker creation. Regression tests cover the audited starvation, real SQLite contention, stale-send races and owned-position exits. See docs/trade-execution-queue-repair-20261028.md. Deploy only executor overlay; no trailing-exit rollout or upstream event-merge changes.
-2026-10-28 Executor-only production acceptance: deployed source commit 6de0ac32 via image 971e3013d62f, all four module hashes match. At 03:51:52 Beijing executor running/restart0, configured revisions CONNECTED, recovery clear, cursor=head31618/gaps0, no pending jobs/open owned lots/unsettled attempts; independent PAPER reqPositions confirms flat, SNOW EXIT_FILLED and stale COHR abandonment unchanged. 77 tests passed, 3 local SDK-dependent tests skipped; post-start logs clear in the 62-second observation. Preserve external Runtime SQLite contention as an explicit remaining system boundary; details and receipts in docs/trade-execution-queue-repair-20261028.md.
 
 2026-10-28 Runtime/W3 P0 生产基础验收补齐：ReadySlot/生命周期与行情停止 SQL 按库短写 offload，启动进度回调可 await 且保持原 SDK task；空 Fork 物理 owner 在 SQL commit 后发布，原 prepare deadline 不刷新。修复 Runtime 独立心跳实际小写枚举；资源退役引用检查、fsync、递归删除和正文编码移出业务 writer，以 data_version 再校验和短原子改名保留竞态保护。
 
@@ -2308,6 +2322,11 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 Runtime P0 发布收口：同类活动任务检查直接复用内存租约，避免在调度控制循环反复 get_task/展开正文；SIGTERM 在 ticker/task 调度边界停止新增派发，已提交 provider/Worker 执行仍按原 owner 收束。
 
 2026-10-28 Runtime/W3 P0 发布验收：全链补齐版 24a5fde5 已上线；按用户明确强停指令替换旧 Worker/Scheduler，收口版 416fb2fa 两组件各 34 源文件摘要核验通过，Worker dispatcher 已恢复 RUNNING，保留原任务与已落盘回执；验收见 docs/runtime-p0-repair-20261028.md。
+
+2026-10-28 Google News黑名单第二批及首词专用查询：新增用户确认10个判黑域（累计22站/23匹配域），修订版Top30其余20站记人工白（累计32站）。所有ticker的Google源只使用第一个统一L1/旧配置首搜索词，不再自动追加ticker；查询计划概念、API预览、实际请求和query_rule同步，空首词明确失败不扩召回，其他源不变。冻结旧历史扫描的查询语法以避免新规则污染既有复算。98项回归及Ruff通过。COHR/MU按首词Coherent Corp/Micron各30次真实日窗口抓取，无正文/抽样/案例JSON；去重157/1595条，累计黑名单命中33(21.02%)/205(12.85%)，合并238/1752(13.58%)，新增10站贡献54条；Top20未判定5/2站，拦截后6/4站。60份RSS哈希、分区统计与Top20校验通过，MU13日100条触顶限制保留，详见docs/google-news-blacklist-cohr-mu-generalization-20261028.md。仅本地实现和统计，未提交/发布生产。
+
+2026-10-28 Google News MU补充验证及ChartMill封禁：按用户要求仅本地追加chartmill.com及子域黑名单，域名边界直接校验与48项Google News回归通过。保留MU原1595条冻结样本/Top20；对原触顶首中末三日发出27次日期对照和6小时语法探针，24次小时窗口均为空，无法补齐全量或可靠估计真实日均，仅确认历史样本53.17条/日。证据eval/google_news_mu_hour_probe_20261028，报告docs/google-news-mu-daily-volume-hour-probe-20261028.md；未提交、未发布生产。
+
 
 ## 2026-10-28 Message Bus 精益化 W1/W2
 - 修复联合许可读取异常造成槽位泄漏；外部身份状态读取移出联合队列锁。失败 checkpoint 与部分已提交页面独立推进。
@@ -2328,23 +2347,37 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 增加100轮未变输入、20ticker大正文/事务内无Native I/O、96小时保留期与正式三角色迁移回归；本地writer69次max/P99约32ms，不能替代生产性能验收。
 - 正式release支持已注册Collector的显式增量迁移；新增只读全周期/逐文章交付验收脚本。按用户追加授权先停止旧消息四角色，再从提交重建上线；持续自然窗口指标不提前宣布达标。
 
-## 2026-10-29 既有Google规则的消息入口整合
-- 同步本地已存在的Google RSS公司主体查询及独立域名黑名单；新Bridge和旧兼容入口沿用同一规则，独立Yahoo源不受影响。相关规则回归通过，未覆盖或丢弃其它会话交易/UI开发。
+2026-10-28 Google News人工治理追加：按用户要求将yahoo.com及子域加入Google News专用黑名单，独立Yahoo消息源不受影响；撤销finance.yahoo.com人工白名单，新增syracuse.com、marketwatch.com人工白记录。MU Top20实际仅两个未判定站，第三站待用户补充，不将已判黑ChartMill擅自改白。域名边界、Google限定及独立Yahoo源隔离直接校验通过；仅本地修改，未提交/发布。
+
+2026-10-28 Google News人工治理确认补齐：用户明确第三个判白站为chosun.com，与syracuse.com、marketwatch.com共同记白；chartmill.com保持判黑。白名单当前34站，与25个黑名单匹配域无冲突，校验通过。仅文档本地更新，未提交/发布。
+
+2026-10-28 By Distribution相关性调试辅助交付：新增scripts/distribution_relevance_debug.py，提供只读生产配置/绑定语言导出、候选提取、每ticker50条固定抽样、正式正则及Decision Model回放、命中上下文/FPFN/同输入历史坏例、失败项续跑、候选均分汇总与共享经验更新；验证时序和5/3轮＋最多1轮修正由SOP约定，不建设状态机或访问关卡。唯一经验MD批判提炼旧作者资料，删除固定三语及体裁/显著性等过时门槛。Decision子集两集各450、九ticker各50，父集及事件隔离核验通过。11项离线回归、Ruff通过；只读当前MU第5版词表完成100条development回放（P71.43%/R78.13%、0执行错误）。未运行真实validation评分或真实模型API，未调参/修改生产词表及分发代码。详见docs/by-distribution-relevance-debug-sop.md。
+
+2026-10-28 ONDS/BE By Distribution正式调试：按现有SOP完成正则/Decision Model两板块，9个候选均成对跑development/validation（18份结果，0执行错误），先冻结常规开发再验证，额外修正各最多一次。ONDS正则验证P93.75%/R88.24%达标；ONDS模型P100%/R77.78%、BE正则P64.29%/R100%、BE模型P100%/R50%均交付均分最佳但未达标。真实Decision Model含基线共700次文章评估；保留候选/冻结哈希/逐条坏例，合并导出最佳配置及OR补充指标，更新唯一共享经验MD，记录旧80case A15与冻结GOLD尺度冲突待复核，未改GOLD/运行时实现/生产词表或部署。详见docs/by-distribution-onds-be-relevance-tuning-20261028.md。
+
+2026-10-28 Decision Model免费横比及阈值统计：固定BE最终提示词/50条validation，读取OpenRouter官方Decisions协议和实时模型/端点价格；Mammoth1、Elephant1、Mercury Decide三个明确:free入口均0端点，零价上限且禁止fallback的真实探针各返回404，未转收费版本、未产生成功推理，故性能横比不可得。复用ONDS/BE最终模型两集各50条缓存分数，完成11档阈值及全实测分数断点统计；ONDS45%验证P100%/R88.89%，BE45%/40%无改善、30%P66.67%/R50%，BE无阈值可同时准召>80%。留存逐条新增放行、输入/预测哈希和完整报告docs/by-distribution-decision-model-comparison-thresholds-20261028.md。未修改生产配置或阈值。
+
+2026-10-28 剩余七ticker相关性调试及九ticker生产应用：依SOP逐个完成COHR/INTC/MU/NBIS/RKLB/SNOW/CEG正则与Decision Model，42候选、84份成对评分，最终执行错误0；正则5项、模型2项两集准召均>80%，其余按四项均分保留最佳但未达标，全部轮次/坏例/配置/唯一共享经验已留存。按用户追加授权，将七项与此前ONDS/BE最终L2及definition应用至SG，正式MonitoringTermsService逐份CAS更新并独立只读回读：ONDS4、BE3、COHR2、INTC3、MU6、NBIS2、RKLB3、SNOW2、CEG2；L1和绑定均不变，阈值0.5，7个分类函数源码哈希与回放一致。未发布运行时代码/重启服务/重放历史。报告docs/by-distribution-seven-ticker-relevance-tuning-20261028.md，部署回执eval/distribution_relevance_tuning_remaining7_20261028/deployment/apply-receipt.json。
+
 
 ## 2026-10-29 Message Bus 上线边界复核
 - 已有Collector checkpoint的绑定不再于重启展开旧Native轮询历史；正式增量迁移同包停止所选API/Projector，避免旧投影器抢消费新契约。
 - 标题实质更正参与内容修订，正文未变也更新原消息；别名晚到不取消已有重要更新。旧未发布文章的到期recheck实际执行一次，仍保留原发布时效门禁，不把旧文重新发布。
 - 558项组合、72项语义及后续针对回归通过；最终启动/旧任务衔接15项通过。仍保留其它会话未提交工作；生产长期目标不据本地测试提前宣布达标。
 
+
 ## 2026-10-29 Message Bus 过期候选减法
 - 过期且从未被接纳的候选在Native文件发布及文章建账前退出，仅保留已有持久化列表/delta与接纳ACK；旧已发布文章更新和旧recheck仍独立续作。过期大正文零Native写、旧未发布recheck实际执行及ARTICLE_ONCE针对回归通过。
+
 
 ## 2026-10-29 Message Bus 上线快交付修正
 - 实测发现新稿FULL后的5个交付仍被旧本地工作阻挡119秒；正文领取、交付及L2候选改为新稿/重要更新优先，并保留每8轮旧工作机会。生产交付循环采用250ms时间片，避免一次32个旧文准备挡住后来新稿。
 - 通过质量、URL与权益/语言检查的旧Raw完整正文直接复用，正文证据中更早的首次观察时间沿用，避免旧文制造新稿cohort。旧队列40项、新稿优先、原发布复用和时间片针对测试通过；不将短样本FULL当成生产80%以上达标。
 
+
 ## 2026-10-29 BODY旧快照转交兼容修正
 - 修复旧By Distribution任务binding_json为$snapshot引用时的KeyError，锁外展开后接入同一live入口。旧任务单项转交异常只做5秒标量重试，不写完整job/正文，不再结束整个BODY进程。真实旧snapshot夹具、故障隔离及旧recheck续作4项回归通过。
+
 
 ## 2026-10-29 curl取网证据回调生命周期修正
 - 修复curl_cffi先清空CFFI引用、再移除multi句柄时仍调用DEBUGFUNCTION导致Collector原生崩溃的问题：detach/reset及异常close完成前保留回调句柄。真实CFFI弱引用回归验证清理期间存活且之后释放；curl/publisher相关6项通过，保留真实取网证明。
@@ -2419,14 +2452,13 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-30 Runtime接回成本治理：effect领取分离待执行与过期RUNNING两个薄集合，沿部分索引各取前N后按原时间/rowid合并，移除写事务内终态历史全扫描；保留租约、抢占唯一性、失败恢复和W1/W2/W3容量。新增大历史VM预算与双Repository并发领取回归。
 
-
 2026-10-30 Runtime结果确认精简：用既有invocation中的确定receipt_key替代ACK时整段Worker回执JSON反查；大结果解码/压缩移出写事务，以原payload条件更新防止晚ACK覆盖新代任务，保留失败ACK续作及模型结果唯一性。新增历史规模成本、NativeContent、跨代及网络失败回归。
-
 
 2026-10-30 Runtime当日列表读取修复：稀疏当日case/message页使用已有current_day索引，移除为补足20条结果遍历其它日期当前对象的无效读取；保留跨日、历史快照及keyset语义。新增2000条历史VM预算、稀疏结果与快照翻页回归。
 
-
 2026-10-30 W3历史冻结减法：72小时交易历史沿ticker/时间部分索引仅读薄字段，执行状态在读快照准备，短事务只保存首个冻结值；移除每case在全局写锁内扫描/展开历史trade正文的11秒级阻塞，保留完整历史、Native引用及ARTICLE_ONCE/W容量合同。新增历史规模、写锁范围和冻结复用回归。
 
-
 2026-10-30 Runtime入站/恢复隔离：取消先完成整轮历史恢复才能接纳新消息的依赖，V2以单一无排队后台dispatcher执行已准入正常任务及既有在途恢复；入站保留原revision/control、calendar、持久inbox及游标，跳过同步模型派发。保留W容量、租约及唯一性，新增慢恢复不阻塞接纳、单dispatcher与真实Bus高水位回归。
+2026-10-30 新加坡远程桌面启动修复：专用 Clash 新加坡 2/3 节点 SSH banner 超时，普通 SSH 与远端 xrdp 正常；订阅标签显示流量 150.01/150GB，疑似额度耗尽。两个桌面隧道脚本增加专用代理失败后回退现有 doxagent-sg DIRECT 链路，更新连接指南中的地区限制；不切换非新加坡节点。启动脚本实际回退成功，14389 隧道收到有效 19 字节 RDP 握手并启动 mstsc；两个脚本 PowerShell 语法解析通过。
+
+2026-10-30 32GB整体main集成：父slice更新28G/30G，按真实memory.max缩放既有压力阈值；Worker20G、Site/Supervisor各10G、Scheduler8G，消息链路各4G并将Collector纳入聚合记账，不改W1/W2/W3容量、预热、轮询与正文质量。整合退出策略/行情共享订阅、W3提示词、Runtime前端及运维开发，同时保留main已修复的ENTRY过期/短事务、SDK回调持久写入和独立维护调度；发布与45分钟完整负载观察另记。

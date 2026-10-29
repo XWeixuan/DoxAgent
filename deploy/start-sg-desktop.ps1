@@ -11,6 +11,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $sshAlias = 'doxagent-sg-rdp'
+$fallbackSshAlias = 'doxagent-sg'
 $rdpHost = '127.0.0.1'
 $rdpPort = 14389
 $credentialTarget = 'TERMSRV/{0}:{1}' -f $rdpHost, $rdpPort
@@ -133,9 +134,22 @@ try {
             '-L', "${rdpHost}:${rdpPort}:127.0.0.1:3389",
             $sshAlias
         )
-        $sshProcess = Start-Process -FilePath 'ssh.exe' -ArgumentList $sshArguments -WindowStyle Hidden -PassThru
-        $startedTunnel = $true
-        Wait-RdpTunnel -Process $sshProcess
+        foreach ($candidateAlias in @($sshAlias, $fallbackSshAlias)) {
+            $sshArguments[-1] = $candidateAlias
+            $sshProcess = Start-Process -FilePath 'ssh.exe' -ArgumentList $sshArguments -WindowStyle Hidden -PassThru
+            $startedTunnel = $true
+            try {
+                Wait-RdpTunnel -Process $sshProcess
+                break
+            }
+            catch {
+                if (-not $sshProcess.HasExited) {
+                    Stop-Process -Id $sshProcess.Id -Force -ErrorAction SilentlyContinue
+                }
+                if ($candidateAlias -eq $fallbackSshAlias) { throw }
+                Write-Warning "Singapore proxy tunnel unavailable. Retrying via $fallbackSshAlias (Clash DIRECT rule)."
+            }
+        }
         Write-Host "Singapore SSH tunnel is ready on $rdpHost`:$rdpPort."
     }
 
