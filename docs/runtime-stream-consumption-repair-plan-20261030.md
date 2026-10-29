@@ -84,3 +84,9 @@ Scheduler配置20分钟stop_grace_period，service.close等待所有提交case/�
 新增成本回归用2000条历史回执和VM预算证明只读当前键，覆盖大NativeContent在写锁外展开、旧ACK不删除新generation请求、外部ACK失败待办、旧格式确定键。38项相关测试通过。测试首轮2失败是预算误施加到初始化建索引，修正fixture在预算前完成初始化，不改业务实现以迎合测试。
 
 18:28:15Z近期100条case样本已出现INTC4、COHR35、MU24、NBIS27等，说明原6ticker均已越过堵头并真实建case；样本上限100不能当全量计数。资源仍未稳定：18:26:43Z Worker匿名约2.89GiB（6 running/5queued），Site约4.08GiB、Supervisor约2.74GiB，前三项合计约9.7GiB，另有Scheduler/API/宿主工作集；大量文件refault/换页与业务峰值同时发生。下一步按同epoch差分与真实进程/任务归属核算，不能宣称修复ACK等于解决全部资源问题。
+
+### 前端当日稀疏列表的独立读成本
+
+生产API实际ReadStore.page→legacy_case_summary→CaseSummary验证：BE/CEG/COHR/MU/NBIS各20条有效，约0.06–0.14秒；INTC仅4条当日case，强制current_page使查询需遍历所有旧日期当前行，page约1.618秒，DTO每条约5ms。先前2秒预算下该ticker会报interrupted。将单日case/message页走已有current_day(kind,ticker,day,sort_key,id)，无需新索引/数据迁移，跨日/ALL/历史水位及keyset语义保留。2000条他日历史+稀疏当日的VM预算、快照及翻页回归，连原ReadStore合同共7项通过。只需更新API读消费者，避免无关重启。
+
+18:33:07Z正式Scheduler b97f48a4启动，结果确认精简生效。该次也先保存真实Worker进程/任务归属，守卫旧Scheduler启动epoch及镜像后只结束退役控制容器，Worker与浏览器保持；前次5个在途job在18:31:08快照全部原ID succeeded/SETTLED。没有清任务、移动游标或改变业务容量。

@@ -2421,3 +2421,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 
 2026-10-30 Runtime结果确认精简：用既有invocation中的确定receipt_key替代ACK时整段Worker回执JSON反查；大结果解码/压缩移出写事务，以原payload条件更新防止晚ACK覆盖新代任务，保留失败ACK续作及模型结果唯一性。新增历史规模成本、NativeContent、跨代及网络失败回归。
+
+
+2026-10-30 Runtime当日列表读取修复：稀疏当日case/message页使用已有current_day索引，移除为补足20条结果遍历其它日期当前对象的无效读取；保留跨日、历史快照及keyset语义。新增2000条历史VM预算、稀疏结果与快照翻页回归。
