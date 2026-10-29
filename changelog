@@ -2396,3 +2396,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 生产有效取网证据修复：publisher curl在非stream完整响应实际返回时记录原物理请求的完成时点/状态/validators，修复RSS已取回却缺完成证据；Benzinga主题查询为空后确实执行primaryTickers查询时，由解析器绑定本轮两条实际已解析响应ID，消除歧义，不把其它失败请求或缓存结果填为新鲜。
 
 2026-10-29 HTTP预算生命周期修复：网络timeout从真实取得联合许可后开始，而非从排队前开始；Collector45秒/Site/BODY外层总预算不变。实测Finnhub等待13.5秒后发网仅1.5秒即被错误取消，避免未完成响应重复下载；正常网络仍受原15秒预算限制，新增准入等待与真实执行超时测试。
+
+2026-10-29 生产隐藏串行修复：配置snapshot按版本复用后，Identity Worker对无snapshot execute仍默认并发1，实际把已配置同身份2并发退化为串行；改读已验证的当前identity容量，不扩大任何配置上限，新增双命令实际重叠回归，并记录worker内部准入等待跨度。

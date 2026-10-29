@@ -9,6 +9,7 @@ import os
 import signal
 import struct
 import sys
+import time
 from contextvars import ContextVar
 
 from .browser_operations import MAX_FRAME_BYTES, encode_response, execute_browser_operation
@@ -417,11 +418,16 @@ class Worker:
 
     async def handle(self, command):
         try:
+            queued_at = time.monotonic()
+            configured_limit = self.repository.identity.access.max_concurrency if self.repository else 1
             async with self._operations.enter(
                 read=command["action"] == "execute",
-                limit=(command.get("snapshot", {}).get("identity", {}).get("access", {}).get("max_concurrency", 1)),
+                limit=(command.get("snapshot", {}).get("identity", {}).get("access", {}).get("max_concurrency", configured_limit)),
             ):
+                waited_ms = int((time.monotonic()-queued_at)*1000)
                 result = await self.dispatch(command)
+                if command["action"] == "execute" and isinstance(result, dict) and "status_code" in result:
+                    result.setdefault("stage_timings", {})["worker_command_wait_ms"] = waited_ms
             await self.send(
                 {
                     "kind": "result",

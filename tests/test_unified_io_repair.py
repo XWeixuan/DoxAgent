@@ -396,3 +396,26 @@ async def test_http_network_budget_starts_after_admission_and_still_bounds_execu
         await clients.request('test','GET','https://slow.test',timeout=.05)
     assert role._value == 5 and clients.clients['test'].slots._value == 2
     await clients.close()
+
+
+async def test_snapshot_reuse_preserves_actual_identity_worker_parallelism():
+    from doxagent.site_strategy.identity_worker import Worker
+    worker=Worker()
+    worker.repository=SimpleNamespace(identity=SimpleNamespace(access=SimpleNamespace(max_concurrency=2)))
+    both=asyncio.Event();release=asyncio.Event();entered=[]
+    async def execute(command):
+        entered.append(command['id'])
+        if len(entered)==2:both.set()
+        await release.wait()
+        return {'status_code':200}
+    worker.dispatch=AsyncMock(side_effect=execute)
+    worker.send=AsyncMock()
+    commands=[{'action':'execute','id':str(n)} for n in range(2)]
+    tasks=[asyncio.create_task(worker.handle(command)) for command in commands]
+    try:
+        await asyncio.wait_for(both.wait(),1)
+    finally:
+        release.set()
+        await asyncio.gather(*tasks)
+    assert len(entered)==2
+    assert all(call.args[0]['result']['stage_timings']['worker_command_wait_ms'] < 500 for call in worker.send.await_args_list)
