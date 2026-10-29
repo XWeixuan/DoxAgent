@@ -34,7 +34,11 @@ class CteeSemiconductorAdapter:
         old_found = False
         exhausted = False
         pages_fetched = 0
+        from .poll_trace import REQUESTS, validate_listing
+        events = REQUESTS.get()
+        validated_ids = []
         while pages_fetched < max_pages:
+            offset = len(events) if events is not None else 0
             url = f"https://www.ctee.com.tw/api/category/semi/{page}"
             try:
                 async with context.request_permit():
@@ -55,6 +59,8 @@ class CteeSemiconductorAdapter:
             if status != 200:
                 raise RuntimeError(f"CTEE category status {status}")
             rows = parse_category_response(html)
+            validated_ids.extend(r['physical_request_id'] for r in
+                validate_listing(events if events is not None else [], since=offset))
             pages_fetched += 1
             if not rows:
                 exhausted = True
@@ -83,6 +89,7 @@ class CteeSemiconductorAdapter:
                 "pages_fetched": pages_fetched,
                 "last_page": page,
                 "list_endpoint_observed": True,
+                "validated_request_ids": validated_ids,
             },
         )
 

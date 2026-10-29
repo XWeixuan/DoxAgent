@@ -57,3 +57,28 @@ async def test_ctee_recovery_gate_is_deferral_without_checkpoint_progress():
     assert result.site_access_deferred and result.site_access_deferred_reason == "site_recovery_pending"
     assert result.site_access_retry_not_before == retry
     assert result.next_checkpoint == {"page": 2} and result.messages == []
+
+
+@pytest.mark.asyncio
+async def test_ctee_multiple_pages_bind_each_parsed_response_to_its_request():
+    from doxagent.message_bus_v2.ctee import CteeSemiconductorAdapter
+    from doxagent.message_bus_v2.poll_trace import REQUESTS
+
+    @asynccontextmanager
+    async def permit():
+        yield
+    events = []
+    async def get(url, **kwargs):
+        number = url.rsplit('/', 1)[-1]
+        events.append({'physical_request_id':number,'proof_basis':'TRANSPORT_SEND',
+                       'response_received_at':datetime.now(UTC).isoformat(),'status_code':200})
+        return 200, url, {}, json.dumps([{}] * 15 if number == '1' else [])
+    token = REQUESTS.set(events)
+    try:
+        result = await CteeSemiconductorAdapter(SimpleNamespace(get=get)).poll_shared(
+            SimpleNamespace(checkpoint={},source=SimpleNamespace(default_parameters={}),
+                window_start=None,requested_at=datetime.now(UTC),run_id='run',request_permit=permit))
+        assert result.acquisition_metadata['validated_request_ids'] == ['1','2']
+        assert all(e['list_validated'] for e in events)
+    finally:
+        REQUESTS.reset(token)

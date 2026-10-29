@@ -130,6 +130,29 @@ async def test_sibling_feed_failure_preserves_healthy_rows_and_validator():
     assert "baseline" not in result.next_checkpoint["endpoints"][e.urls[1]]
 
 
+async def test_parallel_feeds_keep_exact_parsed_request_ids_and_exclude_failed_siblings():
+    from doxagent.message_bus_v2.poll_trace import REQUESTS, validate_listing
+    e = ENDPOINTS['defensescoop_drones']
+    events = []
+    raw = (FIXTURES/'scoop_drones.xml').read_text(encoding='utf8')
+    async def fetch(url, endpoint, **kwargs):
+        events.append({'physical_request_id':url,'proof_basis':'TRANSPORT_SEND',
+                       'response_received_at':NOW.isoformat(),'status_code':200})
+        return Capture(200,url,raw,{},physical_request_id=url)
+    token = REQUESTS.set(events)
+    try:
+        result = await DefenseAdapter(SimpleNamespace(fetch=fetch)).poll_shared(context(e.source_id))
+        assert set(result.acquisition_metadata['validated_request_ids']) == set(e.urls)
+        assert len(validate_listing(events, result.acquisition_metadata['validated_request_ids'])) == 2
+        async def partial(url, endpoint, **kwargs):
+            return Capture(503,url,'failed',{}) if 'counter-drone' in url else await fetch(url,endpoint)
+        result = await DefenseAdapter(SimpleNamespace(fetch=partial)).poll_shared(context(e.source_id))
+        assert result.acquisition_metadata['validated_request_ids'] == [e.urls[0]]
+        assert len(result.failures) == 1  # one refreshed feed cannot hide its missing sibling
+    finally:
+        REQUESTS.reset(token)
+
+
 async def test_publisher_rate_limit_defers_without_busy_retry():
     e = ENDPOINTS["spacenews_rss"]
     http = SimpleNamespace(

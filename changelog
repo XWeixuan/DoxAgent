@@ -2356,3 +2356,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 生产实测修复：移除Site预算耗尽后无条件启动备用Browser canary（包括HTTP/本地等待超时）的路径；实际访问失败仍按既有原因码处理。取消Managed冷建中的全局PSI无限等待；仅对Barrons/InvestorsHub/Investing已验证列表anchor恢复空闲冻结，Reuters强制排除，取网前解冻。73项相关回归通过，实测窗口保留修复前失败和资源峰值。
 
 2026-10-29 修复生产冷启动身份串接：Supervisor在首次await前预占CDP端口、display、VNC和实例容量，启动或取消失败清理其真实进程后释放；冷启动/重接通过SystemInfo核对真实Chrome PID。32项回归通过、1项平台跳过，另验证闲置维护不冷建。根因48f398fd（09-22）遗漏启动中资源；本轮重建并发触发dowjones-main/reuters-backup双9222，保留事故窗口并重建恢复。取消周期冷预热，由真实请求建立、热源继续复用。
+
+2026-10-29 Message Bus live verification: bind lightweight Site HTTP wire timings even without identity attempts; bind CTEE pages and parallel defense feeds to their exact parsed requests, retaining sibling failures and no-proof failures. 79 cadence/CTEE/defense regressions passed.

@@ -787,6 +787,29 @@ def test_old_shared_capture_never_creates_another_physical_request_observation()
         REQUESTS.reset(token)
 
 
+def test_lightweight_site_http_uses_its_wire_timestamps_without_identity_attempts():
+    from doxagent.message_bus_v2.poll_trace import REQUESTS, validate_listing
+    from doxagent.site_strategy.client import _observed
+    from doxagent.site_strategy.schema import AccessResult
+
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        result = AccessResult(request_id='http', operation_id='http', site_id='globenewswire',
+            runtime_key='globenewswire', strategy_revision=1, disposition='SUCCESS', status_code=200,
+            stage_timings={'request_started_epoch_ms':1700000000000,
+                           'capture_acquired_epoch_ms':1700000000200})
+        _observed(result)
+        assert len(validate_listing(events)) == 1
+        assert events[0]['status_code'] == 200
+        assert events[0]['response_received_at'].endswith('20.200000+00:00')
+        events.clear()
+        _observed(result.model_copy(update={'stage_timings':{'total_elapsed_ms':20}}))
+        assert events == []  # elapsed/RPC time alone is never wire proof
+    finally:
+        REQUESTS.reset(token)
+
+
 def test_retention_keeps_unresolved_replayed_input_and_last_fresh_boundary(tmp_path):
     from dataclasses import replace
 

@@ -32,7 +32,9 @@ def _observed(result):
 
     requests = REQUESTS.get()
     if requests is not None:
-        for index, attempt in enumerate(result.attempts):
+        # The lightweight HTTP path has no identity attempt; its wire timestamps
+        # live on the result itself. Never substitute RPC/caller timestamps.
+        for index, attempt in enumerate(result.attempts or [result]):
             stages = attempt.stage_timings
             indexes = sorted(int(key.split('_')[1]) for key in stages
                 if key.startswith('request_') and key.endswith('_started_epoch_ms') and key.split('_')[1].isdigit())
@@ -70,6 +72,7 @@ def _observed(result):
                         else None,
                         "identity_id": result.identity_id,
                         "status": result.disposition.value,
+                        "status_code": getattr(attempt, "status_code", None),
                     }
                 )
     return result

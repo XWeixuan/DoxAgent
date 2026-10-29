@@ -232,6 +232,7 @@ class Capture:
     text: str
     headers: dict
     transport_retries: int = 0
+    physical_request_id: str | None = None
 
 
 class DefenseHttp:
@@ -319,7 +320,8 @@ class DefenseHttp:
                     if response.status_code in {301,302,303,307,308}:
                         url=urljoin(url,response.headers['location']);continue
                     return Capture(response.status_code,url,bytes(data).decode(response.encoding or 'utf-8',errors='replace'),
-                        {k.lower():v for k,v in response.headers.items()})
+                        {k.lower():v for k,v in response.headers.items()},
+                        physical_request_id=event['physical_request_id'] if event else None)
                 event=request_started('GET',url,'injected_transport')
                 async with self.session.stream(
                     "GET",
@@ -360,6 +362,7 @@ class DefenseHttp:
                         url,
                         bytes(data).decode(response.encoding or "utf-8", errors="replace"),
                         {k.lower(): v for k, v in response.headers.items()},
+                        physical_request_id=event['physical_request_id'] if event else None,
                     )
         raise ValueError("defense_redirect_limit")
 
@@ -613,6 +616,7 @@ class DefenseAdapter:
         checkpoint = dict(context.checkpoint)
         states = dict(checkpoint.get("endpoints", {}))
         messages, failures, evidence = {}, [], []
+        validated_ids = []
         covered_endpoints = []
         retry_times = []
         requests = list(e.urls)
@@ -677,6 +681,10 @@ class DefenseAdapter:
                         last_modified=capture.headers.get("last-modified"),
                     )
                 first_seen = dict(state.get("first_seen", {}))
+                # Only this successfully parsed endpoint (or a validated 304
+                # baseline) can prove refresh; sibling/bootstrap traffic cannot.
+                if capture.physical_request_id:
+                    validated_ids.append(capture.physical_request_id)
                 seen = dict(state.get("seen", {}))
                 unchanged = 0
                 for m in rows:
@@ -795,5 +803,6 @@ class DefenseAdapter:
             acquisition_metadata={
                 "endpoints": evidence,
                 "partial_endpoint_failures": len(failures),
+                **({'validated_request_ids': validated_ids} if validated_ids else {}),
             },
         )

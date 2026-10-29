@@ -501,7 +501,7 @@ class Collector:
                         state["bootstrap_complete"] = True
                     remaining = [m for m in result.messages if (m.external_id, m.url) not in seen]
                     if remaining:
-                        await on_page(remaining)
+                        await on_page(remaining, validated_request_ids=result.acquisition_metadata.get('validated_request_ids'))
                     if valid:
                         state['checkpoint']=result.next_checkpoint or committed_checkpoint
                         if options.get('roster'):
