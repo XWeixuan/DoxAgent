@@ -305,7 +305,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                     state.instance_id != response.provenance.instance_id
                     or state.operational_state is not IdentityOperationalState.AVAILABLE
                 ):
-                    if identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
+                    if state.instance_id and state.instance_id != response.provenance.instance_id:
                         from .governance_repository import GovernanceRepository
 
                         GovernanceRepository(self.repository).mark_instance_lost(

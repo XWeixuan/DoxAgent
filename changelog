@@ -2360,3 +2360,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 Message Bus live verification: bind lightweight Site HTTP wire timings even without identity attempts; bind CTEE pages and parallel defense feeds to their exact parsed requests, retaining sibling failures and no-proof failures. 79 cadence/CTEE/defense regressions passed.
 
 2026-10-29 Lean live follow-up: allow authenticated configured primary for real BODY work without changing a healthy crawler backup; preserve auth, recovery, cooldown and subscription fallback checks. On Collector restart, atomically retire obsolete persisted units with a DISABLED schedule boundary, preserving their checkpoints and prior failures. 102 recovery/failover and 20 collection-plane regressions passed; overlap-only sharing fixtures aligned and host disk/timing isolated.
+
+2026-10-29 Site lifecycle review: retire only a confirmed replaced instance target ledger for both External and Managed runtimes; same-instance health recovery keeps current targets. This removes old External target accumulation without clearing a live Managed document.

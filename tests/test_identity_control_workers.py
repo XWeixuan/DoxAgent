@@ -18,6 +18,38 @@ from doxagent.site_strategy.worker_manager import (
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('kind', ['managed_playwright','external_chrome'])
+@pytest.mark.parametrize('replaced', [False,True])
+async def test_actual_instance_replacement_retires_only_old_target_facts(tmp_path,monkeypatch,kind,replaced):
+    from doxagent.site_strategy.worker_runtime import WorkerSiteAccessRuntime
+    from doxagent.site_strategy.browser_runtime import RuntimeProvenance
+    from doxagent.site_strategy.runtime import RuntimeResponse
+    from doxagent.site_strategy.governance_repository import GovernanceRepository
+    from doxagent.site_strategy.governance_models import OwnedBrowserTarget
+    from doxagent.site_strategy.schema import AccessRequest, BrowserRuntimeKind
+    repo=SiteStrategyRepository(tmp_path/'registry.db');store=GovernanceRepository(repo)
+    identity=BrowserIdentitySpec(identity_id='proof',profile_id='proof',egress_id='exit',runtime_kind=kind)
+    state=repo.get_identity_runtime('proof')
+    repo.save_identity_runtime(state.model_copy(update={'instance_id':'old','operational_state':'UNHEALTHY'}),
+                               expected_generation=state.generation)
+    targets=[store.save_target(OwnedBrowserTarget(identity_id='proof',browser_instance_id=i,
+        worker_epoch=1,target_id=i,state='LIVE')) for i in ('old','new')]
+    runtime=WorkerSiteAccessRuntime.__new__(WorkerSiteAccessRuntime)
+    runtime.repository=repo;runtime.workers=SimpleNamespace(command=AsyncMock(return_value={}))
+    runtime._business_slots=asyncio.Semaphore(1);runtime._recovery_slots=asyncio.Semaphore(1)
+    runtime._tokens={}
+    response=RuntimeResponse(200,'https://example.com',{},body='ok',provenance=RuntimeProvenance(
+        'proof',1,BrowserRuntimeKind(kind),'new' if replaced else 'old',1))
+    monkeypatch.setattr('doxagent.site_strategy.worker_runtime.decode_response',lambda value:response)
+    try:
+        await runtime._browser(AccessRequest(operation_id='probe',url='https://example.com',purpose='CRAWLER',
+                                            mode='BROWSER'),SimpleNamespace(site_id='example',model_dump=lambda **_:{}),identity,None)
+        assert store.get_target(targets[0].allocation_id).state == ('LOST' if replaced else 'LIVE')
+        assert store.get_target(targets[1].allocation_id).state == 'LIVE'
+    finally:repo.close()
+
+
+@pytest.mark.asyncio
 async def test_queued_command_re_resolves_retired_worker_without_replaying_request():
     def handle(epoch):
         process = SimpleNamespace(returncode=None, stdin=Mock())
