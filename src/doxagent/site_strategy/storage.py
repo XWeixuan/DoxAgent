@@ -17,7 +17,7 @@ async def registry_io(function, *args, **kwargs):
     """Cancelable bounded reads; actual owner mutations drain their commit."""
     name=getattr(function,"__name__","")
     readonly=(name.startswith(("get_","list_","resolve")) and not name.startswith("get_or_create")) or name in {
-        "snapshot","candidate_status","effective_candidates","_resolve_request","_shared_key","_cache_key",
+        "snapshot","candidate_status","effective_candidates","_shared_key","_cache_key",
         "_profile","_auth_state","_identity_for","_purpose_combinations","_materialize_combination"}
     if readonly:
         owner=getattr(function,"__self__",None)

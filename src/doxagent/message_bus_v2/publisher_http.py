@@ -25,21 +25,36 @@ PROCESS_ROLE = "collector"
 async def joint_permits(*slots, source=None):
     """Reserve the current loop's capacities together, never hold one while waiting."""
     slots = (*slots, source._semaphore) if source else slots
-    while True:
-        if source:
-            delay = source._next_request_at-source._clock()
-            if delay>0:
-                await source._sleep(delay)
+    held = None
+    try:
+        while True:
+            if source:
+                delay = source._next_request_at-source._clock()
+                if delay>0:
+                    if held is not None:
+                        held.release()
+                        held = None
+                    await source._sleep(delay)
+                    continue
+            blocked = next((slot for slot in slots if slot is not held and slot.locked()), None)
+            if blocked is not None:
+                if held is not None:
+                    held.release()
+                    held = None
+                await blocked.acquire()
+                # Keep this reservation while checking the remaining capacities.
+                # Releasing it immediately hands it to another queued waiter and
+                # all waiters can circulate forever without entering the request.
+                held = blocked
                 continue
-        blocked = next((slot for slot in slots if slot.locked()), None)
-        if blocked is not None:
-            await blocked.acquire()
-            blocked.release()
-            continue
-        # No await: reservation is atomic within the owning event loop.
-        for slot in slots:
-            slot._value -= 1
-        break
+            for slot in slots:
+                if slot is not held:
+                    slot._value -= 1
+            held = None
+            break
+    finally:
+        if held is not None:
+            held.release()
     try:
         if source:
             source._next_request_at=source._clock()+source.constraints.minimum_request_gap_seconds

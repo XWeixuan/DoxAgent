@@ -234,3 +234,52 @@ async def test_first_body_defer_preserves_provider_floor_and_initial_state(tmp_p
     live.enqueue_checks()
     assert live.get(rows[0]['key'])['initial_result_at']==initial
     await hub.close()
+
+
+async def test_joint_http_queue_makes_progress_under_sustained_contention():
+    from doxagent.message_bus_v2.publisher_http import joint_permits
+    publisher = asyncio.Semaphore(2)
+    global_slots = asyncio.Semaphore(5)
+    completed = []
+    async def request(n):
+        async with joint_permits(publisher, global_slots):
+            await asyncio.sleep(.001)
+            completed.append(n)
+    await asyncio.wait_for(asyncio.gather(*(request(n) for n in range(40))), 2)
+    assert len(completed) == 40
+    assert publisher._value == 2 and global_slots._value == 5
+
+
+async def test_registry_resolve_request_can_provision_missing_publisher(tmp_path):
+    from doxagent.site_strategy.repository import SiteStrategyRepository
+    from doxagent.site_strategy.storage import registry_io
+    from doxagent.site_strategy.schema import ProxyEgress
+    repository = SiteStrategyRepository(tmp_path / 'site.sqlite3')
+    class Service:
+        def __init__(self): self.repository = repository
+        def _resolve_request(self):
+            self.repository.upsert_egress(ProxyEgress(egress_id='new',endpoint='http://127.0.0.1:1080',node_ref='n',node_fingerprint='n',listener_port=1080))
+            return self.repository.get_egress('new')
+    try:
+        assert (await registry_io(Service()._resolve_request)).egress_id == 'new'
+    finally:
+        repository.close()
+
+
+async def test_joint_http_multiple_publishers_and_sources_finish_without_slot_leak():
+    from doxagent.message_bus_v2.publisher_http import joint_permits
+    from doxagent.message_bus_v2.scheduler import SchedulerGroupLimiter
+    from doxagent.message_bus_v2.schema import SchedulerConstraints
+    global_slots = asyncio.Semaphore(5)
+    publishers = [asyncio.Semaphore(2) for _ in range(6)]
+    sources = [SchedulerGroupLimiter(SchedulerConstraints(max_concurrency=2,minimum_request_gap_seconds=.001)) for _ in range(4)]
+    completed = []
+    async def request(n):
+        async with joint_permits(publishers[n % 6],global_slots,source=sources[n % 4]):
+            await asyncio.sleep(.001)
+            completed.append(n)
+    await asyncio.wait_for(asyncio.gather(*(request(n) for n in range(100))),3)
+    assert len(completed) == 100
+    assert global_slots._value == 5
+    assert all(p._value == 2 for p in publishers)
+    assert all(s._semaphore._value == 2 for s in sources)

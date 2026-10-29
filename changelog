@@ -2384,3 +2384,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 统一I/O发布前核对：采集统计拆分窗口范围与生效schedule，使用薄部分索引，探针补首态；专用BODY reader计获取轮并保留失败文章既定更新检查，网络计数按真实获取轮推进。纯提交归档56项关键回归通过，Finnhub实测200/60次分钟额度；正常账号节奏未改变。
 
 2026-10-29 生产观察修复：Chrome153在原生有头启动时仅禁用Ukm即SIGSEGV(-11)，三组同镜像隔离对照复现；External/Managed移除此开关，保留已验证的Segmentation/Optimization禁用项，不变更Profile、sandbox、出口及轮询覆盖。该轮启动失败保留在90分钟验收分母。
+
+2026-10-29 生产观察修复：HTTP联合准入保留被唤醒者的即时许可至完成其余槽位检查，避免多人排队时许可循环转让、容量空闲但全体超时；仍不持槽等待其它容量。Site按需publisher配置解析不再标为纯只读，恢复首次站点配置落库。补多人/多publisher、多source及取消回归。
