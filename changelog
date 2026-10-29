@@ -2418,3 +2418,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-30 Runtime消费恢复：修复Stream JSON别名绕过NativeContent展开，正文超过16KiB时StandardMessage.body被dict引用卡住整个ticker的缺陷；仅在选中成员的业务物化边界解码，保留薄查询、顺序游标、去重及损坏失败语义。新增即时/缓冲、多成员大正文及metadata、重启、真实Runtime case持久化、重复消费和缺失文件回归。
 
 2026-10-30 Runtime接回成本治理：effect领取分离待执行与过期RUNNING两个薄集合，沿部分索引各取前N后按原时间/rowid合并，移除写事务内终态历史全扫描；保留租约、抢占唯一性、失败恢复和W1/W2/W3容量。新增大历史VM预算与双Repository并发领取回归。
+
+
+2026-10-30 Runtime结果确认精简：用既有invocation中的确定receipt_key替代ACK时整段Worker回执JSON反查；大结果解码/压缩移出写事务，以原payload条件更新防止晚ACK覆盖新代任务，保留失败ACK续作及模型结果唯一性。新增历史规模成本、NativeContent、跨代及网络失败回归。

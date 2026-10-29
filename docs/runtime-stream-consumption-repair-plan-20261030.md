@@ -50,3 +50,37 @@ Site匿名内存增长、Reuters/IBKR/Calcalist/DIGITIMES访问失败和API慢�
 成本测试用2000条宽终态历史、5个真实活跃边界和SQLite VM工作量预算验证，领取不再随终态历史增长；两独立Repository并发不会领取同一effect。与大正文4项及W3 v4/故障合同合跑32通过、1个旧CLOSED recovery测试失败；在精确fa683526归档同样复现该失败，不通过改已存在W调度行为掩盖。新补丁只需正式重建Scheduler，保持已在途Worker/BODY/Bus。
 
 不能把此次claim减法直接等同于全部内存/I/O压力已解决，后续同时记录真实恢复成本、case进展与资源。
+
+
+### 第二阶段发布切换的实际中断
+
+Scheduler配置20分钟stop_grace_period，service.close等待所有提交case/维护/W3线程排空；SIGTERM停止新ticker循环，但既有维护步骤和工作轮次仍可继续启动其已排队子步骤。此次切换停在Compose Recreate，不能把该状态当新版本已运行。
+
+18:00:55Z先保存Worker实际running job IDs（5个，含4个runtime-maintain-O2及1个ready作业）、Runtime RUNNING任务及effect租约。只对17:43:34Z/指定旧镜像的**退役Scheduler控制容器ID**核验后终止，交给已在执行的正式Compose发布替换；Worker/Chrome/数据卷/游标均未停止或删除。在途任务沿原持久化run_id/Worker receipt及lease续作，不新建业务副本。需后续对这些原ID状态和case/effect实际进展逐一核验；不能仅因新的进程启动就声称无遗漏/无重复模型尝试。
+
+
+## 生产验证进展与宿主再次失联（未完成验收）
+
+- fa683526正式Scheduler17:43:34Z启动，Bus/BODY/Worker同期正式更新；6条原队首均可读取，未改游标或删除旧消息。17:52:21Z游标BE2110、CEG168、COHR383、INTC5028、MU5201、NBIS881，全部较原值推进。
+- 17:55:39Z起新建可见case包括BE12、CEG12、COHR14、MU6、NBIS11、SNOW1；18:02:19Z前100条近期case样本含BE18、CEG18、COHR19、MU12、NBIS11、SNOW1，共79，最新20项均可在Read按主键找到。INTC尚未证明创建新case；其流已过原堵头，但仍有147条积压，必须继续验证，不能把“reader OK”当恢复完成。
+- b233414d正式Scheduler18:01:38.420816677Z启动，Bus/BODY/Worker仍fa683526兼容版本；生产EXPLAIN已沿pending部分索引和仅RUNNING部分索引，有界只读候选样本7.68ms/0.34ms。这不是实际claim全跨度，更不代表全部负载已稳定。冻结提交24项通过。
+- 17:47:38Z宿主可用内存约1.74GiB，Worker匿名从发布前973MiB增至3278MiB，Python/Codex进程由11个增至44个左右（19Python、16Codex、9code-mode），当时jobs.running只有3。Site匿名3614MiB、Supervisor匿名3175MiB，二者仍占约6.63GiB。较少运行job不等于这些额外控制/准备进程都必须保留；需要按capsule busy/prepared/ready/bound及原owner进一步核对，不能仅凭进程数即杀进程或减少W容量。
+- 17:52:21Z抽样可用1573MiB、Swap1676MiB，vmstat瞬时读盘约145508KiB/s、换入39656KiB/s、iowait23%；资源再度进入回收/重读压力。case恢复释放了之前被堵头隐蔽的真实负载，先前资源低负载/Owner发布统计不足以证明全链路容量。
+- 18:02之后API探针、Docker日志及SSH新会话无返回，连续server not responding。18:06尝试仅应急停止Site/Chrome Supervisor释放资源，SSH未成功，因此**未确认停服命令执行**。未声称生产健康或停服成功。已请用户通过云控制台确认/恢复主机；当前无法完成余下生产验收。
+
+### 恢复访问后的优先步骤
+
+1. 第一时间核验主机/容器epoch，临时控制浏览器服务以保留取证窗口与Runtime/Worker；停采缺口照实记，不作为正常频率达标。
+2. 保存内核/sysstat、cgroup refault/Swap及Worker capsule owner、busy/prepared/ready_slot、实际job/thread/进程映射，确认16个Codex/19个Python究竟在途必要、排队预备、已完成未退还是遗留子进程。Site也按当前Identity driver实测驻留核算，不恢复共享全局故障域。
+3. 已完成job应及时释放真实运行环境，保留持久化thread/receipt及必要READY容量；预备与实际Worker准入的顺序要避免先常驻大量已fork的SDK、再等执行槽。此方向需实际映射证明后实施，不能先改TTL/提高并发/硬挡W，或仅凭本次样本宣称全为泄漏。
+4. 逐一核对18:00:55快照的5个Worker job IDs、CASE任务和2个effect leases，确认原身份续作/终态；验INTC新case、其余原游标及新消息延迟，再核对API DTO完整路径。当前已确证流解析修复有效、领取历史扫描已去掉，但宿主不稳定及部分后续交付未完成，业务恢复验收仍未通过。
+
+### 第三阶段：结果确认写锁与SSH恢复
+
+18:13:16Z SSH恢复，boot未变，无需用户重启，之前应急停止Site/Supervisor命令未成功，服务仍在运行。18:15:02日志明确`w3_execution._ack`总8.481秒、持写锁8.255秒，其间接纳/租约写入等待约7–8秒。原代码对整个worker_receipts命名空间JSON反查job_id，并在写事务内展开/压缩结果；不是CPU/IO高的泛泛推测，是确认的高频历史读取与写锁放大。
+
+修复：ReceiptWorker在既有invocation写入receipt_key，不另建台账；ACK仅按job_id和receipt_key主键读两个当前对象，在写锁外解码NativeContent、去除已确认的final_response/telemetry.events并编码；写事务只做有条件更新、删除对应请求及ACK待办。以原payload作CAS，避免晚ACK覆盖新generation，失败仍由既有w3_ack_pending续作，不重跑模型。既有非模板W3由原确定命名推导键；极少没有scope的旧模板不做历史反查，只压缩精确invocation，保留原receipt/request供既有生命周期收尾，不清库/扫历史迁移。
+
+新增成本回归用2000条历史回执和VM预算证明只读当前键，覆盖大NativeContent在写锁外展开、旧ACK不删除新generation请求、外部ACK失败待办、旧格式确定键。38项相关测试通过。测试首轮2失败是预算误施加到初始化建索引，修正fixture在预算前完成初始化，不改业务实现以迎合测试。
+
+18:28:15Z近期100条case样本已出现INTC4、COHR35、MU24、NBIS27等，说明原6ticker均已越过堵头并真实建case；样本上限100不能当全量计数。资源仍未稳定：18:26:43Z Worker匿名约2.89GiB（6 running/5queued），Site约4.08GiB、Supervisor约2.74GiB，前三项合计约9.7GiB，另有Scheduler/API/宿主工作集；大量文件refault/换页与业务峰值同时发生。下一步按同epoch差分与真实进程/任务归属核算，不能宣称修复ACK等于解决全部资源问题。

@@ -75,6 +75,7 @@ async def test_failed_receipt_model_refresh_requires_explicit_override(
     assert second.idempotency_key != first.idempotency_key
     assert second.attempt_id == ("w3-02" if replace_failed_model else "w3-01")
     assert journal.get("worker_invocations", "job-1")["model"] == "gpt-6-luna"
+    assert journal.get("worker_invocations", "job-1")["receipt_key"] == receipt.last_identity
     assert journal.get("worker_invocations", "job-2")["model"] == "gpt-6-luna"
     assert journal.get("worker_invocations", "job-2")["requested_model"] == expected_model
 

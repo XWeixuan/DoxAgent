@@ -896,29 +896,69 @@ class W3Execution:
         # An ACK failure is recoverable housekeeping, never a reason to repeat a valid decision.
         try:
             self.agent.acknowledge_job(job_id)
-            with self.journal.transaction() as db:
-                for row in db.execute(
-                    "SELECT key,payload FROM runtime_values WHERE namespace='worker_receipts' "
-                    "AND json_extract(payload,'$.job_id')=?",
+            # Exact keys only. Decode/compact outside the global writer, including NativeContent.
+            with self.journal.transaction(write=False, expand=False) as db:
+                invocation_row = db.execute(
+                    "SELECT payload FROM runtime_values WHERE namespace='worker_invocations' AND key=?",
                     (job_id,),
-                ).fetchall():
-                    import json
-
-                    small = json.loads(row[1])
-                    small["final_response"] = None
-                    if small.get("telemetry"):
-                        small["telemetry"]["events"] = []
-                    policy_consumption.put_value(db, "worker_receipts", row[0], small)
+                ).fetchone()
+            invocation = (
+                json.loads(self.journal.content.text(invocation_row[0])) if invocation_row else None
+            )
+            receipt_key = invocation.get("receipt_key") if invocation else None
+            if not receipt_key and invocation and invocation.get("case_id"):
+                # Existing W3 case receipts have a deterministic identity; no history scan.
+                case_id = invocation["case_id"]
+                phase = invocation.get("task_phase")
+                receipt_key = (
+                    f"runtime-worker:{case_id}:{invocation['run_id']}:{invocation['node']}:"
+                    f"{phase or 'case'}" + (f":{case_id}" if phase is not None else "")
+                )
+            keys = []
+            if receipt_key:
+                keys.append(("worker_receipts", receipt_key))
+            with self.journal.transaction(write=False, expand=False) as db:
+                rows = [
+                    (ns, key, row[0])
+                    for ns, key in keys
+                    if (
+                        row := db.execute(
+                            "SELECT payload FROM runtime_values WHERE namespace=? AND key=?",
+                            (ns, key),
+                        ).fetchone()
+                    )
+                ]
+            if invocation_row:
+                rows.insert(0, ("worker_invocations", job_id, invocation_row[0]))
+            updates = []
+            receipt_matches = False
+            for ns, key, raw in rows:
+                small = (
+                    invocation
+                    if ns == "worker_invocations"
+                    else json.loads(self.journal.content.text(raw))
+                )
+                job = small["job"] if ns == "worker_invocations" else small
+                if job.get("job_id") != job_id:
+                    continue  # A newer generation owns this receipt and request.
+                job["final_response"] = None
+                if job.get("telemetry"):
+                    job["telemetry"]["events"] = []
+                updates.append((self.journal.content.encode(small), ns, key, raw))
+                receipt_matches |= ns == "worker_receipts"
+            with self.journal.transaction(expand=False, operation="w3.ack.commit") as db:
+                for payload, ns, key, raw in updates:
+                    changed = db.execute(
+                        "UPDATE runtime_values SET payload=? WHERE namespace=? AND key=? AND payload=?",
+                        (payload, ns, key, raw),
+                    ).rowcount
+                    if not changed:
+                        raise RuntimeError("Worker receipt changed during ACK; retry housekeeping")
+                if receipt_matches:
                     db.execute(
                         "DELETE FROM runtime_values WHERE namespace='worker_requests' AND key=?",
-                        (row[0],),
+                        (receipt_key,),
                     )
-                invocation = policy_consumption.get_value(db, "worker_invocations", job_id)
-                if invocation:
-                    invocation["job"]["final_response"] = None
-                    if invocation["job"].get("telemetry"):
-                        invocation["job"]["telemetry"]["events"] = []
-                    policy_consumption.put_value(db, "worker_invocations", job_id, invocation)
                 db.execute(
                     "DELETE FROM runtime_values WHERE namespace='w3_ack_pending' AND key=?",
                     (job_id,),

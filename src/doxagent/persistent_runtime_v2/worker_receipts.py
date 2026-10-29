@@ -202,6 +202,7 @@ class ReceiptWorker:
                 "worker_invocations",
                 job.job_id,
                 {
+                    "receipt_key": identity,
                     "job": job.model_dump(mode="json"),
                     "ticker": request.ticker,
                     "node": str(request.node),
