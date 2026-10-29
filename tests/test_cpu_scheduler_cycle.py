@@ -48,7 +48,10 @@ def admission(tmp_path):
     publish_control()
     control = SimpleNamespace(
         active_revisions=lambda: revisions,
-        revision_acknowledged=lambda ticker, identity, worker: (identity, worker) in acks,
+        current_revision_admitted=lambda ticker, identity, worker: (
+            revisions[0]["revision_id"] == identity and (identity, worker) in acks
+        ),
+        revision_acknowledged=lambda ticker, identity, worker, **kwargs: (identity, worker) in acks,
         acknowledge_revision=Mock(side_effect=acknowledge),
         admission_error=Mock(),
     )
@@ -60,7 +63,7 @@ def admission(tmp_path):
     return SimpleNamespace(**locals())
 
 
-def test_stable_admission_retains_degraded_state_and_refreshes_ack(tmp_path):
+def test_stable_admission_retains_degraded_state_and_reuses_fresh_ack(tmp_path):
     x = admission(tmp_path)
     assert admit_runtime_revisions(x.control, x.scheduler) == {"MU"}
     x.state[0].status = TickerRunStatus.DEGRADED
@@ -68,7 +71,7 @@ def test_stable_admission_retains_degraded_state_and_refreshes_ack(tmp_path):
         assert admit_runtime_revisions(x.control, x.scheduler) == {"MU"}
     assert x.calls == ["first"]
     assert x.state[0].status == TickerRunStatus.DEGRADED
-    assert x.control.acknowledge_revision.call_count == 4
+    assert x.control.acknowledge_revision.call_count == 1
 
 
 @pytest.mark.parametrize(

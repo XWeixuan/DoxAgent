@@ -1088,6 +1088,7 @@ async def test_benzinga_adapter_falls_back_to_primary_ticker_when_bounded_topics
     assert result.acquisition_metadata == {
         "provider": "benzinga",
         "query_mode": "primary_tickers_fallback",
+        "validated_request_ids": [],  # MockTransport has no actual transport-send trace.
     }
     await client.aclose()
 

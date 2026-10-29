@@ -2734,8 +2734,14 @@ class MessageBusV2Repository:
         ).fetchall()
         result: list[MaterializedStreamMember] = []
         for row in rows:
-            relation = StreamMember.model_validate_json(row["relation_json"])
-            standard = StandardMessage.model_validate_json(row["standard_json"])
+            # SQL aliases are deliberately outside the codec's thin-row contract.
+            # Materialize only these selected business objects, before validation.
+            relation = StreamMember.model_validate(
+                self.content.decode(json.loads(row["relation_json"]))
+            )
+            standard = StandardMessage.model_validate(
+                self.content.decode(json.loads(row["standard_json"]))
+            )
             result.append(
                 MaterializedStreamMember(
                     metadata=standard.metadata,
