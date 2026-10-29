@@ -34,6 +34,8 @@ class FormalProjectors(DomainProjectors):
         self.event_root = event_root
 
     def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        if event.get("serving_skipped"):
+            return [], []
         records, metrics = super().__call__(event)
         if event["table_name"] == "v2_business_imports":
             value = native(event)

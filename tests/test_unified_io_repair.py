@@ -313,3 +313,10 @@ async def test_bloom_official_feeds_use_verified_light_transport_only_for_exact_
     adapter._bloom_clients.request.assert_awaited_once()
     assert await adapter._feed_text(context,'https://investor.bloomenergy.com.other.test/rss/x') == 'other feed'
     adapter._text.assert_awaited_once()
+
+
+@pytest.mark.parametrize('table',['runtime_values','runtime_v2_effects'])
+def test_formal_projection_honors_skipped_receipt_without_payload_or_store(table):
+    from doxagent.v2_read.formal import FormalProjectors
+    mapper = FormalProjectors(None)
+    assert mapper({'table_name':table,'serving_skipped':True,'row':{},'seq':1}) == ([],[])
