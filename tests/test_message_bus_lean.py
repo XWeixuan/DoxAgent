@@ -1124,6 +1124,7 @@ async def test_digitimes_public_listing_encoding_is_endpoint_scoped(monkeypatch,
         SimpleNamespace(egress_id='server-direct', endpoint=None))
     assert result.status_code == 200
     assert (seen['headers'].get('Accept-Encoding') == 'identity') is identity
+    assert seen.get('discard_cookies', False) is identity
 
 @pytest.mark.parametrize('packet', [b'\x00\x00\x00\x03old', b'\x00\x00\x00\x08protobuf'])
 def test_ibkr_framed_transport_observes_sdk_and_protobuf_bytes_unchanged(packet):
