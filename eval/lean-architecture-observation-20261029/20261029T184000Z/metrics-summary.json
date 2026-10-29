@@ -1,0 +1,1237 @@
+{
+  "cycle": {
+    "expected_cycles": 34880,
+    "fresh_cycles": 22330,
+    "missing_cycles": 4851,
+    "pending_cycles": 37,
+    "settled_cycles": 34843,
+    "coverage": 0.6408747811612089,
+    "all_cycle_coverage": 0.6401949541284404,
+    "basis": "ALL_SCHEDULED_CYCLES",
+    "coverage_basis": "SETTLED_OR_OVERDUE_CYCLES",
+    "request_basis": "TRANSPORT_OBSERVATION",
+    "fresh_gap_seconds": {
+      "samples": 23163,
+      "mean": 82.03489687795229,
+      "p95": 172.914279,
+      "max": 4901.0
+    },
+    "eligibility_unknown": 0
+  },
+  "sources": {
+    "newswire_rss": {
+      "expected": 1144,
+      "fresh": 814,
+      "missing": 159,
+      "pending": 3
+    },
+    "yahoo_finance_news": {
+      "expected": 3610,
+      "fresh": 2038,
+      "missing": 1011,
+      "pending": 4
+    },
+    "globenewswire_semiconductors_rss": {
+      "expected": 410,
+      "fresh": 290,
+      "missing": 60,
+      "pending": 0
+    },
+    "nbis_official_actor_rss": {
+      "expected": 164,
+      "fresh": 132,
+      "missing": 20,
+      "pending": 1
+    },
+    "enterprise_apps_official_rss": {
+      "expected": 246,
+      "fresh": 203,
+      "missing": 25,
+      "pending": 1
+    },
+    "reuters_site_search": {
+      "expected": 2508,
+      "fresh": 11,
+      "missing": 269,
+      "pending": 1
+    },
+    "siliconangle_software": {
+      "expected": 245,
+      "fresh": 189,
+      "missing": 24,
+      "pending": 0
+    },
+    "corporate_ir_press_releases": {
+      "expected": 1960,
+      "fresh": 1340,
+      "missing": 316,
+      "pending": 2
+    },
+    "investing_ticker_news": {
+      "expected": 817,
+      "fresh": 423,
+      "missing": 70,
+      "pending": 0
+    },
+    "globenewswire_search": {
+      "expected": 2042,
+      "fresh": 1596,
+      "missing": 206,
+      "pending": 1
+    },
+    "barrons_ticker_news": {
+      "expected": 1634,
+      "fresh": 1253,
+      "missing": 202,
+      "pending": 3
+    },
+    "power_magazine_energy": {
+      "expected": 735,
+      "fresh": 564,
+      "missing": 88,
+      "pending": 3
+    },
+    "sec_edgar": {
+      "expected": 1552,
+      "fresh": 1072,
+      "missing": 327,
+      "pending": 3
+    },
+    "finnhub_company_news": {
+      "expected": 817,
+      "fresh": 653,
+      "missing": 101,
+      "pending": 2
+    },
+    "tomshardware_rss": {
+      "expected": 410,
+      "fresh": 315,
+      "missing": 55,
+      "pending": 0
+    },
+    "power_engineering_energy": {
+      "expected": 571,
+      "fresh": 461,
+      "missing": 62,
+      "pending": 3
+    },
+    "ionq_quantum_actors_rss": {
+      "expected": 245,
+      "fresh": 199,
+      "missing": 29,
+      "pending": 0
+    },
+    "benzinga_news": {
+      "expected": 817,
+      "fresh": 639,
+      "missing": 103,
+      "pending": 2
+    },
+    "venturebeat_software": {
+      "expected": 245,
+      "fresh": 182,
+      "missing": 26,
+      "pending": 0
+    },
+    "thefly_ticker_news": {
+      "expected": 735,
+      "fresh": 570,
+      "missing": 72,
+      "pending": 1
+    },
+    "venturebeat_ai": {
+      "expected": 410,
+      "fresh": 285,
+      "missing": 55,
+      "pending": 0
+    },
+    "dod_contracts": {
+      "expected": 164,
+      "fresh": 112,
+      "missing": 22,
+      "pending": 0
+    },
+    "investorshub_ticker_news": {
+      "expected": 816,
+      "fresh": 473,
+      "missing": 74,
+      "pending": 0
+    },
+    "ibkr_news": {
+      "expected": 816,
+      "fresh": 0,
+      "missing": 226,
+      "pending": 4
+    },
+    "aws_platform_marketplace_rss": {
+      "expected": 245,
+      "fresh": 201,
+      "missing": 28,
+      "pending": 0
+    },
+    "calcalist_search": {
+      "expected": 262,
+      "fresh": 54,
+      "missing": 34,
+      "pending": 0
+    },
+    "dcd_energy_ticker": {
+      "expected": 164,
+      "fresh": 127,
+      "missing": 18,
+      "pending": 0
+    },
+    "data_center_frontier": {
+      "expected": 492,
+      "fresh": 372,
+      "missing": 60,
+      "pending": 0
+    },
+    "register_software_cloud_security": {
+      "expected": 245,
+      "fresh": 184,
+      "missing": 24,
+      "pending": 0
+    },
+    "observability_vendors_official_rss": {
+      "expected": 164,
+      "fresh": 133,
+      "missing": 18,
+      "pending": 1
+    },
+    "ssc_newsroom": {
+      "expected": 82,
+      "fresh": 53,
+      "missing": 11,
+      "pending": 0
+    },
+    "trendforce_news": {
+      "expected": 410,
+      "fresh": 315,
+      "missing": 55,
+      "pending": 0
+    },
+    "unmannedairspace_counteruas": {
+      "expected": 82,
+      "fresh": 52,
+      "missing": 10,
+      "pending": 0
+    },
+    "iridium_press_releases": {
+      "expected": 82,
+      "fresh": 55,
+      "missing": 10,
+      "pending": 0
+    },
+    "lakehouse_platform_official_rss": {
+      "expected": 163,
+      "fresh": 135,
+      "missing": 18,
+      "pending": 0
+    },
+    "crn_cloud_security_datacenter": {
+      "expected": 245,
+      "fresh": 189,
+      "missing": 22,
+      "pending": 0
+    },
+    "spacenews_rss": {
+      "expected": 82,
+      "fresh": 52,
+      "missing": 11,
+      "pending": 1
+    },
+    "doe_energy_news": {
+      "expected": 570,
+      "fresh": 433,
+      "missing": 64,
+      "pending": 0
+    },
+    "trendforce_press_releases": {
+      "expected": 410,
+      "fresh": 315,
+      "missing": 60,
+      "pending": 0
+    },
+    "huggingnews_rss": {
+      "expected": 410,
+      "fresh": 210,
+      "missing": 45,
+      "pending": 0
+    },
+    "nasa_2026_releases": {
+      "expected": 82,
+      "fresh": 55,
+      "missing": 9,
+      "pending": 0
+    },
+    "army_news_releases": {
+      "expected": 82,
+      "fresh": 53,
+      "missing": 10,
+      "pending": 0
+    },
+    "spacecom_launches": {
+      "expected": 82,
+      "fresh": 50,
+      "missing": 9,
+      "pending": 0
+    },
+    "google_news_search_rss": {
+      "expected": 163,
+      "fresh": 134,
+      "missing": 18,
+      "pending": 0
+    },
+    "wccftech_hardware": {
+      "expected": 1225,
+      "fresh": 915,
+      "missing": 130,
+      "pending": 0
+    },
+    "ctee_semiconductor": {
+      "expected": 164,
+      "fresh": 142,
+      "missing": 14,
+      "pending": 0
+    },
+    "utility_dive": {
+      "expected": 164,
+      "fresh": 134,
+      "missing": 16,
+      "pending": 0
+    },
+    "dcd_infrastructure_rss": {
+      "expected": 492,
+      "fresh": 396,
+      "missing": 60,
+      "pending": 0
+    },
+    "ionq_nautilus_rss": {
+      "expected": 82,
+      "fresh": 70,
+      "missing": 8,
+      "pending": 0
+    },
+    "technews_hardware": {
+      "expected": 815,
+      "fresh": 635,
+      "missing": 80,
+      "pending": 0
+    },
+    "nrc_event_notifications": {
+      "expected": 82,
+      "fresh": 66,
+      "missing": 10,
+      "pending": 0
+    },
+    "aviationweek_rss": {
+      "expected": 82,
+      "fresh": 57,
+      "missing": 8,
+      "pending": 0
+    },
+    "aviationweek_rocketlab": {
+      "expected": 82,
+      "fresh": 58,
+      "missing": 7,
+      "pending": 0
+    },
+    "dod_releases": {
+      "expected": 164,
+      "fresh": 116,
+      "missing": 14,
+      "pending": 0
+    },
+    "shephard_uncrewed": {
+      "expected": 82,
+      "fresh": 54,
+      "missing": 7,
+      "pending": 0
+    },
+    "ans_nuclear_newswire": {
+      "expected": 82,
+      "fresh": 64,
+      "missing": 7,
+      "pending": 1
+    },
+    "thelec_semiconductors_rss": {
+      "expected": 405,
+      "fresh": 330,
+      "missing": 35,
+      "pending": 0
+    },
+    "canary_media": {
+      "expected": 162,
+      "fresh": 130,
+      "missing": 14,
+      "pending": 0
+    },
+    "etnews_rss": {
+      "expected": 405,
+      "fresh": 335,
+      "missing": 45,
+      "pending": 0
+    },
+    "sdxcentral_news": {
+      "expected": 405,
+      "fresh": 320,
+      "missing": 35,
+      "pending": 0
+    },
+    "world_nuclear_news": {
+      "expected": 81,
+      "fresh": 66,
+      "missing": 7,
+      "pending": 0
+    },
+    "digitimes_semiconductors": {
+      "expected": 405,
+      "fresh": 0,
+      "missing": 35,
+      "pending": 0
+    },
+    "defensescoop_drones": {
+      "expected": 81,
+      "fresh": 59,
+      "missing": 6,
+      "pending": 0
+    },
+    "optical_systems_official_rss": {
+      "expected": 81,
+      "fresh": 69,
+      "missing": 7,
+      "pending": 0
+    },
+    "siliconangle_ai": {
+      "expected": 405,
+      "fresh": 330,
+      "missing": 30,
+      "pending": 0
+    },
+    "airspaceforces_space": {
+      "expected": 81,
+      "fresh": 58,
+      "missing": 6,
+      "pending": 0
+    },
+    "nrc_news_releases": {
+      "expected": 81,
+      "fresh": 68,
+      "missing": 6,
+      "pending": 0
+    },
+    "defensescoop_space": {
+      "expected": 81,
+      "fresh": 61,
+      "missing": 6,
+      "pending": 0
+    },
+    "breakingdefense_space": {
+      "expected": 81,
+      "fresh": 58,
+      "missing": 9,
+      "pending": 0
+    },
+    "national_quantum_initiative": {
+      "expected": 81,
+      "fresh": 63,
+      "missing": 9,
+      "pending": 0
+    },
+    "army_news_rss": {
+      "expected": 81,
+      "fresh": 57,
+      "missing": 9,
+      "pending": 0
+    },
+    "darpa_news": {
+      "expected": 405,
+      "fresh": 295,
+      "missing": 50,
+      "pending": 0
+    },
+    "digitimes_tw_rss": {
+      "expected": 405,
+      "fresh": 330,
+      "missing": 45,
+      "pending": 0
+    },
+    "tikhub_x_user_posts": {
+      "expected": 8,
+      "fresh": 8,
+      "missing": 0,
+      "pending": 0
+    }
+  },
+  "canonical": 31,
+  "initial_full": 28,
+  "current_full": 29,
+  "delivery": {
+    "required": 32,
+    "published": 31,
+    "within10": 19,
+    "latency": {
+      "n": 31,
+      "mean": 14.837285387096774,
+      "p95": 71.185009,
+      "max": 80.001596
+    }
+  },
+  "cases": {
+    "RKLB": 2,
+    "BE": 40,
+    "CEG": 30,
+    "COHR": 45,
+    "INTC": 5,
+    "MU": 30,
+    "NBIS": 35,
+    "SNOW": 3
+  },
+  "io_intervals": [
+    {
+      "role": "v2-message-collector",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.15324783325195312,
+      "write_GiB": 1.7183151245117188
+    },
+    {
+      "role": "v2-site-access",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.6961517333984375,
+      "write_GiB": 0.333526611328125
+    },
+    {
+      "role": "v2-message-bus",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.1084747314453125,
+      "write_GiB": 0.4711036682128906
+    },
+    {
+      "role": "v2-content-enrichment",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.01488494873046875,
+      "write_GiB": 0.06265640258789062
+    },
+    {
+      "role": "v2-projector",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.9189872741699219,
+      "write_GiB": 0.34722900390625
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 1.5066070556640625,
+      "write_GiB": 0.3247413635253906
+    },
+    {
+      "role": "v2-web",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.000202178955078125,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "codex-worker",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 2.8714599609375,
+      "write_GiB": 0.231781005859375
+    },
+    {
+      "role": "v2-api",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.18420791625976562,
+      "write_GiB": 0.004852294921875
+    },
+    {
+      "role": "v2-maintenance",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.03559112548828125,
+      "write_GiB": 0.010097503662109375
+    },
+    {
+      "role": "v2-scheduler",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 1.9155311584472656,
+      "write_GiB": 0.19356155395507812
+    },
+    {
+      "role": "v2-executor",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 1.52587890625e-05,
+      "write_GiB": 0.005695343017578125
+    },
+    {
+      "role": "v2-initialization",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.0,
+      "write_GiB": 0.00025177001953125
+    },
+    {
+      "role": "v2-transport-maintenance",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.9644508361816406,
+      "write_GiB": 0.00611114501953125
+    },
+    {
+      "role": "v2-control",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.0,
+      "write_GiB": 0.001232147216796875
+    },
+    {
+      "role": "initialization-guardian",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.0,
+      "write_GiB": 0.000186920166015625
+    },
+    {
+      "role": "v2-o4",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.0,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "v2-cdecr-executor",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 3.814697265625e-06,
+      "write_GiB": 0.0004119873046875
+    },
+    {
+      "role": "v2-delivery",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.0,
+      "write_GiB": 0.00128936767578125
+    },
+    {
+      "role": "captcha-proxy",
+      "since": "2026-10-29T17:19:23.958151+00:00",
+      "until": "2026-10-29T17:41:38.460796+00:00",
+      "seconds": 1334.502645,
+      "read_GiB": 0.0,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "v2-message-collector",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.011310577392578125,
+      "write_GiB": 0.2413482666015625
+    },
+    {
+      "role": "v2-site-access",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.023128509521484375,
+      "write_GiB": 0.20377349853515625
+    },
+    {
+      "role": "v2-projector",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.08145523071289062,
+      "write_GiB": 0.43682861328125
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.15010833740234375,
+      "write_GiB": 0.25530242919921875
+    },
+    {
+      "role": "v2-web",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.0,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "v2-api",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 5.340576171875e-05,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "v2-maintenance",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.001491546630859375,
+      "write_GiB": 0.006317138671875
+    },
+    {
+      "role": "v2-executor",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.0002288818359375,
+      "write_GiB": 0.00150299072265625
+    },
+    {
+      "role": "v2-initialization",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 4.57763671875e-05,
+      "write_GiB": 0.002323150634765625
+    },
+    {
+      "role": "v2-transport-maintenance",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.08304977416992188,
+      "write_GiB": 0.001880645751953125
+    },
+    {
+      "role": "v2-control",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 4.1961669921875e-05,
+      "write_GiB": 0.0012359619140625
+    },
+    {
+      "role": "initialization-guardian",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.0,
+      "write_GiB": 0.0015411376953125
+    },
+    {
+      "role": "v2-o4",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 6.103515625e-05,
+      "write_GiB": 0.002227783203125
+    },
+    {
+      "role": "v2-cdecr-executor",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.000843048095703125,
+      "write_GiB": 1.52587890625e-05
+    },
+    {
+      "role": "v2-delivery",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.0,
+      "write_GiB": 8.7738037109375e-05
+    },
+    {
+      "role": "captcha-proxy",
+      "since": "2026-10-29T17:41:38.460796+00:00",
+      "until": "2026-10-29T17:44:47.058124+00:00",
+      "seconds": 188.597328,
+      "read_GiB": 0.0,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "codex-worker",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 12.874053955078125,
+      "write_GiB": 1.1524581909179688
+    },
+    {
+      "role": "v2-content-enrichment",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.049732208251953125,
+      "write_GiB": 0.0052032470703125
+    },
+    {
+      "role": "v2-message-bus",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.18153762817382812,
+      "write_GiB": 0.030139923095703125
+    },
+    {
+      "role": "v2-scheduler",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 1.4592704772949219,
+      "write_GiB": 0.06486892700195312
+    },
+    {
+      "role": "v2-message-collector",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 1.0078353881835938,
+      "write_GiB": 0.9892349243164062
+    },
+    {
+      "role": "v2-site-access",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 6.329196929931641,
+      "write_GiB": 0.042018890380859375
+    },
+    {
+      "role": "v2-projector",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.6233940124511719,
+      "write_GiB": 0.3597869873046875
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 5.095508575439453,
+      "write_GiB": 0.09961318969726562
+    },
+    {
+      "role": "v2-web",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.001659393310546875,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "v2-api",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.043590545654296875,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "v2-maintenance",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.003604888916015625,
+      "write_GiB": 0.00420379638671875
+    },
+    {
+      "role": "v2-executor",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.002674102783203125,
+      "write_GiB": 0.000385284423828125
+    },
+    {
+      "role": "v2-initialization",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.000148773193359375,
+      "write_GiB": 0.000263214111328125
+    },
+    {
+      "role": "v2-transport-maintenance",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.0,
+      "write_GiB": 0.00189208984375
+    },
+    {
+      "role": "v2-control",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.000339508056640625,
+      "write_GiB": 0.000957489013671875
+    },
+    {
+      "role": "initialization-guardian",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.00035858154296875,
+      "write_GiB": 0.000514984130859375
+    },
+    {
+      "role": "v2-o4",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.000110626220703125,
+      "write_GiB": 0.00095367431640625
+    },
+    {
+      "role": "v2-cdecr-executor",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.016155242919921875,
+      "write_GiB": 4.57763671875e-05
+    },
+    {
+      "role": "v2-delivery",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.000152587890625,
+      "write_GiB": 0.0
+    },
+    {
+      "role": "captcha-proxy",
+      "since": "2026-10-29T17:44:47.058124+00:00",
+      "until": "2026-10-29T17:47:38.397957+00:00",
+      "seconds": 171.339833,
+      "read_GiB": 0.0091552734375,
+      "write_GiB": 0.003021240234375
+    },
+    {
+      "role": "codex-worker",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 100.00138092041016,
+      "write_GiB": 7.4177398681640625
+    },
+    {
+      "role": "v2-content-enrichment",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.5348892211914062,
+      "write_GiB": 0.092742919921875
+    },
+    {
+      "role": "v2-message-bus",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 1.517974853515625,
+      "write_GiB": 0.5172958374023438
+    },
+    {
+      "role": "v2-message-collector",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 8.886024475097656,
+      "write_GiB": 7.882389068603516
+    },
+    {
+      "role": "v2-site-access",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 90.07943725585938,
+      "write_GiB": 1.0805435180664062
+    },
+    {
+      "role": "v2-projector",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 9.872974395751953,
+      "write_GiB": 5.445087432861328
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 91.97769165039062,
+      "write_GiB": 0.8311271667480469
+    },
+    {
+      "role": "v2-web",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.12035369873046875,
+      "write_GiB": 0.000270843505859375
+    },
+    {
+      "role": "v2-api",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.7010040283203125,
+      "write_GiB": 0.013973236083984375
+    },
+    {
+      "role": "v2-maintenance",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.1048583984375,
+      "write_GiB": 0.00847625732421875
+    },
+    {
+      "role": "v2-executor",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.06279373168945312,
+      "write_GiB": 0.009304046630859375
+    },
+    {
+      "role": "v2-initialization",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.017330169677734375,
+      "write_GiB": 0.003330230712890625
+    },
+    {
+      "role": "v2-transport-maintenance",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.007335662841796875,
+      "write_GiB": 0.00112152099609375
+    },
+    {
+      "role": "v2-control",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.006824493408203125,
+      "write_GiB": 0.003231048583984375
+    },
+    {
+      "role": "initialization-guardian",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.155731201171875,
+      "write_GiB": 0.00148773193359375
+    },
+    {
+      "role": "v2-o4",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.0082550048828125,
+      "write_GiB": 0.001068115234375
+    },
+    {
+      "role": "v2-cdecr-executor",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.28009033203125,
+      "write_GiB": 0.002410888671875
+    },
+    {
+      "role": "v2-delivery",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.006168365478515625,
+      "write_GiB": 0.001758575439453125
+    },
+    {
+      "role": "captcha-proxy",
+      "since": "2026-10-29T17:47:38.397957+00:00",
+      "until": "2026-10-29T18:26:43.770165+00:00",
+      "seconds": 2345.372208,
+      "read_GiB": 0.19038009643554688,
+      "write_GiB": 0.031047821044921875
+    },
+    {
+      "role": "codex-worker",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 45.23329544067383,
+      "write_GiB": 3.3767967224121094
+    },
+    {
+      "role": "v2-content-enrichment",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.2958793640136719,
+      "write_GiB": 0.032772064208984375
+    },
+    {
+      "role": "v2-message-bus",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.5814285278320312,
+      "write_GiB": 0.16163253784179688
+    },
+    {
+      "role": "v2-message-collector",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 4.0800323486328125,
+      "write_GiB": 3.43316650390625
+    },
+    {
+      "role": "v2-site-access",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 35.95283889770508,
+      "write_GiB": 0.2766532897949219
+    },
+    {
+      "role": "v2-projector",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 4.002162933349609,
+      "write_GiB": 1.7939071655273438
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 38.35137176513672,
+      "write_GiB": 0.4018058776855469
+    },
+    {
+      "role": "v2-web",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.031490325927734375,
+      "write_GiB": 7.62939453125e-06
+    },
+    {
+      "role": "v2-maintenance",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.0309295654296875,
+      "write_GiB": 0.000957489013671875
+    },
+    {
+      "role": "v2-executor",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.018604278564453125,
+      "write_GiB": 0.00481414794921875
+    },
+    {
+      "role": "v2-initialization",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.000820159912109375,
+      "write_GiB": 0.00061798095703125
+    },
+    {
+      "role": "v2-transport-maintenance",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.0,
+      "write_GiB": 1.1444091796875e-05
+    },
+    {
+      "role": "v2-control",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.00057220458984375,
+      "write_GiB": 0.017780303955078125
+    },
+    {
+      "role": "initialization-guardian",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.00168609619140625,
+      "write_GiB": 0.000614166259765625
+    },
+    {
+      "role": "v2-o4",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.00022125244140625,
+      "write_GiB": 0.00103759765625
+    },
+    {
+      "role": "v2-cdecr-executor",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.09926223754882812,
+      "write_GiB": 0.001728057861328125
+    },
+    {
+      "role": "v2-delivery",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.0004119873046875,
+      "write_GiB": 0.0001220703125
+    },
+    {
+      "role": "captcha-proxy",
+      "since": "2026-10-29T18:26:43.770165+00:00",
+      "until": "2026-10-29T18:41:47.959624+00:00",
+      "seconds": 904.189459,
+      "read_GiB": 0.09070205688476562,
+      "write_GiB": 0.013111114501953125
+    }
+  ]
+}

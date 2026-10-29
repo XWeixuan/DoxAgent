@@ -146,3 +146,8 @@ IBKR同一个上游缺口还影响既有交易Executor，发现一条已逾期EX
 本轮修复同时修正了自身引入的3类生产回归（Ukm启动、联合许可无进展、无snapshot隐式串行），承认其影响，未从结算删除。最后整体Review未发现需要新增全局门禁、历史恢复台账或再扩一层队列。剩余工作主要为真实访问能力/权益、关键Browser成本、持续资源增长与全量容量，不再把上线/无OOM当业务验收通过。
 
 详细结算：[观察summary](../eval/unified-io-repair-20261029/summary.md)、[逐unit](../eval/unified-io-repair-20261029/unit-summary.csv)、[逐来源](../eval/unified-io-repair-20261029/source-summary.csv)、[逐篇正文](../eval/unified-io-repair-20261029/articles.csv)、[逐篇交付及物理T0](../eval/unified-io-repair-20261029/deliveries.csv)、[失败与状态](../eval/unified-io-repair-20261029/cycle_status_reasons.csv)、[资源分段](../eval/unified-io-repair-20261029/resource-intervals-final.json)。原始JSON、日志、内核探针、脚本及测试XML继续本地留存同目录。
+
+
+## 后续Runtime消费契约故障纠偏（2026-10-30）
+
+后续真实消费者检查发现6ticker被SQL别名下的NativeContent引用解析错误堵头，527条等待；这不是正文文件坏，也不能由Owner PUBLISHED时点推导“实际Runtime可消费”。之前表格的交付统计仅成立于Owner发布边界，未覆盖消费者解析/claim/case创建，属于本次验收盲区。新修复不扩大数据库自动解码，仅在选中Stream成员的业务读取边界展开；用真实Scheduler交接及SQLite case唯一性测试和生产游标/case验证收口，详见[修复与发布记录](runtime-stream-consumption-repair-plan-20261030.md)。原始观察数字保留，不改写历史失败。

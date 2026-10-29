@@ -112,3 +112,12 @@ b97已去掉ACK反查，18:34:41/53Z仍实测freeze_history写锁6.863/11.653秒
 18:45:19Z可用1451MiB、Swap1806MiB、内存PSI avg60 some84.60/full78.97。18:45:48Z临时停止正式Site Access和Chrome Supervisor，确认成功；Collector/Bus/BODY/Runtime/Worker持续，数据及Profile未删。可用立即升至8833MiB，Swap降862MiB。随后Worker活跃执行由2升至19、SDK/capsule由约15升至44–51，18:48约9.895GiB；可用再次降2098MiB。说明局部降负载会被弹性Worker占用，未完成全局容量稳定证明。
 
 18:50:50Z的51个live capsule中，20能对应当前running job，其他31中10对应BOUND、3 READY、3 USED，15未映射到slot；不能把全部31标成泄漏。18:52补读最近500 job后，live已降36、active21，非active的9个可对应已成功job、6个无最近job，部分是刚完成30秒内，也存在准备完成等待数分钟的BOUND。历史回收错误CapsuleError在压力时出现，缓解后cleanup closing/quarantined为0，证明部分会回收，不支持“所有对象永久泄漏”。剩余环境需要按真实必要性精简；当前未静默修改W1/W2/W3并发/模型能力。已向用户提供保留任务并发、减少尚未执行SDK驻留（可能增加局部准备耗时）与先扩32GB两条路线选择；在决定前浏览器保持临时暂停，不能宣称生产全业务恢复。
+
+## 最终本轮生产确认（资源路线仍待决定）
+
+- 最新Scheduler 5e8f3bb6于19:00:59.02406943Z正式启动；API 02a2050f，Bus/BODY/Worker fa683526，远端仓库同步main。所有应用镜像均正式release归档构建，无临时生产容器/source overlay；资源回收receipt因message pipeline reserve延期，未强行prune或删Profile/数据。
+- 19:02:26.620541Z全部10ticker pending=0：BE2112、CEG174、COHR385、INTC5179、IONQ1、MU5232、NBIS936、ONDS73、RKLB406、SNOW197。原INTC5039/140积压已自然接纳或按原业务规则处理，不挪游标、不skip、不删除输入。19:03:07Z健康文件last_successful_tick19:02:41、recovery19:02:49，无admission_degraded_reason。该事实证明当前Runtime入站已恢复，不证明所有模型判决已完成或全消息覆盖正常。
+- 六ticker生产Read/CaseSummary路径全部通过，INTC5条0.067秒，其余各20条0.081–0.283秒。用户浏览器认证/筛选状态未直接操纵。
+- 最终精确5e8f3bb6提交归档73项相关测试通过，涵盖大正文、领取/ACK/history成本、快照/跨代/并发、慢恢复隔离、CPU admission及原P0合同；之前已记录旧CLOSED recovery基线失败仍保留，未宣称全仓库测试通过。
+- 同epoch17:44:47–18:41:47三大组件物理读Worker158.109GiB、Site132.361GiB、Supervisor135.425GiB，合425.895GiB；不能用不同运行时长累计排序。sysstat正确UTC窗口平均iowait19.13%、18:10采样47.85%，文件refault/Swap及工作集重叠，代码读减法有效但整机仍不稳。停止浏览器后Worker又扩张证明瓶颈转移风险真实存在。
+- Site/Supervisor仍从18:45:48Z起应急暂停，HTTP/RSS及Bus/BODY/Runtime/W持续。**本轮未完成完整业务负载稳定验收**；SDK未执行驻留削减与32GB路线待用户决定，不静默改变W业务能力。自动观察ID2 ACTIVE每两小时，17:18–18:40全轮次64.02%、正文首FULL28/31、Owner代理≤10秒19/32全部留存；最终版本最早24小时汇总2026-10-31 03:00:59北京时间，停服/失败不得从记录消失。

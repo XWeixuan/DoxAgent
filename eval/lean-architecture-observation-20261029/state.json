@@ -1,0 +1,133 @@
+{
+  "automation_id": "2",
+  "baseline_utc": "2026-10-29T17:18:19+00:00",
+  "minimum_summary_after_utc": "2026-10-30T19:00:59.024069+00:00",
+  "last_receipt": "20261029T184000Z",
+  "module_watermarks": {
+    "business": "2026-10-29T18:40:00+00:00",
+    "resource_sar": "2026-10-29T18:40:00+00:00",
+    "host_cgroup": "20261029T184000Z/host.json",
+    "body_delivery_cohort": "2026-10-29T18:40:00+00:00",
+    "capture_delta": "2026-10-29T18:40:00+00:00",
+    "actual_cycle_status_counts": "2026-10-29T18:40:00+00:00",
+    "orchestration_new_case_cohort": "2026-10-29T18:40:00+00:00"
+  },
+  "incomplete_metrics": [
+    "W1/W2 case creation",
+    "current-window effect dispatch/claim",
+    "exact thread fork RPC",
+    "initial BODY stage timestamps",
+    "UI T2",
+    "TAIL due-cycle proof"
+  ],
+  "business_caveats": [
+    "Owner PUBLISHED/T1 is a proxy until actual Runtime reader and cursor/case are verified",
+    "FULL first/current labels require independent quality checks",
+    "bounded file enumeration is incomplete; missing fork/W1W2 spans remain unmeasurable"
+  ],
+  "repairs_performed": true,
+  "continue": true,
+  "gaps": [
+    {
+      "module": "full_cycle_transport_proof",
+      "since": "2026-10-29T04:09:00+00:00",
+      "until": "2026-10-29T06:09:00+00:00",
+      "reason": "retrospective partial export: physical 05:09–05:19, run05:19–05:29 and05:49–05:59 interrupted; surrounding evidence retained"
+    },
+    {
+      "module": "W1/W2 creation and overall orchestration spans",
+      "since": "2026-10-29T02:09:00+00:00",
+      "until": "2026-10-29T08:09:09+00:00",
+      "reason": "case census and capped local queue spans now available; actual creation duration / full dispatch-claim remain unavailable"
+    },
+    {
+      "module": "legacy observation continuity",
+      "since": "2026-10-29T08:09:09+00:00",
+      "until": "2026-10-29T14:30:32.571819+00:00",
+      "reason": "manual pause, host incident and bounded diagnostic restarts; reports retained, no full cycle proof backfilled"
+    }
+  ],
+  "last_material_anomaly": "Runtime six roots fixed; 10 consumer backlogs zero at19:02:26Z; full-load resource thrashing persists, browser services emergency-paused; actual cycle coverage17:18-18:40=64.02%",
+  "probe_policy": "read-only10m chunks/3sSQL/30sremote wall; local cadence computation; preserve failed parts; schedule: latest head per historical unit at start plus all window changes; TZ=UTC sar saDD by host local day",
+  "proven_cycle_windows": [
+    [
+      "2026-10-29T02:09:00+00:00",
+      "2026-10-29T04:09:00+00:00"
+    ],
+    [
+      "2026-10-29T06:09:00+00:00",
+      "2026-10-29T06:12:38+00:00"
+    ],
+    [
+      "2026-10-29T06:12:38+00:00",
+      "2026-10-29T08:09:09+00:00"
+    ],
+    [
+      "2026-10-29T14:30:32.571819+00:00",
+      "2026-10-29T16:00:32.571819+00:00"
+    ],
+    [
+      "2026-10-29T16:00:32.571819+00:00",
+      "2026-10-29T17:18:19+00:00"
+    ],
+    [
+      "2026-10-29T17:18:19+00:00",
+      "2026-10-29T18:40:00+00:00"
+    ]
+  ],
+  "manual_collection_pause": {
+    "requested_by": "user",
+    "stop_begin_utc": "2026-10-29T09:54:20+00:00",
+    "stopped_utc": "2026-10-29T09:54:28+00:00",
+    "containers": [
+      "v2-message-collector",
+      "v2-message-bus",
+      "v2-content-enrichment",
+      "v2-site-access",
+      "v2-chrome-supervisor"
+    ],
+    "must_not_auto_resume": false,
+    "reason": "explicit unified repair release; original pause history retained",
+    "monitor_host_and_orchestration": true,
+    "resumed_utc": "2026-10-29T14:30:32.571819+00:00"
+  },
+  "legacy_observation_epochs": [
+    {
+      "baseline_utc": "2026-10-29T02:09:00+00:00",
+      "minimum_summary_after_utc": "2026-10-30T02:09:00+00:00",
+      "module_watermarks": {
+        "business": "2026-10-29T17:18:19+00:00",
+        "resource_sar": "2026-10-29T17:10:01+00:00",
+        "host_cgroup": "20261029T171819Z/host.json",
+        "body_delivery_cohort": "2026-10-29T17:18:19+00:00",
+        "capture_delta": "2026-10-29T17:18:19+00:00",
+        "actual_cycle_status_counts": "2026-10-29T17:18:19+00:00",
+        "orchestration_new_case_cohort": "2026-10-29T17:18:19+00:00"
+      },
+      "last_receipt": "20261029T080909Z"
+    }
+  ],
+  "final_version_baseline_utc": "2026-10-29T19:00:59.024069+00:00",
+  "repair_authority": "manual user prioritized Runtime repair; heartbeat remains read-only",
+  "browser_services_pause": {
+    "active": true,
+    "since_utc": "2026-10-29T18:45:48+00:00",
+    "roles": [
+      "v2-site-access",
+      "v2-chrome-supervisor"
+    ],
+    "reason": "confirmed severe memory PSI and SSH failures; keep Worker/Runtime/Collector/Bus/BODY and data/Profile; never auto restart from observation",
+    "user_decision_pending": "unexecuted SDK residency versus memory upgrade"
+  },
+  "manual_repair_versions": {
+    "scheduler": "5e8f3bb6",
+    "api": "02a2050f",
+    "bus_body_worker": "fa683526"
+  },
+  "runtime_consumption_check": {
+    "at": "2026-10-29T19:02:26.620541+00:00",
+    "tickers": 10,
+    "pending_total": 0,
+    "source_evidence": "../runtime-stream-consumption-repair-20261030/streams-after-ingress.json"
+  }
+}
