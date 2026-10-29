@@ -2416,3 +2416,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-30 统一I/O修复生产验收留痕：完成14:30:32Z起90分钟全轮次观察与物理T0核对；完整新鲜周期72.72%、末10分钟89.10%，首次FULL56/70、真实≤10秒交付98/125，未宣称达标。正式版本/剩余失败/资源差分及Review落入执行文档和薄CSV，继续既有只读长期观察。
 
 2026-10-30 Runtime消费恢复：修复Stream JSON别名绕过NativeContent展开，正文超过16KiB时StandardMessage.body被dict引用卡住整个ticker的缺陷；仅在选中成员的业务物化边界解码，保留薄查询、顺序游标、去重及损坏失败语义。新增即时/缓冲、多成员大正文及metadata、重启、真实Runtime case持久化、重复消费和缺失文件回归。
+
+2026-10-30 Runtime接回成本治理：effect领取分离待执行与过期RUNNING两个薄集合，沿部分索引各取前N后按原时间/rowid合并，移除写事务内终态历史全扫描；保留租约、抢占唯一性、失败恢复和W1/W2/W3容量。新增大历史VM预算与双Repository并发领取回归。

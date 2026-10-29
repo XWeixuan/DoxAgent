@@ -662,6 +662,8 @@ class SQLitePersistentRuntimeV2Repository:
                     WHERE status IN ('PENDING', 'PENDING_RETRY');
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_effects_case_state
                     ON runtime_v2_effects(case_id,status,effect_id);
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_effects_running
+                    ON runtime_v2_effects(effect_id) WHERE status='RUNNING';
 
                 CREATE TABLE IF NOT EXISTS runtime_v2_provisional_counters (
                     ticker TEXT NOT NULL,
@@ -992,19 +994,30 @@ class SQLitePersistentRuntimeV2Repository:
         now = utc_now()
         with self._lock, self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            rows = db.execute(
-                "SELECT effect_id FROM runtime_v2_effects "
-                "WHERE (status IN ('PENDING','PENDING_RETRY') AND available_at<=?) "
-                "OR (status='RUNNING' AND (json_extract(payload_json,'$.lease_until')<=? "
-                "OR (json_extract(payload_json,'$.lease_until') IS NULL AND updated_at<=?))) "
+            pending = db.execute(
+                "SELECT effect_id,available_at,rowid AS sequence FROM runtime_v2_effects "
+                "INDEXED BY idx_runtime_v2_effects_pending "
+                "WHERE status IN ('PENDING','PENDING_RETRY') AND available_at<=? "
+                "ORDER BY available_at,rowid LIMIT ?",
+                (now.isoformat(), limit),
+            ).fetchall()
+            expired = db.execute(
+                "SELECT effect_id,available_at,rowid AS sequence FROM runtime_v2_effects "
+                "INDEXED BY idx_runtime_v2_effects_running "
+                "WHERE status='RUNNING' AND (json_extract(payload_json,'$.lease_until')<=? "
+                "OR (json_extract(payload_json,'$.lease_until') IS NULL AND updated_at<=?)) "
                 "ORDER BY available_at,rowid LIMIT ?",
                 (
-                    now.isoformat(),
                     now.isoformat(),
                     (now - timedelta(seconds=120)).isoformat(),
                     limit,
                 ),
             ).fetchall()
+            # The top N of each disjoint active set contains the global top N.
+            # Never scan terminal history while holding the business writer.
+            rows = sorted(
+                [*pending, *expired], key=lambda row: (row["available_at"], row["sequence"])
+            )[:limit]
             payloads = []
             for row in rows:
                 db.execute(

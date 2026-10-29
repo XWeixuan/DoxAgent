@@ -20,7 +20,7 @@ Read中SNOW当日11条可以从生产API读库路径返回，INTC/BE当日0、AL
 6. 发布前后保存相同游标/队首/积压账；逐个证明6ticker从原队首可读、游标实际增长、Runtime case/去重或明确历史接纳决定正常落盘，并核对Read可见。旧文可能被既有业务窗口拒绝，不强行触发历史交易；禁止跳过真正应处理新消息。
 7. 观察资源及本地编排跨度，记录积压自然恢复与新稿。恢复两小时一次、至少24小时只读观察，以最终修复版本稳定生效起点明确续计，旧证据和版本切换保留。
 
-## 未混入本次紧急修复
+## 初始分离项与生产恢复后的调整
 
 W3 claim已有6个真实receipt，claim跨度mean3.646秒/max8.011秒，EXPLAIN为SCAN runtime_v2_effects+临时排序，约17,532历史rowid；索引/OR历史扫描属于独立非LLM耗时问题。当前优先修复导致完全不消费的确定性契约错误，不在紧急补丁里重写W1/W2/W3调度。
 
@@ -37,3 +37,16 @@ Site匿名内存增长、Reuters/IBKR/Calcalist/DIGITIMES访问失败和API慢�
 - 组合套件首跑64通过、11失败：10条为旧CPU admission测试桩缺少10月28日已引入的current_revision_admitted，1条Benzinga精确字典断言未包含既有validated_request_ids。未修改对应生产逻辑，更新桩为当前revision+worker ACK/max_age语义，未到期ACK复用（不要求每tick重写ACK），mock无发网证据仍断言空ID；相关合同重跑另记。
 - 除Stream成员join外，同仓库其它实际模型别名均为payload_json，已在原codec名单。没有拓宽NativeContent.row白名单或增加任意列全对象解码；新代码每个选中对象JSON解析/解码一次，避免text展开→json dump→再次模型JSON解析。
 - 实际消费者：Scheduler负责消费、Bus record_consumable会读流，BODY legacy finalize复用Bus接纳，Worker默认工具注册的monitoring.recent_events也会读流。用一份正式backend镜像更新以上4角色；API只查Read，不为此无关重启。Worker滚动沿现有持久化续作/进程归属协议，不添加W门禁。
+
+- 最终合同重跑19/19通过；精确fa683526已提交归档17/17通过（包含新4项、admission12项及原Scheduler交接）。组合首轮其余64项通过；失败与fixture纠偏均保留XML，不宣称首轮全绿。已同步origin/main，正式四角色release进行中。
+
+
+### 第二阶段：接回负载暴露的高频历史领取
+
+首补丁fa683526于17:43:34Z正式Scheduler启动；17:44后BE/CEG/COHR原游标已推进、新case及Read出现。17:47内存可用约1.74GiB、IO PSI显著升高，17:52换页仍活跃，不能就此宣称稳定。恢复后的正确业务负载需要原有W容量，未暂停W或降源周期。
+
+将已证实的effect领取全表扫描纳入紧急修复：PENDING/PENDING_RETRY沿已有部分索引取前N；RUNNING新增仅effect_id的非终态部分索引，租约判断只读取运行中行；两个互斥集合各取前N后按原available_at,rowid全局合并前N。BEGIN IMMEDIATE、原lease_token递增、120秒租约、legacy updated_at过期回收、重试/优先顺序保持不变。索引不含宽payload/JSON，不给续租增加大JSON索引维护。
+
+成本测试用2000条宽终态历史、5个真实活跃边界和SQLite VM工作量预算验证，领取不再随终态历史增长；两独立Repository并发不会领取同一effect。与大正文4项及W3 v4/故障合同合跑32通过、1个旧CLOSED recovery测试失败；在精确fa683526归档同样复现该失败，不通过改已存在W调度行为掩盖。新补丁只需正式重建Scheduler，保持已在途Worker/BODY/Bus。
+
+不能把此次claim减法直接等同于全部内存/I/O压力已解决，后续同时记录真实恢复成本、case进展与资源。
