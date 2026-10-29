@@ -98,7 +98,7 @@ CATALOG = (
         "SpaceNews",
         ("https://spacenews.com/feed/",),
         ("RKLB",),
-        route="us-standard-5",
+        route="direct",
     ),
     Endpoint(
         "ssc_newsroom",

@@ -306,7 +306,7 @@ def initial_sources() -> list[SourceDefinition]:
             site_id="digitimes_tw",
             distribution_policy=DistributionPolicy(jev_enabled=True, require_complete_body=True),
             properties={"feed_proxy_url": {"type": "string", "minLength": 1}},
-            default_parameters={"feed_proxy_url": "http://doxagent-egress-clash:18083"},
+            default_parameters={"feed_http_routes": ["direct"]},
             default_polling=PollingConfig(target_interval_seconds=60),
         ),
         _source(
