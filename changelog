@@ -2463,3 +2463,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-30 32GB整体main集成：父slice更新28G/30G，按真实memory.max缩放既有压力阈值；Worker20G、Site/Supervisor各10G、Scheduler8G，消息链路各4G并将Collector纳入聚合记账，不改W1/W2/W3容量、预热、轮询与正文质量。整合退出策略/行情共享订阅、W3提示词、Runtime前端及运维开发，同时保留main已修复的ENTRY过期/短事务、SDK回调持久写入和独立维护调度；发布与45分钟完整负载观察另记。
 2026-10-30 32GB发布源故障修复：DIGITIMES公开semiconductors列表默认压缩协商在同出口产生500/302拒绝或200拒绝页，curl/httpx/curl_cffi对照确认显式Accept-Encoding: identity返回完整11条More News。仅该Site CRAWLER列表端点固定无压缩，不变更BODY身份/权益、其它端点、出口、频率与完整性合同；新增四种端点/目的隔离回归。
+2026-10-30 DIGITIMES取网路径补齐：列表适配器原默认BROWSER未进入已修正HTTP路径，改为经既有Site HTTP_PUBLIC取同一More News完整列表；保留源解析、真实取网证据和BODY身份，避免公开列表继续每轮启动匿名Chrome。端到端路由与原列表解析16项通过，正式发布Collector后核验自然轮次。

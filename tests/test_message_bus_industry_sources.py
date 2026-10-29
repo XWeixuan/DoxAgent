@@ -281,3 +281,25 @@ def test_barrons_ticker_unwrapped_undated_cards_are_not_new() -> None:
       Historical MarketWatch story without a publication time</a></div>
     </main></html>"""
     assert parse_barrons_ticker_listing(html, ticker="MU", now=NOW) == []
+
+async def test_digitimes_listing_uses_public_http_and_existing_complete_parser():
+    from types import SimpleNamespace
+    from contextlib import asynccontextmanager
+    from doxagent.message_bus_v2.industry_sources import IndustryListingAdapter
+    from doxagent.site_strategy.schema import AccessMode
+
+    seen = {}
+    class Browser:
+        async def get(self, url, **options):
+            seen.update(options)
+            return 200, url, {}, '''<div class="more-news"><div class="date">Oct 29, 21:00</div>
+            <a class="title" href="/news/a20261029VL201/chip-manufacturing.html">A semiconductor manufacturing announcement</a></div>'''
+    @asynccontextmanager
+    async def permit():
+        yield
+    context = SimpleNamespace(run_id='physical-list', requested_at=NOW, window_start=None, request_permit=permit)
+    result = await IndustryListingAdapter(Browser(), 'digitimes')._get(context,
+        'https://www.digitimes.com/topic/semiconductors/')
+    assert seen['mode'] is AccessMode.HTTP_PUBLIC
+    assert len(result.messages) == 1
+    assert result.messages[0].title == 'A semiconductor manufacturing announcement'

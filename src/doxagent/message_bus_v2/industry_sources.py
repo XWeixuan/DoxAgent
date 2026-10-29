@@ -469,6 +469,9 @@ class IndustryListingAdapter:
                 recipe_options = (
                     {"recipe_ref": "builtin:barrons_ticker@1"} if self.variant == "barrons" else {}
                 )
+                if self.variant == "digitimes":
+                    from doxagent.site_strategy.schema import AccessMode
+                    recipe_options["mode"] = AccessMode.HTTP_PUBLIC
                 if self.variant == "barrons" and isinstance(context, PollContext):
                     channel = {"HEAD":"Barrons", "OTHER_HEAD":"BarronsDowJonesNetwork"}.get(
                         context.acquisition_unit)
