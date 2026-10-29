@@ -414,6 +414,11 @@ class ContentEnrichmentHub:
                 seconds = (job.deadline_at-utc_now()).total_seconds()
             if queue_expired:
                 seconds = 0
+            if not reused and not native and job.owner_kind=='live_article':
+                if job.fetch_round>=2:
+                    seconds=0
+                elif seconds>0:
+                    job = await self.bus.storage.call(self.live.repository.begin_fetch, job, _lane_priority=0)
             if reused:
                 result = MediaExtractionResult(
                     record=record, content=cached["content"], final_url=cached.get("final_url"),
@@ -474,7 +479,7 @@ class ContentEnrichmentHub:
                         "candidate_summary": [native.summary()],
                     },
                 )
-            elif seconds <= 0 or (job.fetch_round >= 2 if job.owner_kind=='live_article' else job.attempt_count > 2):
+            elif seconds <= 0 or (job.owner_kind!='live_article' and job.attempt_count > 2):
                 result = MediaExtractionResult(
                     record=record,
                     reason="deadline_exceeded" if seconds <= 0 else "attempt_limit_exceeded",
@@ -485,8 +490,6 @@ class ContentEnrichmentHub:
                     },
                 )
             else:
-                if job.owner_kind == 'live_article':
-                    job = await self.bus.storage.call(self.live.repository.begin_fetch, job, _lane_priority=0)
                 token = DEADLINE.set(time.monotonic() + seconds)
                 try:
                     async with asyncio.timeout(seconds):

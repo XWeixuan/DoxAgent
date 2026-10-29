@@ -616,6 +616,7 @@ class LiveRepository:
             checked=utc_now().isoformat(),
             work_kind=job.work_kind,
             initial_request_at=min((a['request_started_at'] for a in meta.get('attempts',[]) if a.get('request_started_at')),default=None),
+            fetch_round=job.fetch_round,
         )
         completion = message.metadata.get("v2_body_completion", {})
         value.update(
@@ -719,7 +720,6 @@ class LiveRepository:
                 if (
                     now - datetime.fromisoformat(current[4]) < timedelta(hours=24)
                     and value["outcome"] != "NOT_APPLICABLE"
-                    and (value['success'] or current['body_digest'])
                 )
                 else None
             )
@@ -753,7 +753,7 @@ class LiveRepository:
                     int(value["success"] and usable),
                     value["url"],
                     value["result_id"],
-                    int(value["network"]),
+                    max(value.get('fetch_round',0),int(value["network"])),
                     int(value["success"] and value["network"]),
                     int(value["reused"]),
                     int(value["success"] and usable),

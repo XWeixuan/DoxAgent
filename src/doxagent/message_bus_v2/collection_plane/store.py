@@ -61,6 +61,7 @@ class AcquisitionStore:
                     CREATE INDEX IF NOT EXISTS cycles_time ON cycles(dispatch_at,run_id);
                     CREATE INDEX IF NOT EXISTS cycles_ticker_time ON cycles(ticker,dispatch_at);
                     CREATE INDEX IF NOT EXISTS cycles_schedule ON cycles(status,binding_id,unit,dispatch_at);
+                    CREATE INDEX IF NOT EXISTS cycles_schedule_ticker ON cycles(ticker,binding_id,unit,dispatch_at) WHERE status='SCHEDULE';
                     CREATE TABLE IF NOT EXISTS physical_cycles(run_id TEXT PRIMARY KEY,finished_at TEXT,requests_json TEXT NOT NULL);
                     CREATE INDEX IF NOT EXISTS physical_cycles_time ON physical_cycles(finished_at,run_id);
                     CREATE INDEX IF NOT EXISTS cycles_unit_time ON cycles(binding_id,unit,dispatch_at);

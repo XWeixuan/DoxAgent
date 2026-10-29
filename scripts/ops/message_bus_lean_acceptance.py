@@ -27,11 +27,15 @@ def sample(bus_path, minutes=30, now=None):
         rows = [
             dict(r)
             for r in db.execute(
-                "SELECT * FROM cycles WHERE (status='SCHEDULE' AND dispatch_at<=?) OR "
-                "(status!='SCHEDULE' AND dispatch_at>=? AND dispatch_at<=?) ORDER BY dispatch_at",
-                (now.isoformat(), since.isoformat(), now.isoformat()),
+                "SELECT * FROM cycles WHERE dispatch_at>=? AND dispatch_at<=? AND status!='SCHEDULE'",
+                (since.isoformat(), now.isoformat()),
             )
         ]
+        rows += [dict(r) for r in db.execute(
+            "SELECT c.* FROM cycles c INDEXED BY cycles_schedule WHERE c.status='SCHEDULE' AND c.dispatch_at<=? "
+            "AND (c.dispatch_at>=? OR c.dispatch_at=(SELECT max(n.dispatch_at) FROM cycles n "
+            "WHERE n.status='SCHEDULE' AND n.binding_id=c.binding_id AND n.unit=c.unit AND n.dispatch_at<=?))",
+            (now.isoformat(),since.isoformat(),since.isoformat()))]
         physical = {
             r["run_id"]: json.loads(r["requests_json"])
             for r in db.execute(
@@ -79,7 +83,7 @@ def sample(bus_path, minutes=30, now=None):
             dict(r)
             for r in db.execute(
                 "SELECT article_key,source_id,url,first_seen_at,state,outcome,acquired_at,checked_at,"
-                "fetch_total,full_total,cache_total,last_error FROM live_articles "
+                "fetch_total,full_total,cache_total,last_error,initial_request_at,initial_result_at,initial_outcome,fetch_round,work_kind FROM live_articles "
                 "WHERE first_seen_at>=? AND first_seen_at<? AND state!='MERGED' ORDER BY first_seen_at",
                 (since.isoformat(), now.isoformat()),
             )
@@ -87,7 +91,7 @@ def sample(bus_path, minutes=30, now=None):
         deliveries = [
             dict(r)
             for r in db.execute(
-                "SELECT d.article_key,d.ticker,d.source_id,d.state,d.created_at,d.consumable_at,d.last_error "
+                "SELECT d.article_key,d.ticker,d.source_id,d.state,d.created_at,d.consumable_at,d.last_error,d.initial_decision_at,d.initial_decision "
                 "FROM live_deliveries d JOIN live_articles a USING(article_key) "
                 "WHERE a.first_seen_at>=? AND a.first_seen_at<? AND a.state!='MERGED'",
                 (since.isoformat(), now.isoformat()),

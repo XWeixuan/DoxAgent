@@ -80,8 +80,7 @@ def window(ticker, since, until, binding_id=None, *, by_binding=False):
     end = until.isoformat() if isinstance(until, datetime) else until
     with store.connect() as db:
         args = [ticker, start, end]
-        where = "ticker=? AND ((status='SCHEDULE' AND dispatch_at<=?) OR (status!='SCHEDULE' AND dispatch_at>=? AND dispatch_at<=?))"
-        args = [ticker, end, start, end]
+        where = "ticker=? AND dispatch_at>=? AND dispatch_at<=? AND status!='SCHEDULE'"
         if binding_id:
             where += " AND binding_id=?"
             args.append(binding_id)
@@ -91,6 +90,12 @@ def window(ticker, since, until, binding_id=None, *, by_binding=False):
                 "SELECT * FROM cycles WHERE " + where + " ORDER BY dispatch_at", args
             )
         ]
+        rows += [dict(r) for r in db.execute(
+            "SELECT c.* FROM cycles c INDEXED BY cycles_schedule_ticker WHERE c.status='SCHEDULE' AND c.ticker=? "
+            "AND c.dispatch_at<=? AND (c.dispatch_at>=? OR c.dispatch_at=(SELECT max(n.dispatch_at) "
+            "FROM cycles n WHERE n.status='SCHEDULE' AND n.binding_id=c.binding_id AND n.unit=c.unit AND n.dispatch_at<=?))"+
+            (" AND c.binding_id=?" if binding_id else ""),
+            [ticker,end,start,start,*([binding_id] if binding_id else [])])]
         archived=[dict(r) for r in db.execute(
             "SELECT h.* FROM unit_hours h JOIN units u USING(binding_id,unit) "
             "WHERE u.ticker=? AND h.hour>=? AND h.hour<?"+
