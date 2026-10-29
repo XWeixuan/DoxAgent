@@ -451,18 +451,13 @@ class Collector:
         async def on_page(messages, *, checkpoint=None, observed_at=None, **evidence):
             nonlocal page_committed,page_event_offset,committed_checkpoint
             from ..poll_trace import validate_listing
-            validate_listing(events,evidence.get('validated_request_ids'),since=page_event_offset)
+            listings = validate_listing(events,evidence.get('validated_request_ids'),since=page_event_offset)
             page_event_offset=len(events)
-            listings = [
-                e
-                for e in events
-                if e.get("role", "listing") == "listing" and e.get("response_received_at")
-            ]
             observed = (
-                observed_at.isoformat()
-                if observed_at
-                else listings[-1]["response_received_at"]
+                max(e["response_received_at"] for e in listings)
                 if listings
+                else observed_at.isoformat()
+                if observed_at
                 else utc_now().isoformat()
             )
             messages = await asyncio.to_thread(

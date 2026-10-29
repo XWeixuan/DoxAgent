@@ -314,6 +314,28 @@ async def test_validated_page_survives_later_failure_and_has_live_cadence_proof(
     assert proof['list_validated'] and proof['terminal_error']=='TimeoutError'
 
 
+async def test_page_first_seen_uses_its_validated_response_not_postparse_or_prior_page_time(tmp_path):
+    repo,bus,worker,_,store=setup_plane(tmp_path)
+    await worker.refresh(seeds=True)
+    now=utc_now()
+    received=now-timedelta(seconds=4)
+    sdk_received=now-timedelta(seconds=1)
+    class Pages:
+        async def poll(self,context):
+            event=request_started('GET','https://example.test/list',admitted=True)
+            event.update(status_code=200,response_received_at=received.isoformat())
+            # Parsing/callback completion must not move T0 four seconds later.
+            await context.on_page([_message(315)],observed_at=now)
+            # No new physical event: do not reuse the previous page's T0.
+            await context.on_page([_message(316)],observed_at=sdk_received)
+            return PollResult(messages=[])
+    worker.adapters=SimpleNamespace(resolve=lambda *a,**kw:Pages())
+    await worker.acquire(*next(iter(worker.desired.values())))
+    with store.connect() as db:
+        times=[r[0] for r in db.execute('SELECT observed_at FROM captures ORDER BY observed_at')]
+    assert times==[received.isoformat(),sdk_received.isoformat()]
+
+
 def test_retired_transport_headers_do_not_skip_business_and_archive_remains_complete(tmp_path,monkeypatch):
     from doxagent.v2_read.outbox import SourceOutbox
     repo,bus,worker,adapter,store=setup_plane(tmp_path)

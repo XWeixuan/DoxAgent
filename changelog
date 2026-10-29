@@ -2410,3 +2410,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 正文重复工作修复：实测Yahoo同篇video的?.tsrc=rss与无追踪参数形成两个canonical任务，增加失败及更新复查。仅对finance.yahoo.com去除已验证的.tsrc追踪参数，其它真实参数不变，保留其它publisher与文章选择参数；新输入及既有续作自然归一，不扫描历史回填FULL或删交付事实。
 
 2026-10-29 最终全链路Review：Identity Worker的ensure仍每请求序列化整个已验证identity生成同一指纹，改按identity revision及egress generation复用原指纹，只保留每身份当前一项；实际配置/出口变化仍按原冲突处理，不新增门禁或放松绑定校验。
+
+2026-10-30 统一I/O生产复核：分页首次采集时间优先采用本页已验证的真实响应，禁止解析结束回调覆盖T0，也不复用上一页取网时间；无本页物理事件时保留SDK回调事实及原有证据缺口。新增双页回归，21项采集测试通过。
