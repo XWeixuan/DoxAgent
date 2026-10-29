@@ -1093,3 +1093,32 @@ async def test_failed_legacy_adoption_does_not_abort_current_body_worker(tmp_pat
             ).fetchone()[0]
             == "retry_wait"
         )
+
+@pytest.mark.parametrize('site,purpose,path,identity', [
+    ('digitimes', SitePurpose.CRAWLER, '/topic/semiconductors/', True),
+    ('digitimes', SitePurpose.BODY, '/news/article.html', False),
+    ('digitimes', SitePurpose.CRAWLER, '/other/', False),
+    ('other', SitePurpose.CRAWLER, '/topic/semiconductors/', False),
+])
+async def test_digitimes_public_listing_encoding_is_endpoint_scoped(monkeypatch, site, purpose, path, identity):
+    from doxagent.site_strategy import runtime as module
+    from doxagent.site_strategy.schema import AccessRequest, AccessMode
+
+    seen = {}
+    class Clients:
+        async def request(self, key, method, url, **kwargs):
+            seen.update(kwargs)
+            kwargs['content_callback'](b'<html>list</html>')
+            return SimpleNamespace(content=b'', headers={}, status_code=200, url=url, encoding='utf-8')
+    async def public(*args, **kwargs):
+        pass
+    monkeypatch.setattr(module, 'public_url', public)
+    runtime = object.__new__(module.SiteAccessRuntime)
+    runtime._http_sessions = {}
+    runtime._publisher_http_clients = Clients()
+    request = AccessRequest(operation_id='encoding', purpose=purpose, mode=AccessMode.HTTP_PUBLIC,
+        url='https://www.digitimes.com'+path)
+    result = await runtime._http(request, SimpleNamespace(site_id=site,runtime_key=site), None,
+        SimpleNamespace(egress_id='server-direct', endpoint=None))
+    assert result.status_code == 200
+    assert (seen['headers'].get('Accept-Encoding') == 'identity') is identity

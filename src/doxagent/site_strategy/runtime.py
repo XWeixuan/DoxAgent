@@ -1268,6 +1268,11 @@ class SiteAccessRuntime:
             "headers": {"Accept":"text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
                         "Accept-Language":"en-US,en;q=0.9",**request.allowed_headers},
             "allow_redirects":False,"proxy":egress.endpoint}
+        if (resolved.site_id == "digitimes" and request.purpose is SitePurpose.CRAWLER
+                and urlsplit(request.url).path.rstrip("/") == "/topic/semiconductors"):
+            # This public endpoint rejects compressed-response negotiation (even
+            # returning a 200 denial page); the same transport accepts identity.
+            kwargs["headers"]["Accept-Encoding"] = "identity"
         if "query" in request.parameters:kwargs["params"]=request.parameters["query"]
         if "json" in request.parameters:kwargs["json"]=request.parameters["json"]
         data=bytearray();oversized=False

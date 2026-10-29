@@ -2462,3 +2462,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-30 新加坡远程桌面启动修复：专用 Clash 新加坡 2/3 节点 SSH banner 超时，普通 SSH 与远端 xrdp 正常；订阅标签显示流量 150.01/150GB，疑似额度耗尽。两个桌面隧道脚本增加专用代理失败后回退现有 doxagent-sg DIRECT 链路，更新连接指南中的地区限制；不切换非新加坡节点。启动脚本实际回退成功，14389 隧道收到有效 19 字节 RDP 握手并启动 mstsc；两个脚本 PowerShell 语法解析通过。
 
 2026-10-30 32GB整体main集成：父slice更新28G/30G，按真实memory.max缩放既有压力阈值；Worker20G、Site/Supervisor各10G、Scheduler8G，消息链路各4G并将Collector纳入聚合记账，不改W1/W2/W3容量、预热、轮询与正文质量。整合退出策略/行情共享订阅、W3提示词、Runtime前端及运维开发，同时保留main已修复的ENTRY过期/短事务、SDK回调持久写入和独立维护调度；发布与45分钟完整负载观察另记。
+2026-10-30 32GB发布源故障修复：DIGITIMES公开semiconductors列表默认压缩协商在同出口产生500/302拒绝或200拒绝页，curl/httpx/curl_cffi对照确认显式Accept-Encoding: identity返回完整11条More News。仅该Site CRAWLER列表端点固定无压缩，不变更BODY身份/权益、其它端点、出口、频率与完整性合同；新增四种端点/目的隔离回归。
