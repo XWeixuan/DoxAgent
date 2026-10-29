@@ -511,7 +511,7 @@ class ChromeSupervisor:
                     "--no-default-browser-check",
                     "--disk-cache-size=268435456",
                     "--disable-domain-reliability",
-                    "--disable-features=Ukm,SegmentationPlatform,OptimizationHints,OptimizationGuideModelDownloading,OptimizationTargetPrediction",
+                    "--disable-features=SegmentationPlatform,OptimizationHints,OptimizationGuideModelDownloading,OptimizationTargetPrediction",
                     "about:blank",
                     env=environment,
                     stdout=asyncio.subprocess.DEVNULL,

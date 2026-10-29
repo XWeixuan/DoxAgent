@@ -752,7 +752,7 @@ class PersistentBrowserPool:
                         "--remote-debugging-port=0",
                         "--disk-cache-size=268435456",
                         "--disable-domain-reliability",
-                        "--disable-features=Ukm,SegmentationPlatform,OptimizationHints,OptimizationGuideModelDownloading,OptimizationTargetPrediction",
+                        "--disable-features=SegmentationPlatform,OptimizationHints,OptimizationGuideModelDownloading,OptimizationTargetPrediction",
                     ],
                 )
                 cdp = await self._connect_profile_cdp(directory)

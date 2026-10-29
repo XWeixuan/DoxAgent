@@ -2382,3 +2382,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 统一I/O修复 F/Review：首次结果与decision纳入现有CDC薄行，Projector和API同时支持initial指标，旧缺证据保留UNKNOWN；Projector遇本地GC重取引用竞争保留原坐标，不重抓BODY。checkpoint续页变化独立触发计划，必需TAIL从生效边界计入分母。采集交付148、正文契约114、Site/Worker/GC66、专项10项及前端67项通过；生产窗口待验，不宣称性能达标。其它会话未提交交易语义冲突保留隔离。
 
 2026-10-29 统一I/O发布前核对：采集统计拆分窗口范围与生效schedule，使用薄部分索引，探针补首态；专用BODY reader计获取轮并保留失败文章既定更新检查，网络计数按真实获取轮推进。纯提交归档56项关键回归通过，Finnhub实测200/60次分钟额度；正常账号节奏未改变。
+
+2026-10-29 生产观察修复：Chrome153在原生有头启动时仅禁用Ukm即SIGSEGV(-11)，三组同镜像隔离对照复现；External/Managed移除此开关，保留已验证的Segmentation/Optimization禁用项，不变更Profile、sandbox、出口及轮询覆盖。该轮启动失败保留在90分钟验收分母。
