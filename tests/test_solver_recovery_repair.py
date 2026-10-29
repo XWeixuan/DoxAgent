@@ -88,6 +88,29 @@ def test_healthy_backup_is_sticky_and_stale_instance_not_admitted(setup):
     assert not status["proof_ready"] and not status["selectable"]
 
 
+def test_body_can_use_authenticated_primary_without_stealing_crawler_backup(setup):
+    from doxagent.site_strategy.schema import SiteIdentityAuth
+    repo, service, _, scope = setup
+    spec = repo.get_strategy(scope.owner_site_id)
+    repo.apply_strategy(spec.model_copy(update={'auth': spec.auth.model_copy(
+        update={'body_requirement':'required'})}), expected_revision=spec.revision, actor='test')
+    runtime = repo.get_identity_runtime(scope.primary_identity_id)
+    repo.save_site_identity_auth(SiteIdentityAuth(site_id=scope.owner_site_id,
+        identity_id=scope.primary_identity_id, auth_state='VALID',
+        observed_session_revision=runtime.session_revision))
+    state = repo.get_runtime(f'scope:{scope.scope_id}')
+    state.active_combination_id = scope.fallback_identity_id
+    repo.save_runtime(state, expected_generation=state.generation)
+    assert service.failover.candidate_status(scope,scope.primary_identity_id,SitePurpose.BODY)['selectable']
+    assert not service.failover.candidate_status(scope,scope.primary_identity_id,SitePurpose.CRAWLER)['selectable']
+    assert repo.get_runtime(state.runtime_key).active_combination_id == scope.fallback_identity_id
+    repo.save_site_identity_auth(SiteIdentityAuth(site_id=scope.owner_site_id,
+        identity_id=scope.primary_identity_id, auth_state='REAUTH_REQUIRED',
+        observed_session_revision=runtime.session_revision))
+    assert 'auth_required' in service.failover.candidate_status(
+        scope,scope.primary_identity_id,SitePurpose.BODY)['skip_reasons']
+
+
 def test_open_viewer_prevents_warm_activation(setup):
     _, service, store, scope = setup
     proof(setup, scope.primary_identity_id)
@@ -233,8 +256,14 @@ async def test_probe_failure_closes_receipt_and_releases_writer(setup):
 
 
 @pytest.mark.asyncio
-async def test_identical_queries_coalesce_but_consumer_ids_stay_independent(setup):
+async def test_identical_queries_coalesce_but_consumer_ids_stay_independent(setup, monkeypatch):
     _, service, _, scope = setup
+    # This tests overlapping flights, not host disk headroom or thread-pool
+    # scheduling. Keep the small fixture lookup synchronous for a fixed overlap.
+    async def inline(function, *args, **kwargs):
+        return function(*args, **kwargs)
+    monkeypatch.setattr('doxagent.site_strategy.service.registry_io', inline)
+    monkeypatch.setattr(service.repository.storage,'diagnostics',lambda:{'unavailable':False})
     entered = asyncio.Event()
     release = asyncio.Event()
 
@@ -261,7 +290,7 @@ async def test_identical_queries_coalesce_but_consumer_ids_stay_independent(setu
     )
     other = request.model_copy(update={"request_id": "second", "operation_id": "ticker-b"})
     first = asyncio.create_task(service.execute(request))
-    await entered.wait()
+    await asyncio.wait_for(entered.wait(), 1)
     second = asyncio.create_task(service.execute(other))
     await asyncio.sleep(0)
     release.set()
@@ -274,7 +303,7 @@ async def test_identical_queries_coalesce_but_consumer_ids_stay_independent(setu
     )
 
 
-async def test_next_due_boundary_cannot_reuse_previous_cycle_capture(setup):
+async def test_finished_capture_does_not_replace_same_or_next_poll_network(setup):
     _, service, _, scope = setup
     async def execute(request):
         return service._result(request, service._resolve_request(request), AccessDisposition.SUCCESS,
@@ -288,8 +317,10 @@ async def test_next_due_boundary_cannot_reuse_previous_cycle_capture(setup):
     same = await service.execute(request.model_copy(update={'operation_id':'same-cycle','request_id':'same'}))
     later = await service.execute(request.model_copy(update={'operation_id':'next-cycle','request_id':'next',
         'recipe_parameters':{**request.recipe_parameters,'_poll_due_at':(due+timedelta(seconds=30)).isoformat()}}))
-    assert first.capture_id == same.capture_id and same.served_from_shared_capture
-    assert not later.served_from_shared_capture and service._execute_idempotent.await_count == 2
+    # Only genuinely overlapping consumers share. A completed capture is never
+    # a substitute for another poll's actual network request, even in one slot.
+    assert first.capture_id != same.capture_id and not same.served_from_shared_capture
+    assert not later.served_from_shared_capture and service._execute_idempotent.await_count == 3
 
 
 @pytest.mark.asyncio

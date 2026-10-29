@@ -2358,3 +2358,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 修复生产冷启动身份串接：Supervisor在首次await前预占CDP端口、display、VNC和实例容量，启动或取消失败清理其真实进程后释放；冷启动/重接通过SystemInfo核对真实Chrome PID。32项回归通过、1项平台跳过，另验证闲置维护不冷建。根因48f398fd（09-22）遗漏启动中资源；本轮重建并发触发dowjones-main/reuters-backup双9222，保留事故窗口并重建恢复。取消周期冷预热，由真实请求建立、热源继续复用。
 
 2026-10-29 Message Bus live verification: bind lightweight Site HTTP wire timings even without identity attempts; bind CTEE pages and parallel defense feeds to their exact parsed requests, retaining sibling failures and no-proof failures. 79 cadence/CTEE/defense regressions passed.
+
+2026-10-29 Lean live follow-up: allow authenticated configured primary for real BODY work without changing a healthy crawler backup; preserve auth, recovery, cooldown and subscription fallback checks. On Collector restart, atomically retire obsolete persisted units with a DISABLED schedule boundary, preserving their checkpoints and prior failures. 102 recovery/failover and 20 collection-plane regressions passed; overlap-only sharing fixtures aligned and host disk/timing isolated.

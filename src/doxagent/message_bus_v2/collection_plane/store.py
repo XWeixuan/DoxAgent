@@ -131,8 +131,19 @@ class AcquisitionStore:
         return result
 
     @durable_write
-    def disable_unit(self, binding_id, unit):
+    def disable_unit(self, binding_id, unit, *, at=None):
+        at = at or utc_now()
         with self.connect(write=True) as db:
+            row = db.execute('SELECT source_id,ticker,state FROM units WHERE binding_id=? AND unit=? '
+                             'AND required>=0', (binding_id, unit)).fetchone()
+            if row is None:
+                return
+            state = json.loads(row['state'])
+            epoch = state.get('target_due_at') or at.isoformat()
+            db.execute('INSERT INTO cycles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                ('schedule:'+new_id('epoch'),binding_id,row['source_id'],row['ticker'],unit,
+                 epoch,at.isoformat(),state.get('schedule_interval_seconds',60),None,None,
+                 'SCHEDULE','DISABLED',None,canonical_json({'epoch_at':epoch})))
             db.execute(
                 "UPDATE units SET required=-1 WHERE binding_id=? AND unit=?", (binding_id, unit)
             )

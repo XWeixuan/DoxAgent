@@ -76,6 +76,26 @@ def test_restart_uses_collector_checkpoint_without_hydrating_legacy_history(tmp_
     assert load(settings,seeds=True).seeds=={}
 
 
+async def test_restart_retires_obsolete_required_queries_but_keeps_their_checkpoint_and_history(tmp_path):
+    _, _, worker, _, store = setup_plane(tmp_path)
+    cfg = worker.config_loader()
+    binding = next(iter(cfg.bindings.values()))
+    source = cfg.sources[binding.source_id]
+    at = utc_now()-timedelta(minutes=10)
+    store.save_unit(source,binding,'QUERY:obsolete',{'checkpoint':{'cursor':7},
+        'target_due_at':at.isoformat(),'schedule_interval_seconds':60},'old-generation')
+    store.schedule(source,binding,'QUERY:obsolete',at,True,at)
+    assert not worker.desired
+    await worker.refresh(seeds=True)
+    old = store.states()[(binding.binding_id,'QUERY:obsolete')]
+    assert old['required'] == -1 and old['state']['checkpoint'] == {'cursor':7}
+    assert any(r['required']==1 for r in store.states().values())
+    await worker.refresh()
+    with store.connect() as db:
+        states = db.execute("SELECT reason FROM cycles WHERE unit='QUERY:obsolete' ORDER BY dispatch_at").fetchall()
+    assert [r[0] for r in states] == ['ENABLED','DISABLED']
+
+
 async def test_physical_units_have_distinct_stable_phases_without_losing_checkpoints(tmp_path):
     _, _, worker, _, _ = setup_plane(tmp_path)
     cfg = worker.config_loader()

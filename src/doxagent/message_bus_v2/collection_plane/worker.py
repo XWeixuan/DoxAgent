@@ -229,15 +229,13 @@ class Collector:
                 await asyncio.to_thread(
                     self.store.schedule, s, clock_binding, unit, epoch, True, now
                 )
-        for key, (s, targets, unit, options) in self.desired.items():
-            if key not in desired:
-                for b in targets:
-                    old = self.states.get((b.binding_id, unit), {}).get("state", {})
-                    epoch = datetime.fromisoformat(old.get("target_due_at") or now.isoformat())
-                    await asyncio.to_thread(self.store.schedule, s, b, unit, epoch, False, now)
-                    if (b.binding_id, unit) in self.states:
-                        self.states[(b.binding_id, unit)]["required"] = -1
-                    await asyncio.to_thread(self.store.disable_unit, b.binding_id, unit)
+        # Reconcile persisted units too: after restart self.desired is empty,
+        # while old query hashes can still be marked required in the owner DB.
+        expected = {(b.binding_id, unit) for _, targets, unit, _ in desired.values() for b in targets}
+        for (binding_id, unit), record in self.states.items():
+            if record.get('required', 0) >= 0 and (binding_id, unit) not in expected:
+                await asyncio.to_thread(self.store.disable_unit, binding_id, unit, at=now)
+                record['required'] = -1
         self.desired = desired
         p._source_demand, p._group_demand = dict(rates), dict(groups)
         p._limiter_demand=dict(limiter_rates)

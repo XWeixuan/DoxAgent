@@ -107,6 +107,10 @@ class FailoverCoordinator:
         eligible = not reasons
         if (
             not scope.scope_id.startswith("publisher:")
+            # A crawler failover must not strand BODY on its anonymous backup.
+            # The configured primary may serve a real BODY request after the
+            # auth/recovery/cooldown checks above, without switching the crawler.
+            and not (purpose is SitePurpose.BODY and identity_id == scope.primary_identity_id)
             and identity_id != state.active_combination_id
             and not proof
             and (
