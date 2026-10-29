@@ -603,6 +603,8 @@ def release_components(root, state, repo, commit, components, *, collection_migr
         if 'v2-message-collector' in components:
             candidate.setdefault('environment',{})['DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED']='true'
         if kind=='guardian':candidate.setdefault('environment',{})['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=built['images']['repair-agent']['tag']
+        # Compose may retain an old value that shadows the immutable image ENV.
+        candidate.setdefault('environment',{})['DOXAGENT_BUILD_COMMIT']=built['commit']
         candidate['schema']=current.get('schema');manifest['components'][component]=candidate
     if collection_cutover or collection_migration:
         # Cut over acquisition ownership once. Use the existing formal migration

@@ -250,7 +250,8 @@ async def test_joint_http_queue_makes_progress_under_sustained_contention():
     assert publisher._value == 2 and global_slots._value == 5
 
 
-async def test_registry_resolve_request_can_provision_missing_publisher(tmp_path):
+@pytest.mark.parametrize('method',['_resolve_request','_shared_key','_cache_key','_profile'])
+async def test_registry_resolve_request_can_provision_missing_publisher(tmp_path,method):
     from doxagent.site_strategy.repository import SiteStrategyRepository
     from doxagent.site_strategy.storage import registry_io
     from doxagent.site_strategy.schema import ProxyEgress
@@ -261,7 +262,9 @@ async def test_registry_resolve_request_can_provision_missing_publisher(tmp_path
             self.repository.upsert_egress(ProxyEgress(egress_id='new',endpoint='http://127.0.0.1:1080',node_ref='n',node_fingerprint='n',listener_port=1080))
             return self.repository.get_egress('new')
     try:
-        assert (await registry_io(Service()._resolve_request)).egress_id == 'new'
+        Service._resolve_request.__name__ = method
+        setattr(Service,method,Service._resolve_request)
+        assert (await registry_io(getattr(Service(),method))).egress_id == 'new'
     finally:
         repository.close()
 

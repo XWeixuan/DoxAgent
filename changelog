@@ -2386,3 +2386,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 生产观察修复：Chrome153在原生有头启动时仅禁用Ukm即SIGSEGV(-11)，三组同镜像隔离对照复现；External/Managed移除此开关，保留已验证的Segmentation/Optimization禁用项，不变更Profile、sandbox、出口及轮询覆盖。该轮启动失败保留在90分钟验收分母。
 
 2026-10-29 生产观察修复：HTTP联合准入保留被唤醒者的即时许可至完成其余槽位检查，避免多人排队时许可循环转让、容量空闲但全体超时；仍不持槽等待其它容量。Site按需publisher配置解析不再标为纯只读，恢复首次站点配置落库。补多人/多publisher、多source及取消回归。
+
+2026-10-29 生产观察契约复核：将同样可能惰性写入的shared/cache键及generic profile解析移出只读执行分类；正式release写入实际选定commit，避免沿用Compose旧环境变量覆盖新镜像版本，镜像标签仍为部署核验依据。补四种解析入口及旧Compose版本覆盖测试。

@@ -139,7 +139,7 @@ def test_actual_unfinished_repair_image_refs_exit_after_incident_closes(tmp_path
 
 
 def test_one_command_release_builds_and_retargets_companion_without_mutating_previous(tmp_path,monkeypatch):
-    state={'compose_base_command':['docker','compose','-f','base.yml'],'components':{'initialization-guardian':{'current':{'image':'old','compose':{'environment':{'DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE':'old-agent'}}}}}}
+    state={'compose_base_command':['docker','compose','-f','base.yml'],'components':{'initialization-guardian':{'current':{'image':'old','compose':{'environment':{'DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE':'old-agent','DOXAGENT_BUILD_COMMIT':'stale'}}}}}}
     release.atomic(tmp_path/'state.json',state)
     def build(repo,commit,root,kinds):
         assert set(kinds)=={'guardian','repair-agent'}
@@ -147,6 +147,8 @@ def test_one_command_release_builds_and_retargets_companion_without_mutating_pre
     def deploy(root,s,manifest):
         assert s['components']['initialization-guardian']['current']['compose']['environment']['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=='old-agent'
         assert manifest['components']['initialization-guardian']['environment']['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=='new-agent'
+        assert manifest['components']['initialization-guardian']['environment']['DOXAGENT_BUILD_COMMIT']=='new'
+        assert s['components']['initialization-guardian']['current']['compose']['environment']['DOXAGENT_BUILD_COMMIT']=='stale'
         return {'accepted':True}
     monkeypatch.setattr(release,'build',build);monkeypatch.setattr(release,'deploy',deploy)
     assert release.release_components(tmp_path,state,tmp_path,'new',['initialization-guardian'])=={'accepted':True}
