@@ -163,7 +163,7 @@ class UnifiedRuntimeSchedulerService:
         event_limit: int = 100,
         include_detail: bool = True,
     ) -> list[TickerRunDetail]:
-        recover = getattr(self, "_recover_existing_once", None)
+        recover = getattr(self, "_start_existing_recovery", None) or getattr(self, "_recover_existing_once", None)
         if recover is not None:
             recover()
         control_path = getattr(self, "initialization_control_path", None)
@@ -361,7 +361,7 @@ class UnifiedRuntimeSchedulerService:
                         case.route is not None
                         and case.route.primary_route is RuntimeV2PrimaryRoute.TRADE
                     )
-                if coordinator is not None:
+                if coordinator is not None and not getattr(self, "background_runtime_dispatch", False):
                     coordinator.tick(normalized)
             except Exception as exc:
                 runtime_failed = True

@@ -6,7 +6,7 @@ import logging
 import signal
 import time
 from pathlib import Path
-from threading import Event
+from threading import Event, Thread
 
 from doxagent.message_bus_v2.factory import build_message_bus_v2_service
 from doxagent.persistent_runtime_v2.factory import build_persistent_runtime_v2_service
@@ -18,6 +18,24 @@ from .service import UnifiedRuntimeSchedulerService
 
 
 class V2Scheduler(UnifiedRuntimeSchedulerService):
+    background_runtime_dispatch = True
+
+    def _start_existing_recovery(self):
+        previous = getattr(self, "_recovery_thread", None)
+        if previous is not None and previous.is_alive():
+            return  # One dispatcher, no queue of repeated recovery rounds.
+        if getattr(self, "_should_stop", lambda: False)():
+            return
+
+        def recover():
+            try:
+                self._recover_existing_once()
+            except Exception:
+                logging.getLogger(__name__).exception("Runtime dispatch round deferred")
+
+        self._recovery_thread = Thread(target=recover, name="runtime-dispatch", daemon=True)
+        self._recovery_thread.start()
+
     def revision_usable(self, revision):
         state = self.repository.get_state(revision["ticker"])
         return bool(
@@ -42,13 +60,18 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
                     "ON c.case_id=e.case_id WHERE e.status IN ('PENDING','PENDING_RETRY','RUNNING')"
                 )
             ]
+        admitted = getattr(self, "_admitted_tickers", frozenset())
+        tickers = sorted(set(tickers) | admitted)
         for ticker in tickers:
             if getattr(self, "_should_stop", lambda: False)():
                 break
             try:
                 state = ControlRepository(journal).get(ticker)
                 if state and state["analysis_allowed"]:
-                    coordinator.tick_existing(ticker)
+                    if ticker in admitted:
+                        coordinator.tick(ticker)
+                    else:
+                        coordinator.tick_existing(ticker)
             except Exception:
                 logging.getLogger(__name__).exception(
                     "existing-work recovery deferred ticker=%s", ticker
@@ -86,6 +109,7 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
     def _run_admitted_once(self, admitted, *, now, event_limit, include_detail=True):
         from doxagent.v2_control.repository import ControlRepository
 
+        self._admitted_tickers = frozenset(admitted or ())
         control = ControlRepository(self.runtime_v2_service.journal)
         result = []
         for ticker in sorted(admitted or ()):
@@ -173,6 +197,10 @@ def main():
                         break
                     stop.wait(args.interval)
         finally:
+            stop.set()
+            recovery = getattr(scheduler, "_recovery_thread", None)
+            if recovery is not None:
+                recovery.join(timeout=2)
             scheduler.runtime_v2_service.close()
 
 

@@ -98,3 +98,17 @@ b97已去掉ACK反查，18:34:41/53Z仍实测freeze_history写锁6.863/11.653秒
 修复不缩减72小时或历史条数：trade_intents/analysis_trade_decisions各沿ticker+julianday时间范围的部分索引读当前窗口，仅选择case_id/时间/状态等必要标量，不展开整个trade正文；执行回执/实际交易按原identity读需要字段。所有成员与执行状态在同一读快照准备，必要小字段Native引用仍解码；短写事务INSERT OR IGNORE保存首个冻结结果，已有/并发赢家均复用首次值，不更新已冻结历史，不改变W3决策语义。新增历史规模VM预算、无用Native正文不访问、写事务无SELECT、实际执行状态和首次冻结复用回归，且原121条完整历史合同保留。索引一次建库成本与实际版本切换另记，不冒充正常每case成本。
 
 资源归属核对：18:31当前Worker有15组Python/Codex capsule，真实running包括3个已进入RUNNING及2个STARTING，另有6个queued，其中多数为W3 ready/准备路径；`/v1/resources`随后显示PRESSURE、历史事件循环lag峰231256ms、既有idle回收曾CapsuleError且正在CLOSING，不能把全部未映射capsule直接断言泄漏。Site保留7个受保护native Chrome（Supervisor）及3个managed站点Chrome，另有多个Python/Node身份controller；不是仅一个Node异常。此轮未新增W门禁或杀在途Worker；高资源与历史恢复/预备重叠、浏览器常驻及换页正反馈仍属持续风险，需观察真实owner回收与同epoch差分，不能仅以SSH恢复或无OOM判健康。
+
+### 新消息与历史恢复的串行门禁
+
+18:55:18Z宿主读取scheduler-health显示last_recovery_tick仍18:48:10、last_successful_tick=null；INTC游标5039在18:33–18:48不前进、140条积压，即使队首解码已成功、Read已有5条INTC当日case。这不是修复已全部验收，而是另一条明确阻塞：run_due_once先同步_recover_existing_once遍历全部有旧任务ticker，tick_ticker又同步coordinator.tick，历史恢复/模型派发间接挡住下一来源的入站。
+
+精简调整：V2 Scheduler仅保留一个无队列的后台dispatch轮，上一轮未结束不排第二轮；入站主循环继续执行既有revision/control接纳、calendar reconcile、真实stream解码、持久化inbox及原游标提交，不再等待模型/历史派发。后台对当前已接纳ticker执行正常tick（保留公共模板预备/日历业务），对未接纳但有在途任务者仅tick_existing；保留W容量/租约/既有线程池，不并行运行两套coordinator dispatch。停服设置原stop并有界等待控制线程，既有持久化任务按原协议收尾。
+
+新增阻塞恢复时连续入站仍返回、只存在一个dispatcher、stop不再启动，以及真实Bus→coordinator接纳→高水位/游标提交回归。不是把历史I/O藏到新线程当作减本：前述claim/ACK/history范围与锁内宽读已实质删除，此项解除恢复与入站的错误执行依赖。
+
+### 再次严重内存抖动与应急处置（不是稳定验收）
+
+18:45:19Z可用1451MiB、Swap1806MiB、内存PSI avg60 some84.60/full78.97。18:45:48Z临时停止正式Site Access和Chrome Supervisor，确认成功；Collector/Bus/BODY/Runtime/Worker持续，数据及Profile未删。可用立即升至8833MiB，Swap降862MiB。随后Worker活跃执行由2升至19、SDK/capsule由约15升至44–51，18:48约9.895GiB；可用再次降2098MiB。说明局部降负载会被弹性Worker占用，未完成全局容量稳定证明。
+
+18:50:50Z的51个live capsule中，20能对应当前running job，其他31中10对应BOUND、3 READY、3 USED，15未映射到slot；不能把全部31标成泄漏。18:52补读最近500 job后，live已降36、active21，非active的9个可对应已成功job、6个无最近job，部分是刚完成30秒内，也存在准备完成等待数分钟的BOUND。历史回收错误CapsuleError在压力时出现，缓解后cleanup closing/quarantined为0，证明部分会回收，不支持“所有对象永久泄漏”。剩余环境需要按真实必要性精简；当前未静默修改W1/W2/W3并发/模型能力。已向用户提供保留任务并发、减少尚未执行SDK驻留（可能增加局部准备耗时）与先扩32GB两条路线选择；在决定前浏览器保持临时暂停，不能宣称生产全业务恢复。

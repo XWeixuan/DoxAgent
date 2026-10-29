@@ -2427,3 +2427,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 
 2026-10-30 W3历史冻结减法：72小时交易历史沿ticker/时间部分索引仅读薄字段，执行状态在读快照准备，短事务只保存首个冻结值；移除每case在全局写锁内扫描/展开历史trade正文的11秒级阻塞，保留完整历史、Native引用及ARTICLE_ONCE/W容量合同。新增历史规模、写锁范围和冻结复用回归。
+
+
+2026-10-30 Runtime入站/恢复隔离：取消先完成整轮历史恢复才能接纳新消息的依赖，V2以单一无排队后台dispatcher执行已准入正常任务及既有在途恢复；入站保留原revision/control、calendar、持久inbox及游标，跳过同步模型派发。保留W容量、租约及唯一性，新增慢恢复不阻塞接纳、单dispatcher与真实Bus高水位回归。
