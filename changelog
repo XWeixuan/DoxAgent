@@ -2424,3 +2424,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 
 2026-10-30 Runtime当日列表读取修复：稀疏当日case/message页使用已有current_day索引，移除为补足20条结果遍历其它日期当前对象的无效读取；保留跨日、历史快照及keyset语义。新增2000条历史VM预算、稀疏结果与快照翻页回归。
+
+
+2026-10-30 W3历史冻结减法：72小时交易历史沿ticker/时间部分索引仅读薄字段，执行状态在读快照准备，短事务只保存首个冻结值；移除每case在全局写锁内扫描/展开历史trade正文的11秒级阻塞，保留完整历史、Native引用及ARTICLE_ONCE/W容量合同。新增历史规模、写锁范围和冻结复用回归。

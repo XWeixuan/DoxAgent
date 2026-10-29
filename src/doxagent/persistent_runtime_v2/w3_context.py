@@ -195,19 +195,34 @@ def global_snapshot(db, ticker, now):
 
 def _execution_snapshot(db, identity, value, released):
     receipt_row = db.execute(
-        "SELECT payload FROM runtime_values WHERE namespace='trade_receipts' AND key=?",
+        "SELECT json_extract(payload,'$.status'),json_extract(payload,'$.error') "
+        "FROM runtime_values WHERE namespace='trade_receipts' AND key=?",
         (identity,),
     ).fetchone()
-    receipt = json.loads(receipt_row[0]) if receipt_row else {}
+    receipt = dict(status=receipt_row[0], error=receipt_row[1]) if receipt_row else {}
     has_execution = db.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='te_executions'"
     ).fetchone()
     row = (
-        db.execute("SELECT payload FROM te_executions WHERE id=?", (identity,)).fetchone()
+        db.execute(
+            "SELECT json_extract(payload,'$.entry_result'),json_extract(payload,'$.filled_qty'),"
+            "json_extract(payload,'$.error') FROM te_executions WHERE id=?",
+            (identity,),
+        ).fetchone()
         if has_execution
         else None
     )
-    execution = json.loads(row[0]) if row else {}
+    execution = (
+        dict(
+            entry_result=json.loads(row[0])
+            if isinstance(row[0], str) and row[0].startswith(("{", "["))
+            else row[0],
+            filled_qty=row[1],
+            error=row[2],
+        )
+        if row
+        else {}
+    )
     return dict(
         output_status=value.get("status") or value.get("trade_disposition"),
         delivery_status=receipt.get("status", "UNKNOWN"),
@@ -225,28 +240,32 @@ def freeze_history(journal, case, accepted_at):
     if saved is not None:
         return saved
     cutoff = accepted_at - timedelta(hours=72)
-    with journal.transaction() as db:
+    with journal.transaction(write=False, operation="w3.history.read") as db:
         rows = []
-        for namespace, field in (
-            ("trade_intents", "released_at"),
-            ("analysis_trade_decisions", "recorded_at"),
+        for namespace, field, index in (
+            ("trade_intents", "released_at", "runtime_trade_history_window"),
+            ("analysis_trade_decisions", "recorded_at", "runtime_analysis_history_window"),
         ):
             for row in db.execute(
-                "SELECT key,payload FROM runtime_values WHERE namespace=? "
+                f"SELECT key,json_extract(payload,'$.case_id'),json_extract(payload,'$.{field}'),"
+                "json_extract(payload,'$.status'),json_extract(payload,'$.trade_disposition') "
+                f"FROM runtime_values INDEXED BY {index} WHERE namespace='{namespace}' "
                 "AND json_extract(payload,'$.ticker')=? "
                 f"AND julianday(json_extract(payload,'$.{field}'))>=julianday(?) "
                 f"AND julianday(json_extract(payload,'$.{field}'))<julianday(?) ORDER BY key",
-                (namespace, case.ticker, cutoff.isoformat(), accepted_at.isoformat()),
+                (case.ticker, cutoff.isoformat(), accepted_at.isoformat()),
             ):
-                value = json.loads(row[1])
-                if value.get("case_id") != case.case_id:
+                if row[1] != case.case_id:
                     rows.append(
                         dict(
                             identity=row[0],
                             namespace=namespace,
-                            initiated_at=value[field],
+                            initiated_at=row[2],
                             execution=_execution_snapshot(
-                                db, row[0], value, namespace == "trade_intents"
+                                db,
+                                row[0],
+                                dict(status=row[3], trade_disposition=row[4]),
+                                namespace == "trade_intents",
                             ),
                         )
                     )
@@ -254,8 +273,14 @@ def freeze_history(journal, case, accepted_at):
             accepted_at=accepted_at.isoformat(),
             members=sorted(rows, key=lambda r: (r["initiated_at"], r["identity"])),
         )
-        put_value(db, "w3_history_members", identity, saved)
-    return saved
+    saved = journal.content.decode(saved)
+    payload = encode(saved)
+    with journal.transaction(expand=False, operation="w3.history.freeze") as db:
+        inserted = db.execute(
+            "INSERT OR IGNORE INTO runtime_values VALUES('w3_history_members',?,?)",
+            (identity, payload),
+        ).rowcount
+    return saved if inserted else journal.get("w3_history_members", identity)
 
 
 @observed("history.payload")
@@ -424,7 +449,11 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
             p for p in replay["policy_execution_view"]["policies"] if p["policy_id"] in wanted
         ]
     usage = []
-    for row in (() if is_unified_contract(case.w3_contract_version) else case.frozen_inputs.get("policy_usage", [])):
+    for row in (
+        ()
+        if is_unified_contract(case.w3_contract_version)
+        else case.frozen_inputs.get("policy_usage", [])
+    ):
         if new_entry and row["policy_id"] not in wanted:
             continue
         usage.append(

@@ -90,3 +90,11 @@ Scheduler配置20分钟stop_grace_period，service.close等待所有提交case/�
 生产API实际ReadStore.page→legacy_case_summary→CaseSummary验证：BE/CEG/COHR/MU/NBIS各20条有效，约0.06–0.14秒；INTC仅4条当日case，强制current_page使查询需遍历所有旧日期当前行，page约1.618秒，DTO每条约5ms。先前2秒预算下该ticker会报interrupted。将单日case/message页走已有current_day(kind,ticker,day,sort_key,id)，无需新索引/数据迁移，跨日/ALL/历史水位及keyset语义保留。2000条他日历史+稀疏当日的VM预算、快照及翻页回归，连原ReadStore合同共7项通过。只需更新API读消费者，避免无关重启。
 
 18:33:07Z正式Scheduler b97f48a4启动，结果确认精简生效。该次也先保存真实Worker进程/任务归属，守卫旧Scheduler启动epoch及镜像后只结束退役控制容器，Worker与浏览器保持；前次5个在途job在18:31:08快照全部原ID succeeded/SETTLED。没有清任务、移动游标或改变业务容量。
+
+### 接回后的另一处必要消锁：W3历史冻结
+
+b97已去掉ACK反查，18:34:41/53Z仍实测freeze_history写锁6.863/11.653秒，其他写等待25–30秒、INTC existing recovery出现database is locked。代码为72小时历史每case扫描namespace全部ticker历史宽payload、逐项执行快照，并在同一写事务落盘。不能以ACK修好推断整个Runtime已恢复低延迟。
+
+修复不缩减72小时或历史条数：trade_intents/analysis_trade_decisions各沿ticker+julianday时间范围的部分索引读当前窗口，仅选择case_id/时间/状态等必要标量，不展开整个trade正文；执行回执/实际交易按原identity读需要字段。所有成员与执行状态在同一读快照准备，必要小字段Native引用仍解码；短写事务INSERT OR IGNORE保存首个冻结结果，已有/并发赢家均复用首次值，不更新已冻结历史，不改变W3决策语义。新增历史规模VM预算、无用Native正文不访问、写事务无SELECT、实际执行状态和首次冻结复用回归，且原121条完整历史合同保留。索引一次建库成本与实际版本切换另记，不冒充正常每case成本。
+
+资源归属核对：18:31当前Worker有15组Python/Codex capsule，真实running包括3个已进入RUNNING及2个STARTING，另有6个queued，其中多数为W3 ready/准备路径；`/v1/resources`随后显示PRESSURE、历史事件循环lag峰231256ms、既有idle回收曾CapsuleError且正在CLOSING，不能把全部未映射capsule直接断言泄漏。Site保留7个受保护native Chrome（Supervisor）及3个managed站点Chrome，另有多个Python/Node身份controller；不是仅一个Node异常。此轮未新增W门禁或杀在途Worker；高资源与历史恢复/预备重叠、浏览器常驻及换页正反馈仍属持续风险，需观察真实owner回收与同epoch差分，不能仅以SSH恢复或无OOM判健康。

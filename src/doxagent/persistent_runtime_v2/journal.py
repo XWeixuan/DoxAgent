@@ -139,6 +139,14 @@ class RuntimeJournal:
                         json_extract(payload,'$.release_semantic_day'),
                         json_extract(payload,'$.trade.decision'))
                     WHERE namespace='trade_intents';
+                CREATE INDEX IF NOT EXISTS runtime_trade_history_window
+                    ON runtime_values(json_extract(payload,'$.ticker'),
+                        julianday(json_extract(payload,'$.released_at')),key)
+                    WHERE namespace='trade_intents';
+                CREATE INDEX IF NOT EXISTS runtime_analysis_history_window
+                    ON runtime_values(json_extract(payload,'$.ticker'),
+                        julianday(json_extract(payload,'$.recorded_at')),key)
+                    WHERE namespace='analysis_trade_decisions';
             """)
             row = db.execute("SELECT value FROM orchestration_meta WHERE key='version'").fetchone()
             if row and int(row[0]) != self.VERSION:
