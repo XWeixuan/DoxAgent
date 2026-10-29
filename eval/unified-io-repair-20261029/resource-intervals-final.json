@@ -1,0 +1,1122 @@
+[
+  {
+    "since": "2026-10-29T14:31:12.862415+00:00",
+    "until": "2026-10-29T14:33:43.902817+00:00",
+    "seconds": 151.040402,
+    "cpu_busy_percent": 97.21737076129969,
+    "iowait_percent": 0.27927540267125656,
+    "disk_read_MiB_s": 2.9224382625782472,
+    "disk_write_MiB_s": 7.613646722939403,
+    "disk_IOPS": 794.257684774965,
+    "disk_await_ms": 0.6805568290751469,
+    "disk_util": 11.415488684941398,
+    "swap_in_MiB": 0.1796875,
+    "swap_out_MiB": 3.25,
+    "refault_file": 54454,
+    "roles": {
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 2.586228550954201e-05
+      },
+      "v2-message-collector": {
+        "rbytes": 0.19228609276344485,
+        "wbytes": 1.3877702404420242
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.027672645495209952,
+        "wbytes": 0.08066446850426152
+      },
+      "v2-message-bus": {
+        "rbytes": 0.02609504607912789,
+        "wbytes": 0.21473455658572732
+      },
+      "v2-site-access": {
+        "rbytes": 0.024129512380402694,
+        "wbytes": 0.15106160966123489
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.0056121159555706165,
+        "wbytes": 0.2640539350524239
+      },
+      "codex-worker": {
+        "rbytes": 1.9237661076272825,
+        "wbytes": 0.47912470134977525
+      },
+      "v2-api": {
+        "rbytes": 0.03305200088119469,
+        "wbytes": 0.0035689954003167972
+      },
+      "v2-projector": {
+        "rbytes": 0.23459679185705556,
+        "wbytes": 0.6974799779068385
+      },
+      "v2-maintenance": {
+        "rbytes": 0.015491509020215663,
+        "wbytes": 0.010370776489326347
+      },
+      "v2-scheduler": {
+        "rbytes": 0.005974187952704204,
+        "wbytes": 0.12739761842000394
+      },
+      "v2-executor": {
+        "rbytes": 2.586228550954201e-05,
+        "wbytes": 0.006206948522290082
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.0005431079957003822
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.0017586354146488566
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0,
+        "wbytes": 0.00012931142754771005
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.0004655211391717562
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.0012672519899675585
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": []
+  },
+  {
+    "since": "2026-10-29T14:33:43.902817+00:00",
+    "until": "2026-10-29T14:41:41.948133+00:00",
+    "seconds": 478.045316,
+    "cpu_busy_percent": 93.9846004487747,
+    "iowait_percent": 0.4945079926291832,
+    "disk_read_MiB_s": 9.02830305794953,
+    "disk_write_MiB_s": 9.600366330647198,
+    "disk_IOPS": 973.9934362205946,
+    "disk_await_ms": 2.7526100001503395,
+    "disk_util": 12.439406476686408,
+    "swap_in_MiB": 37.8671875,
+    "swap_out_MiB": 843.7265625,
+    "refault_file": 240917,
+    "roles": {
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 0.0018303704078129698
+      },
+      "v2-message-collector": {
+        "rbytes": 0.08987608980149488,
+        "wbytes": 1.2816760215887149
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.011333588194806201,
+        "wbytes": 0.04599622779276431
+      },
+      "v2-message-bus": {
+        "rbytes": 0.1277909053919064,
+        "wbytes": 0.2561211163504005
+      },
+      "codex-worker": {
+        "rbytes": 2.0167903653301353,
+        "wbytes": 1.1473644216189747
+      },
+      "v2-api": {
+        "rbytes": 1.6342592926901517e-05,
+        "wbytes": 0.2670461397220342
+      },
+      "v2-projector": {
+        "rbytes": 0.31952220561031497,
+        "wbytes": 0.34889801639642043
+      },
+      "v2-maintenance": {
+        "rbytes": 0.015786944767386863,
+        "wbytes": 0.029081644113421245
+      },
+      "v2-scheduler": {
+        "rbytes": 0.019570255029964564,
+        "wbytes": 0.12435896087725708
+      },
+      "v2-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.0063164121662474355
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.0004657638984166932
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.0,
+        "wbytes": 0.009200879817845554
+      },
+      "v2-control": {
+        "rbytes": 0.00016342592926901515,
+        "wbytes": 0.0015035185492749395
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0003268518585380303,
+        "wbytes": 0.0014381481775673334
+      },
+      "v2-o4": {
+        "rbytes": 3.268518585380303e-05,
+        "wbytes": 0.011832037279076698
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.00442067138672686,
+        "wbytes": 0.01154604190285592
+      },
+      "v2-delivery": {
+        "rbytes": 1.6342592926901517e-05,
+        "wbytes": 0.002010138930008886
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 8.171296463450758e-06
+      }
+    },
+    "reset_roles": [
+      "v2-site-access",
+      "v2-chrome-supervisor"
+    ]
+  },
+  {
+    "since": "2026-10-29T14:41:41.948133+00:00",
+    "until": "2026-10-29T14:46:21.844138+00:00",
+    "seconds": 279.896005,
+    "cpu_busy_percent": 91.77114910842667,
+    "iowait_percent": 0.7367958310818855,
+    "disk_read_MiB_s": 26.99438879819399,
+    "disk_write_MiB_s": 13.494568039989531,
+    "disk_IOPS": 2173.3357716198916,
+    "disk_await_ms": 6.5550609230850165,
+    "disk_util": 25.395503590699697,
+    "swap_in_MiB": 523.66796875,
+    "swap_out_MiB": 841.35546875,
+    "refault_file": 1139876,
+    "roles": {
+      "v2-chrome-supervisor": {
+        "rbytes": 8.157535934641153,
+        "wbytes": 1.8905040507812894
+      },
+      "v2-web": {
+        "rbytes": 0.002288796512118849,
+        "wbytes": 0.0
+      },
+      "codex-worker": {
+        "rbytes": 1.7960632825037999,
+        "wbytes": 0.8163327706302917
+      },
+      "v2-api": {
+        "rbytes": 0.010927607737738165,
+        "wbytes": 0.18469471366695642
+      },
+      "v2-projector": {
+        "rbytes": 1.9860892173148381,
+        "wbytes": 0.3473248707140354
+      },
+      "v2-maintenance": {
+        "rbytes": 0.0467109873540353,
+        "wbytes": 0.027926108663108642
+      },
+      "v2-scheduler": {
+        "rbytes": 0.11735664555126465,
+        "wbytes": 0.1108391579222433
+      },
+      "v2-executor": {
+        "rbytes": 0.0026376984194540396,
+        "wbytes": 0.0076758419613741895
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.0005721991280297123
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-control": {
+        "rbytes": 1.3956076293407618e-05,
+        "wbytes": 0.0012281347138198703
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0008094524250176419,
+        "wbytes": 0.00020934114440111426
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.023181042723350052,
+        "wbytes": 0.0015072562396880227
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.0007954963487242342
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.021045763050458688
+      }
+    },
+    "reset_roles": [
+      "v2-message-collector",
+      "v2-message-bus",
+      "v2-content-enrichment",
+      "v2-site-access"
+    ]
+  },
+  {
+    "since": "2026-10-29T14:46:21.844138+00:00",
+    "until": "2026-10-29T14:50:15.930654+00:00",
+    "seconds": 234.086516,
+    "cpu_busy_percent": 65.87357431558966,
+    "iowait_percent": 1.7110940201709457,
+    "disk_read_MiB_s": 10.421410683689274,
+    "disk_write_MiB_s": 11.067706186246115,
+    "disk_IOPS": 1440.061588169393,
+    "disk_await_ms": 0.6911026137722153,
+    "disk_util": 20.559919820413747,
+    "swap_in_MiB": 101.41796875,
+    "swap_out_MiB": 10.515625,
+    "refault_file": 181267,
+    "roles": {
+      "v2-message-collector": {
+        "rbytes": 0.24393358265881493,
+        "wbytes": 1.4405397767550183
+      },
+      "v2-message-bus": {
+        "rbytes": 0.2076889704317698,
+        "wbytes": 0.6374012215637401
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.1297263422896174,
+        "wbytes": 0.05374949170502414
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 1.4755662229173423,
+        "wbytes": 0.6437924216019346
+      },
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "codex-worker": {
+        "rbytes": 2.4016394274072583,
+        "wbytes": 0.47521826289216934
+      },
+      "v2-api": {
+        "rbytes": 1.6687206366042887e-05,
+        "wbytes": 0.0
+      },
+      "v2-projector": {
+        "rbytes": 0.8297713365514826,
+        "wbytes": 1.0932790122776659
+      },
+      "v2-maintenance": {
+        "rbytes": 0.04203507283606203,
+        "wbytes": 0.010646437661535363
+      },
+      "v2-scheduler": {
+        "rbytes": 0.6066633874374892,
+        "wbytes": 0.19255367425776887
+      },
+      "v2-executor": {
+        "rbytes": 5.006161909812866e-05,
+        "wbytes": 0.009077840263127331
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.00016687206366042888
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.001768843874800546
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0,
+        "wbytes": 0.00023362088912460042
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.0005506778100794153
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.0009011091437663159
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-site-access"
+    ]
+  },
+  {
+    "since": "2026-10-29T14:50:15.930654+00:00",
+    "until": "2026-10-29T14:57:06.328382+00:00",
+    "seconds": 410.397728,
+    "cpu_busy_percent": 62.74544644053954,
+    "iowait_percent": 1.959519066812555,
+    "disk_read_MiB_s": 9.428572771606573,
+    "disk_write_MiB_s": 10.164958274939574,
+    "disk_IOPS": 1323.5429022648002,
+    "disk_await_ms": 1.6185953433398566,
+    "disk_util": 19.727448393671423,
+    "swap_in_MiB": 190.76953125,
+    "swap_out_MiB": 339.76953125,
+    "refault_file": 424975,
+    "roles": {
+      "v2-site-access": {
+        "rbytes": 0.6405657264018771,
+        "wbytes": 0.442939221145006
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 1.2175117658058772,
+        "wbytes": 0.6895559312160715
+      },
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "codex-worker": {
+        "rbytes": 1.9402196075266773,
+        "wbytes": 0.6572511410199621
+      },
+      "v2-api": {
+        "rbytes": 0.002198705520124127,
+        "wbytes": 0.06880710911245591
+      },
+      "v2-projector": {
+        "rbytes": 0.1322840230246109,
+        "wbytes": 0.5773362858383077
+      },
+      "v2-maintenance": {
+        "rbytes": 0.028478471498750598,
+        "wbytes": 0.021891873144093042
+      },
+      "v2-scheduler": {
+        "rbytes": 2.3023682985642653,
+        "wbytes": 0.25477381236866886
+      },
+      "v2-executor": {
+        "rbytes": 0.0006186833714634989,
+        "wbytes": 0.008261802560466417
+      },
+      "v2-initialization": {
+        "rbytes": 0.00016180949715199205,
+        "wbytes": 0.002141596285835189
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.14455299019101783,
+        "wbytes": 9.518205714823062e-05
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.025537345932870274
+      },
+      "initialization-guardian": {
+        "rbytes": 0.32661722910415336,
+        "wbytes": 0.006843589908957781
+      },
+      "v2-o4": {
+        "rbytes": 3.8072822859292244e-05,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0010279662172008907,
+        "wbytes": 0.0020844870515462502
+      },
+      "v2-delivery": {
+        "rbytes": 1.9036411429646122e-05,
+        "wbytes": 0.005920323954619944
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-message-collector",
+      "v2-message-bus",
+      "v2-content-enrichment"
+    ]
+  },
+  {
+    "since": "2026-10-29T14:57:06.328382+00:00",
+    "until": "2026-10-29T15:02:31.889941+00:00",
+    "seconds": 325.561559,
+    "cpu_busy_percent": 57.875953487460045,
+    "iowait_percent": 3.1056728827185913,
+    "disk_read_MiB_s": 15.15655327501749,
+    "disk_write_MiB_s": 7.651655707108529,
+    "disk_IOPS": 1792.4044896221917,
+    "disk_await_ms": 0.6922171306752944,
+    "disk_util": 27.506625866722796,
+    "swap_in_MiB": 11.03125,
+    "swap_out_MiB": 79.94140625,
+    "refault_file": 393670,
+    "roles": {
+      "v2-message-collector": {
+        "rbytes": 0.06136032325610039,
+        "wbytes": 1.4575056525638521
+      },
+      "v2-message-bus": {
+        "rbytes": 0.03517959870686085,
+        "wbytes": 0.3610348312037663
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.020913383542311887,
+        "wbytes": 0.023625044288475103
+      },
+      "v2-site-access": {
+        "rbytes": 0.4488518444832733,
+        "wbytes": 0.3235515207125544
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.8147700647299088,
+        "wbytes": 0.3562594286507886
+      },
+      "v2-web": {
+        "rbytes": 0.0003239594696743666,
+        "wbytes": 0.000611923442718248
+      },
+      "codex-worker": {
+        "rbytes": 1.492253305311147,
+        "wbytes": 0.12250467353241788
+      },
+      "v2-api": {
+        "rbytes": 0.0025916757573949327,
+        "wbytes": 0.0007919009258706739
+      },
+      "v2-maintenance": {
+        "rbytes": 0.02043344358723875,
+        "wbytes": 0.006683163874393414
+      },
+      "v2-scheduler": {
+        "rbytes": 0.19702735005639901,
+        "wbytes": 0.1763179409949932
+      },
+      "v2-executor": {
+        "rbytes": 0.00010798648989145552,
+        "wbytes": 0.007883013762076254
+      },
+      "v2-initialization": {
+        "rbytes": 2.3996997753656783e-05,
+        "wbytes": 0.000335957968551195
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.34879636234940137,
+        "wbytes": 0.007451067802510431
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.0009478814112694429
+      },
+      "initialization-guardian": {
+        "rbytes": 1.1998498876828392e-05,
+        "wbytes": 0.00013198348764511232
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.00171578533938646,
+        "wbytes": 0.000335957968551195
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.0014878138607267205
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-projector"
+    ]
+  },
+  {
+    "since": "2026-10-29T15:02:31.889941+00:00",
+    "until": "2026-10-29T15:11:30.728467+00:00",
+    "seconds": 538.838526,
+    "cpu_busy_percent": 57.83739109636566,
+    "iowait_percent": 1.508725315373558,
+    "disk_read_MiB_s": 6.1220218874995584,
+    "disk_write_MiB_s": 8.292157248352543,
+    "disk_IOPS": 984.7829626050161,
+    "disk_await_ms": 1.199031733438364,
+    "disk_util": 15.240929524775666,
+    "swap_in_MiB": 91.28515625,
+    "swap_out_MiB": 136.421875,
+    "refault_file": 418804,
+    "roles": {
+      "v2-projector": {
+        "rbytes": 0.3255193073369813,
+        "wbytes": 0.3230980114625286
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.22663764348208465,
+        "wbytes": 0.6125008635703973
+      },
+      "v2-web": {
+        "rbytes": 2.8997555382667644e-05,
+        "wbytes": 0.000819180939560361
+      },
+      "codex-worker": {
+        "rbytes": 0.5180775738555858,
+        "wbytes": 0.2827116662033182
+      },
+      "v2-api": {
+        "rbytes": 0.0003842176088203463,
+        "wbytes": 0.011352542932314384
+      },
+      "v2-maintenance": {
+        "rbytes": 0.012809670090293433,
+        "wbytes": 0.012737176201836764
+      },
+      "v2-scheduler": {
+        "rbytes": 1.7236726870565302,
+        "wbytes": 0.1489169456676897
+      },
+      "v2-executor": {
+        "rbytes": 7.974327730233603e-05,
+        "wbytes": 0.005466039189632851
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.00030447433151801025
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.18717921999511966,
+        "wbytes": 0.001312139381065711
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.0013556357141397124
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0,
+        "wbytes": 0.00751036684411092
+      },
+      "v2-o4": {
+        "rbytes": 0.00017398533229600588,
+        "wbytes": 0.004944083192744833
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0009061736057083639,
+        "wbytes": 0.003196980480939108
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.001790599044879727
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-message-collector",
+      "v2-message-bus",
+      "v2-content-enrichment",
+      "v2-site-access"
+    ]
+  },
+  {
+    "since": "2026-10-29T15:11:30.728467+00:00",
+    "until": "2026-10-29T15:21:40.365510+00:00",
+    "seconds": 609.637043,
+    "cpu_busy_percent": 60.59783802556126,
+    "iowait_percent": 1.2429156319496892,
+    "disk_read_MiB_s": 5.317124591592854,
+    "disk_write_MiB_s": 8.903813015642573,
+    "disk_IOPS": 905.7979765839132,
+    "disk_await_ms": 0.9314153362501086,
+    "disk_util": 12.66163217709853,
+    "swap_in_MiB": 39.20703125,
+    "swap_out_MiB": 19.49609375,
+    "refault_file": 294974,
+    "roles": {
+      "v2-message-bus": {
+        "rbytes": 0.022977298805643608,
+        "wbytes": 0.36750222336801147
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.023355341368257378,
+        "wbytes": 0.07394896974788982
+      },
+      "v2-projector": {
+        "rbytes": 0.1301876065624838,
+        "wbytes": 0.5192574785026638
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.6151265093810909,
+        "wbytes": 0.766183346900067
+      },
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "codex-worker": {
+        "rbytes": 0.875386387486956,
+        "wbytes": 0.3538093936001196
+      },
+      "v2-api": {
+        "rbytes": 0.00016018752653125772,
+        "wbytes": 0.0
+      },
+      "v2-maintenance": {
+        "rbytes": 0.00973940161310047,
+        "wbytes": 0.014961514978019471
+      },
+      "v2-scheduler": {
+        "rbytes": 0.02402812897968866,
+        "wbytes": 0.17011915317619572
+      },
+      "v2-executor": {
+        "rbytes": 6.407501061250309e-06,
+        "wbytes": 0.0075352212480303635
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.00030115254987876454
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.11666137182218438,
+        "wbytes": 0.008547606415707912
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.001557022757883825
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0,
+        "wbytes": 0.0038445006367501854
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 6.407501061250309e-05,
+        "wbytes": 0.0016723577769863307
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.0012943152143725625
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-message-collector",
+      "v2-site-access"
+    ]
+  },
+  {
+    "since": "2026-10-29T15:21:40.365510+00:00",
+    "until": "2026-10-29T15:41:11.633364+00:00",
+    "seconds": 1171.267854,
+    "cpu_busy_percent": 53.94329350208584,
+    "iowait_percent": 1.8376038159676709,
+    "disk_read_MiB_s": 4.953733185526323,
+    "disk_write_MiB_s": 7.137062697338401,
+    "disk_IOPS": 1073.992593328699,
+    "disk_await_ms": 0.6080125094102786,
+    "disk_util": 16.63436756456905,
+    "swap_in_MiB": 51.51171875,
+    "swap_out_MiB": 134.45703125,
+    "refault_file": 873963,
+    "roles": {
+      "v2-site-access": {
+        "rbytes": 0.10481430407292644,
+        "wbytes": 0.22072435683016706
+      },
+      "v2-message-bus": {
+        "rbytes": 0.025466527488254623,
+        "wbytes": 0.3353704213844155
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.007046984361273182,
+        "wbytes": 0.038469931191332775
+      },
+      "v2-projector": {
+        "rbytes": 0.026983980344089595,
+        "wbytes": 0.3032771272488112
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.22786805796686707,
+        "wbytes": 0.33239221171351296
+      },
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 5.33609795458452e-05
+      },
+      "codex-worker": {
+        "rbytes": 0.9176821158621161,
+        "wbytes": 0.20183123500971625
+      },
+      "v2-api": {
+        "rbytes": 0.009228114400209604,
+        "wbytes": 0.00023011922429145743
+      },
+      "v2-maintenance": {
+        "rbytes": 0.008557767094664924,
+        "wbytes": 0.01415399982453544
+      },
+      "v2-scheduler": {
+        "rbytes": 1.0299436116429095,
+        "wbytes": 0.16379819683841507
+      },
+      "v2-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.005302747342368367
+      },
+      "v2-initialization": {
+        "rbytes": 6.67012244323065e-06,
+        "wbytes": 0.0012539830193273622
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.3069957205109123,
+        "wbytes": 0.004255538118781155
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.0009738378767116749
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0,
+        "wbytes": 0.006803524892095263
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.0006503369382149884
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.001047209223587212
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-message-collector"
+    ]
+  },
+  {
+    "since": "2026-10-29T15:41:11.633364+00:00",
+    "until": "2026-10-29T15:44:19.913721+00:00",
+    "seconds": 188.280357,
+    "cpu_busy_percent": 63.125402365059465,
+    "iowait_percent": 1.3038322095347812,
+    "disk_read_MiB_s": 5.342372330063353,
+    "disk_write_MiB_s": 8.207813825143214,
+    "disk_IOPS": 860.6686463846039,
+    "disk_await_ms": 1.0516948786463187,
+    "disk_util": 12.940808264985389,
+    "swap_in_MiB": 68.59375,
+    "swap_out_MiB": 27.77734375,
+    "refault_file": 65672,
+    "roles": {
+      "v2-site-access": {
+        "rbytes": 0.5111227561566606,
+        "wbytes": 0.4341099427594563
+      },
+      "v2-projector": {
+        "rbytes": 0.04576785192732559,
+        "wbytes": 0.28342458077026056
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.78838548197569,
+        "wbytes": 0.8218711179732892
+      },
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "codex-worker": {
+        "rbytes": 0.22556123579051848,
+        "wbytes": 0.116598063386931
+      },
+      "v2-api": {
+        "rbytes": 0.001701252882158068,
+        "wbytes": 0.0008298794547112528
+      },
+      "v2-maintenance": {
+        "rbytes": 0.008236553588009184,
+        "wbytes": 0.004813300837325266
+      },
+      "v2-scheduler": {
+        "rbytes": 0.00960585468828275,
+        "wbytes": 0.1499384704799556
+      },
+      "v2-executor": {
+        "rbytes": 4.1493972735562635e-05,
+        "wbytes": 0.005829903169346551
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.00022821685004559449
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-control": {
+        "rbytes": 0.00016597589094225054,
+        "wbytes": 0.0068672524877356166
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0,
+        "wbytes": 0.00018672287731003186
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0021991805549848196,
+        "wbytes": 0.00045643370009118897
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.0011410842502279726
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-message-collector",
+      "v2-message-bus",
+      "v2-content-enrichment"
+    ]
+  },
+  {
+    "since": "2026-10-29T15:44:19.913721+00:00",
+    "until": "2026-10-29T15:52:38.102331+00:00",
+    "seconds": 498.18861,
+    "cpu_busy_percent": 55.312413771959406,
+    "iowait_percent": 1.2258433741096157,
+    "disk_read_MiB_s": 3.6076478394397657,
+    "disk_write_MiB_s": 7.8962469906728705,
+    "disk_IOPS": 806.4134585493634,
+    "disk_await_ms": 0.6486461595137226,
+    "disk_util": 11.718051924149771,
+    "swap_in_MiB": 5.1640625,
+    "swap_out_MiB": 34.63671875,
+    "refault_file": 274970,
+    "roles": {
+      "v2-message-collector": {
+        "rbytes": 0.055176454656400115,
+        "wbytes": 1.3269400242811653
+      },
+      "v2-message-bus": {
+        "rbytes": 0.21539752534687617,
+        "wbytes": 0.362343942387603
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.021782036526286703,
+        "wbytes": 0.06849815374141131
+      },
+      "v2-projector": {
+        "rbytes": 0.15793152617439407,
+        "wbytes": 0.29490431093958575
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.5636278371558916,
+        "wbytes": 0.469513443914344
+      },
+      "v2-web": {
+        "rbytes": 2.352271763097916e-05,
+        "wbytes": 0.0
+      },
+      "codex-worker": {
+        "rbytes": 0.5593623843588075,
+        "wbytes": 0.12263960882204834
+      },
+      "v2-api": {
+        "rbytes": 8.624996464692359e-05,
+        "wbytes": 0.0
+      },
+      "v2-maintenance": {
+        "rbytes": 0.007495906018405359,
+        "wbytes": 0.011047836380683212
+      },
+      "v2-scheduler": {
+        "rbytes": 0.005841474878359824,
+        "wbytes": 0.14501755419498652
+      },
+      "v2-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.00559840679617304
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.0005723861290204929
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.2740475013067842,
+        "wbytes": 0.0018034083517084023
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.001034999575763083
+      },
+      "initialization-guardian": {
+        "rbytes": 0.0,
+        "wbytes": 0.0002822726115717499
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.00018034083517084023
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.001168294975671965
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": [
+      "v2-site-access"
+    ]
+  },
+  {
+    "since": "2026-10-29T15:52:38.102331+00:00",
+    "until": "2026-10-29T16:01:59.644241+00:00",
+    "seconds": 561.54191,
+    "cpu_busy_percent": 52.56729759699221,
+    "iowait_percent": 1.3982208172992978,
+    "disk_read_MiB_s": 4.0790866793896114,
+    "disk_write_MiB_s": 6.956320722348221,
+    "disk_IOPS": 837.5403360365391,
+    "disk_await_ms": 0.5656072326148063,
+    "disk_util": 12.734579329973785,
+    "swap_in_MiB": 15.78125,
+    "swap_out_MiB": 40.11328125,
+    "refault_file": 397993,
+    "roles": {
+      "v2-site-access": {
+        "rbytes": 0.3768710802903384,
+        "wbytes": 0.17216129291222448
+      },
+      "v2-message-collector": {
+        "rbytes": 0.027129542298988868,
+        "wbytes": 1.2975781829890487
+      },
+      "v2-message-bus": {
+        "rbytes": 0.006309357657739206,
+        "wbytes": 0.35706651441207654
+      },
+      "v2-content-enrichment": {
+        "rbytes": 0.0066084782523178,
+        "wbytes": 0.0274773569438477
+      },
+      "v2-projector": {
+        "rbytes": 0.05094788917892166,
+        "wbytes": 0.3086785410193159
+      },
+      "v2-chrome-supervisor": {
+        "rbytes": 0.14236053414071978,
+        "wbytes": 0.23949820815689427
+      },
+      "v2-web": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "codex-worker": {
+        "rbytes": 0.5715846747752096,
+        "wbytes": 0.28682186873638693
+      },
+      "v2-api": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-maintenance": {
+        "rbytes": 0.006636303423906508,
+        "wbytes": 0.00609371257792673
+      },
+      "v2-scheduler": {
+        "rbytes": 1.6358766191645429,
+        "wbytes": 0.1492333515231303
+      },
+      "v2-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.00477201692746317
+      },
+      "v2-initialization": {
+        "rbytes": 0.0,
+        "wbytes": 0.0002712954229898887
+      },
+      "v2-transport-maintenance": {
+        "rbytes": 0.28329502823751834,
+        "wbytes": 0.00336684576223349
+      },
+      "v2-control": {
+        "rbytes": 0.0,
+        "wbytes": 0.0008417114405583725
+      },
+      "initialization-guardian": {
+        "rbytes": 0.20822271529118813,
+        "wbytes": 0.00013912585794353266
+      },
+      "v2-o4": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      },
+      "v2-cdecr-executor": {
+        "rbytes": 0.0,
+        "wbytes": 0.0002365139585040055
+      },
+      "v2-delivery": {
+        "rbytes": 0.0,
+        "wbytes": 0.0008069299760724894
+      },
+      "captcha-proxy": {
+        "rbytes": 0.0,
+        "wbytes": 0.0
+      }
+    },
+    "reset_roles": []
+  }
+]

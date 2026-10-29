@@ -2412,3 +2412,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-29 最终全链路Review：Identity Worker的ensure仍每请求序列化整个已验证identity生成同一指纹，改按identity revision及egress generation复用原指纹，只保留每身份当前一项；实际配置/出口变化仍按原冲突处理，不新增门禁或放松绑定校验。
 
 2026-10-30 统一I/O生产复核：分页首次采集时间优先采用本页已验证的真实响应，禁止解析结束回调覆盖T0，也不复用上一页取网时间；无本页物理事件时保留SDK回调事实及原有证据缺口。新增双页回归，21项采集测试通过。
+
+2026-10-30 统一I/O修复生产验收留痕：完成14:30:32Z起90分钟全轮次观察与物理T0核对；完整新鲜周期72.72%、末10分钟89.10%，首次FULL56/70、真实≤10秒交付98/125，未宣称达标。正式版本/剩余失败/资源差分及Review落入执行文档和薄CSV，继续既有只读长期观察。
