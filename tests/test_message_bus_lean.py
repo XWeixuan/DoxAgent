@@ -820,6 +820,7 @@ def test_ibkr_news_wire_evidence_is_inside_socket_lock(monkeypatch):
         app.conn = SimpleNamespace(
             lock=lock, socket=SimpleNamespace(send=send), isConnected=lambda: True
         )
+        app.setConnState(EClient.CONNECTED)
         app.nextValidId(1)
 
     monkeypatch.setattr(EClient, "connect", connect)
@@ -838,12 +839,13 @@ def test_ibkr_news_wire_evidence_is_inside_socket_lock(monkeypatch):
     trace = {}
     token = _NEWS_SEND.set(trace)
     try:
-        app.sendMsg("historical-news\0")
+        assert type(app).sendMsg is EClient.sendMsg
+        app.conn.sendMsg(comm.make_msg("historical-news\0"))
         assert sent == [comm.make_msg("historical-news\0")]
         assert trace["proof_basis"] == "TRANSPORT_SEND" and trace["request_started_at"]
         app.conn.socket.send = lambda packet: 0
         with pytest.raises(ConnectionError, match="incomplete_socket_write"):
-            app.sendMsg("historical-news\0")
+            app.conn.sendMsg(comm.make_msg("historical-news\0"))
     finally:
         _NEWS_SEND.reset(token)
         gateway._thread.join(1)
@@ -1122,3 +1124,20 @@ async def test_digitimes_public_listing_encoding_is_endpoint_scoped(monkeypatch,
         SimpleNamespace(egress_id='server-direct', endpoint=None))
     assert result.status_code == 200
     assert (seen['headers'].get('Accept-Encoding') == 'identity') is identity
+
+@pytest.mark.parametrize('packet', [b'\x00\x00\x00\x03old', b'\x00\x00\x00\x08protobuf'])
+def test_ibkr_framed_transport_observes_sdk_and_protobuf_bytes_unchanged(packet):
+    import threading
+    from doxagent.message_bus_v2.ibkr_news import _observe_connection_send, _NEWS_SEND
+    sent = []
+    connection = SimpleNamespace(lock=threading.Lock(), isConnected=lambda: True,
+        socket=SimpleNamespace(send=lambda value: sent.append(value) or len(value)))
+    _observe_connection_send(connection)
+    trace = {}
+    token = _NEWS_SEND.set(trace)
+    try:
+        assert connection.sendMsg(packet) == len(packet)
+        assert sent == [packet]
+        assert trace['proof_basis'] == 'TRANSPORT_SEND'
+    finally:
+        _NEWS_SEND.reset(token)

@@ -18,6 +18,23 @@ from .collection_override import CollectionStopped, REQUEST_GATE
 _NEWS_SEND=ContextVar('ibkr_news_send',default=None)
 
 
+def _observe_connection_send(connection):
+    """Observe framed socket bytes, independent of SDK/protobuf message APIs."""
+    def send(packet):
+        with connection.lock:
+            if not connection.isConnected():
+                raise ConnectionError('ibkr_news_disconnected')
+            started = utc_now().isoformat()
+            sent = connection.socket.send(packet)
+        if sent != len(packet):
+            raise ConnectionError('ibkr_news_incomplete_socket_write')
+        trace = _NEWS_SEND.get()
+        if trace is not None:
+            trace.update(request_started_at=started, proof_basis='TRANSPORT_SEND')
+        return sent
+    connection.sendMsg = send
+
+
 class IbkrNewsGatewayProtocol(Protocol):
     def poll(
         self, ticker: str, since: datetime, until: datetime
@@ -66,20 +83,6 @@ class IbkrNewsGateway:
         owner = self
 
         class App(EWrapper, EClient):  # type: ignore[misc]
-            def sendMsg(self,msg):
-                # EClient discards Connection.sendMsg's byte count. Timestamp
-                # the socket write under its existing lock, not the SDK caller.
-                from ibapi import comm
-                packet=comm.make_msg(msg)
-                with self.conn.lock:
-                    if not self.conn.isConnected():raise ConnectionError('ibkr_news_disconnected')
-                    started=utc_now().isoformat()
-                    sent=self.conn.socket.send(packet)
-                trace=_NEWS_SEND.get()
-                if trace is not None:
-                    trace.update(request_started_at=started,proof_basis='TRANSPORT_SEND')
-                if sent!=len(packet):raise ConnectionError('ibkr_news_incomplete_socket_write')
-
             def __init__(self) -> None:
                 EWrapper.__init__(self)
                 EClient.__init__(self, self)
@@ -180,6 +183,8 @@ class IbkrNewsGateway:
             self.settings.ibkr_tws_port,
             clientId=self.settings.ibkr_news_client_id,
         )
+        if app.isConnected():
+            _observe_connection_send(app.conn)
         thread = threading.Thread(target=app.run, name="ibkr-news", daemon=True)
         thread.start()
         if not app.connected.wait(self.settings.ibkr_tws_timeout_seconds):
