@@ -320,3 +320,79 @@ def test_formal_projection_honors_skipped_receipt_without_payload_or_store(table
     from doxagent.v2_read.formal import FormalProjectors
     mapper = FormalProjectors(None)
     assert mapper({'table_name':table,'serving_skipped':True,'row':{},'seq':1}) == ([],[])
+
+
+async def test_curl_complete_response_records_real_send_and_completion():
+    from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
+    import threading
+    from doxagent.message_bus_v2.publisher_http import PublisherSession
+    from doxagent.message_bus_v2.poll_trace import REQUESTS,validate_listing
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('Content-Length','2')
+            self.send_header('ETag','"one"')
+            self.end_headers()
+            self.wfile.write(b'{}')
+        def log_message(self,*args): pass
+    server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+    thread=threading.Thread(target=server.serve_forever,daemon=True)
+    thread.start()
+    events=[]
+    token=REQUESTS.set(events)
+    session=PublisherSession(trust_env=False,max_clients=1)
+    try:
+        r=await session.get(f'http://127.0.0.1:{server.server_port}/feed',timeout=3)
+        assert r.status_code == 200 and r.content == b'{}'
+        assert len(events) == 1
+        assert events[0]['proof_basis'] == 'TRANSPORT_SEND'
+        assert events[0]['response_received_at'] >= events[0]['request_started_at']
+        assert events[0]['status_code'] == 200
+        assert validate_listing(events) == events
+    finally:
+        await session.close()
+        REQUESTS.reset(token)
+        await asyncio.to_thread(server.shutdown)
+        server.server_close()
+        thread.join(timeout=2)
+
+
+async def test_benzinga_parser_binds_both_real_query_responses_without_old_events():
+    from doxagent.message_bus_v2.adapters import BenzingaNewsAdapter
+    from doxagent.message_bus_v2.poll_trace import REQUESTS,validate_listing
+    adapter=BenzingaNewsAdapter(SimpleNamespace(benzinga_api_key='test',benzinga_news_base_url='https://example.test'),None)
+    events=[{'physical_request_id':'old'}]
+    async def response(*args,**kwargs):
+        events.append({'physical_request_id':str(len(events)),'proof_basis':'TRANSPORT_SEND',
+            'response_received_at':datetime.now(UTC).isoformat(),'status_code':200})
+        return []
+    adapter._json=AsyncMock(side_effect=response)
+    token=REQUESTS.set(events)
+    try:
+        result=await adapter.poll(SimpleNamespace(window_cutoff=None,ticker='MU',requested_at=datetime.now(UTC)))
+        assert adapter._json.await_count == 2
+        assert result.acquisition_metadata['validated_request_ids'] == ['1','2']
+        assert len(validate_listing(events,result.acquisition_metadata['validated_request_ids'])) == 2
+    finally:REQUESTS.reset(token)
+
+
+async def test_http_network_budget_starts_after_admission_and_still_bounds_execution():
+    from doxagent.message_bus_v2.publisher_http import PublisherClients,http_budget
+    class Session:
+        broken=False
+        async def request(self,*args,**kwargs):
+            await asyncio.sleep(.02 if 'fast' in args[1] else .1)
+            return SimpleNamespace(status_code=200)
+        async def close(self): pass
+    clients=PublisherClients(factory=Session)
+    role=http_budget('collector')
+    for _ in range(5): await role.acquire()
+    task=asyncio.create_task(clients.request('test','GET','https://fast.test',timeout=.05))
+    await asyncio.sleep(.08)
+    assert not task.done()
+    for _ in range(5):role.release()
+    assert (await asyncio.wait_for(task,.2)).status_code == 200
+    with pytest.raises(TimeoutError):
+        await clients.request('test','GET','https://slow.test',timeout=.05)
+    assert role._value == 5 and clients.clients['test'].slots._value == 2
+    await clients.close()

@@ -579,6 +579,9 @@ class _BaseAdapter:
 
 class BenzingaNewsAdapter(_BaseAdapter):
     async def poll(self, context: PollContext) -> PollResult:
+        from .poll_trace import REQUESTS
+        requests = REQUESTS.get()
+        offset = len(requests) if requests is not None else 0
         if context.window_cutoff is not None:
             return await self._window_page(context)
         token = _require(self.settings.benzinga_api_key, "BENZINGA_API_KEY")
@@ -617,7 +620,15 @@ class BenzingaNewsAdapter(_BaseAdapter):
             )
             rows = _rows(data)
             query_mode = "primary_tickers_fallback"
-        return self._rows(context, rows, query_mode=query_mode)
+        result = self._rows(context, rows, query_mode=query_mode)
+        # Both the topics response and the optional primaryTickers response
+        # were parsed here; preserve each exact transport ID rather than making
+        # the collector guess which of two successful requests was validated.
+        ids = [e['physical_request_id'] for e in (requests[offset:] if requests is not None else [])
+            if e.get('role','listing') == 'listing' and e.get('response_received_at')
+            and e.get('proof_basis') == 'TRANSPORT_SEND' and e.get('status_code') == 200]
+        return result.model_copy(update={'acquisition_metadata':{
+            **result.acquisition_metadata,'validated_request_ids':ids}})
 
     async def _window_page(self, context: PollContext) -> PollResult:
         assert context.window_start is not None and context.window_cutoff is not None

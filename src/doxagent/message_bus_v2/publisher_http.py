@@ -200,6 +200,12 @@ class PublisherSession(AsyncSession):
             if body is not None:
                 response.content = bytes(body)
             response.bus_request_event = lease["event"]
+            if lease["event"] is not None and not kwargs.get("stream"):
+                from .schema import utc_now
+                lease["event"].update(response_received_at=utc_now().isoformat(),
+                    status_code=response.status_code,
+                    validators={k:v for k,v in response.headers.items()
+                        if k.lower() in {"date","age","etag","last-modified","cache-control"}})
             response.bus_sent_at = lease["sent_at"]
             return response
         finally:
@@ -260,48 +266,48 @@ class PublisherClients:
                     self.clients.pop(name)
                     idle.retired=True
                     self._close_later(idle)
-        async with asyncio.timeout(timeout):
-            while True:
-                client = self.clients.get(key)
-                if client is None:
-                    client = self.clients[key] = _Client(
-                        self.injected or self.factory(),
-                        asyncio.Semaphore(2),
-                        used_at=time.monotonic(),
-                    )
-                source = HTTP_SOURCE.get()
-                waiting = time.monotonic()
-                async with joint_permits(client.slots, http_budget(role), source=source):
-                    if client.retired:
-                        continue
-                    from .collection_override import check_request_allowed
+        while True:
+            client = self.clients.get(key)
+            if client is None:
+                client = self.clients[key] = _Client(
+                    self.injected or self.factory(),
+                    asyncio.Semaphore(2),
+                    used_at=time.monotonic(),
+                )
+            source = HTTP_SOURCE.get()
+            waiting = time.monotonic()
+            async with joint_permits(client.slots, http_budget(role), source=source):
+                if client.retired:
+                    continue
+                from .collection_override import check_request_allowed
 
-                    check_request_allowed()
-                    client.active += 1
-                    executing = time.monotonic()
-                    if source:
-                        from .scheduler import POLL_TIMINGS
-                        timings=POLL_TIMINGS.get()
-                        if timings is not None:
-                            timings['source_http_wait_ms']=timings.get('source_http_wait_ms',0)+int((executing-waiting)*1000)
-                    try:
+                check_request_allowed()
+                client.active += 1
+                executing = time.monotonic()
+                if source:
+                    from .scheduler import POLL_TIMINGS
+                    timings=POLL_TIMINGS.get()
+                    if timings is not None:
+                        timings['source_http_wait_ms']=timings.get('source_http_wait_ms',0)+int((executing-waiting)*1000)
+                try:
+                    async with asyncio.timeout(timeout):
                         return await client.session.request(method, url, timeout=timeout, **kwargs)
-                    except TimeoutError:
-                        pool = getattr(client.session, "pool", None)
-                        if pool is not None and pool.qsize() == 0:
-                            client.retired = True
-                        raise
-                    finally:
-                        client.active -= 1
-                        client.used_at = time.monotonic()
-                        if source:
-                            source.cost.observe(max(.001,time.monotonic()-executing))
-                        if client.retired or getattr(client.session, "broken", False):
-                            if self.clients.get(key) is client:
-                                self.clients.pop(key)
-                            client.retired = True
-                        if client.retired and not client.active:
-                            self._close_later(client)
+                except TimeoutError:
+                    pool = getattr(client.session, "pool", None)
+                    if pool is not None and pool.qsize() == 0:
+                        client.retired = True
+                    raise
+                finally:
+                    client.active -= 1
+                    client.used_at = time.monotonic()
+                    if source:
+                        source.cost.observe(max(.001,time.monotonic()-executing))
+                    if client.retired or getattr(client.session, "broken", False):
+                        if self.clients.get(key) is client:
+                            self.clients.pop(key)
+                        client.retired = True
+                    if client.retired and not client.active:
+                        self._close_later(client)
 
     async def close_idle(self, seconds=180):
         for key, client in list(self.clients.items()):
