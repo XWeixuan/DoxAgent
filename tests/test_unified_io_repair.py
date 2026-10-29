@@ -286,3 +286,30 @@ async def test_joint_http_multiple_publishers_and_sources_finish_without_slot_le
     assert global_slots._value == 5
     assert all(p._value == 2 for p in publishers)
     assert all(s._semaphore._value == 2 for s in sources)
+
+
+async def test_completed_legacy_migration_never_reads_old_body_queue():
+    from doxagent.content_enrichment.service import ContentEnrichmentHub
+    hub = object.__new__(ContentEnrichmentHub)
+    hub._legacy_migrated = True
+    hub.live = SimpleNamespace(claim=AsyncMock(return_value=[]),background_active=AsyncMock(side_effect=AssertionError('legacy JSON read')))
+    hub.bus = SimpleNamespace(storage=SimpleNamespace(read=AsyncMock(side_effect=AssertionError('redundant background scan'))))
+    assert await hub._claim_jobs(limit=2,now=datetime.now(UTC)) == []
+    hub.live.claim.assert_awaited_once_with(2)
+
+
+async def test_bloom_official_feeds_use_verified_light_transport_only_for_exact_host():
+    from contextlib import asynccontextmanager
+    from doxagent.message_bus_v2.adapters import NewswireRSSAdapter
+    @asynccontextmanager
+    async def permit(): yield
+    response = SimpleNamespace(text='<rss><channel/></rss>',raise_for_status=lambda:None)
+    adapter = NewswireRSSAdapter(SimpleNamespace(monitoring_rss_user_agent='test',tool_http_timeout_seconds=8),None)
+    adapter._bloom_clients = SimpleNamespace(request=AsyncMock(return_value=response))
+    adapter._text = AsyncMock(return_value='other feed')
+    context = SimpleNamespace(binding=SimpleNamespace(source_parameters={}),request_permit=permit)
+    url='https://investor.bloomenergy.com/rss/presentation.aspx'
+    assert await adapter._feed_text(context,url) == response.text
+    adapter._bloom_clients.request.assert_awaited_once()
+    assert await adapter._feed_text(context,'https://investor.bloomenergy.com.other.test/rss/x') == 'other feed'
+    adapter._text.assert_awaited_once()

@@ -99,7 +99,7 @@ class ContentEnrichmentHub:
                     return bool(exists and db.execute("SELECT 1 FROM live_migrations WHERE name='legacy-body-complete'").fetchone())
             self._legacy_migrated = await self.bus.storage.read(completed)
         if self._legacy_migrated:
-            return await self.live.claim(limit, allow_background=not await self.bus.storage.read(self.live.background_active))
+            return await self.live.claim(limit)
         self._legacy_claim_round += 1
         background=not await self.bus.storage.read(self.live.background_active)
         jobs=[]

@@ -163,7 +163,10 @@ class AdapterRegistry:
         for adapter in self._builtins.values():
             if isinstance(adapter, (SharedFeedAdapter, IndustryListingAdapter)):
                 await adapter.close()
-        for client in self._builtins['newswire_rss']._route_clients.values():
+        newswire = self._builtins['newswire_rss']
+        if getattr(newswire, '_bloom_clients', None):
+            await newswire._bloom_clients.close()
+        for client in newswire._route_clients.values():
             await client.aclose()
         await self._builtins["corporate_ir@1"].close()
         await self._builtins["defense_public@1"].close()
@@ -894,6 +897,17 @@ class NewswireRSSAdapter(_BaseAdapter):
     async def _feed_text(self, context: PollContext, url: str) -> str:
         routes = context.binding.source_parameters.get("http_routes")
         headers = {"User-Agent": self.settings.monitoring_rss_user_agent}
+        if routes is None and (urlparse(url).hostname or "").lower() == "investor.bloomenergy.com":
+            # This official RSS endpoint rejects httpx's TLS fingerprint (403),
+            # while the verified curl transport returns its complete RSS feed.
+            from .publisher_http import PublisherClients, source_http_scope
+            if not getattr(self, '_bloom_clients', None):
+                self._bloom_clients = PublisherClients()
+            async with source_http_scope(context.request_permit):
+                response = await self._bloom_clients.request('investor.bloomenergy.com', 'GET', url,
+                    headers=headers, timeout=self.settings.tool_http_timeout_seconds)
+                response.raise_for_status()
+            return response.text
         if routes is None:
             return await self._text(context, url, headers=headers)
         from .http_routes import approved_routes, transport_routes

@@ -131,6 +131,9 @@ def sample(bus_path, minutes=30, now=None):
             "full": len(full),
             "ratio": len(full) / len(eligible) if eligible else None,
             "basis": "CANONICAL_FIRST_SEEN_ALL_ELIGIBLE_PROGRAM_LABELS_REQUIRE_PUBLISHER_SPOT_CHECK",
+            "initial_full": sum(r["initial_outcome"] in {"FULL", "SHORT_FULL"} for r in eligible),
+            "initial_pending": sum(r["initial_result_at"] is None for r in eligible),
+            "initial_full_ratio": sum(r["initial_outcome"] in {"FULL", "SHORT_FULL"} for r in eligible) / len(eligible) if eligible else None,
         },
         "delivery": {
             "required_including_unfinished": len(required),

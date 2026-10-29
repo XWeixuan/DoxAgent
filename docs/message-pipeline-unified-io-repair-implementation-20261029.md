@@ -49,3 +49,5 @@ Finnhub实际只读探针HTTP200，响应声明`x-ratelimit-limit=60`、remainin
 ## 生产观察中的启动回归修复
 
 首轮正式5fc746a6已于14:30:32Z启动Collector；14:37–14:39Z追踪ensure失败至Chrome自身退出。同镜像、同UID、临时隔离目录与Xvfb对照：只禁用domain-reliability存活、只禁用Ukm返回-11、只禁用Segmentation/Optimization存活；移除Ukm禁用参数，External及Managed一致修正。未清理任何真实身份目录。UKM后台I/O治理不能据此视为已完成，后续以真实I/O差分判断其剩余影响。首轮失败及修复停顿保留整个90分钟窗口。
+
+后续实测发现HTTP联合许可在多人排队时会反复转让而无请求进入；8c964891修正为唤醒后立即保留该许可检查其余容量，不持许可await其它容量，40并发及100请求/6publisher/4source均能完成且容量归零恢复。Registry惰性publisher/profile写入不得进入只读scope，e41694a2补齐所有相关入口。Compose旧ENV覆盖镜像commit已在正式release契约修正，旧ENV不能作为实际版本依据。进一步删除legacy迁移完成后的旧BODY JSON检查；Bloom两个非press RSS同出口curl200/RSS有效、httpx403，固定低成本curl路线，明确配置出口不变。
