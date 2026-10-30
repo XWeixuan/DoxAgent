@@ -385,3 +385,31 @@ def test_archived_shared_cycle_rebases_broker_equity_to_own_capital(tmp_path):
         "DU_TEST", "PAPER", "archived-cycle", broker.sync(), Decimal(".25")
     )
     assert result["equity"] == "4000" and result["principal"] == "4000"
+
+
+def test_shared_etf_opposite_groups_exit_their_own_quantities(tmp_path):
+    clock, repo, revision, executor, broker = setup_shared(tmp_path)
+    broker.symbols = {**broker.symbols, "SOXX": 100001}
+    broker.prices["SOXX"] = Decimal(100)
+    cfg = TradingConfig(hedge_enabled=True, margin_index_etf="SOXX")
+    open_trade(repo, revision, "MU", "overlap:long", cfg, "LONG")
+    for suffix in (":entry", ":hedge:entry"):
+        asyncio.run(run_job(executor, repo, clock, "overlap:long" + suffix))
+    first = repo.require("lots", "overlap:long:hedge")["remaining_qty"]
+    open_trade(repo, revision, "BE", "overlap:short", cfg, "SHORT")
+    for suffix in (":entry", ":hedge:entry"):
+        asyncio.run(run_job(executor, repo, clock, "overlap:short" + suffix))
+    second = repo.require("lots", "overlap:short:hedge")["remaining_qty"]
+    assert first > 0 and second > 0
+    assert repo.require("lots", "overlap:long:hedge")["remaining_qty"] == first
+    assert int(broker.positions[100001]) == second - first
+    for suffix in (":exit", ":hedge:exit"):
+        asyncio.run(run_job(executor, repo, clock, "overlap:long" + suffix))
+    assert repo.require("lots", "overlap:long:hedge")["remaining_qty"] == 0
+    assert repo.require("lots", "overlap:short:hedge")["remaining_qty"] == second
+    assert int(broker.positions[100001]) == second
+    assert sum(Decimal(f["quantity"]) for f in repo.fills("overlap:long:hedge:exit")) == first
+    for suffix in (":exit", ":hedge:exit"):
+        asyncio.run(run_job(executor, repo, clock, "overlap:short" + suffix))
+    assert int(broker.positions[100001]) == 0
+    assert repo.require("executions", "overlap:short")["group_state"] == "CLOSED"
