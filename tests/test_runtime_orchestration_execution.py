@@ -16,8 +16,8 @@ from tests.test_persistent_runtime_v2 import _AnyPolicies, _AnyResponses, _FakeK
 
 class _PolicyHitW3:
     def run(self, *, case, w3_case, slot):
+        from doxagent.persistent_runtime_v2.schema import W3ExpertTradeResult, W3PolicyResult
         from tests.test_persistent_runtime_w3 import _w3_result
-        from doxagent.persistent_runtime_v2.schema import W3PolicyResult, W3ExpertTradeResult
 
         result = _w3_result().model_copy(
             update={
