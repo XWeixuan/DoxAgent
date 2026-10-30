@@ -2475,3 +2475,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - F01-F07 targeted fixes, independent account capital, CASH two-slot budgets, integer MAIN/HEDGE plans and virtual leg ownership.
 - Remove LEGACY new entry; retain archived profile decoding for EXIT. Add desired/applied ticker configuration and REALTIME 12-minute expiry.
 - No LIVE order authorization used. Production deployment remains pending focused regressions and PAPER acceptance.
+
+2026-10-31 — Trade upgrade acceptance follow-up
+- PAPER real fills verified MAIN/HEDGE ordering, full group exits, personal holding preservation and read-only data sockets; LIVE remains unconfigured.
+- Include entry/exit commissions in stale settled-cash debit fencing; initialize capital tables without implicitly committing the caller transaction.
+- Rebase archived shared-cycle broker equity onto independent strategy capital before any new grant. Focused regression coverage added.

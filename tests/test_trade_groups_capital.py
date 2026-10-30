@@ -363,3 +363,25 @@ def test_cash_stale_broker_balance_retains_buy_and_both_leg_fee_debits(tmp_path)
             sync(),
         )
     assert capacity == 1500 - buys - 2
+
+
+def test_archived_shared_cycle_rebases_broker_equity_to_own_capital(tmp_path):
+    import json
+
+    clock, repo, revision, executor, broker = setup_shared(tmp_path)
+    ledger = CapitalLedger(repo)
+    ledger.allocate("DU_TEST", "4000", "own-principal", "own budget")
+    cycle = repo.cycle_for_entry(
+        "DU_TEST", "PAPER", "archived-cycle", broker.sync(), Decimal(".25")
+    )
+    archived = {k: v for k, v in cycle.items() if k != "principal"}
+    archived["equity"] = "100000"
+    with repo.transaction() as db:
+        db.execute(
+            "UPDATE te_account_cycles SET equity=?,payload=? WHERE cycle_id=?",
+            ("100000", json.dumps(archived), "archived-cycle"),
+        )
+    result = repo.cycle_for_entry(
+        "DU_TEST", "PAPER", "archived-cycle", broker.sync(), Decimal(".25")
+    )
+    assert result["equity"] == "4000" and result["principal"] == "4000"

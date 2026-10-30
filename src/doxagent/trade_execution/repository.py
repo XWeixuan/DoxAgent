@@ -388,9 +388,9 @@ class ExecutionRepository:
                 # Explicit allocation changes take effect for subsequent grants.
                 principal = CapitalLedger(self).book(account, db=db)["principal"]
                 value["equity"] = str(
-                    decimal(value["equity"])
-                    + principal
-                    - decimal(value.get("principal", principal))
+                    decimal(value["equity"]) + principal - decimal(value["principal"])
+                    if "principal" in value
+                    else equity
                 )
                 value["principal"] = str(principal)
                 db.execute(
@@ -651,9 +651,14 @@ class ExecutionRepository:
 
     def cleanup_prepared(self):
         with self.transaction(write=False) as db:
-            rows = [json.loads(r[0]) for r in db.execute("SELECT a.payload FROM te_attempts a JOIN te_jobs j ON j.id=a.job_id WHERE a.state='PREPARED' AND j.state IN ('DONE','FAILED')")]
+            rows = [
+                json.loads(r[0])
+                for r in db.execute(
+                    "SELECT a.payload FROM te_attempts a JOIN te_jobs j ON j.id=a.job_id WHERE a.state='PREPARED' AND j.state IN ('DONE','FAILED')"
+                )
+            ]
         for attempt in rows:
-            self.void_prepared_attempt(attempt,if_prepared=True)
+            self.void_prepared_attempt(attempt, if_prepared=True)
         return len(rows)
 
     def mark_submitting(self, attempt: dict[str, Any], *, wait_seconds: float) -> dict | None:

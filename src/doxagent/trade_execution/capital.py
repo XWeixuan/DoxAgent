@@ -16,7 +16,7 @@ ZERO = Decimal(0)
 
 
 def initialize(db):
-    db.executescript("""
+    statements = """
         CREATE TABLE IF NOT EXISTS te_capital_events (
             id TEXT PRIMARY KEY,account TEXT NOT NULL,kind TEXT NOT NULL,
             amount TEXT NOT NULL,effective_at TEXT NOT NULL,payload TEXT NOT NULL);
@@ -24,7 +24,10 @@ def initialize(db):
         CREATE TABLE IF NOT EXISTS te_cash_slots (
             account TEXT NOT NULL,slot INTEGER NOT NULL,ticker TEXT,
             PRIMARY KEY(account,slot),UNIQUE(account,ticker));
-    """)
+    """
+    for statement in statements.split(";"):
+        if statement.strip():
+            db.execute(statement)
 
 
 def put(db, namespace, key, value):
