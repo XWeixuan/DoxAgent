@@ -1,5 +1,6 @@
 import asyncio
 import json
+import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -83,7 +84,15 @@ class PortfolioBroker:
 
     def quote(self, contract, side, **kwargs):
         value = self.prices[contract["symbol"]]
-        return {"bid": str(value), "ask": str(value), "market_data_type": 1}
+        return {
+            "bid": str(value),
+            "ask": str(value),
+            "market_data_type": 1,
+            "bid_size": "100",
+            "ask_size": "100",
+            "bid_received_at": time.time(),
+            "ask_received_at": time.time(),
+        }
 
     def what_if(self, contract, order_id, **kwargs):
         self.previews.append({"contract": contract, "order_id": order_id, **kwargs})
@@ -355,7 +364,7 @@ def test_old_cycle_unfilled_entry_is_cancelled_at_exit_cutoff(tmp_path):
 def test_new_price_matrix():
     strategy = Strategy()
     assert order_type([{"order_type": "LMT"}], "RTH", "ENTRY") == "LMT"
-    assert order_type([{"order_type": "LMT"}], "RTH", "EXIT") == "MKT"
+    assert order_type([{"order_type": "LMT"}], "RTH", "EXIT") == "LMT"
     kwargs = {
         "side": "BUY",
         "kind": "LMT",
@@ -365,7 +374,7 @@ def test_new_price_matrix():
         "remaining_notional": Decimal("20000"),
     }
     assert price_and_quantity(**kwargs, retry=False, session="RTH")["limit_price"] == "100.50"
-    assert price_and_quantity(**kwargs, retry=True, session="EXTENDED")["limit_price"] == "101.00"
+    assert price_and_quantity(**kwargs, retry=True, session="EXTENDED")["limit_price"] == "100.50"
 
 
 def test_margin_rejection_survives_later_cancel_and_does_not_retry(tmp_path):

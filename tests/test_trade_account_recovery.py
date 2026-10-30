@@ -100,7 +100,7 @@ def test_busy_event_is_not_skipped_and_replay_does_not_duplicate_fill(setup, mon
     monkeypatch.setattr(executor, "apply_event", original)
     executor.drain_events()
     executor.drain_events()
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 197
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 198
     assert len(repo.fills("trade:A:entry")) == 1
 
 

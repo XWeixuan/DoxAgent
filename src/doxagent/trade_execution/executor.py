@@ -27,7 +27,7 @@ from .recovery import (
 )
 from .repository import TERMINAL_ORDERS, ExecutionRepository
 from .sessions import Sessions
-from .strategy import decimal, order_type, price_and_quantity
+from .strategy import decimal, entry_book_ready, order_type, price_and_quantity, valid_quote_side
 
 
 class Executor:
@@ -53,6 +53,56 @@ class Executor:
         self.sync_locks: dict[int, asyncio.Lock] = {}
         self.sync_cache: dict[int, tuple[Any, Any]] = {}
         self.sync_successes: dict[str, int] = {}
+        self.quote_watches = {}
+
+    def _release_watch(self, job_id):
+        watch = self.quote_watches.pop(job_id, None)
+        if watch:
+            reader, contract, owner = watch
+            reader.release_quote(contract, owner)
+
+    async def _observe_quote(self, job, contract, side, strategy):
+        execution = self.repository.require("executions", job["execution_id"])
+        reader = self.market_data(
+            self.repository.profile(execution["profile_revision"]), execution["profile_revision"]
+        )
+        owner = "execution-watch:" + job["id"]
+        try:
+            if hasattr(reader, "quote_snapshot") and hasattr(reader, "subscribe_quote"):
+                old = self.quote_watches.get(job["id"])
+                if old and (old[0] is not reader or old[1] != contract):
+                    self._release_watch(job["id"])
+                self.quote_watches[job["id"]] = (reader, contract, owner)
+                if hasattr(reader, "watch_quote"):
+                    return await asyncio.to_thread(
+                        reader.watch_quote, contract, owner, side=side, strategy=strategy
+                    )
+                await asyncio.to_thread(reader.subscribe_quote, contract, owner)
+                return reader.quote_snapshot(contract) or {}
+            # Broker test doubles and existing adapters without streaming support.
+            return await asyncio.to_thread(reader.quote, contract, side, strategy=strategy)
+        except (ValueError, RuntimeError, TimeoutError):
+            return {}
+
+    async def _entry_book_gate(self, job, contract, side, strategy):
+        if job.get("entry_book_passed_at"):
+            return True
+        repo, now = self.repository, self.journal.clock()
+        if not job.get("entry_book_started_at"):
+            job = repo.update_job(job, entry_book_started_at=now.isoformat())
+        if (now - datetime.fromisoformat(job["entry_book_started_at"])).total_seconds() >= 30:
+            repo.finish(job, "ENTRY_BOOK_TIMEOUT")
+            return False
+        quote = await self._observe_quote(job, contract, side, strategy)
+        now = self.journal.clock()
+        if (now - datetime.fromisoformat(job["entry_book_started_at"])).total_seconds() >= 30:
+            repo.finish(job, "ENTRY_BOOK_TIMEOUT")
+            return False
+        if entry_book_ready(quote, strategy.quote_max_age_seconds):
+            repo.update_job(repo.require("jobs", job["id"]), entry_book_passed_at=now.isoformat())
+            return True
+        repo.update_job(repo.require("jobs", job["id"]), state="WAIT_QUOTE", delay=0.2)
+        return False
 
     def broker(self, revision: Any) -> Any:
         profile = self.repository.profile(revision)
@@ -219,6 +269,7 @@ class Executor:
         repo = self.repository
         job = repo.get("jobs", job_id)
         if not job or job["state"] in {"DONE", "FAILED", "WAIT_MAIN"}:
+            self._release_watch(job_id)
             return
         scope = (job["account"], job.get("traded_ticker", job["ticker"]))
         lock = self.locks.setdefault(scope, asyncio.Lock())
@@ -317,6 +368,10 @@ class Executor:
                         error=str(exc),
                     )
 
+            finally:
+                if repo.require("jobs", job_id)["state"] in {"DONE", "FAILED"}:
+                    self._release_watch(job_id)
+
     async def _sync(self, broker: Any, account: Any, *, force: bool = False) -> Any:
         async with self.sync_locks.setdefault(id(broker), asyncio.Lock()):
             self.recovery.check(account)
@@ -410,6 +465,7 @@ class Executor:
 
     async def _step(self, job: Any) -> Any:
         repo = self.repository
+        self.drain_events()
         groups.advance(repo, job["execution_id"])
         execution = repo.require("executions", job["execution_id"])
         job = repo.require("jobs", job["id"])
@@ -470,6 +526,51 @@ class Executor:
             repo.finish(job, "EXPIRED_SEMANTIC_DAY")
             return
         broker = self.broker(execution["profile_revision"])
+        watch = self.quote_watches.get(job["id"])
+        if (
+            entry
+            and not attempts
+            and watch
+            and job.get("entry_book_started_at")
+            and not job.get("entry_book_passed_at")
+            and not job.get("entry_abandoned_at")
+            and not job.get("exit_requested_at")
+            and not self.recovery.state(job["account"])
+        ):
+            observed_contract = watch[1]
+            if self.sessions.classify(self.journal.clock(), observed_contract) not in {
+                "RTH",
+                "CLOSED",
+            }:
+                side = job.get("side") or ("BUY" if direction == "LONG" else "SELL")
+                if not await self._entry_book_gate(job, observed_contract, side, strategy):
+                    return
+        # Observe working ENTRY from streaming callbacks each second. Cancellation
+        # and terminal confirmation still return to the full reconciliation path.
+        if entry and attempts:
+            job = repo.require("jobs", job["id"])
+            active = next(
+                (
+                    a
+                    for a in reversed(repo.attempts(job["id"]))
+                    if a["state"] not in {"SETTLED", "NOT_SENT"}
+                ),
+                None,
+            )
+            if (
+                active
+                and active["state"] == "WORKING"
+                and active.get("broker_seen")
+                and active.get("broker_status") not in TERMINAL_ORDERS
+                and getattr(broker, "healthy", True)
+                and not self.recovery.state(job["account"])
+                and not job.get("entry_abandoned_at")
+                and not job.get("exit_requested_at")
+                and self.journal.clock() < datetime.fromisoformat(execution["intent"]["expires_at"])
+                and (not job.get("cycle_id") or job["cycle_id"] == self.cycle_id(profile))
+            ):
+                await self._advance_order(job, active, broker, False)
+                return
         await asyncio.to_thread(broker.connect)
         sync = await self._sync(broker, job["account"], force=bool(attempts))
         job = repo.require("jobs", job["id"])
@@ -533,7 +634,7 @@ class Executor:
             if cycle is None:
                 repo.update_job(job, state="WAIT_QUOTE", delay=60, error="WAIT_CYCLE_EQUITY")
                 return
-        if len(attempts) >= 3 or any(a["order_type"] == "MKT" for a in attempts):
+        if entry and len(attempts) >= 3:
             repo.finish(job, "RETRY_BUDGET_EXHAUSTED")
             return
         if job["state"] == "DONE":
@@ -588,6 +689,10 @@ class Executor:
         else:
             assert lot is not None
             side = "SELL" if lot["sign"] > 0 else "BUY"
+        if entry and not attempts and session != "RTH":
+            if not await self._entry_book_gate(job, contract, side, strategy):
+                return
+            job = repo.require("jobs", job["id"])
         quote_broker = self.market_data(profile, execution["profile_revision"])
         quote_contract = await asyncio.to_thread(
             quote_broker.contract, job.get("traded_ticker", job["ticker"]), venue
@@ -807,7 +912,7 @@ class Executor:
         if entry:
             current = repo.require("jobs", job["id"])
             if current["state"] in {"DONE", "FAILED"} or self.abandon_entry(current):
-                repo.void_prepared_attempt(attempt,if_prepared=True)
+                repo.void_prepared_attempt(attempt, if_prepared=True)
                 return False
         if attempt.get("cycle_id") and attempt["cycle_id"] != self.cycle_id(
             repo.profile(execution["profile_revision"])
@@ -840,6 +945,12 @@ class Executor:
         finally:
             self.sync_cache.clear()
         repo.update_attempt(attempt, state="WORKING")
+        if entry:
+            repo.update_job(
+                repo.require("jobs", job["id"]),
+                state="ACTIVE",
+                delay=min(1, strategy.order_wait_seconds),
+            )
         return True
 
     def _position_check(self, job: Any, contract: Any, sync: Any) -> Any:
@@ -951,13 +1062,71 @@ class Executor:
             return
         elapsed = (now - datetime.fromisoformat(attempt["sent_at"])).total_seconds()
         profile = repo.profile(repo.require("executions", job["execution_id"])["profile_revision"])
-        if elapsed < profile.strategy.order_wait_seconds and not expired and not resize:
+        early_cancel = False
+        if (
+            job["leg"] == "ENTRY"
+            and not attempt.get("cancel_sent_at")
+            and not expired
+            and not resize
+            and elapsed < profile.strategy.order_wait_seconds
+        ):
+            quote = await self._observe_quote(
+                job, attempt["contract"], attempt["side"], profile.strategy
+            )
+            now = self.journal.clock()
+            valid = valid_quote_side(quote, attempt["side"], profile.strategy.quote_max_age_seconds)
+            reference = (
+                decimal(quote["ask" if attempt["side"] == "BUY" else "bid"]) if valid else None
+            )
+            limit = decimal(attempt["limit_price"]) if attempt.get("limit_price") else None
+            outside = bool(
+                valid
+                and limit is not None
+                and (reference > limit if attempt["side"] == "BUY" else reference < limit)
+            )
+            since = attempt.get("outside_limit_since") if outside else None
+            checked = attempt.get("price_checked_at")
+            # Missing observations or a process restart cannot prove continuity.
+            if outside and (
+                not since
+                or not checked
+                or (now - datetime.fromisoformat(checked)).total_seconds() > 2
+            ):
+                since = now.isoformat()
+            early_cancel = bool(
+                since and (now - datetime.fromisoformat(since)).total_seconds() >= 2
+            )
+            attempt = repo.update_attempt(
+                attempt, outside_limit_since=since, price_checked_at=now.isoformat()
+            )
+            elapsed = (now - datetime.fromisoformat(attempt["sent_at"])).total_seconds()
+        if (
+            elapsed < profile.strategy.order_wait_seconds
+            and not expired
+            and not resize
+            and not early_cancel
+        ):
             repo.update_job(
-                job, state="ACTIVE", delay=profile.strategy.order_wait_seconds - elapsed
+                job,
+                state="ACTIVE",
+                delay=min(1, profile.strategy.order_wait_seconds - elapsed)
+                if job["leg"] == "ENTRY"
+                else profile.strategy.order_wait_seconds - elapsed,
             )
             return
         if not attempt.get("cancel_sent_at"):
-            repo.update_attempt(attempt, state="CANCEL_PENDING", cancel_sent_at=now.isoformat())
+            repo.update_attempt(
+                attempt,
+                state="CANCEL_PENDING",
+                cancel_sent_at=now.isoformat(),
+                cancel_reason="PRICE_OUTSIDE_LIMIT"
+                if early_cancel
+                else "OWNED_QUANTITY_CHANGED"
+                if resize
+                else expired_reason
+                if expired
+                else "ORDER_WAIT_ELAPSED",
+            )
             self.sync_cache.clear()
             await asyncio.to_thread(broker.cancel, attempt)
             repo.update_job(job, state="ACTIVE", delay=0.2)
@@ -975,6 +1144,8 @@ class Executor:
                 repo.update_job(job, state="ACTIVE", delay=0.2)
 
     def close(self) -> Any:
+        for job_id in list(self.quote_watches):
+            self._release_watch(job_id)
         for reader in self.data_readers.values():
             reader.close()
         for broker in self.brokers.values():

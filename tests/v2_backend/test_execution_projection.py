@@ -88,7 +88,7 @@ def test_owned_fill_and_late_commission_are_projected_without_order_status_infer
         worker.tick(limit=500)
     summary = store.get("execution", "MU", "trade:A")
     assert summary["has_actual_fill"] is True
-    assert summary["filled_quantity"]["value"] == "197"
+    assert summary["filled_quantity"]["value"] == "198"
     fill = repo.fills("trade:A:entry")[0]
     repo.event(
         repo.profile(revision).expected_account_id,

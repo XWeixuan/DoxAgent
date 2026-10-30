@@ -17,20 +17,20 @@ def test_owned_split_adjustment_is_replayable_and_leaves_manual_shares(setup):
     clock, repo, revision, executor, broker = setup
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 197
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 198
     adjustment = dict(
         adjustment_id="MU-SPLIT-TEST",
-        quantity_delta=197,
+        quantity_delta=198,
         effective_at=clock().isoformat(),
         reason="reviewed 2:1 split, own shares only",
     )
     repo.adjust_lot("trade:A", **adjustment)
     repo.adjust_lot("trade:A", **adjustment)
-    broker.positions[9939] = "444"
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 394
+    broker.positions[9939] = "446"
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 396
     clock.value = datetime.fromisoformat(repo.require("lots", "trade:A")["scheduled_exit"])
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
-    assert broker.sent[-1]["quantity"] == 394
+    assert broker.sent[-1]["quantity"] == 396
     assert broker.positions[9939] == "50"
     assert repo.require("lots", "trade:A")["remaining_qty"] == 0
 
@@ -97,7 +97,8 @@ with WriterLock(Path(sys.argv[1])) as owner:
     clock.advance(10)
     with WriterLock(repo.journal.path):
         asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert len(broker.sent) == 1 and broker.sent[0]["order_type"] == "LMT"
+    assert len(broker.sent) == 2 and all(a["order_type"] == "LMT" for a in broker.sent)
+    assert len(repo.attempts("trade:A:entry")) == 3
     assert broker.sent[0]["order_id"] != attempt["order_id"]
     assert repo.require("lots", "trade:A")["remaining_qty"] == 100
 
@@ -161,7 +162,7 @@ def test_exit_failure_keeps_lot_and_explicit_resume_has_new_budget(setup):
     broker.quote = denied
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
     assert repo.require("jobs", "trade:A:exit")["state"] == "FAILED"
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 197
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 198
     repo.resume_exit("trade:A", "quotes restored")
     broker.quote = original_quote
     broker.mode = "fill"

@@ -1,6 +1,7 @@
 """Pure price/quantity/attempt decisions, preserving the approved strategy."""
 
-from decimal import ROUND_CEILING, ROUND_FLOOR, Decimal
+import time
+from decimal import ROUND_CEILING, ROUND_FLOOR, Decimal, InvalidOperation
 from typing import Any
 
 from .schema import Strategy
@@ -39,11 +40,32 @@ def round_price(price: Decimal, side: str, rules: list[dict[str, Any]]) -> Decim
 def order_type(attempts: list[dict[str, Any]], session: str, leg: str = "ENTRY") -> str | None:
     if session == "CLOSED":
         return None
-    if any(item["order_type"] == "MKT" for item in attempts):
+    if leg == "ENTRY" and len(attempts) >= 3:
         return None
-    if len(attempts) >= (2 if session == "RTH" else 3):
-        return None
-    return "MKT" if attempts and session == "RTH" and leg == "EXIT" else "LMT"
+    return "LMT"
+
+
+def valid_quote_side(quote, side, max_age, *, now=None):
+    """A streaming cache read must not turn missing/stale L1 into a valid side."""
+    field = "ask" if side == "BUY" else "bid"
+    try:
+        age = (time.time() if now is None else now) - float(quote[field + "_received_at"])
+        return bool(
+            quote.get("market_data_type") == 1
+            and decimal(quote[field]) > 0
+            and decimal(quote[field + "_size"]) > 0
+            and not quote.get(field + "_pending")
+            and 0 <= age <= max_age
+        )
+    except (KeyError, TypeError, ValueError, InvalidOperation):
+        return False
+
+
+def entry_book_ready(quote, max_age):
+    if not all(valid_quote_side(quote, side, max_age) for side in ("BUY", "SELL")):
+        return False
+    bid, ask = decimal(quote["bid"]), decimal(quote["ask"])
+    return bid <= ask and (ask - bid) / ((ask + bid) / 2) < Decimal(".03")
 
 
 def price_and_quantity(
@@ -61,11 +83,8 @@ def price_and_quantity(
     reference = decimal(quote["ask" if side == "BUY" else "bid"])
     if reference <= 0:
         raise ValueError("QUOTE_UNAVAILABLE")
-    tolerance = (
-        strategy.non_rth_retry_tolerance
-        if retry and session != "RTH"
-        else strategy.initial_tolerance
-    )
+    # Historical profile fields remain decodable; all new orders use this policy.
+    tolerance = Decimal(".005")
     cap = reference * (1 + tolerance if side == "BUY" else 1 - tolerance)
     limit = round_price(cap, side, rules) if kind == "LMT" else None
     sizing = limit if limit is not None else reference

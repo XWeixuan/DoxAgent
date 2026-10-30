@@ -12,8 +12,10 @@ class Strategy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     min_entry_notional_ratio: Decimal = Field(default=Decimal("0.25"), gt=0, le=1)
     initial_tolerance: Decimal = Field(default=Decimal("0.005"), ge=0, lt=1)
-    non_rth_retry_tolerance: Decimal = Field(default=Decimal("0.01"), ge=0, lt=1)
+    # Old pinned payloads remain readable; pricing is now fixed by strategy.py.
+    non_rth_retry_tolerance: Decimal = Field(default=Decimal("0.005"), ge=0, lt=1)
     order_wait_seconds: float = Field(default=5, gt=0, le=60)
+    # Archive compatibility only; order_type enforces three ENTRY opportunities.
     rth_max_retries: Literal[1] = 1
     non_rth_max_retries: Literal[2] = 2
     exit_offset_minutes: int = Field(default=30, gt=0, lt=180)

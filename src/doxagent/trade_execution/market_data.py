@@ -3,10 +3,12 @@
 import json
 import os
 import threading
+import time
 
 from doxagent.ibkr_data_sources import DataSourceRouter
 
 from .ibkr_session import IbkrSession
+from .strategy import valid_quote_side
 
 
 class ReadOnlyQuotes:
@@ -19,6 +21,7 @@ class ReadOnlyQuotes:
         self.sessions, self.contracts = {}, {}
         self.current = None
         self.session_lock = threading.Lock()
+        self.watch_waits = {}
 
     def _session(self, source):
         with self.session_lock:
@@ -89,9 +92,34 @@ class ReadOnlyQuotes:
 
         return self.router.run("realtime", invoke)
 
+    def watch_quote(self, contract, owner, *, side, strategy):
+        """Nonblocking streaming observation; no bilateral gate on retries."""
+
+        def invoke(source):
+            broker, actual = self._contract(source, contract)
+            broker.subscribe_quote(actual, owner)
+            value = broker.quote_snapshot(actual) or {}
+            key = (source["name"], tuple(value.get("generation", ())), contract["con_id"], owner)
+            if value.get("error"):
+                broker.release_quote(actual, owner)
+                raise RuntimeError(value["error"])
+            if valid_quote_side(value, side, strategy.quote_max_age_seconds):
+                self.watch_waits.pop(key, None)
+            elif (
+                time.monotonic() - self.watch_waits.setdefault(key, time.monotonic())
+                >= strategy.request_timeout_seconds
+            ):
+                broker.release_quote(actual, owner)
+                raise TimeoutError("FRESH_QUOTE_UNAVAILABLE")
+            self.current = broker
+            return value
+
+        return self.router.run("realtime", invoke)
+
     def release_quote(self, contract, owner):
         for broker in self.sessions.values():
             broker.release_quote(contract, owner)
+        self.watch_waits = {k: v for k, v in self.watch_waits.items() if k[-1] != owner}
 
     def quote_snapshot(self, contract):
         return self.current.quote_snapshot(contract) if self.current else None

@@ -1,4 +1,5 @@
 import asyncio
+import time
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
@@ -125,7 +126,15 @@ class Broker:
         self.quote_calls += 1
         if self.mode == "no_quote":
             raise ValueError("QUOTE_UNAVAILABLE")
-        return {"bid": self.quote_price, "ask": self.quote_price, "market_data_type": 1}
+        return {
+            "bid": self.quote_price,
+            "ask": self.quote_price,
+            "market_data_type": 1,
+            "bid_size": "100",
+            "ask_size": "100",
+            "bid_received_at": time.time(),
+            "ask_received_at": time.time(),
+        }
 
     def order_event(self, a, status):
         self.sink(
@@ -226,13 +235,13 @@ def test_price_rules_retry_matrix_and_sizing():
         strategy=profile().strategy,
         remaining_notional=Decimal("10020"),
     )
-    assert result["limit_price"] == "106.08" and result["quantity"] == 94
+    assert result["limit_price"] == "104.52" and result["quantity"] == 95
     assert order_type([], "RTH") == "LMT"
-    assert order_type([{"order_type": "LMT"}], "RTH", "EXIT") == "MKT"
-    assert order_type([{"order_type": "LMT"}] * 2, "RTH") is None
+    assert order_type([{"order_type": "LMT"}], "RTH", "EXIT") == "LMT"
+    assert order_type([{"order_type": "LMT"}] * 2, "RTH") == "LMT"
     assert order_type([{"order_type": "LMT"}] * 2, "EXTENDED") == "LMT"
     assert order_type([{"order_type": "LMT"}] * 3, "EXTENDED") is None
-    assert order_type([{"order_type": "MKT"}], "EXTENDED") is None
+    assert order_type([{"order_type": "MKT"}], "EXTENDED") == "LMT"
 
 
 def test_calendar_exit_holiday_early_close_and_cutoff(setup):
@@ -254,12 +263,12 @@ def test_long_fill_and_exit_only_owned_lot(setup):
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
     lot = repo.get("lots", "trade:A")
-    assert lot["remaining_qty"] == 197
+    assert lot["remaining_qty"] == 198
     assert repo.get("executions", "trade:A")["entry_result"] == "FILLED"
     assert len(broker.sent) == 1  # Price improvement does not initiate extra top-up.
     clock.value = datetime.fromisoformat(lot["scheduled_exit"])
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
-    assert broker.sent[-1]["side"] == "SELL" and broker.sent[-1]["quantity"] == 197
+    assert broker.sent[-1]["side"] == "SELL" and broker.sent[-1]["quantity"] == 198
     assert broker.positions[9939] == "50"
     assert repo.get("lots", "trade:A")["remaining_qty"] == 0
 
@@ -354,7 +363,7 @@ def test_non_rth_three_attempts_then_stop(setup):
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry", limit=24))
     assert len(broker.sent) == 3 and len(broker.cancels) == 3
-    assert [a["limit_price"] for a in broker.sent] == ["101.00", "102.00", "102.00"]
+    assert [a["limit_price"] for a in broker.sent] == ["100.50", "100.50", "100.50"]
     assert all(a["order_type"] == "LMT" for a in broker.sent)
     assert repo.get("executions", "trade:A")["entry_result"] == "FAILED"
 
