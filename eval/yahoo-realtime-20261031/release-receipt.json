@@ -1,0 +1,106 @@
+{
+  "verified_at": "2026-10-30T21:07:47.763581+00:00",
+  "roles": {
+    "v2-api": {
+      "image": "sha256:9cee300f48bd363e1a8eb5df320374f6a1a2828f022a16820141677d93b79576",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-30T21:01:52.034374167Z",
+      "restarts": 0,
+      "release_commit": "412d5cfad2890877ed5b04dcb56f7d67b927109d",
+      "registered_image_matches": true
+    },
+    "v2-projector": {
+      "image": "sha256:9cee300f48bd363e1a8eb5df320374f6a1a2828f022a16820141677d93b79576",
+      "running": true,
+      "health": null,
+      "started_at": "2026-10-30T21:02:34.112383411Z",
+      "restarts": 0,
+      "release_commit": "412d5cfad2890877ed5b04dcb56f7d67b927109d",
+      "registered_image_matches": true
+    },
+    "v2-site-access": {
+      "image": "sha256:f1dd49cf707939e51f25f30dc5947a2b49220d9951667f0f6600f2b21086715d",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-30T21:02:48.808380788Z",
+      "restarts": 0,
+      "release_commit": "412d5cfad2890877ed5b04dcb56f7d67b927109d",
+      "registered_image_matches": true
+    },
+    "v2-message-bus": {
+      "image": "sha256:9cee300f48bd363e1a8eb5df320374f6a1a2828f022a16820141677d93b79576",
+      "running": true,
+      "health": null,
+      "started_at": "2026-10-30T21:03:02.567065425Z",
+      "restarts": 0,
+      "release_commit": "412d5cfad2890877ed5b04dcb56f7d67b927109d",
+      "registered_image_matches": true
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:9cee300f48bd363e1a8eb5df320374f6a1a2828f022a16820141677d93b79576",
+      "running": true,
+      "health": null,
+      "started_at": "2026-10-30T21:03:13.842681833Z",
+      "restarts": 0,
+      "release_commit": "412d5cfad2890877ed5b04dcb56f7d67b927109d",
+      "registered_image_matches": true
+    },
+    "v2-message-collector": {
+      "image": "sha256:9cee300f48bd363e1a8eb5df320374f6a1a2828f022a16820141677d93b79576",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-30T21:03:26.243097225Z",
+      "restarts": 0,
+      "release_commit": "412d5cfad2890877ed5b04dcb56f7d67b927109d",
+      "registered_image_matches": true
+    },
+    "v2-web": {
+      "image": "sha256:89321857061bf45c624bf4eb2b027f197fe2d82b26d767bb3614137b5196cb23",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-30T21:03:38.926954247Z",
+      "restarts": 0,
+      "release_commit": "412d5cfad2890877ed5b04dcb56f7d67b927109d",
+      "registered_image_matches": true
+    }
+  },
+  "code": [
+    {
+      "role": "v2-message-collector",
+      "path": "src/doxagent/message_bus_v2/yahoo_graphql.py",
+      "sha256": "467bdbf0997cbad1148e680f87283ff62cb59ab16453a6286c90cf81f843ce7f",
+      "matches": true
+    },
+    {
+      "role": "v2-message-collector",
+      "path": "src/doxagent/message_bus_v2/yahoo_transport.py",
+      "sha256": "91acd204b76248495b313730fa9b784f31359d687a8d75733861aaca73e439b7",
+      "matches": true
+    },
+    {
+      "role": "v2-message-bus",
+      "path": "src/doxagent/message_bus_v2/live_repository.py",
+      "sha256": "37672f4f820874a7f4f6469932fd71bd4ff5347568b41aff4749458169018109",
+      "matches": true
+    },
+    {
+      "role": "v2-content-enrichment",
+      "path": "src/doxagent/content_enrichment/service.py",
+      "sha256": "f227380058c50bc5da3b29a84cdf40db0c9917248363ffd94a78d6a97c7760ba",
+      "matches": true
+    },
+    {
+      "role": "v2-site-access",
+      "path": "src/doxagent/site_strategy/origin_listing.py",
+      "sha256": "9027813984307df4bee5f5bf191537ddc649fedaaf535a59ab6f39171fb1dc53",
+      "matches": true
+    },
+    {
+      "role": "v2-projector",
+      "path": "src/doxagent/v2_read/projectors.py",
+      "sha256": "5f83b37c77f162a59f414574677dbfc843dd8fef50fbdfc9da6464478c36e281",
+      "matches": true
+    }
+  ]
+}

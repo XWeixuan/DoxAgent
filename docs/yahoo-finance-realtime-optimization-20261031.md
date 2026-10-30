@@ -65,7 +65,26 @@ GraphQL 可独立于浏览器运行。采用 Yahoo 自身前端使用的公开 C
 - 1262/1559 两种桌面宽度实际浏览器检查了估算标识，截图已检查，无横向溢出。此为合成 UI 契约场景，不冒充自然新闻验收。
 - 原始较大回归 153 passed、1 failed。失败为 `test_prepare_failure_does_not_claim_or_mutate_pending_task`，涉及 RuntimeJournal 的 claim/prepare 顺序；从未修改的 `d4ae2324` HEAD 导出源码后同样失败。本轮不改变该运行时机制。
 - 本地 C 盘空间不足曾导致后续测试建库失败；已将本轮基线副本转移至 D 盘，并在 D 盘独立临时目录重新执行相关回归。环境失败不计作功能通过。
+- 最终 D 盘复测：**177 passed, 1 deselected**（上述已证实的 Runtime 旧失败）；最终精确时间/页面专项 **30 passed**。回执为 `verified-regression.xml`、`exact-final.xml`。未把先前中断的扩大测试算成通过。
 
 ## 发布与自然消息时延
 
-待本轮最终回归和实际部署记录补充。验收时分别记录：官方精确首发、首次 transport/listing 观测、capture 持久化、live 接纳、FULL/SHORT_FULL、Stream 发布时间。只比较真实首发新稿；更新稿、部署前已出现的文章和估算时间另列，不用它们伪造改善幅度。
+功能提交 **412d5cfad2890877ed5b04dcb56f7d67b927109d** 已推送 `origin/main` 并同步生产仓库。通过标准 `storage_release.py` 的提交归档构建、组件发布、运行检查与资源登记部署，未把本地其他会话未提交的 W3/回测修改带入镜像。
+
+北京 05:01–05:03 依次切换 API、Projector、Site Access、Bus、BODY、Collector、Web；Collector 于 **05:03:26** 启动。七组件运行、重启计数均为 0，带健康检查的组件 healthy；六份关键模块的运行文件 SHA-256 与提交一致。Chrome Supervisor、身份、Profile、代理选择和 ticker 绑定/周期配置均未作变更。原九 ticker 仍为 30 秒，IONQ 沿用原 60 秒。
+
+`release-receipt.json` 记录实际镜像与代码校验。最终窗口 **05:03:26–05:11:05** 的自然轮询（包括失败）为：
+
+| 路径 | 完成轮次及结果 | 执行均值 | 成功轮询间隔均值（含 IONQ） |
+| --- | --- | ---: | ---: |
+| GraphQL | 142 CAPTURED / 1 FAILED | 0.63 秒 | 31.59 秒 |
+| RSS | 146 CAPTURED | 0.53 秒 | 31.48 秒 |
+| 页面 | 145 CAPTURED | 1.02 秒 | 31.27 秒 |
+
+唯一 GraphQL 失败为 BE 的 `RequestError`，21:04:27Z 发起，约 1 秒失败；下一正常轮次恢复，未拖住其他 ticker、RSS 或页面。它导致 BE 成功间隔约 60 秒，不能从统计中剔除。这里尚无更底层网络错误码证据，不把它武断写成 TLS、限流或接口 schema 故障。窗口结束全部十 ticker 三个 HEAD 均 succeeded。
+
+一次部署后进程资源快照：Collector 263 MiB、Bus 166 MiB、BODY 183 MiB、Site Access 2.46 GiB，均为整个组件，不是 Yahoo 增量，也不是峰值或长期均值。标准资源回收因当时 CPU 压力暂缓，登记无错误；新三份业务镜像均被运行组件引用，未清理业务内容、卷或 Profile。
+
+该窗口**没有发布于切换后、可核实精确首发时间的真实新稿样本**，因此不能宣称“发布时间至首次发现/接纳已从约 9 分钟降到 30 秒”，也不能把历史更新稿重放作验收。已确认的验收结论是：真实第三路径上线并持续取到有效列表、精确时间补查不再阻塞新鲜相对时间卡片、三路去重且独立运行。真实新稿端到端降幅仍缺样本。
+
+`verify_production.py` 只读核对首次 transport/listing 观测、capture 持久化、live 接纳、FULL/SHORT_FULL、Stream 发布时间。注意 ACCEPTED capture 的 payload 会被正常清空；需要沿原 input_ref/原生内容及 pipeline_trace 回溯，不能把 `{}` 当作当轮没采集到文章。生产快照为 `production-verification.json`、最终 `natural-final.json`，只比较真实首发新稿；更新稿、部署前已出现的文章和估算时间另列。
