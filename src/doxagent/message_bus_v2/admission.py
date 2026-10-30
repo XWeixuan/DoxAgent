@@ -50,6 +50,8 @@ def evaluate_admission(
         day = published_at.astimezone(ZoneInfo("America/New_York")).date()
         return None if today - timedelta(days=1) <= day <= today else "OUTSIDE_RECENT_DATES"
     if context.mode == "CLOSED_SWEEP":
+        if basis == 'RELATIVE':
+            return 'UNRESOLVED_PUBLICATION_TIME'
         assert context.window_start is not None and context.cutoff is not None
         return (
             None

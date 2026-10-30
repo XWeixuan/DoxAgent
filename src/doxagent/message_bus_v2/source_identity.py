@@ -62,7 +62,7 @@ def resolve_source_name(*, publisher_name=None, resolved_domain=None, url=None) 
 
 
 def business_publication_time(value, basis="EXACT") -> str | None:
-    if str(basis).upper() == "UNKNOWN_FIRST_SEEN" or value is None:
+    if str(basis).upper() in {"UNKNOWN_FIRST_SEEN", "RELATIVE"} or value is None:
         return None
     text = value.isoformat() if hasattr(value, "isoformat") else str(value)
     return text[:10] if str(basis).upper() == "DATE" else text

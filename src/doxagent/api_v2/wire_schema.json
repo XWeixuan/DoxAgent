@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "b3913b78d4d6b66508ed7b75774243de5cc094891d545ea1f4a60c78f31c9753",
+  "source_sha256": "bae3ac06cf7767c94dd8fc6bda2d5e4e3c5d7b85b6f4a1545d83726898dc3cd4",
   "$defs": {
     "Id": {
       "type": "string"
@@ -6298,6 +6298,9 @@
         },
         "revision": {
           "$ref": "#/$defs/Count"
+        },
+        "publication_time_basis": {
+          "type": "string"
         },
         "content_update": {
           "type": "object",

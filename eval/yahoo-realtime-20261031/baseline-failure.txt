@@ -1,0 +1,28 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_________ test_prepare_failure_does_not_claim_or_mutate_pending_task __________
+
+bus = (<doxagent.message_bus_v2.repository.MessageBusV2Repository object at 0x000001A8258E9B10>, <doxagent.message_bus_v2.service.MessageBusV2Service object at 0x000001A8258E9890>)
+tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3154/test_prepare_failure_does_not_0')
+
+    async def test_prepare_failure_does_not_claim_or_mutate_pending_task(bus, tmp_path):
+        from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+        repo, _ = bus
+        journal = RuntimeJournal(tmp_path / "runtime.sqlite3", clock=lambda: NOW)
+        inputs = {"mode": "REALTIME", "source": {"body": "original"}}
+        journal.put_task("case:1", "MU", "CASE", inputs)
+        def fail(_):
+            raise LookupError("temporarily missing stream")
+        with pytest.raises(LookupError):
+            journal.claim("case:1", prepare_inputs=fail)
+        task = journal.get_task("case:1")
+>       assert task["status"] == "PENDING" and task["token"] == 0
+E       AssertionError: assert ('RUNNING' == 'PENDING'
+E         
+E         - PENDING
+E         + RUNNING)
+
+eval\yahoo-realtime-20261031\baseline\tests\test_message_bus_v2_deduplication.py:410: AssertionError
+=========================== short test summary info ===========================
+FAILED eval\yahoo-realtime-20261031\baseline\tests\test_message_bus_v2_deduplication.py::test_prepare_failure_does_not_claim_or_mutate_pending_task
+1 failed in 3.57s

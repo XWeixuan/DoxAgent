@@ -26,6 +26,7 @@ from ..schema import (
 )
 from ..scheduler import GlobalPollScheduler
 from ..search_plan import build_query_plan
+from ..yahoo_sources import yahoo_lane
 from .config import Configuration, ConfigurationLoader, load
 from .store import AcquisitionStore, path_for, required_unit
 
@@ -51,7 +52,7 @@ def balanced_phases(desired):
         if unit.startswith('TAIL:'):
             continue
         period = options['ir_spec'].target_interval_seconds if 'ir_spec' in options else min(b.polling.target_interval_seconds for b in targets)
-        route = ('browser' if unit == 'SUPPLEMENT_HEAD' else 'rss') if source.source_id == 'yahoo_finance_news' else 'all'
+        route = yahoo_lane(unit) if source.source_id == 'yahoo_finance_news' else 'all'
         groups[(source.source_id, period, route)].append(key)
     phases = {}
     for group, members in groups.items():
@@ -211,7 +212,7 @@ class Collector:
                 groups[s.scheduler_group] += 1 / period
                 limiter_key=s.source_id
                 if s.source_id=="yahoo_finance_news":
-                    limiter_key+=":browser" if unit=="SUPPLEMENT_HEAD" else ":rss"
+                    limiter_key+=':'+yahoo_lane(unit)
                 limiter_rates[limiter_key]+=1/period
             phase, phase_key = phases.get(key, ((int(sha256_text(':'.join(key))[:8], 16) % max(1, period * 1000)) / 1000, None))
             options['schedule_phase_key'] = phase_key
@@ -236,6 +237,13 @@ class Collector:
                 )
                 if not state:
                     old.update((seed.units.get(unit, {}) if seed else {}))
+                    if s.source_id == 'yahoo_finance_news' and unit == 'GRAPHQL_HEAD':
+                        # Adding a parallel path to an already running ticker is
+                        # not a new ticker bootstrap. Exact freshness still gates intake.
+                        old['bootstrap_complete'] = any(
+                            self.states.get((b.binding_id, head), {}).get('state', {}).get('bootstrap_complete', False)
+                            for head in ('HEAD', 'SUPPLEMENT_HEAD')
+                        ) or bool(old.get('bootstrap_complete'))
                 old.pop("units", None)
                 old.pop("projection_counts", None)
                 if "ir_spec" in options:
@@ -416,7 +424,7 @@ class Collector:
         demand = DEMAND.set(
             {
                 "rate": self.planner._limiter_demand.get(source.source_id+(
-                    ':browser' if unit=='SUPPLEMENT_HEAD' else ':rss') if source.source_id=='yahoo_finance_news'
+                    ':'+yahoo_lane(unit)) if source.source_id=='yahoo_finance_news'
                     else source.source_id,0),
                 "work_class": "backfill" if unit.startswith("TAIL:") else "foreground",
             }
@@ -606,14 +614,16 @@ class Collector:
             )
         finally:
             finished = utc_now()
-            valid = valid and any(
+            # Timestamp-only work validates article metadata, not a fresh listing.
+            # It is auxiliary (required=0) and cannot renew HEAD cadence evidence.
+            valid = valid and (unit == 'TAIL:YAHOO_TIME' or any(
                 e.get("role", "listing") == "listing"
                 and e.get('list_validated') and e.get('proof_basis')=='TRANSPORT_SEND'
                 and e.get("response_received_at")
                 and not e.get("error_type")
                 and (e.get("status_code") is None or 200 <= e["status_code"] < 400)
                 for e in events
-            )
+            ))
             if not valid and not reason:
                 reason = "UNPROVEN_LISTING"
             next_due = epoch + timedelta(

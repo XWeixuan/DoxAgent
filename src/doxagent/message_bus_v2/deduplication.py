@@ -59,7 +59,7 @@ def stable_fields(message: RawMessageInput) -> dict:
         "body": text(message.body) if not invalid_page(message.body) else "",
         "published_at": (
             message.published_at.isoformat()
-            if message.publication_time_basis != "UNKNOWN_FIRST_SEEN"
+            if message.publication_time_basis not in {"UNKNOWN_FIRST_SEEN", "RELATIVE"}
             else None
         ),
         "updated_at": message.metadata.get("identity_evidence", {}).get("updated_at"),
@@ -127,8 +127,8 @@ def aliases(raw: RawMessage) -> list[str]:
 
 def context_conflict(a: RawMessage, b: RawMessage, *, content_match: bool = False) -> bool:
     if (
-        a.publication_time_basis != "UNKNOWN_FIRST_SEEN"
-        and b.publication_time_basis != "UNKNOWN_FIRST_SEEN"
+        a.publication_time_basis not in {"UNKNOWN_FIRST_SEEN", "RELATIVE"}
+        and b.publication_time_basis not in {"UNKNOWN_FIRST_SEEN", "RELATIVE"}
     ):
         if abs(a.published_at - b.published_at) > timedelta(hours=36):
             return True

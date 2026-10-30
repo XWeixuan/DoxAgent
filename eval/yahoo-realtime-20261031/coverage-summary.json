@@ -1,0 +1,92 @@
+[
+  {
+    "ticker": "INTC",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 14,
+    "rss_shared_with_graphql": 14,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.068
+  },
+  {
+    "ticker": "MU",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 18,
+    "rss_shared_with_graphql": 17,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.228
+  },
+  {
+    "ticker": "COHR",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 19,
+    "rss_shared_with_graphql": 19,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.218
+  },
+  {
+    "ticker": "NBIS",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 18,
+    "rss_shared_with_graphql": 18,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.527
+  },
+  {
+    "ticker": "BE",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 19,
+    "rss_shared_with_graphql": 18,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.23
+  },
+  {
+    "ticker": "CEG",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 17,
+    "rss_shared_with_graphql": 17,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.171
+  },
+  {
+    "ticker": "SNOW",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 17,
+    "rss_shared_with_graphql": 17,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.556
+  },
+  {
+    "ticker": "RKLB",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 20,
+    "rss_shared_with_graphql": 20,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.259
+  },
+  {
+    "ticker": "ONDS",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 19,
+    "rss_shared_with_graphql": 19,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.369
+  },
+  {
+    "ticker": "IONQ",
+    "graphql_count": 50,
+    "html_count": 12,
+    "rss_count": 20,
+    "rss_shared_with_graphql": 20,
+    "graphql_new_fresh_missing_rss": [],
+    "graphql_seconds": 1.36
+  }
+]

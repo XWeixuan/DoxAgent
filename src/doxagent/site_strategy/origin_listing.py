@@ -41,9 +41,10 @@ def valid_market(html, url, site, ticker):
     return False
 
 
-async def yahoo_rows(page, html, ticker, parameters):
+async def yahoo_rows(page, html, ticker, parameters, *, observed_at=None):
     from lxml import html as H
     import json
+    import re
     from doxagent.message_bus_v2.yahoo_sources import capture_timestamp_rows, hydration_news_rows
 
     doc = H.fromstring(html)
@@ -63,8 +64,9 @@ async def yahoo_rows(page, html, ticker, parameters):
             from urllib.parse import urljoin
 
             url = urljoin("https://finance.yahoo.com", link.get("href"))
-            if urlsplit(url).hostname != "finance.yahoo.com" or not urlsplit(url).path.endswith(
-                ".html"
+            parsed = urlsplit(url)
+            if parsed.scheme != 'https' or parsed.hostname != "finance.yahoo.com" or not (
+                parsed.path.endswith('.html') or re.match(r'/m/[0-9a-f-]{36}/', parsed.path, re.I)
             ):
                 continue
             cards.append(
@@ -75,6 +77,9 @@ async def yahoo_rows(page, html, ticker, parameters):
                     "publisher": tag.get("yDestinationContentPartner")
                     or tag.get("yContentPartner")
                     or "Yahoo Finance",
+                    "relative_time": ' '.join(card.xpath('.//*[contains(concat(" ",normalize-space(@class)," ")," publishing ")]//text()')),
+                    "pubDate": next(iter(card.xpath('.//time/@datetime')), None),
+                    "listing_observed_at": (observed_at or datetime.now(UTC)).isoformat(),
                 }
             )
     if not cards:
@@ -87,4 +92,5 @@ async def yahoo_rows(page, html, ticker, parameters):
         known_dates=parameters.get("known_dates", {}),
         probe_offset=parameters.get("probe_offset", 0),
         max_probes=int(parameters.get("max_probes", 0)),
+        allow_relative=parameters.get('allow_relative', True),
     )

@@ -539,7 +539,8 @@ class GlobalPollScheduler:
             source_demand = defaultdict(float)
             for source, binding in eligible:
                 count = (
-                    2
+                    3 if source.source_id == 'yahoo_finance_news' and binding.source_parameters.get('graphql_enabled', True)
+                    else 2
                     if source.source_id in {"yahoo_finance_news", "barrons_ticker_news"}
                     else len(
                         self._query_plans.get((source.source_id, binding.ticker), {}).get(
@@ -603,6 +604,8 @@ class GlobalPollScheduler:
             units = [(unit, {}) for unit in endpoint_units(source, binding)]
         elif source.source_id == "yahoo_finance_news":
             units.append(("SUPPLEMENT_HEAD", {}))
+            if binding.source_parameters.get('graphql_enabled', True):
+                units.append(("GRAPHQL_HEAD", {}))
             head = state.units.get("SUPPLEMENT_HEAD", {}).get("checkpoint", {})
             tail = state.units.get("TAIL:YAHOO_TIME", {}).get("checkpoint", {})
             dates = {
@@ -1432,7 +1435,8 @@ class GlobalPollScheduler:
         demand = {
             "due_at": attempted_at.isoformat(),
             "rate": self._source_demand.get(source.source_id, 0)
-            / (2 if source.source_id == "yahoo_finance_news" else 1),
+            / ((3 if binding.source_parameters.get('graphql_enabled', True) else 2)
+               if source.source_id == "yahoo_finance_news" else 1),
             "work_class": "backfill"
             if kwargs.get("window_cutoff")
             or (
@@ -2003,7 +2007,9 @@ class GlobalPollScheduler:
     def _limiter(self, source: SourceDefinition, unit="ALL") -> SchedulerGroupLimiter:
         key = source.source_id
         if source.source_id == "yahoo_finance_news":
-            key += ":browser" if unit in {"SUPPLEMENT_HEAD", "TAIL:YAHOO_TIME"} else ":rss"
+            from .yahoo_sources import yahoo_lane
+
+            key += ':' + yahoo_lane(unit)
         current = self._limiters.get(key)
         constraints = source.scheduler_constraints
         if source.scheduler_constraints.capacity_mode == "adaptive":

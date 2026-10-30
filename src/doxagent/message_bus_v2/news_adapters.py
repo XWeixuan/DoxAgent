@@ -176,6 +176,13 @@ class YahooFinanceNewsAdapter:
     async def poll(self, context: PollContext) -> PollResult:
         from .yahoo_sources import acquire_yahoo_rss
 
+        if context.acquisition_unit == "GRAPHQL_HEAD":
+            from .yahoo_graphql import acquire
+
+            async with context.request_permit():
+                rows, metadata = await acquire(self.transport, context.ticker)
+            return self._map_result(context, rows, "graphql_ticker_stream", 50, metadata)
+
         if context.acquisition_unit in {"SUPPLEMENT_HEAD","TAIL:YAHOO_TIME"}:
             result = await self._poll_supplement(context)
             if result.acquisition_metadata.get("query_mode") != "page_network_ncp":
@@ -274,6 +281,7 @@ class YahooFinanceNewsAdapter:
                             context.ticker,
                             snippet_count=count,
                             operation_id=context.poll_run_id,
+                            allow_relative=context.window_start is None,
                             pending_rows=context.checkpoint.get("pending_timestamp_rows", []),
                             probe_offset=context.checkpoint.get("timestamp_probe_offset", 0),
                             known_dates={**context.checkpoint.get("verified_article_dates", {}),
@@ -484,7 +492,7 @@ class YahooFinanceNewsAdapter:
         for row in rows:
             original_time = row.get("pubDate") or row.get("providerPublishTime")
             published = _dt(original_time)
-            basis = "EXACT"
+            basis = row.get('publication_time_basis', "EXACT")
             if isinstance(original_time, str) and len(original_time.strip()) == 10:
                 published = datetime.fromisoformat(original_time).replace(
                     hour=12, tzinfo=ZoneInfo("America/New_York")
@@ -548,6 +556,9 @@ class YahooFinanceNewsAdapter:
                             else {}
                         ),
                         "publisher_domain": _domain(provider_url),
+                        **({'publication_time_precision': 'relative',
+                            'listing_time_evidence': row['time_evidence']}
+                           if basis == 'RELATIVE' else {}),
                     },
                 )
             )

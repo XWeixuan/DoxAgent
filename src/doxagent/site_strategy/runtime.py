@@ -1405,6 +1405,8 @@ class SiteAccessRuntime:
 
         def observe_request(value):
             try:
+                from doxagent.message_bus_v2.yahoo_graphql import is_ticker_request
+
                 if (
                     (value.is_navigation_request() and value.frame == page.main_frame)
                     or (resolved.site_id == "barrons" and "/market-data/api/news?" in value.url)
@@ -1416,10 +1418,13 @@ class SiteAccessRuntime:
                         and urlsplit(value.url).hostname == "finance.yahoo.com"
                         and (
                             urlsplit(value.url).path.endswith(".html")
+                            or urlsplit(value.url).path.startswith('/m/')
                             or "/latest-news" in value.url
                             or "/xhr/ncp" in value.url
                         )
                     )
+                    or (request.recipe_ref == 'builtin:yahoo_latest_news@1'
+                        and is_ticker_request(value, str(request.recipe_parameters.get('ticker', ''))))
                     or (anchor_eligible and (value.url == request.url or (
                         resolved.site_id == 'investorshub' and urlsplit(value.url).hostname == 'investorshub.advfn.com'
                         and urlsplit(value.url).path.rstrip('/').split('/')[-1] == 'news'
@@ -1428,7 +1433,7 @@ class SiteAccessRuntime:
                     at = int(time.time()*1000)
                     index = len(tracked_requests)
                     tracked_requests[id(value)] = index
-                    if resolved.site_id == 'yahoo_finance' and urlsplit(value.url).path.endswith('.html'):
+                    if resolved.site_id == 'yahoo_finance' and (urlsplit(value.url).path.endswith('.html') or urlsplit(value.url).path.startswith('/m/')):
                         command_timings[f'request_{index}_auxiliary'] = 1
                     command_timings[f'request_{index}_started_epoch_ms'] = at
                     command_timings.setdefault("request_started_epoch_ms", at)
@@ -1563,7 +1568,11 @@ class SiteAccessRuntime:
                             )
                         elif request.recipe_ref == "builtin:yahoo_latest_news@1":
                             try:
-                                rows, metadata = await yahoo_rows(page, fetched['text'], str(request.recipe_parameters['ticker']), request.recipe_parameters)
+                                from email.utils import parsedate_to_datetime
+
+                                listing_date = fetched['headers'].get('date')
+                                observed_at = parsedate_to_datetime(listing_date) if listing_date else None
+                                rows, metadata = await yahoo_rows(page, fetched['text'], str(request.recipe_parameters['ticker']), request.recipe_parameters, observed_at=observed_at)
                             except ValueError:
                                 rows, metadata = None, None
                             result = RuntimeResponse(
@@ -1656,6 +1665,7 @@ class SiteAccessRuntime:
                         pending_rows=request.recipe_parameters.get("pending_rows", []),
                         probe_offset=request.recipe_parameters.get("probe_offset", 0),
                         max_probes=int(request.recipe_parameters.get('max_probes',3)),
+                        allow_relative=request.recipe_parameters.get('allow_relative', True),
                     )
                     result = await recipe_capture(rows, metadata)
                     if result.recipe_result is not None and not retained:

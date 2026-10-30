@@ -232,7 +232,8 @@ def test_adding_tickers_keeps_existing_phase_and_due_units_are_independent(tmp_p
             "next_dispatch_at": now + timedelta(seconds=10),
             "target_due_at": now + timedelta(seconds=10),
             "units": {
-                "SUPPLEMENT_HEAD": {"next_dispatch_at": (now - timedelta(seconds=1)).isoformat()}
+                "SUPPLEMENT_HEAD": {"next_dispatch_at": (now - timedelta(seconds=1)).isoformat()},
+                "GRAPHQL_HEAD": {"next_dispatch_at": (now + timedelta(seconds=10)).isoformat()},
             },
         }
     )
@@ -517,7 +518,7 @@ def test_interval_change_rephases_units_without_erasing_checkpoint(tmp_path):
     scheduler = GlobalPollScheduler(repo, bus, SimpleNamespace())
     scheduler._initialize_due_slots([(source, binding)], now)
     saved = repo.get_poll_unit_state(binding, "SUPPLEMENT_HEAD")
-    assert saved.next_dispatch_at == now + timedelta(seconds=30) and saved.checkpoint == {
+    assert saved.next_dispatch_at == now + timedelta(seconds=20) and saved.checkpoint == {
         "cursor": "keep"
     }
 

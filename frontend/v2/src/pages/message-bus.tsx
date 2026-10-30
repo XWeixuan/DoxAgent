@@ -743,7 +743,7 @@ function MessageCard({
           <div className="message-meta">
             <span>{m.source_name ?? m.source.name}</span>
             <span>{m.source.kind === "api" ? "API" : "爬虫"}</span>
-            <span>发布 {formatInstant(m.source_published_at)}</span>
+            <span>发布{m.publication_time_basis === "RELATIVE" ? "（估算）" : ""} {formatInstant(m.source_published_at)}</span>
             <span>抓取 {formatInstant(m.collected_at)}</span>
             {m.content_update && m.content_update.revision > 1 && <span>已更新 · 正文修订 {m.content_update.revision}</span>}
             {m.content_update?.pending && <span>待核查更新</span>}

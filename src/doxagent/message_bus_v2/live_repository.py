@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 import threading
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -173,6 +174,11 @@ class LiveRepository:
             if not message.admission_context:
                 message = message.model_copy(update={"admission_context": context})
             key, hint = article_key(message, source.source_id), update_hint(message)
+            provider_alias = None
+            if (source.source_id == 'yahoo_finance_news'
+                and message.metadata.get('identity_evidence', {}).get('id_kind') == 'stable_article'
+                and re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', message.external_id or '')):
+                provider_alias = 'yahoo-uuid:' + message.external_id.lower()
             from .deduplication import article_url
 
             locator = article_url(
@@ -192,6 +198,10 @@ class LiveRepository:
                     "SELECT article_key FROM live_origins WHERE origin_key=?", ("canonical:" + key,)
                 ).fetchone()
                 key = alias[0] if alias else key
+                if provider_alias:
+                    alias = db.execute('SELECT article_key FROM live_origins WHERE origin_key=?',
+                                       (provider_alias,)).fetchone()
+                    key = alias[0] if alias else key
                 prior = db.execute(
                     "SELECT a.input_ref,o.material_hint,a.material_observed_at FROM live_articles a "
                     "LEFT JOIN live_origins o ON o.origin_key=? WHERE a.article_key=?",
@@ -242,6 +252,7 @@ class LiveRepository:
                     key=key,
                     hint=hint,
                     origin=origin,
+                    provider_alias=provider_alias,
                     ref=ref,
                     refs=refs,
                     source_id=source.source_id,
@@ -278,6 +289,14 @@ class LiveRepository:
                 return []
             for item in rows:
                 key = item["key"]
+                if item.get('provider_alias'):
+                    # Two parallel captures may have prepared before either one
+                    # committed. Resolve the native UUID under the writer too.
+                    alias = db.execute('SELECT article_key FROM live_origins WHERE origin_key=?',
+                                       (item['provider_alias'],)).fetchone()
+                    key = alias[0] if alias else key
+                    db.execute("INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','yahoo-uuid','',?,'[]')",
+                               (item['provider_alias'], key, item['first_seen']))
                 if item.get("legacy_body_key") and item["legacy_body_key"] != key:
                     db.execute(
                         "INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','legacy','',?,'[]')",

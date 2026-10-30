@@ -18,7 +18,7 @@ def path_for(bus_path):
 
 
 def required_unit(source_id, unit):
-    return (not unit.startswith('TAIL:') or unit=='TAIL:YAHOO_TIME' or unit.startswith('TAIL:IR:')
+    return (not unit.startswith('TAIL:') or unit.startswith('TAIL:IR:')
             or source_id in {'reuters_site_search','globenewswire_search','calcalist_search'})
 
 

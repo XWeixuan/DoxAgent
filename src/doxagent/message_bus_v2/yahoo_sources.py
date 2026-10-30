@@ -10,7 +10,7 @@ import asyncio
 import json
 import re
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from urllib.parse import parse_qs, quote, urlparse
 from xml.etree import ElementTree
@@ -19,8 +19,32 @@ from xml.etree import ElementTree
 _ARTICLE_DATES: dict[str, tuple[float, str]] = {}
 
 
+def yahoo_lane(unit):
+    if unit in {"SUPPLEMENT_HEAD", "TAIL:YAHOO_TIME"}:
+        return "browser"
+    return "graphql" if unit == "GRAPHQL_HEAD" else "rss"
+
+
+def relative_publication(label, observed_at):
+    """Conservative end of Yahoo's rounded age interval, never an exact date."""
+    match = re.search(r"(?:^|[\s•·])(?:(\d+)\s*(s|m|h|d|seconds?|minutes?|hours?|days?)\s+ago|just now)\s*$",
+                      str(label), re.I)
+    if not match:
+        return None
+    amount = int(match[1] or 0)
+    unit = (match[2] or "s").lower()[0]
+    step = {"s": 1, "m": 60, "h": 3600, "d": 86400}[unit]
+    if match[1] is None:
+        step = 60
+    lower = observed_at - timedelta(seconds=(amount + 1) * step)
+    upper = observed_at - timedelta(seconds=amount * step)
+    return lower, {"label": str(label), "observed_at": observed_at.isoformat(),
+                   "earliest": lower.isoformat(), "latest": upper.isoformat(),
+                   "resolution_seconds": step}
+
+
 async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, pending_rows=None,
-                           probe_offset=0,max_probes=3):
+                           probe_offset=0,max_probes=3,allow_relative=True):
     """Current Yahoo SSR cards no longer contain the old latestNews NCP JSON."""
     cards = await page.locator('[data-testid="storyitem"]').evaluate_all(
         """els => els.flatMap(e => {
@@ -28,9 +52,11 @@ async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, p
           let tag={}; try { tag=JSON.parse(a.dataset.yga||'{}'); } catch {}
           if(tag.yModuleName!=='qsp-news') return [];
           const u=new URL(a.href,location.href);
-          if(u.origin!==location.origin||!u.pathname.endsWith('.html')) return [];
+          if(u.origin!==location.origin||!(u.pathname.endsWith('.html')||/^\/m\/[0-9a-f-]{36}\//i.test(u.pathname))) return [];
           return [{id:tag.yDestinationContentUUID||u.href,title:a.innerText.trim(),link:u.href,
-            publisher:tag.yDestinationContentPartner||tag.yContentPartner||'Yahoo Finance'}];
+            publisher:tag.yDestinationContentPartner||tag.yContentPartner||'Yahoo Finance',
+            relative_time:e.querySelector('.publishing')?.textContent?.trim(),
+            pubDate:e.querySelector('time[datetime]')?.dateTime}];
         })"""
     )
     cards = list({r["link"]: r for r in cards}.values())[: max(1, min(count, 20))]
@@ -38,13 +64,15 @@ async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, p
     if not cards:
         return None
     return await capture_timestamp_rows(page,ticker,cards,known_dates=known_dates,
-                                        probe_offset=probe_offset,max_probes=max_probes)
+                                        probe_offset=probe_offset,max_probes=max_probes,allow_relative=allow_relative)
 
 
-async def capture_timestamp_rows(page,ticker,cards,*,known_dates=None,probe_offset=0,max_probes=3):
+async def capture_timestamp_rows(page,ticker,cards,*,known_dates=None,probe_offset=0,max_probes=3,allow_relative=True):
     for row in cards:
         parsed = urlparse(row['link'])
-        if parsed.scheme != 'https' or parsed.hostname != 'finance.yahoo.com' or not parsed.path.endswith('.html'):
+        if parsed.scheme != 'https' or parsed.hostname != 'finance.yahoo.com' or not (
+            parsed.path.endswith('.html') or re.match(r'/m/[0-9a-f-]{36}/', parsed.path, re.I)
+        ):
             raise YahooPageUnavailable('unapproved Yahoo timestamp target')
     now = time.monotonic()
     for url, stamp in (known_dates or {}).items():
@@ -54,7 +82,32 @@ async def capture_timestamp_rows(page,ticker,cards,*,known_dates=None,probe_offs
                 _ARTICLE_DATES[url] = (now + 86400, parsed.isoformat())
         except (AttributeError, ValueError, TypeError):
             pass
-    missing = [r["link"] for r in cards if _ARTICLE_DATES.get(r["link"], (0, ""))[0] <= now]
+    relative = {}
+    expired = set()
+    observed_at = datetime.now(UTC)
+    for row in cards:
+        stamp = row.get('pubDate')
+        try:
+            exact = datetime.fromisoformat(stamp.replace('Z', '+00:00'))
+            if exact.tzinfo is not None and len(stamp) > 10:
+                _ARTICLE_DATES[row['link']] = (now + 86400, exact.isoformat())
+        except (TypeError, ValueError, AttributeError):
+            pass
+        reference = observed_at
+        if row.get('listing_observed_at'):
+            reference = datetime.fromisoformat(row['listing_observed_at'])
+        estimate = relative_publication(row.get('relative_time'), reference) if allow_relative else None
+        if estimate:
+            published, evidence = estimate
+            # Only accept conservatively within the existing 30-minute window.
+            # Old/rounded-hour cards need no speculative article downloads.
+            if (observed_at - published).total_seconds() <= 1800:
+                relative[row['link']] = {**row, 'pubDate': published.isoformat(),
+                                        'publication_time_basis': 'RELATIVE', 'time_evidence': evidence}
+            else:
+                expired.add(row['link'])
+    missing = [r["link"] for r in cards if _ARTICLE_DATES.get(r["link"], (0, ""))[0] <= now
+               and r['link'] not in relative and r['link'] not in expired]
     article_html = {}
     start = int(probe_offset) % len(missing) if missing else 0
     probe_urls = (missing[start:] + missing[:start])[:max(0,min(3,max_probes))]
@@ -111,21 +164,27 @@ async def capture_timestamp_rows(page,ticker,cards,*,known_dates=None,probe_offs
         while len(_ARTICLE_DATES) > 512:
             _ARTICLE_DATES.pop(next(iter(_ARTICLE_DATES)))
     rows = [
-        {**row, "pubDate": _ARTICLE_DATES[row["link"]][1],
+        {**row, "pubDate": _ARTICLE_DATES[row["link"]][1], "publication_time_basis": "EXACT",
          **({"captured_article_html": article_html[row["link"]]} if row["link"] in article_html else {})}
         for row in cards
         if _ARTICLE_DATES.get(row["link"], (0, ""))[0] > now
     ]
+    exact_urls = {row['link'] for row in rows}
+    rows.extend(row for url, row in relative.items() if url not in exact_urls)
     return rows, {
         "capture_method": "ssr_dom_article_metadata",
         "network_status": 200,
         "endpoint": "ticker_news_dom",
         "ticker": ticker,
-        "article_date_failures": len(cards) - len(rows),
+        "article_date_failures": len(missing),
+        "relative_time_rows": len(relative.keys() - exact_urls),
+        "expired_relative_cards": len(expired),
         "parsed_cards": len(cards),
         "timestamp_probe_offset": start + len(probe_urls),
-        "pending_timestamp_rows": [row for row in cards if row["link"] not in {r["link"] for r in rows}],
-        "verified_article_dates":{row['link']:row['pubDate'] for row in rows},
+        "pending_timestamp_rows": [row for row in cards if row["link"] in missing
+                                   and row['link'] not in exact_urls],
+        "verified_article_dates":{row['link']:row['pubDate'] for row in rows
+                                  if row.get('publication_time_basis', 'EXACT') == 'EXACT'},
     }
 
 
@@ -186,6 +245,10 @@ def hydration_news_rows(scripts: list[dict]) -> list[dict] | None:
 
 def latest_news_response(response, ticker: str) -> bool:
     parsed = urlparse(response.url)
+    if parsed.hostname == 'nexus-finance-prod.media.yahoo.com' and parsed.path == '/':
+        from .yahoo_graphql import is_ticker_request
+
+        return is_ticker_request(response.request, ticker)
     if parsed.hostname != "finance.yahoo.com" or parsed.path != "/xhr/ncp":
         return False
     if parse_qs(parsed.query).get("queryRef") != ["latestNews"]:
@@ -205,7 +268,7 @@ def latest_news_response(response, ticker: str) -> bool:
 
 
 async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_count=20,
-                              known_dates=None,pending_rows=None,probe_offset=0,max_probes=3):
+                              known_dates=None,pending_rows=None,probe_offset=0,max_probes=3,allow_relative=True):
     from .news_adapters import _yahoo_contents
 
     captured = asyncio.get_running_loop().create_future()
@@ -224,7 +287,12 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
             return
         try:
             payload = await response.json()
-            rows = _yahoo_contents(payload)
+            if urlparse(response.url).hostname == 'nexus-finance-prod.media.yahoo.com':
+                from .yahoo_graphql import parse_stream
+
+                rows, _ = parse_stream(payload)
+            else:
+                rows = _yahoo_contents(payload)
             if not rows and not (isinstance(payload, dict) and "data" in payload):
                 raise ValueError("unrecognized latestNews JSON")
             if not captured.done():
@@ -294,7 +362,7 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
                     }
                 else:
                     dom = await capture_dom_news(page, ticker, count=snippet_count, known_dates=known_dates,
-                                                 pending_rows=pending_rows, probe_offset=probe_offset,max_probes=max_probes)
+                                                 pending_rows=pending_rows, probe_offset=probe_offset,max_probes=max_probes,allow_relative=allow_relative)
                     if dom is not None:
                         rows, metadata = dom
                         return rows, {

@@ -560,6 +560,7 @@ export interface CaseLink {
 }
 export type MessageRouteFilter = "ALL" | "ARCHIVE" | "TRADE" | "ADD_TO_DELTA" | "W3_PENDING" | "FAILED" | "NOT_PROCESSED";
 export interface MessageSummary extends MessageKey {
+  publication_time_basis?: string;
   content_update?: { revision: Count; pending: boolean; last_error: string | null; last_checked_at: Instant | null; body_acquired_at: Instant | null };
   source_name?: string | null;
   row_revision: Count;

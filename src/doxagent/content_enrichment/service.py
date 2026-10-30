@@ -649,12 +649,14 @@ class ContentEnrichmentHub:
         }
         if (
             (job.source.source_id in {
-                "investorshub_ticker_news", "investing_ticker_news", "corporate_ir_press_releases"
+                "investorshub_ticker_news", "investing_ticker_news", "corporate_ir_press_releases", "yahoo_finance_news"
             } or public_defense)
             and (
                 job.message.publication_time_basis == "DATE"
                 or (public_defense and job.message.publication_time_basis == "UNKNOWN_FIRST_SEEN")
                 or job.source.source_id == "investing_ticker_news"
+                or (job.source.source_id == 'yahoo_finance_news'
+                    and job.message.publication_time_basis in {'RELATIVE', 'UNKNOWN_FIRST_SEEN'})
             )
             and result.succeeded
             and isinstance(stamp, str)
@@ -666,6 +668,7 @@ class ContentEnrichmentHub:
                         "published_at": exact.astimezone(UTC),
                         "publication_time_basis": "EXACT",
                     }
+                    metadata['publication_time_precision'] = 'second'
             except ValueError:
                 pass
         message = job.message.model_copy(

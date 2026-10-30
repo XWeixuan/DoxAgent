@@ -901,6 +901,7 @@ class DomainProjectors:
             source=self.source_label(message),
             source_name=self.source_name(message),
             source_published_at=timestamp(message["published_at"]),
+            publication_time_basis=message.get('publication_time_basis', 'EXACT'),
             collected_at=timestamp(message["collected_at"]),
             normalized_at=timestamp(message["normalized_at"]),
             stream_published_at=timestamp(stream["published_at"]),

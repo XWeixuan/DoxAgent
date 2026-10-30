@@ -90,17 +90,19 @@ def article_input_keys(payload, unit, values):
         payload["binding"]["binding_id"], payload["binding"]["version"],
         unit, payload["bootstrap"], payload["admission"].get("policy_version", 1),
         roster]
-    def business(value):
+    def business(value, relative=False):
         if isinstance(value,dict):
-            return {k:business(v) for k,v in value.items() if k not in {
+            return {k:business(v, relative) for k,v in value.items() if k not in {
                 'pipeline_trace','site_access_trace','request_started_at','response_received_at',
-                'poll_run_id','physical_request_id','capture_id','fetch_latency_ms','listing_rank'}}
+                'poll_run_id','physical_request_id','capture_id','fetch_latency_ms','listing_rank',
+                'listing_time_evidence','time_evidence','listing_observed_at','relative_time'}
+                and not (relative and k == 'pubDate')}
         if isinstance(value,list):
-            return [business(v) for v in value]
+            return [business(v, relative) for v in value]
         return value
     return [sha256_text(canonical_json([scope,
          (identity_key_for(payload["source"]["source_id"], m), stable_fingerprint(m),
-          business(m.raw_payload), business(m.metadata),
+          business(m.raw_payload, m.publication_time_basis == 'RELATIVE'), business(m.metadata),
           m.publication_time_basis, m.metadata.get("language"), m.metadata.get("attachments"),
           [evaluate_admission(m.published_at,c,context.observed_at or utc_now(),
                               m.publication_time_basis) for c in contexts])])) for m in messages]

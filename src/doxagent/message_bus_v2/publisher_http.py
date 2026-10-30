@@ -88,13 +88,14 @@ def http_budget(role):
     # envelope. Site BODY/Reader has its own four slots, never Chrome permits.
     # Yahoo owns a dedicated loop. Split its two slots explicitly rather than
     # accidentally creating a second "global" collector budget on that loop.
-    if HTTP_CONTEXT.get() == "body" and role in {"collector", "yahoo_collector", "body"}:
+    if HTTP_CONTEXT.get() == "body" and role in {"collector", "yahoo_collector", "yahoo_graphql_collector", "body"}:
         role = "body"
-    elif PROCESS_ROLE == "sweep" and role in {"collector", "yahoo_collector"}:
+    elif PROCESS_ROLE == "sweep" and role in {"collector", "yahoo_collector", "yahoo_graphql_collector"}:
         role = "sweep" if role == "collector" else "yahoo_sweep"
     limits = {
         "collector": 5,
         "yahoo_collector": 1,
+        "yahoo_graphql_collector": 1,
         "sweep": 1,
         "yahoo_sweep": 1,
         "site_crawler": 4,

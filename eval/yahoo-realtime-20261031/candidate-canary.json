@@ -1,0 +1,222 @@
+[
+  {
+    "ticker": "INTC",
+    "observed_at": "2026-10-30T20:50:43.210894+00:00",
+    "seconds": 2.1851377979910467,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:43 GMT",
+        "age": "1",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "MU",
+    "observed_at": "2026-10-30T20:50:44.189191+00:00",
+    "seconds": 0.9783014999993611,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:44 GMT",
+        "age": "1",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "COHR",
+    "observed_at": "2026-10-30T20:50:46.107860+00:00",
+    "seconds": 1.9186644979927223,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:45 GMT",
+        "age": "0",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "NBIS",
+    "observed_at": "2026-10-30T20:50:47.396561+00:00",
+    "seconds": 1.28870074400038,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:47 GMT",
+        "age": "1",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "BE",
+    "observed_at": "2026-10-30T20:50:49.439304+00:00",
+    "seconds": 2.0427371120022144,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:49 GMT",
+        "age": "1",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "CEG",
+    "observed_at": "2026-10-30T20:50:50.734984+00:00",
+    "seconds": 1.2956806699949084,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:50 GMT",
+        "age": "0",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "SNOW",
+    "observed_at": "2026-10-30T20:50:52.613998+00:00",
+    "seconds": 1.8790111760026775,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:52 GMT",
+        "age": "0",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "RKLB",
+    "observed_at": "2026-10-30T20:50:54.823469+00:00",
+    "seconds": 2.2094696140120504,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:54 GMT",
+        "age": "0",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "ONDS",
+    "observed_at": "2026-10-30T20:50:56.640577+00:00",
+    "seconds": 1.8171058650041232,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:56 GMT",
+        "age": "0",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  },
+  {
+    "ticker": "IONQ",
+    "observed_at": "2026-10-30T20:50:58.487205+00:00",
+    "seconds": 1.846626782004023,
+    "count": 50,
+    "metadata": {
+      "endpoint": "yahoo_content_gateway",
+      "capture_method": "graphql_http",
+      "page_info": {
+        "totalCount": 200,
+        "start": 0,
+        "count": 50,
+        "nextPage": true
+      },
+      "listing_item_count": 50,
+      "cache_validators": {
+        "date": "Fri, 30 Oct 2026 20:50:58 GMT",
+        "age": "1",
+        "cache-control": "max-age=60,public"
+      }
+    }
+  }
+]

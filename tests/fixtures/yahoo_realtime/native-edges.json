@@ -1,0 +1,104 @@
+{
+  "data": {
+    "lightyearList": {
+      "main": {
+        "edges": [
+          {
+            "node": {
+              "__typename": "AssetRef",
+              "asset": {
+                "__typename": "Story",
+                "id": "99440181-9289-4bde-9418-a2eb5783a09e",
+                "title": "Friday's rout shaved over $11 billion off the US government's stake in Intel",
+                "previewUrl": null,
+                "isPremiumNews": false,
+                "isLiveBlog": false,
+                "embeddedLiveBlog": null,
+                "contentAttributes": {
+                  "pubDate": "2026-10-30T13:44:49Z",
+                  "displayTime": "2026-10-30T20:33:18Z",
+                  "isHosted": true,
+                  "canonicalUrl": "https://finance.yahoo.com/markets/stocks/article/fridays-rout-shaved-over-11-billion-off-the-us-governments-stake-in-intel-203318952.html",
+                  "clickthroughUrl": "https://finance.yahoo.com/markets/stocks/article/fridays-rout-shaved-over-11-billion-off-the-us-governments-stake-in-intel-203318952.html",
+                  "provider": {
+                    "displayName": "Yahoo Finance",
+                    "url": "https://finance.yahoo.com/",
+                    "providerContentUrl": null,
+                    "providerId": "yahoofinance.com"
+                  }
+                },
+                "finance": {
+                  "stockTickers": [
+                    {
+                      "symbol": "INTC",
+                      "grade": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "__typename": "AssetRef",
+              "asset": {
+                "__typename": "Video",
+                "id": "84fb4f34-4bd4-4cac-a09d-617db29e214b",
+                "title": "Chip stocks end in a sea of red, dragging down Nasdaq and S&P 500",
+                "duration": 85,
+                "previewUrl": null,
+                "liveEventInfo": null,
+                "contentAttributes": {
+                  "pubDate": "2026-10-30T20:13:00Z",
+                  "displayTime": "2026-10-30T20:13:00Z",
+                  "isHosted": true,
+                  "canonicalUrl": "https://finance.yahoo.com/video/chip-stocks-end-sea-red-201300907.html",
+                  "clickthroughUrl": "https://finance.yahoo.com/video/chip-stocks-end-sea-red-201300907.html",
+                  "provider": {
+                    "displayName": "Yahoo Finance Video",
+                    "url": "https://finance.yahoo.com/",
+                    "providerContentUrl": null,
+                    "providerId": "video.yahoofinance.com"
+                  }
+                },
+                "finance": {
+                  "stockTickers": [
+                    {
+                      "symbol": "INTC",
+                      "grade": null
+                    },
+                    {
+                      "symbol": "^DJI",
+                      "grade": null
+                    },
+                    {
+                      "symbol": "^SOX",
+                      "grade": null
+                    },
+                    {
+                      "symbol": "^IXIC",
+                      "grade": null
+                    },
+                    {
+                      "symbol": "^GSPC",
+                      "grade": null
+                    },
+                    {
+                      "symbol": "^RUT",
+                      "grade": null
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "pagination": {
+          "nextPage": true,
+          "endCursor": "eyJzZXNzaW9uSWQiOiI2ZjgyMzRmYS00OWIyLTQzZjYtODk3YS1lNmMzNWFjOTRjNWQiLCJpbmRleCI6MTJ9"
+        },
+        "totalCount": 172
+      }
+    }
+  }
+}

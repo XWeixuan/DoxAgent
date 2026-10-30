@@ -245,6 +245,7 @@ class SiteManagedBrowser:
         operation_id: str | None = None,
         timestamp_only: bool = False,
         max_probes: int = 3,
+        allow_relative: bool = True,
     ) -> tuple[list[dict[str, object]], dict[str, object]]:
         result = await self.client.execute(
             AccessRequest(
@@ -262,6 +263,7 @@ class SiteManagedBrowser:
                     "probe_offset": probe_offset,
                     "timestamp_only":timestamp_only,
                     "max_probes":max_probes,
+                    "allow_relative":allow_relative,
                 },
                 remaining_budget_ms=max(1, timeout_seconds * 1000),
             )
