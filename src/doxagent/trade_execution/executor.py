@@ -700,6 +700,10 @@ class Executor:
         if quote_contract["con_id"] != contract["con_id"]:
             raise ValueError("QUOTE_CONTRACT_MISMATCH")
         rules = await asyncio.to_thread(broker.market_rules, contract) if kind == "LMT" else []
+        if entry:
+            # Admission/working observers must not keep an old quote subscription
+            # alive across fresh per-attempt pricing on a quiet after-hours book.
+            self._release_watch(job["id"])
         quote = await asyncio.to_thread(quote_broker.quote, quote_contract, side, strategy=strategy)
         # A quote request may straddle the RTH boundary. Recompute instead of sending old MKT rules.
         if self.sessions.classify(self.journal.clock(), contract) != session:
@@ -946,6 +950,7 @@ class Executor:
             self.sync_cache.clear()
         repo.update_attempt(attempt, state="WORKING")
         if entry:
+            await self._observe_quote(job, attempt["contract"], attempt["side"], strategy)
             repo.update_job(
                 repo.require("jobs", job["id"]),
                 state="ACTIVE",

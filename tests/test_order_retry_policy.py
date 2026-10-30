@@ -287,3 +287,30 @@ def test_exit_continues_past_three_lmt_orders_and_only_sends_remaining_quantity(
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit", limit=30))
     assert repo.require("lots", "trade:A")["remaining_qty"] == 0
     assert broker.positions[9939] == "50"
+
+
+def test_admission_and_retry_release_watch_before_fresh_order_pricing(setup):
+    clock, repo, revision, executor, broker = setup
+    clock.value = datetime(2026, 9, 8, 21, tzinfo=UTC)
+    book, _, _ = stream(broker, clock)
+    owners, priced = set(), []
+    original = broker.quote
+    broker.subscribe_quote = lambda contract, owner, **kw: owners.add(owner)
+    broker.release_quote = lambda contract, owner: owners.discard(owner)
+
+    def fresh_pricing(*args, **kwargs):
+        assert not owners, "a held observer would reuse an aging subscription"
+        priced.append(clock())
+        return original(*args, **kwargs)
+
+    broker.quote = fresh_pricing
+    broker.mode = "unfilled"
+    admit(repo, revision)
+    tick(executor, clock)
+    assert len(priced) == 1 and owners
+    book.update(ask=102, bid=None)
+    for _ in range(3):
+        tick(executor, clock, 1)
+    for _ in range(4):
+        tick(executor, clock, 0.2)
+    assert len(priced) == 2 and len(broker.sent) == 2
