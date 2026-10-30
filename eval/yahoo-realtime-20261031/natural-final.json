@@ -1,0 +1,4703 @@
+{
+  "observed_at": "2026-10-30T21:11:05.252349+00:00",
+  "since": "2026-10-30T21:03:26+00:00",
+  "bindings": [
+    {
+      "ticker": "MU",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "RKLB",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "BE",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "INTC",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "NBIS",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "COHR",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "ONDS",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "CEG",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "SNOW",
+      "enabled": 1,
+      "interval_seconds": 30
+    },
+    {
+      "ticker": "IONQ",
+      "enabled": 1,
+      "interval_seconds": 60
+    }
+  ],
+  "units": [
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:52.988570+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 387
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:40.169000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 876
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:59.660500+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 390
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:11:00.031000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 854
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:11:02.957419+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 379
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:53.330000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 735
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:36.325714+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 428
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:36.627000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 756
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:46.380526+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 491
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:49.985000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 664
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:43.544255+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 951
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:46.663000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 721
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:49.683560+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 409
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:43.381000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 784
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:56.277480+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 485
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:11:03.311000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 760
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:39.627492+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 410
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:56.778000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 730
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:45.976013+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 434
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:12.927000+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 695
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:57.682228+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 275
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:37.721570+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 251
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:11:04.744034+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 705
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:54.687581+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 558
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:13.601325+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 261
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:44.667250+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 546
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:48.060893+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 625
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:50.992651+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 258
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:10:41.493578+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 742
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "required": 1,
+      "status": "succeeded",
+      "last_capture_at": "2026-10-30T21:11:01.062473+00:00",
+      "last_error_code": null,
+      "last_latency_ms": 258
+    }
+  ],
+  "cycle_summary": {
+    "GRAPHQL_HEAD": {
+      "cycles": 143,
+      "statuses": {
+        "CAPTURED": 142,
+        "FAILED": 1
+      },
+      "mean_execution_seconds": 0.6274452447552448,
+      "successful_dispatch_gap_mean_seconds": 31.59154291666667,
+      "successful_dispatch_gap_max_seconds": 60.043138
+    },
+    "HEAD": {
+      "cycles": 146,
+      "statuses": {
+        "CAPTURED": 146
+      },
+      "mean_execution_seconds": 0.5270255616438356,
+      "successful_dispatch_gap_mean_seconds": 31.475031904411765,
+      "successful_dispatch_gap_max_seconds": 60.020525
+    },
+    "SUPPLEMENT_HEAD": {
+      "cycles": 145,
+      "statuses": {
+        "CAPTURED": 145
+      },
+      "mean_execution_seconds": 1.0226472,
+      "successful_dispatch_gap_mean_seconds": 31.267436044444445,
+      "successful_dispatch_gap_max_seconds": 60.066447
+    }
+  },
+  "cycles": [
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:31.810149+00:00",
+      "finished_at": "2026-10-30T21:03:33.459020+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.648871
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:31.810558+00:00",
+      "finished_at": "2026-10-30T21:03:34.295348+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.48479
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:32.155842+00:00",
+      "finished_at": "2026-10-30T21:03:33.802617+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.646775
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:32.245342+00:00",
+      "finished_at": "2026-10-30T21:03:35.680686+00:00",
+      "list_validated": true,
+      "execution_seconds": 3.435344
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:32.683622+00:00",
+      "finished_at": "2026-10-30T21:03:35.113121+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.429499
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:32.888676+00:00",
+      "finished_at": "2026-10-30T21:03:37.604233+00:00",
+      "list_validated": true,
+      "execution_seconds": 4.715557
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:34.128199+00:00",
+      "finished_at": "2026-10-30T21:03:36.069567+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.941368
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:35.993312+00:00",
+      "finished_at": "2026-10-30T21:03:36.617139+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.623827
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:36.201677+00:00",
+      "finished_at": "2026-10-30T21:03:40.242634+00:00",
+      "list_validated": true,
+      "execution_seconds": 4.040957
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:37.434391+00:00",
+      "finished_at": "2026-10-30T21:03:38.351104+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.916713
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:39.245375+00:00",
+      "finished_at": "2026-10-30T21:03:39.804074+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.558699
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:39.445604+00:00",
+      "finished_at": "2026-10-30T21:03:41.417887+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.972283
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:40.779359+00:00",
+      "finished_at": "2026-10-30T21:03:41.613831+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.834472
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:42.672363+00:00",
+      "finished_at": "2026-10-30T21:03:43.641489+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.969126
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:43.053662+00:00",
+      "finished_at": "2026-10-30T21:03:44.606890+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.553228
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:44.102907+00:00",
+      "finished_at": "2026-10-30T21:03:44.790840+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.687933
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:45.777631+00:00",
+      "finished_at": "2026-10-30T21:03:46.269703+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.492072
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:45.992862+00:00",
+      "finished_at": "2026-10-30T21:03:46.629824+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.636962
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:46.104014+00:00",
+      "finished_at": "2026-10-30T21:03:48.194059+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.090045
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:47.450587+00:00",
+      "finished_at": "2026-10-30T21:03:48.680452+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.229865
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:49.340500+00:00",
+      "finished_at": "2026-10-30T21:03:49.929505+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.589005
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:49.479449+00:00",
+      "finished_at": "2026-10-30T21:03:51.268096+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.788647
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:50.715820+00:00",
+      "finished_at": "2026-10-30T21:03:51.464720+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.7489
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:52.619439+00:00",
+      "finished_at": "2026-10-30T21:03:55.378567+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.759128
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:52.888196+00:00",
+      "finished_at": "2026-10-30T21:03:53.833398+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.945202
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:54.077464+00:00",
+      "finished_at": "2026-10-30T21:03:54.869185+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.791721
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:55.924257+00:00",
+      "finished_at": "2026-10-30T21:03:56.315791+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.391534
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:56.131335+00:00",
+      "finished_at": "2026-10-30T21:03:57.234455+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.10312
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:57.469571+00:00",
+      "finished_at": "2026-10-30T21:03:58.386775+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.917204
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:59.273355+00:00",
+      "finished_at": "2026-10-30T21:03:59.674467+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.401112
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:03:59.495603+00:00",
+      "finished_at": "2026-10-30T21:04:00.768785+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.273182
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:00.752673+00:00",
+      "finished_at": "2026-10-30T21:04:01.558373+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.8057
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:02.587814+00:00",
+      "finished_at": "2026-10-30T21:04:03.550462+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.962648
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:02.790080+00:00",
+      "finished_at": "2026-10-30T21:04:04.097452+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.307372
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:04.062730+00:00",
+      "finished_at": "2026-10-30T21:04:04.314341+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.251611
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:06.000283+00:00",
+      "finished_at": "2026-10-30T21:04:06.387367+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.387084
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:06.203635+00:00",
+      "finished_at": "2026-10-30T21:04:07.005293+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.801658
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:07.469541+00:00",
+      "finished_at": "2026-10-30T21:04:07.719139+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.249598
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:09.233921+00:00",
+      "finished_at": "2026-10-30T21:04:09.929224+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.695303
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:09.437652+00:00",
+      "finished_at": "2026-10-30T21:04:10.867779+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.430127
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:10.818561+00:00",
+      "finished_at": "2026-10-30T21:04:11.172022+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.353461
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:12.435562+00:00",
+      "finished_at": "2026-10-30T21:04:13.314297+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.878735
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:12.638912+00:00",
+      "finished_at": "2026-10-30T21:04:13.046278+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.407366
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:12.842084+00:00",
+      "finished_at": "2026-10-30T21:04:14.253541+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.411457
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:13.361448+00:00",
+      "finished_at": "2026-10-30T21:04:14.368092+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.006644
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:14.084777+00:00",
+      "finished_at": "2026-10-30T21:04:15.327776+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.242999
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:15.973063+00:00",
+      "finished_at": "2026-10-30T21:04:16.389230+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.416167
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:16.177947+00:00",
+      "finished_at": "2026-10-30T21:04:16.962149+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.784202
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:17.394633+00:00",
+      "finished_at": "2026-10-30T21:04:17.687540+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.292907
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:19.394173+00:00",
+      "finished_at": "2026-10-30T21:04:19.786667+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.392494
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:19.537166+00:00",
+      "finished_at": "2026-10-30T21:04:20.537840+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.000674
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:20.791616+00:00",
+      "finished_at": "2026-10-30T21:04:21.052271+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.260655
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:22.628120+00:00",
+      "finished_at": "2026-10-30T21:04:23.056572+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.428452
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:22.832730+00:00",
+      "finished_at": "2026-10-30T21:04:24.076407+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.243677
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:24.133529+00:00",
+      "finished_at": "2026-10-30T21:04:24.413463+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.279934
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:25.960479+00:00",
+      "finished_at": "2026-10-30T21:04:26.347492+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.387013
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:26.163241+00:00",
+      "finished_at": "2026-10-30T21:04:27.003099+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.839858
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "FAILED",
+      "reason": "RequestError",
+      "dispatch_at": "2026-10-30T21:04:27.386471+00:00",
+      "finished_at": "2026-10-30T21:04:28.383142+00:00",
+      "list_validated": false,
+      "execution_seconds": 0.996671
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:29.326394+00:00",
+      "finished_at": "2026-10-30T21:04:29.990492+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.664098
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:29.529553+00:00",
+      "finished_at": "2026-10-30T21:04:30.434597+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.905044
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:30.755309+00:00",
+      "finished_at": "2026-10-30T21:04:31.619163+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.863854
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:32.609230+00:00",
+      "finished_at": "2026-10-30T21:04:32.986757+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.377527
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:32.823012+00:00",
+      "finished_at": "2026-10-30T21:04:33.881931+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.058919
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:34.113156+00:00",
+      "finished_at": "2026-10-30T21:04:34.481928+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.368772
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:36.069557+00:00",
+      "finished_at": "2026-10-30T21:04:36.441898+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.372341
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:36.170994+00:00",
+      "finished_at": "2026-10-30T21:04:37.029715+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.858721
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:37.417277+00:00",
+      "finished_at": "2026-10-30T21:04:37.677936+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.260659
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:39.252440+00:00",
+      "finished_at": "2026-10-30T21:04:39.914172+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.661732
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:39.455129+00:00",
+      "finished_at": "2026-10-30T21:04:40.534843+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.079714
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:40.803116+00:00",
+      "finished_at": "2026-10-30T21:04:41.118312+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.315196
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:42.674772+00:00",
+      "finished_at": "2026-10-30T21:04:43.236234+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.561462
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:42.776582+00:00",
+      "finished_at": "2026-10-30T21:04:43.645619+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.869037
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:44.133313+00:00",
+      "finished_at": "2026-10-30T21:04:45.058086+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.924773
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:45.682538+00:00",
+      "finished_at": "2026-10-30T21:04:46.075305+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.392767
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:45.932392+00:00",
+      "finished_at": "2026-10-30T21:04:46.658779+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.726387
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:46.136269+00:00",
+      "finished_at": "2026-10-30T21:04:47.441640+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.305371
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:47.406813+00:00",
+      "finished_at": "2026-10-30T21:04:47.663970+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.257157
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:49.305234+00:00",
+      "finished_at": "2026-10-30T21:04:49.686076+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.380842
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:49.507007+00:00",
+      "finished_at": "2026-10-30T21:04:50.367310+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.860303
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:50.801045+00:00",
+      "finished_at": "2026-10-30T21:04:51.057562+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.256517
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:52.577901+00:00",
+      "finished_at": "2026-10-30T21:04:52.954791+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.37689
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:52.782788+00:00",
+      "finished_at": "2026-10-30T21:04:53.528633+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.745845
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:54.109400+00:00",
+      "finished_at": "2026-10-30T21:04:54.999021+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.889621
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:55.972224+00:00",
+      "finished_at": "2026-10-30T21:04:56.348538+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.376314
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:56.175352+00:00",
+      "finished_at": "2026-10-30T21:04:56.981392+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.80604
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:57.402601+00:00",
+      "finished_at": "2026-10-30T21:04:58.030569+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.627968
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:59.255360+00:00",
+      "finished_at": "2026-10-30T21:04:59.628092+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.372732
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:04:59.459126+00:00",
+      "finished_at": "2026-10-30T21:05:00.387458+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.928332
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:00.729050+00:00",
+      "finished_at": "2026-10-30T21:05:00.985016+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.255966
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:02.636388+00:00",
+      "finished_at": "2026-10-30T21:05:03.019495+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.383107
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:02.842379+00:00",
+      "finished_at": "2026-10-30T21:05:03.808659+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.96628
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:04.106303+00:00",
+      "finished_at": "2026-10-30T21:05:06.019215+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.912912
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:05.940119+00:00",
+      "finished_at": "2026-10-30T21:05:06.348027+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.407908
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:06.143263+00:00",
+      "finished_at": "2026-10-30T21:05:06.889038+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.745775
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:07.463635+00:00",
+      "finished_at": "2026-10-30T21:05:08.546238+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.082603
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:09.316491+00:00",
+      "finished_at": "2026-10-30T21:05:09.997971+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.68148
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:09.519533+00:00",
+      "finished_at": "2026-10-30T21:05:10.453193+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.93366
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:10.797471+00:00",
+      "finished_at": "2026-10-30T21:05:11.360163+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.562692
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:12.389631+00:00",
+      "finished_at": "2026-10-30T21:05:13.162269+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.772638
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:12.593849+00:00",
+      "finished_at": "2026-10-30T21:05:12.979354+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.385505
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:12.796701+00:00",
+      "finished_at": "2026-10-30T21:05:13.886817+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.090116
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:13.404586+00:00",
+      "finished_at": "2026-10-30T21:05:13.659023+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.254437
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:14.123411+00:00",
+      "finished_at": "2026-10-30T21:05:15.396039+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.272628
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:15.965469+00:00",
+      "finished_at": "2026-10-30T21:05:16.346409+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.38094
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:16.169144+00:00",
+      "finished_at": "2026-10-30T21:05:17.093927+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.924783
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:17.402073+00:00",
+      "finished_at": "2026-10-30T21:05:18.272024+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.869951
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:19.330273+00:00",
+      "finished_at": "2026-10-30T21:05:19.759683+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.42941
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:19.542987+00:00",
+      "finished_at": "2026-10-30T21:05:20.612896+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.069909
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:20.809654+00:00",
+      "finished_at": "2026-10-30T21:05:21.544761+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.735107
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:22.611904+00:00",
+      "finished_at": "2026-10-30T21:05:23.327137+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.715233
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:22.824337+00:00",
+      "finished_at": "2026-10-30T21:05:24.679223+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.854886
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:24.068368+00:00",
+      "finished_at": "2026-10-30T21:05:24.358093+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.289725
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:26.001666+00:00",
+      "finished_at": "2026-10-30T21:05:26.391897+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.390231
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:26.171370+00:00",
+      "finished_at": "2026-10-30T21:05:27.022495+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.851125
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:27.394853+00:00",
+      "finished_at": "2026-10-30T21:05:27.649173+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.25432
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:29.257563+00:00",
+      "finished_at": "2026-10-30T21:05:30.215468+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.957905
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:29.440296+00:00",
+      "finished_at": "2026-10-30T21:05:30.457876+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.01758
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:30.781102+00:00",
+      "finished_at": "2026-10-30T21:05:31.633078+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.851976
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:32.663877+00:00",
+      "finished_at": "2026-10-30T21:05:33.032468+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.368591
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:32.868991+00:00",
+      "finished_at": "2026-10-30T21:05:34.444762+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.575771
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:34.080547+00:00",
+      "finished_at": "2026-10-30T21:05:34.334914+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.254367
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:35.979246+00:00",
+      "finished_at": "2026-10-30T21:05:36.535943+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.556697
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:36.161902+00:00",
+      "finished_at": "2026-10-30T21:05:37.197506+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.035604
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:37.391844+00:00",
+      "finished_at": "2026-10-30T21:05:37.649658+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.257814
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:39.233096+00:00",
+      "finished_at": "2026-10-30T21:05:39.904732+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.671636
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:39.490984+00:00",
+      "finished_at": "2026-10-30T21:05:40.270469+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.779485
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:40.734986+00:00",
+      "finished_at": "2026-10-30T21:05:41.045756+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.31077
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:42.578619+00:00",
+      "finished_at": "2026-10-30T21:05:42.961694+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.383075
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:42.781907+00:00",
+      "finished_at": "2026-10-30T21:05:44.397470+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.615563
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:44.142804+00:00",
+      "finished_at": "2026-10-30T21:05:44.928007+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.785203
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:45.667322+00:00",
+      "finished_at": "2026-10-30T21:05:46.055021+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.387699
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:45.984616+00:00",
+      "finished_at": "2026-10-30T21:05:46.444878+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.460262
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:46.187961+00:00",
+      "finished_at": "2026-10-30T21:05:46.874353+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.686392
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:47.407361+00:00",
+      "finished_at": "2026-10-30T21:05:47.657097+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.249736
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:49.290257+00:00",
+      "finished_at": "2026-10-30T21:05:49.678465+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.388208
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:49.492952+00:00",
+      "finished_at": "2026-10-30T21:05:50.600932+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.10798
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:50.779024+00:00",
+      "finished_at": "2026-10-30T21:05:51.065438+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.286414
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:52.665530+00:00",
+      "finished_at": "2026-10-30T21:05:53.331371+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.665841
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:52.871417+00:00",
+      "finished_at": "2026-10-30T21:05:53.668060+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.796643
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:54.091405+00:00",
+      "finished_at": "2026-10-30T21:05:54.657622+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.566217
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:55.944768+00:00",
+      "finished_at": "2026-10-30T21:05:56.342137+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.397369
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:56.147700+00:00",
+      "finished_at": "2026-10-30T21:05:56.992828+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.845128
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:57.466939+00:00",
+      "finished_at": "2026-10-30T21:05:58.356162+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.889223
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:59.233164+00:00",
+      "finished_at": "2026-10-30T21:05:59.652954+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.41979
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:05:59.437741+00:00",
+      "finished_at": "2026-10-30T21:06:00.200517+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.762776
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:00.760702+00:00",
+      "finished_at": "2026-10-30T21:06:01.017815+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.257113
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:02.614666+00:00",
+      "finished_at": "2026-10-30T21:06:03.298026+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.68336
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:02.819206+00:00",
+      "finished_at": "2026-10-30T21:06:03.849459+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.030253
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:04.056927+00:00",
+      "finished_at": "2026-10-30T21:06:04.328190+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.271263
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:05.938694+00:00",
+      "finished_at": "2026-10-30T21:06:06.330567+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.391873
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:06.141376+00:00",
+      "finished_at": "2026-10-30T21:06:06.831258+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.689882
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:07.452095+00:00",
+      "finished_at": "2026-10-30T21:06:07.750466+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.298371
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:09.281480+00:00",
+      "finished_at": "2026-10-30T21:06:10.336021+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.054541
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:09.484350+00:00",
+      "finished_at": "2026-10-30T21:06:10.546662+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.062312
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:10.744684+00:00",
+      "finished_at": "2026-10-30T21:06:11.913295+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.168611
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:12.456078+00:00",
+      "finished_at": "2026-10-30T21:06:13.290704+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.834626
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:12.661106+00:00",
+      "finished_at": "2026-10-30T21:06:13.053538+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.392432
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:12.863913+00:00",
+      "finished_at": "2026-10-30T21:06:14.621959+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.758046
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:13.372593+00:00",
+      "finished_at": "2026-10-30T21:06:14.026712+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.654119
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:14.086601+00:00",
+      "finished_at": "2026-10-30T21:06:15.631903+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.545302
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:15.974877+00:00",
+      "finished_at": "2026-10-30T21:06:16.376965+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.402088
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:16.178079+00:00",
+      "finished_at": "2026-10-30T21:06:17.087382+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.909303
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:17.426715+00:00",
+      "finished_at": "2026-10-30T21:06:17.684282+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.257567
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:19.286542+00:00",
+      "finished_at": "2026-10-30T21:06:19.745752+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.45921
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:19.490726+00:00",
+      "finished_at": "2026-10-30T21:06:20.854217+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.363491
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:20.793236+00:00",
+      "finished_at": "2026-10-30T21:06:21.058736+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.2655
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:22.652405+00:00",
+      "finished_at": "2026-10-30T21:06:23.615474+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.963069
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:22.856229+00:00",
+      "finished_at": "2026-10-30T21:06:23.640349+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.78412
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:24.116275+00:00",
+      "finished_at": "2026-10-30T21:06:24.481152+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.364877
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:25.985792+00:00",
+      "finished_at": "2026-10-30T21:06:26.369551+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.383759
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:26.188014+00:00",
+      "finished_at": "2026-10-30T21:06:27.053218+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.865204
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:27.422223+00:00",
+      "finished_at": "2026-10-30T21:06:27.672177+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.249954
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:29.281512+00:00",
+      "finished_at": "2026-10-30T21:06:29.659237+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.377725
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:29.485874+00:00",
+      "finished_at": "2026-10-30T21:06:30.233506+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.747632
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:30.811334+00:00",
+      "finished_at": "2026-10-30T21:06:31.068312+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.256978
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:32.567030+00:00",
+      "finished_at": "2026-10-30T21:06:32.958596+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.391566
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:32.775165+00:00",
+      "finished_at": "2026-10-30T21:06:34.854907+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.079742
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:34.114374+00:00",
+      "finished_at": "2026-10-30T21:06:34.836368+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.721994
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:35.953216+00:00",
+      "finished_at": "2026-10-30T21:06:36.327321+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.374105
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:36.125841+00:00",
+      "finished_at": "2026-10-30T21:06:36.953862+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.828021
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:37.455215+00:00",
+      "finished_at": "2026-10-30T21:06:38.183378+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.728163
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:39.276448+00:00",
+      "finished_at": "2026-10-30T21:06:39.942781+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.666333
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:39.479803+00:00",
+      "finished_at": "2026-10-30T21:06:40.332372+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.852569
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:40.815916+00:00",
+      "finished_at": "2026-10-30T21:06:41.068532+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.252616
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:42.664720+00:00",
+      "finished_at": "2026-10-30T21:06:43.045154+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.380434
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:42.866163+00:00",
+      "finished_at": "2026-10-30T21:06:43.570810+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.704647
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:44.131538+00:00",
+      "finished_at": "2026-10-30T21:06:45.147979+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.016441
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:45.603806+00:00",
+      "finished_at": "2026-10-30T21:06:45.989124+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.385318
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:45.908092+00:00",
+      "finished_at": "2026-10-30T21:06:46.369460+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.461368
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:46.110874+00:00",
+      "finished_at": "2026-10-30T21:06:46.794876+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.684002
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:47.446442+00:00",
+      "finished_at": "2026-10-30T21:06:48.193778+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.747336
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:49.303404+00:00",
+      "finished_at": "2026-10-30T21:06:49.690480+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.387076
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:49.506357+00:00",
+      "finished_at": "2026-10-30T21:06:50.594634+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.088277
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:50.726067+00:00",
+      "finished_at": "2026-10-30T21:06:51.728608+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.002541
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:52.611259+00:00",
+      "finished_at": "2026-10-30T21:06:53.003529+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.39227
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:52.814286+00:00",
+      "finished_at": "2026-10-30T21:06:53.589292+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.775006
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:54.075009+00:00",
+      "finished_at": "2026-10-30T21:06:54.729998+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.654989
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:56.000281+00:00",
+      "finished_at": "2026-10-30T21:06:56.388473+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.388192
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:56.203678+00:00",
+      "finished_at": "2026-10-30T21:06:56.957292+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.753614
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:57.449883+00:00",
+      "finished_at": "2026-10-30T21:06:57.828695+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.378812
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:59.320057+00:00",
+      "finished_at": "2026-10-30T21:06:59.700863+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.380806
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:06:59.526837+00:00",
+      "finished_at": "2026-10-30T21:07:00.266768+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.739931
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:00.749084+00:00",
+      "finished_at": "2026-10-30T21:07:01.415892+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.666808
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:02.604041+00:00",
+      "finished_at": "2026-10-30T21:07:03.275985+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.671944
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:02.808841+00:00",
+      "finished_at": "2026-10-30T21:07:03.599434+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.790593
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:04.064886+00:00",
+      "finished_at": "2026-10-30T21:07:04.335927+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.271041
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:05.927783+00:00",
+      "finished_at": "2026-10-30T21:07:06.296962+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.369179
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:06.130597+00:00",
+      "finished_at": "2026-10-30T21:07:06.908455+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.777858
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:07.462448+00:00",
+      "finished_at": "2026-10-30T21:07:07.742067+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.279619
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:09.240225+00:00",
+      "finished_at": "2026-10-30T21:07:09.791023+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.550798
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:09.443906+00:00",
+      "finished_at": "2026-10-30T21:07:10.287716+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.84381
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:10.735192+00:00",
+      "finished_at": "2026-10-30T21:07:10.992808+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.257616
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:12.394885+00:00",
+      "finished_at": "2026-10-30T21:07:13.363969+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.969084
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:12.598308+00:00",
+      "finished_at": "2026-10-30T21:07:12.968768+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.37046
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:12.801340+00:00",
+      "finished_at": "2026-10-30T21:07:14.135104+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.333764
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:13.411545+00:00",
+      "finished_at": "2026-10-30T21:07:14.142671+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.731126
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:14.123749+00:00",
+      "finished_at": "2026-10-30T21:07:15.706788+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.583039
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:15.931979+00:00",
+      "finished_at": "2026-10-30T21:07:16.298777+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.366798
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:16.136516+00:00",
+      "finished_at": "2026-10-30T21:07:17.012846+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.87633
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:17.468814+00:00",
+      "finished_at": "2026-10-30T21:07:17.723528+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.254714
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:19.310926+00:00",
+      "finished_at": "2026-10-30T21:07:20.236463+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.925537
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:19.513266+00:00",
+      "finished_at": "2026-10-30T21:07:20.557033+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.043767
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:20.718866+00:00",
+      "finished_at": "2026-10-30T21:07:20.981527+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.262661
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:22.651224+00:00",
+      "finished_at": "2026-10-30T21:07:23.044942+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.393718
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:22.876882+00:00",
+      "finished_at": "2026-10-30T21:07:23.823318+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.946436
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:24.117392+00:00",
+      "finished_at": "2026-10-30T21:07:24.415044+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.297652
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:25.961319+00:00",
+      "finished_at": "2026-10-30T21:07:26.353666+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.392347
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:26.164231+00:00",
+      "finished_at": "2026-10-30T21:07:26.826727+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.662496
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:27.395753+00:00",
+      "finished_at": "2026-10-30T21:07:28.185466+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.789713
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:29.277797+00:00",
+      "finished_at": "2026-10-30T21:07:29.664639+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.386842
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:29.480687+00:00",
+      "finished_at": "2026-10-30T21:07:30.235077+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.75439
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:30.804573+00:00",
+      "finished_at": "2026-10-30T21:07:31.059938+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.255365
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:32.661346+00:00",
+      "finished_at": "2026-10-30T21:07:33.044559+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.383213
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:32.864523+00:00",
+      "finished_at": "2026-10-30T21:07:33.799779+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.935256
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:34.124034+00:00",
+      "finished_at": "2026-10-30T21:07:34.878795+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.754761
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:35.934944+00:00",
+      "finished_at": "2026-10-30T21:07:36.319830+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.384886
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:36.139416+00:00",
+      "finished_at": "2026-10-30T21:07:36.938611+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.799195
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:37.460819+00:00",
+      "finished_at": "2026-10-30T21:07:37.961963+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.501144
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:39.342930+00:00",
+      "finished_at": "2026-10-30T21:07:39.719985+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.377055
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:39.444339+00:00",
+      "finished_at": "2026-10-30T21:07:40.502385+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.058046
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:40.805338+00:00",
+      "finished_at": "2026-10-30T21:07:41.375617+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.570279
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:42.648055+00:00",
+      "finished_at": "2026-10-30T21:07:43.613698+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.965643
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:42.853580+00:00",
+      "finished_at": "2026-10-30T21:07:43.721316+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.867736
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:44.100610+00:00",
+      "finished_at": "2026-10-30T21:07:44.363360+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.26275
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:45.624331+00:00",
+      "finished_at": "2026-10-30T21:07:46.026956+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.402625
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:45.961384+00:00",
+      "finished_at": "2026-10-30T21:07:46.422378+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.460994
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:46.164347+00:00",
+      "finished_at": "2026-10-30T21:07:46.907484+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.743137
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:47.482526+00:00",
+      "finished_at": "2026-10-30T21:07:47.734361+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.251835
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:49.247202+00:00",
+      "finished_at": "2026-10-30T21:07:49.639355+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.392153
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:49.450794+00:00",
+      "finished_at": "2026-10-30T21:07:50.200943+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.750149
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:50.777050+00:00",
+      "finished_at": "2026-10-30T21:07:51.052077+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.275027
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:52.662334+00:00",
+      "finished_at": "2026-10-30T21:07:53.057608+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.395274
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:52.867047+00:00",
+      "finished_at": "2026-10-30T21:07:53.649056+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.782009
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:54.084850+00:00",
+      "finished_at": "2026-10-30T21:07:54.653723+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.568873
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:55.950000+00:00",
+      "finished_at": "2026-10-30T21:07:56.324939+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.374939
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:56.152868+00:00",
+      "finished_at": "2026-10-30T21:07:56.941865+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.788997
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:57.494437+00:00",
+      "finished_at": "2026-10-30T21:07:58.128496+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.634059
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:59.236846+00:00",
+      "finished_at": "2026-10-30T21:07:59.637246+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.4004
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:07:59.439957+00:00",
+      "finished_at": "2026-10-30T21:08:00.148766+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.708809
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:00.801193+00:00",
+      "finished_at": "2026-10-30T21:08:01.083956+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.282763
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:02.632584+00:00",
+      "finished_at": "2026-10-30T21:08:03.605449+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.972865
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:02.836208+00:00",
+      "finished_at": "2026-10-30T21:08:03.548263+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.712055
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:04.055011+00:00",
+      "finished_at": "2026-10-30T21:08:04.315395+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.260384
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:05.935869+00:00",
+      "finished_at": "2026-10-30T21:08:06.313134+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.377265
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:06.145370+00:00",
+      "finished_at": "2026-10-30T21:08:06.869869+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.724499
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:07.498176+00:00",
+      "finished_at": "2026-10-30T21:08:08.170348+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.672172
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:09.233454+00:00",
+      "finished_at": "2026-10-30T21:08:09.702817+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.469363
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:09.436923+00:00",
+      "finished_at": "2026-10-30T21:08:10.149795+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.712872
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:10.738821+00:00",
+      "finished_at": "2026-10-30T21:08:11.005631+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.26681
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:12.458855+00:00",
+      "finished_at": "2026-10-30T21:08:13.433325+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.97447
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:12.667371+00:00",
+      "finished_at": "2026-10-30T21:08:13.047582+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.380211
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:12.770131+00:00",
+      "finished_at": "2026-10-30T21:08:14.156535+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.386404
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:13.346477+00:00",
+      "finished_at": "2026-10-30T21:08:13.979850+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.633373
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:14.057490+00:00",
+      "finished_at": "2026-10-30T21:08:16.190818+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.133328
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:15.900408+00:00",
+      "finished_at": "2026-10-30T21:08:16.288413+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.388005
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:16.103534+00:00",
+      "finished_at": "2026-10-30T21:08:17.001110+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.897576
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:17.438485+00:00",
+      "finished_at": "2026-10-30T21:08:18.093499+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.655014
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:19.270018+00:00",
+      "finished_at": "2026-10-30T21:08:20.231473+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.961455
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:19.472185+00:00",
+      "finished_at": "2026-10-30T21:08:20.260121+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.787936
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:20.741036+00:00",
+      "finished_at": "2026-10-30T21:08:21.528925+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.787889
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:22.638014+00:00",
+      "finished_at": "2026-10-30T21:08:23.016153+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.378139
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:22.842765+00:00",
+      "finished_at": "2026-10-30T21:08:23.700025+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.85726
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:24.089778+00:00",
+      "finished_at": "2026-10-30T21:08:24.392364+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.302586
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:25.959338+00:00",
+      "finished_at": "2026-10-30T21:08:26.349634+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.390296
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:26.162243+00:00",
+      "finished_at": "2026-10-30T21:08:26.917067+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.754824
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:27.382233+00:00",
+      "finished_at": "2026-10-30T21:08:27.634025+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.251792
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:29.232071+00:00",
+      "finished_at": "2026-10-30T21:08:29.624750+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.392679
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:29.453220+00:00",
+      "finished_at": "2026-10-30T21:08:30.273419+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.820199
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:30.772861+00:00",
+      "finished_at": "2026-10-30T21:08:31.385014+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.612153
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:32.659448+00:00",
+      "finished_at": "2026-10-30T21:08:33.029503+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.370055
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:32.863509+00:00",
+      "finished_at": "2026-10-30T21:08:33.765834+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.902325
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:34.113367+00:00",
+      "finished_at": "2026-10-30T21:08:34.728149+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.614782
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:35.999373+00:00",
+      "finished_at": "2026-10-30T21:08:36.388461+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.389088
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:36.202912+00:00",
+      "finished_at": "2026-10-30T21:08:36.910522+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.70761
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:37.464951+00:00",
+      "finished_at": "2026-10-30T21:08:38.244307+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.779356
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:39.234581+00:00",
+      "finished_at": "2026-10-30T21:08:39.766111+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.53153
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:39.438509+00:00",
+      "finished_at": "2026-10-30T21:08:40.339142+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.900633
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:40.804208+00:00",
+      "finished_at": "2026-10-30T21:08:41.055975+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.251767
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:42.655925+00:00",
+      "finished_at": "2026-10-30T21:08:43.088774+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.432849
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:42.863762+00:00",
+      "finished_at": "2026-10-30T21:08:44.017622+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.15386
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:44.098067+00:00",
+      "finished_at": "2026-10-30T21:08:44.384154+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.286087
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:45.643999+00:00",
+      "finished_at": "2026-10-30T21:08:46.028932+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.384933
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:45.948243+00:00",
+      "finished_at": "2026-10-30T21:08:46.395004+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.446761
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:46.158808+00:00",
+      "finished_at": "2026-10-30T21:08:46.900632+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.741824
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:47.479101+00:00",
+      "finished_at": "2026-10-30T21:08:48.964206+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.485105
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:49.313303+00:00",
+      "finished_at": "2026-10-30T21:08:49.704273+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.39097
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:49.515718+00:00",
+      "finished_at": "2026-10-30T21:08:50.251575+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.735857
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:50.742692+00:00",
+      "finished_at": "2026-10-30T21:08:50.993377+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.250685
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:52.578124+00:00",
+      "finished_at": "2026-10-30T21:08:52.946373+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.368249
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:52.846056+00:00",
+      "finished_at": "2026-10-30T21:08:53.605889+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.759833
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:54.060584+00:00",
+      "finished_at": "2026-10-30T21:08:54.996347+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.935763
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:55.908876+00:00",
+      "finished_at": "2026-10-30T21:08:56.296015+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.387139
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:56.111360+00:00",
+      "finished_at": "2026-10-30T21:08:56.919218+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.807858
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:57.451685+00:00",
+      "finished_at": "2026-10-30T21:08:58.484799+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.033114
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:59.288914+00:00",
+      "finished_at": "2026-10-30T21:08:59.962290+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.673376
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:08:59.492644+00:00",
+      "finished_at": "2026-10-30T21:09:00.300272+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.807628
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:00.727018+00:00",
+      "finished_at": "2026-10-30T21:09:00.983828+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.25681
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:02.578134+00:00",
+      "finished_at": "2026-10-30T21:09:02.954962+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.376828
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:02.782070+00:00",
+      "finished_at": "2026-10-30T21:09:03.546476+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.764406
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:04.119179+00:00",
+      "finished_at": "2026-10-30T21:09:04.618038+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.498859
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:05.983934+00:00",
+      "finished_at": "2026-10-30T21:09:06.357476+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.373542
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:06.186891+00:00",
+      "finished_at": "2026-10-30T21:09:06.990894+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.804003
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:07.410242+00:00",
+      "finished_at": "2026-10-30T21:09:08.028545+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.618303
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:09.264002+00:00",
+      "finished_at": "2026-10-30T21:09:09.638113+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.374111
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:09.467738+00:00",
+      "finished_at": "2026-10-30T21:09:10.242229+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.774491
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:10.742437+00:00",
+      "finished_at": "2026-10-30T21:09:11.332970+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.590533
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:12.436466+00:00",
+      "finished_at": "2026-10-30T21:09:13.136354+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.699888
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:12.639650+00:00",
+      "finished_at": "2026-10-30T21:09:13.019195+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.379545
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:12.843375+00:00",
+      "finished_at": "2026-10-30T21:09:13.746846+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.903471
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:13.350409+00:00",
+      "finished_at": "2026-10-30T21:09:14.516465+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.166056
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:14.065370+00:00",
+      "finished_at": "2026-10-30T21:09:15.634784+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.569414
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:15.918618+00:00",
+      "finished_at": "2026-10-30T21:09:16.325344+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.406726
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:16.124356+00:00",
+      "finished_at": "2026-10-30T21:09:16.901990+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.777634
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:17.389035+00:00",
+      "finished_at": "2026-10-30T21:09:17.995288+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.606253
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:19.325653+00:00",
+      "finished_at": "2026-10-30T21:09:19.722610+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.396957
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:19.527399+00:00",
+      "finished_at": "2026-10-30T21:09:20.431293+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.903894
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:20.724852+00:00",
+      "finished_at": "2026-10-30T21:09:20.985440+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.260588
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:22.615099+00:00",
+      "finished_at": "2026-10-30T21:09:22.984057+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.368958
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:22.817387+00:00",
+      "finished_at": "2026-10-30T21:09:23.705461+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.888074
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:24.064058+00:00",
+      "finished_at": "2026-10-30T21:09:24.346059+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.282001
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:25.992182+00:00",
+      "finished_at": "2026-10-30T21:09:26.363351+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.371169
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:26.195212+00:00",
+      "finished_at": "2026-10-30T21:09:26.979843+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.784631
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:27.415914+00:00",
+      "finished_at": "2026-10-30T21:09:28.062837+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.646923
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:29.324062+00:00",
+      "finished_at": "2026-10-30T21:09:29.718805+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.394743
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:29.527268+00:00",
+      "finished_at": "2026-10-30T21:09:30.471336+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.944068
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:30.745846+00:00",
+      "finished_at": "2026-10-30T21:09:31.004767+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.258921
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:32.646233+00:00",
+      "finished_at": "2026-10-30T21:09:33.025198+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.378965
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:32.852700+00:00",
+      "finished_at": "2026-10-30T21:09:33.661606+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.808906
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:34.057475+00:00",
+      "finished_at": "2026-10-30T21:09:36.950630+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.893155
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:35.976299+00:00",
+      "finished_at": "2026-10-30T21:09:36.364060+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.387761
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:36.179734+00:00",
+      "finished_at": "2026-10-30T21:09:36.905758+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.726024
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:37.425100+00:00",
+      "finished_at": "2026-10-30T21:09:40.307232+00:00",
+      "list_validated": true,
+      "execution_seconds": 2.882132
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:39.301488+00:00",
+      "finished_at": "2026-10-30T21:09:39.976413+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.674925
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:39.505348+00:00",
+      "finished_at": "2026-10-30T21:09:40.621772+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.116424
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:40.774925+00:00",
+      "finished_at": "2026-10-30T21:09:41.025098+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.250173
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:42.609319+00:00",
+      "finished_at": "2026-10-30T21:09:43.374488+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.765169
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:42.813587+00:00",
+      "finished_at": "2026-10-30T21:09:43.651167+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.83758
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:44.090993+00:00",
+      "finished_at": "2026-10-30T21:09:44.753185+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.662192
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:45.619019+00:00",
+      "finished_at": "2026-10-30T21:09:46.176171+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.557152
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:45.927664+00:00",
+      "finished_at": "2026-10-30T21:09:46.680740+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.753076
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:46.130184+00:00",
+      "finished_at": "2026-10-30T21:09:46.880539+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.750355
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:47.464964+00:00",
+      "finished_at": "2026-10-30T21:09:48.819120+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.354156
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:49.266298+00:00",
+      "finished_at": "2026-10-30T21:09:49.816389+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.550091
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:49.470177+00:00",
+      "finished_at": "2026-10-30T21:09:50.623924+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.153747
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:50.793549+00:00",
+      "finished_at": "2026-10-30T21:09:51.462240+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.668691
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:52.566949+00:00",
+      "finished_at": "2026-10-30T21:09:52.964669+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.39772
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:52.772594+00:00",
+      "finished_at": "2026-10-30T21:09:53.850235+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.077641
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:54.106276+00:00",
+      "finished_at": "2026-10-30T21:09:54.675159+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.568883
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:55.937004+00:00",
+      "finished_at": "2026-10-30T21:09:56.315451+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.378447
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:56.140226+00:00",
+      "finished_at": "2026-10-30T21:09:56.850596+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.71037
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:57.462390+00:00",
+      "finished_at": "2026-10-30T21:09:57.761463+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.299073
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:59.250606+00:00",
+      "finished_at": "2026-10-30T21:09:59.686629+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.436023
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:09:59.453657+00:00",
+      "finished_at": "2026-10-30T21:10:00.217460+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.763803
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:00.726804+00:00",
+      "finished_at": "2026-10-30T21:10:01.388704+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.6619
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:02.572372+00:00",
+      "finished_at": "2026-10-30T21:10:03.265874+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.693502
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:02.776305+00:00",
+      "finished_at": "2026-10-30T21:10:03.781357+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.005052
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:04.106472+00:00",
+      "finished_at": "2026-10-30T21:10:04.364708+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.258236
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:05.919450+00:00",
+      "finished_at": "2026-10-30T21:10:06.333032+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.413582
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:06.122148+00:00",
+      "finished_at": "2026-10-30T21:10:07.417673+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.295525
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:07.392002+00:00",
+      "finished_at": "2026-10-30T21:10:07.650132+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.25813
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:09.323419+00:00",
+      "finished_at": "2026-10-30T21:10:09.745550+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.422131
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:09.556527+00:00",
+      "finished_at": "2026-10-30T21:10:10.376873+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.820346
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:10.773852+00:00",
+      "finished_at": "2026-10-30T21:10:11.027082+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.25323
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:12.398736+00:00",
+      "finished_at": "2026-10-30T21:10:13.093847+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.695111
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:12.601929+00:00",
+      "finished_at": "2026-10-30T21:10:12.978079+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.37615
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:12.843225+00:00",
+      "finished_at": "2026-10-30T21:10:13.907476+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.064251
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:13.353818+00:00",
+      "finished_at": "2026-10-30T21:10:13.614455+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.260637
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:14.102726+00:00",
+      "finished_at": "2026-10-30T21:10:15.373850+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.271124
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:15.980281+00:00",
+      "finished_at": "2026-10-30T21:10:16.363329+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.383048
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:16.183074+00:00",
+      "finished_at": "2026-10-30T21:10:16.940456+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.757382
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:17.477790+00:00",
+      "finished_at": "2026-10-30T21:10:18.180460+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.70267
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:19.244447+00:00",
+      "finished_at": "2026-10-30T21:10:19.624757+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.38031
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:19.447911+00:00",
+      "finished_at": "2026-10-30T21:10:20.270328+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.822417
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:20.767536+00:00",
+      "finished_at": "2026-10-30T21:10:21.027580+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.260044
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:22.654850+00:00",
+      "finished_at": "2026-10-30T21:10:23.028681+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.373831
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:22.859957+00:00",
+      "finished_at": "2026-10-30T21:10:24.038630+00:00",
+      "list_validated": true,
+      "execution_seconds": 1.178673
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:24.132468+00:00",
+      "finished_at": "2026-10-30T21:10:24.650832+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.518364
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:25.977395+00:00",
+      "finished_at": "2026-10-30T21:10:26.350647+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.373252
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:26.179745+00:00",
+      "finished_at": "2026-10-30T21:10:26.933483+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.753738
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:27.400463+00:00",
+      "finished_at": "2026-10-30T21:10:28.050388+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.649925
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:29.263246+00:00",
+      "finished_at": "2026-10-30T21:10:29.647301+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.384055
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:29.466233+00:00",
+      "finished_at": "2026-10-30T21:10:30.291094+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.824861
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:30.792113+00:00",
+      "finished_at": "2026-10-30T21:10:31.046787+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.254674
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:32.612663+00:00",
+      "finished_at": "2026-10-30T21:10:32.984959+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.372296
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:32.818362+00:00",
+      "finished_at": "2026-10-30T21:10:33.733803+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.915441
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:34.114698+00:00",
+      "finished_at": "2026-10-30T21:10:34.368169+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.253471
+    },
+    {
+      "ticker": "INTC",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:35.905921+00:00",
+      "finished_at": "2026-10-30T21:10:36.335455+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.429534
+    },
+    {
+      "ticker": "INTC",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:36.108732+00:00",
+      "finished_at": "2026-10-30T21:10:36.865218+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.756486
+    },
+    {
+      "ticker": "CEG",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:37.477539+00:00",
+      "finished_at": "2026-10-30T21:10:37.728329+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.25079
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:39.234362+00:00",
+      "finished_at": "2026-10-30T21:10:39.645868+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.411506
+    },
+    {
+      "ticker": "BE",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:39.437035+00:00",
+      "finished_at": "2026-10-30T21:10:40.313399+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.876364
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:40.757655+00:00",
+      "finished_at": "2026-10-30T21:10:41.499602+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.741947
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:42.599662+00:00",
+      "finished_at": "2026-10-30T21:10:43.550899+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.951237
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:42.802931+00:00",
+      "finished_at": "2026-10-30T21:10:43.587462+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.784531
+    },
+    {
+      "ticker": "MU",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:44.141974+00:00",
+      "finished_at": "2026-10-30T21:10:44.688456+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.546482
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:45.594931+00:00",
+      "finished_at": "2026-10-30T21:10:46.028936+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.434005
+    },
+    {
+      "ticker": "MU",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:45.899513+00:00",
+      "finished_at": "2026-10-30T21:10:46.390319+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.490806
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:46.113375+00:00",
+      "finished_at": "2026-10-30T21:10:46.834257+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.720882
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:47.453376+00:00",
+      "finished_at": "2026-10-30T21:10:48.079001+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.625625
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:49.282245+00:00",
+      "finished_at": "2026-10-30T21:10:49.692134+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.409889
+    },
+    {
+      "ticker": "MU",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:49.485230+00:00",
+      "finished_at": "2026-10-30T21:10:50.149141+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.663911
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:50.740939+00:00",
+      "finished_at": "2026-10-30T21:10:50.999090+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.258151
+    },
+    {
+      "ticker": "BE",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:52.609998+00:00",
+      "finished_at": "2026-10-30T21:10:52.997557+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.387559
+    },
+    {
+      "ticker": "COHR",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:52.828978+00:00",
+      "finished_at": "2026-10-30T21:10:53.564466+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.735488
+    },
+    {
+      "ticker": "INTC",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:54.148215+00:00",
+      "finished_at": "2026-10-30T21:10:54.706476+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.558261
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:55.899326+00:00",
+      "finished_at": "2026-10-30T21:10:56.384815+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.485489
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:56.204407+00:00",
+      "finished_at": "2026-10-30T21:10:56.935803+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.731396
+    },
+    {
+      "ticker": "BE",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:57.422223+00:00",
+      "finished_at": "2026-10-30T21:10:57.696852+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.274629
+    },
+    {
+      "ticker": "CEG",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:59.280938+00:00",
+      "finished_at": "2026-10-30T21:10:59.670737+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.389799
+    },
+    {
+      "ticker": "CEG",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:10:59.485471+00:00",
+      "finished_at": "2026-10-30T21:11:00.339904+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.854433
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:11:00.811540+00:00",
+      "finished_at": "2026-10-30T21:11:01.069126+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.257586
+    },
+    {
+      "ticker": "COHR",
+      "unit": "HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:11:02.588538+00:00",
+      "finished_at": "2026-10-30T21:11:02.967707+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.379169
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "SUPPLEMENT_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:11:02.791711+00:00",
+      "finished_at": "2026-10-30T21:11:03.552259+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.760548
+    },
+    {
+      "ticker": "COHR",
+      "unit": "GRAPHQL_HEAD",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-10-30T21:11:04.048805+00:00",
+      "finished_at": "2026-10-30T21:11:04.753997+00:00",
+      "list_validated": true,
+      "execution_seconds": 0.705192
+    }
+  ],
+  "capture_count": 16,
+  "first_observed": [],
+  "true_new_exact_after_release": []
+}
