@@ -36,16 +36,14 @@ def round_price(price: Decimal, side: str, rules: list[dict[str, Any]]) -> Decim
     raise ValueError("unstable price rule")
 
 
-def order_type(
-    attempts: list[dict[str, Any]], session: str, leg: str = "ENTRY", *, legacy: bool = False
-) -> str | None:
+def order_type(attempts: list[dict[str, Any]], session: str, leg: str = "ENTRY") -> str | None:
     if session == "CLOSED":
         return None
     if any(item["order_type"] == "MKT" for item in attempts):
         return None
     if len(attempts) >= (2 if session == "RTH" else 3):
         return None
-    return "MKT" if attempts and session == "RTH" and (leg == "EXIT" or legacy) else "LMT"
+    return "MKT" if attempts and session == "RTH" and leg == "EXIT" else "LMT"
 
 
 def price_and_quantity(

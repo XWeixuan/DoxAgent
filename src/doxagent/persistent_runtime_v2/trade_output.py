@@ -5,13 +5,13 @@ from __future__ import annotations
 import asyncio
 import json
 from contextlib import nullcontext
-from datetime import date
+from datetime import date, timedelta
 from typing import Any, Protocol
 
 from pydantic import ValidationError
 
 from doxagent.semantic_clock import expires_at, semantic_day
-from doxagent.v2_control.repository import control_in, output_permission
+from doxagent.v2_control.repository import output_permission
 
 from . import policy_consumption
 from .fencing import assert_write_lease
@@ -116,6 +116,13 @@ class TradeOutputService:
             with self.journal.transaction() if db is None else nullcontext(db) as db:
                 assert_write_lease(db)
                 reason, _ = output_permission(db, case.ticker, case.case_id)
+                from doxagent.trade_execution.configuration import active_in
+
+                active_config = active_in(db, case.ticker)
+                if active_config and semantic_day(
+                    self.journal.clock()
+                ).isoformat() in active_config["configuration"].get("banned_semantic_dates", []):
+                    reason = "BANNED_TRADE_DAY"
                 value["origin_trade_eligible"] = reason is None and disposition_override is None
                 value["trade_disposition"] = disposition_override or reason
                 db.execute(
@@ -133,6 +140,7 @@ class TradeOutputService:
             ).fetchone()
             if old:
                 return str(json.loads(old[0])["status"])
+            prepared_at = self.journal.clock()
             reason, execution_pin = output_permission(db, case.ticker, case.case_id)
             if reason:
                 analysis = {
@@ -151,6 +159,19 @@ class TradeOutputService:
                 semantic_day(self.journal.clock()) != day
             )
             status = disposition_override or ("EXPIRED_SEMANTIC_DAY" if expired else "READY")
+            if (
+                status == "READY"
+                and case.runtime_mode == "REALTIME"
+                and prepared_at - case.source.message_bus_event_time
+                > timedelta(minutes=12)
+            ):
+                status = "RUNTIME_DELAY_EXCEEDED"
+            from doxagent.trade_execution.configuration import active_in
+
+            active_config = active_in(db, case.ticker)
+            config = (active_config or {}).get("configuration", {})
+            if semantic_day(prepared_at).isoformat() in config.get("banned_semantic_dates",[]):
+                status = "BANNED_TRADE_DAY"
             if status == "READY" and selection_id:
                 prior = db.execute(
                     "SELECT 1 FROM runtime_values WHERE namespace='trade_intents' "
@@ -160,7 +181,8 @@ class TradeOutputService:
                     "AND json_extract(payload,'$.status') NOT IN "
                     "('EXPIRED_SEMANTIC_DAY','DUPLICATE_POLICY',"
                     "'DUPLICATE_REALTIME_OUTPUT','DUPLICATE_EVENT_TRADE',"
-                    "'SELECTED_CONDITION_INVALID','POLICY_MIGRATION_UNRESOLVED') LIMIT 1",
+                    "'SELECTED_CONDITION_INVALID','POLICY_MIGRATION_UNRESOLVED',"
+                    "'RUNTIME_DELAY_EXCEEDED','BANNED_TRADE_DAY','EXECUTION_CONFIGURATION_NOT_APPLIED') LIMIT 1",
                     (case.ticker, day.isoformat(), trade.decision.value),
                 ).fetchone()
                 if prior:
@@ -256,18 +278,23 @@ class TradeOutputService:
                 "trade": trade.model_dump(mode="json"),
                 "submitted": False,
                 "released_at": self.journal.clock().isoformat(),
+                "decision_created_at":prepared_at.isoformat(),
+                "runtime_delay":dict(source_at=case.source.message_bus_event_time.isoformat(),prepared_at=prepared_at.isoformat(),age_seconds=(prepared_at-case.source.message_bus_event_time).total_seconds(),limit_seconds=720) if case.runtime_mode == "REALTIME" else None,
+                "suppressed_semantic_date":semantic_day(prepared_at).isoformat() if status == "BANNED_TRADE_DAY" else None,
+                "suppression_policy_revision":(active_config or {}).get("applied_revision") if status == "BANNED_TRADE_DAY" else None,
                 "ready_accepted_at": self.journal.clock().isoformat()
                 if status == "READY"
                 else None,
             }
-            profile = db.execute(
-                "SELECT payload FROM runtime_values "
-                "WHERE namespace='trade_execution' AND key='active'"
-            ).fetchone()
             if execution_pin and status == "READY":
-                intent["execution_pin"] = execution_pin
-            elif profile and status == "READY" and control_in(db, case.ticker) is None:
-                intent["execution_pin"] = json.loads(profile[0])
+                intent["execution_pin"] = {
+                    k: v
+                    for k, v in execution_pin.items()
+                    if k not in {"trading_config", "configuration_revision"}
+                }
+                intent["trading_config"] = execution_pin.get("trading_config", {})
+                intent["configuration_revision"] = execution_pin.get("configuration_revision")
+
             db.execute(
                 "INSERT INTO runtime_values VALUES('trade_intents',?,?)", (identity, encode(intent))
             )
@@ -306,6 +333,14 @@ class TradeOutputService:
             try:
                 receipt = await asyncio.wait_for(adapter.reconcile(identity), timeout=30)
                 if receipt["status"] == "NOT_FOUND":
+                    from doxagent.trade_execution.configuration import banned_in
+                    with self.journal.transaction(write=False) as db:
+                        banned = banned_in(db,intent["ticker"],self.journal.clock())
+                    if banned:
+                        intent.update(status="BANNED_TRADE_DAY",**banned)
+                        self.journal.set("trade_intents",identity,intent)
+                        self.journal.finish(task,status="BANNED_TRADE_DAY")
+                        continue
                     if intent["expires_at"] <= self.journal.clock().isoformat():
                         intent["status"] = "EXPIRED_SEMANTIC_DAY"
                         self.journal.set("trade_intents", identity, intent)

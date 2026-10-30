@@ -32,7 +32,8 @@ runtime.api.request = (async (name: string, path: string) => {
         clock: wire.clock,
         normal_tickers: wire.value(3),
         blocked_tickers: wire.value(1),
-        ib_gateway_status: "CONNECTED",
+        ib_gateway_live_status: "NOT_CONFIGURED",
+        ib_gateway_paper_status: "CONNECTED",
       }),
     };
   if (name === "Metrics")

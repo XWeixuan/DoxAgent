@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import logging
-import time
+import os
 import re
-import sqlite3
+import time
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
@@ -25,7 +24,7 @@ from doxagent.v2_read.projectors import state_wire
 from doxagent.v2_read.repository import ReadStore, encode, instant
 
 from .auth import SupabaseAuth
-from .dto import VERSION, validate, coverage
+from .dto import VERSION, coverage, validate
 from .errors import ApiFailure, classify_failure
 from .views import Views
 
@@ -486,6 +485,8 @@ def create_app(
     from .overview import install as install_overview
 
     install_overview(app)
+    from .trading_config import install as install_trading_config
+    install_trading_config(app)
     from .downloads import install as install_downloads
 
     install_downloads(app)

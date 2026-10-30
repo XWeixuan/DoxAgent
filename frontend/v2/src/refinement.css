@@ -2833,3 +2833,17 @@
 .policy-references summary { cursor: pointer; color: var(--muted-foreground); }
 .policy-references ul { padding-left: 20px; margin-top: 10px; }
 .policy-references li { overflow-wrap: anywhere; margin: 8px 0; line-height: 1.7; }
+
+.trading-dialog { position:fixed; z-index:80; left:50%; top:50%; transform:translate(-50%,-50%); width:520px; max-height:88vh; overflow:auto; background:var(--background,#fff); color:var(--foreground,#1e293b); border:1px solid var(--border,#dbe2e8); border-radius:12px; padding:20px; box-shadow:0 18px 65px #0003; font-size:14px; }
+.trading-dialog-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.trading-dialog h2 { font-size:18px; font-weight:600; }
+.trading-dialog h3 { font-size:16px; font-weight:600; }
+.trading-fields { display:grid; gap:12px; margin-top:12px; }
+.trading-fields label { display:grid; gap:5px; }
+.trading-fields select { height:36px; padding:0 10px; border:1px solid var(--border,#dbe2e8); border-radius:6px; }
+.trading-fields .trading-check { display:flex; align-items:center; gap:8px; }
+.trading-fields input[type=checkbox] { width:16px; height:16px; }
+.trading-date { display:flex; align-items:center; gap:8px; margin-top:6px; }
+.capital-account + .capital-account { border-top:1px solid var(--border,#dbe2e8); padding-top:16px; margin-top:20px; }
+
+.trading-fields small { font-size:13px; line-height:1.5; }

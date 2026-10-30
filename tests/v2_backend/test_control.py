@@ -72,7 +72,7 @@ def test_released_intent_delivers_when_all_tickers_paused(tmp_path):
     now = [datetime(2026, 9, 8, 12, tzinfo=UTC)]
     runtime, journal = runtime_at(tmp_path, now)
     try:
-        runtime.execute_message(_source())
+        runtime.execute_message(_source().model_copy(update={"message_bus_event_time":now[0]}))
         runtime.process_pending_effects()
         intent = journal.values("trade_intents")[0]
         control = ControlRepository(journal)

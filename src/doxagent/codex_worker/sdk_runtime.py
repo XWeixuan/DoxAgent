@@ -511,6 +511,7 @@ class OpenAICodexRuntime:
                     "mcp_servers.data.env.IBKR_TWS_ENABLED": str(
                         self._settings.ibkr_tws_enabled
                     ).lower(),
+                    "mcp_servers.data.env.IBKR_DATA_SOURCES_JSON": self._settings.ibkr_data_sources_json,
                     "mcp_servers.data.env.IBKR_TWS_HOST": self._settings.ibkr_tws_host,
                     "mcp_servers.data.env.IBKR_TWS_PORT": str(self._settings.ibkr_tws_port),
                     "mcp_servers.data.env.IBKR_TWS_CLIENT_ID": str(

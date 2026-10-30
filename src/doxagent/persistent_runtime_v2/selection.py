@@ -110,6 +110,9 @@ class WeekendSelection:
                         and item["status"]
                         not in {
                             "EXPIRED_SEMANTIC_DAY",
+                            "RUNTIME_DELAY_EXCEEDED",
+                            "BANNED_TRADE_DAY",
+                            "EXECUTION_CONFIGURATION_NOT_APPLIED",
                             "DUPLICATE_POLICY",
                             "DUPLICATE_REALTIME_OUTPUT",
                             "DUPLICATE_EVENT_TRADE",

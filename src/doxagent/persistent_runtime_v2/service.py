@@ -2468,6 +2468,9 @@ class PersistentRuntimeV2Service:
         if outcome in {
             "DUPLICATE_POLICY",
             "EXPIRED_SEMANTIC_DAY",
+            "RUNTIME_DELAY_EXCEEDED",
+            "BANNED_TRADE_DAY",
+            "EXECUTION_CONFIGURATION_NOT_APPLIED",
             "SELECTED_CONDITION_INVALID",
             "POLICY_MIGRATION_UNRESOLVED",
         }:

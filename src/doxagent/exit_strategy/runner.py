@@ -110,10 +110,7 @@ class ExitRunner:
                 profile = await self.net_io(
                     self.executor.repository.profile, value["profile_revision"]
                 )
-                broker = self.executor.broker(
-                    profile.quote_profile_revision or value["profile_revision"]
-                )
-                self.executor.recovery.check(broker.profile.expected_account_id)
+                broker = self.executor.market_data(profile, value["profile_revision"])
                 contract = await self.net_io(broker.contract, leg["ticker"], venue)
                 if contract["con_id"] != leg["con_id"]:
                     raise ValueError("QUOTE_CONTRACT_MISMATCH")

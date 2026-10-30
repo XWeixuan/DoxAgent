@@ -78,3 +78,8 @@ export type WireMonitoringTermsValidation = W.Response<W.MonitoringTermsValidati
 export type WireDeferredQueryTicket = W.DeferredQueryTicket;
 
 export type WireCostReport = W.Response<W.Resource<W.CostReport>>;
+
+export type WireTradingConfiguration = W.Response<W.Resource<W.TradingConfiguration>>;
+export type WireTradingConfigurationWrite = W.Response<W.TradingConfiguration>;
+export type WireTradingCapital = W.Response<W.Resource<W.TradingCapital>>;
+export type WireTradingCapitalWrite = W.Response<W.TradingCapital>;

@@ -5,6 +5,10 @@ import schema from "./wire-schema.json";
 
 export const API_PREFIX = "/api/doxagent/v2";
 export type Endpoints = {
+  TradingConfiguration: S.WireTradingConfiguration;
+  TradingConfigurationWrite: S.WireTradingConfigurationWrite;
+  TradingCapital: S.WireTradingCapital;
+  TradingCapitalWrite: S.WireTradingCapitalWrite;
   Research: S.WireResearch;
   Runs: S.WireRuns;
   FutureNodes: S.WireFutureNodes;

@@ -19,7 +19,7 @@ from .ib_gateway import GatewayMonitor
 
 
 def install(app: FastAPI) -> None:
-    gateway = GatewayMonitor()
+    gateway = GatewayMonitor(app.state.control.journal)
     app.state.gateway_monitor = gateway
     prefix = "/api/doxagent/v2"
     store, views, control = app.state.store, app.state.views, app.state.control
@@ -352,7 +352,7 @@ def install(app: FastAPI) -> None:
                     sum(s["health"] in {"NORMAL", "DEGRADED"} for s in states)
                 ),
                 "blocked_tickers": available(sum(s["health"] == "BLOCKED" for s in states if s)),
-                **({"ib_gateway_status": getattr(app.state, "gateway_override", None) or await gateway.status()}
+                **((getattr(app.state, "gateway_override", None) or await gateway.status())
                    if request.url.path.endswith("/gateway-status") else {}),
             },
             view_id=args["view_id"],

@@ -17,20 +17,20 @@ def test_owned_split_adjustment_is_replayable_and_leaves_manual_shares(setup):
     clock, repo, revision, executor, broker = setup
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 198
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 197
     adjustment = dict(
         adjustment_id="MU-SPLIT-TEST",
-        quantity_delta=198,
+        quantity_delta=197,
         effective_at=clock().isoformat(),
         reason="reviewed 2:1 split, own shares only",
     )
     repo.adjust_lot("trade:A", **adjustment)
     repo.adjust_lot("trade:A", **adjustment)
-    broker.positions[9939] = "446"
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 396
+    broker.positions[9939] = "444"
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 394
     clock.value = datetime.fromisoformat(repo.require("lots", "trade:A")["scheduled_exit"])
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
-    assert broker.sent[-1]["quantity"] == 396
+    assert broker.sent[-1]["quantity"] == 394
     assert broker.positions[9939] == "50"
     assert repo.require("lots", "trade:A")["remaining_qty"] == 0
 
@@ -97,13 +97,14 @@ with WriterLock(Path(sys.argv[1])) as owner:
     clock.advance(10)
     with WriterLock(repo.journal.path):
         asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert len(broker.sent) == 1 and broker.sent[0]["order_type"] == "MKT"
+    assert len(broker.sent) == 1 and broker.sent[0]["order_type"] == "LMT"
     assert broker.sent[0]["order_id"] != attempt["order_id"]
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 200
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 100
 
 
 def test_unknown_submit_is_not_retried_after_restart(setup):
     clock, repo, revision, executor, broker = setup
+    broker.order_event = lambda *args: None
     admit(repo, revision)
     broker.mode = "unfilled"
     asyncio.run(executor.step("trade:A:entry"))
@@ -160,7 +161,7 @@ def test_exit_failure_keeps_lot_and_explicit_resume_has_new_budget(setup):
     broker.quote = denied
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
     assert repo.require("jobs", "trade:A:exit")["state"] == "FAILED"
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 198
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 197
     repo.resume_exit("trade:A", "quotes restored")
     broker.quote = original_quote
     broker.mode = "fill"
@@ -203,14 +204,33 @@ def test_runtime_pin_is_frozen_at_trade_output_and_intake_is_once(tmp_path):
     revision = repo.import_profile(profile())
     repo.activate(revision, "paper")
     try:
-        runtime.execute_message(_source())
+        from doxagent.trade_execution.capital import CapitalLedger
+        from doxagent.trade_execution.configuration import ExecutionConfiguration
+        from doxagent.v2_control.repository import ControlRepository
+
+        control = ControlRepository(journal)
+        control.migrate()
+        control.bind("*", "PAPER_TRADING", revision)
+        CapitalLedger(repo).allocate("DU_TEST", "20000", "initial", "test")
+        from tests.v2_backend.test_control import start
+
+        start(control, "PAPER_TRADING")
+        ExecutionConfiguration(journal).apply(repo)
+        recent = _source().model_copy(
+            update={
+                "message_bus_event_time": journal.clock(),
+                "published_at": journal.clock(),
+                "collected_at": journal.clock(),
+            }
+        )
+        runtime.execute_message(recent)
         runtime.process_pending_effects()
         intent = journal.values("trade_intents")[0]
         assert intent["execution_pin"]["revision"] == revision
         live = ExecutionProfile(
             profile_id="live",
             environment="LIVE",
-            account_mode="LIVE_CASH",
+            account_type="CASH",
             port=7496,
             client_id=81,
             expected_account_id="U_TEST",

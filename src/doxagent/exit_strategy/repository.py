@@ -259,6 +259,10 @@ class ExitRepository:
 
     def unsettled(self, value):
         with self.journal.transaction(write=False, timeout=0.2) as db:
+            row = db.execute("SELECT payload FROM te_executions WHERE id=?",(value["position_id"],)).fetchone()
+            execution = json.loads(row[0]) if row else {}
+            if execution.get("ownership_version") == 2 and execution.get("group_state") != "CLOSED":
+                return True
             return any(
                 db.execute(
                     "SELECT 1 FROM te_attempts a JOIN te_jobs j ON j.id=a.job_id "
@@ -401,6 +405,9 @@ class ExitRepository:
             updated_at=now,
             exit_evidence=evidence or {},
         )
+        from doxagent.trade_execution.groups import request_exit
+
+        request_exit(db, position_id, now, reason)
         for leg in value["legs"]:
             lot_row = db.execute(
                 "SELECT payload FROM te_lots WHERE id=?", (leg["lot_id"],)

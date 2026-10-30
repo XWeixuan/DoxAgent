@@ -32,8 +32,6 @@ def profile(**changes):
     changes.setdefault(
         "strategy",
         Strategy(
-            capital_model="LEGACY_PER_INTENT",
-            target_notional_usd=Decimal("20000"),
             initial_tolerance=Decimal("0.01"),
             non_rth_retry_tolerance=Decimal("0.02"),
         ),
@@ -41,7 +39,6 @@ def profile(**changes):
     return ExecutionProfile(
         profile_id="paper",
         environment="PAPER",
-        account_mode="PAPER",
         host="127.0.0.1",
         port=7497,
         client_id=82,
@@ -51,16 +48,18 @@ def profile(**changes):
     )
 
 
-def admit(repo, revision, identity="trade:A", side="LONG"):
+def admit(repo, revision, identity="trade:A", side="LONG", ticker="MU", config=None):
     p = repo.profile(revision)
     value = {
         "intent_id": identity,
-        "ticker": "MU",
+        "ticker": ticker,
         "status": "READY",
         "expires_at": (repo.journal.clock() + timedelta(hours=12)).isoformat(),
         "trade": {"decision": side},
         "execution_pin": {"revision": revision, "profile": p.model_dump(mode="json")},
     }
+    if config is not None:
+        value["trading_config"] = config
     repo.admit(value)
     return value
 
@@ -88,7 +87,26 @@ class Broker:
         pass
 
     def sync(self):
-        return {"positions": dict(self.positions), "at": self.clock().isoformat(), "complete": True}
+        return {
+            "positions": dict(self.positions),
+            "at": self.clock().isoformat(),
+            "complete": True,
+            "account_values": {
+                "AccountReady": "true",
+                **{
+                    key: {"value": "100000", "currency": "USD"}
+                    for key in (
+                        "NetLiquidation",
+                        "AvailableFunds",
+                        "LookAheadAvailableFunds",
+                        "SettledCash",
+                    )
+                },
+            },
+        }
+
+    def what_if(self, *args, **kwargs):
+        return {"status": "VALIDATED", "rows": [{"initial_margin_change": "500"}]}
 
     def contract(self, ticker, exchange="SMART"):
         return {
@@ -153,14 +171,14 @@ class Broker:
             self.fill(a, a["quantity"], self.quote_price)
             self.order_event(a, "Filled")
         elif self.mode == "partial":
-            self.fill(a, 100, 99.8)
+            self.fill(a, min(100, a["quantity"]), 99.8)
 
     def cancel(self, a):
         self.cancels.append(a)
         if self.mode == "stuck_cancel":
             return
         if self.mode == "partial":
-            self.fill(a, 30, 100)
+            self.fill(a, min(30, a["quantity"] - self.cumulative.get(a["id"], 0)), 100)
             self.quote_price = 105
         self.order_event(a, "Cancelled")
 
@@ -170,6 +188,9 @@ def setup(tmp_path):
     clock = Clock()
     repo = ExecutionRepository(RuntimeJournal(tmp_path / "runtime.db", clock=clock))
     revision = repo.import_profile(profile())
+    from doxagent.trade_execution.capital import CapitalLedger
+
+    CapitalLedger(repo).allocate("DU_TEST", "20000", "initial", "test")
     brokers = []
 
     def factory(p, **kwargs):
@@ -207,7 +228,7 @@ def test_price_rules_retry_matrix_and_sizing():
     )
     assert result["limit_price"] == "106.08" and result["quantity"] == 94
     assert order_type([], "RTH") == "LMT"
-    assert order_type([{"order_type": "LMT"}], "RTH", legacy=True) == "MKT"
+    assert order_type([{"order_type": "LMT"}], "RTH", "EXIT") == "MKT"
     assert order_type([{"order_type": "LMT"}] * 2, "RTH") is None
     assert order_type([{"order_type": "LMT"}] * 2, "EXTENDED") == "LMT"
     assert order_type([{"order_type": "LMT"}] * 3, "EXTENDED") is None
@@ -233,12 +254,12 @@ def test_long_fill_and_exit_only_owned_lot(setup):
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
     lot = repo.get("lots", "trade:A")
-    assert lot["remaining_qty"] == 198
+    assert lot["remaining_qty"] == 197
     assert repo.get("executions", "trade:A")["entry_result"] == "FILLED"
     assert len(broker.sent) == 1  # Price improvement does not initiate extra top-up.
     clock.value = datetime.fromisoformat(lot["scheduled_exit"])
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
-    assert broker.sent[-1]["side"] == "SELL" and broker.sent[-1]["quantity"] == 198
+    assert broker.sent[-1]["side"] == "SELL" and broker.sent[-1]["quantity"] == 197
     assert broker.positions[9939] == "50"
     assert repo.get("lots", "trade:A")["remaining_qty"] == 0
 
@@ -248,8 +269,8 @@ def test_partial_cancel_race_reprices_remaining_budget(setup):
     broker.mode = "partial"
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert len(broker.sent) == 2 and len(broker.cancels) == 1
-    assert broker.sent[-1]["order_type"] == "MKT"
+    assert len(broker.sent) == 2 and len(broker.cancels) == 2
+    assert broker.sent[-1]["order_type"] == "LMT"
     assert broker.sent[-1]["quantity"] == 66  # (20000 - 9980 - 3000) / fresh 105
     assert repo.get("lots", "trade:A")["remaining_qty"] == 196
 
@@ -284,20 +305,22 @@ def test_no_quote_does_not_block_another_job_or_create_orders(setup, monkeypatch
     assert repo.get("executions", "trade:B")["entry_result"] == "FILLED"
 
 
-def test_fifo_and_duplicate_fills_do_not_close_manual_position(setup):
+def test_virtual_opposite_and_duplicate_fills_do_not_close_manual_position(setup):
     clock, repo, revision, executor, broker = setup
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    admit(repo, revision, "trade:B", "SHORT")
+    admit(repo, revision, "trade:B", "SHORT", ticker="INTC")
     asyncio.run(run_job(executor, repo, clock, "trade:B:entry"))
-    assert broker.sent[-1]["quantity"] == 202
-    assert repo.get("lots", "trade:A")["remaining_qty"] == 0
-    assert repo.get("lots", "trade:B")["remaining_qty"] == 4
-    assert repo.get("jobs", "trade:A:exit")["state"] == "DONE"
+    qa = repo.get("lots", "trade:A")["remaining_qty"]
+    qb = repo.get("lots", "trade:B")["remaining_qty"]
+    assert qa > 0 and qb > 0
+    assert broker.positions[9939] == str(50 + qa - qb)
     fill = repo.fills("trade:B:entry")[0]
     repo.event(broker.profile.expected_account_id, "fill", fill)
     executor.drain_events()
-    assert repo.get("lots", "trade:B")["remaining_qty"] == 4
+    assert repo.get("lots", "trade:B")["remaining_qty"] == qb
+    asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
+    assert broker.positions[9939] == str(50 - qb)
     asyncio.run(run_job(executor, repo, clock, "trade:B:exit"))
     assert broker.positions[9939] == "50"
 
@@ -308,7 +331,7 @@ def test_hot_switch_does_not_move_existing_execution(setup):
     live = ExecutionProfile(
         profile_id="live",
         environment="LIVE",
-        account_mode="LIVE_CASH",
+        account_type="CASH",
         port=7496,
         client_id=81,
         expected_account_id="U_TEST",

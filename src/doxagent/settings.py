@@ -405,6 +405,7 @@ class DoxAgentSettings(BaseSettings):
         ge=0,
         validation_alias="SILICON_ANALYSTS_MIN_REQUEST_INTERVAL_SECONDS",
     )
+    ibkr_data_sources_json: str = Field(default="[]", validation_alias="IBKR_DATA_SOURCES_JSON")
     ibkr_tws_enabled: bool = Field(default=False, validation_alias="IBKR_TWS_ENABLED")
     ibkr_tws_host: str = Field(default="127.0.0.1", validation_alias="IBKR_TWS_HOST")
     ibkr_tws_port: int = Field(default=7496, ge=1, le=65535, validation_alias="IBKR_TWS_PORT")

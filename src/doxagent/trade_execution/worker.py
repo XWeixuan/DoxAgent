@@ -38,6 +38,17 @@ def active_profile_revisions(executor: Any) -> list[str]:
             binding = mode_binding_in(db, state["ticker"], state["mode"])
             if binding and binding["revision"] not in revisions:
                 revisions.append(binding["revision"])
+        for (payload,) in db.execute(
+            "SELECT DISTINCT e.payload FROM te_jobs j JOIN te_executions e ON "
+            "e.id=j.execution_id WHERE j.state NOT IN ('DONE','FAILED')"
+        ):
+            revision = json.loads(payload)["profile_revision"]
+            if revision not in revisions:
+                revisions.append(revision)
+        for value in executor.journal.values("execution_config_active"):
+            revision = value["execution_pin"]["revision"]
+            if revision not in revisions:
+                revisions.append(revision)
         return revisions
 
 
@@ -57,8 +68,15 @@ def maintain_connections(executor: Any) -> dict[str, str]:
                 executor.recovery.fail(account, exc)
             results[revision] = f"DISCONNECTED:{type(exc).__name__}"
         current = executor.journal.get("execution_connections", revision)
-        value = {"status": results[revision]}
-        if current != value:
+        value = {"status": results[revision], "checked_at": executor.journal.clock().isoformat()}
+        from datetime import datetime
+
+        old_at = (current or {}).get("checked_at")
+        due = (
+            not old_at
+            or (executor.journal.clock() - datetime.fromisoformat(old_at)).total_seconds() >= 30
+        )
+        if not current or current.get("status") != value["status"] or due:
             executor.journal.set("execution_connections", revision, value)
     return results
 
@@ -69,7 +87,9 @@ async def recover_idle_accounts(executor):
         active = {
             r[0]
             for r in db.execute(
-                "SELECT DISTINCT account FROM te_jobs WHERE state NOT IN ('DONE','FAILED')"
+                "SELECT DISTINCT account FROM te_jobs WHERE state IN "
+                "('READY','WAIT_SESSION','WAIT_QUOTE','ACTIVE','RECONCILE_REQUIRED') AND due_at<=?",
+                (executor.journal.clock().isoformat(),),
             )
         }
     seen = set()
@@ -201,6 +221,7 @@ def scheduler_health(executor):
 
 async def run_worker(executor: Any, *, once: Any = False) -> Any:
     from doxagent.exit_strategy.runner import ExitRunner
+
     from .acceptance import tick_suites
 
     exit_runner = ExitRunner(executor)
@@ -218,6 +239,11 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
         await asyncio.to_thread(maintain_connections, executor)
         await recover_idle_accounts(executor)
 
+    async def configurations():
+        from .configuration import ExecutionConfiguration
+
+        ExecutionConfiguration(executor.journal).apply(executor.repository)
+
     async def cycles():
         revisions = await asyncio.to_thread(active_profile_revisions, executor)
         await executor.capture_ready_cycles(revisions)
@@ -232,6 +258,7 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
                 await asyncio.sleep(2 if transient(exc) else 30)
 
     lanes = [
+        ("configurations", configurations, 2),
         ("heartbeat", lambda: asyncio.to_thread(scheduler_health, executor), 10),
         ("connections", connections, 1),
         ("cycles", cycles, 30),

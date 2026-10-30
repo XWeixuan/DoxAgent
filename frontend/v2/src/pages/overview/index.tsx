@@ -1,3 +1,4 @@
+import { CapitalButton } from "./trading-config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -208,49 +209,11 @@ export default function Overview() {
                       </div>
                     ) : (
                       <>
-                        <div className="ticker-state-row">
-                          <h2>Ticker 状态</h2>
-                          <div className="ticker-totals">
-                            <span
-                              className="healthy-count"
-                              aria-label={`正常 ${valueText(data.normal_tickers)}`}
-                              title="正常"
-                            >
-                              {valueText(data.normal_tickers)}
-                            </span>
-                            <i>/</i>
-                            <span
-                              className="blocked-count"
-                              aria-label={`阻塞 ${valueText(data.blocked_tickers)}`}
-                              title="阻塞"
-                            >
-                              {valueText(data.blocked_tickers)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="gateway-status">
-                          <span>IB Gateway 状态</span>
-                          <strong
-                            title={model.gateway.error?.message}
-                            className={
-                              !model.gateway.isError &&
-                              model.gateway.data?.data.data
-                                ?.ib_gateway_status === "CONNECTED"
-                                ? "healthy-count"
-                                : "blocked-count"
-                            }
-                          >
-                            {model.gateway.isError
-                              ? "检测失败"
-                              : model.gateway.data?.data.data
-                                    ?.ib_gateway_status === "CONNECTED"
-                                ? "正常"
-                                : model.gateway.data?.data.data
-                                      ?.ib_gateway_status === "DISCONNECTED"
-                                  ? "断开"
-                                  : "未检测"}
-                          </strong>
-                        </div>
+                        {(["LIVE", "PAPER"] as const).map(environment => {
+                          const gateway = model.gateway.data?.data.data;
+                          const status = environment === "LIVE" ? gateway?.ib_gateway_live_status : gateway?.ib_gateway_paper_status;
+                          return <div className="gateway-status" key={environment}><span>IB Gateway–{environment === "LIVE" ? "Live" : "Paper"}</span><strong className={status === "CONNECTED" ? "healthy-count" : "blocked-count"} title={model.gateway.error?.message}>{model.gateway.isError ? "检测失败" : status === "CONNECTED" ? "正常" : status === "DISCONNECTED" ? "断开" : status === "NOT_CONFIGURED" ? "未配置" : "未检测"}</strong></div>;
+                        })}
                       </>
                     )}
                   </div>
@@ -269,6 +232,7 @@ export default function Overview() {
         <StartForm model={model} />
         <section className="monitor-panel" aria-labelledby="monitor-heading">
           <div className="monitor-heading">
+            <CapitalButton disabled={!model.principal.data?.data.can_operate} />
             <div>
               <h2 id="monitor-heading">标的监控</h2>
             </div>

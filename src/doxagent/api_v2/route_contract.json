@@ -572,5 +572,33 @@
     "parameters": "V，C，P",
     "response_schema": "CostNodeRowPage",
     "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/tickers/{ticker}/trading-config",
+    "parameters": "无",
+    "response_schema": "TradingConfiguration",
+    "transport": "JSON"
+  },
+  {
+    "method": "PUT",
+    "path": "/tickers/{ticker}/trading-config",
+    "parameters": "configuration",
+    "response_schema": "TradingConfiguration",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/trading-capital",
+    "parameters": "无",
+    "response_schema": "TradingCapital",
+    "transport": "JSON"
+  },
+  {
+    "method": "PUT",
+    "path": "/trading-capital/{environment}",
+    "parameters": "configuration",
+    "response_schema": "TradingCapital",
+    "transport": "JSON"
   }
 ]

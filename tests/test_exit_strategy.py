@@ -13,8 +13,26 @@ from doxagent.exit_strategy.repository import ExitRepository
 from doxagent.exit_strategy.runner import ExitRunner
 from doxagent.exit_strategy.schema import ExitPolicy
 from doxagent.v2_read.outbox import SourceOutbox
-from tests.test_trade_execution import admit, run_job
+from tests.test_trade_execution import admit as base_admit
+from tests.test_trade_execution import run_job
 from tests.test_trade_execution import setup as execution_setup
+
+
+def admit(repo, revision, identity="trade:A", side="LONG"):
+    from doxagent.exit_strategy.repository import policy_pin
+
+    with repo.transaction(write=False) as db:
+        enabled = policy_pin(db, "DU_TEST", "PAPER", "MU") is not None
+    return base_admit(
+        repo,
+        revision,
+        identity,
+        side,
+        ticker="INTC" if identity in {"trade:B", "trade:C", "trade:opposite"} else "MU",
+        config={"environment": "PAPER", "trailing_profit_enabled": enabled},
+    )
+
+
 
 setup = execution_setup
 
@@ -338,7 +356,7 @@ def test_next_exit_round_only_after_old_attempt_is_settled_and_cooldown(setup):
     assert repo.require("jobs", "trade:A:exit")["generation"] == 1
 
 
-def test_realized_fifo_profit_stays_in_whole_trade_net_pnl(setup):
+def test_new_opposite_strategy_leaves_main_profit_and_quantity_intact(setup):
     from doxagent.exit_strategy.runner import net_pnl
 
     clock, repo, revision, executor, broker = setup
@@ -350,7 +368,7 @@ def test_realized_fifo_profit_stays_in_whole_trade_net_pnl(setup):
     asyncio.run(run_job(executor, repo, clock, "trade:opposite:entry"))
     value = next(v for v in store.positions() if v["position_id"] == "trade:A")
     remaining = value["legs"][0]["quantity"]
-    assert 0 <= remaining < quantity
+    assert remaining == quantity
     pnl = net_pnl(value, [110], ExitPolicy(), clock())
     assert pnl > quantity * 9  # shrinking quantity does not erase realized gains
 
@@ -471,7 +489,7 @@ def test_new_quote_received_during_db_read_is_not_misclassified_future_stale(set
     asyncio.run(check())
 
 
-def test_partial_fifo_reduction_of_group_leg_requests_whole_group_exit(setup):
+def test_virtual_opposite_does_not_trigger_legacy_group_exit(setup):
     clock, repo, revision, executor, broker = setup
     store, _ = opened(setup)
     admit(repo, revision, identity="trade:B")
@@ -482,7 +500,7 @@ def test_partial_fifo_reduction_of_group_leg_requests_whole_group_exit(setup):
     asyncio.run(run_job(executor, repo, clock, "trade:C:entry"))
     value = next(v for v in store.positions() if v["position_id"] == "group:AB")
     assert all(leg["quantity"] > 0 for leg in value["legs"])
-    assert value["pending_reason"] == "RESIDUAL_GROUP_EXIT"
+    assert not value.get("pending_reason")
 
 
 def test_slow_subscription_release_does_not_block_observation_loop(setup):

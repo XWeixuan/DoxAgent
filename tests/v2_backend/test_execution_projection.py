@@ -88,7 +88,7 @@ def test_owned_fill_and_late_commission_are_projected_without_order_status_infer
         worker.tick(limit=500)
     summary = store.get("execution", "MU", "trade:A")
     assert summary["has_actual_fill"] is True
-    assert summary["filled_quantity"]["value"] == "198"
+    assert summary["filled_quantity"]["value"] == "197"
     fill = repo.fills("trade:A:entry")[0]
     repo.event(
         repo.profile(revision).expected_account_id,
@@ -119,8 +119,8 @@ def test_owned_fill_and_late_commission_are_projected_without_order_status_infer
     for _ in range(5):
         worker.tick(limit=500)
     corrected = store.get("case", "MU", "case-a")
-    assert corrected["results"] == ["EVENT_DISCOVERY", "TRADE_INTENT"]
-    assert corrected["trade"]["state"] == "UNKNOWN"
+    assert corrected["results"] == ["EVENT_DISCOVERY", "TRADE_INTENT", "TRADE_NOT_EXECUTED"]
+    assert corrected["trade"]["state"] == "NOT_EXECUTED"
     with store.connect() as db:
         latest = store.highwater(db)
         assert db.execute("SELECT count(*) FROM gaps").fetchone()[0] == 0
@@ -134,11 +134,18 @@ def test_owned_fill_and_late_commission_are_projected_without_order_status_infer
         )["payload"]
         deltas.append(payload)
     assert (
-        next(n for delta in reversed(deltas) for n in delta["replace_nodes"] if n["node_id"] == "TRADE_EXECUTION")["case_count"]
+        next(
+            n
+            for delta in reversed(deltas)
+            for n in delta["replace_nodes"]
+            if n["node_id"] == "TRADE_EXECUTION"
+        )["case_count"]
         == 0
     )
     assert any(
         case["trade"]["state"] == "UNKNOWN" and "TRADE_EXECUTION" not in case["results"]
-        for delta in deltas for case in delta["upsert_cases"] if case["case_id"] == "case-a"
+        for delta in deltas
+        for case in delta["upsert_cases"]
+        if case["case_id"] == "case-a"
     )
     assert state["seq"] > seq

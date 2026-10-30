@@ -8,13 +8,12 @@ from datetime import UTC, datetime, timedelta
 
 from doxagent.w3_timing import observed
 
+from .case_outcomes import effective_novelty, effective_policy
 from .journal import encode
 from .message_pin import active_states, message_content, pin_snapshot
-from .policy_consumption import put_value
 from .policy_watch import watch_snapshot
 from .w2_alignment import related_ids
 from .w3_contracts import is_unified_contract
-from .case_outcomes import effective_novelty, effective_policy
 
 
 def policy_associations(w2):
@@ -403,10 +402,10 @@ def trading_context(case, journal=None):
                 else None
             )
         if row:
-            from doxagent.trade_execution.schema import ExecutionProfile
+            from doxagent.trade_execution.schema import historical_profile
             from doxagent.trade_execution.sessions import Sessions
 
-            offset = ExecutionProfile.model_validate_json(row[0]).strategy.exit_offset_minutes
+            offset = historical_profile(json.loads(row[0])).strategy.exit_offset_minutes
             value["exit_before_regular_close_minutes"] = offset
             if case.runtime_mode != "CLOSED":
                 cutoff = case.frozen_inputs.get("w3_replay", {}).get("cutoff_at")

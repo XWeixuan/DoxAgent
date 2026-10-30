@@ -45,6 +45,8 @@ class IbkrSession:
         self.sync_lock = threading.Lock()
         self.request_lock = threading.Lock()
         self.requests: dict[int, dict[str, Any]] = {}
+        self.rule_requests: dict[int, dict[str, Any]] = {}
+        self.preview_ids: set[int] = set()
         self.serial = 10000
         self.ready = threading.Event()
         self.accounts_ready = threading.Event()
@@ -67,6 +69,10 @@ class IbkrSession:
         self.open_event = threading.Event()
         self.completed_event = threading.Event()
         self.last_sync = 0.0
+        self.want_settled_cash = profile.account_type == "CASH"
+        self.cash_checked_at = 0.0
+        self.cash_value = None
+        self.cash_error = None
         self.healthy = False
         self.connection_generation = 0
         self.retry_after = 0.0
@@ -196,12 +202,16 @@ class IbkrSession:
         identity = int(ids[index])
         # Market rule callbacks use the rule ID, not a generated request ID.
         with self.request_lock:
-            request = self.requests.setdefault(
+            request = self.rule_requests.setdefault(
                 identity, {"event": threading.Event(), "rows": [], "error": None}
             )
         if not request["event"].is_set():
             self.app.reqMarketRule(identity)
-        return list(self._wait(identity))
+        if not request["event"].wait(self.profile.strategy.request_timeout_seconds):
+            raise TimeoutError("IBKR_REQUEST_TIMEOUT: market_rule")
+        if request["error"]:
+            raise RuntimeError(request["error"])
+        return list(request["rows"])
 
     def subscribe_quote(self, contract, owner, *, refresh=False):
         """Shared streaming L1; only socket setup runs on a background thread."""
@@ -281,6 +291,28 @@ class IbkrSession:
             raise TimeoutError("FRESH_QUOTE_UNAVAILABLE")
         finally:
             self.release_quote(contract, owner)
+
+    def planning_bars(self, contract):
+        """A recent close may size a plan when the ETF session is closed."""
+        self.connect()
+        request = self._request()
+        try:
+            self.app.reqHistoricalData(
+                request,
+                self._contract_object(contract),
+                "",
+                "3 D",
+                "1 day",
+                "TRADES",
+                0,
+                2,
+                False,
+                [],
+            )
+            return self._wait(request)
+        finally:
+            self.app.cancelHistoricalData(request)
+            self.requests.pop(request, None)
 
     def atr_seed(self, contract, side, end, bar_size="1 min"):
         """One bounded historical request; bars seed ATR, never historical MFE."""
@@ -371,6 +403,19 @@ class IbkrSession:
                     wait_end(self.account_event, "account", "BROKER_ACCOUNT_SYNC_INCOMPLETE")
                 finally:
                     self.app.reqAccountUpdates(False, self.profile.expected_account_id)
+                if self.want_settled_cash:
+                    if time.monotonic() - self.cash_checked_at >= 10:
+                        try:
+                            self.cash_value = self.settled_cash()
+                            self.cash_error = None
+                        except (ValueError, RuntimeError, TimeoutError) as exc:
+                            self.cash_value = None
+                            self.cash_error = str(exc)
+                        self.cash_checked_at = time.monotonic()
+                    if self.cash_value:
+                        self.account_values["SettledCash"] = self.cash_value
+                    else:
+                        self.account_values["SettledCashError"] = self.cash_error
                 self.last_sync = time.monotonic()
                 return {
                     "complete": True,
@@ -385,6 +430,55 @@ class IbkrSession:
                 }
             finally:
                 self.requests.pop(request, None)
+
+    def settled_cash(self):
+        self.connect()
+        request = self._request()
+        try:
+            self.app.reqAccountSummary(request, "All", "SettledCash")
+            rows = self._wait(request)
+            usd = [
+                row
+                for row in rows
+                if row["account"] == self.profile.expected_account_id
+                and row["tag"] == "SettledCash"
+                and row["currency"] == "USD"
+            ]
+            if not usd:
+                base = [
+                    row
+                    for row in rows
+                    if row["account"] == self.profile.expected_account_id
+                    and row["tag"] == "SettledCash"
+                    and row["currency"] == "BASE"
+                ]
+                if base:
+                    proof = self._request()
+                    try:
+                        self.app.reqAccountSummary(proof, "All", "$LEDGER")
+                        ledger = self._wait(proof)
+                        if any(
+                            row["account"] == self.profile.expected_account_id
+                            and row["tag"] in {"Currency", "$LEDGER-Currency"}
+                            and row["value"] == "USD"
+                            for row in ledger
+                        ):
+                            usd = base
+                    finally:
+                        self.app.cancelAccountSummary(proof)
+                        self.requests.pop(proof, None)
+            if not usd:
+                raise ValueError("SETTLED_USD_CASH_UNAVAILABLE")
+            return {
+                "value": usd[-1]["value"],
+                "currency": "USD",
+                "account": self.profile.expected_account_id,
+                "captured_at": datetime.now(UTC).isoformat(),
+                "connection_generation": self.connection_generation,
+            }
+        finally:
+            self.app.cancelAccountSummary(request)
+            self.requests.pop(request, None)
 
     def submit(self, attempt: dict[str, Any]) -> Any:
         self._fuse()
@@ -442,11 +536,13 @@ class IbkrSession:
         order.tif, order.outsideRth = "DAY", session != "RTH"
         request = {"event": threading.Event(), "rows": [], "error": None}
         self.requests[order_id] = request
+        self.preview_ids.add(order_id)
         try:
             self.app.placeOrder(order_id, self._contract_object(contract), order)
             return {"status": "VALIDATED", "rows": self._wait(order_id)}
         finally:
             self.requests.pop(order_id, None)
+            self.preview_ids.discard(order_id)
 
     @staticmethod
     def _contract_object(value: Any) -> Any:
@@ -521,7 +617,8 @@ class IbkrSession:
                     key = session.quote_ids.get(reqId)
                     if key:
                         session.quotes[key]["error"] = f"IBKR_{errorCode}: {errorString}"
-                if request or key:
+                order_rejection = errorCode in {201, 203, 321, 387, 10052}
+                if (request or key) and (not order_rejection or reqId in session.preview_ids):
                     return
                 session._emit(
                     "error", {**value, "order_id": reqId, "client_id": session.profile.client_id}
@@ -563,8 +660,8 @@ class IbkrSession:
                     session.requests[reqId]["event"].set()
 
             def marketRule(self, marketRuleId: Any, priceIncrements: Any) -> Any:
-                if marketRuleId in session.requests:
-                    request = session.requests[marketRuleId]
+                if marketRuleId in session.rule_requests:
+                    request = session.rule_requests[marketRuleId]
                     request["rows"] = [
                         {"low_edge": str(p.lowEdge), "increment": str(p.increment)}
                         for p in priceIncrements
@@ -714,6 +811,18 @@ class IbkrSession:
             def positionEnd(self) -> Any:
                 session.position_event.set()
 
+            def accountSummary(self, reqId, account, tag, value, currency):
+                request = session.requests.get(reqId)
+                if request:
+                    request["rows"].append(
+                        dict(account=account, tag=tag, value=value, currency=currency)
+                    )
+
+            def accountSummaryEnd(self, reqId):
+                request = session.requests.get(reqId)
+                if request:
+                    request["event"].set()
+
             def updateAccountValue(
                 self, key: Any, value: Any, currency: Any, accountName: Any
             ) -> Any:
@@ -721,7 +830,12 @@ class IbkrSession:
                     return
                 if str(key).lower() == "accountready":
                     session.account_values["AccountReady"] = value
-                elif key in {"NetLiquidation", "AvailableFunds", "LookAheadAvailableFunds"}:
+                elif key in {
+                    "NetLiquidation",
+                    "AvailableFunds",
+                    "LookAheadAvailableFunds",
+                    "SettledCash",
+                }:
                     session.account_values[key] = {"value": value, "currency": currency}
 
             def updatePortfolio(

@@ -62,7 +62,7 @@ def test_trade_output_is_atomic_idempotent_and_expires_after_midnight(tmp_path):
         assert runtime.repository.list_consumed_policy_revisions("MU") == set()
         assert runtime.repository.list_provisional("MU", case.trading_date)
         second = runtime.execute_message(
-            _source().model_copy(update={"source_message_id": "second"})
+            _source().model_copy(update={"source_message_id": "second","message_bus_event_time":now[0]})
         )
         runtime.process_pending_effects()
         assert len(runtime.repository.list_daily_trades("MU", second.trading_date)) == 1
