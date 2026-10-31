@@ -212,3 +212,7 @@ def test_projector_retains_only_delivery_anchors_and_attaches_to_message(tmp_pat
         'standard_id','first_discovered_at','first_poll_due_at'}
     projected=mapper.message({'standard_message_id':'a','stream_item_id':sample['stream_item_id'],'member_index':0},2)
     assert projected[0]['data']['pipeline']['discovered_at']=='2026-09-08T11:59:58Z'
+    store.ingest('test','published',projected)
+    store.ingest('test','canonical-merge',[{'kind':'native:live_deliveries','ticker':'MU','id':'article:MU','data':None}])
+    revised=mapper.message({'standard_message_id':'a','stream_item_id':sample['stream_item_id'],'member_index':0},3)
+    assert revised[0]['data']['pipeline']==projected[0]['data']['pipeline']
