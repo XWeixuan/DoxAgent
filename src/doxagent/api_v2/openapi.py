@@ -87,7 +87,7 @@ def install(app: FastAPI) -> None:
             )
             operation.setdefault("parameters", []).extend(query_parameters(handler.endpoint))
             operation["x-contract-parameters"] = route["parameters"]
-            if route["method"] in {"POST", "PATCH", "DELETE"}:
+            if route["method"] in {"POST", "PATCH", "DELETE"} and not route["path"].startswith("/audit/revenue/"):
                 operation["parameters"].extend(
                     [
                         {

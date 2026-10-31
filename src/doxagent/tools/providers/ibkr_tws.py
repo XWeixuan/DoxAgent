@@ -358,6 +358,8 @@ class IbkrTwsSession:
         contract: ResolvedContract,
         *,
         generic_ticks: str = "",
+        streaming_capture: bool = False,
+        market_venue: str | None = None,
     ) -> dict[str, Any]:
         app = self._require_app()
         request_id = next(self._request_ids)
@@ -367,11 +369,11 @@ class IbkrTwsSession:
         app.snapshot_market_types[request_id] = None
         app.option_computation_results[request_id] = {}
         app.reqMarketDataType(self.config.market_data_type)
-        streaming = bool(generic_ticks)
+        streaming = bool(generic_ticks) or streaming_capture
         try:
             app.reqMktData(
                 request_id,
-                _to_official_contract(app, contract),
+                (_to_official_contract(app, contract, market_venue=market_venue) if market_venue else _to_official_contract(app, contract)),
                 generic_ticks,
                 not streaming,
                 False,

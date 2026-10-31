@@ -62,6 +62,8 @@ def parser() -> Any:
         cmd.add_argument("--reason", required=True)
         if name == "adjust-capital":
             cmd.add_argument("--effective-at", required=True)
+            cmd.add_argument("--fee-kind", choices=["BORROW", "FINANCING", "OTHER"])
+            cmd.add_argument("--execution-id")
     cmd = sub.add_parser("probe")
     cmd.add_argument("--profile", required=True)
     cmd.add_argument("--symbol", default="MU")
@@ -248,7 +250,7 @@ def main() -> Any:
         if args.command == "allocate-capital":
             output = ledger.allocate(account, args.amount, args.id, args.reason)
         else:
-            output = ledger.adjust(account, args.amount, args.id, args.reason, args.effective_at)
+            output = ledger.adjust(account, args.amount, args.id, args.reason, args.effective_at, fee_kind=args.fee_kind, execution_id=args.execution_id)
     elif args.command == "import-profile":
         profile = ExecutionProfile.model_validate_json(Path(args.file).read_text(encoding="utf-8"))
         output = {"revision": repo.import_profile(profile)}

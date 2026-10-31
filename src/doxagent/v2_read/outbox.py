@@ -39,6 +39,7 @@ TABLES = {
         "te_allocations",
         "te_lots",
         "te_lot_adjustments",
+        "te_capital_events",
     ),
     "initialization": (
         "v2_model_invocations",

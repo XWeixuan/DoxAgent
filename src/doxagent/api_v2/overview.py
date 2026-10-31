@@ -256,6 +256,7 @@ def install(app: FastAPI) -> None:
                     "SELECT source,checkpoint,head,error,checked_at FROM source_health"
                 )
             }
+            revenue_available = bool(db.execute("SELECT 1 FROM read_meta WHERE key='revenue_audit_v1'").fetchone())
         value = {
             "monitoring": capability(fresh, "CONTROL_WORKER_UNAVAILABLE"),
             "paper_trading": capability(
@@ -265,7 +266,7 @@ def install(app: FastAPI) -> None:
                 execution_ready and "LIVE_TRADING" in bindings, "MODE_UNAVAILABLE"
             ),
             "revenue_audit": capability(
-                False,
+                revenue_available,
                 "NOT_RELEASED",
             ),
             "message_stream": capability(

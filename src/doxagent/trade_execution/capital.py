@@ -101,13 +101,28 @@ class CapitalLedger:
             )
             return value
 
-    def adjust(self, account, amount, identity, reason, effective_at):
+    def adjust(
+        self, account, amount, identity, reason, effective_at, *, fee_kind=None, execution_id=None
+    ):
         amount = decimal(amount)
         at = datetime.fromisoformat(effective_at)
         if not reason.strip() or at.tzinfo is None or at > self.repo.journal.clock():
             raise ValueError("dated capital adjustment and reason required")
         value = dict(account=account, amount=str(amount), reason=reason, effective_at=effective_at)
+        if fee_kind:
+            if fee_kind not in {"BORROW", "FINANCING", "OTHER"} or amount > 0:
+                raise ValueError("invalid attributed strategy fee")
+            value["fee_kind"] = fee_kind
+        if execution_id:
+            value["execution_id"] = execution_id
         with self.repo.transaction() as db:
+            if (
+                execution_id
+                and not db.execute(
+                    "SELECT 1 FROM te_executions WHERE id=? AND account=?", (execution_id, account)
+                ).fetchone()
+            ):
+                raise ValueError("fee execution does not belong to account")
             old = db.execute(
                 "SELECT payload FROM te_capital_events WHERE id=?", (identity,)
             ).fetchone()

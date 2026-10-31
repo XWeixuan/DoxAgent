@@ -2443,6 +2443,7 @@ class PersistentRuntimeV2Service:
             if not policy_consumption.prepare_output_guard(
                 case, value, self.input_snapshot_loader(case.ticker)
             ):
+                TradeOutputService(self.journal).audit_rejected(case, value, "SELECTED_CONDITION_INVALID")
                 self.repository.save_archive(
                     ArchiveRecord(
                         case_id=case.case_id,
@@ -2460,6 +2461,7 @@ class PersistentRuntimeV2Service:
                 outcome = TradeOutputService(self.journal).record(case, value)
             else:
                 outcome = "SELECTED_CONDITION_INVALID"
+                TradeOutputService(self.journal).audit_rejected(case, value, outcome)
         if outcome == "POLICY_AUTHORIZATION_NOT_ADMITTED":
             raise RuntimeInputUnavailable(
                 "policy_authorization_pending",

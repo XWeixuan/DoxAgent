@@ -5,6 +5,10 @@ import schema from "./wire-schema.json";
 
 export const API_PREFIX = "/api/doxagent/v2";
 export type Endpoints = {
+  RevenueSnapshot: S.WireRevenueSnapshot;
+  RevenueEvaluation: S.WireRevenueEvaluation;
+  RevenueReport: S.WireRevenueReport;
+  RevenueDetail: S.WireRevenueDetail;
   TradingConfiguration: S.WireTradingConfiguration;
   TradingConfigurationWrite: S.WireTradingConfigurationWrite;
   TradingCapital: S.WireTradingCapital;
@@ -97,6 +101,8 @@ export class ApiFailure extends Error {
   }
 }
 const errorMessages: Record<string, string> = {
+  VIEW_EXPIRED: "快照已过期，请手动刷新。",
+  REVENUE_NOT_ACTIVATED: "收益审计尚未启用。",
   SERVICE_BUSY: "读取服务繁忙，请稍后重试。",
   QUERY_TIMEOUT: "读取超时，请重试该模块。",
   STORE_BUSY: "数据正在更新，请稍后重试。",

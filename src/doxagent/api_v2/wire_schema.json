@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "2fb083e7f5ae9bdb0ce8003eaf85d1d60ab0ede37950c13fea2619f71333649a",
+  "source_sha256": "9b42db99bb5e1ff88d838d62456ff4bf23f747d810f480b771854ede5cfcfca6",
   "$defs": {
     "Id": {
       "type": "string"
@@ -28635,6 +28635,717 @@
           "additionalProperties": false
         }
       ]
+    },
+    "RevenueSnapshot": {
+      "type": "object",
+      "properties": {
+        "frame_id": {
+          "type": "string"
+        },
+        "as_of": {
+          "type": "string"
+        },
+        "since": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "frame_id",
+        "as_of",
+        "since"
+      ],
+      "additionalProperties": false
+    },
+    "RevenueEvaluation": {
+      "type": "object",
+      "properties": {
+        "evaluated": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "evaluated"
+      ],
+      "additionalProperties": false
+    },
+    "RevenueReport": {
+      "type": "object",
+      "properties": {
+        "as_of": {
+          "type": "string"
+        },
+        "since": {
+          "type": "string"
+        },
+        "start_at": {
+          "type": "string"
+        },
+        "end_at": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string",
+          "enum": [
+            "LIVE",
+            "PAPER"
+          ]
+        },
+        "mode": {
+          "$ref": "#/$defs/RevenueMode"
+        },
+        "hypothesis_total": {
+          "type": "number"
+        },
+        "hypothesis_pending_count": {
+          "type": "number"
+        },
+        "hypothesis_pending_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kpis": {
+          "type": "object",
+          "properties": {
+            "strategy_value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "net": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "roi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "realized": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "upl": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fees": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "actual_count": {
+              "type": "number"
+            },
+            "intent_count": {
+              "type": "number"
+            },
+            "completed_count": {
+              "type": "number"
+            },
+            "win_rate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hypothetical_count": {
+              "type": "number"
+            },
+            "hypothetical_usd_count": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "strategy_value",
+            "net",
+            "roi",
+            "realized",
+            "upl",
+            "fees",
+            "actual_count",
+            "intent_count",
+            "completed_count",
+            "win_rate",
+            "hypothetical_count",
+            "hypothetical_usd_count"
+          ],
+          "additionalProperties": false
+        },
+        "curve": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "at": {
+                "type": "string"
+              },
+              "net": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "realized": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "at",
+              "net",
+              "realized"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "holdings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RevenueRecord"
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RevenueRecord"
+          }
+        },
+        "total": {
+          "type": "number"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "as_of",
+        "since",
+        "start_at",
+        "end_at",
+        "environment",
+        "mode",
+        "hypothesis_total",
+        "hypothesis_pending_count",
+        "hypothesis_pending_ids",
+        "kpis",
+        "curve",
+        "holdings",
+        "items",
+        "total",
+        "offset",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "RevenueMode": {
+      "type": "string",
+      "enum": [
+        "ACTUAL",
+        "ALL",
+        "UNEXECUTED"
+      ],
+      "description": "Revenue reads are frozen until the user explicitly captures a new frame."
+    },
+    "RevenueRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ticker": {
+          "type": "string"
+        },
+        "direction": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string",
+          "enum": [
+            "LIVE",
+            "PAPER"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "intent_at": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "ACTUAL",
+            "UNEXECUTED",
+            "PENDING"
+          ]
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "legs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RevenueLeg"
+          }
+        },
+        "net": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "upl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fees": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hypothesis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RevenueHypothesis"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "case_id",
+        "ticker",
+        "direction",
+        "environment",
+        "title",
+        "intent_at",
+        "kind",
+        "completed",
+        "reason",
+        "status",
+        "legs",
+        "net",
+        "roi",
+        "upl",
+        "fees",
+        "hypothesis"
+      ],
+      "additionalProperties": false
+    },
+    "RevenueLeg": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "asset": {
+          "type": "string"
+        },
+        "sign": {
+          "type": "number"
+        },
+        "qty": {
+          "type": "string"
+        },
+        "entry_qty": {
+          "type": "string"
+        },
+        "exit_qty": {
+          "type": "string"
+        },
+        "entry_price": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exit_price": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notional": {
+          "type": "string"
+        },
+        "realized": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fees": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "opened_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exit_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "upl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "holding_price": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "asset",
+        "sign",
+        "qty",
+        "entry_qty",
+        "exit_qty",
+        "entry_price",
+        "exit_price",
+        "notional",
+        "realized",
+        "fees",
+        "opened_at",
+        "exit_at",
+        "upl",
+        "roi",
+        "holding_price"
+      ],
+      "additionalProperties": false
+    },
+    "RevenueHypothesis": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "PRICED",
+            "WAIT_EXIT",
+            "UNPRICEABLE"
+          ]
+        },
+        "entry_at": {
+          "type": "string"
+        },
+        "exit_at": {
+          "type": "string"
+        },
+        "entry_price": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exit_price": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evaluated_for": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "entry_at",
+        "exit_at",
+        "entry_price",
+        "exit_price",
+        "roi",
+        "amount",
+        "evaluated_for"
+      ],
+      "additionalProperties": false
+    },
+    "RevenueDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ticker": {
+          "type": "string"
+        },
+        "direction": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string",
+          "enum": [
+            "LIVE",
+            "PAPER"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "intent_at": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "ACTUAL",
+            "UNEXECUTED",
+            "PENDING"
+          ]
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "legs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RevenueLeg"
+          }
+        },
+        "net": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "upl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fees": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hypothesis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RevenueHypothesis"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RevenueOrder"
+          }
+        },
+        "fills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Fill"
+          }
+        }
+      },
+      "required": [
+        "case_id",
+        "completed",
+        "direction",
+        "environment",
+        "fees",
+        "fills",
+        "hypothesis",
+        "id",
+        "intent_at",
+        "kind",
+        "legs",
+        "net",
+        "orders",
+        "reason",
+        "roi",
+        "status",
+        "ticker",
+        "title",
+        "upl"
+      ],
+      "additionalProperties": false
+    },
+    "RevenueOrder": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "MAIN",
+            "HEDGE"
+          ]
+        },
+        "traded_ticker": {
+          "type": "string"
+        },
+        "order_attempt_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "leg": {
+          "type": "string",
+          "enum": [
+            "ENTRY",
+            "EXIT"
+          ]
+        },
+        "side": {
+          "type": "string",
+          "enum": [
+            "BUY",
+            "SELL"
+          ]
+        },
+        "order_type": {
+          "type": "string",
+          "enum": [
+            "LMT",
+            "MKT"
+          ]
+        },
+        "quantity": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "limit_price": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecimalString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "type": "string"
+        },
+        "broker_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sent_at": {
+          "$ref": "#/$defs/Value%3CInstant%3E"
+        },
+        "settled_at": {
+          "$ref": "#/$defs/Value%3CInstant%3E"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "broker_status",
+        "execution_id",
+        "leg",
+        "limit_price",
+        "order_attempt_id",
+        "order_type",
+        "quantity",
+        "reason",
+        "sent_at",
+        "settled_at",
+        "side",
+        "state"
+      ],
+      "additionalProperties": false
     }
   }
 }

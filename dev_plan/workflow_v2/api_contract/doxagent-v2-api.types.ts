@@ -1020,3 +1020,37 @@ export interface TradingCapital {
  applied: { identity: Id; amount: DecimalString; applied_at: string } | null;
  }[];
 }
+/** Revenue reads are frozen until the user explicitly captures a new frame. */
+export type RevenueMode = "ACTUAL" | "ALL" | "UNEXECUTED";
+export interface RevenueSnapshot { frame_id: string; as_of: string; since: string; }
+export interface RevenueEvaluation { evaluated: number; }
+export interface RevenueHypothesis {
+  state: "PRICED" | "WAIT_EXIT" | "UNPRICEABLE";
+  entry_at: string; exit_at: string; entry_price: string | null; exit_price: string | null;
+  roi: string | null; amount: string | null; evaluated_for: string;
+}
+export interface RevenueLeg {
+  id: string; role: string; asset: string; sign: number; qty: string;
+  entry_qty: string; exit_qty: string; entry_price: string | null; exit_price: string | null;
+  notional: string; realized: string | null; fees: string | null;
+  opened_at: string | null; exit_at: string | null; upl: string | null; roi: string | null; holding_price: string | null;
+}
+export interface RevenueRecord {
+  id: string; case_id: string | null; ticker: string; direction: string;
+  environment: "LIVE" | "PAPER"; title: string; intent_at: string;
+  kind: "ACTUAL" | "UNEXECUTED" | "PENDING"; completed: boolean; reason: string; status: string;
+  legs: RevenueLeg[]; net: string | null; roi: string | null; upl: string | null; fees: string | null;
+  hypothesis: RevenueHypothesis | null;
+}
+export interface RevenueReport {
+  as_of: string; since: string; start_at: string; end_at: string;
+  environment: "LIVE" | "PAPER"; mode: RevenueMode;
+  hypothesis_total: number; hypothesis_pending_count: number; hypothesis_pending_ids: string[];
+  kpis: { strategy_value: string | null; net: string | null; roi: string | null; realized: string | null; upl: string | null;
+    fees: string | null; actual_count: number; intent_count: number; completed_count: number;
+    win_rate: string | null; hypothetical_count: number; hypothetical_usd_count: number; };
+  curve: { at: string; net: string | null; realized: string | null; }[];
+  holdings: RevenueRecord[]; items: RevenueRecord[]; total: number; offset: number; limit: number;
+}
+export interface RevenueOrder extends OrderSummary { reason: string | null; }
+export interface RevenueDetail extends RevenueRecord { orders: RevenueOrder[]; fills: Fill[]; }

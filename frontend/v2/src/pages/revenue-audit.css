@@ -1,0 +1,507 @@
+.revenue-audit {
+  --revenue-profit: #168667;
+  --revenue-loss: #c83d50;
+}
+.revenue-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.revenue-control-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.revenue-control-right .business-heading {
+  margin: 0;
+}
+.revenue-asof {
+  display: flex;
+  gap: 24px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  margin: 8px 0 14px;
+}
+.revenue-asof span {
+  margin-left: auto;
+}
+.revenue-profit {
+  color: var(--revenue-profit) !important;
+}
+.revenue-loss {
+  color: var(--revenue-loss) !important;
+}
+.revenue-kpis {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-bottom: 20px;
+}
+.revenue-kpis article {
+  min-width: 0;
+  padding: 4px 16px;
+  border-right: 1px solid var(--border);
+}
+.revenue-kpis article:first-child {
+  padding-left: 0;
+}
+.revenue-kpis article:last-child {
+  border: 0;
+}
+.revenue-kpis article > span {
+  display: block;
+}
+.revenue-kpis strong {
+  display: block;
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  margin: 8px 0;
+}
+.revenue-kpis em {
+  font-size: 19px;
+  color: var(--muted-foreground);
+  font-style: normal;
+  font-weight: 400;
+}
+.revenue-kpis article > span:last-child {
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+.revenue-middle {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(340px, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.revenue-middle .chart-panel {
+  min-width: 0;
+}
+.revenue-middle header,
+.revenue-records > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.revenue-middle h2,
+.revenue-records h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  margin: 0;
+}
+.revenue-middle header > span,
+.revenue-records h2 span {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+.revenue-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+.revenue-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.revenue-legend i {
+  width: 16px;
+  height: 2px;
+  background: #198a72;
+}
+.revenue-legend span + span i {
+  background: #7c879b;
+}
+.revenue-chart-body {
+  position: relative;
+  margin-top: 18px;
+}
+.revenue-chart-body svg {
+  width: 100%;
+  height: 322px;
+  overflow: visible;
+}
+.revenue-chart-body text {
+  font-family: inherit;
+  font-size: 14px;
+  fill: var(--muted-foreground);
+}
+.revenue-grid {
+  stroke: var(--border);
+  stroke-dasharray: 3 5;
+}
+.revenue-net-line,
+.revenue-realized-line {
+  fill: none;
+  stroke: #198a72;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.revenue-realized-line {
+  stroke: #7c879b;
+  stroke-width: 1.8;
+  stroke-dasharray: 5 4;
+}
+.revenue-point {
+  fill: #198a72;
+  stroke: var(--background);
+  stroke-width: 1.5;
+}
+.revenue-chart-tooltip {
+  position: absolute;
+  left: 20%;
+  top: 12px;
+  display: grid;
+  gap: 4px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  font-size: 14px;
+  box-shadow: 0 4px 16px #0000000d;
+  pointer-events: none;
+}
+.revenue-chart-tooltip strong {
+  font-size: 19px;
+}
+.revenue-holding-list {
+  max-height: 358px;
+  overflow: auto;
+  margin-top: 14px;
+}
+.revenue-holding {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.revenue-holding:hover {
+  background: var(--muted);
+}
+.revenue-holding-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.revenue-holding-heading strong {
+  font-size: 20px;
+  font-weight: 600;
+}
+.revenue-holding-heading span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+.revenue-holding-heading > div:last-child {
+  text-align: right;
+}
+.revenue-holding-heading > div:last-child span {
+  color: inherit;
+}
+.revenue-holding > p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 9px 0 12px;
+}
+.revenue-holding-leg {
+  border-top: 1px solid var(--border);
+  padding-top: 9px;
+  margin-top: 9px;
+  font-size: 14px;
+}
+.revenue-holding-leg > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.revenue-holding-leg b {
+  margin-left: auto;
+  font-weight: 500;
+}
+.revenue-holding-leg > div:nth-child(2) {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.revenue-holding-leg span:has(svg) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted-foreground);
+}
+.revenue-holding-leg svg {
+  width: 14px;
+  height: 14px;
+}
+.revenue-holding-leg .revenue-opened {
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.revenue-records {
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+.revenue-records > header {
+  padding: 16px;
+}
+.revenue-records > header > span {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin-left: auto;
+}
+.revenue-records > header .business-tabs {
+  margin-left: auto;
+}
+.revenue-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.revenue-table th {
+  font-weight: 500;
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.revenue-table th,
+.revenue-table td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+.revenue-table th:nth-child(1) {
+  width: 17%;
+}
+.revenue-table th:nth-child(2) {
+  width: 28%;
+}
+.revenue-table th:nth-child(3) {
+  width: 8%;
+}
+.revenue-table th:nth-child(4) {
+  width: 13%;
+}
+.revenue-table th:nth-child(5) {
+  width: 10%;
+}
+.revenue-table th:nth-child(6) {
+  width: 14%;
+}
+.revenue-table th:nth-child(7) {
+  width: 10%;
+}
+.revenue-table th:nth-child(n + 4):nth-child(-n + 6),
+.revenue-table td:nth-child(n + 4):nth-child(-n + 6) {
+  text-align: right;
+}
+.revenue-table td:first-child {
+  color: var(--muted-foreground);
+  line-height: 1.55;
+}
+.revenue-table tbody tr {
+  cursor: pointer;
+}
+.revenue-table tbody tr:hover {
+  background: var(--muted);
+}
+.revenue-table .revenue-unexecuted {
+  background: color-mix(in srgb, var(--muted) 65%, transparent);
+}
+.revenue-table small {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.revenue-table strong {
+  font-weight: 500;
+}
+.revenue-record-link {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+}
+.revenue-record-link strong {
+  font-size: 15px;
+}
+.revenue-record-link > span {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.revenue-record-link p {
+  margin: 5px 0 0;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+.revenue-status {
+  font-size: 13px;
+  white-space: nowrap;
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.revenue-records footer {
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+.revenue-records footer > div {
+  display: flex;
+  gap: 8px;
+}
+.revenue-drawer {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 101;
+  width: min(600px, 90vw);
+  overflow: auto;
+  background: var(--background);
+  border-left: 1px solid var(--border);
+  box-shadow: -10px 0 40px #00000012;
+  padding: 0 24px 24px;
+  font-size: 14px;
+}
+.revenue-drawer > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--background);
+  z-index: 1;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+}
+.revenue-drawer h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.revenue-drawer h3 {
+  font-size: 16px;
+  margin: 18px 0 12px;
+}
+.revenue-drawer section {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.revenue-detail-intro > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.revenue-detail-intro h3 {
+  font-size: 24px;
+}
+.revenue-detail-intro h3 span {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  margin-left: 12px;
+}
+.revenue-detail-intro p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+.revenue-detail-intro > span {
+  color: var(--muted-foreground);
+}
+.revenue-detail-intro a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 12px;
+  color: var(--primary);
+}
+.revenue-detail-intro a svg {
+  width: 14px;
+}
+.revenue-detail-result {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 22px 0;
+}
+.revenue-detail-result strong {
+  font-size: 29px;
+}
+.revenue-leg-detail {
+  padding: 10px 0;
+}
+.revenue-leg-detail h4 {
+  font-size: 15px;
+  margin: 0 0 10px;
+}
+.revenue-drawer dl {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+.revenue-drawer dt {
+  color: var(--muted-foreground);
+}
+.revenue-drawer dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.revenue-timeline {
+  list-style: none;
+  padding: 0 0 0 12px;
+  margin: 16px 0;
+}
+.revenue-timeline li {
+  position: relative;
+  border-left: 1px solid var(--border);
+  padding: 0 0 22px 20px;
+}
+.revenue-timeline li:before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted-foreground);
+}
+.revenue-timeline li > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.revenue-timeline p {
+  margin: 8px 0;
+}
+.revenue-timeline small {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
