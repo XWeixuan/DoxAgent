@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import type {
   Period,
   TradingConfiguration,
@@ -162,7 +162,10 @@ runtime.api.request = (async (
 createRoot(document.getElementById("root")!).render(
   <RuntimeProvider runtime={runtime}>
     <BrowserRouter>
-      <Overview />
+      <Routes>
+        <Route path="/tests/browser/trading-config.html" element={<Overview />} />
+        <Route path="/ticker/:ticker/research" element={<h1>基础投研测试页</h1>} />
+      </Routes>
     </BrowserRouter>
   </RuntimeProvider>,
 );

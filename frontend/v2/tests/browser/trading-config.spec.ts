@@ -22,14 +22,29 @@ for (const width of [1262, 1559]) {
     await expect(
       dialog.getByLabel("滑动止盈", { exact: true }),
     ).not.toBeChecked();
-    await dialog.getByLabel("交易账户", { exact: true }).selectOption("LIVE");
+    // Native mouse clicks must not bubble through the portal into the row route.
+    const account = dialog.getByLabel("交易账户", { exact: true });
+    await account.click();
+    expect(page.url()).toBe(before);
+    await account.press("End");
+    await account.press("Enter");
+    await expect(account).toHaveValue("LIVE");
     await dialog.getByLabel("SHORT 替代", { exact: true }).check();
+    expect(page.url()).toBe(before);
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("反向单股 ETF", { exact: true }).click();
     await dialog.getByLabel("反向单股 ETF", { exact: true }).fill("MUD");
-    await dialog.getByLabel("开启对冲").check();
+    await dialog.getByText("开启对冲", { exact: true }).click();
+    expect(page.url()).toBe(before);
+    await expect(dialog.getByLabel("开启对冲")).toBeChecked();
+    await dialog.getByLabel("滑动止盈", { exact: true }).check();
+    expect(page.url()).toBe(before);
+    await expect(dialog).toBeVisible();
     await dialog.getByLabel("正向指数 ETF", { exact: true }).fill("SOXL");
     await dialog.getByLabel("反向指数 ETF", { exact: true }).fill("SOXS");
     await dialog.getByRole("button", { name: "添加禁交易日期" }).click();
     await dialog.getByLabel("禁交易日期 1", { exact: true }).fill("2026-11-04");
+    expect(page.url()).toBe(before);
     await dialog.getByRole("button", { name: "保存配置", exact: true }).click();
     await expect(dialog.getByRole("status")).toContainText(
       "已保存，等待执行端应用",
@@ -37,6 +52,7 @@ for (const width of [1262, 1559]) {
     await expect(dialog.getByRole("status")).toContainText("执行端已应用", {
       timeout: 7000,
     });
+    expect(page.url()).toBe(before);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -54,5 +70,16 @@ for (const width of [1262, 1559]) {
     await expect(funds.getByRole("status")).toContainText("执行端已应用", {
       timeout: 7000,
     });
+    await funds.getByRole("button", { name: "关闭策略资金" }).click();
+    await page.getByRole("button", { name: "交易配置 MU", exact: true }).click();
+    await page.locator(".detail-overlay").click({ position: { x: 5, y: 5 } });
+    await expect(dialog).not.toBeVisible();
+    expect(page.url()).toBe(before);
+    // The normal non-control row click must still navigate.
+    await page.locator("tr.monitor-row").filter({
+      has: page.getByRole("link", { name: "MU", exact: true }),
+    }).locator("td").nth(1).click();
+    await expect(page).toHaveURL(/\/ticker\/MU\/research$/);
+    await expect(page.getByRole("heading", { name: "基础投研测试页" })).toBeVisible();
   });
 }
