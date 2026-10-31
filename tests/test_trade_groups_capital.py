@@ -46,6 +46,64 @@ def test_asset_direction_table():
         ] == expected
 
 
+@pytest.mark.parametrize("direction,main,hedge", [("LONG", "MU", "SIDX"), ("SHORT", "MUD", "LIDX")])
+def test_cash_hedge_uses_two_etfs_and_buys_for_both_signal_directions(
+    tmp_path, direction, main, hedge
+):
+    clock, repo, _, executor, _ = setup_shared(tmp_path)
+    revision = repo.import_profile(profile(account_type="CASH", strategy=Strategy()))
+    broker = executor.broker(revision)
+    broker.symbols = {**broker.symbols, "MUD": 100001, "LIDX": 100002, "SIDX": 100003}
+    broker.prices.update({name: Decimal(100) for name in ("MUD", "LIDX", "SIDX")})
+    sync = broker.sync
+
+    def cash_sync():
+        value = sync()
+        value["account_values"]["SettledCash"] = {"value": "100000", "currency": "USD"}
+        return value
+
+    broker.sync = cash_sync
+    cfg = TradingConfig(
+        hedge_enabled=True,
+        cash_short_substitute_enabled=True,
+        inverse_single_stock_etf="MUD",
+        cash_positive_index_etf="LIDX",
+        cash_inverse_index_etf="SIDX",
+        margin_index_etf="OTHER",
+    )
+    root = "cash:hedge:" + direction
+    open_trade(repo, revision, "MU", root, cfg, direction)
+    for suffix in (":entry", ":hedge:entry"):
+        asyncio.run(run_job(executor, repo, clock, root + suffix))
+    assert [(a["contract"]["symbol"], a["side"]) for a in broker.sent] == [
+        (main, "BUY"),
+        (hedge, "BUY"),
+    ]
+    with repo.transaction() as db:
+        groups.request_exit(db, root, clock().isoformat(), "TEST_CASH_HEDGE")
+    for suffix in (":exit", ":hedge:exit"):
+        asyncio.run(run_job(executor, repo, clock, root + suffix))
+    assert [(a["contract"]["symbol"], a["side"]) for a in broker.sent[2:]] == [
+        (main, "SELL"),
+        (hedge, "SELL"),
+    ]
+    assert repo.require("executions", root)["group_state"] == "CLOSED"
+    assert not any(broker.positions.values())
+
+
+@pytest.mark.parametrize("missing", ["cash_positive_index_etf", "cash_inverse_index_etf"])
+def test_cash_hedge_rejects_either_missing_side_even_with_margin_etf(missing):
+    values = dict(
+        hedge_enabled=True,
+        margin_index_etf="OTHER",
+        cash_positive_index_etf="LIDX",
+        cash_inverse_index_etf="SIDX",
+    )
+    values[missing] = None
+    with pytest.raises(ValueError, match="HEDGE_ASSET_MISSING"):
+        assets("MU", "LONG", "CASH", TradingConfig(**values))
+
+
 def test_integer_plan_matches_exhaustive_small_search():
     for budget in (20, 57, 100, 999):
         for mp in (3, 25, 60):
