@@ -1,4 +1,4 @@
-// Synthetic UI contract fixture; no production API or authentication calls.
+// Synthetic HTTP transport; real ApiClient, Resource envelope and wire validation.
 import { createRoot } from "react-dom/client";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { Period, MessageSummary } from "@contract";
@@ -15,7 +15,12 @@ import { ApiFailure } from "../../src/core/api";
 const runtime = createRuntime(createTestAuth());
 const calls: string[] = [];
 let serial = 0;
-const control = { delay: 0, fail: false, reset: () => {} };
+const control = {
+  delay: 0,
+  fail: new URLSearchParams(location.search).has("initial_failure"),
+  invalidCoverage: new URLSearchParams(location.search).has("invalid_coverage"),
+  reset: () => {},
+};
 Object.assign(window, { busFixtureCalls: calls, busControl: control });
 const body = {
   content_id: "body",
@@ -77,9 +82,61 @@ window.fetch = async (input, init) => {
       }),
       { headers: { "content-type": "text/event-stream" } },
     );
-  return originalFetch(input, init);
+  const url = new URL(String(input), location.origin);
+  if (!url.pathname.startsWith("/api/doxagent/v2/"))
+    return originalFetch(input, init);
+  const path = url.pathname.slice("/api/doxagent/v2".length) + url.search;
+  const name = path.startsWith("/read-context")
+    ? "ReadContext"
+    : path.includes("/message-bus/dashboard")
+      ? "BusDashboard"
+      : path.includes("/messages")
+        ? "Messages"
+        : "Content";
+  try {
+    const result = await fixtureRequest(name, path);
+    if (
+      name === "BusDashboard" &&
+      control.invalidCoverage &&
+      "data" in result.data &&
+      result.data.data &&
+      "coverage" in result.data.data
+    )
+      Object.assign(result.data, { coverage: result.data.data.coverage });
+    return new Response(
+      JSON.stringify({
+        ...result,
+        meta: {
+          contract_version: "2.0.0-draft.2",
+          workflow_generation: "V2",
+          request_id: "fixture-request",
+          view_id: url.searchParams.get("view_id"),
+          scope_key: "fixture-scope",
+          representation_revision: "1",
+          freshness: "FRESH",
+          refresh_error: null,
+          ...result.meta,
+        },
+      }),
+      { status: 200 },
+    );
+  } catch (error) {
+    if (!(error instanceof ApiFailure)) throw error;
+    return new Response(
+      JSON.stringify({
+        error: {
+          code: error.code,
+          message: error.message,
+          request_id: error.requestId,
+          retryable: false,
+          fields: [],
+        },
+      }),
+      { status: error.status },
+    );
+  }
 };
-runtime.api.request = (async (name: string, path: string) => {
+async function fixtureRequest(name: string, path: string) {
   calls.push(name + ":" + path);
   const query = new URL(path, location.origin).searchParams;
   const meta = { as_of: new Date().toISOString() };
@@ -213,7 +270,7 @@ runtime.api.request = (async (name: string, path: string) => {
       }),
     };
   throw new Error("Unexpected fixture request: " + name);
-}) as typeof runtime.api.request;
+}
 createRoot(document.getElementById("root")!).render(
   <RuntimeProvider runtime={runtime}>
     <MemoryRouter initialEntries={["/tickers/MU/message-bus"]}>

@@ -1,4 +1,24 @@
 import { expect, test } from "@playwright/test";
+test("invalid HTTP envelope reports its request id without inventing empty bindings", async ({
+  page,
+}) => {
+  await page.goto("/tests/browser/news-timeliness.html?invalid_coverage=1");
+  await expect(page.getByText(/消息统计读取失败/)).toBeVisible();
+  await expect(page.getByText(/请求编号：fixture-request/)).toBeVisible();
+  await expect(
+    page.getByText(/请求编号：undefined|已保留上次结果|没有已绑定消息源/),
+  ).toHaveCount(0);
+  await expect(page.locator("[data-message-id]")).toHaveCount(20);
+  await page.evaluate(() => {
+    (
+      window as unknown as { busControl: { invalidCoverage: boolean } }
+    ).busControl.invalidCoverage = false;
+  });
+  await page.getByRole("button", { name: "刷新", exact: true }).click();
+  await expect(page.getByText("已绑定 32")).toBeVisible();
+  await expect(page.getByText(/消息统计读取失败/)).toHaveCount(0);
+  await expect(page.locator("[data-message-id]")).toHaveCount(20);
+});
 for (const width of [1262, 1559]) {
   test(`bus reading survives minute errors and view rollover at ${width}px`, async ({
     page,

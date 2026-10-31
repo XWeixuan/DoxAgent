@@ -14,6 +14,31 @@ from doxagent.v2_read.repository import ReadStore
 from tests.v2_backend.test_streaming import message
 
 
+def dashboard_http_response(tmp_path):
+    from fastapi.testclient import TestClient
+    from doxagent.api_v2.app import PREFIX,create_app
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.v2_control.repository import ControlRepository
+    from tests.v2_backend.test_api import OfflineAuth
+    store=ReadStore(tmp_path/'read.db');store.migrate();store.migrate_projection_indexes()
+    store.ingest('test','ticker',[{'kind':'ticker','ticker':'MU','id':'MU','data':{'removed':False,'run_state':'RUNNING'}}])
+    control=ControlRepository(RuntimeJournal(tmp_path/'runtime.db'));control.migrate()
+    with TestClient(create_app(store=store,control=control,auth=OfflineAuth())) as client:
+        headers={'Authorization':'Bearer offline'}
+        context=client.get(PREFIX+'/read-context?ticker=MU&page=MESSAGE_BUS&period=CURRENT_TRADING_DAY',headers=headers)
+        assert context.status_code==200,context.text
+        response=client.get(PREFIX+'/tickers/MU/message-bus/dashboard',params={'view_id':context.json()['data']['view_id']},headers=headers)
+        assert response.status_code==200,response.text
+        return response.json()
+
+
+def test_http_dashboard_resource_coverage_is_distinct_from_polling_coverage(tmp_path):
+    response=dashboard_http_response(tmp_path)
+    validate('Coverage',response['data']['coverage'])
+    assert response['data']['coverage']['state']=='COMPLETE'
+    assert response['data']['data']['coverage']=={'expected':0,'succeeded':0,'ratio':None}
+
+
 def test_source_rounds_count_missing_work_and_or_paths_but_and_complements():
     plans=[{'unit':'http','group':'listing','epoch':0,'interval':60},
            {'unit':'browser','group':'listing','epoch':0,'interval':60},

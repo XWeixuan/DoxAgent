@@ -271,8 +271,9 @@ function MessageStream({
       <div className="bus-refresh-feedback" role="status" aria-live="polite">
         {dashboard.error ? (
           <span title={dashboard.error.message}>
-            消息统计读取失败，已保留上次结果。
+            消息统计读取失败{data ? "，已保留上次结果。" : "。"}
             {"requestId" in dashboard.error &&
+              Boolean(dashboard.error.requestId) &&
               ` 请求编号：${String(dashboard.error.requestId)}`}
           </span>
         ) : (
@@ -430,7 +431,7 @@ function MessageStream({
               }
             />
           ))}
-          {!sources.length && !dashboard.isPending && <p>没有已绑定消息源</p>}
+          {!sources.length && data && <p>没有已绑定消息源</p>}
         </aside>
       </div>
     </>
