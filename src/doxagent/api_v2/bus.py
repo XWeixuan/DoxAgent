@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request
 from doxagent.message_bus_v2.schema import TickerSourceBinding
 from doxagent.v2_read.repository import instant
 
-from .dto import available, missing, validate
+from .dto import available, coverage, missing, validate
 from .errors import ApiFailure
 from .news_timeliness import poll_cadence, poll_window
 
@@ -176,7 +176,9 @@ def install(app: FastAPI):
         view = context(request,ticker,args)
         MessageStreams(store,views).filters(args,view)
         data = dashboard_data(store,ticker,view,args)
-        return app.state.respond(request,'BusDashboard',data,view_id=args['view_id'])
+        # data.coverage is a polling ratio, not the HTTP Resource's Coverage.
+        return app.state.respond(request,'BusDashboard',data,view_id=args['view_id'],
+                                 resource_coverage=coverage(complete=True))
 
     @app.get(prefix + "/metrics")
     async def metrics(ticker: str, request: Request):
