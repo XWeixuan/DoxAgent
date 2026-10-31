@@ -32,7 +32,7 @@
 .revenue-loss {
   color: var(--revenue-loss) !important;
 }
-.revenue-kpis {
+.audit-metrics.revenue-kpis {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   margin-bottom: 20px;

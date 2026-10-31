@@ -16,7 +16,7 @@
 
 ## 资源与刷新
 
-`POST /audit/revenue/refresh` 在打开页面、手动刷新时生成既有 views 表中的冻结 frame。只对新功能范围内的实际持仓取报价，并按必要日期边界补少量历史估值缓存。无常驻统计进程、定时行情采集或前端轮询。
+`POST /audit/revenue/refresh` 在打开页面、手动刷新时生成既有 views 表中的冻结 frame。对既有账本当前自有持仓及新功能范围内实际持仓按唯一资产取报价，并按必要日期边界补少量历史估值缓存。无常驻统计进程、定时行情采集或前端轮询。
 
 `GET /audit/revenue/report`、`GET /audit/revenue/records/{identity}` 只读 SQLite；切换账户、期间、筛选、翻页和打开详情不刷新持仓行情。历史净值缺口保持为空；曲线使用真实用户观察时点及可准确还原的已实现收益。
 

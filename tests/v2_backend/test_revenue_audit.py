@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
-from tests.test_trade_execution import setup  # noqa: F401
 
 from doxagent.api_v2.dto import validate
 from doxagent.revenue_audit.ledger import fold_leg, unrealized
@@ -11,6 +10,7 @@ from doxagent.revenue_audit.market import causal_quote
 from doxagent.revenue_audit.projection import account_key
 from doxagent.revenue_audit.service import RevenueService
 from doxagent.v2_read.repository import ReadStore
+from tests.test_trade_execution import setup  # noqa: F401
 
 T0 = "2026-11-02T14:00:00+00:00"
 T1 = "2026-11-02T15:00:00+00:00"
@@ -56,7 +56,7 @@ def record(identity="trade:a", env="PAPER", kind="ACTUAL", legs=None):
         kind=kind,
         status="FAILED" if kind == "UNEXECUTED" else "EXECUTION_ACCEPTED",
         reason="TEST",
-        completed=bool(legs and all(l["qty"] == "0" for l in legs)),
+        completed=bool(legs and all(owned_leg["qty"] == "0" for owned_leg in legs)),
         main_cap="1000",
         legs=legs or [],
     )
@@ -137,10 +137,10 @@ def put(service, *records):
 
 
 def test_fifo_partial_entry_fee_not_double_counted():
-    l = leg()
-    assert Decimal(l["realized"]) == Decimal("38.6")
-    assert unrealized(l, NOW, dict(bid="120")) == Decimal("119.4")
-    assert Decimal(l["realized"]) + unrealized(l, NOW, dict(bid="120")) == 158
+    owned_leg = leg()
+    assert Decimal(owned_leg["realized"]) == Decimal("38.6")
+    assert unrealized(owned_leg, NOW, dict(bid="120")) == Decimal("119.4")
+    assert Decimal(owned_leg["realized"]) + unrealized(owned_leg, NOW, dict(bid="120")) == 158
     assert Decimal(leg(sign=-1)["realized"]) == Decimal("-41.4")
     assert unrealized(leg(sign=-1), NOW, dict(ask="120")) == Decimal("-120.6")
 
@@ -178,7 +178,8 @@ def test_frozen_actual_default_no_hypothetical_reads_and_accounts_isolated(servi
 
 def test_http_auth_schema_validation_and_quote_work_only_on_post(service, tmp_path):
     from fastapi.testclient import TestClient
-    from doxagent.api_v2.app import create_app, PREFIX
+
+    from doxagent.api_v2.app import PREFIX, create_app
     from doxagent.persistent_runtime_v2.journal import RuntimeJournal
     from doxagent.v2_control.repository import ControlRepository
     from tests.v2_backend.test_api import OfflineAuth
@@ -218,7 +219,7 @@ def test_http_auth_schema_validation_and_quote_work_only_on_post(service, tmp_pa
         )
 
 
-def test_real_projection_late_fee_and_bust(setup, tmp_path, monkeypatch):
+def test_real_projection_late_fee_and_bust(setup, tmp_path, monkeypatch):  # noqa: F811
     from tests.v2_backend.test_execution_projection import (
         test_owned_fill_and_late_commission_are_projected_without_order_status_inference,
     )
@@ -255,7 +256,11 @@ def test_real_projection_late_fee_and_bust(setup, tmp_path, monkeypatch):
     def observe(store, *args, **kwargs):
         for item in args[2]:
             if item["kind"] == "revenue_record" and item["data"]:
-                seen.extend(l["fees"] for l in item["data"]["legs"] if l["fees"] is not None)
+                seen.extend(
+                    owned_leg["fees"]
+                    for owned_leg in item["data"]["legs"]
+                    if owned_leg["fees"] is not None
+                )
         return ingest(store, *args, **kwargs)
 
     monkeypatch.setattr(ReadStore, "ingest", observe)
@@ -405,9 +410,9 @@ def test_exit_calendar_early_close_and_profile_offset(service):
 
 
 def test_finished_after_selected_period_is_not_a_historical_win(service):
-    l = leg(closed=True)
-    l["timeline"][-1]["at"] = NOW
-    put(service, record(legs=[l]))
+    owned_leg = leg(closed=True)
+    owned_leg["timeline"][-1]["at"] = NOW
+    put(service, record(legs=[owned_leg]))
     frame = service.capture("owner")["frame_id"]
     data = service.report("owner", frame, "PAPER", "PREVIOUS_TRADING_DAY")
     assert data["kpis"]["completed_count"] == 0
@@ -440,7 +445,7 @@ def test_short_total_asset_counts_short_proceeds_and_negative_stock_value(servic
     assert Decimal(data["kpis"]["strategy_value"]) == 4558 - 6 * 121
 
 
-def test_activation_is_explicit_idempotent_and_keeps_existing_capital(setup, tmp_path):
+def test_activation_is_explicit_idempotent_and_keeps_existing_capital(setup, tmp_path):  # noqa: F811
     from doxagent.revenue_audit.cli import activate
     from doxagent.trade_execution.capital import CapitalLedger
 

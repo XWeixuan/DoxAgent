@@ -12,6 +12,12 @@ for (const width of [1262, 1559]) {
     await expect(page.locator(".revenue-table tbody tr")).toHaveCount(3);
     await expect(page.locator(".revenue-holding")).toHaveCount(2);
     await expect(page.locator(".revenue-kpis article")).toHaveCount(7);
+    const metricRows = await page
+      .locator(".revenue-kpis article")
+      .evaluateAll((cards) =>
+        cards.map((card) => Math.round(card.getBoundingClientRect().top)),
+      );
+    expect(new Set(metricRows).size).toBe(1);
     await expect(page.locator(".revenue-kpis article").first()).toContainText(
       "当前策略总资产",
     );

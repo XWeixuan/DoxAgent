@@ -505,7 +505,7 @@ function RevenueKpis({ data: d }: { data: RevenueReport }) {
         <span>实际主仓与对冲仓合计</span>
       </article>
       <article>
-        <span>实际交易 / 交易意图</span>
+        <span>实际交易 / 意图</span>
         <strong>
           {k.actual_count}
           <em> / {k.intent_count}</em>
