@@ -53,3 +53,16 @@
 生产首次采样 INTC/MU/BE/COHR 的 dashboard 计算与 DTO 验证约 0.1385–0.1464 秒，46–49KB；旧 BusMetrics 严格 DTO 校验也通过，INTC/MU 的 0 与 BE 的 2 均 AVAILABLE。当前休市、上线后暂无可靠新 E2E 样本，均值/P95 按无样本展示。
 
 实际 SQL 计划暴露 SQLite 将近20轮业务查询改为先读 ticker 的 delivery 范围，没有用到完整来源/日/时间前缀。后续用 CROSS JOIN 固定小窗口驱动连接顺序，避免未来积累后扩大扫描。同时补齐非交易日但 Runtime maintenance 状态未知时的来源显示：依照交易日历及采集单元真实 active 标记判断，不能因为 Runtime clock 的 CLOSED_* 标签未知就漏算已休眠来源；IR/SEC 和明确活动的临时采集保留运行状态。该补充只需 API 更新。
+
+### 最终生产复核（北京时间 2026-11-01 06:06–06:07）
+
+- API：`466edcc3`，healthy；Projector：`6c26e9e6`，running；Web/Collector/Bus/BODY：`b4720b2c`，有健康检查的组件 healthy，其余 running。每个功能提交均先推送 origin/main 再部署；文档追加提交不需要重建应用。
+- INTC：31 绑定、2 运行、29 休眠；MU：30/2/28；BE：33/2/31；COHR：32/2/30。Yahoo 最近成功保留、显示 CLOSED_SLEEP；IR/SEC 有新成功记录且 SCHEDULED。
+- 四标的当日 dashboard 计算与 DTO 校验约 0.17 秒量级，约45–50KB。INTC 上一交易日约0.30秒：新增771，正文591/820=72.07%；近7日约1.03秒：新增2333，正文2122/2916=72.77%。因此当日“无样本”与历史有正文率可以正确区分。
+- 生产 EXPLAIN 已确认近20轮查询使用 current_source 的 kind/ticker/source/day/时间范围完整前缀；正文查询走既有 body_cohort 时间范围与 parent/identity 精确连接。
+- 已补验小数秒的轮次区间边界；负耗时视为无可靠计时，合法0保留；首次 MessageSummary 锚点在 BODY 修订、canonical delivery 合并/删除后保持不变。后端30项定向回归通过，最后锚点修改对应12项复验通过。
+- 当前是休市阶段，未获得上线后的真实新消息 E2E 样本。均值/P95 显示无样本，之后由真实新消息自然累积；不把缺历史数据写成0秒，也未注入生产测试消息。
+- 这里的生产验证是实际运行镜像、真实数据库读取及 DTO 校验，未使用用户登录会话完成生产浏览器全链路录屏。浏览器连续性由两种宽度的真实浏览器/合成接口测试覆盖，不扩大声称为全天稳定性验收。
+- 标准资源回收器已执行检查，因消息管线资源预留暂缓清理镜像；没有全局 prune 或删除仍被使用的镜像。额外构建只涉及 backend/web；没有新表、索引、外部服务或统计定时任务。
+
+脱敏读数、版本摘要与查询计划见 [acceptance.json](../eval/message_bus_repair_20261101/acceptance.json)。本地共享主目录的其它交易执行提交/未提交修改保持原样，本轮代码与报告在独立 worktree 中维护。
