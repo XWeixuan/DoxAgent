@@ -27,3 +27,18 @@
 - Python真实HTTP响应样本经过前端ApiClient接受；旧错误响应被拒绝且保留请求编号。
 - 相关后端20项通过；前端69项通过；消息总线3项浏览器测试（含200错误响应与恢复、两种宽度分钟更新/续期）及交易配置2项浏览器回归通过。
 - Typecheck和生产构建通过后仅发布API/Web。最终Git提交、运行版本及用户已登录生产页面验证在部署后追加。
+
+## 生产浏览器验收完成
+
+修复提交 `75fa461e5d5d61efcc7761f1aef2eeaeff67a4c2` 已先推送 origin/main，再从该提交正式构建、发布 API/Web。两者实际镜像 revision、release登记commit、运行镜像ID一致；API/Web均通过健康检查。其他角色未因本次修复重建，没有数据库迁移或新增读写。
+
+使用用户已经登录的 Chrome 生产页面实际验证，重新加载新静态资源 `index-Be4BMKq5.js` 后：
+
+- BE“当天”：周期新增2；绑定33、运行2、休眠31；右侧实际渲染33张来源卡片，消息列表20条，错误提示为空。
+- 切换“7天”：周期新增461，正文完整851/1194，显示71.3%，待完成3；HTTP响应通过真实前端校验，来源卡片正常。
+- 验证后恢复原“当天”视图。没有后端数据样本的E2E仍显示横线，未伪造0秒。
+- 此处是**真实登录生产页面验证**，不再仅以函数/DTO/合成浏览器测试代替。
+
+脱敏版本与浏览器验收读数：[envelope-browser-acceptance.json](../eval/message_bus_repair_20261101/envelope-browser-acceptance.json)。
+
+![修复后BE近7日生产页面](../eval/message_bus_repair_20261101/production-http-envelope-fixed.png)

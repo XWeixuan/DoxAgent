@@ -66,3 +66,7 @@
 - 标准资源回收器已执行检查，因消息管线资源预留暂缓清理镜像；没有全局 prune 或删除仍被使用的镜像。额外构建只涉及 backend/web；没有新表、索引、外部服务或统计定时任务。
 
 脱敏读数、版本摘要与查询计划见 [acceptance.json](../eval/message_bus_repair_20261101/acceptance.json)。本地共享主目录的其它交易执行提交/未提交修改保持原样，本轮代码与报告在独立 worktree 中维护。
+
+## HTTP封装后续修复
+
+上述函数与DTO验证遗漏了HTTP Resource外层Coverage字段冲突，真实页面仍会拒收HTTP 200响应。已在75fa461e修复并使用真实登录生产浏览器验收，详见 [HTTP外层响应修复记录](message-bus-http-envelope-repair-20261101.md)。

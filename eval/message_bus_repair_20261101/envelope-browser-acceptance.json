@@ -1,0 +1,67 @@
+{
+  "fix_commit": "75fa461e5d5d61efcc7761f1aef2eeaeff67a4c2",
+  "production_base_preserved": "55eb29e3227d14daed7a5aa0d002609a5bc9408d",
+  "identity": {
+    "v2-api": {
+      "actual": "sha256:2ba1ca409ed82afb3c754b65328e5587a7df5ab27082a301a92660650239f61d",
+      "container_created": "2026-10-31T22:40:34.22214153Z",
+      "image_revision": "75fa461e5d5d61efcc7761f1aef2eeaeff67a4c2",
+      "image_source": "bb632905205d665aa7e92db91b938920aec76275d1c4ce492c2dcfb2f5764915",
+      "registered": {
+        "image": "sha256:2ba1ca409ed82afb3c754b65328e5587a7df5ab27082a301a92660650239f61d",
+        "commit": "75fa461e5d5d61efcc7761f1aef2eeaeff67a4c2"
+      },
+      "mounts": [
+        "/data"
+      ]
+    },
+    "v2-web": {
+      "actual": "sha256:d3650eba90dd0148c7b30ffada6cc347977abaca195f065492462d75d29f78a3",
+      "container_created": "2026-10-31T22:42:18.269326064Z",
+      "image_revision": "75fa461e5d5d61efcc7761f1aef2eeaeff67a4c2",
+      "image_source": null,
+      "registered": {
+        "image": "sha256:d3650eba90dd0148c7b30ffada6cc347977abaca195f065492462d75d29f78a3",
+        "commit": "75fa461e5d5d61efcc7761f1aef2eeaeff67a4c2"
+      },
+      "mounts": []
+    }
+  },
+  "browser": {
+    "url": "https://agent.doxatlas.com/ticker/BE/message-bus",
+    "authenticated_existing_session": true,
+    "loaded_script": "https://agent.doxatlas.com/assets/index-Be4BMKq5.js",
+    "current_day": {
+      "published": 2,
+      "source_total": 33,
+      "source_running": 2,
+      "source_sleeping": 31,
+      "rendered_source_cards": 33,
+      "loaded_messages": 20,
+      "stats_error": "",
+      "e2e_samples": 0
+    },
+    "seven_days": {
+      "published": 461,
+      "body_full": 851,
+      "body_total": 1194,
+      "body_pending": 3,
+      "body_display": "71.3%",
+      "stats_error": ""
+    },
+    "restored_period": "CURRENT_TRADING_DAY"
+  },
+  "tests": {
+    "backend": 20,
+    "frontend_unit": 69,
+    "browser": 5,
+    "typecheck": "passed",
+    "build": "passed"
+  },
+  "schema_validation": "strict; no bypass",
+  "deployed_roles": [
+    "v2-api",
+    "v2-web"
+  ],
+  "screenshot": "production-http-envelope-fixed.png"
+}
