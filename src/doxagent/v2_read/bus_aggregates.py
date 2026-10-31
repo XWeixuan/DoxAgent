@@ -1,5 +1,6 @@
 """Message-filter dimensions with independent message and body-attempt dates."""
 import json
+from datetime import datetime
 from collections import defaultdict
 from .repository import encode
 
@@ -7,10 +8,15 @@ from .repository import encode
 def contributions(db, members):
     result = []
     for ticker, identity in members:
-        row = db.execute("SELECT day,source_id,route,json_extract(payload,'$.source.kind') FROM object_current WHERE kind='message' AND ticker=? AND id=?", (ticker,identity)).fetchone()
+        row = db.execute("SELECT day,source_id,route,json_extract(payload,'$.source.kind'),"
+            "json_extract(payload,'$.pipeline.discovered_at'),json_extract(payload,'$.stream_published_at') "
+            "FROM object_current WHERE kind='message' AND ticker=? AND id=?", (ticker,identity)).fetchone()
         dimensions = {"source_id": row[1], "route": row[2], "source_kind": row[3]} if row else {}
         common = {"ticker":ticker,"entity":identity,"dimensions":dimensions}
         result.append({**common,"metric":"bus_messages","day":row[0] if row else "", "value":1 if row else None})
+        elapsed = (datetime.fromisoformat(row[5])-datetime.fromisoformat(row[4])).total_seconds() if row and row[4] else None
+        for metric,value in [('bus_e2e_seconds',elapsed),('bus_e2e_samples',1 if elapsed is not None else None)]:
+            result.append({**common,'metric':metric,'day':row[0] if row else '', 'value':value})
         counts = defaultdict(lambda: [0,0])
         if row:
             for day, succeeded in db.execute("SELECT a.day,json_extract(a.payload,'$.succeeded') FROM object_current l JOIN object_current a ON a.kind='body_attempt' AND a.ticker=l.ticker AND a.parent=l.id WHERE l.kind='message_raw_link' AND l.ticker=? AND l.parent=?", (ticker,identity)):

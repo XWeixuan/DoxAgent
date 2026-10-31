@@ -25,9 +25,7 @@ export type WireShellContent = W.Response<W.Resource<W.ShellContent>>;
 export type WireUnit = W.Response<W.Resource<W.ExpectationUnit>>;
 export type WirePolicyContext = W.Response<W.Resource<W.PolicyContext>>;
 export type WirePolicyShells = W.Response<
-  W.Resource<
-    W.Page<W.PolicyShellSummary>
-  >
+  W.Resource<W.Page<W.PolicyShellSummary>>
 >;
 export type WirePolicyMetrics = W.Response<W.Resource<W.PolicyMetrics>>;
 export type WirePolicies = W.Response<W.Resource<W.Page<W.PolicySummary>>>;
@@ -42,6 +40,7 @@ export type WireDeltaDays = W.Response<W.Resource<W.Page<W.DeltaDay>>>;
 export type WireDelta = W.Response<W.Resource<W.ReferenceDelta>>;
 export type WireBusStatus = W.Response<W.Resource<W.BusStatus>>;
 export type WireBusMetrics = W.Response<W.Resource<W.BusMetrics>>;
+export type WireBusDashboard = W.Response<W.Resource<W.BusDashboard>>;
 export type WireSources = W.Response<W.Resource<W.Page<W.SourceStatus>>>;
 export type WireMessages = W.Response<W.Resource<W.MessageBaseline>>;
 export type WireMessage = W.Response<W.Resource<W.MessageSummary>>;
@@ -71,10 +70,14 @@ export type WireCostBreakdown = W.Response<W.Resource<W.CostBreakdown>>;
 export type WireCostNodes = W.Response<W.Resource<W.Page<W.CostNodeRow>>>;
 export type WireBindingWrite = W.Response<W.BindingConfig>;
 export type WireBindingReceipt = W.Response<W.MutationReceipt>;
-export type WireMonitoringTerms = W.Response<W.Resource<W.MonitoringTermsConfig>>;
+export type WireMonitoringTerms = W.Response<
+  W.Resource<W.MonitoringTermsConfig>
+>;
 export type WireMonitoringTermsWrite = W.Response<W.MonitoringTermsConfig>;
-export type WireMonitoringTermsValidation = W.Response<W.MonitoringTermsValidation>;
+export type WireMonitoringTermsValidation =
+  W.Response<W.MonitoringTermsValidation>;
 
 export type WireDeferredQueryTicket = W.DeferredQueryTicket;
 
 export type WireCostReport = W.Response<W.Resource<W.CostReport>>;
+

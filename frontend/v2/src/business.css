@@ -1285,3 +1285,6 @@
 .case-details dl.case-lifecycle-timing {
   grid-template-columns: 220px 1fr;
 }
+
+/* Keep transient read feedback from moving the reading viewport. */
+.bus-refresh-feedback { height: 24px; line-height: 24px; overflow: hidden; color: var(--destructive); font-size: 13px; }

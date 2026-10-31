@@ -101,6 +101,13 @@ class MessageStreams:
             cursor=args.get("cursor"),
             **filters,
         )
+        if args.get('reading_after') and not args.get('cursor'):
+            anchor = self.store.page('message',ticker,view['seq'],identity=args['reading_after'],limit=1,**filters)
+            if anchor:
+                page_scope=hashlib.sha256(encode(['message',ticker,identity,filters,limit]).encode()).hexdigest()
+                page['next_cursor']=self.store.save_token(owner,page_scope,{
+                    'seq':view['seq'],'view_id':identity,'after':[anchor[0]['sort'],anchor[0]['id']]})
+                page['has_more']=True
         scope = self.scope(ticker, identity, filters, limit)
         from .news_timeliness import message_update_states
         message_update_states(self.store,ticker,view['seq'],page['items'])
@@ -226,7 +233,7 @@ def install(app: FastAPI) -> None:
     @app.get(PREFIX + "/tickers/{ticker}/messages")
     async def messages(ticker: str, request: Request) -> Any:
         args = query(
-            request, {"view_id", "source_kind", "source_id", "route", "q", "limit", "cursor"}
+            request, {"view_id", "source_kind", "source_id", "route", "q", "limit", "cursor", "reading_after"}
         )
         return respond(
             request,

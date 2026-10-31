@@ -15,19 +15,19 @@ from .errors import ApiFailure
 from .news_timeliness import poll_cadence, poll_window
 
 
-def source_status(store, binding, seq, view, cadences=None):
+def source_status(store, binding, seq, view, cadences=None, *, live_states=None, source=None, ticker_state=None):
     native = TickerSourceBinding.model_validate(binding)
-    source = store.get("native:source_definitions", "", native.source_id, seq)
+    source = source if source is not None else store.get("native:source_definitions", "", native.source_id, seq)
     if source is None:
         raise ApiFailure("SOURCE_GAP", 503, retryable=True)
-    poll = store.get("native:poll_states", native.ticker, native.binding_id, seq) or {}
     from doxagent.message_bus_v2.collection_plane.observability import binding_states
-    live=binding_states([native.ticker])
-    if live is not None:
-        poll=live.get(native.binding_id,{'status':'never_polled'})
+    live=live_states if live_states is not None else binding_states([native.ticker])
+    poll = live.get(native.binding_id) if live is not None else None
+    if poll is None:
+        poll = store.get("native:poll_states", native.ticker, native.binding_id, seq) or {}
     checkpoints = [poll.get('checkpoint',{}),*[value.get('checkpoint',{})
         for unit,value in poll.get('units',{}).items() if not unit.startswith('TAIL:')]]
-    ticker = store.get("ticker", native.ticker, native.ticker, seq) or {}
+    ticker = ticker_state if ticker_state is not None else (store.get("ticker", native.ticker, native.ticker, seq) or {})
     status = poll.get("status", "never_polled")
     enabled = native.enabled and native.polling.enabled and source["enabled"]
     health = (
@@ -49,7 +49,7 @@ def source_status(store, binding, seq, view, cadences=None):
         countdown = "PAUSED"
     elif not native.polling.active_at(now):
         countdown = "WINDOW_CLOSED"
-    elif native.source_id != "corporate_ir_press_releases" and view["wire"]["clock"]["session"]["value"] == "CLOSED_SLEEP":
+    elif native.source_id not in {"corporate_ir_press_releases", "sec_edgar"} and view["wire"]["clock"]["session"]["value"] == "CLOSED_SLEEP":
         countdown = "CLOSED_SLEEP"
 
     def observed(key, transform=lambda value: value):
@@ -164,6 +164,16 @@ def install(app: FastAPI):
         if view["wire"]["page"] != "MESSAGE_BUS":
             raise ApiFailure("SCOPE_MISMATCH", 400)
         return view
+
+    @app.get(prefix + '/dashboard')
+    async def dashboard(ticker: str, request: Request):
+        from .bus_dashboard import dashboard_data
+        from .streaming import MessageStreams
+        args = app.state.query(request, {'view_id','source_id','source_kind'})
+        view = context(request,ticker,args)
+        MessageStreams(store,views).filters(args,view)
+        data = dashboard_data(store,ticker,view,args)
+        return app.state.respond(request,'BusDashboard',data,view_id=args['view_id'])
 
     @app.get(prefix + "/metrics")
     async def metrics(ticker: str, request: Request):

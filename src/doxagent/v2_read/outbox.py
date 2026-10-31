@@ -300,7 +300,8 @@ class SourceOutbox:
                         if table=="live_deliveries":
                             changed=" OR ".join(f"OLD.{field} IS NOT NEW.{field}" for field in (
                                 "state","terms_revision","decision_digest","raw_id","standard_id","consumable_at",
-                                "initial_decision_at","initial_decision"))
+                                "initial_decision_at","initial_decision","first_discovered_at","first_poll_due_at")
+                                if field in {r[1] for r in columns})
                         if table == 'poll_runs':
                             changed = f"({changed}) AND (NEW.status!='DISPATCHED' OR OLD.status IS NOT NEW.status)"
                         if table == "poll_captures":

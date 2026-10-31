@@ -12,25 +12,15 @@ import {
   Clock3,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { useQuery, type InfiniteData } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, useSearchParams } from "react-router-dom";
-import type {
-  Period,
-  MessageSummary,
-  MessageDelta,
-  SourceStatus,
-  Response,
-  Resource,
-  MessageBaseline,
-} from "@contract";
+import type { Period, MessageSummary, SourceStatus, Response } from "@contract";
 import { useRuntime } from "@/core/runtime";
 import { usePageContext, tickerPath } from "@/core/page-query";
-import { usePages } from "@/core/paged-query";
-import { useLive, useMinuteReads } from "@/core/live-query";
-import { compareMessageOrder } from "@/core/updates";
+import { useBusFeed } from "./use-bus-feed";
+import { useMinuteReads } from "@/core/live-query";
 import { queryString } from "@/core/api";
 import {
-  duration,
   formatInstant,
   formatSourceSuccess,
   valueText,
@@ -38,7 +28,7 @@ import {
 } from "@/core/format";
 import { PageTitle, Choices, ContentReader } from "@/components/page-kit";
 import { PeriodPicker, periods } from "@/components/business-metrics";
-import { Comparison, MetricNote } from "./overview/metrics";
+import { Comparison } from "./overview/metrics";
 import { Module, Notice } from "@/components/state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,17 +42,27 @@ const routes = [
   ["FAILED", "失败"],
   ["NOT_PROCESSED", "待处理"],
 ];
+const seconds = (value: number | null | undefined) =>
+  value == null ? "—" : value.toFixed(2) + "s";
+const ratio = (value: number | null | undefined) =>
+  value == null ? "无样本" : (value * 100).toFixed(1) + "%";
 export default function MessageBus() {
   const { ticker = "" } = useParams();
   const [p, setP] = useSearchParams();
   const config = p.get("mode") === "CONFIG";
   const period = (periods.find((x) => x[0] === p.get("period"))?.[0] ??
     "CURRENT_TRADING_DAY") as Period;
-  const ctx = usePageContext(ticker, "MESSAGE_BUS", period);
-  const feed = usePageContext(ticker, "MESSAGE_BUS", "ALL");
+  const ctx = usePageContext(ticker, "MESSAGE_BUS", period, { renew: false });
+  const [refresh, setRefresh] = useState(0);
   return (
     <>
-      <PageTitle title={`${ticker} 消息总线`} refresh={ctx.refetch}>
+      <PageTitle
+        title={`${ticker} 消息总线`}
+        refresh={async () => {
+          await ctx.refetch();
+          setRefresh((n) => n + 1);
+        }}
+      >
         {!config && (
           <PeriodPicker
             value={period}
@@ -91,19 +91,26 @@ export default function MessageBus() {
       </PageTitle>
       {ctx.error && <Notice danger>{ctx.error.message}</Notice>}
       {config ? (
-          <BindingSettings
-            refresh={ctx.refetch}
-            ticker={ticker}
-            view={ctx.data?.data.view_id}
-          />
-        ) : ctx.data && feed.data ? (
-          <MessageStream
-            ticker={ticker}
-            period={period}
-            context={feed.data}
-            reset={() => void feed.refetch()}
-          />
-        ) : null}
+        <BindingSettings
+          refresh={ctx.refetch}
+          ticker={ticker}
+          view={ctx.data?.data.view_id}
+        />
+      ) : ctx.data ? (
+        <MessageStream
+          key={[
+            ticker,
+            p.get("kind"),
+            p.get("source"),
+            p.get("route"),
+            p.get("q"),
+          ].join(":")}
+          ticker={ticker}
+          period={period}
+          context={ctx.data}
+          refresh={refresh}
+        />
+      ) : null}
     </>
   );
 }
@@ -111,19 +118,23 @@ function MessageStream({
   ticker,
   period,
   context,
-  reset,
+  refresh,
 }: {
   ticker: string;
   period: Period;
   context: Response<import("@contract").ReadContext>;
-  reset: () => void;
+  refresh: number;
 }) {
-  const { api, query, scope } = useRuntime();
+  const { api, scope } = useRuntime();
   const [p, setP] = useSearchParams();
-  const [search, setSearch] = useState(p.get("q") ?? "");
-  const [searchOpen, setSearchOpen] = useState(!!p.get("q"));
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const view = context.data.view_id;
+  const [search, setSearch] = useState(p.get("q") ?? ""),
+    [searchOpen, setSearchOpen] = useState(!!p.get("q"));
+  const scroll = useRef<HTMLDivElement>(null);
+  const filters = {
+    source_kind: p.get("kind") ?? undefined,
+    source_id: p.get("source") ?? undefined,
+    route: p.get("route") ?? "ALL",
+  };
   const set = (key: string, v: string) => {
     const n = new URLSearchParams(p);
     if (v) n.set(key, v);
@@ -131,169 +142,63 @@ function MessageStream({
     if (key === "kind") n.delete("source");
     setP(n);
   };
-  const filters = {
-    source_kind: p.get("kind") ?? undefined,
-    source_id: p.get("source") ?? undefined,
-    route: p.get("route") ?? "ALL",
-  };
-  // The minute snapshot is separate from the message stream's immutable scope.
-  const minuteKey = [
-    scope,
-    "bus-minute",
-    ticker,
-    period,
-    filters.source_kind,
-    filters.source_id,
-    filters.route,
-  ];
-  const minuteContext = useQuery({
-    queryKey: [...minuteKey, "context"],
-    queryFn: ({ signal }) => api.request("ReadContext", "/read-context" +
-      queryString({ ticker, page: "MESSAGE_BUS", period, refresh: "MINUTE" }), { signal }),
-    staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: "always",
-  });
-  const minuteView = minuteContext.data?.data.view_id;
-  const statusQuery = useQuery({
-    queryKey: [...minuteKey, "status", minuteView, showDiagnostics], enabled: !!minuteView,
-    queryFn: ({ signal }) => api.request("BusStatus", tickerPath(ticker) +
-      "/message-bus/status" + queryString({ view_id: minuteView, diagnostics: showDiagnostics ? "true" : undefined }), { view: minuteView, signal }),
-    refetchOnWindowFocus: false,
-  });
-  const metricsQuery = useQuery({
-    queryKey: [...minuteKey, "metrics", minuteView], enabled: !!minuteView,
-    queryFn: ({ signal }) => api.request("BusMetrics", tickerPath(ticker) +
-      "/message-bus/metrics" + queryString({ view_id: minuteView, ...filters }), { view: minuteView, signal }),
-    refetchOnWindowFocus: false,
-  });
-  const sourcesQuery = useQuery({
-    queryKey: [...minuteKey, "sources", minuteView, showDiagnostics], enabled: !!minuteView,
-    queryFn: ({ signal }) => api.request("Sources", tickerPath(ticker) +
-      "/message-bus/sources" + queryString({ view_id: minuteView, limit: "100", today_counts: "true", diagnostics: showDiagnostics ? "true" : undefined }), { view: minuteView, signal }),
+  const dashboard = useQuery({
+    queryKey: [
+      scope,
+      "bus-dashboard",
+      ticker,
+      period,
+      filters.source_kind,
+      filters.source_id,
+    ],
+    queryFn: async ({ signal }) => {
+      const current = await api.request(
+        "ReadContext",
+        "/read-context" +
+          queryString({
+            ticker,
+            page: "MESSAGE_BUS",
+            period,
+            refresh: "MINUTE",
+          }),
+        { signal },
+      );
+      const view = current.data.view_id;
+      const response = await api.request(
+        "BusDashboard",
+        tickerPath(ticker) +
+          "/message-bus/dashboard" +
+          queryString({
+            view_id: view,
+            source_id: filters.source_id,
+            source_kind: filters.source_kind,
+          }),
+        { signal, view },
+      );
+      return { current, response };
+    },
+    staleTime: 60_000,
+    gcTime: 120_000,
+    refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
   const minuteError = useMinuteReads(context, async () => {
-    await minuteContext.refetch();
+    await dashboard.refetch();
   });
-  const path =
-    tickerPath(ticker) +
-    "/messages" +
-    queryString({
-      view_id: view,
-      ...filters,
-      q: p.get("q") ?? undefined,
-      limit: "20",
-    });
-  const messages = usePages<MessageSummary, "Messages">(
-    "Messages",
-    path,
-    (r) => r.data?.messages ?? null,
-    view,
+  useEffect(() => {
+    if (refresh) void dashboard.refetch();
+  }, [refresh]);
+  const messages = useBusFeed(
+    ticker,
+    { ...filters, q: p.get("q") ?? undefined },
+    scroll,
   );
-  const baseline = messages.source?.data?.stream_cursor;
-  const streamError = useLive<MessageDelta>(
-    tickerPath(ticker) +
-      "/messages/events" +
-      queryString({ view_id: view, ...filters, q: p.get("q") ?? undefined }),
-    view,
-    baseline,
-    async (delta, streamCursor) => {
-      if (delta.action === "UPSERT" && !delta.row) {
-        const response = await api.request(
-          "Message",
-          tickerPath(ticker) +
-            `/messages/${encodeURIComponent(delta.standard_message_id)}/revisions/${delta.revision}` +
-            queryString({ view_id: view, stream_cursor: streamCursor }),
-          { view },
-        );
-        delta = { ...delta, row: response.data.data };
-      }
-      if (
-        delta.action === "UPSERT" &&
-        (!delta.row ||
-          delta.row.standard_message_id !== delta.standard_message_id ||
-          delta.row.revision !== delta.revision ||
-          delta.row.row_revision !== delta.row_revision)
-      )
-        throw new Error("Message revision mismatch");
-      query.setQueryData<InfiniteData<Response<Resource<MessageBaseline>>>>(
-        [scope, "pages", "Messages", path, view],
-        (old) => {
-          if (!old) return old;
-          let found = false;
-          const pages = old.pages.map((page) => {
-            if (!page.data.data) return page;
-            const items = page.data.data.messages.items.flatMap((row) => {
-              if (
-                row.standard_message_id !== delta.standard_message_id ||
-                row.revision !== delta.revision
-              )
-                return [row];
-              found = true;
-              if (delta.action === "REMOVE") return [];
-              return [
-                row.row_revision >= delta.row_revision ? row : delta.row!,
-              ];
-            });
-            return {
-              ...page,
-              data: {
-                ...page.data,
-                data: {
-                  ...page.data.data,
-                  messages: { ...page.data.data.messages, items },
-                },
-              },
-            };
-          });
-          if (
-            !found &&
-            delta.action === "UPSERT" &&
-            delta.matches_scope &&
-            delta.row
-          ) {
-            const first = pages[0];
-            if (first.data.data) {
-              const items = [delta.row, ...first.data.data.messages.items].sort(
-                compareMessageOrder,
-              );
-              pages[0] = {
-                ...first,
-                data: {
-                  ...first.data,
-                  data: {
-                    ...first.data.data,
-                    messages: { ...first.data.data.messages, items },
-                  },
-                },
-              };
-            }
-          }
-          return { ...old, pages };
-        },
-      );
-    },
-    reset,
-  );
-  const status = statusQuery.data?.data.data,
-    metrics = metricsQuery.data?.data.data,
-    sources = sourcesQuery.data?.data.data?.items ?? [];
+  const data = dashboard.data?.response.data.data,
+    metrics = data?.metrics,
+    sources = data?.sources ?? [];
   return (
     <>
-      {minuteContext.error && <Notice danger>{minuteContext.error.message}</Notice>}
-      <div className="business-metrics bus-metrics">
-        <article>
-          <span>
-            <Timer aria-hidden="true" />
-            连续运行时长
-          </span>
-          <strong>
-            {status
-              ? status.run_state === "RUNNING"
-                ? valueText(status.continuous_run_seconds, duration)
-                : "未运行"
-              : "—"}
-          </strong>
-        </article>
+      <div className="business-metrics bus-metrics" aria-label="消息统计">
         <article>
           <span>
             <Plus aria-hidden="true" />
@@ -305,98 +210,77 @@ function MessageStream({
           {metrics && period !== "ALL" && (
             <Comparison metric={metrics.published_revisions} />
           )}
-          {metrics && <MetricNote metric={metrics.published_revisions} />}
-        </article>
-        <article>
-          <span>
-            <CircleCheck aria-hidden="true" />
-            {metrics?.new_article_body ? "新文章正文成功率" : "正文补全成功率（旧口径）"}
-          </span>
-          <strong>
-            {metrics?.new_article_body
-              ? metrics.new_article_body.ratio === null ? "—" : (metrics.new_article_body.ratio * 100).toFixed(1) + "%"
-              : metrics
-              ? valueText(
-                  metrics.body_completion_success_ratio.current,
-                  (v) => (Number(v) * 100).toFixed(1) + "%",
-                )
-              : "—"}
-          </strong>
-          {metrics?.new_article_body && <small>完整 {metrics.new_article_body.full} / {metrics.new_article_body.total} · 待完成 {metrics.new_article_body.pending} · 失败 {metrics.new_article_body.failed}</small>}
-          {metrics?.new_article_body && <small>网络成功 {metrics.new_article_body.network_succeeded} / {metrics.new_article_body.network_attempts} · 正文复用 {metrics.new_article_body.cache_reuses}</small>}
-          {metrics && !metrics.new_article_body && period !== "ALL" && (
-            <Comparison metric={metrics.body_completion_success_ratio} />
-          )}
-          {metrics && !metrics.new_article_body && (
-            <MetricNote metric={metrics.body_completion_success_ratio} />
-          )}
-          {status?.timeliness?.cadence &&
-            ((status.timeliness.cadence.pending_intake_candidates ?? 0) > 0 ||
-             (status.timeliness.cadence.failed_intake_candidates ?? 0) > 0) && <small>
-              候选待接纳 {status.timeliness.cadence.pending_intake_candidates ?? 0}
-              {" · 接纳异常 "}{status.timeliness.cadence.failed_intake_candidates ?? 0}
-            </small>}
         </article>
         <article>
           <span>
             <Radio aria-hidden="true" />
-            数据源状态
+            消息源状态
+          </span>
+          <strong>{data ? `已绑定 ${data.counts.total}` : "—"}</strong>
+          {data && (
+            <small>
+              运行 {data.counts.running} · 休眠 {data.counts.sleeping} · 异常{" "}
+              {data.counts.abnormal}
+              {data.counts.disabled > 0 && ` · 停用 ${data.counts.disabled}`}
+              {data.counts.unknown > 0 && ` · 未知 ${data.counts.unknown}`}
+            </small>
+          )}
+        </article>
+        <article>
+          <span>
+            <CircleCheck aria-hidden="true" />
+            正文补全成功率
           </span>
           <strong>
-            {status ? (
-              <>
-                <span className="tone-success">
-                  {valueText(status.source_counts.normal)}
-                </span>{" "}
-                /{" "}
-                <span className="tone-danger">
-                  {valueText(status.source_counts.abnormal)}
-                </span>
-              </>
-            ) : (
-              "—"
-            )}
+            {data ? ratio(metrics?.new_article_body?.ratio) : "—"}
           </strong>
+          {metrics?.new_article_body && (
+            <small>
+              完整 {metrics.new_article_body.full} /{" "}
+              {metrics.new_article_body.total} · 待完成{" "}
+              {metrics.new_article_body.pending}
+            </small>
+          )}
         </article>
         <article>
           <span>
             <Clock3 aria-hidden="true" />
-            {status?.timeliness?.cadence ? "近30分钟实际刷新间隔" : status?.timeliness ? "近30分钟单次轮询耗时" : "启用源最近耗时均值"}
-            <Button size="sm" variant="ghost" aria-pressed={showDiagnostics}
-              onClick={() => setShowDiagnostics((value) => !value)}>采集诊断</Button>
+            平均端到端耗时
           </span>
-          <strong>
-            {status?.timeliness?.cadence
-              ? status.timeliness.cadence.gap_mean_seconds === null ? "—" : status.timeliness.cadence.gap_mean_seconds.toFixed(2) + "s"
-              : status?.timeliness
-              ? status.timeliness.mean_seconds === null ? "—" : status.timeliness.mean_seconds.toFixed(2) + "s"
-              : status
-              ? valueText(
-                  status.average_poll_latency_seconds,
-                  (v) => v.toFixed(2) + "s",
-                )
-              : "—"}
+          <strong title="新消息首次发现至首次正式发布，按所选周期汇总">
+            {seconds(data?.mean_e2e_seconds)}
           </strong>
-          {status?.timeliness?.cadence ? <small>
-            <span className="whitespace-nowrap">P95 {status.timeliness.cadence.gap_p95_seconds?.toFixed(2) ?? "—"}s</span>
-            {" · "}<span className="whitespace-nowrap" title="已有结果或超过验收时限的周期；延期和失败保留在分母">兑现 {status.timeliness.cadence.coverage === null ? "—" : (status.timeliness.cadence.coverage * 100).toFixed(1) + "%"}</span>
-            {" · "}<span className="whitespace-nowrap">缺轮 {status.timeliness.cadence.missing_cycles}</span>
-            {" · "}<span className="whitespace-nowrap">延期 {status.timeliness.cadence.deferred} / 失败 {status.timeliness.cadence.failed}</span>
-            {!!status.timeliness.cadence.pending_cycles && <>{" · "}<span className="whitespace-nowrap">进行中 {status.timeliness.cadence.pending_cycles}</span></>}
-          </small> : status?.timeliness && <small>P95 {status.timeliness.p95_seconds?.toFixed(2) ?? "—"}s · {status.timeliness.samples} 次 · 延期 {status.timeliness.deferred}</small>}
+          {data && <small>{data.e2e_samples} 条新消息</small>}
+        </article>
+        <article>
+          <span>
+            <Timer aria-hidden="true" />
+            周期轮询覆盖率
+          </span>
+          <strong title="每源近20个已结算逻辑轮次；替代路径任一成功，互补单元共同满足">
+            {data ? ratio(data.coverage.ratio) : "—"}
+          </strong>
+          {data && (
+            <small>
+              近20轮 / 源 · 成功 {data.coverage.succeeded} / 预期{" "}
+              {data.coverage.expected}
+            </small>
+          )}
         </article>
       </div>
-      {streamError && <Notice danger>{streamError}</Notice>}
-      {minuteError && <Notice danger>{minuteError}</Notice>}
-      {sourcesQuery.error && (
-        <Notice danger>消息源状态刷新失败：{sourcesQuery.error.message}</Notice>
-      )}
-      {metricsQuery.error && (
-        <Notice danger>消息统计读取失败：{metricsQuery.error.message}</Notice>
-      )}
+      <div className="bus-refresh-feedback" role="status" aria-live="polite">
+        {dashboard.error ? (
+          <span title={dashboard.error.message}>
+            消息统计读取失败，已保留上次结果。
+            {"requestId" in dashboard.error &&
+              ` 请求编号：${String(dashboard.error.requestId)}`}
+          </span>
+        ) : (
+          messages.streamError || minuteError
+        )}
+      </div>
       <div className="bus-layout">
         <section className="stream-panel">
-          {" "}
           <div className="stream-toolbar">
             <h2>
               <MessagesSquare aria-hidden="true" />
@@ -499,6 +383,7 @@ function MessageStream({
             </form>
           )}
           <div
+            ref={scroll}
             className="message-scroll"
             role="region"
             aria-label="消息列表"
@@ -509,7 +394,7 @@ function MessageStream({
                 d.items.length ? (
                   d.items.map((m) => (
                     <MessageCard
-                      key={m.standard_message_id + ":" + m.revision}
+                      key={m.standard_message_id}
                       ticker={ticker}
                       message={m}
                     />
@@ -539,10 +424,13 @@ function MessageStream({
               key={s.source.binding_id}
               status={s}
               today={s.published_today}
-              semanticDay={minuteContext.data?.data.clock.semantic_day ?? context.data.clock.semantic_day}
+              semanticDay={
+                dashboard.data?.current.data.clock.semantic_day ??
+                context.data.clock.semantic_day
+              }
             />
           ))}
-          {!sources.length && <p>没有已绑定消息源</p>}
+          {!sources.length && !dashboard.isPending && <p>没有已绑定消息源</p>}
         </aside>
       </div>
     </>
@@ -600,16 +488,16 @@ export function SourceCard({
           </div>
         </div>
         <Badge variant={s.current_error ? "destructive" : "secondary"}>
-          {
-            s.current_error?.code.startsWith("SOURCE_DEFERRED:") ? "采集延期" : "上次结果：" +
-            {
-              succeeded: "正常",
-              partial: "部分失败",
-              failed: "失败",
-              disabled: "禁用",
-              never_polled: "未轮询",
-            }[s.poll_status]
-          }
+          {s.current_error?.code.startsWith("SOURCE_DEFERRED:")
+            ? "采集延期"
+            : "上次结果：" +
+              {
+                succeeded: "正常",
+                partial: "部分失败",
+                failed: "失败",
+                disabled: "禁用",
+                never_polled: "未轮询",
+              }[s.poll_status]}
         </Badge>
       </header>
       <div className="source-status-body">
@@ -650,20 +538,20 @@ export function SourceCard({
           </dd>
           <dt>当天新增</dt>
           <dd>{today ? valueText(today) : "未记录"}</dd>
-          <dt>{s.collection_state_source ? "采集耗时" : "轮询耗时"}</dt>
-          <dd title={s.stage_timings_ms ? `源排队 ${s.stage_timings_ms.source_wait_ms ?? 0}ms · Site排队 ${s.stage_timings_ms.site_wait_ms ?? 0}ms · 执行 ${s.stage_timings_ms.runtime_ms ?? 0}ms · 接纳 ${s.stage_timings_ms.accept_ms ?? 0}ms` : undefined}>
-            {valueText(s.last_poll_latency_seconds, (v) => v.toFixed(2) + "s")}
+          <dt>平均端到端耗时</dt>
+          <dd title={`近20逻辑轮次 · ${s.recent?.e2e_samples ?? 0}条新消息`}>
+            {seconds(s.recent?.mean_e2e_seconds)}
           </dd>
-          {s.capture_age_seconds != null && <><dt>采集距今</dt><dd title={s.collection_state_source ? "全部必需单元中最久未刷新的列表；不以RSS替代浏览器频道" : s.capture_to_first_intake_seconds == null ? undefined : `采集至首次接纳 ${s.capture_to_first_intake_seconds.toFixed(2)}s`}>{s.capture_age_seconds.toFixed(1)}s</dd></>}
-          {s.collection_observed_at && <><dt>账本观察</dt><dd title="直接读取采集面；业务消息仍以发布和Read投影时点为准">{new Date(s.collection_observed_at).toLocaleTimeString()}</dd></>}
-          {s.cadence && <>
-            <dt>实际间隔</dt><dd title={`P95 ${s.cadence.gap_p95_seconds?.toFixed(2) ?? "—"}s · 最长空窗 ${s.cadence.max_gap_seconds?.toFixed(2) ?? "—"}s · 请求启动P95 ${s.cadence.worst_request_p95_seconds?.toFixed(2) ?? "—"}s`}>
-              {s.cadence.gap_mean_seconds?.toFixed(2) ?? "—"}s
-            </dd>
-            <dt>周期兑现</dt><dd><span className="whitespace-nowrap">{s.cadence.coverage == null ? "—" : (s.cadence.coverage * 100).toFixed(1) + "%"}</span> · <span className="whitespace-nowrap">缺轮 {s.cadence.missing_cycles}</span></dd>
-          </>}
-          {!!s.pending_query_count && <><dt>待覆盖查询</dt><dd>{s.pending_query_count}</dd></>}
-          {!!s.pending_timestamp_count && <><dt>待核验时间</dt><dd>{s.pending_timestamp_count}</dd></>}
+          <dt>P95端到端耗时</dt>
+          <dd>{seconds(s.recent?.p95_e2e_seconds)}</dd>
+          <dt>实际刷新间隔</dt>
+          <dd>{seconds(s.recent?.refresh_seconds)}</dd>
+          <dt>正文补全成功率</dt>
+          <dd
+            title={`近20轮发现文章 · 完整 ${s.recent?.body_full ?? 0} / ${s.recent?.body_total ?? 0}`}
+          >
+            {ratio(s.recent?.body_ratio)}
+          </dd>
         </dl>
       </div>
 
@@ -743,11 +631,18 @@ function MessageCard({
           <div className="message-meta">
             <span>{m.source_name ?? m.source.name}</span>
             <span>{m.source.kind === "api" ? "API" : "爬虫"}</span>
-            <span>发布{m.publication_time_basis === "RELATIVE" ? "（估算）" : ""} {formatInstant(m.source_published_at)}</span>
+            <span>
+              发布{m.publication_time_basis === "RELATIVE" ? "（估算）" : ""}{" "}
+              {formatInstant(m.source_published_at)}
+            </span>
             <span>抓取 {formatInstant(m.collected_at)}</span>
-            {m.content_update && m.content_update.revision > 1 && <span>已更新 · 正文修订 {m.content_update.revision}</span>}
+            {m.content_update && m.content_update.revision > 1 && (
+              <span>已更新 · 正文修订 {m.content_update.revision}</span>
+            )}
             {m.content_update?.pending && <span>待核查更新</span>}
-            {m.content_update?.last_error && <span title={m.content_update.last_error}>最近正文检查失败</span>}
+            {m.content_update?.last_error && (
+              <span title={m.content_update.last_error}>最近正文检查失败</span>
+            )}
           </div>
         </div>
         <span className={"domain-tag route-tag route-" + route}>{route}</span>

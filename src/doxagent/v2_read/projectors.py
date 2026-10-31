@@ -251,7 +251,10 @@ class DomainProjectors:
             "source_id": value.get("source_id"),
         }
         records, metrics = [record], []
-        if table=='live_deliveries':record['parent']=value['article_key']
+        if table == 'live_deliveries':
+            record['parent'] = value['article_key']
+            record['sort'] = timestamp(value.get('first_poll_due_at') or value.get('first_discovered_at') or value['created_at'])
+            record['day'] = semantic_day(datetime.fromisoformat(record['sort'])).isoformat()
         if table=="live_articles":
             full=value.get("outcome") in {"FULL","SHORT_FULL"}
             eligible=value.get("state") not in {"MERGED","NOT_APPLICABLE"} and value.get("outcome")!='NOT_APPLICABLE'
@@ -919,6 +922,13 @@ class DomainProjectors:
                 "body_acquired_at":timestamp(message["metadata"]["media_enrichment"]["body_acquired_at"]) if message.get("metadata",{}).get("media_enrichment",{}).get("body_acquired_at") else None,
             },
         )
+        article_key = message.get('metadata',{}).get('live_article_key')
+        delivery = self.store.get('native:live_deliveries',ticker,article_key+':'+ticker) if article_key else None
+        if delivery and delivery.get('first_discovered_at'):
+            summary['pipeline'] = {
+                'discovered_at': timestamp(delivery['first_discovered_at']),
+                'poll_due_at': timestamp(delivery['first_poll_due_at']) if delivery.get('first_poll_due_at') else None,
+            }
         validate("MessageSummary", summary)
         return [
             {

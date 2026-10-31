@@ -78,7 +78,7 @@ def counts(store, ticker, seq, filters, days):
     return Decimal(messages), Decimal(attempts[1]) / attempts[0] if attempts[0] else None
 
 
-def metrics(store, ticker, view, filters):
+def metrics(store, ticker, view, filters, *, body=None):
     period = view["wire"]["period"]
     days = None if period["selected"] == "ALL" else period["current"]["trading_days"]
     current = counts(store, ticker, view["seq"], filters, days)
@@ -91,10 +91,10 @@ def metrics(store, ticker, view, filters):
             "metric_id": name,
             "unit": "COUNT" if i == 0 else "RATIO",
             "current": available(decimal_text(current[i]))
-            if current[i] is not None and (i or current[i])
+            if current[i] is not None
             else missing(),
             "previous": available(decimal_text(previous[i]))
-            if previous[i] is not None and (i or previous[i])
+            if previous[i] is not None
             else missing(),
             "change_pct": compare(
                 current[i], previous[i], applicable=period["comparison_applicable"]
@@ -107,5 +107,5 @@ def metrics(store, ticker, view, filters):
     }
     from .news_timeliness import body_cohort
 
-    result["new_article_body"] = body_cohort(store,ticker,view["seq"],filters,days)
+    result["new_article_body"] = body if body is not None else body_cohort(store,ticker,view["seq"],filters,days)
     return result

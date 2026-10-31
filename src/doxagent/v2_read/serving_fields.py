@@ -30,6 +30,11 @@ def select(kind,identity,value):
     if value is None or not kind.startswith('native:'):return value
     table=kind[7:]
     if table in CONTROL:return value
+    if table=='live_deliveries':
+        # Only first-discovery anchors and the published identity, never the
+        # admission document or worker state. Reuse the existing source index.
+        return {k:v for k,v in value.items() if k in {
+            'standard_id','first_discovered_at','first_poll_due_at'}}
     if table=='runtime_v2_cases':
         result={k:v for k,v in value.items() if k in CASE_FIELDS}
         result['source']={'snapshot':{'ticker':value.get('source',{}).get('snapshot',{}).get('ticker')}}
