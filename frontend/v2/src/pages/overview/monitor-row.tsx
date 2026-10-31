@@ -1,3 +1,4 @@
+import { TradingConfigButton } from "./trading-config";
 import { Fragment } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, ChevronRight, Pause, RotateCcw, Trash2 } from "lucide-react";
@@ -40,6 +41,8 @@ export function MonitorRow({
         onClick={(event) => {
           if (
             !accessible ||
+            // Portal events bubble through React even outside this row's DOM.
+            !event.currentTarget.contains(event.target as Node) ||
             (event.target as Element).closest("a, button, [data-row-control]")
           )
             return;
@@ -137,6 +140,7 @@ export function MonitorRow({
         </TableCell>
         <TableCell data-row-control>
           <div className="row-actions">
+            <TradingConfigButton ticker={state.ticker} disabled={busy || !canOperate} />
             {(
               [
                 { kind: "PAUSE", action: "pause", label: "暂停", icon: Pause },

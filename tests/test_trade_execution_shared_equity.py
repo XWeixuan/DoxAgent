@@ -1,9 +1,12 @@
 import asyncio
 import json
+import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+import pytest
 
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal, digest, encode
 from doxagent.persistent_runtime_v2.schema import TradeRecord
@@ -81,7 +84,15 @@ class PortfolioBroker:
 
     def quote(self, contract, side, **kwargs):
         value = self.prices[contract["symbol"]]
-        return {"bid": str(value), "ask": str(value), "market_data_type": 1}
+        return {
+            "bid": str(value),
+            "ask": str(value),
+            "market_data_type": 1,
+            "bid_size": "100",
+            "ask_size": "100",
+            "bid_received_at": time.time(),
+            "ask_received_at": time.time(),
+        }
 
     def what_if(self, contract, order_id, **kwargs):
         self.previews.append({"contract": contract, "order_id": order_id, **kwargs})
@@ -185,6 +196,9 @@ def setup_shared(tmp_path):
     clock = Clock()
     repo = ExecutionRepository(RuntimeJournal(tmp_path / "shared.db", clock=clock))
     revision = repo.import_profile(profile(strategy=Strategy()))
+    from doxagent.trade_execution.capital import CapitalLedger
+
+    CapitalLedger(repo).allocate("DU_TEST", "20000", "initial", "test")
     created = []
 
     def factory(p, **kwargs):
@@ -217,11 +231,11 @@ def test_shared_pool_counts_filled_positions_and_integer_minimum(tmp_path):
     clock, repo, revision, executor, broker = setup_shared(tmp_path)
     admit_ticker(repo, revision, "MU")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
-    assert broker.sent[0]["quantity"] == 199
-    assert broker.previews[0]["quantity"] == 199
+    assert broker.sent[0]["quantity"] == 198
+    assert broker.previews[0]["quantity"] == 198
     admit_ticker(repo, revision, "BE")
     asyncio.run(run_job(executor, repo, clock, "trade:BE:entry"))
-    assert broker.sent[1]["quantity"] == 100
+    assert broker.sent[1]["quantity"] == 99
     admit_ticker(repo, revision, "ONDS")
     asyncio.run(run_job(executor, repo, clock, "trade:ONDS:entry"))
     assert len(broker.sent) == 2
@@ -243,47 +257,47 @@ def test_shared_pool_reserves_unfilled_entry_before_second_ticker(tmp_path):
     jobs = [repo.require("jobs", f"trade:{ticker}:entry") for ticker in ("MU", "BE")]
     assert sum(Decimal(job.get("reserved_open_usd", "0")) for job in jobs) <= 30000
     assert len(broker.sent) == 2
-    assert sorted(attempt["quantity"] for attempt in broker.sent) == [99, 199]
+    assert sorted(attempt["quantity"] for attempt in broker.sent) == [99, 198]
 
 
-def test_opposite_entry_only_offsets_owned_position_when_new_opening_is_too_small(tmp_path):
+def test_same_origin_reverse_cannot_borrow_full_grant_or_net_old_group(tmp_path):
     clock, repo, revision, executor, broker = setup_shared(tmp_path)
     admit_ticker(repo, revision, "MU")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
     admit_ticker(repo, revision, "MU", direction="SHORT", identity="trade:MU:reverse")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:reverse:entry"))
-    assert broker.sent[-1]["side"] == "SELL"
-    assert broker.sent[-1]["quantity"] == 199
-    assert repo.require("lots", "trade:MU")["remaining_qty"] == 0
-    assert repo.require("executions", "trade:MU:reverse")["entry_reason"] == "OFFSET_ONLY"
-    assert repo.require("jobs", "trade:MU:reverse:entry")["reserved_open_usd"] == "0"
+    assert len(broker.sent) == 1
+    assert repo.require("lots", "trade:MU")["remaining_qty"] == 198
+    assert (
+        repo.require("executions", "trade:MU:reverse")["entry_reason"]
+        == "PORTFOLIO_CAPACITY_EXHAUSTED"
+    )
 
 
-def test_opposite_entry_counts_only_new_net_position_against_quota(tmp_path):
+def test_personal_position_notional_does_not_replace_own_budget(tmp_path):
     clock, repo, revision, executor, broker = setup_shared(tmp_path)
     broker.positions[broker.symbols["OTHER"]] = 240
-    broker.prices["OTHER"] = Decimal("100")
     admit_ticker(repo, revision, "MU")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
-    assert broker.sent[0]["quantity"] == 59
-    broker.positions.pop(broker.symbols["OTHER"])
-    admit_ticker(repo, revision, "MU", direction="SHORT", identity="trade:MU:reverse")
-    asyncio.run(run_job(executor, repo, clock, "trade:MU:reverse:entry"))
-    assert broker.sent[-1]["quantity"] == 200
-    assert repo.require("lots", "trade:MU:reverse")["remaining_qty"] == 141
-    assert repo.require("executions", "trade:MU:reverse")["entry_result"] == "FILLED"
+    assert broker.sent[0]["quantity"] == 198
+    assert broker.positions[broker.symbols["OTHER"]] == 240
 
 
 def test_rounding_and_margin_fail_without_submitting(tmp_path):
     clock, repo, revision, executor, broker = setup_shared(tmp_path)
-    broker.positions[broker.symbols["OTHER"]] = 1
-    broker.prices["OTHER"] = Decimal("24950")
+    from doxagent.trade_execution.capital import CapitalLedger
+
+    ledger = CapitalLedger(repo)
+    ledger.allocate("DU_TEST", "24000", "increase", "test initial grant")
+    admit_ticker(repo, revision, "MU")
+    asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
+    ledger.allocate("DU_TEST", "20000", "decrease", "new grants use reduced allocation")
     broker.prices["ONDS"] = Decimal("4700")
     admit_ticker(repo, revision, "ONDS")
     asyncio.run(run_job(executor, repo, clock, "trade:ONDS:entry"))
-    assert not broker.sent
-    assert repo.require("executions", "trade:ONDS")["entry_reason"] == (
-        "PORTFOLIO_CAPACITY_EXHAUSTED"
+    assert len(broker.sent) == 1
+    assert (
+        repo.require("executions", "trade:ONDS")["entry_reason"] == "PORTFOLIO_CAPACITY_EXHAUSTED"
     )
 
     margin_dir = tmp_path / "margin"
@@ -301,15 +315,16 @@ def test_loss_reduces_next_cycle_equity_after_confirmed_exit(tmp_path):
     admit_ticker(repo, revision, "MU")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
     first = repo.require("jobs", "trade:MU:entry")
-    assert first["cycle_id"] == "2026-09-08"
+    assert first["cycle_id"] == "margin:2026-09-08"
     clock.value = datetime.fromisoformat(repo.require("lots", "trade:MU")["scheduled_exit"])
+    broker.prices["MU"] = Decimal("90")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:exit"))
     assert repo.require("lots", "trade:MU")["remaining_qty"] == 0
     broker.equity = Decimal("18500")
     admit_ticker(repo, revision, "BE")
     asyncio.run(run_job(executor, repo, clock, "trade:BE:entry"))
-    assert broker.sent[-1]["quantity"] == 184
-    assert repo.require("jobs", "trade:BE:entry")["cycle_id"] == "2026-09-09"
+    assert broker.sent[-1]["quantity"] == 179
+    assert repo.require("jobs", "trade:BE:entry")["cycle_id"] == "margin:2026-09-09"
 
 
 def test_cycle_equity_is_captured_after_exit_without_waiting_for_next_intent(tmp_path):
@@ -321,15 +336,15 @@ def test_cycle_equity_is_captured_after_exit_without_waiting_for_next_intent(tmp
     asyncio.run(executor.capture_ready_cycles([revision]))
     with repo.journal.transaction() as db:
         assert not db.execute(
-            "SELECT 1 FROM te_account_cycles WHERE cycle_id='2026-09-09'"
+            "SELECT 1 FROM te_account_cycles WHERE cycle_id='margin:2026-09-09'"
         ).fetchone()
     asyncio.run(run_job(executor, repo, clock, "trade:MU:exit"))
     asyncio.run(executor.capture_ready_cycles([revision]))
     with repo.journal.transaction() as db:
         row = db.execute(
-            "SELECT equity FROM te_account_cycles WHERE cycle_id='2026-09-09'"
+            "SELECT equity FROM te_account_cycles WHERE cycle_id='margin:2026-09-09'"
         ).fetchone()
-    assert row[0] == "18500"
+    assert row[0] == "19998"
 
 
 def test_old_cycle_unfilled_entry_is_cancelled_at_exit_cutoff(tmp_path):
@@ -349,7 +364,7 @@ def test_old_cycle_unfilled_entry_is_cancelled_at_exit_cutoff(tmp_path):
 def test_new_price_matrix():
     strategy = Strategy()
     assert order_type([{"order_type": "LMT"}], "RTH", "ENTRY") == "LMT"
-    assert order_type([{"order_type": "LMT"}], "RTH", "EXIT") == "MKT"
+    assert order_type([{"order_type": "LMT"}], "RTH", "EXIT") == "LMT"
     kwargs = {
         "side": "BUY",
         "kind": "LMT",
@@ -359,7 +374,7 @@ def test_new_price_matrix():
         "remaining_notional": Decimal("20000"),
     }
     assert price_and_quantity(**kwargs, retry=False, session="RTH")["limit_price"] == "100.50"
-    assert price_and_quantity(**kwargs, retry=True, session="EXTENDED")["limit_price"] == "101.00"
+    assert price_and_quantity(**kwargs, retry=True, session="EXTENDED")["limit_price"] == "100.50"
 
 
 def test_margin_rejection_survives_later_cancel_and_does_not_retry(tmp_path):
@@ -416,9 +431,16 @@ def test_structured_event_claim_blocks_second_case(tmp_path):
     ).model_copy(update={"ticker": "MU"})
     runtime, journal = runtime_at(tmp_path, [datetime(2026, 9, 8, 14, tzinfo=ZoneInfo("UTC"))])
     try:
-        first = runtime.execute_message(_source())
+        source = _source().model_copy(
+            update={
+                "message_bus_event_time": journal.clock(),
+                "published_at": journal.clock(),
+                "collected_at": journal.clock(),
+            }
+        )
+        first = runtime.execute_message(source)
         second = runtime.execute_message(
-            _source().model_copy(update={"source_message_id": "same-event-second-story"})
+            source.model_copy(update={"source_message_id": "same-event-second-story"})
         )
         output = TradeOutputService(journal)
         assert output.record(first, trade) == "READY"
@@ -433,7 +455,10 @@ def test_schema_v1_profile_pin_remains_compatible(tmp_path):
     journal = RuntimeJournal(tmp_path / "legacy.db", clock=clock)
     ExecutionRepository(journal)
     historical = profile().model_dump(mode="json")
-    historical["strategy"].pop("capital_model")
+    historical["strategy"]["capital_model"] = "LEGACY_PER_INTENT"
+    historical["strategy"]["target_notional_usd"] = "20000"
+    historical["account_mode"] = "PAPER"
+    historical.pop("account_type")
     historical["strategy"].pop("min_entry_notional_ratio")
     revision = "ep_" + digest(historical)[:24]
     with journal.transaction() as db:
@@ -449,15 +474,17 @@ def test_schema_v1_profile_pin_remains_compatible(tmp_path):
             ),
         )
     repo = ExecutionRepository(journal)
-    assert repo.profile(revision).strategy.capital_model == "LEGACY_PER_INTENT"
+    assert repo.profile(revision).account_type == "MARGIN"
+    assert "capital_model" not in repo.profile(revision).strategy.model_dump()
     assert repo.profile_payload(revision) == historical
-    repo.admit(
-        {
-            "intent_id": "trade:historical",
-            "ticker": "MU",
-            "status": "READY",
-            "expires_at": (clock() + timedelta(hours=12)).isoformat(),
-            "trade": {"decision": "LONG"},
-            "execution_pin": {"revision": revision, "profile": historical},
-        }
-    )
+    with pytest.raises(ValueError, match="LEGACY_ENTRY_REMOVED"):
+        repo.admit(
+            {
+                "intent_id": "trade:historical",
+                "ticker": "MU",
+                "status": "READY",
+                "expires_at": (clock() + timedelta(hours=12)).isoformat(),
+                "trade": {"decision": "LONG"},
+                "execution_pin": {"revision": revision, "profile": historical},
+            }
+        )

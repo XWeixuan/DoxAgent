@@ -5,7 +5,7 @@ for (const width of [1262, 1559]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("http://127.0.0.1:5174/tests/browser/runtime-trade.html");
+    await page.goto("/tests/browser/runtime-trade.html");
     await expect(page.getByText("运行链路")).toBeVisible();
     await expect(
       page.getByRole("button", { name: /一轮判定交易/ }),

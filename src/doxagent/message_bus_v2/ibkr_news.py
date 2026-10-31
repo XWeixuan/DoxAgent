@@ -11,9 +11,16 @@ from datetime import UTC, datetime, timedelta
 from html import unescape
 from typing import Any, Protocol, cast
 
-from doxagent.message_bus_v2.schema import JsonObject, PollContext, PollResult, RawMessageInput, utc_now
+from doxagent.message_bus_v2.schema import (
+    JsonObject,
+    PollContext,
+    PollResult,
+    RawMessageInput,
+    utc_now,
+)
 from doxagent.settings import DoxAgentSettings
-from .collection_override import CollectionStopped, REQUEST_GATE
+
+from .collection_override import REQUEST_GATE, CollectionStopped
 
 _NEWS_SEND=ContextVar('ibkr_news_send',default=None)
 
@@ -57,6 +64,7 @@ class IbkrNewsGateway:
         self._stream: dict[str, list[JsonObject]] = defaultdict(list)
         self._next_request_id = 29_200
         self.on_news = None
+        self._data_source = None
         self._articles = OrderedDict()
         self._delivered = defaultdict(dict)
 
@@ -259,7 +267,29 @@ class IbkrNewsGateway:
                     self._articles.popitem(last=False)
         return result
 
-    def poll(
+    def poll(self, ticker, since, until):
+        from doxagent.ibkr_data_sources import router
+
+        def invoke(source):
+            with self._lock:
+                endpoint = (source["host"], int(source["port"]))
+                if self._data_source != endpoint:
+                    self.close()
+                    self.settings = self.settings.model_copy(
+                        update=dict(ibkr_tws_host=endpoint[0], ibkr_tws_port=endpoint[1])
+                    )
+                    self._data_source = endpoint
+            try:
+                rows, metadata = self._poll(ticker, since, until)
+                metadata["data_source"] = source["name"]
+                return rows, metadata
+            except Exception:
+                self.close()
+                raise
+
+        return router(self.settings).run("news", invoke)
+
+    def _poll(
         self, ticker: str, since: datetime, until: datetime
     ) -> tuple[list[JsonObject], JsonObject]:
         with self._lock:
@@ -285,7 +315,8 @@ class IbkrNewsGateway:
             app.reqHistoricalNews(request_id,conid,providers,
                 since.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),
                 until.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),300,[])
-        finally:_NEWS_SEND.reset(token)
+        finally:
+            _NEWS_SEND.reset(token)
         if not event.wait(self.settings.ibkr_tws_timeout_seconds):
             raise RuntimeError("IBKR historical news request timed out")
         if trace is not None:

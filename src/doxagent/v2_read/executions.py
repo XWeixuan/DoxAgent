@@ -140,6 +140,8 @@ class ExecutionProjector:
                 "family": row["family"],
                 "correction": row["correction"],
                 "leg": job["leg"],
+                "role": job.get("role", "MAIN"),
+                "traded_ticker": job.get("traded_ticker", job["ticker"]),
             }
             fills[record["id"]] = record["data"]
         if fee:
@@ -155,6 +157,8 @@ class ExecutionProjector:
                     "order_attempt_id": value["id"],
                     "execution_id": identity,
                     "leg": job["leg"],
+                    "role": job.get("role", "MAIN"),
+                    "traded_ticker": job.get("traded_ticker", job["ticker"]),
                     "side": value["side"],
                     "order_type": value["order_type"],
                     "quantity": str(value["quantity"]),
@@ -204,6 +208,8 @@ class ExecutionProjector:
                     "order_attempt_id": fill["attempt_id"],
                     "correction_revision": fill["correction"],
                     "leg": fill["leg"],
+                    "role": fill.get("role", "MAIN"),
+                    "traded_ticker": fill.get("traded_ticker", ticker),
                     "side": fill["side"],
                     "executed_at": instant(datetime.fromisoformat(fill["time"])),
                     "quantity": str(fill["quantity"]),
@@ -222,7 +228,7 @@ class ExecutionProjector:
                 }
             )
         positive = [f for f in effective.values() if Decimal(f["quantity"]) > 0]
-        entry = [f for f in positive if f["leg"] == "ENTRY"]
+        entry = [f for f in positive if f["leg"] == "ENTRY" and f.get("role", "MAIN") == "MAIN"]
         pin = intent.get("execution_pin") or {}
         environment = (pin.get("profile") or {}).get("environment")
         first_fill = min((f["time"] for f in entry), default=None)
@@ -237,6 +243,32 @@ class ExecutionProjector:
             with_execution_state(
                 {
                     "exit_strategy": execution.get("exit_strategy"),
+                    **(
+                        {
+                            "execution_group": dict(
+                                state=execution.get("group_state", "OPENING"),
+                                account_type=execution["account_type"],
+                                budget_usd=execution.get("budget_usd"),
+                                main_asset=execution["legs"][0]["traded_ticker"]
+                                if execution.get("legs")
+                                else ticker,
+                                main_side=execution["legs"][0]["side"]
+                                if execution.get("legs")
+                                else ("BUY" if intent["trade"]["decision"] == "LONG" else "SELL"),
+                                main_quantity=execution.get("leg_quantities", {}).get("MAIN", "0"),
+                                hedge_asset=execution["legs"][1]["traded_ticker"]
+                                if len(execution.get("legs", [])) > 1
+                                else None,
+                                hedge_quantity=execution.get("leg_quantities", {}).get(
+                                    "HEDGE", "0"
+                                ),
+                                hedge_result=execution.get("hedge_status"),
+                                hedge_reason=execution.get("hedge_entry_reason"),
+                            )
+                        }
+                        if execution.get("ownership_version") == 2 and execution.get("legs")
+                        else {}
+                    ),
                     "execution_id": identity,
                     "intent_id": intent["intent_id"],
                     "case_id": case_id,

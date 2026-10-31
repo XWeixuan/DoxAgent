@@ -48,7 +48,13 @@ def mode_binding_in(db: sqlite3.Connection, ticker: str, mode: str) -> dict[str,
             "SELECT payload FROM v2_mode_binding WHERE ticker=? AND mode=?",
             (GLOBAL_BINDING_TICKER, mode),
         ).fetchone()
-    return json.loads(row[0]) if row else None
+    if row:
+        return json.loads(row[0])
+    from doxagent.trade_execution.configuration import account_pin
+
+    if mode in {"PAPER_TRADING", "LIVE_TRADING"}:
+        return account_pin(db, "PAPER" if mode == "PAPER_TRADING" else "LIVE")
+    return None
 
 
 def output_permission(
@@ -56,6 +62,11 @@ def output_permission(
 ) -> tuple[str | None, dict[str, Any] | None]:
     state = control_in(db, ticker)
     if state is None:
+        active = db.execute(
+            "SELECT payload FROM runtime_values WHERE namespace='trade_execution' AND key='active'"
+        ).fetchone()
+        if active and json.loads(active[0]).get("profile", {}).get("environment") == "LIVE":
+            return "MODE_UNAVAILABLE", None
         return None, None
     admission = db.execute(
         "SELECT payload FROM v2_analysis_admission WHERE identity=?", (case_id,)
@@ -65,10 +76,16 @@ def output_permission(
         return "ANALYSIS_ONLY", None
     if not state["new_intent_allowed"] or origin.get("removal_epoch", 0) != state["removal_epoch"]:
         return "SUPPRESSED_BY_CONTROL", None
-    binding = mode_binding_in(db, ticker, state["mode"])
-    if binding is None:
-        return "MODE_UNAVAILABLE", None
-    return None, binding
+    from doxagent.trade_execution.configuration import active_in
+
+    active = active_in(db, ticker)
+    if active:
+        return None, {
+            **active["execution_pin"],
+            "trading_config": active["configuration"],
+            "configuration_revision": active["applied_revision"],
+        }
+    return "EXECUTION_CONFIGURATION_NOT_APPLIED", None
 
 
 class ControlRepository:
@@ -156,7 +173,8 @@ class ControlRepository:
         ticker = ticker.strip().upper()
         if ticker != GLOBAL_BINDING_TICKER and not re.fullmatch(r"[A-Z][A-Z0-9.\-]{0,14}", ticker):
             raise ControlError("VALIDATION_FAILED", 422)
-        profile = ExecutionRepository(self.journal).profile(revision)
+        repository = ExecutionRepository(self.journal)
+        profile = repository.profile(revision)
         if mode not in {"PAPER_TRADING", "LIVE_TRADING"}:
             raise ControlError("VALIDATION_FAILED", 422)
         if profile.environment != ("PAPER" if mode == "PAPER_TRADING" else "LIVE"):
@@ -185,7 +203,7 @@ class ControlRepository:
                 (
                     ticker,
                     mode,
-                    encode({"revision": revision, "profile": profile.model_dump(mode="json")}),
+                    encode({"revision": revision, "profile": repository.profile_payload(revision)}),
                 ),
             )
 
@@ -246,6 +264,30 @@ class ControlRepository:
             if kind in {"START", "RESTART"} and mode != "MESSAGE_MONITORING":
                 if mode_binding_in(db, ticker, mode) is None:
                     raise ControlError("MODE_UNAVAILABLE")
+            if (
+                kind in {"START", "RESTART"}
+                and "monitor_mode" in body
+                and mode != "MESSAGE_MONITORING"
+            ):
+                from doxagent.trade_execution.capital import get, put
+                from doxagent.trade_execution.planning import TradingConfig
+
+                desired = get(db, "execution_config_desired", ticker)
+                config = (desired or {}).get(
+                    "configuration", TradingConfig().model_dump(mode="json")
+                )
+                config["environment"] = "LIVE" if mode == "LIVE_TRADING" else "PAPER"
+                put(
+                    db,
+                    "execution_config_desired",
+                    ticker,
+                    dict(
+                        revision=(desired or {}).get("revision", 0) + 1,
+                        configuration=config,
+                        actor=actor,
+                        saved_at=now,
+                    ),
+                )
             if state and state["removed"] and kind != "START":
                 raise ControlError("TICKER_REMOVED")
             if state and kind in {"PAUSE", "RESTART"} and state.get("initialization_incomplete"):

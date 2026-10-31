@@ -121,8 +121,22 @@ class MarketProvider:
         self.failed = False
         self.next_connect_at = 0.0
         self.connect_failures = 0
+        self._read_sources = {}
 
     def history(self, ticker, bar, duration, venue="SMART", end=None):
+        from doxagent.ibkr_data_sources import router
+
+        def invoke(source):
+            with self.lock:
+                if source["name"] not in self._read_sources:
+                    settings = self.settings.model_copy(update=dict(ibkr_tws_host=source["host"],ibkr_tws_port=int(source["port"])))
+                    self._read_sources[source["name"]] = MarketProvider(settings)
+                provider = self._read_sources[source["name"]]
+            return provider._history(ticker,bar,duration,venue,end)
+
+        return router(self.settings).run("history", invoke)
+
+    def _history(self, ticker, bar, duration, venue="SMART", end=None):
         from dataclasses import replace
 
         from doxagent.tools.providers.ibkr_tws import IbkrTwsConfig, IbkrTwsSession
@@ -188,6 +202,8 @@ class MarketProvider:
                     self.session = None
 
     def close(self):
+        for provider in self._read_sources.values():
+            provider.close()
         with self.lock:
             if self.session:
                 self.session.close()

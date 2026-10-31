@@ -107,7 +107,7 @@ class DomainProjectors:
     def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         if event.get("serving_skipped"):
             return [], []
-        from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
+        from doxagent.message_bus_v2.collection_plane.observability import RETIRED_TABLES, enabled
         if enabled() and event['table_name'] in RETIRED_TABLES:
             return [],[]
         table, row, value = event["table_name"], event["row"], native(event)
@@ -621,6 +621,9 @@ class DomainProjectors:
                 "SELECTED_CONDITION_INVALID",
                 "POLICY_MIGRATION_UNRESOLVED",
                 "EXPIRED_SEMANTIC_DAY",
+                "RUNTIME_DELAY_EXCEEDED",
+                "BANNED_TRADE_DAY",
+                "EXECUTION_CONFIGURATION_NOT_APPLIED",
             }:
                 metrics.append(
                     {

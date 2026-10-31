@@ -16,8 +16,8 @@ from tests.test_persistent_runtime_v2 import _AnyPolicies, _AnyResponses, _FakeK
 
 class _PolicyHitW3:
     def run(self, *, case, w3_case, slot):
+        from doxagent.persistent_runtime_v2.schema import W3ExpertTradeResult, W3PolicyResult
         from tests.test_persistent_runtime_w3 import _w3_result
-        from doxagent.persistent_runtime_v2.schema import W3PolicyResult, W3ExpertTradeResult
 
         result = _w3_result().model_copy(
             update={
@@ -62,7 +62,7 @@ def test_trade_output_is_atomic_idempotent_and_expires_after_midnight(tmp_path):
         assert runtime.repository.list_consumed_policy_revisions("MU") == set()
         assert runtime.repository.list_provisional("MU", case.trading_date)
         second = runtime.execute_message(
-            _source().model_copy(update={"source_message_id": "second"})
+            _source().model_copy(update={"source_message_id": "second","message_bus_event_time":now[0]})
         )
         runtime.process_pending_effects()
         assert len(runtime.repository.list_daily_trades("MU", second.trading_date)) == 1

@@ -54,6 +54,14 @@ def parser() -> Any:
         cmd.add_argument("--profile", required=True, help="Immutable profile revision")
         if name == "activate-profile":
             cmd.add_argument("--reason", required=True)
+    for name in ("allocate-capital", "adjust-capital"):
+        cmd = sub.add_parser(name)
+        cmd.add_argument("--profile", required=True)
+        cmd.add_argument("--amount", required=True)
+        cmd.add_argument("--id", required=True)
+        cmd.add_argument("--reason", required=True)
+        if name == "adjust-capital":
+            cmd.add_argument("--effective-at", required=True)
     cmd = sub.add_parser("probe")
     cmd.add_argument("--profile", required=True)
     cmd.add_argument("--symbol", default="MU")
@@ -220,18 +228,27 @@ def main() -> Any:
         profile = ExecutionProfile(
             profile_id=args.profile_id,
             environment=args.environment,
-            account_mode="PAPER" if args.environment == "PAPER" else "LIVE_CASH",
+            account_type="MARGIN" if args.environment == "PAPER" else "CASH",
             host=args.host,
             port=args.port,
             client_id=args.client_id,
             expected_account_id=accounts[0],
-            short_enabled=args.environment == "PAPER",
+            short_enabled=True,
         )
         output = {
             "revision": repo.import_profile(profile),
             "account": accounts[0],
             "activated": False,
         }
+    elif args.command in {"allocate-capital", "adjust-capital"}:
+        from .capital import CapitalLedger
+
+        account = repo.profile(args.profile).expected_account_id
+        ledger = CapitalLedger(repo)
+        if args.command == "allocate-capital":
+            output = ledger.allocate(account, args.amount, args.id, args.reason)
+        else:
+            output = ledger.adjust(account, args.amount, args.id, args.reason, args.effective_at)
     elif args.command == "import-profile":
         profile = ExecutionProfile.model_validate_json(Path(args.file).read_text(encoding="utf-8"))
         output = {"revision": repo.import_profile(profile)}

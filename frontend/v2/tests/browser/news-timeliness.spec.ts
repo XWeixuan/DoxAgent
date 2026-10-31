@@ -7,7 +7,7 @@ for (const width of [1262, 1559]) {
     page.on("pageerror", (error) => errors.push(error.message));
     await page.clock.install();
     await page.setViewportSize({ width, height: 1000 });
-    await page.goto("http://127.0.0.1:5181/tests/browser/news-timeliness.html");
+    await page.goto("/tests/browser/news-timeliness.html");
     await expect(page.getByText("已绑定 32")).toBeVisible();
     await expect(page.getByText("84.0%")).toBeVisible();
     await expect(page.getByText("85.0%")).toBeVisible();

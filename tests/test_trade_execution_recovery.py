@@ -97,13 +97,15 @@ with WriterLock(Path(sys.argv[1])) as owner:
     clock.advance(10)
     with WriterLock(repo.journal.path):
         asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert len(broker.sent) == 1 and broker.sent[0]["order_type"] == "MKT"
+    assert len(broker.sent) == 2 and all(a["order_type"] == "LMT" for a in broker.sent)
+    assert len(repo.attempts("trade:A:entry")) == 3
     assert broker.sent[0]["order_id"] != attempt["order_id"]
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 200
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 100
 
 
 def test_unknown_submit_is_not_retried_after_restart(setup):
     clock, repo, revision, executor, broker = setup
+    broker.order_event = lambda *args: None
     admit(repo, revision)
     broker.mode = "unfilled"
     asyncio.run(executor.step("trade:A:entry"))
@@ -203,14 +205,33 @@ def test_runtime_pin_is_frozen_at_trade_output_and_intake_is_once(tmp_path):
     revision = repo.import_profile(profile())
     repo.activate(revision, "paper")
     try:
-        runtime.execute_message(_source())
+        from doxagent.trade_execution.capital import CapitalLedger
+        from doxagent.trade_execution.configuration import ExecutionConfiguration
+        from doxagent.v2_control.repository import ControlRepository
+
+        control = ControlRepository(journal)
+        control.migrate()
+        control.bind("*", "PAPER_TRADING", revision)
+        CapitalLedger(repo).allocate("DU_TEST", "20000", "initial", "test")
+        from tests.v2_backend.test_control import start
+
+        start(control, "PAPER_TRADING")
+        ExecutionConfiguration(journal).apply(repo)
+        recent = _source().model_copy(
+            update={
+                "message_bus_event_time": journal.clock(),
+                "published_at": journal.clock(),
+                "collected_at": journal.clock(),
+            }
+        )
+        runtime.execute_message(recent)
         runtime.process_pending_effects()
         intent = journal.values("trade_intents")[0]
         assert intent["execution_pin"]["revision"] == revision
         live = ExecutionProfile(
             profile_id="live",
             environment="LIVE",
-            account_mode="LIVE_CASH",
+            account_type="CASH",
             port=7496,
             client_id=81,
             expected_account_id="U_TEST",

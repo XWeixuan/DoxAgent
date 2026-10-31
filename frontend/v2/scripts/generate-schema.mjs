@@ -81,6 +81,9 @@ if (existsSync(backendPath)) {
     walk(definitions[name]);
   };
   for (const name of [
+    "TradingConfiguration",
+    "TradingCapital",
+    "OverviewStatus",
     "CostReport",
     "CostReportTotals",
     "CostReportRow",
@@ -96,8 +99,11 @@ if (existsSync(backendPath)) {
     "BusRoundCoverage",
     "MessageSummary",
     "ExecutionSummary",
+    "OrderSummary",
+    "Fill",
     "ModelAttempt",
     "CaseDetail",
+    "CaseSummary",
   ])
     add(name, true);
   backend.source_sha256 = createHash("sha256").update(contract).digest("hex");

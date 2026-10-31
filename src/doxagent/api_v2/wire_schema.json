@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "53e35f2c7f906176091d0335347ba86a8005bb6c1452da7339800cfa17e611b1",
+  "source_sha256": "27f06db45e31aef96e2b845dda4e57c1ffa3ffd833b3b2c5a749efbee232b2d2",
   "$defs": {
     "Id": {
       "type": "string"
@@ -1792,23 +1792,36 @@
       "type": "object",
       "properties": {
         "ib_gateway_status": {
-          "anyOf": [
-            {
-              "const": "CONNECTED"
-            },
-            {
-              "const": "DISCONNECTED"
-            }
+          "type": "string",
+          "enum": [
+            "CONNECTED",
+            "DISCONNECTED"
+          ]
+        },
+        "ib_gateway_live_status": {
+          "type": "string",
+          "enum": [
+            "CONNECTED",
+            "DISCONNECTED",
+            "NOT_CONFIGURED"
+          ]
+        },
+        "ib_gateway_paper_status": {
+          "type": "string",
+          "enum": [
+            "CONNECTED",
+            "DISCONNECTED",
+            "NOT_CONFIGURED"
           ]
         },
         "clock": {
           "$ref": "#/$defs/ClockContext"
         },
         "normal_tickers": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
+          "$ref": "#/$defs/Value%3CCount%3E"
         },
         "blocked_tickers": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
+          "$ref": "#/$defs/Value%3CCount%3E"
         }
       },
       "required": [
@@ -7777,24 +7790,41 @@
     "CaseSummary": {
       "type": "object",
       "properties": {
+        "w3_decision": {
+          "$ref": "#/$defs/Value%3C(%22LONG%22%7C%22SHORT%22%7C%22NO_TRADE%22)%3E"
+        },
+        "final_novelty_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "W1",
+            "W3_OPERATIONS",
+            null
+          ]
+        },
+        "final_policy_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "W2",
+            "LEGACY_W3",
+            null
+          ]
+        },
         "source_name": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "w3_operations_status": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "first_round_tags": {
@@ -7813,29 +7843,19 @@
           "$ref": "#/$defs/Day"
         },
         "runtime_mode": {
-          "anyOf": [
-            {
-              "const": "REALTIME"
-            },
-            {
-              "const": "CLOSED"
-            }
+          "type": "string",
+          "enum": [
+            "REALTIME",
+            "CLOSED"
           ]
         },
         "first_round_shape": {
-          "anyOf": [
-            {
-              "const": "PARALLEL"
-            },
-            {
-              "const": "SEQUENTIAL"
-            },
-            {
-              "const": "W1_ONLY"
-            },
-            {
-              "const": "UNDETERMINED"
-            }
+          "type": "string",
+          "enum": [
+            "PARALLEL",
+            "SEQUENTIAL",
+            "W1_ONLY",
+            "UNDETERMINED"
           ]
         },
         "status": {
@@ -7845,7 +7865,7 @@
           "$ref": "#/$defs/TechnicalStatus"
         },
         "title": {
-          "$ref": "#/$defs/Value__8f3d8a04fb57"
+          "$ref": "#/$defs/Value%3Cstring%3E"
         },
         "source": {
           "$ref": "#/$defs/SourceLabel"
@@ -7854,10 +7874,10 @@
           "$ref": "#/$defs/Instant"
         },
         "completed_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "duration_seconds": {
-          "$ref": "#/$defs/Value__428f46b7789d"
+          "$ref": "#/$defs/Value%3Cnumber%3E"
         },
         "initial_route": {
           "anyOf": [
@@ -7880,32 +7900,24 @@
           ]
         },
         "w3_status": {
-          "anyOf": [
-            {
-              "const": "PENDING"
-            },
-            {
-              "const": "RUNNING"
-            },
-            {
-              "const": "RESOLVED"
-            },
-            {
-              "const": "FAILED_RETRYABLE"
-            },
-            {
-              "const": "FAILED"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "RESOLVED",
+            "FAILED_RETRYABLE",
+            "FAILED",
+            null
           ]
         },
         "final_novelty": {
-          "$ref": "#/$defs/Value__b99c051953a2"
+          "$ref": "#/$defs/Value%3C(%22NEW%22%7C%22OLD%22)%3E"
         },
         "final_policy_hit": {
-          "$ref": "#/$defs/Value__8840cdd488e7"
+          "$ref": "#/$defs/Value%3Cboolean%3E"
         },
         "results": {
           "type": "array",
@@ -7940,49 +7952,25 @@
           "type": "boolean"
         },
         "trade_disposition": {
-          "anyOf": [
-            {
-              "const": "NOT_EVALUATED"
-            },
-            {
-              "const": "ANALYSIS_ONLY"
-            },
-            {
-              "const": "SUPPRESSED_BY_CONTROL"
-            },
-            {
-              "const": "MODE_UNAVAILABLE"
-            },
-            {
-              "const": "CANDIDATE"
-            },
-            {
-              "const": "READY"
-            },
-            {
-              "const": "DUPLICATE_POLICY"
-            },
-            {
-              "const": "DUPLICATE_REALTIME_OUTPUT"
-            },
-            {
-              "const": "DUPLICATE_EVENT_TRADE"
-            },
-            {
-              "const": "EXPIRED_SEMANTIC_DAY"
-            },
-            {
-              "const": "SELECTED_CONDITION_INVALID"
-            },
-            {
-              "const": "POLICY_MIGRATION_UNRESOLVED"
-            },
-            {
-              "const": "EXECUTION_ACCEPTED"
-            },
-            {
-              "const": "OUTPUT_RECORDED"
-            }
+          "type": "string",
+          "enum": [
+            "RUNTIME_DELAY_EXCEEDED",
+            "BANNED_TRADE_DAY",
+            "EXECUTION_CONFIGURATION_NOT_APPLIED",
+            "NOT_EVALUATED",
+            "ANALYSIS_ONLY",
+            "SUPPRESSED_BY_CONTROL",
+            "MODE_UNAVAILABLE",
+            "CANDIDATE",
+            "READY",
+            "DUPLICATE_POLICY",
+            "DUPLICATE_REALTIME_OUTPUT",
+            "DUPLICATE_EVENT_TRADE",
+            "EXPIRED_SEMANTIC_DAY",
+            "SELECTED_CONDITION_INVALID",
+            "POLICY_MIGRATION_UNRESOLVED",
+            "EXECUTION_ACCEPTED",
+            "OUTPUT_RECORDED"
           ]
         },
         "stream_item_id": {
@@ -7990,23 +7978,6 @@
         },
         "member_count": {
           "$ref": "#/$defs/Count"
-        },
-        "w3_decision": {
-          "$ref": "#/$defs/Value_W3Direction"
-        },
-        "final_novelty_source": {
-          "enum": [
-            "W1",
-            "W3_OPERATIONS",
-            null
-          ]
-        },
-        "final_policy_source": {
-          "enum": [
-            "W2",
-            "LEGACY_W3",
-            null
-          ]
         }
       },
       "required": [
@@ -10068,6 +10039,9 @@
     "ExecutionSummary": {
       "type": "object",
       "properties": {
+        "execution_group": {
+          "$ref": "#/$defs/ExecutionGroupSummary"
+        },
         "execution_id": {
           "$ref": "#/$defs/Id"
         },
@@ -10254,6 +10228,16 @@
     "OrderSummary": {
       "type": "object",
       "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "MAIN",
+            "HEDGE"
+          ]
+        },
+        "traded_ticker": {
+          "type": "string"
+        },
         "order_attempt_id": {
           "$ref": "#/$defs/Id"
         },
@@ -10261,33 +10245,24 @@
           "$ref": "#/$defs/Id"
         },
         "leg": {
-          "anyOf": [
-            {
-              "const": "ENTRY"
-            },
-            {
-              "const": "EXIT"
-            }
+          "type": "string",
+          "enum": [
+            "ENTRY",
+            "EXIT"
           ]
         },
         "side": {
-          "anyOf": [
-            {
-              "const": "BUY"
-            },
-            {
-              "const": "SELL"
-            }
+          "type": "string",
+          "enum": [
+            "BUY",
+            "SELL"
           ]
         },
         "order_type": {
-          "anyOf": [
-            {
-              "const": "LMT"
-            },
-            {
-              "const": "MKT"
-            }
+          "type": "string",
+          "enum": [
+            "LMT",
+            "MKT"
           ]
         },
         "quantity": {
@@ -10307,20 +10282,16 @@
           "type": "string"
         },
         "broker_status": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "sent_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "settled_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         }
       },
       "required": [
@@ -10341,6 +10312,16 @@
     "Fill": {
       "type": "object",
       "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "MAIN",
+            "HEDGE"
+          ]
+        },
+        "traded_ticker": {
+          "type": "string"
+        },
         "fill_id": {
           "$ref": "#/$defs/Id"
         },
@@ -10354,23 +10335,17 @@
           "$ref": "#/$defs/Count"
         },
         "leg": {
-          "anyOf": [
-            {
-              "const": "ENTRY"
-            },
-            {
-              "const": "EXIT"
-            }
+          "type": "string",
+          "enum": [
+            "ENTRY",
+            "EXIT"
           ]
         },
         "side": {
-          "anyOf": [
-            {
-              "const": "BUY"
-            },
-            {
-              "const": "SELL"
-            }
+          "type": "string",
+          "enum": [
+            "BUY",
+            "SELL"
           ]
         },
         "executed_at": {
@@ -10383,7 +10358,7 @@
           "$ref": "#/$defs/DecimalString"
         },
         "commission_usd": {
-          "$ref": "#/$defs/Value__7760d6d54550"
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
         }
       },
       "required": [
@@ -28311,6 +28286,575 @@
         "e2e_samples"
       ],
       "additionalProperties": false
+    },
+    "TradingConfiguration": {
+      "type": "object",
+      "properties": {
+        "ticker": {
+          "type": "string"
+        },
+        "revision": {
+          "$ref": "#/$defs/Count"
+        },
+        "configuration": {
+          "$ref": "#/$defs/TradingSettings"
+        },
+        "active": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "configuration": {
+                  "$ref": "#/$defs/TradingSettings"
+                },
+                "ticker_revision": {
+                  "$ref": "#/$defs/Count"
+                },
+                "account_revision": {
+                  "$ref": "#/$defs/Id"
+                },
+                "applied_revision": {
+                  "$ref": "#/$defs/Id"
+                },
+                "plan_schema_version": {
+                  "$ref": "#/$defs/Count"
+                },
+                "applied_at": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "configuration",
+                "ticker_revision",
+                "account_revision",
+                "applied_revision",
+                "plan_schema_version",
+                "applied_at"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "account_type": {
+                "type": "string",
+                "enum": [
+                  "CASH",
+                  "MARGIN"
+                ]
+              },
+              "revision": {
+                "$ref": "#/$defs/Id"
+              }
+            },
+            "required": [
+              "account_type",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "revision": {
+                  "$ref": "#/$defs/Count"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "revision",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ticker",
+        "revision",
+        "configuration",
+        "active",
+        "accounts",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "TradingSettings": {
+      "type": "object",
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": [
+            "PAPER",
+            "LIVE"
+          ]
+        },
+        "cash_short_substitute_enabled": {
+          "type": "boolean"
+        },
+        "inverse_single_stock_etf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hedge_enabled": {
+          "type": "boolean"
+        },
+        "hedge_ratio": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "margin_index_etf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cash_positive_index_etf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cash_inverse_index_etf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trailing_profit_enabled": {
+          "type": "boolean"
+        },
+        "banned_semantic_dates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "environment",
+        "cash_short_substitute_enabled",
+        "inverse_single_stock_etf",
+        "hedge_enabled",
+        "hedge_ratio",
+        "margin_index_etf",
+        "cash_positive_index_etf",
+        "cash_inverse_index_etf",
+        "trailing_profit_enabled",
+        "banned_semantic_dates"
+      ],
+      "additionalProperties": false
+    },
+    "TradingCapital": {
+      "type": "object",
+      "properties": {
+        "accounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "enum": [
+                  "LIVE",
+                  "PAPER"
+                ]
+              },
+              "account_type": {
+                "type": "string",
+                "enum": [
+                  "CASH",
+                  "MARGIN"
+                ]
+              },
+              "desired": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "identity": {
+                        "$ref": "#/$defs/Id"
+                      },
+                      "amount": {
+                        "$ref": "#/$defs/DecimalString"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "actor": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "identity",
+                      "amount",
+                      "reason",
+                      "actor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "book": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "allocated": {
+                        "$ref": "#/$defs/DecimalString"
+                      },
+                      "realized_net_pnl": {
+                        "$ref": "#/$defs/DecimalString"
+                      },
+                      "trading_equity": {
+                        "$ref": "#/$defs/DecimalString"
+                      },
+                      "unrealized_pnl": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/$defs/DecimalString"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "net_value": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/$defs/DecimalString"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "occupied_budget": {
+                        "$ref": "#/$defs/DecimalString"
+                      },
+                      "provisional": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "allocated",
+                      "realized_net_pnl",
+                      "trading_equity",
+                      "unrealized_pnl",
+                      "net_value",
+                      "occupied_budget",
+                      "provisional"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "applied": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "identity": {
+                        "$ref": "#/$defs/Id"
+                      },
+                      "amount": {
+                        "$ref": "#/$defs/DecimalString"
+                      },
+                      "applied_at": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "identity",
+                      "amount",
+                      "applied_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "environment",
+              "account_type",
+              "desired",
+              "book",
+              "applied"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "accounts"
+      ],
+      "additionalProperties": false
+    },
+    "ExecutionGroupSummary": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string"
+        },
+        "account_type": {
+          "type": "string",
+          "enum": [
+            "CASH",
+            "MARGIN"
+          ]
+        },
+        "budget_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecimalString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "main_asset": {
+          "type": "string"
+        },
+        "main_side": {
+          "type": "string",
+          "enum": [
+            "BUY",
+            "SELL"
+          ]
+        },
+        "main_quantity": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "hedge_asset": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hedge_quantity": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "hedge_result": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hedge_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "account_type",
+        "budget_usd",
+        "main_asset",
+        "main_side",
+        "main_quantity",
+        "hedge_asset",
+        "hedge_quantity",
+        "hedge_result",
+        "hedge_reason"
+      ],
+      "additionalProperties": false
+    },
+    "Value<(\"LONG\"|\"SHORT\"|\"NO_TRADE\")>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "type": "string",
+              "enum": [
+                "LONG",
+                "SHORT",
+                "NO_TRADE"
+              ]
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Value<(\"NEW\"|\"OLD\")>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "type": "string",
+              "enum": [
+                "NEW",
+                "OLD"
+              ]
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Value<boolean>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

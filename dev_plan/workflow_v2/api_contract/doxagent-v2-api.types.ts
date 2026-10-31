@@ -195,7 +195,7 @@ export interface TickerNavigation {
   removed: false;
 }
 export interface SourceCounts { normal: Value<Count>; abnormal: Value<Count> }
-export interface OverviewStatus { ib_gateway_status?: "CONNECTED" | "DISCONNECTED"; clock: ClockContext; normal_tickers: Value<Count>; blocked_tickers: Value<Count> }
+export interface OverviewStatus { ib_gateway_status?: "CONNECTED" | "DISCONNECTED"; ib_gateway_live_status?: "CONNECTED" | "DISCONNECTED" | "NOT_CONFIGURED"; ib_gateway_paper_status?: "CONNECTED" | "DISCONNECTED" | "NOT_CONFIGURED"; clock: ClockContext; normal_tickers: Value<Count>; blocked_tickers: Value<Count> }
 export interface OverviewMetrics {
   policy_hits: Metric;
   trade_executed: Metric;
@@ -734,7 +734,7 @@ export interface CaseSummary {
   results: ResultKind[];
   trade: { intent_count: Count; state: CaseTradeState; reason_codes: string[] };
   result_settled: boolean;
-  trade_disposition: "NOT_EVALUATED" | "ANALYSIS_ONLY" | "SUPPRESSED_BY_CONTROL" | "MODE_UNAVAILABLE" | "CANDIDATE" | "READY" | "DUPLICATE_POLICY" | "DUPLICATE_REALTIME_OUTPUT" | "DUPLICATE_EVENT_TRADE" | "EXPIRED_SEMANTIC_DAY" | "SELECTED_CONDITION_INVALID" | "POLICY_MIGRATION_UNRESOLVED" | "EXECUTION_ACCEPTED" | "OUTPUT_RECORDED";
+  trade_disposition: "RUNTIME_DELAY_EXCEEDED" | "BANNED_TRADE_DAY" | "EXECUTION_CONFIGURATION_NOT_APPLIED" | "NOT_EVALUATED" | "ANALYSIS_ONLY" | "SUPPRESSED_BY_CONTROL" | "MODE_UNAVAILABLE" | "CANDIDATE" | "READY" | "DUPLICATE_POLICY" | "DUPLICATE_REALTIME_OUTPUT" | "DUPLICATE_EVENT_TRADE" | "EXPIRED_SEMANTIC_DAY" | "SELECTED_CONDITION_INVALID" | "POLICY_MIGRATION_UNRESOLVED" | "EXECUTION_ACCEPTED" | "OUTPUT_RECORDED";
   stream_item_id: Id; member_count: Count;
 }
 export type NodeId = "SOURCE" | "W1" | "W2" | "W3" | "ARCHIVE" | "EVENT_DISCOVERY" | "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
@@ -875,7 +875,13 @@ export interface ExitStrategySummary {
   remaining_quantity: Count; group_status: "SINGLE_LEG" | "EXPLICIT_GROUP";
   valid_observations: Count; invalid_observations: Count; confirmation: (boolean | null)[];
 }
+export interface ExecutionGroupSummary {
+ state: string; account_type: "CASH" | "MARGIN"; budget_usd: DecimalString | null;
+ main_asset: string; main_side: "BUY" | "SELL"; main_quantity: DecimalString;
+ hedge_asset: string | null; hedge_quantity: DecimalString; hedge_result: string | null; hedge_reason: string | null;
+}
 export interface ExecutionSummary {
+  execution_group?: ExecutionGroupSummary;
   execution_id: Id; intent_id: Id; case_id: Id;
   environment: Value<"PAPER" | "LIVE">; profile_revision: Value<Id>;
   direction: "LONG" | "SHORT";
@@ -889,12 +895,14 @@ export interface ExecutionSummary {
   filled_quantity: Value<DecimalString>; filled_notional_usd: Value<DecimalString>;
 }
 export interface OrderSummary {
+  role?: "MAIN" | "HEDGE"; traded_ticker?: string;
   order_attempt_id: Id; execution_id: Id; leg: "ENTRY" | "EXIT";
   side: "BUY" | "SELL"; order_type: "LMT" | "MKT";
   quantity: DecimalString; limit_price: DecimalString | null;
   state: string; broker_status: string | null; sent_at: Value<Instant>; settled_at: Value<Instant>;
 }
 export interface Fill {
+  role?: "MAIN" | "HEDGE"; traded_ticker?: string;
   fill_id: Id; execution_id: Id; order_attempt_id: Id; correction_revision: Count;
   leg: "ENTRY" | "EXIT"; side: "BUY" | "SELL";
   executed_at: Instant; quantity: DecimalString; price: DecimalString;
@@ -998,4 +1006,32 @@ export interface CostReport {
   rows: CostReportRow[]; row_count: Count; offset: Count; limit: Count;
   filter_choices: { tickers: string[]; nodes: string[]; models: {provider: string; model_id: string}[] };
   source_coverage: Coverage; coverage: Coverage;
+}
+
+export interface TradingSettings {
+ environment: "PAPER" | "LIVE";
+ cash_short_substitute_enabled: boolean;
+ inverse_single_stock_etf: string | null;
+ hedge_enabled: boolean;
+ hedge_ratio: DecimalString;
+ margin_index_etf: string | null;
+ cash_positive_index_etf: string | null;
+ cash_inverse_index_etf: string | null;
+ trailing_profit_enabled: boolean;
+ banned_semantic_dates: string[];
+}
+export interface TradingConfiguration {
+ ticker: string;
+ revision: Count;
+ configuration: TradingSettings;
+ active: { configuration: TradingSettings; ticker_revision: Count; account_revision: Id; applied_revision: Id; plan_schema_version: Count; applied_at: string } | null;
+ accounts: { [environment: string]: { account_type: "CASH" | "MARGIN"; revision: Id } };
+ error: { revision: Count; error: string } | null;
+}
+export interface TradingCapital {
+ accounts: { environment: "LIVE" | "PAPER"; account_type: "CASH" | "MARGIN";
+ desired: { identity: Id; amount: DecimalString; reason: string; actor: string } | null;
+ book: { allocated: DecimalString; realized_net_pnl: DecimalString; trading_equity: DecimalString; unrealized_pnl: DecimalString | null; net_value: DecimalString | null; occupied_budget: DecimalString; provisional: boolean } | null;
+ applied: { identity: Id; amount: DecimalString; applied_at: string } | null;
+ }[];
 }

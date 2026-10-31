@@ -20,7 +20,8 @@ def project(store, event, records, *, _offset_reproject=True):
     record = records[0]
     if table == "te_allocations":
         lot_id = value["lot_id"]
-        execution = adapter.find("te_executions", lot_id)
+        job = adapter.find("te_jobs", lot_id + ":entry")
+        execution = adapter.find("te_executions", job["execution_id"])
         ticker = execution["ticker"]
         record.update(
             ticker=ticker,
@@ -29,23 +30,32 @@ def project(store, event, records, *, _offset_reproject=True):
         )
     elif table == "te_lots":
         lot_id = value["id"]
-        execution = adapter.find("te_executions", lot_id)
+        execution = adapter.find("te_executions", value.get("group_id", lot_id))
         ticker = execution["ticker"]
         record.update(ticker=ticker, parent=lot_id, id=lot_id)
     else:
         if table == "te_events" and event["row"]["kind"] != "fees":
             return [], []
-        lot_id, ticker = record.get("parent"), record["ticker"]
-        if not lot_id:
-            return [], []
-        execution = adapter.find("te_executions", lot_id)
+        fill = (
+            value
+            if table == "te_fills"
+            else adapter.find("te_fills", opaque(event["row"]["account"], value["exec_id"]))
+        )
+        attempt = adapter.find("te_attempts", fill["attempt_id"])
+        job = adapter.find("te_jobs", attempt["job_id"])
+        lot_id = (
+            job.get("leg_id", job["execution_id"]) if _offset_reproject else record.get("parent")
+        )
+        owner = adapter.find("te_jobs", lot_id + ":entry")
+        execution = adapter.find("te_executions", owner["execution_id"])
+        ticker = execution["ticker"]
     intent = execution["intent"]
     case_id = intent.get("case_id") or intent.get("trade", {}).get("case_id")
     if not case_id or not store.get("business_provenance", ticker, case_id):
         return [], []
     allocations = adapter.rows("native:te_allocations", ticker, lot_id)
-    fills = adapter.rows("native:te_fills", ticker, lot_id)
-    fees = adapter.rows("commission", ticker, lot_id)
+    fills = adapter.rows("native:te_fills", ticker, execution["id"])
+    fees = adapter.rows("commission", ticker, execution["id"])
     for pending in records:
         if pending["kind"] == "native:te_allocations":
             if pending["data"] is None:
@@ -68,6 +78,14 @@ def project(store, event, records, *, _offset_reproject=True):
             fill = adapter.find("te_fills", fill_id)
         resolved.append((fill["time"], allocation["fill_id"], allocation, fill))
     queue, observations = deque(), {}
+    sign = next(
+        (
+            1 if fill["side"] == "BUY" else -1
+            for _, _, allocation, fill in sorted(resolved)
+            if allocation["kind"] == "ENTRY"
+        ),
+        1 if intent["trade"]["decision"] == "LONG" else -1,
+    )
     environment = (intent.get("execution_pin") or {}).get("profile", {}).get("environment")
     if environment not in {"PAPER", "LIVE"}:
         return [], []
@@ -106,7 +124,7 @@ def project(store, event, records, *, _offset_reproject=True):
         if allocation["kind"] not in {"EXIT", "FIFO_OFFSET"}:
             continue
         identity = opaque(fill["account"], fill["family"], lot_id)
-        amount = (price * qty - cost) * (1 if intent["trade"]["decision"] == "LONG" else -1)
+        amount = (price * qty - cost) * sign
         amount -= entry_fee + commission * qty
         observations[identity] = {
             "amount": None if remaining or adjusted_basis or unsupported else str(amount),

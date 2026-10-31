@@ -1014,6 +1014,11 @@ function Executions({
                 <span>{e.entry_result ?? e.intake_status}</span>
               </header>
               <dl>
+                {e.execution_group && <>
+                  <dt>交易组</dt><dd>{e.execution_group.account_type} · {({OPENING:"开仓中",OPEN:"持仓中",CLOSING:"退出中",CLOSED:"已退出",EXIT_BLOCKED:"退出待核对"} as Record<string,string>)[e.execution_group.state] ?? e.execution_group.state}</dd>
+                  <dt>实际主仓</dt><dd>{e.execution_group.main_side} {e.execution_group.main_asset} · 剩余 {e.execution_group.main_quantity} 股</dd>
+                  {e.execution_group.hedge_asset && <><dt>对冲仓</dt><dd>{e.execution_group.hedge_asset} · 剩余 {e.execution_group.hedge_quantity} 股{e.execution_group.hedge_result === "HEDGE_INCOMPLETE" ? " · 对冲未完成" : ""}{e.execution_group.hedge_reason ? ` · ${e.execution_group.hedge_reason}` : ""}</dd></>}
+                </>}
                 <dt>成交数量</dt>
                 <dd>{valueText(e.filled_quantity, (v) => decimal(v, 4))}</dd>
                 <dt>成交金额</dt>

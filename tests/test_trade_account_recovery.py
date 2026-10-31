@@ -87,6 +87,7 @@ def test_busy_event_is_not_skipped_and_replay_does_not_duplicate_fill(setup, mon
     admit(repo, revision)
     asyncio.run(executor.step("trade:A:entry"))
     cursor = repo.journal.get("trade_execution", "event_cursor", 0)
+    repo.event("DU_TEST", "fill", repo.fills("trade:A:entry")[0])
     original = executor.apply_event
     monkeypatch.setattr(
         executor,

@@ -52,7 +52,7 @@ export function StartForm({
       ),
     staleTime: 10_000,
   });
-  const [mode, setMode] = useState<MonitorMode>("MESSAGE_MONITORING");
+  const [mode, setMode] = useState<MonitorMode>("PAPER_TRADING");
   const [initialization, setInitialization] =
     useState<StartTickerRequest["initialization"]>("FORCE_INITIALIZE");
   const [error, setError] = useState("");

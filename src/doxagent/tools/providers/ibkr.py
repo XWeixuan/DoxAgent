@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from datetime import UTC, date, datetime
 from typing import Any
 
+from doxagent.ibkr_data_sources import ACTIVE_DATA_SOURCE, routed_tool
 from doxagent.models import ResultStatus
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
@@ -60,6 +61,8 @@ _CLIENT_PORTAL_FIELD_NAMES = {
 }
 
 
+
+
 class _IbkrClient(BaseRealToolClient):
     source_scope = "ibkr"
     title = "IBKR TWS market data"
@@ -86,6 +89,11 @@ class _IbkrClient(BaseRealToolClient):
                 "IBKR TWS tools are disabled; set IBKR_TWS_ENABLED=true after local smoke passes."
             )
         config = IbkrTwsConfig.from_settings(self.settings)
+        source = ACTIVE_DATA_SOURCE.get()
+        if source:
+            from dataclasses import replace
+
+            config = replace(config, host=source["host"], port=int(source["port"]))
         with self._session_lock:
             session = self._session_factory(config)
             try:
@@ -154,6 +162,7 @@ class IbkrContractSearchClient(_IbkrClient):
     source_scope = "ibkr_contract_search"
     title = "IBKR TWS contract search"
 
+    @routed_tool("reference")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
@@ -181,6 +190,7 @@ class IbkrMarketSnapshotClient(_IbkrClient):
     source_scope = "ibkr_market_snapshot"
     title = "IBKR TWS market snapshot"
 
+    @routed_tool("realtime")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
@@ -217,6 +227,7 @@ class IbkrMarketHistoryClient(_IbkrClient):
     source_scope = "ibkr_market_history"
     title = "IBKR TWS market history"
 
+    @routed_tool("history")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
@@ -272,6 +283,7 @@ class IbkrTradeTapeClient(_IbkrClient):
     source_scope = "ibkr_trade_tape"
     title = "IBKR TWS trade tape"
 
+    @routed_tool("history")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
@@ -300,6 +312,7 @@ class IbkrHistoricalTicksClient(_IbkrClient):
     source_scope = "ibkr_historical_ticks"
     title = "IBKR TWS historical ticks"
 
+    @routed_tool("history")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
@@ -341,6 +354,7 @@ class IbkrShortabilitySnapshotClient(_IbkrClient):
     source_scope = "ibkr_shortability_snapshot"
     title = "IBKR TWS shortability snapshot"
 
+    @routed_tool("realtime")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
@@ -384,6 +398,7 @@ class IbkrOptionSurfaceClient(_IbkrClient):
     source_scope = "ibkr_option_surface"
     title = "IBKR TWS bounded option surface"
 
+    @routed_tool("realtime")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
@@ -481,6 +496,7 @@ class IbkrFedFundsCurveClient(_IbkrClient):
     source_scope = "ibkr_fed_funds_curve"
     title = "IBKR TWS Fed Funds futures curve"
 
+    @routed_tool("history")
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             max_contracts = max(1, min(12, int(request.input.get("max_contracts", 8))))

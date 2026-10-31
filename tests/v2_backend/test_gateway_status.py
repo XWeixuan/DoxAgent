@@ -1,8 +1,8 @@
 import asyncio
-
-import pytest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+
+import pytest
 from fastapi import FastAPI, Request
 
 from doxagent.api_v2.ib_gateway import GatewayMonitor, probe
@@ -39,7 +39,16 @@ class App:
         self.closed = True
 
 
-@pytest.mark.parametrize("override", [{"ready": False}, {"accounts": False}, {"clock": False}, {"connected": False}, {"broken": True}])
+@pytest.mark.parametrize(
+    "override",
+    [
+        {"ready": False},
+        {"accounts": False},
+        {"clock": False},
+        {"connected": False},
+        {"broken": True},
+    ],
+)
 def test_socket_or_process_alone_is_not_healthy(override):
     app = App(**override)
     assert probe(lambda: app) is False
@@ -58,7 +67,10 @@ def test_concurrent_probes_are_shared_but_manual_refresh_probes_again(monkeypatc
 
     async def check():
         monitor = GatewayMonitor()
-        assert await asyncio.gather(monitor.status(), monitor.status()) == ["CONNECTED", "CONNECTED"]
+        assert await asyncio.gather(monitor.status(), monitor.status()) == [
+            "CONNECTED",
+            "CONNECTED",
+        ]
         assert len(calls) == 1
         assert await monitor.status() == "CONNECTED"
 
@@ -68,27 +80,44 @@ def test_concurrent_probes_are_shared_but_manual_refresh_probes_again(monkeypatc
 
 def test_overview_status_does_not_wait_for_gateway(monkeypatch):
     from doxagent.api_v2.overview import install
-    status = AsyncMock(return_value="DISCONNECTED")
+
+    status = AsyncMock(
+        return_value={
+            "ib_gateway_live_status": "NOT_CONFIGURED",
+            "ib_gateway_paper_status": "DISCONNECTED",
+        }
+    )
     monkeypatch.setattr(GatewayMonitor, "status", status)
     app = FastAPI()
     app.state.store = SimpleNamespace(get=lambda *args: None, batch_get=lambda *args: {})
-    app.state.control = None
-    app.state.views = SimpleNamespace(get=lambda *args: {
-        "wire": {"page": "OVERVIEW", "clock": {}}, "tickers": [], "seq": 1,
-    })
+    app.state.control = SimpleNamespace(journal=None)
+    app.state.views = SimpleNamespace(
+        get=lambda *args: {
+            "wire": {"page": "OVERVIEW", "clock": {}},
+            "tickers": [],
+            "seq": 1,
+        }
+    )
     app.state.query = lambda *args: {"view_id": "view"}
     app.state.respond = lambda request, name, payload, **kwargs: payload
     install(app)
 
     async def check(path):
         route = next(r for r in app.routes if r.path == path)
-        request = Request({"type": "http", "path": path, "headers": [],
-                           "state": {"principal": SimpleNamespace(user_id="owner")}})
+        request = Request(
+            {
+                "type": "http",
+                "path": path,
+                "headers": [],
+                "state": {"principal": SimpleNamespace(user_id="owner")},
+            }
+        )
         return await route.endpoint(request)
 
     fast = asyncio.run(check("/api/doxagent/v2/overview/status"))
     assert "ib_gateway_status" not in fast
     status.assert_not_awaited()
     slow = asyncio.run(check("/api/doxagent/v2/overview/gateway-status"))
-    assert slow["ib_gateway_status"] == "DISCONNECTED"
+    assert slow["ib_gateway_paper_status"] == "DISCONNECTED"
+    assert slow["ib_gateway_live_status"] == "NOT_CONFIGURED"
     status.assert_awaited_once()
