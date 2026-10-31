@@ -35,6 +35,7 @@ export type Endpoints = {
   Delta: S.WireDelta;
   BusStatus: S.WireBusStatus;
   BusMetrics: S.WireBusMetrics;
+  BusDashboard: S.WireBusDashboard;
   Sources: S.WireSources;
   Messages: S.WireMessages;
   Message: S.WireMessage;
@@ -135,12 +136,15 @@ function pause(ms: number, signal: AbortSignal) {
 export function validateWire<K extends keyof Endpoints>(
   name: K,
   body: unknown,
+  status = 0,
 ): Endpoints[K] {
   const validate = ajv.getSchema(`wire#/definitions/Wire${name}`);
   if (!validate?.(body))
     throw new ApiFailure(
       "INVALID_RESPONSE",
       "返回数据不符合 V2 契约，无法显示该模块。",
+      status,
+      (body as { meta?: { request_id?: string } } | null)?.meta?.request_id,
     );
   return body as Endpoints[K];
 }
@@ -383,7 +387,7 @@ export class ApiClient {
           retryAfterMs(res.headers.get("Retry-After")),
         );
       }
-      const result = validateWire(name, body);
+      const result = validateWire(name, body, res.status);
       if (options.view && result.meta.view_id !== options.view)
         throw new ApiFailure(
           "SCOPE_MISMATCH",

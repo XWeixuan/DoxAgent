@@ -31,24 +31,30 @@ def binding_states(tickers=None):
     if store is None:
         return None
     with store.connect() as db:
-        where = "required=1"
+        where = "required!=0"
         params = ()
         if tickers:
             where += " AND ticker IN (SELECT value FROM json_each(?))"
             params = (json.dumps(tickers),)
         rows = db.execute(
-            "SELECT binding_id,unit,head_json FROM units WHERE " + where, params
+            "SELECT binding_id,unit,required,head_json FROM units WHERE " + where, params
         ).fetchall()
     grouped = {}
     for row in rows:
-        grouped.setdefault(row["binding_id"], []).append(json.loads(row["head_json"]))
+        if row['unit'].startswith('TAIL:') and not row['unit'].startswith('TAIL:IR:'):
+            continue
+        grouped.setdefault(row["binding_id"], []).append((row['required'],json.loads(row["head_json"])))
     result = {}
     observed = store.get_meta("configuration", {}).get("at")
-    for binding, states in grouped.items():
+    for binding, heads in grouped.items():
+        active = [s for required,s in heads if required == 1]
+        disabled = max((s.get('disabled_at','') for _,s in heads),default='')
+        states = active or [s for _,s in heads if not disabled or s.get('disabled_at') == disabled]
         captures = [s.get("last_capture_at") for s in states]
         healthy = all(s.get("status") == "succeeded" for s in states)
         errors = [s.get("last_error_code") for s in states if s.get("last_error_code")]
         result[binding] = {
+            'collection_active': bool(active),
             "collection_observed_at": observed,
             "status": "succeeded" if healthy else "partial" if any(captures) else "failed",
             "last_capture_at": min(captures) if all(captures) else None,
@@ -60,8 +66,8 @@ def binding_states(tickers=None):
                 sum(s.get("last_latency_ms") or 0 for s in states) / len(states)
             ),
             "last_error_code": errors[0] if errors else None,
-            "target_due_at": min(s["next_dispatch_at"] for s in states),
-            "next_dispatch_at": min(s["next_dispatch_at"] for s in states),
+            "target_due_at": min((s.get("next_dispatch_at") for s in states if s.get('next_dispatch_at')),default=None) if active else None,
+            "next_dispatch_at": min((s.get("next_dispatch_at") for s in states if s.get('next_dispatch_at')),default=None) if active else None,
             "last_window_coverage": "COMPLETE" if healthy else "PARTIAL",
             "checkpoint": {
                 "ir_endpoints": [s["ir_endpoint"] for s in states if s.get("ir_endpoint")]

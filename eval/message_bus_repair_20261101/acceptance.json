@@ -1,0 +1,280 @@
+{
+  "at": "2026-10-31T22:06:40.818973+00:00",
+  "method": "read-only production dashboard functions under 3s deadline plus strict DTO validation; browser tests use synthetic API fixtures",
+  "old_metrics_schema_ok": true,
+  "components": [
+    {
+      "name": "v2-projector",
+      "image": "sha256:8b4adefb5c640c75a674829fe9e4bf02a9f03aa1b068667a26f37a846fcd4051",
+      "state": "running",
+      "health": null,
+      "commit": "6c26e9e6d03df68f2c4d6292f1045215ce17d7fe"
+    },
+    {
+      "name": "v2-api",
+      "image": "sha256:04af0d8bc9357cf34da7d0ae2dd78ed67f2c97553644ee5d4e0172e0383e8edd",
+      "state": "running",
+      "health": "healthy",
+      "commit": "466edcc341520a79ae867fd09c31c08c7f46c7bb"
+    },
+    {
+      "name": "v2-web",
+      "image": "sha256:d6a8bad5755bc0be1f63dcf8c0a4e540d846493469379d98a1ec46f73acae902",
+      "state": "running",
+      "health": "healthy",
+      "commit": "b4720b2c137e17849d08ab640c59c5541300c251"
+    },
+    {
+      "name": "v2-message-collector",
+      "image": "sha256:47589435e504290b758e4876c34fa88f9ac5e08da279eab6a9096ce2248a828c",
+      "state": "running",
+      "health": "healthy",
+      "commit": "b4720b2c137e17849d08ab640c59c5541300c251"
+    },
+    {
+      "name": "v2-content-enrichment",
+      "image": "sha256:47589435e504290b758e4876c34fa88f9ac5e08da279eab6a9096ce2248a828c",
+      "state": "running",
+      "health": null,
+      "commit": "b4720b2c137e17849d08ab640c59c5541300c251"
+    },
+    {
+      "name": "v2-message-bus",
+      "image": "sha256:47589435e504290b758e4876c34fa88f9ac5e08da279eab6a9096ce2248a828c",
+      "state": "running",
+      "health": null,
+      "commit": "b4720b2c137e17849d08ab640c59c5541300c251"
+    }
+  ],
+  "current_day": [
+    {
+      "ticker": "INTC",
+      "seconds": 0.1767,
+      "bytes": 46257,
+      "counts": {
+        "total": 31,
+        "running": 2,
+        "sleeping": 29,
+        "disabled": 0,
+        "abnormal": 0,
+        "unknown": 0
+      },
+      "published": {
+        "state": "AVAILABLE",
+        "value": "0",
+        "reason": null
+      },
+      "coverage": {
+        "expected": 620,
+        "succeeded": 562,
+        "ratio": 0.9064516129032258
+      },
+      "e2e_samples": 0
+    },
+    {
+      "ticker": "MU",
+      "seconds": 0.1724,
+      "bytes": 45289,
+      "counts": {
+        "total": 30,
+        "running": 2,
+        "sleeping": 28,
+        "disabled": 0,
+        "abnormal": 0,
+        "unknown": 0
+      },
+      "published": {
+        "state": "AVAILABLE",
+        "value": "0",
+        "reason": null
+      },
+      "coverage": {
+        "expected": 600,
+        "succeeded": 545,
+        "ratio": 0.9083333333333333
+      },
+      "e2e_samples": 0
+    },
+    {
+      "ticker": "BE",
+      "seconds": 0.1986,
+      "bytes": 49244,
+      "counts": {
+        "total": 33,
+        "running": 2,
+        "sleeping": 31,
+        "disabled": 0,
+        "abnormal": 0,
+        "unknown": 0
+      },
+      "published": {
+        "state": "AVAILABLE",
+        "value": "2",
+        "reason": null
+      },
+      "coverage": {
+        "expected": 660,
+        "succeeded": 606,
+        "ratio": 0.9181818181818182
+      },
+      "e2e_samples": 0
+    },
+    {
+      "ticker": "COHR",
+      "seconds": 0.1675,
+      "bytes": 48287,
+      "counts": {
+        "total": 32,
+        "running": 2,
+        "sleeping": 30,
+        "disabled": 0,
+        "abnormal": 0,
+        "unknown": 0
+      },
+      "published": {
+        "state": "AVAILABLE",
+        "value": "0",
+        "reason": null
+      },
+      "coverage": {
+        "expected": 640,
+        "succeeded": 593,
+        "ratio": 0.9265625
+      },
+      "e2e_samples": 0
+    }
+  ],
+  "period_examples": [
+    {
+      "period": "PREVIOUS_TRADING_DAY",
+      "ok": true,
+      "seconds": 0.3041,
+      "body": {
+        "total": 820,
+        "full": 591,
+        "pending": 11,
+        "failed": 218,
+        "ratio": 0.7207317073170731,
+        "network_attempts": null,
+        "network_succeeded": null,
+        "cache_reuses": null,
+        "basis": "FIRST_OBSERVED_ARTICLE",
+        "legacy_excluded": true
+      },
+      "published": {
+        "state": "AVAILABLE",
+        "value": "771",
+        "reason": null
+      }
+    },
+    {
+      "period": "TRADING_DAYS_7",
+      "ok": true,
+      "seconds": 1.0256,
+      "body": {
+        "total": 2916,
+        "full": 2122,
+        "pending": 12,
+        "failed": 782,
+        "ratio": 0.7277091906721537,
+        "network_attempts": null,
+        "network_succeeded": null,
+        "cache_reuses": null,
+        "basis": "FIRST_OBSERVED_ARTICLE",
+        "legacy_excluded": true
+      },
+      "published": {
+        "state": "AVAILABLE",
+        "value": "2333",
+        "reason": null
+      }
+    }
+  ],
+  "query_plans": [
+    [
+      [
+        9,
+        0,
+        0,
+        "SCAN w VIRTUAL TABLE INDEX 1:"
+      ],
+      [
+        14,
+        0,
+        0,
+        "SCAN day VIRTUAL TABLE INDEX 3:"
+      ],
+      [
+        20,
+        0,
+        0,
+        "SEARCH d USING INDEX current_source (kind=? AND ticker=? AND source_id=? AND day=? AND sort_key>? AND sort_key<?)"
+      ],
+      [
+        42,
+        0,
+        0,
+        "SEARCH b USING INDEX current_identity (kind=? AND ticker=? AND id=?) LEFT-JOIN"
+      ],
+      [
+        57,
+        0,
+        0,
+        "SEARCH m USING INDEX current_identity (kind=? AND ticker=? AND id=?) LEFT-JOIN"
+      ]
+    ],
+    [
+      [
+        3,
+        0,
+        0,
+        "SEARCH b USING INDEX object_current_body_cohort (kind=? AND <expr>>? AND <expr><?)"
+      ],
+      [
+        23,
+        0,
+        0,
+        "CORRELATED SCALAR SUBQUERY 1"
+      ],
+      [
+        27,
+        23,
+        0,
+        "SEARCH o USING COVERING INDEX current_parent (kind=? AND ticker=? AND parent=?)"
+      ],
+      [
+        40,
+        0,
+        0,
+        "CORRELATED SCALAR SUBQUERY 2"
+      ],
+      [
+        45,
+        40,
+        0,
+        "SEARCH a USING COVERING INDEX current_parent (kind=? AND ticker=? AND parent=?)"
+      ],
+      [
+        52,
+        40,
+        0,
+        "SEARCH o USING COVERING INDEX current_parent (kind=? AND ticker=? AND parent=?)"
+      ]
+    ]
+  ],
+  "tests": {
+    "backend_focused": 30,
+    "final_projector_recheck": 12,
+    "frontend_unit": 67,
+    "browser_widths": [
+      1262,
+      1559
+    ],
+    "typecheck": "passed",
+    "build": "passed"
+  },
+  "migration": {
+    "exit_code": "0",
+    "result": "{\"delivery_anchors\": \"installed\", \"retired_heads_initialized\": 492, \"history_backfill\": false}"
+  }
+}

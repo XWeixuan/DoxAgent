@@ -154,7 +154,8 @@ class AcquisitionStore:
                  epoch,at.isoformat(),state.get('schedule_interval_seconds',60),None,None,
                  'SCHEDULE','DISABLED',None,canonical_json({'epoch_at':epoch})))
             db.execute(
-                "UPDATE units SET required=-1 WHERE binding_id=? AND unit=?", (binding_id, unit)
+                "UPDATE units SET required=-1,head_json=json_set(head_json,'$.disabled_at',?) "
+                "WHERE binding_id=? AND unit=?", (at.isoformat(), binding_id, unit)
             )
 
     @durable_write
@@ -172,6 +173,12 @@ class AcquisitionStore:
                 "last_error_code",
                 "next_dispatch_at",
             )
+        }
+        head['coverage_plan'] = {
+            'epoch': state.get('target_due_at'),
+            'interval': state.get('schedule_interval_seconds'),
+            'binding_version': binding.version,
+            'group': state.get('coverage_group'),
         }
         if unit.startswith("IR:"):
             spec = next(
@@ -555,7 +562,9 @@ class AcquisitionStore:
             self._pending_round=getattr(self,"_pending_round",0)+1
             order="ASC" if self._pending_round%8==0 else "DESC"
             for source in sources:
-                row=db.execute("SELECT * FROM captures WHERE status='PENDING' AND source_id=? "
+                row=db.execute("SELECT captures.*, (SELECT due_at FROM cycles WHERE "
+                    "run_id=captures.run_id||':'||captures.binding_id) AS poll_due_at "
+                    "FROM captures WHERE status='PENDING' AND source_id=? "
                     "AND not_before<=? ORDER BY observed_at "+order+" LIMIT 1",(source,utc_now().isoformat())).fetchone()
                 if row:
                     rows.append(dict(row));self._pending_source=source

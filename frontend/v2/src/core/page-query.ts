@@ -14,6 +14,7 @@ export function usePageContext(
   ticker: string,
   page: PageKind,
   period?: Period,
+  options: { renew?: boolean } = {},
 ) {
   const { api, scope, query: cache } = useRuntime();
   const key = [scope, ticker, page, "context", period];
@@ -140,7 +141,10 @@ export function usePageContext(
     });
     return next;
   };
-  useViewRenewal(result.data?.data, refetch);
+  useViewRenewal(
+    options.renew === false ? undefined : result.data?.data,
+    refetch,
+  );
   return { ...result, refetch };
 }
 export function useRead<K extends keyof Endpoints>(

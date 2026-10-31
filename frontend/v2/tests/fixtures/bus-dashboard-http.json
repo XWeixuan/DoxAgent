@@ -1,0 +1,132 @@
+{
+  "data": {
+    "state": "AVAILABLE",
+    "data": {
+      "metrics": {
+        "published_revisions": {
+          "metric_id": "published_revisions",
+          "unit": "COUNT",
+          "current": {
+            "state": "AVAILABLE",
+            "value": "0",
+            "reason": null
+          },
+          "previous": {
+            "state": "AVAILABLE",
+            "value": "0",
+            "reason": null
+          },
+          "change_pct": {
+            "state": "NOT_APPLICABLE",
+            "value": null,
+            "reason": "WINDOW_INCOMPLETE"
+          },
+          "current_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "previous_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "provisional": false
+        },
+        "body_completion_success_ratio": {
+          "metric_id": "body_completion_success_ratio",
+          "unit": "RATIO",
+          "current": {
+            "state": "NOT_RECORDED",
+            "value": null,
+            "reason": "NOT_RECORDED"
+          },
+          "previous": {
+            "state": "NOT_RECORDED",
+            "value": null,
+            "reason": "NOT_RECORDED"
+          },
+          "change_pct": {
+            "state": "NOT_APPLICABLE",
+            "value": null,
+            "reason": "WINDOW_INCOMPLETE"
+          },
+          "current_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "previous_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "provisional": false
+        },
+        "new_article_body": {
+          "total": 0,
+          "full": 0,
+          "pending": 0,
+          "failed": 0,
+          "ratio": null,
+          "network_attempts": null,
+          "network_succeeded": null,
+          "cache_reuses": null,
+          "basis": "FIRST_OBSERVED_ARTICLE",
+          "legacy_excluded": true
+        }
+      },
+      "sources": [],
+      "counts": {
+        "total": 0,
+        "running": 0,
+        "sleeping": 0,
+        "disabled": 0,
+        "abnormal": 0,
+        "unknown": 0
+      },
+      "mean_e2e_seconds": null,
+      "e2e_samples": 0,
+      "coverage": {
+        "expected": 0,
+        "succeeded": 0,
+        "ratio": null
+      }
+    },
+    "reason": null,
+    "coverage": {
+      "state": "COMPLETE",
+      "reasons": [],
+      "known_count": null,
+      "excluded_count": 0,
+      "observed_through": null
+    }
+  },
+  "meta": {
+    "contract_version": "2.0.0-draft.2",
+    "workflow_generation": "V2",
+    "request_id": "3742118d32ef455d94f9ec802375f869",
+    "view_id": "17081b71b58642bb94ed7bd98d6f5a41.08bcd895c79f47208bbf8678aafa7b93.1793486984",
+    "scope_key": "8468d30591e81d9531ea0366d20741531877501190bfdacc150ecc916cd12c3f",
+    "as_of": "2026-10-31T22:34:44.765945Z",
+    "representation_revision": "de82fbd3ec3e9dfeac8b9b317bd01799050cb2aa7fe55893181a06814919aea5",
+    "freshness": "STALE",
+    "refresh_error": null
+  }
+}
