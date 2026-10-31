@@ -98,8 +98,9 @@ function TradingDialog({
       setSaving(false);
     }
   }
-  const cash =
-    data?.accounts[draft?.environment || "PAPER"]?.account_type === "CASH";
+  const accountType =
+    data?.accounts[draft?.environment || "PAPER"]?.account_type;
+  const cash = accountType === "CASH";
   const text = (key: keyof TradingSettings, label: string) => (
     <label>
       {label}
@@ -183,11 +184,22 @@ function TradingDialog({
               </label>
               {cash ? (
                 <>
-                  {text("cash_positive_index_etf", "正向指数 ETF")}
-                  {text("cash_inverse_index_etf", "反向指数 ETF")}
+                  {text(
+                    "cash_positive_index_etf",
+                    "正向（LONG）指数 ETF · SHORT 信号时买入",
+                  )}
+                  {text(
+                    "cash_inverse_index_etf",
+                    "反向（SHORT）指数 ETF · LONG 信号时买入",
+                  )}
                 </>
+              ) : accountType === "MARGIN" ? (
+                text(
+                  "margin_index_etf",
+                  "指数 ETF · LONG 信号时卖空，SHORT 信号时买入",
+                )
               ) : (
-                text("margin_index_etf", "指数 ETF")
+                <p>账户接入后，按 CASH / MARGIN 类型配置对冲 ETF。</p>
               )}
             </>
           )}

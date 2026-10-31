@@ -2491,3 +2491,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-31 下单规则PAPER验收完成：最终运行时代码ec68095c，仅发布v2-executor并核验4个文件。125项完整交易回归通过；真实SPY BUY 5股、QQQ SHORT 5股均完成LMT开平仓，窗口约1.02秒准入，逐单核对当次Bid/Ask偏移0.5%及最小报价单位。SPY EXIT前5张取消后第6张LMT成交，验证不受三次限制且未转MKT；两组CLOSED，实际持仓及事件缺口为0。首次未发单的订阅衔接失败记录保留并永久关闭，未复活；35项收尾回归包含其修复用例。PAPER本金配置不变，费用和净盈亏正常入账；Live仍未配置。回滚previous指向已验收的32b5af2f8f6f基线，避免误回退到中间失败版本。
 
 2026-11-01 交易配置弹窗导航修复：React Portal点击会沿组件树冒泡到MonitorRow，原行导航仅检查DOM中的a/button/data-row-control，导致select、checkbox、label误跳基础投研。行导航增加currentTarget.contains(target)判断，排除不属于本行DOM的Portal事件；普通行点击导航保持。浏览器fixture改为真实Routes，新增原生下拉点击、对冲标签、滑动止盈、输入框、保存、关闭/遮罩及普通行导航断言。修复前两种桌面宽度均复现URL跳转，修复后1262/1559通过；67项前端单测及TypeScript通过。
+
+2026-11-01 交易配置账户类型与低频入口修正：隐藏Overview策略资金按钮，恢复标的监控标题；资金接口/账本与配置不变。前端原cash布尔判断把未配置账户落入MARGIN单框，改为CASH/MARGIN/未配置三态，未知类型不展示保证金字段；CASH正向LONG/反向SHORT两个ETF字段分别注明对应信号及BUY方向，MARGIN单框注明LONG卖空/SHORT买入。代码及已安装执行器核对确认后端按account_type配置校验并选择两个CASH ETF，CASH两方向开仓均为BUY、退出SELL；新增双向整组执行、任一ETF缺失拒绝，以及未知Live单框草稿后接CASH仍禁止应用的测试。25项后端回归、8项1262/1559浏览器测试、67项前端单测及类型检查通过；本次不改后端执行逻辑。

@@ -229,3 +229,35 @@ def test_applied_ban_permanently_abandons_unsent_intent(tmp_path):
     service.apply(repo)
     asyncio.run(executor.step("ban:intent:entry"))
     assert not broker.sent
+
+
+def test_unknown_live_margin_only_draft_cannot_apply_when_account_becomes_cash(tmp_path):
+    _, journal, repo, _, service, _ = configured(tmp_path)
+    service.apply(repo)
+    before = service.read("MU")
+    draft = {
+        **before["configuration"],
+        "environment": "LIVE",
+        "hedge_enabled": True,
+        "margin_index_etf": "SIDX",
+    }
+    service.save("MU", draft, before["revision"], "test")
+    service.apply(repo)
+    assert service.read("MU")["error"]["error"] == "ACCOUNT_NOT_CONFIGURED"
+    repo.import_profile(
+        ExecutionProfile(
+            profile_id="cash-live",
+            environment="LIVE",
+            account_type="CASH",
+            port=4001,
+            client_id=81,
+            expected_account_id="U_TEST",
+        )
+    )
+    CapitalLedger(repo).allocate("U_TEST", "4000", "cash-principal", "test")
+    service.apply(repo)
+    value = service.read("MU")
+    assert value["accounts"]["LIVE"]["account_type"] == "CASH"
+    assert value["error"]["error"] == "HEDGE_ASSET_MISSING"
+    assert value["active"] == before["active"]
+    assert value["active"]["configuration"]["environment"] == "PAPER"
