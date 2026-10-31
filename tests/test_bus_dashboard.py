@@ -117,6 +117,15 @@ def test_dashboard_zero_schema_and_closed_bindings_keep_ir_sec_policy(tmp_path,m
     assert result['metrics']['published_revisions']['current']['value']=='0'
     assert result['metrics']['new_article_body']['ratio'] is None
     assert all(s['last_success_at']['value'] for s in result['sources'])
+    # Runtime maintenance health may be stale; an unknown CLOSED_* clock must
+    # not turn proven off-market sleeping collection into unknown sources.
+    view=head_view(store,datetime(2026,11,1,12,tzinfo=UTC))
+    view['wire']['clock']=PageCalendar().clock(datetime(2026,11,1,12,tzinfo=UTC))
+    assert dashboard_data(store,'MU',view,{})['counts']['sleeping']==1
+    monkeypatch.setattr(observability,'binding_states',lambda tickers:{
+        'MU:'+sid:{'collection_active':True,'status':'succeeded','target_due_at':'2026-11-01T12:00:00Z'}
+        for sid in ['feed','corporate_ir_press_releases','sec_edgar']})
+    assert dashboard_data(store,'MU',view,{})['counts']['running']==3
 
 
 def test_period_e2e_is_per_new_message_and_replacement_does_not_double_count(tmp_path):

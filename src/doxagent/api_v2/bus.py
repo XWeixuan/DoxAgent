@@ -49,7 +49,10 @@ def source_status(store, binding, seq, view, cadences=None, *, live_states=None,
         countdown = "PAUSED"
     elif not native.polling.active_at(now):
         countdown = "WINDOW_CLOSED"
-    elif native.source_id not in {"corporate_ir_press_releases", "sec_edgar"} and view["wire"]["clock"]["session"]["value"] == "CLOSED_SLEEP":
+    elif (native.source_id not in {"corporate_ir_press_releases", "sec_edgar"}
+          and poll.get('collection_active') is not True
+          and (view['wire']['clock']['session']['value']=='CLOSED_SLEEP'
+               or view['wire']['clock'].get('is_trading_day',{}).get('value') is False)):
         countdown = "CLOSED_SLEEP"
 
     def observed(key, transform=lambda value: value):

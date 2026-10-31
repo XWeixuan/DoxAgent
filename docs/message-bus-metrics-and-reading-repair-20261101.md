@@ -44,4 +44,12 @@
 
 后端定向回归覆盖逻辑轮次、缺失派发、互补/替代路径、休市冻结、迁移幂等、已知零值、正文别名、首次锚点、最小 serving 字段及新 view 游标。更广回归发现备份清理/初始化旧测试失败；这些不在本轮修改范围，不宣称全仓测试全部通过。
 
-发布以 origin/main 为唯一基线；本地其他交易执行提交和未提交修改不纳入。生产仅更新 API、Projector、Collector、Bus、Web，BODY、Scheduler、Site Access 与浏览器身份保持原版本。正式提交、迁移结果与生产读数在部署后追加。
+发布以 origin/main 为唯一基线；本地其他交易执行提交和未提交修改不纳入。生产更新 API、Projector、Collector、Bus、BODY、Web；BODY 的规范化合并需传递首次锚点。Scheduler、Site Access 与浏览器身份保持原版本。正式提交、迁移结果与生产读数在部署后追加。
+
+### 首次发布及查询计划复核
+
+功能提交 `b4720b2c137e17849d08ab640c59c5541300c251` 已先进入 origin/main，再按标准 release manifest 上线上述六个相关组件；仅构建 backend/web。显式迁移成功，两列安装完成，492 个旧停用 head 从已有 schedule 补充停用时间，没有消息历史回填。API/Web/Collector healthy，其余相关组件 running。
+
+生产首次采样 INTC/MU/BE/COHR 的 dashboard 计算与 DTO 验证约 0.1385–0.1464 秒，46–49KB；旧 BusMetrics 严格 DTO 校验也通过，INTC/MU 的 0 与 BE 的 2 均 AVAILABLE。当前休市、上线后暂无可靠新 E2E 样本，均值/P95 按无样本展示。
+
+实际 SQL 计划暴露 SQLite 将近20轮业务查询改为先读 ticker 的 delivery 范围，没有用到完整来源/日/时间前缀。后续用 CROSS JOIN 固定小窗口驱动连接顺序，避免未来积累后扩大扫描。同时补齐非交易日但 Runtime maintenance 状态未知时的来源显示：依照交易日历及采集单元真实 active 标记判断，不能因为 Runtime clock 的 CLOSED_* 标签未知就漏算已休眠来源；IR/SEC 和明确活动的临时采集保留运行状态。该补充只需 API 更新。

@@ -54,6 +54,7 @@ def binding_states(tickers=None):
         healthy = all(s.get("status") == "succeeded" for s in states)
         errors = [s.get("last_error_code") for s in states if s.get("last_error_code")]
         result[binding] = {
+            'collection_active': bool(active),
             "collection_observed_at": observed,
             "status": "succeeded" if healthy else "partial" if any(captures) else "failed",
             "last_capture_at": min(captures) if all(captures) else None,
