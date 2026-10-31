@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "2fb083e7f5ae9bdb0ce8003eaf85d1d60ab0ede37950c13fea2619f71333649a",
+  "source_sha256": "27f06db45e31aef96e2b845dda4e57c1ffa3ffd833b3b2c5a749efbee232b2d2",
   "$defs": {
     "Id": {
       "type": "string"
@@ -6402,6 +6402,29 @@
         "exact_duplicate_count": {
           "$ref": "#/$defs/Value%3CCount%3E"
         },
+        "pipeline": {
+          "type": "object",
+          "properties": {
+            "discovered_at": {
+              "$ref": "#/$defs/Instant"
+            },
+            "poll_due_at": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Instant"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "discovered_at",
+            "poll_due_at"
+          ],
+          "additionalProperties": false
+        },
         "case": {
           "$ref": "#/$defs/CaseLink"
         },
@@ -6603,6 +6626,9 @@
     "SourceStatus": {
       "type": "object",
       "properties": {
+        "recent": {
+          "$ref": "#/$defs/BusSourceMetrics"
+        },
         "collection_observed_at": {
           "$ref": "#/$defs/Instant"
         },
@@ -27379,13 +27405,34 @@
           ]
         },
         "network_attempts": {
-          "$ref": "#/$defs/Count"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Count"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "network_succeeded": {
-          "$ref": "#/$defs/Count"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Count"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "cache_reuses": {
-          "$ref": "#/$defs/Count"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Count"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "basis": {
           "type": "string",
@@ -27393,6 +27440,37 @@
         },
         "legacy_excluded": {
           "type": "boolean"
+        },
+        "initial": {
+          "type": "object",
+          "properties": {
+            "full": {
+              "$ref": "#/$defs/Count"
+            },
+            "pending": {
+              "$ref": "#/$defs/Count"
+            },
+            "failed": {
+              "$ref": "#/$defs/Count"
+            },
+            "unknown": {
+              "$ref": "#/$defs/Count"
+            },
+            "ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "full",
+            "pending",
+            "failed",
+            "unknown",
+            "ratio"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -28064,6 +28142,148 @@
         "has_more",
         "snapshot_id",
         "limit"
+      ],
+      "additionalProperties": false
+    },
+    "BusSourceMetrics": {
+      "type": "object",
+      "properties": {
+        "coverage": {
+          "$ref": "#/$defs/BusRoundCoverage"
+        },
+        "mean_e2e_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "p95_e2e_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "e2e_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "refresh_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "body_total": {
+          "$ref": "#/$defs/Count"
+        },
+        "body_full": {
+          "$ref": "#/$defs/Count"
+        },
+        "body_ratio": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "coverage",
+        "mean_e2e_seconds",
+        "p95_e2e_seconds",
+        "e2e_samples",
+        "refresh_seconds",
+        "body_total",
+        "body_full",
+        "body_ratio"
+      ],
+      "additionalProperties": false
+    },
+    "BusRoundCoverage": {
+      "type": "object",
+      "properties": {
+        "expected": {
+          "$ref": "#/$defs/Count"
+        },
+        "succeeded": {
+          "$ref": "#/$defs/Count"
+        },
+        "ratio": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "expected",
+        "succeeded",
+        "ratio"
+      ],
+      "additionalProperties": false
+    },
+    "BusDashboard": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "$ref": "#/$defs/BusMetrics"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceStatus"
+          }
+        },
+        "counts": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/Count"
+            },
+            "running": {
+              "$ref": "#/$defs/Count"
+            },
+            "sleeping": {
+              "$ref": "#/$defs/Count"
+            },
+            "disabled": {
+              "$ref": "#/$defs/Count"
+            },
+            "abnormal": {
+              "$ref": "#/$defs/Count"
+            },
+            "unknown": {
+              "$ref": "#/$defs/Count"
+            }
+          },
+          "required": [
+            "total",
+            "running",
+            "sleeping",
+            "disabled",
+            "abnormal",
+            "unknown"
+          ],
+          "additionalProperties": false
+        },
+        "coverage": {
+          "$ref": "#/$defs/BusRoundCoverage"
+        },
+        "mean_e2e_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "e2e_samples": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "metrics",
+        "sources",
+        "counts",
+        "coverage",
+        "mean_e2e_seconds",
+        "e2e_samples"
       ],
       "additionalProperties": false
     },

@@ -568,14 +568,28 @@ export interface MessageSummary extends MessageKey {
   source_published_at: Instant; collected_at: Instant; normalized_at: Instant;
   stream_published_at: Instant; stream_item_id: Id; stream_offset: Count; member_index: Count;
   exact_duplicate_count: Value<Count>;
+  pipeline?: { discovered_at: Instant; poll_due_at: Instant | null };
   case: CaseLink;
   body: ContentRef;
 }
 export interface MessageBaseline { messages: Page<MessageSummary>; stream_cursor: string }
 export interface BusMetrics { published_revisions: Metric; body_completion_success_ratio: Metric; new_article_body?: ArticleBodyCohort }
+export interface BusRoundCoverage { expected: Count; succeeded: Count; ratio: number | null }
+export interface BusSourceMetrics {
+  coverage: BusRoundCoverage;
+  mean_e2e_seconds: number | null; p95_e2e_seconds: number | null; e2e_samples: Count;
+  refresh_seconds: number | null;
+  body_total: Count; body_full: Count; body_ratio: number | null;
+}
+export interface BusDashboard {
+  metrics: BusMetrics; sources: SourceStatus[];
+  counts: { total: Count; running: Count; sleeping: Count; disabled: Count; abnormal: Count; unknown: Count };
+  coverage: BusRoundCoverage;
+  mean_e2e_seconds: number | null; e2e_samples: Count;
+}
 export interface ArticleBodyCohort {
   total: Count; full: Count; pending: Count; failed: Count; ratio: number | null;
-  network_attempts: Count; network_succeeded: Count; cache_reuses: Count;
+  network_attempts: Count | null; network_succeeded: Count | null; cache_reuses: Count | null;
   basis: "FIRST_OBSERVED_ARTICLE"; legacy_excluded: boolean;
   initial?: { full: Count; pending: Count; failed: Count; unknown: Count; ratio: number | null };
 }
@@ -602,6 +616,7 @@ export interface BusStatus {
   timeliness?: PollTimeliness;
 }
 export interface SourceStatus {
+  recent?: BusSourceMetrics;
   collection_observed_at?: Instant;
   collection_state_source?: "ACQUISITION_LEDGER";
   published_today?: Value<Count>;

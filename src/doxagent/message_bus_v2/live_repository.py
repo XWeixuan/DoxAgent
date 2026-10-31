@@ -83,7 +83,8 @@ class LiveRepository:
                 "initial_outcome": "TEXT",
             },
             "live_origins": {"targets_json": "TEXT NOT NULL DEFAULT '[]'"},
-            "live_deliveries": {"initial_decision_at": "TEXT", "initial_decision": "TEXT"},
+            "live_deliveries": {"initial_decision_at": "TEXT", "initial_decision": "TEXT",
+                                "first_discovered_at": "TEXT", "first_poll_due_at": "TEXT"},
         }.items():
             existing = {r[1] for r in db.execute("PRAGMA table_info(" + table + ")")}
             for field, definition in fields.items():
@@ -259,6 +260,7 @@ class LiveRepository:
                     url=message.url,
                     title=message.title or "",
                     observed=observed_at,
+                    poll_due=message.metadata.get('pipeline_trace',{}).get('poll_due_at'),
                     first_seen=legacy_known.first_seen_at.isoformat()
                     if legacy_known
                     else observed_at,
@@ -429,9 +431,10 @@ class LiveRepository:
                     binding_id, ticker, terms_revision = target
                     db.execute(
                         "INSERT INTO live_deliveries(article_key,ticker,source_id,binding_id,"
-                        "terms_revision,admission_json,bootstrap,state,due_at,created_at) "
-                        "VALUES(?,?,?,?,?,?,?, ?,?,?) ON CONFLICT(article_key,ticker) DO UPDATE SET "
+                        "terms_revision,admission_json,bootstrap,state,due_at,created_at,first_discovered_at,first_poll_due_at) "
+                        "VALUES(?,?,?,?,?,?,?, ?,?,?,?,?) ON CONFLICT(article_key,ticker) DO UPDATE SET "
                         "source_id=excluded.source_id,binding_id=excluded.binding_id,terms_revision=excluded.terms_revision,"
+                        "first_discovered_at=excluded.first_discovered_at,first_poll_due_at=excluded.first_poll_due_at,"
                         "state=CASE WHEN state IN ('L2_DUE','CANCELLED','CONFIG_INCOMPLETE','ADMISSION_REJECTED') THEN excluded.state ELSE state END "
                         "WHERE raw_id IS NULL AND source_id!=excluded.source_id AND (? OR NOT EXISTS("
                         "SELECT 1 FROM ticker_source_bindings b WHERE b.binding_id=live_deliveries.binding_id "
@@ -459,6 +462,8 @@ class LiveRepository:
                             else "WAIT_BODY",
                             now,
                             now,
+                            item['observed'] if not baseline and not rejected else None,
+                            item.get('poll_due') if not baseline and not rejected else None,
                             int(item["direct"]),
                         ),
                     )
@@ -686,7 +691,7 @@ class LiveRepository:
                 columns = (
                     "ticker,source_id,binding_id,terms_revision,admission_json,bootstrap,state,due_at,"
                     "claim_token,lease_until,decision_digest,published_digest,regex_result,jev_result,last_error,"
-                    "raw_id,standard_id,consumable_at,created_at,initial_decision_at,initial_decision"
+                    "raw_id,standard_id,consumable_at,created_at,initial_decision_at,initial_decision,first_discovered_at,first_poll_due_at"
                 )
                 db.execute(
                     "INSERT OR IGNORE INTO live_deliveries(article_key,"
@@ -1043,7 +1048,7 @@ class LiveRepository:
             columns = (
                 "ticker,source_id,binding_id,terms_revision,admission_json,bootstrap,state,due_at,"
                 "claim_token,lease_until,decision_digest,published_digest,regex_result,jev_result,last_error,"
-                "raw_id,standard_id,consumable_at,created_at,initial_decision_at,initial_decision"
+                "raw_id,standard_id,consumable_at,created_at,initial_decision_at,initial_decision,first_discovered_at,first_poll_due_at"
             )
             db.execute(
                 "INSERT OR IGNORE INTO live_deliveries(article_key,"

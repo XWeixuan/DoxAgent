@@ -257,6 +257,7 @@ class Collector:
                     seconds=phase
                 )
                 old.update(
+                    coverage_group=options.get('coverage_group'),
                     schedule_phase_version=3,
                     schedule_phase_key=phase_key,
                     target_due_at=epoch.isoformat(),

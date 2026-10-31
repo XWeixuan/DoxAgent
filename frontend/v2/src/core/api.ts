@@ -31,6 +31,7 @@ export type Endpoints = {
   Delta: S.WireDelta;
   BusStatus: S.WireBusStatus;
   BusMetrics: S.WireBusMetrics;
+  BusDashboard: S.WireBusDashboard;
   Sources: S.WireSources;
   Messages: S.WireMessages;
   Message: S.WireMessage;

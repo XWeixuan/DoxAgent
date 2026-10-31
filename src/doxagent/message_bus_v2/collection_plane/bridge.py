@@ -46,6 +46,7 @@ class CaptureBridge:
             **m.get("metadata",{}),"acquisition_committed_at":row["committed_at"],
             "pipeline_trace":{**m.get("metadata",{}).get("pipeline_trace",{}),
                 "capture_id":row["capture_id"],"listing_received_at":row["observed_at"],
+                "poll_due_at":row.get("poll_due_at"),
                 "capture_committed_at":row["committed_at"]}}}) for m in payload["result"]["messages"]]
         from ..schema import PollResult
         from ..google_news_rules import filter_google_news_result
