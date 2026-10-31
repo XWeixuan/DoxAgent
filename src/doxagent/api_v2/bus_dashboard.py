@@ -55,6 +55,10 @@ def recent_business(store,ticker,rounds):
         first=semantic_day(datetime.fromisoformat(w['start']))
         last=semantic_day(datetime.fromisoformat(w['end']))
         w['days']=[(first+timedelta(days=n)).isoformat() for n in range((last-first).days+1)]
+        # UTC sort keys may omit fractional seconds. A bare boundary prefix
+        # correctly includes start+.2s and excludes end+.2s ('Z' sorts later).
+        w['start']=w['start'].removesuffix('Z')
+        w['end']=w['end'].removesuffix('Z')
     with store.connect() as db:
         # Reuse current_source's complete (kind,ticker,source,day,sort) prefix.
         # Messages/body are exact identity lookups; no new index or historical scan.

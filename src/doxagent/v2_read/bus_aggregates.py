@@ -15,6 +15,7 @@ def contributions(db, members):
         common = {"ticker":ticker,"entity":identity,"dimensions":dimensions}
         result.append({**common,"metric":"bus_messages","day":row[0] if row else "", "value":1 if row else None})
         elapsed = (datetime.fromisoformat(row[5])-datetime.fromisoformat(row[4])).total_seconds() if row and row[4] else None
+        if elapsed is not None and elapsed < 0:elapsed=None
         for metric,value in [('bus_e2e_seconds',elapsed),('bus_e2e_samples',1 if elapsed is not None else None)]:
             result.append({**common,'metric':metric,'day':row[0] if row else '', 'value':value})
         counts = defaultdict(lambda: [0,0])

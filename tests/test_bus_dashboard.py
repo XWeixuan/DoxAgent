@@ -140,9 +140,17 @@ def test_period_e2e_is_per_new_message_and_replacement_does_not_double_count(tmp
     # A legacy message without a trusted first-discovery anchor stays unknown.
     store.ingest('test','legacy',[message('b')])
     assert mean_period(store,'MU',view,None)==(2,1)
+    negative=message('negative');negative['data']['pipeline']={'discovered_at':'2026-09-08T12:00:01Z','poll_due_at':None}
+    store.ingest('test','untrusted-clock',[negative])
+    assert mean_period(store,'MU',view,None)==(2,1)
     store.ingest('test','delivery',[{'kind':'native:live_deliveries','ticker':'MU','id':'article:MU',
-        'parent':'article','source_id':'news','sort':'2026-09-08T11:59:00Z','day':'2026-09-08',
+        'parent':'article','source_id':'news','sort':'2026-09-08T11:59:00.250000Z','day':'2026-09-08',
         'data':{'first_poll_due_at':'2026-09-08T11:59:00Z','standard_id':'a'}}])
+    following=message('c');following['data']['pipeline']={'discovered_at':'2026-09-08T12:00:00.250000Z','poll_due_at':None}
+    following['data']['stream_published_at']='2026-09-08T12:00:01.250000Z'
+    store.ingest('test','next-round',[following,{'kind':'native:live_deliveries','ticker':'MU','id':'next:MU',
+        'parent':'next','source_id':'news','sort':'2026-09-08T12:00:00.250000Z','day':'2026-09-08',
+        'data':{'first_poll_due_at':'2026-09-08T12:00:00.250000Z','standard_id':'c'}}])
     result=recent_business(store,'MU',{'MU:news':{'from_at':'2026-09-08T11:59:00Z','until_at':'2026-09-08T12:00:00Z'}})
     assert result['news']['latencies']==[2]
 
