@@ -1,0 +1,47 @@
+{
+  "verified_at": "2026-11-01",
+  "account_probe": {
+    "runtime_key_configured": true,
+    "credits_status": 200,
+    "balance_usd": "13.946629063",
+    "runtime_key_belongs_to_account": true,
+    "account_check_status": 200
+  },
+  "deployment": {
+    "secret_mode": "0o600",
+    "directory_mode": "0o700",
+    "v2-api": {
+      "image": "sha256:ec108289a992b4777a9e35a599c7c73bfb81b3efd214822fd34282476edc3bb0",
+      "commit": "caad057652cea6fc33f61287c60d8d7128e91d97",
+      "image_revision": "caad057652cea6fc33f61287c60d8d7128e91d97",
+      "health": "healthy",
+      "credential_in_environment": false,
+      "secret_mount_readonly": true
+    },
+    "v2-web": {
+      "image": "sha256:4dfbd4bacbee512e9768f500ffec9b080b2a5fb7092b5f366d3f585b048f383f",
+      "commit": "caad057652cea6fc33f61287c60d8d7128e91d97",
+      "image_revision": "caad057652cea6fc33f61287c60d8d7128e91d97",
+      "health": "healthy",
+      "credential_in_environment": false
+    }
+  },
+  "browser": {
+    "environment": "authenticated production Overview",
+    "row_order": [
+      "IB Gateway Live",
+      "IB Gateway Paper",
+      "OpenRouter balance"
+    ],
+    "displayed_balance_usd": "13.95",
+    "screenshot": "production-overview-balance.png"
+  },
+  "tests": {
+    "backend_focused": 30,
+    "frontend_unit": 69,
+    "browser": 8,
+    "typecheck": true,
+    "production_build": true
+  },
+  "note": "Deployment snapshot; later coverage-only API release is recorded separately."
+}

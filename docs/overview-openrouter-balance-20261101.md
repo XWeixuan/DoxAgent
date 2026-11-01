@@ -16,4 +16,4 @@
 
 生产验收：先推送origin/main，再用标准release流程仅构建/部署v2-api、v2-web。两个角色的发布登记和实际镜像revision均为 `caad057652cea6fc33f61287c60d8d7128e91d97`，健康检查均healthy。实际验证secret挂载只读、文件0600、目录0700，两个容器环境均不含该凭据。已将secret Compose覆盖文件加入后续标准发布基础命令，避免下次构建丢失挂载。
 
-已在登录后的真实生产Overview验收：Live未配置、Paper断开两行下面显示“OpenRouter余额 $13.95”，上次成功时间正常；保留其他会话已发布的收益审计和7卡片布局。验收时余额原值13.946629063美元，仅页面保留两位小数。截图留在本地 `eval/openrouter_balance_20261101/production-overview-balance.png`；该金额是验收时快照，之后会随账户使用变化。
+已在登录后的真实生产Overview验收：Live未配置、Paper断开两行下面显示“OpenRouter余额 $13.95”，上次成功时间正常；保留其他会话已发布的收益审计和7卡片布局。验收时余额原值13.946629063美元，仅页面保留两位小数。脱敏[验收回执](../eval/openrouter_balance_20261101/acceptance.json)与[生产截图](../eval/openrouter_balance_20261101/production-overview-balance.png)已纳入Git；该金额是验收时快照，之后会随账户使用变化。
