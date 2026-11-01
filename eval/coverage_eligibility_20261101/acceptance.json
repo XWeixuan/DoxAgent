@@ -1,0 +1,220 @@
+{
+  "api": {
+    "image": "sha256:35dfe244eeca82571fa6677c3e1ef514c0b6e424df214e46ab842ce0cd78994f",
+    "health": "healthy",
+    "revision": "db3af6df65817dd31a9e83803a6b96a0bcac9666",
+    "secret_mount_readonly": true
+  },
+  "changed_components": [
+    "v2-api"
+  ],
+  "verification": {
+    "commit": "db3af6df65817dd31a9e83803a6b96a0bcac9666",
+    "at": "2026-11-01T23:28:23.203377+08:00",
+    "results": [
+      {
+        "ticker": "INTC",
+        "seconds": 0.5207,
+        "coverage": {
+          "expected": 560,
+          "succeeded": 542,
+          "ratio": 0.9678571428571429
+        },
+        "unfiltered": {
+          "expected": 620,
+          "succeeded": 562,
+          "ratio": 0.9064516129032258
+        },
+        "excluded_count": 3,
+        "excluded": [
+          {
+            "source": "huggingnews_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "reuters_site_search",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "thelec_semiconductors_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 20,
+              "ratio": 1.0
+            }
+          }
+        ]
+      },
+      {
+        "ticker": "MU",
+        "seconds": 0.3711,
+        "coverage": {
+          "expected": 520,
+          "succeeded": 517,
+          "ratio": 0.9942307692307693
+        },
+        "unfiltered": {
+          "expected": 600,
+          "succeeded": 545,
+          "ratio": 0.9083333333333333
+        },
+        "excluded_count": 4,
+        "excluded": [
+          {
+            "source": "globenewswire_search",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 8,
+              "ratio": 0.4
+            }
+          },
+          {
+            "source": "huggingnews_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "reuters_site_search",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "thelec_semiconductors_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 20,
+              "ratio": 1.0
+            }
+          }
+        ]
+      },
+      {
+        "ticker": "BE",
+        "seconds": 0.6049,
+        "coverage": {
+          "expected": 580,
+          "succeeded": 567,
+          "ratio": 0.9775862068965517
+        },
+        "unfiltered": {
+          "expected": 660,
+          "succeeded": 607,
+          "ratio": 0.9196969696969697
+        },
+        "excluded_count": 4,
+        "excluded": [
+          {
+            "source": "canary_media",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 20,
+              "ratio": 1.0
+            }
+          },
+          {
+            "source": "huggingnews_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "reuters_site_search",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "thelec_semiconductors_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 20,
+              "ratio": 1.0
+            }
+          }
+        ]
+      },
+      {
+        "ticker": "COHR",
+        "seconds": 0.3718,
+        "coverage": {
+          "expected": 560,
+          "succeeded": 554,
+          "ratio": 0.9892857142857143
+        },
+        "unfiltered": {
+          "expected": 640,
+          "succeeded": 594,
+          "ratio": 0.928125
+        },
+        "excluded_count": 4,
+        "excluded": [
+          {
+            "source": "huggingnews_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "investorshub_ticker_news",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 20,
+              "ratio": 1.0
+            }
+          },
+          {
+            "source": "reuters_site_search",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 0,
+              "ratio": 0.0
+            }
+          },
+          {
+            "source": "thelec_semiconductors_rss",
+            "status": "partial",
+            "coverage": {
+              "expected": 20,
+              "succeeded": 20,
+              "ratio": 1.0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
