@@ -1,4 +1,3 @@
-import { CapitalButton } from "./trading-config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -279,7 +278,6 @@ export default function Overview() {
         <StartForm model={model} />
         <section className="monitor-panel" aria-labelledby="monitor-heading">
           <div className="monitor-heading">
-            <CapitalButton disabled={!model.principal.data?.data.can_operate} />
             <div>
               <h2 id="monitor-heading">标的监控</h2>
             </div>

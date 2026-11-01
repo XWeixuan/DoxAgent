@@ -602,6 +602,34 @@
     "transport": "JSON"
   },
   {
+    "method": "POST",
+    "path": "/audit/revenue/refresh",
+    "parameters": "Revenue frame",
+    "response_schema": "RevenueSnapshot",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/audit/revenue/report",
+    "parameters": "Revenue frame",
+    "response_schema": "RevenueReport",
+    "transport": "JSON"
+  },
+  {
+    "method": "POST",
+    "path": "/audit/revenue/hypotheticals",
+    "parameters": "Revenue frame",
+    "response_schema": "RevenueEvaluation",
+    "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/audit/revenue/records/{identity}",
+    "parameters": "Revenue frame",
+    "response_schema": "RevenueDetail",
+    "transport": "JSON"
+  },
+  {
     "method": "GET",
     "path": "/overview/openrouter-balance",
     "parameters": "无",

@@ -9,7 +9,7 @@ CONTROL={
     'poll_states','ir_endpoint_states','v2_ticker_control','v2_control_ack',
     'initialization_repair_incidents','initialization_repair_rounds',
     'te_executions','te_jobs','te_attempts','te_fills','te_events','te_allocations',
-    'te_lots','te_lot_adjustments',
+    'te_lots','te_lot_adjustments','te_capital_events',
     'article_body_results','poll_runs','poll_captures',
 }
 CASE_FIELDS={

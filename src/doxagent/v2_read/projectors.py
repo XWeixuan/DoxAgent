@@ -695,6 +695,8 @@ class DomainProjectors:
             from .health import project as health
 
             health(self.store, ticker, records)
+        from doxagent.revenue_audit.projection import project as revenue_project
+        records.extend(revenue_project(self.store, event, records))
         return records, metrics
 
     def case(self, value: dict[str, Any], revision: int, *, reconstruct_archive: bool = False) -> list[dict[str, Any]]:

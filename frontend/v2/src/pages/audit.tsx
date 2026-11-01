@@ -28,6 +28,7 @@ import { PeriodPicker, periods } from "@/components/business-metrics";
 import { Module, Notice } from "@/components/state";
 import { Button } from "@/components/ui/button";
 import { CoverageNote, MetricNote } from "./overview/metrics";
+import { RevenueAudit } from "./revenue-audit";
 const tokens = (v: Value<string>) =>
   valueText(
     v,
@@ -61,7 +62,7 @@ export default function Audit() {
         />
       </div>
       {revenue ? (
-        <div className="module-empty">暂未开放</div>
+        <RevenueAudit />
       ) : (
         <CostAudit ticker={ticker} />
       )}

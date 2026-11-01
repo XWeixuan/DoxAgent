@@ -90,6 +90,63 @@ class TradeOutputService:
     def __init__(self, journal: RuntimeJournal) -> None:
         self.journal = journal
 
+    def audit_context(self, db, case, *, decision_at=None):
+        """Freeze attribution at decision time; this grants no execution permission."""
+        from doxagent.trade_execution.configuration import active_in, account_pin
+
+        active = active_in(db, case.ticker) or {}
+        desired = db.execute(
+            "SELECT payload FROM runtime_values WHERE namespace='execution_config_desired' AND key=?",
+            (case.ticker,),
+        ).fetchone()
+        environment = (
+            (json.loads(desired[0]) if desired else active).get("configuration", {}).get("environment")
+        )
+        if environment is None:
+            row = (
+                db.execute(
+                    "SELECT json_extract(payload,'$.requested_mode') FROM v2_ticker_control WHERE ticker=?",
+                    (case.ticker,),
+                ).fetchone()
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_ticker_control'").fetchone()
+                else None
+            )
+            environment = {"PAPER_TRADING": "PAPER", "LIVE_TRADING": "LIVE"}.get(row[0] if row else "")
+        environment = environment or "PAPER"
+        pin = account_pin(db, environment) if environment else None
+        return dict(
+            version=1,
+            decision_at=decision_at or self.journal.clock().isoformat(),
+            exit_offset_minutes=(pin or {})
+            .get("profile", {})
+            .get("strategy", {})
+            .get("exit_offset_minutes", 30),
+            environment=environment,
+            account=(pin or {}).get("profile", {}).get("expected_account_id"),
+            title=case.source.snapshot.title,
+        )
+
+
+    def audit_rejected(self, case, trade, reason):
+        """Record a terminal W3 rejection without claiming or releasing an intent."""
+        if case.runtime_mode == "CLOSED" or trade.decision.value not in {"LONG", "SHORT"}:
+            return
+        with self.journal.transaction() as db:
+            assert_write_lease(db)
+            value = dict(
+                intent_id=f"trade:{case.case_id}",
+                case_id=case.case_id,
+                ticker=case.ticker,
+                trade_disposition=reason,
+                trade=trade.model_dump(mode="json"),
+                recorded_at=self.journal.clock().isoformat(),
+                audit_context=self.audit_context(db, case),
+            )
+            db.execute(
+                "INSERT OR IGNORE INTO runtime_values VALUES('analysis_trade_decisions',?,?)",
+                (value["intent_id"], encode(value)),
+            )
+
     def record(
         self,
         case: RuntimeCase,
@@ -115,6 +172,7 @@ class TradeOutputService:
             }
             with self.journal.transaction() if db is None else nullcontext(db) as db:
                 assert_write_lease(db)
+                value["audit_context"] = self.audit_context(db, case)
                 reason, _ = output_permission(db, case.ticker, case.case_id)
                 from doxagent.trade_execution.configuration import active_in
 
@@ -141,9 +199,21 @@ class TradeOutputService:
             if old:
                 return str(json.loads(old[0])["status"])
             prepared_at = self.journal.clock()
+            audit = self.audit_context(db, case, decision_at=prepared_at.isoformat())
+            if selection_id:
+                candidate = db.execute("SELECT payload FROM runtime_values WHERE namespace='candidates' AND key=?", (f"candidate:{case.case_id}",)).fetchone()
+                if candidate:
+                    original = json.loads(candidate[0])
+                    audit["decision_at"] = original.get("audit_context", {}).get("decision_at", original["created_at"])
             reason, execution_pin = output_permission(db, case.ticker, case.case_id)
+            if execution_pin:
+                audit["environment"] = execution_pin["profile"]["environment"]
+                audit["account"] = execution_pin["profile"]["expected_account_id"]
+                audit["exit_offset_minutes"] = execution_pin["profile"].get("strategy", {}).get("exit_offset_minutes", 30)
             if reason:
                 analysis = {
+                    "audit_context": audit,
+                    "intent_id": identity,
                     "case_id": case.case_id,
                     "ticker": case.ticker,
                     "trade_disposition": reason,
@@ -268,6 +338,7 @@ class TradeOutputService:
                     ),
                 )
             intent = {
+                "audit_context": audit,
                 "intent_id": identity,
                 "ticker": case.ticker,
                 "case_id": case.case_id,

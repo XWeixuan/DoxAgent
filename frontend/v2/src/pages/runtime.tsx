@@ -145,6 +145,14 @@ function RuntimeBody({
   }, [ticker, period, scope, view, searchQuery]);
   const listView = exportSession?.viewId ?? readView;
   const selectCase = (id: string) => setSelected({ id, view: readView });
+  const openedFromLink = useRef<string | null>(null);
+  const linkedCase = p.get("case");
+  useEffect(() => {
+    if (linkedCase && openedFromLink.current !== linkedCase) {
+      openedFromLink.current = linkedCase;
+      setSelected({ id: linkedCase, view: readView });
+    }
+  }, [linkedCase, readView]);
   const selectListedCase = (id: string) => setSelected({ id, view: listView });
   const metrics = useRead(
     "RuntimeMetrics",

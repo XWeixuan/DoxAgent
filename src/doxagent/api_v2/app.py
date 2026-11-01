@@ -212,6 +212,7 @@ def create_app(
             path = request.url.path
             if (runner is not None
                     and path not in {PREFIX + "/auth/config", PREFIX + "/auth/me", PREFIX + "/overview/openrouter-balance"}
+                    and path not in {PREFIX + "/audit/revenue/refresh", PREFIX + "/audit/revenue/hypotheticals"}
                     and not path.startswith(PREFIX + "/queries/")
                     and not path.endswith(("/messages/events", "/runtime/graph/events"))):
                 job = {
@@ -514,6 +515,8 @@ def create_app(
     from .cost import install as install_cost
 
     install_cost(app)
+    from .revenue import install as install_revenue
+    install_revenue(app)
     from .bindings import install as install_bindings
 
     install_bindings(app)

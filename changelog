@@ -2498,6 +2498,12 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-01 交易配置发布基线核对：当前Web b472、API 466、Projector 6c由fafc分叉构建，未包含此前c908的交易配置及API；执行器仍为已验收ec680。为避免导航修复发布后刷新丢失配置或接口404，合并已发布消息总线分支与现有交易代码，生成两者兼容的前端及接口/投影基线；不修改或重启下单执行器，不变更账户、策略和资金配置。
 
+2026-11-01 交易配置账户类型与低频入口修正：隐藏Overview策略资金按钮，恢复标的监控标题；资金接口/账本与配置不变。前端原cash布尔判断把未配置账户落入MARGIN单框，改为CASH/MARGIN/未配置三态，未知类型不展示保证金字段；CASH正向LONG/反向SHORT两个ETF字段分别注明对应信号及BUY方向，MARGIN单框注明LONG卖空/SHORT买入。代码及已安装执行器核对确认后端按account_type配置校验并选择两个CASH ETF，CASH两方向开仓均为BUY、退出SELL；新增双向整组执行、任一ETF缺失拒绝，以及未知Live单框草稿后接CASH仍禁止应用的测试。25项后端回归、8项1262/1559浏览器测试、67项前端单测及类型检查通过；本次不改后端执行逻辑。
 2026-11-01 Message Bus HTTP repair: distinguish polling ratio from Resource completeness to stop valid-200 payloads failing frontend validation; preserve request IDs and avoid false empty-source/stale-result labels. Add full FastAPI-to-ApiClient contract regressions and browser tests using the real client; integrate already-deployed 55eb29e3 before rebuilding API/Web to preserve parallel-session changes.
 
 2026-11-01 Overview: show OpenRouter account credit balance beneath Live/Paper Gateway status using an authenticated independent endpoint, a shared 5-minute in-memory cache and API-only read-only credential mount; preserve zero and stale balances, keep provider calls out of SQL workers, and never expose management credentials to clients or Git.
+2026-11-01 收益审计开发：新增前后端收益页、Live/Paper 隔离、五种期间与实际/全部/未执行视图、交易组持仓卡片和共用详情抽屉。复用 Runtime 输出、SourceOutbox、读侧 MVCC 及持仓 allocations；按区间已实现净收益加期末减期初净浮盈核算，自有策略资金与实际归属费用独立统计。默认不读取假设数据；历史 BID_ASK 假设收益按所选期间每批最多12条串行懒计算并缓存；持仓行情仅页面重开/手动刷新请求，切换筛选/账户/期间/详情无行情刷新。新增显式启用边界，不补算或展示旧业务记录；补充实际费用归属参数与 W3 Case 详情入口，不修改订单状态机或交易规则。
+2026-11-01 收益审计补充：顶部最左侧新增当前策略总资产，按 DoxAgent 自有股票当前市值加策略现金计算，包含当前浮盈；使用独立策略基线、资金流和实际净盈亏，支持空头负市值及卖空现金，不混入个人资金，不受期间/实际或假设筛选影响。
+
+
+2026-11-01 收益审计交付收尾：总资产直接复用现有独立策略现金与当前自有持仓，不导入旧交易；七项KPI固定同栏，修正成本页公共六列样式覆盖。合并已发布消息总线和最新交易配置修正后，117项后端回归、类型检查/构建及双宽度收益与成本浏览器检查通过。

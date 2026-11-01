@@ -54,6 +54,12 @@ let configuration: TradingConfiguration = {
   },
   error: null,
 };
+const fixtureMode = new URLSearchParams(location.search).get("account");
+if (fixtureMode === "missing") delete configuration.accounts.LIVE;
+if (fixtureMode === "paper-cash") {
+  configuration.accounts.PAPER.account_type = "CASH";
+  configuration.accounts.LIVE.account_type = "MARGIN";
+}
 let capital: TradingCapital = {
   accounts: [
     {
@@ -91,14 +97,24 @@ runtime.api.request = (async (
       revision: configuration.revision + 1,
     };
     setTimeout(() => {
+      const account =
+        configuration.accounts[configuration.configuration.environment];
+      if (!account) {
+        configuration = {
+          ...configuration,
+          error: {
+            revision: configuration.revision,
+            error: "ACCOUNT_NOT_CONFIGURED",
+          },
+        };
+        return;
+      }
       configuration = {
         ...configuration,
         active: {
           configuration: configuration.configuration,
           ticker_revision: configuration.revision,
-          account_revision:
-            configuration.accounts[configuration.configuration.environment]
-              .revision,
+          account_revision: account.revision,
           applied_revision: `applied-${configuration.revision}`,
           plan_schema_version: 2,
           applied_at: new Date().toISOString(),
