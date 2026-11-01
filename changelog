@@ -2507,3 +2507,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 
 2026-11-01 收益审计交付收尾：总资产直接复用现有独立策略现金与当前自有持仓，不导入旧交易；七项KPI固定同栏，修正成本页公共六列样式覆盖。合并已发布消息总线和最新交易配置修正后，117项后端回归、类型检查/构建及双宽度收益与成本浏览器检查通过。
+2026-11-01 Message Bus coverage: exclude the entire last20 logical-round window from both numerator and denominator when the source is currently failed, partial or SOURCE_DEFERRED; re-include after recovery, preserve card diagnostics and no-sample semantics, reuse existing batched current states without new queries or persistence.

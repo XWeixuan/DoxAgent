@@ -146,7 +146,11 @@ def dashboard_data(store,ticker,view,args):
     body=current_body(store,ticker,view,selected_ids)
     data=metrics(store,ticker,view,{k:args[k] for k in ['source_id','source_kind'] if args.get(k)},body=body)
     mean,count=mean_period(store,ticker,view,selected_ids)
-    chosen=[s['recent']['coverage'] for s in sources if s['source']['source_id'] in selected]
+    # Eligibility is the current source state: exclude its whole window, including
+    # earlier successes. Keep card diagnostics and the logical-round ledger intact.
+    chosen=[s['recent']['coverage'] for s in sources if s['source']['source_id'] in selected
+            and s['poll_status'] not in {'partial','failed'}
+            and not (s['current_error'] or {}).get('code','').startswith('SOURCE_DEFERRED:')]
     expected=sum(c['expected'] for c in chosen);success=sum(c['succeeded'] for c in chosen)
     return {'metrics':data,'sources':sources,'counts':counts,'mean_e2e_seconds':mean,'e2e_samples':count,
             'coverage':{'expected':expected,'succeeded':success,'ratio':success/expected if expected else None}}

@@ -153,6 +153,43 @@ def test_dashboard_zero_schema_and_closed_bindings_keep_ir_sec_policy(tmp_path,m
     assert dashboard_data(store,'MU',view,{})['counts']['running']==3
 
 
+def test_coverage_excludes_entire_window_for_current_failed_or_deferred_sources(tmp_path,monkeypatch):
+    from tests.test_content_enrichment_hub import _setup
+    from doxagent.api_v2 import bus_dashboard
+    _,_,source,binding=_setup(tmp_path/'bus')
+    store=ReadStore(tmp_path/'read.db');store.migrate();store.migrate_projection_indexes()
+    rows=[{'kind':'ticker','ticker':'MU','id':'MU','data':{'run_state':'RUNNING'}}]
+    states={}
+    for sid,status,error in [('healthy','succeeded',None),('failed','failed',None),
+                             ('partial','partial',None),
+                             ('blocked','succeeded','SOURCE_DEFERRED:SITE_ACCESS')]:
+        s=source.model_copy(update={'source_id':sid})
+        b=binding.model_copy(update={'source_id':sid,'binding_id':'MU:'+sid})
+        rows.extend([{'kind':'native:source_definitions','ticker':'','id':sid,'data':s.model_dump(mode='json')},
+                     {'kind':'native:ticker_source_bindings','ticker':'MU','id':b.binding_id,'source_id':sid,'data':b.model_dump(mode='json')}])
+        states[b.binding_id]={'collection_active':True,'status':status,'last_error_code':error,
+                              'target_due_at':'2026-11-01T12:00:00Z'}
+    store.ingest('test','heads',rows)
+    monkeypatch.setattr(bus_dashboard,'binding_states',lambda tickers:states)
+    successes={'MU:healthy':18,'MU:failed':1,'MU:partial':3,'MU:blocked':0}
+    monkeypatch.setattr(bus_dashboard,'recent_rounds',lambda *args:{
+        bid:{'expected':20,'succeeded':successes[bid],'ratio':successes[bid]/20,'from_at':None} for bid in states})
+    view=head_view(store,datetime(2026,11,1,12,tzinfo=UTC))
+    result=dashboard_data(store,'MU',view,{})
+    validate('BusDashboard',result)
+    assert result['coverage']=={'expected':20,'succeeded':18,'ratio':.9}
+    # The cards retain the observed window for diagnosis; only the KPI excludes it.
+    assert all(s['recent']['coverage']['expected']==20 for s in result['sources'])
+    for sid in ['failed','partial','blocked']:
+        filtered=dashboard_data(store,'MU',view,{'source_id':sid})
+        assert filtered['coverage']=={'expected':0,'succeeded':0,'ratio':None}
+    # Recovery at the next read re-includes the whole unchanged window.
+    for state in states.values():state.update(status='succeeded',last_error_code=None)
+    assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':80,'succeeded':22,'ratio':.275}
+    for state in states.values():state.update(status='failed')
+    assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':0,'succeeded':0,'ratio':None}
+
+
 def test_period_e2e_is_per_new_message_and_replacement_does_not_double_count(tmp_path):
     store=ReadStore(tmp_path/'read.db');store.migrate();store.migrate_projection_indexes()
     row=message('a');row['data']['pipeline']={'discovered_at':'2026-09-08T11:59:58Z','poll_due_at':'2026-09-08T11:59:00Z'}
