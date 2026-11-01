@@ -63,3 +63,7 @@
 本地已按报告 P0-A、P0-B、P1 实施，没有接回旧重型接纳事务，也没有实现 P2 模糊/事件去重。相关文件集中在 `message_bus_v2/{deduplication,body_results,adapters,polling,repository,live_repository,live,service}.py` 与 `content_enrichment/service.py`。
 
 如后续发布，应让 Bus、BODY、Delivery 使用同一代码版本，再在当前 Google ticker 的自然新稿中分别核对 canonical 复用、真实 BODY 发送、每 ticker 唯一 Stream/Runtime CASE 和正文晋级；覆盖完整活跃交易日后再判断全 ticker 扩量。不得用本地重放结果宣称生产容量/延迟达标。本轮未执行生产发布或绑定扩量。
+
+## 后续发布记录（2026-11-02）
+
+已随ae5f3f8a整体main发布至包括Bus/BODY/Delivery在内的19个正式角色，维持同一源码版本；配套正式collection迁移成功。Google新增绑定及生产校验的真实边界见[整体发布验收](google-news-rss-whitelist-body-optimization-phase2-20261102.md)。非交易日自然cycles尚未运行，不以本地重放或绑定成功宣称交易日SLA。

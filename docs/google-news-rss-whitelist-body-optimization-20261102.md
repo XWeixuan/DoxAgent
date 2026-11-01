@@ -145,3 +145,7 @@
 |`summary.json`、`site-results.csv`|34站分层统计，避免混算成功率|
 
 所有代码仍为本地候选，**未提交、未发布生产**。上线后才可以用真实新文章计算流量加权的FULL/SHORT_FULL成功率及耗时，不能用本报告的故障抽样或“多轮至少一次成功”替代生产验收。
+
+## 后续实施状态（2026-11-02）
+
+第二轮已正式发布全部main开发代码及Google专用两路径访问/原生接管，BE/INTC之外新增7个绑定、MU排除。Benzinga公共路径调整最终仅作用Google源，原生HTTP/Browser顺序保留；最终结果、此前统计中的Stocktwits行情页/截断纠正及生产剩余限制，以[第二轮报告](google-news-rss-whitelist-body-optimization-phase2-20261102.md)为准。

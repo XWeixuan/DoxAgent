@@ -2546,3 +2546,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-02 Google News RSS正文第二轮优化：Google专用两路径路由接入Jina引擎、Zyte安全环境认证和单Profile按需Chrome；修复StockTitan代理DNS预检、GuruFocus浮层、Moomoo/TechPowerUp/StreetInsider/Stocktwits/Barchart正文范围及伪FULL。复用既有Live队列实现四域名原生source接管、发现溯源及追踪变体归并，禁止重复公共fallback轮次，原生抓取策略保持。新增除MU外当前ticker幂等绑定脚本；按用户追加要求整体同步本地main开发并正式生产发布，验收记录见docs/google-news-rss-whitelist-body-optimization-phase2-20261102.md。
 2026-11-02 整体发布收敛：storage_release在更新组件commit时同步更新不可变源码archive SHA，避免私有Compose保留旧值覆盖新镜像身份；保留previous原始身份并补充发布回归。
+
+2026-11-02 整体main发布验收：ae5f3f8a已推origin/main并正式发布19角色，648次源码hash及commit/archive身份核验通过。首轮漏迁移导致BODY缺execution_spent_ms列，已中止并经正式collection-migration修复（退出0），随后角色均运行且最终restart0。Google七个新绑定、BE/INTC幂等保留、MU排除；9个编译配置可见，当前非交易日未伪造自然轮询SLA。生产StockTitan FULL，GuruFocus1次失败+3篇FULL；保留TheStreet/原生身份权益限制。Google Chrome当前0进程、候选无引用镜像已清理；本地临时Profile删除被自动审批拦截而保留。

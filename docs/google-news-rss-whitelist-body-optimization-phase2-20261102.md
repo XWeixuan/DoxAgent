@@ -77,3 +77,38 @@ Google摘要与原生列表摘要属于两个origin观察，不能误当原生�
 ### 发布前完整回归结果
 
 扩大范围回归447项：441通过、6失败，333秒。对6条失败在未修改HEAD e111a2b1的隔离源码/测试中独立复现，均失败，保留head-baseline-tests.xml/txt。失败为Event Library三个时间规则、Document2一次reference注入、CDECR失败文档NOOP语义、W3回测运行延迟READY预期；未修改相应生产语义来使本轮全绿。Google最终63项通过；Ruff与编译检查通过。发布工具另修正环境中旧source archive SHA覆盖新镜像身份的问题，previous环境不修改。
+
+
+## 7. 最终生产发布与运行验收
+
+正式应用源码提交：`ae5f3f8ada5299ab7be528c57a16d8a12224b735`，已推送origin/main并同步服务器。后续验收回执提交只追加文档/证据及本地运维验证脚本，不改变这批运行源码。正式source archive SHA256：`b9942559f1606bb2ede68117d251be6827b7bbfc9d1493664da1d236b400b8c8`。使用现有storage_release构建backend/site/supervisor/web/guardian/repair-agent，**没有启用最初准备的临时BODY overlay**。
+
+19个应用角色均已发布：Supervisor、Site Access、Bus、BODY、Collector、Delivery、Control、Projector、API、Web、Codex Worker、Scheduler、O4、Maintenance、Initialization、CDECR Executor、交易Executor、Transport Maintenance、Guardian。逐一确认运行镜像等于release登记值、commit/source archive环境正确；18个Python角色各核验36个变更源码文件，共648次hash匹配。提供healthcheck的角色全部healthy，其余确认running；最终容器重启计数均为0。这是当前发布验收，不等于长期零故障保证。
+
+### 发布过程中实际发生的故障与恢复
+
+首轮发布漏执行同期轻量改动所需的正式迁移，BODY在enqueue_checks处报`sqlite3.OperationalError: no such column: execution_spent_ms`，出现重启。发现后中止当次发布；通过storage_release原有`--collection-migration`流程停止Collector/Bus/BODY及相关API/Projector、运行正式v2-migrate、再启动相同版本。迁移退出码0，现有Live表补字段，无历史回放、epoch重置或身份改动。迁移及中断事实保留，不能用最终新容器的restart_count=0抹去早期故障。
+
+Scheduler退出耗时异常，现有Compose默认允许20分钟优雅退出；已发停止信号后再次确认Codex Worker active/cold/queued均为0，采用30秒容器停止上限完成退出，保留持久任务、租约及原有恢复语义。没有改Runtime任务状态或订单记录，随后完成新版本启动。未借本次发布扩大修复既有Runtime/Event Library测试基线问题。
+
+### 正式容器真实BODY复测
+
+- StockTitan：FULL，9924字，1.658秒，实际走现有土耳其HTTP出口。
+- GuruFocus首篇：一次Zyte阶段超时，随后共享Chrome回退未通过文章身份验证，最终UNAVAILABLE，27.116秒；失败保留。
+- GuruFocus另外三篇历史验证文章：全部FULL，分别5706/2217/969字，9.214/18.669/9.173秒，均为实际Zyte browser响应。证明正式容器认证/解析路径有效，但不能把这三次成功覆盖首篇失败；正式容器本轮该站为3/4。
+
+以上通过正式SharedContentExtractor及body_v2.2执行，没有注入消息或创建Case。正文路径样本与83篇主实验有重复，**不能相加成为88篇独立文章**。
+
+### 绑定及实际调度状态
+
+已新增CEG、COHR、IONQ、NBIS、ONDS、RKLB、SNOW七个绑定；BE/INTC保留原绑定，操作与再次预览均为unchanged。独立Repository回读9个唯一Google绑定，均enabled+polling.enabled；MU绑定不存在。BE/INTC版本仍为3，新绑定版本1。统一搜索词依次为Bloom Energy、Constellation Energy、Coherent Corp、Intel、IonQ、Nebius、Ondas、Rocket Lab、Snowflake，未加入ticker代码。沿用现行60秒周期，没有擅自改为全时轮询或30秒周期。
+
+Collector配置编译可见全部9个绑定；当前语义交易日为2026-11-01、calendar_realtime=false，既有非交易日日历门关闭Google自然轮询。因此近期无Google cycles，旧unit记录仅为保留checkpoint，不能误说新绑定已跑完自然轮询或达到端到端SLA。没有修改日历/生产collection override来伪造验收，也不把源enabled当作自然消息已验收。
+
+### 资源和凭据
+
+正式Zyte环境仅注入BODY，逐容器检查未扩散至其他18角色；宿主env文件0600。共享Google Profile目录`/identities/google-news-body/profile`，检查其Chrome进程数为0。一次低频资源快照：BODY178.3MiB、Collector161.6MiB、Site Access537.1MiB；这是整个角色的当前内存，不是新增功能的精确增量或交易日峰值。此前未启用、无运行/回滚/模板引用的候选镜像`doxagent-google-body:20261102`已按引用检查删除；正式镜像、必要previous和原生Profile保留。全局reconcile在CPU压力下按原策略延期，未强制prune。
+
+本地临时Chrome测试Profile的清理被自动审批拦截，已保留；它不在Git/生产镜像内，也不是服务器常驻浏览器。
+
+最终证据：production-verified.json、schema-migration-receipt.json、production-smoke-recovery.txt、production-smoke-next.json、bindings-applied.json、bindings-readback.json、bindings-independent.json、polling-windows.json、browser-idle.json、production-resources.txt、candidate-cleanup.json。TheStreet、原生付费/身份限制和自然交易日SLA仍按上述实际边界保留，不宣称所有站点全部修复。

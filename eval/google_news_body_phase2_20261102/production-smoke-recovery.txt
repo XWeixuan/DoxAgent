@@ -1,0 +1,2 @@
+running restarts=0
+{"provider_key_present": true, "profile": "/identities/google-news-body/profile", "results": [{"site": "stocktitan.net", "outcome": "FULL", "reason": null, "chars": 9924, "method": "stocktitan_embedded_form4", "elapsed_ms": 1658, "attempts": [{"stage": "direct", "status": 200}]}, {"site": "gurufocus.com", "outcome": "UNAVAILABLE", "reason": "publisher_identity_mismatch", "chars": 0, "method": null, "elapsed_ms": 27116, "attempts": [{"stage": "zyte", "status": null}, {"stage": "google_browser", "status": 200}]}]}

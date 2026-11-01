@@ -1,0 +1,3 @@
+doxagent-v2-v2-content-enrichment-1 178.3MiB / 4GiB 8.50%
+doxagent-v2-v2-message-collector-1 161.6MiB / 4GiB 5.79%
+doxagent-v2-v2-site-access-1 537.1MiB / 10GiB 0.31%

@@ -1,0 +1,1 @@
+{"commit": "ae5f3f8ada5299ab7be528c57a16d8a12224b735", "migration": {"container": "5bf02a5ff6a7e21af352dfb2e640eb95e691230d3d894d8f0155cd7f44cb24c7", "exit_code": "0"}, "components": ["v2-message-bus", "v2-content-enrichment", "v2-message-collector", "v2-projector", "v2-api"]}

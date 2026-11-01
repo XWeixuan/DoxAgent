@@ -108,5 +108,11 @@
       "failure_reasons": []
     }
   ],
-  "production_sla_proven": false
+  "production_sla_proven": false,
+  "selected_execution_attempts": {
+    "reader": 38,
+    "zyte": 20,
+    "direct": 32,
+    "zyte_http": 18
+  }
 }
