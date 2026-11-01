@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "27f06db45e31aef96e2b845dda4e57c1ffa3ffd833b3b2c5a749efbee232b2d2",
+  "source_sha256": "18de3f93b079b6675b2a4f244028b92520b13910f517c217e954de707c965e4b",
   "$defs": {
     "Id": {
       "type": "string"
@@ -28855,6 +28855,46 @@
           "additionalProperties": false
         }
       ]
+    },
+    "OpenRouterBalance": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "STALE",
+            "UNAVAILABLE",
+            "NOT_CONFIGURED"
+          ]
+        },
+        "balance_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecimalString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checked_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "balance_usd",
+        "checked_at"
+      ],
+      "additionalProperties": false
     }
   }
 }

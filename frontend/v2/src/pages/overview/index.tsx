@@ -24,7 +24,7 @@ import {
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 
 import { Module, Notice } from "@/components/state";
-import { valueText } from "@/core/format";
+import { decimal, formatInstant, valueText } from "@/core/format";
 import { filtersSupported, periods, useOverview } from "./data";
 import { Metrics } from "./metrics";
 import { StartForm } from "./start-form";
@@ -209,13 +209,60 @@ export default function Overview() {
                       </div>
                     ) : (
                       <>
-                        {(["LIVE", "PAPER"] as const).map(environment => {
+                        {(["LIVE", "PAPER"] as const).map((environment) => {
                           const gateway = model.gateway.data?.data.data;
-                          const status = environment === "LIVE" ? gateway?.ib_gateway_live_status : gateway?.ib_gateway_paper_status;
-                          return <div className="gateway-status" key={environment}><span>IB Gateway–{environment === "LIVE" ? "Live" : "Paper"}</span><strong className={status === "CONNECTED" ? "healthy-count" : "blocked-count"} title={model.gateway.error?.message}>{model.gateway.isError ? "检测失败" : status === "CONNECTED" ? "正常" : status === "DISCONNECTED" ? "断开" : status === "NOT_CONFIGURED" ? "未配置" : "未检测"}</strong></div>;
+                          const status =
+                            environment === "LIVE"
+                              ? gateway?.ib_gateway_live_status
+                              : gateway?.ib_gateway_paper_status;
+                          return (
+                            <div className="gateway-status" key={environment}>
+                              <span>
+                                IB Gateway–
+                                {environment === "LIVE" ? "Live" : "Paper"}
+                              </span>
+                              <strong
+                                className={
+                                  status === "CONNECTED"
+                                    ? "healthy-count"
+                                    : "blocked-count"
+                                }
+                                title={model.gateway.error?.message}
+                              >
+                                {model.gateway.isError
+                                  ? "检测失败"
+                                  : status === "CONNECTED"
+                                    ? "正常"
+                                    : status === "DISCONNECTED"
+                                      ? "断开"
+                                      : status === "NOT_CONFIGURED"
+                                        ? "未配置"
+                                        : "未检测"}
+                              </strong>
+                            </div>
+                          );
                         })}
                       </>
                     )}
+                    <div className="gateway-status openrouter-balance">
+                      <span>OpenRouter 余额</span>
+                      <strong
+                        title={
+                          model.balance.data?.data.data?.checked_at
+                            ? `账户余额（USD），每5分钟更新；上次成功：${formatInstant(model.balance.data.data.data.checked_at)}`
+                            : "账户余额（USD），每5分钟更新"
+                        }
+                      >
+                        {model.balance.data?.data.data?.balance_usd != null
+                          ? `$${decimal(model.balance.data.data.data.balance_usd, 2)}${model.balance.isError || model.balance.data.data.data.status === "STALE" ? "（旧）" : ""}`
+                          : model.balance.isPending
+                            ? "读取中"
+                            : model.balance.data?.data.data?.status ===
+                                "NOT_CONFIGURED"
+                              ? "未配置"
+                              : "读取失败"}
+                      </strong>
+                    </div>
                   </div>
                 </article>
               </div>

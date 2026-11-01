@@ -26,6 +26,14 @@ runtime.api.request = (async (name: string, path: string) => {
     ) as Period;
     return { data: wire.context(selected) };
   }
+  if (name === "OpenRouterBalance")
+    return {
+      data: wire.resource({
+        status: "AVAILABLE",
+        balance_usd: "13.946629063",
+        checked_at: "2026-11-01T00:00:00Z",
+      }),
+    };
   if (name === "Status")
     return {
       data: wire.resource({

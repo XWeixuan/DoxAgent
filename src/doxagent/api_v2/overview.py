@@ -21,9 +21,17 @@ from .ib_gateway import GatewayMonitor
 def install(app: FastAPI) -> None:
     gateway = GatewayMonitor(app.state.control.journal)
     app.state.gateway_monitor = gateway
+    from .openrouter_balance import OpenRouterBalanceMonitor
+    app.state.openrouter_balance = OpenRouterBalanceMonitor()
     prefix = "/api/doxagent/v2"
     store, views, control = app.state.store, app.state.views, app.state.control
     query, respond = app.state.query, app.state.respond
+
+    @app.get(prefix + '/overview/openrouter-balance')
+    async def openrouter_balance(request: Request):
+        query(request,set())
+        data = await app.state.openrouter_balance.status()
+        return respond(request,'OpenRouterBalance',data)
 
     def overview_view(request, args):
         view = views.get(request.state.principal.user_id, args.get("view_id", ""))

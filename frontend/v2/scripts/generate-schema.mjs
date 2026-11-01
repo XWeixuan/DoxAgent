@@ -89,6 +89,7 @@ if (existsSync(backendPath)) {
     "CostReportRow",
     "CostSummary",
     "BusStatus",
+    "OpenRouterBalance",
     "SourceStatus",
     "PollTimeliness",
     "PollCadence",

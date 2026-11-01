@@ -133,6 +133,16 @@ export function useOverview(
       ),
     queryFn: ({ signal }) => load("Status", "/overview/gateway-status", signal),
   });
+  const balance = useQuery({
+    queryKey: [scope, "openrouter-balance"],
+    queryFn: ({ signal }) =>
+      api.request("OpenRouterBalance", "/overview/openrouter-balance", {
+        signal,
+      }),
+    staleTime: 300_000,
+    refetchInterval: 300_000,
+    refetchOnWindowFocus: false,
+  });
   const metrics = useQuery({
     queryKey: [scope, "overview-metrics", period],
     enabled: !!context.data,
@@ -179,6 +189,7 @@ export function useOverview(
     await Promise.allSettled([
       status.refetch(),
       gateway.refetch(),
+      balance.refetch(),
       metrics.refetch(),
       list.refetch(),
     ]);
@@ -226,6 +237,7 @@ export function useOverview(
       error: contextBlocked ? context.error : status.error,
     },
     gateway,
+    balance,
     metrics: {
       ...metrics,
       isPending: metrics.isPending && !contextBlocked,

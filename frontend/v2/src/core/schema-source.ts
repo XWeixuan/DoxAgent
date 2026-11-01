@@ -6,6 +6,7 @@ export type WirePrincipal = W.Response<W.Principal>;
 export type WireCapabilities = W.Response<W.Capabilities>;
 export type WireReadContext = W.Response<W.ReadContext>;
 export type WireStatus = W.Response<W.Resource<W.OverviewStatus>>;
+export type WireOpenRouterBalance = W.Response<W.Resource<W.OpenRouterBalance>>;
 export type WireMetrics = W.Response<W.Resource<W.OverviewMetrics>>;
 export type WireTickers = W.Response<W.Resource<W.Page<W.TickerOverview>>>;
 export type WireNavigation = W.Response<W.Resource<W.Page<W.TickerNavigation>>>;

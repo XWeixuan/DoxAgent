@@ -1,0 +1,8 @@
+# Optional API-only credential mount. The key file is outside the Git checkout.
+services:
+  v2-api:
+    secrets: [openrouter_management_key]
+
+secrets:
+  openrouter_management_key:
+    file: ${DOXAGENT_OPENROUTER_MANAGEMENT_KEY_HOST_FILE:-/var/lib/doxagent/overview-credits/management_key}

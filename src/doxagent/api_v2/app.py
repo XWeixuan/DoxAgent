@@ -211,7 +211,7 @@ def create_app(
             runner = app.state.query_runner if request.method == "GET" else app.state.control_runner
             path = request.url.path
             if (runner is not None
-                    and path not in {PREFIX + "/auth/config", PREFIX + "/auth/me"}
+                    and path not in {PREFIX + "/auth/config", PREFIX + "/auth/me", PREFIX + "/overview/openrouter-balance"}
                     and not path.startswith(PREFIX + "/queries/")
                     and not path.endswith(("/messages/events", "/runtime/graph/events"))):
                 job = {

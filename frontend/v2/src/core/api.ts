@@ -66,6 +66,7 @@ export type Endpoints = {
   Capabilities: S.WireCapabilities;
   ReadContext: S.WireReadContext;
   Status: S.WireStatus;
+  OpenRouterBalance: S.WireOpenRouterBalance;
   Metrics: S.WireMetrics;
   Tickers: S.WireTickers;
   Navigation: S.WireNavigation;

@@ -600,5 +600,12 @@
     "parameters": "configuration",
     "response_schema": "TradingCapital",
     "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/overview/openrouter-balance",
+    "parameters": "无",
+    "response_schema": "OpenRouterBalance",
+    "transport": "JSON"
   }
 ]

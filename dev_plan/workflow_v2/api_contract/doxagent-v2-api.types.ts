@@ -195,6 +195,11 @@ export interface TickerNavigation {
   removed: false;
 }
 export interface SourceCounts { normal: Value<Count>; abnormal: Value<Count> }
+export interface OpenRouterBalance {
+  status: "AVAILABLE" | "STALE" | "UNAVAILABLE" | "NOT_CONFIGURED";
+  balance_usd: DecimalString | null;
+  checked_at: Instant | null;
+}
 export interface OverviewStatus { ib_gateway_status?: "CONNECTED" | "DISCONNECTED"; ib_gateway_live_status?: "CONNECTED" | "DISCONNECTED" | "NOT_CONFIGURED"; ib_gateway_paper_status?: "CONNECTED" | "DISCONNECTED" | "NOT_CONFIGURED"; clock: ClockContext; normal_tickers: Value<Count>; blocked_tickers: Value<Count> }
 export interface OverviewMetrics {
   policy_hits: Metric;

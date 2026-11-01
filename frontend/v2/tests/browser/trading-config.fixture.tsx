@@ -133,6 +133,14 @@ runtime.api.request = (async (
     ) as Period;
     return { data: wire.context(selected) };
   }
+  if (name === "OpenRouterBalance")
+    return {
+      data: wire.resource({
+        status: "AVAILABLE",
+        balance_usd: "13.946629063",
+        checked_at: "2026-11-01T00:00:00Z",
+      }),
+    };
   if (name === "Status")
     return {
       data: wire.resource({
@@ -163,8 +171,14 @@ createRoot(document.getElementById("root")!).render(
   <RuntimeProvider runtime={runtime}>
     <BrowserRouter>
       <Routes>
-        <Route path="/tests/browser/trading-config.html" element={<Overview />} />
-        <Route path="/ticker/:ticker/research" element={<h1>基础投研测试页</h1>} />
+        <Route
+          path="/tests/browser/trading-config.html"
+          element={<Overview />}
+        />
+        <Route
+          path="/ticker/:ticker/research"
+          element={<h1>基础投研测试页</h1>}
+        />
       </Routes>
     </BrowserRouter>
   </RuntimeProvider>,
