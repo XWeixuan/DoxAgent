@@ -553,6 +553,17 @@ def parse_search(raw, e, now):
     return rows, value.get("cursor", {})
 
 
+def _cse_token_invalid(raw):
+    try:
+        value = json.loads(raw[raw.index('{'):raw.rindex('}')+1])
+        error = value.get('error') or {}
+        text = str(error.get('message', '')) + ' ' + ' '.join(
+            str(item.get('reason', '')) for item in error.get('errors', []))
+    except (ValueError, TypeError, AttributeError):
+        return False
+    return bool(re.search(r'(?:invalid|expired)[ _-]*(?:cse[ _-]*)?token|(?:cse_tok|token).{0,40}(?:invalid|expired)', text, re.I))
+
+
 class DefenseAdapter:
     def __init__(self, http=None):
         self.http = http or DefenseHttp()
@@ -563,47 +574,52 @@ class DefenseAdapter:
         await self.http.close()
 
     async def _search(self, e, query, start=0):
-        async with self.cse_lock:
-            if self.cse is None or self.cse[0] < time.monotonic():
-                cx = "partner-pub-0047680307646695:9309925491"
-                r = await self.http.fetch(
-                    "https://cse.google.com/cse.js?" + urlencode({"cx": cx}), e
-                )
-                if r.status != 200:
-                    raise RuntimeError(f"calcalist_cse_bootstrap_http_{r.status}")
-                fields = {}
-                for name in ("cse_token", "cselibVersion"):
-                    found = re.search(r'"' + name + r'"\s*:\s*"([^"\\]+)"', r.text)
-                    if not found:
-                        raise ValueError("calcalist_cse_bootstrap_contract_changed")
-                    fields[name] = found[1]
-                self.cse = (time.monotonic() + 900, fields)
-        fields = self.cse[1]
-        params = {
-            "rsz": "filtered_cse",
-            "num": "10",
-            "hl": "iw",
-            "source": "gcsc",
-            "cselibv": fields["cselibVersion"],
-            "cx": "partner-pub-0047680307646695:9309925491",
-            "q": query,
-            "safe": "active",
-            "cse_tok": fields["cse_token"],
-            "gl": "il",
-            "filter": "0",
-            "exp": "cc,esbfa",
-            "callback": "callback",
-            "sort": "date",
-            "start": start,
-            "rurl": e.urls[0] + "#gsc.tab=0&gsc.q=" + query,
-        }
-        capture = await self.http.fetch(
-            "https://cse.google.com/cse/element/v1?" + urlencode(params), e
-        )
-        if capture.status != 200:
-            self.cse = None
-            raise RuntimeError(f"calcalist_search_http_{capture.status}")
-        return capture
+        for attempt in range(2):
+            async with self.cse_lock:
+                if self.cse is None or self.cse[0] < time.monotonic():
+                    cx = "partner-pub-0047680307646695:9309925491"
+                    r = await self.http.fetch(
+                        "https://cse.google.com/cse.js?" + urlencode({"cx": cx}), e
+                    )
+                    if r.status != 200:
+                        raise RuntimeError(f"calcalist_cse_bootstrap_http_{r.status}")
+                    fields = {}
+                    for name in ("cse_token", "cselibVersion"):
+                        found = re.search(r'"' + name + r'"\s*:\s*"([^"\\]+)"', r.text)
+                        if not found:
+                            raise ValueError("calcalist_cse_bootstrap_contract_changed")
+                        fields[name] = found[1]
+                    self.cse = (time.monotonic() + 900, fields)
+            fields = self.cse[1]
+            params = {
+                "rsz": "filtered_cse",
+                "num": "10",
+                "hl": "iw",
+                "source": "gcsc",
+                "cselibv": fields["cselibVersion"],
+                "cx": "partner-pub-0047680307646695:9309925491",
+                "q": query,
+                "safe": "active",
+                "cse_tok": fields["cse_token"],
+                "gl": "il",
+                "filter": "0",
+                "exp": "cc,esbfa",
+                "callback": "callback",
+                "sort": "date",
+                "start": start,
+                "rurl": e.urls[0] + "#gsc.tab=0&gsc.q=" + query,
+            }
+            capture = await self.http.fetch(
+                "https://cse.google.com/cse/element/v1?" + urlencode(params), e
+            )
+            if capture.status != 200:
+                if attempt == 0 and _cse_token_invalid(capture.text):
+                    async with self.cse_lock:
+                        if self.cse and self.cse[1] is fields:
+                            self.cse = None
+                    continue
+                raise RuntimeError(f"calcalist_search_http_{capture.status}")
+            return capture
 
     async def poll(self, context: PollContext):
         return await self._poll(context)

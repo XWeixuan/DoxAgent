@@ -238,8 +238,10 @@ def test_embedded_sdk_identity_hook_is_awaited_with_request(tmp_path):
         received.append((request, thread, turn))
 
     runtime.receipt_callback = capture
-    assert asyncio.run(runtime.start("request", tmp_path)) == "handle"
-    assert received == [("request", "thread-1", None), ("request", "thread-1", "turn-1")]
+    from types import SimpleNamespace
+    request = SimpleNamespace(thread_id=None)
+    assert asyncio.run(runtime.start(request, tmp_path)) == "handle"
+    assert received == [(request, "thread-1", None), (request, "thread-1", "turn-1")]
 
 
 def test_legacy_empty_global_state_uses_reconstructed_runtime_snapshot(tmp_path, monkeypatch):

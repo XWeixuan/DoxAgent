@@ -24,9 +24,52 @@ def invalid_page(value: str | None) -> bool:
     return bool(re.match(r"(?:Search results for|1\.\s*News\s*[•·])", value, re.I))
 
 
+def language(message, source_id=""):
+    evidence = message.metadata.get('identity_evidence', {})
+    return (message.metadata.get('language') or evidence.get('language')
+            or ('en' if source_id in {'benzinga_news', 'finnhub_company_news', 'yahoo_finance_news'} else ''))
+
+
+def url_kind(message, source_id=""):
+    kind = message.metadata.get('identity_evidence', {}).get('url_kind', 'unknown')
+    if kind != 'unknown':
+        return kind
+    host = (urlsplit(message.url).hostname or '').lower()
+    if source_id == 'benzinga_news' and (host == 'benzinga.com' or host.endswith('.benzinga.com')):
+        return 'article'  # The API supplies article permalinks, not list-page guesses.
+    if source_id == 'finnhub_company_news' and host not in {'finnhub.io', 'news.google.com'}:
+        return 'article'
+    return kind
+
+
+def article_identity(message, source_id, *, default_language=None):
+    """Fill only provider-known identity facts, also for stored pre-fix inputs."""
+    evidence = dict(message.metadata.get('identity_evidence', {}))
+    lang = message.metadata.get('language') or evidence.get('language') or default_language or language(message, source_id)
+    kind = url_kind(message, source_id)
+    if lang == message.metadata.get('language', '') and kind == evidence.get('url_kind', 'unknown'):
+        return message
+    evidence['url_kind'] = kind
+    return message.model_copy(update={'metadata': {**message.metadata, 'identity_evidence': evidence,
+                                                  **({'language': lang} if lang else {})}})
+
+
+def identity_title(message):
+    title = text(message.title)
+    # A publisher suffix is presentation, not a numeric fact (e.g. 24/7 Wall St.).
+    if (message.metadata.get('provider') == 'google_news'
+            or getattr(message, 'source_id', '') == 'google_news_search_rss'
+            or message.metadata.get('google_wrapper_url')):
+        suffix = ' - ' + text(message.publisher_name or message.source)
+        if len(suffix) > 3 and title.casefold().endswith(suffix.casefold()):
+            title = title[:-len(suffix)].rstrip()
+    return title
+
+
 def article_url(url: str, kind: str = "unknown") -> str | None:
     p = urlsplit(url)
-    if kind == "generic" or p.path.rstrip("/") in {
+    host = (p.hostname or '').lower().removeprefix('www.')
+    if (host == 'finnhub.io' and p.path.rstrip('/') == '/api/news') or kind == "generic" or p.path.rstrip("/") in {
         "",
         "/search",
         "/site-search",
@@ -45,7 +88,10 @@ def article_url(url: str, kind: str = "unknown") -> str | None:
         for k, v in parse_qsl(p.query, keep_blank_values=True)
         if not k.lower().startswith("utm_")
         and k.lower() not in {"fbclid", "gclid", "mc_cid", "mc_eid"}
-        and not ((p.hostname or '').lower() == 'finance.yahoo.com' and k.lower() == '.tsrc')
+        and not (k.lower() == '.tsrc' and host in {
+            'finance.yahoo.com', '247wallst.com', 'tikr.com', 'stocktwits.com', 'fool.com',
+            'thestreet.com', 'barrons.com', 'benzinga.com', 'investors.com'})
+        and not (host == 'barrons.com' and k.lower() in {'siteid', 'mod'})
     ]
     return urlunsplit(
         (p.scheme.lower(), p.netloc.lower(), p.path or "/", urlencode(sorted(query)), "")
@@ -77,6 +123,14 @@ def stable_fields(message: RawMessageInput) -> dict:
 
 def stable_fingerprint(message: RawMessageInput) -> str:
     return sha256_text(canonical_json(stable_fields(message)))
+
+
+def full_fingerprint(body, title=None):
+    value = text(body)
+    if (not value or invalid_page(value) or not assess_media_body(value, title).complete_like
+            or len(set(re.findall(r'\w+', value.lower()))) < 40):
+        return None
+    return sha256_text(value)
 
 
 def content_evidence(message: RawMessageInput, original: RawMessageInput) -> dict:
@@ -147,8 +201,8 @@ def context_conflict(a: RawMessage, b: RawMessage, *, content_match: bool = Fals
         )
         if known_article_id:
             ta, tb = (
-                set(re.findall(r"\w+", text(a.title).lower())),
-                set(re.findall(r"\w+", text(b.title).lower())),
+                set(re.findall(r"\w+", identity_title(a).lower())),
+                set(re.findall(r"\w+", identity_title(b).lower())),
             )
             if ta and tb and len(ta & tb) / max(len(ta), len(tb)) < 0.2:
                 return True
@@ -157,12 +211,12 @@ def context_conflict(a: RawMessage, b: RawMessage, *, content_match: bool = Fals
     if content_match:
         # Exact full text is insufficient for an unrelated/template/republication context.
         ta, tb = (
-            set(re.findall(r"\w+", text(a.title).lower())),
-            set(re.findall(r"\w+", text(b.title).lower())),
+            set(re.findall(r"\w+", identity_title(a).lower())),
+            set(re.findall(r"\w+", identity_title(b).lower())),
         )
         compatible_title = bool(ta and tb and len(ta & tb) / max(len(ta), len(tb)) >= 0.5)
-        if set(re.findall(r"\d+(?:[.,]\d+)*", text(a.title))) != set(
-            re.findall(r"\d+(?:[.,]\d+)*", text(b.title))
+        if set(re.findall(r"\d+(?:[.,]\d+)*", identity_title(a))) != set(
+            re.findall(r"\d+(?:[.,]\d+)*", identity_title(b))
         ):
             return True
         opposites = [("rise", "fall"), ("rises", "falls"), ("up", "down"), ("upgrade", "downgrade")]

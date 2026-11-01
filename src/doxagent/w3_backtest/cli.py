@@ -32,6 +32,13 @@ def run_path(value: str) -> Path:
 
 
 def build_dataset(dataset: Path) -> dict:
+    if (
+        json.loads((dataset / "manifest.json").read_text(encoding="utf-8")).get("schema_version")
+        == "w3-backtest.dataset.v2"
+    ):
+        from .curated import build_curated
+
+        return build_curated(dataset)
     from .dataset import input_fingerprint, load_cases, read_json, write_json
     from .gold import import_gold
 
@@ -63,7 +70,7 @@ def build_dataset(dataset: Path) -> dict:
             folder / "index.json",
             dict(
                 schema_version="w3-backtest.evidence.v1",
-                cutoff_at=case["evidence_cutoff_at"],
+                cutoff_at=case.get("as_of") or case.get("evidence_cutoff_at"),
                 web_search=dict(
                     path="web_search.jsonl",
                     availability="AVAILABLE" if available_web else "UNAVAILABLE",
@@ -104,8 +111,15 @@ def build_dataset(dataset: Path) -> dict:
 
 
 def execute_run(
-    dataset: Path, root: Path, *, keys=None, concurrency=4, prompt_root=None,
-    timeout_seconds=1800, model=None, effort=None
+    dataset: Path,
+    root: Path,
+    *,
+    keys=None,
+    concurrency=4,
+    prompt_root=None,
+    timeout_seconds=1800,
+    model=None,
+    effort=None,
 ) -> dict:
     from .dataset import input_fingerprint, load_cases, read_json, write_json
     from .report import render_report
@@ -121,14 +135,21 @@ def execute_run(
     if keys and set(keys) - available:
         raise ValueError(f"unknown case keys: {sorted(set(keys) - available)}")
     selected = [c for c in cases if not keys or c["case_key"] in keys]
-    prompts = Path(prompt_root or "prompts/persistent_runtime_v2/w3").resolve()
+    curated = read_json(dataset / "manifest.json").get("schema_version") == "w3-backtest.dataset.v2"
+    prompts = Path(
+        prompt_root
+        or (dataset / "prompt_source" if curated else "prompts/persistent_runtime_v2/w3")
+    ).resolve()
     prompt_files = ["AGENTS.md", "skills/skill.md"]
+    if curated:
+        prompt_files.append("backtest.md")
+        if (prompts / "provenance.json").exists():
+            prompt_files.append("provenance.json")
     if (prompts / "contract.json").exists():
         # The schema marker is part of the frozen prompt pack, not a new capability.
         prompt_files.append("contract.json")
     prompt_hashes = {
-        name: hashlib.sha256((prompts / name).read_bytes()).hexdigest()
-        for name in prompt_files
+        name: hashlib.sha256((prompts / name).read_bytes()).hexdigest() for name in prompt_files
     }
     signature = input_fingerprint(dataset)
     try:
@@ -143,7 +164,11 @@ def execute_run(
         Path("src/doxagent/codex_worker"),
     ):
         for file in sorted(folder.glob("*.py")):
-            if folder == Path(__file__).parent and file.name not in {"runner.py", "legacy.py"}:
+            if folder == Path(__file__).parent and file.name not in {
+                "runner.py",
+                "decision_runner.py",
+                "legacy.py",
+            }:
                 # Preparation and report changes do not change frozen model
                 # execution; prepared input bytes have their own fingerprint.
                 continue
@@ -179,6 +204,8 @@ def execute_run(
                     data_mcp_enabled=False,
                     ibkr_api=False,
                     subagents=False,
+                    research_assets_mcp=curated,
+                    evaluation_scope="w3_decision_only" if curated else "legacy_two_stage",
                     os_sandbox="full-access" if os.name == "nt" else "read-only",
                     filesystem_contract=(
                         "case-local read-only task; Windows executable file tools enabled"
@@ -197,53 +224,78 @@ def execute_run(
             target.write_bytes(content)
         elif hashlib.sha256(target.read_bytes()).hexdigest() != expected:
             raise ValueError("Frozen run prompts were modified; use a new --run-id")
-    with ThreadPoolExecutor(max_workers=concurrency) as pool:
-        work = {
-            pool.submit(
-                run_case,
-                dataset,
-                c["case_key"],
-                root,
-                prompt_root=frozen_prompts,
-                timeout_seconds=timeout_seconds,
-                model=model,
-                effort=effort,
-            ): c
-            for c in selected
-            if not (
-                (root / "cases" / c["case_key"] / "result.json").exists()
-                and read_json(root / "cases" / c["case_key"] / "result.json").get("status")
-                == "SUCCEEDED"
-            )
-        }
-        for future in as_completed(work):
-            case = work[future]
-            try:
-                result = future.result()
-            except Exception as exc:
-                result = dict(
-                    case_key=case["case_key"],
-                    ticker=case["ticker"],
-                    status="INPUT_ERROR",
-                    error=dict(type=type(exc).__name__, message=str(exc)),
-                    decision=None,
-                    operations=None,
-                    cutoff_at=case["evidence_cutoff_at"],
-                    started_at=datetime.now(UTC).isoformat(),
-                    finished_at=datetime.now(UTC).isoformat(),
+    shared = None
+    if curated:
+        from .decision_runner import DecisionReplayRunner
+
+        shared = DecisionReplayRunner(
+            dataset,
+            root,
+            prompt_root=frozen_prompts,
+            model=model,
+            effort=effort,
+            timeout_seconds=timeout_seconds,
+        )
+        run_case = shared.run_case
+    try:
+        with ThreadPoolExecutor(max_workers=concurrency) as pool:
+            work = {
+                pool.submit(
+                    run_case,
+                    dataset,
+                    c["case_key"],
+                    root,
+                    prompt_root=frozen_prompts,
+                    timeout_seconds=timeout_seconds,
+                    model=model,
+                    effort=effort,
+                ): c
+                for c in selected
+                if not (
+                    (root / "cases" / c["case_key"] / "result.json").exists()
+                    and read_json(root / "cases" / c["case_key"] / "result.json").get("status")
+                    == "SUCCEEDED"
                 )
-                write_json(root / "cases" / case["case_key"] / "result.json", result)
-            print(
-                json.dumps(
-                    dict(
-                        case_key=result["case_key"],
-                        status=result["status"],
-                        error=result.get("error"),
+            }
+            for future in as_completed(work):
+                case = work[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    result = dict(
+                        case_key=case["case_key"],
+                        ticker=case["ticker"],
+                        status="DATA_ERROR" if curated else "INPUT_ERROR",
+                        **(
+                            dict(
+                                evaluation_scope="w3_decision_only",
+                                operations_status="NOT_REQUESTED",
+                            )
+                            if curated
+                            else {}
+                        ),
+                        error=dict(type=type(exc).__name__, message=str(exc)),
+                        decision=None,
+                        operations=None,
+                        cutoff_at=case.get("as_of") or case.get("evidence_cutoff_at"),
+                        started_at=datetime.now(UTC).isoformat(),
+                        finished_at=datetime.now(UTC).isoformat(),
+                    )
+                    write_json(root / "cases" / case["case_key"] / "result.json", result)
+                print(
+                    json.dumps(
+                        dict(
+                            case_key=result["case_key"],
+                            status=result["status"],
+                            error=result.get("error"),
+                        ),
+                        ensure_ascii=False,
                     ),
-                    ensure_ascii=False,
-                ),
-                flush=True,
-            )
+                    flush=True,
+                )
+    finally:
+        if shared:
+            shared.close()
     summary = render_report(root, dataset)
     manifest = read_json(marker)
     manifest.update(finished_at=datetime.now(UTC).isoformat(), summary=summary)
@@ -255,6 +307,7 @@ def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description="Isolated local historical W3 replay")
     commands = root.add_subparsers(dest="command", required=True)
     for name in (
+        "prepare-curated",
         "prepare-cases",
         "prepare-nasa",
         "prepare-search",
@@ -263,10 +316,15 @@ def parser() -> argparse.ArgumentParser:
         "run",
     ):
         command = commands.add_parser(name)
-        command.add_argument("--dataset", default="w3_history_20261014")
+        command.add_argument(
+            "--dataset",
+            default="w3_curated_20261030" if name == "prepare-curated" else "w3_history_20261014",
+        )
         command.add_argument("--case", action="append", dest="case_keys")
-        if name in {"prepare-cases", "prepare-prices"}:
+        if name in {"prepare-curated", "prepare-cases", "prepare-prices"}:
             command.add_argument("--ssh-host", default="doxagent-sg")
+        if name == "prepare-curated":
+            command.add_argument("--catalog")
         if name == "prepare-search":
             command.add_argument("--workers", type=int, default=4)
         if name == "run":
@@ -288,7 +346,15 @@ def parser() -> argparse.ArgumentParser:
 def main(argv=None):
     args = parser().parse_args(argv)
     dataset = dataset_path(args.dataset) if hasattr(args, "dataset") else None
-    if args.command == "prepare-cases":
+    if args.command == "prepare-curated":
+        from .curated import prepare_curated
+
+        result = prepare_curated(
+            dataset,
+            host=args.ssh_host,
+            **(dict(catalog=Path(args.catalog)) if args.catalog else {}),
+        )
+    elif args.command == "prepare-cases":
         from .dataset import acquire_remote, materialize_export
 
         acquire_remote(dataset, args.ssh_host)
@@ -300,11 +366,31 @@ def main(argv=None):
     elif args.command == "prepare-search":
         from .collect import prepare_search
 
-        result = asyncio.run(prepare_search(dataset, args.case_keys, args.workers))
+        if (
+            json.loads((dataset / "manifest.json").read_text(encoding="utf-8")).get(
+                "schema_version"
+            )
+            == "w3-backtest.dataset.v2"
+        ):
+            from .curated import construction_tasks
+
+            result = construction_tasks(dataset, args.case_keys)
+        else:
+            result = asyncio.run(prepare_search(dataset, args.case_keys, args.workers))
     elif args.command == "prepare-prices":
         from .prices import prepare_prices
 
-        result = prepare_prices(dataset, host=args.ssh_host, case_keys=args.case_keys)
+        if (
+            json.loads((dataset / "manifest.json").read_text(encoding="utf-8")).get(
+                "schema_version"
+            )
+            == "w3-backtest.dataset.v2"
+        ):
+            from .market import prepare_market_views
+
+            result = prepare_market_views(dataset, host=args.ssh_host, case_keys=args.case_keys)
+        else:
+            result = prepare_prices(dataset, host=args.ssh_host, case_keys=args.case_keys)
     elif args.command == "build":
         manifest = build_dataset(dataset)
         result = {

@@ -128,6 +128,7 @@ class RemoteEventLibraryInitializer:
         d1_reports = await self._load_and_verify_d1_reports(upstream_context_manifest)
         local_run_root = self.local_workspace_root / run_id
         local_run_root.mkdir(parents=True, exist_ok=True)
+        existing = self.service.repository.get_maintenance_run(run_id)
         frozen_root, manifest = self.service.views.materialize_frozen_view(
             run_root=local_run_root,
             run_id=run_id,
@@ -137,6 +138,7 @@ class RemoteEventLibraryInitializer:
             reference_review_candidates=review_candidates,
             upstream_context_manifest=upstream_context_manifest,
             upstream_d1_reports=d1_reports,
+            resume_frozen_view_id=(str(existing["frozen_view_id"]) if existing else None),
         )
         # Event Details are capability-scoped per attempt and therefore are not
         # uploaded as a globally readable Frozen View subtree.

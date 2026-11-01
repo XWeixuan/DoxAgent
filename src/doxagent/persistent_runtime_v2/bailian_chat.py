@@ -62,6 +62,7 @@ def chat_body(request):
 def complete(client, request):
     body, fingerprint = chat_body(request)
     started, observed, parts, response_id, finished = perf_counter(), {}, [], "", False
+    finish_reason = None
 
     def receipt():
         details = observed.get("prompt_tokens_details") or {}
@@ -71,6 +72,8 @@ def complete(client, request):
             "cached_input_tokens": details.get("cached_tokens"),
             "provider_usage": observed,
             "response_id": response_id or None,
+            "finish_reason": finish_reason,
+            "elapsed_ms": round((perf_counter() - started) * 1000),
         }
 
     try:
@@ -84,6 +87,7 @@ def complete(client, request):
                     if choice.delta.content:
                         parts.append(choice.delta.content)
                     if choice.finish_reason:
+                        finish_reason = choice.finish_reason
                         finished = choice.finish_reason == "stop"
     except Exception as exc:
         error = _safe_transport_error(exc)

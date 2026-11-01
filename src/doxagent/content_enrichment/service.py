@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
+from urllib.parse import urlsplit
 
 from doxagent.content_enrichment.extractor import SharedContentExtractor
 from doxagent.content_enrichment.native import native_article
@@ -81,6 +82,7 @@ class ContentEnrichmentHub:
         self._google_slots = asyncio.Semaphore(4)
         self._google_client = None
         self._google_flights = {}
+        self._capability_waits = {}
         from doxagent.message_bus_v2.distribution_repository import DistributionRepository
 
         self.distribution = DistributionRepository(repository)
@@ -108,7 +110,7 @@ class ContentEnrichmentHub:
             await self._adopt_legacy(legacy)
         if len(jobs)<limit:
             jobs+=await self.live.claim(limit-len(jobs),allow_background=background)
-            if any(j.work_kind=='recheck' for j in jobs):background=False
+            if any(j.work_kind in {'recheck','capability_resume'} for j in jobs):background=False
         if len(jobs)<limit:
             legacy=await self._legacy_claim(limit=limit-len(jobs),now=now,allow_rechecks=background)
             await self._adopt_legacy(legacy)
@@ -142,7 +144,7 @@ class ContentEnrichmentHub:
         return len(jobs)
 
     async def _process_guarded(self, job: EnrichmentJob, now: datetime) -> None:
-        work_token = WORK_CLASS.set("recheck" if job.work_kind == "recheck" else "backfill" if job.bootstrap else "foreground")
+        work_token = WORK_CLASS.set("recheck" if job.work_kind in {"recheck", "capability_resume"} else "backfill" if job.bootstrap else "foreground")
         age_token = WORK_AGE.set(max(0, (utc_now() - job.created_at).total_seconds()))
         from doxagent.message_bus_v2.publisher_http import HTTP_CONTEXT
         http_token=HTTP_CONTEXT.set('body')
@@ -318,6 +320,8 @@ class ContentEnrichmentHub:
                 **job.message.metadata, 'language': job.source.content_language.strip().lower()}})
             job = job.model_copy(update={'message': message})
 
+        from doxagent.message_bus_v2.deduplication import article_identity
+        job = job.model_copy(update={'message': article_identity(job.message, job.source.source_id)})
         reason = (
             None
             if job.owner_kind in {"distribution_article", "live_article"}
@@ -405,6 +409,44 @@ class ContentEnrichmentHub:
         )
         continuation_token = RESUME_STAGE.set(continuation)
         try:
+            # Google handoff and native URL variants use the existing canonical reservation.
+            if job.owner_kind == 'live_article' and job.source.source_id != 'google_news_search_rss':
+                from doxagent.message_bus_v2 import google_handoff
+                if job.source.source_id == google_handoff.native_source_id(job.message.url):
+                    normalized = google_handoff.canonical_url(job.message.url)
+                    if normalized != job.message.url:
+                        message = job.message.model_copy(update={'url':normalized,
+                            'raw_url':job.message.raw_url or job.message.url})
+                        if await self.bus.storage.call(self.live.repository.reserve_resolved, job, message, _lane_priority=0):
+                            return
+                        job = job.model_copy(update={'message':message})
+                        record = replace(record, url=normalized)
+            if job.source.source_id == 'google_news_search_rss' and job.owner_kind == 'live_article':
+                target = await self._google_url(job.message.url) if job.message.metadata.get('canonical_resolution') == 'pending_body' else job.message.url
+                domains = job.message.metadata.get('allowed_publisher_domains', [])
+                host = (urlsplit(target).hostname or '').removeprefix('www.').lower()
+                if domains and not any(host == d or host.endswith('.' + d) for d in domains):
+                    raise ValueError('domain_constraint_unresolved')
+                if job.work_kind == 'new_article':
+                    from doxagent.message_bus_v2 import google_handoff
+                    if google_handoff.native_source_id(target):
+                        handoff = await self.bus.storage.prepare(google_handoff.prepare, self.live.repository, job, target)
+                        if handoff and await self.bus.storage.call(google_handoff.commit, self.live.repository, job, handoff, _lane_priority=0):
+                            return
+                message = job.message.model_copy(update={'url': target, 'raw_url': job.message.raw_url or job.message.url,
+                    'metadata': {**job.message.metadata, 'canonical_resolution': 'resolved'}})
+                if job.work_kind == 'new_article' and await self.bus.storage.call(
+                    self.live.repository.reserve_resolved, job, message, _lane_priority=0):
+                    return
+                extended = any(host == site or host.endswith('.' + site) for site in ('gurufocus.com', 'futunn.com', 'benzinga.com'))
+                budget = max(job.fetch_budget_seconds, 30 if extended else 20)
+                job = job.model_copy(update={'message': message, 'fetch_budget_seconds': budget,
+                    'deadline_at': utc_now() + timedelta(seconds=max(.001, budget - job.execution_spent_ms/1000))})
+                record = replace(record, url=target, raw_url=message.raw_url)
+                if not reused:
+                    alias = await self.bus.storage.read(self.live.resolved_reuse, message, job.source.source_id, target)
+                    if alias:
+                        cached, reused = alias, True
             seconds = (job.deadline_at - max(now, utc_now())).total_seconds()
             # Queue lateness is an SLO breach, not evidence the article cannot
             # be downloaded. Its original publication/admission proof survives.
@@ -494,8 +536,6 @@ class ContentEnrichmentHub:
                 try:
                     async with asyncio.timeout(seconds):
                         if job.message.metadata.get("canonical_resolution") == "pending_body":
-                            from urllib.parse import urlsplit
-
                             target = await self._google_url(job.message.url)
                             domains = job.message.metadata.get("allowed_publisher_domains", [])
                             host = (urlsplit(target).hostname or "").removeprefix("www.").lower()
@@ -520,6 +560,11 @@ class ContentEnrichmentHub:
                                 diagnostics={**alias_body.get('diagnostics', {}), 'site_access_trace': [],
                                     'reused_from_execution_id': alias_body.get('execution_id'),
                                     'body_acquired_at': alias_body.get('acquired_at')})
+                        elif (blocked := self._capability_waits.get((job.source.source_id, urlsplit(record.url or '').hostname))) and blocked > utc_now():
+                            result = MediaExtractionResult(
+                                record=record, reason='site_recovery_pending',
+                                diagnostics={'outcome': 'UNAVAILABLE', 'capability_retry_at': blocked.isoformat()},
+                            )
                         elif isinstance(self.extractor, SharedContentExtractor):
                             result = await self.extractor.extract_version(
                                 record, job.pipeline_version
@@ -560,11 +605,26 @@ class ContentEnrichmentHub:
             RESUME_STAGE.reset(continuation_token)
 
         finished_at = utc_now()
+        spent = sum(int(a.latency_ms or 0) for a in result.attempts
+                    if a.reason not in {'site_budget_deferred', 'site_recovery_pending', 'storage_unavailable', 'domain_cooldown'})
+        job = job.model_copy(update={'execution_spent_ms': job.execution_spent_ms + spent})
+        capability_wait = job.owner_kind == 'live_article' and result.reason in {'site_recovery_pending', 'domain_cooldown'}
+        if capability_wait:
+            retry_at = result.diagnostics.get('capability_retry_at')
+            if not retry_at:
+                delay = max((a.retry_after_seconds for a in result.attempts if a.retry_after_seconds), default=60)
+                retry_at = (finished_at + timedelta(seconds=max(5, delay))).isoformat()
+                result.diagnostics['capability_retry_at'] = retry_at
+            host = urlsplit(record.url or '').hostname
+            if result.reason == 'site_recovery_pending' and host:
+                self._capability_waits[(job.source.source_id, host)] = datetime.fromisoformat(retry_at)
+            # This attempt has an honest failed result. Its durable continuation
+            # is scheduled below by commit_result, not a five-second WAIT_BODY loop.
         if job.owner_kind != "live_article":
             await self.bus.storage.call(self.repository.record_enrichment_execution,
                 job, result, started_at=now, reused=reused)
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
-        if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred", "domain_cooldown"}:
+        if not capability_wait and not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred", "domain_cooldown"}:
             delay = max((item.retry_after_seconds for item in result.attempts
                          if item.retry_after_seconds and item.retry_after_seconds > 0), default=5)
             not_before = finished_at + timedelta(seconds=max(5,delay))
@@ -584,7 +644,8 @@ class ContentEnrichmentHub:
                 )
                 return
         if (
-            not result.succeeded
+            not capability_wait and not result.succeeded
+            and job.source.source_id != 'google_news_search_rss'
             and (job.fetch_round == 1 if job.owner_kind=='live_article' else job.attempt_count == 1)
             and self._retryable(result)
             and finished_at < job.deadline_at
@@ -638,7 +699,7 @@ class ContentEnrichmentHub:
             "reason": result.reason,
             "attempt_count": job.attempt_count,
         }
-        final_url = result.final_url or job.message.url
+        final_url = result.final_url or result.record.url or job.message.url
         publisher = job.message.publisher_name or job.message.source or job.source.display_name
         publication_updates: dict[str, object] = {}
         stamp = result.diagnostics.get("publisher_published_at")
@@ -728,7 +789,7 @@ class ContentEnrichmentHub:
                                 known_article_raw_id=known.raw_message_id)
                     body(job, message)
 
-            await self.bus.storage.call(finalize, _lane_priority=0 if job.work_kind != 'recheck' and not job.bootstrap else 1)
+            await self.bus.storage.call(finalize, _lane_priority=0 if job.work_kind not in {'recheck','capability_resume'} and not job.bootstrap else 1)
             return
         assert job.binding is not None
 
@@ -751,7 +812,7 @@ class ContentEnrichmentHub:
 
         try:
             accepted = await self.bus.storage.call(finalize_binding,
-                _lane_priority=0 if job.work_kind != 'recheck' and not job.bootstrap else 1)
+                _lane_priority=0 if job.work_kind not in {'recheck','capability_resume'} and not job.bootstrap else 1)
         except RuntimeError as exc:
             if not job.known_article_raw_id or str(exc) not in {
                 "known_article_revision_identity_changed", "known_article_revision_not_authorized"

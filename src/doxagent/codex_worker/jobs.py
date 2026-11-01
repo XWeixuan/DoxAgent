@@ -1060,6 +1060,11 @@ class WorkerJobManager:
             )
         except Exception as exc:
             code = getattr(exc, "code", "CODEX_WORKER_ERROR")
+            # Frames only: no prompts, locals, exception source lines or SDK payloads.
+            import traceback
+            frames = [f'{Path(f.filename).name}:{f.lineno}:{f.name}'
+                      for f in traceback.extract_tb(exc.__traceback__)[-8:]]
+            logging.getLogger(__name__).warning('worker failure origin phase=%s type=%s frames=%s', phase, type(exc).__name__, frames)
             message = str(exc).lower()
             if (
                 phase == "START_THREAD"

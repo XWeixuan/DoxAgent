@@ -137,6 +137,8 @@ class LiveQueue:
         if source is None:
             return None
         message = RawMessageInput.model_validate(self.repository.load(row["input_ref"]))
+        from .deduplication import article_identity
+        message = article_identity(message, source.source_id)
         if row["url"] != message.url:
             metadata = {**message.metadata}
             metadata.pop("canonical_resolution", None)
@@ -151,20 +153,7 @@ class LiveQueue:
         )
         started = datetime.fromisoformat(row["first_fetch_at"])
         attempts = json.loads(row["attempts_json"])
-        spent = (
-            sum(
-                float(a.get("latency_ms", 0))
-                for a in attempts
-                if a.get("reason")
-                not in {
-                    "site_budget_deferred",
-                    "site_recovery_pending",
-                    "storage_unavailable",
-                    "domain_cooldown",
-                }
-            )
-            / 1000
-        )
+        spent = row['execution_spent_ms'] / 1000
         cached = None
         revalidation = None
         if row["result_ref"] and row["body_digest"]:
@@ -252,6 +241,7 @@ class LiveQueue:
             fetch_round=row['fetch_round'],
             execution_seq=row["attempt"],
             work_kind=row["work_kind"],
+            execution_spent_ms=row['execution_spent_ms'],
             pipeline_version="body_v2.2",
             prior_attempts=attempts,
             result={"live_cached": cached}
@@ -369,7 +359,7 @@ class LiveQueue:
                            "AND state='FETCH_DUE'", (job.not_before.isoformat(), key))
                 if job.work_kind == "recheck":
                     db.execute(
-                        "UPDATE live_articles SET state='FETCH_DUE',work_kind='recheck',due_at=?,attempt=0,fetch_round=0,"
+                        "UPDATE live_articles SET state='FETCH_DUE',work_kind='recheck',due_at=?,attempt=0,fetch_round=0,execution_spent_ms=0,"
                         "first_fetch_at=NULL,attempts_json='[]' WHERE article_key=? AND state IN ('READY','FETCH_DUE') "
                         "AND (checked_at IS NULL OR checked_at<?)",
                         (utc_now().isoformat(), key, job.created_at.isoformat()),
@@ -402,7 +392,7 @@ class LiveQueue:
         with self.bus.repository._connect() as db:
             return bool(
                 db.execute(
-                    "SELECT 1 FROM live_articles WHERE state='FETCHING' AND work_kind='recheck' "
+                    "SELECT 1 FROM live_articles WHERE state='FETCHING' AND work_kind IN ('recheck','capability_resume') "
                     "AND lease_until>? LIMIT 1",
                     (utc_now().isoformat(),),
                 ).fetchone()
@@ -455,7 +445,9 @@ class LiveDeliveryWorker:
         source=sources[row['source_id']]
         binding = self.bus.repository.get_binding(row["binding_id"])
         if binding and not row.get("raw_id"):
-            known = self.bus.repository.known_published_article(binding, message)
+            fingerprint = message.metadata.get('v2_body_completion', {}).get('body_fingerprint')
+            known, checked = self.bus.repository.publication_match(binding, message, fingerprint=fingerprint)
+            row['_publication_lookup'] = (known, checked)
             if known:
                 row["raw_id"] = known.raw_message_id
         if row['ticker'] not in terms:
@@ -477,10 +469,12 @@ class LiveDeliveryWorker:
         return prepared
 
     async def publish(self, row, source, binding, message):
-        prepared = await self.bus.storage.prepare(
-            self.repository.prepare_publication, self.bus, row, source, binding, message
-        )
-        await self.bus.storage.call(self.repository.publish, prepared, _lane_priority=0)
+        for _ in range(2):
+            prepared = await self.bus.storage.prepare(
+                self.repository.prepare_publication, self.bus, row, source, binding, message)
+            if await self.bus.storage.call(self.repository.publish, prepared, _lane_priority=0) is not False:
+                return
+        raise RuntimeError('live_publication_changed')  # Existing delivery retry, never another BODY fetch.
 
     async def process(self, row, prepared=None):
         if row.get('_prepare_error'):

@@ -216,3 +216,9 @@ T0由59篇真实发送完成响应、112篇逐篇SDK callback证明，另20篇�
 - 当前区域代理失效仍阻碍Yahoo、Investing、InvestorsHub、CTEE、HuggingNews等；已定位到真实HTTPS上游连接和无效订阅刷新，未证明是过期账单/新代码错误，不随意轮换国家或动Profile。恢复外部代理前不能完成完整业务负载验收。
 - 从本轮CPU/内存/磁盘数据看，再增加内存不能独自解决IBKR批量屏障、W3历史反复物化、SQLite重复建连及Worker启动异常。也没有证据支持削减W3预热作为本轮修复；它的明确READY物理PSS约0.7GiB。
 - 正式当前版本：Collector/BODY `8085064d`，Site `3c6ec643`；Scheduler/Worker/API/Supervisor及其它首轮消费者 `3ae8c6c7`。后续commit只有报告/薄证据，无需再重启这些稳定的应用角色。W3并行开发工作按用户回复保留未提交/未发布。
+
+## 用户补充额度后恢复复核（07:13北京时间续记）
+
+用户确认Flower_SS额度耗尽并完成升级，远端原出口真实请求恢复200；通过既有probe恢复五个egress READY，未换节点或身份。Collector旧连接状态仍导致Yahoo HTTP/HuggingNews超时，23:09:33Z仅重启原正式Collector（同容器/镜像）后自然采集恢复。23:09:34–23:12:16Z有执行记录的73个来源中72个至少一次CAPTURED；CTEE仍验证中，Reuters部分频道失败，不能等同全单元覆盖。定向262个成功逻辑轮次均关联真实TRANSPORT_SEND与有效列表，Yahoo两频道分别验证。宿主可用16.87GiB、PSI0、无OOM；保留此前45分钟失败/缺口及CPU、交付、BODY问题，不回改历史指标。
+
+详见[本次恢复记录](../eval/flower-quota-recovery-20261030/summary.md)。本轮无代码/构建变更，W3并行工作留本地。用户已重启两小时观察，不重复创建任务。

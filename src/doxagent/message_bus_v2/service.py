@@ -1097,6 +1097,7 @@ class MessageBusV2Service:
     ) -> tuple[EnrichmentJob | None, bool]:
         """Durably stage provider output before any network enrichment work."""
 
+        message = dedup.article_identity(message, source.source_id, default_language=source.content_language)
         if google_news_message_blocked(source.source_id, message):
             return None, False
         if self.live_queue is not None:
@@ -1323,7 +1324,11 @@ class MessageBusV2Service:
         metadata = dict(message.metadata)
         if not trusted_enrichment:
             metadata.pop("v2_body_completion", None)
-        original = enrichment_input if trusted_enrichment and enrichment_input else message
+        original = dedup.article_identity(
+            enrichment_input if trusted_enrichment and enrichment_input else message, source.source_id,
+            default_language=source.content_language)
+        if language := dedup.language(original, source.source_id):
+            metadata.setdefault('language', language)
         evidence = dedup.content_evidence(message, original)
         evidence["checked_at"] = utc_now().isoformat()
         metadata["content_evidence"] = evidence
@@ -1337,6 +1342,7 @@ class MessageBusV2Service:
             and enrichment.get("succeeded")
             and enrichment.get("identity_match") == "supported"
         ):
+            identity_evidence['url_kind'] = 'article'
             identity_evidence["verified_urls"] = list(
                 dict.fromkeys(
                     [

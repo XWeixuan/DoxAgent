@@ -1,0 +1,112 @@
+{
+  "total": 83,
+  "full": 70,
+  "sites": [
+    {
+      "site": "barchart.com",
+      "total": 5,
+      "full": 5,
+      "mean_ms": 3334,
+      "max_ms": 4966,
+      "failure_reasons": []
+    },
+    {
+      "site": "benzinga.com",
+      "total": 5,
+      "full": 5,
+      "mean_ms": 4486,
+      "max_ms": 11458,
+      "failure_reasons": []
+    },
+    {
+      "site": "futunn.com",
+      "total": 10,
+      "full": 9,
+      "mean_ms": 11312,
+      "max_ms": 30007,
+      "failure_reasons": [
+        "non_article_target"
+      ]
+    },
+    {
+      "site": "gurufocus.com",
+      "total": 10,
+      "full": 10,
+      "mean_ms": 10170,
+      "max_ms": 15966,
+      "failure_reasons": []
+    },
+    {
+      "site": "moomoo.com",
+      "total": 10,
+      "full": 8,
+      "mean_ms": 7672,
+      "max_ms": 20002,
+      "failure_reasons": [
+        "incomplete_extract",
+        "transport_timeout"
+      ]
+    },
+    {
+      "site": "stocktitan.net",
+      "total": 10,
+      "full": 10,
+      "mean_ms": 703,
+      "max_ms": 1683,
+      "failure_reasons": []
+    },
+    {
+      "site": "stocktwits.com",
+      "total": 5,
+      "full": 4,
+      "mean_ms": 8281,
+      "max_ms": 12043,
+      "failure_reasons": [
+        "non_article_target"
+      ]
+    },
+    {
+      "site": "streetinsider.com",
+      "total": 5,
+      "full": 5,
+      "mean_ms": 5389,
+      "max_ms": 17413,
+      "failure_reasons": []
+    },
+    {
+      "site": "techpowerup.com",
+      "total": 8,
+      "full": 8,
+      "mean_ms": 2208,
+      "max_ms": 6032,
+      "failure_reasons": []
+    },
+    {
+      "site": "thestreet.com",
+      "total": 10,
+      "full": 1,
+      "mean_ms": 7794,
+      "max_ms": 8773,
+      "failure_reasons": [
+        "transport_timeout",
+        "transport_timeout",
+        "transport_timeout",
+        "transport_timeout",
+        "transport_timeout",
+        "transport_timeout",
+        "transport_timeout",
+        "transport_timeout",
+        "transport_timeout"
+      ]
+    },
+    {
+      "site": "tipranks.com",
+      "total": 5,
+      "full": 5,
+      "mean_ms": 5329,
+      "max_ms": 11682,
+      "failure_reasons": []
+    }
+  ],
+  "production_sla_proven": false
+}

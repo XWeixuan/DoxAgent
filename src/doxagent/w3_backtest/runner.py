@@ -235,16 +235,29 @@ class _ReplayRuntime:
     """
 
     def __init__(self, runtime):
+        import asyncio
+
         self.runtime = runtime
         self.receipt_callback = None
+        self._start_lock = asyncio.Lock()
+        self._prepared = {}
 
     def __getattr__(self, name):
         return getattr(self.runtime, name)
 
     async def prepare_fork(self, request, cwd, parent_thread_id):
-        return await self.runtime.prepare_fork(request, cwd, parent_thread_id)
+        async with self._start_lock:
+            thread_id = await self.runtime.prepare_fork(request, cwd, parent_thread_id)
+            self._prepared[thread_id] = self.runtime._prepared_thread
+            self.runtime._prepared_thread = None
+            return thread_id
 
     async def start(self, request, cwd):
+        async with self._start_lock:
+            self.runtime._prepared_thread = self._prepared.pop(request.thread_id, None)
+            return await self._start(request, cwd)
+
+    async def _start(self, request, cwd):
         identities = []
         self.runtime.receipt_callback = lambda thread, turn: identities.append((thread, turn))
         try:
@@ -282,6 +295,24 @@ def local_worker(worker_root: Path):
         IBKR_TWS_ENABLED="false",
         CODEX_INTERNAL_ORIGINATOR_OVERRIDE="doxagent-w3-backtest",
     )
+    # Host .agents skills and SDK-bundled system skills are discovered outside
+    # CODEX_HOME. Disable their catalog entries in this private runtime only.
+    skill_roots = [Path.home() / ".agents/skills", Path.cwd() / ".agents/skills", home / "skills"]
+    disabled = {
+        p.parent.resolve() for root in skill_roots if root.exists() for p in root.rglob("SKILL.md")
+    }
+    bundled = source_home / "skills/.system"
+    if bundled.exists():
+        disabled.update(
+            (home / "skills/.system" / p.parent.name).resolve() for p in bundled.glob("*/SKILL.md")
+        )
+    skill_config = (
+        "skills.config=["
+        + ",".join(
+            "{path=" + json.dumps(str(p / "SKILL.md")) + ",enabled=false}" for p in sorted(disabled)
+        )
+        + "]"
+    )
     config = CodexConfig(
         env=env,
         config_overrides=(
@@ -290,7 +321,7 @@ def local_worker(worker_root: Path):
             "features.apps=false",
             "features.plugins=false",
             "features.memories=false",
-            "features.skip_host_skill_discovery=true",
+            skill_config,
             "features.browser_use=false",
             "features.computer_use=false",
             "features.image_generation=false",
@@ -310,15 +341,36 @@ def local_worker(worker_root: Path):
         # credentials and case-local writes remain constrained separately.
         sandbox_override=Sandbox.full_access if os.name == "nt" else None,
     )
-    store = LocalWorkspaceStore(workspace_path(worker_root / "workspaces"))
+
+    class ReplayWorkspaceStore(LocalWorkspaceStore):
+        def ensure_research_pack(self, pack_id, files=None):
+            import time
+
+            # Windows scanners briefly hold newly materialized pack folders.
+            for attempt in range(5):
+                try:
+                    return super().ensure_research_pack(pack_id, files)
+                except PermissionError:
+                    if os.name != "nt" or attempt == 4:
+                        raise
+                    time.sleep(0.1 * (attempt + 1))
+
+    store = ReplayWorkspaceStore(workspace_path(worker_root / "workspaces"))
     manager = WorkerJobManager(_ReplayRuntime(runtime), store, launch_interval_seconds=0.05)
     manager.thread_lifecycle.transport = AppServerThreads(config)
     return _LocalWorker(manager), LocalWorkspaceClient(store)
 
 
 class ReplayRunner:
-    def __init__(self, *, prompt_root=None, worker_factory=local_worker, timeout_seconds=1800,
-                 model=None, effort=None):
+    def __init__(
+        self,
+        *,
+        prompt_root=None,
+        worker_factory=local_worker,
+        timeout_seconds=1800,
+        model=None,
+        effort=None,
+    ):
         if effort is not None and model is None:
             raise ValueError("effort requires a model override")
         self.model_profile = (
@@ -508,9 +560,11 @@ class ReplayRunner:
             w3_assets=assets,
             # Replay uses file-delivered evidence even for the current direction schema.
             # Do not opt into production's research MCP/market preparation entry.
-            w3_contracts=dict(w3_contract_version=replay_contract,
+            w3_contracts=dict(
+                w3_contract_version=replay_contract,
                 w3_trade_schema=contract_models(replay_contract)[0].model_json_schema(),
-                w3_operations_schema=contract_models(replay_contract)[1].model_json_schema()),
+                w3_operations_schema=contract_models(replay_contract)[1].model_json_schema(),
+            ),
             projection=view,
             policy_usage=usage,
             w3_replay=dict(

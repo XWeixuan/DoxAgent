@@ -12,6 +12,7 @@ from weakref import WeakKeyDictionary
 
 from curl_cffi import CurlOpt
 from curl_cffi.requests import AsyncSession
+import httpx
 
 log = logging.getLogger(__name__)
 _LEASE = ContextVar("publisher_curl_lease", default=None)
@@ -232,6 +233,7 @@ class _Client:
     active: int = 0
     used_at: float = 0
     retired: bool = False
+    pre_send_timeouts: int = 0
 
 
 class PublisherClients:
@@ -243,6 +245,7 @@ class PublisherClients:
         )
         self._maintenance_at = 0
         self._closing = set()
+        self._pre_send_replaced = set()
 
     def _close_later(self, client):
         if getattr(client, 'closing', False):
@@ -258,6 +261,14 @@ class PublisherClients:
         self._closing.add(task)
         task.add_done_callback(self._closing.discard)
 
+    def _transport_timeout(self, key, client, progress):
+        if getattr(client.session, 'traced_transport', False) and not progress['sent']:
+            client.pre_send_timeouts += 1
+            if client.pre_send_timeouts >= 2 and key not in self._pre_send_replaced:
+                self._pre_send_replaced.add(key)
+                client.retired = True
+                log.warning('publisher transport replaced after pre-send timeouts phase=%s', progress['phase'])
+
     async def request(self, key, method, url, *, role="collector", timeout=8, **kwargs):
         if time.monotonic() - self._maintenance_at > 60:
             self._maintenance_at = time.monotonic()
@@ -265,6 +276,7 @@ class PublisherClients:
             for name, idle in list(self.clients.items()):
                 if not idle.active and time.monotonic()-idle.used_at>180:
                     self.clients.pop(name)
+                    self._pre_send_replaced.discard(name)
                     idle.retired=True
                     self._close_later(idle)
         while True:
@@ -285,6 +297,9 @@ class PublisherClients:
                 check_request_allowed()
                 client.active += 1
                 executing = time.monotonic()
+                from .poll_trace import TRANSPORT_PROGRESS
+                progress = {'phase': 'transport', 'sent': False}
+                progress_token = TRANSPORT_PROGRESS.set(progress)
                 if source:
                     from .scheduler import POLL_TIMINGS
                     timings=POLL_TIMINGS.get()
@@ -292,13 +307,29 @@ class PublisherClients:
                         timings['source_http_wait_ms']=timings.get('source_http_wait_ms',0)+int((executing-waiting)*1000)
                 try:
                     async with asyncio.timeout(timeout):
-                        return await client.session.request(method, url, timeout=timeout, **kwargs)
-                except TimeoutError:
+                        response = await client.session.request(method, url, timeout=timeout, **kwargs)
+                    client.pre_send_timeouts = 0
+                    self._pre_send_replaced.discard(key)
+                    return response
+                except (TimeoutError, httpx.TimeoutException) as exc:
+                    # This scope starts after joint admission. Never retire a
+                    # healthy publisher just because its caller waited for capacity.
+                    exc.transport_phase = progress['phase']
+                    if getattr(client.session, 'traced_transport', False):
+                        exc.reason_code = 'publisher_response_timeout' if progress['sent'] else 'publisher_pre_send_timeout'
+                    self._transport_timeout(key, client, progress)
                     pool = getattr(client.session, "pool", None)
                     if pool is not None and pool.qsize() == 0:
                         client.retired = True
                     raise
+                except asyncio.CancelledError:
+                    # A parent's equal/shorter deadline may fire before ours.
+                    # Ordinary caller cancellation is not evidence of a bad pool.
+                    if time.monotonic() - executing >= timeout * .9:
+                        self._transport_timeout(key, client, progress)
+                    raise
                 finally:
+                    TRANSPORT_PROGRESS.reset(progress_token)
                     client.active -= 1
                     client.used_at = time.monotonic()
                     if source:
@@ -314,12 +345,14 @@ class PublisherClients:
         for key, client in list(self.clients.items()):
             if not client.active and time.monotonic() - client.used_at > seconds:
                 self.clients.pop(key)
+                self._pre_send_replaced.discard(key)
                 client.retired = True
                 await client.session.close()
 
     async def close(self):
         clients = list(self.clients.values())
         self.clients.clear()
+        self._pre_send_replaced.clear()
         for session in {id(c.session): c.session for c in clients}.values():
             await session.close()
         if self._closing:
@@ -327,6 +360,7 @@ class PublisherClients:
 
 
 class _HttpxSession:
+    traced_transport = True
     def __init__(self, options):
         import httpx
         from .poll_trace import httpx_request

@@ -58,15 +58,29 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
     manifest = json.loads((run_root / "run_manifest.json").read_text(encoding="utf-8"))
     dataset = dataset or Path(manifest["dataset_path"])
     gold = {g["case_key"]: g for g in read_jsonl(dataset / "gold.jsonl")}
+    dataset_marker = dataset / "manifest.json"
+    dataset_meta = (
+        json.loads(dataset_marker.read_text(encoding="utf-8")) if dataset_marker.exists() else {}
+    )
+    active_keys = (
+        {row["case_key"] for row in dataset_meta["cases"]}
+        if dataset_meta.get("schema_version") == "w3-backtest.dataset.v2"
+        else None
+    )
+    excluded = []
     rows = []
     for path in sorted((run_root / "cases").glob("*/result.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
         key = result["case_key"]
+        if active_keys is not None and key not in active_keys:
+            excluded.append(key)
+            continue
         case = json.loads((dataset / "inputs" / key / "case.json").read_text(encoding="utf-8"))
         normalized = normalize_decision(result, case, dataset)
         item = {**result, "normalized_decision": normalized, "gold": gold.get(key, {})}
         item.update(score(result, item["gold"], normalized))
         item["group"] = case.get("group")
+        item["tags"] = item["gold"].get("tags", [])
         db_path = path.parent / "runtime.sqlite3"
         item["operations_receipt"] = None
         if db_path.exists() and result.get("replay_case_id"):
@@ -117,6 +131,31 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
         if unlabelled_decisions
         else None,
     )
+    if excluded:
+        summary["excluded_cases"] = excluded
+    if manifest.get("technical_retries"):
+        retries = manifest["technical_retries"]
+        summary["initial_technical_failures"] = len(retries)
+        summary["technical_retries_succeeded"] = sum(r["status"] == "SUCCEEDED" for r in retries)
+    if any(r.get("evaluation_scope") == "w3_decision_only" for r in rows):
+        summary["evaluation_scope"] = "w3_decision_only"
+        summary["operations_status"] = "NOT_REQUESTED"
+        summary["operations_succeeded"] = None
+        summary["groups"] = {}
+        for name, group in (
+            ("core", [r for r in rows if "边缘案例" not in r["tags"]]),
+            ("edge", [r for r in rows if "边缘案例" in r["tags"]]),
+            ("timeliness", [r for r in rows if "时效性" in r["tags"]]),
+        ):
+            evaluated = [r for r in group if r["score"] is not None]
+            summary["groups"][name] = dict(
+                cases=len(group),
+                scored=len(evaluated),
+                correct=sum(r["score"] is True for r in evaluated),
+                accuracy=sum(r["score"] is True for r in evaluated) / len(evaluated)
+                if evaluated
+                else None,
+            )
     summary["wrong_trade_rate"] = (
         summary["wrong_trades"] / summary["labelled_no_trade_denominator"]
         if summary["labelled_no_trade_denominator"]
@@ -146,10 +185,17 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
         "|---|---|---|---|---|",
     ]
     for row in rows:
+        route = (
+            "决策回放"
+            if row.get("evaluation_scope") == "w3_decision_only"
+            else "W3"
+            if row.get("would_enter_w3")
+            else "仅直接回放"
+        )
         text.append(
             f"| {row['case_key']} | {row['normalized_decision'] or '无合法决策'} | "
             f"{row['category']} | {row['status']} | "
-            f"{'W3' if row.get('would_enter_w3') else '仅直接回放'} |"
+            f"{route} |"
         )
     for row in rows:
         duration = (

@@ -653,6 +653,7 @@ class MessageBusV2Repository:
         """Scalar durable-input receipt; never a claim that a body is complete."""
         from .body_results import access_scope, update_hint
         from .schema import canonical_json, identity_key_for, sha256_text
+        message = dedup.article_identity(message, binding.source_id)
 
         if message.admission_context and message.admission_context.mode == "CLOSED_SWEEP":
             return False
@@ -676,7 +677,7 @@ class MessageBusV2Repository:
                   sha256_text(canonical_json(message.raw_payload)), dedup.stable_fingerprint(message),
                   policy, access_scope(message, binding.source_id),
                   'scope:source:' + binding.source_id,
-                  message.metadata.get('language') or message.metadata.get('identity_evidence',{}).get('language') or '')).fetchone()
+                  dedup.language(message, binding.source_id))).fetchone()
             if not row:
                 return False
             hint = update_hint(message)
@@ -1585,10 +1586,35 @@ class MessageBusV2Repository:
 
     # -- Raw, Standard and buffering -------------------------------------------------
 
+    @staticmethod
+    def published_candidates(db, ticker, aliases, fingerprint=None):
+        """Indexed scalar candidates only; safe inside the final short writer."""
+        found = {}
+        if aliases:
+            found.update((r[0], False) for r in db.execute(
+                "SELECT DISTINCT v.raw_message_id FROM message_identity_aliases a "
+                "JOIN logical_message_versions v ON v.ticker=a.ticker AND v.logical_message_id=a.logical_message_id "
+                "JOIN standard_messages s ON s.raw_message_id=v.raw_message_id "
+                "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                "WHERE a.ticker=? AND a.alias IN (SELECT value FROM json_each(?)) LIMIT 8",
+                (ticker, json.dumps(aliases))))
+        if fingerprint and not found:
+            for r in db.execute(
+                "SELECT v.raw_message_id FROM logical_message_versions v "
+                "JOIN standard_messages s ON s.raw_message_id=v.raw_message_id "
+                "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                "WHERE v.ticker=? AND v.body_fingerprint=? LIMIT 32", (ticker, fingerprint)):
+                found.setdefault(r[0], True)
+        return found
+
     def known_published_article(self, binding, message):
+        return self.publication_match(binding, message)[0]
+
+    def publication_match(self, binding, message, *, fingerprint=None):
         from .schema import identity_key_for
         from .body_results import access_scope
 
+        message = dedup.article_identity(message, binding.source_id)
         evidence = message.metadata.get("identity_evidence", {})
         urls = [message.url, evidence.get("original_url"), *evidence.get("verified_urls", [])]
         aliases = sorted({"url:" + url for value in urls if isinstance(value, str)
@@ -1598,34 +1624,42 @@ class MessageBusV2Repository:
             # Strong URL aliases are ticker-wide: discovery source is not an
             # article identity. Use the existing indexed alias map, never title
             # matching or a scan/hydration of historical messages.
-            shared = db.execute(
-                "SELECT DISTINCT r.data_json FROM message_identity_aliases a "
-                "JOIN logical_message_versions v ON v.ticker=a.ticker AND v.logical_message_id=a.logical_message_id "
-                "JOIN raw_messages r ON r.raw_message_id=v.raw_message_id "
-                "JOIN standard_messages s ON s.raw_message_id=r.raw_message_id "
-                "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
-                "WHERE a.ticker=? AND a.alias IN (SELECT value FROM json_each(?)) LIMIT 8",
-                (binding.ticker, json.dumps(aliases)),
-            ).fetchall() if aliases else []
+            candidates = self.published_candidates(db, binding.ticker, aliases, fingerprint)
+            # Pre-fix API articles may have no URL alias. The existing URL index
+            # reconnects these rows without scanning or rewriting old history.
+            for url in ({value[4:] for value in aliases} if not candidates else ()):
+                for row in db.execute(
+                    "SELECT r.raw_message_id FROM raw_messages r "
+                    "JOIN standard_messages s ON s.raw_message_id=r.raw_message_id "
+                    "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                    "WHERE r.ticker=? AND json_extract(r.data_json,'$.url')=? LIMIT 4",
+                    (binding.ticker, url)):
+                    candidates.setdefault(row[0], False)
             rows = db.execute(
-                """SELECT r.data_json FROM raw_messages r JOIN standard_messages s
+                """SELECT r.raw_message_id FROM raw_messages r JOIN standard_messages s
                    ON s.raw_message_id=r.raw_message_id JOIN stream_members sm
                    ON sm.standard_message_id=s.standard_message_id
                    WHERE r.ticker=? AND r.source_id=? AND r.binding_id=? AND r.identity_key=?
                    ORDER BY r.revision DESC LIMIT 4""",
                 (binding.ticker, binding.source_id, binding.binding_id, identity_key_for(binding.source_id, message)),
             ).fetchall()
-        for row in [*shared, *rows]:
-            raw = RawMessage.model_validate_json(row[0])
-            language = message.metadata.get("language") or evidence.get("language")
-            old_language = raw.metadata.get("language") or raw.metadata.get("identity_evidence", {}).get("language")
+            for row in rows:
+                candidates[row[0]] = False
+        checked = set(candidates)
+        for identity, content_match in candidates.items():
+            raw = self.get_raw(identity)
+            if raw is None:
+                continue
+            raw = dedup.article_identity(raw, raw.source_id)
+            language = dedup.language(message, binding.source_id)
+            old_language = dedup.language(raw, raw.source_id)
             if (access_scope(raw, raw.source_id) != access_scope(message, binding.source_id)
                     or (language and old_language and language != old_language)):
                 continue
             comparable = message.model_copy(update={"identity_key": identity_key_for(binding.source_id, message)})
-            if not dedup.context_conflict(raw, comparable):
-                return raw
-        return None
+            if not dedup.context_conflict(raw, comparable, content_match=content_match):
+                return raw, checked
+        return None, checked
 
     def published_identity_keys(self, binding, messages, *, tickers=None):
         """Scalar-only batch existence proof, used before skipping expired input."""

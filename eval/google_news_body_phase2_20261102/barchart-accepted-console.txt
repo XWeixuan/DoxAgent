@@ -1,0 +1,6 @@
+barchart.com reader-controls FULL None 3282
+barchart.com reader-controls FULL None 3276
+barchart.com reader-controls FULL None 4966
+barchart.com reader-controls FULL None 2509
+barchart.com reader-controls FULL None 2636
+real validation complete 5

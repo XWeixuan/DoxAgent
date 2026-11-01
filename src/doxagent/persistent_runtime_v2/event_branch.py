@@ -31,6 +31,9 @@ def branch_library(source: Path,target: Path,ticker: str,base: int) -> EventLibr
                 columns=','.join(r[1] for r in db.execute('PRAGMA main.table_info('+table+')'))
                 db.execute('INSERT INTO main.'+table+'('+columns+') SELECT '+columns+' FROM origin.'+table+' WHERE '+where,args)
             copy('library_versions','ticker=? AND version=?',(ticker,base))
+            # The selected version's parent is intentionally absent. Keep its
+            # compact, already computed delta without restoring full history.
+            copy('reference_view_deltas','ticker=? AND to_library_version=?',(ticker,base))
             copy('library_heads','ticker=?',(ticker,))
             db.execute('UPDATE library_heads SET published_version=? WHERE ticker=?',(base,ticker))
             copy('id_counters','ticker=?',(ticker,))

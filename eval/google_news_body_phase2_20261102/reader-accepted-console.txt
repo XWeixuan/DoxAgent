@@ -1,0 +1,16 @@
+barchart.com reader-controls FULL None 7622
+barchart.com reader-controls FULL None 6400
+barchart.com reader-controls PARTIAL expand_required 8544
+barchart.com reader-controls FULL None 5236
+barchart.com reader-controls FULL None 11984
+stocktwits.com reader-controls FULL None 11790
+stocktwits.com reader-controls UNAVAILABLE non_article_target 48
+stocktwits.com reader-controls FULL None 8626
+stocktwits.com reader-controls FULL None 12043
+stocktwits.com reader-controls FULL None 8897
+streetinsider.com reader-controls FULL None 1886
+streetinsider.com reader-controls FULL None 17413
+streetinsider.com reader-controls FULL None 2820
+streetinsider.com reader-controls FULL None 1942
+streetinsider.com reader-controls FULL None 2883
+real validation complete 15

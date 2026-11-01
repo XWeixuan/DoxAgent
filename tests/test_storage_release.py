@@ -139,15 +139,17 @@ def test_actual_unfinished_repair_image_refs_exit_after_incident_closes(tmp_path
 
 
 def test_one_command_release_builds_and_retargets_companion_without_mutating_previous(tmp_path,monkeypatch):
-    state={'compose_base_command':['docker','compose','-f','base.yml'],'components':{'initialization-guardian':{'current':{'image':'old','compose':{'environment':{'DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE':'old-agent','DOXAGENT_BUILD_COMMIT':'stale'}}}}}}
+    state={'compose_base_command':['docker','compose','-f','base.yml'],'components':{'initialization-guardian':{'current':{'image':'old','compose':{'environment':{'DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE':'old-agent','DOXAGENT_BUILD_COMMIT':'stale','DOXAGENT_SOURCE_SHA256':'old-source'}}}}}}
     release.atomic(tmp_path/'state.json',state)
     def build(repo,commit,root,kinds):
         assert set(kinds)=={'guardian','repair-agent'}
-        return {'commit':'new','images':{'guardian':{'image':'new'},'repair-agent':{'tag':'new-agent'}}}
+        return {'commit':'new','source_archive_sha256':'new-source','images':{'guardian':{'image':'new'},'repair-agent':{'tag':'new-agent'}}}
     def deploy(root,s,manifest):
         assert s['components']['initialization-guardian']['current']['compose']['environment']['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=='old-agent'
         assert manifest['components']['initialization-guardian']['environment']['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=='new-agent'
         assert manifest['components']['initialization-guardian']['environment']['DOXAGENT_BUILD_COMMIT']=='new'
+        assert manifest['components']['initialization-guardian']['environment']['DOXAGENT_SOURCE_SHA256']=='new-source'
+        assert s['components']['initialization-guardian']['current']['compose']['environment']['DOXAGENT_SOURCE_SHA256']=='old-source'
         assert s['components']['initialization-guardian']['current']['compose']['environment']['DOXAGENT_BUILD_COMMIT']=='stale'
         return {'accepted':True}
     monkeypatch.setattr(release,'build',build);monkeypatch.setattr(release,'deploy',deploy)
@@ -160,7 +162,7 @@ def test_collector_registration_uses_formal_migration_and_stops_old_acquisition(
         'v2-content-enrichment':{'current':{'image':'old','compose':{}}}}}
     release.atomic(tmp_path/'state.json',state)
     calls=[]
-    monkeypatch.setattr(release,'build',lambda *a:{'commit':'new','images':{'backend':{'image':'new-backend'}}})
+    monkeypatch.setattr(release,'build',lambda *a:{'commit':'new','source_archive_sha256':'new-source','images':{'backend':{'image':'new-backend'}}})
     monkeypatch.setattr(release.subprocess,'run',lambda c,**kw:calls.append(c))
     monkeypatch.setattr(release,'run',lambda c,**kw:'0' if c[:2]==['docker','wait'] else 'formal-migration-id')
     def deployed(root,current,manifest):
@@ -181,7 +183,7 @@ def test_registered_collection_schema_upgrade_stops_all_three_owners(tmp_path,mo
            'components':{c:{'current':{'image':'old','compose':{}}} for c in components}}
     release.atomic(tmp_path/'state.json',state)
     calls=[]
-    monkeypatch.setattr(release,'build',lambda *a:{'commit':'new','images':{'backend':{'image':'new-backend'}}})
+    monkeypatch.setattr(release,'build',lambda *a:{'commit':'new','source_archive_sha256':'new-source','images':{'backend':{'image':'new-backend'}}})
     monkeypatch.setattr(release.subprocess,'run',lambda c,**kw:calls.append(c))
     monkeypatch.setattr(release,'run',lambda c,**kw:'0' if c[:2]==['docker','wait'] else 'formal-migration-id')
     monkeypatch.setattr(release,'deploy',lambda *a:True)

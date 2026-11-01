@@ -192,6 +192,14 @@ class PollJournal:
                 if name not in {r[1] for r in db.execute("PRAGMA table_info(poll_captures)")}:
                     db.execute(f"ALTER TABLE poll_captures ADD COLUMN {name} INTEGER")
 
+    def google_urls(self, wrappers):
+        if not wrappers:
+            return {}
+        with self.repo._connect() as db:
+            return dict(db.execute('SELECT wrapper,final_url FROM google_url_resolutions '
+                                   'WHERE wrapper IN (SELECT value FROM json_each(?))',
+                                   (json.dumps(wrappers),)))
+
     def google_url(self, wrapper, final_url=None):
         if final_url is not None:
             with self.repo.transaction() as db:

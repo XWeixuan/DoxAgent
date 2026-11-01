@@ -1,16 +1,16 @@
 {
   "automation_id": "2",
   "baseline_utc": "2026-10-29T17:18:19+00:00",
-  "minimum_summary_after_utc": "2026-10-30T19:00:59.024069+00:00",
-  "last_receipt": "20261029T184000Z",
+  "minimum_summary_after_utc": "2026-10-30T23:09:34+00:00",
+  "last_receipt": "20261030T130033Z",
   "module_watermarks": {
-    "business": "2026-10-29T18:40:00+00:00",
-    "resource_sar": "2026-10-29T18:40:00+00:00",
-    "host_cgroup": "20261029T184000Z/host.json",
-    "body_delivery_cohort": "2026-10-29T18:40:00+00:00",
-    "capture_delta": "2026-10-29T18:40:00+00:00",
-    "actual_cycle_status_counts": "2026-10-29T18:40:00+00:00",
-    "orchestration_new_case_cohort": "2026-10-29T18:40:00+00:00"
+    "business": "2026-10-30T13:00:33.797000+00:00",
+    "resource_sar": "2026-10-30T13:00:01+00:00",
+    "host_cgroup": "20261030T130033Z/host.json",
+    "body_delivery_cohort": "2026-10-30T13:00:33.797000+00:00",
+    "capture_delta": "2026-10-30T13:00:33.797000+00:00",
+    "actual_cycle_status_counts": "2026-10-30T13:00:33.797000+00:00",
+    "orchestration_new_case_cohort": "2026-10-30T13:00:33.797000+00:00"
   },
   "incomplete_metrics": [
     "W1/W2 case creation",
@@ -18,7 +18,10 @@
     "exact thread fork RPC",
     "initial BODY stage timestamps",
     "UI T2",
-    "TAIL due-cycle proof"
+    "TAIL due-cycle proof",
+    "historical cadence expected counts need disabled-TAIL closure audit; original values retained",
+    "BODY first request timestamps absent in latest185 new articles; queue/execution unmeasurable",
+    "4 latest required deliveries lack proven T0"
   ],
   "business_caveats": [
     "Owner PUBLISHED/T1 is a proxy until actual Runtime reader and cursor/case are verified",
@@ -47,8 +50,8 @@
       "reason": "manual pause, host incident and bounded diagnostic restarts; reports retained, no full cycle proof backfilled"
     }
   ],
-  "last_material_anomaly": "Runtime six roots fixed; 10 consumer backlogs zero at19:02:26Z; full-load resource thrashing persists, browser services emergency-paused; actual cycle coverage17:18-18:40=64.02%",
-  "probe_policy": "read-only10m chunks/3sSQL/30sremote wall; local cadence computation; preserve failed parts; schedule: latest head per historical unit at start plus all window changes; TZ=UTC sar saDD by host local day",
+  "last_material_anomaly": "INTC case_44cda48686a6406fb717fe98c7323f9b FAILED/provider_request_failed: Bailian incomplete result, raw finish_reason/response_id unavailable. Model domain, not ingestion failure. Schedule probe timeout fully recovered, SQL vs SSH cause not proven. Known capability wait continued4h36 and new38m sample; no host thrash. Evidence 20261030T130033Z/summary.md",
+  "probe_policy": "read-only10m chunks/3sSQL/30sremote wall; local cadence computation; retain failures; schedule heads reconstructed from previous complete local end-watermarks plus current10m changes ONLY; do not repeat DISTINCT all historical schedule heads; TZ=UTC sar saDD by host local day",
   "proven_cycle_windows": [
     [
       "2026-10-29T02:09:00+00:00",
@@ -73,6 +76,62 @@
     [
       "2026-10-29T17:18:19+00:00",
       "2026-10-29T18:40:00+00:00"
+    ],
+    [
+      "2026-10-29T18:40:00+00:00",
+      "2026-10-29T20:40:00+00:00"
+    ],
+    [
+      "2026-10-29T20:40:00+00:00",
+      "2026-10-29T21:15:39.017039+00:00"
+    ],
+    [
+      "2026-10-29T22:00:39.017039+00:00",
+      "2026-10-29T23:09:34+00:00"
+    ],
+    [
+      "2026-10-29T23:09:34+00:00",
+      "2026-10-30T01:03:25.468000+00:00"
+    ],
+    [
+      "2026-10-29T21:15:39.017039+00:00",
+      "2026-10-29T22:00:39.017039+00:00"
+    ],
+    [
+      "2026-10-30T01:03:25.468000+00:00",
+      "2026-10-30T03:00:26.825000+00:00"
+    ],
+    [
+      "2026-10-30T03:00:26.825000+00:00",
+      "2026-10-30T05:00:26.825000+00:00"
+    ],
+    [
+      "2026-10-30T05:00:26.825000+00:00",
+      "2026-10-30T05:02:28.254000+00:00"
+    ],
+    [
+      "2026-10-30T05:02:28.254000+00:00",
+      "2026-10-30T07:02:28.254000+00:00"
+    ],
+    [
+      "2026-10-30T07:02:28.254000+00:00",
+      "2026-10-30T07:03:59.547000+00:00"
+    ],
+    [
+      "2026-10-30T07:03:59.547000+00:00",
+      "2026-10-30T09:00:00.840000+00:00"
+    ],
+    [
+      "2026-10-30T09:00:00.840000+00:00",
+      "2026-10-30T11:00:00.840000+00:00"
+    ],
+    [
+      "2026-10-30T11:00:00.840000+00:00",
+      "2026-10-30T11:04:32.396000+00:00"
+    ],
+    [
+      "2026-10-30T11:04:32.396000+00:00",
+      "2026-10-30T13:00:33.797000+00:00"
     ]
   ],
   "manual_collection_pause": {
@@ -110,14 +169,16 @@
   "final_version_baseline_utc": "2026-10-29T19:00:59.024069+00:00",
   "repair_authority": "manual user prioritized Runtime repair; heartbeat remains read-only",
   "browser_services_pause": {
-    "active": true,
+    "active": false,
     "since_utc": "2026-10-29T18:45:48+00:00",
     "roles": [
       "v2-site-access",
       "v2-chrome-supervisor"
     ],
     "reason": "confirmed severe memory PSI and SSH failures; keep Worker/Runtime/Collector/Bus/BODY and data/Profile; never auto restart from observation",
-    "user_decision_pending": "unexecuted SDK residency versus memory upgrade"
+    "user_decision_pending": null,
+    "resumed_utc": "2026-10-29T19:36:08.054724+00:00",
+    "resumed_by": "explicit user request to observe 10 minutes under restored services"
   },
   "manual_repair_versions": {
     "scheduler": "5e8f3bb6",
@@ -125,9 +186,887 @@
     "bus_body_worker": "fa683526"
   },
   "runtime_consumption_check": {
-    "at": "2026-10-29T19:02:26.620541+00:00",
+    "at": "2026-10-30T13:01:23.949789+00:00",
     "tickers": 10,
     "pending_total": 0,
-    "source_evidence": "../runtime-stream-consumption-repair-20261030/streams-after-ingress.json"
-  }
+    "source_evidence": "20261030T130033Z/runtime-stream.json",
+    "does_not_include_pre_owner_wait_body": true
+  },
+  "ignored_heartbeat": {
+    "at": "2026-10-29T19:22:19.656+00:00",
+    "reason": "user explicitly excluded abnormal production period as normal baseline; interrupted raw evidence retained"
+  },
+  "latest_manual_validation": {
+    "since_utc": "2026-10-29T23:06:24+00:00",
+    "until_utc": "2026-10-29T23:12:39.550671+00:00",
+    "directory": "../flower-quota-recovery-20261030",
+    "sdk_prewarm_changed": false,
+    "status": "proxy quota restored; original egress proven READY; formal Collector restart recovered Yahoo HTTP and HuggingNews;72 observed sources captured; CTEE and partial Reuters failures remain; not full performance acceptance"
+  },
+  "manual_validation_history": [
+    {
+      "since_utc": "2026-10-29T19:37:23.654777+00:00",
+      "until_utc": "2026-10-29T19:47:23.654857+00:00",
+      "seconds": 600,
+      "directory": "../browser-restore-10m-20261030",
+      "sdk_prewarm_changed": false,
+      "status": "services restored; no sustained memory thrash in this 10-minute low-job natural workload; not a long-term capacity pass"
+    }
+  ],
+  "observation_configuration_segments": [
+    {
+      "since_utc": "2026-10-29T23:09:34+00:00",
+      "host": "8CPU32GB",
+      "versions": {
+        "collector_body": "8085064d",
+        "site": "3c6ec643",
+        "other_initial_apps": "3ae8c6c7"
+      },
+      "change": "Flower quota restored and original egress probes passed; same-image Collector restart at23:09:33.873614Z; W3 parallel development not deployed",
+      "minimum_full_configuration_summary_after_utc": "2026-10-30T23:09:34+00:00",
+      "evidence": "../flower-quota-recovery-20261030/summary.md"
+    }
+  ],
+  "last_successful_observation_utc": "2026-10-30T13:00:33.797000+00:00",
+  "observation_receipts": [
+    {
+      "directory": "20261030T010325Z",
+      "since_utc": "2026-10-29T18:40:00+00:00",
+      "until_utc": "2026-10-30T01:03:25.468000+00:00",
+      "previous_module_watermarks": {
+        "business": "2026-10-29T18:40:00+00:00",
+        "resource_sar": "2026-10-29T18:40:00+00:00",
+        "host_cgroup": "20261029T184000Z/host.json",
+        "body_delivery_cohort": "2026-10-29T18:40:00+00:00",
+        "capture_delta": "2026-10-29T18:40:00+00:00",
+        "actual_cycle_status_counts": "2026-10-29T18:40:00+00:00",
+        "orchestration_new_case_cohort": "2026-10-29T18:40:00+00:00"
+      },
+      "reuse": "../32gb-release-20261030,21:15:39–22:00:39Z complete evidence",
+      "stage_summary": false,
+      "production_mutations": false,
+      "cadence_basis": "raw production cadence plus separately identified local disabled-TAIL closure audit; all failures preserved"
+    },
+    {
+      "directory": "20261030T030026Z",
+      "since_utc": "2026-10-30T01:03:25.468000+00:00",
+      "until_utc": "2026-10-30T03:00:26.825000+00:00",
+      "previous_module_watermarks": {
+        "business": "2026-10-30T01:03:25.468000+00:00",
+        "resource_sar": "2026-10-30T01:00:00+00:00",
+        "host_cgroup": "20261030T010325Z/host.json",
+        "body_delivery_cohort": "2026-10-30T01:03:25.468000+00:00",
+        "capture_delta": "2026-10-30T01:03:25.468000+00:00",
+        "actual_cycle_status_counts": "2026-10-30T01:03:25.468000+00:00",
+        "orchestration_new_case_cohort": "2026-10-30T01:03:25.468000+00:00"
+      },
+      "stage_summary": false,
+      "production_mutations": false,
+      "cadence_basis": "retain raw results and disabled-TAIL closure audit; use first send per unit/run for collection intervals, retain individual redirects/retries",
+      "probe_failures_reconciled": "Site slim-array retry,10min schedule changes; successful original schedule heads reused; incomplete originals retained"
+    },
+    {
+      "directory": "20261030T050228Z",
+      "since_utc": "2026-10-30T03:00:26.825000+00:00",
+      "until_utc": "2026-10-30T05:02:28.254000+00:00",
+      "previous_module_watermarks": {
+        "business": "2026-10-30T03:00:26.825000+00:00",
+        "resource_sar": "2026-10-30T03:00:00+00:00",
+        "host_cgroup": "20261030T030026Z/host.json",
+        "body_delivery_cohort": "2026-10-30T03:00:26.825000+00:00",
+        "capture_delta": "2026-10-30T03:00:26.825000+00:00",
+        "actual_cycle_status_counts": "2026-10-30T03:00:26.825000+00:00",
+        "orchestration_new_case_cohort": "2026-10-30T03:00:26.825000+00:00"
+      },
+      "stage_summary": false,
+      "production_mutations": false,
+      "query_windows": [
+        [
+          "2026-10-30T03:00:26.825000+00:00",
+          "2026-10-30T05:00:26.825000+00:00"
+        ],
+        [
+          "2026-10-30T05:00:26.825000+00:00",
+          "2026-10-30T05:02:28.254000+00:00"
+        ]
+      ],
+      "cadence_basis": "raw production function plus offline disabled-TAIL closure; local merged slots deduplicated across120min and2min windows",
+      "cross_midnight_case_scope": "trading_date29/30; exact date/index predicate retained",
+      "probe_errors": 0
+    },
+    {
+      "directory": "20261030T070359Z",
+      "since_utc": "2026-10-30T05:02:28.254000+00:00",
+      "until_utc": "2026-10-30T07:03:59.547000+00:00",
+      "previous_module_watermarks": {
+        "business": "2026-10-30T05:02:28.254000+00:00",
+        "resource_sar": "2026-10-30T05:00:00+00:00",
+        "host_cgroup": "20261030T050228Z/host.json",
+        "body_delivery_cohort": "2026-10-30T05:02:28.254000+00:00",
+        "capture_delta": "2026-10-30T05:02:28.254000+00:00",
+        "actual_cycle_status_counts": "2026-10-30T05:02:28.254000+00:00",
+        "orchestration_new_case_cohort": "2026-10-30T05:02:28.254000+00:00"
+      },
+      "stage_summary": false,
+      "production_mutations": false,
+      "query_windows": [
+        [
+          "2026-10-30T05:02:28.254000+00:00",
+          "2026-10-30T07:02:28.254000+00:00"
+        ],
+        [
+          "2026-10-30T07:02:28.254000+00:00",
+          "2026-10-30T07:03:59.547000+00:00"
+        ]
+      ],
+      "cadence_basis": "raw function retained; local disabled-TAIL closure, deduplicated interval merge, first send per unit/run and previous proven open-tail timestamps",
+      "probe_errors": 0,
+      "new_resource_investigation": "maintenance-and-resource-investigation.json; all attribution limitations retained"
+    },
+    {
+      "directory": "20261030T090000Z",
+      "since_utc": "2026-10-30T07:03:59.547000+00:00",
+      "until_utc": "2026-10-30T09:00:00.840000+00:00",
+      "previous_module_watermarks": {
+        "business": "2026-10-30T07:03:59.547000+00:00",
+        "resource_sar": "2026-10-30T07:00:00+00:00",
+        "host_cgroup": "20261030T070359Z/host.json",
+        "body_delivery_cohort": "2026-10-30T07:03:59.547000+00:00",
+        "capture_delta": "2026-10-30T07:03:59.547000+00:00",
+        "actual_cycle_status_counts": "2026-10-30T07:03:59.547000+00:00",
+        "orchestration_new_case_cohort": "2026-10-30T07:03:59.547000+00:00"
+      },
+      "stage_summary": false,
+      "production_mutations": false,
+      "query_windows": [
+        [
+          "2026-10-30T07:03:59.547000+00:00",
+          "2026-10-30T09:00:00.840000+00:00"
+        ]
+      ],
+      "cadence_basis": "raw plus offline disabled-TAIL closure; first send per unit/run; prior proven tail timestamps carried",
+      "probe_errors": 0,
+      "notification": "DONT_NOTIFY"
+    },
+    {
+      "directory": "20261030T110432Z",
+      "since_utc": "2026-10-30T09:00:00.840000+00:00",
+      "until_utc": "2026-10-30T11:04:32.396000+00:00",
+      "previous_module_watermarks": {
+        "business": "2026-10-30T09:00:00.840000+00:00",
+        "resource_sar": "2026-10-30T09:00:00+00:00",
+        "host_cgroup": "20261030T090000Z/host.json",
+        "body_delivery_cohort": "2026-10-30T09:00:00.840000+00:00",
+        "capture_delta": "2026-10-30T09:00:00.840000+00:00",
+        "actual_cycle_status_counts": "2026-10-30T09:00:00.840000+00:00",
+        "orchestration_new_case_cohort": "2026-10-30T09:00:00.840000+00:00"
+      },
+      "query_windows": [
+        [
+          "2026-10-30T09:00:00.840000+00:00",
+          "2026-10-30T11:00:00.840000+00:00"
+        ],
+        [
+          "2026-10-30T11:00:00.840000+00:00",
+          "2026-10-30T11:04:32.396000+00:00"
+        ]
+      ],
+      "stage_summary": false,
+      "production_mutations": false,
+      "notification": "NOTIFY",
+      "probe_errors": 0,
+      "accounting": "raw and closure results retained; supplemental asof reclassifies future terminal statuses to in-flight but preserves genuine pre-cutoff sends; all-cycle coverage unchanged"
+    },
+    {
+      "directory": "20261030T130033Z",
+      "since_utc": "2026-10-30T11:04:32.396000+00:00",
+      "until_utc": "2026-10-30T13:00:33.797000+00:00",
+      "previous_module_watermarks": {
+        "business": "2026-10-30T11:04:32.396000+00:00",
+        "resource_sar": "2026-10-30T11:00:00+00:00",
+        "host_cgroup": "20261030T110432Z/host.json",
+        "body_delivery_cohort": "2026-10-30T11:04:32.396000+00:00",
+        "capture_delta": "2026-10-30T11:04:32.396000+00:00",
+        "actual_cycle_status_counts": "2026-10-30T11:04:32.396000+00:00",
+        "orchestration_new_case_cohort": "2026-10-30T11:04:32.396000+00:00"
+      },
+      "query_windows": [
+        [
+          "2026-10-30T11:04:32.396000+00:00",
+          "2026-10-30T13:00:33.797000+00:00"
+        ]
+      ],
+      "stage_summary": false,
+      "production_mutations": false,
+      "notification": "NOTIFY",
+      "original_probe_errors": 1,
+      "unrecovered_probe_errors": 0,
+      "probe_recovery": {
+        "original_timeout_seconds": 50,
+        "reused_previous_receipt": "20261030T110432Z",
+        "reused_head_rows": 504,
+        "retry_returncode": 0,
+        "retry_seconds": 2.375,
+        "all12_change_parts_complete": true,
+        "production_mutation": false
+      },
+      "accounting": "raw and disabled-TAIL closure retained; asof restores17 in-flight instead of5; no performance gain claimed"
+    }
+  ],
+  "cadence_accounting_warning": {
+    "discovered_at": "2026-10-30T01:03:25.468000+00:00",
+    "evidence": "20261030T010325Z/closure-reproduction.json",
+    "mechanism": "cadence.py drops DISABLED TAIL schedule events lacking required before closing ENABLED interval",
+    "production_fixed": false,
+    "original_results_retained": true,
+    "offline_audit": "20261030T010325Z/offline-cadence-closure-audit.py",
+    "latest_raw_coverage": 0.8886064201117769,
+    "latest_closure_audited_coverage": 0.9072033287329804,
+    "do_not_claim_performance_gain": true
+  },
+  "latest_observed_versions": {
+    "collector_body": "8085064d",
+    "site": "3c6ec643",
+    "other_initial_apps": "3ae8c6c7",
+    "source_evidence": "20261030T130033Z/health.json"
+  },
+  "carry_forward_failures": {
+    "articles": [],
+    "unpublished_required_deliveries": [
+      {
+        "article_key": "8499556f87faac9ba1af34da32acaf31df8e3b5fe5c04251c08e5a589fe6fb57",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "0baf420c3dea03b58b065c5bb3d3bb2edaa9d82a4d203b6034f3d7238d9010e6",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "8cf72e50a7784cd36dff8a4c024cffd1c8953b687b044f8cb805b97f2c9491ad",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "4cd296fe22c872bee4ab520c6355d1167d899f4d9f097a6d9ab7e8402212db2e",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "317f6fb1f0a16855916bbe053c252f16b2941f5bd9b76f0ba01c052333d49657",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "29d7d91a2b9e934b8de0bc623dbb3084edbd8d145113bf10a2fcbeb074ea3683",
+        "ticker": "MU",
+        "source_id": "investing_ticker_news",
+        "state": "ADMISSION_REJECTED",
+        "last_error": "EXPIRED_PUBLICATION"
+      },
+      {
+        "article_key": "59e7a613e03cea9437f66b73efaf0575fa005333a6493018d10a36bb9065eeb4",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "IRRELEVANT",
+        "last_error": null
+      },
+      {
+        "article_key": "5850dbbe1bcbd6039ee76234e5905bbf81a3911f9e2c7fa4169d27b01b51aeaa",
+        "ticker": "MU",
+        "source_id": "reuters_site_search",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "80216d37e37434ddbf71d1c30b34875055ba2bff64cfd9db84852eed2a94447c",
+        "ticker": "COHR",
+        "source_id": "reuters_site_search",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "80216d37e37434ddbf71d1c30b34875055ba2bff64cfd9db84852eed2a94447c",
+        "ticker": "RKLB",
+        "source_id": "reuters_site_search",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "018b05324fc5ae7fb2bf53a54bc5ae68e7216a6e027ecba953d49f558772e308",
+        "ticker": "BE",
+        "source_id": "reuters_site_search",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "c0791d1bf32a55b8848b9e93b5b4195db00c6b6ae251c3e6e0b9fe4bd0625f0f",
+        "ticker": "INTC",
+        "source_id": "yahoo_finance_news",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "3ca96656a3bd017cf69c4b10d96248ca94a56c1cd35d7163065e8970fa4d8ce2",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "e7ba2a649b21d58403542bcbab943edfb3dea7ef61f9c6ed47e96943a3d938a1",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "17c4fcf327ecbc0971cce9eb30ecc41d7d82566840b0c6f5a6977c910c6ff1bd",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "cebf85fe2ecfd1f6a620b012cea529c0cc8eb7b7da22aaf3387227f4e1cbd295",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "8dac7ff87b5822863e858b265226ca2c791510bc44d4714dbf81c4a224a962f7",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "d88a43fb25e1981cef044b6302e7328eac01380991d99e3f2da08c995ac029b4",
+        "ticker": "INTC",
+        "source_id": "google_news_search_rss",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "ec9d632e8a3ade60b1472c017ab5296177581c3f736875764582e90efccb6e30",
+        "ticker": "BE",
+        "source_id": "wccftech_hardware",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "ec9d632e8a3ade60b1472c017ab5296177581c3f736875764582e90efccb6e30",
+        "ticker": "COHR",
+        "source_id": "wccftech_hardware",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "ec9d632e8a3ade60b1472c017ab5296177581c3f736875764582e90efccb6e30",
+        "ticker": "INTC",
+        "source_id": "wccftech_hardware",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "ec9d632e8a3ade60b1472c017ab5296177581c3f736875764582e90efccb6e30",
+        "ticker": "MU",
+        "source_id": "wccftech_hardware",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "ec9d632e8a3ade60b1472c017ab5296177581c3f736875764582e90efccb6e30",
+        "ticker": "NBIS",
+        "source_id": "wccftech_hardware",
+        "state": "PUBLISHED",
+        "last_error": null
+      },
+      {
+        "article_key": "092d1d24f8bd125ca867aabbba3e45bb93a86a86bf2daa7d87567386298a870c",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "76bb8b1bb5b1b72147f039895403b8fce74d3100d279b8ca32c3166a66fdf49a",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "c5118355a84a26e017d744f0371b1274d8def922f951da25902c5da4d7dfdb03",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "f13dd345cdc9053cf448f5d46a6c585033c7033e92af44c819074f04df2fee20",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "13fa7b96b62ae3c53c472286e8024f67b214790496d73cf1320256a24f19f758",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "f6d64a1822725ced7cff969cda2ab1b0448bfaf441d686c53fe0fc7de1586363",
+        "ticker": "INTC",
+        "source_id": "google_news_search_rss",
+        "state": "WAIT_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "e574c52d8e83c1d71f6d0cc101ab31ed2a30b5e7dbd65a8179982dddb7b80d8b",
+        "ticker": "INTC",
+        "source_id": "investing_ticker_news",
+        "state": "ADMISSION_REJECTED",
+        "last_error": "EXPIRED_PUBLICATION"
+      },
+      {
+        "article_key": "54b8015eb9f3cc35fa09ebc8722cce7f7b86f289ca1662f07ff9dc814fc9ed3f",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "7c955c17b469871fb9a15da200ccadf4334dbca081da6453100850cf001889b3",
+        "ticker": "RKLB",
+        "source_id": "aviationweek_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "da07189851222ac4235323070c79ffc80ae7bfca6c18d9e88bab7870901d0767",
+        "ticker": "BE",
+        "source_id": "dcd_infrastructure_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "da07189851222ac4235323070c79ffc80ae7bfca6c18d9e88bab7870901d0767",
+        "ticker": "CEG",
+        "source_id": "dcd_infrastructure_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "da07189851222ac4235323070c79ffc80ae7bfca6c18d9e88bab7870901d0767",
+        "ticker": "COHR",
+        "source_id": "dcd_infrastructure_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "da07189851222ac4235323070c79ffc80ae7bfca6c18d9e88bab7870901d0767",
+        "ticker": "INTC",
+        "source_id": "dcd_infrastructure_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "da07189851222ac4235323070c79ffc80ae7bfca6c18d9e88bab7870901d0767",
+        "ticker": "MU",
+        "source_id": "dcd_infrastructure_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "da07189851222ac4235323070c79ffc80ae7bfca6c18d9e88bab7870901d0767",
+        "ticker": "NBIS",
+        "source_id": "dcd_infrastructure_rss",
+        "state": "NO_PUBLIC_BODY",
+        "last_error": null
+      },
+      {
+        "article_key": "f21c1d38040fb7e621f2c1f4fc493c5dda8ca03118bd75959b4c9c2dc39806e6",
+        "ticker": "INTC",
+        "source_id": "google_news_search_rss",
+        "state": "WAIT_BODY",
+        "last_error": null,
+        "asof": "2026-10-30T13:00:33.797000+00:00",
+        "current_state_may_postdate_cutoff": true
+      },
+      {
+        "article_key": "8f5e32a735facc110d6f9046c4ca1103eb7dd77666de954cbb964c72d288d344",
+        "ticker": "INTC",
+        "source_id": "investing_ticker_news",
+        "state": "PUBLISHED",
+        "last_error": null,
+        "asof": "2026-10-30T13:00:33.797000+00:00",
+        "current_state_may_postdate_cutoff": true
+      }
+    ],
+    "failed_jobs": [
+      {
+        "id": "785d73e7fd37f139855d5b39d8096821476a12c91420ddc4f0849ee856c3a902",
+        "run_id": "w3-ready-bf8ec68fe13c46cb93cc0ab24d8aa139",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      },
+      {
+        "id": "b419d9f3ecae96fcea5c29ece74ac534604fcdcbfc8ca1472a42cb12322ab8ab",
+        "run_id": "w3-ready-fe089dda5dcf49a5b4db9d8e66331a54",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      },
+      {
+        "id": "f53ec02b9f84b209feacd8942d1358d3303a6638fa68da3243e1548bfcae2e33",
+        "run_id": "w3-ready-0f1cf222b2c54055a7a80d25253cb157",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      },
+      {
+        "id": "2a52c0217ba731249d5069d59bc539f75b662b99ffe6dfc5ad49dd9596b9f86f",
+        "run_id": "w3-ready-4b90365835654e3492c2f08cdd3a71bd",
+        "code": "CODEX_START_TIMEOUT",
+        "error": "START_THREAD exceeded its timeout budget"
+      },
+      {
+        "id": "fce3ce51853717f0583dc71ff5adf77297d1fd4d0daa1ce1a651ca7cc3c758b5",
+        "run_id": "w3-ready-5dd4236f3b4e471ebb375d17eb28f33f",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      },
+      {
+        "id": "67458a3d1015cc573e9a7eab7c8f10d8a35af12ab8cc56009d3bdf27998e4172",
+        "run_id": "w3-ready-0fafb0e1092942d183f5dc19a11fd590",
+        "code": "CODEX_START_TIMEOUT",
+        "error": "START_THREAD exceeded its timeout budget"
+      },
+      {
+        "id": "e33405a55c41e379792408bf451bd37c267654ec65b68a301c319e1cb16eb8d4",
+        "run_id": "w3-ready-cdf99b5e31844828a3e3b62d25f90880",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      },
+      {
+        "id": "b2b0f65a932be2cac3745716dd7c9b52810cb887ca0a52c642c65859a4a187e6",
+        "run_id": "w3-ready-b70971d640094c1697d729d654b2c834",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      },
+      {
+        "id": "b1c4a07679f1e9b1d64699b1ce6b5990f358a51c6a37551a452c85ca2c956f26",
+        "run_id": "w3-ready-49f4f07ea3004c1d96780d8d4f4d71c6",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      },
+      {
+        "id": "297921f452547b0877467f9a1f93f3438dc75e1c9c2a8571619b10b180e52621",
+        "run_id": "w3-ready-8fc5303554f7464b85fc12cea1029f9f",
+        "code": "CODEX_WORKER_ERROR",
+        "error": "START_THREAD: dictionary changed size during iteration"
+      }
+    ],
+    "evidence": "20261030T010325Z/part*/analysis.json; prior-cohort-current.json",
+    "failed_jobs_count": 214,
+    "new_failed_jobs_count": 0,
+    "latest_partial_or_unavailable_article_keys": [
+      "3f284311758bd4c55ddaceb78387d03bc0a1ca7a57a51c960681e300fc49bb4b",
+      "212128f73d380db761a5d6039808ec301d495fe0eb5458653de6ac188d8907ab",
+      "fc9b844fcd5ef4ee65105d8d544a4a4a137def5debcb86a3d267a14ce7748acc",
+      "695c36621e954c1d1c90f69a456d1275e47832ac1a1e318a8b2d46727421d66c",
+      "2c38856bca1fb3fccfe8752b44704eff52d824e8137679243a13d9b32ca984a8",
+      "920218282c5bea4c7c950cd111cc2039d08283bf57c13d8a0d7d471df17b5f00",
+      "2649106ae413e805f0f2219ba81c05efbb9d92efe487a93bcd96ebf4b3fbb808",
+      "5fabf79cccb312bd7d3b973252b91b976a49200b6d958d2c55272198c1c63a55",
+      "5ac1d7b2b7dcd29374bdac8dfe913235839121fd8853488a3dd948cc6132b8e2",
+      "88eb750bf3bafa5bc6515cdda40f20b20d449cf1b7dedbbc1c1e1eb81db2c68b",
+      "12aeb1b24f4d599ff74b63dfd1cb2b066c71d389a84ae855ae000ee57371aff0",
+      "547bf6fc984d2471ce3d8d4b0f7e6b889757c651661c561252babf5ab71c8d37",
+      "5d1e9afbe538b0622e8be432995237c0ef5a66e55f888bd67ce268af59493b5d",
+      "4b579b2cf46fcb5e026c9de4ed2833f823cd843335c22b7dd1748fdb91458316",
+      "392b285d1273aac632d8284a51a78876521d3b2c3023bdcd020b001cb8fdcb0f",
+      "fa96193dbaa43138f2a2b54f8f522c1cf6976eebccc63a1ce93e63b5e60fffee",
+      "e173ce055dee3ab87384e5bbc2d928b56bf2bc326c5b9cdb59a86d664b19f49b",
+      "b5247325fabcb2686786c3b055effcc6df2f8aa796ff29be9fab208b97ffe3b4",
+      "0dc1b3b21da658a1474bc01b0f9e6de3a3d9e2f47bf99e53408ea8011417a168",
+      "59d18ca79afbaa7c3e591d9d55e0b32d538e2bd0533493d364d59633b5aef21b",
+      "cd1357240005a73f015ffc7462ce3f4f59030721620a110bc679e93854ddbf8c",
+      "91fe7473d1ed50f4748d22886bbd79fd8f7fc65954e3cf89ce02b70f893176ab",
+      "972b7537206a87f085170afd9e33b8897a43f09ad92688930d824ad9a2924f3f",
+      "74a5dba07024c5e3c696c7448e5dc84bd40d23c305df2c5ffe271fe4dfa57aed",
+      "8928a8e9c3af836414e0e44b97f2e7b158036410c02417aa721207d5ceec3ca4",
+      "c055cfde202cc6b4b3476617ecfb8d4c31677f0ac9d314d6b36d29b679282bd8",
+      "60ef123efe04df4c54bafba80bf8ab46e472807fd8bc17742c8cbbe010aee9d0",
+      "6ee7041b3b6f6b726f4b723e137fc10e032506975c51e4c5056b3982de2d9061",
+      "a7fe2c39fe776e11513b646e7d9b7241983b7a6a3e6b5a46fb4c956df9127678",
+      "e1ebd767ad905923727b572cbc44b5a07e7e816ef94ac6d52d57bebfec0aab5d",
+      "ce62c5a8f564af54d256d90261a7cf156932610d37af31ba6909f7789fed7f01",
+      "7cdca638685d6cb03f0f26ad68290f94aded1accc51d12d7a6164d5a0735c939",
+      "fd2eed4e163f8f1dd790a2f4cdf10d1b9766386ac710eea346c5e0cf3245fe0a",
+      "12ecc052a642f7d4ee5ce4c87ea90ca28e388034e746da1a3e508608e9d39d67",
+      "04868ff4a923453616eece2d018588893242df54f5735ce8a0f6c865e45add52",
+      "9d0776dfa202d15b2ba40d4eb477181808dbd90c89de55e3dd53bff68d82ec74",
+      "821dc46a3430be41a3c6b9232d3215935c3a1c34b15d1c885121fa6f649b8571",
+      "694d25b0feacff5cc3459918c01a7050228778b82b4dc129d097e8249701dee3",
+      "a46aee2fb162e514d620be9026a37cddc944c7ec60f4c6d5e181d37564aeb2a3",
+      "0745a49d2b4ca49e97e23bbeab0bc406a6e78decc1c33ade0ce923c2c9a2a566",
+      "8e92c804242632e9eebb7e9c7c9622f8ba541e97a29f46df62c4f94e0aeb3512",
+      "e793abc1b4fc3a376d0d1e1f2c290f765cb383c943fb6f56b9ab84272baa20e7",
+      "43a3136b0ea97109dcbe1aac1f698c8bacf05f3e80596a58cd02ee7fc7192f80",
+      "c26870b2a4e2f472145d84f6647d54b33192905dd0364e44826125d24193e4e2",
+      "2aea8d279ce241d593ea22473cdcd14a2f6d3cce800908f75dcb3f58099bce78",
+      "91470e5bd74d5d96720a55ac693798d177a830a7747c543f8127f573ef3c6e13",
+      "5b187381f42a738101de343d0b3524c6fdd1b2a4609c0dd2333603bc8b4db890",
+      "077041f6948209385eba013548fc486f56e12fd348360f4d4f2660c60544cbbf",
+      "6a2d12f0765111dead957b1e42e23541bc1dd5de8f759a59358519b97eaf433d",
+      "f21c1d38040fb7e621f2c1f4fc493c5dda8ca03118bd75959b4c9c2dc39806e6",
+      "f7dff23455ec6d7d2cc6a5ef6e78f531fa3c7e5c03ba382d96cc5bf97dd7bd30",
+      "5d72b72ba79acc8a0ac0a17c422fad4b36c5c5ad7cb884da67c1540b2e253816",
+      "cad708d5970216bb38c4a6dc17c8053b1e3eff45096c5e940ca187e8acf5e2d8",
+      "2dfa189fa509c5a8d62a8641076f5de0c191dd4588517943c2701e693c75bf2d",
+      "da257010cc9a81d42cc908047c998e2c91206f65248a42cbbb7aa9a23ee79145",
+      "2d8b8a0bc6c5d61641ab4dd97a62772a00f640ee6fec8da56e0882b1c30375a7",
+      "c3f91d59ff8b80e853a71d4cc55b2aa6892c6aa166fa84fd979b417e1bc7b35b",
+      "eb057c7a2f97c50d80b9a029384c4eaa0a945cd489c68839c8d084bd39362a85",
+      "8b7dfff4bdeee2e2ece15b5af1bd84fa5cc58fa4d4afd89818b43de07344f5d2",
+      "2ece88e1f28a1db6d25ccb99255c63ed14dc5cfa8e48f23a5150b0be0866f096",
+      "ae796ff61d4700659ea018b25182d76930ab5365a14e88e9d6bb2157628ddfdb",
+      "1b81cf240223ac2370dbafcb2984a1136968570e10618ab06e41560be7c25aab",
+      "173b0a0a6ba87cf3c6f710ef52720d3a7108d0f6b99b5f355485ad771bd021ff",
+      "b29dcdff5b93b03c27a0c2db17e1d635f3c9c69fb3fd5a1224601809f8e2c018",
+      "93810182ec8c553a2828783964dc7c976cc381367f3a4c48a0dd5e5b5559b90e",
+      "40b2dc9a3b70767fa7283f66d7dc248f0dbd91ac32b7f8f65d72c68e611b1ce7",
+      "7494ff299bfac6a2dcfcf98f63140aed1c06a75aebd85c44617c4c22d1e0745f",
+      "5e9a16f466baccac2a77f40f2c97a478fe74f7803f07b4407dbe359b19853f91",
+      "6af647acdee8b2d924fccd1cd2798b7bff7c794dc11a10ff6b0f83ff4f2f67c4",
+      "043b82eb6485e35f28fa3022e0a70ee34bd1093beabd47e9bcccb25eab6f1c01",
+      "954efbcc721b52e923f4374f89b6d0513ca60d9d6d71f8a0784868f75e7c5e36",
+      "a924b2f2eaa4063c1eb63eef67fdf621ccf399326ecb7c28d4e02d9112559901",
+      "343ca4e852dc93f4aa1f98a87bc373d7b940237f89a6703dc5a02b49e3892c0a",
+      "8f5e32a735facc110d6f9046c4ca1103eb7dd77666de954cbb964c72d288d344"
+    ],
+    "latest_current_evidence": "20261030T130033Z/prior-cohort-current.json",
+    "open_job_ids": [
+      "7a3f4da3559e53604e0a148c1b63b427eb5b019258fd0eb18e1b19a6fd875ab2"
+    ],
+    "open_jobs_evidence": "20261030T130033Z/part0/jobs.json",
+    "open_jobs_instruction": "Next turn follow these exact job IDs by primary key; new-created cohort will omit them. Do not infer idle prewarm from run_id."
+  },
+  "request_interval_accounting_warning": {
+    "basis": "first TRANSPORT_SEND per collection unit/run; all redirect/retry sends remain separate detail",
+    "evidence": "20261030T130033Z/part0/cadence-130033-collection-intervals.json",
+    "production_changed": false,
+    "reason": "all-header gaps can halve apparent60s cycle when redirects create two headers per attempt; include open tail exposure"
+  },
+  "latest_http_timeout_investigation": {
+    "at": "2026-10-30T11:04:32.396000+00:00",
+    "source": "huggingnews_rss",
+    "first_failure": "2026-10-30T02:26:32.238277+00:00",
+    "failed_physical_runs": 34,
+    "failed_logical_cycles": 170,
+    "proof": "34 existing physical rows with zero TRANSPORT_SEND events",
+    "related": "CEG:newswire_rss HEAD117/117 sameDE route pre-header timeout",
+    "root_status": "pre-header boundary proven; HTTP pool versus proxy/endpoint handshake not distinguished; outer TimeoutError not covered by adapter retry or httpx broken-client retirement",
+    "evidence": "20261030T130033Z/failure-analysis.json",
+    "no_repair": true,
+    "latest_window_since": "2026-10-30T11:04:32.396000+00:00",
+    "latest_window_failed_physical_runs": 116,
+    "latest_window_failed_logical_cycles": 580,
+    "known_continuous_failed_physical_runs_since0226": 394,
+    "known_continuous_failed_logical_cycles_since0226": 1970,
+    "current_first_send_gap_seconds": 9416.027647,
+    "current_fresh_gap_seconds": 31136.245438,
+    "latest_window_failed_physical_runs_at_cutoff": 115,
+    "latest_window_failed_logical_cycles_at_cutoff": 575,
+    "latest_window_inflight_physical_runs_at_cutoff": 1,
+    "latest_window_inflight_logical_cycles_at_cutoff": 5,
+    "latest_window_until": "2026-10-30T13:00:33.797000+00:00",
+    "latest_window_total_logical_cycles": 580
+  },
+  "latest_ibkr_stall_investigation": {
+    "since": "2026-10-30T04:14:12+00:00",
+    "first_recovered_capture": "2026-10-30T04:35:06.742556+00:00",
+    "last_success_at_cutoff": "2026-10-30T05:02:24.718051+00:00",
+    "failed_runs": 180,
+    "sent": 66,
+    "without_send": 114,
+    "root_status": "historicalNewsEnd no-progress plus queued/shared-path wait; no gateway/upstream state proof, not old SDK signature or4002",
+    "evidence": "20261030T050228Z/ibkr-send-proof.json;ibkr-bounded-log.json",
+    "no_repair": true,
+    "latest_followup": {
+      "since": "2026-10-30T11:04:32.396000+00:00",
+      "until": "2026-10-30T13:00:33.797000+00:00",
+      "fresh_cycles": 1159,
+      "expected_cycles": 1160,
+      "long_stall_reobserved": false,
+      "evidence": "20261030T130033Z/source-summary.json"
+    }
+  },
+  "latest_reuters_state": {
+    "changed_at": "2026-10-30T04:31:46.911150+00:00",
+    "observed_at": "2026-10-30T11:05:57.136139+00:00",
+    "state": "DATADOME BACKOFF/STILL_BLOCKED,known persistent blocker",
+    "logical_ip_banned_failures": 1140,
+    "evidence": "20261030T130033Z/reuters-recovery-current.json;failure-analysis.json",
+    "identity_unchanged_by_observer": true,
+    "latest_window_fresh": 8,
+    "latest_window_expected": 3257,
+    "latest_window_human_challenge_pending": 3527
+  },
+  "latest_observation_limits": {
+    "window_end": "2026-10-30T13:00:33.797000+00:00",
+    "new_articles": 185,
+    "initial_request_timestamp_samples": 0,
+    "first_result_evidence_missing_but_not_running": 1,
+    "older_pre_owner_capability_wait": 2,
+    "required_deliveries_missing_t0": 4,
+    "fork_rpc": "unmeasurable",
+    "W1W2_exact_local_creation": "unmeasurable",
+    "ui_t2": "unmeasurable",
+    "old_PROVENANCE_UNVERIFIED54": "not rescanned,not presumed recovered",
+    "full20ticker30s_capacity": "not verified"
+  },
+  "latest_worker_resource_wave": {
+    "window_start": "2026-10-30T05:02:28.254000+00:00",
+    "window_end": "2026-10-30T07:03:59.547000+00:00",
+    "approx_activity_begin": "2026-10-30T06:00:00+00:00",
+    "worker_cgroup_previous_peak_GiB": 5.38,
+    "worker_cgroup_new_peak_GiB": 13.18,
+    "peak_includes_file_cache": true,
+    "worker_read_GiB": 9.476673126220703,
+    "share_observed_leaf_read": 0.6642638131544532,
+    "host_swap_sample_max_MiB": 1218.5390625,
+    "known_explicit_maintenance_jobs": 39,
+    "request_node_unclassified_jobs": 40,
+    "observed_concurrent_jobs_max": 11,
+    "parent_high_max_oom_delta": 0,
+    "current_memory_psi_avg_zero": true,
+    "causality": "maintenance overlap, not exact per-job/file or SDK prewarm attribution; instantaneous anonymous peak unavailable",
+    "evidence": "20261030T070359Z/maintenance-and-resource-investigation.json;resource-analysis.json;job-attribution.json",
+    "prewarm_or_W_limits_changed": false,
+    "followup": {
+      "until": "2026-10-30T13:00:33.797000+00:00",
+      "peak_unchanged_GiB": 13.18,
+      "current_anon_GiB": 2.05,
+      "window_physical_read_GiB": 0.25,
+      "host_swap_sample_max_MiB": 1584.36,
+      "current_memory_psi_avg_zero": true,
+      "evidence": "20261030T130033Z/resource-analysis.json",
+      "not_claiming_swap_cleared": true
+    }
+  },
+  "latest_observation_status": {
+    "at": "2026-10-30T13:00:33.797000+00:00",
+    "notification": "NOTIFY",
+    "reason": "one new INTC Bailian incomplete stream case failure; original schedule probe50s timeout recovered with local heads and incremental changes; no new host thrash",
+    "cycle_audited": 0.9072033287329804,
+    "initial_full": 105,
+    "new_articles": 185,
+    "delivery_within10": 185,
+    "required_deliveries": 210,
+    "published": 208,
+    "runtime_pending": 0,
+    "production_changes": false,
+    "evidence": "20261030T130033Z/summary.md"
+  },
+  "cutoff_terminal_accounting_warning": {
+    "discovered_at": "2026-10-30T11:04:32.396000+00:00",
+    "mechanism": "late observation can see finished_at after cutoff; cannot retain FAILED/CAPTURED as historical terminal",
+    "required_local_audit": "20261030T110432Z/offline-cadence-asof-audit.py",
+    "evidence": "20261030T130033Z/part0/cadence-130033-asof-audit.json",
+    "before_inflight": 5,
+    "after_inflight": 17,
+    "all_cycle_coverage_unchanged": true,
+    "production_changed": false
+  },
+  "known_capability_wait_loops": {
+    "f6d64a1822725ced7cff969cda2ab1b0448bfaf441d686c53fe0fc7de1586363": {
+      "source": "google_news_search_rss",
+      "publisher": "Seeking Alpha",
+      "ticker": "INTC",
+      "first_seen_at": "2026-10-30T08:24:34.481681+00:00",
+      "age_seconds_at_cutoff": 16559.315319,
+      "state": "FETCH_DUE / delivery WAIT_BODY",
+      "attempt": 0,
+      "fetch_round": 0,
+      "reason": "awaiting_capability / site_recovery_pending",
+      "scope": "publisher:seeking_alpha",
+      "handling_mode": "HUMAN",
+      "signals": [
+        "press_and_hold_instruction"
+      ],
+      "last_real_probe": "2026-10-30T11:06:14.855310Z",
+      "provider": "UNKNOWN",
+      "recovery_error": "recovery_contract_not_satisfied",
+      "mechanism": "deferred attempts do not consume budget/rounds and live-article requeue bypasses deadline; no independent business-wait terminal",
+      "exact_requeue_count": "unmeasurable;only last4 retained",
+      "evidence": "20261030T130033Z/pending-article-current.json",
+      "last_observed_at": "2026-10-30T13:01:51.829918+00:00"
+    },
+    "f21c1d38040fb7e621f2c1f4fc493c5dda8ca03118bd75959b4c9c2dc39806e6": {
+      "source": "google_news_search_rss",
+      "publisher": "not independently identified",
+      "ticker": "INTC",
+      "first_seen_at": "2026-10-30T12:22:34.574072+00:00",
+      "age_seconds_at_cutoff": 2279.222928,
+      "state": "FETCH_DUE / delivery WAIT_BODY",
+      "attempt": 0,
+      "fetch_round": 0,
+      "reason": "awaiting_capability",
+      "evidence": "20261030T130033Z/part0/business.json"
+    }
+  },
+  "latest_initial_result_ledger_gap": {
+    "article_key": "9f3b4537affe3154cef8a9fe16c66c415df203baa0499c27fd1d52d5ce123fd4",
+    "source": "yahoo_finance_news",
+    "first_seen_at": "2026-10-30T10:09:06.356981+00:00",
+    "current_state": "READY/PARTIAL",
+    "work_kind": "recheck",
+    "fetch_total": 4,
+    "initial_fields_missing": true,
+    "classification": "first result unmeasurable,not genuine ongoing initial download",
+    "evidence": "20261030T110432Z/part0/business.json"
+  },
+  "latest_model_failure": {
+    "case_id": "case_44cda48686a6406fb717fe98c7323f9b",
+    "ticker": "INTC",
+    "code": "provider_request_failed",
+    "error": "Bailian chat returned an incomplete result",
+    "created_at": "2026-10-30T12:27:46.919876+00:00",
+    "updated_at": "2026-10-30T12:31:59.119083+00:00",
+    "not_non_llm_local_time": true,
+    "root_limit": "stream stop marker or response_id absent; exact raw cause unmeasurable",
+    "evidence": "20261030T130033Z/part0/orchestration.json"
+  },
+  "schedule_probe_policy": {
+    "since": "2026-10-30T13:00:33.797000+00:00",
+    "previous_complete_plan": "20261030T130033Z/part0/cadence-combined.jsonl",
+    "incremental_script": "20261030T130033Z/schedule-changes-only.py",
+    "instruction": "Update dates; reuse latest local SCHEDULE <= start per binding/unit, then export10m changes only. If previous baseline incomplete retain gap, do not assume head. Preserve original failed receipt.",
+    "evidence": "20261030T130033Z/schedule-recovery-receipt.json"
+  },
+  "model_failure_history": [
+    {
+      "case_id": "case_c0766120239849d480ce79a7d510a4d8",
+      "ticker": "MU",
+      "code": "provider_timeout",
+      "error": "Bailian request timed out",
+      "not_non_llm_local_time": true,
+      "evidence": "20261030T110432Z/part0/orchestration.json"
+    }
+  ]
 }

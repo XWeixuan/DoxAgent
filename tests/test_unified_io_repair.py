@@ -202,7 +202,7 @@ def test_finnhub_release_migration_is_idempotent_and_preserves_business_config(t
     assert repo.get_source(source.source_id)==updated
 
 
-async def test_first_body_defer_preserves_provider_floor_and_initial_state(tmp_path,monkeypatch):
+async def test_first_body_capability_result_preserves_provider_floor_and_first_failure(tmp_path,monkeypatch):
     from tests.test_content_enrichment_hub import _setup,_message,_GovernedExtractor
     from doxagent.message_bus_v2.live import LiveQueue
     from doxagent.content_enrichment.service import ContentEnrichmentHub
@@ -221,14 +221,19 @@ async def test_first_body_defer_preserves_provider_floor_and_initial_state(tmp_p
     before=utc_now()
     assert await hub.run_once()==1
     row=live.get(rows[0]['key'])
-    assert row['state']=='FETCH_DUE' and row['work_kind']=='new_article'
-    assert datetime.fromisoformat(row['due_at'])>=before+timedelta(seconds=60)
-    assert row['fetch_round']==0 and row['initial_outcome'] is None
-    with repo.transaction() as db:db.execute("UPDATE live_articles SET due_at=?",(before.isoformat(),))
-    hub.extractor=_GovernedExtractor()
+    assert row['state']=='READY' and row['work_kind']=='new_article'
+    assert datetime.fromisoformat(row['next_check_at'])>=before+timedelta(seconds=60)
+    assert row['initial_outcome']=='UNAVAILABLE' and row['initial_result_at']
+    first_result=row['initial_result_at']
+    with repo.transaction() as db:db.execute("UPDATE live_articles SET next_check_at=?",(before.isoformat(),))
+    live.enqueue_checks()
+    assert live.get(rows[0]['key'])['work_kind']=='capability_resume'
+    await hub.close()
+    hub=ContentEnrichmentHub(repo,bus,extractor=_GovernedExtractor())
     assert await hub.run_once()==1
     row=live.get(rows[0]['key'])
-    assert row['initial_outcome']=='FULL' and row['initial_result_at'] and row['fetch_round']==1
+    assert row['outcome']=='FULL' and row['initial_outcome']=='UNAVAILABLE'
+    assert row['initial_result_at']==first_result and row['fetch_round']==1
     initial=row['initial_result_at']
     with repo.transaction() as db:db.execute("UPDATE live_articles SET next_check_at='2000-01-01'")
     live.enqueue_checks()

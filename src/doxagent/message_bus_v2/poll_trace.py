@@ -12,6 +12,7 @@ from .schema import utc_now
 REQUESTS = ContextVar("poll_requests", default=None)
 DEMAND = ContextVar("poll_demand", default=None)
 REQUEST_ROLE = ContextVar("poll_request_role", default="listing")
+TRANSPORT_PROGRESS = ContextVar("publisher_transport_progress", default=None)
 _HTTP_POOLS = WeakKeyDictionary()
 
 
@@ -61,7 +62,12 @@ async def httpx_request(request):
     async def trace(name, info):
         if prior is not None:
             await prior(name, info)
+        progress = TRANSPORT_PROGRESS.get()
+        if progress is not None:
+            progress['phase'] = name
         if name in {"http11.send_request_headers.started", "http2.send_request_headers.started"}:
+            if progress is not None:
+                progress['sent'] = True
             request.extensions["_bus_poll_event"] = request_started(request.method, request.url, admitted=True)
 
     request.extensions["trace"] = trace

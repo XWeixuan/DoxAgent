@@ -2252,6 +2252,16 @@ class SiteStrategyService:
                 FailureCategory.AUTH_REQUIRED,
                 FailureCategory.ENTITLEMENT_MISSING,
             }:
+                if (resolved.site_id == 'investing' and request.purpose is SitePurpose.BODY
+                        and not self._auth_required(resolved, request.purpose)
+                        and not profile.credential_ref):
+                    # The same anonymous identity can read public Investing news
+                    # and encounter a login wall on one article. Preserve that
+                    # article's response, not a false site-wide missing-login state.
+                    return self._result_from_response(
+                        request, resolved, combination, profile, egress, response,
+                        AccessDisposition.AUTH_REQUIRED, category, reason,
+                        attempts, started)
                 # Entitlement is article-specific: one premium article must not
                 # invalidate a Profile that can still read other articles.
                 if category is FailureCategory.AUTH_REQUIRED:

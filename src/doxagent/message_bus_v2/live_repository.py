@@ -81,6 +81,7 @@ class LiveRepository:
                 "initial_request_at": "TEXT",
                 "initial_result_at": "TEXT",
                 "initial_outcome": "TEXT",
+                "execution_spent_ms": "INTEGER NOT NULL DEFAULT 0",
             },
             "live_origins": {"targets_json": "TEXT NOT NULL DEFAULT '[]'"},
             "live_deliveries": {"initial_decision_at": "TEXT", "initial_decision": "TEXT",
@@ -150,6 +151,12 @@ class LiveRepository:
         from .schema import RawMessageInput
 
         context = admission or AdmissionContext(observed_at=datetime.fromisoformat(observed_at))
+        from . import deduplication as dedup
+        mappings = {}
+        if source.source_id == 'google_news_search_rss':
+            messages = list(messages)
+            mappings = self.bus.polling.google_urls(
+                [m.url if isinstance(m, RawMessageInput) else m['url'] for m in messages])
         rows = []
         for value in messages:
             message = (
@@ -157,6 +164,16 @@ class LiveRepository:
                 if isinstance(value, RawMessageInput)
                 else RawMessageInput.model_validate(value)
             )
+            if target := mappings.get(message.url):
+                from urllib.parse import urlsplit
+                host = (urlsplit(target).hostname or '').removeprefix('www.')
+                domains = message.metadata.get('allowed_publisher_domains', [])
+                if not domains or any(host == d or host.endswith('.' + d) for d in domains):
+                    evidence = message.metadata.get('identity_evidence', {})
+                    message = message.model_copy(update={'url': target, 'raw_url': message.raw_url or message.url,
+                        'metadata': {**message.metadata, 'canonical_resolution': 'resolved',
+                                     'identity_evidence': {**evidence, 'verified_urls': list(dict.fromkeys(
+                                         [*evidence.get('verified_urls', []), message.url, target]))}}})
             if (
                 not (
                     message.metadata.get("language")
@@ -174,7 +191,9 @@ class LiveRepository:
                 )
             if not message.admission_context:
                 message = message.model_copy(update={"admission_context": context})
+            message = dedup.article_identity(message, source.source_id)
             key, hint = article_key(message, source.source_id), update_hint(message)
+            canonical = key
             provider_alias = None
             if (source.source_id == 'yahoo_finance_news'
                 and message.metadata.get('identity_evidence', {}).get('id_kind') == 'stable_article'
@@ -204,7 +223,7 @@ class LiveRepository:
                                        (provider_alias,)).fetchone()
                     key = alias[0] if alias else key
                 prior = db.execute(
-                    "SELECT a.input_ref,o.material_hint,a.material_observed_at FROM live_articles a "
+                    "SELECT a.input_ref,o.material_hint,a.material_observed_at,a.body_digest FROM live_articles a "
                     "LEFT JOIN live_origins o ON o.origin_key=? WHERE a.article_key=?",
                     (origin, key),
                 ).fetchone()
@@ -215,6 +234,14 @@ class LiveRepository:
             if targets and not prior:
                 first = self.bus.get_binding(targets[0][0])
                 legacy_known = self.bus.known_published_article(first, message) if first else None
+                if legacy_known:
+                    old_key = legacy_known.metadata.get('live_article_key')
+                    with self.bus._connect() as db:
+                        saved = db.execute('SELECT input_ref,body_digest FROM live_articles WHERE article_key=? AND state!=\'MERGED\'',
+                                           (old_key,)).fetchone() if old_key else None
+                    if saved:
+                        key = old_key
+                        prior = (saved[0], None, observed_at, saved[1])
             if reason and not prior and not legacy_known and not recheck:
                 continue  # The durable list/delta is proof enough for expired, never-admitted input.
             if prior and (prior[1] is None or prior[1] == hint or observed_at < prior[2]):
@@ -232,7 +259,7 @@ class LiveRepository:
             legacy_changed = bool(
                 legacy_known
                 and (
-                    text(message.title) != text(legacy_known.title)
+                    dedup.identity_title(message) != dedup.identity_title(legacy_known)
                     or any(
                         fields.get(k) and fields[k] != old_fields.get(k)
                         for k in ("updated_at", "provider_version")
@@ -240,6 +267,16 @@ class LiveRepository:
                 )
             )
             baseline = bootstrap
+            if legacy_changed and prior and ref == prior[0]:
+                ref, refs = self.put(message.model_dump(mode='json'))
+            # Only validate a potential upgrade. Ordinary repeated list rows do
+            # not parse native HTML or recheck complete results.
+            native_upgrade = False
+            if message.body and prior and not prior[3]:
+                from doxagent.content_enrichment.native import native_article
+                native_upgrade = native_article(message) is not None
+                if native_upgrade and ref == prior[0]:
+                    ref, refs = self.put(message.model_dump(mode='json'))
             if source.source_id == "yahoo_finance_news" and isinstance(
                 message.metadata.get("_poll_bootstrap"), bool
             ):
@@ -251,11 +288,13 @@ class LiveRepository:
             rows.append(
                 dict(
                     key=key,
+                    canonical=canonical,
                     hint=hint,
                     origin=origin,
                     provider_alias=provider_alias,
                     ref=ref,
                     refs=refs,
+                    native_upgrade=native_upgrade,
                     source_id=source.source_id,
                     url=message.url,
                     title=message.title or "",
@@ -304,6 +343,10 @@ class LiveRepository:
                         "INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','legacy','',?,'[]')",
                         ("legacy_body:" + item["legacy_body_key"], key, item["first_seen"]),
                     )
+                # A canonical reservation can have appeared since preparation.
+                alias = db.execute('SELECT article_key FROM live_origins WHERE origin_key=?',
+                                   ('canonical:' + item.get('canonical', item['key']),)).fetchone()
+                key = alias[0] if alias else key
                 old = db.execute(
                     "SELECT state,result_ref,material_hint,input_revision,material_observed_at,checked_at,body_digest,work_kind,next_check_at FROM live_articles "
                     "WHERE article_key=?",
@@ -312,7 +355,8 @@ class LiveRepository:
                 origin = db.execute(
                     "SELECT material_hint FROM live_origins WHERE origin_key=?", (item["origin"],)
                 ).fetchone()
-                changed = bool(
+                changed = bool((item.get('native_upgrade') and old and not old['body_digest'])
+                               or item.get('kind') == 'content_update') or bool(
                     old
                     and origin
                     and origin[0] != item["hint"]
@@ -348,16 +392,23 @@ class LiveRepository:
                     and (item.get("recheck") or (not rejected and not baseline))
                 ):
                     changed = True
+                    # An updated listing is not a new first-download budget.
+                    # Keep attempts/age until the first result actually exists.
+                    pending_first = not old['result_ref'] and old['state'] != 'NOT_APPLICABLE'
+                    reset = '' if pending_first else "attempt=0,fetch_round=0,execution_spent_ms=0,first_fetch_at=NULL,attempts_json='[]',"
                     db.execute(
                         "UPDATE live_articles SET material_hint=?,input_ref=?,input_revision=input_revision+1,"
-                        "source_id=?,state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,first_fetch_at=NULL,title=?,attempts_json='[]',"
-                        "work_kind='content_update',material_observed_at=? WHERE article_key=?",
+                        "source_id=?,state='FETCH_DUE',due_at=?,claim_token=NULL,lease_until=NULL," + reset + "title=?,"
+                        "url=CASE WHEN ? THEN ? ELSE url END,"
+                        "work_kind=?,material_observed_at=? WHERE article_key=?",
                         (
                             item["hint"],
                             item["ref"],
                             item["source_id"],
                             now,
                             item["title"],
+                            int(item.get('native_upgrade', False)), item['url'],
+                            'new_article' if pending_first else 'content_update',
                             item["observed"],
                             key,
                         ),
@@ -377,12 +428,14 @@ class LiveRepository:
                     # This is a durable re-entry/TAIL delta, not every unchanged
                     # poll. Check once in the background; existing FULL stays readable.
                     db.execute(
-                        "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,first_fetch_at=NULL,"
+                        "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,execution_spent_ms=0,first_fetch_at=NULL,"
                         "work_kind='recheck',attempts_json='[]',next_check_at=NULL WHERE article_key=?",
                         (now, key),
                     )
                 if (not old or changed) and item["refs"]:
                     self._refs(db, "live_articles_input", key, item["refs"])
+                db.execute("INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','canonical','',?,'[]')",
+                           ('canonical:' + item.get('canonical', key), key, item['first_seen']))
                 if not origin:
                     db.execute(
                         "INSERT INTO live_origins VALUES(?,?,?,?,?,?,?)",
@@ -481,7 +534,7 @@ class LiveRepository:
             if background:
                 limit = min(limit, 1)
                 if db.execute(
-                    "SELECT 1 FROM live_articles WHERE state='FETCHING' AND work_kind='recheck' "
+                    "SELECT 1 FROM live_articles WHERE state='FETCHING' AND work_kind IN ('recheck','capability_resume') "
                     "AND lease_until>? LIMIT 1",
                     (stamp,),
                 ).fetchone():
@@ -496,8 +549,8 @@ class LiveRepository:
             }
             publishers = db.execute(
                 "SELECT publisher,min(due_at) first_due,max(first_seen_at) newest,max(first_seen_at>=? OR work_kind='content_update') urgent FROM live_articles "
-                "WHERE state='FETCH_DUE' AND due_at<=? AND (work_kind='recheck')=? "
-                "GROUP BY publisher ORDER BY urgent DESC,newest DESC,first_due LIMIT 64",
+                "WHERE state='FETCH_DUE' AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
+                "GROUP BY publisher ORDER BY " + ('first_due,newest DESC' if background else 'urgent DESC,newest DESC,first_due') + " LIMIT 64",
                 (recent, stamp, int(background)),
             ).fetchall()
             rows = []
@@ -506,9 +559,9 @@ class LiveRepository:
                 if available:
                     rows += db.execute(
                         "SELECT article_key,input_revision FROM live_articles WHERE state='FETCH_DUE' "
-                        "AND publisher=? AND due_at<=? AND (work_kind='recheck')=? "
-                        "ORDER BY (first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at LIMIT ?",
-                        (publisher[0], stamp, int(background), recent, available),
+                        "AND publisher=? AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
+                        "ORDER BY " + ('due_at,first_seen_at' if background else "(first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at") + " LIMIT ?",
+                        (publisher[0], stamp, int(background), *([] if background else [recent]), available),
                     ).fetchall()
                 if len(rows) >= limit:
                     break
@@ -572,13 +625,14 @@ class LiveRepository:
                     "WHERE article_key=? AND claim_token=?",(sent,key,job.claim_token))
             db.execute(
                 "UPDATE live_articles SET state='FETCH_DUE',due_at=?,claim_token=NULL,lease_until=NULL,"
-                "last_error=?,attempt=?,attempts_json=?,fetch_round=? WHERE article_key=? AND claim_token=?",
+                "last_error=?,attempt=?,attempts_json=?,fetch_round=?,execution_spent_ms=? WHERE article_key=? AND claim_token=?",
                 (
                     job.not_before.isoformat(),
                     "awaiting_capability" if job.attempt_count == 0 else "retry",
                     job.attempt_count,
                     canonical_json(attempts),
                     job.fetch_round,
+                    job.execution_spent_ms,
                     key,
                     job.claim_token,
                 ),
@@ -601,6 +655,11 @@ class LiveRepository:
             native_only or (meta.get("succeeded") and meta.get("outcome") in {"FULL", "SHORT_FULL"})
         )
         from .deduplication import text
+        from .deduplication import full_fingerprint
+        fingerprint = full_fingerprint(message.body, message.title) if success else None
+        message = message.model_copy(update={'metadata': {**message.metadata,
+            'v2_body_completion': {**message.metadata.get('v2_body_completion', {}),
+                                  'body_fingerprint': fingerprint}}})
 
         # Publication revisions include material title corrections as well as
         # body changes; a body-only digest would silently lose headline fixes.
@@ -641,6 +700,9 @@ class LiveRepository:
             work_kind=job.work_kind,
             initial_request_at=min((a['request_started_at'] for a in meta.get('attempts',[]) if a.get('request_started_at')),default=None),
             fetch_round=job.fetch_round,
+            execution_spent_ms=job.execution_spent_ms,
+            initial=bool(previous and not previous['result_ref']),
+            capability_retry_at=meta.get('capability_retry_at'),
         )
         completion = message.metadata.get("v2_body_completion", {})
         value.update(
@@ -686,7 +748,7 @@ class LiveRepository:
                 ("canonical:" + value["canonical"],),
             ).fetchone()
             preserve_owner = False
-            if value["success"] and alias and alias[0] != key:
+            if alias and alias[0] != key:
                 target = alias[0]
                 columns = (
                     "ticker,source_id,binding_id,terms_revision,admission_json,bootstrap,state,due_at,"
@@ -747,6 +809,9 @@ class LiveRepository:
                 )
                 else None
             )
+            if value.get('capability_retry_at'):
+                check = value['capability_retry_at']
+            initial = bool(value.get('initial', value.get('work_kind') == 'new_article')) and not current['result_ref']
             db.execute(
                 "UPDATE live_articles SET state=CASE WHEN ? THEN state ELSE 'READY' END,"
                 "claim_token=CASE WHEN ? THEN claim_token ELSE NULL END,lease_until=CASE WHEN ? THEN lease_until ELSE NULL END,"
@@ -755,9 +820,10 @@ class LiveRepository:
                 "checked_at=?,revision=revision+?,last_error=?,next_check_at=?,url=CASE WHEN ? THEN ? ELSE url END,last_result_id=?,"
                 "fetch_total=fetch_total+?,full_total=full_total+?,cache_total=cache_total+?,"
                 "validators_json=CASE WHEN ? THEN ? ELSE validators_json END,"
-                "initial_request_at=CASE WHEN ?='new_article' THEN coalesce(initial_request_at,?) ELSE initial_request_at END,"
-                "initial_result_at=CASE WHEN ?='new_article' THEN coalesce(initial_result_at,?) ELSE initial_result_at END,"
-                "initial_outcome=CASE WHEN ?='new_article' THEN coalesce(initial_outcome,?) ELSE initial_outcome END WHERE article_key=?",
+                "execution_spent_ms=CASE WHEN ? THEN execution_spent_ms ELSE ? END,"
+                "initial_request_at=CASE WHEN ? THEN coalesce(initial_request_at,?) ELSE initial_request_at END,"
+                "initial_result_at=CASE WHEN ? THEN coalesce(initial_result_at,?) ELSE initial_result_at END,"
+                "initial_outcome=CASE WHEN ? THEN coalesce(initial_outcome,?) ELSE initial_outcome END WHERE article_key=?",
                 (
                     int(preserve_owner),
                     int(preserve_owner),
@@ -782,25 +848,18 @@ class LiveRepository:
                     int(value["reused"]),
                     int(value["success"] and usable),
                     canonical_json(value.get("validators", {})),
-                    value.get('work_kind'),value.get('initial_request_at'),
-                    value.get('work_kind'),value['checked'],
-                    value.get('work_kind'),value['outcome'],
+                    int(preserve_owner), value.get('execution_spent_ms', 0),
+                    int(initial),value.get('initial_request_at'),
+                    int(initial),value['checked'],
+                    int(initial),value['outcome'],
                     key,
                 ),
             )
-            if value["success"]:
-                db.execute(
-                    "INSERT OR IGNORE INTO live_origins VALUES(?,?,?,?,?,?,?)",
-                    (
-                        "canonical:" + value["canonical"],
-                        key,
-                        "resolved",
-                        "canonical",
-                        "",
-                        current[4],
-                        "[]",
-                    ),
-                )
+            # Resolving the article locator and obtaining FULL are different
+            # facts. A failed fetch still shares its proven canonical owner.
+            db.execute(
+                "INSERT OR IGNORE INTO live_origins VALUES(?,?,?,?,?,?,?)",
+                ("canonical:" + value["canonical"], key, "resolved", "canonical", "", current[4], "[]"))
             db.execute(
                 "UPDATE live_deliveries SET state='PENDING',due_at=? WHERE article_key=? "
                 "AND ? AND (state='WAIT_BODY' OR (? AND state IN ('PUBLISHED','IRRELEVANT','NO_PUBLIC_BODY')))",
@@ -857,13 +916,15 @@ class LiveRepository:
         cutoff = (now - timedelta(hours=24)).isoformat()
         with self.bus._connect() as db:
             rows = db.execute(
-                "SELECT article_key FROM live_articles WHERE state='READY' "
-                "AND next_check_at<=? AND first_seen_at>=? ORDER BY next_check_at LIMIT ?",
+                "SELECT article_key,last_error FROM live_articles WHERE state='READY' "
+                "AND next_check_at<=? AND (first_seen_at>=? OR last_error IN ('site_recovery_pending','domain_cooldown')) "
+                "ORDER BY next_check_at LIMIT ?",
                 (stamp, cutoff, limit),
             ).fetchall()
             expired = db.execute(
                 "SELECT article_key FROM live_articles WHERE next_check_at<=? "
-                "AND first_seen_at<? ORDER BY next_check_at LIMIT 128",
+                "AND first_seen_at<? AND coalesce(last_error,'') NOT IN ('site_recovery_pending','domain_cooldown') "
+                "ORDER BY next_check_at LIMIT 128",
                 (stamp, cutoff),
             ).fetchall()
         if not rows and not expired:
@@ -875,9 +936,9 @@ class LiveRepository:
             )
             for row in rows:
                 db.execute(
-                    "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,"
-                    "first_fetch_at=NULL,work_kind='recheck',attempts_json='[]',next_check_at=NULL WHERE article_key=? AND state='READY'",
-                    (stamp, row[0]),
+                    "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,execution_spent_ms=0,"
+                    "first_fetch_at=NULL,work_kind=?,attempts_json='[]',next_check_at=NULL WHERE article_key=? AND state='READY'",
+                    (stamp, 'capability_resume' if row[1] in {'site_recovery_pending','domain_cooldown'} else 'recheck', row[0]),
                 )
         return len(rows)
 
@@ -1020,7 +1081,7 @@ class LiveRepository:
             )
         ]
 
-    def reserve_resolved(self, job, final_message):
+    def reserve_resolved(self, job, final_message, *, join_failure=False):
         """One canonical reservation before downloading; join an existing owner."""
         canonical = article_key(final_message, job.source.source_id)
         key = job.article_id
@@ -1037,13 +1098,18 @@ class LiveRepository:
             ).fetchone()
             target = alias[0] if alias else canonical
             exists = db.execute(
-                "SELECT result_ref FROM live_articles WHERE article_key=?", (target,)
+                "SELECT result_ref,body_digest FROM live_articles WHERE article_key=?", (target,)
             ).fetchone()
             if not exists or target == key:
                 db.execute(
                     "INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','canonical','',?,'[]')",
                     ("canonical:" + canonical, key, current[1]),
                 )
+                return False
+            if exists[0] and not exists[1] and not join_failure:
+                # An honest prior failure is not a reusable body. Let this new
+                # discovery finish its bounded attempt; commit_result joins the
+                # result (including failure) back into the same owner.
                 return False
             columns = (
                 "ticker,source_id,binding_id,terms_revision,admission_json,bootstrap,state,due_at,"
@@ -1103,11 +1169,15 @@ class LiveRepository:
         from .schema import IngestResult, RawProcessingStatus, StreamItem, StreamMember
 
         key, ticker = row["article_key"], row["ticker"]
-        known = (
-            self.bus.get_raw(row["raw_id"])
-            if row["raw_id"]
-            else self.bus.known_published_article(binding, message)
-        )
+        lookup_fingerprint = message.metadata.get('v2_body_completion', {}).get('body_fingerprint')
+        checked = set()
+        cached_lookup = row.pop('_publication_lookup', None)
+        if cached_lookup is not None:
+            known, checked = cached_lookup
+        elif row['raw_id']:
+            known = self.bus.get_raw(row['raw_id'])
+        else:
+            known, checked = self.bus.publication_match(binding, message, fingerprint=lookup_fingerprint)
         from .schema import RawMessageInput
 
         original_input = RawMessageInput.model_validate(self.load(row["input_ref"]))
@@ -1129,6 +1199,24 @@ class LiveRepository:
         )
         if isinstance(raw, IngestResult):
             return {"rejected": raw.error_code, "row": row}
+        from .deduplication import aliases
+        incoming_aliases = aliases(raw)
+        fingerprint = raw.metadata.get('content_evidence', {}).get('body_fingerprint')
+        if not known and fingerprint and fingerprint != lookup_fingerprint:
+            known, extra_checked = self.bus.publication_match(binding, raw, fingerprint=fingerprint)
+            checked.update(extra_checked)
+        if known:
+            old_evidence = known.metadata.get('content_evidence', {})
+            old_complete = (old_evidence.get('kind') == 'FULL'
+                            or known.metadata.get('media_enrichment', {}).get('outcome') in {'FULL','SHORT_FULL'})
+            new_complete = (raw.metadata.get('content_evidence', {}).get('kind') == 'FULL'
+                            or raw.metadata.get('media_enrichment', {}).get('outcome') in {'FULL','SHORT_FULL'})
+            if old_complete and not new_complete:
+                from .schema import content_hash_for
+                raw = raw.model_copy(update={'body': known.body, 'metadata': {**raw.metadata,
+                    'content_evidence': old_evidence,
+                    'media_enrichment': known.metadata.get('media_enrichment', {})}})
+                raw = raw.model_copy(update={'content_hash': content_hash_for(raw)})
         raw_id = (
             known.raw_message_id if known else "raw_live_" + sha256_text(key + ":" + ticker)[:32]
         )
@@ -1223,8 +1311,6 @@ class LiveRepository:
             }
         )
         standard = bus._standardize(raw).model_copy(update={"standard_message_id": standard_id})
-        from .deduplication import aliases
-
         item_id = "stream_live_" + sha256_text(key + ":" + ticker)[:32]
         item = StreamItem(
             stream_item_id=item_id,
@@ -1258,7 +1344,9 @@ class LiveRepository:
             revision=revision,
             origin_epoch=origin["epoch"] if origin else None,
             binding_version=binding.version,
-            aliases=aliases(raw),
+            aliases=sorted(set(incoming_aliases) | set(aliases(raw))),
+            checked_publications=checked,
+            fingerprint=raw.metadata.get('content_evidence', {}).get('body_fingerprint'),
         )
 
     def publish(self, prepared):
@@ -1296,6 +1384,10 @@ class LiveRepository:
                 )
                 return
             raw, standard, item = prepared["raw"], prepared["standard"], prepared["item"]
+            if not prepared['known']:
+                competitors = self.bus.published_candidates(db, ticker, prepared['aliases'], prepared['fingerprint'])
+                if set(competitors) - prepared['checked_publications']:
+                    return False  # Reprepare once outside BEGIN; keep the downloaded result.
             if current[0] == row["body_digest"] and current[1]:
                 db.execute(
                     "UPDATE live_deliveries SET state='PUBLISHED' WHERE article_key=? AND ticker=?",
@@ -1317,6 +1409,11 @@ class LiveRepository:
             if (control["epoch"] if control else None) != prepared["origin_epoch"]:
                 raise RuntimeError("live_publication_configuration_changed")
             if prepared.get("unchanged"):
+                db.execute('UPDATE logical_message_versions SET body_fingerprint=? '
+                           'WHERE raw_message_id=? AND body_fingerprint IS NOT ?',
+                           (prepared['fingerprint'], raw.raw_message_id, prepared['fingerprint']))
+                db.executemany('INSERT OR IGNORE INTO message_identity_aliases VALUES(?,?,?)',
+                               [(ticker, a, prepared['logical_id']) for a in prepared['aliases']])
                 db.execute(
                     "UPDATE live_deliveries SET state='PUBLISHED',raw_id=?,standard_id=?,decision_digest=?,"
                     "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL,"
@@ -1380,10 +1477,14 @@ class LiveRepository:
                         prepared["logical_id"],
                         1,
                         raw.raw_message_id,
-                        row["body_digest"],
+                        prepared['fingerprint'],
                         canonical_json(raw.metadata["message_version"]),
                     ),
                 )
+            else:
+                db.execute('UPDATE logical_message_versions SET body_fingerprint=? '
+                           'WHERE raw_message_id=? AND body_fingerprint IS NOT ?',
+                           (prepared['fingerprint'], raw.raw_message_id, prepared['fingerprint']))
             for alias in prepared["aliases"]:
                 db.execute(
                     "INSERT OR IGNORE INTO message_identity_aliases VALUES(?,?,?)",

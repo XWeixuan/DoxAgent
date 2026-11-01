@@ -58,6 +58,8 @@ class SharedContentExtractor:
         self._pipeline_enabled = pipeline_enabled and extractor is None
         self._pipeline: ArticlePipeline | None = None
         self._managed_pipeline: ArticlePipeline | None = None
+        from .google_access import GooglePublicAccess
+        self._google_access = GooglePublicAccess(trusted_proxy_dns=trusted_proxy_dns)
         self._site_access_client = site_access_client
         self._close_site_access_client = close_site_access_client
         self._disabled_hosts = disabled_hosts or set()
@@ -94,6 +96,7 @@ class SharedContentExtractor:
                     ),
                     browser=self._browser,
                     disabled_hosts=self._disabled_hosts,
+                    google_access=self._google_access,
                 )
                 if self._site_access_client is not None:
                     managed_transport = SiteAccessTransport(self._site_access_client)
@@ -106,9 +109,11 @@ class SharedContentExtractor:
                         site_client=self._site_access_client,
                         disabled_hosts=self._disabled_hosts,
                         pipeline_version="body_v2.2",
+                        google_access=self._google_access,
                     )
 
     async def close(self) -> None:
+        await self._google_access.close()
         if self._browser:
             await self._browser.close()
         if self._close_site_access_client and self._site_access_client is not None:

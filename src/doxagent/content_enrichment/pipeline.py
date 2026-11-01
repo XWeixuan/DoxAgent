@@ -10,6 +10,10 @@ from urllib.parse import urlparse
 from weakref import WeakKeyDictionary
 
 from doxagent.content_enrichment.captions import caption_text, cnbc_caption_source
+from doxagent.content_enrichment.publisher_documents import (
+    READER_STAGE_SECONDS,
+    publisher_host,
+)
 from doxagent.content_enrichment.publishers import public_api_html, public_article_api
 from doxagent.content_enrichment.quality import (
     Candidate,
@@ -21,8 +25,8 @@ from doxagent.content_enrichment.quality import (
 )
 from doxagent.content_enrichment.transport import (
     DEADLINE,
-    REVALIDATION,
     RESUME_STAGE,
+    REVALIDATION,
     Observation,
     PublicTransport,
     conditional_headers,
@@ -76,6 +80,7 @@ class ArticlePipeline:
         disabled_hosts: set[str] | None = None,
         site_client: Any | None = None,
         pipeline_version: str = PIPELINE_VERSION,
+        google_access: Any | None = None,
     ) -> None:
         self.transport = transport
         self.browser = browser
@@ -83,6 +88,7 @@ class ArticlePipeline:
         self.disabled_hosts = disabled_hosts or set()
         self.site_client = site_client
         self.pipeline_version = pipeline_version
+        self.google_access = google_access
 
     async def _managed_browser_read(self, url, info, parameters, stage):
         if getattr(self.browser,"site_managed",False):
@@ -154,6 +160,14 @@ class ArticlePipeline:
                 access_order=[s for s in access_order if s in {"http_public","browser","browser_fetch","reader"}]
             elif self.site_client is not None and resolved.site_id=="generic":
                 access_order=["http_public","reader"] if self.reader_enabled else ["http_public","browser"]
+            google = self.google_access if record.source_id == "google_news_search_rss" and not identity_path else None
+            if google:
+                from .google_access import plan
+                access_order = plan(url)
+                diagnostics["google_access_plan"] = access_order
+                if not access_order:
+                    reason = 'non_article_target'
+                    break
             # Count executable routes, not unavailable adapters, against the two-route budget.
             access_order=[s for s in dict.fromkeys(access_order)
                 if not (s in {"browser","browser_fetch"} and self.browser is None)
@@ -175,18 +189,28 @@ class ArticlePipeline:
                     or diagnostics.get("credential_ref") or info.page_kind in {"quote", "listing", "media"}
                 ):
                     continue
-                if reason in {"non_article_target", "publisher_identity_mismatch", "unsupported_content_type"}:
+                if reason in {"non_article_target", "publisher_identity_mismatch", "unsupported_content_type", "short_social_post"}:
                     break
                 phase_started = time.monotonic()
                 article_deadline = DEADLINE.get()
                 cap = float(strategy_parameters.get(stage + "_timeout_seconds", {
-                    "http_public": 5, "browser": 8, "browser_fetch": 8, "reader": 8,
+                    "http_public": 5, "browser": 8, "browser_fetch": 8,
+                    "reader": READER_STAGE_SECONDS.get(publisher_host(url), 8) if record.source_id == 'google_news_search_rss' else 8,
+                    "zyte": 20, "zyte_http": 10, "google_browser": 10,
                 }[stage]))
                 auth = {}
+                if google and stage == 'reader' and publisher_host(url) == 'futunn.com':
+                    cap = 14
+                elif google and stage == 'reader' and publisher_host(url) == 'thestreet.com':
+                    cap = 4
+                elif google and stage == 'reader':
+                    cap = 10
                 try:
                     async with _stage_budget(cap):
                         if stage == "http_public":
-                            observation = await self.transport.fetch(url, attempts)
+                            observation = await google.http(url, attempts, self.transport) if google else await self.transport.fetch(url, attempts)
+                        elif google and stage in {"reader", "zyte", "zyte_http", "google_browser"}:
+                            observation = await google.read(url, stage, attempts)
                         elif stage == "reader":
                             observation = await self.transport.fetch(
                                 "https://r.jina.ai/" + url, attempts, phase="reader", publisher_url=url)
@@ -226,10 +250,11 @@ class ArticlePipeline:
                 if reason == "deadline_exceeded" and (article_deadline is None or article_deadline > time.monotonic()):
                     reason = "transport_timeout"
                 if stage == "reader":
-                    info = inspect_reader(observation.text, url, record.title, strategy_ref=strategy_ref)
+                    info = await asyncio.to_thread(inspect_reader, observation.text, url, record.title, strategy_ref=strategy_ref)
                 else:
-                    url = observation.url or url
-                    info = inspect_html(observation.text, url, record.title,
+                    if urlparse(observation.url).scheme in {"http", "https"}:
+                        url = observation.url or url
+                    info = await asyncio.to_thread(inspect_html, observation.text, url, record.title,
                         strategy_ref=strategy_ref, strategy_parameters=strategy_parameters)
                 if reason:
                     reason = info.access_reason or reason
@@ -240,6 +265,8 @@ class ArticlePipeline:
                         if stage == "http_public":
                             diagnostics["validators"] = {k.lower():v for k,v in observation.headers.items() if k.lower() in {"etag","last-modified"}}
                         method = ("browser_" if stage in {"browser", "browser_fetch"} else "") + candidate.method
+                        if stage in {"zyte", "zyte_http", "google_browser"}:
+                            method = stage + "_" + candidate.method
                         if auth.get("credential_ref"):
                             verified = getattr(self.browser, "verified", None)
                             if verified:

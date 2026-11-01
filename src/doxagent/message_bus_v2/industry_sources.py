@@ -679,28 +679,32 @@ class SharedFeedAdapter:
             or self.browser is None
         ):
             raise ValueError("browser feed fallback is only approved for GlobeNewswire")
-        deadline = time.monotonic() + 30
         route_used = routes[0] if routes else "legacy"
         async with context.request_permit():
+            deadline = time.monotonic() + (30 if browser_fallback else 12)
             # One retry for read-only connection loss; all attempts share a short
             # deadline so an RSS failure cannot occupy the shared collector for minutes.
-            async with asyncio.timeout(30):
+            async with asyncio.timeout_at(deadline):
                 selected_routes = approved_routes(routes) if routes else [("legacy", proxy)]
                 if len(selected_routes) == 1 and not browser_fallback:
                     selected_routes *= 2
 
                 async def send(route_proxy):
-                    timeout = httpx.Timeout(12, connect=5, pool=5)
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise TimeoutError('publisher feed deadline')
+                    timeout = httpx.Timeout(min(12, remaining), connect=min(5, remaining), pool=min(5, remaining))
                     if route_proxy:
                         client = self._route_clients.get(str(route_proxy))
                         if client is None:
                             from .publisher_http import PublisherHttpx
                             client = PublisherHttpx(proxy=str(route_proxy), timeout=12)
                             self._route_clients[str(route_proxy)] = client
-                        return await client.get(source.entry_url)
+                        return await client.get(source.entry_url, timeout=timeout)
                     return await self.client.get(source.entry_url, timeout=timeout)
 
                 transport_errors = (
+                    TimeoutError,
                     httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadError,
                     httpx.ReadTimeout, httpx.RemoteProtocolError,
                 )

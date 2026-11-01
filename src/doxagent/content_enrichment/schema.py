@@ -54,7 +54,8 @@ class EnrichmentJob(BusModel):
     fetch_budget_seconds: int = Field(default=180, ge=1, le=1800)
     body_result_key: str | None = None
     known_article_raw_id: str | None = None
-    work_kind: Literal["new_article", "content_update", "recheck"] = "new_article"
+    work_kind: Literal["new_article", "content_update", "recheck", "capability_resume"] = "new_article"
+    execution_spent_ms: int = Field(default=0, ge=0)
     result: dict[str, object] = Field(default_factory=dict)
 
     @property

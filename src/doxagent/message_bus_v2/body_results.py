@@ -12,7 +12,7 @@ from .schema import canonical_json, sha256_text, utc_now
 
 def article_key(message, source_id: str) -> str:
     evidence = message.metadata.get("identity_evidence", {})
-    url = dedup.article_url(message.url, evidence.get("url_kind", "unknown"))
+    url = dedup.article_url(message.url, dedup.url_kind(message, source_id))
     # Only a provider-declared article identity can substitute for a verified URL.
     locator = url or (
         f"{source_id}:{message.external_id}"
@@ -20,7 +20,7 @@ def article_key(message, source_id: str) -> str:
         else f"{source_id}:{message.external_id or message.source_item_key or message.url}"
     )
     scope = access_scope(message, source_id)
-    language = message.metadata.get("language") or evidence.get("language") or ""
+    language = dedup.language(message, source_id)
     return sha256_text(canonical_json([locator, scope, language]))
 
 
@@ -67,7 +67,7 @@ class ArticleBodyResults:
             rows = db.execute("SELECT data_json FROM article_body_results WHERE "
                 "json_extract(data_json,'$.final_canonical_url')=? AND status='READY' LIMIT 8",
                 (dedup.article_url(final_url, 'article'),)).fetchall()
-        language = message.metadata.get('language') or message.metadata.get('identity_evidence', {}).get('language') or ''
+        language = dedup.language(message, source_id)
         hint = update_hint(message)
         for row in rows:
             value = json.loads(row[0])
@@ -87,7 +87,7 @@ class ArticleBodyResults:
                 message = message.model_copy(update={'metadata': {**message.metadata,
                     'language': source.content_language.strip().lower()}})
         key, hint = article_key(message, source_id), update_hint(message)
-        language = message.metadata.get("language") or message.metadata.get("identity_evidence", {}).get("language") or ""
+        language = dedup.language(message, source_id)
         with self.repository.transaction() as db:
             row = db.execute(
                 "SELECT data_json FROM article_body_results WHERE fetch_key=?", (key,)
@@ -153,9 +153,7 @@ class ArticleBodyResults:
                 "canonical_article_key": key,
                 "publisher": urlsplit(message.url).hostname,
                 "access_scope": access_scope(message, source_id),
-                "language": message.metadata.get("language")
-                or message.metadata.get("identity_evidence", {}).get("language")
-                or "",
+                "language": language,
                 "source_id": source_id,
                 "url": message.url,
                 "title": dedup.text(message.title),
@@ -198,11 +196,7 @@ class ArticleBodyResults:
                 old = json.loads(row[0])
                 old_metadata = old.get("metadata", {})
                 old_input = message.model_copy(update={"url": old["url"], "metadata": old_metadata})
-                old_language = (
-                    old_metadata.get("language")
-                    or old_metadata.get("identity_evidence", {}).get("language")
-                    or ""
-                )
+                old_language = dedup.language(old_input, old['source_id'])
                 if not old_language:
                     old_source = self.repository.get_source(old['source_id'])
                     old_language = (old_source.content_language or '').strip().lower() if old_source else ''

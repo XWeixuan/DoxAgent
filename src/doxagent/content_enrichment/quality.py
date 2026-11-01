@@ -12,6 +12,13 @@ from urllib.parse import urljoin, urlparse
 
 from lxml import html as html_parser  # type: ignore[import-untyped]
 
+from doxagent.content_enrichment.publisher_documents import (
+    READER_HEADER_HOSTS,
+    apply_document,
+    body_nodes,
+    publisher_host,
+    same_article,
+)
 from doxagent.content_enrichment.strategies import legacy_strategy_ref
 from doxagent.content_enrichment.strategies.adapters import (
     READER_HEADER_STRATEGIES,
@@ -127,7 +134,8 @@ CHALLENGE = re.compile(
     r"this page maybe requiring captcha|prove you are not a robot|人工验证挑战|"
     r"access is temporarily restricted|unusual activity from your (?:device|network)|"
     r"automated \(bot\) activity|use of developer or inspection tools|"
-    r"enable javascript and cookies to continue",
+    r"enable javascript and cookies to continue|performing security verification|"
+    r"verifies you are not a bot|automated bot check in progress|drag the handle to the target",
     re.I,
 )
 WALL = re.compile(
@@ -197,7 +205,7 @@ def _node_text(node: Any, *, sa_body: bool = False, street_body: bool = False) -
             break
         if re.match(
             r"^(?:Sign up for our (?:daily|weekly) news|You also may be interested in|"
-            r"Should You Invest \$1,000 .* Right Now\?|Featured Articles and Offers|"
+            r"(?:Where )?Should You Invest \$1,000\b.*?\bRight Now\?|Featured Articles and Offers|"
             r"Click here for the latest technology news|"
             r"Read the latest financial and business news)",
             text,
@@ -280,6 +288,13 @@ def inspect_html(
         )
     )
     if not has_article_body:
+        if root.xpath('//*[@id="drag-captcha"]'):
+            result.page_kind, result.access_reason = "challenge", "challenge_required"
+            result.interactive_challenge = True
+            return result
+        if publisher_host(url) in {"moomoo.com", "futunn.com"} and title == "Document" and not root.xpath("//h1|//p"):
+            result.page_kind, result.access_reason = "app_shell", "render_required"
+            return result
         captcha_frame = any(
             (urlparse(src).hostname or "").endswith(".captcha-delivery.com")
             for src in root.xpath("//iframe/@src")
@@ -353,6 +368,7 @@ def inspect_html(
     for selector in parameters.get("body_xpath", []):
         if isinstance(selector, str):
             configured_nodes.extend(root.xpath(selector))
+    configured_nodes = configured_nodes or body_nodes(root, url)
     strategy_document = select_article_nodes(strategy, root, path, generic_nodes, configured_nodes)
     article_nodes = strategy_document.article_nodes
     gate_text = " ".join(_node_text(n) for n in article_nodes) or visible
@@ -435,12 +451,18 @@ def inspect_html(
         node_text=_node_text,
         candidate_type=Candidate,
     )
+    publisher_root = apply_document(root, url, expected_title, result, title_match=title_match,
+                                    candidate_type=Candidate, node_text=_node_text)
+    if publisher_root is not None:
+        expansion_root = publisher_root
     # Only semantically identified original-article links; never arbitrary external assets.
     for link in expansion_root.xpath(".//a[@href]"):
         label = clean(link.text_content())
         if len(label) > 100:
             continue
         href = urljoin(url, link.get("href"))
+        if urlparse(href).scheme not in {"http", "https"} or not urlparse(href).hostname:
+            continue
         if re.search(r"\.(?:jpg|jpeg|png|gif|webp|svg|avif)$", urlparse(href).path, re.I):
             continue
         if EXPAND.fullmatch(label) or re.search(
@@ -456,7 +478,7 @@ def inspect_html(
         EXPAND.fullmatch(clean(node.text_content())) is not None
         for node in expansion_root.xpath(".//button")
     )
-    if "/video/" in path or "jwplayer.com" in urlparse(url).netloc or "/previews/" in path:
+    if "/video/" in path or "/ibd-videos/" in path or "jwplayer.com" in urlparse(url).netloc or "/previews/" in path:
         result.page_kind = "media"
     elif article_nodes or any(c.method == "json_ld_article_body" for c in result.candidates):
         result.page_kind = "article"
@@ -473,6 +495,17 @@ def inspect_reader(
     strategy_ref: str | None = None,
 ) -> Inspection:
     result = Inspection(page_kind="article")
+    if publisher_host(url) == 'stocktwits.com' and urlparse(url).path.startswith('/symbol/'):
+        result.page_kind, result.access_reason = 'quote', 'non_article_target'
+        return result
+    source_header = next((line[12:].strip() for line in text.splitlines()
+                          if line.startswith("URL Source: ")), "")
+    if source_header and not same_article(source_header, url):
+        result.access_reason = "publisher_identity_mismatch"
+        return result
+    if publisher_host(url) == "investors.com" and "/ibd-videos/" in urlparse(url).path:
+        result.page_kind, result.access_reason = "media", "unsupported_media"
+        return result
     if CHALLENGE.search(text[:2000]):
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         return result
@@ -484,17 +517,29 @@ def inspect_reader(
         return result
     # Locate article heading; do not fall back to arbitrary navigation text for Yahoo.
     lines = text.splitlines()
-    heads = [
-        (i, line.lstrip("# ").strip()) for i, line in enumerate(lines) if line.startswith("# ")
-    ]
+    heads = []
+    for i, line in enumerate(lines):
+        heading = re.match(r"^#{1,6}\s+(.+?)\s*#*\s*$", line)
+        if heading:
+            heads.append((i, heading[1]))
+        elif i + 1 < len(lines) and line.strip() and re.fullmatch(r"[=-]{3,}", lines[i+1].strip()):
+            heads.append((i+1, line.strip()))
     matching = [(i, h) for i, h in heads if expected_title and title_match(h, expected_title)]
+    if publisher_host(url) in {'stocktwits.com', 'streetinsider.com'} and not any(
+        line.startswith('# ') and expected_title and title_match(line[2:], expected_title)
+        for line in lines
+    ):
+        matching = []  # Chapter headings are not a substitute for the document title.
     strategy = strategy_ref or legacy_strategy_ref(url)
-    if not matching and (strategy in READER_HEADER_STRATEGIES or strategy=='builtin:generic@1'):
+    if not matching and (strategy in READER_HEADER_STRATEGIES or strategy=='builtin:generic@1'
+                         or publisher_host(url) in READER_HEADER_HOSTS):
         # These observed reader templates start directly with the article after their headers.
         title_header = next((line[7:].strip() for line in lines if line.startswith("Title: ")), "")
         marker = next((i for i, line in enumerate(lines) if line == "Markdown Content:"), None)
         source = next((line[12:].strip() for line in lines if line.startswith("URL Source: ")), "")
         trusted_header = strategy not in {'builtin:benzinga@1','builtin:generic@1'} or source == url
+        if publisher_host(url) in READER_HEADER_HOSTS:
+            trusted_header = same_article(source, url)
         if (
             marker is not None
             and expected_title
@@ -509,8 +554,17 @@ def inspect_reader(
     start, result.headline = matching[0]
     selected: list[str] = []
     in_ad = False
-    for line in lines[start + 1 :]:
+    for offset, line in enumerate(lines[start + 1 :], start+1):
         plain = clean(re.sub(r"^[#>*\s]+", "", line))
+        if publisher_host(url) == 'stocktwits.com':
+            if line.startswith('Read Next[') or plain == 'Advertisement|Remove ads.':
+                continue  # An inline recommendation can precede more of the same article.
+            if re.fullmatch(r'#{1,6}\s+Latest News\s*', line, re.I):
+                break
+        if publisher_host(url) == 'streetinsider.com' and re.fullmatch(
+            r'You (?:may also|also may) be interested in', plain, re.I
+        ):
+            break
         if re.fullmatch(r"View Comments|Terms and Privacy Policy|About the authors?", plain, re.I):
             break
         if WALL.search(plain):
@@ -526,10 +580,17 @@ def inspect_reader(
         if plain == "Share" and sum(map(len, selected)) > 600:
             break
         if re.match(
-            r"^(?:#+\s*)?(?:recommended|recommendations|related articles|more from|daily brief|read next)\b",
+            r"^(?:#+\s*)?(?:recommended|recommendations|related articles|more from|daily brief|read next|what to read next)\b",
             line,
             re.I,
         ):
+            break
+        if publisher_host(url) == "seekingalpha.com" and re.match(r"^#{1,6}\s+More on\b", line, re.I):
+            break
+        if (publisher_host(url) == "fool.com"
+                and re.match(r"Should you (?:buy|invest)\b", plain, re.I)
+                and re.search(r"Stock Advisor|10 best stocks|See the 10 stocks",
+                              " ".join(lines[offset:offset+12]), re.I)):
             break
         if re.match(
             r"^(?:this article was written by|analyst.s disclosure|seeking alpha.s disclosure)",

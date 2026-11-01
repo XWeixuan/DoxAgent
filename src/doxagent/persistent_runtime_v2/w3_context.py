@@ -302,27 +302,28 @@ def history_payload(journal, repository, case, membership):
             ):
                 values[(row[0], row[1])] = json.loads(row[2])
         current_cases = {}
-        if hasattr(repository, "path"):
+        if frozen is None and hasattr(repository, "path"):
             ids = list({v["trade"]["case_id"] for v in values.values()})
             for start in range(0, len(ids), 200):
                 batch = ids[start : start + 200]
                 for row in db.execute(
-                    "SELECT case_id,payload_json FROM runtime_v2_cases WHERE case_id IN ("
+                    "SELECT case_id,payload_json AS match_case FROM runtime_v2_cases WHERE case_id IN ("
                     + ",".join("?" for _ in batch)
                     + ")",
                     batch,
                 ):
-                    current_cases[row[0]] = repository.content.decode(json.loads(row[1]))
+                    current_cases[row[0]] = _history_match_state(json.loads(row[1]), repository.content)
         for member in membership["members"]:
             value = values.get((member["namespace"], member["identity"]))
             if value is None:
                 raise ValueError("frozen history business record is unavailable")
             trade = value["trade"]
-            if hasattr(repository, "path"):
-                business = current_cases.get(trade["case_id"], trade)
-            else:
-                current = repository.get_case(trade["case_id"])
-                business = current.model_dump(mode="json") if current else trade
+            if frozen is None:
+                if hasattr(repository, "path"):
+                    business = current_cases.get(trade["case_id"], trade)
+                else:
+                    current = repository.get_case(trade["case_id"])
+                    business = current.model_dump(mode="json") if current else trade
             w1 = trade["w1_result"]
             w2 = trade["w2_result"]
             w3 = trade.get("w3_trade_decision")
@@ -357,7 +358,7 @@ def history_payload(journal, repository, case, membership):
                     ),
                 )
             )
-            if member["namespace"] == "trade_intents":
+            if frozen is None and member["namespace"] == "trade_intents":
                 matches.append(
                     dict(events=event_matches(business), policies=actual_policy_hits(business))
                 )
@@ -370,6 +371,20 @@ def history_payload(journal, repository, case, membership):
         matches = frozen
     journal.set("w3_frozen_history_payload", case.case_id, {"items": items, "matches": matches})
     return items, matches
+
+
+def _history_match_state(raw, content):
+    """Match event/policy facts without expanding source bodies or tool evidence."""
+    keys = ('w1_final', 'w1_result', 'w2_final', 'w2_result',
+            'w3_operations_result', 'w3_operations_status', 'w3_result',
+            'w3_trade_decision', 'w3_contract_version')
+    selected = {k: raw[k] for k in keys if k in raw}
+    for field, needed in [('version_pin', 'event_library_root'), ('frozen_inputs', 'provisional')]:
+        value = raw.get(field) or {}
+        if '$doxagent_content_v1' in value:
+            value = content.decode(value)
+        selected[field] = {needed: value[needed]} if needed in value else {}
+    return content.decode(selected)
 
 
 def trading_context(case, journal=None):

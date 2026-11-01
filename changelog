@@ -2469,6 +2469,11 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-30 DIGITIMES持续复测补齐：共享HTTP会话首请求200，重放匿名AWSALB/PHPSESSID/p2a响应Cookie后可稳定复现500；清Cookie立即恢复，单改压缩协商不足。仅公开列表使用discard_cookies=True，保留TCP池/既有出口及全部Profile登录Cookie；同一NL出口连续6次均返回11条完整列表。追加请求目的隔离回归，不新增重试/浏览器回退。
 2026-10-30 W3回测选集修订：按用户明确回复将BE-02-04从正式选集移除；最终59条目录、43条有效Case（4 LONG/3 SHORT/36 NO_TRADE）。将选择覆盖保存于preparation/selection_overrides.json，后续重新导入不会恢复该条；其余Gold/时效性标签保持原样，旧资料保留审计。
 2026-10-30 32GB观察后公开feed恢复：区域固定代理真实失联，逐端点直连验证DIGITIMES Taiwan完整40条RSS、SpaceNews完整16条及两篇普通文章现有Reader FULL（4678/3487字符）。SpaceNews固定HTTP/stdlib路线改直连，DIGITIMES Taiwan默认feed_http_routes改direct并经治理Source更新现有生产配置；不改受保护浏览器身份/出口，不把HuggingNews直连403当成功，不变更正文质量和轮询周期。相关56项回归通过。
+2026-10-30 W3回测真实验收：接通生产prepare-fork以同时继承提示词和研究工具，修复嵌入SDK并发prepared-thread单槽与Fork/Resume writer冲突；关闭私有SDK主机Skill目录，纠正非UTC历史请求时钟并支持休市空窗/事件行情。相关79项回归通过，6条真实工程验收全部完成；正式43条已完成主轮，3条无输出超时按原输入、提示词及gpt-6-luna/max进行技术重试，保留失败回执；最终评分另记完成回执。
+2026-10-30 W3回测升级验收完成：正式43条均产出合法决策，原3条无输出超时同输入/profile重试成功并保留失败回执；Gold匹配32/43，误交易6、漏交易5，未改标签。43份三段真实行情、380份来源，1个母线程/43个成功独立子线程，43个决策阶段，无运营写入；79项回归与Ruff通过，结果和审计保存于实现回执及calibrated_full44_20261030。
+2026-10-30 W3错误子集模型复测：固定上一轮输入、提示词、行情与Gold，将6项误交易+5项漏交易切为gpt-6.1-sol/medium；11条均成功，实际模型回执核验通过。纠正MU-02-03、MU-03-04、MU-03-05三项误交易，仍有3项误交易/5项漏交易；子集纠正率3/11。对照报告与审计位于eval/w3_backtest/runs/sol61_medium_errors11_20261030，未改业务代码或标签。
+
+2026-10-31 Yahoo Finance source survey: record live RSS/page/timestamp-task behavior, polling and discovery-lag samples, page coverage/link filters, timestamp admission and audit limitations. Documentation only; no runtime or configuration change. See docs/yahoo-finance-source-current-state-20261031.md.
 2026-10-31 Yahoo Finance realtime: add independent Content Gateway GraphQL HEAD on existing egress; admit fresh relative-time cards without timestamp TAIL, preserve precision and BODY exact-time correction; support native GraphQL and /m/ cards; merge Yahoo UUID aliases before BODY while retaining per-path update hints; expose estimated publication label; add live probes and focused regressions.
 
 2026-10-31 — Trade execution/exit upgrade (isolated development branch; acceptance pending)
@@ -2490,6 +2495,15 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-31 下单规则PAPER验收完成：最终运行时代码ec68095c，仅发布v2-executor并核验4个文件。125项完整交易回归通过；真实SPY BUY 5股、QQQ SHORT 5股均完成LMT开平仓，窗口约1.02秒准入，逐单核对当次Bid/Ask偏移0.5%及最小报价单位。SPY EXIT前5张取消后第6张LMT成交，验证不受三次限制且未转MKT；两组CLOSED，实际持仓及事件缺口为0。首次未发单的订阅衔接失败记录保留并永久关闭，未复活；35项收尾回归包含其修复用例。PAPER本金配置不变，费用和净盈亏正常入账；Live仍未配置。回滚previous指向已验收的32b5af2f8f6f基线，避免误回退到中间失败版本。
 
+2026-10-31 W1R2/W2R2成本真实对照：按用户澄清采用原20例（W1R2=20/W2R2=10，另10例无原始R2不拼造），远端隔离容器以现行DS1017 medium和OpenRouter GLM5.3Flash high/OpenInference FP4各一遍共60次，无重试/无fallback。两组冻结生产Prompt/Schema及现行上下文；原生计费/usage与流式TPS记录完整。候选成本约低96.67%、首次可消费21/30，对照30/30；显式区分90%原始核心一致率与结构/身份失败，银标准确率仅作限定审查。报告eval/r2_openrouter_glm_flash_20261031/REPORT.md；生产未改动，凭据未入产物，临时测试凭据/容器已清理。
+
+2026-10-31 GLM xhigh复测：同批冻结输入新增30次OpenRouter/OpenInference FP4调用，仅推理档位由high改xhigh，复用DS基线不重跑。网关接受但原生元数据仅列low/high/max，未验证底层档位映射；W1R2可消费19/20、W2R2 4/10，总费约0.027218元。报告eval/r2_openrouter_glm_flash_xhigh_20261031/REPORT.md；生产未变，临时凭据及容器已清理。
+
+2026-10-31 GLM max复测：同批冻结输入新增30次OpenRouter/OpenInference FP4调用，复用DS/high/xhigh回执；W1R2可消费17/20（含1条120秒超时）、W2R2 6/10。超时通过generation API补全10166推理tokens和收费，30次总费约0.029597元；原始流式回执不改写。报告eval/r2_openrouter_glm_flash_max_20261031/REPORT.md；生产未变。
+
+2026-10-31 GLM GMICloud FP8 high复测：冻结原20例输入新增30次真实调用，只换provider到gmicloud/fp8并沿用high；W1R2可消费19/20、W2R2 10/10，30次全部完成。总费约0.111966元，为FP4 high的4.16倍；原生usage与目录价格逐笔重建完全一致。W2仍有77.8秒长尾及C6原因推断风险，未把结构改善视为全量准确率提升。报告eval/r2_openrouter_glm_flash_gmicloud_high_20261031/REPORT.md；生产未改，临时凭据和容器已清理。
+
+2026-11-01 指定消息管线精益修复（本地代码与测试，未部署）：仅执行R1/R2/R5/R6/R7及R4 Investing。HTTP发头前连续超时局部退休publisher客户端、保留在途请求并补内建TimeoutError有限重试；BODY能力不可用先落真实首败，以现有article到期续作，薄累计执行预算不再依赖截断诊断，保留完整正文策略与ARTICLE_ONCE；Investing匿名单篇登录墙不再污染整身份认证状态；IBKR请求finally收尾、已完成文章增量接纳、提交后确认与整段覆盖游标完成后推进；Calcalist仅明确失效token刷新一次；W3历史匹配跳过无关Native展开，Worker/Bailian补内容无关薄诊断。不改Reuters、DIGITIMES、源周期、频道覆盖、W1/W2/W3容量及其他会话W3回测开发；实现和测试边界见docs/selected-lean-repairs-implementation-20261101.md。
 2026-11-01 交易配置弹窗导航修复：React Portal点击会沿组件树冒泡到MonitorRow，原行导航仅检查DOM中的a/button/data-row-control，导致select、checkbox、label误跳基础投研。行导航增加currentTarget.contains(target)判断，排除不属于本行DOM的Portal事件；普通行点击导航保持。浏览器fixture改为真实Routes，新增原生下拉点击、对冲标签、滑动止盈、输入框、保存、关闭/遮罩及普通行导航断言。修复前两种桌面宽度均复现URL跳转，修复后1262/1559通过；67项前端单测及TypeScript通过。
 2026-11-01 Message Bus: fix ArticleBodyCohort schema/known-zero/body-rate errors and complete sleeping-source counts (IR/SEC unchanged); isolate smooth minute dashboard refresh from retained reading pages/scroll; add per-new-message first-publish E2E and source-logical last20 coverage with bounded indexed reads and existing incremental buckets; include narrow explicit anchor/head metadata migration and regression/browser verification.
 2026-11-01 Message Bus production follow-up: force bounded window-first SQLite joins to consume the full existing source index; classify off-market sleeping sources from calendar plus acquisition activity even when Runtime maintenance health is unknown; retain explicit active collection and IR/SEC exceptions.
@@ -2507,4 +2521,28 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 
 2026-11-01 收益审计交付收尾：总资产直接复用现有独立策略现金与当前自有持仓，不导入旧交易；七项KPI固定同栏，修正成本页公共六列样式覆盖。合并已发布消息总线和最新交易配置修正后，117项后端回归、类型检查/构建及双宽度收益与成本浏览器检查通过。
+
+2026-11-01 INTC earnings refresh: added scoped operator submit/launch/status scripts using formal production D1/D2/D3 only, pinned existing Event v53, isolated control DB and 90-minute monitoring; production source and active assets unchanged.
+
+2026-11-01 O2 历史 provisional 修复：精简分支保留选中版本的 Reference View Delta，导出优先使用缓存；父版本未保留且无缓存时明确告警并继续导出有效主数据。恢复复用原冻结视图并校验任务/版本/批次/截止及上游身份，避免审阅状态变化造成假输入冲突。新增按日期隔离的小时补跑脚本和回归，局部失败不阻塞后续日期或其他 ticker，最终验收仍要求目标覆盖。生产仅更新 executor，四个历史失败分支实时导出及 NBIS 原冻结视图恢复探针通过；全量补跑仍由小时任务继续验收。详见 docs/o2-provisional-backfill-recovery-20261101.md。
+
+2026-11-02 O2部署纠正：核实实际进程后，补丁由误选的交易executor迁至真正执行O2的v2-scheduler；交易executor恢复原镜像。四个失败任务已在正确服务更新后重新恢复；完整验收仍待小时补跑完成。
+
+2026-11-02 W3回测新增COHR案例：按用户指定加入Amazon Q3（Gold NO_TRADE）与MPWR Q3（Gold LONG），绑定原生产Case、真实发布时间及历史D1/D2；Terra medium补充COHR视角离线证据，远端预取COHR三段行情。正式集由43增至45；仅对新增2条启动Sol 6.1 medium各1次、Luna max各10次冻结输入比较，作废此前交易标的未确认的调用。正式生产及提示词未改。
+
+2026-11-02 W3新增COHR两案例评测完成：Sol 6.1 medium两条均NO_TRADE；Luna max各10次，Amazon为NO_TRADE 10/10，MPWR为LONG 5/10、NO_TRADE 5/10。22次有效决策、11个母线程及22个独立成功子线程，实际模型/effort、输入和提示词hash已核验；1次模型输出前Windows落盘失败留档并同输入补跑成功。详见eval/w3_backtest/runs/cohr_new2_consistency_20261102/comparison.md。
+
+2026-11-02 Google News RSS白名单正文优化（本地，未发布）：覆盖34站170篇历史文章，补齐Chosun/Syracuse公开ANS及StockTitan完整内嵌Form4解析，修正Barron's订阅预览与IBD视频列表7条伪FULL；完善Reader标题/URL身份、正文边界、非法原文链接与挑战原因识别。Benzinga公共Reader先于已有Browser且保留恢复，Futunn限定12秒Reader预算并遵守原始截止；解析移出Hub事件循环。独立Chosun/StockTitan各5篇均FULL，服务器HTTP出口与Reader分层验证；166项集成及收尾32项解析回归通过（有重叠）。未新增身份、未部署；未解决的浏览器/权益/出口项见docs/google-news-rss-whitelist-body-optimization-20261102.md。
+
+2026-11-02 W3原43条分歧分析：新增详细报告及结构化审计，逐条对照Luna 11项与Sol剩余8项分歧；统计边缘占比5/11、4/8，区分概率/认知传导门槛、两条时效性Gold与回放条件冲突、MU-01-05实际采用采购承诺的新命题、MU-03-05独立经济判断与历史去重归因差异。11条输入指纹、冻结提示词、实际模型及本地引用均核验；未改Gold/提示词/生产或重新调用模型。报告：dev_plan/workflow_v2/w3_backtest_43_case_disagreement_analysis_20261102.md。
+
+2026-11-02 跨消息源确定性去重修复（本地，未发布）：统一可信 API 原文/语言与 BODY/发布身份，收敛已证实追踪参数，前移已有 Google wrapper 映射复用；后到原生 FULL 改善失败结果，失败 wrapper 仍接回原文章。Live 用现有纯完整正文指纹索引完成跨 URL 判重，并发提交只重做锁外本地准备，保持 ARTICLE_ONCE 与完整正文不降级；旧记录按索引具体接回，无历史补扫/新表/后台账本。31组65次历史首发冻结重放为31次发布；新增 Live→Runtime 重开唯一 CASE 验证。相关测试与既有 Runtime 基线失败详见 docs/message-bus-cross-source-deduplication-repair-20261102.md。
+2026-11-02 IONQ quantum source bindings: enabled all seven previously developed quantum/government sources in production (six new bindings, National Quantum Initiative retained), using existing reserved English monitoring terms v1 and 60-second cadence. Reapply unchanged; unrelated bindings and all source definitions preserved. Receipts: eval/ionq-quantum-binding-20261102/.
 2026-11-01 Message Bus coverage: exclude the entire last20 logical-round window from both numerator and denominator when the source is currently failed, partial or SOURCE_DEFERRED; re-include after recovery, preserve card diagnostics and no-sample semantics, reuse existing batched current states without new queries or persistence.
+
+2026-11-02 Live/Paper最终接入及只读验收：新增仅Docker私网监听的Live relay 7497→4001，保留Paper 7496→4002；绑定真实Live账户CASH/client82并由正式Executor应用950美元独立策略额度，实际USD SettledCash 959.07，两CASH名额上限各475；原Paper本金4000及策略权益3987.519931、10个ticker配置和个人持仓数量保持。双数据源沿用Paper优先、Live备用及60秒冷却/成功来源粘性；重载API/Executor/Codex Worker环境并在Worker空闲后操作。发现采集/Bus旧镜像缺少此前数据源适配，仅对原运行父镜像补Settings字段、共用router和news包装三处，部署ae874f463dfb保留其他生产修正；真实新闻/正文、只读socket断开切源与恢复后不抖动验证通过。53项交易/配置/资金回归通过，生产认证保持，新增委托/成交均0。用户明确周末仅只读，未宣称Live成交、资金周转结算或开市新鲜盘口已验收。证据：eval/live-paper-onboarding-20261102/；报告：docs/ibkr-live-paper-onboarding-acceptance-20261102.md。
+
+2026-11-02 O2 backfill final acceptance: all 10 tickers and 43 compensation tasks succeeded, 47 old failures compensated. All 4308 original eligible targets covered: 1010 uniquely processed, 3298 reviewed pending, zero uncovered. Last task finished 04:37:17 Asia/Shanghai; timer disabled and heartbeat deleted after independent durable-receipt and native-candidate verification. Audit files retained.
+
+2026-11-02 Google News RSS正文第二轮优化：Google专用两路径路由接入Jina引擎、Zyte安全环境认证和单Profile按需Chrome；修复StockTitan代理DNS预检、GuruFocus浮层、Moomoo/TechPowerUp/StreetInsider/Stocktwits/Barchart正文范围及伪FULL。复用既有Live队列实现四域名原生source接管、发现溯源及追踪变体归并，禁止重复公共fallback轮次，原生抓取策略保持。新增除MU外当前ticker幂等绑定脚本；按用户追加要求整体同步本地main开发并正式生产发布，验收记录见docs/google-news-rss-whitelist-body-optimization-phase2-20261102.md。
+2026-11-02 整体发布收敛：storage_release在更新组件commit时同步更新不可变源码archive SHA，避免私有Compose保留旧值覆盖新镜像身份；保留previous原始身份并补充发布回归。

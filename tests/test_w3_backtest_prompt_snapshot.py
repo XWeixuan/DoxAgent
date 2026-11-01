@@ -29,14 +29,24 @@ def test_prompt_snapshot_preserves_contract_and_rejects_changed_marker(
 
     monkeypatch.setattr(runner, "run_case", fake_run)
     monkeypatch.setattr(report, "render_report", lambda *_: {"cases": 1})
+    (tmp_path / "dataset").mkdir()
+    (tmp_path / "dataset" / "manifest.json").write_text(
+        '{"schema_version":"w3-backtest.dataset.v1"}'
+    )
     run = tmp_path / "run"
-    execute_run(tmp_path / "dataset", run, prompt_root=prompts,
-                model=model, effort="medium" if model else None)
+    execute_run(
+        tmp_path / "dataset",
+        run,
+        prompt_root=prompts,
+        model=model,
+        effort="medium" if model else None,
+    )
     assert (run / "prompt_snapshot/contract.json").read_bytes() == marker.read_bytes()
     assert "contract.json" in json.loads((run / "run_manifest.json").read_text())["prompt_hashes"]
     with pytest.raises(ValueError, match="new --run-id"):
-        execute_run(tmp_path / "dataset", run, prompt_root=prompts,
-                    model="gpt-6-luna", effort="max")
+        execute_run(
+            tmp_path / "dataset", run, prompt_root=prompts, model="gpt-6-luna", effort="max"
+        )
     marker.write_text('{"w3_contract_version":"persistent-runtime.w3.v4"}', encoding="utf-8")
     with pytest.raises(ValueError, match="new --run-id"):
         execute_run(tmp_path / "dataset", run, prompt_root=prompts)

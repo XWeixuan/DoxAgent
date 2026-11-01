@@ -686,6 +686,8 @@ class BenzingaNewsAdapter(_BaseAdapter):
                         "PUBLISHED" if row.get("created") else "UPDATED_FALLBACK"
                     ),
                     "provider": "benzinga",
+                    "language": "en",
+                    "identity_evidence": {"url_kind": "article"},
                     "query_mode": query_mode,
                     **(
                         {
@@ -745,7 +747,8 @@ class FinnhubCompanyNewsAdapter(_BaseAdapter):
                 source=row.get("source") or "Finnhub",
                 url=row.get("url"),
                 published_at=row.get("datetime"),
-                metadata={"provider": "finnhub", "category": row.get("category")},
+                metadata={"provider": "finnhub", "category": row.get("category"), "language": "en",
+                          "identity_evidence": {"url_kind": "unknown" if urlparse(str(row.get('url') or '')).hostname == 'finnhub.io' else 'article'}},
             )
             (messages if message else failures).append(cast(Any, message or failure))
         return PollResult(
@@ -938,7 +941,7 @@ class NewswireRSSAdapter(_BaseAdapter):
 
         async with asyncio.timeout(25):
             response, _ = await transport_routes(
-                send, approved_routes(routes), (httpx.TransportError,)
+                send, approved_routes(routes), (TimeoutError, httpx.TransportError)
             )
         # Explicit 403/429 is not a transport failure and must not rotate egress.
         response.raise_for_status()

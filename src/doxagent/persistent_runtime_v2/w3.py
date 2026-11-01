@@ -919,6 +919,13 @@ class CodexW3AgentRunner:
             "AGENTS.md": assets["w3/AGENTS.md" if single_skill else "w3/agent.md"],
             skill_path: assets["w3/" + skill_path],
         }
+        replay_instructions = (
+            assets.get("w3/backtest.md")
+            if self.environment.mode == "OFFLINE_REPLAY"
+            else None
+        )
+        if replay_instructions:
+            instructions["backtest.md"] = replay_instructions
         if batch:
             instruction_pack = digest(["w3-instructions-v1", instructions])
             await self._workspace.ensure_research_pack(instruction_pack, instructions)
@@ -1108,6 +1115,11 @@ class CodexW3AgentRunner:
                 "evidence delivery; retain the skill's decision and operations rules. "
                 "Do not open URLs or use shell/Python network requests."
             )
+            if replay_instructions:
+                task["instruction"] = (
+                    "继承 AGENTS.md、唯一 Skill 与 backtest.md；按 input.as_of 冻结时点，"
+                    "只完成本轮决策。通过 w3_research 读取本 Case 已提供的历史资料及行情。"
+                )
             if phase != "w3_template":
                 replay = case.frozen_inputs.get("w3_replay", {})
                 evidence_root = f"{case_root}/evidence"
@@ -1165,6 +1177,11 @@ class CodexW3AgentRunner:
                     "Do not evaluate a message, research a trade, or perform operations. "
                     'Return {"ready": true} under output_schema.'
                 )
+        if replay_instructions and phase == "w3_template":
+            task["instruction"] = (
+                '初始化 AGENTS.md、唯一 Skill 与 backtest.md；不处理消息或开展研究。'
+                '返回 {"ready": true}。'
+            )
         await write(
             run_id, f"{case_root}/task.json", json.dumps(task, ensure_ascii=False, indent=2)
         )
@@ -1194,7 +1211,10 @@ class CodexW3AgentRunner:
             # Load the only business skill once in the mother thread; case turns
             # inherit it and carry only phase-specific data and artifact pointers.
             prompt = (
-                assets["w3/skills/skill.md"] + "\n\n" if phase == "w3_template" else ""
+                assets["w3/skills/skill.md"] + "\n\n"
+                + ((replay_instructions + "\n\n") if replay_instructions else "")
+                if phase == "w3_template"
+                else ""
             ) + json.dumps(task, ensure_ascii=False)
         profile = execution_profile(
             case,

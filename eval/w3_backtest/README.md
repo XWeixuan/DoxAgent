@@ -1,3 +1,36 @@
+# 2026-11-02：新增两条 COHR Case
+
+`w3_curated_20261030` 在原43条之上加入 `ADD-AMZN-Q3-2026`（Gold：NO_TRADE）和 `ADD-MPWR-Q3-2026`（Gold：LONG），当前正式集为45条。两条交易标的均为 COHR，使用原生产Case的消息、W1/W2、发布时间及绑定D1/D2；新增检索证据由 Terra medium 构造，行情为准备阶段远端拉取的COHR真实快照。
+
+仅对这两条执行 Sol 6.1 medium 各1次、Luna max 各10次，逐轮与汇总保存在 [cohr_new2_consistency_20261102](runs/cohr_new2_consistency_20261102/)。新增选集与Gold来源保存在 `datasets/w3_curated_20261030/preparation/additions_20261102/selection.json`。不要运行旧59条目录的 `prepare-curated` 覆盖当前45条增补集；日常使用 `build/run/resume/report`。下文43条是2026-10-30的冻结历史基线。
+
+# 2026-10-30：v2 决策级回测
+
+新正式集为 `datasets/w3_curated_20261030`：用户59条目录保留43条有效案例（按后续指示移除BE-02-04），Gold与Tag仅供宿主评分；全部随机NOISE已移除。旧版73条数据和二阶段运行保留在下文作为历史说明。
+
+v2按一轮运行共享提示词母线程，每条消息独立fork，只输出v5的四字段第一阶段决策。不会执行运营、写交易意图或模拟订单。默认使用数据集 `prompt_source` 中冻结的生产active AGENTS/Skill、contract.json与中文backtest.md；显式 `--prompt-root` 可用于提示词实验，该目录需包含这四份文件。实际模型/effort和提示词hash写入run_manifest及Worker审计。
+
+```powershell
+# 首次导入用户目录、指定远端Case与历史D1/D2，冻结生产生效提示词
+.venv/Scripts/python.exe -m doxagent.w3_backtest prepare-curated --dataset w3_curated_20261030
+# 输出每批4条的Terra/medium子Agent任务；构造流程先读规范手册
+.venv/Scripts/python.exe -m doxagent.w3_backtest prepare-search --dataset w3_curated_20261030
+# 材料由子Agent实际搜索准备；有DATE精度时先补时，再拉真实历史行情
+.venv/Scripts/python.exe -m doxagent.w3_backtest prepare-prices --dataset w3_curated_20261030
+.venv/Scripts/python.exe -m doxagent.w3_backtest build --dataset w3_curated_20261030
+.venv/Scripts/python.exe -m doxagent.w3_backtest run --dataset w3_curated_20261030 --run-id calibrated-01 --model gpt-6-luna --effort max --concurrency 3
+```
+
+`prepare-search`在v2生成任务文件，不自动调用旧版Luna采集器。按任务使用gpt-6.1-terra/medium子Agent、每批3–5条，完成后再派下一批。只向构造者提供本批原消息、冻结提示词和D1/D2；Gold、目录标签、旧判断与原始归档不交付。
+
+`inputs/<case>/case.json`是中性输入；`evidence/index.json`、`web_search.jsonl`与`sources/*.md`承载历史检索；`market_view.json`是远端提前拉取的三段真实行情（五个完成日线、24小时60分bar、4小时5分bar）。形成中的bar不交付；休市窗口如实保留为空。具体采集困难只写`preparation`，不写成W3拒绝交易提示。
+
+回测使用现有本地w3_research只读入口，冻结资料按Case绑定；实时Web、Data MCP、IBKR和子Agent均关闭。运行期不接远端账户。SDK及Journal用真实时间，业务判断只用Case的as_of。输入准备失败记技术错误，不充当NO_TRADE。报告包含全体、非边缘、边缘、时效性分组；运营状态为NOT_REQUESTED。
+
+不要在构造过程中启动正式全量评分；输入、提示词、执行代码改变后使用新run-id。`prepare-curated`是重新导入命令，会重建输入/Gold并重新冻结生产提示词，不要将它作为普通resume命令；完成构造后用build/run/resume/report。
+
+---
+
 > Gold更新（2026-10-21）：用户最终图片标注已补齐36条，现有73条全部可评分（7 LONG、4 SHORT、62 NO_TRADE）。下文首轮基线的37条评分/29条空白/7条条件结果是历史口径；最终标注出处与原Gold备份见 [录入回执](annotation/20261021/final_gold/README.md)。
 
 # 本地 W3 历史情景回放

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import warnings
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -323,6 +324,7 @@ class EventLibraryViewCompiler:
         reference_review_candidates: list[ReferenceReviewCandidate] | None = None,
         upstream_context_manifest: dict[str, Any] | None = None,
         upstream_d1_reports: dict[str, str] | None = None,
+        resume_frozen_view_id: str | None = None,
     ) -> tuple[Path, FrozenViewManifest]:
         if not batches:
             raise ValueError("at least one Delta batch is required")
@@ -339,6 +341,33 @@ class EventLibraryViewCompiler:
         delta_ids = [item.delta_id for batch in batches for item in batch.items]
         if len(delta_ids) != len(set(delta_ids)):
             raise ValueError("combined Frozen View Delta IDs must be unique")
+        if resume_frozen_view_id is not None:
+            # Publication changes review schedules and reference-view bases. Those
+            # mutable projections must not redefine an already dispatched input.
+            root = Path(run_root) / "context" / "event_library" / resume_frozen_view_id
+            manifest = FrozenViewManifest.model_validate_json(
+                (root / "manifest.json").read_text(encoding="utf-8")
+            )
+            if (
+                manifest.frozen_view_id != resume_frozen_view_id
+                or manifest.run_id != run_id
+                or manifest.mode != mode
+                or manifest.ticker != ticker
+                or manifest.base_library_version != base_version
+                or manifest.delta_batch_ids != [batch.batch_id for batch in batches]
+                or manifest.as_of != as_of
+            ):
+                raise ValueError("resume state does not match the frozen maintenance input")
+            if upstream_context_manifest is not None:
+                saved = json.loads((root / manifest.upstream_context_manifest_path).read_text())
+                if any(saved.get(k) != v for k, v in upstream_context_manifest.items()):
+                    raise ValueError("resume upstream context does not match frozen input")
+                for role, content in (upstream_d1_reports or {}).items():
+                    if (root / manifest.upstream_d1_report_paths[role]).read_text(
+                        encoding="utf-8"
+                    ) != content:
+                        raise ValueError("resume D1 report does not match frozen input")
+            return root, manifest
         events = self._repository.published_events(ticker, base_version)
         effective_packages = [package for batch in batches for package in batch.runtime_packages]
         if not effective_packages:
@@ -966,12 +995,25 @@ class EventLibraryViewCompiler:
         }
         base_version = self._repository.library_base_version(ticker, selected)
         if base_version is not None and selected > base_version:
-            delta = self.reference_view_delta(
-                ticker,
-                from_version=base_version,
-                to_version=selected,
-                persist=not self._repository.read_only,
-            )
-            reference_delta_path.write_text(delta.model_dump_json(indent=2), encoding="utf-8")
-            exports["reference_view_delta"] = reference_delta_path
+            delta = self._repository.get_reference_view_delta(ticker, base_version, selected)
+            if delta is None and (
+                base_version == 0
+                or self._repository.library_base_version(ticker, base_version) is not None
+            ):
+                delta = self.reference_view_delta(
+                    ticker,
+                    from_version=base_version,
+                    to_version=selected,
+                    persist=not self._repository.read_only,
+                )
+            if delta is not None:
+                reference_delta_path.write_text(delta.model_dump_json(indent=2), encoding="utf-8")
+                exports["reference_view_delta"] = reference_delta_path
+            else:
+                warnings.warn(
+                    f"Reference View Delta V{base_version}->V{selected} unavailable for "
+                    f"{ticker}: parent version is not retained; Published views exported",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
         return exports

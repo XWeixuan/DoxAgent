@@ -605,7 +605,7 @@ class Collector:
             reason = "CANCELLED"
             raise
         except Exception as exc:
-            reason = type(exc).__name__
+            reason = getattr(exc, 'reason_code', None) or type(exc).__name__
             log.warning(
                 "collector request failed source=%s unit=%s reason=%s detail=%s",
                 source.source_id,

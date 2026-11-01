@@ -622,7 +622,8 @@ def test_pending_durable_input_skips_rebuilding_body_job_without_claiming_succes
     assert created and job is not None
     from doxagent.message_bus_v2.body_results import ArticleBodyResults
     advanced,_=ArticleBodyResults(repo).schedule(
-        message.model_copy(update={'summary':'Another provider supplies a different teaser.'}),
+        message.model_copy(update={'summary':'Another provider supplies a different teaser.',
+                                   'metadata': {'language': 'en'}}),
         'another-provider',now=utc_now(),
     )
     assert advanced['check_seq'] > 1

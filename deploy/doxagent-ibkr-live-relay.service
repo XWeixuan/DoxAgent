@@ -1,0 +1,12 @@
+[Unit]
+Description=Private Docker bridge to loopback IB Gateway Live API
+After=network.target docker.service
+[Service]
+EnvironmentFile=/etc/doxagent/broker.env
+ExecStart=/usr/bin/socat TCP4-LISTEN:7497,bind=${DOCKER_HOST_GATEWAY},reuseaddr,fork,range=172.16.0.0/12 TCP4:127.0.0.1:4001
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+User=nobody
+[Install]
+WantedBy=multi-user.target

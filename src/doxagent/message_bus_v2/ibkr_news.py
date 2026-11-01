@@ -7,6 +7,7 @@ import re
 import threading
 from collections import OrderedDict, defaultdict
 from contextvars import ContextVar
+from contextlib import aclosing
 from datetime import UTC, datetime, timedelta
 from html import unescape
 from typing import Any, Protocol, cast
@@ -23,6 +24,14 @@ from doxagent.settings import DoxAgentSettings
 from .collection_override import REQUEST_GATE, CollectionStopped
 
 _NEWS_SEND=ContextVar('ibkr_news_send',default=None)
+
+
+class NewsRequestError(RuntimeError):
+    """One request failed; the shared socket may still be healthy."""
+
+
+class NewsRequestTimeout(NewsRequestError):
+    pass
 
 
 def _observe_connection_send(connection):
@@ -157,7 +166,10 @@ class IbkrNewsGateway:
                 articleId: str,
                 headline: str,
             ) -> None:  # noqa: N802,E501
-                self.historical_rows[requestId].append(
+                rows = self.historical_rows.get(requestId)
+                if rows is None:
+                    return
+                rows.append(
                     {
                         "time": timeValue,
                         "providerCode": providerCode,
@@ -168,12 +180,18 @@ class IbkrNewsGateway:
                 )
 
             def historicalNewsEnd(self, requestId: int, hasMore: bool) -> None:  # noqa: N802
-                self.historical_rows[requestId].append({"_hasMore": bool(hasMore)})
-                self.historical_events.setdefault(requestId, threading.Event()).set()
+                rows = self.historical_rows.get(requestId)
+                event = self.historical_events.get(requestId)
+                if rows is not None and event is not None:
+                    rows.append({"_hasMore": bool(hasMore)})
+                    event.set()
 
             def newsArticle(self, requestId: int, articleType: int, articleText: str) -> None:  # noqa: N802
-                self.article_results[requestId] = (articleType, articleText)
-                self.article_events.setdefault(requestId, threading.Event()).set()
+                with owner._stream_lock:
+                    event = self.article_events.get(requestId)
+                    if event is not None:
+                        self.article_results[requestId] = (articleType, articleText)
+                        event.set()
 
             def error(self, reqId: int, *args: Any) -> None:
                 error_code, error_string = _parse_error_args(args)
@@ -182,8 +200,9 @@ class IbkrNewsGateway:
                 if error_code not in {2104, 2106, 2107, 2108, 2158}:
                     self.errors.append(f"{reqId}:{error_code}:{error_string}")
                 for events in (self.contract_events, self.historical_events, self.article_events):
-                    if reqId in events and error_code not in {2104, 2106, 2107, 2108, 2158}:
-                        events[reqId].set()
+                    event = events.get(reqId)
+                    if event is not None and error_code not in {2104, 2106, 2107, 2108, 2158}:
+                        event.set()
 
         app = App()
         app.connect(
@@ -251,15 +270,15 @@ class IbkrNewsGateway:
             return cached[1]
         request_id = self._request_id()
         event = app.article_events.setdefault(request_id, threading.Event())
-        app.reqNewsArticle(request_id, provider, article_id, [])
-        if not event.wait(min(self.settings.ibkr_tws_timeout_seconds, 5)):
-            app.article_events.pop(request_id, None)
-            return None, None
-        result = cast(
-            tuple[int | None, str | None], app.article_results.get(request_id, (None, None))
-        )
-        app.article_events.pop(request_id, None)
-        app.article_results.pop(request_id, None)
+        try:
+            app.reqNewsArticle(request_id, provider, article_id, [])
+            if not event.wait(min(self.settings.ibkr_tws_timeout_seconds, 5)):
+                return None, None
+            result = cast(tuple[int | None, str | None], app.article_results.get(request_id, (None, None)))
+        finally:
+            with self._stream_lock:
+                app.article_events.pop(request_id, None)
+                app.article_results.pop(request_id, None)
         if result[0] == 0 and result[1]:
             with self._stream_lock:
                 self._articles[(provider, article_id)] = (datetime.now(UTC), result)
@@ -283,6 +302,10 @@ class IbkrNewsGateway:
                 rows, metadata = self._poll(ticker, since, until)
                 metadata["data_source"] = source["name"]
                 return rows, metadata
+            except NewsRequestError:
+                # Do not disconnect unrelated tick subscriptions for one absent
+                # historicalNewsEnd. Router failover still owns true connectivity.
+                raise
             except Exception:
                 self.close()
                 raise
@@ -300,37 +323,42 @@ class IbkrNewsGateway:
         error_start = len(app.errors)
         # Periodic SDK reconciliation also recovers callback loss after restart.
         request_id = self._request_id()
-        event = app.historical_events.setdefault(request_id, threading.Event())
         providers = "+".join(code for code, _ in app.providers)
         if not providers:
             raise RuntimeError("IBKR returned no subscribed news providers")
         from .poll_trace import request_started
 
         conid=self._conid(app,ticker)
+        event = app.historical_events.setdefault(request_id, threading.Event())
+        app.historical_rows[request_id] = []
         trace = request_started("SDK", f"ibkr://news/{ticker}", "ibkr_sdk")
         if trace is not None:
             trace["sdk_request_id"] = request_id
-        token=_NEWS_SEND.set(trace)
         try:
-            app.reqHistoricalNews(request_id,conid,providers,
-                since.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),
-                until.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),300,[])
+            token=_NEWS_SEND.set(trace)
+            try:
+                app.reqHistoricalNews(request_id,conid,providers,
+                    since.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),
+                    until.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC"),300,[])
+            finally:
+                _NEWS_SEND.reset(token)
+            if not event.wait(self.settings.ibkr_tws_timeout_seconds):
+                raise NewsRequestTimeout("IBKR historical news request timed out")
         finally:
-            _NEWS_SEND.reset(token)
-        if not event.wait(self.settings.ibkr_tws_timeout_seconds):
-            raise RuntimeError("IBKR historical news request timed out")
+            app.historical_events.pop(request_id, None)
+            raw = app.historical_rows.pop(request_id, [])
+            # Even an interrupted response may contain useful news. Keep it in
+            # the existing stream until durable capture acknowledges the rows.
+            with self._stream_lock:
+                self._stream[ticker].extend(item for item in raw if "articleId" in item)
         if trace is not None:
             trace["response_received_at"] = datetime.now(UTC).isoformat()
             trace["status"] = "CALLBACK_COMPLETE"
-        raw = app.historical_rows.pop(request_id, [])
-        app.historical_events.pop(request_id, None)
         if not any('_hasMore' in item for item in raw):
             if trace is not None:
                 trace['status'] = 'SDK_ERROR'
-            raise RuntimeError('IBKR historical news did not reach historicalNewsEnd')
+            raise NewsRequestError('IBKR historical news did not reach historicalNewsEnd')
         has_more = any(bool(item.get("_hasMore")) for item in raw)
-        with self._stream_lock:
-            self._stream[ticker].extend(item for item in raw if "articleId" in item)
         transport = "historical_fallback"
         unique: dict[tuple[str, str], JsonObject] = {}
         with self._stream_lock:
@@ -355,16 +383,15 @@ class IbkrNewsGateway:
             self._stream[ticker] = [
                 row
                 for row in self._stream[ticker]
-                if (
-                    str(row.get("providerCode")),
-                    str(row.get("articleId")),
-                )
-                not in emitted_keys
-                and (str(row.get('providerCode')) + ':' + str(row.get('articleId'))) not in self._delivered[ticker]
+                if (str(row.get('providerCode')) + ':' + str(row.get('articleId'))) not in self._delivered[ticker]
                 and ((stamp := _published(row.get("time"))) is None or stamp >= since)
             ]
-        with self._stream_lock:
-            pending_count = len(self._stream[ticker])
+            # Selection is not durable acceptance. Keep selected rows until
+            # on_page succeeds, but count only the not-yet-selected backlog.
+            pending_count = sum(
+                (str(row.get('providerCode')), str(row.get('articleId'))) not in emitted_keys
+                for row in self._stream[ticker]
+            )
         return rows, {
             "transport": transport,
             "provider_codes": [code for code, _ in app.providers],
@@ -451,25 +478,81 @@ class IbkrNewsAdapter:
                 # a non-daemon IBAPI reader during interpreter shutdown.
                 await asyncio.gather(work, return_exceptions=True)
                 raise
-        if isinstance(self.gateway, IbkrNewsGateway):
-            async def complete(row):
-                async with self._article_slots:
-                    kind, body = await asyncio.to_thread(self.gateway._article, self.gateway._app,
-                        str(row['providerCode']), str(row['articleId']))
-                return {**row, 'articleType': kind, **({'articleText': body} if body and kind == 0 else {})}
-            rows = await asyncio.gather(*(complete(row) for row in rows))
-        result = self._result(context, rows, metadata)
-        if isinstance(self.gateway, IbkrNewsGateway) and context.on_page:
-            recent = {**self.gateway._delivered[context.ticker],
-                      **{str(row['providerCode']) + ':' + str(row['articleId']): utc_now().isoformat() for row in rows}}
-            checkpoint = {**result.next_checkpoint, 'recent_sdk_articles': dict(list(recent.items())[-1000:])}
-            from .poll_trace import REQUESTS
-            receipts = [r for r in REQUESTS.get() or [] if r.get('transport') == 'ibkr_sdk' and r.get('response_received_at')]
-            received = datetime.fromisoformat(receipts[-1]['response_received_at']) if receipts else context.requested_at
-            await context.on_page(result.messages, observed_at=received, checkpoint=checkpoint)
-            self.gateway._delivered[context.ticker] = checkpoint['recent_sdk_articles']
-            result = result.model_copy(update={'next_checkpoint': checkpoint})
+        if not isinstance(self.gateway, IbkrNewsGateway):
+            return self._result(context, rows, metadata)
+        from .poll_trace import REQUESTS
+        receipts = [r for r in REQUESTS.get() or [] if r.get('transport') == 'ibkr_sdk' and r.get('response_received_at')]
+        received = datetime.fromisoformat(receipts[-1]['response_received_at']) if receipts else context.requested_at
+        completed = []
+        async with aclosing(self._complete_rows(rows, self.gateway._app)) as batches:
+            async for batch in batches:
+                completed.extend(batch)
+                if context.on_page:
+                    result = self._result(context, batch, metadata)
+                    recent = self._recent(context, batch)
+                    await context.on_page(result.messages, observed_at=received,
+                                          checkpoint={**context.checkpoint, 'recent_sdk_articles': recent})
+                    self._ack_rows(context.ticker, batch, recent)
+        result = self._result(context, completed, metadata)
+        if context.on_page:
+            result = result.model_copy(update={'next_checkpoint': {
+                **result.next_checkpoint, 'recent_sdk_articles': dict(self.gateway._delivered[context.ticker])}})
         return result
+
+    async def _complete_rows(self, rows, app, gate=None):
+        async def complete(row):
+            async with self._article_slots:
+                if gate is not None:
+                    gate.check()
+                work = asyncio.create_task(asyncio.to_thread(
+                    self.gateway._article, app, str(row['providerCode']), str(row['articleId'])))
+                try:
+                    kind, body = await asyncio.shield(work)
+                except asyncio.CancelledError:
+                    await asyncio.gather(work, return_exceptions=True)
+                    raise
+            return {**row, 'articleType': kind, **({'articleText': body} if body and kind == 0 else {})}
+        pending = {asyncio.create_task(complete(row)) for row in rows}
+        tasks = set(pending)
+        failure = None
+        try:
+            while pending:
+                done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+                batch = []
+                for task in done:
+                    try:
+                        batch.append(task.result())
+                    except Exception as exc:
+                        failure = failure or exc
+                if batch:
+                    yield batch
+            if failure:
+                raise failure  # failed rows remain unacknowledged for reconciliation
+        finally:
+            for task in pending:
+                task.cancel()
+            # A cancelled waiter must not abandon its socket-owning thread.
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+    def _recent(self, context, rows):
+        with self.gateway._stream_lock:
+            recent = {**context.checkpoint.get('recent_sdk_articles', {}),
+                      **self.gateway._delivered[context.ticker]}
+        recent.update({str(r['providerCode'])+':'+str(r['articleId']): utc_now().isoformat() for r in rows})
+        return dict(list(recent.items())[-1000:])
+
+    def _ack_rows(self, ticker, rows, recent):
+        def version(row):
+            return tuple(str(row.get(k, '')) for k in ('providerCode','articleId','time','headline','extraData','callback_at'))
+        acknowledged = {version(r) for r in rows}
+        with self.gateway._stream_lock:
+            remaining = [r for r in self.gateway._stream[ticker] if version(r) not in acknowledged]
+            # A new tick for the same article during capture is a new observation,
+            # not the old download's acknowledgement.
+            for r in remaining:
+                recent.pop(str(r['providerCode'])+':'+str(r['articleId']), None)
+            self.gateway._delivered[ticker] = recent
+            self.gateway._stream[ticker] = remaining
 
     def _result(self, context, rows, metadata):
         since = context.requested_at - timedelta(hours=24)
@@ -563,53 +646,28 @@ class IbkrNewsAdapter:
     async def _deliver_ticks(self, context, gate=None):
         from .schema import utc_now
 
-        # Socket callbacks retain the pending rows until durable capture succeeds.
-        with self.gateway._stream_lock:
-            rows = [dict(row) for row in self.gateway._stream[context.ticker]]
-        if not rows:
-            return
-        app = self.gateway._app
-
-        async def complete(row):
-            async with self._article_slots:
-                if gate is not None:
-                    gate.check()
-                kind, body = await asyncio.to_thread(
-                    self.gateway._article, app, str(row["providerCode"]), str(row["articleId"])
-                )
-            return {
-                **row,
-                "articleType": kind,
-                **({"articleText": body} if body and kind == 0 else {}),
-            }
-
+        # Capture each completed batch before waiting for slow article bodies.
         try:
-            rows = await asyncio.gather(*(complete(row) for row in rows))
-            received = min(
-                datetime.fromisoformat(r["callback_at"]) for r in rows if r.get("callback_at")
-            )
-            current = context.model_copy(update={"requested_at": utc_now()})
-            result = self._result(current, rows, {"provider_names": dict(app.providers)})
-            await context.on_page(result.messages, observed_at=received, bootstrap=False)
-            for row in rows:
-                self.gateway._delivered[context.ticker][str(row['providerCode']) + ':' + str(row['articleId'])] = utc_now().isoformat()
-            self.gateway._delivered[context.ticker] = dict(list(self.gateway._delivered[context.ticker].items())[-1000:])
-            keys = {(r["providerCode"], r["articleId"]) for r in rows}
-            with self.gateway._stream_lock:
-                self.gateway._stream[context.ticker] = [
-                    r
-                    for r in self.gateway._stream[context.ticker]
-                    if (r.get("providerCode"), r.get("articleId")) not in keys
-                ]
+            while True:
+                with self.gateway._stream_lock:
+                    rows = [dict(row) for row in self.gateway._stream[context.ticker]]
+                if not rows:
+                    return
+                app = self.gateway._app
+                async with aclosing(self._complete_rows(rows, app, gate)) as batches:
+                    async for batch in batches:
+                        received = min(datetime.fromisoformat(r['callback_at']) for r in batch if r.get('callback_at'))
+                        current = context.model_copy(update={'requested_at': utc_now()})
+                        result = self._result(current, batch, {'provider_names': dict(app.providers)})
+                        await context.on_page(result.messages, observed_at=received, bootstrap=False)
+                        self._ack_rows(context.ticker, batch, self._recent(context, batch))
+                # A tick received while the prior batch was running still needs capture.
         except CollectionStopped:
             return
         except Exception:
             import logging
-
             logging.getLogger(__name__).exception(
-                "IBKR callback capture failed ticker=%s; retained for reconciliation",
-                context.ticker,
-            )
+                'IBKR callback capture failed ticker=%s; retained for reconciliation', context.ticker)
 
     async def close(self) -> None:
         if isinstance(self.gateway, IbkrNewsGateway):
