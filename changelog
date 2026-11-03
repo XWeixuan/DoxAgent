@@ -2616,3 +2616,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 三消息源验收收尾：SDxCentral采用public_access及已验证公开文章，冷备listing和FULL正文链通过并恢复主身份；三源约九分钟自然轮询无采集失败，199项相关测试通过，保留冷校验延期和历史CSE响应缺口。
 
 2026-11-04 测试坏例完善：同类视频页面导航/简介也不能冒充完整正文，音视频均记media_requires_transcript；X账号/绑定刷新只更新规则及内存路由，保留当前长连接，避免每次修改产生20秒重连窗口，错误退避前先关闭失效消费者。23项专项通过。
+
+2026-11-04 Bloomberg预览边界收尾：实测Money Stuff newsletter仅返回三段预览，也不得计作全文；将已验证的音视频/付费newsletter限制统一为轻量来源函数，同时覆盖提取与缓存提交，并保持候选发现/原始证据。25项专项通过，正文可得性仍如实标记未验收。

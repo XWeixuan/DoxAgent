@@ -716,10 +716,13 @@ class LiveRepository:
     def prepare_result(self, job, message, *, outcome=None):
         message = message.model_copy(update={"metadata": {**message.metadata, "_delivery_mode": job.source.delivery_mode}})
         meta = message.metadata.get("media_enrichment", {})
-        if job.source.source_id=='bloomberg_massive' and any(path in message.url for path in ('/news/audio/','/news/videos/')):
-            # Covers cached downloads too: a media description is not a transcript.
-            meta={**meta,'succeeded':False,'outcome':'PARTIAL','reason_code':'media_requires_transcript'}
-            message=message.model_copy(update={'metadata':{**message.metadata,'media_enrichment':meta}})
+        if job.source.source_id=='bloomberg_massive':
+            from .newswire_sources import bloomberg_body_limitation
+            limitation=bloomberg_body_limitation(message.url)
+            if limitation:
+                # Cached media descriptions / gated newsletter previews remain partial.
+                meta={**meta,'succeeded':False,'outcome':'PARTIAL','reason_code':limitation}
+                message=message.model_copy(update={'metadata':{**message.metadata,'media_enrichment':meta}})
         native_only = job.source.content_enrichment_mode.value == "skip" or message.metadata.get(
             "body_not_applicable"
         )

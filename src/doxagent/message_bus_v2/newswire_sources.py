@@ -26,6 +26,15 @@ CATALOG={
 }
 
 
+def bloomberg_body_limitation(url):
+    path=urlsplit(url).path
+    if any(part in path for part in ('/news/audio/','/news/videos/')):
+        return 'media_requires_transcript'
+    if '/opinion/newsletters/' in path:
+        return 'newsletter_requires_full_text'
+    return None
+
+
 def initial_sources():
     return [SourceDefinition(source_id=sid,display_name=name,kind=SourceKind.API,
         adapter_ref='builtin:newswire_massive@1',acquisition_mode=AcquisitionMode.MASSIVE_DISTRIBUTION,
