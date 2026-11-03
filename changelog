@@ -2573,3 +2573,9 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 整体发布完成：产品版本1df0118d已推origin/main并在生产构建发布Collector/BODY/Bus/Projector/API/Scheduler/Web七角色，132次源码hash核验一致，均running/restart0，API健康200；四节点有效High/1h配置正确，已有自然High W1R2成功及4784 tokens缓存读取。191+4项回归通过，1项此前已记录的RuntimeJournal基线失败保留；详见docs/full-main-release-20261103.md。
 
 2026-11-03 发布后自然流量复核：四轮新增High回执11/11成功（W1R2=4/W1R3=2/W2R2=3/W2R3=2），前三轮有热缓存读取，W2R3已有新缓存写入；七角色最终身份及运行核验通过。
+
+2026-11-03 Massive Distribution Newswire方案：完成五平台官方RSS搜索、候选/正文/条件请求及生产HTTP出口只读实测，明确ACCESS博客伪候选与BW正文限制；产出复用现有Collector/Live/BODY/正则、10个ticker测试目标和末端隔离的执行方案。未修改产品代码、生产配置或真实订阅。详见docs/massive-distribution-newswire-development-plan-20261103.md，证据eval/massive-newswire-research-20261103/。
+
+2026-11-03 Business Wire正则只读评估：对原4078条和新4094条RSS全量回放10个ticker当前生产L2，分别得到311/316条命中、396/402个article×ticker；保存完整快照、规则hash、命中CSV与定性阅读，记录CEG/RKLB/MU等词义误匹配。仅标题+摘要、无正文/Decision Model调用，未变更生产或词库。详见docs/businesswire-seven-day-regex-evaluation-20261103.md。
+
+2026-11-03 Massive Distribution测试接入：新增第四采集类型与五平台/七端点，复用Collector→Live→BODY→L2正则→标准化，新增同库test_publications末端sink；源配置中的10个测试目标不创建真实订阅，捕获/文章/正文所有权分域、正文测试并发1、HTTP并发2、无Decision Model/新Chrome，保留304和BW单请求16MiB限制。真实七端点及ACCESS正文样本通过，回归和生产启动回执见docs/massive-distribution-implementation-20261103.md。

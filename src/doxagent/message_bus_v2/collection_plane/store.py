@@ -204,7 +204,7 @@ class AcquisitionStore:
                 }
                 head["ir_endpoint"].pop("checkpoint", None)
         checkpoint=None
-        if source.acquisition_mode.value=='by_distribution' and 'checkpoint' in state:
+        if source.acquisition_mode.shared_distribution and 'checkpoint' in state:
             checkpoint=(source.source_id+':'+unit+':'+generation,canonical_json(state['checkpoint']))
             state={k:v for k,v in state.items() if k!='checkpoint'}|{'checkpoint_ref':checkpoint[0]}
         args = (

@@ -20,6 +20,7 @@ _BUDGETS = WeakKeyDictionary()
 HTTP_CONTEXT = ContextVar("message_http_context", default=None)
 HTTP_SOURCE = ContextVar("message_http_source", default=None)
 PROCESS_ROLE = "collector"
+RESPONSE_LIMIT = ContextVar("publisher_response_limit", default=4 * 1024 * 1024)
 
 
 @asynccontextmanager
@@ -191,7 +192,7 @@ class PublisherSession(AsyncSession):
             body = bytearray()
 
             def receive(chunk):
-                if len(body) + len(chunk) > 4 * 1024 * 1024:
+                if len(body) + len(chunk) > RESPONSE_LIMIT.get():
                     return 0
                 body.extend(chunk)
                 return len(chunk)
@@ -382,7 +383,7 @@ class _HttpxSession:
             async with self.client.stream(method, url, **kwargs) as response:
                 data = bytearray()
                 async for chunk in response.aiter_bytes():
-                    if len(data) + len(chunk) > 4 * 1024 * 1024:
+                    if len(data) + len(chunk) > RESPONSE_LIMIT.get():
                         raise ValueError("publisher_response_exceeds_4mib")
                     data.extend(chunk)
                 response._content = bytes(

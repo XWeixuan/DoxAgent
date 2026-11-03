@@ -1,0 +1,134 @@
+from pathlib import Path
+
+import pytest
+
+from doxagent.message_bus_v2.newswire_sources import initial_sources, parse_feed, parse_access
+from doxagent.message_bus_v2.schema import utc_now, UpdateActor
+from doxagent.message_bus_v2.test_delivery import bindings
+from doxagent.message_bus_v2.live import LiveQueue, LiveDeliveryWorker
+from doxagent.content_enrichment.service import ContentEnrichmentHub
+from doxagent.message_bus_v2.monitoring_terms import MonitoringTermsService, TickerMonitoringTerms
+from tests.test_content_enrichment_hub import _setup, _message, _GovernedExtractor
+
+
+def terms(repo):
+    return MonitoringTermsService(repo).apply(TickerMonitoringTerms.model_validate(dict(ticker='MU',expected_revision=0,
+        l1_concepts=[dict(concept_id='micron',expressions={'en':'Micron'})],
+        l2={'en':{'groups':[{'id':'company','any':[{'literal':'Micron'}]}]}},
+        definition={'relevant':'Micron','irrelevant':'Other topics'})),actor='test')
+
+
+@pytest.mark.parametrize('test_first',[True,False])
+async def test_same_url_isolated_final_sink_without_real_subscription(tmp_path,test_first):
+    repo,bus,production,binding=_setup(tmp_path)
+    revision=terms(repo)
+    source=next(s for s in initial_sources() if s.source_id=='prnewswire_massive')
+    source=source.model_copy(update={'distribution_policy':source.distribution_policy.model_copy(update={'test_tickers':['MU']})})
+    repo.save_source(source)
+    assert repo.get_binding('MU:'+source.source_id) is None
+    bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
+    message=_message(710).model_copy(update={'title':'Micron manufacturing investment announced'})
+    extractor=_GovernedExtractor();hub=ContentEnrichmentHub(repo,bus,extractor=extractor)
+    try:
+        for test in ([True,False] if test_first else [False,True]):
+            s=source if test else production;b=bindings(source)[0] if test else binding
+            rows=live.prepare_input(s,[(b.binding_id,'MU',revision)],[message],observed_at=utc_now().isoformat(),unit='WIRE:all')
+            assert bool(rows[0]['key'].startswith('test_')) is test
+            live.accept(rows)
+            await hub.run_once()
+            worker=LiveDeliveryWorker(bus)
+            async def forbidden(*a,**kw):raise AssertionError('Decision Model was called')
+            worker.classify=forbidden
+            await worker.run_available()
+        with repo._connect() as db:
+            assert db.execute('SELECT count(*) FROM test_publications').fetchone()[0]==1
+            assert db.execute('SELECT count(*) FROM standard_messages').fetchone()[0]==1
+            assert db.execute('SELECT count(*) FROM raw_messages').fetchone()[0]==1
+            assert db.execute("SELECT count(*) FROM ticker_source_bindings WHERE source_id=?",(source.source_id,)).fetchone()[0]==0
+            assert db.execute("SELECT count(*) FROM live_articles WHERE delivery_mode='test'").fetchone()[0]==1
+        # Redelivery never creates another BODY owner/publication.
+        live.accept(rows)
+        await hub.run_once();await worker.run_available()
+        with repo._connect() as db:assert db.execute('SELECT count(*) FROM test_publications').fetchone()[0]==1
+    finally:await hub.close()
+
+
+def test_bw_full_window_and_language_are_not_silently_dropped():
+    source=initial_sources()[0]
+    fixture=Path('eval/businesswire-regex-screen-20261103/original-4078-feed.xml')
+    if not fixture.exists():pytest.skip('optional real research fixture')
+    rows=parse_feed(fixture.read_text(encoding='utf-8'),source,source.default_parameters['endpoints'][0],utc_now())
+    assert len(rows)==4078
+    assert any(r.metadata['language']=='zh-Hant' for r in rows)
+    assert all(r.url.startswith('https://www.businesswire.com/') for r in rows)
+    assert all(r.body is None for r in rows)
+
+
+def test_access_parser_rejects_blog_and_challenge():
+    with pytest.raises(ValueError):parse_access('<html>Just a moment...</html>',utc_now())
+    text='''<div class="nr-card-body"><h2 class="nr-card-title"><a href="https://www.accessnewswire.com/newsroom/en/technology/contract-123">New contract</a></h2><p class="nr-card-meta">November 3, 2026 8:40 AM</p><p class="nr-card-summary">Company signs contract.</p></div>'''
+    rows=parse_access(text,utc_now())
+    assert len(rows)==1 and rows[0].published_at.hour==13
+
+
+def test_real_subscription_to_test_source_is_rejected(tmp_path):
+    repo,bus,_,_=_setup(tmp_path)
+    with pytest.raises(ValueError,match='test source targets'):
+        bus.configure_binding(ticker='MU',source_id='businesswire_massive',actor=UpdateActor.USER)
+
+
+async def test_ten_targets_use_seven_physical_units_and_calendar_is_unchanged(tmp_path):
+    from types import SimpleNamespace
+    from doxagent.message_bus_v2.collection_plane.config import Configuration
+    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
+    from doxagent.message_bus_v2.collection_plane.worker import Collector
+    sources=initial_sources()
+    cfg=Configuration(sources={s.source_id:s for s in sources},
+        bindings={b.binding_id:b for s in sources for b in bindings(s)},realtime=False)
+    collector=Collector(SimpleNamespace(message_bus_v2_sqlite_path=str(tmp_path/'bus.db')),
+        SimpleNamespace(),store=AcquisitionStore(tmp_path/'acquisition.db',initialize=True),
+        config_loader=lambda *a,**kw:cfg)
+    await collector.refresh()
+    assert len(collector.desired)==7
+    assert all(len(value[1])==10 for value in collector.desired.values())
+    assert cfg.realtime is False
+
+
+async def test_304_preserves_checkpoint_and_bad_feed_does_not_become_empty_success():
+    import httpx
+    from contextlib import asynccontextmanager
+    from doxagent.message_bus_v2.newswire_sources import NewswireAdapter
+    from doxagent.message_bus_v2.schema import SharedPollContext
+    @asynccontextmanager
+    async def permit():yield
+    class Client:
+        status=304
+        async def get(self,url,**kw):
+            return httpx.Response(self.status,text='<html>Challenge</html>',request=httpx.Request('GET',url))
+    client=Client();adapter=NewswireAdapter();adapter.clients={'direct':client}
+    source=initial_sources()[0]
+    context=SharedPollContext(run_id='test',source=source,acquisition_unit='TEST:WIRE:all',
+        checkpoint={'etag':'old','seen':{'article':'hash'}},request_permit=permit)
+    result=await adapter.poll_shared(context)
+    assert result.next_checkpoint==context.checkpoint and not result.messages
+    client.status=200
+    with pytest.raises((ValueError,RuntimeError)):
+        await adapter.poll_shared(context)
+
+
+async def test_massive_body_fallback_never_opens_browser():
+    from types import SimpleNamespace
+    from doxagent.content_enrichment.pipeline import ArticlePipeline
+    from doxagent.content_enrichment.transport import Observation
+    from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord, DomainFetchController
+    phases=[]
+    async def fetch(url,attempts,*,phase='direct',**kw):
+        phases.append(phase)
+        return Observation(url,'',403,'http_403')
+    async def browser(*a,**kw):raise AssertionError('test BODY opened a browser')
+    pipeline=ArticlePipeline(SimpleNamespace(fetch=fetch,controller=DomainFetchController()),
+                             browser=SimpleNamespace(read=browser))
+    record=MediaEnrichmentRecord(standard_message_id='t',raw_message_id='t',source_id='businesswire_massive',
+        ticker='MU',title='Micron investment',body='',url='https://www.businesswire.com/news/home/123/en',raw_url=None,source_name='Business Wire')
+    await pipeline.extract(record)
+    assert phases==['direct','reader']

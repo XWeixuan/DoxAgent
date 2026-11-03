@@ -25,6 +25,7 @@ WORK_CLASS: ContextVar[str] = ContextVar("body_work_class", default="foreground"
 WORK_AGE: ContextVar[float] = ContextVar("body_work_age", default=0)
 REVALIDATION: ContextVar[dict | None] = ContextVar("body_revalidation",default=None)
 RESUME_STAGE = ContextVar("body_resume_stage", default=None)
+PUBLIC_PROXY = ContextVar("body_public_proxy", default=None)
 
 
 def conditional_headers(url):
@@ -259,6 +260,8 @@ class PublicTransport:
             "timeout": remaining(12),
         }
         # curl_cffi streams bound memory; lightweight fake sessions may expose only get().
+        if phase != "reader" and PUBLIC_PROXY.get():
+            kwargs["proxy"] = PUBLIC_PROXY.get()
         stream = getattr(self.session, "stream", None)
         if stream is not None:
             async with stream("GET", url, **kwargs) as response:

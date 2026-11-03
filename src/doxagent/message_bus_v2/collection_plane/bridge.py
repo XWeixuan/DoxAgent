@@ -33,6 +33,7 @@ class CaptureBridge:
         source = self.repo.get_source(source_id)
         if source is None:
             raise ValueError("captured source is missing")
+        source = source.model_copy(update={"delivery_mode": payload.get("delivery_mode", "production")})
         targets = payload.get("targets")
         if targets is None:
             targets = [
@@ -55,7 +56,7 @@ class CaptureBridge:
         return self.bus.live_queue.repository.prepare_input(source,
             [(t["binding_id"],t["ticker"],t.get("terms_revision",0)) for t in targets],messages,
             observed_at=row["observed_at"],unit=row["unit"],
-            bootstrap=payload.get("bootstrap",False) if source.acquisition_mode.value!="by_distribution" else False,
+            bootstrap=payload.get("bootstrap",False) if not source.acquisition_mode.shared_distribution else False,
             admission=AdmissionContext.model_validate(payload["admission"]))
 
     def commit(self, row, prepared):

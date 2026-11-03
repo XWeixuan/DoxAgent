@@ -868,6 +868,7 @@ class ReadStore:
                 [
                     "json_extract(payload,'$.kind')='api'",
                     "json_extract(payload,'$.enabled')=1",
+                    "coalesce(json_extract(payload,'$.delivery_mode'),'production')!='test'",
                     "NOT EXISTS (SELECT 1 FROM objects b "
                     "WHERE b.kind='native:ticker_source_bindings' "
                     "AND b.ticker=? AND b.id=?||':'||objects.id AND b.valid_from<=? "

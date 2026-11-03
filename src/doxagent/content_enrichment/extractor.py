@@ -144,6 +144,17 @@ class SharedContentExtractor:
             assert self._session is not None
             from urllib.parse import urlparse
 
+            if record.source_id and record.source_id.endswith("_massive") and self._pipeline is not None:
+                # These public wire sources use the same body/quality pipeline,
+                # without borrowing browser identities from existing subscriptions.
+                from .transport import PUBLIC_PROXY
+                from doxagent.message_bus_v2.http_routes import HTTP_EGRESSES
+                route = {"globenewswire_massive": "tr-standard-1", "access_newswire_massive": "us-standard-5"}.get(record.source_id)
+                token = PUBLIC_PROXY.set(HTTP_EGRESSES[route] if route else None)
+                try:
+                    return await self._pipeline.extract(record)
+                finally:
+                    PUBLIC_PROXY.reset(token)
             if (
                 version == "body_v2.2"
                 and self._pipeline_enabled

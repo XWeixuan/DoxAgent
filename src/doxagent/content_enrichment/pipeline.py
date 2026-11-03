@@ -168,6 +168,8 @@ class ArticlePipeline:
                 if not access_order:
                     reason = 'non_article_target'
                     break
+            if record.source_id and record.source_id.endswith("_massive"):
+                access_order = ["reader", "http_public"] if record.source_id == "tmx_newsfile_massive" else ["http_public", "reader"]
             # Count executable routes, not unavailable adapters, against the two-route budget.
             access_order=[s for s in dict.fromkeys(access_order)
                 if not (s in {"browser","browser_fetch"} and self.browser is None)

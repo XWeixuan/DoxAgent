@@ -139,6 +139,8 @@ class AdapterRegistry:
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
         from .corporate_ir.adapter import CorporateIrAdapter
 
+        from .newswire_sources import NewswireAdapter
+        self._builtins["newswire_massive@1"] = NewswireAdapter()
         self._builtins["corporate_ir@1"] = CorporateIrAdapter()
         from .defense_sources import DefenseAdapter
 
@@ -168,6 +170,7 @@ class AdapterRegistry:
             await newswire._bloom_clients.close()
         for client in newswire._route_clients.values():
             await client.aclose()
+        await self._builtins["newswire_massive@1"].close()
         await self._builtins["corporate_ir@1"].close()
         await self._builtins["defense_public@1"].close()
         await self._builtins["sec_edgar@1"].close()

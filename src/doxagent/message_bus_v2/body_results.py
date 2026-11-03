@@ -22,7 +22,8 @@ def article_key(message, source_id: str) -> str:
     )
     scope = access_scope(message, source_id)
     language = dedup.language(message, source_id)
-    return sha256_text(canonical_json([locator, scope, language]))
+    key = sha256_text(canonical_json([locator, scope, language]))
+    return "test_" + key if message.metadata.get("_delivery_mode") == "test" else key
 
 
 def access_scope(message, source_id):

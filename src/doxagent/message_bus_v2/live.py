@@ -15,6 +15,7 @@ from .body_results import ArticleBodyResults
 from .live_repository import LiveRepository
 from .monitoring_terms import MonitoringTermsService
 from .relevance import regex_relevant
+from .test_delivery import resolve_binding
 from .schema import AcquisitionMode, RawMessageInput, utc_now
 
 log = logging.getLogger(__name__)
@@ -136,6 +137,7 @@ class LiveQueue:
             source = self.bus.repository.get_source(row["source_id"])
         if source is None:
             return None
+        source = source.model_copy(update={"delivery_mode": row.get("delivery_mode", "production")})
         message = RawMessageInput.model_validate(self.repository.load(row["input_ref"]))
         from .deduplication import article_identity
         message = article_identity(message, source.source_id)
@@ -149,7 +151,7 @@ class LiveQueue:
             first = db.execute(
                 "SELECT binding_id FROM live_deliveries WHERE article_key=? LIMIT 1", (key,)
             ).fetchone()
-        binding = self.bus.repository.get_binding(first[0]) if first else None
+        binding = resolve_binding(self.bus.repository, first[0]) if first else None
         budget = (
             180 if source.adapter_ref in {"builtin:sec_edgar@1", "builtin:defense_public@1"} else 20
         )
@@ -287,6 +289,8 @@ class LiveQueue:
         await asyncio.to_thread(Path(prepared["spool_path"]).unlink, missing_ok=True)
 
     async def checks(self):
+        from .test_delivery import maintain
+        await self.bus.storage.call(maintain, self.repository, _lane_priority=2)
         await self.bus.storage.call(self.repository.retire_acceptances, _lane_priority=2)
         return await self.bus.storage.call(self.repository.enqueue_checks, _lane_priority=2)
 
@@ -445,8 +449,10 @@ class LiveDeliveryWorker:
         if row['source_id'] not in sources:
             sources[row['source_id']]=self.queue.source(row['source_id']) or self.bus.repository.get_source(row['source_id'])
         source=sources[row['source_id']]
-        binding = self.bus.repository.get_binding(row["binding_id"])
-        if binding and not row.get("raw_id"):
+        if source:
+            source=source.model_copy(update={"delivery_mode":row.get("delivery_mode","production")})
+        binding = resolve_binding(self.bus.repository, row["binding_id"])
+        if binding and not row.get("raw_id") and row.get("delivery_mode") != "test":
             fingerprint = message.metadata.get('v2_body_completion', {}).get('body_fingerprint')
             known, checked = self.bus.repository.publication_match(binding, message, fingerprint=fingerprint)
             row['_publication_lookup'] = (known, checked)
@@ -491,7 +497,7 @@ class LiveDeliveryWorker:
         if _complete_body_required(source) and not _complete_body_verified(message):
             await self.bus.storage.call(self.repository.decision, row, "NO_PUBLIC_BODY")
             return
-        relevance_required = source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION or (
+        relevance_required = source.acquisition_mode.shared_distribution or (
             source.source_id == "google_news_search_rss"
             and binding.source_parameters.get("require_relevance") is True
         )
@@ -511,13 +517,13 @@ class LiveDeliveryWorker:
         ):
             await self.publish(row, source, binding, message)
             return
-        if regex_relevant(definition, source.content_language or "en", message):
+        if regex_relevant(definition, (message.metadata.get("language") if source.delivery_mode == "test" else None) or source.content_language or "en", message):
             await self.bus.storage.call(self.repository.decision, row, "PENDING", regex=True)
             await self.publish(row, source, binding, message)
-        elif (source.distribution_policy and source.distribution_policy.jev_enabled) or (
+        elif source.acquisition_mode is not AcquisitionMode.MASSIVE_DISTRIBUTION and ((source.distribution_policy and source.distribution_policy.jev_enabled) or (
             source.source_id == "google_news_search_rss"
             and binding.source_parameters.get("require_relevance") is True
-        ):
+        )):
             await self.bus.storage.call(self.repository.decision, row, "L2_DUE", regex=False)
         else:
             await self.bus.storage.call(self.repository.decision, row, "IRRELEVANT", regex=False)

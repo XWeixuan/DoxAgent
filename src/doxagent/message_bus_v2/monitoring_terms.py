@@ -35,7 +35,7 @@ def language_requirements(
         if (
             source.source_id in subscribed and source.enabled and source.content_language
             and source.acquisition_mode
-            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
+            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION, AcquisitionMode.MASSIVE_DISTRIBUTION}
         ):
             requirements.setdefault(source.content_language, []).append(source.source_id)
     return {language: sorted(ids) for language, ids in sorted(requirements.items())}

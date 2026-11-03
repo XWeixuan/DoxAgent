@@ -67,8 +67,11 @@ class LiveRepository:
 
     @staticmethod
     def migrate(db):
+        from .test_delivery import install
+        install(db)
         for table, fields in {
             "live_articles": {
+                "delivery_mode": "TEXT NOT NULL DEFAULT 'production'",
                 "material_observed_at": "TEXT NOT NULL DEFAULT ''",
                 "attempts_json": "TEXT NOT NULL DEFAULT '[]'",
                 "validators_json": "TEXT NOT NULL DEFAULT '{}'",
@@ -164,6 +167,7 @@ class LiveRepository:
                 if isinstance(value, RawMessageInput)
                 else RawMessageInput.model_validate(value)
             )
+            message = message.model_copy(update={"metadata": {**message.metadata, "_delivery_mode": source.delivery_mode}})
             if target := mappings.get(message.url):
                 from urllib.parse import urlsplit
                 host = (urlsplit(target).hostname or '').removeprefix('www.')
@@ -212,7 +216,7 @@ class LiveRepository:
             origin = sha256_text(
                 canonical_json(
                     [
-                        source.source_id,
+                        source.source_id + (":test" if source.delivery_mode == "test" else ""),
                         locator or message.external_id or message.source_item_key or message.url,
                     ]
                 )
@@ -235,7 +239,7 @@ class LiveRepository:
                 message.published_at, context, utc_now(), message.publication_time_basis
             )
             legacy_known = None
-            if targets and not prior:
+            if targets and not prior and source.delivery_mode != "test":
                 first = self.bus.get_binding(targets[0][0])
                 legacy_known = self.bus.known_published_article(first, message) if first else None
                 if legacy_known:
@@ -322,6 +326,7 @@ class LiveRepository:
                     ibkr_native=ibkr_native,
                     ibkr_flash=ibkr_flash,
                     source_id=source.source_id,
+                    delivery_mode=source.delivery_mode,
                     url=message.url,
                     title=message.title or "",
                     observed=observed_at,
@@ -336,7 +341,7 @@ class LiveRepository:
                     unit=unit,
                     targets=targets,
                     admission=context.model_dump_json(),
-                    direct=source.acquisition_mode.value != "by_distribution",
+                    direct=not source.acquisition_mode.shared_distribution,
                     reason=reason if not legacy_known else None,
                     bootstrap=baseline,
                 )
@@ -399,7 +404,7 @@ class LiveRepository:
 
                     db.execute(
                         "INSERT INTO live_articles(article_key,source_id,url,publisher,material_hint,"
-                        "first_seen_at,input_ref,state,due_at,title,material_observed_at,work_kind) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "first_seen_at,input_ref,state,due_at,title,material_observed_at,work_kind,delivery_mode) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
                         (
                             key,
                             item["source_id"],
@@ -415,6 +420,7 @@ class LiveRepository:
                             item["title"],
                             item["observed"],
                             item["kind"],
+                            item.get("delivery_mode", "production"),
                         ),
                     )
                 elif changed or (
@@ -581,7 +587,7 @@ class LiveRepository:
             publishers = db.execute(
                 "SELECT publisher,min(due_at) first_due,max(first_seen_at) newest,max(first_seen_at>=? OR work_kind='content_update') urgent FROM live_articles "
                 "WHERE state='FETCH_DUE' AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
-                "GROUP BY publisher ORDER BY " + ('first_due,newest DESC' if background else 'urgent DESC,newest DESC,first_due') + " LIMIT 64",
+                "GROUP BY publisher ORDER BY min(delivery_mode='test')," + ('first_due,newest DESC' if background else 'urgent DESC,newest DESC,first_due') + " LIMIT 64",
                 (recent, stamp, int(background)),
             ).fetchall()
             rows = []
@@ -591,7 +597,7 @@ class LiveRepository:
                     rows += db.execute(
                         "SELECT article_key,input_revision FROM live_articles WHERE state='FETCH_DUE' "
                         "AND publisher=? AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
-                        "ORDER BY " + ('due_at,first_seen_at' if background else "(first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at") + " LIMIT ?",
+                        "ORDER BY (delivery_mode='test')," + ('due_at,first_seen_at' if background else "(first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at") + " LIMIT ?",
                         (publisher[0], stamp, int(background), *([] if background else [recent]), available),
                     ).fetchall()
                 if len(rows) >= limit:
@@ -605,7 +611,11 @@ class LiveRepository:
         if not rows:
             return []
         with self.bus.transaction() as db:
+            test_active = db.execute("SELECT count(*) FROM live_articles WHERE delivery_mode='test' AND state='FETCHING' AND lease_until>?", (stamp,)).fetchone()[0]
             for row in rows:
+                mode = db.execute('SELECT delivery_mode FROM live_articles WHERE article_key=?',(row[0],)).fetchone()[0]
+                if mode == 'test' and test_active:
+                    continue
                 token = new_id("live-fetch")
                 updated = db.execute(
                     "UPDATE live_articles SET state='FETCHING',claim_token=?,lease_until=?,"
@@ -616,6 +626,7 @@ class LiveRepository:
                 ).fetchone()
                 if updated:
                     claimed.append((row[0], updated[0], token))
+                    test_active += int(mode == "test")
         return claimed
 
     def get(self, key):
@@ -678,6 +689,7 @@ class LiveRepository:
         return job.model_copy(update={'fetch_round':row[0]})
 
     def prepare_result(self, job, message, *, outcome=None):
+        message = message.model_copy(update={"metadata": {**message.metadata, "_delivery_mode": job.source.delivery_mode}})
         meta = message.metadata.get("media_enrichment", {})
         native_only = job.source.content_enrichment_mode.value == "skip" or message.metadata.get(
             "body_not_applicable"
@@ -893,7 +905,7 @@ class LiveRepository:
                 ("canonical:" + value["canonical"], key, "resolved", "canonical", "", current[4], "[]"))
             db.execute(
                 "UPDATE live_deliveries SET state='PENDING',due_at=? WHERE article_key=? "
-                "AND ? AND (state='WAIT_BODY' OR (? AND state IN ('PUBLISHED','IRRELEVANT','NO_PUBLIC_BODY')))",
+                "AND ? AND (state='WAIT_BODY' OR (? AND state IN ('PUBLISHED','TEST_PUBLISHED','IRRELEVANT','NO_PUBLIC_BODY')))",
                 (stamp, key, int(not preserve_owner or usable), int(changed)),
             )
             if value.get("site_outcome"):
@@ -978,14 +990,14 @@ class LiveRepository:
         recent = (now - timedelta(minutes=30)).isoformat()
         with self.bus._connect() as db:
             rows = db.execute(
-                "SELECT d.*,a.result_ref,a.input_ref,a.body_digest,a.revision,a.first_seen_at,"
+                "SELECT d.*,a.result_ref,a.input_ref,a.body_digest,a.revision,a.first_seen_at,a.delivery_mode,"
                 "(a.first_seen_at>=? OR a.work_kind='content_update') foreground "
                 "FROM live_deliveries d JOIN live_articles a USING(article_key) "
                 "WHERE d.state=? AND d.due_at<=? AND a.result_ref IS NOT NULL "
                 + (
                     "ORDER BY d.due_at,d.article_key LIMIT ?"
                     if old_only
-                    else "ORDER BY foreground DESC,a.first_seen_at DESC,d.due_at,d.article_key LIMIT ?"
+                    else "ORDER BY (a.delivery_mode='test'),foreground DESC,a.first_seen_at DESC,d.due_at,d.article_key LIMIT ?"
                 ),
                 (recent, state, now.isoformat(), limit),
             ).fetchall()
@@ -1114,6 +1126,7 @@ class LiveRepository:
 
     def reserve_resolved(self, job, final_message, *, join_failure=False):
         """One canonical reservation before downloading; join an existing owner."""
+        final_message = final_message.model_copy(update={"metadata": {**final_message.metadata, "_delivery_mode": job.source.delivery_mode}})
         canonical = article_key(final_message, job.source.source_id)
         key = job.article_id
         stamp = utc_now().isoformat()
@@ -1199,6 +1212,9 @@ class LiveRepository:
 
         from .schema import IngestResult, RawProcessingStatus, StreamItem, StreamMember
 
+        if row.get("delivery_mode") == "test":
+            from .test_delivery import prepare
+            return prepare(self, bus, row, source, binding, message)
         key, ticker = row["article_key"], row["ticker"]
         lookup_fingerprint = message.metadata.get('v2_body_completion', {}).get('body_fingerprint')
         checked = set()
@@ -1289,7 +1305,7 @@ class LiveRepository:
                 "decision_ready_at": utc_now().isoformat(),
             },
         }
-        if source.acquisition_mode.value == "by_distribution":
+        if source.acquisition_mode.shared_distribution:
             metadata["distribution"] = {
                 "decision_id": f"live:{key}:{ticker}:{row['revision']}:{row['terms_revision']}",
                 "terms_revision": row["terms_revision"],
@@ -1386,6 +1402,9 @@ class LiveRepository:
         )
 
     def publish(self, prepared):
+        if prepared.get("test"):
+            from .test_delivery import commit
+            return commit(self, prepared)
         from doxagent.v2_control.mirror import state_in
 
         from .schema import PublicationMode

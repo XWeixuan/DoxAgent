@@ -321,7 +321,7 @@ class GlobalPollScheduler:
         for source, binding in due:
             if source.source_id == "corporate_ir_press_releases":
                 continue
-            if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+            if source.acquisition_mode.shared_distribution:
                 continue
             else:
                 for key, options in self.work_units(
@@ -336,7 +336,7 @@ class GlobalPollScheduler:
                     else:
                         tasks.append(task)
         for source, binding in eligible:
-            if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+            if source.acquisition_mode.shared_distribution:
                 shared.setdefault(source.source_id, (source, []))[1].append(binding)
         for source, bindings in shared.values():
             for key, targets, options in self.distribution_work_units(
@@ -549,7 +549,7 @@ class GlobalPollScheduler:
                     )
                 )
                 rate = count / binding.polling.target_interval_seconds
-                if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                if source.acquisition_mode.shared_distribution:
                     source_demand[source.source_id] = max(source_demand[source.source_id], rate)
                 else:
                     source_demand[source.source_id] += rate
@@ -592,9 +592,12 @@ class GlobalPollScheduler:
         from .pressure import background_allowed
 
         units = [
-            ("SHARED" if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION else "HEAD", {})
+            ("SHARED" if source.acquisition_mode.shared_distribution else "HEAD", {})
         ]
-        if source.adapter_ref == "builtin:technology_public@1":
+        if source.adapter_ref == "builtin:newswire_massive@1":
+            from .newswire_sources import endpoint_units
+            units = [(unit, {}) for unit in endpoint_units(source)]
+        elif source.adapter_ref == "builtin:technology_public@1":
             from .technology_sources import endpoint_units
 
             units = [(unit, {}) for unit in endpoint_units(source)]

@@ -668,7 +668,7 @@ export interface BindingConfig {
   editor: { parameter_form: boolean; parameter_form_id: string | null; json: true; polling_interval_form: true };
   writable_parameter_paths: string[];
   redacted_parameter_paths: string[];
-  monitoring_terms_usage: { acquisition_mode: "by_ticker" | "by_search" | "by_distribution"; terms_mode: "UNIFIED" | "LEGACY" | "UNCONFIGURED"; managed_parameter_paths: string[] };
+  monitoring_terms_usage: { acquisition_mode: "by_ticker" | "by_search" | "by_distribution" | "massive_distribution"; terms_mode: "UNIFIED" | "LEGACY" | "UNCONFIGURED"; managed_parameter_paths: string[] };
 }
 export interface MonitoringL1Concept { concept_id: string; expressions: Record<string, string> }
 export interface MonitoringL2Term {
@@ -686,7 +686,7 @@ export interface MonitoringTermsValue {
 export interface MonitoringTermsRequest { configuration: MonitoringTermsValue }
 export interface MonitoringTermsConsumer {
   source_id: string; name: string; binding_id: string;
-  acquisition_mode: "by_search" | "by_distribution";
+  acquisition_mode: "by_search" | "by_distribution" | "massive_distribution";
   content_language: string | null; source_enabled: boolean; binding_enabled: boolean;
   search_policy_mode: "or" | "separate" | null; jev_source_enabled: boolean | null;
   terms_mode: "UNIFIED" | "LEGACY" | "UNCONFIGURED";

@@ -201,6 +201,8 @@ class DomainProjectors:
         if table == "article_body_results":
             identity = value["fetch_key"]
             value = {k:v for k,v in value.items() if k not in {"content", "diagnostics"}}
+        if table in {"live_articles", "live_deliveries", "live_origins"} and str(value.get("article_key", "")).startswith("test_"):
+            return [], []
         if table=="live_articles":
             identity=value["article_key"]
             value={k:v for k,v in value.items() if k not in {'input_ref','result_ref','attempts_json','validators_json','claim_token','lease_until'}}

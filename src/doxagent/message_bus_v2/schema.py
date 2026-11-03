@@ -77,6 +77,11 @@ class AcquisitionMode(StrEnum):
     BY_TICKER = "by_ticker"
     BY_SEARCH = "by_search"
     BY_DISTRIBUTION = "by_distribution"
+    MASSIVE_DISTRIBUTION = "massive_distribution"
+
+    @property
+    def shared_distribution(self) -> bool:
+        return self in {self.BY_DISTRIBUTION, self.MASSIVE_DISTRIBUTION}
 
 
 class SearchPolicy(BusModel):
@@ -87,6 +92,7 @@ class SearchPolicy(BusModel):
 class DistributionPolicy(BusModel):
     jev_enabled: bool = False
     require_complete_body: bool = False
+    test_tickers: list[str] = Field(default_factory=list)
 
 
 class ContentEnrichmentMode(StrEnum):
@@ -210,6 +216,7 @@ class SourceDefinition(BusModel):
     kind: SourceKind = Field(validation_alias=AliasChoices("kind", "source_kind"))
     adapter_ref: str
     acquisition_mode: AcquisitionMode = AcquisitionMode.BY_TICKER
+    delivery_mode: Literal["production", "test"] = "production"
     entry_url: str | None = None
     content_language: str | None = None
     site_id: str | None = None

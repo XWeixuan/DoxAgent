@@ -57,7 +57,6 @@ class ConfigurationLoader:
 
     def __call__(self,settings,*,seeds=False):
         import sqlite3
-        from datetime import timedelta
         path=Path(settings.message_bus_v2_sqlite_path).resolve()
         with closing(sqlite3.connect(path.as_uri()+"?mode=ro",uri=True,timeout=.2)) as db:
             revision=db.execute("SELECT revision FROM bus_configuration WHERE id=1").fetchone()[0]
@@ -94,6 +93,10 @@ class Configuration:
     def allowed(self, binding, now, *, control=None):
         current = self.bindings.get(binding.binding_id)
         source = self.sources.get(binding.source_id)
+        if source and source.delivery_mode == "test":
+            return bool(current and current.enabled and source.enabled and current.polling.enabled
+                and current.polling.active_at(now) and current.version == binding.version
+                and (not control or control["sources"].get(source.source_id) == (source.version, True)))
         return bool(
             current
             and source
@@ -146,11 +149,18 @@ def load(settings, *, seeds=False):
         result.bindings = {
             b.binding_id: b for b in repo.list_bindings(active_only=True) if b.ticker in running
         }
+        from ..test_delivery import bindings as test_bindings
+        for source in result.sources.values():
+            for binding in test_bindings(source):
+                result.bindings[binding.binding_id] = binding
+        running |= {b.ticker for b in result.bindings.values()}
         terms = MonitoringTermsService(repo)
         result.terms = {t: terms.get(t) for t in running}
         result.override = CollectionControl(repo).status(include_applied=False)
         if seeds:
             for b in result.bindings.values():
+                if result.sources[b.source_id].delivery_mode == "test":
+                    continue
                 if b.binding_id in existing:
                     continue  # Already owned by Collector; do not hydrate obsolete Native poll state at restart.
                 result.seeds[b.binding_id] = repo.get_poll_state(b)

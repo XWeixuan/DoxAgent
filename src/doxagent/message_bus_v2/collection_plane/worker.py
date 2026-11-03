@@ -187,7 +187,7 @@ class Collector:
                 ]
             for unit, options in units:
                 options={**options,'coverage_required':required_unit(s.source_id,unit)}
-                shared = s.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
+                shared = s.acquisition_mode.shared_distribution
                 key = (s.source_id if shared else b.binding_id, unit)
                 if key not in desired:
                     desired[key] = [s, [], unit, options]
@@ -198,7 +198,7 @@ class Collector:
         groups = defaultdict(float)
         limiter_rates=defaultdict(float)
         for key, (s, targets, unit, options) in desired.items():
-            if s.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+            if s.acquisition_mode.shared_distribution:
                 options['roster']=sha256_text(canonical_json(sorted(b.binding_id for b in targets)))
                 prior=self.states.get((targets[0].binding_id,unit),{}).get('state',{})
                 options['force_refresh']=prior.get('association_roster')!=options['roster']
@@ -313,7 +313,7 @@ class Collector:
                     sorted((b.binding_id,b.version) for b in targets),
                     options.get('schedule_phase_key'),
                     source.default_parameters,
-                    None if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
+                    None if source.acquisition_mode.shared_distribution
                     else targets[0].source_parameters,
                     options.get("query_plan_override"),
                     options["ir_spec"].fingerprint if "ir_spec" in options else None,
@@ -522,7 +522,7 @@ class Collector:
                             checkpoint,
                             recovery=options.get("recovery", False),
                         )
-                    elif source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                    elif source.acquisition_mode.shared_distribution:
                         result = await adapter.poll_shared(
                             SharedPollContext(
                                 run_id=run_id,
@@ -709,14 +709,14 @@ class Collector:
         payload = {
             "generation": self.states[(targets[0].binding_id, unit)]["generation"],
             "source_id": source.source_id,
+            "delivery_mode":source.delivery_mode,
             "targets":target_refs,
             "result":{"messages":[m.model_dump(mode="json") for m in messages]},
             "bootstrap":bootstrap,"admission":context.model_dump(mode="json")}
         target_scope=sorted({b.ticker for b in targets})
-        keys=[sha256_text(canonical_json([source.source_id,article_key(m,source.source_id),
+        keys=[sha256_text(canonical_json([source.source_id + (":test" if source.delivery_mode == "test" else ""),article_key(m,source.source_id),
               update_hint(m),target_scope])) for m in messages]
         payload["input_keys"] = keys
-        fingerprint = sha256_text(canonical_json(sorted(keys))) if keys else ""
         for offset in range(0,len(messages),32):
             part={**payload,"result":{"messages":payload["result"]["messages"][offset:offset+32]},
                   "input_keys":keys[offset:offset+32]}

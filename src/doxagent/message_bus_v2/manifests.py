@@ -94,6 +94,7 @@ def initial_sources() -> list[SourceDefinition]:
     from .technology_sources import initial_sources as technology_sources
     from .energy_catalog import initial_sources as energy_sources
     from .thefly_source import initial_source as initial_fly_source
+    from .newswire_sources import initial_sources as massive_sources
 
     string_array = {"type": "array", "items": {"type": "string", "minLength": 1}}
     ticker_locator = {
@@ -393,6 +394,7 @@ def initial_sources() -> list[SourceDefinition]:
             distribution_policy=DistributionPolicy(jev_enabled=True),
             minimum_request_gap_seconds=0,
         ),
+        *massive_sources(),
     ]
 
 

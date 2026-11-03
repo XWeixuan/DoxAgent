@@ -653,19 +653,21 @@ class MessageBusV2Service:
     ) -> TickerSourceBinding:
         source = self.require_source(source_id)
         binding_id = binding_id_for(ticker, source.source_id)
+        if source.delivery_mode == "test":
+            raise ValueError("test source targets are configured on the source, not ticker subscriptions")
         current = self.repository.get_binding(binding_id, include_tombstoned=True)
         if (
             current is None
             and actor is not UpdateActor.SYSTEM
             and not legacy_default_profile
             and source.acquisition_mode
-            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
+            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION, AcquisitionMode.MASSIVE_DISTRIBUTION}
         ):
             from .monitoring_terms import MonitoringTermsService
 
             if MonitoringTermsService(self.repository).get(ticker) is None:
                 raise ValueError("monitoring terms required before new search/distribution binding")
-        if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+        if source.acquisition_mode.shared_distribution:
             if source_parameters not in (None, {}, source.default_parameters):
                 raise ValueError("distribution entry parameters belong to SourceDefinition")
             if polling is not None and any(
@@ -724,7 +726,7 @@ class MessageBusV2Service:
             raise KeyError(f"binding not found: {binding_id}")
         updated = self._patched_binding(current, patch, actor=actor, reason=reason)
         source = self.require_source(updated.source_id)
-        if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+        if source.acquisition_mode.shared_distribution:
             if updated.source_parameters != current.source_parameters:
                 raise ValueError("distribution entry parameters belong to SourceDefinition")
             if updated.polling.target_interval_seconds != current.polling.target_interval_seconds:
