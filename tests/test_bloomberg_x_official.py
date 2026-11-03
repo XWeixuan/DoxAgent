@@ -140,26 +140,28 @@ def test_sitemap_and_rss_teasers_share_one_article_and_one_body_owner(tmp_path):
     assert len(live.claim(limit=10))==1
 
 
-async def test_bloomberg_podcast_description_cannot_be_full_or_trigger_network():
+@pytest.mark.parametrize('media_path',['audio','videos'])
+async def test_bloomberg_podcast_description_cannot_be_full_or_trigger_network(media_path):
     from doxagent.content_enrichment.extractor import SharedContentExtractor
     from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
     record=MediaEnrichmentRecord(standard_message_id='audio',raw_message_id='audio',source_id='bloomberg_massive',
-        ticker='MU',title='Apple holiday outlook podcast',body='',url='https://www.bloomberg.com/news/audio/2026-11-04/podcast',raw_url=None,source_name='Bloomberg')
+        ticker='MU',title='Apple holiday outlook podcast',body='',url=f'https://www.bloomberg.com/news/{media_path}/2026-11-04/podcast',raw_url=None,source_name='Bloomberg')
     extractor=SharedContentExtractor(browser_enabled=False)
     async def forbidden():raise AssertionError('Audio description started network extraction')
     extractor.start=forbidden
     result=await extractor.extract_version(record,'body_v2.2')
     assert not result.succeeded and result.diagnostics['outcome']=='PARTIAL'
-    assert result.reason=='audio_requires_transcript'
+    assert result.reason=='media_requires_transcript'
 
 
-def test_cached_bloomberg_audio_full_result_is_downgraded(tmp_path):
+@pytest.mark.parametrize('media_path',['audio','videos'])
+def test_cached_bloomberg_audio_full_result_is_downgraded(tmp_path,media_path):
     from doxagent.message_bus_v2.live import LiveQueue
     from doxagent.message_bus_v2.test_delivery import bindings
     from tests.test_content_enrichment_hub import _message
     repo,bus,_,_=_setup(tmp_path);source=next(s for s in initial_sources() if s.source_id=='bloomberg_massive')
     repo.save_source(source);binding=bindings(source)[0];live=LiveQueue(bus).repository
-    message=_message(999).model_copy(update={'url':'https://www.bloomberg.com/news/audio/2026-11-04/podcast',
+    message=_message(999).model_copy(update={'url':f'https://www.bloomberg.com/news/{media_path}/2026-11-04/podcast',
         'metadata':{'media_enrichment':{'succeeded':True,'outcome':'FULL'}}})
     rows=live.prepare_input(source,[(binding.binding_id,binding.ticker,0)],[message],observed_at=utc_now().isoformat(),unit='TEST:WIRE:news')
     live.accept(rows)
@@ -167,4 +169,28 @@ def test_cached_bloomberg_audio_full_result_is_downgraded(tmp_path):
         work_kind='new_article',fetch_round=0,execution_spent_ms=0)
     prepared=live.prepare_result(job,message)
     assert prepared['success'] is False and prepared['outcome']=='PARTIAL'
-    assert prepared['error']=='audio_requires_transcript'
+    assert prepared['error']=='media_requires_transcript'
+
+
+async def test_account_rule_refresh_keeps_the_existing_stream_connection():
+    import asyncio
+    source=initial_source();binding=SimpleNamespace(binding_id='MU:x_official_posts',version=1)
+    current={'microntech':[binding]};writes={}
+    owner=SimpleNamespace(settings=SimpleNamespace(x_bearer_token='test'),store=SimpleNamespace(meta=lambda k,v:writes.update(v)))
+    stream=OfficialStream(owner,client=object());stream.roster=lambda:(source,current)
+    reconciled=[];started=asyncio.Event();updated=asyncio.Event();stop=asyncio.Event();connections=[]
+    async def reconcile(accounts):
+        reconciled.append(sorted(accounts))
+        if len(reconciled)>1:updated.set()
+    async def consume():
+        connections.append(True);stream.health['state']='CONNECTED';started.set()
+        await stop.wait()
+    stream.reconcile=reconcile;stream.consume=consume
+    task=asyncio.create_task(stream.run(stop))
+    try:
+        await asyncio.wait_for(started.wait(),3)
+        current['intel']=[binding]
+        await asyncio.wait_for(updated.wait(),3)
+        assert len(connections)==1 and reconciled==[['microntech'],['intel','microntech']]
+    finally:
+        stop.set();await asyncio.wait_for(task,3)

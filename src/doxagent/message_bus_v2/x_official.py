@@ -150,11 +150,17 @@ class OfficialStream:
                         if consumer.done():await consumer
                         _,current=self.roster()
                         fresh=tuple((a,tuple((b.binding_id,b.version) for b in bs)) for a,bs in sorted(current.items()))
-                        if fresh!=signature:break
+                        if fresh!=signature:
+                            await self.reconcile(current)
+                            signature=fresh
+                            await self.status(self.health.get('state','CONNECTING'),accounts=sorted(current))
+                            if not current:break
                         if monotonic()-healthy_since>=60:failures=0
-                    if not current:await self.reconcile({})
                 except asyncio.CancelledError:raise
                 except Exception as exc:
+                    if consumer:
+                        consumer.cancel();await asyncio.gather(consumer,return_exceptions=True)
+                        consumer=None
                     failures+=1
                     code=exc.response.status_code if isinstance(exc,httpx.HTTPStatusError) else None
                     delay=300 if code in {401,402,403} else min(60,2**min(failures,6))
