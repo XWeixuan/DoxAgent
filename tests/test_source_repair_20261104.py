@@ -37,6 +37,7 @@ def test_sdx_identity_configuration_is_isolated_and_idempotent(tmp_path):
     assert primary.egress_id != backup.egress_id
     assert primary.runtime_kind == backup.runtime_kind == "external_chrome"
     assert backup.lifecycle.idle_seconds == 120
+    assert repository.get_strategy("sdxcentral").auth.verification_kind == "public_access"
     configure(repository)
     assert repository.get_identity(primary.identity_id).revision == primary.revision
     assert GovernanceRepository(repository).get_scope(scope.scope_id).revision == scope.revision

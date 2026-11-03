@@ -20,3 +20,21 @@
 本地初轮 134 项回归通过，覆盖三类来源解析、正文、CSE 有界刷新、NRC 运营方过滤、SDxCentral 身份配置及同 scope 的 CRAWLER/BODY 调用。修复前独立读取已得到 SDxCentral 28 条真实新闻和 3,442 字符 FULL 正文。生产发布及自然轮询结果见后续收尾记录。
 
 NRC 当前三条事件分别属于 Cooper、Veterans Health Administration、Team Industrial Services；Cooper 的官方运营方为 Nebraska Public Power District，均不属于 CEG。正常零条不等于来源失败。此修复不回填超出既有时效窗口的旧消息，不承诺消除外站未来的风控变化，不将一次成功等同长期稳定。
+
+## 生产收尾
+
+运行代码 `35a7396e03c722d703ccb4a51084ef21488bef46` 已推送 main，并按标准精确 SHA 流程重建、发布 Collector、Content Enrichment、Site Access。Supervisor 容器仍为 `37881d9a4b92`，启动时间仍为 11-01 22:08 UTC；其他既有 Profile 未重建。三个角色六处相关模块哈希与提交内容一致。后续仅补部署配置脚本和验收文档，不需要因此重建业务容器。
+
+完整自然观察窗 **UTC 2026-11-03 19:22:45—19:31:44**（北京时间 11-04 03:22:45—03:31:44）：
+
+| 来源 | 去重物理 listing 成功 | 实际范围 | 观察窗内采集失败 |
+| --- | ---: | --- | ---: |
+| Calcalist | 30 | ONDS 三个搜索词各 9 次，尾页 3 次；已跨一次 300 秒令牌续期 | 0 |
+| NRC | 9 | CEG；一次辅助运营方表读取，checkpoint 保留 55 个电站映射；没有符合 CEG 的当日报告 | 0 |
+| SDxCentral | 9 | COHR / INTC / MU / NBIS / SNOW 各接纳 9 次同一共享采集，不能当 45 次网站访问 | 0 |
+
+自然采集的三类来源最新单元错误均已清除。Calcalist 的尾页启停属于调度状态，不计为采集失败。抽样 BODY：Calcalist 希伯来文文章 **FULL / 4,012 字符**，NRC 原生 Cooper 事件 **FULL / 1,478 字符**（仅验证抽取、不向 CEG 发布），SDxCentral **FULL / 3,405 字符**。这些是正文能力验收，不能冒充观察窗内新文章的业务发布量。
+
+SDxCentral 备用的第一次限定身份请求返回 ACCESS_EXHAUSTED，触发现有异步冷 canary；随后实际备用 listing 请求成功 200。BODY 首次也存在 canary/预算延期，保留失败回执；冷校验后最终限定备用的真实 BODY 请求为 **SUCCESS / 200 / FULL / 3,405 字符**。主身份恢复操作 DONE/ready=true；验收没有将临时延期写成全程成功。主备出口实测为两个不同 IP，地区记录均为 DE。维护验证改为 `public_access`，配置了一条已验证的公开正文 URL，不要求订阅鉴权。
+
+相关回归 **134 + 65 = 199 项通过**，另在最终公开验证配置修改后重跑 4 项配置/接口测试通过。此为约九分钟观察结果，不是数日无人值守稳定性的证明。Calcalist 的旧 403 原始响应缺口仍保留，不能把本轮修复过的令牌缺陷等同于所有历史 403 的唯一已证实原因。

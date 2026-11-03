@@ -2612,3 +2612,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 三消息源修复：Calcalist 补 CSE 请求令牌失效识别、缩短缓存并有界刷新旧令牌403；NRC兼容核电Facility事件，按官方运营方表缓存映射后过滤Licensee；SDxCentral采集及BODY接入独立正式Chrome主备与真实listing契约，保留Supervisor/Profile。
 
 2026-11-04 Bloomberg播客质量修正：自然测试抽样发现节目简介误标FULL，音频页改记PARTIAL/audio_requires_transcript且不请求无字幕正文；结果提交同时防止旧缓存再冒充FULL，新增隔离测试撤回脚本保留审计与原始证据，不动正式消息。20项专项通过；退役脚本保留旧绑定原参数。
+
+2026-11-04 三消息源验收收尾：SDxCentral采用public_access及已验证公开文章，冷备listing和FULL正文链通过并恢复主身份；三源约九分钟自然轮询无采集失败，199项相关测试通过，保留冷校验延期和历史CSE响应缺口。

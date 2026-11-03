@@ -13,6 +13,7 @@ from doxagent.site_strategy.schema import (
 )
 
 SCOPE = "source:sdxcentral_news"
+BODY_CANARY = "https://www.sdxcentral.com/news/broadcom-kills-vmware-telco-cloud-platform-standalone-license-option/"
 
 
 def configure(repository, *, primary_egress="de-standard-1", fallback_egress="nl-standard-2"):
@@ -40,15 +41,23 @@ def configure(repository, *, primary_egress="de-standard-1", fallback_egress="nl
             access=AccessPolicy(combinations=[AccessCombination(id=member, identity_id=member,
                 priority=index) for index, member in enumerate(members)],
                 max_concurrency=1, min_interval_ms=3000, crawler_queue_timeout_ms=30000),
-            auth=AuthPolicy(maintenance_url="https://www.sdxcentral.com/news/"),
+            auth=AuthPolicy(maintenance_url="https://www.sdxcentral.com/news/",
+                verification_url=BODY_CANARY, verification_kind="public_access"),
             body=BodyStrategyPointer(ref="builtin:generic@1", access_order=["browser"])),
             expected_revision=None, actor="ops:sdxcentral-browser")
+    # One-time upgrade of this rollout's original empty verification policy.
+    # Never overwrite an operator's existing article choice.
+    current = repository.get_strategy("sdxcentral")
+    if not current.auth.verification_url:
+        repository.apply_strategy(current.model_copy(update={"auth":current.auth.model_copy(
+            update={"verification_url":BODY_CANARY, "verification_kind":"public_access"})}),
+            expected_revision=current.revision, actor="ops:sdxcentral-public-verification")
     if governance.get_scope(SCOPE) is None:
         governance.apply_scope(SourceAccessScope(scope_id=SCOPE, source_id="sdxcentral_news",
             owner_site_id="sdxcentral", primary_identity_id=members[0],
             fallback_identity_id=members[1], verification_plan={"default_publisher":True,
                 "crawler":{"url":"https://www.sdxcentral.com/news/"},
-                "fallback_state":"UNVERIFIED"}), expected_revision=None)
+                "body_url":BODY_CANARY, "fallback_state":"UNVERIFIED"}), expected_revision=None)
     return {"scope_id":SCOPE, "identities":members}
 
 
