@@ -344,6 +344,47 @@ async def test_nrc_search_matches_licensee_field_and_native_body_never_fetches(t
     repo.close()
 
 
+async def test_nrc_power_reactor_facility_resolves_operator_without_matching_narrative(tmp_path):
+    from doxagent.message_bus_v2.energy_sources import NRC_OPERATORS_URL
+    from doxagent.message_bus_v2.poll_trace import REQUEST_ROLE
+
+    repo, bus = setup_bus(tmp_path)
+    configure(bus)
+    source = repo.get_source("nrc_event_notifications")
+    binding = repo.get_binding("CEG:" + source.source_id)
+    raw = (FIXTURES / "nrc_events.html").read_text(encoding="utf-8")
+    raw = raw.replace("<b>Licensee:</b> Whitestone Associates Inc.", "<b>Facility:</b> Calvert Cliffs")
+    # The other licensee mentions CEG but must not be included.
+    raw = raw.replace("LOST RADIOACTIVE MATERIAL", "Constellation Energy LOST RADIOACTIVE MATERIAL")
+    table = '''<table><tr><th>Plant Name Docket Number</th><th>License</th><th>Type</th>
+    <th>Location</th><th>Owner/Operator</th></tr>
+    <tr><td>Calvert Cliffs 1 05000317</td><td/><td/><td/><td>Constellation Energy Generation, LLC</td></tr>
+    <tr><td>Cooper 05000298</td><td/><td/><td/><td>Nebraska Public Power District</td></tr></table>'''
+    roles = []
+    async def fetch(url, spec, **kwargs):
+        roles.append((url, REQUEST_ROLE.get()))
+        return Capture(200, url, table if url == NRC_OPERATORS_URL else raw, {})
+    http = SimpleNamespace(fetch=AsyncMock(side_effect=fetch))
+    adapter = EnergyAdapter(http)
+    context = PollContext(source=source, binding=binding, ticker="CEG",
+        acquisition_unit=next(iter(endpoint_units(source))), requested_at=NOW,
+        request_permit=permit, query_plan={"queries": []})
+    result = await adapter.poll(context)
+    assert len(result.messages) == 1
+    message = result.messages[0]
+    assert not message.raw_payload["licensee"]
+    assert message.raw_payload["facility"] == "Calvert Cliffs"
+    assert message.raw_payload["reactor_operator"] == "Constellation Energy Generation, LLC"
+    assert (NRC_OPERATORS_URL, "article") in roles
+    assert "nrc_reactor_operators" in result.next_checkpoint
+    # Repeated polls reuse the official table; unrelated reactor is excluded.
+    raw = raw.replace("Calvert Cliffs", "Cooper")
+    result = await adapter.poll(context)
+    assert result.messages == []
+    assert sum(url == NRC_OPERATORS_URL for url, _ in roles) == 1
+    repo.close()
+
+
 async def test_real_hub_accepts_complete_nrc_event_and_article_once(tmp_path):
     repo, bus = setup_bus(tmp_path)
     configure(bus)

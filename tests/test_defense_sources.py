@@ -28,6 +28,40 @@ from scripts.ops.configure_defense_sources import configure
 
 FIXTURES = Path(__file__).parent / "fixtures" / "defense_sources"
 NOW = datetime(2026, 10, 24, tzinfo=UTC)
+
+
+async def test_calcalist_refreshes_expired_request_token_once_without_retrying_access_denial():
+    bootstrap = '{"cse_token":"fresh", "cselibVersion":"v1"}'
+    invalid = '{"error":{"message":"Invalid request token.","errors":[{"reason":"forbidden"}]}}'
+    http = SimpleNamespace(fetch=AsyncMock(side_effect=[
+        Capture(403, "https://cse.google.com/cse/element/v1", invalid, {}),
+        Capture(200, "https://cse.google.com/cse.js", bootstrap, {}),
+        Capture(200, "https://cse.google.com/cse/element/v1", '{"results":[]}', {}),
+    ]))
+    adapter = DefenseAdapter(http)
+    adapter.cse = (float("inf"), {"cse_token":"stale", "cselibVersion":"v1"})
+    assert (await adapter._search(ENDPOINTS["calcalist_search"], "ONDS")).status == 200
+    assert http.fetch.await_count == 3
+    denied = SimpleNamespace(fetch=AsyncMock(return_value=Capture(403,
+        "https://cse.google.com/cse/element/v1", '{"error":{"message":"Access denied"}}', {})))
+    adapter = DefenseAdapter(denied)
+    adapter.cse = (float("inf"), {"cse_token":"current", "cselibVersion":"v1"})
+    with pytest.raises(RuntimeError, match="calcalist_search_http_403"):
+        await adapter._search(ENDPOINTS["calcalist_search"], "ONDS")
+    assert denied.fetch.await_count == 1
+
+
+async def test_calcalist_generic_403_refreshes_only_aged_token_and_is_bounded():
+    import time
+    endpoint = ENDPOINTS["calcalist_search"]
+    denied = Capture(403, endpoint.urls[0], '{"error":{"message":"Forbidden"}}', {})
+    bootstrap = Capture(200, endpoint.urls[0], '{"cse_token":"new", "cselibVersion":"v1"}', {})
+    http = SimpleNamespace(fetch=AsyncMock(side_effect=[denied, bootstrap, denied]))
+    adapter = DefenseAdapter(http)
+    adapter.cse = (time.monotonic() + 180, {"cse_token":"old", "cselibVersion":"v1"})
+    with pytest.raises(RuntimeError, match="calcalist_search_http_403"):
+        await adapter._search(endpoint, "ONDS")
+    assert http.fetch.await_count == 3
 FILES = dict(
     zip(
         [e.source_id for e in CATALOG],

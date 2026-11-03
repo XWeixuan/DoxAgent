@@ -18,6 +18,33 @@ from .schema import SharedPollContext, canonical_json, sha256_text
 from .technology_sources import TechnologyAdapter, TechnologyHttp, article
 from .technology_sources import parse_listing as parse_feed
 
+NRC_OPERATORS_URL = "https://www.nrc.gov/facilities-safety/operating-reactors/list-power-reactor-units"
+
+
+def reactor_key(value):
+    # Daily reports use station names; the official table adds unit/docket numbers.
+    return re.sub(r"[^a-z]", "", value.casefold())
+
+
+def parse_reactor_operators(raw):
+    operators = {}
+    for table in html.fromstring(raw).xpath("//table"):
+        headings = [text(node) for node in table.xpath(".//th")]
+        if not any("Owner/Operator" in value for value in headings):
+            continue
+        for row in table.xpath(".//tr[td]"):
+            cells = row.xpath("./td")
+            if len(cells) < 5:
+                continue
+            key, operator = reactor_key(text(cells[0])), text(cells[4])
+            if key and operator:
+                if key in operators and operators[key] != operator:
+                    raise ValueError("nrc_reactor_operator_ambiguous:" + key)
+                operators[key] = operator
+    if not operators:
+        raise ValueError("nrc_reactor_operator_table_changed")
+    return operators
+
 
 def text(node):
     return " ".join(" ".join(node.itertext()).split()) if node is not None else ""
@@ -48,9 +75,9 @@ def parse_events(spec, doc, now):
         if not re.fullmatch(r"en\d+", grid.get("id", "")):
             continue
         event_id = grid.get("id")[2:]
-        licensee = field(grid, "Licensee")
-        if not licensee:
-            raise ValueError("nrc_event_licensee_missing")
+        licensee, facility = field(grid, "Licensee"), field(grid, "Facility")
+        if not licensee and not facility:
+            raise ValueError("nrc_event_licensee_or_facility_missing")
         siblings, event_body = [], None
         for node in grid.itersiblings():
             if re.fullmatch(r"en\d+", node.get("id", "")):
@@ -75,7 +102,7 @@ def parse_events(spec, doc, now):
         message = _message(
             source="NRC",
             url=dated_url + "?" + urlencode({"event": event_id}),
-            title=f"NRC EN {event_id} | {licensee} | {first_line[:220]}",
+            title=f"NRC EN {event_id} | {licensee or facility} | {first_line[:220]}",
             summary=first_line,
             published_at=stamp,
             basis="EXACT",
@@ -84,6 +111,7 @@ def parse_events(spec, doc, now):
             payload={
                 "event_id": event_id,
                 "licensee": licensee,
+                "facility": facility,
                 "event_html": native,
                 "content_hash": version,
                 "updated_at": field(grid, "Last Update Date"),
@@ -245,6 +273,27 @@ class EnergyHttp:
 class EnergyAdapter(TechnologyAdapter):
     def __init__(self, http=None):
         super().__init__(EnergyHttp(http), sources=SOURCES, parser=parse_listing)
+        self.reactor_operators = None
+        self.reactor_lock = asyncio.Lock()
+
+    async def _operators(self, context, spec):
+        from .poll_trace import REQUEST_ROLE
+
+        async with self.reactor_lock:
+            cache = self.reactor_operators or context.checkpoint.get("nrc_reactor_operators")
+            now = context.requested_at.timestamp()
+            if not cache or now - cache["fetched_at"] >= 86400:
+                token = REQUEST_ROLE.set("article")
+                try:
+                    async with context.request_permit():
+                        capture = await self.http.fetch(NRC_OPERATORS_URL, spec)
+                    if capture.status != 200:
+                        raise ValueError(f"nrc_operators_http_{capture.status}")
+                    cache = {"fetched_at": now, "operators": parse_reactor_operators(capture.text)}
+                finally:
+                    REQUEST_ROLE.reset(token)
+            self.reactor_operators = cache
+            return cache
 
     async def poll_shared(self, context):
         result = await super().poll_shared(context)
@@ -281,9 +330,24 @@ class EnergyAdapter(TechnologyAdapter):
                 return " ".join(re.findall(r"\w+", value.casefold()))
 
             terms = [normalize(value) for value in aliases]
+            reactors = [m for m in result.messages if not m.raw_payload["licensee"]]
+            cache = context.checkpoint.get("nrc_reactor_operators")
+            if reactors:
+                cache = await self._operators(context, spec)
+                for message in reactors:
+                    facility = message.raw_payload["facility"]
+                    operator = cache["operators"].get(reactor_key(facility))
+                    if not operator:
+                        raise ValueError("nrc_reactor_operator_unknown:" + facility)
+                    message.raw_payload.update(reactor_operator=operator,
+                                               operator_reference_url=NRC_OPERATORS_URL)
+            if cache:
+                result.next_checkpoint["nrc_reactor_operators"] = cache
             result.messages = [
                 message
                 for message in result.messages
-                if any(term in normalize(message.raw_payload["licensee"]) for term in terms)
+                if any(term in normalize(message.raw_payload["licensee"] or
+                                         message.raw_payload.get("reactor_operator", ""))
+                       for term in terms)
             ]
         return result

@@ -15,7 +15,7 @@ from .technology_sources import SOURCES, TechnologyHttp
 
 class TechnologyBodyReader:
     def __init__(self, http=None, *, sources=None):
-        self.http = http or TechnologyHttp()
+        self.http = http or TechnologyHttp(purpose="BODY")
         self.sources = sources if sources is not None else SOURCES
 
     async def close(self):

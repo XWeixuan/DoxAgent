@@ -561,7 +561,7 @@ def _cse_token_invalid(raw):
             str(item.get('reason', '')) for item in error.get('errors', []))
     except (ValueError, TypeError, AttributeError):
         return False
-    return bool(re.search(r'(?:invalid|expired)[ _-]*(?:cse[ _-]*)?token|(?:cse_tok|token).{0,40}(?:invalid|expired)', text, re.I))
+    return bool(re.search(r'(?:invalid|expired)[ _-]*(?:(?:cse|request)[ _-]*)?token|(?:cse_tok|token).{0,40}(?:invalid|expired)', text, re.I))
 
 
 class DefenseAdapter:
@@ -589,8 +589,8 @@ class DefenseAdapter:
                         if not found:
                             raise ValueError("calcalist_cse_bootstrap_contract_changed")
                         fields[name] = found[1]
-                    self.cse = (time.monotonic() + 900, fields)
-            fields = self.cse[1]
+                    self.cse = (time.monotonic() + 300, fields)
+                token_expires_at, fields = self.cse
             params = {
                 "rsz": "filtered_cse",
                 "num": "10",
@@ -613,12 +613,18 @@ class DefenseAdapter:
                 "https://cse.google.com/cse/element/v1?" + urlencode(params), e
             )
             if capture.status != 200:
-                if attempt == 0 and _cse_token_invalid(capture.text):
+                # CSE can reject an aged, request-bound token with a generic
+                # forbidden response. Refresh that cached credential once on
+                # the same route; a fresh-token refusal remains a real error.
+                aged = token_expires_at - time.monotonic() <= 240
+                if attempt == 0 and (_cse_token_invalid(capture.text) or
+                                     (capture.status == 403 and aged)):
                     async with self.cse_lock:
                         if self.cse and self.cse[1] is fields:
                             self.cse = None
                     continue
                 raise RuntimeError(f"calcalist_search_http_{capture.status}")
+            capture.cse_token_refreshed = bool(attempt)
             return capture
 
     async def poll(self, context: PollContext):
@@ -773,6 +779,8 @@ class DefenseAdapter:
                         "unchanged_items": unchanged,
                         "route": e.route,
                         "transport_retries": capture.transport_retries,
+                        **({"cse_token_refreshed": capture.cse_token_refreshed}
+                           if e.parser == "calcalist" else {}),
                     }
                 )
             except Exception as exc:

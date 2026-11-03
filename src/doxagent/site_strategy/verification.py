@@ -248,6 +248,10 @@ def crawler_capture_items(source_id, response, request):
     now = utc_now()
     if source_id == "reuters_site_search":
         return reuters_listing_rows(response.body, request, response.final_url)
+    if source_id == "sdxcentral_news":
+        from doxagent.message_bus_v2.technology_sources import SOURCES, parse_listing
+
+        return parse_listing(SOURCES[source_id], response.body, response.final_url, now) or None
     if source_id == "ctee_semiconductor":
         from doxagent.message_bus_v2.ctee import parse_category_item, parse_category_response
 

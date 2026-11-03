@@ -153,6 +153,7 @@ FAMILIES = (
         ("https://www.sdxcentral.com/news/",),
         COMMON,
         parser="sdxcentral",
+        transport="browser",
     ),
     TechnologySource(
         "wccftech_hardware",
@@ -268,13 +269,39 @@ class Capture:
 class TechnologyHttp:
     """Reuse inside a publisher; isolate failures between unrelated publishers."""
 
-    def __init__(self, session=None):
+    def __init__(self, session=None, *, purpose="CRAWLER", browser_client=None):
         from .publisher_http import PublisherClients
         self.clients = PublisherClients(session=session)
         self.session = session  # Injection compatibility; production clients are publisher-local.
         self.stdlib_slots = asyncio.Semaphore(4)
+        self.purpose = purpose
+        self.browser_client = browser_client
+
+    async def _browser_fetch(self, url, spec):
+        from doxagent.settings import DoxAgentSettings
+        from doxagent.site_strategy.client import SiteAccessClient, SiteAccessError
+        from doxagent.site_strategy.schema import AccessRequest, AccessMode, SitePurpose
+        from doxagent.site_strategy.tokens import read_token
+        from .schema import new_id
+
+        if not spec.accepts(url):
+            raise ValueError("technology_browser_host_not_approved")
+        if self.browser_client is None:
+            settings = DoxAgentSettings()
+            self.browser_client = SiteAccessClient(settings.site_access_url, token=read_token(
+                settings.site_access_worker_token, settings.site_access_worker_token_file))
+        result = await self.browser_client.execute(AccessRequest(
+            operation_id=new_id("technology"), origin_scope_id=f"source:{spec.source_id}",
+            purpose=SitePurpose(self.purpose), url=url, mode=AccessMode.BROWSER,
+            remaining_budget_ms=90_000))
+        if result.disposition.value != "SUCCESS":
+            raise SiteAccessError(result)
+        return Capture(result.status_code or 200, result.final_url or url,
+                       result.body, result.headers)
 
     async def fetch(self, url, spec, *, headers=None, method="GET", json_body=None):
+        if spec.transport == "browser":
+            return await self._browser_fetch(url, spec)
         from .http_routes import HTTP_EGRESSES
         from .publisher_http import http_budget
         from .schema import utc_now
@@ -327,6 +354,8 @@ class TechnologyHttp:
 
     async def close(self):
         await self.clients.close()
+        if self.browser_client is not None:
+            await self.browser_client.close()
 
 
 def plain(text):
@@ -542,6 +571,10 @@ class TechnologyAdapter:
                     }
                 )
             except Exception as exc:
+                if spec.transport == "browser":
+                    from doxagent.site_strategy.client import SiteAccessError
+                    if isinstance(exc, SiteAccessError):
+                        raise
                 state["failures"] = state.get("failures", 0) + 1
                 state["error"] = type(exc).__name__ + ":" + str(exc)[:180]
                 state.setdefault("retry_at", None)
