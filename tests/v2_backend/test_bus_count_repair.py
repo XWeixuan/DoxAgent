@@ -35,7 +35,11 @@ def test_older_gap_recovery_counts_message_after_newer_raw_link(tmp_path):
 
     # Older source data still cannot overwrite the current message.
     store.ingest('bus', 'stale-message:9', [{**message(), 'day': '2026-10-24'}], position=9)
-    assert counts(store, 'INTC', after, {}, ['2026-10-25'])[0] == Decimal(1)
+    with store.connect() as db:
+        current = store.highwater(db)
+        assert db.execute("SELECT day FROM object_current WHERE kind='message'").fetchone()[0] \
+            == '2026-10-25'
+    assert counts(store, 'INTC', current, {}, ['2026-10-25'])[0] == Decimal(1)
 
 
 def test_older_message_change_and_delete_settle_newer_body_counts(tmp_path):
