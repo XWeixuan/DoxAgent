@@ -51,6 +51,7 @@ def prepare(repo, bus, row, source, binding, message):
     ref, refs = repo.put(dict(raw=raw.model_dump(mode='json'),standard=standard.model_dump(mode='json'),
         test_publication=True,terms_revision=row['terms_revision']))
     return dict(test=True,row=row,ref=ref,refs=refs,source_version=source.version,
+        fingerprint=message.metadata.get('v2_body_completion',{}).get('body_fingerprint') or row['body_digest'],
         outcome=message.metadata.get('media_enrichment',{}).get('outcome'),prepared_at=utc_now().isoformat())
 
 
@@ -71,9 +72,15 @@ def commit(repo, prepared):
                        (prepared['rejected'],row['article_key'],row['ticker']))
             return True
         identity=sha256_text(canonical_json([row['article_key'],row['ticker'],row['revision'],row['terms_revision']]))
+        peer=db.execute('SELECT publication_id FROM test_publications WHERE ticker=? AND article_key!=? '
+            'AND decision_digest IN (?,?) LIMIT 1',(row['ticker'],row['article_key'],prepared['fingerprint'],row['body_digest'])).fetchone()
+        if peer:
+            db.execute("UPDATE live_deliveries SET state='TEST_DUPLICATE',published_digest=?,decision_digest=?,last_error=? "
+                "WHERE article_key=? AND ticker=?",(row['body_digest'],row['body_digest'],'DUPLICATE_OF:'+peer[0],row['article_key'],row['ticker']))
+            return True
         inserted=db.execute('INSERT OR IGNORE INTO test_publications VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
             (identity,row['article_key'],row['ticker'],row['source_id'],row['revision'],row['terms_revision'],
-             prepared['source_version'],row['body_digest'],prepared['outcome'],prepared['prepared_at'],stamp,prepared['ref'])).rowcount
+             prepared['source_version'],prepared['fingerprint'],prepared['outcome'],prepared['prepared_at'],stamp,prepared['ref'])).rowcount
         if inserted:
             repo._refs(db,'test_publications',identity,prepared['refs'])
         db.execute("UPDATE live_deliveries SET state='TEST_PUBLISHED',published_digest=?,decision_digest=?,"

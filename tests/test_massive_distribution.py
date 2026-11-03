@@ -161,3 +161,20 @@ def test_test_publisher_access_wall_defers_without_failure_or_production_block(t
     rows=live.prepare_input(production,[(binding.binding_id,binding.ticker,0)],[_message(804)],observed_at=utc_now().isoformat(),unit='HEAD')
     live.accept(rows)
     assert live.claim(limit=1)[0][0]==rows[0]['key']
+
+
+async def test_exact_complete_body_duplicate_across_test_urls_is_not_republished(tmp_path):
+    repo,bus,_,_=_setup(tmp_path);revision=terms(repo)
+    bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
+    source=initial_sources()[1];binding=next(b for b in bindings(source) if b.ticker=='MU')
+    hub=ContentEnrichmentHub(repo,bus,extractor=_GovernedExtractor())
+    try:
+        for n in (900,901):
+            message=_message(n).model_copy(update={'title':'Micron announces manufacturing expansion'})
+            live.accept(live.prepare_input(source,[(binding.binding_id,'MU',revision)],[message],observed_at=utc_now().isoformat(),unit='WIRE:all'))
+            await hub.run_once();await LiveDeliveryWorker(bus).run_available()
+        with repo._connect() as db:
+            assert db.execute('SELECT count(*) FROM test_publications').fetchone()[0]==1
+            assert db.execute("SELECT count(*) FROM live_deliveries WHERE state='TEST_DUPLICATE'").fetchone()[0]==1
+            assert db.execute('SELECT count(*) FROM raw_messages').fetchone()[0]==0
+    finally:await hub.close()

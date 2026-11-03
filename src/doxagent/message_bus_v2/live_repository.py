@@ -917,7 +917,7 @@ class LiveRepository:
                 ("canonical:" + value["canonical"], key, "resolved", "canonical", "", current[4], "[]"))
             db.execute(
                 "UPDATE live_deliveries SET state='PENDING',due_at=? WHERE article_key=? "
-                "AND ? AND (state='WAIT_BODY' OR (? AND state IN ('PUBLISHED','TEST_PUBLISHED','IRRELEVANT','NO_PUBLIC_BODY')))",
+                "AND ? AND (state='WAIT_BODY' OR (? AND state IN ('PUBLISHED','TEST_PUBLISHED','TEST_DUPLICATE','IRRELEVANT','NO_PUBLIC_BODY')))",
                 (stamp, key, int(not preserve_owner or usable), int(changed)),
             )
             if value.get("site_outcome"):

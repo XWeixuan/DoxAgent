@@ -2583,3 +2583,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Massive测试启动后调优：依据BW连续UNAVAILABLE正文结果，在同一Live claim内为测试站点三次连续不可用增加5分钟待处理冷却，继续列表发现、不产生虚假失败尝试、不影响正式正文；9项专项通过。新增幂等注册脚本scripts/ops/enable_massive_tests.py。
 
 2026-11-03 Massive测试发布收尾：同一测试发布重放保留已存payload的artifact引用，并在提交时核对词库版本；九项专项通过。生产核验脚本分开统计物理轮询与target回执，并核验零模型决策。
+
+2026-11-03 Massive测试去重验收：复用既有完整正文fingerprint识别跨URL同文，重复仅记录TEST_DUPLICATE、不重复测试发布；保持ARTICLE_ONCE和正式生产去重边界，10项专项测试通过。
