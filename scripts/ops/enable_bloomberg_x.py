@@ -20,6 +20,8 @@ def main():
     if args.retire_tikhub:
         status=AcquisitionStore(path_for(repo.path)).get_meta('x_official_stream',{})
         if status.get('state')!='CONNECTED' or (utc_now()-datetime.fromisoformat(status['at'])).total_seconds()>90:raise RuntimeError('Official stream is not connected; TikHub retirement deferred')
+        expected={a.lower() for values in ACCOUNTS.values() for a in values}
+        if not expected.issubset(status.get('accounts',[])):raise RuntimeError('Not all official accounts are connected')
         for ticker in ACCOUNTS:
             binding=repo.get_binding(ticker+':'+SOURCE_ID)
             if not binding or not binding.enabled:raise RuntimeError('Missing official X binding: '+ticker)

@@ -127,7 +127,7 @@ class OfficialStream:
         if owned:
             from .http_routes import HTTP_EGRESSES
             source=self.owner.config.sources.get(SOURCE_ID)
-            route=source.default_parameters.get('http_route','direct') if source else 'direct'
+            route=source.default_parameters.get('http_route','us-standard-5') if source else 'us-standard-5'
             self.client=httpx.AsyncClient(proxy=HTTP_EGRESSES.get(route),headers={'Authorization':'Bearer '+unquote(token)},
             timeout=httpx.Timeout(connect=10,read=90,write=10,pool=10),trust_env=False)
         failures=0
