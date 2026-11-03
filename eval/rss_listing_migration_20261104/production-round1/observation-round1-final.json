@@ -1,0 +1,2726 @@
+{
+  "at": "2026-11-03T20:42:22.331557+00:00",
+  "since": "2026-11-03T20:32:21.871123+00:00",
+  "release": {
+    "commit": "4b6e7398345618cab5be3581b549a672fc6fccff",
+    "image": "sha256:c425c60f8735eaa725f30c5c59df1fa23ea0166f8050d4f46b4ae9f22a87a053",
+    "components": [
+      "v2-message-collector",
+      "v2-message-bus",
+      "v2-api"
+    ],
+    "at": "2026-11-03T20:32:21.871123+00:00",
+    "sources": 20
+  },
+  "sources": [
+    {
+      "source_id": "army_news_rss",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 1
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 1
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.455456+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:36.483009+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:army_worldwide_is_curated_and_omits_current_rss_articles",
+          "last_latency_ms": 461,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T20:42:36.455456+00:00",
+          "status": "failed",
+          "ticker": "ONDS",
+          "unit": "FEED:7ac5d73f70f0bc24ce914019"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "FAILED": 10
+      },
+      "request_roles": {
+        "rss_fallback": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.278,
+        "p95": 0.507,
+        "max": 0.507
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.067,
+        "p95": 0.102,
+        "max": 0.102
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:32:36.518782+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:33:36.557249+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:34:36.543093+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:35:36.495815+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:36:36.533438+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:37:36.486226+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:38:36.552307+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:39:36.540099+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:40:36.514384+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T20:41:36.483009+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "aviationweek_rss",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 1
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 1
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.893475+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:06.953206+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:aviation_home_is_curated_search_needs_runtime_or_verified_api",
+          "last_latency_ms": 1121,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T20:43:06.893475+00:00",
+          "status": "failed",
+          "ticker": "RKLB",
+          "unit": "FEED:4fad395714a054d6369cc3e7"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "FAILED": 10
+      },
+      "request_roles": {
+        "rss_fallback": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.787,
+        "p95": 0.99,
+        "max": 0.99
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.14,
+        "p95": 0.423,
+        "max": 0.423
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:33:07.023128+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:34:07.107118+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:35:06.972886+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:36:07.178842+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:37:06.942213+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:38:07.316856+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:39:06.921360+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:40:06.931985+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:41:06.984867+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T20:42:06.953206+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "canary_media",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.775198+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:20.986799+00:00",
+          "last_capture_at": "2026-11-03T20:42:21.391139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 422,
+          "last_success_at": "2026-11-03T20:42:21.408607+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:20.775198+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:bd9f86f953b4a5cb13216d0d"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.775198+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:20.986799+00:00",
+          "last_capture_at": "2026-11-03T20:42:21.391139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 422,
+          "last_success_at": "2026-11-03T20:42:21.408607+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:20.775198+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:bd9f86f953b4a5cb13216d0d"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.657,
+        "p95": 1.237,
+        "max": 1.237
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.122,
+        "p95": 0.329,
+        "max": 0.329
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "required_binding_units": 3,
+      "physical_units": 3,
+      "latest_statuses": {
+        "succeeded": 3
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:10.941330+00:00",
+          "last_capture_at": "2026-11-03T20:42:11.003482+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 62,
+          "last_success_at": "2026-11-03T20:42:11.014092+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:10.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:a518927e703ee73b94eb2ec9"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:30.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:31.062899+00:00",
+          "last_capture_at": "2026-11-03T20:41:31.123334+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 61,
+          "last_success_at": "2026-11-03T20:41:31.124020+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:30.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:0f559d39370394f58715143f"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:50.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:50.873683+00:00",
+          "last_capture_at": "2026-11-03T20:41:50.946723+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 73,
+          "last_success_at": "2026-11-03T20:41:50.947372+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:50.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:ffdb14036507158e4b9c311e"
+        }
+      ],
+      "physical_cycles": 30,
+      "physical_statuses": {
+        "CAPTURED": 30
+      },
+      "request_roles": {
+        "listing": 30
+      },
+      "network_seconds": {
+        "samples": 30,
+        "mean": 0.068,
+        "p95": 0.123,
+        "max": 0.124
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 30,
+        "mean": 0.082,
+        "p95": 0.27,
+        "max": 0.304
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "data_center_frontier",
+      "required_binding_units": 6,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 6
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:45.962508+00:00",
+          "last_capture_at": "2026-11-03T20:41:46.328213+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 381,
+          "last_success_at": "2026-11-03T20:41:46.343927+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:45.962508+00:00",
+          "last_capture_at": "2026-11-03T20:41:46.328213+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 381,
+          "last_success_at": "2026-11-03T20:41:46.343927+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:45.962508+00:00",
+          "last_capture_at": "2026-11-03T20:41:46.328213+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 381,
+          "last_success_at": "2026-11-03T20:41:46.343927+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:45.962508+00:00",
+          "last_capture_at": "2026-11-03T20:41:46.328213+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 381,
+          "last_success_at": "2026-11-03T20:41:46.343927+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:45.962508+00:00",
+          "last_capture_at": "2026-11-03T20:41:46.328213+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 381,
+          "last_success_at": "2026-11-03T20:41:46.343927+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:45.962508+00:00",
+          "last_capture_at": "2026-11-03T20:41:46.328213+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 381,
+          "last_success_at": "2026-11-03T20:41:46.343927+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.404,
+        "p95": 0.865,
+        "max": 0.865
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.042,
+        "p95": 0.077,
+        "max": 0.077
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "required_binding_units": 6,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 6
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 6
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:03.628534+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 272,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:03.614601+00:00",
+          "status": "failed",
+          "ticker": "BE",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:03.628534+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 272,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:03.614601+00:00",
+          "status": "failed",
+          "ticker": "CEG",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:03.628534+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 272,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:03.614601+00:00",
+          "status": "failed",
+          "ticker": "COHR",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:03.628534+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 272,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:03.614601+00:00",
+          "status": "failed",
+          "ticker": "INTC",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:03.628534+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 272,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:03.614601+00:00",
+          "status": "failed",
+          "ticker": "MU",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:03.628534+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 272,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:03.614601+00:00",
+          "status": "failed",
+          "ticker": "NBIS",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "FAILED": 10
+      },
+      "request_roles": {
+        "rss_fallback": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.574,
+        "p95": 3.081,
+        "max": 3.081
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.073,
+        "p95": 0.289,
+        "max": 0.289
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:33:03.679487+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:34:03.653286+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:35:03.903744+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:36:03.622578+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:37:03.708084+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:38:03.683031+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:39:03.717351+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:40:03.628893+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:41:03.655356+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T20:42:03.628534+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "defensescoop_drones",
+      "required_binding_units": 2,
+      "physical_units": 2,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:24.440595+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:24.524332+00:00",
+          "last_capture_at": "2026-11-03T20:41:25.115001+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1084,
+          "last_success_at": "2026-11-03T20:41:25.610458+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:24.440595+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:3e7ad1dabf2ec5b4b61c9c0c"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:54.440595+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:54.538916+00:00",
+          "last_capture_at": "2026-11-03T20:41:54.932836+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 412,
+          "last_success_at": "2026-11-03T20:41:54.956659+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:54.440595+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:27cdf1757342a7b11cdfb4c3"
+        }
+      ],
+      "physical_cycles": 20,
+      "physical_statuses": {
+        "CAPTURED": 20
+      },
+      "request_roles": {
+        "listing": 20
+      },
+      "network_seconds": {
+        "samples": 20,
+        "mean": 0.465,
+        "p95": 0.579,
+        "max": 0.67
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 20,
+        "mean": 0.071,
+        "p95": 0.143,
+        "max": 0.187
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dod_contracts",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:44.533432+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:44.608476+00:00",
+          "last_capture_at": "2026-11-03T20:41:44.629222+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 29,
+          "last_success_at": "2026-11-03T20:41:44.637475+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:44.533432+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:cfae6ba739108534dbac3414"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:44.533432+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:44.608476+00:00",
+          "last_capture_at": "2026-11-03T20:41:44.629222+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 29,
+          "last_success_at": "2026-11-03T20:41:44.637475+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:44.533432+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:cfae6ba739108534dbac3414"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.113,
+        "p95": 0.877,
+        "max": 0.877
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.058,
+        "p95": 0.225,
+        "max": 0.225
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dod_releases",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.211271+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:10.341687+00:00",
+          "last_capture_at": "2026-11-03T20:42:10.838339+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 518,
+          "last_success_at": "2026-11-03T20:42:10.860990+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:10.211271+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:dfc334fc62e359d686dd3b57"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.211271+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:10.341687+00:00",
+          "last_capture_at": "2026-11-03T20:42:10.838339+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 518,
+          "last_success_at": "2026-11-03T20:42:10.860990+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:10.211271+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:dfc334fc62e359d686dd3b57"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 9,
+        "FAILED": 1
+      },
+      "request_roles": {
+        "listing": 10,
+        "rss_fallback": 1
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.335,
+        "p95": 0.573,
+        "max": 0.573
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.146,
+        "p95": 0.5,
+        "max": 0.5
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:dfc334fc62e359d686dd3b57",
+          "at": "2026-11-03T20:37:10.244055+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "required_binding_units": 3,
+      "physical_units": 3,
+      "latest_statuses": {
+        "succeeded": 3
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:59.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:59.765197+00:00",
+          "last_capture_at": "2026-11-03T20:42:00.347402+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 613,
+          "last_success_at": "2026-11-03T20:42:00.379493+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:59.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:69cd0a82d11ee5cf9feef522"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:19.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:19.819228+00:00",
+          "last_capture_at": "2026-11-03T20:42:20.096510+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 326,
+          "last_success_at": "2026-11-03T20:42:20.144989+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:19.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:50b1d9a9bb4f6befd163b153"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:39.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:39.789572+00:00",
+          "last_capture_at": "2026-11-03T20:41:41.354686+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1583,
+          "last_success_at": "2026-11-03T20:41:41.372554+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:39.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:ef7490c95438b64379a1b34c"
+        }
+      ],
+      "physical_cycles": 30,
+      "physical_statuses": {
+        "CAPTURED": 30
+      },
+      "request_roles": {
+        "listing": 30
+      },
+      "network_seconds": {
+        "samples": 30,
+        "mean": 0.94,
+        "p95": 1.982,
+        "max": 2.608
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 30,
+        "mean": 0.082,
+        "p95": 0.308,
+        "max": 0.345
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "etnews_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:22.383721+00:00",
+          "last_capture_at": "2026-11-03T20:41:23.773075+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1398,
+          "last_success_at": "2026-11-03T20:41:23.782417+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:22.383721+00:00",
+          "last_capture_at": "2026-11-03T20:41:23.773075+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1398,
+          "last_success_at": "2026-11-03T20:41:23.782417+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:22.383721+00:00",
+          "last_capture_at": "2026-11-03T20:41:23.773075+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1398,
+          "last_success_at": "2026-11-03T20:41:23.782417+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:22.383721+00:00",
+          "last_capture_at": "2026-11-03T20:41:23.773075+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1398,
+          "last_success_at": "2026-11-03T20:41:23.782417+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:22.383721+00:00",
+          "last_capture_at": "2026-11-03T20:41:23.773075+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1398,
+          "last_success_at": "2026-11-03T20:41:23.782417+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.298,
+        "p95": 1.215,
+        "max": 1.215
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.211,
+        "p95": 0.569,
+        "max": 0.569
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:52.319738+00:00",
+          "last_capture_at": "2026-11-03T20:41:52.837308+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 559,
+          "last_success_at": "2026-11-03T20:41:52.884597+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:52.319738+00:00",
+          "last_capture_at": "2026-11-03T20:41:52.837308+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 559,
+          "last_success_at": "2026-11-03T20:41:52.884597+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:52.319738+00:00",
+          "last_capture_at": "2026-11-03T20:41:52.837308+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 559,
+          "last_success_at": "2026-11-03T20:41:52.884597+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:52.319738+00:00",
+          "last_capture_at": "2026-11-03T20:41:52.837308+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 559,
+          "last_success_at": "2026-11-03T20:41:52.884597+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:52.319738+00:00",
+          "last_capture_at": "2026-11-03T20:41:52.837308+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 559,
+          "last_success_at": "2026-11-03T20:41:52.884597+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.812,
+        "p95": 1.867,
+        "max": 1.867
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.089,
+        "p95": 0.268,
+        "max": 0.268
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "nsf_news",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:47.075981+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:47.096105+00:00",
+          "last_capture_at": "2026-11-03T20:41:48.699761+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1617,
+          "last_success_at": "2026-11-03T20:41:48.713049+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:47.075981+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:981618343246fe95aed86647"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 1.406,
+        "p95": 1.668,
+        "max": 1.668
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.061,
+        "p95": 0.101,
+        "max": 0.101
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:51.709308+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:52.017111+00:00",
+          "last_capture_at": "2026-11-03T20:41:52.603013+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 609,
+          "last_success_at": "2026-11-03T20:41:52.629202+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:51.709308+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:580eb14015a8c19d636c9706"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.755,
+        "p95": 1.451,
+        "max": 1.451
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.163,
+        "p95": 0.484,
+        "max": 0.484
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "quantum_zeitgeist",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.177217+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:36.281235+00:00",
+          "last_capture_at": "2026-11-03T20:41:37.138119+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 888,
+          "last_success_at": "2026-11-03T20:41:37.169396+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:36.177217+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:36ea93b1b1238527f70d7bb9"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "FAILED": 1,
+        "CAPTURED": 9
+      },
+      "request_roles": {
+        "listing": 10,
+        "rss_fallback": 1
+      },
+      "network_seconds": {
+        "samples": 11,
+        "mean": 0.744,
+        "p95": 1.063,
+        "max": 1.063
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.084,
+        "p95": 0.208,
+        "max": 0.208
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:36ea93b1b1238527f70d7bb9",
+          "at": "2026-11-03T20:32:36.211379+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "technews_hardware",
+      "required_binding_units": 10,
+      "physical_units": 2,
+      "latest_statuses": {
+        "succeeded": 10
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:06.625478+00:00",
+          "last_capture_at": "2026-11-03T20:42:07.293315+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 678,
+          "last_success_at": "2026-11-03T20:42:07.309776+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:06.625478+00:00",
+          "last_capture_at": "2026-11-03T20:42:07.293315+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 678,
+          "last_success_at": "2026-11-03T20:42:07.309776+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:06.625478+00:00",
+          "last_capture_at": "2026-11-03T20:42:07.293315+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 678,
+          "last_success_at": "2026-11-03T20:42:07.309776+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:06.625478+00:00",
+          "last_capture_at": "2026-11-03T20:42:07.293315+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 678,
+          "last_success_at": "2026-11-03T20:42:07.309776+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:06.625478+00:00",
+          "last_capture_at": "2026-11-03T20:42:07.293315+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 678,
+          "last_success_at": "2026-11-03T20:42:07.309776+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:36.707494+00:00",
+          "last_capture_at": "2026-11-03T20:41:36.909665+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 221,
+          "last_success_at": "2026-11-03T20:41:36.929118+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:36.707494+00:00",
+          "last_capture_at": "2026-11-03T20:41:36.909665+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 221,
+          "last_success_at": "2026-11-03T20:41:36.929118+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:36.707494+00:00",
+          "last_capture_at": "2026-11-03T20:41:36.909665+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 221,
+          "last_success_at": "2026-11-03T20:41:36.929118+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:36.707494+00:00",
+          "last_capture_at": "2026-11-03T20:41:36.909665+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 221,
+          "last_success_at": "2026-11-03T20:41:36.929118+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:36.707494+00:00",
+          "last_capture_at": "2026-11-03T20:41:36.909665+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 221,
+          "last_success_at": "2026-11-03T20:41:36.929118+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:365211cf9af517cb87395484"
+        }
+      ],
+      "physical_cycles": 20,
+      "physical_statuses": {
+        "CAPTURED": 20
+      },
+      "request_roles": {
+        "listing": 20
+      },
+      "network_seconds": {
+        "samples": 20,
+        "mean": 0.275,
+        "p95": 0.651,
+        "max": 0.664
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 20,
+        "mean": 0.087,
+        "p95": 0.213,
+        "max": 0.248
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "thelec_semiconductors_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:20.760525+00:00",
+          "last_capture_at": "2026-11-03T20:42:20.978438+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 266,
+          "last_success_at": "2026-11-03T20:42:21.027523+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:20.760525+00:00",
+          "last_capture_at": "2026-11-03T20:42:20.978438+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 266,
+          "last_success_at": "2026-11-03T20:42:21.027523+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:20.760525+00:00",
+          "last_capture_at": "2026-11-03T20:42:20.978438+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 266,
+          "last_success_at": "2026-11-03T20:42:21.027523+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:20.760525+00:00",
+          "last_capture_at": "2026-11-03T20:42:20.978438+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 266,
+          "last_success_at": "2026-11-03T20:42:21.027523+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:20.760525+00:00",
+          "last_capture_at": "2026-11-03T20:42:20.978438+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 266,
+          "last_success_at": "2026-11-03T20:42:21.027523+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.226,
+        "p95": 0.821,
+        "max": 0.821
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.135,
+        "p95": 0.39,
+        "max": 0.39
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 5
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 5
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:41.970458+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:7652",
+          "last_latency_ms": 3562,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T20:42:41.885785+00:00",
+          "status": "failed",
+          "ticker": "BE",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:41.970458+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:7652",
+          "last_latency_ms": 3562,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T20:42:41.885785+00:00",
+          "status": "failed",
+          "ticker": "COHR",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:41.970458+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:7652",
+          "last_latency_ms": 3562,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T20:42:41.885785+00:00",
+          "status": "failed",
+          "ticker": "INTC",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:41.970458+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:7652",
+          "last_latency_ms": 3562,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T20:42:41.885785+00:00",
+          "status": "failed",
+          "ticker": "MU",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:41.970458+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:7652",
+          "last_latency_ms": 3562,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T20:42:41.885785+00:00",
+          "status": "failed",
+          "ticker": "NBIS",
+          "unit": "FEED:92686c4979c09925ef476378"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "FAILED": 10
+      },
+      "request_roles": {
+        "listing": 10,
+        "rss_fallback": 10
+      },
+      "network_seconds": {
+        "samples": 20,
+        "mean": 0.863,
+        "p95": 2.325,
+        "max": 2.381
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.11,
+        "p95": 0.35,
+        "max": 0.35
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:32:41.926382+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:33:41.958069+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:34:41.982411+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:35:41.944861+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:36:41.979920+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:37:42.027647+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:38:42.235378+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:39:41.984973+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:40:41.950204+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T20:41:41.970458+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "utility_dive",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:02.193864+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:02.292495+00:00",
+          "last_capture_at": "2026-11-03T20:42:03.592372+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1316,
+          "last_success_at": "2026-11-03T20:42:03.608101+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:02.193864+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:f0fb325afe07ff21bf307014"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:02.193864+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:42:02.292495+00:00",
+          "last_capture_at": "2026-11-03T20:42:03.592372+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1316,
+          "last_success_at": "2026-11-03T20:42:03.608101+00:00",
+          "next_dispatch_at": "2026-11-03T20:43:02.193864+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:f0fb325afe07ff21bf307014"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 9,
+        "FAILED": 1
+      },
+      "request_roles": {
+        "listing": 10,
+        "rss_fallback": 1
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 2.167,
+        "p95": 7.169,
+        "max": 7.169
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.121,
+        "p95": 0.441,
+        "max": 0.441
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:f0fb325afe07ff21bf307014",
+          "at": "2026-11-03T20:40:02.243769+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:27.041365+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T20:41:27.104938+00:00",
+          "last_capture_at": "2026-11-03T20:41:27.342163+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 271,
+          "last_success_at": "2026-11-03T20:41:27.376811+00:00",
+          "next_dispatch_at": "2026-11-03T20:42:27.041365+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:7aeff12b5dff2df82855fb85"
+        }
+      ],
+      "physical_cycles": 10,
+      "physical_statuses": {
+        "CAPTURED": 10
+      },
+      "request_roles": {
+        "listing": 10
+      },
+      "network_seconds": {
+        "samples": 10,
+        "mean": 0.41,
+        "p95": 1.646,
+        "max": 1.646
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 10,
+        "mean": 0.065,
+        "p95": 0.264,
+        "max": 0.264
+      },
+      "failed_cycles": []
+    }
+  ],
+  "configuration": {
+    "modified_sources": [
+      {
+        "source_id": "crn_cloud_security_datacenter",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "enterprise_apps_official_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "aviationweek_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "huggingnews_rss",
+        "discovery_mode": "http_listing",
+        "version": 4,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "utility_dive",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "tomshardware_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "dod_releases",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "defensescoop_drones",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "quantum_computing_report",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "quantum_zeitgeist",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "etnews_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "nsf_news",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "data_center_frontier",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "world_nuclear_news",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "dod_contracts",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "technews_hardware",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "canary_media",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "thelec_semiconductors_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "army_news_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      },
+      {
+        "source_id": "dcd_infrastructure_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": false
+      }
+    ],
+    "other_source_changes": [],
+    "binding_business_changes": [],
+    "terms_unchanged": true,
+    "bindings_unchanged_set": true,
+    "active_bindings": {
+      "huggingnews_rss": 5,
+      "tomshardware_rss": 5,
+      "thelec_semiconductors_rss": 5,
+      "etnews_rss": 5,
+      "enterprise_apps_official_rss": 1,
+      "aviationweek_rss": 1,
+      "dod_contracts": 2,
+      "dod_releases": 2,
+      "defensescoop_drones": 1,
+      "army_news_rss": 1,
+      "crn_cloud_security_datacenter": 1,
+      "technews_hardware": 5,
+      "utility_dive": 2,
+      "world_nuclear_news": 1,
+      "canary_media": 2,
+      "dcd_infrastructure_rss": 6,
+      "data_center_frontier": 6,
+      "quantum_computing_report": 1,
+      "quantum_zeitgeist": 1,
+      "nsf_news": 1
+    }
+  },
+  "new_origins": [
+    {
+      "rowid": 17897,
+      "source_id": "defensescoop_drones",
+      "article_key": "ad2d0934f1e064a79579c42b7a434a407cfaba10d0f946b451e8f42278c268ea",
+      "first_seen_at": "2026-11-03T20:31:29.489447+00:00",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "title": "Wind RiverX’s Ed Siu on scaling defense technology securely",
+      "url": "https://defensescoop.com/video/wind-riverxs-ed-siu-on-scaling-defense-technology-securely/",
+      "acquired_at": null
+    },
+    {
+      "rowid": 17899,
+      "source_id": "world_nuclear_news",
+      "article_key": "5a41329604c2a06ba53af58c7dc52efb59e4bf216e92782fb94de0d0ef028e58",
+      "first_seen_at": "2026-11-03T20:31:31.621386+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Urenco USA marks first commercial LEU+ production",
+      "url": "https://www.world-nuclear-news.org/articles/urenco-usa-marks-first-commercial-leu-production",
+      "acquired_at": "2026-11-03T20:31:42.064012+00:00"
+    },
+    {
+      "rowid": 17901,
+      "source_id": "world_nuclear_news",
+      "article_key": "c748763c505b7fa2960a327c33cfab82fa11cb7d0019c0dd014a4166e4e0b914",
+      "first_seen_at": "2026-11-03T20:31:31.621386+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Saltfoss targets US licensing for floating power plant",
+      "url": "https://www.world-nuclear-news.org/articles/saltfoss-targets-us-licensing-for-floating-power-plant",
+      "acquired_at": "2026-11-03T20:31:42.296884+00:00"
+    },
+    {
+      "rowid": 17903,
+      "source_id": "world_nuclear_news",
+      "article_key": "d697a67091a9a44ee6c530dd6f3c6f29078ca813fce6cb8af6e25fb58b9884fa",
+      "first_seen_at": "2026-11-03T20:31:31.621386+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Turkey and South Korea explore nuclear financing cooperation",
+      "url": "https://www.world-nuclear-news.org/articles/turkey-and-south-korea-agree-on-nuclear-financing-cooperation",
+      "acquired_at": "2026-11-03T20:31:43.075291+00:00"
+    },
+    {
+      "rowid": 17905,
+      "source_id": "world_nuclear_news",
+      "article_key": "e85d0aedd81101c612ea9adcf895c779f54f5bf730ea5ba7668defc10090bf36",
+      "first_seen_at": "2026-11-03T20:31:31.621386+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Singapore enlists Finnish help in bolstering nuclear expertise",
+      "url": "https://www.world-nuclear-news.org/articles/singapore-enlists-finnish-help-in-bolstering-nuclear-expertise",
+      "acquired_at": "2026-11-03T20:31:43.134832+00:00"
+    },
+    {
+      "rowid": 17907,
+      "source_id": "world_nuclear_news",
+      "article_key": "be833c297d3017d61118b3a915bf61e9156c13d7d595119f67d28e319a5e09f2",
+      "first_seen_at": "2026-11-03T20:31:31.621386+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Rosatom planning new uranium processing plant",
+      "url": "https://www.world-nuclear-news.org/articles/rosatom-planning-new-uranium-processing-plant",
+      "acquired_at": "2026-11-03T20:31:44.586327+00:00"
+    },
+    {
+      "rowid": 17909,
+      "source_id": "world_nuclear_news",
+      "article_key": "09830671ce022455ccb7b5acc76565d598557e92b36e520f6e1052fc67ade0c4",
+      "first_seen_at": "2026-11-03T20:31:31.621386+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Texas SMR plant moves to final permitting stage",
+      "url": "https://www.world-nuclear-news.org/articles/texas-smr-plant-moves-to-final-permitting-stage",
+      "acquired_at": "2026-11-03T20:31:44.735595+00:00"
+    },
+    {
+      "rowid": 17927,
+      "source_id": "data_center_frontier",
+      "article_key": "805c94818b778fe4f590c33fb4c285819728c14b2158b851f01916fad5ad23ff",
+      "first_seen_at": "2026-11-03T20:31:47.161673+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "The Converter as the Control Point for AI Data Center Power",
+      "url": "https://www.datacenterfrontier.com/sponsored/article/55411522/the-converter-as-the-control-point-for-ai-data-center-power",
+      "acquired_at": "2026-11-03T20:31:59.220569+00:00"
+    },
+    {
+      "rowid": 17929,
+      "source_id": "quantum_computing_report",
+      "article_key": "e72d9dd77c024f2c951f6b8afe54f5e25fedf038c0011e75bdee8ccb48a760fa",
+      "first_seen_at": "2026-11-03T20:31:52.464873+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Alice & Bob Demonstrates Multi-Hour Physical Bit-Flip Suppression on Single-Cat and Helium 2 Processors",
+      "url": "https://quantumcomputingreport.com/alice-bob-demonstrates-multi-hour-physical-bit-flip-suppression-on-single-cat-and-helium-2-processors/",
+      "acquired_at": "2026-11-03T20:31:59.404864+00:00"
+    },
+    {
+      "rowid": 17931,
+      "source_id": "huggingnews_rss",
+      "article_key": "65f0a8a9cdab304495d54825188697d3a36e2710f0084e13485d27f2c3f2d8cb",
+      "first_seen_at": "2026-11-03T20:31:54.709775+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "OpenAI Unreleased Model Beats GPT-6 Astra on Hardware Design Benchmark",
+      "url": "https://huggingnews.com/ai/openai-unreleased-model-beats-gpt-6-astra-on-hardware-design-benchmark-273c6aa1",
+      "acquired_at": "2026-11-03T20:32:01.941739+00:00"
+    },
+    {
+      "rowid": 17933,
+      "source_id": "huggingnews_rss",
+      "article_key": "f5f365220be249d686c28cfe3b4dfd622721763e332ea6ed99081e71fa0e7242",
+      "first_seen_at": "2026-11-03T20:31:54.709775+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Snowflake Launches Serverless Platform for Training Open-Weight AI Models",
+      "url": "https://huggingnews.com/ai/snowflake-launches-serverless-platform-for-training-open-weight-ai-model-91eb65bc",
+      "acquired_at": "2026-11-03T20:32:01.844608+00:00"
+    },
+    {
+      "rowid": 17935,
+      "source_id": "data_center_frontier",
+      "article_key": "5102e0117dcd206ef346059be13aa2d82952162932591e7111e975ed76a42ada",
+      "first_seen_at": "2026-11-03T20:31:47.161673+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "How Data Center Power Went from Utility to Strategy",
+      "url": "https://www.datacenterfrontier.com/sponsored/article/55410109/how-data-center-power-went-from-utility-to-strategy",
+      "acquired_at": "2026-10-07T10:48:32.849354+00:00"
+    },
+    {
+      "rowid": 17964,
+      "source_id": "utility_dive",
+      "article_key": "6c5ddcd3200d5dbc65ac07d296d75172032070f2eb76806f0d7483e4e5321d04",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Energy affordability tops voter concerns in election set to shake up Congress",
+      "url": "https://www.utilitydive.com/news/energy-affordability-voter-election-midterm-congress-energy-policy/873596/",
+      "acquired_at": "2026-11-03T20:32:20.548516+00:00"
+    },
+    {
+      "rowid": 17966,
+      "source_id": "utility_dive",
+      "article_key": "459c8b30a944eba49f1e36705935e984122c23b79d6463b4d252d75002511b44",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "PJM’s revised data center backstop procurement plan reduces utility risks: ICF",
+      "url": "https://www.utilitydive.com/news/pjm-revised-data-center-backstop-procurement-ferc/873551/",
+      "acquired_at": "2026-11-03T20:32:21.726523+00:00"
+    },
+    {
+      "rowid": 17968,
+      "source_id": "utility_dive",
+      "article_key": "379d39090980107c0aacf25384035b3bbac1cb9163b754e0b5271408432c8bb7",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "PSEG Power plans 200-MW nuclear uprate as company eyes data center deals",
+      "url": "https://www.utilitydive.com/news/pseg-power-nuclear-uprate-salem-data-center-earnings/873587/",
+      "acquired_at": "2026-11-03T20:32:21.736337+00:00"
+    },
+    {
+      "rowid": 17970,
+      "source_id": "utility_dive",
+      "article_key": "4e875495808fe07949799022bffd5e55a1c394e2aab4e64eff189bc6502b14dd",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Caterpillar expands production of engines and turbines to meet data center demand",
+      "url": "https://www.utilitydive.com/news/caterpillar-posts-highest-sales-quarter-ever-data-centers-q3-2026/873586/",
+      "acquired_at": "2026-11-03T20:32:23.401570+00:00"
+    },
+    {
+      "rowid": 17972,
+      "source_id": "utility_dive",
+      "article_key": "45b12b60f1a68a4d7aca64667d9735c5e3d45d08bf52a6552f7b7b639f09a3e2",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "title": "Top electric power sector and utility conferences in 2027",
+      "url": "https://www.utilitydive.com/news/top-electric-power-sector-and-utility-conferences-in-2027/832259/",
+      "acquired_at": null
+    },
+    {
+      "rowid": 17974,
+      "source_id": "utility_dive",
+      "article_key": "c7635d216c713b290e7b8167ee14ac1e8c106010ca67005a7224fae5caad0ce5",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Mitsubishi Electric seeks to expand North American grid foothold",
+      "url": "https://www.utilitydive.com/news/mitsubishi-electric-seeks-to-expand-north-american-grid-foothold/873463/",
+      "acquired_at": "2026-11-03T20:32:26.142843+00:00"
+    },
+    {
+      "rowid": 17976,
+      "source_id": "utility_dive",
+      "article_key": "d66bef35a938c2f726136a0446afda5644937766078405ec9ad314f1889dc881",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Exelon eyes $8B in energy storage, in part to address PJM supply crunch",
+      "url": "https://www.utilitydive.com/news/exelon-energy-storage-new-jersey-earnings/873423/",
+      "acquired_at": "2026-11-03T20:32:27.332214+00:00"
+    },
+    {
+      "rowid": 17978,
+      "source_id": "utility_dive",
+      "article_key": "17c017c4af8dc677498715983b9ea8fa8eba5eb8ab076faba93a0561ad3e2269",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Dominion sees $137M net income boost from rate increase",
+      "url": "https://www.utilitydive.com/news/dominion-sees-137m-net-income-boost-from-rate-increase/873458/",
+      "acquired_at": "2026-11-03T20:32:28.401742+00:00"
+    },
+    {
+      "rowid": 17980,
+      "source_id": "utility_dive",
+      "article_key": "17cab7c96a9e7eb5b038d704605fec2a32a4a6148cb0b166ad510c5c057bcb26",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Xcel Energy rolls out $70B, 5-year capital plan focused on renewables",
+      "url": "https://www.utilitydive.com/news/xcel-energy-renewables-wind-earnings/873273/",
+      "acquired_at": "2026-11-03T20:32:29.702570+00:00"
+    },
+    {
+      "rowid": 17982,
+      "source_id": "utility_dive",
+      "article_key": "ab8f70a002b80dbadbb455e91f24cca70b2259d41c66751e41f01ec98050abd9",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Lack of wildfire reform is having ‘dire and escalating impacts’: SCE",
+      "url": "https://www.utilitydive.com/news/wildfire-reform-sce-edison-international-earnings/873322/",
+      "acquired_at": "2026-11-03T20:32:31.582212+00:00"
+    },
+    {
+      "rowid": 17984,
+      "source_id": "utility_dive",
+      "article_key": "233e09d012e8609cda60c397d6c3e3a561e248a160f265e9e44205904c43b500",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Chinese-linked solar developer loses appeal over Texas grid interconnection",
+      "url": "https://www.utilitydive.com/news/chinese-linked-solar-developer-loses-appeal-to-connect-to-texas-grid/873178/",
+      "acquired_at": "2026-11-03T20:32:31.534530+00:00"
+    },
+    {
+      "rowid": 17986,
+      "source_id": "utility_dive",
+      "article_key": "a3aaf8c0121213f9dfeae41d9262b1b25f2aefca7ffa62ab6ed6ed1ebc7402f0",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Hitachi’s nuclear revenue rises as SMR delivery date approaches",
+      "url": "https://www.utilitydive.com/news/hitachi-sees-rise-in-nuclear-revenue-as-smr-delivery-date-approaches/873327/",
+      "acquired_at": "2026-11-03T20:32:33.948617+00:00"
+    },
+    {
+      "rowid": 17988,
+      "source_id": "utility_dive",
+      "article_key": "90099659087dabb56ad80f0c7e068863caf8aad0e0e7ff5237ebf27cc3a8d3bc",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "AEP increases investment plan 30% on generation, transmission spending",
+      "url": "https://www.utilitydive.com/news/aep-transmission-data-center-earnings/873189/",
+      "acquired_at": "2026-11-03T20:32:34.321643+00:00"
+    },
+    {
+      "rowid": 17990,
+      "source_id": "utility_dive",
+      "article_key": "be61f2264a780ff809a983a28bae67560e79e6fd1df80a552fd2ff3d60dc3340",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "FirstEnergy data center pipeline increases to 26 GW in Q3",
+      "url": "https://www.utilitydive.com/news/firstenergy-data-center-pipeline-maidsville/873149/",
+      "acquired_at": "2026-11-03T20:32:37.336880+00:00"
+    },
+    {
+      "rowid": 17992,
+      "source_id": "utility_dive",
+      "article_key": "89483abb89dd2222745acf68af752de919d3ee95913eeccff0ff98c1d48a6071",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Data center purchases of electrical equipment up 80% since 2025: Hubbell",
+      "url": "https://www.utilitydive.com/news/data-center-purchases-of-electrical-equipment-up-80-since-2025-hubbell/873134/",
+      "acquired_at": "2026-11-03T20:32:37.282584+00:00"
+    },
+    {
+      "rowid": 17994,
+      "source_id": "utility_dive",
+      "article_key": "d6f9620de73470d6901b959452e805e9903a2f84b4319f53f7994d908beb6a4c",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "BAAJA gives federal regulators ‘bigger hammer’ to break transmission blocks",
+      "url": "https://www.utilitydive.com/news/baaja-permitting-reform-interregional-transmission-harder/873041/",
+      "acquired_at": "2026-11-03T20:32:40.519903+00:00"
+    },
+    {
+      "rowid": 17996,
+      "source_id": "utility_dive",
+      "article_key": "58c9bc641e21661e7cb181ddcab215b65a7efafd999d642c534220e61a925f02",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "California utilities, aggregators and customers to benefit from new DER laws: advocates",
+      "url": "https://www.utilitydive.com/news/california-utilities-aggregators-and-customers-to-benefit-from-new-der-law/873048/",
+      "acquired_at": "2026-11-03T20:32:40.165408+00:00"
+    },
+    {
+      "rowid": 17998,
+      "source_id": "utility_dive",
+      "article_key": "b1a6d6e456861347cf7c5f605900f6c21ba92acd4ca458a1706160a5529234e5",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "CMS Energy CEO predicts data center ‘progress’ after midterms",
+      "url": "https://www.utilitydive.com/news/cms-energy-ceo-predicts-data-center-progress-after-midterms/873057/",
+      "acquired_at": "2026-11-03T20:32:43.138523+00:00"
+    },
+    {
+      "rowid": 18000,
+      "source_id": "utility_dive",
+      "article_key": "7300585d281255d1f28a62cfd1b1d2cfbfa2d6b0dfa0becf78cb2ae79f4b1f1d",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "FERC approves tougher MISO penalties for nonperforming demand-side resources",
+      "url": "https://www.utilitydive.com/news/ferc-miso-penalties-demand-side-resource-lmr/873006/",
+      "acquired_at": "2026-11-03T20:32:43.278303+00:00"
+    },
+    {
+      "rowid": 18002,
+      "source_id": "utility_dive",
+      "article_key": "cd564bbe5de51092df7167d693001981bb281f6c9b1704f7a12c39f7387df470",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "DOE announces $10.1B in loans to Constellation, Alliant, for 3.7 GW",
+      "url": "https://www.utilitydive.com/news/doe-loans-constellation-alliant-nuclear-gas/873011/",
+      "acquired_at": "2026-11-03T20:32:45.053668+00:00"
+    },
+    {
+      "rowid": 18004,
+      "source_id": "utility_dive",
+      "article_key": "b848030c2bfea03aac85921979ba5769a86b383bbb3f47afc66e163067d8eb66",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "CenterPoint expands 10-year capital plan by $4B to handle load growth",
+      "url": "https://www.utilitydive.com/news/centerpoint-expands-10-year-capital-plan-4b/872850/",
+      "acquired_at": "2026-11-03T20:32:46.312623+00:00"
+    },
+    {
+      "rowid": 18006,
+      "source_id": "utility_dive",
+      "article_key": "c6f67cee6fa4e84be256ff6b34a68ef1aada81512e2ea4a78d1ff884607dc45e",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "PJM urges FERC to dismiss Mon Power ‘fishing expedition’ seeking to recoup $145M",
+      "url": "https://www.utilitydive.com/news/pjm-ferc-mon-power-winter-storm-fern-complaint/872855/",
+      "acquired_at": "2026-11-03T20:32:47.954998+00:00"
+    },
+    {
+      "rowid": 18008,
+      "source_id": "utility_dive",
+      "article_key": "102c66bcfa73f4d0d5b806ddfc5de412edd31aac1567fc1768bf4627bb8e5f6e",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Reliability standards for AI data centers, crypto miners move closer to adoption",
+      "url": "https://www.utilitydive.com/news/reliability-standards-ai-data-centers-crypto-miners-pass-final-nerc-ba/833094/",
+      "acquired_at": "2026-11-03T20:32:48.702662+00:00"
+    },
+    {
+      "rowid": 18010,
+      "source_id": "utility_dive",
+      "article_key": "a4ec15513a37aa175130758c9c56db64274d5ecedbcb19b9ef4b111d715066c4",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Capacity, clarity, cash and compliance: the 4 C’s of electric co-op funding success",
+      "url": "https://www.utilitydive.com/news/for-electric-cooperatives-winning-federal-state-funding-depends-on-4-cs/833299/",
+      "acquired_at": "2026-11-03T20:32:50.190626+00:00"
+    },
+    {
+      "rowid": 18012,
+      "source_id": "utility_dive",
+      "article_key": "723b2ed0a851e894b058a56f5ebd6f2e79bd7e813333485aef208f00579adfe2",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "CISA promises proactive critical infrastructure defense in new strategic plan",
+      "url": "https://www.utilitydive.com/news/cisa-strategic-plan-2030-infrastructure-partnerships/872762/",
+      "acquired_at": "2026-11-03T20:32:51.066907+00:00"
+    },
+    {
+      "rowid": 18014,
+      "source_id": "utility_dive",
+      "article_key": "f871b7bce564fa7f1b41a950cb046dd69033d91d9df29d045ce9f6a826a6a399",
+      "first_seen_at": "2026-11-03T20:32:03.662140+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "title": "Clean energy groups, states oppose MISO’s large load-generation study plan",
+      "url": "https://www.utilitydive.com/news/miso-large-load-lars-ferc-google-oms/849887/",
+      "acquired_at": "2026-11-03T20:32:53.127529+00:00"
+    }
+  ],
+  "new_origin_count": 38,
+  "new_article_outcomes": {
+    "UNAVAILABLE": 2,
+    "FULL": 36
+  },
+  "captures": [],
+  "other_component_changes": [],
+  "containers": [
+    {
+      "name": "doxagent-v2-v2-message-collector-1",
+      "image": "sha256:c425c60f8735eaa725f30c5c59df1fa23ea0166f8050d4f46b4ae9f22a87a053",
+      "started_at": "2026-11-03T20:31:13.657570033Z",
+      "status": "running",
+      "restarts": 0,
+      "build_commit": "4b6e7398345618cab5be3581b549a672fc6fccff"
+    },
+    {
+      "name": "doxagent-v2-v2-message-bus-1",
+      "image": "sha256:c425c60f8735eaa725f30c5c59df1fa23ea0166f8050d4f46b4ae9f22a87a053",
+      "started_at": "2026-11-03T20:31:27.088885569Z",
+      "status": "running",
+      "restarts": 0,
+      "build_commit": "4b6e7398345618cab5be3581b549a672fc6fccff"
+    },
+    {
+      "name": "doxagent-v2-v2-api-1",
+      "image": "sha256:c425c60f8735eaa725f30c5c59df1fa23ea0166f8050d4f46b4ae9f22a87a053",
+      "started_at": "2026-11-03T20:31:37.796113115Z",
+      "status": "running",
+      "restarts": 0,
+      "build_commit": "4b6e7398345618cab5be3581b549a672fc6fccff"
+    },
+    {
+      "name": "doxagent-v2-v2-content-enrichment-1",
+      "image": "sha256:bd6fa109ef1315e01f401d5750a01199c860a163036129356b69d898526f0b20",
+      "started_at": "2026-11-03T19:44:12.308592558Z",
+      "status": "running",
+      "restarts": 0,
+      "build_commit": "d87a54ec0149d3fa9584b0036f119194960b268f"
+    }
+  ],
+  "resources": [
+    {
+      "BlockIO": "862MB / 1.17GB",
+      "CPUPerc": "37.02%",
+      "Container": "doxagent-v2-v2-message-collector-1",
+      "ID": "d24b5ba23659",
+      "MemPerc": "8.63%",
+      "MemUsage": "353.4MiB / 4GiB",
+      "Name": "doxagent-v2-v2-message-collector-1",
+      "NetIO": "281MB / 9.63MB",
+      "PIDs": "25"
+    },
+    {
+      "BlockIO": "77.9MB / 320MB",
+      "CPUPerc": "82.43%",
+      "Container": "doxagent-v2-v2-message-bus-1",
+      "ID": "c303686e7d99",
+      "MemPerc": "3.90%",
+      "MemUsage": "159.6MiB / 4GiB",
+      "Name": "doxagent-v2-v2-message-bus-1",
+      "NetIO": "167kB / 382kB",
+      "PIDs": "20"
+    },
+    {
+      "BlockIO": "170MB / 4.46MB",
+      "CPUPerc": "0.41%",
+      "Container": "doxagent-v2-v2-api-1",
+      "ID": "4f369de076fa",
+      "MemPerc": "13.27%",
+      "MemUsage": "543.3MiB / 4GiB",
+      "Name": "doxagent-v2-v2-api-1",
+      "NetIO": "276kB / 828kB",
+      "PIDs": "43"
+    },
+    {
+      "BlockIO": "96.5MB / 217MB",
+      "CPUPerc": "26.31%",
+      "Container": "doxagent-v2-v2-content-enrichment-1",
+      "ID": "d8c86a0d9956",
+      "MemPerc": "6.76%",
+      "MemUsage": "276.8MiB / 4GiB",
+      "Name": "doxagent-v2-v2-content-enrichment-1",
+      "NetIO": "185MB / 4.58MB",
+      "PIDs": "15"
+    }
+  ]
+}

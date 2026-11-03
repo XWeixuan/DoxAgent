@@ -597,7 +597,7 @@ class GlobalPollScheduler:
             ("SHARED" if source.acquisition_mode.shared_distribution else "HEAD", {})
         ]
         if listing_enabled(source):
-            units = [(unit, {}) for unit in listing_units(source)]
+            units = [(unit, {}) for unit in listing_units(source, binding)]
         elif source.adapter_ref == "builtin:newswire_massive@1":
             from .newswire_sources import endpoint_units
             units = [(unit, {}) for unit in endpoint_units(source)]

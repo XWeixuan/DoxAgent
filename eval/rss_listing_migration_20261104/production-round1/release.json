@@ -1,0 +1,11 @@
+{
+  "commit": "4b6e7398345618cab5be3581b549a672fc6fccff",
+  "image": "sha256:c425c60f8735eaa725f30c5c59df1fa23ea0166f8050d4f46b4ae9f22a87a053",
+  "components": [
+    "v2-message-collector",
+    "v2-message-bus",
+    "v2-api"
+  ],
+  "at": "2026-11-03T20:32:21.871123+00:00",
+  "sources": 20
+}

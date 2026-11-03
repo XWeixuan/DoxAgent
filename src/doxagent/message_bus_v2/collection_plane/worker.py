@@ -616,6 +616,7 @@ class Collector:
             raise
         except Exception as exc:
             reason = getattr(exc, 'reason_code', None) or type(exc).__name__
+            state["last_error_message"] = type(exc).__name__ + ":" + str(exc)[:300]
             log.warning(
                 "collector request failed source=%s unit=%s reason=%s detail=%s",
                 source.source_id,

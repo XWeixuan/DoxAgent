@@ -2622,3 +2622,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 Bloomberg/X运行交付：Bloomberg七端点持续隔离测试、十目标正则、零正式消息/真实订阅/模型调用；X十账号与十真实绑定、单个官方活动连接及心跳验证，TikHub两源及旧绑定停用，原L1/L2/定义哈希不变。25项专项、六项双宽浏览器和十份API配置/绑定契约验收通过；Bloomberg全文及X自然帖子发布验收边界明确留存，详见docs/bloomberg-and-x-official-source-implementation-20261104.md。
 
 2026-11-04 RSS实时发现迁移：为20个既有源建立26个HTTP/JSON内部入口并复用原BODY；独立FEED调度、条件请求与列表变化去重，RSS保底保持失败状态和独立请求证据。16源轻量路径验证，Aviation Week/Army/DCD/Toms的完整覆盖或长缓存边界明确保留；新增真实样本与状态/隔离/身份复用测试，详见docs/rss-to-http-listing-migration-20261104.md。
+
+2026-11-04 RSS迁移首轮十分钟验收：已切换16源217/220成功，四已知覆盖/缓存阻塞保留40次失败RSS保底；原54绑定、监测词与非目标配置不变。连接故障同出口一次重试共用12秒预算，拒绝不重试，持久保存周期错误详情；Quantum固定US接口两个100条分段保留原200头部，modified驱动正文更新，企业内部feed选择保留。68项回归通过，进入第二轮发布观察。

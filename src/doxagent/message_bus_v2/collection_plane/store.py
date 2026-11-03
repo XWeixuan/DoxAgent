@@ -302,7 +302,11 @@ class AcquisitionStore:
                     (run_id + ":" + target.binding_id,),
                 ).fetchone()
                 prior_proof = json.loads(previous[0]) if previous else {}
-                target_proof = {**proof, "terminal_error": reason, "attempt_finished": True}
+                target_proof = {
+                    **proof, "terminal_error": reason,
+                    "terminal_error_message": state.get("last_error_message") if reason else None,
+                    "attempt_finished": True,
+                }
                 if not target_proof["list_validated"] and prior_proof.get("list_validated"):
                     target_proof.update(
                         {

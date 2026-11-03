@@ -16,6 +16,8 @@ from lxml import html
 from .schema import AcquisitionFailure, PollResult, sha256_text
 from .technology_sources import TechnologySource, article
 
+PRIMARY_TIMEOUT_SECONDS = 12
+
 
 @dataclass(frozen=True)
 class Listing:
@@ -132,8 +134,9 @@ RECIPES = {
     "quantum_zeitgeist": (
         Listing(
             "https://quantumzeitgeist.com/feed/",
-            "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=50&fields=ID,URL,title,date,excerpt,modified",
+            "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
             "wordpress",
+            "us-standard-5",
         ),
     ),
     "huggingnews_rss": (
@@ -216,8 +219,13 @@ def enabled(source):
     )
 
 
-def endpoint_units(source):
-    return {"FEED:" + sha256_text(r.feed)[:24]: r for r in RECIPES[source.source_id]}
+def endpoint_units(source, binding=None):
+    recipes = RECIPES[source.source_id]
+    if source.source_id == "enterprise_apps_official_rss" and binding is not None:
+        feeds = binding.source_parameters.get("rss_urls", source.default_parameters.get("rss_urls"))
+        if feeds is not None:
+            recipes = tuple(r for r in recipes if r.feed in feeds)
+    return {"FEED:" + sha256_text(r.feed)[:24]: r for r in recipes}
 
 
 def text(node):
@@ -231,6 +239,7 @@ def parse_listing(recipe, spec, raw, now):
         else html.fromstring(raw)
     )
     rows = []
+    updates = {}
     if recipe.parser == "frontier_api":
         spec = replace(spec, domain="datacenterfrontier.com")
         for item in json.loads(raw)["data"]["getContentStream"]["edges"]:
@@ -249,6 +258,7 @@ def parse_listing(recipe, spec, raw, now):
         spec = replace(spec, domain="quantumzeitgeist.com")
         for row in json.loads(raw)["posts"]:
             rows.append((row["URL"], row["title"], row["date"], row.get("excerpt")))
+            updates[row["URL"]] = row.get("modified")
     elif recipe.parser == "hugging":
         nodes = json.loads(raw)["nodes"]
         values = nodes[2]["data"]
@@ -272,6 +282,7 @@ def parse_listing(recipe, spec, raw, now):
             if row.get("template") == "article" and row.get("path", "").startswith("/news/"):
                 date = datetime.fromtimestamp(float(row["publisheddate"]), UTC).isoformat()
                 rows.append((row["path"], row["title"], date, row.get("description")))
+                updates[urljoin(recipe.url, row["path"])] = row.get("lastModified")
     elif recipe.parser.startswith("dod_"):
         kind = "400" if recipe.parser == "dod_contracts" else "9"
         for node in doc.xpath(
@@ -475,6 +486,7 @@ def parse_listing(recipe, spec, raw, now):
                 )
     elif recipe.parser == "wp_rest":
         for row in json.loads(raw):
+            updates[row["link"]] = row.get("modified_gmt")
             rows.append(
                 (
                     row["link"],
@@ -522,6 +534,9 @@ def parse_listing(recipe, spec, raw, now):
                 message.url = urljoin(recipe.url, url)
                 message.external_id = message.source_item_key = message.url
             message.metadata.update(discovery_method="http_listing", listing_url=recipe.url)
+            if updates.get(message.url):
+                message.raw_payload["updated_at"] = updates[message.url]
+                message.metadata["identity_evidence"]["updated_at"] = updates[message.url]
             messages[message.url] = message
     if not messages:
         raise ValueError("public_listing_empty_or_changed:" + recipe.parser)
@@ -537,6 +552,21 @@ class ListingAdapter:
     def __getattr__(self, name):
         return getattr(self.delegate, name)
 
+    async def _fetch(self, url, spec, **kwargs):
+        # A dropped pooled connection can recover immediately on the same route.
+        # Both attempts share one deadline; HTTP refusals never retry or rotate.
+        async with asyncio.timeout(PRIMARY_TIMEOUT_SECONDS):
+            for attempt in range(2):
+                try:
+                    return await self.http.fetch(url, spec, **kwargs)
+                except Exception as exc:
+                    if attempt or not (
+                        isinstance(exc, (TimeoutError, OSError))
+                        or getattr(exc, "code", None) in {7, 28, 35, 52, 56}
+                    ):
+                        raise
+                    await asyncio.sleep(0.2)
+
     async def poll(self, context):
         if not enabled(context.source) or context.window_cutoff is not None:
             return await self.delegate.poll(context)
@@ -548,7 +578,7 @@ class ListingAdapter:
         return await self._poll(context, shared=True)
 
     async def _poll(self, context, *, shared):
-        recipes = endpoint_units(context.source)
+        recipes = endpoint_units(context.source, getattr(context, "binding", None))
         selected = recipes.get(context.acquisition_unit)
         if selected is None:
             if context.acquisition_unit not in {"ALL", "HEAD", "SHARED"}:
@@ -611,7 +641,11 @@ class ListingAdapter:
             if recipe.coverage_review:
                 raise ValueError("public_listing_coverage_review:" + recipe.coverage_review)
             headers = {"Cache-Control": "no-cache"}
-            if previous.get("baseline") and not getattr(context, "force_refresh", False):
+            if (
+                previous.get("baseline")
+                and recipe.parser != "wordpress"
+                and not getattr(context, "force_refresh", False)
+            ):
                 headers.update(
                     {
                         k: previous[v]
@@ -619,7 +653,7 @@ class ListingAdapter:
                         if previous.get(v)
                     }
                 )
-            async with context.request_permit():
+            async with context.request_permit(), asyncio.timeout(PRIMARY_TIMEOUT_SECONDS):
                 url = recipe.url
                 if recipe.fresh_query:
                     url += (
@@ -629,7 +663,7 @@ class ListingAdapter:
                     )
                 if recipe.parser == "frontier_api":
                     headers["x-tenant-key"] = "ebm_datacenterfrontier"
-                    capture = await self.http.fetch(
+                    capture = await self._fetch(
                         url,
                         spec,
                         headers=headers,
@@ -645,9 +679,15 @@ class ListingAdapter:
                 else:
                     if recipe.method == "POST":
                         headers["X-Requested-With"] = "XMLHttpRequest"
-                    capture = await self.http.fetch(
-                        url, spec, headers=headers, method=recipe.method
-                    )
+                    capture = await self._fetch(url, spec, headers=headers, method=recipe.method)
+                    if recipe.parser == "wordpress" and capture.status == 200:
+                        # Retain the old 200-item RSS discovery window, without bodies.
+                        second = await self._fetch(url + "&offset=100", spec, headers=headers)
+                        if second.status != 200:
+                            raise ValueError("public_listing_page2_http_" + str(second.status))
+                        combined = json.loads(capture.text)
+                        combined["posts"].extend(json.loads(second.text)["posts"])
+                        capture = replace(capture, text=json.dumps(combined))
             age = capture.headers.get("age")
             if recipe.max_age_seconds is not None and age and float(age) > recipe.max_age_seconds:
                 raise ValueError("public_listing_stale_cache_age:" + age)
@@ -672,13 +712,22 @@ class ListingAdapter:
                             message.published_at.isoformat()
                             if message.publication_time_basis != "UNKNOWN_FIRST_SEEN"
                             else None,
+                            message.raw_payload.get("updated_at"),
                         ]
                     )
                 )
                 if seen.get(message.url) != signature or getattr(context, "force_refresh", False):
                     changed.append(message)
                 seen[message.url] = signature
-            proven = validate_listing(events or [], since=offset)
+            parsed_ids = [
+                e["physical_request_id"]
+                for e in (events or [])[offset:]
+                if e.get("role", "listing") == "listing"
+                and e.get("response_received_at")
+                and e.get("status_code") in {200, 304}
+                and not e.get("error_type")
+            ]
+            proven = validate_listing(events or [], parsed_ids, since=offset)
             return PollResult(
                 messages=changed,
                 window_done=True,

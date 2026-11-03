@@ -108,7 +108,7 @@
     "source_id": "quantum_zeitgeist",
     "index": 0,
     "fixture": "quantum_zeitgeist-0.html",
-    "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=50&fields=ID,URL,title,date,excerpt,modified",
+    "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
     "parser": "wordpress"
   },
   {

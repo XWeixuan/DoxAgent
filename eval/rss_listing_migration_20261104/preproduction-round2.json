@@ -1,0 +1,153 @@
+{
+  "source_id": "quantum_zeitgeist",
+  "index": 0,
+  "at": "2026-11-03T20:55:18.645878+00:00",
+  "listing": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+  "method": {
+    "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+    "method": "http_listing",
+    "status": 200,
+    "items": 200,
+    "validated_request_ids": [
+      "038a64bfd9d04465b6ae3faa67c295c8",
+      "9c990b76cb154db58f85fe0ab389082a"
+    ]
+  },
+  "items": 200,
+  "failures": [],
+  "seconds": 2.923,
+  "calls": [
+    {
+      "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+      "status": 200,
+      "seconds": 1.471,
+      "bytes": 54495,
+      "age": null,
+      "date": "Tue, 03 Nov 2026 20:55:17 GMT",
+      "modified": null,
+      "cache_control": "no-cache, must-revalidate, max-age=0, no-store, private"
+    },
+    {
+      "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified&offset=100",
+      "status": 200,
+      "seconds": 1.4,
+      "bytes": 69194,
+      "age": null,
+      "date": "Tue, 03 Nov 2026 20:55:18 GMT",
+      "modified": null,
+      "cache_control": "no-cache, must-revalidate, max-age=0, no-store, private"
+    }
+  ],
+  "samples": [
+    {
+      "admission_context": null,
+      "publication_time_basis": "EXACT",
+      "external_id": "https://quantumzeitgeist.com/zitterbewegung-timed-light-pulses-optical-dirac-systems/",
+      "source_item_key": "https://quantumzeitgeist.com/zitterbewegung-timed-light-pulses-optical-dirac-systems/",
+      "title": "Sun Yat-Sen Team Boosts ‘Zitterbewegung’ with Timed Light Pulses",
+      "body": null,
+      "summary": "Static mediums suppress observable trembling motion by absorbing interbranch mixing into dressed eigenstates. Now, through periodically modulated system properties, researchers demonstrate parametrically amplified coherence, directly enhancing that same ‘Zitterbewegung’. This work establishes a framework linking this quantum behaviour with bosonic Bogoliubov dynamics for potential control over light propagation.",
+      "source": "Quantum Zeitgeist",
+      "source_name": "quantumzeitgeist.com",
+      "publisher_name": "Quantum Zeitgeist",
+      "url": "https://quantumzeitgeist.com/zitterbewegung-timed-light-pulses-optical-dirac-systems/",
+      "raw_url": "https://quantumzeitgeist.com/zitterbewegung-timed-light-pulses-optical-dirac-systems/",
+      "published_at": "2026-11-03T19:44:00Z",
+      "raw_payload": {
+        "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+        "updated_at": "2026-11-03T13:28:48+00:00"
+      },
+      "metadata": {
+        "publisher_domain": "quantumzeitgeist.com",
+        "content_language": "en",
+        "identity_evidence": {
+          "id_kind": "canonical_url",
+          "url_kind": "article",
+          "mutable": true,
+          "updated_at": "2026-11-03T13:28:48+00:00"
+        },
+        "provider": "technology_public",
+        "language": "en",
+        "body_access_scope": "public",
+        "discovery_method": "http_listing",
+        "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified"
+      }
+    },
+    {
+      "admission_context": null,
+      "publication_time_basis": "EXACT",
+      "external_id": "https://quantumzeitgeist.com/stmicroelectronics-post-quantum-mcu-hardware-cryptography/",
+      "source_item_key": "https://quantumzeitgeist.com/stmicroelectronics-post-quantum-mcu-hardware-cryptography/",
+      "title": "STMicroelectronics launches MCU with hardware for post-quantum cryptography",
+      "body": null,
+      "summary": "STMicroelectronics’ new STM32G5 MCU offers hardware support for post-quantum cryptography, helping designs meet regulations from NIST and the European Commission.",
+      "source": "Quantum Zeitgeist",
+      "source_name": "quantumzeitgeist.com",
+      "publisher_name": "Quantum Zeitgeist",
+      "url": "https://quantumzeitgeist.com/stmicroelectronics-post-quantum-mcu-hardware-cryptography/",
+      "raw_url": "https://quantumzeitgeist.com/stmicroelectronics-post-quantum-mcu-hardware-cryptography/",
+      "published_at": "2026-11-03T18:12:23Z",
+      "raw_payload": {
+        "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+        "updated_at": "2026-11-03T18:12:25+00:00"
+      },
+      "metadata": {
+        "publisher_domain": "quantumzeitgeist.com",
+        "content_language": "en",
+        "identity_evidence": {
+          "id_kind": "canonical_url",
+          "url_kind": "article",
+          "mutable": true,
+          "updated_at": "2026-11-03T18:12:25+00:00"
+        },
+        "provider": "technology_public",
+        "language": "en",
+        "body_access_scope": "public",
+        "discovery_method": "http_listing",
+        "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified"
+      }
+    },
+    {
+      "admission_context": null,
+      "publication_time_basis": "EXACT",
+      "external_id": "https://quantumzeitgeist.com/univ-circuit-quality-factor-exceeds-3d/",
+      "source_item_key": "https://quantumzeitgeist.com/univ-circuit-quality-factor-exceeds-3d/",
+      "title": "Circuit quality factor exceeds 10^4 in a 3D-integrated quantum device",
+      "body": null,
+      "summary": "3D integration of a hybrid quantum dot circuit-QED device addresses low microwave losses, a challenge for experiments requiring exotic material stacks. The process, using dense indium bump interconnects and Niobium Nitride (NbN) thin films, achieves internal quality factors above 10^5 in the single photon regime.",
+      "source": "Quantum Zeitgeist",
+      "source_name": "quantumzeitgeist.com",
+      "publisher_name": "Quantum Zeitgeist",
+      "url": "https://quantumzeitgeist.com/univ-circuit-quality-factor-exceeds-3d/",
+      "raw_url": "https://quantumzeitgeist.com/univ-circuit-quality-factor-exceeds-3d/",
+      "published_at": "2026-11-03T18:11:58Z",
+      "raw_payload": {
+        "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+        "updated_at": "2026-11-03T18:12:00+00:00"
+      },
+      "metadata": {
+        "publisher_domain": "quantumzeitgeist.com",
+        "content_language": "en",
+        "identity_evidence": {
+          "id_kind": "canonical_url",
+          "url_kind": "article",
+          "mutable": true,
+          "updated_at": "2026-11-03T18:12:00+00:00"
+        },
+        "provider": "technology_public",
+        "language": "en",
+        "body_access_scope": "public",
+        "discovery_method": "http_listing",
+        "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified"
+      }
+    }
+  ],
+  "validated": 2,
+  "repeat": {
+    "items": 0,
+    "failures": []
+  },
+  "rss_items": 200,
+  "recent_rss_items": 102,
+  "recent_rss_missing": []
+}

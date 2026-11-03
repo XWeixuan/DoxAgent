@@ -385,6 +385,13 @@ async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_su
         and state["last_error_code"] == "HTTP_LISTING_FAILED_RSS_FALLBACK"
     )
     with store.connect() as d:
+        proof = json.loads(
+            d.execute(
+                "select data_json from cycles where status!='SCHEDULE' "
+                "order by finished_at desc limit 1"
+            ).fetchone()[0]
+        )
+        assert proof["terminal_error_message"] == "HTTP403; RSS still available"
         assert (
             d.execute(
                 "select status from cycles where status!='SCHEDULE' "
@@ -467,3 +474,84 @@ def test_legacy_shared_projection_also_preserves_failure_and_old_freshness(tmp_p
     assert state.last_error_code == failure.error_code
     assert state.last_error_message == "403"
     repo.close()
+
+
+async def test_transport_retry_recovers_on_same_route_without_rss_or_budget_amplification():
+    http = Http(TimeoutError("pooled connection lost"), capture())
+    delegate = SimpleNamespace(poll_shared=AsyncMock())
+    result = await ListingAdapter(delegate, http).poll_shared(context())
+    assert result.messages and not result.failures
+    assert len(http.calls) == 2
+    assert http.calls[0][0:2] == http.calls[1][0:2]
+    delegate.poll_shared.assert_not_called()
+
+
+async def test_transient_retries_share_one_short_deadline(monkeypatch):
+    from doxagent.message_bus_v2 import public_listing
+
+    monkeypatch.setattr(public_listing, "PRIMARY_TIMEOUT_SECONDS", 0.02)
+
+    class Slow:
+        calls = 0
+
+        async def fetch(self, *args, **kwargs):
+            self.calls += 1
+            await asyncio.sleep(5)
+
+    http = Slow()
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    result = await asyncio.wait_for(ListingAdapter(delegate, http).poll_shared(context()), 0.5)
+    assert result.failures and http.calls == 1
+    delegate.poll_shared.assert_awaited_once()
+
+
+def test_enterprise_internal_feed_opt_out_is_preserved():
+    from doxagent.message_bus_v2.public_listing import endpoint_units
+
+    source = definition("enterprise_apps_official_rss")
+    salesforce = RECIPES[source.source_id][1]
+    binding = TickerSourceBinding(
+        binding_id="SNOW:" + source.source_id,
+        ticker="SNOW",
+        source_id=source.source_id,
+        source_parameters={"rss_urls": [salesforce.feed]},
+    )
+    assert list(endpoint_units(source, binding).values()) == [salesforce]
+
+
+async def test_quantum_two_pages_preserve_200_item_window_and_both_transport_proofs():
+    first = capture("quantum_zeitgeist")
+    data = json.loads(first.text)
+    data["posts"] = [{**row, "URL": row["URL"].rstrip("/") + "-page2/"} for row in data["posts"]]
+    second = Capture(200, first.url + "&offset=100", json.dumps(data), {})
+    http = Http(first, second)
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        result = await ListingAdapter(SimpleNamespace(), http).poll_shared(
+            context("quantum_zeitgeist")
+        )
+        assert not result.failures and len(result.messages) == 4
+        assert len(result.acquisition_metadata["validated_request_ids"]) == 2
+        assert "offset=100" in http.calls[1][0]
+        assert all(call[1].route == "us-standard-5" for call in http.calls)
+    finally:
+        REQUESTS.reset(token)
+
+
+async def test_api_body_only_modification_is_a_material_update_without_repeating_unchanged_rows():
+    from doxagent.message_bus_v2.body_results import update_hint
+
+    first = capture("enterprise_apps_official_rss")
+    data = json.loads(first.text)
+    data[0]["modified_gmt"] = "2026-11-03T21:00:00"
+    second = Capture(200, first.url, json.dumps(data), {})
+    http = Http(first, second)
+    adapter = ListingAdapter(SimpleNamespace(), http)
+    ctx = context("enterprise_apps_official_rss")
+    initial = await adapter.poll_shared(ctx)
+    ctx.checkpoint = initial.next_checkpoint
+    updated = await adapter.poll_shared(ctx)
+    assert len(updated.messages) == 1
+    assert updated.messages[0].title == initial.messages[0].title
+    assert update_hint(updated.messages[0]) != update_hint(initial.messages[0])

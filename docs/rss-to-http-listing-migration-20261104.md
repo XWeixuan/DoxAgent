@@ -1,6 +1,6 @@
 # RSS → 轻量网页发现迁移与验收（2026-11-04）
 
-本轮审查了生产中的 20 个外部源、26 个内部入口、54 个启用订阅。16 个源找到了可用 HTTP/JSON 发现路径；另 4 个源保留可执行的解析/探测能力及 RSS 保底，但不把未通过覆盖或及时性验收的路径标成成功。本文生产验收部分在发布观察后补充。
+本轮审查了生产中的 20 个外部源、26 个内部入口、54 个启用订阅。16 个源找到了可用 HTTP/JSON 发现路径；另 4 个源保留可执行的解析/探测能力及 RSS 保底，但不把未通过覆盖或及时性验收的路径标成成功。第一轮生产观察已完成，下面保留完整统计和第二轮修复范围。
 
 ## 1. 逐源入口与处理结果
 
@@ -20,7 +20,7 @@
 | `aviationweek_rss` | `https://aviationweek.com/search` | GET HTML | 完整列表运行时待评估 |
 | `utility_dive` | `https://www.utilitydive.com/` | GET HTML | 轻量入口与栏目对齐通过 |
 | `etnews_rss` | `https://www.etnews.com/news/section.html?id1=06` | GET HTML | 轻量入口与栏目对齐通过 |
-| `quantum_zeitgeist` | `https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=50&fields=ID,URL,title,date,excerpt,modified` | GET JSON | 轻量入口与栏目对齐通过 |
+| `quantum_zeitgeist` | `https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified` | GET JSON | 轻量入口与栏目对齐通过 |
 | `huggingnews_rss` | `https://huggingnews.com/__data.json` | GET JSON | 轻量入口与栏目对齐通过 |
 | `quantum_computing_report` | `https://quantumcomputingreport.com/news/` | GET HTML | 轻量入口与栏目对齐通过 |
 | `tomshardware_rss` | `https://www.tomshardware.com/archive` | GET HTML | 列表长缓存，RSS保底 |
@@ -55,7 +55,7 @@ HTTP 拒绝、超时、空壳/结构变化、覆盖未通过，或指定源返�
 - NSF GET `/news` 实测命中长达约 6 小时的 CDN 缓存；查询参数未绕开，`/news/releases` 出现 AWS WAF 202。相同公开只读列表的 POST + `X-Requested-With: XMLHttpRequest` 多次返回 `must-revalidate, no-cache, private` 新响应，采用该方式；没有提交表单或写入站点。
 - CRN HTML 是 JS 外壳；沿网页 category template → shared.js → index-worker.js，找到网页本身调用的 `query-index.json?sheet=cloud/security/data-center`。保留三个栏目，不用全站首页替代。
 - HuggingNews 采用同一 Svelte 页面的 `__data.json`，解析引用表而不执行 JS；使用 story 的 publishedAt，不用 eventTimeApprox 冒充该源的发稿时间。
-- Quantum Zeitgeist 首页 429；官方 WordPress 公共 API 无浏览器即可读，列表字段约 27 KB，去掉约 940 KB 响应中的正文等无关字段。50 条作为实时头部，冻结补扫保留旧 RSS 能力。
+- Quantum Zeitgeist 首页 429；官方 WordPress 公共 API 无浏览器即可读，首轮 50 条列表约 27 KB；第二轮改为固定 US HTTP 出口、两个 100 条分段（约 124 KB），实测 200 个不同文章 ID、最近一天 102 条 RSS 样本零缺口，保留原 RSS 的 200 条头部范围。两段和短重试共用 12 秒预算，不下载正文；冻结补扫保留旧 RSS 能力。固定出口是在独立探测后选择的配置，不是遇到 429 自动切换。
 - TechNews AI 栏目裸 URL 曾返回约 15 小时缓存；按分钟变化的查询参数实测返回新响应。Canary、QCR、Utility Dive、SAP、Workday 的刷新方式也分别验证，不对所有站点盲目套用。
 - ETNews 原 `06.xml` 的实际主题是“电子”，对齐 `/news/section.html?id1=06`；The Elec 对齐 S1N2 半导体栏目，保留 `idxno` 区分文章。韩国/台湾显示时间按当地时区解析；仅有日期的条目标 DATE；Utility Dive 无列表精确时间的条目标 UNKNOWN_FIRST_SEEN，交由原 BODY 链补准。
 
@@ -77,6 +77,18 @@ HTTP 拒绝、超时、空壳/结构变化、覆盖未通过，或指定源返�
 
 ## 6. 生产发布与十分钟观察
 
-待统一发布后填入不可变 commit/image、配置核对、按源物理周期、延迟、接纳与资源数据。最多进行两轮“发布 → 10 分钟观察 → 针对可修复故障修复”，不自动创建浏览器身份。十分钟没有自然新稿时，只验收采集健康与资源，不能据此宣称发稿到发现的端到端延迟已经降低。
+第一轮生产 commit 为 `4b6e7398345618cab5be3581b549a672fc6fccff`，镜像 `sha256:c425c60f8735eaa725f30c5c59df1fa23ea0166f8050d4f46b4ae9f22a87a053`。仅更新 Collector、Message Bus、API；BODY 和其他组件保持不变。
+
+观察窗口为北京时间 **2026-11-04 04:32:21.871—04:42:22.332**，600.46 秒。26 个内部入口各完成 10 次真实物理周期，共 260 次，不按 ticker 扇出重复计数。
+
+- 16 个已切换源、22 个内部入口：217/220 次网页列表成功（98.64%）；DoD Releases、Utility Dive 各一次连接/响应失败后恢复，Quantum Zeitgeist 一次 429 后恢复。429 当轮 API 与 RSS 均被拒绝，如实失败，不重试拒绝响应。
+- 4 个已知例外各 10 次 RSS 保底周期，40 次均明确显示失败；没有被 RSS 的可用性“漂白”为网页成功。全 20 源原始口径为 217/260 次成功，两种口径分别保留。
+- 所有源的订阅集合及绑定业务参数、监测词、非目标源配置、其他组件版本核对一致。20 个源模式均为 http_listing，54 个启用绑定保留；配置重跑全部 unchanged。
+- Collector 采样约 332—369 MiB、25 个 PID；API、Bus 和 BODY 亦记录绝对采样值，不能把其他来源并行负载算成本轮增量。没有新增浏览器进程/身份。
+- 切换对齐产生的 38 个来源关联中，36 个关联已有/取得 FULL，2 个 UNAVAILABLE；包含旧稿的首次来源对齐，不能称为 38 篇真实新稿，更不能据此计算真实新文章正文成功率。
+
+第二轮针对首轮故障与窗口覆盖补齐：同一出口最多重试一次，间隔 0.2 秒，两次共用 12 秒主路径预算，403/429 不重试、不轮换出口。另把 terminal_error_message 留入持久周期证据，便于恢复后仍能解释历史失败。另保留企业源按 binding 选择的内部 feed；JSON 提供的 modified/lastModified 纳入材料更新证据，使正文发生更新而标题未改时仍能重新验证。第二轮相关 68 项测试通过（含 47 项本轮专项）；两个分段均绑定真实解析证明，任一段失败保留失败 RSS 保底。第二轮仅更新 Collector/Bus，源配置重跑应无变化，BODY/API/浏览器保持第一轮状态。完成后再观察 10 分钟；本轮不进行第三次发布循环。
+
+十分钟没有自然新稿时，只验收采集健康与资源，不能据此宣称发稿到发现的端到端延迟已经降低。
 
 回退操作沿用源版本回滚，或把指定源 `discovery_mode` 改为 `rss` 以完全恢复旧发现实现；正文链路与已提交消息不回滚。
