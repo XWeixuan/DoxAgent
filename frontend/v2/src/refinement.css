@@ -1761,6 +1761,9 @@
   }
 }
 @media (min-width: 1181px) and (max-width: 1399px) {
+  .overview .metric-card h3 {
+    min-height: 42px;
+  }
   .overview .metric-card:nth-child(5) h3 svg {
     display: none;
   }

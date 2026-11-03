@@ -159,7 +159,7 @@ export function metrics(period: W.Period): W.OverviewMetrics {
     trade_triggered: m("trade_triggered", 6, 5, "20"),
     messages: m("messages", 1248, 1016, "22.8"),
     api_token_cost: m("api_token_cost", 18.42, 20.5, "-10.1", "USD"),
-    nonroutine_repairs: metric("nonroutine_repairs", "0"),
+    failed_cases: m("failed_cases", 3, 2, "50"),
     paper_realized_net_pnl: m("paper_pnl", 286.5, 214.2, "33.8", "USD"),
     live_realized_net_pnl: m("live_pnl", 124.8, 108.8, "14.7", "USD"),
   };

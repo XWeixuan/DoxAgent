@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "1980bbf72cee26d8875bc6b7de8e0eb52a9c912dbf3589e4c2c943e480f0e979",
+  "source_sha256": "36dbdcfc8cc70d28a9d0999f367ffdae333ef6c34a789b7a58dddda4d35adbde",
   "$defs": {
     "Id": {
       "type": "string"
@@ -1849,7 +1849,7 @@
         "api_token_cost": {
           "$ref": "#/$defs/Metric"
         },
-        "nonroutine_repairs": {
+        "failed_cases": {
           "$ref": "#/$defs/Metric"
         },
         "paper_realized_net_pnl": {
@@ -1865,7 +1865,7 @@
         "trade_triggered",
         "messages",
         "api_token_cost",
-        "nonroutine_repairs",
+        "failed_cases",
         "paper_realized_net_pnl",
         "live_realized_net_pnl"
       ],

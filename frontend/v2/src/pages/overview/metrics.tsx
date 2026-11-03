@@ -5,7 +5,7 @@ import {
   ArrowLeftRight,
   MessagesSquare,
   Coins,
-  Wrench,
+  CircleAlert,
   ChartNoAxesCombined,
   Info,
 } from "lucide-react";
@@ -145,14 +145,15 @@ export function Metrics({
       note: data.api_token_cost,
     },
     {
-      title: "非例行维护触发数",
+      title: "下游Case判定失败数",
       content: (
         <>
-          {metricText(data.nonroutine_repairs)}
-          <small>次</small>
+          {metricText(data.failed_cases)}
+          <small>个</small>
         </>
       ),
-      foot: null,
+      foot: <Comparison metric={data.failed_cases} />,
+      note: data.failed_cases,
     },
     {
       title: `${prefix}收益变化`,
@@ -189,7 +190,7 @@ export function Metrics({
                 ArrowLeftRight,
                 MessagesSquare,
                 Coins,
-                Wrench,
+                CircleAlert,
                 ChartNoAxesCombined,
               ][i];
               return <Icon aria-hidden="true" />;

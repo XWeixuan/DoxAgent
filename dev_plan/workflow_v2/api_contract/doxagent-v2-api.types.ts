@@ -207,7 +207,7 @@ export interface OverviewMetrics {
   trade_triggered: Metric;
   messages: Metric;
   api_token_cost: Metric;
-  nonroutine_repairs: Metric;
+  failed_cases: Metric;
   paper_realized_net_pnl: Metric;
   live_realized_net_pnl: Metric;
 }
