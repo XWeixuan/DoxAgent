@@ -302,6 +302,11 @@ class NativeChallenge:
 
     async def prepare_retry(self, expected, *, on_dispatch=None):
         """A native mouse click on one visible RETRY, never a puzzle answer or reload."""
+        self.retry_stage='FOCUS'
+        async with self.connection() as call:
+            await call('Target.activateTarget', {'targetId':self.target.target_id})
+            await call('Page.bringToFront')
+        self.retry_stage='REVALIDATE'
         scene = await self.inspect()
         if (scene.get('scene_state') != 'RETRY_READY' or not scene.get('retry_control')
                 or scene.get('url') != expected.get('url')
@@ -324,14 +329,23 @@ class NativeChallenge:
             if not (0 <= x <= 10000 and 0 <= y <= 10000):
                 raise RuntimeError('solver_retry_control_outside_view')
             self.check()
+            self.retry_stage='MOVE'
             await call('Input.dispatchMouseEvent', {'type':'mouseMoved','x':x,'y':y})
             if on_dispatch is not None:
                 await on_dispatch()  # Persist uncertainty only at the actual mutation boundary.
+            self.retry_stage='PRESS_RELEASE'
             for kind in ('mousePressed','mouseReleased'):
-                await call('Input.dispatchMouseEvent', {'type':kind,'x':x,'y':y,'button':'left','clickCount':1})
+                await call('Input.dispatchMouseEvent', {'type':kind,'x':x,'y':y,'button':'left',
+                    'buttons':1 if kind=='mousePressed' else 0,'clickCount':1})
+                if kind=='mousePressed':await asyncio.sleep(.08)
+            self.retry_stage='AFTER_ACTION'
             from .schema import digest_json
-            after = await observe_verification_document(call)
-            await self._evidence(call,after,'after_action',digest_json([scene['url'],'retry_clicked']))
+            try:
+                async with asyncio.timeout(3):
+                    after = await observe_verification_document(call)
+                    await self._evidence(call,after,'after_action',digest_json([scene['url'],'retry_clicked']))
+            except (TimeoutError,RuntimeError):
+                pass  # Input ACKs are durable proof; a navigating screenshot is not an input failure.
 
     async def reload(self):
         async with self.connection() as call:

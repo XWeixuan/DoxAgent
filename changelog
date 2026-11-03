@@ -2587,3 +2587,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Massive测试去重验收：复用既有完整正文fingerprint识别跨URL同文，重复仅记录TEST_DUPLICATE、不重复测试发布；保持ARTICLE_ONCE和正式生产去重边界，10项专项测试通过。
 
 2026-11-03 Massive来源观测补齐：在既有采集回执记录HTTP耗时/响应大小、列表时间窗口和连续窗口无交集风险，不增加服务或表；短feed覆盖风险与真实漏抓分开，10项专项通过。
+2026-11-03 Reuters RETRY链：现有主备均为输入前NOT_DISPATCHED三次封顶且无当前付费任务；复现后台标签原生mouseMoved超时，激活原页后输入ACK正常。修复聚焦/按钮位/旧无输入锁闩升级与阶段记账，后置截图超时不再否定输入ACK。截图屏幕坐标路径实测点击仍遇本地滑块加载问题，新增同原页、真实可见t=fe、已ACK新鲜RETRY后的单次Provider bootstrap，保留出口/任务幂等/费用及原页验证门槛；真实验收见docs/reuters-retry-chain-repair-20261103.md。

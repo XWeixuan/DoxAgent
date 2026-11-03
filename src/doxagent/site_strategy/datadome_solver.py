@@ -3,7 +3,7 @@
 import json
 from contextlib import nullcontext
 from datetime import datetime, timedelta
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit, parse_qs
 
 import httpx
 
@@ -81,6 +81,32 @@ class SolverError(RuntimeError):
 def scene_key(scene):
     # Presentation state may change while the same paid challenge is processing.
     return digest_json({key: scene.get(key) for key in ("url", "website", "user_agent")})
+
+
+def retry_provider_bootstrap(recovery, scene):
+    """One actual t=fe frame after acknowledged RETRY; provider loads its own widget.
+
+    Local canvas rendering is not a 2Captcha API prerequisite. Keep exact owned
+    scene, fresh action and existing paid/egress limits, never fabricate a URL.
+    """
+    action=recovery.scene_preparation
+    if (recovery.site_id!='reuters' or action.get('status')!='CLICKED'
+            or action.get('preparation_version',1)<2
+            or action.get('instance_id')!=recovery.original_instance_id
+            or action.get('target_id')!=recovery.original_target_id
+            or scene.get('visible') is not True or not scene.get('loaded_frame_id')
+            or scene.get('scene_state') not in {'RETRY_READY','SLIDER_LOADING'}):
+        return False
+    try:
+        age=(utc_now()-datetime.fromisoformat(action['started_at'])).total_seconds()
+        p=urlsplit(scene.get('url') or '')
+        query=parse_qs(p.query)
+        return (5<=age<=120 and p.scheme=='https' and p.hostname
+            and (p.hostname=='captcha-delivery.com' or p.hostname.endswith('.captcha-delivery.com'))
+            and p.port in {None,443} and not p.username and p.path=='/captcha/'
+            and query.get('t')==['fe'] and all(query.get(k) for k in ('cid','initialCid','hash')))
+    except (KeyError,ValueError,TypeError):
+        return False
 
 
 class TwoCaptcha:
@@ -307,6 +333,12 @@ class DataDomeSolver:
             return False
         recovery=current
         previous = recovery.scene_preparation
+        # Release only an old, proven no-input preflight latch after this input
+        # fix. Paid jobs and actual/uncertain click counts remain unchanged.
+        legacy_preflight = (previous.get('status')=='NOT_DISPATCHED'
+            and previous.get('preparation_version',1)<2 and not previous.get('attempt_no'))
+        if legacy_preflight:
+            previous={**previous,'preflight_failures':0}
         signature = scene_key(scene)
         now=utc_now()
         if scene.get('state') == 'RETRY':
@@ -328,7 +360,8 @@ class DataDomeSolver:
             action={ 'retry_action_id':new_id('retry'), 'scene_signature':signature,
                 'instance_id':recovery.original_instance_id,'target_id':recovery.original_target_id,
                 'attempt_no':attempts+1,'started_at':now.isoformat(),'status':'PREPARING',
-                'preflight_failures':int(previous.get('preflight_failures',0))}
+                'preflight_failures':int(previous.get('preflight_failures',0)),
+                'preparation_version':2}
             value=recovery.model_copy(update={'scene_preparation':action})
             self.coordinator.store.save_recovery(value,expected_generation=recovery.generation)
             async def dispatched():
@@ -338,7 +371,9 @@ class DataDomeSolver:
                     expected_generation=recovery.generation)
             try:
                 await browser.prepare_retry(scene,on_dispatch=dispatched)
-            except Exception:
+            except Exception as exc:
+                action.update(failure_stage=getattr(browser,'retry_stage','UNKNOWN'),
+                              error_type=type(exc).__name__)
                 if action['status']=='PREPARING':
                     action.update(status='NOT_DISPATCHED',attempt_no=attempts,
                                   preflight_failures=action['preflight_failures']+1)
@@ -346,7 +381,8 @@ class DataDomeSolver:
                         value.model_copy(update={'scene_preparation':dict(action)}),
                         expected_generation=recovery.generation)
                     self.coordinator.event(recovery,'DATADOME_RETRY_NOT_DISPATCHED',
-                                           retry_action_id=action['retry_action_id'])
+                        retry_action_id=action['retry_action_id'],stage=action['failure_stage'],
+                        error_type=action['error_type'])
                 raise
             action={**action,'status':'CLICKED'}
             self.coordinator.store.save_recovery(value.model_copy(update={'scene_preparation':action}),
@@ -515,7 +551,8 @@ class DataDomeSolver:
                     return (
                         True  # Next tick must prove the real listing/body, never mark healthy here.
                     )
-                if scene['state'] != 'SOLVABLE':
+                provider_bootstrap=retry_provider_bootstrap(recovery,scene)
+                if scene['state'] != 'SOLVABLE' and not provider_bootstrap:
                     preparing=await self.prepare_scene(recovery,browser,scene)
                     if active and active.get('status') == 'WAITING_SLIDER':
                         reason='DATADOME_'+scene['state']
@@ -536,6 +573,7 @@ class DataDomeSolver:
                     return False
                 if active is None:
                     active = self.new_job(recovery, scene, route)
+                    active['admission']='ACKNOWLEDGED_RETRY_PROVIDER_BOOTSTRAP' if provider_bootstrap else 'LOCAL_SLIDER_READY'
                 with self.coordinator.service.repository.transaction() as db:
                     count = db.execute(
                         "select count(*) from datadome_solver_jobs where "

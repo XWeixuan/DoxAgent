@@ -187,6 +187,7 @@ async def test_native_retry_uses_exact_current_owner_and_native_input(monkeypatc
         yield call
 
     browser = NativeChallenge.__new__(NativeChallenge)
+    browser.target = type('Target', (), {'target_id':'root'})()
     browser.inspect = AsyncMock(return_value=scene)
     browser.connection = connection
     browser.check = lambda: None
