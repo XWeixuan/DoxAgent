@@ -561,6 +561,7 @@ class IbkrNewsAdapter:
             cast(dict[str, object], providers_value) if isinstance(providers_value, dict) else {}
         )
         messages: list[RawMessageInput] = []
+        empty_count = 0
         for row in rows:
             published = _published(row.get("time"))
             if published is not None and (
@@ -573,14 +574,16 @@ class IbkrNewsAdapter:
             link_match = re.search(
                 r'https?://[^\s"<>]+', raw_body or str(row.get("extraData") or "")
             )
-            body = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", raw_body))).strip() or None
+            body = None if row.get('articleType') == 0 and isinstance(row.get('articleText'), str) else (
+                re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", raw_body))).strip() or None)
             url = (
                 link_match.group(0).rstrip(".,)")
                 if link_match
                 else "https://www.interactivebrokers.com/en/trading/providers.php"
             )
             publisher = str(providers.get(provider_code) or provider_code)
-            messages.append(
+            from .ibkr_identity import normalize_message
+            message = normalize_message(
                 RawMessageInput(
                     external_id=f"{provider_code}:{article_id}",
                     source_item_key=f"{provider_code}:{article_id}",
@@ -610,6 +613,10 @@ class IbkrNewsAdapter:
                     },
                 )
             )
+            if message.metadata.get('ibkr_content_kind') == 'empty':
+                empty_count += 1
+            else:
+                messages.append(message)
         return PollResult(
             messages=messages,
             next_checkpoint=(
@@ -620,7 +627,7 @@ class IbkrNewsAdapter:
             window_coverage="PARTIAL"
             if metadata.get("has_more") or metadata.get("pending_count") or metadata.get("errors")
             else "COMPLETE",
-            acquisition_metadata=metadata,
+            acquisition_metadata={**metadata, 'ibkr_empty_filtered_count': empty_count},
         )
 
     def _callback(self, ticker):

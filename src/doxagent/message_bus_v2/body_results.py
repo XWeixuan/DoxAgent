@@ -11,10 +11,11 @@ from .schema import canonical_json, sha256_text, utc_now
 
 
 def article_key(message, source_id: str) -> str:
+    from .ibkr_identity import story_id
     evidence = message.metadata.get("identity_evidence", {})
     url = dedup.article_url(message.url, dedup.url_kind(message, source_id))
     # Only a provider-declared article identity can substitute for a verified URL.
-    locator = url or (
+    locator = story_id(message, source_id) or url or (
         f"{source_id}:{message.external_id}"
         if evidence.get("id_kind") == "stable_article" and message.external_id
         else f"{source_id}:{message.external_id or message.source_item_key or message.url}"

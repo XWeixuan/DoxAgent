@@ -875,7 +875,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
     persistent_runtime_v2_api_profile: Literal[
-        "current", "vertex_recall", "bailian_glm", "vertex_glm", "bailian_deepseek", "openrouter_haiku"
+        "current", "vertex_recall", "bailian_glm", "vertex_glm", "bailian_deepseek", "openrouter_haiku", "openrouter_haiku_high"
     ] = Field(
         default="current", validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_API_PROFILE"
     )

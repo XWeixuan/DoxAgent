@@ -40,16 +40,21 @@ def bailian_glm_rounds(workspace_endpoint):
 def configured_rounds(settings):
     profile = settings.persistent_runtime_v2_api_profile
     result = {}
-    if profile == "openrouter_haiku":
+    if profile in {"openrouter_haiku", "openrouter_haiku_high"}:
+        from .case_output_contract import VERSION
+        from .case_cache import VERSION as CACHE_VERSION
+
         result.update({
             f"{lane}:{rnd}": dict(
                 model="anthropic/claude-haiku-5.5",
                 provider="openrouter",
                 transport="chat_completions_json_schema",
                 provider_endpoint="google-vertex/global",
-                reasoning_effort="xhigh",
+                reasoning_effort="high" if profile == "openrouter_haiku_high" else "xhigh",
                 timeout_seconds=300,
                 cache_ttl="1h",
+                output_contract=VERSION,
+                case_cache_layout=CACHE_VERSION,
             )
             for lane in ("W1", "W2") for rnd in ("R2", "R3")
         })

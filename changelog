@@ -2557,4 +2557,12 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-03 Runtime紧急Haiku迁移：新增显式openrouter_haiku profile，将W1R2/W1R3/W2R2/W2R3冻结为OpenRouter Haiku5.5 xhigh、google-vertex/global、原生strict JSON Schema、65536 token与300秒预算。R1及其回退保持原配置；扩展回执xhigh读取，R3按现有不可变父轮输入显式回放，不跨provider传previous_response_id。静态提示词前缀沿用1小时显式缓存。29项传输/profile及79项Runtime/W2对齐回归通过；未改业务Prompt、判定Schema及路由。
 
+2026-11-03 IBKR 多频道去重修复（本地，未发布）：仅对已验证Dow Jones频道归一稳定文章ID，保留原SDK投递ID/checkpoint及频道覆盖，接入现有BODY键与发布别名。去除原生版权尾注，真实标题快讯标SHORT_FULL，无事实占位过滤；支持后到长文及正文/标题修订，阻止快讯/坏标题降级和旧在途结果覆盖，保持ARTICLE_ONCE。旧频道记录按6个identity索引点查接回最早发布，不补扫历史、不新增表/队列。63组263条冻结输入重放为63次发布、每组一个正文owner；测试与既有Runtime基线失败详见docs/ibkr-news-channel-deduplication-repair-20261103.md。
+
 2026-11-03 Runtime Haiku生产验收与high可消费性审查：bab0739d镜像已发布Scheduler/API，四节点自然xhigh回执115/115成功（19:32快照），R3父轮回放与1小时缓存命中正常；Decision Model及主环境文件切换用户新key，Bus/API/Scheduler有效指纹均为99e52ce2871e，Decision真实调用HTTP200。high原三例失败均仅Markdown围栏，原生Schema复测W1R2 20/20、W2R2 9/10；唯一W2失败通过wire Schema却违反本地RELATED身份不变量，现有一次修复仍未完全修正。109项定向回归通过；完整根因、证据边界与后续high最小改进顺序见dev_plan/workflow_v2/runtime_haiku_high_consumability_audit_20261103.md。未自行切回high、未改业务Prompt/Router或重放历史Case。
+
+2026-11-03 INTC/IONQ相关性优化：INTC在原准召尺度内收紧泛AI/投资正则、限定通用产品信号位置并优化模型定义；Google新增binding可选context_terms与require_relevance，INTC搜索结果复用既有正文后正则/Decision路径，其他ticker默认不变。IONQ新建同源真实100/100 GOLD与50/50模型子集，terra high逐条标注；SOP冻结后验证两轨过线。新增路径53项及实时发布/去重49项回归通过。全部候选、标签修订与边界见eval/relevance_intc_ionq_20261103/；生产应用另附回执。
+
+2026-11-03 INTC/IONQ优化生产验收：代码460fda18已推origin/main；仅Message Bus窄补丁镜像发布，实际四模块hash一致、running/restart0。通过正式服务将INTC3→4、IONQ1→2并启用INTC Google上下文及正文后相关性门；独立回读两套完整配置一致、其他八ticker词表不变。共享源120条回放并集P71.25→76.32%、R96.61→98.31%；IONQ正则验证93.59/93.59%、模型97.78/100%。无长期降量承诺，证据见docs/intc-ionq-relevance-optimization-20261103.md。
+
+2026-11-03 Haiku High稳定性与轻量缓存（本地，未发布）：保持W1/W2输出Schema与本地校验不变，新增版本化模型可见不变量，澄清W2必要事实与confidence边界，冻结20例真实High复测W1R2 20/20首次可消费、限定银标15/15，W2R2 10/10、限定银标9/9，无修复重试。通过后为四轮固定系统前缀增加1小时单断点缓存及稳定session_id，动态Mode/ID/修复指令放user，父轮与Case数据不共享缓存；四轮均有真实读取（4784/5120/5726/2537 tokens），W1R3初期重复写入及后续热缓存读取均留痕。新增openrouter_haiku_high候选profile，原xhigh配置与历史冻结请求保持兼容；技术版本字段不混入回执，116项定向回归通过。详见dev_plan/workflow_v2/haiku_high_stability_and_cache_acceptance_20261103.md。生产未切档，未发布其他会话改动。

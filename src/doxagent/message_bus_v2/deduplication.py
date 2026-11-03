@@ -44,6 +44,9 @@ def url_kind(message, source_id=""):
 
 def article_identity(message, source_id, *, default_language=None):
     """Fill only provider-known identity facts, also for stored pre-fix inputs."""
+    if source_id == 'ibkr_news':
+        from .ibkr_identity import normalize_message
+        message = normalize_message(message)
     evidence = dict(message.metadata.get('identity_evidence', {}))
     lang = message.metadata.get('language') or evidence.get('language') or default_language or language(message, source_id)
     kind = url_kind(message, source_id)
@@ -176,6 +179,9 @@ def aliases(raw: RawMessage) -> list[str]:
     for alias in evidence.get("verified_article_aliases", []):
         if isinstance(alias, str):
             result.append("verified:" + alias)
+    from .ibkr_identity import story_id
+    if identity := story_id(raw, raw.source_id):
+        result.append('verified:' + identity)
     return sorted(set(result))
 
 
@@ -186,6 +192,9 @@ def context_conflict(a: RawMessage, b: RawMessage, *, content_match: bool = Fals
     ):
         if abs(a.published_at - b.published_at) > timedelta(hours=36):
             return True
+    from .ibkr_identity import story_id
+    if (identity := story_id(a, getattr(a, 'source_id', 'ibkr_news'))) and identity == story_id(b, getattr(b, 'source_id', 'ibkr_news')):
+        return False  # Verified provider story, including headline corrections.
     au = article_url(a.url, a.metadata.get("identity_evidence", {}).get("url_kind", "unknown"))
     bu = article_url(b.url, b.metadata.get("identity_evidence", {}).get("url_kind", "unknown"))
     shared_url = bool(au and au == bu)

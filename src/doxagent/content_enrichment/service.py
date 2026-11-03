@@ -514,7 +514,7 @@ class ContentEnrichmentHub:
                     final_url=record.url,
                     extraction_method=native.method,
                     diagnostics={
-                        "outcome": "FULL" if len(native.text) >= 800 else "SHORT_FULL",
+                        "outcome": "FULL" if len(native.text) >= 800 and native.method != 'native_provider_flash' else "SHORT_FULL",
                         "stage": "validate",
                         "body_source": "provider_article_api",
                         "identity_match": "provider_article_id",

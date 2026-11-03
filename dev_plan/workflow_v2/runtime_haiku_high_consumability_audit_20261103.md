@@ -2,6 +2,8 @@
 
 日期：2026-11-03；所有业务时间注明时区。证据目录：`eval/haiku-case-rollout-20261103/`。
 
+后续决策：用户明确要求本轮不改Schema结构，不将下文的W2字段精简建议作为恢复high前置。已按此完成一致性表达、冻结集high复测及固定前缀缓存适配；结果与边界见`haiku_high_stability_and_cache_acceptance_20261103.md`。下文保留当时的排查记录，字段精简仅为暂缓的可选方案。
+
 ## 结论与已执行范围
 
 1. W1R2、W1R3、W2R2、W2R3已临时上线OpenRouter `anthropic/claude-haiku-5.5` / `google-vertex/global` / `xhigh`；使用原生`json_schema + strict`、65536输出token、300秒读取等待预算，静态系统前缀沿用1小时显式缓存。R1及原有回退规则不变。

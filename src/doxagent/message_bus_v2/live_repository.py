@@ -192,6 +192,10 @@ class LiveRepository:
             if not message.admission_context:
                 message = message.model_copy(update={"admission_context": context})
             message = dedup.article_identity(message, source.source_id)
+            from .ibkr_identity import story_id
+            ibkr_story = story_id(message, source.source_id)
+            if source.source_id == 'ibkr_news' and message.metadata.get('ibkr_content_kind') == 'empty':
+                continue
             key, hint = article_key(message, source.source_id), update_hint(message)
             canonical = key
             provider_alias = None
@@ -223,7 +227,7 @@ class LiveRepository:
                                        (provider_alias,)).fetchone()
                     key = alias[0] if alias else key
                 prior = db.execute(
-                    "SELECT a.input_ref,o.material_hint,a.material_observed_at,a.body_digest FROM live_articles a "
+                    "SELECT a.input_ref,o.material_hint,a.material_observed_at,a.body_digest,a.material_hint,a.title,a.outcome FROM live_articles a "
                     "LEFT JOIN live_origins o ON o.origin_key=? WHERE a.article_key=?",
                     (origin, key),
                 ).fetchone()
@@ -237,18 +241,17 @@ class LiveRepository:
                 if legacy_known:
                     old_key = legacy_known.metadata.get('live_article_key')
                     with self.bus._connect() as db:
-                        saved = db.execute('SELECT input_ref,body_digest FROM live_articles WHERE article_key=? AND state!=\'MERGED\'',
+                        saved = db.execute('SELECT input_ref,body_digest,material_hint,title,outcome FROM live_articles WHERE article_key=? AND state!=\'MERGED\'',
                                            (old_key,)).fetchone() if old_key else None
                     if saved:
                         key = old_key
-                        prior = (saved[0], None, observed_at, saved[1])
+                        prior = (saved[0], None, observed_at, saved[1], saved[2], saved[3], saved[4])
             if reason and not prior and not legacy_known and not recheck:
                 continue  # The durable list/delta is proof enough for expired, never-admitted input.
-            if prior and (prior[1] is None or prior[1] == hint or observed_at < prior[2]):
-                ref, refs = prior[0], set()
-            else:
-                ref, refs = self.put(message.model_dump(mode="json"))
-            from .deduplication import stable_fields, text
+            if ibkr_story and prior and not message.title and prior[5]:
+                message = message.model_copy(update={'title': prior[5]})
+                hint = update_hint(message)
+            from .deduplication import stable_fields
 
             old_fields = (
                 legacy_known.metadata.get("content_evidence", {}).get("input_fields", {})
@@ -267,16 +270,36 @@ class LiveRepository:
                 )
             )
             baseline = bootstrap
-            if legacy_changed and prior and ref == prior[0]:
+            ibkr_native = False
+            ibkr_flash = message.metadata.get('ibkr_content_kind') == 'flash'
+            if ibkr_story and (not prior or (hint != prior[4] and observed_at >= prior[2])):
+                from doxagent.content_enrichment.native import native_article
+                ibkr_native = native_article(message) is not None
+                if ibkr_native and prior and ibkr_flash:
+                    if prior[6] == 'FULL':
+                        ibkr_native = False
+                    else:
+                        # Only a changing flash needs this read, never an unchanged poll.
+                        saved_input = dedup.article_identity(RawMessageInput.model_validate(self.load(prior[0])), source.source_id)
+                        if saved_input.metadata.get('ibkr_content_kind') == 'article' and saved_input.body:
+                            ibkr_native = False
+            if ibkr_story:
+                legacy_changed = bool(prior and ibkr_native and hint != prior[4])
+            if prior and (prior[1] is None or prior[1] == hint or observed_at < prior[2]
+                          or (ibkr_story and not ibkr_native)):
+                ref, refs = prior[0], set()
+            else:
                 ref, refs = self.put(message.model_dump(mode='json'))
             # Only validate a potential upgrade. Ordinary repeated list rows do
             # not parse native HTML or recheck complete results.
             native_upgrade = False
-            if message.body and prior and not prior[3]:
+            if message.body and prior and not prior[3] and not ibkr_story:
                 from doxagent.content_enrichment.native import native_article
                 native_upgrade = native_article(message) is not None
                 if native_upgrade and ref == prior[0]:
                     ref, refs = self.put(message.model_dump(mode='json'))
+            if (legacy_changed or ibkr_native) and prior and ref == prior[0]:
+                ref, refs = self.put(message.model_dump(mode='json'))
             if source.source_id == "yahoo_finance_news" and isinstance(
                 message.metadata.get("_poll_bootstrap"), bool
             ):
@@ -295,6 +318,9 @@ class LiveRepository:
                     ref=ref,
                     refs=refs,
                     native_upgrade=native_upgrade,
+                    ibkr_story=bool(ibkr_story),
+                    ibkr_native=ibkr_native,
+                    ibkr_flash=ibkr_flash,
                     source_id=source.source_id,
                     url=message.url,
                     title=message.title or "",
@@ -348,7 +374,7 @@ class LiveRepository:
                                    ('canonical:' + item.get('canonical', item['key']),)).fetchone()
                 key = alias[0] if alias else key
                 old = db.execute(
-                    "SELECT state,result_ref,material_hint,input_revision,material_observed_at,checked_at,body_digest,work_kind,next_check_at FROM live_articles "
+                    "SELECT state,result_ref,material_hint,input_revision,material_observed_at,checked_at,body_digest,work_kind,next_check_at,outcome FROM live_articles "
                     "WHERE article_key=?",
                     (key,),
                 ).fetchone()
@@ -362,6 +388,10 @@ class LiveRepository:
                     and origin[0] != item["hint"]
                     and item["observed"] >= old["material_observed_at"]
                 )
+                if item.get('ibkr_story'):
+                    changed = bool(old and item['ibkr_native'] and old['material_hint'] != item['hint']
+                                   and item['observed'] >= old['material_observed_at']
+                                   and not (item['ibkr_flash'] and old['outcome'] == 'FULL'))
                 rejected = bool(item.get("reason"))
                 baseline = bool(item["bootstrap"])
                 if not old:
@@ -398,7 +428,7 @@ class LiveRepository:
                     reset = '' if pending_first else "attempt=0,fetch_round=0,execution_spent_ms=0,first_fetch_at=NULL,attempts_json='[]',"
                     db.execute(
                         "UPDATE live_articles SET material_hint=?,input_ref=?,input_revision=input_revision+1,"
-                        "source_id=?,state='FETCH_DUE',due_at=?,claim_token=NULL,lease_until=NULL," + reset + "title=?,"
+                        "source_id=?,state='FETCH_DUE',due_at=?,claim_token=NULL,lease_until=NULL," + reset + "title=CASE WHEN ? AND ?='' THEN title ELSE ? END,"
                         "url=CASE WHEN ? THEN ? ELSE url END,"
                         "work_kind=?,material_observed_at=? WHERE article_key=?",
                         (
@@ -406,6 +436,7 @@ class LiveRepository:
                             item["ref"],
                             item["source_id"],
                             now,
+                            int(item.get('ibkr_story', False)), item['title'],
                             item["title"],
                             int(item.get('native_upgrade', False)), item['url'],
                             'new_article' if pending_first else 'content_update',
@@ -1206,12 +1237,17 @@ class LiveRepository:
             known, extra_checked = self.bus.publication_match(binding, raw, fingerprint=fingerprint)
             checked.update(extra_checked)
         if known:
+            if source.source_id == 'ibkr_news' and not raw.title and known.title:
+                raw = raw.model_copy(update={'title': known.title})
             old_evidence = known.metadata.get('content_evidence', {})
             old_complete = (old_evidence.get('kind') == 'FULL'
                             or known.metadata.get('media_enrichment', {}).get('outcome') in {'FULL','SHORT_FULL'})
             new_complete = (raw.metadata.get('content_evidence', {}).get('kind') == 'FULL'
                             or raw.metadata.get('media_enrichment', {}).get('outcome') in {'FULL','SHORT_FULL'})
-            if old_complete and not new_complete:
+            if (old_complete and not new_complete) or (
+                source.source_id == 'ibkr_news' and raw.metadata.get('ibkr_content_kind') == 'flash'
+                and known.metadata.get('media_enrichment', {}).get('outcome') == 'FULL'
+            ):
                 from .schema import content_hash_for
                 raw = raw.model_copy(update={'body': known.body, 'metadata': {**raw.metadata,
                     'content_evidence': old_evidence,

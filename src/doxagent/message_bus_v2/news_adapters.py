@@ -622,6 +622,10 @@ class GoogleNewsSearchRssAdapter:
             if plan
             else google_narrow_query(context.ticker, terms[0] if terms else "")
         )
+        from .google_news_rules import google_context_query
+
+        context_terms = context.binding.source_parameters.get("context_terms", [])
+        query = google_context_query(query, context_terms)
         if domains:
             query += " (" + " OR ".join(f"site:{item}" for item in domains) + ")"
         query += " when:1d"
@@ -727,7 +731,7 @@ class GoogleNewsSearchRssAdapter:
                 "window_hours": 24,
                 "terms_revision": plan["terms_revision"] if plan else None,
                 "query_source": "monitoring_terms" if plan else "LEGACY_TERMS",
-                "query_rule": "first_l1_only",
+                "query_rule": "first_l1_with_context" if context_terms else "first_l1_only",
                 "rss_received_count": len(rows),
             },
         )

@@ -1485,6 +1485,10 @@ class PersistentRuntimeV2Service:
                             "case_id": case.case_id,
                             "lane": lane,
                             "round": round_name,
+                            **({"output_contract": model_settings["output_contract"]}
+                               if model_settings.get("output_contract") else {}),
+                            **({"case_cache_layout": model_settings["case_cache_layout"]}
+                               if model_settings.get("case_cache_layout") else {}),
                         },
                     ),
                     f"{round_key}:{attempt}",
@@ -1540,7 +1544,8 @@ class PersistentRuntimeV2Service:
                         else RuntimeTechnicalStatus.FAILED
                     ),
                     previous_response_id=previous_response_id,
-                    **model_settings,
+                    **{k: v for k, v in model_settings.items()
+                       if k not in {"output_contract", "case_cache_layout"}},
                     latency_ms=round((perf_counter() - started) * 1000),
                     started_at=started_at,
                     finished_at=utc_now(),
@@ -1670,7 +1675,8 @@ class PersistentRuntimeV2Service:
                 context_mode=context_mode,
                 response_id=result.response_id,
                 previous_response_id=previous_response_id,
-                **model_settings,
+                **{k: v for k, v in model_settings.items()
+                   if k not in {"output_contract", "case_cache_layout"}},
                 input_tokens=result.input_tokens,
                 output_tokens=result.output_tokens,
                 reasoning_tokens=result.reasoning_tokens,

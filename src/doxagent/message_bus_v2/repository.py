@@ -1619,15 +1619,35 @@ class MessageBusV2Repository:
         urls = [message.url, evidence.get("original_url"), *evidence.get("verified_urls", [])]
         aliases = sorted({"url:" + url for value in urls if isinstance(value, str)
                           and (url := dedup.article_url(value, evidence.get("url_kind", "unknown")))})
+        aliases.extend('verified:' + alias for alias in evidence.get('verified_article_aliases', [])
+                       if isinstance(alias, str))
+        from .ibkr_identity import DJ_CHANNELS, story_id
+        ibkr_story = story_id(message, binding.source_id)
+        if ibkr_story:
+            aliases.append('verified:' + ibkr_story)
 
         with self._connect() as db:
             # Strong URL aliases are ticker-wide: discovery source is not an
             # article identity. Use the existing indexed alias map, never title
             # matching or a scan/hydration of historical messages.
             candidates = self.published_candidates(db, binding.ticker, aliases, fingerprint)
+            if ibkr_story and not candidates:
+                core = ibkr_story.rsplit(':', 1)[1]
+                old_keys = [f'ibkr_news:external:{code}:{code}${core}' for code in DJ_CHANNELS]
+                # Six exact channel identities, not a title/JSON/history scan.
+                old = db.execute(
+                    "SELECT r.raw_message_id FROM raw_messages r "
+                    "JOIN standard_messages s ON s.raw_message_id=r.raw_message_id "
+                    "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                    "JOIN stream_items i ON i.stream_item_id=m.stream_item_id "
+                    "WHERE r.ticker=? AND r.source_id='ibkr_news' "
+                    "AND r.identity_key IN (SELECT value FROM json_each(?)) "
+                    "GROUP BY r.raw_message_id ORDER BY min(i.stream_offset),r.raw_message_id LIMIT 24",
+                    (binding.ticker, json.dumps(old_keys))).fetchall()
+                candidates.update((r[0], False) for r in old)
             # Pre-fix API articles may have no URL alias. The existing URL index
             # reconnects these rows without scanning or rewriting old history.
-            for url in ({value[4:] for value in aliases} if not candidates else ()):
+            for url in ({value[4:] for value in aliases if value.startswith('url:')} if not candidates else ()):
                 for row in db.execute(
                     "SELECT r.raw_message_id FROM raw_messages r "
                     "JOIN standard_messages s ON s.raw_message_id=r.raw_message_id "
@@ -1650,6 +1670,7 @@ class MessageBusV2Repository:
             raw = self.get_raw(identity)
             if raw is None:
                 continue
+            stored = raw
             raw = dedup.article_identity(raw, raw.source_id)
             language = dedup.language(message, binding.source_id)
             old_language = dedup.language(raw, raw.source_id)
@@ -1658,7 +1679,7 @@ class MessageBusV2Repository:
                 continue
             comparable = message.model_copy(update={"identity_key": identity_key_for(binding.source_id, message)})
             if not dedup.context_conflict(raw, comparable, content_match=content_match):
-                return raw, checked
+                return (stored if ibkr_story else raw), checked
         return None, checked
 
     def published_identity_keys(self, binding, messages, *, tickers=None):

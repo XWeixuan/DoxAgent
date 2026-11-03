@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from hashlib import sha256
 from time import perf_counter
 from typing import Any
@@ -28,6 +29,8 @@ HAIKU_ENDPOINT = "google-vertex/global"
 
 
 def _recall_system(request: RuntimeResponsesRequest[Any], *, contract_first: bool = False) -> str:
+    from .case_output_contract import VERSION, consistency_checks
+
     schema = bailian_strict_wire_schema(request.output_model.model_json_schema())
     contract = (
         "\n\n# Exact Output Contract\n"
@@ -37,9 +40,13 @@ def _recall_system(request: RuntimeResponsesRequest[Any], *, contract_first: boo
         "object, or emit Markdown.\n"
         + json.dumps(schema, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     )
+    checks = (
+        consistency_checks(request.schema_name)
+        if request.metadata.get("output_contract") == VERSION else ""
+    )
     if contract_first:
-        return contract.lstrip() + "\n\n" + request.instructions
-    return request.instructions + contract
+        return contract.lstrip() + "\n\n" + request.instructions + checks
+    return request.instructions + contract + checks
 
 
 def build_w2_r1_cached_request(request: RuntimeResponsesRequest[Any]) -> tuple[dict[str, Any], str]:
@@ -170,14 +177,20 @@ def build_w1_r1_cached_request(request: RuntimeResponsesRequest[Any]) -> tuple[d
 
 def build_case_schema_request(request: RuntimeResponsesRequest[Any]) -> tuple[dict[str, Any], str]:
     """Explicit R2/R3 context and native schema enforcement, including parent replay."""
+    from .case_cache import VERSION as CACHE_VERSION, split_instructions
+
     schema = bailian_strict_wire_schema(request.output_model.model_json_schema())
-    system = _recall_system(request, contract_first=True)
+    dynamic_instructions = ""
+    shared_cache = request.metadata.get("case_cache_layout") == CACHE_VERSION
+    system_request = request
+    if shared_cache:
+        fixed, dynamic_instructions = split_instructions(request.instructions)
+        system_request = replace(request, instructions=fixed)
+    system = _recall_system(system_request, contract_first=True)
     fingerprint = sha256(system.encode()).hexdigest()
-    messages: list[dict[str, Any]] = [{
-        "role": "system",
-        "content": [{"type": "text", "text": system,
-                     "cache_control": {"type": "ephemeral", "ttl": request.cache_ttl or "1h"}}],
-    }]
+    blocks = [{"type": "text", "text": system,
+               "cache_control": {"type": "ephemeral", "ttl": request.cache_ttl or "1h"}}]
+    messages: list[dict[str, Any]] = [{"role": "system", "content": blocks}]
     if request.replay_parent:
         messages.extend([
             {"role": "user", "content": request.replay_parent[0]},
@@ -188,6 +201,8 @@ def build_case_schema_request(request: RuntimeResponsesRequest[Any]) -> tuple[di
             "parent_context_missing", "Haiku requires explicit frozen parent messages", retryable=False
         )
     text, _ = _cache_optimized_input(request.payload, request.cache_context_keys)
+    if dynamic_instructions:
+        text = "# Runtime Round Directives\n" + dynamic_instructions + "\n\n# Current Round Input\n" + text
     messages.append({"role": "user", "content": text})
     return {
         "model": request.model or HAIKU_MODEL,
@@ -199,6 +214,8 @@ def build_case_schema_request(request: RuntimeResponsesRequest[Any]) -> tuple[di
             "name": request.schema_name, "strict": True, "schema": schema,
         }},
         "max_tokens": 65536,
+        **({"session_id": "w12-" + request.schema_name + "-" + fingerprint}
+           if shared_cache else {}),
         "stream": True,
         "stream_options": {"include_usage": True},
     }, fingerprint

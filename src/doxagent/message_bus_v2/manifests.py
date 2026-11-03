@@ -181,6 +181,8 @@ def initial_sources() -> list[SourceDefinition]:
             properties={
                 "search_terms": {**string_array, "minItems": 1, "maxItems": 10},
                 "domains": {**string_array, "maxItems": 10},
+                "context_terms": {**string_array, "maxItems": 16},
+                "require_relevance": {"type": "boolean"},
             },
             required=[],
         ),

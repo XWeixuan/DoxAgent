@@ -139,6 +139,8 @@ class LiveQueue:
         message = RawMessageInput.model_validate(self.repository.load(row["input_ref"]))
         from .deduplication import article_identity
         message = article_identity(message, source.source_id)
+        if source.source_id == 'ibkr_news' and not message.title and row['title']:
+            message = message.model_copy(update={'title': row['title']})
         if row["url"] != message.url:
             metadata = {**message.metadata}
             metadata.pop("canonical_resolution", None)
@@ -489,7 +491,11 @@ class LiveDeliveryWorker:
         if _complete_body_required(source) and not _complete_body_verified(message):
             await self.bus.storage.call(self.repository.decision, row, "NO_PUBLIC_BODY")
             return
-        if row.get("raw_id") or source.acquisition_mode is not AcquisitionMode.BY_DISTRIBUTION:
+        relevance_required = source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION or (
+            source.source_id == "google_news_search_rss"
+            and binding.source_parameters.get("require_relevance") is True
+        )
+        if row.get("raw_id") or not relevance_required:
             await self.publish(row, source, binding, message)
             return
         if found is None:
@@ -508,7 +514,10 @@ class LiveDeliveryWorker:
         if regex_relevant(definition, source.content_language or "en", message):
             await self.bus.storage.call(self.repository.decision, row, "PENDING", regex=True)
             await self.publish(row, source, binding, message)
-        elif source.distribution_policy and source.distribution_policy.jev_enabled:
+        elif (source.distribution_policy and source.distribution_policy.jev_enabled) or (
+            source.source_id == "google_news_search_rss"
+            and binding.source_parameters.get("require_relevance") is True
+        ):
             await self.bus.storage.call(self.repository.decision, row, "L2_DUE", regex=False)
         else:
             await self.bus.storage.call(self.repository.decision, row, "IRRELEVANT", regex=False)
