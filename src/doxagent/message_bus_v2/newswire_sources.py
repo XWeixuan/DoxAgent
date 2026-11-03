@@ -2,6 +2,7 @@
 import asyncio
 import httpx
 import hashlib
+import time
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
@@ -98,6 +99,7 @@ class NewswireAdapter:
             if cp.get('etag'):headers['If-None-Match']=cp['etag']
             if cp.get('modified'):headers['If-Modified-Since']=cp['modified']
         if self.slots is None:self.slots=asyncio.Semaphore(2)
+        started=time.monotonic()
         token=RESPONSE_LIMIT.set(16*1024*1024 if s.source_id=='businesswire_massive' else 4*1024*1024)
         try:
             async with self.slots,context.request_permit(),asyncio.timeout(12):
@@ -113,14 +115,16 @@ class NewswireAdapter:
                     return await self.clients[key].get(endpoint['url'],headers=headers)
                 response,route=await transport_routes(send,[(r,HTTP_EGRESSES[r]) for r in s.default_parameters['feed_http_routes']],
                     (TimeoutError,OSError,httpx.TransportError))
+            metadata={'wire_status':response.status_code,'route':route,'endpoint':endpoint['endpoint_id'],
+                'request_seconds':round(time.monotonic()-started,3),'response_bytes':len(response.content)}
             if response.status_code==304:
                 return PollResult(messages=[],next_checkpoint=cp,window_done=True,window_coverage='PARTIAL',
-                    acquisition_metadata={'wire_status':304,'route':route,'endpoint':endpoint['endpoint_id']})
+                    acquisition_metadata=metadata)
             response.raise_for_status()
             text=response.text;digest=hashlib.sha256(response.content).hexdigest()
             cp.update(etag=response.headers.get('etag'),modified=response.headers.get('last-modified'))
             if digest==cp.get('digest') and not context.force_refresh:
-                return PollResult(messages=[],next_checkpoint=cp,window_done=True,window_coverage='PARTIAL')
+                return PollResult(messages=[],next_checkpoint=cp,window_done=True,window_coverage='PARTIAL',acquisition_metadata=metadata)
             rows=await asyncio.to_thread(parse_feed,text,s,endpoint,context.requested_at)
             old=cp.get('seen',{});seen={};delta=[];cutoff=context.requested_at-timedelta(minutes=30)
             for row in rows:
@@ -128,8 +132,11 @@ class NewswireAdapter:
                 hint=hashlib.sha256((str(row.title)+str(row.summary)).encode()).hexdigest()
                 seen[row.source_item_key or row.url]=hint
                 if context.force_refresh or old.get(row.source_item_key or row.url)!=hint:delta.append(row)
+            overlap=len(set(old)&set(seen))
+            metadata.update(feed_items=len(rows),delta_items=len(delta),window_overlap=overlap,
+                window_overflow_risk=bool(old and seen and not overlap),
+                oldest=min(r.published_at for r in rows).isoformat(),newest=max(r.published_at for r in rows).isoformat())
             cp.update(digest=digest,seen=seen)
             return PollResult(messages=delta,next_checkpoint=cp,window_done=True,window_coverage='PARTIAL',
-                acquisition_metadata={'wire_status':200,'route':route,'endpoint':endpoint['endpoint_id'],
-                    'feed_items':len(rows),'delta_items':len(delta),'oldest':min(r.published_at for r in rows).isoformat()})
+                acquisition_metadata=metadata)
         finally:RESPONSE_LIMIT.reset(token)

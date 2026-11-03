@@ -112,8 +112,9 @@ async def test_304_preserves_checkpoint_and_bad_feed_does_not_become_empty_succe
     async def permit():yield
     class Client:
         status=304
+        body='<html>Challenge</html>'
         async def get(self,url,**kw):
-            return httpx.Response(self.status,text='<html>Challenge</html>',request=httpx.Request('GET',url))
+            return httpx.Response(self.status,text=self.body,request=httpx.Request('GET',url))
     client=Client();adapter=NewswireAdapter();adapter.clients={'direct':client}
     source=initial_sources()[0]
     context=SharedPollContext(run_id='test',source=source,acquisition_unit='TEST:WIRE:all',
@@ -123,6 +124,15 @@ async def test_304_preserves_checkpoint_and_bad_feed_does_not_become_empty_succe
     client.status=200
     with pytest.raises((ValueError,RuntimeError)):
         await adapter.poll_shared(context)
+    from email.utils import format_datetime
+    client.body=f'<rss><channel><item><title>Company contract</title><link>https://www.businesswire.com/news/home/123/en/</link><pubDate>{format_datetime(context.requested_at)}</pubDate></item></channel></rss>'
+    first=await adapter.poll_shared(context)
+    assert first.acquisition_metadata['window_overflow_risk'] is True
+    assert first.acquisition_metadata['response_bytes']>0
+    context=context.model_copy(update={'checkpoint':first.next_checkpoint,'force_refresh':True})
+    second=await adapter.poll_shared(context)
+    assert second.acquisition_metadata['window_overlap']==1
+    assert second.acquisition_metadata['window_overflow_risk'] is False
 
 
 async def test_massive_body_fallback_never_opens_browser():
