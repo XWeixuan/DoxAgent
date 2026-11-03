@@ -85,6 +85,7 @@ class Metrics:
             "trade_triggered": {"runtime": {"runtime_v2_trade_records", "runtime_values"}},
             "trade_executed": {"runtime": {"te_fills", "te_executions"}},
             "processed_cases": {"runtime": {"runtime_v2_cases"}},
+            "failed_cases": {"runtime": {"runtime_v2_cases", "runtime_v2_w3_cases"}},
             "policy_hits": {"runtime": {"runtime_v2_cases", "runtime_v2_w3_cases"}},
             "policy_ar_hits": {"runtime": {"runtime_v2_cases", "runtime_v2_w3_cases"}},
             "nonroutine_repairs": {

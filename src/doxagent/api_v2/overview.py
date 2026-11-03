@@ -18,6 +18,41 @@ from .errors import ApiFailure
 from .ib_gateway import GatewayMonitor
 
 
+def failed_cases_metric(store, view):
+    """Reuse the Runtime FAILURE-node buckets, not Case rows or attempt failures."""
+    from decimal import Decimal
+    from doxagent.v2_read.metrics import Metrics, compare, decimal_text
+    from doxagent.v2_read.repository import encode
+
+    period = view['wire']['period']
+    days = period['current']['trading_days']
+    previous = period['previous']['trading_days'] if period['previous'] else []
+    totals = {}
+    with store.connect() as db:
+        for day, value in db.execute(
+            "SELECT day,value FROM " + store.metric_table(view['seq'])
+            + " WHERE metric='graph_cases' AND dimensions=? "
+            "AND ticker IN (SELECT value FROM json_each(?)) "
+            "AND day IN (SELECT value FROM json_each(?)) AND valid_from<=? "
+            "AND (valid_to IS NULL OR valid_to>?)",
+            (encode({'node':'FAILURE'}), json.dumps(view['tickers']),
+             json.dumps(sorted(set(days + previous))), view['seq'], view['seq']),
+        ):
+            totals[day] = totals.get(day, Decimal(0)) + Decimal(value)
+    current = sum((totals.get(day, Decimal(0)) for day in days), Decimal(0))
+    prior = sum((totals.get(day, Decimal(0)) for day in previous), Decimal(0)) if previous else None
+    service = Metrics(store)
+    complete = service.complete('failed_cases', view['seq'], days)
+    prior_complete = service.complete('failed_cases', view['seq'], previous)
+    return {'metric_id':'failed_cases', 'unit':'COUNT',
+            'current':available(decimal_text(current)) if complete or current else missing(),
+            'previous':available(decimal_text(prior)) if prior is not None and prior_complete else missing(),
+            'change_pct':compare(current, prior, applicable=complete and prior_complete),
+            'current_coverage':coverage(complete=complete),
+            'previous_coverage':coverage(complete=prior_complete) if previous else None,
+            'provisional':False}
+
+
 def install(app: FastAPI) -> None:
     gateway = GatewayMonitor(app.state.control.journal)
     app.state.gateway_monitor = gateway
@@ -73,17 +108,11 @@ def install(app: FastAPI) -> None:
                 "trade_triggered",
                 "messages",
                 "api_token_cost",
-                "nonroutine_repairs",
                 "paper_realized_net_pnl",
                 "live_realized_net_pnl",
             ),
         )
-        data["nonroutine_repairs"].update(
-            previous=missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
-            change_pct=missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
-            previous_coverage=None,
-            provisional=False,
-        )
+        data['failed_cases'] = failed_cases_metric(store, view)
         return respond(request, "OverviewMetrics", data, view_id=args["view_id"])
 
     @app.get(prefix + "/overview/tickers")

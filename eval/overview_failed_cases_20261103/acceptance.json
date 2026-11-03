@@ -1,0 +1,300 @@
+{
+  "changed_components": [
+    "v2-api",
+    "v2-web"
+  ],
+  "api": {
+    "image": "sha256:a4e171bfa065ec754bde0bd88ba65e04da16516778ec3d54f88276cbe0dccab6",
+    "health": "healthy",
+    "revision": "b824879d133c9810b6876862188dfe296f08071a",
+    "balance_secret_readonly": true
+  },
+  "web": {
+    "image": "sha256:a8300c8e8e587401e290e66f1d2ed1807b1b10f6f9b876cab528992d446be092",
+    "health": "healthy",
+    "revision": "b824879d133c9810b6876862188dfe296f08071a"
+  },
+  "web_new_label_present": true,
+  "web_old_label_present": false,
+  "data_verification": {
+    "at": "2026-11-03T12:18:39.089676+00:00",
+    "commit": "b824879d133c9810b6876862188dfe296f08071a",
+    "tickers": [
+      "BE",
+      "CEG",
+      "COHR",
+      "INTC",
+      "IONQ",
+      "MU",
+      "NBIS",
+      "ONDS",
+      "RKLB",
+      "SNOW"
+    ],
+    "periods": [
+      {
+        "period": "CURRENT_TRADING_DAY",
+        "seconds": 0.01854,
+        "metric": {
+          "metric_id": "failed_cases",
+          "unit": "COUNT",
+          "current": {
+            "state": "AVAILABLE",
+            "value": "135",
+            "reason": null
+          },
+          "previous": {
+            "state": "NOT_RECORDED",
+            "value": null,
+            "reason": "NOT_RECORDED"
+          },
+          "change_pct": {
+            "state": "NOT_APPLICABLE",
+            "value": null,
+            "reason": "WINDOW_INCOMPLETE"
+          },
+          "current_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "previous_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "provisional": false
+        },
+        "runtime_source_failure_total": 135
+      },
+      {
+        "period": "PREVIOUS_TRADING_DAY",
+        "seconds": 0.01458,
+        "metric": {
+          "metric_id": "failed_cases",
+          "unit": "COUNT",
+          "current": {
+            "state": "AVAILABLE",
+            "value": "594",
+            "reason": null
+          },
+          "previous": {
+            "state": "NOT_RECORDED",
+            "value": null,
+            "reason": "NOT_RECORDED"
+          },
+          "change_pct": {
+            "state": "NOT_APPLICABLE",
+            "value": null,
+            "reason": "WINDOW_INCOMPLETE"
+          },
+          "current_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "previous_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "provisional": false
+        },
+        "runtime_source_failure_total": 594
+      },
+      {
+        "period": "TRADING_DAYS_7",
+        "seconds": 0.01536,
+        "metric": {
+          "metric_id": "failed_cases",
+          "unit": "COUNT",
+          "current": {
+            "state": "AVAILABLE",
+            "value": "1042",
+            "reason": null
+          },
+          "previous": {
+            "state": "NOT_RECORDED",
+            "value": null,
+            "reason": "NOT_RECORDED"
+          },
+          "change_pct": {
+            "state": "NOT_APPLICABLE",
+            "value": null,
+            "reason": "WINDOW_INCOMPLETE"
+          },
+          "current_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "previous_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "provisional": false
+        },
+        "runtime_source_failure_total": 1042
+      },
+      {
+        "period": "TRADING_DAYS_30",
+        "seconds": 0.02309,
+        "metric": {
+          "metric_id": "failed_cases",
+          "unit": "COUNT",
+          "current": {
+            "state": "AVAILABLE",
+            "value": "1710",
+            "reason": null
+          },
+          "previous": {
+            "state": "NOT_RECORDED",
+            "value": null,
+            "reason": "NOT_RECORDED"
+          },
+          "change_pct": {
+            "state": "NOT_APPLICABLE",
+            "value": null,
+            "reason": "WINDOW_INCOMPLETE"
+          },
+          "current_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "previous_coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "NOT_RECORDED"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": null
+          },
+          "provisional": false
+        },
+        "runtime_source_failure_total": 1710
+      }
+    ],
+    "query_plan": [
+      [
+        1,
+        0,
+        0,
+        "COMPOUND QUERY"
+      ],
+      [
+        2,
+        1,
+        0,
+        "LEFT-MOST SUBQUERY"
+      ],
+      [
+        5,
+        2,
+        0,
+        "SEARCH metric_buckets_current USING INDEX metric_buckets_current_identity (metric=? AND ticker=? AND day=? AND dimensions=?)"
+      ],
+      [
+        10,
+        2,
+        0,
+        "LIST SUBQUERY 3"
+      ],
+      [
+        12,
+        10,
+        0,
+        "SCAN json_each VIRTUAL TABLE INDEX 1:"
+      ],
+      [
+        30,
+        2,
+        0,
+        "LIST SUBQUERY 4"
+      ],
+      [
+        32,
+        30,
+        0,
+        "SCAN json_each VIRTUAL TABLE INDEX 1:"
+      ],
+      [
+        68,
+        1,
+        0,
+        "UNION ALL"
+      ],
+      [
+        71,
+        68,
+        0,
+        "SEARCH metric_buckets_history USING INDEX metric_buckets_history_window (metric=? AND ticker=? AND day=? AND valid_to>?)"
+      ],
+      [
+        76,
+        68,
+        0,
+        "LIST SUBQUERY 3"
+      ],
+      [
+        78,
+        76,
+        0,
+        "SCAN json_each VIRTUAL TABLE INDEX 1:"
+      ],
+      [
+        96,
+        68,
+        0,
+        "LIST SUBQUERY 4"
+      ],
+      [
+        98,
+        96,
+        0,
+        "SCAN json_each VIRTUAL TABLE INDEX 1:"
+      ]
+    ]
+  },
+  "tests": {
+    "backend_focused": 15,
+    "frontend_unit": 69,
+    "feature_browser_widths": [
+      1262,
+      1559
+    ],
+    "typecheck": true,
+    "production_build": true
+  },
+  "browser_scope": "Synthetic business fixtures in real browser; production acceptance is deployed artifact, live data and query-plan verification."
+}

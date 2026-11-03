@@ -158,8 +158,8 @@ def test_api_startup_does_not_create_missing_read_database(tmp_path):
     assert not path.exists()
 
 
-@pytest.mark.parametrize("repair_count", [0, 2])
-def test_overview_nonroutine_repairs_uses_projected_round_count(tmp_path, repair_count):
+@pytest.mark.parametrize("failed_count", [0, 2])
+def test_overview_failed_cases_uses_existing_failure_node_buckets(tmp_path, failed_count):
     from doxagent.v2_read.calendar import PageCalendar
 
     store = ReadStore(tmp_path / "read.db")
@@ -174,35 +174,38 @@ def test_overview_nonroutine_repairs_uses_projected_round_count(tmp_path, repair
         "ticker",
         [{"kind": "ticker", "ticker": "MU", "id": "MU", "data": {"removed": False}}],
     )
+    store.ingest('fixture','second-ticker',[
+        {'kind':'ticker','ticker':'INTC','id':'INTC','data':{'removed':False}}])
     contributions = [
-        {
-            "metric": "nonroutine_repairs",
-            "ticker": "MU",
-            "entity": f"round-{index}",
-            "day": day,
-            "value": 1,
-        }
-        for index in range(repair_count)
+        {'metric':'graph_cases','ticker':ticker,'entity':f'case-{index}:FAILURE',
+         'day':day,'value':1,'dimensions':{'node':'FAILURE'}}
+        for ticker,n in [('MU',failed_count),('INTC',failed_count*2)] for index in range(n)
     ]
-    store.ingest("initialization", "repair-rounds", [], contributions=contributions)
+    # Node-level failures and successful cases must not inflate the Case total.
+    contributions.extend([
+        {'metric':'graph_failed','ticker':'MU','entity':'retry:W1','day':day,'value':9,'dimensions':{'node':'W1'}},
+        {'metric':'graph_cases','ticker':'MU','entity':'success:SOURCE','day':day,'value':50,'dimensions':{'node':'SOURCE'}},
+        {'metric':'graph_cases','ticker':'REMOVED','entity':'old:FAILURE','day':day,'value':99,'dimensions':{'node':'FAILURE'}},
+    ])
+    store.ingest('runtime','graph-buckets',[],contributions=contributions)
     store.ingest(
         "capture_coverage",
-        "initialization-proof",
+        "runtime-proof",
         [
             {
                 "kind": "capture_coverage",
                 "ticker": "",
-                "id": "initialization",
+                "id": "runtime",
                 "data": {
-                    "source": "initialization",
+                    "source": "runtime",
                     "started_at": (now - timedelta(days=60)).isoformat(),
                     "end_at": (now + timedelta(days=2)).isoformat(),
                     "closed_end_at": (now + timedelta(days=2)).isoformat(),
                     "complete": True,
                     "tables_json": json.dumps(
                         [
-                            "initialization_repair_incidents",
-                            "initialization_repair_rounds",
+                            "runtime_v2_cases",
+                            "runtime_v2_w3_cases",
                         ]
                     ),
                 },
@@ -226,9 +229,33 @@ def test_overview_nonroutine_repairs_uses_projected_round_count(tmp_path, repair
             headers={"Authorization": "Bearer offline"},
         )
     assert response.status_code == 200, response.text
-    metric = response.json()["data"]["data"]["nonroutine_repairs"]
+    metric = response.json()["data"]["data"]["failed_cases"]
     assert metric["current"]["state"] == "AVAILABLE"
-    assert metric["current"]["value"] == str(repair_count)
+    assert metric["current"]["value"] == str(failed_count * 3)
     assert metric["current_coverage"]["state"] == "COMPLETE"
-    assert metric["previous"]["reason"] == "NOT_APPLICABLE"
-    assert metric["change_pct"]["reason"] == "NOT_APPLICABLE"
+    assert "nonroutine_repairs" not in response.json()["data"]["data"]
+
+
+def test_failed_case_period_recovery_and_frozen_view(tmp_path, monkeypatch):
+    from contextvars import ContextVar
+    from doxagent.v2_read import query_budget
+    monkeypatch.setattr(query_budget,'frozen_proofs',ContextVar('test_proofs',default=None))
+    from doxagent.api_v2.overview import failed_cases_metric
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    proof={'kind':'capture_coverage','ticker':'','id':'runtime','data':{
+        'complete':True,'started_at':'2026-09-01T00:00:00Z','end_at':'2026-10-01T00:00:00Z',
+        'tables_json':json.dumps(['runtime_v2_cases','runtime_v2_w3_cases'])}}
+    values=[{'metric':'graph_cases','ticker':ticker,'entity':identity,'day':day,
+             'value':1,'dimensions':{'node':'FAILURE'}}
+            for ticker,identity,day in [('MU','a','2026-09-08'),('INTC','b','2026-09-08'),
+                                        ('MU','prior','2026-09-07'),('MU','outside','2026-09-01')]]
+    seq=store.ingest('runtime','initial',[proof],contributions=values)
+    view={'seq':seq,'tickers':['MU','INTC'],'wire':{'period':{
+        'current':{'trading_days':['2026-09-08']},'previous':{'trading_days':['2026-09-07']}}}}
+    metric=failed_cases_metric(store,view)
+    assert metric['current']['value']=='2' and metric['previous']['value']=='1'
+    assert metric['change_pct']['value']=='100'
+    # A recovered Case replaces its existing bucket contribution; no failed-attempt sum.
+    changed=store.ingest('runtime','recovered',[],contributions=[{**values[0],'value':0}])
+    assert failed_cases_metric(store,{**view,'seq':changed})['current']['value']=='1'
+    assert failed_cases_metric(store,view)['current']['value']=='2'

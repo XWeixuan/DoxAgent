@@ -85,6 +85,7 @@ if (existsSync(backendPath)) {
     "TradingConfiguration",
     "TradingCapital",
     "OverviewStatus",
+    "OverviewMetrics",
     "CostReport",
     "CostReportTotals",
     "CostReportRow",
