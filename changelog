@@ -2556,3 +2556,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Message Bus计数修复生产验收：81ec32e9已推origin/main，仅发布Projector；18:58按现有MVCC差量路径补齐INTC29/SNOW1，共30条。真实API容器全量核对正式消息、概览与Bus逐日逐源计数均一致，缺口0；重复执行无新commit，目标消息行未改、来源checkpoint不回退，无消息/模型重放。44项定向回归通过，证据eval/bus_count_repair_20261103/。
 
 2026-11-03 Runtime紧急Haiku迁移：新增显式openrouter_haiku profile，将W1R2/W1R3/W2R2/W2R3冻结为OpenRouter Haiku5.5 xhigh、google-vertex/global、原生strict JSON Schema、65536 token与300秒预算。R1及其回退保持原配置；扩展回执xhigh读取，R3按现有不可变父轮输入显式回放，不跨provider传previous_response_id。静态提示词前缀沿用1小时显式缓存。29项传输/profile及79项Runtime/W2对齐回归通过；未改业务Prompt、判定Schema及路由。
+
+2026-11-03 Runtime Haiku生产验收与high可消费性审查：bab0739d镜像已发布Scheduler/API，四节点自然xhigh回执115/115成功（19:32快照），R3父轮回放与1小时缓存命中正常；Decision Model及主环境文件切换用户新key，Bus/API/Scheduler有效指纹均为99e52ce2871e，Decision真实调用HTTP200。high原三例失败均仅Markdown围栏，原生Schema复测W1R2 20/20、W2R2 9/10；唯一W2失败通过wire Schema却违反本地RELATED身份不变量，现有一次修复仍未完全修正。109项定向回归通过；完整根因、证据边界与后续high最小改进顺序见dev_plan/workflow_v2/runtime_haiku_high_consumability_audit_20261103.md。未自行切回high、未改业务Prompt/Router或重放历史Case。

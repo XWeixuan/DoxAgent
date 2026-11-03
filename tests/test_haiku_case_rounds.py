@@ -9,7 +9,7 @@ from doxagent.persistent_runtime_v2.future_model_profiles import configured_roun
 from doxagent.persistent_runtime_v2.openrouter import (
     RuntimeRecallOpenRouterClient, build_case_schema_request,
 )
-from doxagent.persistent_runtime_v2.schema import RuntimeModelTurn
+from doxagent.persistent_runtime_v2.schema import RuntimeModelTurn, W2PolicyAssessmentResultV2
 from doxagent.persistent_runtime_v2.transport import RuntimeResponsesError
 from tests.test_w2_r1_openrouter import bailian, request, stream_response
 
@@ -61,5 +61,25 @@ def test_transport_native_schema_routes_all_four_rounds(lane, round_name):
         result = client.complete(replace(request(), metadata={"lane": lane, "round": round_name}))
         assert result.value.candidate_policy_ids == []
         assert seen[0]["response_format"]["json_schema"]["strict"] is True
+    finally:
+        client.close()
+
+
+def test_native_shape_does_not_bypass_policy_identity_invariants():
+    """The observed high regression is valid JSON but unusable business state."""
+    raw = {"policy_hit": False, "policy_related": True, "policy_ids": [],
+           "hit_condition_ids": [], "related_policy_ids": [],
+           "confidence": "normal", "reason": "Policy is related, but its identity was omitted"}
+    req = replace(request(), output_model=W2PolicyAssessmentResultV2,
+                  metadata={"lane": "W2", "round": "R2"})
+    client = RuntimeRecallOpenRouterClient(
+        bailian(), api_key="offline",
+        client=httpx.Client(transport=httpx.MockTransport(lambda r: stream_response(output=raw))),
+    )
+    try:
+        with pytest.raises(RuntimeResponsesError, match="RELATED requires related_policy_ids") as error:
+            client.complete(req)
+        assert error.value.retryable
+        assert json.loads(error.value.usage["raw_output"]) == raw
     finally:
         client.close()
