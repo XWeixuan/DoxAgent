@@ -23,6 +23,14 @@ def google_narrow_query(ticker: str, first_term: str) -> str:
     return f'"{escaped}"' if " " in value or '"' in value else escaped
 
 
+def google_context_query(query: str, terms: list[str]) -> str:
+    """Optional binding-owned literal context, ANDed with the company query."""
+    if not terms:
+        return query
+    literals = ['"' + term.strip().replace('"', '\\"') + '"' for term in terms]
+    return query + " (" + " OR ".join(literals) + ")"
+
+
 def normalize_domain(value: str) -> str:
     value = value.strip()
     host = urlsplit(value if "://" in value else "https://" + value).hostname or ""

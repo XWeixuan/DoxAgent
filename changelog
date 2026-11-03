@@ -2558,3 +2558,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Runtime紧急Haiku迁移：新增显式openrouter_haiku profile，将W1R2/W1R3/W2R2/W2R3冻结为OpenRouter Haiku5.5 xhigh、google-vertex/global、原生strict JSON Schema、65536 token与300秒预算。R1及其回退保持原配置；扩展回执xhigh读取，R3按现有不可变父轮输入显式回放，不跨provider传previous_response_id。静态提示词前缀沿用1小时显式缓存。29项传输/profile及79项Runtime/W2对齐回归通过；未改业务Prompt、判定Schema及路由。
 
 2026-11-03 Runtime Haiku生产验收与high可消费性审查：bab0739d镜像已发布Scheduler/API，四节点自然xhigh回执115/115成功（19:32快照），R3父轮回放与1小时缓存命中正常；Decision Model及主环境文件切换用户新key，Bus/API/Scheduler有效指纹均为99e52ce2871e，Decision真实调用HTTP200。high原三例失败均仅Markdown围栏，原生Schema复测W1R2 20/20、W2R2 9/10；唯一W2失败通过wire Schema却违反本地RELATED身份不变量，现有一次修复仍未完全修正。109项定向回归通过；完整根因、证据边界与后续high最小改进顺序见dev_plan/workflow_v2/runtime_haiku_high_consumability_audit_20261103.md。未自行切回high、未改业务Prompt/Router或重放历史Case。
+
+2026-11-03 INTC/IONQ相关性优化：INTC在原准召尺度内收紧泛AI/投资正则、限定通用产品信号位置并优化模型定义；Google新增binding可选context_terms与require_relevance，INTC搜索结果复用既有正文后正则/Decision路径，其他ticker默认不变。IONQ新建同源真实100/100 GOLD与50/50模型子集，terra high逐条标注；SOP冻结后验证两轨过线。新增路径53项及实时发布/去重49项回归通过。全部候选、标签修订与边界见eval/relevance_intc_ionq_20261103/；生产应用另附回执。
