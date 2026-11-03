@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from doxagent.message_bus_v2.public_listing import RECIPES
+from doxagent.message_bus_v2.public_listing import RECIPES, RSS_ONLY_SOURCES
 from doxagent.message_bus_v2.schema import UpdateActor
 
 
@@ -16,7 +16,9 @@ def configure(service):
             if source is None:
                 report.append({"source_id": sid, "action": "absent"})
                 continue
-            if source.default_parameters.get("discovery_mode") == "http_listing":
+            mode = "rss" if sid in RSS_ONLY_SOURCES else "http_listing"
+            kind = "api" if mode == "rss" else "crawler"
+            if source.default_parameters.get("discovery_mode") == mode and source.kind == kind:
                 report.append({"source_id": sid, "action": "unchanged", "version": source.version})
                 continue
             schema = {
@@ -32,14 +34,14 @@ def configure(service):
                     "parameter_schema": schema,
                     "default_parameters": {
                         **source.default_parameters,
-                        "discovery_mode": "http_listing",
+                        "discovery_mode": mode,
                     },
-                    "kind": "crawler",
+                    "kind": kind,
                 },
                 actor=UpdateActor.USER,
                 reason=(
-                    "RSS latency migration: HTTP discovery, original BODY "
-                    "and explicit failed RSS fallback"
+                    "RSS latency review: explicit RSS choice or verified HTTP discovery; "
+                    "original BODY and failed crawler fallback retained"
                 ),
             )
             report.append(
@@ -48,6 +50,7 @@ def configure(service):
                     "action": "updated",
                     "version": updated.version,
                     "adapter_ref": updated.adapter_ref,
+                    "discovery_mode": mode,
                     "listings": [r.url for r in RECIPES[sid]],
                 }
             )

@@ -1,6 +1,7 @@
 import asyncio
 import json
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,17 +16,20 @@ from doxagent.message_bus_v2.manifests import initial_sources
 from doxagent.message_bus_v2.poll_trace import REQUESTS, request_started
 from doxagent.message_bus_v2.public_listing import (
     RECIPES,
+    RSS_ONLY_SOURCES,
     ListingAdapter,
+    cache_evidence,
     enabled,
+    endpoint_units,
     parse_listing,
 )
 from doxagent.message_bus_v2.schema import (
     AcquisitionMode,
+    ContentEnrichmentMode,
     PollResult,
     SharedPollContext,
     SourceDefinition,
     TickerSourceBinding,
-    sha256_text,
     utc_now,
 )
 from doxagent.message_bus_v2.technology_sources import Capture, TechnologySource
@@ -84,10 +88,6 @@ def rows(sid, index=0):
 @pytest.mark.parametrize("sample", SAMPLES, ids=lambda s: f"{s['source_id']}-{s['index']}")
 def test_real_listing_contract_and_identity(sample):
     sid, index = sample["source_id"], sample["index"]
-    if sid == "aviationweek_rss":
-        with pytest.raises(ValueError):
-            rows(sid, index)
-        return
     messages = rows(sid, index)
     assert len(messages) >= 1
     assert len({m.url for m in messages}) == len(messages)
@@ -144,15 +144,14 @@ class Http:
         event = request_started(kwargs.get("method", "GET"), url, admitted=True)
         if event is not None:
             event.update(status_code=result.status, response_received_at=utc_now().isoformat())
-        return result
+        return replace(result, url=url)
 
 
 def context(sid="quantum_computing_report", index=0, checkpoint=None):
-    recipe = RECIPES[sid][index]
     return SharedPollContext(
         run_id="fixture",
         source=definition(sid),
-        acquisition_unit="FEED:" + sha256_text(recipe.feed)[:24],
+        acquisition_unit=list(endpoint_units(definition(sid)))[index],
         request_permit=permit,
         checkpoint=checkpoint or {},
         requested_at=NOW,
@@ -252,6 +251,28 @@ async def test_nsf_uses_verified_uncached_readonly_post():
     assert h.calls[0][2]["headers"]["X-Requested-With"] == "XMLHttpRequest"
 
 
+async def test_thelec_uses_uncached_post_form_and_keeps_semiconductor_filter():
+    h = Http(capture("thelec_semiconductors_rss"))
+    result = await ListingAdapter(SimpleNamespace(), h).poll_shared(
+        context("thelec_semiconductors_rss")
+    )
+    assert result.messages and not result.failures
+    assert h.calls[0][2]["method"] == "POST"
+    assert h.calls[0][2]["form_body"] == {"sc_section_code": "S1N2", "view_type": "sm"}
+
+
+def test_thelec_wrong_uncached_all_news_is_not_a_successful_section():
+    recipe = RECIPES["thelec_semiconductors_rss"][0]
+    raw = (FIXTURES / "thelec_semiconductors_rss-0.html").read_text(encoding="utf8")
+    with pytest.raises(ValueError, match="thelec_wrong_section"):
+        parse_listing(
+            recipe,
+            spec_for("thelec_semiconductors_rss", recipe),
+            "<title>전체 기사목록</title>" + raw,
+            NOW,
+        )
+
+
 async def test_one_failed_internal_endpoint_cannot_block_its_sibling():
     class IsolatedHttp:
         async def fetch(self, url, spec, **kwargs):
@@ -317,7 +338,8 @@ def test_configuration_preserves_body_binding_semantics_and_is_idempotent(tmp_pa
     for sid in RECIPES:
         current = repo.get_source(sid)
         old = before[sid]
-        assert enabled(current)
+        assert enabled(current) == (sid not in RSS_ONLY_SOURCES)
+        assert current.kind == ("api" if sid in RSS_ONLY_SOURCES else "crawler")
         for field in [
             "adapter_ref",
             "entry_url",
@@ -334,6 +356,156 @@ def test_configuration_preserves_body_binding_semantics_and_is_idempotent(tmp_pa
         assert binding.source_parameters == {} and binding.source_version == current.version
     assert all(r["action"] == "unchanged" for r in configure(bus))
     repo.close()
+
+
+def test_aviation_topics_have_distinct_units_and_article_identity_overlaps():
+    recipes = endpoint_units(definition("aviationweek_rss"))
+    assert len(recipes) == 5 and len({r.feed for r in recipes.values()}) == 1
+    groups = [rows("aviationweek_rss", i) for i in range(5)]
+    urls = [m.url for group in groups for m in group]
+    assert len(set(urls)) < len(urls)  # Real cross-tag articles, not synthetic duplicates.
+    assert all(m.publication_time_basis == "EXACT" for group in groups for m in group)
+
+
+async def test_aviation_combined_poll_deduplicates_internal_topics():
+    class TopicsHttp(Http):
+        async def fetch(self, url, spec, **kwargs):
+            index = next(i for i, r in enumerate(RECIPES["aviationweek_rss"]) if r.url == url)
+            self.responses = [capture("aviationweek_rss", index)]
+            return await super().fetch(url, spec, **kwargs)
+
+    ctx = context("aviationweek_rss")
+    ctx.acquisition_unit = "ALL"
+    result = await ListingAdapter(SimpleNamespace(), TopicsHttp()).poll_shared(ctx)
+    expected = {m.url for i in range(5) for m in rows("aviationweek_rss", i)}
+    assert not result.failures
+    assert len(result.messages) == len(expected)
+    assert len(result.next_checkpoint["listings"]) == 5
+
+
+async def test_aviation_separate_topic_captures_deduplicate_in_existing_bus(tmp_path, monkeypatch):
+    from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    from doxagent.message_bus_v2.service import MessageBusV2Service
+
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo)
+    source = definition("aviationweek_rss").model_copy(
+        update={"content_enrichment_mode": ContentEnrichmentMode.SKIP, "default_parameters": {}}
+    )
+    bus.register_source(source)
+    binding = TickerSourceBinding(
+        binding_id="RKLB:aviationweek_rss",
+        ticker="RKLB",
+        source_id=source.source_id,
+        source_version=source.version,
+    )
+    repo.save_binding(binding)
+    seen = {}
+    for i in range(5):
+        for message in rows("aviationweek_rss", i):
+            if message.url in seen:
+                first, second = seen[message.url], message
+                break
+            seen[message.url] = message
+        else:
+            continue
+        break
+    monkeypatch.setattr(
+        "doxagent.message_bus_v2.service.utc_now",
+        lambda: first.published_at + timedelta(seconds=20),
+    )
+    a = await bus.accept_message(source=source, binding=binding, message=first, bootstrap=False)
+    b = await bus.accept_message(source=source, binding=binding, message=second, bootstrap=False)
+    assert a.decision.value == "inserted" and b.decision.value == "duplicate"
+    assert a.raw_message_id == b.raw_message_id
+    repo.close()
+
+
+@pytest.mark.parametrize("sid", sorted(RSS_ONLY_SOURCES))
+async def test_deliberate_rss_choice_never_probes_http_or_marks_fallback_failure(sid):
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    http = Http(AssertionError("RSS choice must not probe HTML"))
+    ctx = context(sid)
+    ctx.source = ctx.source.model_copy(update={"default_parameters": {"discovery_mode": "rss"}})
+    result = await ListingAdapter(delegate, http).poll_shared(ctx)
+    assert not result.failures and not http.calls
+    delegate.poll_shared.assert_awaited_once()
+
+
+def test_cache_age_uses_date_even_when_age_is_hidden_but_not_article_last_modified():
+    from dataclasses import replace
+
+    recipe = RECIPES["quantum_computing_report"][0]
+    base = capture(headers={"date": "Tue, 03 Nov 2026 20:00:00 GMT"})
+    with pytest.raises(ValueError, match="stale_cache_age"):
+        cache_evidence(base, recipe, now=NOW)
+    fresh = replace(
+        base,
+        headers={
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 21:00:00 GMT",
+            "last-modified": "Wed, 01 Jan 2020 00:00:00 GMT",
+            "cache-control": "max-age=31536000",
+        },
+    )
+    assert cache_evidence(fresh, recipe, now=NOW)["observed_age_seconds"] == 0
+
+
+@pytest.mark.parametrize("status", [200, 304])
+async def test_old_http_success_and_conditional_response_are_failed_not_fresh(status):
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    ctx = context(
+        checkpoint={
+            "listings": {
+                RECIPES["quantum_computing_report"][0].url: {"baseline": True, "etag": '"old"'}
+            }
+        }
+    )
+    response = capture(status=status, headers={"age": "900", "cache-control": "no-store,private"})
+    result = await ListingAdapter(delegate, Http(response)).poll_shared(ctx)
+    assert result.failures and "stale_cache_age" in result.failures[0].error_message
+    assert not result.next_checkpoint["listings"]
+
+
+async def test_quantum_second_page_cache_is_also_validated():
+    first = capture("quantum_zeitgeist")
+    second = capture("quantum_zeitgeist", headers={"age": "600"})
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    result = await ListingAdapter(delegate, Http(first, second)).poll_shared(
+        context("quantum_zeitgeist")
+    )
+    assert result.failures and "stale_cache_age" in result.failures[0].error_message
+
+
+async def test_cache_evidence_is_bound_to_physical_request_receipt():
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        result = await ListingAdapter(
+            SimpleNamespace(), Http(capture(headers={"age": "12"}))
+        ).poll_shared(context())
+    finally:
+        REQUESTS.reset(token)
+    assert not result.failures
+    assert len(events) == 1 and events[0]["listing_cache"]["observed_age_seconds"] == 12
+
+
+def test_explicit_stale_warning_is_not_accepted_as_fresh():
+    with pytest.raises(ValueError, match="stale_cache_warning"):
+        cache_evidence(
+            capture(headers={"warning": '110 cache.example "Response is stale"'}),
+            RECIPES["quantum_computing_report"][0],
+            now=NOW,
+        )
+
+
+def test_proxy_explicit_stale_response_without_age_is_rejected():
+    with pytest.raises(ValueError, match="stale_cache_status:x-proxy-cache=STALE"):
+        cache_evidence(
+            capture(headers={"x-proxy-cache": "STALE"}),
+            RECIPES["quantum_computing_report"][0],
+            now=NOW,
+        )
 
 
 async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_success(

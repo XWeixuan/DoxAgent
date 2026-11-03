@@ -1,0 +1,1446 @@
+[
+  {
+    "source_id": "aviationweek_rss",
+    "index": 0,
+    "unit": "FEED:326fd881c3432e0ffa056094",
+    "at": "2026-11-03T22:05:34.620446+00:00",
+    "items": 25,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://aviationweek.com/taxonomy/term/186836",
+      "method": "http_listing",
+      "status": 200,
+      "items": 25,
+      "cache": [
+        {
+          "url": "https://aviationweek.com/taxonomy/term/186836",
+          "observed_age_seconds": 0.198,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:36 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:35 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "52ce93a4899d4d519d353daab76d6967"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "52ce93a4899d4d519d353daab76d6967",
+        "role": "listing",
+        "request_key": "174b9853403c743a526b6f9f5da4a9fa603ffdece803873c5b75f77bab805e5b",
+        "endpoint": "aviationweek.com/taxonomy/term/186836",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:05:35.151218+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:05:36.197926+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:05:36 GMT",
+          "age": "0",
+          "cache-control": "max-age=31536000, public",
+          "last-modified": "Tue, 03 Nov 2026 22:05:35 GMT"
+        },
+        "listing_cache": {
+          "url": "https://aviationweek.com/taxonomy/term/186836",
+          "observed_age_seconds": 0.198,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:36 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:35 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 1.598,
+    "article_urls": [
+      "https://aviationweek.com/space/budget-policy-regulation/south-korea-lists-innospace-launch-offset-option",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/jaxa-backs-interstellar-zero-launcher",
+      "https://aviationweek.com/defense/missile-defense-weapons/hypersonica-accelerate-testing-pace-funding-boost",
+      "https://aviationweek.com/space/space-exploration/nasa-firms-plans-artemis-iii-lunar-lander-tests",
+      "https://aviationweek.com/defense/aircraft-propulsion/startup-advances-active-muon-imaging-dense-components",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/ula-sets-mid-november-date-vulcans-return-flight",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/debrief-new-glenn-debut-take-2",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/emirates-asteroid-mission-moves-next-phase",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/cowboy-space-details-big-iron-launcher-plans",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/first-virgin-galactic-delta-class-spaceplane-set-ferry-flight",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/super-heavy-tested-flight-15",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/blue-origin-track-resume-new-glenn-pad-ops-november",
+      "https://aviationweek.com/space/budget-policy-regulation/europe-nears-final-countdown-launch-sovereign-human-spaceflight",
+      "https://aviationweek.com/space/operations-safety/esas-space-rider-suffers-mishap-drop-test",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/spacex-attempt-starship-super-heavy-landings-next-flight",
+      "https://aviationweek.com/space/space-exploration/japan-launches-first-round-trip-mission-mars",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/russias-geoscan-works-launch-vehicle",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/pld-space-miura-5-inaugural-launcher-nears-final-integration",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/jaxa-innovative-space-carrier-collaborate-reusable-rocket-studies",
+      "https://aviationweek.com/space/operations-safety/nasa-opens-bidding-next-space-station",
+      "https://aviationweek.com/space/operations-safety/rocket-lab-tank-design-flaw-formally-pushes-neutron-debut-2027",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/debrief-spacex-asks-pick-pace-starship-flights-texas",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/virgin-galactic-afrl-reveal-space-weather-study-agreement",
+      "https://aviationweek.com/space/budget-policy-regulation/space-emerges-next-frontier-turkeys-aerospace-ambition",
+      "https://aviationweek.com/space/commercial-space/spacexs-35th-cargo-dragon-mission-launches-space-station"
+    ],
+    "latest_publication": "2026-11-03T12:34:30+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 1,
+    "unit": "FEED:2f5220907304596465d3fe32",
+    "at": "2026-11-03T22:05:36.532708+00:00",
+    "items": 25,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://aviationweek.com/taxonomy/term/186841",
+      "method": "http_listing",
+      "status": 200,
+      "items": 25,
+      "cache": [
+        {
+          "url": "https://aviationweek.com/taxonomy/term/186841",
+          "observed_age_seconds": 0.374,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:37 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:36 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "570ac9c1bd57404dba5f81c597502e19"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "570ac9c1bd57404dba5f81c597502e19",
+        "role": "listing",
+        "request_key": "01fc10183d35e82eee92c24bdd959a0f6a527e041e51bf282129501371ad4abc",
+        "endpoint": "aviationweek.com/taxonomy/term/186841",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:05:36.533735+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:05:37.373500+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:05:37 GMT",
+          "age": "0",
+          "cache-control": "max-age=31536000, public",
+          "last-modified": "Tue, 03 Nov 2026 22:05:36 GMT"
+        },
+        "listing_cache": {
+          "url": "https://aviationweek.com/taxonomy/term/186841",
+          "observed_age_seconds": 0.374,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:37 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:36 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 0.898,
+    "article_urls": [
+      "https://aviationweek.com/defense/aircraft-propulsion/pentagon-outlines-plans-initial-cislunar-constellation",
+      "https://aviationweek.com/space/satellites/googles-suncatcher-satellite-sends-ai-generated-response",
+      "https://aviationweek.com/space/satellites/hydrosat-plans-high-resolution-midwave-ir-satellite-system",
+      "https://aviationweek.com/air-transport/safety-ops-regulation/uk-weighs-return-egnos-satellite-positioning-service",
+      "https://aviationweek.com/space/satellites/mda-space-secures-iris2-role",
+      "https://aviationweek.com/space/satellites/effect-spacecraft-ozone-layer-climate-worries-researchers",
+      "https://aviationweek.com/space/space-exploration/nasa-taking-another-look-hubble-servicing-options",
+      "https://aviationweek.com/space/satellites/telesat-lightspeed-schedule-slips-launch-considerations",
+      "https://aviationweek.com/space/satellites/indra-charts-space-growth-after-iris2-commitments",
+      "https://aviationweek.com/space/satellites/alt-pnt-heads-initial-service-2027",
+      "https://aviationweek.com/space/satellites/us-space-force-wants-multivendor-gps-gen4-constellation",
+      "https://aviationweek.com/space/satellites/gomspace-deploys-communications-satellite-testbed-ukraine",
+      "https://aviationweek.com/space/satellites/nasa-selects-earthdaily-advance-commercial-earth-observation",
+      "https://aviationweek.com/space/satellites/europe-adds-galileo-satellites-airbus-thales-alenia-space-deals",
+      "https://aviationweek.com/space/satellites/ohb-takes-mediamobil-communication-stake",
+      "https://aviationweek.com/space/satellites/darpa-eyes-solar-sails-cislunar-constellations",
+      "https://aviationweek.com/defense/budget-policy-operations/iceye-nokia-commit-providing-sovereign-satcom-ukraine",
+      "https://aviationweek.com/defense/budget-policy-operations/us-army-finds-its-space-niche-exploiting-stratosphere",
+      "https://aviationweek.com/space/satellites/xona-launches-alt-pnt-sats-readies-2027-commercial-service",
+      "https://aviationweek.com/space/satellites/us-calls-russian-operations-around-iceye-satellite-threatening",
+      "https://aviationweek.com/space/satellites/airbus-targets-german-earth-observation-ai-offering",
+      "https://aviationweek.com/business-aviation/interiors-connectivity/viasat-announces-capacity-boost-jetxp-service",
+      "https://aviationweek.com/aerospace/manufacturing-supply-chain/strong-third-quarter-outlook-leads-rtx-boost-full-year",
+      "https://aviationweek.com/space/satellites/ast-spacemobile-outlines-plans-initial-service-first-markets",
+      "https://aviationweek.com/space/satellites/reflex-aerospace-boost-production-nvidia-backing"
+    ],
+    "latest_publication": "2026-11-03T18:40:08+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 2,
+    "unit": "FEED:27af3058ede7e42aefe10b96",
+    "at": "2026-11-03T22:05:37.747282+00:00",
+    "items": 25,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://aviationweek.com/taxonomy/term/186846",
+      "method": "http_listing",
+      "status": 200,
+      "items": 25,
+      "cache": [
+        {
+          "url": "https://aviationweek.com/taxonomy/term/186846",
+          "observed_age_seconds": 0.956,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:38 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:38 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "efb19fb6cb144e269e431e21752cd31e"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "efb19fb6cb144e269e431e21752cd31e",
+        "role": "listing",
+        "request_key": "ae6d62eb57df9198afd1338f928ef7ec238bec6221816d2edb3120557bb6a24a",
+        "endpoint": "aviationweek.com/taxonomy/term/186846",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:05:37.748279+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:05:38.956304+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:05:38 GMT",
+          "age": "0",
+          "cache-control": "max-age=31536000, public",
+          "last-modified": "Tue, 03 Nov 2026 22:05:38 GMT"
+        },
+        "listing_cache": {
+          "url": "https://aviationweek.com/taxonomy/term/186846",
+          "observed_age_seconds": 0.956,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:38 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:38 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 1.224,
+    "article_urls": [
+      "https://aviationweek.com/space/budget-policy-regulation/south-korea-lists-innospace-launch-offset-option",
+      "https://aviationweek.com/space/satellites/mda-space-secures-iris2-role",
+      "https://aviationweek.com/space/satellites/effect-spacecraft-ozone-layer-climate-worries-researchers",
+      "https://aviationweek.com/space/space-exploration/jaxa-launches-ambitious-campaign-return-samples-martian-moon",
+      "https://aviationweek.com/space/budget-policy-regulation/pentagons-commercial-space-reserve-goes-operational",
+      "https://aviationweek.com/space/satellites/europe-adds-galileo-satellites-airbus-thales-alenia-space-deals",
+      "https://aviationweek.com/space/budget-policy-regulation/sierra-space-appoints-second-cfo-four-months",
+      "https://aviationweek.com/space/budget-policy-regulation/nasa-looks-accelerate-reduce-cost-ambitious-space-science",
+      "https://aviationweek.com/space/budget-policy-regulation/space-force-sets-aces-guide-commercial-partners-black",
+      "https://aviationweek.com/space/budget-policy-regulation/nasa-panel-raises-human-spaceflight-iss-successor-concerns",
+      "https://aviationweek.com/defense/budget-policy-operations/iceye-nokia-commit-providing-sovereign-satcom-ukraine",
+      "https://aviationweek.com/defense/budget-policy-operations/us-army-finds-its-space-niche-exploiting-stratosphere",
+      "https://aviationweek.com/space/budget-policy-regulation/canadas-defense-department-backs-access-nordspace-launch-site",
+      "https://aviationweek.com/space/budget-policy-regulation/space-force-considers-third-launch-site-heavy-lift-rockets-2030",
+      "https://aviationweek.com/space/budget-policy-regulation/europe-nears-final-countdown-launch-sovereign-human-spaceflight",
+      "https://aviationweek.com/space/budget-policy-regulation/debrief-where-space-community-getting-its-orbital-updates",
+      "https://aviationweek.com/aerospace/aircraft-propulsion/aviation-hall-fame-unveils-class-27",
+      "https://aviationweek.com/aerospace/manufacturing-supply-chain/strong-third-quarter-outlook-leads-rtx-boost-full-year",
+      "https://aviationweek.com/defense/budget-policy-operations/uk-explores-drone-satcom-options",
+      "https://aviationweek.com/space/budget-policy-regulation/nasa-ig-calls-decadal-survey-reforms",
+      "https://aviationweek.com/space/budget-policy-regulation/sda-transport-satellite-constellation-grows-larger-integration-lags",
+      "https://aviationweek.com/space/budget-policy-regulation/deadline-extended-submit-pitches-us-space-academy-hq",
+      "https://aviationweek.com/space/space-exploration/artemis-ii-astronaut-christina-koch-moves-nasa-management",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/virgin-galactic-afrl-reveal-space-weather-study-agreement",
+      "https://aviationweek.com/space/budget-policy-regulation/space-emerges-next-frontier-turkeys-aerospace-ambition"
+    ],
+    "latest_publication": "2026-11-03T12:34:30+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 3,
+    "unit": "FEED:8292bdac5cd50ce3bbe95689",
+    "at": "2026-11-03T22:05:39.571112+00:00",
+    "items": 25,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://aviationweek.com/taxonomy/term/186851",
+      "method": "http_listing",
+      "status": 200,
+      "items": 25,
+      "cache": [
+        {
+          "url": "https://aviationweek.com/taxonomy/term/186851",
+          "observed_age_seconds": 0.578,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:40 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:39 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "2c1321a299be4db4977ba7bf086a2e9d"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "2c1321a299be4db4977ba7bf086a2e9d",
+        "role": "listing",
+        "request_key": "1af45d02831c412cd372fbd85dbb83d0c42e31d2ad97aedce63b4e65f217c13d",
+        "endpoint": "aviationweek.com/taxonomy/term/186851",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:05:39.572115+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:05:40.578323+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:05:40 GMT",
+          "age": "0",
+          "cache-control": "max-age=31536000, public",
+          "last-modified": "Tue, 03 Nov 2026 22:05:39 GMT"
+        },
+        "listing_cache": {
+          "url": "https://aviationweek.com/taxonomy/term/186851",
+          "observed_age_seconds": 0.578,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:40 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:39 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 1.032,
+    "article_urls": [
+      "https://aviationweek.com/space/operations-safety/nasas-swift-observatory-nears-atmospheric-reentry",
+      "https://aviationweek.com/space/space-exploration/nasa-conclude-life-mars-simulation-oct-31",
+      "https://aviationweek.com/space/space-exploration/jaxa-launches-ambitious-campaign-return-samples-martian-moon",
+      "https://aviationweek.com/space/space-exploration/nasa-firms-plans-artemis-iii-lunar-lander-tests",
+      "https://aviationweek.com/space/operations-safety/spacewalkers-install-next-last-space-station-roll-out-solar-array",
+      "https://aviationweek.com/space/operations-safety/russia-explores-extending-iss-operations-2032-us-talks",
+      "https://aviationweek.com/business-aviation/aircraft-propulsion/rendezvous-robotics-plans-self-assembling-tile-demo-space-28",
+      "https://aviationweek.com/space/commercial-space/space-industry-contemplates-options-contracting-launch-market",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/super-heavy-tested-flight-15",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/blue-origin-track-resume-new-glenn-pad-ops-november",
+      "https://aviationweek.com/space/operations-safety/us-space-force-plans-new-spider-program-gps-ground-ops",
+      "https://aviationweek.com/space/budget-policy-regulation/canadas-defense-department-backs-access-nordspace-launch-site",
+      "https://aviationweek.com/space/satellites/us-calls-russian-operations-around-iceye-satellite-threatening",
+      "https://aviationweek.com/space/budget-policy-regulation/space-force-considers-third-launch-site-heavy-lift-rockets-2030",
+      "https://aviationweek.com/space/commercial-space/20-twenties-alumnus-opens-nasa-arc-jet-facility-spacex-blue-origin",
+      "https://aviationweek.com/space/operations-safety/esas-space-rider-suffers-mishap-drop-test",
+      "https://aviationweek.com/aerospace/manufacturing-supply-chain/strong-third-quarter-outlook-leads-rtx-boost-full-year",
+      "https://aviationweek.com/space/space-exploration/ohb-leads-european-lunar-outpost-study",
+      "https://aviationweek.com/space/operations-safety/aerospace-veteran-stephen-cash-head-marshall-space-flight-center",
+      "https://aviationweek.com/space/space-exploration/nasas-iss-crew-12-returnees-reflect-lengthy-mission",
+      "https://aviationweek.com/space/operations-safety/nasa-opens-bidding-next-space-station",
+      "https://aviationweek.com/space/operations-safety/debrief-us-armys-expanding-foothold-space",
+      "https://aviationweek.com/space/commercial-space/spacex-cargo-dragon-delivers-rollouts-research-iss",
+      "https://aviationweek.com/space/operations-safety/rocket-lab-tank-design-flaw-formally-pushes-neutron-debut-2027",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/debrief-spacex-asks-pick-pace-starship-flights-texas"
+    ],
+    "latest_publication": "2026-11-02T21:57:33+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 4,
+    "unit": "FEED:3b61227c8889e3342d63be4b",
+    "at": "2026-11-03T22:05:40.921373+00:00",
+    "items": 25,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://aviationweek.com/taxonomy/term/456",
+      "method": "http_listing",
+      "status": 200,
+      "items": 25,
+      "cache": [
+        {
+          "url": "https://aviationweek.com/taxonomy/term/456",
+          "observed_age_seconds": 0.205,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:42 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:41 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "d36f0d70250d4716aca79b2f238ee7f3"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "d36f0d70250d4716aca79b2f238ee7f3",
+        "role": "listing",
+        "request_key": "186104bc6f649450ea40ae008a3e37603c85969015864764c99d041bf0b77358",
+        "endpoint": "aviationweek.com/taxonomy/term/456",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:05:40.922404+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:05:42.204884+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:05:42 GMT",
+          "age": "0",
+          "cache-control": "max-age=31536000, public",
+          "last-modified": "Tue, 03 Nov 2026 22:05:41 GMT"
+        },
+        "listing_cache": {
+          "url": "https://aviationweek.com/taxonomy/term/456",
+          "observed_age_seconds": 0.205,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "age": "0",
+            "date": "Tue, 03 Nov 2026 22:05:42 GMT",
+            "cache-control": "max-age=31536000, public",
+            "last-modified": "Tue, 03 Nov 2026 22:05:41 GMT",
+            "x-cache": "MISS",
+            "cf-cache-status": "DYNAMIC",
+            "x-drupal-dynamic-cache": "MISS"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 1.305,
+    "article_urls": [
+      "https://aviationweek.com/space/commercial-space/voyager-technologies-sees-strong-2027-top-line-growth",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/jaxa-backs-interstellar-zero-launcher",
+      "https://aviationweek.com/space/satellites/googles-suncatcher-satellite-sends-ai-generated-response",
+      "https://aviationweek.com/space/commercial-space/northwood-space-raises-375m-series-c-funding-round",
+      "https://aviationweek.com/space/space-exploration/nasa-firms-plans-artemis-iii-lunar-lander-tests",
+      "https://aviationweek.com/space/space-exploration/nasa-taking-another-look-hubble-servicing-options",
+      "https://aviationweek.com/space/satellites/alt-pnt-heads-initial-service-2027",
+      "https://aviationweek.com/space/commercial-space/space-industry-contemplates-options-contracting-launch-market",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/cowboy-space-details-big-iron-launcher-plans",
+      "https://aviationweek.com/space/budget-policy-regulation/nasa-panel-raises-human-spaceflight-iss-successor-concerns",
+      "https://aviationweek.com/space/commercial-space/space-force-awards-first-operational-casr-contracts-six-vendors",
+      "https://aviationweek.com/space/commercial-space/dawn-aerospace-plans-uk-launch-operations",
+      "https://aviationweek.com/space/commercial-space/20-twenties-alumnus-opens-nasa-arc-jet-facility-spacex-blue-origin",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/spacex-attempt-starship-super-heavy-landings-next-flight",
+      "https://aviationweek.com/defense/budget-policy-operations/debrief-starshield-limits-ukraine-risk-damage-us-aerospace",
+      "https://aviationweek.com/aerospace/manufacturing-supply-chain/strong-third-quarter-outlook-leads-rtx-boost-full-year",
+      "https://aviationweek.com/space/satellites/ast-spacemobile-outlines-plans-initial-service-first-markets",
+      "https://aviationweek.com/space/space-exploration/rocketdyne-supply-thrusters-private-lazuli-space-telescope",
+      "https://aviationweek.com/space/commercial-space/blue-origin-plans-330-million-expansion-florida",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/pld-space-miura-5-inaugural-launcher-nears-final-integration",
+      "https://aviationweek.com/aerospace/emerging-technologies/tesla-demos-flying-roadster-powered-spacex-cold-gas-thrusters",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/jaxa-innovative-space-carrier-collaborate-reusable-rocket-studies",
+      "https://aviationweek.com/space/operations-safety/nasa-opens-bidding-next-space-station",
+      "https://aviationweek.com/space/commercial-space/spacex-cargo-dragon-delivers-rollouts-research-iss",
+      "https://aviationweek.com/space/launch-vehicles-propulsion/debrief-spacex-asks-pick-pace-starship-flights-texas"
+    ],
+    "latest_publication": "2026-11-03T16:12:51+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 0,
+    "unit": "FEED:a518927e703ee73b94eb2ec9",
+    "at": "2026-11-03T22:06:22.549692+00:00",
+    "items": 50,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud",
+      "method": "http_listing",
+      "status": 200,
+      "items": 50,
+      "cache": [
+        {
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud",
+          "observed_age_seconds": 0.681,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT",
+            "x-cache": "MISS, MISS, MISS",
+            "x-cache-hits": "0, 0, 0",
+            "cf-cache-status": "HIT"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "f5e47f7eff8f49a189413d79ee3337ae"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "f5e47f7eff8f49a189413d79ee3337ae",
+        "role": "listing",
+        "request_key": "717f4ce2ff5fb65f8b7d44836469d97698109720181ad9ba36bb362aead3ffad",
+        "endpoint": "www.crn.com/query-index.json",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:06:22.629775+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:06:22.680414+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+          "cache-control": "max-age=7200, must-revalidate",
+          "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT"
+        },
+        "listing_cache": {
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud",
+          "observed_age_seconds": 0.681,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT",
+            "x-cache": "MISS, MISS, MISS",
+            "x-cache-hits": "0, 0, 0",
+            "cf-cache-status": "HIT"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 0.146,
+    "article_urls": [
+      "https://www.crn.com/news/cloud/2026/cloud-market-share-q3-google-cloud-gains-as-aws-loses-ground-anthropic-and-spacex-crack-into-top-10",
+      "https://www.crn.com/news/cloud/2026/aws-vs-microsoft-azure-vs-google-cloud-q3-earnings-faceoff",
+      "https://www.crn.com/news/cloud/2026/google-cloud-sales-explode-103-percent-as-ceo-touts-tpu-extraordinary-demand",
+      "https://www.crn.com/news/cloud/2026/ahead-hires-over-300-employees-to-drive-vmware-vcf-as-sales-soar",
+      "https://www.crn.com/news/cloud/2026/connectwise-cto-on-cloud-backup-cyberattack-m365-update-and-helping-thousands-of-partners",
+      "https://www.crn.com/news/cloud/2026/ahead-moves-120-vmware-clients-to-rapidscale-in-big-vcsp-deal-to-give-enterprises-best-of-both-worlds",
+      "https://www.crn.com/news/cloud/2026/aws-marketplace-lowers-partner-fees-in-game-changer-channel-move",
+      "https://www.crn.com/news/cloud/2026/vmware-star-1111-acquires-hundreds-of-ibm-customers-in-blockbuster-vcf-push",
+      "https://www.crn.com/news/cloud/2026/1111-systems-ceo-on-buying-ibm-cloud-customers-for-vmware-charge",
+      "https://www.crn.com/news/cloud/2026/microsoft-s-ryan-roslansky-exits-as-copilot-leadership-shifts",
+      "https://www.crn.com/news/cloud/2026/aws-ai-chief-on-making-ai-cheap-and-easy-openai-strategy-and-ai-products-partners-need-to-be-selling",
+      "https://www.crn.com/news/cloud/2026/nutanix-acquires-ryax-to-boost-gpu-utilization-and-agentic-ai-play",
+      "https://www.crn.com/news/cloud/2026/accenture-settles-doj-dei-case-for-25-million-denies-wrongdoing",
+      "https://www.crn.com/news/cloud/2026/6-big-new-vmware-partner-incentives-trainings-and-knights-improvements",
+      "https://www.crn.com/news/cloud/2026/vmware-vsphere-8-end-of-support-move-to-vcf-9-1-our-no-1-mission-execs-say",
+      "https://www.crn.com/news/cloud/2026/google-cloud-ceo-tpus-have-faster-payback-vs-gpus",
+      "https://www.crn.com/news/cloud/2026/aws-ceo-excited-ducklabs-acquisitionwill-drive-analytics-partner-says-deal-will-help-fill-gap-for-clients",
+      "https://www.crn.com/news/cloud/2026/aws-ai-director-on-forward-deployed-engineers-and-partners-clear-path-ahead-together",
+      "https://www.crn.com/news/cloud/2026/ibm-ceo-s-letter-to-investors-spoke-to-deeply-held-leadership-principle",
+      "https://www.crn.com/news/cloud/2026/cloud-market-share-q2-2026-google-gains-share-as-aws-falls",
+      "https://www.crn.com/news/cloud/2026/nutanix-to-layoff-5-percent-of-global-workforce-here-s-why",
+      "https://www.crn.com/news/cloud/2026/aws-vs-microsoft-vs-google-cloud-earnings-q2-2026-face-off",
+      "https://www.crn.com/news/cloud/2026/aws-169b-run-rate-favorable-220b-investment-and-ai-enterprise-vision-a-win-for-partners-caylent-execs-say",
+      "https://www.crn.com/news/cloud/2026/the-10-biggest-cloud-outages-of-2026-so-far",
+      "https://www.crn.com/news/cloud/2026/amazon-s-aws-earnings-preview-5-big-ai-sales-anthropic-and-nova-things-to-know",
+      "https://www.crn.com/news/cloud/2026/google-ceo-on-gemini-4-allocating-tpus-ai-models-and-gemini-enterprise",
+      "https://www.crn.com/news/cloud/2026/aws-partner-bizcloud-on-anthropic-claude-push-ai-not-killing-jobs-and-aws-fdes",
+      "https://www.crn.com/news/cloud/2026/10-coolest-new-aws-tools-products-and-ai-innovation-of-2026",
+      "https://www.crn.com/news/cloud/2026/top-10-aws-news-stories-of-2026-openai-layoffs-and-ai-innovation",
+      "https://www.crn.com/news/cloud/2026/the-10-hottest-cloud-computing-startups-of-2026-so-far",
+      "https://www.crn.com/news/cloud/2026/klue-confirms-breach-exposed-crm-data-across-integrations",
+      "https://www.crn.com/news/cloud/2026/top-10-biggest-google-cloud-news-of-2026-so-far-wiz-agentic-ai-and-new-partner-program",
+      "https://www.crn.com/news/ai/2026/openai-hires-google-gemini-ai-guru-sam-altman-touts-new-hire",
+      "https://www.crn.com/news/cloud/2026/aws-director-on-new-partner-funding-customer-outcome-competency-and-marketplace-storefronts",
+      "https://www.crn.com/news/cloud/2026/snowflake-summit-2026-coco-cowork-drive-partner-growth",
+      "https://www.crn.com/news/cloud/2026/vmware-partner-touts-broadcom-s-focus-on-remaining-partners-and-joint-deals-with-former-resellers",
+      "https://www.crn.com/news/ai/2026/accenture-director-joins-google-cloud-star-quantiphi-as-new-ceo-to-lead-global-scale",
+      "https://www.crn.com/news/cloud/2026/aws-openai-partnership-is-massive-as-ai-model-choice-and-ease-is-key-to-clients-partners-say",
+      "https://www.crn.com/news/cloud/2026/hpe-sells-nearly-1-billion-stake-in-h3c-tech-plans-to-sell-remaining-stake-for-370-million",
+      "https://www.crn.com/news/cloud/2026/hpe-vp-kristian-kerr-on-unprecedented-vmware-price-increases-public-cloud-repatriation-new-hpe-unified-private-cloud-platform",
+      "https://www.crn.com/news/cloud/2026/30-notable-it-executive-moves-april-2026",
+      "https://www.crn.com/news/cloud/2026/vmware-s-new-vcf-9-1-cuts-customer-costs-for-storage-ai-and-security-comdivision-ceo-explains",
+      "https://www.crn.com/news/cloud/2026/google-cloud-s-6-big-execs-who-left-for-anthropic-openai-and-microsoft-in-2026",
+      "https://www.crn.com/news/cloud/2026/aws-confirms-data-center-outage-caused-by-thermal-event-some-services-still-impacted",
+      "https://www.crn.com/news/cloud/2026/cloud-partners-find-ai-customer-success-by-drinking-our-own-champagne",
+      "https://www.crn.com/news/cloud/2026/aws-exec-revamping-map-program-is-game-changing-for-partners",
+      "https://www.crn.com/news/cloud/2026/cloud-market-share-q1-2026-aws-microsoft-google-battling-in-ai-era",
+      "https://www.crn.com/news/cloud/2026/aws-vs-google-cloud-vs-microsoft-azure-q1-earnings-face-off",
+      "https://www.crn.com/news/cloud/2026/google-cloud-s-80b-run-rate-800-percent-ai-growth-and-462b-backlog-google-s-q1-earnings-key-results",
+      "https://www.crn.com/news/cloud/2026/insight-exec-clients-are-accelerating-data-center-exits-amid-chip-shortages-vmware-changes-and-google-s-enterprise-ai-push"
+    ],
+    "latest_publication": "2026-11-03T18:30:00+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 1,
+    "unit": "FEED:0f559d39370394f58715143f",
+    "at": "2026-11-03T22:06:22.746817+00:00",
+    "items": 50,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security",
+      "method": "http_listing",
+      "status": 200,
+      "items": 50,
+      "cache": [
+        {
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security",
+          "observed_age_seconds": 0.801,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT",
+            "x-cache": "MISS, MISS, MISS",
+            "x-cache-hits": "0, 0, 0",
+            "cf-cache-status": "HIT"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "453fe6eaf0e74c00925d720a40fa0436"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "453fe6eaf0e74c00925d720a40fa0436",
+        "role": "listing",
+        "request_key": "4f33d68aa126f04a5fc7fa04a52d1e75d17cf5b306a751a3b62ae241d7b5235b",
+        "endpoint": "www.crn.com/query-index.json",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:06:22.747894+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:06:22.801055+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+          "cache-control": "max-age=7200, must-revalidate",
+          "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT"
+        },
+        "listing_cache": {
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security",
+          "observed_age_seconds": 0.801,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT",
+            "x-cache": "MISS, MISS, MISS",
+            "x-cache-hits": "0, 0, 0",
+            "cf-cache-status": "HIT"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 0.073,
+    "article_urls": [
+      "https://www.crn.com/news/security/2026/the-25-hottest-edge-security-companies-2026-edge-computing-100",
+      "https://www.crn.com/news/security/2026/arctic-wolf-ceo-nick-schneider-ai-vulnerability-threats-changing-in-2027",
+      "https://www.crn.com/news/security/2026/sentinelone-s-chris-corde-on-why-traditional-edr-is-flying-blind-on-ai-agents",
+      "https://www.crn.com/news/security/2026/connectwise-cto-we-threw-the-big-kill-switch-now-cloud-backup-is-back",
+      "https://www.crn.com/news/security/2026/firemon-ceo-jody-brazil-on-why-you-can-t-out-patch-attackers-in-the-ai-era",
+      "https://www.crn.com/news/security/2026/5-latest-updates-on-php2shell-exploitation",
+      "https://www.crn.com/news/security/2026/php-threat-is-likely-far-from-over-despite-limited-exploitation-so-far-guidepoint-expert",
+      "https://www.crn.com/news/security/2026/sentinelone-ceo-tomer-weingarten-on-autonomous-soc-ai-we-re-well-ahead",
+      "https://www.crn.com/news/security/2026/china-state-aligned-group-storm-0940-used-agentic-ai-at-rate-of-2-900-sign-in-attempts-per-minute-in-connectwise-breach",
+      "https://www.crn.com/news/security/2026/sentinelone-s-ai-security-surge-driving-separation-from-the-pack-partners",
+      "https://www.crn.com/news/security/2026/sentinelone-ceo-s-5-boldest-ai-statements-at-onecon-2026",
+      "https://www.crn.com/news/security/2026/5-things-to-know-about-critical-php-vulnerabilities-exploitation",
+      "https://www.crn.com/news/security/2026/connectwise-aims-to-get-cloud-backup-for-microsoft-365-up-and-running-by-end-of-this-week-cto-david-raissipour",
+      "https://www.crn.com/news/security/2026/threatlocker-ceo-on-launch-of-new-ai-agent-controls-massive-opportunities-for-msps",
+      "https://www.crn.com/news/security/2026/connectwise-cto-sees-light-at-end-of-tunnel-in-bid-to-restore-connectwise-cloud-backup-microsoft-365-access",
+      "https://www.crn.com/news/security/2026/how-jetstream-aims-to-build-a-lasting-ai-security-platform-with-the-channel-execs",
+      "https://www.crn.com/news/security/2026/1password-cto-nancy-wang-identity-security-must-adapt-to-new-world-of-ai-agents",
+      "https://www.crn.com/news/security/2026/proofpoint-ceo-sumit-dhawan-on-market-changing-6-3b-varonis-deal-ipo-goal",
+      "https://www.crn.com/news/security/2026/5-things-to-know-on-proofpoint-s-6-3b-acquisition-of-varonis",
+      "https://www.crn.com/news/security/2026/guidepoint-security-s-mark-thornberry-promoted-to-chief-business-officer-for-ai-platform-hyperscaler-push",
+      "https://www.crn.com/news/security/2026/torq-revs-up-channel-efforts-in-the-agentic-soc-space-exclusive",
+      "https://www.crn.com/news/security/2026/5-big-things-to-know-about-post-quantum-security-in-2026",
+      "https://www.crn.com/news/security/2026/10-browser-security-vendors-making-moves-in-2026",
+      "https://www.crn.com/news/security/2026/why-rogue-ai-agents-are-a-wake-up-call-for-security-teams-experts",
+      "https://www.crn.com/news/security/2026/six-months-after-mythos-here-s-how-ai-is-shaking-up-vulnerability-management-experts",
+      "https://www.crn.com/news/security/2026/netskope-ceo-sanjay-beri-rogue-agents-make-an-ai-kill-switch-mandatory",
+      "https://www.crn.com/news/security/2026/accenture-cyber-exec-industry-is-moving-beyond-whack-a-mole-patching-amid-ai-driven-vulnerability-surge",
+      "https://www.crn.com/news/security/2026/lastpass-has-cleared-a-lot-of-hurdles-strong-ai-growth-ahead-ceo-karim-toubba",
+      "https://www.crn.com/news/security/2026/quantum-readiness-means-it-s-time-to-elevate-your-cryptography-experts-optiv-field-ciso",
+      "https://www.crn.com/news/security/2026/how-cybersecurity-can-help-rein-in-surging-ai-token-costs-experts",
+      "https://www.crn.com/news/security/2026/nvidia-has-the-right-idea-on-advancing-ai-agent-security-guidepoint-exec",
+      "https://www.crn.com/news/security/2026/ai-may-be-dominating-cybersecurity-but-quantum-preparations-can-t-wait-analysis",
+      "https://www.crn.com/news/security/2026/wiz-unveils-msp-program-to-boost-cloud-ai-managed-security-services-exclusive",
+      "https://www.crn.com/news/security/2026/microsoft-s-rob-lefferts-on-new-capabilities-unifying-defender-sentinel-the-foundation-you-need-for-agentic-security",
+      "https://www.crn.com/news/security/2026/new-optiv-cro-ai-is-disrupting-security-in-a-compressed-timeframe",
+      "https://www.crn.com/news/security/2026/censys-shifts-to-channel-only-for-new-business-aims-to-expand-internet-intelligence-with-partners",
+      "https://www.crn.com/news/security/2026/sailpoint-ceo-mark-mcclain-when-ai-can-move-thousands-of-times-faster-than-humans-identity-security-is-key",
+      "https://www.crn.com/news/security/2026/okta-unveils-revamped-channel-program-shifting-most-service-delivery-to-partners-exclusive",
+      "https://www.crn.com/news/security/2026/ai-governance-is-key-but-don-t-let-it-slow-down-cyber-defense-optiv-ciso",
+      "https://www.crn.com/news/security/2026/why-the-post-quantum-shift-could-leave-older-it-systems-behind-experts",
+      "https://www.crn.com/news/security/2026/vectra-ai-unveils-major-evolution-of-partner-program-to-enable-ai-native-security-opportunity-ceo",
+      "https://www.crn.com/news/security/2026/bigger-ai-security-budgets-should-be-coming-in-2027-guidepoint-ciso",
+      "https://www.crn.com/news/security/2026/why-the-cybersecurity-channel-is-essential-as-an-ai-reality-check-analysis",
+      "https://www.crn.com/news/security/2026/cyderes-ceo-not-one-ciso-has-disclosed-getting-more-budget-to-secure-ai",
+      "https://www.crn.com/news/security/2026/security-operations-to-see-a-renaissance-in-next-24-months-cyderes-ceo",
+      "https://www.crn.com/news/security/2026/how-crowdstrike-s-fal-con-is-emerging-as-a-mini-rsa-for-the-cyber-industry-analysis",
+      "https://www.crn.com/news/security/2026/crowdstrike-safemind-gives-frontier-ai-to-defenders-that-doesn-t-just-create-more-work-partners",
+      "https://www.crn.com/news/security/2026/open-models-harnesses-increasingly-key-to-making-ai-powered-security-sustainable-crowdstrike-partners",
+      "https://www.crn.com/news/security/2026/crowdstrike-fal-con-2026-biggest-statements-from-nvidia-ceo-huang-intel-ceo-tan-and-openai-president-brockman",
+      "https://www.crn.com/news/security/2026/flamingo-looks-to-build-autonomous-msps-with-open-source-ai-and-4-5m-in-new-funding"
+    ],
+    "latest_publication": "2026-11-03T15:00:00+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 2,
+    "unit": "FEED:ffdb14036507158e4b9c311e",
+    "at": "2026-11-03T22:06:22.872023+00:00",
+    "items": 50,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center",
+      "method": "http_listing",
+      "status": 200,
+      "items": 50,
+      "cache": [
+        {
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center",
+          "observed_age_seconds": 0.924,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "last-modified": "Tue, 03 Nov 2026 20:26:38 GMT",
+            "x-cache": "MISS, HIT, MISS",
+            "x-cache-hits": "0, 1, 0",
+            "cf-cache-status": "HIT"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "62db388924394b2898b2eead0dd62e83"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "62db388924394b2898b2eead0dd62e83",
+        "role": "listing",
+        "request_key": "4bd3cdd62f744eab44e6773bbf7a6157e0ce9497c260cf526add28b3b376c41d",
+        "endpoint": "www.crn.com/query-index.json",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:06:22.872734+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:06:22.923784+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+          "cache-control": "max-age=7200, must-revalidate",
+          "last-modified": "Tue, 03 Nov 2026 20:26:38 GMT"
+        },
+        "listing_cache": {
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center",
+          "observed_age_seconds": 0.924,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:22 GMT",
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "last-modified": "Tue, 03 Nov 2026 20:26:38 GMT",
+            "x-cache": "MISS, HIT, MISS",
+            "x-cache-hits": "0, 1, 0",
+            "cf-cache-status": "HIT"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 0.066,
+    "article_urls": [
+      "https://www.crn.com/news/data-center/2026/balata-rides-data-center-gold-rush-to-100m-in-revenue",
+      "https://www.crn.com/news/data-center/2026/gdt-exec-channel-can-benefit-from-nvidia-s-ai-financing-boom-but-hurdles-persist",
+      "https://www.crn.com/news/data-center/2026/feds-arrest-solution-provider-owner-in-alleged-300m-gpu-server-smuggling-scheme",
+      "https://www.crn.com/news/data-center/2026/lenovo-seeks-to-fast-track-ai-server-deals-for-partners-with-new-ai-express-program",
+      "https://www.crn.com/news/data-center/2026/how-mark-iii-won-one-of-the-largest-nvidia-ai-factory-enterprise-deals-in-the-channel",
+      "https://www.crn.com/news/data-center/2026/before-sale-to-softcat-gdt-tapped-into-nvidia-fueled-neocloud-gold-rush",
+      "https://www.crn.com/news/data-center/2026/imt-teams-with-dell-technologies-to-deliver-gold-standard-arizona-cardinals-technology-transformation",
+      "https://www.crn.com/news/data-center/2026/lenovo-exec-new-virtualization-solutions-will-aid-partners-in-modernization-push-with-or-without-vmware",
+      "https://www.crn.com/news/data-center/2026/aws-unable-to-restore-data-centers-hit-by-iran-strikes-partner-hopes-amazon-s-220b-spending-plan-continues",
+      "https://www.crn.com/news/data-center/2026/stormagic-ceo-on-mako-partnership-vmware-and-the-edge-we-are-the-edge",
+      "https://www.crn.com/news/data-center/2026/d-h-posts-30-percent-growth-in-its-advanced-solutions-enterprise-group-now-a-multi-billion-dollar-business",
+      "https://www.crn.com/news/data-center/2026/dell-ai-server-momentum-accelerates-with-record-60-9b-in-q2-ai-orders-backlog-hits-95b",
+      "https://www.crn.com/news/data-center/2026/nutanix-ceo-ramaswami-on-ai-amd-gpus-and-why-partners-need-to-move-faster",
+      "https://www.crn.com/news/data-center/2026/lenovo-leader-calls-data-center-backlash-a-constraint-but-sees-no-ai-slowdown",
+      "https://www.crn.com/news/data-center/2026/exclusive-cisco-extends-ucs-compute-price-protection-quote-validity-to-14-days",
+      "https://www.crn.com/news/data-center/2026/nutanix-bets-big-on-agentic-ai-with-new-controls-for-the-hybrid-cloud",
+      "https://www.crn.com/news/data-center/2026/partners-hope-cisco-supermicro-deal-will-fill-gap-left-by-cisco-ucs-server-shipment-delays",
+      "https://www.crn.com/news/data-center/2026/aws-pours-6b-into-new-us-data-center-as-amazon-s-220b-spending-goal-unfolds",
+      "https://www.crn.com/news/data-center/2026/schneider-electric-gives-channel-partners-new-ups-battery-upgrade-services-opportunities",
+      "https://www.crn.com/news/data-center/2026/exclusive-new-dell-storage-partnership-strengthens-d-h-enterprise-distribution-play",
+      "https://www.crn.com/news/data-center/2026/hpe-enterprise-global-sales-vp-monica-gille-is-leaving-company-ready-for-next-chapter",
+      "https://www.crn.com/news/data-center/2026/us-data-center-capacity-will-double-despite-local-concerns-neoclouds-offer-partner-opportunity",
+      "https://www.crn.com/news/data-center/2026/intel-ceo-strong-ai-x86-demand-driving-growth-as-foundry-manufacturing-execution-improve",
+      "https://www.crn.com/news/data-center/2026/ibm-shares-plummet-on-q2-earnings-warning",
+      "https://www.crn.com/news/data-center/2026/dell-north-america-president-kyle-leciejewski-on-why-dell-is-uniquely-executing-with-partners-in-midst-of-supply-chain-crisis",
+      "https://www.crn.com/news/data-center/2026/google-to-build-15b-data-center-next-to-amazon-center-in-missouri",
+      "https://www.crn.com/news/data-center/2026/dell-s-infrastructure-blitz-private-cloud-powerstore-elite-poweredge-in-spotlight-at-dell-technologies-world-2026",
+      "https://www.crn.com/news/data-center/2026/dell-technologies-world-2026-seven-big-channel-game-changers",
+      "https://www.crn.com/news/data-center/2026/partners-dell-supply-chain-superiority-is-driving-sales-growth-versus-competitors",
+      "https://www.crn.com/news/data-center/2026/lenovo-exec-sees-ai-demand-straining-high-end-cpu-supply-amid-memory-crunch",
+      "https://www.crn.com/news/data-center/2026/data-center-market-share-face-off-hyperscalers-vs-colocation-vs-enterprise",
+      "https://www.crn.com/news/data-center/2026/mistral-ai-raises-830m-for-nvidia-data-center-with-13-800-gpus",
+      "https://www.crn.com/news/data-center/2026/dell-has-reduced-its-workforce-by-27-percent-from-fy-2023-to-fy-2026",
+      "https://www.crn.com/news/data-center/2026/hpe-ceo-antonio-neri-elevated-memory-prices-to-persist-well-into-2027",
+      "https://www.crn.com/news/components-peripherals/2026/craig-barratt-to-succeed-intel-chair-frank-yeary-in-may",
+      "https://www.crn.com/news/data-center/2026/dell-coo-jeff-clarke-supply-chain-edge-poised-to-drive-share-gains-in-spite-of-soaring-memory-costs",
+      "https://www.crn.com/news/data-center/2026/it-distributors-warn-memory-shortages-supply-chain-strains-impacting-the-channel",
+      "https://www.crn.com/news/data-center/2026/inside-dell-s-backpack-sized-xr9700-the-server-dell-says-creates-a-brand-new-category",
+      "https://www.crn.com/news/data-center/2026/the-coolest-data-center-companies-of-2026-the-data-center-50",
+      "https://www.crn.com/news/data-center/2026/cisco-cancels-compute-promotions-deal-registration-discounts-in-wake-of-rising-memory-prices",
+      "https://www.crn.com/news/data-center/2026/hpe-s-simon-ewington-pricing-changes-in-wake-of-memory-crisis-will-be-rare",
+      "https://www.crn.com/news/data-center/2026/partners-concerned-about-how-new-hpe-pricing-terms-might-impact-greenlake",
+      "https://www.crn.com/news/data-center/2026/hpe-warns-partners-of-price-adjustments-on-server-greenlake-orders-in-wake-of-memory-price-increases",
+      "https://www.crn.com/news/data-center/2026/lenovo-restructures-data-center-unit-as-ai-drives-double-digit-growth-to-record-sales",
+      "https://www.crn.com/news/data-center/2026/how-shi-built-a-1b-dell-technologies-business",
+      "https://www.crn.com/news/data-center/2026/shi-races-to-shield-customers-from-soaring-memory-costs",
+      "https://www.crn.com/news/data-center/2026/equinix-hires-former-juniper-channel-chief-gordon-mackintosh-to-lead-global-partner-sales",
+      "https://www.crn.com/news/data-center/2026/lenovo-exec-partners-should-order-quickly-for-best-prices-amid-memory-crunch",
+      "https://www.crn.com/news/data-center/2026/chief-partner-officer-denise-millard-on-why-dell-is-upping-incentives-for-needle-movers",
+      "https://www.crn.com/news/data-center/2026/nvidia-channel-chief-neoclouds-represent-next-phase-of-opportunity-for-partners"
+    ],
+    "latest_publication": "2026-10-28T18:42:00+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "data_center_frontier",
+    "index": 0,
+    "unit": "FEED:89de5d09f5f486ad42605b0a",
+    "at": "2026-11-03T22:07:48.429474+00:00",
+    "items": 53,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://scorpia.graphql.aspire-ebm.com",
+      "method": "http_listing",
+      "status": 200,
+      "items": 53,
+      "cache": [
+        {
+          "url": "https://scorpia.graphql.aspire-ebm.com",
+          "observed_age_seconds": 0.518,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:07:51 GMT",
+            "cf-cache-status": "DYNAMIC"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "89bcd9c6089048748560350a59106a8c"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "89bcd9c6089048748560350a59106a8c",
+        "role": "listing",
+        "request_key": "e431f87cb33a1abce190198595f0d49d9d62c221b486b9284dcbf9c8cb3fa299",
+        "endpoint": "scorpia.graphql.aspire-ebm.com",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:07:49.045948+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:07:51.517603+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:07:51 GMT"
+        },
+        "listing_cache": {
+          "url": "https://scorpia.graphql.aspire-ebm.com",
+          "observed_age_seconds": 0.518,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:07:51 GMT",
+            "cf-cache-status": "DYNAMIC"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 3.125,
+    "article_urls": [
+      "https://www.datacenterfrontier.com/energy/podcast/55416357/dcf-show-can-ai-unlock-data-centers-stranded-megawatts",
+      "https://www.datacenterfrontier.com/sponsored/article/55416100/data-center-jobs-engineering-construction-commissioning-sales-field-service-and-facility-tech-jobs-available-in-major-data-center-hotspots",
+      "https://www.datacenterfrontier.com/videos/video/55415994/nidec-brings-decades-of-experience-to-todays-data-center-technology-needs",
+      "https://www.datacenterfrontier.com/sponsored/whitepaper/55415680/take-control-of-liquid-cooling",
+      "https://www.datacenterfrontier.com/cooling/article/55415936/ocp-2026-cooler-master-scales-liquid-cooling-from-cold-plates-to-25-mw-cdus",
+      "https://www.datacenterfrontier.com/white-papers/whitepaper/55415097/hydronics-at-ai-scale-connecting-power-water-and-cooling-infrastructure",
+      "https://www.datacenterfrontier.com/sponsored/article/55414832/why-viega-securing-the-fluid-management-backbone-of-next-gen-data-centers",
+      "https://www.datacenterfrontier.com/machine-learning/article/55415714/7x24-ai-frontier-futurist-meets-data-center-og",
+      "https://www.datacenterfrontier.com/press-releases/article/55415645/moog-introduces-new-liquid-cooling-pumps-for-high-density-data-centers",
+      "https://www.datacenterfrontier.com/sponsored/article/55411639/trane-designing-cooling-for-the-ai-data-center",
+      "https://www.datacenterfrontier.com/hyperscale/article/55415349/the-50-gigawatt-test-semianalysis-sees-a-historic-data-center-surge-in-2027",
+      "https://www.datacenterfrontier.com/sponsored/podcast/55409684/why-ai-infrastructure-need-intelligence-to-scale",
+      "https://www.datacenterfrontier.com/white-papers/whitepaper/55413403/2026-data-center-construction-supply-chain-state-of-the-market-report",
+      "https://www.datacenterfrontier.com/hyperscale/article/55413469/hpes-quantum-computing-bet-a-multi-vendor-path-to-the-data-center",
+      "https://www.datacenterfrontier.com/sponsored/article/55408839/where-containment-meets-compliance-how-a-life-safety-ban-reshaped-data-center-containment",
+      "https://www.datacenterfrontier.com/press-releases/article/55414676/daelim-belefic-secures-ul-and-cul-certification-for-1000-kva-dry-type-transformer",
+      "https://www.datacenterfrontier.com/machine-learning/article/55414626/at-7x24-exchange-ai-data-center-growth-confronts-new-realities-of-power-grid-reliability-and-community-trust",
+      "https://www.datacenterfrontier.com/machine-learning/article/55414295/nvidias-dsx-pod-pushes-ai-factory-construction-toward-the-assembly-line",
+      "https://www.datacenterfrontier.com/sponsored/article/55413608/what-six-months-of-fluid-data-says-about-aluminum-in-liquid-cooling",
+      "https://www.datacenterfrontier.com/sponsored/article/55413888/800-vdc-for-ai-data-centers-rethinking-power-delivery-in-the-white-space",
+      "https://www.datacenterfrontier.com/energy/article/55410654/big-techs-next-nuclear-bet-more-power-from-reactors-already-running",
+      "https://www.datacenterfrontier.com/sponsored/article/55413596/the-next-cooling-challenge-building-resilience-beyond-technology",
+      "https://www.datacenterfrontier.com/sponsored/article/55411631/trane-cooling-at-the-edge-of-capability",
+      "https://www.datacenterfrontier.com/machine-learning/article/55412783/amd-helion-puts-cpu-density-at-the-center-of-agentic-ai-infrastructure",
+      "https://www.datacenterfrontier.com/sponsored/podcast/55413627/podcast-beyond-the-liquid-cooling-hype-why-airflow-still-matters-in-ai-data-centers",
+      "https://www.datacenterfrontier.com/machine-learning/article/55413450/ais-fragmented-regulatory-landscape-becomes-a-data-center-design-challenge",
+      "https://www.datacenterfrontier.com/sponsored/whitepaper/55384674/from-training-to-inference-why-dcim-is-becoming-mission-critical",
+      "https://www.datacenterfrontier.com/sponsored/article/55413314/why-ai-data-center-compressors-need-to-work-efficiently-at-both-ends-of-the-operating-range",
+      "https://www.datacenterfrontier.com/hyperscale/podcast/55413214/ais-gpu-refresh-cycle-is-becoming-a-stranded-capital-problem",
+      "https://www.datacenterfrontier.com/videos/video/55412589/quick-chat-data-center-projects-and-the-transitions-taking-place-as-it-relates-to-the-topic-of-sustainability",
+      "https://www.datacenterfrontier.com/hyperscale/article/55411657/beyond-colossus-5c-advances-575m-memphis-ai-factory-expansion",
+      "https://www.datacenterfrontier.com/sponsored/article/55411522/the-converter-as-the-control-point-for-ai-data-center-power",
+      "https://www.datacenterfrontier.com/sustainability/article/55412461/dcf-global-the-nordics-ai-boom-meets-the-power-test",
+      "https://www.datacenterfrontier.com/sponsored/article/55411625/trane-the-ai-cooling-inflection-point",
+      "https://www.datacenterfrontier.com/sponsored/article/55411501/when-hyperscalers-set-the-standard-rethinking-what-best-practice-really-means",
+      "https://www.datacenterfrontier.com/machine-learning/article/55412214/ocp-2026-ai-infrastructure-moves-from-scaling-to-coordination",
+      "https://www.datacenterfrontier.com/home/podcast/55411952/everyone-says-diesel-is-dead-the-market-says-otherwise",
+      "https://www.datacenterfrontier.com/site-selection/article/55409955/virginias-new-data-center-bargain-power-permits-and-the-right-to-build",
+      "https://www.datacenterfrontier.com/sponsored/article/55408831/future-proofing-data-center-cooling-designing-for-the-unknown",
+      "https://www.datacenterfrontier.com/sponsored/whitepaper/55411155/ask-the-expert-data-center-sustainability-requires-a-more-connected-scorecard",
+      "https://www.datacenterfrontier.com/hyperscale/article/55411534/ocp-2026-agentic-ai-pushes-the-data-center-from-chip-to-grid",
+      "https://www.datacenterfrontier.com/white-papers/whitepaper/55408818/ai-is-reshaping-data-center-cooling",
+      "https://www.datacenterfrontier.com/special-reports/whitepaper/55411256/why-ai-is-forcing-a-rethink-of-data-center-cooling-design",
+      "https://www.datacenterfrontier.com/hyperscale/article/55408812/land-expand-north-americas-data-center-pipeline-expands-under-pressure",
+      "https://www.datacenterfrontier.com/white-papers/whitepaper/55402418/intelligent-flow-measurement-has-become-essential-for-next-generation-data-center-cooling",
+      "https://www.datacenterfrontier.com/sponsored/article/55410593/behind-the-meter-power-offers-control-flexibility-and-speed-for-the-ai-age",
+      "https://www.datacenterfrontier.com/machine-learning/article/55410832/dcf-global-five-markets-redrawing-the-ai-infrastructure-map",
+      "https://www.datacenterfrontier.com/sponsored/article/55409982/prolift-rigging-who-should-coordinate-the-heavy-lift",
+      "https://www.datacenterfrontier.com/design/article/55410513/nvidias-dsx-ready-brings-power-and-cooling-into-the-ai-factory-blueprint",
+      "https://www.datacenterfrontier.com/sponsored/whitepaper/55405066/asset-protection-and-risk-mitigation-for-mission-critical-data-centers",
+      "https://www.datacenterfrontier.com/hyperscale/article/55409162/brookfields-arep-deal-extends-the-ai-infrastructure-stack-to-powered-land",
+      "https://www.datacenterfrontier.com/sponsored/article/55410109/how-data-center-power-went-from-utility-to-strategy",
+      "https://www.datacenterfrontier.com/energy/podcast/55410029/ai-is-turning-energy-storage-into-active-power-infrastructure"
+    ],
+    "latest_publication": "2026-11-03T19:51:01+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "nsf_news",
+    "index": 0,
+    "unit": "FEED:981618343246fe95aed86647",
+    "at": "2026-11-03T22:07:45.721138+00:00",
+    "items": 9,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://www.nsf.gov/news",
+      "method": "http_listing",
+      "status": 200,
+      "items": 9,
+      "cache": [
+        {
+          "url": "https://www.nsf.gov/news",
+          "observed_age_seconds": 0.508,
+          "age_known": true,
+          "max_age_seconds": 300,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:07:47 GMT",
+            "cache-control": "must-revalidate, no-cache, private",
+            "x-cache": "Miss from cloudfront"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "ffe5b4b815874fdca063a15f5c34afa0"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "ffe5b4b815874fdca063a15f5c34afa0",
+        "role": "listing",
+        "request_key": "e36a73f65a68f63240941f5ac2fa4e89a18171b8b6008b6015ffad0a5c33d941",
+        "endpoint": "www.nsf.gov/news",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:07:46.253106+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:07:47.507858+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:07:47 GMT",
+          "cache-control": "must-revalidate, no-cache, private"
+        },
+        "listing_cache": {
+          "url": "https://www.nsf.gov/news",
+          "observed_age_seconds": 0.508,
+          "age_known": true,
+          "max_age_seconds": 300,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:07:47 GMT",
+            "cache-control": "must-revalidate, no-cache, private",
+            "x-cache": "Miss from cloudfront"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 1.801,
+    "article_urls": [
+      "https://www.nsf.gov/news/podcast-laser-could-break-laws-physics",
+      "https://www.nsf.gov/news/podcast-future-electronics-goes-beyond-circuit-boards",
+      "https://www.nsf.gov/news/podcast-can-americas-most-powerful-laser-unlock-universe",
+      "https://www.nsf.gov/news/podcast-hidden-dna-code-controls-your-genes",
+      "https://www.nsf.gov/news/nsf-lays-foundation-next-generation-technologies-support",
+      "https://www.nsf.gov/news/nsf-ukri-metascience-statement",
+      "https://www.nsf.gov/news/podcast-could-holographic-3d-printing-be-real",
+      "https://www.nsf.gov/news/podcast-new-quantum-enabled-materials",
+      "https://www.nsf.gov/news/podcast-can-prosthetic-limbs-feel-touch-haptic-feedback"
+    ],
+    "latest_publication": "2026-11-02T21:07:52+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "quantum_zeitgeist",
+    "index": 0,
+    "unit": "FEED:36ea93b1b1238527f70d7bb9",
+    "at": "2026-11-03T22:06:22.984301+00:00",
+    "items": 200,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+      "method": "http_listing",
+      "status": 200,
+      "items": 200,
+      "cache": [
+        {
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+          "observed_age_seconds": 1.293,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:29 GMT",
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private"
+          }
+        },
+        {
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified&offset=100",
+          "observed_age_seconds": 0.293,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:30 GMT",
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "1e112ff424414a2cb71a761fb67364c3",
+        "13ffd5dbb8f74ba7a9f8f2abf7ad6a30"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "1e112ff424414a2cb71a761fb67364c3",
+        "role": "listing",
+        "request_key": "16c6d10bf4251fb6506333303a454a928c646878dd088db7bb54c39ed6ab552a",
+        "endpoint": "public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:06:23.506498+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:06:29.171932+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:06:29 GMT",
+          "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private"
+        },
+        "listing_cache": {
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+          "observed_age_seconds": 1.293,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:29 GMT",
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private"
+          }
+        },
+        "list_validated": true
+      },
+      {
+        "physical_request_id": "13ffd5dbb8f74ba7a9f8f2abf7ad6a30",
+        "role": "listing",
+        "request_key": "9b1c35f472881723b33943c45ec0c03e512a58844c42894e51bffd7a233564f2",
+        "endpoint": "public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:06:29.172933+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:06:30.288948+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:06:30 GMT",
+          "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private"
+        },
+        "listing_cache": {
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified&offset=100",
+          "observed_age_seconds": 0.293,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:06:30 GMT",
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 7.358,
+    "article_urls": [
+      "https://quantumzeitgeist.com/zitterbewegung-timed-light-pulses-optical-dirac-systems/",
+      "https://quantumzeitgeist.com/stmicroelectronics-post-quantum-mcu-hardware-cryptography/",
+      "https://quantumzeitgeist.com/univ-circuit-quality-factor-exceeds-3d/",
+      "https://quantumzeitgeist.com/ibm-swapnet-circuit-boosts-quantum-state/",
+      "https://quantumzeitgeist.com/utrecht-university-volume-law-entanglement-simulations/",
+      "https://quantumzeitgeist.com/mforc-memoryless-circuits-halt-entanglement-retain/",
+      "https://quantumzeitgeist.com/quantum-classical-hybrid-computation-unified-framework/",
+      "https://quantumzeitgeist.com/guelph-quantum-systems-randomness-within/",
+      "https://quantumzeitgeist.com/qwavemps-queens-university-quantum-source-tool/",
+      "https://quantumzeitgeist.com/left-handed-lines-casimir-effect-coupling-boost/",
+      "https://quantumzeitgeist.com/vienna-photon-number-coherence-tuning-excitation/",
+      "https://quantumzeitgeist.com/quantum-threats-hkust-hong-kong-banks/",
+      "https://quantumzeitgeist.com/government-cipher-vietnam-drafts-standards-fend/",
+      "https://quantumzeitgeist.com/toyota-uchicago-partnership-quantum-sensors-materials/",
+      "https://quantumzeitgeist.com/firgun-vc-quantum-computing-scaling/",
+      "https://quantumzeitgeist.com/quantum-x-encryption-gix-internet-backs/",
+      "https://quantumzeitgeist.com/anthropic-go-public-next-month-2/",
+      "https://quantumzeitgeist.com/quantum-technology-mapping-of-artworks-and-forms/",
+      "https://quantumzeitgeist.com/semiqons-31m-partnership-quantum-role-memory/",
+      "https://quantumzeitgeist.com/firstqfm-quantum-reservoir-computing-forecasts-days/",
+      "https://quantumzeitgeist.com/instanodes-post-quantum-accounts-ethereum-networks/",
+      "https://quantumzeitgeist.com/scottish-widows-backs-quantum-firms-venture/",
+      "https://quantumzeitgeist.com/multiverse-computing-yellowdogai-partnership-european/",
+      "https://quantumzeitgeist.com/twente-four-photon-entanglement-linear-optics/",
+      "https://quantumzeitgeist.com/tsinghua-quantum-faultscope-software-pinpoints-errors/",
+      "https://quantumzeitgeist.com/nedo-six-firms-quantum-materials-130m/",
+      "https://quantumzeitgeist.com/post-quantum-migration-hpt-vietnam-specterais/",
+      "https://quantumzeitgeist.com/koid-rareview-hoid-etf-starts-trading/",
+      "https://quantumzeitgeist.com/collaborative-ai-minimal-spin-calibrations-derivation/",
+      "https://quantumzeitgeist.com/sq-quantumedge-api-superqubit-rest-platform/",
+      "https://quantumzeitgeist.com/quantum-era-sectigo-see-78-percent/",
+      "https://quantumzeitgeist.com/quantum-many-body-systems-quasi-phases-defined/",
+      "https://quantumzeitgeist.com/quint-computing-quantum-funding-error-correction/",
+      "https://quantumzeitgeist.com/universal-quantum-iqpu-chip-scaling-computers/",
+      "https://quantumzeitgeist.com/gradiant-quantum-communications-phd-gain-funds/",
+      "https://quantumzeitgeist.com/kisti-rectangular-codes-quantum-networks-reduce/",
+      "https://quantumzeitgeist.com/technical-munich-mamba-reduces-26-percent/",
+      "https://quantumzeitgeist.com/harvard-university-qubits-mit-way-control/",
+      "https://quantumzeitgeist.com/qolab-nobel-laureate-martinis-discuss-years/",
+      "https://quantumzeitgeist.com/maryland-sage-spin-qubits-resilience-magnetic/",
+      "https://quantumzeitgeist.com/gaussian-beam-quantum-simulation-mimics-light/",
+      "https://quantumzeitgeist.com/cheng-coherence-passes-qubits-test-six/",
+      "https://quantumzeitgeist.com/massachusetts-technology-electronic-quasicrystal-quantum/",
+      "https://quantumzeitgeist.com/indiana-university-classical-simulation-time-algorithm/",
+      "https://quantumzeitgeist.com/pidn-quantum-error-mitigation-network-cuts/",
+      "https://quantumzeitgeist.com/geneva-quantum-twist-angle-disorder-hides/",
+      "https://quantumzeitgeist.com/europes-billion-quantum-spend-10-billion/",
+      "https://quantumzeitgeist.com/cornell-graphene-superconductivity-magnetism-six-layers/",
+      "https://quantumzeitgeist.com/yang-fault-tolerant-code-qubits-constant/",
+      "https://quantumzeitgeist.com/costa-advisory-quantum-threat-satellite-security/",
+      "https://quantumzeitgeist.com/science-cold-control-chips-foundation-computer/",
+      "https://quantumzeitgeist.com/equal1s-quantum-leap-ops-flynn/",
+      "https://quantumzeitgeist.com/google-quantum-computing-fellowship-awards-berlin/",
+      "https://quantumzeitgeist.com/karlsruhe-technology-tin-vacancy-qubits-diamond/",
+      "https://quantumzeitgeist.com/cqe-chicago-quantum-exchange-argonnes-q/",
+      "https://quantumzeitgeist.com/structured-light-imaging-offers-path-quantum/",
+      "https://quantumzeitgeist.com/melbourne-diamond-quantum-sensor-machine-learning/",
+      "https://quantumzeitgeist.com/edinburgh-quantum-authentication-method-relies-entanglement/",
+      "https://quantumzeitgeist.com/beijing-posts-teleportation-criteria-identify-entanglement/",
+      "https://quantumzeitgeist.com/california-technology-quantum-metropolis-sampling-simplifies/",
+      "https://quantumzeitgeist.com/gesda-summit-gathered-exploring-science-diplomacy/",
+      "https://quantumzeitgeist.com/uav-hyperspectral-sensing-mineral-detection-accuracy/",
+      "https://quantumzeitgeist.com/illinois-urbana-ai-memory-negative-space/",
+      "https://quantumzeitgeist.com/origin-quantum-pyqlas-linear-systems-library/",
+      "https://quantumzeitgeist.com/friedrich-alexander-mathematical-foundations-quantum/",
+      "https://quantumzeitgeist.com/kurdistan-strategic-helper-flip-27-percent/",
+      "https://quantumzeitgeist.com/eth-zurich-orbital-embedding-method-simplify/",
+      "https://quantumzeitgeist.com/kisti-quantum-computer-next-year-korea/",
+      "https://quantumzeitgeist.com/quandela-eyes-korean-firms-quantum/",
+      "https://quantumzeitgeist.com/iqm-france-engineered-learning-problems-performance/",
+      "https://quantumzeitgeist.com/ibm-quantum-simulation-time-fragmenting-problems/",
+      "https://quantumzeitgeist.com/ibm-research-bayesian-weight-33-percent/",
+      "https://quantumzeitgeist.com/foqus-technologies-follows-canadas-quantum/",
+      "https://quantumzeitgeist.com/lamarr-machine-quantum-neural-44-percent/",
+      "https://quantumzeitgeist.com/arxiv-quantum-states-mimic-polynomials-classical/",
+      "https://quantumzeitgeist.com/maryland-adaptive-quantum-encoding-preserves-rainfall/",
+      "https://quantumzeitgeist.com/florida-atlantic-quantum-computers-cancer/",
+      "https://quantumzeitgeist.com/minister-innovation-visits-quantcores-glasgow/",
+      "https://quantumzeitgeist.com/tuned-quantum-kernels-match-classical/",
+      "https://quantumzeitgeist.com/salamanca-single-flux-qubit-topological-protection/",
+      "https://quantumzeitgeist.com/clifford-designs-cannot-generated-sub-linear/",
+      "https://quantumzeitgeist.com/arxiv-pauli-measurements-reduce-overhead-non/",
+      "https://quantumzeitgeist.com/arxiv-quantum-measurement-noise-speed-image/",
+      "https://quantumzeitgeist.com/qubitrium-b-telecom-detector-costs-photon/",
+      "https://quantumzeitgeist.com/stealthcores-quantum-resistant-keys-stealthpq-uses/",
+      "https://quantumzeitgeist.com/ai-superconductors-wire-supermatics-commercial/",
+      "https://quantumzeitgeist.com/capgemini-quantum-network-flags-hybrid-suspicious/",
+      "https://quantumzeitgeist.com/qtonic-quantum-operations-names-ex-nato/",
+      "https://quantumzeitgeist.com/quantum-error-correction-cubical-toric-code-bounds/",
+      "https://quantumzeitgeist.com/quantum-digital-signatures-related-key-bound-derivation/",
+      "https://quantumzeitgeist.com/graphene-nanoribbons-woven-alliance-quantum-ribbons/",
+      "https://quantumzeitgeist.com/quantum-machine-learning-gravitational-wave-signal-detection/",
+      "https://quantumzeitgeist.com/quantum-computing-software-design-structuring-approach/",
+      "https://quantumzeitgeist.com/antiferromagnetic-semiconductors-electric-field-spin-control/",
+      "https://quantumzeitgeist.com/colab-q-quantum-four-start-ups/",
+      "https://quantumzeitgeist.com/dipolar-fermi-gas-polaron-binding-energy-mapping/",
+      "https://quantumzeitgeist.com/light-matter-model-gauge-dependence-algebraic-law/",
+      "https://quantumzeitgeist.com/gauge-fields-spin-conversion-tight-binding-lattices/",
+      "https://quantumzeitgeist.com/clifford-qubits-depth-designs-need-falls/",
+      "https://quantumzeitgeist.com/complex-bosonic-systems-revival-patterns-derivation/",
+      "https://quantumzeitgeist.com/tokyo-four-photon-shapes-boost-quantum/",
+      "https://quantumzeitgeist.com/universitat-siegen-quantum-coherence-measured-mechanical/",
+      "https://quantumzeitgeist.com/tin-films-link-to-493k-superconductivity-discovery/",
+      "https://quantumzeitgeist.com/free-fermion-hamiltonians-ground-state-preparation-limits/",
+      "https://quantumzeitgeist.com/quantum-circuits-vlsilike-design-and-verification-flow/",
+      "https://quantumzeitgeist.com/qldpc-codes-decoding-time-tenfold-reduction-method/",
+      "https://quantumzeitgeist.com/distributed-quantum-computing-sequence-simulation-module/",
+      "https://quantumzeitgeist.com/spin-systems-thermalisation-time-logarithmic-bound/",
+      "https://quantumzeitgeist.com/diamond-nitrogen-vacancy-center-48mhz-bandwidth-sensor/",
+      "https://quantumzeitgeist.com/amazon-braket-track-post-quantum-adoption/",
+      "https://quantumzeitgeist.com/qaoa-mixers-graph-structure-optimization-link/",
+      "https://quantumzeitgeist.com/ingaasgaas-quantum-dots-electron-spin-control-photons/",
+      "https://quantumzeitgeist.com/qc-mdpc-codes-neural-network-decoding-improvements/",
+      "https://quantumzeitgeist.com/neutral-atom-quantum-computing-loss-decoder/",
+      "https://quantumzeitgeist.com/majorana-modes-vortex-fragments-topological-superconductivity/",
+      "https://quantumzeitgeist.com/quantum-circuits-fault-tolerance-spacetime-code-distances/",
+      "https://quantumzeitgeist.com/qubit-coherence-domain-walls-ising-spin-chains/",
+      "https://quantumzeitgeist.com/quantum-snapshots-mapping-hidden-density-patterns/",
+      "https://quantumzeitgeist.com/quantum-channels-state-discrimination-entanglement-generation-codes/",
+      "https://quantumzeitgeist.com/quantum-innovators-iqst-backs-events/",
+      "https://quantumzeitgeist.com/qdmin-nuclear-minima-finding-success-rate/",
+      "https://quantumzeitgeist.com/quantum-sensor-coherence-tenfold-boost-dynamical-decoupling/",
+      "https://quantumzeitgeist.com/rydberg-atom-embeddings-for-combinatorial-optimization-problems/",
+      "https://quantumzeitgeist.com/qubits-noise-agnostic-state-protection-protocols/",
+      "https://quantumzeitgeist.com/fermions-weak-interactions-gap-preservation-spectral-flow/",
+      "https://quantumzeitgeist.com/rydberg-technologies-atom-processors-beat-random/",
+      "https://quantumzeitgeist.com/qiskit-noise-limits-lifetime-quantum-time/",
+      "https://quantumzeitgeist.com/qsolid-quantum-hardware-software-consortium/",
+      "https://quantumzeitgeist.com/iceberg-quantum-jens-eisert-gains/",
+      "https://quantumzeitgeist.com/exequantum-bluebik-partnership-titans-thailands-quantum/",
+      "https://quantumzeitgeist.com/howard-quantum-math-camp-biology-labs/",
+      "https://quantumzeitgeist.com/adaptive-measurements-outperform-static-ones-exponentially/",
+      "https://quantumzeitgeist.com/quantum-safe-helps-firms-ibm/",
+      "https://quantumzeitgeist.com/mamba-generative-quantum-eigensolver-electronic-structure-prediction/",
+      "https://quantumzeitgeist.com/quantum-cellular-automata-nonstandard-circuit-implementation/",
+      "https://quantumzeitgeist.com/superconductor-terahertz-resonator-transition-temperature-boost/",
+      "https://quantumzeitgeist.com/quantum-key-distribution-transmitter-recovery-attack-demonstration/",
+      "https://quantumzeitgeist.com/continuous-variable-estimation-error-bounds-distributed-ipe/",
+      "https://quantumzeitgeist.com/kelvins-phonon-emission-splits-increase-population-energy/",
+      "https://quantumzeitgeist.com/gan-defects-optically-detected-magnetic-resonance-model/",
+      "https://quantumzeitgeist.com/hong-kong-quantum-smoothing-theories-common/",
+      "https://quantumzeitgeist.com/massachusetts-technology-atoms-dipole-moment-controls/",
+      "https://quantumzeitgeist.com/quantum-zeitgeist-weekly-digest-nov-2/",
+      "https://quantumzeitgeist.com/quantum-computation-polynomial-hierarchy-verification-breakthrough/",
+      "https://quantumzeitgeist.com/quantum-hall-fluids-exotic-state-mapping/",
+      "https://quantumzeitgeist.com/quantum-channel-entanglement-advantage-bounds-disprove-conjecture/",
+      "https://quantumzeitgeist.com/gottesman-kitaev-preskill-distributions-rigged-quantum-three-design/",
+      "https://quantumzeitgeist.com/entropy-fluctuations-and-quantum-system-spectra/",
+      "https://quantumzeitgeist.com/quantum-reference-frames-sharper-particle-trajectories-correlation/",
+      "https://quantumzeitgeist.com/quantum-error-recovery-performance-upper-bound-codes/",
+      "https://quantumzeitgeist.com/quantum-retrodiction-bayes-rule-consistency-principles/",
+      "https://quantumzeitgeist.com/quantum-divergence-indefinite-causality-geometric-limit/",
+      "https://quantumzeitgeist.com/quantum-search-tournament-solution-time-reduction/",
+      "https://quantumzeitgeist.com/meet-nako-a-benchmarking-framework-for-evaluating-and-diagnosing-neutral-atom-quantum-compilers/",
+      "https://quantumzeitgeist.com/continuous-variable-quantum-error-correction-compatibility/",
+      "https://quantumzeitgeist.com/quantum-states-entropy-wishart-ensembles-correlation/",
+      "https://quantumzeitgeist.com/quantum-devices-exceptional-points-noise-detection-method/",
+      "https://quantumzeitgeist.com/ibm-quantums-next-edge-alliance-joseph/",
+      "https://quantumzeitgeist.com/quantum-hypothesis-testing-nussbaum-szkola-mapping-bounds/",
+      "https://quantumzeitgeist.com/quantum-memory-stabilization-random-update-technique/",
+      "https://quantumzeitgeist.com/logarithmic-negativity-mapping-hidden-entanglement-shifts/",
+      "https://quantumzeitgeist.com/entanglement-bootstrap-doplicher-haag-roberts-theory-connection/",
+      "https://quantumzeitgeist.com/quantum-measurements-noiseless-code-subspace-preservation-proof/",
+      "https://quantumzeitgeist.com/quantum-points-detecting-weak-forces-faster/",
+      "https://quantumzeitgeist.com/quantum-algorithms-detect-entanglement-using-adiabatic-computing/",
+      "https://quantumzeitgeist.com/quantum-surgery-logical-qubit-error-measurement/",
+      "https://quantumzeitgeist.com/quantum-links-longer-range-variational-algorithms-training/",
+      "https://quantumzeitgeist.com/quantum-system-resets-measure-twelve-qubit-entanglement/",
+      "https://quantumzeitgeist.com/quantum-simulation-automated-verification-hamiltonian-qubits/",
+      "https://quantumzeitgeist.com/quantum-gate-errors-energy-dissipation-relationship-investigation/",
+      "https://quantumzeitgeist.com/qaoa-imaging-cost-reduction-algebraic-correspondence-method/",
+      "https://quantumzeitgeist.com/quantum-entanglement-cryo-array-rydberg-interaction-fidelity/",
+      "https://quantumzeitgeist.com/ibm-watson-qubits-simulate-molecular-reactions-subspace-methods/",
+      "https://quantumzeitgeist.com/quantum-simulation-cost-reduction-probabilistic-method/",
+      "https://quantumzeitgeist.com/florida-m-qubit-control-5000-m/",
+      "https://quantumzeitgeist.com/quantum-data-classification-polynomial-measurements-learning/",
+      "https://quantumzeitgeist.com/ising-model-solvable-benchmark-for-algorithms/",
+      "https://quantumzeitgeist.com/hermitian-chains-non-bloch-dynamical-phase-transitions-measurement/",
+      "https://quantumzeitgeist.com/quantum-subsystems-entropy-production-mapping-dynamics-thermodynamics/",
+      "https://quantumzeitgeist.com/rotated-cluster-states-distant-quantum-measurement-link/",
+      "https://quantumzeitgeist.com/quantum-gates-tuning-method-reduces-errors/",
+      "https://quantumzeitgeist.com/quantum-error-correction-partial-decoding-boost/",
+      "https://quantumzeitgeist.com/matrix-logarithms-trace-inequalities-semidefinite-matrices/",
+      "https://quantumzeitgeist.com/quantum-three-wave-mixing-amplification-dynamics-derivation/",
+      "https://quantumzeitgeist.com/jaynes-cummings-models-supersymmetry-trigonometric-potentials/",
+      "https://quantumzeitgeist.com/quantum-cv-dipe-error-bound-estimation-protocols/",
+      "https://quantumzeitgeist.com/silicon-vacancy-diamond-defect-coherence-enhancement/",
+      "https://quantumzeitgeist.com/photon-exchange-hong-ou-mandel-coincidence-probing/",
+      "https://quantumzeitgeist.com/moth-quantum-halloween-braided-game-splits/",
+      "https://quantumzeitgeist.com/frequency-comb-joint-quantum-institute/",
+      "https://quantumzeitgeist.com/jpmorganchase-quantum-position-checks-analysis-strengthens/",
+      "https://quantumzeitgeist.com/dissipative-cavity-solver-for-np-hard-problems/",
+      "https://quantumzeitgeist.com/floquet-eigenstates-stability-via-dissipative-cavity-coupling/",
+      "https://quantumzeitgeist.com/raman-signals-correlated-twin-beams-sfg-readout/",
+      "https://quantumzeitgeist.com/schrodinger-operators-ground-state-overlap-energy-bounds/",
+      "https://quantumzeitgeist.com/reverse-quantum-annealing-alkaline-earth-monofluoride-energy/",
+      "https://quantumzeitgeist.com/quantum-communication-squeezed-light-energy-loss-bound/",
+      "https://quantumzeitgeist.com/quantum-magic-resource-decay-rate-evaluation-framework/",
+      "https://quantumzeitgeist.com/nuclear-clocks-mutual-gravity-precision-impact/",
+      "https://quantumzeitgeist.com/ibm-quantum-variational-energy-residual-analysis/"
+    ],
+    "latest_publication": "2026-11-03T19:44:00+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  },
+  {
+    "source_id": "thelec_semiconductors_rss",
+    "index": 0,
+    "unit": "FEED:fac62acf437bd04a5df0e157",
+    "at": "2026-11-03T22:05:42.545740+00:00",
+    "items": 20,
+    "failures": [],
+    "metadata": {
+      "listing_url": "https://www.thelec.kr/news/articleList.html",
+      "method": "http_listing",
+      "status": 200,
+      "items": 20,
+      "cache": [
+        {
+          "url": "https://www.thelec.kr/news/articleList.html",
+          "observed_age_seconds": 1.01,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:05:42 GMT",
+            "cache-control": "no-cache, no-store, must-revalidate"
+          }
+        }
+      ],
+      "validated_request_ids": [
+        "c296b3f3f75d4bd59ea08ac563f1b7c3"
+      ]
+    },
+    "events": [
+      {
+        "physical_request_id": "c296b3f3f75d4bd59ea08ac563f1b7c3",
+        "role": "listing",
+        "request_key": "35e00a0446ea33cb5643122a2fa24cafef1e14f22c92d178cd8503110c394cd0",
+        "endpoint": "www.thelec.kr/news/articleList.html",
+        "transport": "publisher_curl",
+        "request_started_at": "2026-11-03T22:05:42.752992+00:00",
+        "proof_basis": "TRANSPORT_SEND",
+        "response_received_at": "2026-11-03T22:05:43.009697+00:00",
+        "status_code": 200,
+        "validators": {
+          "date": "Tue, 03 Nov 2026 22:05:42 GMT",
+          "cache-control": "no-cache, no-store, must-revalidate"
+        },
+        "listing_cache": {
+          "url": "https://www.thelec.kr/news/articleList.html",
+          "observed_age_seconds": 1.01,
+          "age_known": true,
+          "max_age_seconds": 120,
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:05:42 GMT",
+            "cache-control": "no-cache, no-store, must-revalidate"
+          }
+        },
+        "list_validated": true
+      }
+    ],
+    "seconds": 0.491,
+    "article_urls": [
+      "https://www.thelec.kr/news/articleView.html?idxno=64817",
+      "https://www.thelec.kr/news/articleView.html?idxno=64755",
+      "https://www.thelec.kr/news/articleView.html?idxno=64724",
+      "https://www.thelec.kr/news/articleView.html?idxno=64711",
+      "https://www.thelec.kr/news/articleView.html?idxno=64651",
+      "https://www.thelec.kr/news/articleView.html?idxno=64640",
+      "https://www.thelec.kr/news/articleView.html?idxno=64709",
+      "https://www.thelec.kr/news/articleView.html?idxno=64698",
+      "https://www.thelec.kr/news/articleView.html?idxno=64663",
+      "https://www.thelec.kr/news/articleView.html?idxno=64634",
+      "https://www.thelec.kr/news/articleView.html?idxno=64635",
+      "https://www.thelec.kr/news/articleView.html?idxno=64632",
+      "https://www.thelec.kr/news/articleView.html?idxno=64631",
+      "https://www.thelec.kr/news/articleView.html?idxno=64591",
+      "https://www.thelec.kr/news/articleView.html?idxno=64545",
+      "https://www.thelec.kr/news/articleView.html?idxno=64565",
+      "https://www.thelec.kr/news/articleView.html?idxno=64518",
+      "https://www.thelec.kr/news/articleView.html?idxno=64526",
+      "https://www.thelec.kr/news/articleView.html?idxno=64510",
+      "https://www.thelec.kr/news/articleView.html?idxno=64502"
+    ],
+    "latest_publication": "2026-11-03T08:09:00+00:00",
+    "repeat_items": 0,
+    "repeat_failures": []
+  }
+]

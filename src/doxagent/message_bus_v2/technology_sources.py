@@ -299,7 +299,9 @@ class TechnologyHttp:
         return Capture(result.status_code or 200, result.final_url or url,
                        result.body, result.headers)
 
-    async def fetch(self, url, spec, *, headers=None, method="GET", json_body=None):
+    async def fetch(self, url, spec, *, headers=None, method="GET", json_body=None, form_body=None):
+        if form_body is not None and spec.transport != "curl":
+            raise ValueError("technology_form_requires_curl_transport")
         if spec.transport == "browser":
             return await self._browser_fetch(url, spec)
         from .http_routes import HTTP_EGRESSES
@@ -332,7 +334,8 @@ class TechnologyHttp:
                             (spec.domain, spec.route), method, url,
                             proxy=HTTP_EGRESSES[spec.route], headers=headers or None,
                             allow_redirects=False, content_callback=receive,
-                            **({"json": json_body} if json_body is not None else {}))
+                            **({"json": json_body} if json_body is not None else {}),
+                            **({"data": form_body} if form_body is not None else {}))
                     except Exception:
                         if oversized:
                             raise ValueError("technology_response_exceeds_4mib") from None

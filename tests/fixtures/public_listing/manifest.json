@@ -87,8 +87,8 @@
     "source_id": "aviationweek_rss",
     "index": 0,
     "fixture": "aviationweek_rss-0.html",
-    "url": "https://aviationweek.com/search",
-    "parser": "aviation_review"
+    "url": "https://aviationweek.com/taxonomy/term/186836",
+    "parser": "aviation"
   },
   {
     "source_id": "utility_dive",
@@ -129,8 +129,8 @@
     "source_id": "tomshardware_rss",
     "index": 0,
     "fixture": "tomshardware_rss-0.html",
-    "url": "https://www.tomshardware.com/archive",
-    "parser": "toms"
+    "url": "https://www.tomshardware.com/news/",
+    "parser": "toms_news"
   },
   {
     "source_id": "dcd_infrastructure_rss",
@@ -143,7 +143,7 @@
     "source_id": "thelec_semiconductors_rss",
     "index": 0,
     "fixture": "thelec_semiconductors_rss-0.html",
-    "url": "https://www.thelec.kr/news/articleList.html?sc_section_code=S1N2&view_type=sm",
+    "url": "https://www.thelec.kr/news/articleList.html",
     "parser": "thelec"
   },
   {
@@ -180,5 +180,33 @@
     "fixture": "enterprise_apps_official_rss-2.html",
     "url": "https://newsroom.workday.com/press-releases",
     "parser": "workday"
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 1,
+    "fixture": "aviationweek_rss-1.html",
+    "url": "https://aviationweek.com/taxonomy/term/186841",
+    "parser": "aviation"
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 2,
+    "fixture": "aviationweek_rss-2.html",
+    "url": "https://aviationweek.com/taxonomy/term/186846",
+    "parser": "aviation"
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 3,
+    "fixture": "aviationweek_rss-3.html",
+    "url": "https://aviationweek.com/taxonomy/term/186851",
+    "parser": "aviation"
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 4,
+    "fixture": "aviationweek_rss-4.html",
+    "url": "https://aviationweek.com/taxonomy/term/456",
+    "parser": "aviation"
   }
 ]

@@ -6,8 +6,10 @@ import asyncio
 import copy
 import json
 import re
+from collections import Counter
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from urllib.parse import urljoin, urlsplit
 from zoneinfo import ZoneInfo
 
@@ -17,6 +19,16 @@ from .schema import AcquisitionFailure, PollResult, sha256_text
 from .technology_sources import TechnologySource, article
 
 PRIMARY_TIMEOUT_SECONDS = 12
+DEFAULT_MAX_CACHE_AGE_SECONDS = 120
+# Deliberate RSS choices are normal RSS polls, not failed crawler fallbacks.
+RSS_ONLY_SOURCES = {"army_news_rss", "dcd_infrastructure_rss", "tomshardware_rss"}
+AVIATION_TOPICS = {
+    "186836": "Launch Vehicles & Propulsion",
+    "186841": "Satellites",
+    "186846": "Budget, Policy & Regulation",
+    "186851": "Operations & Safety",
+    "456": "Commercial Space",
+}
 
 
 @dataclass(frozen=True)
@@ -54,7 +66,6 @@ RECIPES = {
             "https://www.nsf.gov/news",
             "nsf",
             "us-standard-5",
-            max_age_seconds=300,
             method="POST",
         ),
     ),
@@ -94,7 +105,6 @@ RECIPES = {
             "https://www.crn.com/news/" + p + "/rss.xml",
             "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=" + p,
             "crn",
-            fresh_query=True,
         )
         for p in ("cloud", "security", "data-center")
     ),
@@ -106,14 +116,14 @@ RECIPES = {
             "de-standard-1",
         ),
     ),
-    "aviationweek_rss": (
+    "aviationweek_rss": tuple(
         Listing(
             "https://aviationweek.com/awn/rss-feed-by-content-source",
-            "https://aviationweek.com/search",
-            "aviation_review",
+            "https://aviationweek.com/taxonomy/term/" + topic,
+            "aviation",
             "us-standard-5",
-            coverage_review="aviation_home_is_curated_search_needs_runtime_or_verified_api",
-        ),
+        )
+        for topic in AVIATION_TOPICS
     ),
     "utility_dive": (
         Listing(
@@ -158,8 +168,8 @@ RECIPES = {
     "tomshardware_rss": (
         Listing(
             "https://www.tomshardware.com/feeds.xml",
-            "https://www.tomshardware.com/archive",
-            "toms",
+            "https://www.tomshardware.com/news/",
+            "toms_news",
             fresh_query=True,
             max_age_seconds=300,
         ),
@@ -177,8 +187,9 @@ RECIPES = {
     "thelec_semiconductors_rss": (
         Listing(
             "https://www.thelec.kr/rss/S1N2.xml",
-            "https://www.thelec.kr/news/articleList.html?sc_section_code=S1N2&view_type=sm",
+            "https://www.thelec.kr/news/articleList.html",
             "thelec",
+            method="POST",
         ),
     ),
     "defensescoop_drones": tuple(
@@ -225,7 +236,65 @@ def endpoint_units(source, binding=None):
         feeds = binding.source_parameters.get("rss_urls", source.default_parameters.get("rss_urls"))
         if feeds is not None:
             recipes = tuple(r for r in recipes if r.feed in feeds)
-    return {"FEED:" + sha256_text(r.feed)[:24]: r for r in recipes}
+    counts = Counter(r.feed for r in recipes)
+    return {
+        "FEED:" + sha256_text(r.feed if counts[r.feed] == 1 else r.feed + "|" + r.url)[:24]: r
+        for r in recipes
+    }
+
+
+def cache_evidence(capture, recipe, *, now=None):
+    """Check observed response age, not article age or the declared cache lifetime."""
+    headers = {k.lower(): v for k, v in capture.headers.items()}
+    now = now or datetime.now(UTC)
+    age = max(0.0, float(headers.get("age", 0)))
+    if headers.get("date"):
+        try:
+            date = parsedate_to_datetime(headers["date"])
+            if date.tzinfo is not None:
+                age = max(age, (now - date).total_seconds())
+        except (TypeError, ValueError, OverflowError):
+            pass
+    limit = recipe.max_age_seconds or DEFAULT_MAX_CACHE_AGE_SECONDS
+    if age > limit:
+        raise ValueError("public_listing_stale_cache_age:" + str(round(age, 3)))
+    if re.search(r"(?:^|,)\s*11[01]\s", headers.get("warning", "")):
+        raise ValueError("public_listing_stale_cache_warning")
+    for key in ("x-proxy-cache", "x-cache", "cf-cache-status"):
+        if re.search(r"\b(?:STALE|UPDATING)\b", headers.get(key, ""), re.I):
+            raise ValueError("public_listing_stale_cache_status:" + key + "=" + headers[key])
+    return {
+        "observed_age_seconds": round(age, 3),
+        "age_basis": (
+            "age_and_date"
+            if headers.get("age") and headers.get("date")
+            else "age"
+            if headers.get("age")
+            else "date_only"
+            if headers.get("date")
+            else "unknown"
+        ),
+        "max_age_seconds": limit,
+        "headers": {
+            k: headers[k]
+            for k in (
+                "age",
+                "date",
+                "cache-control",
+                "cdn-cache-control",
+                "last-modified",
+                "etag",
+                "x-cache",
+                "x-cache-hits",
+                "cf-cache-status",
+                "x-drupal-cache",
+                "x-drupal-dynamic-cache",
+                "x-proxy-cache",
+                "warning",
+            )
+            if k in headers
+        },
+    }
 
 
 def text(node):
@@ -416,6 +485,42 @@ def parse_listing(recipe, spec, raw, now):
                         text(summaries[0]) if summaries else None,
                     )
                 )
+    elif recipe.parser == "aviation":
+        expected = AVIATION_TOPICS[urlsplit(recipe.url).path.rsplit("/", 1)[-1]]
+        headings = doc.xpath("//h1")
+        if not headings or text(headings[0]) != expected:
+            raise ValueError("aviation_wrong_topic_heading")
+        for node in doc.xpath('//main//*[contains(concat(" ",@class," ")," views-row ")]'):
+            content = node.xpath('.//*[contains(concat(" ",@class," ")," teaser__content ")]')
+            if not content:
+                continue
+            links = content[0].xpath("./div[1]/a[@href]")
+            dates = content[0].xpath(".//time/@datetime")
+            summaries = content[0].xpath('.//*[contains(@class,"teaser__description")]')
+            if links and dates:
+                rows.append(
+                    (
+                        links[0].get("href"),
+                        text(links[0]),
+                        dates[0],
+                        text(summaries[0]) if summaries else None,
+                    )
+                )
+    elif recipe.parser == "toms_news":
+        for node in doc.xpath('//*[contains(concat(" ",@class," ")," listingResult ")]'):
+            links = node.xpath('./a[contains(concat(" ",@class," ")," article-link ")]')
+            dates = node.xpath(".//time/@datetime")
+            titles = node.xpath('.//*[contains(concat(" ",@class," ")," article-name ")]')
+            summaries = node.xpath('.//*[contains(concat(" ",@class," ")," synopsis ")]')
+            if links and dates and titles:
+                rows.append(
+                    (
+                        links[0].get("href"),
+                        text(titles[0]),
+                        dates[0],
+                        text(summaries[0]) if summaries else None,
+                    )
+                )
     elif recipe.parser == "toms":
         year = doc.xpath('//select[@id="archiveYear"]/option[@selected]/@value')
         from dateutil.parser import parse
@@ -446,6 +551,9 @@ def parse_listing(recipe, spec, raw, now):
                     )
                 )
     elif recipe.parser == "thelec":
+        titles = doc.xpath("//title")
+        if titles and "반도체" not in text(titles[0]):
+            raise ValueError("thelec_wrong_section")
         for node in doc.xpath('//li[@class="altlist-webzine-item"]'):
             links = node.xpath('.//h2/a[contains(@href,"articleView.html?idxno=")]')
             dates = node.xpath('.//div[@class="altlist-info-item"]')
@@ -589,7 +697,7 @@ class ListingAdapter:
         # Normal scheduling uses one internal unit per entry; direct canaries can exercise all.
         results = await asyncio.gather(*(self._one(context, r, shared=shared) for r in selected))
         return PollResult(
-            messages=[m for r in results for m in r.messages],
+            messages=list({m.url: m for r in results for m in r.messages}.values()),
             failures=[f for r in results for f in r.failures],
             next_checkpoint={
                 "listings": {
@@ -641,6 +749,7 @@ class ListingAdapter:
             if recipe.coverage_review:
                 raise ValueError("public_listing_coverage_review:" + recipe.coverage_review)
             headers = {"Cache-Control": "no-cache"}
+            captures = []
             if (
                 previous.get("baseline")
                 and recipe.parser != "wordpress"
@@ -676,21 +785,44 @@ class ListingAdapter:
                             )
                         },
                     )
+                    captures.append(capture)
                 else:
                     if recipe.method == "POST":
                         headers["X-Requested-With"] = "XMLHttpRequest"
-                    capture = await self._fetch(url, spec, headers=headers, method=recipe.method)
+                    capture = await self._fetch(
+                        url,
+                        spec,
+                        headers=headers,
+                        method=recipe.method,
+                        **(
+                            {"form_body": {"sc_section_code": "S1N2", "view_type": "sm"}}
+                            if recipe.parser == "thelec"
+                            else {}
+                        ),
+                    )
+                    captures.append(capture)
                     if recipe.parser == "wordpress" and capture.status == 200:
                         # Retain the old 200-item RSS discovery window, without bodies.
                         second = await self._fetch(url + "&offset=100", spec, headers=headers)
                         if second.status != 200:
                             raise ValueError("public_listing_page2_http_" + str(second.status))
+                        captures.append(second)
                         combined = json.loads(capture.text)
                         combined["posts"].extend(json.loads(second.text)["posts"])
                         capture = replace(capture, text=json.dumps(combined))
-            age = capture.headers.get("age")
-            if recipe.max_age_seconds is not None and age and float(age) > recipe.max_age_seconds:
-                raise ValueError("public_listing_stale_cache_age:" + age)
+            caches = [{"url": c.url, **cache_evidence(c, recipe)} for c in captures]
+            for event in (events or [])[offset:]:
+                method = "POST" if recipe.parser == "frontier_api" else recipe.method
+                evidence = next(
+                    (
+                        c
+                        for c in caches
+                        if sha256_text(method + ":" + c["url"]) == event.get("request_key")
+                    ),
+                    None,
+                )
+                if evidence is not None:
+                    event["listing_cache"] = evidence
             if capture.status == 304 and previous.get("baseline"):
                 messages = []
             elif capture.status == 200:
@@ -746,6 +878,7 @@ class ListingAdapter:
                     "method": "http_listing",
                     "status": capture.status,
                     "items": len(messages),
+                    "cache": caches,
                     "validated_request_ids": [e["physical_request_id"] for e in proven],
                 },
             )

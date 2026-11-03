@@ -1,0 +1,288 @@
+[
+  {
+    "source_id": "data_center_frontier",
+    "index": 0,
+    "probe": "data_center_frontier-0-actual",
+    "listing": "https://scorpia.graphql.aspire-ebm.com",
+    "parsed_items": 53,
+    "first_urls": [
+      "https://www.datacenterfrontier.com/energy/podcast/55416357/dcf-show-can-ai-unlock-data-centers-stranded-megawatts",
+      "https://www.datacenterfrontier.com/sponsored/article/55416100/data-center-jobs-engineering-construction-commissioning-sales-field-service-and-facility-tech-jobs-available-in-major-data-center-hotspots",
+      "https://www.datacenterfrontier.com/videos/video/55415994/nidec-brings-decades-of-experience-to-todays-data-center-technology-needs"
+    ],
+    "latest_published_at": "2026-11-03T19:51:01+00:00"
+  },
+  {
+    "source_id": "dod_contracts",
+    "index": 0,
+    "probe": "dod_contracts-actual",
+    "listing": "https://www.war.gov/News/Contracts/",
+    "parsed_items": 10,
+    "first_urls": [
+      "https://www.war.gov/News/Contracts/Contract/Article/4639373/contracts-for-nov-2-2026/",
+      "https://www.war.gov/News/Contracts/Contract/Article/4638054/contracts-for-oct-30-2026/",
+      "https://www.war.gov/News/Contracts/Contract/Article/4637206/contracts-for-oct-29-2026/"
+    ],
+    "latest_published_at": "2026-11-02T22:00:00+00:00"
+  },
+  {
+    "source_id": "nsf_news",
+    "index": 0,
+    "probe": "nsf_news-actual",
+    "listing": "https://www.nsf.gov/news",
+    "parsed_items": 9,
+    "first_urls": [
+      "https://www.nsf.gov/news/podcast-laser-could-break-laws-physics",
+      "https://www.nsf.gov/news/podcast-future-electronics-goes-beyond-circuit-boards",
+      "https://www.nsf.gov/news/podcast-can-americas-most-powerful-laser-unlock-universe"
+    ],
+    "latest_published_at": "2026-11-02T21:07:52+00:00"
+  },
+  {
+    "source_id": "world_nuclear_news",
+    "index": 0,
+    "probe": "world_nuclear_news-actual",
+    "listing": "https://www.world-nuclear-news.org/",
+    "parsed_items": 19,
+    "first_urls": [
+      "https://www.world-nuclear-news.org/articles/bruce-unit-5-refurbishment-begins",
+      "https://www.world-nuclear-news.org/articles/the-challenge-of-securing-uranium-from-seawater---podcast",
+      "https://www.world-nuclear-news.org/articles/viewpoint-four-million-workers-wont-be-enough-without-the-right-leaders"
+    ],
+    "latest_published_at": "2026-11-03T12:00:00+00:00"
+  },
+  {
+    "source_id": "canary_media",
+    "index": 0,
+    "probe": "canary_media-0-actual",
+    "listing": "https://www.canarymedia.com/articles",
+    "parsed_items": 10,
+    "first_urls": [
+      "https://www.canarymedia.com/articles/sponsored/heres-how-solar-and-wind-developers-can-hold-onto-tax-credits",
+      "https://www.canarymedia.com/articles/batteries/batteries-not-gas-plants-for-data-centers",
+      "https://www.canarymedia.com/articles/climate-justice/trump-cuts-tribes-funds-clean-energy"
+    ],
+    "latest_published_at": "2026-11-03T12:00:00+00:00"
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 0,
+    "probe": "crn_cloud_security_datacenter-0-actual",
+    "listing": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud",
+    "parsed_items": 50,
+    "first_urls": [
+      "https://www.crn.com/news/cloud/2026/cloud-market-share-q3-google-cloud-gains-as-aws-loses-ground-anthropic-and-spacex-crack-into-top-10",
+      "https://www.crn.com/news/cloud/2026/aws-vs-microsoft-azure-vs-google-cloud-q3-earnings-faceoff",
+      "https://www.crn.com/news/cloud/2026/google-cloud-sales-explode-103-percent-as-ceo-touts-tpu-extraordinary-demand"
+    ],
+    "latest_published_at": "2026-11-03T18:30:00+00:00"
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 1,
+    "probe": "crn_cloud_security_datacenter-1-actual",
+    "listing": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security",
+    "parsed_items": 50,
+    "first_urls": [
+      "https://www.crn.com/news/security/2026/the-25-hottest-edge-security-companies-2026-edge-computing-100",
+      "https://www.crn.com/news/security/2026/arctic-wolf-ceo-nick-schneider-ai-vulnerability-threats-changing-in-2027",
+      "https://www.crn.com/news/security/2026/sentinelone-s-chris-corde-on-why-traditional-edr-is-flying-blind-on-ai-agents"
+    ],
+    "latest_published_at": "2026-11-03T15:00:00+00:00"
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 2,
+    "probe": "crn_cloud_security_datacenter-2-actual",
+    "listing": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center",
+    "parsed_items": 50,
+    "first_urls": [
+      "https://www.crn.com/news/data-center/2026/balata-rides-data-center-gold-rush-to-100m-in-revenue",
+      "https://www.crn.com/news/data-center/2026/gdt-exec-channel-can-benefit-from-nvidia-s-ai-financing-boom-but-hurdles-persist",
+      "https://www.crn.com/news/data-center/2026/feds-arrest-solution-provider-owner-in-alleged-300m-gpu-server-smuggling-scheme"
+    ],
+    "latest_published_at": "2026-10-28T18:42:00+00:00"
+  },
+  {
+    "source_id": "dod_releases",
+    "index": 0,
+    "probe": "dod_releases-actual",
+    "listing": "https://www.war.gov/News/Releases/",
+    "parsed_items": 10,
+    "first_urls": [
+      "https://www.war.gov/News/Releases/Release/Article/4638926/department-of-wars-office-of-strategic-capital-signs-conditional-loan-commitmen/",
+      "https://www.war.gov/News/Releases/Release/Article/4637317/department-of-war-releases-fiscal-year-2026-military-intelligence-program-budget/",
+      "https://www.war.gov/News/Releases/Release/Article/4636398/department-of-war-announces-150-million-in-awards-to-multidisciplinary-universi/"
+    ],
+    "latest_published_at": "2026-11-02T15:00:17+00:00"
+  },
+  {
+    "source_id": "utility_dive",
+    "index": 0,
+    "probe": "utility_dive-actual",
+    "listing": "https://www.utilitydive.com/",
+    "parsed_items": 31,
+    "first_urls": [
+      "https://www.utilitydive.com/news/energy-affordability-voter-election-midterm-congress-energy-policy/873596/",
+      "https://www.utilitydive.com/news/pjm-revised-data-center-backstop-procurement-ferc/873551/",
+      "https://www.utilitydive.com/news/can-battman-secure-the-us-battery-manufacturing-supply-chain/873599/"
+    ],
+    "latest_published_at": "2026-11-03T21:54:54.362533+00:00"
+  },
+  {
+    "source_id": "etnews_rss",
+    "index": 0,
+    "probe": "etnews_rss-actual",
+    "listing": "https://www.etnews.com/news/section.html?id1=06",
+    "parsed_items": 15,
+    "first_urls": [
+      "https://www.etnews.com/20261103000231",
+      "https://www.etnews.com/20261102000334",
+      "https://www.etnews.com/20261103000247"
+    ],
+    "latest_published_at": "2026-11-03T07:00:00+00:00"
+  },
+  {
+    "source_id": "quantum_zeitgeist",
+    "index": 0,
+    "probe": "quantum_zeitgeist-actual",
+    "listing": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+    "parsed_items": 100,
+    "first_urls": [
+      "https://quantumzeitgeist.com/zitterbewegung-timed-light-pulses-optical-dirac-systems/",
+      "https://quantumzeitgeist.com/stmicroelectronics-post-quantum-mcu-hardware-cryptography/",
+      "https://quantumzeitgeist.com/univ-circuit-quality-factor-exceeds-3d/"
+    ],
+    "latest_published_at": "2026-11-03T19:44:00+00:00"
+  },
+  {
+    "source_id": "huggingnews_rss",
+    "index": 0,
+    "probe": "huggingnews_rss-actual",
+    "listing": "https://huggingnews.com/__data.json",
+    "parsed_items": 113,
+    "first_urls": [
+      "https://huggingnews.com/ai/audit-finds-mits-gpt-6-weight-edit-only-fixed-loops-as-laptop-qwen-match-12fa3e90",
+      "https://huggingnews.com/ai/google-to-link-k-12-student-access-to-web-search-with-adoption-of-ai-too-d9e21414",
+      "https://huggingnews.com/earnings/amd-forecasts-17b-in-q4-revenue-as-ai-sales-drive-q3-earnings-beat-32ec2929"
+    ],
+    "latest_published_at": "2026-11-03T21:30:13.114000+00:00"
+  },
+  {
+    "source_id": "quantum_computing_report",
+    "index": 0,
+    "probe": "quantum_computing_report-actual",
+    "listing": "https://quantumcomputingreport.com/news/",
+    "parsed_items": 25,
+    "first_urls": [
+      "https://quantumcomputingreport.com/universal-quantum-details-iterative-redecode-scheme-for-fast-transversal-fault-tolerant-logic/",
+      "https://quantumcomputingreport.com/universal-quantum-unveils-the-iqpu-foundry-fabricated-trapped-ion-processor-engineered-for-modular-scaling/",
+      "https://quantumcomputingreport.com/ahead-of-eu-quantum-act-iqm-calls-for-dedicated-qubit-foundries-and-darpa-style-procurement/"
+    ],
+    "latest_published_at": "2026-11-03T12:00:00+00:00"
+  },
+  {
+    "source_id": "technews_hardware",
+    "index": 0,
+    "probe": "technews_hardware-0-actual",
+    "listing": "https://technews.tw/category/semiconductor/",
+    "parsed_items": 15,
+    "first_urls": [
+      "https://finance.technews.tw/2026/11/03/marvell-acquires-lumentum-optical-electrical-integration-challenge-broadcom-leadership/",
+      "https://finance.technews.tw/2026/11/03/transition-from-peacetime-to-wartime/",
+      "https://technews.tw/2026/11/03/counterpoint-research-see-marvell-and-lumentum-and-trendforce-ai-networking-interconnect/"
+    ],
+    "latest_published_at": "2026-11-03T09:50:00+00:00"
+  },
+  {
+    "source_id": "technews_hardware",
+    "index": 1,
+    "probe": "technews_hardware-1-actual",
+    "listing": "https://technews.tw/category/ai/",
+    "parsed_items": 15,
+    "first_urls": [
+      "https://finance.technews.tw/2026/11/03/smr-mmr/",
+      "https://finance.technews.tw/2026/11/03/transition-from-peacetime-to-wartime/",
+      "https://technews.tw/2026/11/03/google-app-major-interface-redesign/"
+    ],
+    "latest_published_at": "2026-11-03T09:58:00+00:00"
+  },
+  {
+    "source_id": "thelec_semiconductors_rss",
+    "index": 0,
+    "probe": "thelec-form",
+    "listing": "https://www.thelec.kr/news/articleList.html",
+    "parsed_items": 20,
+    "first_urls": [
+      "https://www.thelec.kr/news/articleView.html?idxno=64817",
+      "https://www.thelec.kr/news/articleView.html?idxno=64755",
+      "https://www.thelec.kr/news/articleView.html?idxno=64724"
+    ],
+    "latest_published_at": "2026-11-03T08:09:00+00:00"
+  },
+  {
+    "source_id": "defensescoop_drones",
+    "index": 0,
+    "probe": "defensescoop_drones-0-actual",
+    "listing": "https://defensescoop.com/tag/drones/",
+    "parsed_items": 10,
+    "first_urls": [
+      "https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/",
+      "https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/",
+      "https://defensescoop.com/2026/10/21/air-force-cca-drones-sustainment-plan/"
+    ],
+    "latest_published_at": "2026-11-03T21:58:57.033296+00:00"
+  },
+  {
+    "source_id": "defensescoop_drones",
+    "index": 1,
+    "probe": "defensescoop_drones-1-actual",
+    "listing": "https://defensescoop.com/tag/counter-drone/",
+    "parsed_items": 10,
+    "first_urls": [
+      "https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/",
+      "https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/",
+      "https://defensescoop.com/2026/10/12/eighth-army-adapting-to-new-drone-threats/"
+    ],
+    "latest_published_at": "2026-11-02T12:00:00+00:00"
+  },
+  {
+    "source_id": "enterprise_apps_official_rss",
+    "index": 0,
+    "probe": "enterprise_apps_official_rss-0-actual",
+    "listing": "https://news.sap.com/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+    "parsed_items": 48,
+    "first_urls": [
+      "https://news.sap.com/2026/11/sap-a-market-shaper-inaugural-2026-gartner-emerging-market-quadrant-integrated-supply-chain-ai-agents-established-vendors/",
+      "https://news.sap.com/2026/11/business-networks-harness-agentic-ai-collaboration-operational-resilience/",
+      "https://news.sap.com/2026/11/sap-cohere-empower-regulated-industries-innovate-deploy-ai-faster/"
+    ],
+    "latest_published_at": "2026-11-03T13:15:00+00:00"
+  },
+  {
+    "source_id": "enterprise_apps_official_rss",
+    "index": 1,
+    "probe": "enterprise_apps_official_rss-1-actual",
+    "listing": "https://www.salesforce.com/news/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+    "parsed_items": 50,
+    "first_urls": [
+      "https://www.salesforce.com/news/stories/salesforce-signs-definitive-agreement-to-acquire-cresta/",
+      "https://www.salesforce.com/news/stories/salesforce-signs-definitive-agreement-to-acquire-rune-technologies/",
+      "https://www.salesforce.com/news/stories/no-single-ai-strategy/"
+    ],
+    "latest_published_at": "2026-11-02T21:00:00+00:00"
+  },
+  {
+    "source_id": "enterprise_apps_official_rss",
+    "index": 2,
+    "probe": "enterprise_apps_official_rss-2-actual",
+    "listing": "https://newsroom.workday.com/press-releases",
+    "parsed_items": 10,
+    "first_urls": [
+      "https://newsroom.workday.com/2026-11-02-Workday-to-Announce-Fiscal-2027-Third-Quarter-Financial-Results-on-November-24,-2026",
+      "https://newsroom.workday.com/2026-10-21-Workday-Announces-Pricing-of-2-5-Billion-Senior-Notes-Offering",
+      "https://newsroom.workday.com/2026-10-19-Workday-Named-a-Leader-in-2026-Gartner-R-Magic-Quadrant-TM-for-Cloud-ERP-Finance"
+    ],
+    "latest_published_at": "2026-11-02T12:00:00+00:00"
+  }
+]
