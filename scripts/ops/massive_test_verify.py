@@ -39,11 +39,12 @@ def main():
             try:result[name]=[dict(r) for r in db.execute(query)]
             except sqlite3.OperationalError:result[name]=[]
         result['real_test_bindings']=db.execute('SELECT count(*) FROM ticker_source_bindings WHERE source_id IN ('+placeholders+')',source_ids).fetchone()[0]
+        result['test_model_decisions']=db.execute("SELECT count(*) FROM live_deliveries WHERE article_key LIKE 'test_%' AND (jev_result IS NOT NULL OR state='L2_DUE')").fetchone()[0]
     acquisition=path.parent/'acquisition.sqlite3'
     with sqlite3.connect(acquisition.as_uri()+'?mode=ro',uri=True,timeout=2) as db:
         db.row_factory=sqlite3.Row
         result['units']=[dict(r) for r in db.execute('SELECT source_id,unit,count(*) target_units FROM units WHERE source_id IN ('+placeholders+') GROUP BY source_id,unit',source_ids)]
-        result['cycles']=[dict(r) for r in db.execute('SELECT source_id,status,count(*) count FROM (SELECT * FROM cycles ORDER BY rowid DESC LIMIT 5000) WHERE source_id IN ('+placeholders+') GROUP BY source_id,status',source_ids)]
+        result['cycles']=[dict(r) for r in db.execute('SELECT source_id,status,count(*) target_receipts,count(DISTINCT json_extract(data_json,\'$.physical_run_id\')) physical_runs FROM (SELECT * FROM cycles ORDER BY rowid DESC LIMIT 5000) WHERE source_id IN ('+placeholders+') GROUP BY source_id,status',source_ids)]
     print(json.dumps(result,ensure_ascii=True,indent=2))
 
 

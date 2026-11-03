@@ -50,6 +50,15 @@ async def test_same_url_isolated_final_sink_without_real_subscription(tmp_path,t
         live.accept(rows)
         await hub.run_once();await worker.run_available()
         with repo._connect() as db:assert db.execute('SELECT count(*) FROM test_publications').fetchone()[0]==1
+        row=live.deliveries('TEST_PUBLISHED')[0]
+        message,s,b,found=worker._prepare(row)
+        with repo._connect() as db:
+            before=[tuple(r) for r in db.execute("SELECT * FROM artifact_ref WHERE owner_type='test_publications' ORDER BY owner_id,artifact_id")]
+        prepared=live.prepare_publication(bus,row,s,b,message)
+        live.publish(prepared);live.publish(prepared)
+        with repo._connect() as db:
+            after=[tuple(r) for r in db.execute("SELECT * FROM artifact_ref WHERE owner_type='test_publications' ORDER BY owner_id,artifact_id")]
+            assert before==after
     finally:await hub.close()
 
 

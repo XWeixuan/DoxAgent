@@ -63,15 +63,19 @@ def commit(repo, prepared):
             return False
         if current[2]!='test':
             raise RuntimeError('test_publication_scope_mismatch')
+        terms=db.execute('SELECT current_revision FROM ticker_monitoring_terms WHERE ticker=?',(row['ticker'],)).fetchone()
+        if terms and terms[0]!=row['terms_revision']:
+            return False
         if prepared.get('rejected'):
             db.execute("UPDATE live_deliveries SET state='ADMISSION_REJECTED',last_error=? WHERE article_key=? AND ticker=?",
                        (prepared['rejected'],row['article_key'],row['ticker']))
             return True
         identity=sha256_text(canonical_json([row['article_key'],row['ticker'],row['revision'],row['terms_revision']]))
-        db.execute('INSERT OR IGNORE INTO test_publications VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+        inserted=db.execute('INSERT OR IGNORE INTO test_publications VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
             (identity,row['article_key'],row['ticker'],row['source_id'],row['revision'],row['terms_revision'],
-             prepared['source_version'],row['body_digest'],prepared['outcome'],prepared['prepared_at'],stamp,prepared['ref']))
-        repo._refs(db,'test_publications',identity,prepared['refs'])
+             prepared['source_version'],row['body_digest'],prepared['outcome'],prepared['prepared_at'],stamp,prepared['ref'])).rowcount
+        if inserted:
+            repo._refs(db,'test_publications',identity,prepared['refs'])
         db.execute("UPDATE live_deliveries SET state='TEST_PUBLISHED',published_digest=?,decision_digest=?,"
             "initial_decision=coalesce(initial_decision,'TEST_PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?) "
             "WHERE article_key=? AND ticker=?",(row['body_digest'],row['body_digest'],stamp,row['article_key'],row['ticker']))
