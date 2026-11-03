@@ -1,0 +1,34 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>CRN.com Cloud Computing Feed</title>
+        <link>https://www.crn.com/news/cloud/</link>
+        <description>CRN RSS Feed</description>
+        <lastBuildDate>Tue, 03 Nov 2026 19:55:11 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>TCC RSS Feed Worker (Cloudflare) - crn-rss</generator>
+        <language>en</language>
+        <atom:link href="https://www.crn.com/news/cloud/rss.xml" rel="self" type="application/rss+xml"/>
+        <category>Cloud</category>
+        
+        <item>
+            <title>Cloud Market Share Q3: Google Cloud Gains As AWS Loses Ground; Anthropic And SpaceX Crack Into Top 10</title>
+            <link>https://www.crn.com/news/cloud/2026/cloud-market-share-q3-google-cloud-gains-as-aws-loses-ground-anthropic-and-spacex-crack-into-top-10</link>
+            <guid>https://www.crn.com/news/cloud/2026/cloud-market-share-q3-google-cloud-gains-as-aws-loses-ground-anthropic-and-spacex-crack-into-top-10</guid>
+            <pubDate>Tue, 03 Nov 2026 18:30:00 GMT</pubDate>
+            <description>Cloud market share in Q3 2026 saw Google Cloud gain share, while AWS and Microsoft lost share in the global $168 billion market. Anthropic and SpaceX also made the cloud services rankings.</description>
+            <category>Cloud</category>
+            <author>mharanas@thechannelcompany.com (Mark Haranas)</author>
+            <enclosure url="https://www.crn.com/news/cloud/2026/media_1e544d5d0484bc719b89118525946ad68e3685e64.png" length="0" type="image/png"/>
+        </item>
+        <item>
+            <title>AWS Vs. Microsoft Azure Vs. Google Cloud Q3 Earnings Face-Off</title>
+            <link>https://www.crn.com/news/cloud/2026/aws-vs-microsoft-azure-vs-google-cloud-q3-earnings-faceoff</link>
+            <guid>https://www.crn.com/news/cloud/2026/aws-vs-microsoft-azure-vs-google-cloud-q3-earnings-faceoff</guid>
+            <pubDate>Mon, 02 Nov 2026 13:00:00 GMT</pubDate>
+            <description>AWS vs. Microsoft Azure vs. Google Cloud: See Q3 2026 cloud revenue, global market share and sales growth as cloud services market hit $168 billion.</description>
+            <category>Cloud</category>
+            <author>mharanas@thechannelcompany.com (Mark Haranas)</author>
+            <enclosure url="https://www.crn.com/news/cloud/2026/media_111dcb30b7fdbe495e2aa9a64d771bec008355a4c.jpg" length="0" type="image/jpg"/>
+        </item>
+        </channel>
+</rss>

@@ -566,6 +566,9 @@ class Collector:
                     reason = result.site_access_deferred_reason or (
                         result.failures[0].error_code if result.failures else None
                     )
+                    state["last_error_message"] = (
+                        result.failures[0].error_message if result.failures else None
+                    )
                     # A failed response still carries recovery progress. Adapters
                     # advance a page cursor only after their page callback commits.
                     # Never discard failure counts/Retry-After for an empty list.
@@ -646,7 +649,11 @@ class Collector:
                 last_attempt_at=now.isoformat(),
                 last_latency_ms=round((time.monotonic() - started) * 1000),
                 last_error_code=reason,
-                status="succeeded" if valid else "partial" if page_committed else "failed",
+                status=(
+                    "succeeded" if valid else "failed"
+                    if reason == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+                    else "partial" if page_committed else "failed"
+                ),
             )
             # A failed persistence attempt must not leave the network clock due
             # and refetch the same unit every 100ms. Only scheduling moves here;

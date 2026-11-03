@@ -159,6 +159,14 @@ class AdapterRegistry:
         from .energy_sources import EnergyAdapter
 
         self._builtins["energy_public@1"] = EnergyAdapter(self._builtins["technology_public@1"].http)
+        from .public_listing import ListingAdapter
+
+        self._listing_adapters = {
+            key: ListingAdapter(self._builtins[key], self._builtins["technology_public@1"].http)
+            for key in ("technology_public@1", "energy_public@1", "defense_public@1",
+                        "huggingnews_rss", "tomshardware_rss", "thelec_semiconductors_rss",
+                        "etnews_rss", "newswire_rss")
+        }
 
     def set_streaming_bindings(self, binding_ids):
         self._builtins['ibkr_news']._active_bindings = set(binding_ids)
@@ -204,7 +212,7 @@ class AdapterRegistry:
         if adapter_ref.startswith("builtin:"):
             key = adapter_ref.removeprefix("builtin:")
             try:
-                return self._builtins[key]
+                return self._listing_adapters.get(key, self._builtins[key])
             except KeyError as exc:
                 raise AdapterLoadError(f"unknown builtin adapter: {key}") from exc
         cache_key = (adapter_ref, source_version)

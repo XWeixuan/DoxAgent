@@ -1,0 +1,35 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cf="http://www.microsoft.com/schemas/rss/core/2005" version="2.0">
+  <channel>
+    <title>
+News Releases - U.S. Dept. of War
+</title>
+    <link>
+https://www.war.gov/News/Releases/
+</link>
+    <description>
+Stay up to date on the latest Department of War statements and announcements.
+</description>
+    <language>en-us</language>
+    <pubDate>Mon, 02 Nov 2026 15:00:17 GMT</pubDate>
+    <lastBuildDate>Tue, 03 Nov 2026 18:47:20 GMT</lastBuildDate>
+    <atom:link href="www.war.gov?ContentType=9&amp;Site=945&amp;isdashboardselected=0&amp;max=50" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Department of War's Office of Strategic Capital Signs Conditional Loan Commitment of up to $450 Million With Neros, Inc.</title>
+      <link>https://www.war.gov/News/Releases/Release/Article/4638926/department-of-wars-office-of-strategic-capital-signs-conditional-loan-commitmen/</link>
+      <description>The War Department's Office of Strategic Capital announced a conditional loan commitment of up to $450 million to Neros Inc., a U.S.-based developer and manufacturer of dual-use small unmanned aircraft systems.
+</description>
+      <pubDate>Mon, 02 Nov 2026 15:00:17 GMT</pubDate>
+      <dc:creator>Press Operations</dc:creator>
+      <guid isPermaLink="false">https://www.war.gov/News/Releases/Release/Article/4638926/department-of-wars-office-of-strategic-capital-signs-conditional-loan-commitmen/</guid>
+    </item>
+    <item>
+      <title>Department of War Releases Fiscal Year 2026 Military Intelligence Program Budget</title>
+      <link>https://www.war.gov/News/Releases/Release/Article/4637317/department-of-war-releases-fiscal-year-2026-military-intelligence-program-budget/</link>
+      <description>The War Department released the Military Intelligence Program appropriated top-line budget for fiscal year 2026. The total was $30.9 billion and is aligned to the National Defense Strategy.
+</description>
+      <pubDate>Fri, 30 Oct 2026 13:15:13 GMT</pubDate>
+      <dc:creator>Press Operations</dc:creator>
+      <guid isPermaLink="false">https://www.war.gov/News/Releases/Release/Article/4637317/department-of-war-releases-fiscal-year-2026-military-intelligence-program-budget/</guid>
+    </item>
+    </channel>
+</rss>

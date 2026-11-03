@@ -1,0 +1,469 @@
+import asyncio
+import json
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
+from urllib.parse import urlsplit
+
+import pytest
+
+from doxagent.message_bus_v2.body_results import article_key
+from doxagent.message_bus_v2.industry_sources import parse_shared_feed
+from doxagent.message_bus_v2.manifests import initial_sources
+from doxagent.message_bus_v2.poll_trace import REQUESTS, request_started
+from doxagent.message_bus_v2.public_listing import (
+    RECIPES,
+    ListingAdapter,
+    enabled,
+    parse_listing,
+)
+from doxagent.message_bus_v2.schema import (
+    AcquisitionMode,
+    PollResult,
+    SharedPollContext,
+    SourceDefinition,
+    TickerSourceBinding,
+    sha256_text,
+    utc_now,
+)
+from doxagent.message_bus_v2.technology_sources import Capture, TechnologySource
+
+FIXTURES = Path(__file__).parent / "fixtures/public_listing"
+SAMPLES = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf8"))
+NOW = datetime(2026, 11, 3, 21, tzinfo=UTC)
+
+
+@asynccontextmanager
+async def permit():
+    yield
+
+
+def definition(sid):
+    found = next((s for s in initial_sources() if s.source_id == sid), None)
+    if found is None:
+        found = SourceDefinition(
+            source_id=sid,
+            display_name=sid,
+            adapter_ref="builtin:newswire_rss",
+            kind="api",
+            scheduler_group="newswire_rss",
+            acquisition_mode=AcquisitionMode.BY_TICKER,
+            content_language="en",
+        )
+    return found.model_copy(
+        update={
+            "default_parameters": {**found.default_parameters, "discovery_mode": "http_listing"}
+        }
+    )
+
+
+def spec_for(sid, recipe):
+    s = definition(sid)
+    return TechnologySource(
+        sid,
+        s.display_name,
+        urlsplit(recipe.url).hostname.removeprefix("www."),
+        (recipe.url,),
+        (),
+        language=s.content_language,
+    )
+
+
+def rows(sid, index=0):
+    recipe = RECIPES[sid][index]
+    return parse_listing(
+        recipe,
+        spec_for(sid, recipe),
+        (FIXTURES / f"{sid}-{index}.html").read_text(encoding="utf8"),
+        NOW,
+    )
+
+
+@pytest.mark.parametrize("sample", SAMPLES, ids=lambda s: f"{s['source_id']}-{s['index']}")
+def test_real_listing_contract_and_identity(sample):
+    sid, index = sample["source_id"], sample["index"]
+    if sid == "aviationweek_rss":
+        with pytest.raises(ValueError):
+            rows(sid, index)
+        return
+    messages = rows(sid, index)
+    assert len(messages) >= 1
+    assert len({m.url for m in messages}) == len(messages)
+    assert all(m.body is None for m in messages)  # Original BODY path owns completion.
+    assert all(m.metadata["identity_evidence"]["url_kind"] == "article" for m in messages)
+    assert all(m.metadata["discovery_method"] == "http_listing" for m in messages)
+    assert all(m.published_at.tzinfo is not None for m in messages)
+    rss = FIXTURES / f"{sid}-{index}-rss.xml"
+    if rss.exists():
+        feed = RECIPES[sid][index].feed
+        old = parse_shared_feed(
+            rss.read_text(encoding="utf8"),
+            feed_url=feed,
+            publisher=definition(sid).display_name,
+            language=definition(sid).content_language,
+            now=NOW,
+        )
+        previous = {m.url: m for m in old}
+        for message in messages:
+            if message.url in previous:
+                from doxagent.message_bus_v2.deduplication import article_identity
+
+                old_message = article_identity(
+                    previous[message.url], sid, default_language=definition(sid).content_language
+                )
+                assert article_key(message, sid) == article_key(old_message, sid)
+
+
+def test_thelec_article_query_id_and_korean_time_survive():
+    messages = rows("thelec_semiconductors_rss")
+    assert len({m.url for m in messages}) == 2
+    assert all("?idxno=" in m.url for m in messages)
+    assert all(m.publication_time_basis == "EXACT" for m in messages)
+    assert messages[0].published_at == datetime(2026, 11, 3, 8, 9, tzinfo=UTC)
+
+
+def test_dates_are_not_fabricated_as_exact():
+    assert all(m.publication_time_basis == "DATE" for m in rows("canary_media"))
+    assert all(m.publication_time_basis == "UNKNOWN_FIRST_SEEN" for m in rows("utility_dive"))
+    assert all(m.publication_time_basis == "EXACT" for m in rows("data_center_frontier"))
+    assert rows("etnews_rss")[0].published_at.hour == 7  # 16:00 KST.
+
+
+class Http:
+    def __init__(self, *responses):
+        self.responses = list(responses)
+        self.calls = []
+
+    async def fetch(self, url, spec, **kwargs):
+        self.calls.append((url, spec, kwargs))
+        result = self.responses.pop(0) if len(self.responses) > 1 else self.responses[0]
+        if isinstance(result, BaseException):
+            raise result
+        event = request_started(kwargs.get("method", "GET"), url, admitted=True)
+        if event is not None:
+            event.update(status_code=result.status, response_received_at=utc_now().isoformat())
+        return result
+
+
+def context(sid="quantum_computing_report", index=0, checkpoint=None):
+    recipe = RECIPES[sid][index]
+    return SharedPollContext(
+        run_id="fixture",
+        source=definition(sid),
+        acquisition_unit="FEED:" + sha256_text(recipe.feed)[:24],
+        request_permit=permit,
+        checkpoint=checkpoint or {},
+        requested_at=NOW,
+    )
+
+
+def capture(sid="quantum_computing_report", index=0, status=200, headers=None):
+    recipe = RECIPES[sid][index]
+    return Capture(
+        status,
+        recipe.url,
+        (FIXTURES / f"{sid}-{index}.html").read_text(encoding="utf8") if status == 200 else "",
+        headers or {},
+    )
+
+
+async def test_delta_conditional_request_and_material_change_do_not_repeat_body_work():
+    r = capture(headers={"etag": '"v1"'})
+    h = Http(
+        r,
+        Capture(304, r.url, "", {"etag": '"v1"'}),
+        r,
+        Capture(
+            200, r.url, r.text.replace("Iterative Redecode", "New Funding Iterative Redecode"), {}
+        ),
+    )
+    delegate = SimpleNamespace(poll_shared=AsyncMock())
+    adapter = ListingAdapter(delegate, h)
+    ctx = context()
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        first = await adapter.poll_shared(ctx)
+        ctx.checkpoint = first.next_checkpoint
+        assert len(first.messages) == 2 and not first.failures
+        second = await adapter.poll_shared(ctx)
+        ctx.checkpoint = second.next_checkpoint
+        assert second.messages == [] and not second.failures
+        assert h.calls[1][2]["headers"]["If-None-Match"] == '"v1"'
+        third = await adapter.poll_shared(ctx)
+        ctx.checkpoint = third.next_checkpoint
+        assert third.messages == []
+        fourth = await adapter.poll_shared(ctx)
+        assert len(fourth.messages) == 1
+        assert fourth.acquisition_metadata["validated_request_ids"]
+        delegate.poll_shared.assert_not_called()
+    finally:
+        REQUESTS.reset(token)
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        Capture(403, "https://quantumcomputingreport.com/news/", "denied", {}),
+        Capture(
+            200,
+            "https://quantumcomputingreport.com/news/",
+            "<html><title>Just a moment...</title></html>",
+            {},
+        ),
+        Capture(304, "https://quantumcomputingreport.com/news/", "", {}),
+    ],
+)
+async def test_rss_fallback_keeps_news_but_never_claims_healthy_listing(response):
+    sample = rows("quantum_computing_report")[0]
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult(messages=[sample])))
+    adapter = ListingAdapter(delegate, Http(response))
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        result = await adapter.poll_shared(context())
+    finally:
+        REQUESTS.reset(token)
+    assert result.messages and result.failures[0].error_code == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+    assert result.acquisition_metadata["discovery_method"] == "rss_fallback"
+    assert result.messages[0].metadata["discovery_method"] == "rss_fallback"
+    assert not result.window_done and not result.next_checkpoint["listings"]
+    assert not result.acquisition_metadata["validated_request_ids"]
+    assert not any(e.get("list_validated") for e in events)
+
+
+async def test_old_cache_is_not_a_fresh_poll_and_uses_original_rss_delegate():
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    result = await ListingAdapter(
+        delegate, Http(capture("tomshardware_rss", headers={"age": "5400"}))
+    ).poll_shared(context("tomshardware_rss"))
+    assert "stale_cache_age:5400" in result.failures[0].error_message
+    delegate.poll_shared.assert_awaited_once()
+
+
+async def test_nsf_uses_verified_uncached_readonly_post():
+    h = Http(capture("nsf_news"))
+    delegate = SimpleNamespace(poll_shared=AsyncMock())
+    result = await ListingAdapter(delegate, h).poll_shared(context("nsf_news"))
+    assert result.messages and not result.failures
+    assert h.calls[0][2]["method"] == "POST"
+    assert h.calls[0][2]["headers"]["X-Requested-With"] == "XMLHttpRequest"
+
+
+async def test_one_failed_internal_endpoint_cannot_block_its_sibling():
+    class IsolatedHttp:
+        async def fetch(self, url, spec, **kwargs):
+            if "sheet=cloud" in url:
+                await asyncio.Event().wait()
+            return capture("crn_cloud_security_datacenter", 1)
+
+    adapter = ListingAdapter(SimpleNamespace(), IsolatedHttp())
+    slow = asyncio.create_task(adapter.poll_shared(context("crn_cloud_security_datacenter", 0)))
+    try:
+        good = await asyncio.wait_for(
+            adapter.poll_shared(context("crn_cloud_security_datacenter", 1)), 1
+        )
+        assert good.messages and not good.failures
+        assert not slow.done()
+    finally:
+        slow.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await slow
+
+
+async def test_collection_revocation_is_not_treated_as_publisher_failure():
+    from doxagent.message_bus_v2.collection_override import CollectionStopped
+
+    delegate = SimpleNamespace(poll_shared=AsyncMock())
+    with pytest.raises(CollectionStopped):
+        await ListingAdapter(delegate, Http(CollectionStopped("revoked"))).poll_shared(context())
+    delegate.poll_shared.assert_not_called()
+
+
+async def test_closed_sweep_keeps_original_recovery_recipe():
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    h = Http(AssertionError("recovery must retain RSS recipe"))
+    ctx = context()
+    ctx.window_cutoff = NOW
+    await ListingAdapter(delegate, h).poll_shared(ctx)
+    delegate.poll_shared.assert_awaited_once()
+    assert not h.calls
+
+
+def test_configuration_preserves_body_binding_semantics_and_is_idempotent(tmp_path):
+    from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    from doxagent.message_bus_v2.service import MessageBusV2Service
+    from scripts.ops.configure_rss_listing_migration import configure
+
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo)
+    for sid in RECIPES:
+        source = definition(sid).model_copy(update={"default_parameters": {}})
+        bus.register_source(source)
+        repo.save_binding(
+            TickerSourceBinding(
+                binding_id="SNOW:" + sid,
+                ticker="SNOW",
+                source_id=sid,
+                source_version=source.version,
+                source_parameters={},
+            )
+        )
+    before = {s.source_id: s for s in repo.list_sources()}
+    report = configure(bus)
+    assert len(report) == 20 and all(s["action"] == "updated" for s in report)
+    for sid in RECIPES:
+        current = repo.get_source(sid)
+        old = before[sid]
+        assert enabled(current)
+        for field in [
+            "adapter_ref",
+            "entry_url",
+            "site_id",
+            "content_language",
+            "acquisition_mode",
+            "scheduler_group",
+            "scheduler_constraints",
+            "default_polling_config",
+            "distribution_policy",
+        ]:
+            assert getattr(current, field) == getattr(old, field)
+        binding = repo.get_binding("SNOW:" + sid)
+        assert binding.source_parameters == {} and binding.source_version == current.version
+    assert all(r["action"] == "unchanged" for r in configure(bus))
+    repo.close()
+
+
+async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_success(
+    tmp_path, monkeypatch
+):
+    from doxagent.message_bus_v2.collection_plane import observability
+    from doxagent.message_bus_v2.schema import AcquisitionFailure
+    from tests.test_content_enrichment_hub import _message
+    from tests.test_message_collection_plane import setup_plane
+
+    repo, bus, worker, _, store = setup_plane(tmp_path)
+    await worker.refresh(seeds=True)
+    args = next(iter(worker.desired.values()))
+    source, targets, unit, options = args
+    worker.states[(targets[0].binding_id, unit)]["state"].update(
+        last_capture_at=(utc_now() - timedelta(minutes=1)).isoformat(),
+        last_success_at=utc_now().isoformat(),
+    )
+
+    class Fallback:
+        async def poll(self, ctx):
+            e = request_started("GET", "https://example.com/rss", admitted=True)
+            e.update(status_code=200, response_received_at=utc_now().isoformat())
+            return PollResult(
+                messages=[_message(9181)],
+                acquisition_metadata={"validated_request_ids": []},
+                failures=[
+                    AcquisitionFailure(
+                        source_id=source.source_id,
+                        binding_id=targets[0].binding_id,
+                        ticker=targets[0].ticker,
+                        error_code="HTTP_LISTING_FAILED_RSS_FALLBACK",
+                        error_message="HTTP403; RSS still available",
+                        raw_hash="test",
+                        original_payload={},
+                    )
+                ],
+            )
+
+    worker.adapters = SimpleNamespace(resolve=lambda *a, **k: Fallback())
+    await worker.acquire(*args)
+    monkeypatch.setattr(observability, "store_from_environment", lambda: store)
+    projected = observability.binding_states()[targets[0].binding_id]
+    assert projected["status"] == "failed"
+    assert projected["last_error_message"] == "HTTP403; RSS still available"
+    state = store.states()[(targets[0].binding_id, unit)]["state"]
+    assert (
+        state["status"] == "failed"
+        and state["last_error_code"] == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+    )
+    with store.connect() as d:
+        assert (
+            d.execute(
+                "select status from cycles where status!='SCHEDULE' "
+                "order by finished_at desc limit 1"
+            ).fetchone()[0]
+            == "FAILED"
+        )
+    assert store.pending()  # Failure status never discards fallback news.
+
+
+async def test_known_coverage_gap_keeps_rss_without_wasting_a_shell_request():
+    http = Http(AssertionError("known incomplete page must not be refetched"))
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    result = await ListingAdapter(delegate, http).poll_shared(context("army_news_rss"))
+    assert result.failures and "coverage_review" in result.failures[0].error_message
+    assert not http.calls
+    delegate.poll_shared.assert_awaited_once()
+
+
+async def test_fallback_network_proof_is_separate_from_primary_cadence():
+    from doxagent.message_bus_v2.poll_trace import validate_listing
+
+    class Delegate:
+        async def poll_shared(self, context):
+            event = request_started("GET", "https://example.com/feed.xml", admitted=True)
+            event.update(status_code=200, response_received_at=utc_now().isoformat())
+            return PollResult(messages=rows("quantum_computing_report"))
+
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        result = await ListingAdapter(Delegate(), Http(capture(status=403))).poll_shared(context())
+        assert result.failures
+        assert [e["role"] for e in events] == ["listing", "rss_fallback"]
+        assert validate_listing(events) == []
+    finally:
+        REQUESTS.reset(token)
+
+
+def test_legacy_shared_projection_also_preserves_failure_and_old_freshness(tmp_path):
+    from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
+    from doxagent.message_bus_v2.schema import AcquisitionFailure
+
+    repo = MessageBusV2Repository(tmp_path / "legacy.db")
+    source = definition("quantum_computing_report")
+    binding = TickerSourceBinding(
+        binding_id="IONQ:quantum_computing_report", ticker="IONQ", source_id=source.source_id
+    )
+    scheduler = GlobalPollScheduler.__new__(GlobalPollScheduler)
+    scheduler.repository = repo
+    repo.save_source(source)
+    repo.save_binding(binding)
+    old = utc_now() - timedelta(minutes=2)
+    repo.save_poll_state(
+        repo.get_poll_state(binding).model_copy(
+            update={"last_success_at": old, "last_capture_at": old}
+        )
+    )
+    failure = AcquisitionFailure(
+        source_id=source.source_id,
+        binding_id=binding.binding_id,
+        ticker=binding.ticker,
+        error_code="HTTP_LISTING_FAILED_RSS_FALLBACK",
+        error_message="403",
+        raw_hash="failure",
+        original_payload={},
+    )
+    scheduler._record_distribution_poll(
+        source,
+        [(binding, 1, {})],
+        {"created_at": utc_now().isoformat(), "mode": "REALTIME", "coverage": "PARTIAL"},
+        observed_at=utc_now(),
+        coverage="PARTIAL",
+        discovery_failure=failure,
+    )
+    state = repo.get_poll_unit_state(binding, "SHARED")
+    assert state.status.value == "failed"
+    assert state.last_success_at == old and state.last_capture_at == old
+    assert state.last_error_code == failure.error_code
+    assert state.last_error_message == "403"
+    repo.close()

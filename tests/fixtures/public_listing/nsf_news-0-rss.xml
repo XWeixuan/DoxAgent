@@ -1,0 +1,27 @@
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xml:base="https://www.nsf.gov/">
+  <channel>
+    <title>NSF News</title>
+    <link>https://www.nsf.gov/</link>
+    <description>News posted on the NSF website</description>
+    <language>en</language>
+    
+    <item>
+  <title>Podcast: The laser that could break the laws of physics</title>
+  <link>https://www.nsf.gov/news/podcast-laser-could-break-laws-physics</link>
+  <description>  U.S. National Science Foundation-supported researcher Jonathan Zuegel discusses the future of high-powered laser research in the United States, the ambitious NSF Optical Parametric Amplifier Line (NSF OPAL) laser facility. NSF OPAL is designed to…
+
+</description>
+  <pubDate>Mon, 02 Nov 2026 16:07:52 -0500</pubDate>
+    <dc:creator>NSF</dc:creator>
+    <guid isPermaLink="false">https://www.nsf.gov/news/podcast-laser-could-break-laws-physics</guid>
+    </item>
+<item>
+  <title>Podcast: The future of electronics goes beyond circuit boards </title>
+  <link>https://www.nsf.gov/news/podcast-future-electronics-goes-beyond-circuit-boards</link>
+  <description>NSF-supported researcher Ethan Secor discusses a specialized additive manufacturing technique, the materials involved, and the resulting circuits that can be customized for complex 3D surfaces...</description>
+  <pubDate>Tue, 27 Oct 2026 16:23:58 -0400</pubDate>
+    <dc:creator>NSF</dc:creator>
+    <guid isPermaLink="false">https://www.nsf.gov/news/podcast-future-electronics-goes-beyond-circuit-boards</guid>
+    </item>
+</channel>
+</rss>

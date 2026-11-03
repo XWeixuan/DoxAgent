@@ -1,0 +1,184 @@
+[
+  {
+    "source_id": "data_center_frontier",
+    "index": 0,
+    "fixture": "data_center_frontier-0.html",
+    "url": "https://scorpia.graphql.aspire-ebm.com",
+    "parser": "frontier_api"
+  },
+  {
+    "source_id": "dod_contracts",
+    "index": 0,
+    "fixture": "dod_contracts-0.html",
+    "url": "https://www.war.gov/News/Contracts/",
+    "parser": "dod_contracts"
+  },
+  {
+    "source_id": "nsf_news",
+    "index": 0,
+    "fixture": "nsf_news-0.html",
+    "url": "https://www.nsf.gov/news",
+    "parser": "nsf"
+  },
+  {
+    "source_id": "army_news_rss",
+    "index": 0,
+    "fixture": "army_news_rss-0.html",
+    "url": "https://www.army.mil/news",
+    "parser": "army"
+  },
+  {
+    "source_id": "world_nuclear_news",
+    "index": 0,
+    "fixture": "world_nuclear_news-0.html",
+    "url": "https://www.world-nuclear-news.org/",
+    "parser": "wnn"
+  },
+  {
+    "source_id": "canary_media",
+    "index": 0,
+    "fixture": "canary_media-0.html",
+    "url": "https://www.canarymedia.com/articles",
+    "parser": "canary"
+  },
+  {
+    "source_id": "technews_hardware",
+    "index": 0,
+    "fixture": "technews_hardware-0.html",
+    "url": "https://technews.tw/category/semiconductor/",
+    "parser": "technews"
+  },
+  {
+    "source_id": "technews_hardware",
+    "index": 1,
+    "fixture": "technews_hardware-1.html",
+    "url": "https://technews.tw/category/ai/",
+    "parser": "technews"
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 0,
+    "fixture": "crn_cloud_security_datacenter-0.html",
+    "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud",
+    "parser": "crn"
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 1,
+    "fixture": "crn_cloud_security_datacenter-1.html",
+    "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security",
+    "parser": "crn"
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "index": 2,
+    "fixture": "crn_cloud_security_datacenter-2.html",
+    "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center",
+    "parser": "crn"
+  },
+  {
+    "source_id": "dod_releases",
+    "index": 0,
+    "fixture": "dod_releases-0.html",
+    "url": "https://www.war.gov/News/Releases/",
+    "parser": "dod_releases"
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "index": 0,
+    "fixture": "aviationweek_rss-0.html",
+    "url": "https://aviationweek.com/search",
+    "parser": "aviation_review"
+  },
+  {
+    "source_id": "utility_dive",
+    "index": 0,
+    "fixture": "utility_dive-0.html",
+    "url": "https://www.utilitydive.com/",
+    "parser": "utility"
+  },
+  {
+    "source_id": "etnews_rss",
+    "index": 0,
+    "fixture": "etnews_rss-0.html",
+    "url": "https://www.etnews.com/news/section.html?id1=06",
+    "parser": "etnews"
+  },
+  {
+    "source_id": "quantum_zeitgeist",
+    "index": 0,
+    "fixture": "quantum_zeitgeist-0.html",
+    "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=50&fields=ID,URL,title,date,excerpt,modified",
+    "parser": "wordpress"
+  },
+  {
+    "source_id": "huggingnews_rss",
+    "index": 0,
+    "fixture": "huggingnews_rss-0.html",
+    "url": "https://huggingnews.com/__data.json",
+    "parser": "hugging"
+  },
+  {
+    "source_id": "quantum_computing_report",
+    "index": 0,
+    "fixture": "quantum_computing_report-0.html",
+    "url": "https://quantumcomputingreport.com/news/",
+    "parser": "qcr"
+  },
+  {
+    "source_id": "tomshardware_rss",
+    "index": 0,
+    "fixture": "tomshardware_rss-0.html",
+    "url": "https://www.tomshardware.com/archive",
+    "parser": "toms"
+  },
+  {
+    "source_id": "dcd_infrastructure_rss",
+    "index": 0,
+    "fixture": "dcd_infrastructure_rss-0.html",
+    "url": "https://www.datacenterdynamics.com/en/news/?page=1",
+    "parser": "dcd"
+  },
+  {
+    "source_id": "thelec_semiconductors_rss",
+    "index": 0,
+    "fixture": "thelec_semiconductors_rss-0.html",
+    "url": "https://www.thelec.kr/news/articleList.html?sc_section_code=S1N2&view_type=sm",
+    "parser": "thelec"
+  },
+  {
+    "source_id": "defensescoop_drones",
+    "index": 0,
+    "fixture": "defensescoop_drones-0.html",
+    "url": "https://defensescoop.com/tag/drones/",
+    "parser": "scoop"
+  },
+  {
+    "source_id": "defensescoop_drones",
+    "index": 1,
+    "fixture": "defensescoop_drones-1.html",
+    "url": "https://defensescoop.com/tag/counter-drone/",
+    "parser": "scoop"
+  },
+  {
+    "source_id": "enterprise_apps_official_rss",
+    "index": 0,
+    "fixture": "enterprise_apps_official_rss-0.html",
+    "url": "https://news.sap.com/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+    "parser": "wp_rest"
+  },
+  {
+    "source_id": "enterprise_apps_official_rss",
+    "index": 1,
+    "fixture": "enterprise_apps_official_rss-1.html",
+    "url": "https://www.salesforce.com/news/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+    "parser": "wp_rest"
+  },
+  {
+    "source_id": "enterprise_apps_official_rss",
+    "index": 2,
+    "fixture": "enterprise_apps_official_rss-2.html",
+    "url": "https://newsroom.workday.com/press-releases",
+    "parser": "workday"
+  }
+]

@@ -171,6 +171,7 @@ class AcquisitionStore:
                 "last_attempt_at",
                 "last_latency_ms",
                 "last_error_code",
+                "last_error_message",
                 "next_dispatch_at",
             )
         }

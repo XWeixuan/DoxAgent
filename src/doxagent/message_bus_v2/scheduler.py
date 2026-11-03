@@ -590,11 +590,15 @@ class GlobalPollScheduler:
 
     def work_units(self, source, binding, state, now, *, include_all=False):
         from .pressure import background_allowed
+        from .public_listing import enabled as listing_enabled
+        from .public_listing import endpoint_units as listing_units
 
         units = [
             ("SHARED" if source.acquisition_mode.shared_distribution else "HEAD", {})
         ]
-        if source.adapter_ref == "builtin:newswire_massive@1":
+        if listing_enabled(source):
+            units = [(unit, {}) for unit in listing_units(source)]
+        elif source.adapter_ref == "builtin:newswire_massive@1":
             from .newswire_sources import endpoint_units
             units = [(unit, {}) for unit in endpoint_units(source)]
         elif source.adapter_ref == "builtin:technology_public@1":
@@ -1260,7 +1264,13 @@ class GlobalPollScheduler:
                     deadline_seconds=self.service.enrichment_retry_deadline_seconds,
                     pipeline_version=self.service.enrichment_pipeline_version,
                 )
-            if mode == "REALTIME" and (result.window_done or getattr(self, "_long_running", False)):
+            discovery_failure = next(
+                (f for f in result.failures
+                 if f.error_code == "HTTP_LISTING_FAILED_RSS_FALLBACK"), None
+            )
+            if mode == "REALTIME" and (
+                result.window_done or getattr(self, "_long_running", False) or discovery_failure
+            ):
                 await self.storage_call(
                     self._record_distribution_poll,
                     source,
@@ -1271,6 +1281,7 @@ class GlobalPollScheduler:
                     observed_at=utc_now(),
                     acquisition_checkpoint=result.next_checkpoint,
                     acquisition_unit=acquisition_unit,
+                    discovery_failure=discovery_failure,
                 )
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
@@ -1346,6 +1357,7 @@ class GlobalPollScheduler:
         observed_at: datetime | None = None,
         acquisition_checkpoint: JsonObject | None = None,
         acquisition_unit: str = "SHARED",
+        discovery_failure=None,
     ) -> None:
         """Project one shared acquisition onto its subscribed ticker poll states."""
         with self.repository.atomic_intake():
@@ -1396,16 +1408,25 @@ class GlobalPollScheduler:
                         update={
                             "source_definition_version": source.version,
                             "binding_version": binding.version,
-                            "last_capture_at": observed_at,
-                            "status": PollStatus.PARTIAL if partial else PollStatus.SUCCEEDED,
+                            "last_capture_at": (
+                                previous.last_capture_at if discovery_failure else observed_at
+                            ),
+                            "status": (PollStatus.FAILED if discovery_failure
+                                       else PollStatus.PARTIAL if partial else PollStatus.SUCCEEDED),
                             "last_attempt_at": observed_at,
-                            "last_success_at": observed_at,
-                            "last_failure_at": observed_at if partial else None,
-                            "failure_since": observed_at if partial else None,
-                            "last_error_code": "SOURCE_WINDOW_PARTIAL" if partial else None,
-                            "last_error_message": "Shared source coverage is partial"
-                            if partial
-                            else None,
+                            "last_success_at": (
+                                previous.last_success_at if discovery_failure else observed_at
+                            ),
+                            "last_failure_at": observed_at if partial or discovery_failure else None,
+                            "failure_since": observed_at if partial or discovery_failure else None,
+                            "last_error_code": (
+                                discovery_failure.error_code if discovery_failure
+                                else "SOURCE_WINDOW_PARTIAL" if partial else None
+                            ),
+                            "last_error_message": (
+                                discovery_failure.error_message if discovery_failure
+                                else "Shared source coverage is partial" if partial else None
+                            ),
                             "consecutive_failures": 0,
                             "target_due_at": next_due,
                             "next_dispatch_at": next_due,

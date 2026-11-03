@@ -1,0 +1,49 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
+
+<channel>
+	<title>AI 人工智慧 – TechNews 科技新報</title>
+	<atom:link href="https://technews.tw/category/ai/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://technews.tw</link>
+	<description>市場和業內人士關心的趨勢、內幕與新聞</description>
+	<lastBuildDate>Tue, 03 Nov 2026 07:00:50 +0000</lastBuildDate>
+	<language>zh-TW</language>
+	<sy:updatePeriod>hourly</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=4.7.2</generator>
+	<item>
+		<title>看不懂卻更容易相信？揭露生成式 AI 的文字雙面刃：艱澀語法與流暢幻覺</title>
+		<link>https://technews.tw/2026/11/03/ai-generated-text-harder-to-understand/</link>
+		<pubDate>Tue, 03 Nov 2026 06:10:58 +0000</pubDate>
+		<dc:creator>TechNews 編輯台</dc:creator>
+				<category>AI 人工智慧</category>
+		<category>人力資源</category>
+		<category>數位內容</category>
+		<category>AI 代理</category>
+		<category>AI 文字</category>
+		<category>AI 生成</category>
+		<category>聊天機器人</category>
+		<category>語言</category>
+
+		<guid isPermaLink="false">https://technews.tw/?p=1644138</guid>
+		<description>一項聚焦於心理語言學的最新分析指出，人工智慧（AI）生成的回應，正變得越來越難讓人類在第一時間快速理解。研究觀 [&amp;#8230;]</description>
+		</item>
+		<item>
+		<title>AI 成為理財神隊友，元大證券如何把 Gemini Enterprise 帶進投資人的日常？</title>
+		<link>https://finance.technews.tw/2026/11/03/ai-gemini-enterprise-yuanta-invest/</link>
+		<pubDate>Tue, 03 Nov 2026 06:00:45 +0000</pubDate>
+		<dc:creator>TechNews</dc:creator>
+				<category>AI 人工智慧</category>
+		<category>Gemini</category>
+		<category>理財</category>
+		<category>AI 投資理財</category>
+		<category>AI 理財工具</category>
+		<category>Gemini Enterprise</category>
+		<category>Google Cloud</category>
+		<category>MBTI</category>
+		<category>元大證券</category>
+
+		<guid isPermaLink="false">https://technews.tw/?p=1640701</guid>
+		<description>你可能也有這個經驗：早上通勤打開手機，財經快訊、法人報告、公司公告與朋友轉傳的投資消息接連跳出；社群上有人喊著 [&amp;#8230;]</description>
+		</item>
+		</channel>
+</rss>

@@ -1,0 +1,32 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Canary Media</title>
+        <link>https://www.canarymedia.com/</link>
+        <atom:link href="https://www.canarymedia.com/rss.rss" rel="self" type="application/rss+xml"/>
+        <description>The leading newsroom covering the transition to clean energy, electrification and climate solutions. We report on how the world is decarbonizing with a critical focus on finding out what works and what doesn't.</description>
+        <language>en-US</language>
+        <pubDate>Tue, 03 Nov 2026 14:33:56 -0500</pubDate>
+        <lastBuildDate>Tue, 03 Nov 2026 14:33:56 -0500</lastBuildDate>
+
+                                            <item>
+                <title>Here’s how solar and wind developers can hold on to tax credits</title>
+                <link>https://www.canarymedia.com/articles/sponsored/heres-how-solar-and-wind-developers-can-hold-onto-tax-credits</link>
+                <pubDate>Tue, 03 Nov 2026 08:35:00 -0500</pubDate>
+                <guid>https://www.canarymedia.com/articles/sponsored/heres-how-solar-and-wind-developers-can-hold-onto-tax-credits</guid>
+                <description>
+                     When Congress passed the Inflation Reduction Act (IRA) in August 2022, solar and wind developers celebrated something that had historically been elusive: long-term certainty about federal tax incentives. Companies accustomed to the waxing and waning of political support for the investment tax credit (ITC) and…
+                </description>
+                <author/>
+            </item>
+                                            <item>
+                <title>Why batteries, not gas plants, should be data centers' first choice</title>
+                <link>https://www.canarymedia.com/articles/batteries/batteries-not-gas-plants-for-data-centers</link>
+                <pubDate>Tue, 03 Nov 2026 03:30:00 -0500</pubDate>
+                <guid>https://www.canarymedia.com/articles/batteries/batteries-not-gas-plants-for-data-centers</guid>
+                <description>
+                     Developers and utilities are building tons of gas generation to power the data center boom. It’s an expansion that could cost them and the rest of us dearly, both in terms of climate change and money that may end up wasted if computing demand fails to materialize.  But there’s a cleaner, cheaper, and faster-to-deploy…
+                </description>
+                <author>Jeff St. John</author>
+            </item>
+                                            </channel>
+</rss>

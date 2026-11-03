@@ -1,0 +1,54 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
+
+<channel>
+	<title>Quantum Computing Report</title>
+	<atom:link href="https://quantumcomputingreport.com/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://quantumcomputingreport.com/</link>
+	<description>Where Qubits Entangle with Commerce</description>
+	<lastBuildDate>Tue, 03 Nov 2026 15:17:09 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.4</generator>
+	<item>
+		<title>Universal Quantum Details Iterative Redecode Scheme for Fast Transversal Fault-Tolerant Logic</title>
+		<link>https://quantumcomputingreport.com/universal-quantum-details-iterative-redecode-scheme-for-fast-transversal-fault-tolerant-logic/</link>
+					<comments>https://quantumcomputingreport.com/universal-quantum-details-iterative-redecode-scheme-for-fast-transversal-fault-tolerant-logic/#respond</comments>
+		
+		<dc:creator>Mohamed Abdel-Kareem</dc:creator>
+		<pubDate>Tue, 03 Nov 2026 15:17:05 +0000</pubDate>
+				<category>Uncategorized</category>
+		<guid isPermaLink="false">https://quantumcomputingreport.com/?p=48391</guid>
+
+					<description>&lt;p&gt;Universal Quantum's new Iterative Redecode Scheme (IRS) addresses the error-correlation bottleneck in fast transversal quantum logic. This decoding architecture, detailed in a paper by Mark Webber and colleagues, uses a propagation-assisted local (PAL) framework to coordinate corrections across logical blocks, resulting in significantly lower logical error rates compared to other decoders. The IRS achieves this by alternating local Minimum-Weight Perfect Matching (MWPM) with deterministic Pauli-frame propagation, allowing for efficient and accurate error correction in fault-tolerant quantum hardware.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://quantumcomputingreport.com/universal-quantum-details-iterative-redecode-scheme-for-fast-transversal-fault-tolerant-logic/"&gt;Universal Quantum Details Iterative Redecode Scheme for Fast Transversal Fault-Tolerant Logic&lt;/a&gt; appeared first on &lt;a href="https://quantumcomputingreport.com"&gt;Quantum Computing Report&lt;/a&gt;.&lt;/p&gt;
+</description>
+		
+					<wfw:commentRss>https://quantumcomputingreport.com/universal-quantum-details-iterative-redecode-scheme-for-fast-transversal-fault-tolerant-logic/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Universal Quantum Unveils the iQPU: Foundry-Fabricated Trapped-Ion Processor Engineered for Modular Scaling</title>
+		<link>https://quantumcomputingreport.com/universal-quantum-unveils-the-iqpu-foundry-fabricated-trapped-ion-processor-engineered-for-modular-scaling/</link>
+					<comments>https://quantumcomputingreport.com/universal-quantum-unveils-the-iqpu-foundry-fabricated-trapped-ion-processor-engineered-for-modular-scaling/#respond</comments>
+		
+		<dc:creator>Mohamed Abdel-Kareem</dc:creator>
+		<pubDate>Tue, 03 Nov 2026 15:08:39 +0000</pubDate>
+				<category>Uncategorized</category>
+		<guid isPermaLink="false">https://quantumcomputingreport.com/?p=48387</guid>
+
+					<description>&lt;p&gt;Universal Quantum has launched the iQPU, a foundry-fabricated trapped-ion processor designed for modular scaling. This integrated quantum processing unit aims to eliminate wiring bottlenecks in large-scale trapped-ion systems by integrating control electronics directly on-chip and using a proprietary interconnect technology called UQConnect to link multiple iQPU modules. The iQPU will be used in two quantum computers for the German Aerospace Center (DLR) to address challenges in space mission planning, climate modeling, and materials design.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://quantumcomputingreport.com/universal-quantum-unveils-the-iqpu-foundry-fabricated-trapped-ion-processor-engineered-for-modular-scaling/"&gt;Universal Quantum Unveils the iQPU: Foundry-Fabricated Trapped-Ion Processor Engineered for Modular Scaling&lt;/a&gt; appeared first on &lt;a href="https://quantumcomputingreport.com"&gt;Quantum Computing Report&lt;/a&gt;.&lt;/p&gt;
+</description>
+		
+					<wfw:commentRss>https://quantumcomputingreport.com/universal-quantum-unveils-the-iqpu-foundry-fabricated-trapped-ion-processor-engineered-for-modular-scaling/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		</channel>
+</rss>

@@ -1,0 +1,31 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>
+<title>Home | Data Center Frontier</title>
+<link>https://www.datacenterfrontier.com/</link>
+<atom:link href="https://www.datacenterfrontier.com/__rss/website-scheduled-content.xml?input=%7B%22sectionAlias%22%3A%22home%22%7D" rel="self" type="application/rss+xml"/>
+<description>Data Center Frontier reports on issues related to telecom, data centers, cloud computing, and the future of the internet for those working in facilities powering the cloud.</description>
+<language>EN</language>
+<item>
+<title>Data Center Jobs: Engineering, Construction, Commissioning, Sales, Field Service and Facility Tech Jobs Available in Major Data Center Hotspots</title>
+<link>https://www.datacenterfrontier.com/sponsored/article/55416100/data-center-jobs-engineering-construction-commissioning-sales-field-service-and-facility-tech-jobs-available-in-major-data-center-hotspots</link>
+<guid isPermaLink="true">https://www.datacenterfrontier.com/sponsored/article/55416100/data-center-jobs-engineering-construction-commissioning-sales-field-service-and-facility-tech-jobs-available-in-major-data-center-hotspots</guid>
+<description>Each month Data Center Frontier, in partnership with Pkaza, posts some of the hottest data center career opportunities in the market. Here’s a look at some of the latest data center jobs posted on the Data Center Frontier jobs board, powered by Pkaza Critical Facilities Recruiting.</description>
+<pubDate>03 Nov 2026 11:40:00 GMT</pubDate>
+<author>Kathy Hitchens</author>
+<category domain="datacenterfrontier.com">Sponsored</category>
+<media:content medium="image" url="https://img.datacenterfrontier.com/files/base/ebm/datacenterfrontier/image/2026/11/6ae8f4a00113625b684a53df-vlphotopro_shutterstock_2463386913_copy_2.png"/>
+<media:credit>VL-PhotoPro/Shutterstock.com</media:credit>
+<media:description>&lt;p&gt;Source: VL-PhotoPro/Shutterstock.com&lt;/p&gt;</media:description>
+</item>
+<item>
+<title>OCP 2026: Cooler Master Scales Liquid Cooling from Cold Plates to 2.5 MW CDUs</title>
+<link>https://www.datacenterfrontier.com/cooling/article/55415936/ocp-2026-cooler-master-scales-liquid-cooling-from-cold-plates-to-25-mw-cdus</link>
+<guid isPermaLink="true">https://www.datacenterfrontier.com/cooling/article/55415936/ocp-2026-cooler-master-scales-liquid-cooling-from-cold-plates-to-25-mw-cdus</guid>
+<description>An inside look at Cooler Master&amp;apos;s expanding AI cooling portfolio reveals a focus on modular design, serviceability, and the equipment needed to deploy liquid cooling at data center scale.</description>
+<pubDate>02 Nov 2026 16:52:34 GMT</pubDate>
+<author>Matt Vincent</author>
+<category domain="datacenterfrontier.com">Cooling</category>
+<media:content medium="image" url="https://img.datacenterfrontier.com/files/base/ebm/datacenterfrontier/image/2026/11/6ae8bc2fa65a28d3b6d76c4a-coolermastercdu.png"/>
+<media:credit>Cooler Master</media:credit>
+<media:description>&lt;p&gt;The Cooler Master 300 kW AALC (Air-Assisted Liquid Cooling) CDU offers high-heat-load management for IT hardware, dissipating up to 300 kW of thermal energy. This liquid-to-air CDU is designed for deployment in existing data centers without built-in liquid cooling infrastructure.&amp;nbsp;&lt;/p&gt;</media:description>
+</item>
+</channel></rss>

@@ -1,0 +1,46 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
+
+<channel>
+	<title>半導體 – TechNews 科技新報</title>
+	<atom:link href="https://technews.tw/category/semiconductor/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://technews.tw</link>
+	<description>市場和業內人士關心的趨勢、內幕與新聞</description>
+	<lastBuildDate>Tue, 03 Nov 2026 07:00:50 +0000</lastBuildDate>
+	<language>zh-TW</language>
+	<sy:updatePeriod>hourly</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=4.7.2</generator>
+	<item>
+		<title>記憶體缺貨衝擊，Mac、iPad 供貨吃緊至年底</title>
+		<link>https://technews.tw/2026/11/03/memory-mac-ipad-in-short-supply/</link>
+		<pubDate>Tue, 03 Nov 2026 06:48:49 +0000</pubDate>
+		<dc:creator>邱 倢芯</dc:creator>
+				<category>Apple</category>
+		<category>科技生活</category>
+		<category>記憶體</category>
+		<category>iPad</category>
+		<category>Mac</category>
+		<category>蘋果</category>
+		<category>記憶體荒</category>
+
+		<guid isPermaLink="false">https://technews.tw/?p=1644195</guid>
+		<description>全球記憶體供應緊張持續影響消費性電子產品市場，即使是蘋果也難以避免。蘋果在最新一季財報電話會議中證實，Mac  [&amp;#8230;]</description>
+		</item>
+		<item>
+		<title>安森美財報優預期  將收購 Ferric、強化晶片供電</title>
+		<link>https://finance.technews.tw/2026/11/03/onsemi-posts-strong-earnings-and-agrees-to-acquire-ferric/</link>
+		<pubDate>Tue, 03 Nov 2026 06:00:21 +0000</pubDate>
+		<dc:creator>MoneyDJ</dc:creator>
+				<category>半導體</category>
+		<category>財報</category>
+		<category>財經</category>
+		<category>Ferric</category>
+		<category>ON Semiconductor</category>
+		<category>安森美</category>
+		<category>收購</category>
+
+		<guid isPermaLink="false">https://technews.tw/?p=1644111</guid>
+		<description>美國功率半導體大廠安森美（ON Semiconductor）財報優於預期，並將斥資 6 億美元收購整合式穩壓器 [&amp;#8230;]</description>
+		</item>
+		</channel>
+</rss>

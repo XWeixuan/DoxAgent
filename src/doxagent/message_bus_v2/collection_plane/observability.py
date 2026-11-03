@@ -53,10 +53,14 @@ def binding_states(tickers=None):
         captures = [s.get("last_capture_at") for s in states]
         healthy = all(s.get("status") == "succeeded" for s in states)
         errors = [s.get("last_error_code") for s in states if s.get("last_error_code")]
+        fallback_failed = "HTTP_LISTING_FAILED_RSS_FALLBACK" in errors
         result[binding] = {
             'collection_active': bool(active),
             "collection_observed_at": observed,
-            "status": "succeeded" if healthy else "partial" if any(captures) else "failed",
+            "status": (
+                "failed" if fallback_failed else "succeeded" if healthy
+                else "partial" if any(captures) else "failed"
+            ),
             "last_capture_at": min(captures) if all(captures) else None,
             "last_success_at": min(s["last_success_at"] for s in states)
             if all(s.get("last_success_at") for s in states)
@@ -66,6 +70,10 @@ def binding_states(tickers=None):
                 sum(s.get("last_latency_ms") or 0 for s in states) / len(states)
             ),
             "last_error_code": errors[0] if errors else None,
+            "last_error_message": next(
+                (s.get("last_error_message") for s in states
+                 if s.get("last_error_code") == "HTTP_LISTING_FAILED_RSS_FALLBACK"), None
+            ),
             "target_due_at": min((s.get("next_dispatch_at") for s in states if s.get('next_dispatch_at')),default=None) if active else None,
             "next_dispatch_at": min((s.get("next_dispatch_at") for s in states if s.get('next_dispatch_at')),default=None) if active else None,
             "last_window_coverage": "COMPLETE" if healthy else "PARTIAL",

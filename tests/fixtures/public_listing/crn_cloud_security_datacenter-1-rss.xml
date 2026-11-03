@@ -1,0 +1,34 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>CRN.com Security Feed</title>
+        <link>https://www.crn.com/news/security/</link>
+        <description>CRN RSS Feed</description>
+        <lastBuildDate>Tue, 03 Nov 2026 19:56:12 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>TCC RSS Feed Worker (Cloudflare) - crn-rss</generator>
+        <language>en</language>
+        <atom:link href="https://www.crn.com/news/security/rss.xml" rel="self" type="application/rss+xml"/>
+        <category>Security</category>
+        
+        <item>
+            <title>The 25 Hottest Edge Security Companies: 2026 Edge Computing 100</title>
+            <link>https://www.crn.com/news/security/2026/the-25-hottest-edge-security-companies-2026-edge-computing-100</link>
+            <guid>https://www.crn.com/news/security/2026/the-25-hottest-edge-security-companies-2026-edge-computing-100</guid>
+            <pubDate>Tue, 03 Nov 2026 15:00:00 GMT</pubDate>
+            <description>As part of CRN’s Edge Computing 100 for 2026, here are 25 security vendors working to protect users and data across IT, OT and IoT environments.</description>
+            <category>Security</category>
+            <author>kalspach@thechannelcompany.com (Kyle Alspach)</author>
+            <enclosure url="https://www.crn.com/news/security/2026/media_1cc8fcac80fcd7924b5d1f8dbee1f5b317a0d45d4.png" length="0" type="image/png"/>
+        </item>
+        <item>
+            <title>Arctic Wolf CEO Nick Schneider: AI, Vulnerability Threats Changing In 2027</title>
+            <link>https://www.crn.com/news/security/2026/arctic-wolf-ceo-nick-schneider-ai-vulnerability-threats-changing-in-2027</link>
+            <guid>https://www.crn.com/news/security/2026/arctic-wolf-ceo-nick-schneider-ai-vulnerability-threats-changing-in-2027</guid>
+            <pubDate>Mon, 02 Nov 2026 14:36:00 GMT</pubDate>
+            <description>As 2027 approaches, we have every reason to expect that AI-driven exploitation of vulnerabilities will be ‘more of the norm than the exception,’ Arctic Wolf CEO Nick Schneider says during the latest episode of CRN’s Security or Else! podcast.</description>
+            <category>Security</category>
+            <author>kalspach@thechannelcompany.com (Kyle Alspach)</author>
+            <enclosure url="https://www.crn.com/news/security/2026/media_1d55fd9e14c3f03077cc3e23dad5467b632c5eea8.png" length="0" type="image/png"/>
+        </item>
+        </channel>
+</rss>
