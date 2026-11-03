@@ -1,52 +1,52 @@
 <rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
 
 <channel>
-	<title>SAP News Center</title>
-	<atom:link href="https://news.sap.com/feed/" rel="self" type="application/rss+xml"/>
-	<link>https://news.sap.com/</link>
-	<description>Company &amp; Customer Stories | Press Room</description>
-	<lastBuildDate>Tue, 03 Nov 2026 10:42:34 +0000</lastBuildDate>
-	<language>en-US</language>
-	<sy:updatePeriod>
-	hourly	</sy:updatePeriod>
-	<sy:updateFrequency>
-	1	</sy:updateFrequency>
-	<generator>https://wordpress.org/?v=7.1.4</generator>
-	<item>
-		<title>SAP Positioned as a Market Shaper in the Inaugural 2026 Gartner® Emerging Market Quadrant for Integrated Supply Chain AI Agents – Established Vendors</title>
-		<link>https://news.sap.com/2026/11/sap-a-market-shaper-inaugural-2026-gartner-emerging-market-quadrant-integrated-supply-chain-ai-agents-established-vendors/</link>
-		
-		<dc:creator>Devesh Mishra</dc:creator>
-		<pubDate>Tue, 03 Nov 2026 13:15:00 +0000</pubDate>
-				<category>Artificial Intelligence</category>
-		<category>Supply chain management</category>
-		<category>Agentic AI</category>
-		<category>Autonomous SCM</category>
-		<category>Gartner</category>
-		<category>Joule</category>
-		<category>SAP Autonomous Suite</category>
-		<guid isPermaLink="false">https://news.sap.com/?p=249342</guid>
+    <title>SAP News Center</title>
+    <atom:link href="https://news.sap.com/feed/" rel="self" type="application/rss+xml"/>
+    <link>https://news.sap.com/</link>
+    <description>Company &amp; Customer Stories | Press Room</description>
+    <lastBuildDate>Tue, 03 Nov 2026 10:42:34 +0000</lastBuildDate>
+    <language>en-US</language>
+    <sy:updatePeriod>
+    hourly  </sy:updatePeriod>
+    <sy:updateFrequency>
+    1   </sy:updateFrequency>
+    <generator>https://wordpress.org/?v=7.1.4</generator>
+    <item>
+        <title>SAP Positioned as a Market Shaper in the Inaugural 2026 Gartner® Emerging Market Quadrant for Integrated Supply Chain AI Agents – Established Vendors</title>
+        <link>https://news.sap.com/2026/11/sap-a-market-shaper-inaugural-2026-gartner-emerging-market-quadrant-integrated-supply-chain-ai-agents-established-vendors/</link>
 
-					<description>The supply chain AI conversation is shifting.</description>
-										</item>
-		<item>
-		<title>Business Networks Harness Agentic AI to Bolster Collaboration and Operational Resilience Among Trading Partners</title>
-		<link>https://news.sap.com/2026/11/business-networks-harness-agentic-ai-collaboration-operational-resilience/</link>
-		
-		<dc:creator>Jörn Keller</dc:creator>
-		<pubDate>Tue, 03 Nov 2026 12:15:00 +0000</pubDate>
-				<category>Artificial Intelligence</category>
-		<category>Business network</category>
-		<category>Spend management</category>
-		<category>Supply chain management</category>
-		<category>AI</category>
-		<category>Asset management</category>
-		<category>Logistics</category>
-		<category>Procurement</category>
-		<category>SAP Business Network</category>
-		<guid isPermaLink="false">https://news.sap.com/?p=248770</guid>
+        <dc:creator>Devesh Mishra</dc:creator>
+        <pubDate>Tue, 03 Nov 2026 13:15:00 +0000</pubDate>
+                <category>Artificial Intelligence</category>
+        <category>Supply chain management</category>
+        <category>Agentic AI</category>
+        <category>Autonomous SCM</category>
+        <category>Gartner</category>
+        <category>Joule</category>
+        <category>SAP Autonomous Suite</category>
+        <guid isPermaLink="false">https://news.sap.com/?p=249342</guid>
 
-					<description>The vision of SAP Business Network is to become the intelligence and execution layer for commerce between companies.</description>
-										</item>
-		</channel>
+                    <description>The supply chain AI conversation is shifting.</description>
+                                        </item>
+        <item>
+        <title>Business Networks Harness Agentic AI to Bolster Collaboration and Operational Resilience Among Trading Partners</title>
+        <link>https://news.sap.com/2026/11/business-networks-harness-agentic-ai-collaboration-operational-resilience/</link>
+
+        <dc:creator>Jörn Keller</dc:creator>
+        <pubDate>Tue, 03 Nov 2026 12:15:00 +0000</pubDate>
+                <category>Artificial Intelligence</category>
+        <category>Business network</category>
+        <category>Spend management</category>
+        <category>Supply chain management</category>
+        <category>AI</category>
+        <category>Asset management</category>
+        <category>Logistics</category>
+        <category>Procurement</category>
+        <category>SAP Business Network</category>
+        <guid isPermaLink="false">https://news.sap.com/?p=248770</guid>
+
+                    <description>The vision of SAP Business Network is to become the intelligence and execution layer for commerce between companies.</description>
+                                        </item>
+        </channel>
 </rss>

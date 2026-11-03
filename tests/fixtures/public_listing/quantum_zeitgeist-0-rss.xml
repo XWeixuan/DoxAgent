@@ -1,67 +1,67 @@
 <rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
 
 <channel>
-	<title>Quantum Zeitgeist</title>
-	<atom:link href="https://quantumzeitgeist.com/feed/" rel="self" type="application/rss+xml"/>
-	<link>https://quantumzeitgeist.com</link>
-	<description>Quantum Computing News &amp; Analysis</description>
-	<lastBuildDate>Tue, 03 Nov 2026 09:41:20 +0000</lastBuildDate>
-	<language>en-GB</language>
-	<sy:updatePeriod>
-	hourly	</sy:updatePeriod>
-	<sy:updateFrequency>
-	1	</sy:updateFrequency>
-	
+    <title>Quantum Zeitgeist</title>
+    <atom:link href="https://quantumzeitgeist.com/feed/" rel="self" type="application/rss+xml"/>
+    <link>https://quantumzeitgeist.com</link>
+    <description>Quantum Computing News &amp; Analysis</description>
+    <lastBuildDate>Tue, 03 Nov 2026 09:41:20 +0000</lastBuildDate>
+    <language>en-GB</language>
+    <sy:updatePeriod>
+    hourly  </sy:updatePeriod>
+    <sy:updateFrequency>
+    1   </sy:updateFrequency>
+
 
 <image>
-	<url>https://quantumzeitgeist.com/wp-content/uploads/qz-site-icon-512-32x32.jpg</url>
-	<title>Quantum Zeitgeist</title>
-	<link>https://quantumzeitgeist.com</link>
-	<width>32</width>
-	<height>32</height>
-</image> 
-<site xmlns="com-wordpress:feed-additions:1">212105860</site>	<item>
-		<title>SoftBank Leads Six Firms in $130M Quantum Materials R&amp;D Project</title>
-		<link>https://quantumzeitgeist.com/nedo-six-firms-quantum-materials-130m/</link>
-		
-		<dc:creator>The Neuron</dc:creator>
-		<pubDate>Tue, 03 Nov 2026 09:41:18 +0000</pubDate>
-				<category>Quantum Applications</category>
-		<category>Deep Tech</category>
-		<category>Machine Learning</category>
-		<category>materials development</category>
-		<category>NEDO</category>
-		<category>Quantum Computing</category>
-		<category>SoftBank</category>
-		<guid isPermaLink="false">https://quantumzeitgeist.com/?p=366448</guid>
+    <url>https://quantumzeitgeist.com/wp-content/uploads/qz-site-icon-512-32x32.jpg</url>
+    <title>Quantum Zeitgeist</title>
+    <link>https://quantumzeitgeist.com</link>
+    <width>32</width>
+    <height>32</height>
+</image>
+<site xmlns="com-wordpress:feed-additions:1">212105860</site>   <item>
+        <title>SoftBank Leads Six Firms in $130M Quantum Materials R&amp;D Project</title>
+        <link>https://quantumzeitgeist.com/nedo-six-firms-quantum-materials-130m/</link>
 
-					<description>TOPPAN Holdings, Asahi Kasei, and four other firms will jointly develop a quantum-computing materials platform, selected by NEDO for 2026-2028.</description>
-		
-		
-		
-		<media:content url="https://quantumzeitgeist.com/wp-content/uploads/softbank-leads-six-firms-in-130m-quantum-materials-logo.jpg" medium="image" type="image/jpeg" width="1200" height="675"><media:title type="plain">SoftBank Leads Six Firms in $130M Quantum Materials R&amp;D Project</media:title></media:content>
+        <dc:creator>The Neuron</dc:creator>
+        <pubDate>Tue, 03 Nov 2026 09:41:18 +0000</pubDate>
+                <category>Quantum Applications</category>
+        <category>Deep Tech</category>
+        <category>Machine Learning</category>
+        <category>materials development</category>
+        <category>NEDO</category>
+        <category>Quantum Computing</category>
+        <category>SoftBank</category>
+        <guid isPermaLink="false">https://quantumzeitgeist.com/?p=366448</guid>
+
+                    <description>TOPPAN Holdings, Asahi Kasei, and four other firms will jointly develop a quantum-computing materials platform, selected by NEDO for 2026-2028.</description>
+
+
+
+        <media:content url="https://quantumzeitgeist.com/wp-content/uploads/softbank-leads-six-firms-in-130m-quantum-materials-logo.jpg" medium="image" type="image/jpeg" width="1200" height="675"><media:title type="plain">SoftBank Leads Six Firms in $130M Quantum Materials R&amp;D Project</media:title></media:content>
 <media:thumbnail url="https://quantumzeitgeist.com/wp-content/uploads/softbank-leads-six-firms-in-130m-quantum-materials-logo.jpg" width="1200" height="675"/>
-<post-id xmlns="com-wordpress:feed-additions:1">366448</post-id>	</item>
-		<item>
-		<title>HPT Vietnam to deliver SpecterAI’s post-quantum migration services</title>
-		<link>https://quantumzeitgeist.com/post-quantum-migration-hpt-vietnam-specterais/</link>
-		
-		<dc:creator>Dr. Donovan</dc:creator>
-		<pubDate>Tue, 03 Nov 2026 09:41:15 +0000</pubDate>
-				<category>Quantum Security</category>
-		<category>Quantum Cryptography</category>
-		<category>HPT</category>
-		<category>HPT Vietnam</category>
-		<category>post-quantum cryptography</category>
-		<category>SpecterAI</category>
-		<guid isPermaLink="false">https://quantumzeitgeist.com/?p=366432</guid>
+<post-id xmlns="com-wordpress:feed-additions:1">366448</post-id>    </item>
+        <item>
+        <title>HPT Vietnam to deliver SpecterAI’s post-quantum migration services</title>
+        <link>https://quantumzeitgeist.com/post-quantum-migration-hpt-vietnam-specterais/</link>
 
-					<description>SpecterAI Quantum Security and HPT Vietnam Corporation signed detailed schedules and action roadmap on October 28, 2026, following an agreement concluded in June 2026. The partnership will bring post-quantum cryptography migration services and quantum security education to the Vietnamese market.</description>
-		
-		
-		
-		<media:content url="https://quantumzeitgeist.com/wp-content/uploads/hpt-vietnam-to-deliver-specterais-post-quantum-migration-scaled.jpg" medium="image" type="image/jpeg" width="2560" height="1707"><media:title type="plain">HPT Vietnam to deliver SpecterAI’s post-quantum migration services</media:title></media:content>
+        <dc:creator>Dr. Donovan</dc:creator>
+        <pubDate>Tue, 03 Nov 2026 09:41:15 +0000</pubDate>
+                <category>Quantum Security</category>
+        <category>Quantum Cryptography</category>
+        <category>HPT</category>
+        <category>HPT Vietnam</category>
+        <category>post-quantum cryptography</category>
+        <category>SpecterAI</category>
+        <guid isPermaLink="false">https://quantumzeitgeist.com/?p=366432</guid>
+
+                    <description>SpecterAI Quantum Security and HPT Vietnam Corporation signed detailed schedules and action roadmap on October 28, 2026, following an agreement concluded in June 2026. The partnership will bring post-quantum cryptography migration services and quantum security education to the Vietnamese market.</description>
+
+
+
+        <media:content url="https://quantumzeitgeist.com/wp-content/uploads/hpt-vietnam-to-deliver-specterais-post-quantum-migration-scaled.jpg" medium="image" type="image/jpeg" width="2560" height="1707"><media:title type="plain">HPT Vietnam to deliver SpecterAI’s post-quantum migration services</media:title></media:content>
 <media:thumbnail url="https://quantumzeitgeist.com/wp-content/uploads/hpt-vietnam-to-deliver-specterais-post-quantum-migration-scaled.jpg" width="2560" height="1707"/>
-<post-id xmlns="com-wordpress:feed-additions:1">366432</post-id>	</item>
-		</channel>
+<post-id xmlns="com-wordpress:feed-additions:1">366432</post-id>    </item>
+        </channel>
 </rss>

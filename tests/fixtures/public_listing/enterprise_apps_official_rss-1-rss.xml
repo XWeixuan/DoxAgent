@@ -1,46 +1,46 @@
 <rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
 
 <channel>
-	<title>Salesforce</title>
-	<atom:link href="https://www.salesforce.com/news/feed/" rel="self" type="application/rss+xml"/>
-	<link>https://www.salesforce.com/news/</link>
-	<description>Get the latest Salesforce press releases, announcements, stories, and media contacts. See today’s CRM news.</description>
-	<lastBuildDate>Mon, 02 Nov 2026 20:23:14 +0000</lastBuildDate>
-	<language>en-US</language>
-	<sy:updatePeriod>
-	hourly	</sy:updatePeriod>
-	<sy:updateFrequency>
-	1	</sy:updateFrequency>
-	<generator>https://wordpress.org/?v=7.1.4</generator>
+    <title>Salesforce</title>
+    <atom:link href="https://www.salesforce.com/news/feed/" rel="self" type="application/rss+xml"/>
+    <link>https://www.salesforce.com/news/</link>
+    <description>Get the latest Salesforce press releases, announcements, stories, and media contacts. See today’s CRM news.</description>
+    <lastBuildDate>Mon, 02 Nov 2026 20:23:14 +0000</lastBuildDate>
+    <language>en-US</language>
+    <sy:updatePeriod>
+    hourly  </sy:updatePeriod>
+    <sy:updateFrequency>
+    1   </sy:updateFrequency>
+    <generator>https://wordpress.org/?v=7.1.4</generator>
 
 <image>
-	<url>https://www.salesforce.com/news/wp-content/uploads/sites/3/2026/07/salesforce-favicon.svg?w=32</url>
-	<title>Salesforce</title>
-	<link>https://www.salesforce.com/news/</link>
-	<width>32</width>
-	<height>32</height>
-</image> 
-<site xmlns="com-wordpress:feed-additions:1">218239395</site>	<item>
-		<title>Salesforce Signs Definitive Agreement to Acquire Cresta</title>
-		<link>https://www.salesforce.com/news/stories/salesforce-signs-definitive-agreement-to-acquire-cresta/</link>
-		
-		<dc:creator></dc:creator>
-		<pubDate>Mon, 02 Nov 2026 21:00:00 +0000</pubDate>
-				<category>Uncategorized</category>
-		<guid isPermaLink="false">https://www.salesforce.com/?p=96206</guid>
+    <url>https://www.salesforce.com/news/wp-content/uploads/sites/3/2026/07/salesforce-favicon.svg?w=32</url>
+    <title>Salesforce</title>
+    <link>https://www.salesforce.com/news/</link>
+    <width>32</width>
+    <height>32</height>
+</image>
+<site xmlns="com-wordpress:feed-additions:1">218239395</site>   <item>
+        <title>Salesforce Signs Definitive Agreement to Acquire Cresta</title>
+        <link>https://www.salesforce.com/news/stories/salesforce-signs-definitive-agreement-to-acquire-cresta/</link>
 
-					<description>Combination unites advanced voice agents with the world’s #1 CRM, bringing together the customer, the conversation and the outcome</description>
-										<post-id xmlns="com-wordpress:feed-additions:1">96206</post-id>	</item>
-		<item>
-		<title>Salesforce Signs Definitive Agreement to Acquire Rune Technologies</title>
-		<link>https://www.salesforce.com/news/stories/salesforce-signs-definitive-agreement-to-acquire-rune-technologies/</link>
-		
-		<dc:creator></dc:creator>
-		<pubDate>Thu, 29 Oct 2026 20:00:00 +0000</pubDate>
-				<category>Uncategorized</category>
-		<guid isPermaLink="false">https://www.salesforce.com/?p=96158</guid>
+        <dc:creator></dc:creator>
+        <pubDate>Mon, 02 Nov 2026 21:00:00 +0000</pubDate>
+                <category>Uncategorized</category>
+        <guid isPermaLink="false">https://www.salesforce.com/?p=96206</guid>
 
-					<description>Salesforce, the #1 AI CRM, today announced it has signed a definitive agreement to acquire Rune Technologies, a leading edge-native technology provider building solutions to enable critical logistics and sustainment operations for the U.S. military and allied nations. Rune Technologies&amp;#8217;s technology helps frontline teams forecast supply needs, optimize resources, and make mission-critical decisions – including [&amp;#8230;]</description>
-										<post-id xmlns="com-wordpress:feed-additions:1">96158</post-id>	</item>
-		</channel>
+                    <description>Combination unites advanced voice agents with the world’s #1 CRM, bringing together the customer, the conversation and the outcome</description>
+                                        <post-id xmlns="com-wordpress:feed-additions:1">96206</post-id> </item>
+        <item>
+        <title>Salesforce Signs Definitive Agreement to Acquire Rune Technologies</title>
+        <link>https://www.salesforce.com/news/stories/salesforce-signs-definitive-agreement-to-acquire-rune-technologies/</link>
+
+        <dc:creator></dc:creator>
+        <pubDate>Thu, 29 Oct 2026 20:00:00 +0000</pubDate>
+                <category>Uncategorized</category>
+        <guid isPermaLink="false">https://www.salesforce.com/?p=96158</guid>
+
+                    <description>Salesforce, the #1 AI CRM, today announced it has signed a definitive agreement to acquire Rune Technologies, a leading edge-native technology provider building solutions to enable critical logistics and sustainment operations for the U.S. military and allied nations. Rune Technologies&amp;#8217;s technology helps frontline teams forecast supply needs, optimize resources, and make mission-critical decisions – including [&amp;#8230;]</description>
+                                        <post-id xmlns="com-wordpress:feed-additions:1">96158</post-id> </item>
+        </channel>
 </rss>

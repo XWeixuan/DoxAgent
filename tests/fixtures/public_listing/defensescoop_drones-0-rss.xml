@@ -1,80 +1,80 @@
 <rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
 
 <channel>
-	<title>drones Archives | DefenseScoop</title>
-	<atom:link href="https://defensescoop.com/tag/drones/feed/" rel="self" type="application/rss+xml"/>
-	<link>https://defensescoop.com/tag/drones/</link>
-	<description>DefenseScoop</description>
-	<lastBuildDate>Mon, 02 Nov 2026 18:19:43 +0000</lastBuildDate>
-	<language>en-US</language>
-	<sy:updatePeriod>
-	hourly	</sy:updatePeriod>
-	<sy:updateFrequency>
-	1	</sy:updateFrequency>
-	<generator>https://wordpress.org/?v=7.1.4</generator>
+    <title>drones Archives | DefenseScoop</title>
+    <atom:link href="https://defensescoop.com/tag/drones/feed/" rel="self" type="application/rss+xml"/>
+    <link>https://defensescoop.com/tag/drones/</link>
+    <description>DefenseScoop</description>
+    <lastBuildDate>Mon, 02 Nov 2026 18:19:43 +0000</lastBuildDate>
+    <language>en-US</language>
+    <sy:updatePeriod>
+    hourly  </sy:updatePeriod>
+    <sy:updateFrequency>
+    1   </sy:updateFrequency>
+    <generator>https://wordpress.org/?v=7.1.4</generator>
 
 <image>
-	<url>https://defensescoop.com/wp-content/uploads/sites/8/2023/01/cropped-ds_favicon-2.png?w=32</url>
-	<title>drones Archives | DefenseScoop</title>
-	<link>https://defensescoop.com/tag/drones/</link>
-	<width>32</width>
-	<height>32</height>
-</image> 
-<site xmlns="com-wordpress:feed-additions:1">214772896</site>	<item>
-		<title>Leonardo DRS tapped to support Army’s high-energy laser program</title>
-		<link>https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/</link>
-					<comments>https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/#respond</comments>
-		
-		<dc:creator>Jon Harper</dc:creator>
-		<pubDate>Mon, 02 Nov 2026 18:19:40 +0000</pubDate>
-				<category>Weapons</category>
-		<category>AeroVironment</category>
-		<category>Army</category>
-		<category>Brig. Gen. Matt Ross</category>
-		<category>counter-drone</category>
-		<category>counter-UAS</category>
-		<category>directed energy</category>
-		<category>drones</category>
-		<category>Enduring-High Energy Laser (E-HEL)</category>
-		<category>high-energy laser</category>
-		<category>JIATF 401</category>
-		<category>Leonardo DRS</category>
-		<category>LOCUST</category>
-		<guid isPermaLink="false">https://defensescoop.com/?p=132567</guid>
+    <url>https://defensescoop.com/wp-content/uploads/sites/8/2023/01/cropped-ds_favicon-2.png?w=32</url>
+    <title>drones Archives | DefenseScoop</title>
+    <link>https://defensescoop.com/tag/drones/</link>
+    <width>32</width>
+    <height>32</height>
+</image>
+<site xmlns="com-wordpress:feed-additions:1">214772896</site>   <item>
+        <title>Leonardo DRS tapped to support Army’s high-energy laser program</title>
+        <link>https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/</link>
+                    <comments>https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/#respond</comments>
 
-					<description>&lt;p&gt;The company will be helping prime contractor AeroVironment under the E-HEL program.&lt;/p&gt;
+        <dc:creator>Jon Harper</dc:creator>
+        <pubDate>Mon, 02 Nov 2026 18:19:40 +0000</pubDate>
+                <category>Weapons</category>
+        <category>AeroVironment</category>
+        <category>Army</category>
+        <category>Brig. Gen. Matt Ross</category>
+        <category>counter-drone</category>
+        <category>counter-UAS</category>
+        <category>directed energy</category>
+        <category>drones</category>
+        <category>Enduring-High Energy Laser (E-HEL)</category>
+        <category>high-energy laser</category>
+        <category>JIATF 401</category>
+        <category>Leonardo DRS</category>
+        <category>LOCUST</category>
+        <guid isPermaLink="false">https://defensescoop.com/?p=132567</guid>
+
+                    <description>&lt;p&gt;The company will be helping prime contractor AeroVironment under the E-HEL program.&lt;/p&gt;
 &lt;p&gt;The post &lt;a href="https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/"&gt;Leonardo DRS tapped to support Army’s high-energy laser program&lt;/a&gt; appeared first on &lt;a href="https://defensescoop.com"&gt;DefenseScoop&lt;/a&gt;.&lt;/p&gt;
 </description>
-										<wfw:commentRss>https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-		<post-id xmlns="com-wordpress:feed-additions:1">132567</post-id>	</item>
-		<item>
-		<title>Army designates 2 additional ‘permissive’ sites for commercial vendors to test their drone and counter-drone tech</title>
-		<link>https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/</link>
-					<comments>https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/#respond</comments>
-		
-		<dc:creator>Jon Harper</dc:creator>
-		<pubDate>Wed, 28 Oct 2026 19:56:07 +0000</pubDate>
-				<category>Tech</category>
-		<category>Adam Telle</category>
-		<category>Army</category>
-		<category>counter-drone</category>
-		<category>counter-UAS</category>
-		<category>Dan Driscoll</category>
-		<category>drones</category>
-		<category>unmanned aerial systems</category>
-		<category>weapons testing</category>
-		<guid isPermaLink="false">https://defensescoop.com/?p=132505</guid>
+                                        <wfw:commentRss>https://defensescoop.com/2026/11/02/army-high-energy-laser-program-leonardo-drs-av/feed/</wfw:commentRss>
+            <slash:comments>0</slash:comments>
 
-					<description>&lt;p&gt;The move is part of a broader Army initiative aimed at facilitating vendor access to test ranges.&lt;/p&gt;
+
+        <post-id xmlns="com-wordpress:feed-additions:1">132567</post-id>    </item>
+        <item>
+        <title>Army designates 2 additional ‘permissive’ sites for commercial vendors to test their drone and counter-drone tech</title>
+        <link>https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/</link>
+                    <comments>https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/#respond</comments>
+
+        <dc:creator>Jon Harper</dc:creator>
+        <pubDate>Wed, 28 Oct 2026 19:56:07 +0000</pubDate>
+                <category>Tech</category>
+        <category>Adam Telle</category>
+        <category>Army</category>
+        <category>counter-drone</category>
+        <category>counter-UAS</category>
+        <category>Dan Driscoll</category>
+        <category>drones</category>
+        <category>unmanned aerial systems</category>
+        <category>weapons testing</category>
+        <guid isPermaLink="false">https://defensescoop.com/?p=132505</guid>
+
+                    <description>&lt;p&gt;The move is part of a broader Army initiative aimed at facilitating vendor access to test ranges.&lt;/p&gt;
 &lt;p&gt;The post &lt;a href="https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/"&gt;Army designates 2 additional ‘permissive’ sites for commercial vendors to test their drone and counter-drone tech&lt;/a&gt; appeared first on &lt;a href="https://defensescoop.com"&gt;DefenseScoop&lt;/a&gt;.&lt;/p&gt;
 </description>
-										<wfw:commentRss>https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-		<post-id xmlns="com-wordpress:feed-additions:1">132505</post-id>	</item>
-		</channel>
+                                        <wfw:commentRss>https://defensescoop.com/2026/10/28/army-test-range-access-commercial-vendors-drone-technology/feed/</wfw:commentRss>
+            <slash:comments>0</slash:comments>
+
+
+        <post-id xmlns="com-wordpress:feed-additions:1">132505</post-id>    </item>
+        </channel>
 </rss>
