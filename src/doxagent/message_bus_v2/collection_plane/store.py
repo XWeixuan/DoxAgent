@@ -10,7 +10,7 @@ from functools import wraps
 from contextlib import closing, contextmanager, nullcontext
 from pathlib import Path
 
-from ..schema import canonical_json, new_id, utc_now
+from ..schema import AcquisitionMode, canonical_json, new_id, utc_now
 
 
 def path_for(bus_path):
@@ -290,6 +290,8 @@ class AcquisitionStore:
             "winning_request_id": winning.get("physical_request_id") if winning else None,
             "listing_received_at": winning.get("response_received_at") if winning else None,
         }
+        if valid and source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION:
+            proof['wire_observation']=state.get('wire_observation',{})
         with self.connect(write=True) as db:
             db.execute('INSERT INTO physical_cycles VALUES(?,?,?) ON CONFLICT(run_id) DO UPDATE SET '
                 'finished_at=excluded.finished_at,requests_json=excluded.requests_json',(run_id,now,canonical_json(requests)))

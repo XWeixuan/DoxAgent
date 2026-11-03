@@ -45,6 +45,12 @@ def main():
         db.row_factory=sqlite3.Row
         result['units']=[dict(r) for r in db.execute('SELECT source_id,unit,count(*) target_units FROM units WHERE source_id IN ('+placeholders+') GROUP BY source_id,unit',source_ids)]
         result['cycles']=[dict(r) for r in db.execute('SELECT source_id,status,count(*) target_receipts,count(DISTINCT json_extract(data_json,\'$.physical_run_id\')) physical_runs FROM (SELECT * FROM cycles ORDER BY rowid DESC LIMIT 5000) WHERE source_id IN ('+placeholders+') GROUP BY source_id,status',source_ids)]
+        observed={}
+        for row in db.execute('SELECT source_id,unit,data_json FROM (SELECT * FROM cycles ORDER BY rowid DESC LIMIT 5000) WHERE source_id IN ('+placeholders+')',source_ids):
+            data=json.loads(row['data_json']);key=(row['source_id'],row['unit'])
+            if key not in observed and data.get('wire_observation') is not None:
+                observed[key]=dict(source_id=key[0],unit=key[1],observation=data['wire_observation'])
+        result['latest_wire_observations']=list(observed.values())
     print(json.dumps(result,ensure_ascii=True,indent=2))
 
 

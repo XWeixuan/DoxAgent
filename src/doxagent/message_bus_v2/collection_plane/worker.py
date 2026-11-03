@@ -575,6 +575,8 @@ class Collector:
                     if remaining:
                         await on_page(remaining, validated_request_ids=result.acquisition_metadata.get('validated_request_ids'))
                     if valid:
+                        if source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION:
+                            state['wire_observation']=result.acquisition_metadata
                         state['checkpoint']=result.next_checkpoint or committed_checkpoint
                         if options.get('roster'):
                             state['association_roster']=options['roster']

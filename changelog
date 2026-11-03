@@ -2588,3 +2588,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-03 Massive来源观测补齐：在既有采集回执记录HTTP耗时/响应大小、列表时间窗口和连续窗口无交集风险，不增加服务或表；短feed覆盖风险与真实漏抓分开，10项专项通过。
 2026-11-03 Reuters RETRY链：现有主备均为输入前NOT_DISPATCHED三次封顶且无当前付费任务；复现后台标签原生mouseMoved超时，激活原页后输入ACK正常。修复聚焦/按钮位/旧无输入锁闩升级与阶段记账，后置截图超时不再否定输入ACK。截图屏幕坐标路径实测点击仍遇本地滑块加载问题，新增同原页、真实可见t=fe、已ACK新鲜RETRY后的单次Provider bootstrap，保留出口/任务幂等/费用及原页验证门槛；真实验收见docs/reuters-retry-chain-repair-20261103.md。
+
+2026-11-03 Massive观测落盘验收：将端点窗口/耗时元数据接入现有采集cycle回执并提供有界读回；31项Collector及Massive联合回归通过，不新增表/进程。
