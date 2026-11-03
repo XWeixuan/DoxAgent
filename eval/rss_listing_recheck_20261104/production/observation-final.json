@@ -1,0 +1,3429 @@
+{
+  "at": "2026-11-03T22:19:02.849086+00:00",
+  "since": "2026-11-03T22:15:17.548031+00:00",
+  "release": {
+    "commit": "c7697c88357261799994a7925561e9508c31c690",
+    "image": "sha256:084340718b26781513f7dd81c7891f13288afd4a77aff3a190e7016ba9bc880e",
+    "components": [
+      "v2-message-collector",
+      "v2-message-bus"
+    ],
+    "at": "2026-11-03T22:15:17.548031+00:00",
+    "sources": 20
+  },
+  "sources": [
+    {
+      "source_id": "army_news_rss",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:17.463884+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:17.506540+00:00",
+          "last_capture_at": "2026-11-03T22:18:17.737111+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 231,
+          "last_success_at": "2026-11-03T22:18:17.738452+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:17.463884+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "SHARED"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "cache_receipts": 0,
+      "endpoints": {
+        "www.army.mil/rss/static/0.xml": 3
+      },
+      "cache_samples": [],
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.223,
+        "p95": 0.224,
+        "max": 0.224
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 0.223,
+        "p95": 0.224,
+        "max": 0.224
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.23,
+        "p95": 0.232,
+        "max": 0.232
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.077,
+        "p95": 0.169,
+        "max": 0.169
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.071,
+        "p95": 0.164,
+        "max": 0.164
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "aviationweek_rss",
+      "required_binding_units": 5,
+      "physical_units": 5,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T22:15:33.656226+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:33.664304+00:00",
+          "last_capture_at": "2026-11-03T22:18:33.987500+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 324,
+          "last_success_at": "2026-11-03T22:18:33.988703+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:33.656226+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:326fd881c3432e0ffa056094"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T22:15:57.656226+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:57.758701+00:00",
+          "last_capture_at": "2026-11-03T22:18:58.078912+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 321,
+          "last_success_at": "2026-11-03T22:18:58.080470+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:57.656226+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:2f5220907304596465d3fe32"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T22:15:21.656226+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:21.856236+00:00",
+          "last_capture_at": "2026-11-03T22:18:22.812932+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 973,
+          "last_success_at": "2026-11-03T22:18:22.829493+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:21.656226+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:27af3058ede7e42aefe10b96"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T22:15:45.656226+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:45.758362+00:00",
+          "last_capture_at": "2026-11-03T22:18:46.074784+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 317,
+          "last_success_at": "2026-11-03T22:18:46.077486+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:45.656226+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:8292bdac5cd50ce3bbe95689"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T22:15:09.656226+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:09.667489+00:00",
+          "last_capture_at": "2026-11-03T22:18:10.706942+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1253,
+          "last_success_at": "2026-11-03T22:18:10.925390+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:09.656226+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:3b61227c8889e3342d63be4b"
+        }
+      ],
+      "physical_cycles": 19,
+      "physical_statuses": {
+        "CAPTURED": 19
+      },
+      "request_roles": {
+        "listing": 19
+      },
+      "cache_receipts": 19,
+      "endpoints": {
+        "aviationweek.com/taxonomy/term/186846": 4,
+        "aviationweek.com/taxonomy/term/186836": 4,
+        "aviationweek.com/taxonomy/term/186851": 4,
+        "aviationweek.com/taxonomy/term/186841": 4,
+        "aviationweek.com/taxonomy/term/456": 3
+      },
+      "cache_samples": [
+        {
+          "endpoint": "aviationweek.com/taxonomy/term/186846",
+          "age_basis": "age_and_date",
+          "headers": {
+            "age": "0",
+            "cache-control": "max-age=31536000, public",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:18:22 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:18:22 GMT",
+            "x-cache": "MISS",
+            "x-drupal-dynamic-cache": "MISS"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.813,
+          "url": "https://aviationweek.com/taxonomy/term/186846"
+        },
+        {
+          "endpoint": "aviationweek.com/taxonomy/term/186836",
+          "age_basis": "age_and_date",
+          "headers": {
+            "age": "59",
+            "cache-control": "max-age=31536000, public",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:18:33 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:17:33 GMT",
+            "x-cache": "HIT",
+            "x-cache-hits": "1",
+            "x-drupal-dynamic-cache": "MISS"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 59.0,
+          "url": "https://aviationweek.com/taxonomy/term/186836"
+        },
+        {
+          "endpoint": "aviationweek.com/taxonomy/term/186851",
+          "age_basis": "age_and_date",
+          "headers": {
+            "age": "59",
+            "cache-control": "max-age=31536000, public",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:18:45 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:17:45 GMT",
+            "x-cache": "HIT",
+            "x-cache-hits": "1",
+            "x-drupal-dynamic-cache": "MISS"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 59.0,
+          "url": "https://aviationweek.com/taxonomy/term/186851"
+        },
+        {
+          "endpoint": "aviationweek.com/taxonomy/term/186841",
+          "age_basis": "age_and_date",
+          "headers": {
+            "age": "58",
+            "cache-control": "max-age=31536000, public",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:18:57 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:17:58 GMT",
+            "x-cache": "HIT",
+            "x-cache-hits": "1",
+            "x-drupal-dynamic-cache": "MISS"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 58.0,
+          "url": "https://aviationweek.com/taxonomy/term/186841"
+        }
+      ],
+      "network_seconds": {
+        "samples": 19,
+        "mean": 0.783,
+        "p95": 1.64,
+        "max": 1.64
+      },
+      "primary_network_seconds": {
+        "samples": 19,
+        "mean": 0.783,
+        "p95": 1.64,
+        "max": 1.64
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 19,
+        "mean": 0.826,
+        "p95": 1.657,
+        "max": 1.657
+      },
+      "due_to_wire_seconds": {
+        "samples": 19,
+        "mean": 0.083,
+        "p95": 0.329,
+        "max": 0.329
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 19,
+        "mean": 0.075,
+        "p95": 0.302,
+        "max": 0.302
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "canary_media",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.775198+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:20.926294+00:00",
+          "last_capture_at": "2026-11-03T22:18:21.724010+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 953,
+          "last_success_at": "2026-11-03T22:18:21.880518+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:20.775198+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:bd9f86f953b4a5cb13216d0d"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.775198+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:20.926294+00:00",
+          "last_capture_at": "2026-11-03T22:18:21.724010+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 953,
+          "last_success_at": "2026-11-03T22:18:21.880518+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:20.775198+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:bd9f86f953b4a5cb13216d0d"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "www.canarymedia.com/articles": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.canarymedia.com/articles",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, s-maxage=31536000, max-age=0",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:15:21 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:15:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.464,
+          "url": "https://www.canarymedia.com/articles?_dox_poll=29895735"
+        },
+        {
+          "endpoint": "www.canarymedia.com/articles",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, s-maxage=31536000, max-age=0",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:16:21 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:16:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.203,
+          "url": "https://www.canarymedia.com/articles?_dox_poll=29895736"
+        },
+        {
+          "endpoint": "www.canarymedia.com/articles",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, s-maxage=31536000, max-age=0",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:17:21 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:17:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.317,
+          "url": "https://www.canarymedia.com/articles?_dox_poll=29895737"
+        },
+        {
+          "endpoint": "www.canarymedia.com/articles",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, s-maxage=31536000, max-age=0",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:18:21 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:18:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.724,
+          "url": "https://www.canarymedia.com/articles?_dox_poll=29895738"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.68,
+        "p95": 1.145,
+        "max": 1.145
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.68,
+        "p95": 1.145,
+        "max": 1.145
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.943,
+        "p95": 1.684,
+        "max": 1.684
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.222,
+        "p95": 0.544,
+        "max": 0.544
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.083,
+        "p95": 0.151,
+        "max": 0.151
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "required_binding_units": 3,
+      "physical_units": 3,
+      "latest_statuses": {
+        "succeeded": 3
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:10.924282+00:00",
+          "last_capture_at": "2026-11-03T22:18:10.978327+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 54,
+          "last_success_at": "2026-11-03T22:18:10.978782+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:10.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:a518927e703ee73b94eb2ec9"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:30.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:31.014775+00:00",
+          "last_capture_at": "2026-11-03T22:18:31.074244+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 60,
+          "last_success_at": "2026-11-03T22:18:31.074752+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:30.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:0f559d39370394f58715143f"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:50.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:50.850874+00:00",
+          "last_capture_at": "2026-11-03T22:18:50.905168+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 55,
+          "last_success_at": "2026-11-03T22:18:50.905696+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:50.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:ffdb14036507158e4b9c311e"
+        }
+      ],
+      "physical_cycles": 11,
+      "physical_statuses": {
+        "CAPTURED": 11
+      },
+      "request_roles": {
+        "listing": 11
+      },
+      "cache_receipts": 11,
+      "endpoints": {
+        "www.crn.com/query-index.json": 11
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.crn.com/query-index.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "cf-cache-status": "HIT",
+            "date": "Tue, 03 Nov 2026 22:17:50 GMT",
+            "last-modified": "Tue, 03 Nov 2026 20:26:38 GMT",
+            "x-cache": "MISS, HIT, MISS",
+            "x-cache-hits": "0, 1, 0"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.919,
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center"
+        },
+        {
+          "endpoint": "www.crn.com/query-index.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "cf-cache-status": "HIT",
+            "date": "Tue, 03 Nov 2026 22:18:10 GMT",
+            "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT",
+            "x-cache": "MISS, MISS, MISS",
+            "x-cache-hits": "0, 0, 0"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.978,
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud"
+        },
+        {
+          "endpoint": "www.crn.com/query-index.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "cf-cache-status": "HIT",
+            "date": "Tue, 03 Nov 2026 22:18:31 GMT",
+            "last-modified": "Tue, 03 Nov 2026 21:24:45 GMT",
+            "x-cache": "MISS, MISS, MISS",
+            "x-cache-hits": "0, 0, 0"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.074,
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security"
+        },
+        {
+          "endpoint": "www.crn.com/query-index.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=7200, must-revalidate",
+            "cdn-cache-control": "max-age=172800, must-revalidate",
+            "cf-cache-status": "HIT",
+            "date": "Tue, 03 Nov 2026 22:18:50 GMT",
+            "last-modified": "Tue, 03 Nov 2026 20:26:38 GMT",
+            "x-cache": "MISS, HIT, MISS",
+            "x-cache-hits": "0, 1, 0"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.905,
+          "url": "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center"
+        }
+      ],
+      "network_seconds": {
+        "samples": 11,
+        "mean": 0.055,
+        "p95": 0.075,
+        "max": 0.075
+      },
+      "primary_network_seconds": {
+        "samples": 11,
+        "mean": 0.055,
+        "p95": 0.075,
+        "max": 0.075
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 11,
+        "mean": 0.057,
+        "p95": 0.079,
+        "max": 0.079
+      },
+      "due_to_wire_seconds": {
+        "samples": 11,
+        "mean": 0.085,
+        "p95": 0.216,
+        "max": 0.216
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 11,
+        "mean": 0.083,
+        "p95": 0.213,
+        "max": 0.213
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "data_center_frontier",
+      "required_binding_units": 6,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 6
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:45.961442+00:00",
+          "last_capture_at": "2026-11-03T22:18:46.850734+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 907,
+          "last_success_at": "2026-11-03T22:18:46.868462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:45.961442+00:00",
+          "last_capture_at": "2026-11-03T22:18:46.850734+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 907,
+          "last_success_at": "2026-11-03T22:18:46.868462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:45.961442+00:00",
+          "last_capture_at": "2026-11-03T22:18:46.850734+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 907,
+          "last_success_at": "2026-11-03T22:18:46.868462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:45.961442+00:00",
+          "last_capture_at": "2026-11-03T22:18:46.850734+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 907,
+          "last_success_at": "2026-11-03T22:18:46.868462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:45.961442+00:00",
+          "last_capture_at": "2026-11-03T22:18:46.850734+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 907,
+          "last_success_at": "2026-11-03T22:18:46.868462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:45.961442+00:00",
+          "last_capture_at": "2026-11-03T22:18:46.850734+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 907,
+          "last_success_at": "2026-11-03T22:18:46.868462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "scorpia.graphql.aspire-ebm.com": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "scorpia.graphql.aspire-ebm.com",
+          "age_basis": "date_only",
+          "headers": {
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:15:47 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.427,
+          "url": "https://scorpia.graphql.aspire-ebm.com"
+        },
+        {
+          "endpoint": "scorpia.graphql.aspire-ebm.com",
+          "age_basis": "date_only",
+          "headers": {
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:16:46 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.262,
+          "url": "https://scorpia.graphql.aspire-ebm.com"
+        },
+        {
+          "endpoint": "scorpia.graphql.aspire-ebm.com",
+          "age_basis": "date_only",
+          "headers": {
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:17:46 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.253,
+          "url": "https://scorpia.graphql.aspire-ebm.com"
+        },
+        {
+          "endpoint": "scorpia.graphql.aspire-ebm.com",
+          "age_basis": "date_only",
+          "headers": {
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:18:46 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.851,
+          "url": "https://scorpia.graphql.aspire-ebm.com"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.574,
+        "p95": 0.886,
+        "max": 0.886
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.574,
+        "p95": 0.886,
+        "max": 0.886
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.881,
+        "p95": 1.728,
+        "max": 1.728
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.238,
+        "p95": 0.828,
+        "max": 0.828
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.033,
+        "p95": 0.076,
+        "max": 0.076
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "required_binding_units": 6,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 6
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:44.623029+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.655810+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.889139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 234,
+          "last_success_at": "2026-11-03T22:18:44.889549+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.623029+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:44.623029+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.655810+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.889139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 234,
+          "last_success_at": "2026-11-03T22:18:44.889549+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.623029+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:44.623029+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.655810+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.889139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 234,
+          "last_success_at": "2026-11-03T22:18:44.889549+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.623029+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:44.623029+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.655810+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.889139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 234,
+          "last_success_at": "2026-11-03T22:18:44.889549+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.623029+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:44.623029+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.655810+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.889139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 234,
+          "last_success_at": "2026-11-03T22:18:44.889549+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.623029+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:44.623029+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.655810+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.889139+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 234,
+          "last_success_at": "2026-11-03T22:18:44.889549+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.623029+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 0,
+      "endpoints": {
+        "www.datacenterdynamics.com/en/rss/": 4
+      },
+      "cache_samples": [],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.301,
+        "p95": 0.517,
+        "max": 0.517
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.301,
+        "p95": 0.517,
+        "max": 0.517
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.313,
+        "p95": 0.531,
+        "max": 0.531
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.053,
+        "p95": 0.07,
+        "max": 0.07
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.05,
+        "p95": 0.067,
+        "max": 0.067
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "defensescoop_drones",
+      "required_binding_units": 2,
+      "physical_units": 2,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:24.440595+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:24.482413+00:00",
+          "last_capture_at": "2026-11-03T22:18:24.962365+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 515,
+          "last_success_at": "2026-11-03T22:18:24.997634+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:24.440595+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:3e7ad1dabf2ec5b4b61c9c0c"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:54.440595+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:54.462114+00:00",
+          "last_capture_at": "2026-11-03T22:18:54.893626+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 455,
+          "last_success_at": "2026-11-03T22:18:54.917460+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:54.440595+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:27cdf1757342a7b11cdfb4c3"
+        }
+      ],
+      "physical_cycles": 8,
+      "physical_statuses": {
+        "CAPTURED": 8
+      },
+      "request_roles": {
+        "listing": 8
+      },
+      "cache_receipts": 8,
+      "endpoints": {
+        "defensescoop.com/tag/drones/": 4,
+        "defensescoop.com/tag/counter-drone/": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "defensescoop.com/tag/drones/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=300, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:17:24 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.897,
+          "url": "https://defensescoop.com/tag/drones/?_dox_poll=29895737"
+        },
+        {
+          "endpoint": "defensescoop.com/tag/counter-drone/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=300, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:17:54 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.963,
+          "url": "https://defensescoop.com/tag/counter-drone/?_dox_poll=29895737"
+        },
+        {
+          "endpoint": "defensescoop.com/tag/drones/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=300, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:18:24 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.962,
+          "url": "https://defensescoop.com/tag/drones/?_dox_poll=29895738"
+        },
+        {
+          "endpoint": "defensescoop.com/tag/counter-drone/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=300, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:18:54 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.894,
+          "url": "https://defensescoop.com/tag/counter-drone/?_dox_poll=29895738"
+        }
+      ],
+      "network_seconds": {
+        "samples": 8,
+        "mean": 0.401,
+        "p95": 0.5,
+        "max": 0.5
+      },
+      "primary_network_seconds": {
+        "samples": 8,
+        "mean": 0.401,
+        "p95": 0.5,
+        "max": 0.5
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 8,
+        "mean": 0.422,
+        "p95": 0.522,
+        "max": 0.522
+      },
+      "due_to_wire_seconds": {
+        "samples": 8,
+        "mean": 0.058,
+        "p95": 0.097,
+        "max": 0.097
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 8,
+        "mean": 0.056,
+        "p95": 0.096,
+        "max": 0.096
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dod_contracts",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:44.533432+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.554472+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.584231+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 42,
+          "last_success_at": "2026-11-03T22:18:44.596472+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.533432+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:cfae6ba739108534dbac3414"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:44.533432+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:44.554472+00:00",
+          "last_capture_at": "2026-11-03T22:18:44.584231+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 42,
+          "last_success_at": "2026-11-03T22:18:44.596472+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:44.533432+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:cfae6ba739108534dbac3414"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "www.war.gov/News/Contracts/": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.war.gov/News/Contracts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache,private",
+            "date": "Tue, 03 Nov 2026 22:15:44 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.238,
+          "url": "https://www.war.gov/News/Contracts/"
+        },
+        {
+          "endpoint": "www.war.gov/News/Contracts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache,private",
+            "date": "Tue, 03 Nov 2026 22:16:44 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.613,
+          "url": "https://www.war.gov/News/Contracts/"
+        },
+        {
+          "endpoint": "www.war.gov/News/Contracts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache,private",
+            "date": "Tue, 03 Nov 2026 22:17:44 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.608,
+          "url": "https://www.war.gov/News/Contracts/"
+        },
+        {
+          "endpoint": "www.war.gov/News/Contracts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache,private",
+            "date": "Tue, 03 Nov 2026 22:18:44 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.584,
+          "url": "https://www.war.gov/News/Contracts/"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.18,
+        "p95": 0.626,
+        "max": 0.626
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.18,
+        "p95": 0.626,
+        "max": 0.626
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.211,
+        "p95": 0.714,
+        "max": 0.714
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.047,
+        "p95": 0.078,
+        "max": 0.078
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.038,
+        "p95": 0.055,
+        "max": 0.055
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dod_releases",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.211271+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:10.279553+00:00",
+          "last_capture_at": "2026-11-03T22:18:10.502668+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 231,
+          "last_success_at": "2026-11-03T22:18:10.511013+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:10.211271+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:dfc334fc62e359d686dd3b57"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.211271+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:10.279553+00:00",
+          "last_capture_at": "2026-11-03T22:18:10.502668+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 231,
+          "last_success_at": "2026-11-03T22:18:10.511013+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:10.211271+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:dfc334fc62e359d686dd3b57"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "cache_receipts": 3,
+      "endpoints": {
+        "www.war.gov/News/Releases/": 3
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.war.gov/News/Releases/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache,private",
+            "date": "Tue, 03 Nov 2026 22:16:10 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.518,
+          "url": "https://www.war.gov/News/Releases/"
+        },
+        {
+          "endpoint": "www.war.gov/News/Releases/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache,private",
+            "date": "Tue, 03 Nov 2026 22:17:10 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.471,
+          "url": "https://www.war.gov/News/Releases/"
+        },
+        {
+          "endpoint": "www.war.gov/News/Releases/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache,private",
+            "date": "Tue, 03 Nov 2026 22:18:10 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.503,
+          "url": "https://www.war.gov/News/Releases/"
+        }
+      ],
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.24,
+        "p95": 0.287,
+        "max": 0.287
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 0.24,
+        "p95": 0.287,
+        "max": 0.287
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.259,
+        "p95": 0.308,
+        "max": 0.308
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.046,
+        "p95": 0.071,
+        "max": 0.071
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.043,
+        "p95": 0.068,
+        "max": 0.068
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "required_binding_units": 3,
+      "physical_units": 3,
+      "latest_statuses": {
+        "succeeded": 3
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:59.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:59.833307+00:00",
+          "last_capture_at": "2026-11-03T22:19:00.300832+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 481,
+          "last_success_at": "2026-11-03T22:19:00.314048+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:59.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:69cd0a82d11ee5cf9feef522"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:19.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:19.830475+00:00",
+          "last_capture_at": "2026-11-03T22:18:20.091052+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 274,
+          "last_success_at": "2026-11-03T22:18:20.104262+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:19.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:50b1d9a9bb4f6befd163b153"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:39.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:39.753046+00:00",
+          "last_capture_at": "2026-11-03T22:18:41.345942+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1616,
+          "last_success_at": "2026-11-03T22:18:41.369315+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:39.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:ef7490c95438b64379a1b34c"
+        }
+      ],
+      "physical_cycles": 12,
+      "physical_statuses": {
+        "CAPTURED": 11,
+        "FAILED": 1
+      },
+      "request_roles": {
+        "listing": 13,
+        "rss_fallback": 1
+      },
+      "cache_receipts": 11,
+      "endpoints": {
+        "www.salesforce.com/news/wp-json/wp/v2/posts": 4,
+        "newsroom.workday.com/press-releases": 6,
+        "news.sap.com/wp-json/wp/v2/posts": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "news.sap.com/wp-json/wp/v2/posts",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=600, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:18:00 GMT",
+            "x-cache": "MISS"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.319,
+          "url": "https://news.sap.com/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt&_dox_poll=29895737"
+        },
+        {
+          "endpoint": "www.salesforce.com/news/wp-json/wp/v2/posts",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=60",
+            "date": "Tue, 03 Nov 2026 22:18:20 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.091,
+          "url": "https://www.salesforce.com/news/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt"
+        },
+        {
+          "endpoint": "newsroom.workday.com/press-releases",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, no-cache, public, no-cache",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:18:40 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:18:40 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.346,
+          "url": "https://newsroom.workday.com/press-releases?_dox_poll=29895738"
+        },
+        {
+          "endpoint": "news.sap.com/wp-json/wp/v2/posts",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "max-age=600, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:19:00 GMT",
+            "x-cache": "MISS"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.301,
+          "url": "https://news.sap.com/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt&_dox_poll=29895738"
+        }
+      ],
+      "network_seconds": {
+        "samples": 12,
+        "mean": 0.656,
+        "p95": 1.67,
+        "max": 1.67
+      },
+      "primary_network_seconds": {
+        "samples": 11,
+        "mean": 0.709,
+        "p95": 1.67,
+        "max": 1.67
+      },
+      "fallback_network_seconds": {
+        "samples": 1,
+        "mean": 0.075,
+        "p95": 0.075,
+        "max": 0.075
+      },
+      "execution_seconds": {
+        "samples": 12,
+        "mean": 1.695,
+        "p95": 12.236,
+        "max": 12.236
+      },
+      "due_to_wire_seconds": {
+        "samples": 12,
+        "mean": 0.075,
+        "p95": 0.142,
+        "max": 0.142
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 12,
+        "mean": 0.064,
+        "p95": 0.097,
+        "max": 0.097
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:ef7490c95438b64379a1b34c",
+          "at": "2026-11-03T22:16:39.801359+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "etnews_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.332180+00:00",
+          "last_capture_at": "2026-11-03T22:18:22.697534+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 373,
+          "last_success_at": "2026-11-03T22:18:22.705462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.332180+00:00",
+          "last_capture_at": "2026-11-03T22:18:22.697534+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 373,
+          "last_success_at": "2026-11-03T22:18:22.705462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.332180+00:00",
+          "last_capture_at": "2026-11-03T22:18:22.697534+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 373,
+          "last_success_at": "2026-11-03T22:18:22.705462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.332180+00:00",
+          "last_capture_at": "2026-11-03T22:18:22.697534+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 373,
+          "last_success_at": "2026-11-03T22:18:22.705462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.332180+00:00",
+          "last_capture_at": "2026-11-03T22:18:22.697534+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 373,
+          "last_success_at": "2026-11-03T22:18:22.705462+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "www.etnews.com/news/section.html": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.etnews.com/news/section.html",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:15:22 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.851,
+          "url": "https://www.etnews.com/news/section.html?id1=06"
+        },
+        {
+          "endpoint": "www.etnews.com/news/section.html",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:16:22 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.637,
+          "url": "https://www.etnews.com/news/section.html?id1=06"
+        },
+        {
+          "endpoint": "www.etnews.com/news/section.html",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:17:22 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.709,
+          "url": "https://www.etnews.com/news/section.html?id1=06"
+        },
+        {
+          "endpoint": "www.etnews.com/news/section.html",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:18:22 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.698,
+          "url": "https://www.etnews.com/news/section.html?id1=06"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.159,
+        "p95": 0.171,
+        "max": 0.171
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.159,
+        "p95": 0.171,
+        "max": 0.171
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.409,
+        "p95": 0.514,
+        "max": 0.514
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.276,
+        "p95": 0.403,
+        "max": 0.403
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.039,
+        "p95": 0.062,
+        "max": 0.062
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:52.315647+00:00",
+          "last_capture_at": "2026-11-03T22:18:52.759831+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 482,
+          "last_success_at": "2026-11-03T22:18:52.798826+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:52.315647+00:00",
+          "last_capture_at": "2026-11-03T22:18:52.759831+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 482,
+          "last_success_at": "2026-11-03T22:18:52.798826+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:52.315647+00:00",
+          "last_capture_at": "2026-11-03T22:18:52.759831+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 482,
+          "last_success_at": "2026-11-03T22:18:52.798826+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:52.315647+00:00",
+          "last_capture_at": "2026-11-03T22:18:52.759831+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 482,
+          "last_success_at": "2026-11-03T22:18:52.798826+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:52.315647+00:00",
+          "last_capture_at": "2026-11-03T22:18:52.759831+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 482,
+          "last_success_at": "2026-11-03T22:18:52.798826+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "huggingnews.com/__data.json": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "huggingnews.com/__data.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "private, no-store",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:15:52 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.661,
+          "url": "https://huggingnews.com/__data.json"
+        },
+        {
+          "endpoint": "huggingnews.com/__data.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "private, no-store",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:16:52 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.673,
+          "url": "https://huggingnews.com/__data.json"
+        },
+        {
+          "endpoint": "huggingnews.com/__data.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "private, no-store",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:17:52 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.741,
+          "url": "https://huggingnews.com/__data.json"
+        },
+        {
+          "endpoint": "huggingnews.com/__data.json",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "private, no-store",
+            "cf-cache-status": "DYNAMIC",
+            "date": "Tue, 03 Nov 2026 22:18:52 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.76,
+          "url": "https://huggingnews.com/__data.json"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.423,
+        "p95": 0.47,
+        "max": 0.47
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.423,
+        "p95": 0.47,
+        "max": 0.47
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.464,
+        "p95": 0.532,
+        "max": 0.532
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.045,
+        "p95": 0.078,
+        "max": 0.078
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.043,
+        "p95": 0.076,
+        "max": 0.076
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "nsf_news",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:47.075981+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:47.145252+00:00",
+          "last_capture_at": "2026-11-03T22:18:48.063357+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 929,
+          "last_success_at": "2026-11-03T22:18:48.074063+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:47.075981+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:981618343246fe95aed86647"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "www.nsf.gov/news": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.nsf.gov/news",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "must-revalidate, no-cache, private",
+            "date": "Tue, 03 Nov 2026 22:15:49 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.173,
+          "url": "https://www.nsf.gov/news"
+        },
+        {
+          "endpoint": "www.nsf.gov/news",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "must-revalidate, no-cache, private",
+            "date": "Tue, 03 Nov 2026 22:16:48 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.412,
+          "url": "https://www.nsf.gov/news"
+        },
+        {
+          "endpoint": "www.nsf.gov/news",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "must-revalidate, no-cache, private",
+            "date": "Tue, 03 Nov 2026 22:17:48 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.242,
+          "url": "https://www.nsf.gov/news"
+        },
+        {
+          "endpoint": "www.nsf.gov/news",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "must-revalidate, no-cache, private",
+            "date": "Tue, 03 Nov 2026 22:18:47 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.063,
+          "url": "https://www.nsf.gov/news"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 1.171,
+        "p95": 1.41,
+        "max": 1.41
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 1.171,
+        "p95": 1.41,
+        "max": 1.41
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 1.334,
+        "p95": 2.008,
+        "max": 2.008
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.225,
+        "p95": 0.687,
+        "max": 0.687
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.075,
+        "p95": 0.101,
+        "max": 0.101
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:51.709308+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:51.805001+00:00",
+          "last_capture_at": "2026-11-03T22:18:52.440774+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 657,
+          "last_success_at": "2026-11-03T22:18:52.462109+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:51.709308+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:580eb14015a8c19d636c9706"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "quantumcomputingreport.com/news/": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "quantumcomputingreport.com/news/",
+          "age_basis": "age_and_date",
+          "headers": {
+            "age": "47",
+            "cache-control": "public, max-age=2678400",
+            "cf-cache-status": "HIT",
+            "date": "Tue, 03 Nov 2026 22:15:51 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:15:04 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 47.0,
+          "url": "https://quantumcomputingreport.com/news/?_dox_poll=29895735"
+        },
+        {
+          "endpoint": "quantumcomputingreport.com/news/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, max-age=2678400",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:16:52 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:16:52 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.345,
+          "url": "https://quantumcomputingreport.com/news/?_dox_poll=29895736"
+        },
+        {
+          "endpoint": "quantumcomputingreport.com/news/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, max-age=2678400",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:17:52 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:17:52 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.342,
+          "url": "https://quantumcomputingreport.com/news/?_dox_poll=29895737"
+        },
+        {
+          "endpoint": "quantumcomputingreport.com/news/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, max-age=2678400",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:18:52 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:18:52 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.441,
+          "url": "https://quantumcomputingreport.com/news/?_dox_poll=29895738"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.462,
+        "p95": 0.63,
+        "max": 0.63
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.462,
+        "p95": 0.63,
+        "max": 0.63
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.478,
+        "p95": 0.657,
+        "max": 0.657
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.116,
+        "p95": 0.256,
+        "max": 0.256
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.111,
+        "p95": 0.246,
+        "max": 0.246
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "quantum_zeitgeist",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.177217+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:36.272757+00:00",
+          "last_capture_at": "2026-11-03T22:18:38.889383+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 2662,
+          "last_success_at": "2026-11-03T22:18:38.934601+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:36.177217+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:36ea93b1b1238527f70d7bb9"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 8
+      },
+      "cache_receipts": 8,
+      "endpoints": {
+        "public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/": 8
+      },
+      "cache_samples": [
+        {
+          "endpoint": "public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private",
+            "date": "Tue, 03 Nov 2026 22:17:36 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 2.289,
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified"
+        },
+        {
+          "endpoint": "public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private",
+            "date": "Tue, 03 Nov 2026 22:17:37 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.289,
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified&offset=100"
+        },
+        {
+          "endpoint": "public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private",
+            "date": "Tue, 03 Nov 2026 22:18:37 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.891,
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified"
+        },
+        {
+          "endpoint": "public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private",
+            "date": "Tue, 03 Nov 2026 22:18:38 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.891,
+          "url": "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified&offset=100"
+        }
+      ],
+      "network_seconds": {
+        "samples": 8,
+        "mean": 1.109,
+        "p95": 1.63,
+        "max": 1.63
+      },
+      "primary_network_seconds": {
+        "samples": 8,
+        "mean": 1.109,
+        "p95": 1.63,
+        "max": 1.63
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 2.421,
+        "p95": 2.703,
+        "max": 2.703
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.181,
+        "p95": 0.583,
+        "max": 0.583
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.036,
+        "p95": 0.096,
+        "max": 0.096
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "technews_hardware",
+      "required_binding_units": 10,
+      "physical_units": 2,
+      "latest_statuses": {
+        "succeeded": 10
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:06.583590+00:00",
+          "last_capture_at": "2026-11-03T22:18:06.957462+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 391,
+          "last_success_at": "2026-11-03T22:18:06.976178+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:06.583590+00:00",
+          "last_capture_at": "2026-11-03T22:18:06.957462+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 391,
+          "last_success_at": "2026-11-03T22:18:06.976178+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:06.583590+00:00",
+          "last_capture_at": "2026-11-03T22:18:06.957462+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 391,
+          "last_success_at": "2026-11-03T22:18:06.976178+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:06.583590+00:00",
+          "last_capture_at": "2026-11-03T22:18:06.957462+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 391,
+          "last_success_at": "2026-11-03T22:18:06.976178+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:06.583590+00:00",
+          "last_capture_at": "2026-11-03T22:18:06.957462+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 391,
+          "last_success_at": "2026-11-03T22:18:06.976178+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:36.577282+00:00",
+          "last_capture_at": "2026-11-03T22:18:36.848814+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 293,
+          "last_success_at": "2026-11-03T22:18:36.871534+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:36.577282+00:00",
+          "last_capture_at": "2026-11-03T22:18:36.848814+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 293,
+          "last_success_at": "2026-11-03T22:18:36.871534+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:36.577282+00:00",
+          "last_capture_at": "2026-11-03T22:18:36.848814+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 293,
+          "last_success_at": "2026-11-03T22:18:36.871534+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:36.577282+00:00",
+          "last_capture_at": "2026-11-03T22:18:36.848814+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 293,
+          "last_success_at": "2026-11-03T22:18:36.871534+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:36.577282+00:00",
+          "last_capture_at": "2026-11-03T22:18:36.848814+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 293,
+          "last_success_at": "2026-11-03T22:18:36.871534+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:365211cf9af517cb87395484"
+        }
+      ],
+      "physical_cycles": 7,
+      "physical_statuses": {
+        "CAPTURED": 7
+      },
+      "request_roles": {
+        "listing": 7
+      },
+      "cache_receipts": 7,
+      "endpoints": {
+        "technews.tw/category/ai/": 4,
+        "technews.tw/category/semiconductor/": 3
+      },
+      "cache_samples": [
+        {
+          "endpoint": "technews.tw/category/semiconductor/",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:17:06 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.85,
+          "url": "https://technews.tw/category/semiconductor/?_dox_poll=29895737"
+        },
+        {
+          "endpoint": "technews.tw/category/ai/",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:17:36 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.074,
+          "url": "https://technews.tw/category/ai/?_dox_poll=29895737"
+        },
+        {
+          "endpoint": "technews.tw/category/semiconductor/",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:18:06 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.958,
+          "url": "https://technews.tw/category/semiconductor/?_dox_poll=29895738"
+        },
+        {
+          "endpoint": "technews.tw/category/ai/",
+          "age_basis": "date_only",
+          "headers": {
+            "date": "Tue, 03 Nov 2026 22:18:36 GMT",
+            "x-cache": "Miss from cloudfront"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.849,
+          "url": "https://technews.tw/category/ai/?_dox_poll=29895738"
+        }
+      ],
+      "network_seconds": {
+        "samples": 7,
+        "mean": 0.309,
+        "p95": 0.475,
+        "max": 0.475
+      },
+      "primary_network_seconds": {
+        "samples": 7,
+        "mean": 0.309,
+        "p95": 0.475,
+        "max": 0.475
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 7,
+        "mean": 0.331,
+        "p95": 0.504,
+        "max": 0.504
+      },
+      "due_to_wire_seconds": {
+        "samples": 7,
+        "mean": 0.066,
+        "p95": 0.139,
+        "max": 0.139
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 7,
+        "mean": 0.062,
+        "p95": 0.136,
+        "max": 0.136
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "thelec_semiconductors_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:20.927873+00:00",
+          "last_capture_at": "2026-11-03T22:18:21.185932+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 270,
+          "last_success_at": "2026-11-03T22:18:21.198432+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:20.927873+00:00",
+          "last_capture_at": "2026-11-03T22:18:21.185932+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 270,
+          "last_success_at": "2026-11-03T22:18:21.198432+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:20.927873+00:00",
+          "last_capture_at": "2026-11-03T22:18:21.185932+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 270,
+          "last_success_at": "2026-11-03T22:18:21.198432+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:20.927873+00:00",
+          "last_capture_at": "2026-11-03T22:18:21.185932+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 270,
+          "last_success_at": "2026-11-03T22:18:21.198432+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:20.927873+00:00",
+          "last_capture_at": "2026-11-03T22:18:21.185932+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 270,
+          "last_success_at": "2026-11-03T22:18:21.198432+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "www.thelec.kr/news/articleList.html": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.thelec.kr/news/articleList.html",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:15:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.716,
+          "url": "https://www.thelec.kr/news/articleList.html"
+        },
+        {
+          "endpoint": "www.thelec.kr/news/articleList.html",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:16:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.534,
+          "url": "https://www.thelec.kr/news/articleList.html"
+        },
+        {
+          "endpoint": "www.thelec.kr/news/articleList.html",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:17:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.319,
+          "url": "https://www.thelec.kr/news/articleList.html"
+        },
+        {
+          "endpoint": "www.thelec.kr/news/articleList.html",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store, must-revalidate",
+            "date": "Tue, 03 Nov 2026 22:18:21 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.186,
+          "url": "https://www.thelec.kr/news/articleList.html"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.347,
+        "p95": 0.477,
+        "max": 0.477
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.347,
+        "p95": 0.477,
+        "max": 0.477
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.721,
+        "p95": 0.891,
+        "max": 0.891
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.377,
+        "p95": 0.574,
+        "max": 0.574
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.127,
+        "p95": 0.213,
+        "max": 0.213
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T22:15:22.894213+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.941115+00:00",
+          "last_capture_at": "2026-11-03T22:18:24.006050+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1192,
+          "last_success_at": "2026-11-03T22:18:24.133595+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.894213+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "SHARED"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:22.894213+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.941115+00:00",
+          "last_capture_at": "2026-11-03T22:18:24.006050+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1192,
+          "last_success_at": "2026-11-03T22:18:24.133595+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.894213+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "SHARED"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T22:15:22.894213+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.941115+00:00",
+          "last_capture_at": "2026-11-03T22:18:24.006050+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1192,
+          "last_success_at": "2026-11-03T22:18:24.133595+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.894213+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "SHARED"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T22:15:22.894213+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.941115+00:00",
+          "last_capture_at": "2026-11-03T22:18:24.006050+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1192,
+          "last_success_at": "2026-11-03T22:18:24.133595+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.894213+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "SHARED"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 3,
+            "epoch": "2026-11-03T22:15:22.894213+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:22.941115+00:00",
+          "last_capture_at": "2026-11-03T22:18:24.006050+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1192,
+          "last_success_at": "2026-11-03T22:18:24.133595+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:22.894213+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "SHARED"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 0,
+      "endpoints": {
+        "www.tomshardware.com/feeds.xml": 4
+      },
+      "cache_samples": [],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.591,
+        "p95": 0.603,
+        "max": 0.603
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.591,
+        "p95": 0.603,
+        "max": 0.603
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 1.114,
+        "p95": 1.192,
+        "max": 1.192
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.458,
+        "p95": 0.512,
+        "max": 0.512
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.043,
+        "p95": 0.066,
+        "max": 0.066
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "utility_dive",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:02.193864+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:02.210488+00:00",
+          "last_capture_at": "2026-11-03T22:18:03.638754+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1450,
+          "last_success_at": "2026-11-03T22:18:03.660919+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:02.193864+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:f0fb325afe07ff21bf307014"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:02.193864+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:02.210488+00:00",
+          "last_capture_at": "2026-11-03T22:18:03.638754+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1450,
+          "last_success_at": "2026-11-03T22:18:03.660919+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:02.193864+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:f0fb325afe07ff21bf307014"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 3,
+        "DISPATCHED": 1
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "cache_receipts": 3,
+      "endpoints": {
+        "www.utilitydive.com/": 3
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.utilitydive.com/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, max-age=14400",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:16:02 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:16:02 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.093,
+          "url": "https://www.utilitydive.com/?_dox_poll=29895736"
+        },
+        {
+          "endpoint": "www.utilitydive.com/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, max-age=14400",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:17:03 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:17:03 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.717,
+          "url": "https://www.utilitydive.com/?_dox_poll=29895737"
+        },
+        {
+          "endpoint": "www.utilitydive.com/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "public, max-age=14400",
+            "cf-cache-status": "MISS",
+            "date": "Tue, 03 Nov 2026 22:18:03 GMT",
+            "last-modified": "Tue, 03 Nov 2026 22:18:03 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 0.64,
+          "url": "https://www.utilitydive.com/?_dox_poll=29895738"
+        }
+      ],
+      "network_seconds": {
+        "samples": 3,
+        "mean": 1.2,
+        "p95": 1.422,
+        "max": 1.422
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 1.2,
+        "p95": 1.422,
+        "max": 1.422
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 1.279,
+        "p95": 1.493,
+        "max": 1.493
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.089,
+        "p95": 0.1,
+        "max": 0.1
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.031,
+        "p95": 0.046,
+        "max": 0.046
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:27.041365+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T22:18:27.141899+00:00",
+          "last_capture_at": "2026-11-03T22:18:27.334852+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 218,
+          "last_success_at": "2026-11-03T22:18:27.360415+00:00",
+          "next_dispatch_at": "2026-11-03T22:19:27.041365+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:7aeff12b5dff2df82855fb85"
+        }
+      ],
+      "physical_cycles": 4,
+      "physical_statuses": {
+        "CAPTURED": 4
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "cache_receipts": 4,
+      "endpoints": {
+        "www.world-nuclear-news.org/": 4
+      },
+      "cache_samples": [
+        {
+          "endpoint": "www.world-nuclear-news.org/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store",
+            "date": "Tue, 03 Nov 2026 22:15:27 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.364,
+          "url": "https://www.world-nuclear-news.org/"
+        },
+        {
+          "endpoint": "www.world-nuclear-news.org/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store",
+            "date": "Tue, 03 Nov 2026 22:16:26 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.324,
+          "url": "https://www.world-nuclear-news.org/"
+        },
+        {
+          "endpoint": "www.world-nuclear-news.org/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store",
+            "date": "Tue, 03 Nov 2026 22:17:26 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.277,
+          "url": "https://www.world-nuclear-news.org/"
+        },
+        {
+          "endpoint": "www.world-nuclear-news.org/",
+          "age_basis": "date_only",
+          "headers": {
+            "cache-control": "no-cache, no-store",
+            "date": "Tue, 03 Nov 2026 22:18:26 GMT"
+          },
+          "max_age_seconds": 120,
+          "observed_age_seconds": 1.335,
+          "url": "https://www.world-nuclear-news.org/"
+        }
+      ],
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.282,
+        "p95": 0.555,
+        "max": 0.555
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 0.282,
+        "p95": 0.555,
+        "max": 0.555
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 4,
+        "mean": 0.474,
+        "p95": 1.276,
+        "max": 1.276
+      },
+      "due_to_wire_seconds": {
+        "samples": 4,
+        "mean": 0.252,
+        "p95": 0.767,
+        "max": 0.767
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 4,
+        "mean": 0.077,
+        "p95": 0.101,
+        "max": 0.101
+      },
+      "failed_cycles": []
+    }
+  ],
+  "configuration": {
+    "modified_sources": [
+      {
+        "source_id": "tomshardware_rss",
+        "discovery_mode": "rss",
+        "version": 4,
+        "expected_mode": "rss",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "dcd_infrastructure_rss",
+        "discovery_mode": "rss",
+        "version": 3,
+        "expected_mode": "rss",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "nsf_news",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "dod_releases",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "enterprise_apps_official_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "defensescoop_drones",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "data_center_frontier",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "huggingnews_rss",
+        "discovery_mode": "http_listing",
+        "version": 4,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "thelec_semiconductors_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "quantum_zeitgeist",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "army_news_rss",
+        "discovery_mode": "rss",
+        "version": 3,
+        "expected_mode": "rss",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "etnews_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "aviationweek_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "canary_media",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "dod_contracts",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "quantum_computing_report",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "technews_hardware",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "world_nuclear_news",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "utility_dive",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "crn_cloud_security_datacenter",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "expected_mode": "http_listing",
+        "body_and_business_contract_unchanged": true
+      }
+    ],
+    "other_source_changes": [],
+    "binding_business_changes": [],
+    "terms_unchanged": true,
+    "bindings_unchanged_set": true,
+    "active_bindings": {
+      "huggingnews_rss": 5,
+      "tomshardware_rss": 5,
+      "thelec_semiconductors_rss": 5,
+      "etnews_rss": 5,
+      "enterprise_apps_official_rss": 1,
+      "aviationweek_rss": 1,
+      "dod_contracts": 2,
+      "dod_releases": 2,
+      "defensescoop_drones": 1,
+      "army_news_rss": 1,
+      "crn_cloud_security_datacenter": 1,
+      "technews_hardware": 5,
+      "utility_dive": 2,
+      "world_nuclear_news": 1,
+      "canary_media": 2,
+      "dcd_infrastructure_rss": 6,
+      "data_center_frontier": 6,
+      "quantum_computing_report": 1,
+      "quantum_zeitgeist": 1,
+      "nsf_news": 1
+    }
+  },
+  "new_origins": [],
+  "new_origin_count": 0,
+  "new_article_outcomes": {},
+  "captures": [
+    {
+      "source_id": "aviationweek_rss",
+      "status": "ACCEPTED",
+      "n": 4
+    }
+  ],
+  "other_component_changes": [],
+  "containers": [
+    {
+      "name": "doxagent-v2-v2-message-collector-1",
+      "image": "sha256:084340718b26781513f7dd81c7891f13288afd4a77aff3a190e7016ba9bc880e",
+      "started_at": "2026-11-03T22:14:55.541388178Z",
+      "status": "running",
+      "restarts": 0,
+      "oom_killed": false,
+      "build_commit": "c7697c88357261799994a7925561e9508c31c690"
+    },
+    {
+      "name": "doxagent-v2-v2-message-bus-1",
+      "image": "sha256:084340718b26781513f7dd81c7891f13288afd4a77aff3a190e7016ba9bc880e",
+      "started_at": "2026-11-03T22:15:08.298695265Z",
+      "status": "running",
+      "restarts": 0,
+      "oom_killed": false,
+      "build_commit": "c7697c88357261799994a7925561e9508c31c690"
+    },
+    {
+      "name": "doxagent-v2-v2-content-enrichment-1",
+      "image": "sha256:bd6fa109ef1315e01f401d5750a01199c860a163036129356b69d898526f0b20",
+      "started_at": "2026-11-03T19:44:12.308592558Z",
+      "status": "running",
+      "restarts": 0,
+      "oom_killed": false,
+      "build_commit": "d87a54ec0149d3fa9584b0036f119194960b268f"
+    }
+  ],
+  "resources": [
+    {
+      "BlockIO": "9.81MB / 434MB",
+      "CPUPerc": "23.65%",
+      "Container": "doxagent-v2-v2-message-collector-1",
+      "ID": "abccd64bf33b",
+      "MemPerc": "6.76%",
+      "MemUsage": "276.7MiB / 4GiB",
+      "Name": "doxagent-v2-v2-message-collector-1",
+      "NetIO": "102MB / 3.72MB",
+      "PIDs": "25"
+    },
+    {
+      "BlockIO": "1.25MB / 135MB",
+      "CPUPerc": "170.35%",
+      "Container": "doxagent-v2-v2-message-bus-1",
+      "ID": "7fbae01f1abd",
+      "MemPerc": "3.45%",
+      "MemUsage": "141.4MiB / 4GiB",
+      "Name": "doxagent-v2-v2-message-bus-1",
+      "NetIO": "12.5kB / 22.6kB",
+      "PIDs": "19"
+    },
+    {
+      "BlockIO": "165MB / 990MB",
+      "CPUPerc": "20.80%",
+      "Container": "doxagent-v2-v2-content-enrichment-1",
+      "ID": "d8c86a0d9956",
+      "MemPerc": "7.07%",
+      "MemUsage": "289.6MiB / 4GiB",
+      "Name": "doxagent-v2-v2-content-enrichment-1",
+      "NetIO": "468MB / 11.8MB",
+      "PIDs": "15"
+    }
+  ]
+}

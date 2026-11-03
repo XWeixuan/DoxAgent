@@ -1,0 +1,63 @@
+[
+  {
+    "run_id": "collect_8770c0d2f9c04990a675716e5d37387c:SNOW:enterprise_apps_official_rss",
+    "binding_id": "SNOW:enterprise_apps_official_rss",
+    "source_id": "enterprise_apps_official_rss",
+    "ticker": "SNOW",
+    "unit": "FEED:ef7490c95438b64379a1b34c",
+    "due_at": "2026-11-03T22:16:39.736240+00:00",
+    "dispatch_at": "2026-11-03T22:16:39.801359+00:00",
+    "interval_seconds": 60,
+    "source_version": 2,
+    "binding_version": 2,
+    "status": "FAILED",
+    "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+    "finished_at": "2026-11-03T22:16:52.037280+00:00",
+    "proof": {
+      "attempt_finished": true,
+      "list_validated": false,
+      "listing_received_at": null,
+      "physical_run_id": "collect_8770c0d2f9c04990a675716e5d37387c",
+      "required": true,
+      "terminal_error": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+      "terminal_error_message": "TimeoutError:",
+      "winning_request_id": null
+    },
+    "requests": [
+      {
+        "endpoint": "newsroom.workday.com/press-releases",
+        "physical_request_id": "b94d0c20fdf6425683c5b0bf1436c1c6",
+        "proof_basis": "TRANSPORT_SEND",
+        "request_key": "5ebb1da732c8b5f6f65fb8d518ce41ae27a4ea1e55376be4c36c0263f516d0a4",
+        "request_started_at": "2026-11-03T22:16:39.802852+00:00",
+        "role": "listing",
+        "transport": "publisher_curl"
+      },
+      {
+        "endpoint": "newsroom.workday.com/press-releases",
+        "physical_request_id": "716c281f88a94399bd4b9c08284fe7b2",
+        "proof_basis": "TRANSPORT_SEND",
+        "request_key": "5ebb1da732c8b5f6f65fb8d518ce41ae27a4ea1e55376be4c36c0263f516d0a4",
+        "request_started_at": "2026-11-03T22:16:48.004064+00:00",
+        "role": "listing",
+        "transport": "publisher_curl"
+      },
+      {
+        "endpoint": "newsroom.workday.com/press-releases",
+        "physical_request_id": "4543c53e4f1f4e65ba81beb25f911ce5",
+        "proof_basis": "TRANSPORT_SEND",
+        "request_key": "53874192632132c01ab4a06ad38e7a329449fdc97406287e155eb03aedb8506b",
+        "request_started_at": "2026-11-03T22:16:51.956048+00:00",
+        "response_received_at": "2026-11-03T22:16:52.031355+00:00",
+        "role": "rss_fallback",
+        "status_code": 200,
+        "transport": "http",
+        "validators": {
+          "age": "57",
+          "date": "Tue, 03 Nov 2026 22:16:51 GMT",
+          "last-modified": "Tue, 03 Nov 2026 22:15:54 GMT"
+        }
+      }
+    ]
+  }
+]
