@@ -139,6 +139,9 @@ class SharedContentExtractor:
                 reason="pipeline_version_unavailable",
                 diagnostics={"pipeline_version": version, "stage": "intake"},
             )
+        if record.source_id=='bloomberg_massive' and '/news/audio/' in (record.fetch_url or ''):
+            return MediaExtractionResult(record=record,reason='audio_requires_transcript',
+                diagnostics={'outcome':'PARTIAL','reason_code':'audio_requires_transcript'})
         await self.start()
         async with self._semaphore:
             assert self._session is not None

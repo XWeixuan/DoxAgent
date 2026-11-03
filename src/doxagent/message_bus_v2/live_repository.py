@@ -716,6 +716,10 @@ class LiveRepository:
     def prepare_result(self, job, message, *, outcome=None):
         message = message.model_copy(update={"metadata": {**message.metadata, "_delivery_mode": job.source.delivery_mode}})
         meta = message.metadata.get("media_enrichment", {})
+        if job.source.source_id=='bloomberg_massive' and '/news/audio/' in message.url:
+            # Covers cached downloads too: an episode description is not a transcript.
+            meta={**meta,'succeeded':False,'outcome':'PARTIAL','reason_code':'audio_requires_transcript'}
+            message=message.model_copy(update={'metadata':{**message.metadata,'media_enrichment':meta}})
         native_only = job.source.content_enrichment_mode.value == "skip" or message.metadata.get(
             "body_not_applicable"
         )

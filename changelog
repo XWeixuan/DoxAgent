@@ -2610,3 +2610,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 X生产契约修正：真实API读回发现schema生成器未覆盖MonitoringTermsValue/BindingConfig，补齐定向同步，修复x_accounts与流式轮询编辑标识的后端校验；新增native控制读回+wire校验防回归，七项专项通过。
 
 2026-11-04 三消息源修复：Calcalist 补 CSE 请求令牌失效识别、缩短缓存并有界刷新旧令牌403；NRC兼容核电Facility事件，按官方运营方表缓存映射后过滤Licensee；SDxCentral采集及BODY接入独立正式Chrome主备与真实listing契约，保留Supervisor/Profile。
+
+2026-11-04 Bloomberg播客质量修正：自然测试抽样发现节目简介误标FULL，音频页改记PARTIAL/audio_requires_transcript且不请求无字幕正文；结果提交同时防止旧缓存再冒充FULL，新增隔离测试撤回脚本保留审计与原始证据，不动正式消息。20项专项通过；退役脚本保留旧绑定原参数。

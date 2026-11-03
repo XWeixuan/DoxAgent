@@ -30,7 +30,7 @@ def main():
                 bus.update_source(source.source_id,{'enabled':False},actor=UpdateActor.USER,reason=reason)
         for b in repo.list_bindings():
             if b.source_id.startswith('tikhub_') and b.enabled:
-                bus.configure_binding(ticker=b.ticker,source_id=b.source_id,enabled=False,actor=UpdateActor.USER,reason=reason)
+                bus.configure_binding(ticker=b.ticker,source_id=b.source_id,source_parameters=b.source_parameters,polling=b.polling,streaming=b.streaming,enabled=False,actor=UpdateActor.USER,reason=reason)
         profile=repo.get_default_profile()
         if profile and any(e.source_id.startswith('tikhub_') for e in profile.entries):
             bus.save_default_profile(profile.model_copy(update={'entries':[e for e in profile.entries if not e.source_id.startswith('tikhub_')], 'updated_by':UpdateActor.USER,'updated_reason':reason}))
