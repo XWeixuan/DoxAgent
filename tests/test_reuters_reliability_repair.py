@@ -199,6 +199,9 @@ async def test_native_retry_uses_exact_current_owner_and_native_input(monkeypatc
         "mouseReleased",
     ]
     assert all(p["x"] == 110 and p["y"] == 220 for m, p in calls if m == "Input.dispatchMouseEvent")
+    assert [m for m,_ in calls[:2]]==['Target.activateTarget','Page.bringToFront']
+    buttons=[p.get('buttons') for m,p in calls if m=='Input.dispatchMouseEvent' and p['type']!='mouseMoved']
+    assert buttons==[1,0]
     assert not any(m in {"Page.reload", "Runtime.evaluate"} for m, p in calls)
     doc["frames"][0]["frame_id"] = "replacement"
     with pytest.raises(RuntimeError, match="scene_changed"):
