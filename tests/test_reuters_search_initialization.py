@@ -34,6 +34,27 @@ def test_native_results_preserve_publication_time_and_reject_non_articles():
     assert rows[0]['date']=='2026-11-03T17:00:00Z'
     assert rows[0]['date_basis']=='publisher_timestamp'
     assert native_search_rows({'result':{'articles':[]}})==[]
+    omitted={'result':{'pagination':{'expected_size':20},'response_time':5}}
+    assert native_search_rows(omitted,empty_confirmed=True)==[]
+    with pytest.raises(ValueError):native_search_rows(omitted)
+    with pytest.raises(ValueError):native_search_rows({'result':None},empty_confirmed=True)
     with pytest.raises(ValueError):native_search_rows({'result':{}})
     payload['result']['articles'][0]['canonical_url']='https://ads.example.com/foo-2026-11-03/'
     with pytest.raises(ValueError):native_search_rows(payload)
+
+
+async def test_adapter_does_not_turn_native_timestamp_back_into_noon(tmp_path):
+    from tests.test_message_bus_v2_news_sources import _context
+    from doxagent.message_bus_v2.news_adapters import ReutersSiteSearchAdapter
+    ctx,repo=_context(tmp_path,'reuters_site_search',{'max_pages':1})
+    class Browser:
+        async def reuters_search(self,*a):
+            return [{'title':'Micron reports memory manufacturing expansion',
+                'date':'2026-09-14T12:15:42Z','date_basis':'publisher_timestamp',
+                'url':'/technology/micron-expansion-2026-09-14/'}]
+    try:
+        result=await ReutersSiteSearchAdapter(Browser())._poll_query(ctx,'Micron','q','monitoring_terms')
+        message=result.messages[0]
+        assert message.publication_time_basis=='EXACT'
+        assert message.published_at.isoformat()=='2026-09-14T12:15:42+00:00'
+    finally:repo.close()

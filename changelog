@@ -2596,3 +2596,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Reuters真实打码验收：a7dcec8b仅窄发布Site Access，Supervisor与Chrome/Profile保留；主原页完成RETRY→task84313566657→ready→作用域校验→原页CLEARED及CRAWLER业务证明，约34.7秒后再次拦截；备用task84313568401应用后仍受阻，不记成功。补充聚焦/按钮位回归断言29项通过，完整记录费用与持续稳定性未通过边界，见docs/reuters-retry-chain-repair-20261103.md。
 
 2026-11-04 Reuters出口/Profile对照与搜索修复：三组正式Chrome短时对照均在正常搜索流程取得20/19/20条结果，确认旧逻辑将空query占位页误判零结果成功。新增正常表单查询/原生分页与query/offset绑定响应观察，直接解析浏览器实际搜索响应和发布时间，恢复验证拒绝空壳；采集排队3秒→20秒，活动备用不再误受冷启动5秒预算门槛。相关76项回归及第二页真实验证通过，保留原Profile和工作备用，详见docs/reuters-egress-profile-search-repair-20261104.md。
+
+2026-11-04 Reuters生产验收补齐：原生Ondas零结果响应省略articles，仅在query明确零结果及匹配原生响应时接受；Collector保留native published_time的EXACT精度，减少历史文章正文取时间压力。Owner已真实验收接回恢复的原主身份，保留备用及原访问速率；相关89项回归通过，首发残留的排队/切换延期与正文FULL证据分列记录。

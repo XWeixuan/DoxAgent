@@ -1001,7 +1001,8 @@ class ReutersSiteSearchAdapter:
             for raw in rows:
                 row = dict(raw)
                 published_date = _reuters_date(row.get("date"))
-                basis = "DATE" if published_date is not None else "UNKNOWN_FIRST_SEEN"
+                publisher_time = _dt(row.get('date')) if row.get('date_basis') == 'publisher_timestamp' else None
+                basis = "EXACT" if publisher_time else "DATE" if published_date is not None else "UNKNOWN_FIRST_SEEN"
                 if published_date is not None and published_date < cutoff:
                     continue
                 url = str(row.get("url") or "")
@@ -1020,7 +1021,7 @@ class ReutersSiteSearchAdapter:
                     continue
                 seen.add(url)
                 identifier = sha256_text(url)
-                published = (
+                published = publisher_time or (
                     datetime.combine(
                         published_date, time(hour=12), tzinfo=ZoneInfo("America/New_York")
                     )
@@ -1070,7 +1071,7 @@ class ReutersSiteSearchAdapter:
                             ),
                             "query": query,
                             "query_source": query_source,
-                            "publication_time_precision": "day" if published_date else "unknown",
+                            "publication_time_precision": "exact" if publisher_time else "day" if published_date else "unknown",
                             "search_result_date": published_date.isoformat()
                             if published_date
                             else None,

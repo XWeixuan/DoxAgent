@@ -71,10 +71,14 @@ async def wait_for_native_document_redirect(page: Any, response: Any) -> Any:
         raise
 
 
-def native_search_rows(payload: object) -> list[dict[str, object]]:
+def native_search_rows(payload: object, *, empty_confirmed: bool = False) -> list[dict[str, object]]:
     """Parse the browser's own completed search response, never issue another request."""
     result=payload.get('result',{}) if isinstance(payload,dict) else {}
     articles=result.get('articles') if isinstance(result,dict) else None
+    # A real empty search omits articles entirely. Accept it only alongside the
+    # initialized query-specific empty DOM, never from missing API data alone.
+    if articles is None and empty_confirmed and isinstance(result,dict) and isinstance(result.get('pagination'),dict):
+        return []
     if not isinstance(articles,list):
         raise ValueError('invalid_reuters_search_response')
     rows=[]
@@ -112,7 +116,7 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
                 error.status_code=response.status;error.response_url=page.url
                 error.response_body=await page.content();error.response_headers={}
                 raise error
-            return native_search_rows(await response.json())
+            return native_search_rows(await response.json(),empty_confirmed=not rows)
         return rows
     finally:
         if listening:page.remove_listener('response',observe)
