@@ -53,4 +53,10 @@ Collector侧同时保留原生published_time为EXACT，避免再次降格为纽�
 
 剩余容量边界：26个HEAD/分钟，若均再产生一个TAIL，便超过现有主身份1500ms启动间隔所能提供的约40次/分钟，且正文也共享预算。此次保持既有节奏，优先保障HEAD；未通过提高请求频率或把延期伪装成功来声称容量无限。后续若要求尾页也每分钟全部完成，需要独立评估补扫窗口与容量，而不是继续换IP。
 
+最终收尾运行代码为`d807d4bb62e05b5cca1047b25dbb0f132723d8b8`，UTC18:30:21窄发布Site Access；Collector继续使用包含精确时间修复的bad52514，相关文件内容与最终提交一致，5文件哈希全部匹配。Supervisor仍为37881d9a4b92，六个实验Identity全部禁用，没有遗留OPEN维护会话。
+
+最终完整窗口UTC18:30:21–18:33:25：100次CRAWLER成功回执，37次site_queue_timeout延期、1次访问预算耗尽、1次TimeoutError；无新Challenge、无新付费任务、无新UNPROVEN_LISTING或invalid_reuters_search_response。cycles分列80次主查询CAPTURED、16次尾页CAPTURED、35次尾页排队失败和2次尾页TimeoutError（按dispatch窗口，与按完成时间统计的ACCESS_RESULT口径不同，不相加）。26个有效主查询最新仍全部succeeded。最终3分钟窗没有新增正式BODY任务；前述独立FULL是此前单独验证，不能移入这个窗口。
+
+**交付结论是主查询已恢复、正文通路实测可用、内部误判已修正，但尾页容量/排队问题尚未完全消除，也未完成天级稳定性验收。** 不需要为了本轮验收额外登录新实验Profile；生产仍使用原有已持久化Profile，真正新发生的Challenge或掉号应按实际任务处理。
+
 脱敏证据位于`eval/reuters_egress_profile_20261104/`：state/state2、queue-change、profile-snapshot、candidate-old-ip、candidate-oldstate-new-ip、candidate-new-ip、final-candidate-old-ip、pagination-old-ip。最初实验脚本把零条标为LISTING_OK的文件保留，但本报告已依据截图将其纠正为未验证空壳，不计通过。完整CaptchaURL、Cookie、代理密钥未输出或提交。
