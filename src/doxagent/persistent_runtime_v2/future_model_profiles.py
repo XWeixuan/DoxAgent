@@ -40,6 +40,19 @@ def bailian_glm_rounds(workspace_endpoint):
 def configured_rounds(settings):
     profile = settings.persistent_runtime_v2_api_profile
     result = {}
+    if profile == "openrouter_haiku":
+        result.update({
+            f"{lane}:{rnd}": dict(
+                model="anthropic/claude-haiku-5.5",
+                provider="openrouter",
+                transport="chat_completions_json_schema",
+                provider_endpoint="google-vertex/global",
+                reasoning_effort="xhigh",
+                timeout_seconds=300,
+                cache_ttl="1h",
+            )
+            for lane in ("W1", "W2") for rnd in ("R2", "R3")
+        })
     if profile in {"vertex_recall", "vertex_glm"}:
         if not settings.vertex_project:
             raise ValueError("Vertex profile requires DOXAGENT_VERTEX_PROJECT")

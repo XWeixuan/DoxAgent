@@ -130,8 +130,8 @@ def test_stream_usage_and_history_round_routing():
     for model in ("deepseek-v4.1-flash", "qwen3.8-flash"):
         client.complete(replace(request(), model=model, provider="bailian", reasoning_effort="low"))
     assert len(calls) == 1 and len(original.calls) == 2
-    with pytest.raises(RuntimeResponsesError, match="W2R1 only"):
-        client.complete(replace(request(), metadata={"lane": "W2", "round": "R2"}))
+    with pytest.raises(RuntimeResponsesError, match="W1/W2 round"):
+        client.complete(replace(request(), metadata={"lane": "W2", "round": "R4"}))
     client.close()
 
 

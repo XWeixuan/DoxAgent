@@ -1,4 +1,4 @@
-"""OpenRouter recall rounds; other and historical rounds stay on Bailian."""
+"""OpenRouter Haiku rounds selected by each Case's frozen provider settings."""
 
 from __future__ import annotations
 
@@ -168,6 +168,42 @@ def build_w1_r1_cached_request(request: RuntimeResponsesRequest[Any]) -> tuple[d
     }, fingerprint
 
 
+def build_case_schema_request(request: RuntimeResponsesRequest[Any]) -> tuple[dict[str, Any], str]:
+    """Explicit R2/R3 context and native schema enforcement, including parent replay."""
+    schema = bailian_strict_wire_schema(request.output_model.model_json_schema())
+    system = _recall_system(request, contract_first=True)
+    fingerprint = sha256(system.encode()).hexdigest()
+    messages: list[dict[str, Any]] = [{
+        "role": "system",
+        "content": [{"type": "text", "text": system,
+                     "cache_control": {"type": "ephemeral", "ttl": request.cache_ttl or "1h"}}],
+    }]
+    if request.replay_parent:
+        messages.extend([
+            {"role": "user", "content": request.replay_parent[0]},
+            {"role": "assistant", "content": request.replay_parent[1]},
+        ])
+    elif request.inherit_context:
+        raise RuntimeResponsesError(
+            "parent_context_missing", "Haiku requires explicit frozen parent messages", retryable=False
+        )
+    text, _ = _cache_optimized_input(request.payload, request.cache_context_keys)
+    messages.append({"role": "user", "content": text})
+    return {
+        "model": request.model or HAIKU_MODEL,
+        "provider": {"only": [request.provider_endpoint or HAIKU_ENDPOINT],
+                     "allow_fallbacks": False, "require_parameters": True},
+        "reasoning": {"effort": request.reasoning_effort or "high"},
+        "messages": messages,
+        "response_format": {"type": "json_schema", "json_schema": {
+            "name": request.schema_name, "strict": True, "schema": schema,
+        }},
+        "max_tokens": 65536,
+        "stream": True,
+        "stream_options": {"include_usage": True},
+    }, fingerprint
+
+
 class RuntimeRecallOpenRouterClient:
     """Provider selection comes from frozen round settings, never current defaults."""
 
@@ -265,12 +301,13 @@ class RuntimeRecallOpenRouterClient:
             return self.bailian.complete(request)
         if (
             request.metadata.get("lane") not in {"W1", "W2"}
-            or request.metadata.get("round") != "R1"
+            or request.metadata.get("round") not in {"R1", "R2", "R3"}
         ):
             raise RuntimeResponsesError(
-                "provider_route_invalid", "OpenRouter route is W1R1/W2R1 only", retryable=False
+                "provider_route_invalid", "OpenRouter route requires a W1/W2 round", retryable=False
             )
-        if request.inherit_context or request.replay_parent:
+        is_recall = request.metadata["round"] == "R1"
+        if is_recall and (request.inherit_context or request.replay_parent):
             raise RuntimeResponsesError(
                 "provider_route_invalid", "Recall R1 requires explicit inputs", retryable=False
             )
@@ -278,7 +315,7 @@ class RuntimeRecallOpenRouterClient:
             raise RuntimeResponsesError(
                 "provider_auth_failed", "OPENROUTER_API_KEY is missing", retryable=False
             )
-        builder = (
+        builder = build_case_schema_request if not is_recall else (
             build_w1_r1_cached_request
             if request.metadata["lane"] == "W1"
             else build_w2_r1_cached_request

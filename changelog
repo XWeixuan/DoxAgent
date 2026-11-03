@@ -2551,4 +2551,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-03 Message Bus计数漏计修复：派生贡献在现有writer事务中基于当前消息事实重算，不再被旧缺口receipt与较新正文/关联计数水位挡住；保留对象乱序保护及其他直接贡献水位。新增显式消息身份定点重算参数，复用现有MVCC差量桶，补齐历史计数不重放消息/模型；覆盖恢复、路由、删除、历史视图和幂等回归。不修改来源及相关性/去重/资源治理。见docs/message-bus-count-repair-20261103.md。
 
+2026-11-03 W1R2/W2R2 Haiku5.5真实对照：原20例冻结输入（每档W1=20/W2=10），OpenRouter固定google-vertex/global，high与xhigh各30次；按用户要求将输出上限放宽至65536，补测唯一被16K截断的xhigh W2 #16，产出19013 tokens/81秒。共61次调用；high首次可消费27/30，xhigh首次29/30、补测后30/30，失败原回执与费用均保留。总费high约0.362747元、xhigh含补测约0.658694元；银标指标与格式可靠性分别统计，TPS披露传输缓冲和端到端口径。报告eval/r2_haiku55_effort_20261103/REPORT.md；无生产配置变更，临时凭据及容器已清理。
+
 2026-11-03 Message Bus计数修复生产验收：81ec32e9已推origin/main，仅发布Projector；18:58按现有MVCC差量路径补齐INTC29/SNOW1，共30条。真实API容器全量核对正式消息、概览与Bus逐日逐源计数均一致，缺口0；重复执行无新commit，目标消息行未改、来源checkpoint不回退，无消息/模型重放。44项定向回归通过，证据eval/bus_count_repair_20261103/。
+
+2026-11-03 Runtime紧急Haiku迁移：新增显式openrouter_haiku profile，将W1R2/W1R3/W2R2/W2R3冻结为OpenRouter Haiku5.5 xhigh、google-vertex/global、原生strict JSON Schema、65536 token与300秒预算。R1及其回退保持原配置；扩展回执xhigh读取，R3按现有不可变父轮输入显式回放，不跨provider传previous_response_id。静态提示词前缀沿用1小时显式缓存。29项传输/profile及79项Runtime/W2对齐回归通过；未改业务Prompt、判定Schema及路由。

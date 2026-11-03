@@ -1436,7 +1436,9 @@ class PersistentRuntimeV2Service:
             started_at = utc_now()
             result = None
             stateless_parent = (
-                model_settings["transport"] == "chat_completions_json_object" and inherit_context
+                model_settings["transport"] in {
+                    "chat_completions_json_object", "chat_completions_json_schema"
+                } and inherit_context
             )
             context_mode = (
                 "REPLAY_PARENT"
