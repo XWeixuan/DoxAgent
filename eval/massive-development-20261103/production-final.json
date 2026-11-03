@@ -1,0 +1,381 @@
+{
+  "at": "2026-11-03T14:40:18.512268+00:00",
+  "controls": {
+    "ticker_source_bindings": {
+      "count": 313,
+      "sha256": "8961920c5da94b68302c8cb7f99a6c340c3fdd503f76f59fefed8fce4c2b9821"
+    },
+    "ticker_monitoring_term_revisions": {
+      "count": 30,
+      "sha256": "9e8eef2c843702dafeaf2ba5cc6d6620e08932a721ef2f960e0d8480dcee1949"
+    },
+    "source_definitions": {
+      "count": 101,
+      "sha256": "726d6985382ab0e36a0b4dbf7d6395a5c2017e0c57dfed543edc811cb7d368c7"
+    },
+    "default_profiles": {
+      "count": 1,
+      "sha256": "5edabe139f9ec167d5ac48eb9a1613f31aae8b70d8a0943f2196e0f881b22897"
+    }
+  },
+  "sources": [
+    {
+      "source_id": "access_newswire_massive",
+      "enabled": 1,
+      "version": 1
+    },
+    {
+      "source_id": "businesswire_massive",
+      "enabled": 1,
+      "version": 1
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "enabled": 1,
+      "version": 1
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "enabled": 1,
+      "version": 1
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "enabled": 1,
+      "version": 1
+    }
+  ],
+  "raw_messages_test_source_rows": 0,
+  "standard_messages_test_source_rows": 0,
+  "body": [
+    {
+      "source_id": "access_newswire_massive",
+      "state": "READY",
+      "outcome": "FULL",
+      "count": 18
+    },
+    {
+      "source_id": "businesswire_massive",
+      "state": "FETCH_DUE",
+      "outcome": null,
+      "count": 15
+    },
+    {
+      "source_id": "businesswire_massive",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "count": 107
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "FETCH_DUE",
+      "outcome": null,
+      "count": 1
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "READY",
+      "outcome": "FULL",
+      "count": 78
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "READY",
+      "outcome": "PARTIAL",
+      "count": 1
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "FETCHING",
+      "outcome": null,
+      "count": 1
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "READY",
+      "outcome": "FULL",
+      "count": 39
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "READY",
+      "outcome": "PARTIAL",
+      "count": 20
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "count": 1
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "state": "READY",
+      "outcome": "FULL",
+      "count": 10
+    }
+  ],
+  "deliveries": [
+    {
+      "source_id": "access_newswire_massive",
+      "state": "IRRELEVANT",
+      "count": 170
+    },
+    {
+      "source_id": "access_newswire_massive",
+      "state": "TEST_PUBLISHED",
+      "count": 10
+    },
+    {
+      "source_id": "businesswire_massive",
+      "state": "NO_PUBLIC_BODY",
+      "count": 1070
+    },
+    {
+      "source_id": "businesswire_massive",
+      "state": "WAIT_BODY",
+      "count": 150
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "IRRELEVANT",
+      "count": 706
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "NO_PUBLIC_BODY",
+      "count": 10
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "TEST_PUBLISHED",
+      "count": 74
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "WAIT_BODY",
+      "count": 10
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "IRRELEVANT",
+      "count": 367
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "NO_PUBLIC_BODY",
+      "count": 210
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "TEST_PUBLISHED",
+      "count": 23
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "WAIT_BODY",
+      "count": 10
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "state": "IRRELEVANT",
+      "count": 94
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "state": "TEST_PUBLISHED",
+      "count": 6
+    }
+  ],
+  "publications": [
+    {
+      "source_id": "access_newswire_massive",
+      "count": 10
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "count": 74
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "count": 23
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "count": 6
+    }
+  ],
+  "active_test_body": [
+    {
+      "count": 1
+    }
+  ],
+  "real_test_bindings": 0,
+  "test_model_decisions": 0,
+  "units": [
+    {
+      "source_id": "access_newswire_massive",
+      "unit": "TEST:WIRE:http",
+      "target_units": 10
+    },
+    {
+      "source_id": "businesswire_massive",
+      "unit": "TEST:WIRE:all",
+      "target_units": 10
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "unit": "TEST:WIRE:all",
+      "target_units": 10
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "unit": "TEST:WIRE:public",
+      "target_units": 10
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "unit": "TEST:WIRE:all",
+      "target_units": 10
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "unit": "TEST:WIRE:business",
+      "target_units": 10
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "unit": "TEST:WIRE:all",
+      "target_units": 10
+    }
+  ],
+  "cycles": [
+    {
+      "source_id": "access_newswire_massive",
+      "status": "CAPTURED",
+      "target_receipts": 160,
+      "physical_runs": 16
+    },
+    {
+      "source_id": "businesswire_massive",
+      "status": "CAPTURED",
+      "target_receipts": 160,
+      "physical_runs": 16
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "status": "CAPTURED",
+      "target_receipts": 320,
+      "physical_runs": 32
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "status": "CAPTURED",
+      "target_receipts": 320,
+      "physical_runs": 32
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "status": "CAPTURED",
+      "target_receipts": 150,
+      "physical_runs": 15
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "status": "FAILED",
+      "target_receipts": 10,
+      "physical_runs": 1
+    }
+  ],
+  "latest_wire_observations": [
+    {
+      "source_id": "globenewswire_massive",
+      "unit": "TEST:WIRE:all",
+      "observation": {
+        "delta_items": 1,
+        "endpoint": "all",
+        "feed_items": 20,
+        "newest": "2026-11-03T14:39:00+00:00",
+        "oldest": "2026-11-03T14:27:00+00:00",
+        "request_seconds": 3.621,
+        "response_bytes": 37327,
+        "route": "tr-standard-1",
+        "window_overflow_risk": false,
+        "window_overlap": 19,
+        "wire_status": 200
+      }
+    },
+    {
+      "source_id": "access_newswire_massive",
+      "unit": "TEST:WIRE:http",
+      "observation": {
+        "endpoint": "http",
+        "request_seconds": 4.347,
+        "response_bytes": 168893,
+        "route": "us-standard-5",
+        "wire_status": 200
+      }
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "unit": "TEST:WIRE:all",
+      "observation": {
+        "delta_items": 1,
+        "endpoint": "all",
+        "feed_items": 20,
+        "newest": "2026-11-03T14:37:00+00:00",
+        "oldest": "2026-11-03T14:24:00+00:00",
+        "request_seconds": 1.635,
+        "response_bytes": 40896,
+        "route": "direct",
+        "window_overflow_risk": false,
+        "window_overlap": 19,
+        "wire_status": 200
+      }
+    },
+    {
+      "source_id": "businesswire_massive",
+      "unit": "TEST:WIRE:all",
+      "observation": {
+        "endpoint": "all",
+        "request_seconds": 3.812,
+        "response_bytes": 0,
+        "route": "direct",
+        "wire_status": 304
+      }
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "unit": "TEST:WIRE:all",
+      "observation": {
+        "endpoint": "all",
+        "request_seconds": 7.641,
+        "response_bytes": 34613,
+        "route": "direct",
+        "wire_status": 200
+      }
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "unit": "TEST:WIRE:public",
+      "observation": {
+        "endpoint": "public",
+        "request_seconds": 3.737,
+        "response_bytes": 0,
+        "route": "tr-standard-1",
+        "wire_status": 304
+      }
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "unit": "TEST:WIRE:business",
+      "observation": {
+        "endpoint": "business",
+        "request_seconds": 2.64,
+        "response_bytes": 0,
+        "route": "direct",
+        "wire_status": 304
+      }
+    }
+  ]
+}

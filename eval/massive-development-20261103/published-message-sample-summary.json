@@ -1,0 +1,80 @@
+[
+  {
+    "source_id": "prnewswire_massive",
+    "ticker": "MU",
+    "body_outcome": "FULL",
+    "published_at": "2026-11-03T14:22:14.604906+00:00",
+    "payload_fields": [
+      "raw",
+      "standard",
+      "terms_revision",
+      "test_publication"
+    ],
+    "raw_title": "Jin Medical Supports the 12th Jiangsu Provincial Games for Persons with Disabilities with Professional Wheelchairs and Accessibility Services",
+    "raw_body_chars": 8611,
+    "standard_fields": [
+      "admission_context",
+      "binding_id",
+      "body",
+      "collected_at",
+      "external_id",
+      "metadata",
+      "normalized_at",
+      "publication_time_basis",
+      "published_at",
+      "publisher_name",
+      "raw_message_id",
+      "resolved_domain",
+      "revision",
+      "schema_version",
+      "source",
+      "source_definition_version",
+      "source_id",
+      "source_item_key",
+      "source_name",
+      "standard_message_id",
+      "ticker",
+      "title",
+      "url"
+    ]
+  },
+  {
+    "source_id": "globenewswire_massive",
+    "ticker": "CEG",
+    "body_outcome": "FULL",
+    "published_at": "2026-11-03T14:21:56.672053+00:00",
+    "payload_fields": [
+      "raw",
+      "standard",
+      "terms_revision",
+      "test_publication"
+    ],
+    "raw_title": "Global Thermal Solutions Market Report 2026: Size, Trends and Forecast to 2030 | Capitalize on AI Liquid Cooling with Schneider Electric, Vertiv, Delta Electronics and Boyd",
+    "raw_body_chars": 7668,
+    "standard_fields": [
+      "admission_context",
+      "binding_id",
+      "body",
+      "collected_at",
+      "external_id",
+      "metadata",
+      "normalized_at",
+      "publication_time_basis",
+      "published_at",
+      "publisher_name",
+      "raw_message_id",
+      "resolved_domain",
+      "revision",
+      "schema_version",
+      "source",
+      "source_definition_version",
+      "source_id",
+      "source_item_key",
+      "source_name",
+      "standard_message_id",
+      "ticker",
+      "title",
+      "url"
+    ]
+  }
+]

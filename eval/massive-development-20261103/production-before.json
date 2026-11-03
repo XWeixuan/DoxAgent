@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-03T14:09:27.424495+00:00",
+  "controls": {
+    "ticker_source_bindings": {
+      "count": 313,
+      "sha256": "8961920c5da94b68302c8cb7f99a6c340c3fdd503f76f59fefed8fce4c2b9821"
+    },
+    "ticker_monitoring_term_revisions": {
+      "count": 30,
+      "sha256": "9e8eef2c843702dafeaf2ba5cc6d6620e08932a721ef2f960e0d8480dcee1949"
+    },
+    "source_definitions": {
+      "count": 101,
+      "sha256": "726d6985382ab0e36a0b4dbf7d6395a5c2017e0c57dfed543edc811cb7d368c7"
+    },
+    "default_profiles": {
+      "count": 1,
+      "sha256": "5edabe139f9ec167d5ac48eb9a1613f31aae8b70d8a0943f2196e0f881b22897"
+    }
+  },
+  "sources": [],
+  "raw_messages_test_source_rows": 0,
+  "standard_messages_test_source_rows": 0,
+  "body": [],
+  "deliveries": [],
+  "publications": [],
+  "active_test_body": [],
+  "real_test_bindings": 0,
+  "units": [],
+  "cycles": []
+}

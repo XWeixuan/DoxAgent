@@ -1,0 +1,65 @@
+{
+  "v2-message-bus": {
+    "commit": "7e63af9425a018f92c991f8faec3d73546859ca4",
+    "image": "sha256:bd3d760e0a0fa03d4c64b38a43384ff66c5aaffcc47017cf993374c2965f3523",
+    "image_id": "sha256:bd3d760e0a0fa03d4c64b38a43384ff66c5aaffcc47017cf993374c2965f3523",
+    "running": true,
+    "health": null,
+    "started_at": "2026-11-03T14:31:43.879529954Z",
+    "restarts": 0
+  },
+  "v2-content-enrichment": {
+    "commit": "7e63af9425a018f92c991f8faec3d73546859ca4",
+    "image": "sha256:bd3d760e0a0fa03d4c64b38a43384ff66c5aaffcc47017cf993374c2965f3523",
+    "image_id": "sha256:bd3d760e0a0fa03d4c64b38a43384ff66c5aaffcc47017cf993374c2965f3523",
+    "running": true,
+    "health": null,
+    "started_at": "2026-11-03T14:31:54.425384426Z",
+    "restarts": 0
+  },
+  "v2-message-collector": {
+    "commit": "d6cf95ee52ff4adf45bde4a4cced4fa4699d9aa3",
+    "image": "sha256:6c892467b4b698a1e00b89c4d7b2fc1c4b1628555e3c0a9560fc624f234a7bd8",
+    "image_id": "sha256:6c892467b4b698a1e00b89c4d7b2fc1c4b1628555e3c0a9560fc624f234a7bd8",
+    "running": true,
+    "health": "healthy",
+    "started_at": "2026-11-03T14:39:52.970695582Z",
+    "restarts": 0
+  },
+  "v2-projector": {
+    "commit": "91824dd8205245a3bdc3ce657f07f5350f18cee6",
+    "image": "sha256:9ad0a6f2c0b34ffcfb7fce27f84aa9d1c128871e4b988dd45b48cc1dca77e654",
+    "image_id": "sha256:9ad0a6f2c0b34ffcfb7fce27f84aa9d1c128871e4b988dd45b48cc1dca77e654",
+    "running": true,
+    "health": null,
+    "started_at": "2026-11-03T14:12:25.51903311Z",
+    "restarts": 0
+  },
+  "v2-api": {
+    "commit": "91824dd8205245a3bdc3ce657f07f5350f18cee6",
+    "image": "sha256:9ad0a6f2c0b34ffcfb7fce27f84aa9d1c128871e4b988dd45b48cc1dca77e654",
+    "image_id": "sha256:9ad0a6f2c0b34ffcfb7fce27f84aa9d1c128871e4b988dd45b48cc1dca77e654",
+    "running": true,
+    "health": "healthy",
+    "started_at": "2026-11-03T14:12:35.461063586Z",
+    "restarts": 0
+  },
+  "v2-scheduler": {
+    "commit": "91824dd8205245a3bdc3ce657f07f5350f18cee6",
+    "image": "sha256:9ad0a6f2c0b34ffcfb7fce27f84aa9d1c128871e4b988dd45b48cc1dca77e654",
+    "image_id": "sha256:9ad0a6f2c0b34ffcfb7fce27f84aa9d1c128871e4b988dd45b48cc1dca77e654",
+    "running": true,
+    "health": null,
+    "started_at": "2026-11-03T14:14:31.404815222Z",
+    "restarts": 0
+  },
+  "v2-web": {
+    "commit": "91824dd8205245a3bdc3ce657f07f5350f18cee6",
+    "image": "sha256:2c80147fbb9f6ab5b49c7b4060a3f6a321a4005956d839b394541367a6ed541b",
+    "image_id": "sha256:2c80147fbb9f6ab5b49c7b4060a3f6a321a4005956d839b394541367a6ed541b",
+    "running": true,
+    "health": "healthy",
+    "started_at": "2026-11-03T14:14:41.399159525Z",
+    "restarts": 0
+  }
+}

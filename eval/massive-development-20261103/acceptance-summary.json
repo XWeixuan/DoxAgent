@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-03T14:40:18.512268+00:00",
+  "checks": {
+    "controls_unchanged": true,
+    "five_sources_enabled": true,
+    "seven_units_ten_targets": true,
+    "no_formal_messages": true,
+    "no_real_test_bindings": true,
+    "no_model_calls": true,
+    "test_body_inflight_at_most_one": true,
+    "seven_endpoint_observations": true,
+    "roles_running": true,
+    "roles_image_match": true
+  },
+  "publication_count": 113,
+  "businesswire_body_acceptance": "NOT_PASSED",
+  "business_evaluation": "RUNNING_NOT_COMPLETE"
+}

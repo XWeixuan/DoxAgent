@@ -1,0 +1,18 @@
+[
+  {
+    "source_id": "businesswire_massive",
+    "last_error": "test_publisher_cooldown",
+    "state": "FETCH_DUE",
+    "count": 15,
+    "earliest_due": "2026-11-03T14:40:55.486987+00:00",
+    "last_checked": null
+  },
+  {
+    "source_id": "businesswire_massive",
+    "last_error": "empty_extract",
+    "state": "READY",
+    "count": 107,
+    "earliest_due": "2026-11-03T14:14:09.052048+00:00",
+    "last_checked": "2026-11-03T14:35:55.486987+00:00"
+  }
+]

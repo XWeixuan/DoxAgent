@@ -2590,3 +2590,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Reuters RETRY链：现有主备均为输入前NOT_DISPATCHED三次封顶且无当前付费任务；复现后台标签原生mouseMoved超时，激活原页后输入ACK正常。修复聚焦/按钮位/旧无输入锁闩升级与阶段记账，后置截图超时不再否定输入ACK。截图屏幕坐标路径实测点击仍遇本地滑块加载问题，新增同原页、真实可见t=fe、已ACK新鲜RETRY后的单次Provider bootstrap，保留出口/任务幂等/费用及原页验证门槛；真实验收见docs/reuters-retry-chain-repair-20261103.md。
 
 2026-11-03 Massive观测落盘验收：将端点窗口/耗时元数据接入现有采集cycle回执并提供有界读回；31项Collector及Massive联合回归通过，不新增表/进程。
+
+2026-11-03 Massive测试运行交付：五源七端点在生产隔离测试中保持启用，十目标L2、零Decision Model/正式消息/真实订阅，原有配置哈希一致；最终读回113条隔离发布，七角色运行正常，BW正文未通过单列，附实现/运行报告与轻量证据。

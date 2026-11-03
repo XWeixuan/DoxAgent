@@ -1,0 +1,4 @@
+doxagent-v2-v2-message-bus-1 165.28% 135.1MiB / 4GiB
+doxagent-v2-v2-message-collector-1 29.45% 389.8MiB / 4GiB
+doxagent-v2-v2-content-enrichment-1 8.39% 199.5MiB / 4GiB
+doxagent-v2-v2-site-access-1 87.60% 3.504GiB / 10GiB

@@ -1,0 +1,163 @@
+[
+  {
+    "source": "businesswire_massive",
+    "unit": "TEST:WIRE:all",
+    "delta": 23,
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "all",
+      "feed_items": 4121,
+      "delta_items": 23,
+      "oldest": "2026-10-27T15:00:00+00:00"
+    },
+    "sample": [
+      {
+        "title": "NATIXIS UK Regulatory Announcement: Form 8.3 Segro plc",
+        "url": "https://www.businesswire.com/news/home/20261103583629/en/NATIXIS-UK-Regulatory-Announcement-Form-8.3-Segro-plc/"
+      },
+      {
+        "title": "First Trust Global Funds PLC UK Regulatory Announcement: Net Asset Value(s)",
+        "url": "https://www.businesswire.com/news/home/20261103421080/en/First-Trust-Global-Funds-PLC-UK-Regulatory-Announcement-Net-Asset-Value-s/"
+      }
+    ]
+  },
+  {
+    "source": "prnewswire_massive",
+    "unit": "TEST:WIRE:all",
+    "delta": 20,
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "all",
+      "feed_items": 20,
+      "delta_items": 20,
+      "oldest": "2026-11-03T14:00:00+00:00"
+    },
+    "sample": [
+      {
+        "title": "For Aflac, 25 years of holiday giving is just ducky!",
+        "url": "https://www.prnewswire.com/news-releases/for-aflac-25-years-of-holiday-giving-is-just-ducky-302927111.html"
+      },
+      {
+        "title": "GovCIO Announces Partnership with the Washington Commanders to Honor Those Who Serve",
+        "url": "https://www.prnewswire.com/news-releases/govcio-announces-partnership-with-the-washington-commanders-to-honor-those-who-serve-302927101.html"
+      }
+    ]
+  },
+  {
+    "source": "prnewswire_massive",
+    "unit": "TEST:WIRE:business",
+    "delta": 20,
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "business",
+      "feed_items": 20,
+      "delta_items": 20,
+      "oldest": "2026-11-03T14:00:00+00:00"
+    },
+    "sample": [
+      {
+        "title": "GovCIO Announces Partnership with the Washington Commanders to Honor Those Who Serve",
+        "url": "https://www.prnewswire.com/news-releases/govcio-announces-partnership-with-the-washington-commanders-to-honor-those-who-serve-302927101.html"
+      },
+      {
+        "title": "PSG Global Solutions Names Kara Sheffel Vice President of Business Development to Lead Its Staffing Vertical",
+        "url": "https://www.prnewswire.com/news-releases/psg-global-solutions-names-kara-sheffel-vice-president-of-business-development-to-lead-its-staffing-vertical-302926919.html"
+      }
+    ]
+  },
+  {
+    "source": "globenewswire_massive",
+    "unit": "TEST:WIRE:all",
+    "delta": 20,
+    "metadata": {
+      "wire_status": 200,
+      "route": "tr-standard-1",
+      "endpoint": "all",
+      "feed_items": 20,
+      "delta_items": 20,
+      "oldest": "2026-11-03T14:00:00+00:00"
+    },
+    "sample": [
+      {
+        "title": "QX Global Group Launches 'QX TaxReady' to US CPA and Tax Firms, an AI-powered Managed Tax Preparation Service, at One Fixed Price Per Return, All Year Round",
+        "url": "https://www.globenewswire.com/news-release/2026/11/03/3394345/0/en/qx-global-group-launches-qx-taxready-to-us-cpa-and-tax-firms-an-ai-powered-managed-tax-preparation-service-at-one-fixed-price-per-return-all-year-round.html"
+      },
+      {
+        "title": "Semiconductor KrF Photoresists Market - Global Forecast 2026-2032 | Mature-Node Fabs and Advanced Packaging Fuel 6.88% CAGR, Creating a USD 6.10 Billion Opportunity",
+        "url": "https://www.globenewswire.com/news-release/2026/11/03/3394346/28124/en/semiconductor-krf-photoresists-market-global-forecast-2026-2032-mature-node-fabs-and-advanced-packaging-fuel-6-88-cagr-creating-a-usd-6-10-billion-opportunity.html"
+      }
+    ]
+  },
+  {
+    "source": "globenewswire_massive",
+    "unit": "TEST:WIRE:public",
+    "delta": 20,
+    "metadata": {
+      "wire_status": 200,
+      "route": "tr-standard-1",
+      "endpoint": "public",
+      "feed_items": 20,
+      "delta_items": 20,
+      "oldest": "2026-11-03T14:00:00+00:00"
+    },
+    "sample": [
+      {
+        "title": "SoundHound AI and LG Partner to Expand Commerce Opportunities for Merchants on LG Smart TVs",
+        "url": "https://www.globenewswire.com/news-release/2026/11/03/3394344/0/en/soundhound-ai-and-lg-partner-to-expand-commerce-opportunities-for-merchants-on-lg-smart-tvs.html"
+      },
+      {
+        "title": "Hofseth BioCare ASA: AECORBIO APPOINTS PROF. KARL G. SYLVESTER AS CO-FOUNDER AND CONSULTING CHIEF MEDICAL OFFICER",
+        "url": "https://www.globenewswire.com/news-release/2026/11/03/3394340/0/en/hofseth-biocare-asa-aecorbio-appoints-prof-karl-g-sylvester-as-co-founder-and-consulting-chief-medical-officer.html"
+      }
+    ]
+  },
+  {
+    "source": "access_newswire_massive",
+    "unit": "TEST:WIRE:http",
+    "delta": 10,
+    "metadata": {
+      "wire_status": 200,
+      "route": "us-standard-5",
+      "endpoint": "http",
+      "feed_items": 20,
+      "delta_items": 10,
+      "oldest": "2026-11-03T13:25:00+00:00"
+    },
+    "sample": [
+      {
+        "title": "VISTECH Expands SolSuite CPQ With AI-Powered Conversational Guided Selling",
+        "url": "https://www.accessnewswire.com/newsroom/en/computers-technology-and-internet/vistech-expands-solsuite-cpq-with-ai-powered-conversational-guide-1242732"
+      },
+      {
+        "title": "SynQor(R) Introduces Two New High Voltage Modules to its 270 Vin DC-DC Mil-COTS Family, the MCOTS-C-270-800-FT & MCOTS-C-270-1000-FT",
+        "url": "https://www.accessnewswire.com/newsroom/en/aerospace-and-defense/synqorr-introduces-two-new-high-voltage-modules-to-its-270-vin-dc-dc-mil-cots-1243386"
+      }
+    ]
+  },
+  {
+    "source": "tmx_newsfile_massive",
+    "unit": "TEST:WIRE:all",
+    "delta": 6,
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "all",
+      "feed_items": 25,
+      "delta_items": 6,
+      "oldest": "2026-11-03T12:42:00+00:00"
+    },
+    "sample": [
+      {
+        "title": "AmeriTrust Announces Change of Auditor",
+        "url": "https://www.newsfilecorp.com/release/322282/AmeriTrust-Announces-Change-of-Auditor"
+      },
+      {
+        "title": "Aegis Secures Second U.S. Order from GGV Energy, Doubling Its American Deployment and Establishing a Foothold in the U.S. Market",
+        "url": "https://www.newsfilecorp.com/release/322219/Aegis-Secures-Second-U.S.-Order-from-GGV-Energy-Doubling-Its-American-Deployment-and-Establishing-a-Foothold-in-the-U.S.-Market"
+      }
+    ]
+  }
+]
