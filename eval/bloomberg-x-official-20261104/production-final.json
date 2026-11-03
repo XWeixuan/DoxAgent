@@ -1,0 +1,303 @@
+{
+  "at": "2026-11-03T19:46:46.040729+00:00",
+  "stream": {
+    "accounts": [
+      "bloom_energy",
+      "coherentcorp",
+      "constellationeg",
+      "intel",
+      "ionq_inc",
+      "microntech",
+      "nebiusai",
+      "ondasholdings",
+      "rocketlab",
+      "snowflake"
+    ],
+    "at": "2026-11-03T19:46:36.085090+00:00",
+    "connected_at": "2026-11-03T19:34:55.746931+00:00",
+    "error": null,
+    "http_status": 200,
+    "provider_keepalive_at": "2026-11-03T19:46:36.085070+00:00",
+    "received": 0,
+    "session": "x-stream_3c1ec3c1d2434d05b4c3879ecb95ea27",
+    "state": "CONNECTED"
+  },
+  "sources": [
+    {
+      "source_id": "bloomberg_massive",
+      "enabled": 1,
+      "version": 1
+    },
+    {
+      "source_id": "tikhub_x_search",
+      "enabled": 0,
+      "version": 2
+    },
+    {
+      "source_id": "tikhub_x_user_posts",
+      "enabled": 0,
+      "version": 2
+    },
+    {
+      "source_id": "x_official_posts",
+      "enabled": 1,
+      "version": 2
+    }
+  ],
+  "bindings": [
+    {
+      "source_id": "tikhub_x_user_posts",
+      "ticker": "MU",
+      "enabled": 0
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "INTC",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "MU",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "BE",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "COHR",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "NBIS",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "CEG",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "RKLB",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "SNOW",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "ONDS",
+      "enabled": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "ticker": "IONQ",
+      "enabled": 1
+    }
+  ],
+  "accounts": [
+    {
+      "ticker": "BE",
+      "revision": 4,
+      "accounts": [
+        "bloom_energy"
+      ]
+    },
+    {
+      "ticker": "INTC",
+      "revision": 5,
+      "accounts": [
+        "intel"
+      ]
+    },
+    {
+      "ticker": "MU",
+      "revision": 7,
+      "accounts": [
+        "microntech"
+      ]
+    },
+    {
+      "ticker": "NBIS",
+      "revision": 3,
+      "accounts": [
+        "nebiusai"
+      ]
+    },
+    {
+      "ticker": "COHR",
+      "revision": 3,
+      "accounts": [
+        "coherentcorp"
+      ]
+    },
+    {
+      "ticker": "RKLB",
+      "revision": 4,
+      "accounts": [
+        "rocketlab"
+      ]
+    },
+    {
+      "ticker": "ONDS",
+      "revision": 5,
+      "accounts": [
+        "ondasholdings"
+      ]
+    },
+    {
+      "ticker": "SNOW",
+      "revision": 3,
+      "accounts": [
+        "snowflake"
+      ]
+    },
+    {
+      "ticker": "CEG",
+      "revision": 3,
+      "accounts": [
+        "constellationeg"
+      ]
+    },
+    {
+      "ticker": "IONQ",
+      "revision": 3,
+      "accounts": [
+        "ionq_inc"
+      ]
+    }
+  ],
+  "terms_content_hash": {
+    "BE": "25d079c05fcd61607ddc6fb238f83665da7babe8decc7d66a82f322909bae2e3",
+    "INTC": "d90394266e4f21f1533a4c4959f3a373a5d46268baf1635eeded89c2f78eb381",
+    "MU": "67c083002d59b18cdf0cbabd0d29ddb04f3e6b1cddc5cddbad83cc39300c3ed3",
+    "NBIS": "e66b4dd49012f046eb4b6194fee3c3dbf81731a15bb79ca1d672446b84d24a98",
+    "COHR": "2431ae090764da6791de6f4155606bb356d0877de852e4a415c1c6efa7bdb478",
+    "RKLB": "478eeff57d6619529fc5b2d290018fdc9f41e3cd67b14caf69bdb217a9cdc594",
+    "ONDS": "659d9ccec0e09a58b49164fef87054d201c7b260b1c7182df465036411ea801a",
+    "SNOW": "feaf921eb507742311a4bf4abfa2c6acdd963598ba9bf4ecb8ed609e3f80cbbe",
+    "CEG": "2b7c9087094d4acd45023332397907d09047d4ece6436486abe4f4050b5b2d6c",
+    "IONQ": "85347e3f3ab9ad07d9743992546dddd6fca925b8dcb22e818a616c14faf35964"
+  },
+  "formal_messages": {
+    "raw_messages": [],
+    "standard_messages": []
+  },
+  "bloomberg_real_bindings": 0,
+  "bloomberg_model_decisions": 0,
+  "bloomberg_bodies": [
+    {
+      "state": "READY",
+      "outcome": "PARTIAL",
+      "last_error": "audio_requires_transcript",
+      "count": 1
+    },
+    {
+      "state": "READY",
+      "outcome": "PARTIAL",
+      "last_error": "incomplete_extract",
+      "count": 4
+    },
+    {
+      "state": "READY",
+      "outcome": "PARTIAL",
+      "last_error": "media_requires_transcript",
+      "count": 2
+    },
+    {
+      "state": "READY",
+      "outcome": "PARTIAL",
+      "last_error": "newsletter_requires_full_text",
+      "count": 1
+    },
+    {
+      "state": "READY",
+      "outcome": "PARTIAL",
+      "last_error": "subscription_required",
+      "count": 3
+    }
+  ],
+  "bloomberg_test_publications": 0,
+  "x_body_work": [],
+  "units": [
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "TEST:WIRE:business",
+      "targets": 10
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "TEST:WIRE:economics",
+      "targets": 10
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "TEST:WIRE:industries",
+      "targets": 10
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "TEST:WIRE:markets",
+      "targets": 10
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "TEST:WIRE:news",
+      "targets": 10
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "TEST:WIRE:sitemap",
+      "targets": 10
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "TEST:WIRE:technology",
+      "targets": 10
+    }
+  ],
+  "cycles": [
+    {
+      "unit": "TEST:WIRE:business",
+      "status": "CAPTURED",
+      "physical_runs": 12
+    },
+    {
+      "unit": "TEST:WIRE:economics",
+      "status": "CAPTURED",
+      "physical_runs": 12
+    },
+    {
+      "unit": "TEST:WIRE:industries",
+      "status": "CAPTURED",
+      "physical_runs": 12
+    },
+    {
+      "unit": "TEST:WIRE:markets",
+      "status": "CAPTURED",
+      "physical_runs": 12
+    },
+    {
+      "unit": "TEST:WIRE:news",
+      "status": "CAPTURED",
+      "physical_runs": 12
+    },
+    {
+      "unit": "TEST:WIRE:sitemap",
+      "status": "CAPTURED",
+      "physical_runs": 11
+    },
+    {
+      "unit": "TEST:WIRE:technology",
+      "status": "CAPTURED",
+      "physical_runs": 12
+    }
+  ],
+  "x_captures": []
+}

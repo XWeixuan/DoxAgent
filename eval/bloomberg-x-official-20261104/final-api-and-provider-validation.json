@@ -1,0 +1,100 @@
+{
+  "valid": true,
+  "terms_and_bindings": [
+    {
+      "ticker": "INTC",
+      "revision": 5,
+      "accounts": [
+        "intel"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "MU",
+      "revision": 7,
+      "accounts": [
+        "microntech"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "BE",
+      "revision": 4,
+      "accounts": [
+        "bloom_energy"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "COHR",
+      "revision": 3,
+      "accounts": [
+        "coherentcorp"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "NBIS",
+      "revision": 3,
+      "accounts": [
+        "nebiusai"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "CEG",
+      "revision": 3,
+      "accounts": [
+        "constellationeg"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "RKLB",
+      "revision": 4,
+      "accounts": [
+        "rocketlab"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "SNOW",
+      "revision": 3,
+      "accounts": [
+        "snowflake"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "ONDS",
+      "revision": 5,
+      "accounts": [
+        "ondasholdings"
+      ],
+      "polling_interval_form": false
+    },
+    {
+      "ticker": "IONQ",
+      "revision": 3,
+      "accounts": [
+        "ionq_inc"
+      ],
+      "polling_interval_form": false
+    }
+  ],
+  "provider": {
+    "status": 200,
+    "payload": {
+      "data": [
+        {
+          "connected_at": "2026-11-03T19:34:35.000Z",
+          "endpoint_name": "filtered_stream",
+          "id": "5272e69c-eb63-4c42-84d1-ec67a53e8780"
+        }
+      ],
+      "meta": {
+        "result_count": 1
+      }
+    }
+  }
+}

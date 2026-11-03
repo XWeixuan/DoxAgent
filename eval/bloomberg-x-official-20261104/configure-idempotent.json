@@ -1,0 +1,1 @@
+{"configured": ["INTC", "MU", "BE", "COHR", "NBIS", "CEG", "RKLB", "SNOW", "ONDS", "IONQ"], "accounts": {"INTC": ["intel"], "MU": ["MicronTech"], "BE": ["Bloom_Energy"], "COHR": ["CoherentCorp"], "NBIS": ["nebiusai"], "CEG": ["ConstellationEG"], "RKLB": ["RocketLab"], "SNOW": ["Snowflake"], "ONDS": ["OndasHoldings"], "IONQ": ["IonQ_Inc"]}, "bloomberg_mode": "test"}

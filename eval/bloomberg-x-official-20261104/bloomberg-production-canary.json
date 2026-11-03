@@ -1,0 +1,148 @@
+[
+  {
+    "endpoint": "news",
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "news",
+      "request_seconds": 0.91,
+      "response_bytes": 15023,
+      "feed_items": 20,
+      "delta_items": 3,
+      "window_overlap": 0,
+      "window_overflow_risk": false,
+      "oldest": "2026-11-02T21:16:17+00:00",
+      "newest": "2026-11-03T19:01:02+00:00"
+    },
+    "delta": 3,
+    "sample": [
+      {
+        "title": "The RBI Is Key to India\u2019s Bond Market Puzzle",
+        "url": "https://www.bloomberg.com/opinion/articles/2026-11-03/the-rbi-is-key-to-india-s-bond-market-puzzle"
+      }
+    ]
+  },
+  {
+    "endpoint": "economics",
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "economics",
+      "request_seconds": 0.143,
+      "response_bytes": 14514,
+      "feed_items": 20,
+      "delta_items": 0,
+      "window_overlap": 0,
+      "window_overflow_risk": false,
+      "oldest": "2026-10-31T10:30:00+00:00",
+      "newest": "2026-11-03T18:00:00+00:00"
+    },
+    "delta": 0,
+    "sample": []
+  },
+  {
+    "endpoint": "industries",
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "industries",
+      "request_seconds": 0.24,
+      "response_bytes": 15091,
+      "feed_items": 20,
+      "delta_items": 1,
+      "window_overlap": 0,
+      "window_overflow_risk": false,
+      "oldest": "2026-11-03T00:37:24+00:00",
+      "newest": "2026-11-03T18:39:54+00:00"
+    },
+    "delta": 1,
+    "sample": [
+      {
+        "title": "BMW Cuts Outlook for Second Straight Quarter Amid Restructuring",
+        "url": "https://www.bloomberg.com/news/articles/2026-11-03/bmw-cuts-outlook-for-second-straight-quarter-amid-restructuring"
+      }
+    ]
+  },
+  {
+    "endpoint": "technology",
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "technology",
+      "request_seconds": 0.341,
+      "response_bytes": 15585,
+      "feed_items": 20,
+      "delta_items": 0,
+      "window_overlap": 0,
+      "window_overflow_risk": false,
+      "oldest": "2026-11-02T21:16:17+00:00",
+      "newest": "2026-11-03T18:31:39+00:00"
+    },
+    "delta": 0,
+    "sample": []
+  },
+  {
+    "endpoint": "business",
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "business",
+      "request_seconds": 0.946,
+      "response_bytes": 12613,
+      "feed_items": 20,
+      "delta_items": 1,
+      "window_overlap": 0,
+      "window_overflow_risk": false,
+      "oldest": "2026-11-03T14:51:03+00:00",
+      "newest": "2026-11-03T18:50:15+00:00"
+    },
+    "delta": 1,
+    "sample": [
+      {
+        "title": "Bloomberg Tech: Apple's Holiday Forecast (Podcast)",
+        "url": "https://www.bloomberg.com/news/audio/2026-11-03/bloomberg-tech-apple-s-holiday-forecast-podcast"
+      }
+    ]
+  },
+  {
+    "endpoint": "markets",
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "markets",
+      "request_seconds": 0.622,
+      "response_bytes": 15471,
+      "feed_items": 20,
+      "delta_items": 0,
+      "window_overlap": 0,
+      "window_overflow_risk": false,
+      "oldest": "2026-11-02T22:25:14+00:00",
+      "newest": "2026-11-03T18:16:21+00:00"
+    },
+    "delta": 0,
+    "sample": []
+  },
+  {
+    "endpoint": "sitemap",
+    "metadata": {
+      "wire_status": 200,
+      "route": "direct",
+      "endpoint": "sitemap",
+      "request_seconds": 0.754,
+      "response_bytes": 267801,
+      "feed_items": 446,
+      "delta_items": 1,
+      "window_overlap": 0,
+      "window_overflow_risk": false,
+      "oldest": "2026-10-29T23:02:35.725000+00:00",
+      "newest": "2026-11-03T19:01:02.333000+00:00"
+    },
+    "delta": 1,
+    "sample": [
+      {
+        "title": "The RBI Is Key to India's Bond Market Puzzle",
+        "url": "https://www.bloomberg.com/opinion/articles/2026-11-03/the-rbi-is-key-to-india-s-bond-market-puzzle"
+      }
+    ]
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "username": "intel",
+    "id": "2803191",
+    "name": "Intel",
+    "company_urls": [
+      "http://www.intel.com/stories"
+    ]
+  },
+  {
+    "username": "MicronTech",
+    "id": "19037711",
+    "name": "Micron Technology",
+    "company_urls": [
+      "https://www.micron.com/"
+    ]
+  },
+  {
+    "username": "Bloom_Energy",
+    "id": "97722136",
+    "name": "Bloom Energy",
+    "company_urls": [
+      "http://www.bloomenergy.com"
+    ]
+  },
+  {
+    "username": "CoherentCorp",
+    "id": "17787327",
+    "name": "Coherent Corp.",
+    "company_urls": [
+      "https://www.coherent.com/"
+    ]
+  },
+  {
+    "username": "ConstellationEG",
+    "id": "35742491",
+    "name": "Constellation",
+    "company_urls": [
+      "http://www.constellationenergy.com"
+    ]
+  },
+  {
+    "username": "RocketLab",
+    "id": "91145174",
+    "name": "Rocket Lab",
+    "company_urls": [
+      "http://www.rocketlabcorp.com"
+    ]
+  },
+  {
+    "username": "OndasHoldings",
+    "id": "1492845729223741456",
+    "name": "Ondas Inc.",
+    "company_urls": [
+      "https://www.ondas.com/"
+    ]
+  },
+  {
+    "username": "IonQ_Inc",
+    "id": "836657815137607680",
+    "name": "IonQ",
+    "company_urls": [
+      "https://ionq.com"
+    ]
+  },
+  {
+    "username": "nebiusai",
+    "id": "1674054161661345794",
+    "name": "Nebius",
+    "company_urls": [
+      "https://nebius.com/"
+    ]
+  },
+  {
+    "username": "Snowflake",
+    "id": "2539962439",
+    "name": "Snowflake",
+    "company_urls": [
+      "https://www.snowflake.com"
+    ]
+  }
+]

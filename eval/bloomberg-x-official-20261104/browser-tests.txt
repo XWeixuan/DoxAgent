@@ -1,0 +1,11 @@
+
+Running 6 tests using 1 worker
+
+  ok 1 tests\browser\monitoring-terms.spec.ts:4:3 › bound languages refresh while preserving drafts at 1262px (764ms)
+  ok 2 tests\browser\monitoring-terms.spec.ts:34:3 › official accounts save without affecting regex at 1262px (522ms)
+  ok 3 tests\browser\monitoring-terms.spec.ts:46:3 › monitoring terms editor fits 1262px (577ms)
+  ok 4 tests\browser\monitoring-terms.spec.ts:4:3 › bound languages refresh while preserving drafts at 1559px (634ms)
+  ok 5 tests\browser\monitoring-terms.spec.ts:34:3 › official accounts save without affecting regex at 1559px (501ms)
+  ok 6 tests\browser\monitoring-terms.spec.ts:46:3 › monitoring terms editor fits 1559px (613ms)
+
+  6 passed (4.2s)

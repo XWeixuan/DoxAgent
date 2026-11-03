@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-03T19:46:46.040729+00:00",
+  "checks": {
+    "x_ten_bindings": true,
+    "x_connected": true,
+    "x_ten_accounts": true,
+    "provider_one_active_connection": true,
+    "tikhub_sources_and_bindings_retired": true,
+    "bloomberg_no_formal_messages": true,
+    "bloomberg_no_real_bindings": true,
+    "bloomberg_no_model": true,
+    "bloomberg_seven_units_ten_targets": true,
+    "original_regex_and_definitions_unchanged": true,
+    "roles_running": true,
+    "roles_immutable_image_match": true,
+    "production_ten_terms_and_binding_schemas_valid": true
+  },
+  "x_natural_posts_received": 0,
+  "x_natural_publication_acceptance": "PENDING_NATURAL_POST",
+  "bloomberg_full_body_acceptance": "NOT_PASSED_PUBLIC_ACCESS",
+  "test_publications": 0
+}

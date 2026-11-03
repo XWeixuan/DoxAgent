@@ -2618,3 +2618,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 测试坏例完善：同类视频页面导航/简介也不能冒充完整正文，音视频均记media_requires_transcript；X账号/绑定刷新只更新规则及内存路由，保留当前长连接，避免每次修改产生20秒重连窗口，错误退避前先关闭失效消费者。23项专项通过。
 
 2026-11-04 Bloomberg预览边界收尾：实测Money Stuff newsletter仅返回三段预览，也不得计作全文；将已验证的音视频/付费newsletter限制统一为轻量来源函数，同时覆盖提取与缓存提交，并保持候选发现/原始证据。25项专项通过，正文可得性仍如实标记未验收。
+
+2026-11-04 Bloomberg/X运行交付：Bloomberg七端点持续隔离测试、十目标正则、零正式消息/真实订阅/模型调用；X十账号与十真实绑定、单个官方活动连接及心跳验证，TikHub两源及旧绑定停用，原L1/L2/定义哈希不变。25项专项、六项双宽浏览器和十份API配置/绑定契约验收通过；Bloomberg全文及X自然帖子发布验收边界明确留存，详见docs/bloomberg-and-x-official-source-implementation-20261104.md。

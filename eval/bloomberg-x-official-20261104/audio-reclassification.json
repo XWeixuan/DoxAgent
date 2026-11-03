@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-03T19:27:39.792583+00:00",
+  "corrected": [
+    {
+      "article_key": "test_49f534395556182de0e371ebe40a55fba8bfb25abdc36f1356a63890a9fcb043",
+      "retracted_test_publications": [
+        "ec5ab7e708cdda2cf2eeb75c956b81735f65d2d7dc11a6e0bf5cb69a0db81905"
+      ]
+    }
+  ],
+  "production_messages_touched": 0
+}

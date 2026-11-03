@@ -1,0 +1,15 @@
+{
+  "terms_content_hash": {
+    "BE": "25d079c05fcd61607ddc6fb238f83665da7babe8decc7d66a82f322909bae2e3",
+    "INTC": "d90394266e4f21f1533a4c4959f3a373a5d46268baf1635eeded89c2f78eb381",
+    "MU": "67c083002d59b18cdf0cbabd0d29ddb04f3e6b1cddc5cddbad83cc39300c3ed3",
+    "NBIS": "e66b4dd49012f046eb4b6194fee3c3dbf81731a15bb79ca1d672446b84d24a98",
+    "COHR": "2431ae090764da6791de6f4155606bb356d0877de852e4a415c1c6efa7bdb478",
+    "RKLB": "478eeff57d6619529fc5b2d290018fdc9f41e3cd67b14caf69bdb217a9cdc594",
+    "ONDS": "659d9ccec0e09a58b49164fef87054d201c7b260b1c7182df465036411ea801a",
+    "SNOW": "feaf921eb507742311a4bf4abfa2c6acdd963598ba9bf4ecb8ed609e3f80cbbe",
+    "CEG": "2b7c9087094d4acd45023332397907d09047d4ece6436486abe4f4050b5b2d6c",
+    "IONQ": "85347e3f3ab9ad07d9743992546dddd6fca925b8dcb22e818a616c14faf35964"
+  },
+  "bindings": 313
+}

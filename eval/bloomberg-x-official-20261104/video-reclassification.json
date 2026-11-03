@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-03T19:36:59.272589+00:00",
+  "corrected": [
+    {
+      "article_key": "test_631a0a8a73cef1cc1a2230a5c7d69eff6ec4b87253251725c4b92bda1b5601d1",
+      "retracted_test_publications": [
+        "ef07916b361727b15f3805882c46d221b0130ace799cae19d3fefd89a7875432"
+      ]
+    },
+    {
+      "article_key": "test_e46e9c5c5daf7fe11e58bacd9e2b782aaf9e2bbae3ba5bc099355143331df446",
+      "retracted_test_publications": [
+        "25e8fc5e08a21fc45ebfb7b5ba80546611c1ccce51396543fe8e5aec6ca50617"
+      ]
+    }
+  ],
+  "production_messages_touched": 0
+}

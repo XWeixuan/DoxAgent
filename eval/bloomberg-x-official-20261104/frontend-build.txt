@@ -1,0 +1,36 @@
+Generated V2 validators from shared wire types (no V1 dependency).
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 2508 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                   0.80 kB │ gzip:   0.41 kB
+dist/assets/audit-C0stD0ZD.css                    8.12 kB │ gzip:   1.95 kB
+dist/assets/index-B4k8Nalj.css                  134.61 kB │ gzip:  25.81 kB
+dist/assets/chevron-right-CPAaPDPe.js             0.13 kB │ gzip:   0.14 kB
+dist/assets/git-pull-request-arrow-CPuTgYOd.js    0.32 kB │ gzip:   0.24 kB
+dist/assets/scan-line-CGl4dOh-.js                 0.33 kB │ gzip:   0.22 kB
+dist/assets/load-more-Lo5VYAg8.js                 0.34 kB │ gzip:   0.28 kB
+dist/assets/layers-DWweo4Sc.js                    0.42 kB │ gzip:   0.24 kB
+dist/assets/calendar-days-CwCJrtai.js             0.49 kB │ gzip:   0.26 kB
+dist/assets/table-CpljrQs3.js                     1.34 kB │ gzip:   0.58 kB
+dist/assets/event-rail-CFTpzX1t.js                1.56 kB │ gzip:   0.85 kB
+dist/assets/business-metrics-BGMTQGrQ.js          2.68 kB │ gzip:   1.40 kB
+dist/assets/ticker-workspace-D6xQ3x8W.js          2.94 kB │ gzip:   1.27 kB
+dist/assets/research-Bu2QXtrC.js                  3.85 kB │ gzip:   1.91 kB
+dist/assets/metrics--bWC7GMW.js                   4.66 kB │ gzip:   1.87 kB
+dist/assets/live-query-pTG6z3Am.js                5.56 kB │ gzip:   2.53 kB
+dist/assets/events-ByaeEAyA.js                   10.71 kB │ gzip:   3.94 kB
+dist/assets/strategy-JZa53QRe.js                 12.66 kB │ gzip:   5.11 kB
+dist/assets/expectations-DTGR221n.js             16.79 kB │ gzip:   5.67 kB
+dist/assets/audit-C_ZayeGx.js                    30.42 kB │ gzip:  10.50 kB
+dist/assets/query-runtime-Btojn1CB.js            34.74 kB │ gzip:  10.41 kB
+dist/assets/message-bus-TIGSOxdF.js              37.00 kB │ gzip:  13.01 kB
+dist/assets/index-CXnqkmnj.js                    38.94 kB │ gzip:  14.19 kB
+dist/assets/runtime-BAGCV9YO.js                  48.93 kB │ gzip:  16.07 kB
+dist/assets/react-runtime-BDIxgnof.js            50.81 kB │ gzip:  18.06 kB
+dist/assets/wire-validation-CUxxoACA.js         124.48 kB │ gzip:  39.05 kB
+dist/assets/auth-runtime-CQoOg3v1.js            219.74 kB │ gzip:  57.97 kB
+dist/assets/page-kit-BNkUdHdC.js                220.75 kB │ gzip:  72.39 kB
+dist/assets/index-B_ae76v4.js                   575.67 kB │ gzip: 142.72 kB
+✓ built in 3.75s
