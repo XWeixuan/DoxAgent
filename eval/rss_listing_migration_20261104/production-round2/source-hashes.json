@@ -1,0 +1,44 @@
+[
+  {
+    "component": "v2-message-collector",
+    "file": "src/doxagent/message_bus_v2/public_listing.py",
+    "expected": "b4054a064d92130df83747e9d5e9d63ef03aa031c53332ad2d716970b80814c5",
+    "actual": "b4054a064d92130df83747e9d5e9d63ef03aa031c53332ad2d716970b80814c5",
+    "matches": true
+  },
+  {
+    "component": "v2-message-collector",
+    "file": "src/doxagent/message_bus_v2/collection_plane/worker.py",
+    "expected": "629528ff30e92fca70ecae7638a6efdb0af2a7a0aeede5c9be79a063c7d7dc42",
+    "actual": "629528ff30e92fca70ecae7638a6efdb0af2a7a0aeede5c9be79a063c7d7dc42",
+    "matches": true
+  },
+  {
+    "component": "v2-message-collector",
+    "file": "src/doxagent/message_bus_v2/collection_plane/store.py",
+    "expected": "4e2c09a834585d39ff8f399d7459af06cb50a2a96c38c54de0acb0553ca18810",
+    "actual": "4e2c09a834585d39ff8f399d7459af06cb50a2a96c38c54de0acb0553ca18810",
+    "matches": true
+  },
+  {
+    "component": "v2-message-bus",
+    "file": "src/doxagent/message_bus_v2/public_listing.py",
+    "expected": "b4054a064d92130df83747e9d5e9d63ef03aa031c53332ad2d716970b80814c5",
+    "actual": "b4054a064d92130df83747e9d5e9d63ef03aa031c53332ad2d716970b80814c5",
+    "matches": true
+  },
+  {
+    "component": "v2-message-bus",
+    "file": "src/doxagent/message_bus_v2/collection_plane/worker.py",
+    "expected": "629528ff30e92fca70ecae7638a6efdb0af2a7a0aeede5c9be79a063c7d7dc42",
+    "actual": "629528ff30e92fca70ecae7638a6efdb0af2a7a0aeede5c9be79a063c7d7dc42",
+    "matches": true
+  },
+  {
+    "component": "v2-message-bus",
+    "file": "src/doxagent/message_bus_v2/collection_plane/store.py",
+    "expected": "4e2c09a834585d39ff8f399d7459af06cb50a2a96c38c54de0acb0553ca18810",
+    "actual": "4e2c09a834585d39ff8f399d7459af06cb50a2a96c38c54de0acb0553ca18810",
+    "matches": true
+  }
+]

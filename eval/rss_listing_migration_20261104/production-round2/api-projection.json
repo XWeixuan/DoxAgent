@@ -1,0 +1,15 @@
+{
+  "bindings": 54,
+  "statuses": {
+    "succeeded": 41,
+    "failed": 13
+  },
+  "failed_sources": [
+    "army_news_rss",
+    "aviationweek_rss",
+    "dcd_infrastructure_rss",
+    "tomshardware_rss"
+  ],
+  "failed_with_detail": 13,
+  "checked_at": "2026-11-03T21:07:56Z"
+}

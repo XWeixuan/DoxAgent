@@ -1,0 +1,2456 @@
+{
+  "at": "2026-11-03T21:02:32.234578+00:00",
+  "since": "2026-11-03T21:00:01.230745+00:00",
+  "release": {
+    "commit": "93bc25ef133b899daf923bcf56ee2c1effd3f37e",
+    "image": "sha256:aea3f5fe1a07bcb46192cf1bd57b9acbc9b03c26fcdea5a3cd378b1814f50451",
+    "components": [
+      "v2-message-collector",
+      "v2-message-bus"
+    ],
+    "at": "2026-11-03T21:00:01.230745+00:00",
+    "sources": 20
+  },
+  "sources": [
+    {
+      "source_id": "army_news_rss",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 1
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 1
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.455456+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:36.585288+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:army_worldwide_is_curated_and_omits_current_rss_articles",
+          "last_latency_ms": 244,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T21:02:36.455456+00:00",
+          "status": "failed",
+          "ticker": "ONDS",
+          "unit": "FEED:7ac5d73f70f0bc24ce914019"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "FAILED": 2
+      },
+      "request_roles": {
+        "rss_fallback": 2
+      },
+      "network_seconds": {
+        "samples": 2,
+        "mean": 0.212,
+        "p95": 0.213,
+        "max": 0.213
+      },
+      "primary_network_seconds": null,
+      "fallback_network_seconds": {
+        "samples": 2,
+        "mean": 0.212,
+        "p95": 0.213,
+        "max": 0.213
+      },
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 0.28,
+        "p95": 0.317,
+        "max": 0.317
+      },
+      "due_to_wire_seconds": null,
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.09,
+        "p95": 0.13,
+        "max": 0.13
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T21:00:36.506176+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7ac5d73f70f0bc24ce914019",
+          "at": "2026-11-03T21:01:36.585288+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "aviationweek_rss",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 1
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 1
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.893475+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:06.947497+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:aviation_home_is_curated_search_needs_runtime_or_verified_api",
+          "last_latency_ms": 822,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T21:03:06.893475+00:00",
+          "status": "failed",
+          "ticker": "RKLB",
+          "unit": "FEED:4fad395714a054d6369cc3e7"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "FAILED": 3
+      },
+      "request_roles": {
+        "rss_fallback": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.756,
+        "p95": 0.868,
+        "max": 0.868
+      },
+      "primary_network_seconds": null,
+      "fallback_network_seconds": {
+        "samples": 3,
+        "mean": 0.756,
+        "p95": 0.868,
+        "max": 0.868
+      },
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.93,
+        "p95": 1.138,
+        "max": 1.138
+      },
+      "due_to_wire_seconds": null,
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.065,
+        "p95": 0.086,
+        "max": 0.086
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T21:00:06.979293+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T21:01:06.948737+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:4fad395714a054d6369cc3e7",
+          "at": "2026-11-03T21:02:06.947497+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "canary_media",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.775198+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:20.854051+00:00",
+          "last_capture_at": "2026-11-03T21:02:21.350812+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 985,
+          "last_success_at": "2026-11-03T21:02:21.848999+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:20.775198+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:bd9f86f953b4a5cb13216d0d"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.775198+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:20.854051+00:00",
+          "last_capture_at": "2026-11-03T21:02:21.350812+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 985,
+          "last_success_at": "2026-11-03T21:02:21.848999+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:20.775198+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:bd9f86f953b4a5cb13216d0d"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.583,
+        "p95": 0.873,
+        "max": 0.873
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 0.583,
+        "p95": 0.873,
+        "max": 0.873
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 1.067,
+        "p95": 1.793,
+        "max": 1.793
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.266,
+        "p95": 0.611,
+        "max": 0.611
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.1,
+        "p95": 0.123,
+        "max": 0.123
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "required_binding_units": 3,
+      "physical_units": 3,
+      "latest_statuses": {
+        "succeeded": 3
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:10.863464+00:00",
+          "last_capture_at": "2026-11-03T21:02:10.913271+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 50,
+          "last_success_at": "2026-11-03T21:02:10.915474+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:10.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:a518927e703ee73b94eb2ec9"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:30.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:30.846571+00:00",
+          "last_capture_at": "2026-11-03T21:02:30.914398+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 68,
+          "last_success_at": "2026-11-03T21:02:30.914802+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:30.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:0f559d39370394f58715143f"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:50.840578+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:50.876578+00:00",
+          "last_capture_at": "2026-11-03T21:01:50.949061+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 73,
+          "last_success_at": "2026-11-03T21:01:50.949356+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:50.840578+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:ffdb14036507158e4b9c311e"
+        }
+      ],
+      "physical_cycles": 8,
+      "physical_statuses": {
+        "CAPTURED": 8
+      },
+      "request_roles": {
+        "listing": 8
+      },
+      "network_seconds": {
+        "samples": 8,
+        "mean": 0.061,
+        "p95": 0.074,
+        "max": 0.074
+      },
+      "primary_network_seconds": {
+        "samples": 8,
+        "mean": 0.061,
+        "p95": 0.074,
+        "max": 0.074
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 8,
+        "mean": 0.064,
+        "p95": 0.076,
+        "max": 0.076
+      },
+      "due_to_wire_seconds": {
+        "samples": 8,
+        "mean": 0.061,
+        "p95": 0.185,
+        "max": 0.185
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 8,
+        "mean": 0.059,
+        "p95": 0.183,
+        "max": 0.183
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "data_center_frontier",
+      "required_binding_units": 6,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 6
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:45.906627+00:00",
+          "last_capture_at": "2026-11-03T21:01:46.267389+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 370,
+          "last_success_at": "2026-11-03T21:01:46.277062+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:45.906627+00:00",
+          "last_capture_at": "2026-11-03T21:01:46.267389+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 370,
+          "last_success_at": "2026-11-03T21:01:46.277062+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:45.906627+00:00",
+          "last_capture_at": "2026-11-03T21:01:46.267389+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 370,
+          "last_success_at": "2026-11-03T21:01:46.277062+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:45.906627+00:00",
+          "last_capture_at": "2026-11-03T21:01:46.267389+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 370,
+          "last_success_at": "2026-11-03T21:01:46.277062+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:45.906627+00:00",
+          "last_capture_at": "2026-11-03T21:01:46.267389+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 370,
+          "last_success_at": "2026-11-03T21:01:46.277062+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:45.885640+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:45.906627+00:00",
+          "last_capture_at": "2026-11-03T21:01:46.267389+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 370,
+          "last_success_at": "2026-11-03T21:01:46.277062+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:45.885640+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:89de5d09f5f486ad42605b0a"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "CAPTURED": 2
+      },
+      "request_roles": {
+        "listing": 2
+      },
+      "network_seconds": {
+        "samples": 2,
+        "mean": 0.356,
+        "p95": 0.357,
+        "max": 0.357
+      },
+      "primary_network_seconds": {
+        "samples": 2,
+        "mean": 0.356,
+        "p95": 0.357,
+        "max": 0.357
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 0.377,
+        "p95": 0.383,
+        "max": 0.383
+      },
+      "due_to_wire_seconds": {
+        "samples": 2,
+        "mean": 0.041,
+        "p95": 0.058,
+        "max": 0.058
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.038,
+        "p95": 0.055,
+        "max": 0.055
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "required_binding_units": 6,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 6
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 6
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:03.624009+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 251,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:03.614601+00:00",
+          "status": "failed",
+          "ticker": "BE",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:03.624009+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 251,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:03.614601+00:00",
+          "status": "failed",
+          "ticker": "CEG",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:03.624009+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 251,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:03.614601+00:00",
+          "status": "failed",
+          "ticker": "COHR",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:03.624009+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 251,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:03.614601+00:00",
+          "status": "failed",
+          "ticker": "INTC",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:03.624009+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 251,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:03.614601+00:00",
+          "status": "failed",
+          "ticker": "MU",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:03.614601+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:03.624009+00:00",
+          "last_capture_at": "2026-11-03T20:30:45.300323+00:00",
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_coverage_review:dcd_news_list_omits_analysis_opinions_and_whitepapers_in_original_feed",
+          "last_latency_ms": 251,
+          "last_success_at": "2026-11-03T20:30:45.300811+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:03.614601+00:00",
+          "status": "failed",
+          "ticker": "NBIS",
+          "unit": "FEED:7278213ee8f6cdb74ee2b957"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "FAILED": 3
+      },
+      "request_roles": {
+        "rss_fallback": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.244,
+        "p95": 0.252,
+        "max": 0.252
+      },
+      "primary_network_seconds": null,
+      "fallback_network_seconds": {
+        "samples": 3,
+        "mean": 0.244,
+        "p95": 0.252,
+        "max": 0.252
+      },
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.623,
+        "p95": 1.339,
+        "max": 1.339
+      },
+      "due_to_wire_seconds": null,
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.091,
+        "p95": 0.202,
+        "max": 0.202
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T21:00:03.676885+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T21:01:03.816573+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:7278213ee8f6cdb74ee2b957",
+          "at": "2026-11-03T21:02:03.624009+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "defensescoop_drones",
+      "required_binding_units": 2,
+      "physical_units": 2,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:24.440595+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:24.527723+00:00",
+          "last_capture_at": "2026-11-03T21:02:25.015130+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 498,
+          "last_success_at": "2026-11-03T21:02:25.025889+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:24.440595+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:3e7ad1dabf2ec5b4b61c9c0c"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:54.440595+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:54.482020+00:00",
+          "last_capture_at": "2026-11-03T21:01:54.914964+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 454,
+          "last_success_at": "2026-11-03T21:01:54.936208+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:54.440595+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:27cdf1757342a7b11cdfb4c3"
+        }
+      ],
+      "physical_cycles": 5,
+      "physical_statuses": {
+        "CAPTURED": 5
+      },
+      "request_roles": {
+        "listing": 5
+      },
+      "network_seconds": {
+        "samples": 5,
+        "mean": 0.465,
+        "p95": 0.487,
+        "max": 0.487
+      },
+      "primary_network_seconds": {
+        "samples": 5,
+        "mean": 0.465,
+        "p95": 0.487,
+        "max": 0.487
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 5,
+        "mean": 0.514,
+        "p95": 0.625,
+        "max": 0.625
+      },
+      "due_to_wire_seconds": {
+        "samples": 5,
+        "mean": 0.123,
+        "p95": 0.229,
+        "max": 0.229
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 5,
+        "mean": 0.117,
+        "p95": 0.215,
+        "max": 0.215
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dod_contracts",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:44.533432+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:44.558399+00:00",
+          "last_capture_at": "2026-11-03T21:01:44.578341+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 35,
+          "last_success_at": "2026-11-03T21:01:44.593583+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:44.533432+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:cfae6ba739108534dbac3414"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:44.533432+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:44.558399+00:00",
+          "last_capture_at": "2026-11-03T21:01:44.578341+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 35,
+          "last_success_at": "2026-11-03T21:01:44.593583+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:44.533432+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:cfae6ba739108534dbac3414"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "CAPTURED": 2
+      },
+      "request_roles": {
+        "listing": 2
+      },
+      "network_seconds": {
+        "samples": 2,
+        "mean": 0.018,
+        "p95": 0.018,
+        "max": 0.018
+      },
+      "primary_network_seconds": {
+        "samples": 2,
+        "mean": 0.018,
+        "p95": 0.018,
+        "max": 0.018
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 0.032,
+        "p95": 0.035,
+        "max": 0.035
+      },
+      "due_to_wire_seconds": {
+        "samples": 2,
+        "mean": 0.017,
+        "p95": 0.026,
+        "max": 0.026
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.015,
+        "p95": 0.025,
+        "max": 0.025
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "dod_releases",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.211271+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:10.241540+00:00",
+          "last_capture_at": "2026-11-03T21:02:10.570059+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 340,
+          "last_success_at": "2026-11-03T21:02:10.582318+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:10.211271+00:00",
+          "status": "succeeded",
+          "ticker": "ONDS",
+          "unit": "FEED:dfc334fc62e359d686dd3b57"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:10.211271+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:10.241540+00:00",
+          "last_capture_at": "2026-11-03T21:02:10.570059+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 340,
+          "last_success_at": "2026-11-03T21:02:10.582318+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:10.211271+00:00",
+          "status": "succeeded",
+          "ticker": "RKLB",
+          "unit": "FEED:dfc334fc62e359d686dd3b57"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.261,
+        "p95": 0.326,
+        "max": 0.326
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 0.261,
+        "p95": 0.326,
+        "max": 0.326
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.472,
+        "p95": 0.837,
+        "max": 0.837
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.262,
+        "p95": 0.58,
+        "max": 0.58
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.07,
+        "p95": 0.169,
+        "max": 0.169
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "required_binding_units": 3,
+      "physical_units": 3,
+      "latest_statuses": {
+        "succeeded": 3
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:59.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:59.754407+00:00",
+          "last_capture_at": "2026-11-03T21:02:00.177501+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 437,
+          "last_success_at": "2026-11-03T21:02:00.191487+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:59.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:69cd0a82d11ee5cf9feef522"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:19.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:19.747470+00:00",
+          "last_capture_at": "2026-11-03T21:02:20.127844+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 401,
+          "last_success_at": "2026-11-03T21:02:20.150164+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:19.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:50b1d9a9bb4f6befd163b153"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:39.736240+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:39.826928+00:00",
+          "last_capture_at": "2026-11-03T21:01:41.389480+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1579,
+          "last_success_at": "2026-11-03T21:01:41.406482+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:39.736240+00:00",
+          "status": "succeeded",
+          "ticker": "SNOW",
+          "unit": "FEED:ef7490c95438b64379a1b34c"
+        }
+      ],
+      "physical_cycles": 7,
+      "physical_statuses": {
+        "CAPTURED": 7
+      },
+      "request_roles": {
+        "listing": 7
+      },
+      "network_seconds": {
+        "samples": 7,
+        "mean": 0.7,
+        "p95": 1.56,
+        "max": 1.56
+      },
+      "primary_network_seconds": {
+        "samples": 7,
+        "mean": 0.7,
+        "p95": 1.56,
+        "max": 1.56
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 7,
+        "mean": 0.741,
+        "p95": 1.58,
+        "max": 1.58
+      },
+      "due_to_wire_seconds": {
+        "samples": 7,
+        "mean": 0.075,
+        "p95": 0.151,
+        "max": 0.151
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 7,
+        "mean": 0.066,
+        "p95": 0.131,
+        "max": 0.131
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "etnews_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:22.361866+00:00",
+          "last_capture_at": "2026-11-03T21:02:22.669776+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 319,
+          "last_success_at": "2026-11-03T21:02:22.681218+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:22.361866+00:00",
+          "last_capture_at": "2026-11-03T21:02:22.669776+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 319,
+          "last_success_at": "2026-11-03T21:02:22.681218+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:22.361866+00:00",
+          "last_capture_at": "2026-11-03T21:02:22.669776+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 319,
+          "last_success_at": "2026-11-03T21:02:22.681218+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:22.361866+00:00",
+          "last_capture_at": "2026-11-03T21:02:22.669776+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 319,
+          "last_success_at": "2026-11-03T21:02:22.681218+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:22.288702+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:22.361866+00:00",
+          "last_capture_at": "2026-11-03T21:02:22.669776+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 319,
+          "last_success_at": "2026-11-03T21:02:22.681218+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:22.288702+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:0fd4ca992c8e3868c4fb1126"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.159,
+        "p95": 0.167,
+        "max": 0.167
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 0.159,
+        "p95": 0.167,
+        "max": 0.167
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.392,
+        "p95": 0.435,
+        "max": 0.435
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.365,
+        "p95": 0.567,
+        "max": 0.567
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.158,
+        "p95": 0.339,
+        "max": 0.339
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:52.279378+00:00",
+          "last_capture_at": "2026-11-03T21:01:52.724693+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 480,
+          "last_success_at": "2026-11-03T21:01:52.760020+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:52.279378+00:00",
+          "last_capture_at": "2026-11-03T21:01:52.724693+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 480,
+          "last_success_at": "2026-11-03T21:01:52.760020+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:52.279378+00:00",
+          "last_capture_at": "2026-11-03T21:01:52.724693+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 480,
+          "last_success_at": "2026-11-03T21:01:52.760020+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 5,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:52.279378+00:00",
+          "last_capture_at": "2026-11-03T21:01:52.724693+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 480,
+          "last_success_at": "2026-11-03T21:01:52.760020+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:52.239724+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:52.279378+00:00",
+          "last_capture_at": "2026-11-03T21:01:52.724693+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 480,
+          "last_success_at": "2026-11-03T21:01:52.760020+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:52.239724+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:7f41b8a5d65f0c98a05fb3d2"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "CAPTURED": 2
+      },
+      "request_roles": {
+        "listing": 2
+      },
+      "network_seconds": {
+        "samples": 2,
+        "mean": 0.607,
+        "p95": 0.77,
+        "max": 0.77
+      },
+      "primary_network_seconds": {
+        "samples": 2,
+        "mean": 0.607,
+        "p95": 0.77,
+        "max": 0.77
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 0.647,
+        "p95": 0.814,
+        "max": 0.814
+      },
+      "due_to_wire_seconds": {
+        "samples": 2,
+        "mean": 0.062,
+        "p95": 0.082,
+        "max": 0.082
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.06,
+        "p95": 0.08,
+        "max": 0.08
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "nsf_news",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:47.075981+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:47.113194+00:00",
+          "last_capture_at": "2026-11-03T21:01:48.343303+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1240,
+          "last_success_at": "2026-11-03T21:01:48.353140+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:47.075981+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:981618343246fe95aed86647"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "CAPTURED": 2
+      },
+      "request_roles": {
+        "listing": 2
+      },
+      "network_seconds": {
+        "samples": 2,
+        "mean": 1.067,
+        "p95": 1.209,
+        "max": 1.209
+      },
+      "primary_network_seconds": {
+        "samples": 2,
+        "mean": 1.067,
+        "p95": 1.209,
+        "max": 1.209
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 1.091,
+        "p95": 1.24,
+        "max": 1.24
+      },
+      "due_to_wire_seconds": {
+        "samples": 2,
+        "mean": 0.076,
+        "p95": 0.093,
+        "max": 0.093
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.063,
+        "p95": 0.089,
+        "max": 0.089
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:51.709308+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:51.740661+00:00",
+          "last_capture_at": "2026-11-03T21:01:52.330388+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 604,
+          "last_success_at": "2026-11-03T21:01:52.344687+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:51.709308+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:580eb14015a8c19d636c9706"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "CAPTURED": 2
+      },
+      "request_roles": {
+        "listing": 2
+      },
+      "network_seconds": {
+        "samples": 2,
+        "mean": 0.59,
+        "p95": 0.594,
+        "max": 0.594
+      },
+      "primary_network_seconds": {
+        "samples": 2,
+        "mean": 0.59,
+        "p95": 0.594,
+        "max": 0.594
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 0.606,
+        "p95": 0.609,
+        "max": 0.609
+      },
+      "due_to_wire_seconds": {
+        "samples": 2,
+        "mean": 0.032,
+        "p95": 0.036,
+        "max": 0.036
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.028,
+        "p95": 0.031,
+        "max": 0.031
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "quantum_zeitgeist",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.177217+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:36.240021+00:00",
+          "last_capture_at": "2026-11-03T21:01:38.428007+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 2324,
+          "last_success_at": "2026-11-03T21:01:38.564119+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:36.177217+00:00",
+          "status": "succeeded",
+          "ticker": "IONQ",
+          "unit": "FEED:36ea93b1b1238527f70d7bb9"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "CAPTURED": 2
+      },
+      "request_roles": {
+        "listing": 4
+      },
+      "network_seconds": {
+        "samples": 4,
+        "mean": 1.236,
+        "p95": 1.776,
+        "max": 1.776
+      },
+      "primary_network_seconds": {
+        "samples": 4,
+        "mean": 1.236,
+        "p95": 1.776,
+        "max": 1.776
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 2.638,
+        "p95": 2.951,
+        "max": 2.951
+      },
+      "due_to_wire_seconds": {
+        "samples": 2,
+        "mean": 0.201,
+        "p95": 0.338,
+        "max": 0.338
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.195,
+        "p95": 0.327,
+        "max": 0.327
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "technews_hardware",
+      "required_binding_units": 10,
+      "physical_units": 2,
+      "latest_statuses": {
+        "succeeded": 10
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:06.653262+00:00",
+          "last_capture_at": "2026-11-03T21:02:06.944769+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 308,
+          "last_success_at": "2026-11-03T21:02:06.961494+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:06.653262+00:00",
+          "last_capture_at": "2026-11-03T21:02:06.944769+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 308,
+          "last_success_at": "2026-11-03T21:02:06.961494+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:06.653262+00:00",
+          "last_capture_at": "2026-11-03T21:02:06.944769+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 308,
+          "last_success_at": "2026-11-03T21:02:06.961494+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:06.653262+00:00",
+          "last_capture_at": "2026-11-03T21:02:06.944769+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 308,
+          "last_success_at": "2026-11-03T21:02:06.961494+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:06.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:06.653262+00:00",
+          "last_capture_at": "2026-11-03T21:02:06.944769+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 308,
+          "last_success_at": "2026-11-03T21:02:06.961494+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:06.558543+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:2fcddd0f7ad7d5452dbc221e"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:36.583622+00:00",
+          "last_capture_at": "2026-11-03T21:01:36.968318+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 492,
+          "last_success_at": "2026-11-03T21:01:37.088561+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:36.583622+00:00",
+          "last_capture_at": "2026-11-03T21:01:36.968318+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 492,
+          "last_success_at": "2026-11-03T21:01:37.088561+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:36.583622+00:00",
+          "last_capture_at": "2026-11-03T21:01:36.968318+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 492,
+          "last_success_at": "2026-11-03T21:01:37.088561+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:36.583622+00:00",
+          "last_capture_at": "2026-11-03T21:01:36.968318+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 492,
+          "last_success_at": "2026-11-03T21:01:37.088561+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:365211cf9af517cb87395484"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:36.558543+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:36.583622+00:00",
+          "last_capture_at": "2026-11-03T21:01:36.968318+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 492,
+          "last_success_at": "2026-11-03T21:01:37.088561+00:00",
+          "next_dispatch_at": "2026-11-03T21:02:36.558543+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:365211cf9af517cb87395484"
+        }
+      ],
+      "physical_cycles": 5,
+      "physical_statuses": {
+        "CAPTURED": 5
+      },
+      "request_roles": {
+        "listing": 5
+      },
+      "network_seconds": {
+        "samples": 5,
+        "mean": 0.26,
+        "p95": 0.378,
+        "max": 0.378
+      },
+      "primary_network_seconds": {
+        "samples": 5,
+        "mean": 0.26,
+        "p95": 0.378,
+        "max": 0.378
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 5,
+        "mean": 0.306,
+        "p95": 0.505,
+        "max": 0.505
+      },
+      "due_to_wire_seconds": {
+        "samples": 5,
+        "mean": 0.071,
+        "p95": 0.097,
+        "max": 0.097
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 5,
+        "mean": 0.068,
+        "p95": 0.095,
+        "max": 0.095
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "thelec_semiconductors_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 5
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:20.754624+00:00",
+          "last_capture_at": "2026-11-03T21:02:21.191519+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 448,
+          "last_success_at": "2026-11-03T21:02:21.202502+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:20.754624+00:00",
+          "last_capture_at": "2026-11-03T21:02:21.191519+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 448,
+          "last_success_at": "2026-11-03T21:02:21.202502+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "COHR",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:20.754624+00:00",
+          "last_capture_at": "2026-11-03T21:02:21.191519+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 448,
+          "last_success_at": "2026-11-03T21:02:21.202502+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "INTC",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:20.754624+00:00",
+          "last_capture_at": "2026-11-03T21:02:21.191519+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 448,
+          "last_success_at": "2026-11-03T21:02:21.202502+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "MU",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:20.715343+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:20.754624+00:00",
+          "last_capture_at": "2026-11-03T21:02:21.191519+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 448,
+          "last_success_at": "2026-11-03T21:02:21.202502+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:20.715343+00:00",
+          "status": "succeeded",
+          "ticker": "NBIS",
+          "unit": "FEED:fac62acf437bd04a5df0e157"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.14,
+        "p95": 0.152,
+        "max": 0.152
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 0.14,
+        "p95": 0.152,
+        "max": 0.152
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.817,
+        "p95": 1.626,
+        "max": 1.626
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.501,
+        "p95": 0.792,
+        "max": 0.792
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.165,
+        "p95": 0.297,
+        "max": 0.297
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "required_binding_units": 5,
+      "physical_units": 1,
+      "latest_statuses": {
+        "failed": 5
+      },
+      "latest_errors": {
+        "HTTP_LISTING_FAILED_RSS_FALLBACK": 5
+      },
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:41.993397+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:12353",
+          "last_latency_ms": 1890,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T21:02:41.885785+00:00",
+          "status": "failed",
+          "ticker": "BE",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:41.993397+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:12353",
+          "last_latency_ms": 1890,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T21:02:41.885785+00:00",
+          "status": "failed",
+          "ticker": "COHR",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:41.993397+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:12353",
+          "last_latency_ms": 1890,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T21:02:41.885785+00:00",
+          "status": "failed",
+          "ticker": "INTC",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 4,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:41.993397+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:12353",
+          "last_latency_ms": 1890,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T21:02:41.885785+00:00",
+          "status": "failed",
+          "ticker": "MU",
+          "unit": "FEED:92686c4979c09925ef476378"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:41.885785+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:01:41.993397+00:00",
+          "last_capture_at": null,
+          "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+          "last_error_message": "ValueError:public_listing_stale_cache_age:12353",
+          "last_latency_ms": 1890,
+          "last_success_at": null,
+          "next_dispatch_at": "2026-11-03T21:02:41.885785+00:00",
+          "status": "failed",
+          "ticker": "NBIS",
+          "unit": "FEED:92686c4979c09925ef476378"
+        }
+      ],
+      "physical_cycles": 2,
+      "physical_statuses": {
+        "FAILED": 2
+      },
+      "request_roles": {
+        "listing": 2,
+        "rss_fallback": 2
+      },
+      "network_seconds": {
+        "samples": 4,
+        "mean": 0.555,
+        "p95": 0.956,
+        "max": 0.956
+      },
+      "primary_network_seconds": {
+        "samples": 2,
+        "mean": 0.33,
+        "p95": 0.413,
+        "max": 0.413
+      },
+      "fallback_network_seconds": {
+        "samples": 2,
+        "mean": 0.779,
+        "p95": 0.956,
+        "max": 0.956
+      },
+      "execution_seconds": {
+        "samples": 2,
+        "mean": 1.808,
+        "p95": 1.892,
+        "max": 1.892
+      },
+      "due_to_wire_seconds": {
+        "samples": 2,
+        "mean": 0.064,
+        "p95": 0.115,
+        "max": 0.115
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 2,
+        "mean": 0.06,
+        "p95": 0.108,
+        "max": 0.108
+      },
+      "failed_cycles": [
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T21:00:41.897228+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        },
+        {
+          "unit": "FEED:92686c4979c09925ef476378",
+          "at": "2026-11-03T21:01:41.993397+00:00",
+          "status": "FAILED",
+          "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        }
+      ]
+    },
+    {
+      "source_id": "utility_dive",
+      "required_binding_units": 2,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 2
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:02.193864+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:02.258973+00:00",
+          "last_capture_at": "2026-11-03T21:02:03.652793+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1406,
+          "last_success_at": "2026-11-03T21:02:03.665262+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:02.193864+00:00",
+          "status": "succeeded",
+          "ticker": "BE",
+          "unit": "FEED:f0fb325afe07ff21bf307014"
+        },
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:32:02.193864+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:02.258973+00:00",
+          "last_capture_at": "2026-11-03T21:02:03.652793+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 1406,
+          "last_success_at": "2026-11-03T21:02:03.665262+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:02.193864+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:f0fb325afe07ff21bf307014"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 1.498,
+        "p95": 1.615,
+        "max": 1.615
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 1.498,
+        "p95": 1.615,
+        "max": 1.615
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 1.798,
+        "p95": 2.207,
+        "max": 2.207
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.368,
+        "p95": 0.772,
+        "max": 0.772
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.091,
+        "p95": 0.152,
+        "max": 0.152
+      },
+      "failed_cycles": []
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "required_binding_units": 1,
+      "physical_units": 1,
+      "latest_statuses": {
+        "succeeded": 1
+      },
+      "latest_errors": {},
+      "heads": [
+        {
+          "coverage_plan": {
+            "binding_version": 2,
+            "epoch": "2026-11-03T20:31:27.041365+00:00",
+            "group": null,
+            "interval": 60
+          },
+          "last_attempt_at": "2026-11-03T21:02:27.136003+00:00",
+          "last_capture_at": "2026-11-03T21:02:27.300811+00:00",
+          "last_error_code": null,
+          "last_error_message": null,
+          "last_latency_ms": 177,
+          "last_success_at": "2026-11-03T21:02:27.314308+00:00",
+          "next_dispatch_at": "2026-11-03T21:03:27.041365+00:00",
+          "status": "succeeded",
+          "ticker": "CEG",
+          "unit": "FEED:7aeff12b5dff2df82855fb85"
+        }
+      ],
+      "physical_cycles": 3,
+      "physical_statuses": {
+        "CAPTURED": 3
+      },
+      "request_roles": {
+        "listing": 3
+      },
+      "network_seconds": {
+        "samples": 3,
+        "mean": 0.266,
+        "p95": 0.474,
+        "max": 0.474
+      },
+      "primary_network_seconds": {
+        "samples": 3,
+        "mean": 0.266,
+        "p95": 0.474,
+        "max": 0.474
+      },
+      "fallback_network_seconds": null,
+      "execution_seconds": {
+        "samples": 3,
+        "mean": 0.458,
+        "p95": 1.018,
+        "max": 1.018
+      },
+      "due_to_wire_seconds": {
+        "samples": 3,
+        "mean": 0.254,
+        "p95": 0.568,
+        "max": 0.568
+      },
+      "due_to_dispatch_seconds": {
+        "samples": 3,
+        "mean": 0.081,
+        "p95": 0.095,
+        "max": 0.095
+      },
+      "failed_cycles": []
+    }
+  ],
+  "configuration": {
+    "modified_sources": [
+      {
+        "source_id": "aviationweek_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "huggingnews_rss",
+        "discovery_mode": "http_listing",
+        "version": 4,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "etnews_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "dod_releases",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "dcd_infrastructure_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "tomshardware_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "utility_dive",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "defensescoop_drones",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "world_nuclear_news",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "quantum_computing_report",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "technews_hardware",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "army_news_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "nsf_news",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "canary_media",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "data_center_frontier",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "crn_cloud_security_datacenter",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "enterprise_apps_official_rss",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "thelec_semiconductors_rss",
+        "discovery_mode": "http_listing",
+        "version": 3,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "quantum_zeitgeist",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      },
+      {
+        "source_id": "dod_contracts",
+        "discovery_mode": "http_listing",
+        "version": 2,
+        "body_and_business_contract_unchanged": true
+      }
+    ],
+    "other_source_changes": [],
+    "binding_business_changes": [],
+    "terms_unchanged": true,
+    "bindings_unchanged_set": true,
+    "active_bindings": {
+      "huggingnews_rss": 5,
+      "tomshardware_rss": 5,
+      "thelec_semiconductors_rss": 5,
+      "etnews_rss": 5,
+      "enterprise_apps_official_rss": 1,
+      "aviationweek_rss": 1,
+      "dod_contracts": 2,
+      "dod_releases": 2,
+      "defensescoop_drones": 1,
+      "army_news_rss": 1,
+      "crn_cloud_security_datacenter": 1,
+      "technews_hardware": 5,
+      "utility_dive": 2,
+      "world_nuclear_news": 1,
+      "canary_media": 2,
+      "dcd_infrastructure_rss": 6,
+      "data_center_frontier": 6,
+      "quantum_computing_report": 1,
+      "quantum_zeitgeist": 1,
+      "nsf_news": 1
+    }
+  },
+  "new_origins": [],
+  "new_origin_count": 0,
+  "new_article_outcomes": {},
+  "captures": [
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "status": "ACCEPTED",
+      "n": 4
+    }
+  ],
+  "other_component_changes": [],
+  "containers": [
+    {
+      "name": "doxagent-v2-v2-message-collector-1",
+      "image": "sha256:aea3f5fe1a07bcb46192cf1bd57b9acbc9b03c26fcdea5a3cd378b1814f50451",
+      "started_at": "2026-11-03T20:59:38.544831879Z",
+      "status": "running",
+      "restarts": 0,
+      "oom_killed": false,
+      "build_commit": "93bc25ef133b899daf923bcf56ee2c1effd3f37e"
+    },
+    {
+      "name": "doxagent-v2-v2-message-bus-1",
+      "image": "sha256:aea3f5fe1a07bcb46192cf1bd57b9acbc9b03c26fcdea5a3cd378b1814f50451",
+      "started_at": "2026-11-03T20:59:51.632149246Z",
+      "status": "running",
+      "restarts": 0,
+      "oom_killed": false,
+      "build_commit": "93bc25ef133b899daf923bcf56ee2c1effd3f37e"
+    },
+    {
+      "name": "doxagent-v2-v2-content-enrichment-1",
+      "image": "sha256:bd6fa109ef1315e01f401d5750a01199c860a163036129356b69d898526f0b20",
+      "started_at": "2026-11-03T19:44:12.308592558Z",
+      "status": "running",
+      "restarts": 0,
+      "oom_killed": false,
+      "build_commit": "d87a54ec0149d3fa9584b0036f119194960b268f"
+    }
+  ],
+  "resources": [
+    {
+      "BlockIO": "13.2MB / 337MB",
+      "CPUPerc": "37.58%",
+      "Container": "doxagent-v2-v2-message-collector-1",
+      "ID": "2f5bfceba4b5",
+      "MemPerc": "7.79%",
+      "MemUsage": "319.2MiB / 4GiB",
+      "Name": "doxagent-v2-v2-message-collector-1",
+      "NetIO": "79.2MB / 2.72MB",
+      "PIDs": "25"
+    },
+    {
+      "BlockIO": "6.73MB / 98MB",
+      "CPUPerc": "120.88%",
+      "Container": "doxagent-v2-v2-message-bus-1",
+      "ID": "6c55a5c27cd2",
+      "MemPerc": "3.56%",
+      "MemUsage": "145.9MiB / 4GiB",
+      "Name": "doxagent-v2-v2-message-bus-1",
+      "NetIO": "10.2kB / 19.9kB",
+      "PIDs": "19"
+    },
+    {
+      "BlockIO": "117MB / 397MB",
+      "CPUPerc": "13.15%",
+      "Container": "doxagent-v2-v2-content-enrichment-1",
+      "ID": "d8c86a0d9956",
+      "MemPerc": "7.26%",
+      "MemUsage": "297.4MiB / 4GiB",
+      "Name": "doxagent-v2-v2-content-enrichment-1",
+      "NetIO": "248MB / 6.18MB",
+      "PIDs": "15"
+    }
+  ]
+}
