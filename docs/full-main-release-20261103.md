@@ -34,3 +34,9 @@ Web镜像：`sha256:de37851ca0cabd739d5036a3bf248db0b0f017a0b80a4fe1a64a1fa627a8
 - 不要求重启未加载本次变动代码的其他独立角色；无数据库迁移，无来源订阅/交易规则变更。
 
 验收明细见 `eval/full_main_release_20261103/{verification,release}.json`。远端私有发布目录：`/var/lib/doxagent/releases/full-main-1df0118d0226/`。私有清单包含有效环境，只存远端受限目录，不提交仓库。
+
+## 最终自然流量复核（北京时间20:40）
+
+新增High四轮回执11/11成功：W1R2 4条、W1R3 2条、W2R2 3条、W2R3 2条；未混入7条旧冻结xhigh回执。最新样本缓存读取分别为W1R2 4784、W1R3 5120、W2R2 5726 tokens，W2R3样本写入2537、读取0，属新缓存创建回执，不能宣称该生产快照已证明W2R3热读取。七角色再次核验均运行、镜像一致、restart0，错误列表为空。明细eval/full_main_release_20261103/verification-final.json。
+
+仓库最终同步包含本发布说明提交；运行镜像仍固定产品源码1df0118d，后续说明提交不包含产品代码，无需为文档重建。
