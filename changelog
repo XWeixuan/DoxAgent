@@ -2579,3 +2579,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Business Wire正则只读评估：对原4078条和新4094条RSS全量回放10个ticker当前生产L2，分别得到311/316条命中、396/402个article×ticker；保存完整快照、规则hash、命中CSV与定性阅读，记录CEG/RKLB/MU等词义误匹配。仅标题+摘要、无正文/Decision Model调用，未变更生产或词库。详见docs/businesswire-seven-day-regex-evaluation-20261103.md。
 
 2026-11-03 Massive Distribution测试接入：新增第四采集类型与五平台/七端点，复用Collector→Live→BODY→L2正则→标准化，新增同库test_publications末端sink；源配置中的10个测试目标不创建真实订阅，捕获/文章/正文所有权分域、正文测试并发1、HTTP并发2、无Decision Model/新Chrome，保留304和BW单请求16MiB限制。真实七端点及ACCESS正文样本通过，回归和生产启动回执见docs/massive-distribution-implementation-20261103.md。
+
+2026-11-03 Massive测试启动后调优：依据BW连续UNAVAILABLE正文结果，在同一Live claim内为测试站点三次连续不可用增加5分钟待处理冷却，继续列表发现、不产生虚假失败尝试、不影响正式正文；9项专项通过。新增幂等注册脚本scripts/ops/enable_massive_tests.py。

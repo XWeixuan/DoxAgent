@@ -132,3 +132,23 @@ async def test_massive_body_fallback_never_opens_browser():
         ticker='MU',title='Micron investment',body='',url='https://www.businesswire.com/news/home/123/en',raw_url=None,source_name='Business Wire')
     await pipeline.extract(record)
     assert phases==['direct','reader']
+
+
+def test_test_publisher_access_wall_defers_without_failure_or_production_block(tmp_path):
+    repo,bus,production,binding=_setup(tmp_path)
+    bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
+    source=initial_sources()[0];b=bindings(source)[0]
+    keys=[]
+    for n in range(4):
+        message=_message(800+n)
+        rows=live.prepare_input(source,[(b.binding_id,b.ticker,0)],[message],observed_at=utc_now().isoformat(),unit='WIRE:all')
+        live.accept(rows);keys.append(rows[0]['key'])
+    with repo.transaction() as db:
+        db.executemany("UPDATE live_articles SET state='READY',outcome='UNAVAILABLE',checked_at=? WHERE article_key=?",
+                       [(utc_now().isoformat(),k) for k in keys[:3]])
+    assert live.claim(limit=4)==[]
+    pending=live.get(keys[-1]);assert pending['state']=='FETCH_DUE' and pending['attempt']==0
+    assert pending['last_error']=='test_publisher_cooldown'
+    rows=live.prepare_input(production,[(binding.binding_id,binding.ticker,0)],[_message(804)],observed_at=utc_now().isoformat(),unit='HEAD')
+    live.accept(rows)
+    assert live.claim(limit=1)[0][0]==rows[0]['key']

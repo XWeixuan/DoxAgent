@@ -616,6 +616,18 @@ class LiveRepository:
                 mode = db.execute('SELECT delivery_mode FROM live_articles WHERE article_key=?',(row[0],)).fetchone()[0]
                 if mode == 'test' and test_active:
                     continue
+                if mode == 'test':
+                    publisher = db.execute('SELECT publisher FROM live_articles WHERE article_key=?',(row[0],)).fetchone()[0]
+                    failures = db.execute("SELECT outcome,checked_at FROM live_articles WHERE delivery_mode='test' "
+                        "AND publisher=? AND state='READY' AND checked_at>? ORDER BY checked_at DESC LIMIT 3",
+                        (publisher,(now-timedelta(minutes=5)).isoformat())).fetchall()
+                    if len(failures)==3 and all(r[0]=='UNAVAILABLE' for r in failures):
+                        # Keep discovery and pending bodies, without inventing a failed
+                        # attempt for every article behind the same access wall.
+                        retry=(datetime.fromisoformat(failures[0][1])+timedelta(minutes=5)).isoformat()
+                        db.execute("UPDATE live_articles SET due_at=?,last_error='test_publisher_cooldown' "
+                            "WHERE article_key=? AND state='FETCH_DUE'",(retry,row[0]))
+                        continue
                 token = new_id("live-fetch")
                 updated = db.execute(
                     "UPDATE live_articles SET state='FETCHING',claim_token=?,lease_until=?,"
