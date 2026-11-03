@@ -149,7 +149,7 @@ class NewswireAdapter:
             rows=await asyncio.to_thread(parse_feed,text,s,endpoint,context.requested_at)
             old=cp.get('seen',{});seen={};delta=[];cutoff=context.requested_at-timedelta(minutes=30)
             for row in rows:
-                if row.published_at<cutoff:continue
+                if row.published_at<cutoff and s.source_id!='bloomberg_massive':continue
                 hint=hashlib.sha256((str(row.title)+str(row.summary)).encode()).hexdigest()
                 seen[row.source_item_key or row.url]=hint
                 if context.force_refresh or old.get(row.source_item_key or row.url)!=hint:delta.append(row)

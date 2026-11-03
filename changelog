@@ -2604,3 +2604,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 Bloomberg/X消息源接入：Bloomberg单一Massive测试源共六RSS+news sitemap，逐项扫描、统一URL去重、独立检查点与轻量HTTP并发，订阅墙严格保留PARTIAL并复用冷却；X官方Filtered Stream单长连接共享十目标，统一监测词新增版本化x_accounts、按作者路由、原生帖子直接标准发布不进BODY/模型，规则仅管理自有tag，重连/心跳及启停沿用Collector。18项专项、59项相关回归、六项双宽浏览器检查及Web构建通过；生产切换脚本在连接就绪后退役TikHub。
 
 2026-11-04 X启动收尾：在源注册前启动的Collector同样使用已验证US HTTP出口；TikHub退役核验覆盖全部十个官方账号及新鲜连接状态，避免以部分账号连接代替完整切换。
+
+2026-11-04 Bloomberg覆盖观测收尾：采集层保留全部新出现的RSS/sitemap候选用于发现时效评估，Bus既有新鲜度接纳规则不变；补齐七个共享物理单元、零X轮询、RSS摘要差异不重复正文的测试，18项专项通过，新增只读切换核验脚本。

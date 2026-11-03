@@ -42,7 +42,7 @@ async def test_unsorted_rss_does_not_stop_at_old_article():
     adapter=NewswireAdapter();adapter.clients={'direct':Client()}
     context=SharedPollContext(run_id='r',source=source,acquisition_unit='TEST:WIRE:news',request_permit=permit)
     first=await adapter.poll_shared(context)
-    assert len(first.messages)==2 and first.messages[-1].title=='hidden-new'
+    assert len(first.messages)==3 and first.messages[-1].title=='hidden-new'
     again=await adapter.poll_shared(context.model_copy(update={'checkpoint':first.next_checkpoint}))
     assert not again.messages
 
