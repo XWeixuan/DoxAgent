@@ -322,6 +322,8 @@ class LiveRepository:
                     ref=ref,
                     refs=refs,
                     native_upgrade=native_upgrade,
+                    native_post=source.source_id=="x_official_posts",
+                    native_digest=sha256_text(canonical_json([message.title,message.body or ""])),
                     ibkr_story=bool(ibkr_story),
                     ibkr_native=ibkr_native,
                     ibkr_flash=ibkr_flash,
@@ -516,6 +518,15 @@ class LiveRepository:
                             "UPDATE live_origins SET targets_json=? WHERE origin_key=?",
                             (targets, item["origin"]),
                         )
+                if item.get('native_post') and not rejected and not baseline:
+                    if not old or changed:
+                        db.execute("UPDATE live_articles SET state='READY',outcome='NOT_APPLICABLE',"
+                            "result_ref=input_ref,body_digest=?,revision=revision+1,checked_at=?,acquired_at=?,"
+                            "claim_token=NULL,lease_until=NULL,next_check_at=NULL WHERE article_key=?",
+                            (item['native_digest'],now,now,key))
+                        self._refs(db,'live_articles_result',key,item['refs'])
+                    db.execute("UPDATE live_deliveries SET state='PENDING' WHERE article_key=? "
+                        "AND state IN ('WAIT_BODY','PUBLISHED')",(key,))
                 for target in item["targets"]:
                     # The payload holds references, not an immutable roster model.
                     binding_id, ticker, terms_revision = target
@@ -541,6 +552,8 @@ class LiveRepository:
                             if rejected
                             else "SUPPRESSED"
                             if baseline
+                            else "PENDING"
+                            if item.get("native_post")
                             else "PENDING"
                             if old
                             and old["result_ref"]
@@ -618,10 +631,10 @@ class LiveRepository:
                     continue
                 if mode == 'test':
                     publisher = db.execute('SELECT publisher FROM live_articles WHERE article_key=?',(row[0],)).fetchone()[0]
-                    failures = db.execute("SELECT outcome,checked_at FROM live_articles WHERE delivery_mode='test' "
+                    failures = db.execute("SELECT outcome,checked_at,last_error FROM live_articles WHERE delivery_mode='test' "
                         "AND publisher=? AND state='READY' AND checked_at>? ORDER BY checked_at DESC LIMIT 3",
                         (publisher,(now-timedelta(minutes=5)).isoformat())).fetchall()
-                    if len(failures)==3 and all(r[0]=='UNAVAILABLE' for r in failures):
+                    if len(failures)==3 and all(r[0]=='UNAVAILABLE' or r[2]=='subscription_required' for r in failures):
                         # Keep discovery and pending bodies, without inventing a failed
                         # attempt for every article behind the same access wall.
                         retry=(datetime.fromisoformat(failures[0][1])+timedelta(minutes=5)).isoformat()

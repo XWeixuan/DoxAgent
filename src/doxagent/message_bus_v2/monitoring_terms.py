@@ -95,9 +95,21 @@ class RelevanceDefinition(BusModel):
 class TickerMonitoringTerms(BusModel):
     ticker: str
     expected_revision: int = Field(ge=0)
+    x_accounts: list[str] = Field(default_factory=list, max_length=20)
     l1_concepts: list[L1Concept] = Field(min_length=1, max_length=3)
     l2: dict[str, L2Language]
     definition: RelevanceDefinition
+
+    @field_validator('x_accounts')
+    @classmethod
+    def _accounts(cls, values):
+        result=[]
+        for value in values:
+            value=value.strip().removeprefix('@').lower()
+            if not re.fullmatch(r'[a-z0-9_]{1,15}',value):
+                raise ValueError('/x_accounts: use X account handles, without URLs')
+            if value not in result:result.append(value)
+        return result
 
     @field_validator("ticker")
     @classmethod

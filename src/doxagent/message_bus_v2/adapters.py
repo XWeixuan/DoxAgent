@@ -136,6 +136,8 @@ class AdapterRegistry:
                 browser=crawler_plane.browser if crawler_plane is not None else None,
             ),
         }
+        from .x_official import StreamOnlyAdapter
+        self._builtins["x_official_stream@1"] = StreamOnlyAdapter()
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
         from .corporate_ir.adapter import CorporateIrAdapter
 

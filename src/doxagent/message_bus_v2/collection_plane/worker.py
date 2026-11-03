@@ -161,6 +161,8 @@ class Collector:
                 continue
             if not b.polling.active_at(now):
                 continue
+            if s.source_id == "x_official_posts":
+                continue  # Dedicated shared long connection, never a polling work unit.
             if s.source_id == "corporate_ir_press_releases":
                 from ..corporate_ir.schema import endpoints
 
@@ -374,6 +376,8 @@ class Collector:
         await self.refresh(seeds=True)
         refresh = asyncio.create_task(self._refresh_loop())
         maintenance = asyncio.create_task(self._maintenance_loop())
+        from ..x_official import OfficialStream
+        stream = asyncio.create_task(OfficialStream(self).run(stop))
         control = asyncio.create_task(self._control_loop()) if isinstance(self.config_loader,ConfigurationLoader) else None
         try:
             while not stop.is_set():
@@ -409,10 +413,11 @@ class Collector:
             self._stop = True
             refresh.cancel()
             maintenance.cancel()
+            stream.cancel()
             if control:control.cancel()
             for t in self.inflight.values():
                 t.cancel()
-            await asyncio.gather(refresh, maintenance, *([control] if control else []), *self.inflight.values(), return_exceptions=True)
+            await asyncio.gather(refresh, maintenance, stream, *([control] if control else []), *self.inflight.values(), return_exceptions=True)
 
     async def acquire(self, source, targets, unit, options):
         from doxagent.site_strategy.scope import AccessRoutingContext, access_routing

@@ -391,7 +391,7 @@ function Editor({
             启用消息源
           </FieldLabel>
         </Field>
-        <Field>
+        {config?.editor.polling_interval_form !== false && candidate?.source_id !== "x_official_posts" ? <Field>
           <FieldLabel>轮询间隔（秒）</FieldLabel>
           <Input
             aria-label="轮询间隔（秒）"
@@ -401,7 +401,7 @@ function Editor({
             value={interval}
             onChange={(e) => setInterval(e.target.value)}
           />
-        </Field>
+        </Field> : <span>Filtered Stream 长连接</span>}
         <div className="binding-schedule">
           <span>运行时段</span>
           <div>

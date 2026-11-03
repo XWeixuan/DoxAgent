@@ -110,7 +110,7 @@ class Configuration:
                 and binding.ticker in control['running']))
             and (control['pauses'] if control else self.pauses).get(binding.ticker) != "all"
             and (
-                source.source_id in {"corporate_ir_press_releases", "sec_edgar"}
+                source.source_id in {"corporate_ir_press_releases", "sec_edgar", "x_official_posts"}
                 or (
                     self.realtime
                     and (

@@ -102,7 +102,9 @@ def initial_sources() -> list[SourceDefinition]:
         "ticker_pages": {"type": "object", "additionalProperties": {"type": "string"}},
         "exchange": {"type": "string", "enum": ["NASDAQ", "NYSE", "AMEX"]},
     }
+    from .x_official import initial_source as x_source
     return [
+        x_source(),
         initial_sec_source(),
         *defense_sources(),
         *technology_sources(),
@@ -123,6 +125,7 @@ def initial_sources() -> list[SourceDefinition]:
         _source(
             "tikhub_x_search",
             "TikHub X Search API",
+            enabled=False,
             scheduler_group="tikhub",
             properties={"search_terms": {**string_array, "minItems": 1, "maxItems": 3}},
             required=["search_terms"],
@@ -131,6 +134,7 @@ def initial_sources() -> list[SourceDefinition]:
         _source(
             "tikhub_x_user_posts",
             "TikHub X User Posts API",
+            enabled=False,
             scheduler_group="tikhub",
             properties={"usernames": {**string_array, "minItems": 1, "maxItems": 2}},
             required=["usernames"],

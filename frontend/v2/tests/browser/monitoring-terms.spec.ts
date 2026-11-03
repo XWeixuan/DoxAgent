@@ -31,6 +31,18 @@ for (const width of [1262, 1559]) {
     await expect(page.getByRole("textbox", { name: "概念 1 he" })).toHaveValue("אונדס");
   });
 
+  test(`official accounts save without affecting regex at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("http://127.0.0.1:5174/tests/browser/monitoring-terms.html");
+    await page.getByRole("textbox", { name: "X 官方账号", exact: true }).fill("@MicronTech, micronnews");
+    await page.getByRole("button", { name: "应用更新" }).click();
+    await expect(page.locator("#saved-revision")).toHaveText("2");
+    await expect(page.getByRole("textbox", { name: "X 官方账号", exact: true })).toHaveValue("@MicronTech, micronnews");
+    await expect(page.getByRole("textbox", { name: "概念 1 en", exact: true })).toHaveValue("Micron memory");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: `test-results/x-official-accounts-${width}.png`, fullPage: true });
+  });
+
   test(`monitoring terms editor fits ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("http://127.0.0.1:5174/tests/browser/monitoring-terms.html");

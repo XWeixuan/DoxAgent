@@ -22,6 +22,7 @@ CATALOG={
  'globenewswire_massive':('GlobeNewswire',[('all','https://www.globenewswire.com/RssFeed'),('public','https://www.globenewswire.com/RssFeed/orgclass/1/feedTitle/GlobeNewswire%20-%20News%20about%20Public%20Companies')],['tr-standard-1','us-standard-5']),
  'access_newswire_massive':('ACCESS Newswire',[('http','https://www.accessnewswire.com/newsroom')],['us-standard-5']),
  'tmx_newsfile_massive':('TMX Newsfile',[('all','https://feeds.newsfilecorp.com/global/Last25Stories')],['direct']),
+ 'bloomberg_massive':('Bloomberg',[(name,'https://www.bloomberg.com/'+path) for name,path in [('news','feeds/news.rss'),('economics','feeds/economics/news.rss'),('industries','feeds/industries/news.rss'),('technology','feeds/technology/news.rss'),('business','feeds/business/news.rss'),('markets','feeds/markets/news.rss'),('sitemap','sitemaps/news/latest.xml')]],['direct']),
 }
 
 
@@ -29,9 +30,9 @@ def initial_sources():
     return [SourceDefinition(source_id=sid,display_name=name,kind=SourceKind.API,
         adapter_ref='builtin:newswire_massive@1',acquisition_mode=AcquisitionMode.MASSIVE_DISTRIBUTION,
         delivery_mode='test',entry_url=urls[0][1],content_language='en',scheduler_group='massive.'+sid,
-        scheduler_constraints=SchedulerConstraints(max_concurrency=1,minimum_request_gap_seconds=1),
+        scheduler_constraints=SchedulerConstraints(max_concurrency=2 if sid=="bloomberg_massive" else 1,minimum_request_gap_seconds=1),
         distribution_policy=DistributionPolicy(test_tickers=TICKERS,jev_enabled=False,require_complete_body=True),
-        default_parameters={'endpoints':[{'endpoint_id':eid,'url':url,'format':'html' if eid=='http' else 'rss'} for eid,url in urls],
+        default_parameters={'endpoints':[{'endpoint_id':eid,'url':url,'format':'html' if eid=='http' else 'sitemap' if eid=='sitemap' else 'rss'} for eid,url in urls],
                             'feed_http_routes':routes},default_polling_config=PollingConfig(target_interval_seconds=30))
         for sid,(name,urls,routes) in CATALOG.items()]
 
@@ -60,6 +61,21 @@ def parse_access(text,now):
 
 def parse_feed(text,source,endpoint,now):
     if endpoint['format']=='html':return parse_access(text,now)
+    if endpoint['format']=='sitemap':
+        root=ET.fromstring(text)
+        if not root.tag.endswith('}urlset'):raise ValueError('invalid_news_sitemap')
+        rows=[]
+        for entry in root.findall('{*}url'):
+            url=entry.findtext('{*}loc');title=entry.findtext('{*}news/{*}title')
+            date=entry.findtext('{*}news/{*}publication_date')
+            if not url or not title or not date:continue
+            if urlsplit(url).hostname not in {'www.bloomberg.com','bloomberg.com'}:continue
+            rows.append(RawMessageInput(title=title,url=url,source=source.display_name,
+                published_at=datetime.fromisoformat(date.replace('Z','+00:00')),
+                source_item_key=url,raw_payload={'sitemap_url':endpoint.get('url'),'publication_date':date},metadata={'language':'en','publication_time_precision':'second',
+                'identity_evidence':{'id_kind':'stable_article','url_kind':'article'}}))
+        if not rows:raise ValueError('news_sitemap_has_no_valid_articles')
+        return rows
     # BW publishes HTTP links and its feed host is different from its article host.
     if source.source_id=='businesswire_massive':
         try:
@@ -77,6 +93,11 @@ def parse_feed(text,source,endpoint,now):
         parts=urlsplit(row.url).path.split('/')
         lang=parts[4] if source.source_id=='businesswire_massive' and len(parts)>4 else 'en'
         row.metadata['language']={'zh-HK':'zh-Hant','zh-CN':'zh-Hans'}.get(lang,lang)
+        if source.source_id=='bloomberg_massive':
+            # RSS descriptions are only listing teasers; sitemap has none.
+            # Keep teaser evidence, but do not turn endpoint differences into body revisions.
+            row.raw_payload['listing_summary']=row.summary
+            row.summary=None
     return rows
 
 

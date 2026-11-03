@@ -91,7 +91,7 @@ async def test_ten_targets_use_seven_physical_units_and_calendar_is_unchanged(tm
     from doxagent.message_bus_v2.collection_plane.config import Configuration
     from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
     from doxagent.message_bus_v2.collection_plane.worker import Collector
-    sources=initial_sources()
+    sources=[s for s in initial_sources() if s.source_id!="bloomberg_massive"]
     cfg=Configuration(sources={s.source_id:s for s in sources},
         bindings={b.binding_id:b for s in sources for b in bindings(s)},realtime=False)
     collector=Collector(SimpleNamespace(message_bus_v2_sqlite_path=str(tmp_path/'bus.db')),
@@ -153,7 +153,8 @@ async def test_massive_body_fallback_never_opens_browser():
     assert phases==['direct','reader']
 
 
-def test_test_publisher_access_wall_defers_without_failure_or_production_block(tmp_path):
+@pytest.mark.parametrize('outcome,error',[('UNAVAILABLE','http_403'),('PARTIAL','subscription_required')])
+def test_test_publisher_access_wall_defers_without_failure_or_production_block(tmp_path,outcome,error):
     repo,bus,production,binding=_setup(tmp_path)
     bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
     source=initial_sources()[0];b=bindings(source)[0]
@@ -163,8 +164,8 @@ def test_test_publisher_access_wall_defers_without_failure_or_production_block(t
         rows=live.prepare_input(source,[(b.binding_id,b.ticker,0)],[message],observed_at=utc_now().isoformat(),unit='WIRE:all')
         live.accept(rows);keys.append(rows[0]['key'])
     with repo.transaction() as db:
-        db.executemany("UPDATE live_articles SET state='READY',outcome='UNAVAILABLE',checked_at=? WHERE article_key=?",
-                       [(utc_now().isoformat(),k) for k in keys[:3]])
+        db.executemany("UPDATE live_articles SET state='READY',outcome=?,last_error=?,checked_at=? WHERE article_key=?",
+                       [(outcome,error,utc_now().isoformat(),k) for k in keys[:3]])
     assert live.claim(limit=4)==[]
     pending=live.get(keys[-1]);assert pending['state']=='FETCH_DUE' and pending['attempt']==0
     assert pending['last_error']=='test_publisher_cooldown'

@@ -2600,3 +2600,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 Reuters生产验收补齐：原生Ondas零结果响应省略articles，仅在query明确零结果及匹配原生响应时接受；Collector保留native published_time的EXACT精度，减少历史文章正文取时间压力。Owner已真实验收接回恢复的原主身份，保留备用及原访问速率；相关89项回归通过，首发残留的排队/切换延期与正文FULL证据分列记录。
 
 2026-11-04 Reuters消费回执闭合：生产physical_cycles确认同一搜索两个原生响应导致UNPROVEN_LISTING；按实际解析的Response.request确定唯一listing证明，其余保留为辅助请求，并以真实JSON读取完成补足完成时间。原10个ticker/26个主查询最新均成功，尾页排队延期仍明确保留，未提高访问频率；相关90项回归及主身份独立正文FULL/1243字符验证通过。
+
+2026-11-04 Bloomberg/X消息源接入：Bloomberg单一Massive测试源共六RSS+news sitemap，逐项扫描、统一URL去重、独立检查点与轻量HTTP并发，订阅墙严格保留PARTIAL并复用冷却；X官方Filtered Stream单长连接共享十目标，统一监测词新增版本化x_accounts、按作者路由、原生帖子直接标准发布不进BODY/模型，规则仅管理自有tag，重连/心跳及启停沿用Collector。18项专项、59项相关回归、六项双宽浏览器检查及Web构建通过；生产切换脚本在连接就绪后退役TikHub。

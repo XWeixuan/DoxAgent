@@ -385,6 +385,11 @@ class AcquisitionStore:
                 ],
             )
 
+    @durable_write
+    def capture_stream(self, source, targets, payload, observed, session):
+        with self.connect(write=True) as db:
+            self._capture(db,source,targets,'STREAM',payload,None,observed,session,None,utc_now().isoformat())
+
     def _capture(
         self, db, source, targets, unit, payload, input_key, observed, run_id, winning, now
     ):

@@ -6,6 +6,8 @@ import { useRuntime } from "@/core/runtime";
 import { ApiFailure } from "@/core/api";
 import { blankTerms, newTerm, ruleSummary, sameTerms, parseRulesJson } from "@/core/monitoring-terms";
 import { Button } from "@/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Notice } from "@/components/state";
 
 const fields = [["all", "全部"], ["title", "标题"], ["summary", "摘要"], ["body", "正文"]] as const;
@@ -24,6 +26,8 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
   const [mode, setMode] = useState<"RULES" | "JSON">("RULES");
   const [jsonText, setJsonText] = useState("");
   const [jsonInvalid, setJsonInvalid] = useState(false);
+  const [accountsText, setAccountsText] = useState("");
+  useEffect(() => { setAccountsText((draft?.x_accounts ?? []).join(", ")); }, [baseline]);
   const [error, setError] = useState("");
   const [issues, setIssues] = useState<{ path: string; message: string }[]>([]);
   const [preview, setPreview] = useState<MonitoringTermsConfig["consumers"]>([]);
@@ -74,9 +78,9 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
   // Binding metadata stays live even while the configuration draft retains its baseline.
   const languages = (saved ?? baseline).required_languages;
   const language = languages.includes(selectedLanguage) ? selectedLanguage : languages[0];
-  if (!languages.length) return <section className="terms-settings" aria-label={`${ticker} 统一监测词`}><header><h2>{ticker} 统一监测词</h2></header><Notice>当前没有已启用且使用统一监测词的消息源。</Notice></section>;
+
   const remoteChanges = saved && saved.revision !== baseline.revision ? [
-    ["搜索监测词", "l1_concepts"], ["分发匹配规则", "l2"], ["Jev 定义", "definition"],
+    ["搜索监测词", "l1_concepts"], ["分发匹配规则", "l2"], ["Jev 定义", "definition"], ["X 官方账号", "x_accounts"],
   ].filter(([, key]) => JSON.stringify(baseline.configuration?.[key as keyof MonitoringTermsValue]) !== JSON.stringify(saved.configuration?.[key as keyof MonitoringTermsValue])).map(([label]) => label) : [];
   const check = async () => {
     setError(""); setBusy(true);
@@ -116,6 +120,14 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
   return <section className="terms-settings" aria-label={`${ticker} 统一监测词`}>
     <header><h2>{ticker} 统一监测词</h2><span>版本 {baseline.revision || "未配置"}</span></header>
     {saved && saved.revision !== baseline.revision && dirty && <Notice>远端已有版本 {saved.revision}，变更模块：{remoteChanges.join("、") || "配置元数据"}。当前草稿已保留。</Notice>}
+    <section className="terms-section" id="monitoring-x-accounts">
+      <FieldGroup><Field><FieldLabel htmlFor="x-official-accounts">X 官方账号</FieldLabel>
+        <Input id="x-official-accounts" aria-label="X 官方账号" autoComplete="off" placeholder="多个账号以逗号分隔" value={accountsText} onChange={(event) => {
+          const value = event.target.value; setAccountsText(value);
+          edit((next) => { next.x_accounts = value.split(/[,，\s]+/).filter(Boolean); });
+        }} /></Field></FieldGroup>
+    </section>
+    {languages.length > 0 ? <>
     <section className="terms-section" id="monitoring-keywords">
       <h3>搜索监测词 · By Keyword</h3>
       <div className="terms-table-wrap"><table><thead><tr><th>概念</th>{languages.map((lang) => <th key={lang}>{lang}</th>)}<th>操作</th></tr></thead><tbody>
@@ -149,10 +161,11 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
       <div className="terms-jev"><label>相关条件<textarea value={draft.definition.relevant} onChange={(event) => edit((next) => { next.definition.relevant = event.target.value; })} /></label><label>不相关条件<textarea value={draft.definition.irrelevant} onChange={(event) => edit((next) => { next.definition.irrelevant = event.target.value; })} /></label></div>
       <p className="terms-note">{(saved ?? baseline).consumers.filter((c) => c.acquisition_mode === "by_distribution").map((c) => `${c.name}：源配置${c.jev_source_enabled ? "已开启" : "未开启"}`).join("；") || "尚无分发消息源"}。实际运行还取决于 Worker 配置。</p>
     </section>
+    </> : <Notice>当前没有已启用且使用统一监测词的消息源。</Notice>}
     {issues.length > 0 && <Notice danger><ul>{issues.map((issue, index) => <li key={index}>{issue.path}：{issue.message}</li>)}</ul></Notice>}
     {error && <Notice danger>{error}</Notice>}
     {saved && saved.revision !== baseline.revision && <div className="terms-actions"><Button variant="outline" onClick={() => { setBaseline(saved); setDraft(structuredClone(saved.configuration ?? blankTerms(saved.required_languages))); setError(""); retry.current = undefined; }}>读取最新版本</Button><Button variant="outline" onClick={() => { setBaseline(saved); retry.current = undefined; setError(""); }}>基于最新版本应用我的草稿</Button></div>}
-    <div className="terms-actions"><Button variant="outline" disabled={busy || jsonInvalid} onClick={() => void check()}>检查并预览</Button><Button disabled={!dirty || busy || jsonInvalid} onClick={() => void apply()}>{busy ? "处理中" : "应用更新"}</Button><Button variant="outline" disabled={!dirty || busy} onClick={() => { sessionStorage.removeItem(draftKey); setDraft(structuredClone(baseline.configuration ?? blankTerms(languages))); setJsonText(JSON.stringify(baseline.configuration?.l2 ?? {}, null, 2)); setJsonInvalid(false); setError(""); setIssues([]); retry.current = undefined; }}>放弃修改</Button></div>
+    <div className="terms-actions"><Button variant="outline" disabled={busy || jsonInvalid} onClick={() => void check()}>检查并预览</Button><Button disabled={!dirty || busy || jsonInvalid} onClick={() => void apply()}>{busy ? "处理中" : "应用更新"}</Button><Button variant="outline" disabled={!dirty || busy} onClick={() => { sessionStorage.removeItem(draftKey); setDraft(structuredClone(baseline.configuration ?? blankTerms(languages))); setAccountsText((baseline.configuration?.x_accounts ?? []).join(", ")); setJsonText(JSON.stringify(baseline.configuration?.l2 ?? {}, null, 2)); setJsonInvalid(false); setError(""); setIssues([]); retry.current = undefined; }}>放弃修改</Button></div>
     {preview.length > 0 && <div className="terms-previews"><h4>实际搜索语句预览</h4>{preview.map((c) => <div key={c.binding_id}><strong>{c.name} · {c.content_language ?? "en"} · {c.search_policy_mode ?? "separate"}{!c.binding_enabled || !c.source_enabled ? " · 已停用" : ""}</strong>{c.queries.map((q) => <code key={q.query_key}>{q.query}</code>)}{c.preview_issue && <span>{c.preview_issue}</span>}</div>)}</div>}
   </section>;
 }

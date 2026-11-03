@@ -71,7 +71,7 @@ class MonitoringTermsControl(Bindings):
             configuration_override
             if configuration_override is not None
             else (
-                {key: saved[key] for key in ("l1_concepts", "l2", "definition")} if saved else None
+                {key: saved[key] for key in ("l1_concepts", "l2", "definition", "x_accounts") if key in saved} if saved else None
             )
         )
         preview_revision = revision + 1 if configuration_override is not None else revision

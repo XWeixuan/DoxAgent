@@ -187,16 +187,16 @@ def configuration(source, binding, *, terms_present: bool = False):
                 "parameter_form": False,
                 "parameter_form_id": None,
                 "json": True,
-                "polling_interval_form": True,
+                "polling_interval_form": source.source_id!="x_official_posts",
             },
             "writable_parameter_paths": sorted(writable),
             "redacted_parameter_paths": sorted(hidden),
             "monitoring_terms_usage": {
                 "acquisition_mode": source.acquisition_mode.value,
                 "terms_mode": (
-                    "UNIFIED" if terms_present and source.acquisition_mode in {
+                    "UNIFIED" if terms_present and (source.source_id=="x_official_posts" or source.acquisition_mode in {
                         AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION
-                    } else "LEGACY" if source.acquisition_mode is AcquisitionMode.BY_SEARCH
+                    }) else "LEGACY" if source.acquisition_mode is AcquisitionMode.BY_SEARCH
                     else "UNCONFIGURED"
                 ),
                 "managed_parameter_paths": managed_paths(source, terms_present=terms_present),

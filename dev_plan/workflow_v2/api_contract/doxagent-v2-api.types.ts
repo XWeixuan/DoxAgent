@@ -665,7 +665,7 @@ export interface BindingConfig {
   binding_version: Count; source_version: Count; control_etag: string;
   effective: BindingEditable;
   parameter_schema: JsonObject;
-  editor: { parameter_form: boolean; parameter_form_id: string | null; json: true; polling_interval_form: true };
+  editor: { parameter_form: boolean; parameter_form_id: string | null; json: true; polling_interval_form: boolean };
   writable_parameter_paths: string[];
   redacted_parameter_paths: string[];
   monitoring_terms_usage: { acquisition_mode: "by_ticker" | "by_search" | "by_distribution" | "massive_distribution"; terms_mode: "UNIFIED" | "LEGACY" | "UNCONFIGURED"; managed_parameter_paths: string[] };
@@ -679,6 +679,7 @@ export interface MonitoringL2Term {
 export interface MonitoringL2Group { id: string; any: MonitoringL2Term[]; all: MonitoringL2Term[]; none: MonitoringL2Term[] }
 export interface MonitoringL2Language { groups: MonitoringL2Group[] }
 export interface MonitoringTermsValue {
+  x_accounts?: string[];
   l1_concepts: MonitoringL1Concept[];
   l2: Record<string, MonitoringL2Language>;
   definition: { relevant: string; irrelevant: string };

@@ -475,6 +475,7 @@ class DoxAgentSettings(BaseSettings):
         default="en-US,en;q=0.9",
         validation_alias="STOCKTWITS_ACCEPT_LANGUAGE",
     )
+    x_bearer_token: str | None = Field(default=None, validation_alias="X_BEARER_TOKEN")
     tikhub_api_key: str | None = Field(default=None, validation_alias="TIKHUB_API_KEY")
     tikhub_base_url: str = Field(
         default="https://api.tikhub.io",
