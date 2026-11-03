@@ -98,7 +98,10 @@ def test_accounts_versioned_normalized_and_readable_by_control(tmp_path):
     assert normalized.x_accounts==['microntech']
     service.apply(normalized,actor='test')
     control=MonitoringTermsControl(repo.path)
-    assert control.get_terms('MU')['configuration']['x_accounts']==['microntech']
+    from doxagent.api_v2.dto import validate
+    snapshot=control.get_terms('MU')
+    validate('MonitoringTermsConfig',snapshot)
+    assert snapshot['configuration']['x_accounts']==['microntech']
     with pytest.raises(ValueError):type(config).model_validate({**config.model_dump(),'x_accounts':['https://x.com/other']})
 
 

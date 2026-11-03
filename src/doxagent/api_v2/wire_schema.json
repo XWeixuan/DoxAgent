@@ -7039,20 +7039,17 @@
               "type": "boolean"
             },
             "parameter_form_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
+              "type": [
+                "string",
+                "null"
               ]
             },
             "json": {
+              "type": "boolean",
               "const": true
             },
             "polling_interval_form": {
-              "const": true
+              "type": "boolean"
             }
           },
           "required": [
@@ -7079,29 +7076,20 @@
           "type": "object",
           "properties": {
             "acquisition_mode": {
-              "anyOf": [
-                {
-                  "const": "by_ticker"
-                },
-                {
-                  "const": "by_search"
-                },
-                {
-                  "const": "by_distribution"
-                }
+              "type": "string",
+              "enum": [
+                "by_ticker",
+                "by_search",
+                "by_distribution",
+                "massive_distribution"
               ]
             },
             "terms_mode": {
-              "anyOf": [
-                {
-                  "const": "UNIFIED"
-                },
-                {
-                  "const": "LEGACY"
-                },
-                {
-                  "const": "UNCONFIGURED"
-                }
+              "type": "string",
+              "enum": [
+                "UNIFIED",
+                "LEGACY",
+                "UNCONFIGURED"
               ]
             },
             "managed_parameter_paths": {
@@ -7260,6 +7248,12 @@
     "MonitoringTermsValue": {
       "type": "object",
       "properties": {
+        "x_accounts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "l1_concepts": {
           "type": "array",
           "items": {

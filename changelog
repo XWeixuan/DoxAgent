@@ -2606,3 +2606,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 X启动收尾：在源注册前启动的Collector同样使用已验证US HTTP出口；TikHub退役核验覆盖全部十个官方账号及新鲜连接状态，避免以部分账号连接代替完整切换。
 
 2026-11-04 Bloomberg覆盖观测收尾：采集层保留全部新出现的RSS/sitemap候选用于发现时效评估，Bus既有新鲜度接纳规则不变；补齐七个共享物理单元、零X轮询、RSS摘要差异不重复正文的测试，18项专项通过，新增只读切换核验脚本。
+
+2026-11-04 X生产契约修正：真实API读回发现schema生成器未覆盖MonitoringTermsValue/BindingConfig，补齐定向同步，修复x_accounts与流式轮询编辑标识的后端校验；新增native控制读回+wire校验防回归，七项专项通过。
