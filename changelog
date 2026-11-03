@@ -2569,3 +2569,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Overview: replace nonroutine repair KPI with failed downstream Case count; sum existing graph_cases FAILURE-node buckets for all Overview tickers and selected/prior trading periods in one bounded indexed read. Reuse existing revision corrections, coverage proof and Overview refresh; no new tables, writes, backfill or per-ticker requests. Synchronize API validators and add zero/aggregation/period/recovery/frozen-view and dual-width browser regressions.
 
 2026-11-03 全量本地开发整合发布：合入origin/main已有Google相关性与概览失败Case KPI，保留本地IBKR去重及Haiku High稳定性/单断点缓存；发布时显式启用openrouter_haiku_high，按实际容器建立回滚基线，源码仅从已提交commit构建，核验生产角色源码和配置。历史取证导出与凭据不纳入产品提交。
+
+2026-11-03 整体发布完成：产品版本1df0118d已推origin/main并在生产构建发布Collector/BODY/Bus/Projector/API/Scheduler/Web七角色，132次源码hash核验一致，均running/restart0，API健康200；四节点有效High/1h配置正确，已有自然High W1R2成功及4784 tokens缓存读取。191+4项回归通过，1项此前已记录的RuntimeJournal基线失败保留；详见docs/full-main-release-20261103.md。
