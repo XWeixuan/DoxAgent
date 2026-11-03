@@ -2594,3 +2594,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-03 Massive测试运行交付：五源七端点在生产隔离测试中保持启用，十目标L2、零Decision Model/正式消息/真实订阅，原有配置哈希一致；最终读回113条隔离发布，七角色运行正常，BW正文未通过单列，附实现/运行报告与轻量证据。
 
 2026-11-03 Reuters真实打码验收：a7dcec8b仅窄发布Site Access，Supervisor与Chrome/Profile保留；主原页完成RETRY→task84313566657→ready→作用域校验→原页CLEARED及CRAWLER业务证明，约34.7秒后再次拦截；备用task84313568401应用后仍受阻，不记成功。补充聚焦/按钮位回归断言29项通过，完整记录费用与持续稳定性未通过边界，见docs/reuters-retry-chain-repair-20261103.md。
+
+2026-11-04 Reuters出口/Profile对照与搜索修复：三组正式Chrome短时对照均在正常搜索流程取得20/19/20条结果，确认旧逻辑将空query占位页误判零结果成功。新增正常表单查询/原生分页与query/offset绑定响应观察，直接解析浏览器实际搜索响应和发布时间，恢复验证拒绝空壳；采集排队3秒→20秒，活动备用不再误受冷启动5秒预算门槛。相关76项回归及第二页真实验证通过，保留原Profile和工作备用，详见docs/reuters-egress-profile-search-repair-20261104.md。

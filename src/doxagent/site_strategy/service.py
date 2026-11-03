@@ -1948,7 +1948,12 @@ class SiteStrategyService:
                 continue
             combination = materialized
             remaining = request.remaining_budget_ms / 1000 - (time.monotonic() - started)
-            if scope and combination.identity_id == scope.fallback_identity_id and remaining < 5:
+            if (
+                scope
+                and combination.identity_id == scope.fallback_identity_id
+                and route.active_combination_id != scope.fallback_identity_id
+                and remaining < 5
+            ):
                 activation = (await self.failover.schedule_async(scope, request.purpose))
                 return self._result(
                     request,

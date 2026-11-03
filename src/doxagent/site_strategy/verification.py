@@ -220,15 +220,8 @@ def reuters_listing_rows(html, request, actual_url):
     if rows:
         return rows
     text = main[0].text_content()
-    return (
-        []
-        if re.search(
-            r"Search results for[\s\S]*?\b0 results\b|No search results match the term\b",
-            text,
-            re.I,
-        )
-        else None
-    )
+    empty = re.search(r'No search results match the term\s*[“"\u2018\'](.*?)[”"\u2019\']', text, re.I)
+    return [] if empty and empty.group(1).strip().casefold() == query.strip().casefold() else None
 
 
 def crawler_capture_items(source_id, response, request):

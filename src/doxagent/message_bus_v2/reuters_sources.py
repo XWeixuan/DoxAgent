@@ -3,7 +3,41 @@
 from __future__ import annotations
 
 from typing import Any, cast
-from urllib.parse import quote
+import re
+import json
+import asyncio
+from urllib.parse import quote, urlsplit, parse_qs
+
+
+def is_reuters_search_request(url: str, query: str, offset: int) -> bool:
+    """Observe the query-bound request made by the native search form."""
+    try:
+        parsed=urlsplit(url)
+        if parsed.scheme!='https' or parsed.hostname!='www.reuters.com' or parsed.path!='/pf/api/v3/content/fetch/articles-by-search-v2':
+            return False
+        payload=json.loads(parse_qs(parsed.query).get('query',['{}'])[0])
+        return payload.get('keyword')==query and int(payload.get('offset',0))==offset
+    except (ValueError,TypeError,AttributeError):
+        return False
+
+
+SEARCH_STATE = r"""() => {
+  const input=document.querySelector('main input');
+  return {query:input?.value || '', offset:Number(new URLSearchParams(location.search).get('offset')||0),
+    first:[...document.querySelectorAll('main a[href]')].find(a=>/-\d{4}-\d{2}-\d{2}\/$/.test(a.pathname))?.href};
+}"""
+
+SEARCH_READY = r"""({query,offset,previous}) => {
+  const main=document.querySelector('main');
+  const input=main?.querySelector('input');
+  if (!main || input?.value.trim().toLowerCase() !== query.trim().toLowerCase()
+      || Number(new URLSearchParams(location.search).get('offset')||0)!==offset) return false;
+  const links=[...main.querySelectorAll('a[href]')].filter(a=>/-\d{4}-\d{2}-\d{2}\/$/.test(a.pathname));
+  if (links.length) return !previous || links[0].href!==previous;
+  const text=(main.innerText||'').toLowerCase();
+  // Reuters initially paints an empty query shell. It is never a zero-result proof.
+  return text.includes('no search results match the term') && text.includes(query.toLowerCase());
+}"""
 
 
 async def wait_for_native_document_redirect(page: Any, response: Any) -> Any:
@@ -37,8 +71,62 @@ async def wait_for_native_document_redirect(page: Any, response: Any) -> Any:
         raise
 
 
+def native_search_rows(payload: object) -> list[dict[str, object]]:
+    """Parse the browser's own completed search response, never issue another request."""
+    result=payload.get('result',{}) if isinstance(payload,dict) else {}
+    articles=result.get('articles') if isinstance(result,dict) else None
+    if not isinstance(articles,list):
+        raise ValueError('invalid_reuters_search_response')
+    rows=[]
+    for article in articles:
+        if not isinstance(article,dict):continue
+        url=str(article.get('canonical_url') or '')
+        parsed=urlsplit(url)
+        stamp=re.search(r'-(\d{4}-\d{2}-\d{2})/$',parsed.path)
+        title=str(article.get('title') or article.get('basic_headline') or '').strip()
+        if not stamp or len(title)<15 or (parsed.hostname and parsed.hostname!='www.reuters.com'):
+            continue
+        published=article.get('published_time')
+        rows.append({'url':url,'title':title,'date':published or stamp[1],
+            'summary':str(article.get('description') or ''),'date_basis':'publisher_timestamp' if published else 'url_date'})
+    if articles and not rows:
+        raise ValueError('reuters_search_articles_not_parseable')
+    return rows
+
+
 async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dict[str, object]]:
-    response = await page.goto(
+    responses=[];ready=asyncio.Event();navigation={}
+    def observe(response):
+        if is_reuters_search_request(response.url,query,offset):
+            responses.append(response);ready.set()
+    listening=hasattr(page,'on')
+    if listening:page.on('response',observe)
+    try:
+        rows=await _capture_reuters_search_dom(page,query,offset,navigation=navigation)
+        if listening and navigation.get('interactive'):
+            async with asyncio.timeout(12):await ready.wait()
+        if responses:
+            response=responses[-1]
+            if response.status!=200:
+                error=RuntimeError('Reuters native search request rejected')
+                error.status_code=response.status;error.response_url=page.url
+                error.response_body=await page.content();error.response_headers={}
+                raise error
+            return native_search_rows(await response.json())
+        return rows
+    finally:
+        if listening:page.remove_listener('response',observe)
+
+
+async def _capture_reuters_search_dom(page: Any, query: str, offset: int, *, navigation: dict) -> list[dict[str, object]]:
+    if not query.strip() or offset < 0 or offset % 20:
+        raise ValueError('invalid_reuters_query_or_offset')
+    current = await page.evaluate(SEARCH_STATE)
+    current_url = urlsplit(page.url)
+    reuse = (current_url.hostname == 'www.reuters.com' and current_url.path == '/site-search/'
+             and bool(current.get('query')) and
+             (current['query'] != query or current.get('offset',0) < offset))
+    response = None if reuse else await page.goto(
         f"https://www.reuters.com/site-search/?query={quote(query)}&offset={offset}",
         # Third-party/deferred scripts can indefinitely postpone DCL even after
         # a complete native listing is rendered. The contract below waits for
@@ -59,15 +147,30 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
         }
         error.response_url = page.url
         raise error
+    await page.locator('main input').first.wait_for(state='visible',timeout=12_000)
+    current = await page.evaluate(SEARCH_STATE)
+    if current.get('query') != query or current.get('offset',0) > offset:
+        navigation['interactive']=True
+        # A normal form submission initializes client search; no scripted fetch,
+        # identity override, challenge interaction or guessed backend endpoint.
+        await page.bring_to_front()
+        field=page.locator('main input').first
+        await field.fill(query)
+        await field.press('Enter')
+        await page.wait_for_function(SEARCH_READY,arg={'query':query,'offset':0,'previous':None},polling=250,timeout=12_000)
+        current=await page.evaluate(SEARCH_STATE)
+    while current.get('offset',0) < offset:
+        navigation['interactive']=True
+        previous=current.get('first')
+        next_offset=current.get('offset',0)+20
+        await page.bring_to_front()
+        await page.get_by_role('button',name=re.compile(r'^Next stories')).click(timeout=5_000)
+        await page.wait_for_function(SEARCH_READY,arg={'query':query,'offset':next_offset,'previous':previous},polling=250,timeout=12_000)
+        current=await page.evaluate(SEARCH_STATE)
+        if current.get('offset',0) != next_offset:
+            raise RuntimeError('reuters_pagination_did_not_advance')
     await page.wait_for_function(
-        r"""() => {
-          const body = document.body?.innerText || '';
-          const articlePath = /\/[^/]+\/[^/]+-\d{4}-\d{2}-\d{2}\//;
-          const hasArticle = [...document.querySelectorAll('main a[href]')]
-            .some(link => articlePath.test(link.getAttribute('href') || ''));
-          return hasArticle || /Search results for[\s\S]*?\b0 results\b/i.test(body)
-            || /No search results match the term\b/i.test(body);
-        }""",
+        SEARCH_READY, arg={'query':query,'offset':offset,'previous':None},
         polling=250,  # Native Chrome background tabs do not reliably run requestAnimationFrame.
         timeout=12_000,
     )

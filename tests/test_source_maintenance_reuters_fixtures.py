@@ -23,12 +23,19 @@ async def test_normal_article_and_true_empty_search_recipe():
         }
     ]
 
-    async def evaluate(*args):
-        return rows
+    query='Micron'
+    class Field:
+        @property
+        def first(self):return self
+        async def wait_for(self,**kwargs):pass
+    async def evaluate(expression,*args):
+        from doxagent.message_bus_v2.reuters_sources import SEARCH_STATE
+        return {'query':query,'offset':0} if expression==SEARCH_STATE else rows
 
-    page = SimpleNamespace(goto=goto, wait_for_function=wait, evaluate=evaluate)
+    page = SimpleNamespace(goto=goto, wait_for_function=wait, evaluate=evaluate,url='about:blank',locator=lambda *_:Field())
     assert await capture_reuters_search(page, "Micron", 0) == rows
     rows.clear()
+    query='No matching article'
     assert await capture_reuters_search(page, "No matching article", 0) == []
 
 
@@ -43,7 +50,8 @@ async def test_denial_retains_untrusted_page_but_no_cookie():
     async def content():
         return "<html>Access is temporarily restricted</html>"
 
-    page = SimpleNamespace(goto=goto, content=content, url="https://www.reuters.com/site-search/")
+    async def evaluate(*args):return {'query':'','offset':0}
+    page = SimpleNamespace(goto=goto, content=content,evaluate=evaluate, url="https://www.reuters.com/site-search/")
     with pytest.raises(RuntimeError) as error:
         await capture_reuters_search(page, "Micron", 0)
     assert "restricted" in error.value.response_body

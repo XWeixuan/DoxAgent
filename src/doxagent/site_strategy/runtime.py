@@ -1402,10 +1402,16 @@ class SiteAccessRuntime:
         native_document = None
         command_timings = _BROWSER_TIMINGS.get()
         tracked_requests = {}
+        reuters_navigations = []
+        reuters_search_seen = False
 
         def observe_request(value):
+            nonlocal reuters_search_seen
             try:
                 from doxagent.message_bus_v2.yahoo_graphql import is_ticker_request
+                from doxagent.message_bus_v2.reuters_sources import is_reuters_search_request
+                reuters_search = (request.recipe_ref == 'builtin:reuters_search@1' and is_reuters_search_request(
+                    value.url,str(request.recipe_parameters.get('query','')),int(request.recipe_parameters.get('offset',0))))
 
                 if (
                     (value.is_navigation_request() and value.frame == page.main_frame)
@@ -1425,6 +1431,7 @@ class SiteAccessRuntime:
                     )
                     or (request.recipe_ref == 'builtin:yahoo_latest_news@1'
                         and is_ticker_request(value, str(request.recipe_parameters.get('ticker', ''))))
+                    or reuters_search
                     or (anchor_eligible and (value.url == request.url or (
                         resolved.site_id == 'investorshub' and urlsplit(value.url).hostname == 'investorshub.advfn.com'
                         and urlsplit(value.url).path.rstrip('/').split('/')[-1] == 'news'
@@ -1433,6 +1440,15 @@ class SiteAccessRuntime:
                     at = int(time.time()*1000)
                     index = len(tracked_requests)
                     tracked_requests[id(value)] = index
+                    if resolved.site_id == 'reuters':
+                        if reuters_search:
+                            reuters_search_seen = True
+                            for prior in reuters_navigations:
+                                command_timings[f'request_{prior}_auxiliary'] = 1
+                        elif value.is_navigation_request():
+                            reuters_navigations.append(index)
+                            if reuters_search_seen:
+                                command_timings[f'request_{index}_auxiliary'] = 1
                     if resolved.site_id == 'yahoo_finance' and (urlsplit(value.url).path.endswith('.html') or urlsplit(value.url).path.startswith('/m/')):
                         command_timings[f'request_{index}_auxiliary'] = 1
                     command_timings[f'request_{index}_started_epoch_ms'] = at
