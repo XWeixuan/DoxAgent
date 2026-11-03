@@ -2548,3 +2548,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-02 整体发布收敛：storage_release在更新组件commit时同步更新不可变源码archive SHA，避免私有Compose保留旧值覆盖新镜像身份；保留previous原始身份并补充发布回归。
 
 2026-11-02 整体main发布验收：ae5f3f8a已推origin/main并正式发布19角色，648次源码hash及commit/archive身份核验通过。首轮漏迁移导致BODY缺execution_spent_ms列，已中止并经正式collection-migration修复（退出0），随后角色均运行且最终restart0。Google七个新绑定、BE/INTC幂等保留、MU排除；9个编译配置可见，当前非交易日未伪造自然轮询SLA。生产StockTitan FULL，GuruFocus1次失败+3篇FULL；保留TheStreet/原生身份权益限制。Google Chrome当前0进程、候选无引用镜像已清理；本地临时Profile删除被自动审批拦截而保留。
+
+2026-11-03 Message Bus计数漏计修复：派生贡献在现有writer事务中基于当前消息事实重算，不再被旧缺口receipt与较新正文/关联计数水位挡住；保留对象乱序保护及其他直接贡献水位。新增显式消息身份定点重算参数，复用现有MVCC差量桶，补齐历史计数不重放消息/模型；覆盖恢复、路由、删除、历史视图和幂等回归。不修改来源及相关性/去重/资源治理。见docs/message-bus-count-repair-20261103.md。

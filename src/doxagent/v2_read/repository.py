@@ -418,6 +418,7 @@ class ReadStore:
         gap: str | None = None,
         resolved_gap: str | None = None,
         expected_usage_versions: list[tuple[str, str, int]] | None = None,
+        refresh_bus_members: list[tuple[str, str]] | None = None,
     ) -> int:
         proofs = [record for record in records if record["kind"] == "capture_coverage"]
         records = [record for record in records if record["kind"] != "capture_coverage"]
@@ -458,7 +459,8 @@ class ReadStore:
                     seq = int(cursor.lastrowid)
                 return seq
             mutated = False
-            bus_members, raw_links, graph_cases = set(), set(), set()
+            bus_members = set(refresh_bus_members or ())
+            raw_links, graph_cases = set(), set()
             for ordinal, record in enumerate(records):
                 kind, ticker, identity = record["kind"], record["ticker"], record["id"]
                 payload=record.get('data')
@@ -573,7 +575,9 @@ class ReadStore:
                     bus_members.add((ticker,parent))
             from .bus_aggregates import contributions as bus_contributions
             from .graph_seed import contributions as graph_contributions
-            contributions = [*(item for item in (contributions or []) if item["metric"] != "graph_paths"), *bus_contributions(db,bus_members), *graph_contributions(db,graph_cases)]
+            bus_counts = bus_contributions(db, bus_members)
+            bus_bases = {(item['metric'], item['ticker'], item['entity']) for item in bus_counts}
+            contributions = [*(item for item in (contributions or []) if item["metric"] != "graph_paths"), *bus_counts, *graph_contributions(db,graph_cases)]
             groups = {}
             for item in contributions or []:
                 groups.setdefault((item["metric"], item["ticker"], item["entity"]), []).append(item)
@@ -604,7 +608,10 @@ class ReadStore:
                     old_sets.setdefault(tuple(row[:3]), []).append(tuple(row[3:]))
             for base, items in groups.items():
                 identity = (source, *base)
-                if position is not None and base not in folded_bases:
+                # Bus counts are derived from the current objects under this
+                # writer lock, not the incoming receipt's older source position.
+                # Entity watermarks already protect those objects from regression.
+                if position is not None and base not in folded_bases and base not in bus_bases:
                     last = db.execute("SELECT position FROM contribution_watermarks WHERE source=? AND metric=? AND ticker=? AND entity=?", identity).fetchone()
                     if last and last[0] >= position:
                         continue
