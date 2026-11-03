@@ -1706,6 +1706,8 @@ class SiteAccessRuntime:
                         str(request.recipe_parameters["query"]),
                         int(request.recipe_parameters.get("offset", 0)),
                     )
+                    from doxagent.message_bus_v2.reuters_sources import mark_consumed_search
+                    mark_consumed_search(page,tracked_requests,command_timings)
                     result=await recipe_capture(rows)
                     if anchor_eligible and not retained and result.recipe_result is not None:
                         from .fetch_anchors import FetchAnchor

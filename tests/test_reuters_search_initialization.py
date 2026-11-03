@@ -58,3 +58,14 @@ async def test_adapter_does_not_turn_native_timestamp_back_into_noon(tmp_path):
         assert message.publication_time_basis=='EXACT'
         assert message.published_at.isoformat()=='2026-09-14T12:15:42+00:00'
     finally:repo.close()
+
+
+def test_duplicate_native_requests_are_not_ambiguous_listing_proof():
+    from types import SimpleNamespace
+    from doxagent.message_bus_v2.reuters_sources import mark_consumed_search
+    first,consumed=object(),object()
+    timings={'request_0_started_epoch_ms':1,'request_1_started_epoch_ms':2}
+    mark_consumed_search(SimpleNamespace(_doxagent_reuters_consumed=(consumed,10)),{id(first):0,id(consumed):1},timings)
+    assert timings['request_0_auxiliary']==1
+    assert 'request_1_auxiliary' not in timings
+    assert timings['request_1_body_epoch_ms']==10

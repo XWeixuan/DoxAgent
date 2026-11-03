@@ -37,12 +37,20 @@
 
 ## 回归、发布与生产验收
 
-相关回归最终89项通过，含活动/未活动备用短预算分流、空查询/错查询不能证明Micron搜索、原生响应解析/精确发布时间及请求绑定。候选代码在隔离的正式Chrome上实际得到有内容结果，并完成第二页验证。Ruff F/E9与diff检查通过。
+相关回归最终90项通过，含活动/未活动备用短预算分流、空查询/错查询不能证明Micron搜索、原生响应解析/精确发布时间及请求绑定。候选代码在隔离的正式Chrome上实际得到有内容结果，并完成第二页验证。Ruff F/E9与diff检查通过。
 
 首发`daee305329a4e3eeaaa7281172010c45a35d0919`于UTC18:01:44窄发布Site Access。首窗18:01:44–18:03:11已出现15次CRAWLER成功和4条正式正文FULL，但仍有29次采集排队超时，不能称全部恢复。进一步确认：单并发备用不足以承载现有HEAD/TAIL和正文工作量；主身份已由新搜索recipe真实恢复，于本轮通过Owner `ACTIVATE_PRIMARY`重新验收并接回主路由，保留其原配置的并发2/1500ms间隔，不增改网站访问速率参数。首发后实际新增的合法空结果响应省略articles字段，旧严格parser将其报为invalid_reuters_search_response；已用Ondas原生页面复现并补齐，仅在当前query明确零结果且匹配原生响应时接受为空。
 
 Collector侧同时保留原生published_time为EXACT，避免再次降格为纽约中午的日精度时间，减少不必要的正文取时间任务和错过30分钟实时窗口的问题。该补充需要更新Collector，不能只替换Site Access镜像。
 
-待补充最终精确代码、窄发布和生产后只读验收；不会将一次canary或HTTP200外推为所有ticker、正文及长期稳定均已通过。
+补发`bad5251443a8c76d849d525e8343a067e4d7d293`于UTC18:14:17更新Site Access及Collector，Supervisor未重建，5个相关运行文件哈希逐一匹配。18:14:17–18:19:50有208次真实CRAWLER成功回执、49次采集队列延期，无新增Challenge/付费任务；当前10个ticker的26个有效QUERY最新状态全部succeeded。该窗cycles中尾页排队失败42次、主查询排队失败3次，分别保留；不能把最新全绿当窗口内没有失败。
+
+该窗另有UNPROVEN_LISTING：完整physical_cycles证实一个操作有两个同query/offset的200搜索响应，都被当作listing，造成歧义。收尾修复让recipe标记真正完成JSON读取并被解析的Response.request；Runtime将其他响应标为辅助，保留物理请求数量。若Node未先发完结事件，已完成实际JSON读取的时刻可补足该响应完成证据，不伪造请求发送时刻。证据为proof-gap.json。
+
+正文方面，首发后已有多条正式FULL回执，尚不能把某一发行版本无新增正文任务当作正文失败；保留精确时间后，窗口外旧文章不会再仅为取时间而进入正文。单独listing canary曾因无排程due优先级在高负载下排队超时，未计成功。最终版本仍需分列自然采集、单独正文验证及残留延期，不以一次canary外推长期稳定。
+
+单独正文验证已通过：原主身份digitimes-de-1，Chrome instance `5584793148dc4bb7a77b8aa25d53037f`，HTTP200，排队1548ms，独立正文解析FULL/complete_article，1243字符。该验证是手动canary，不冒充自然新增文章或所有订阅正文均可见。
+
+剩余容量边界：26个HEAD/分钟，若均再产生一个TAIL，便超过现有主身份1500ms启动间隔所能提供的约40次/分钟，且正文也共享预算。此次保持既有节奏，优先保障HEAD；未通过提高请求频率或把延期伪装成功来声称容量无限。后续若要求尾页也每分钟全部完成，需要独立评估补扫窗口与容量，而不是继续换IP。
 
 脱敏证据位于`eval/reuters_egress_profile_20261104/`：state/state2、queue-change、profile-snapshot、candidate-old-ip、candidate-oldstate-new-ip、candidate-new-ip、final-candidate-old-ip、pagination-old-ip。最初实验脚本把零条标为LISTING_OK的文件保留，但本报告已依据截图将其纠正为未验证空壳，不计通过。完整CaptchaURL、Cookie、代理密钥未输出或提交。

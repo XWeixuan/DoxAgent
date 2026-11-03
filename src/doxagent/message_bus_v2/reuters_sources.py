@@ -6,6 +6,7 @@ from typing import Any, cast
 import re
 import json
 import asyncio
+import time
 from urllib.parse import quote, urlsplit, parse_qs
 
 
@@ -99,6 +100,7 @@ def native_search_rows(payload: object, *, empty_confirmed: bool = False) -> lis
 
 
 async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dict[str, object]]:
+    page._doxagent_reuters_consumed = None
     responses=[];ready=asyncio.Event();navigation={}
     def observe(response):
         if is_reuters_search_request(response.url,query,offset):
@@ -116,10 +118,24 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
                 error.status_code=response.status;error.response_url=page.url
                 error.response_body=await page.content();error.response_headers={}
                 raise error
-            return native_search_rows(await response.json(),empty_confirmed=not rows)
+            payload=await response.json()
+            page._doxagent_reuters_consumed=(response.request,int(time.time()*1000))
+            return native_search_rows(payload,empty_confirmed=not rows)
         return rows
     finally:
         if listening:page.remove_listener('response',observe)
+
+
+def mark_consumed_search(page, tracked_requests, timings):
+    """Retain all transport observations; only the response actually parsed is listing proof."""
+    consumed=getattr(page,'_doxagent_reuters_consumed',None)
+    if not consumed:return
+    index=tracked_requests.get(id(consumed[0]))
+    if index is None:return
+    for other in tracked_requests.values():
+        if other!=index:timings[f'request_{other}_auxiliary']=1
+    timings.pop(f'request_{index}_auxiliary',None)
+    timings.setdefault(f'request_{index}_body_epoch_ms',consumed[1])
 
 
 async def _capture_reuters_search_dom(page: Any, query: str, offset: int, *, navigation: dict) -> list[dict[str, object]]:
