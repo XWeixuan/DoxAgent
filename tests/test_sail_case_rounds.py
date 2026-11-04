@@ -48,6 +48,7 @@ def test_sail_only_tightens_required_and_keeps_shared_prefix(model):
     original = copy.deepcopy(model.model_json_schema())
     req = replace(request(), output_model=model, model=SAIL_MODEL, provider_endpoint=SAIL_ENDPOINT,
                   cache_context_keys=(),
+                  schema_name="w2_novel_fact_alignment_result" if model is W2NovelFactAlignmentResultV2 else "fixture",
                   metadata={"lane": "W1", "round": "R3", "case_cache_layout": VERSION},
                   instructions="fixed\n\n## Current Capture Mode\nNEW_CAPTURE",
                   replay_parent=("one parent", "one result"))
@@ -76,6 +77,8 @@ def test_sail_only_tightens_required_and_keeps_shared_prefix(model):
     if model is W1FactExtractionResult:
         assert '"format": "date"' not in json.dumps(wire)
         assert "pattern" in wire["properties"]["candidates"]["items"]["properties"]["occurrence_date"]["anyOf"][0]
+    if model is W2NovelFactAlignmentResultV2:
+        assert wire["properties"]["condition_results"]["items"]["properties"]["condition_ids"]["items"]["pattern"] == r"^[^/]+/[^/]+$"
     haiku, _ = build_case_schema_request(replace(req, model=HAIKU_MODEL, provider_endpoint="google-vertex/global"))
     assert haiku["messages"][0]["content"][0]["cache_control"]["ttl"] == "1h"
 
@@ -184,3 +187,47 @@ def test_calendar_validation_remains_local_after_wire_date_lowering():
             "proposition": "test", "assertion_state": "ACTUAL", "subject_time": None,
             "occurrence_date": "2026-02-31", "entities": [],
         }]})
+
+
+def test_actual_alignment_validator_failure_switches_to_haiku():
+    from doxagent.persistent_runtime_v2.repository import InMemoryPersistentRuntimeV2Repository
+    from doxagent.persistent_runtime_v2.service import PersistentRuntimeV2Service, RuntimeSemanticOutputError
+    from doxagent.persistent_runtime_v2.w2_alignment import validate_alignment
+    from tests.test_persistent_runtime_v2 import _FakeKnownEvents, _FakePolicies
+    from tests.test_runtime_policy_direction_usage import fixture_case
+    primary = client()
+    calls = []
+    parent = W2PolicyAssessmentResultV2(policy_hit=True, policy_related=False,
+        policy_ids=["P1"], hit_condition_ids=[{"policy_id":"P1","condition_ids":["C1"]}],
+        related_policy_ids=[], confidence="normal", reason="hit")
+    class Responses:
+        model = primary.model
+        model_settings = primary.model_settings
+        def complete(self, req):
+            calls.append(req)
+            value = W2NovelFactAlignmentResultV2(condition_results=[{
+                "condition_ids": ["C1" if req.model == SAIL_MODEL else "P1/C1"], "is_new": True,
+            }], related_policy_results=[])
+            return RuntimeResponsesResult(value=value,response_id="attempt-"+str(len(calls)),
+                latency_ms=1,input_tokens=20,output_tokens=10,reasoning_tokens=3,cached_input_tokens=5,
+                raw_output=value.model_dump_json())
+    repo = InMemoryPersistentRuntimeV2Repository()
+    service = PersistentRuntimeV2Service(repository=repo,responses=Responses(),
+        known_events=_FakeKnownEvents(),policies=_FakePolicies(),dispatch_effects=False)
+    case, _ = fixture_case()
+    case.frozen_inputs["models"] = primary.model_settings()
+    def validate(value):
+        try:validate_alignment(parent,value)
+        except ValueError as e:raise RuntimeSemanticOutputError(str(e)) from e
+    try:
+        result, _ = service._call_with_retry(case=case,lane="W2",round_name="R3",round_prompt="",
+            payload={},output_model=W2NovelFactAlignmentResultV2,schema_name="w2_novel_fact_alignment_result",
+            validate=validate)
+        assert result.condition_results[0].condition_ids == ["P1/C1"]
+        turns = repo.list_turns(case.case_id)
+        assert [t.model for t in turns] == [SAIL_MODEL,HAIKU_MODEL]
+        assert turns[0].error_code == "semantic_output_validation_failed"
+        assert turns[0].raw_output is not None
+    finally:
+        service.close()
+        primary.close()

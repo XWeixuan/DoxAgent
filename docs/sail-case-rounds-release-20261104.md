@@ -12,6 +12,8 @@ Haiku high完整配置冻结到models.case_fallback四个条目，等同原openr
 
 不修改Router、业务Prompt、W3、历史Case或原R1回退；旧Case没有新冻结case_fallback时不会因当前默认配置改变而换模。识别不出的业务误判不能自动触发fallback：历史W2 #14因果条件误HIT已向用户说明，本次不以结构化输出掩盖该风险。
 
+W2R3 wire Condition身份使用Policy/Condition格式正则，对齐Router已有复合身份合同，保留本地完整覆盖和对象身份校验，不按Case生成枚举。
+
 W1R3日期字段在wire副本使用YYYY-MM-DD正则替代format=date，本地合法日历日期校验保留。
 
 本地验证：190项回归通过，覆盖四节点Schema与缓存布局、Haiku参数不变、主备切换/中断恢复/R3父轮、旧R1回退和运行控制边界。真实调用、缓存与发布验收另追加于本文件。

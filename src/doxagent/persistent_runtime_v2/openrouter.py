@@ -209,6 +209,11 @@ def build_case_schema_request(request: RuntimeResponsesRequest[Any]) -> tuple[di
     sail = request.model == SAIL_MODEL and request.provider_endpoint == SAIL_ENDPOINT
     if sail:
         schema = _sail_required_schema(schema)
+        if request.schema_name == "w2_novel_fact_alignment_result":
+            # Router identities use escaped Policy/Condition refs, never bare C1.
+            schema["properties"]["condition_results"]["items"]["properties"][
+                "condition_ids"
+            ]["items"]["pattern"] = r"^[^/]+/[^/]+$"
     dynamic_instructions = ""
     shared_cache = request.metadata.get("case_cache_layout") == CACHE_VERSION
     system_request = request
