@@ -71,7 +71,11 @@ def test_sail_only_tightens_required_and_keeps_shared_prefix(model):
         elif isinstance(value, list):
             for v in value:
                 check(v)
-    check(a["response_format"]["json_schema"]["schema"])
+    wire = a["response_format"]["json_schema"]["schema"]
+    check(wire)
+    if model is W1FactExtractionResult:
+        assert '"format": "date"' not in json.dumps(wire)
+        assert "pattern" in wire["properties"]["candidates"]["items"]["properties"]["occurrence_date"]["anyOf"][0]
     haiku, _ = build_case_schema_request(replace(req, model=HAIKU_MODEL, provider_endpoint="google-vertex/global"))
     assert haiku["messages"][0]["content"][0]["cache_control"]["ttl"] == "1h"
 
@@ -171,3 +175,12 @@ def test_control_and_identity_errors_do_not_fallback(tmp_path, failure):
     finally:
         service.close()
         primary.close()
+
+
+def test_calendar_validation_remains_local_after_wire_date_lowering():
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
+        W1FactExtractionResult.model_validate({"candidates": [{
+            "proposition": "test", "assertion_state": "ACTUAL", "subject_time": None,
+            "occurrence_date": "2026-02-31", "entities": [],
+        }]})

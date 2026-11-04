@@ -40,6 +40,10 @@ def _sail_required_schema(schema: dict[str, Any]) -> dict[str, Any]:
         if isinstance(value, dict):
             if isinstance(value.get("properties"), dict):
                 value["required"] = list(value["properties"])
+            if value.get("format") == "date":
+                # Sail rejects format=date; local date parsing still checks the calendar.
+                value.pop("format")
+                value["pattern"] = r"^\d{4}-\d{2}-\d{2}$"
             for item in value.values():
                 visit(item)
         elif isinstance(value, list):
