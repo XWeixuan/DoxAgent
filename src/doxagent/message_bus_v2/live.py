@@ -21,6 +21,18 @@ from .schema import AcquisitionMode, RawMessageInput, utc_now
 log = logging.getLogger(__name__)
 
 
+def decision_model_deadline(row, source):
+    if source.acquisition_mode is not AcquisitionMode.BY_DISTRIBUTION:
+        return None
+    # Article discovery also survives source takeovers/canonical merges; neither
+    # retries nor a later BODY revision opens another model window.
+    discovered = min(
+        datetime.fromisoformat(at)
+        for at in (row['first_seen_at'], row.get('first_discovered_at')) if at
+    )
+    return discovered + timedelta(minutes=10)
+
+
 class LiveQueue:
     def __init__(self, bus):
         self.bus = bus
@@ -462,6 +474,8 @@ class LiveDeliveryWorker:
             terms[row['ticker']]=self.terms.get(row['ticker'])
         found = terms[row['ticker']]
         if found:
+            # Loading current terms must not relabel an old cached decision.
+            row.setdefault('_decision_terms_revision', row['terms_revision'])
             row["terms_revision"] = found[0]
         return message, source, binding, found
 
@@ -487,7 +501,7 @@ class LiveDeliveryWorker:
     async def process(self, row, prepared=None):
         if row.get('_prepare_error'):
             raise row['_prepare_error']
-        decision_terms = row["terms_revision"]
+        decision_terms = row.get('_decision_terms_revision', row["terms_revision"])
         message, source, binding, found = prepared or await self.bus.storage.prepare(self._prepare, row)
         if not source or not binding or not binding.enabled:
             await self.bus.storage.call(self.repository.decision, row, "CANCELLED")
@@ -510,16 +524,25 @@ class LiveDeliveryWorker:
             )
             return
         revision, definition = found
+        model_deadline = decision_model_deadline(row, source)
+        model_expired = model_deadline is not None and utc_now() >= model_deadline
         if (
             row.get("decision_digest") == row["body_digest"]
             and decision_terms == revision
             and (row.get("regex_result") or (row.get("jev_result") or 0) >= 0.5)
+            and (
+                not model_expired or row.get('regex_result') or
+                (row.get('due_at') and datetime.fromisoformat(row['due_at']) < model_deadline)
+            )
         ):
             await self.publish(row, source, binding, message)
             return
         if regex_relevant(definition, (message.metadata.get("language") if source.delivery_mode == "test" else None) or source.content_language or "en", message):
             await self.bus.storage.call(self.repository.decision, row, "PENDING", regex=True)
             await self.publish(row, source, binding, message)
+        elif model_expired:
+            await self.bus.storage.call(self.repository.decision, row, 'IRRELEVANT',
+                                        regex=False, error='DECISION_MODEL_EXPIRED')
         elif source.acquisition_mode is not AcquisitionMode.MASSIVE_DISTRIBUTION and ((source.distribution_policy and source.distribution_policy.jev_enabled) or (
             source.source_id == "google_news_search_rss"
             and binding.source_parameters.get("require_relevance") is True
@@ -537,6 +560,16 @@ class LiveDeliveryWorker:
                 await self.bus.storage.call(self.repository.decision,row,'L2_DUE',
                     error=type(row['_prepare_error']).__name__,retry=True)
             prepared = [r for r in prepared if not r[0].get('_prepare_error')]
+            eligible = []
+            for row, msg, source, binding, found in prepared:
+                deadline = decision_model_deadline(row, source) if source else None
+                if deadline is not None and utc_now() >= deadline:
+                    # Still honor regex matches and an already accepted timely
+                    # result; never send expired rows to the model again.
+                    await self.process(row, (msg, source, binding, found))
+                else:
+                    eligible.append((row, msg, source, binding, found))
+            prepared = eligible
             if not prepared:return
             definitions = {
                 row["ticker"]: found[1]
@@ -548,6 +581,10 @@ class LiveDeliveryWorker:
             async def positive(ticker, score, attempt):
                 for row, msg, source, binding, found in prepared:
                     if row["ticker"] == ticker:
+                        deadline = decision_model_deadline(row, source)
+                        if deadline is not None and utc_now() >= deadline:
+                            await self.process(row, (msg, source, binding, found))
+                            continue
                         if await self.bus.storage.call(
                             self.repository.decision, row, "PENDING", regex=False, score=score
                         ):
@@ -559,6 +596,10 @@ class LiveDeliveryWorker:
             for row, msg, source, binding, found in prepared:
                 score = scores.get(row["ticker"])
                 if score is not None and score >= 0.5:
+                    continue
+                deadline = decision_model_deadline(row, source)
+                if deadline is not None and utc_now() >= deadline:
+                    await self.process(row, (msg, source, binding, found))
                     continue
                 error = errors.get(row["ticker"])
                 permanent = error in {
