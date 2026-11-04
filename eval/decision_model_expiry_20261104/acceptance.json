@@ -1,0 +1,113 @@
+{
+  "changed_components": [
+    "v2-message-bus"
+  ],
+  "message_bus": {
+    "image": "sha256:aa7ac5f2c020c6a16b1a7f951d37d40315f8173013242cd8b4079bebaa95fb29",
+    "state": "running",
+    "restarts": 0,
+    "revision": "1ab887b3f31630f67ba1ccfa7224c7ca4c3f2e56"
+  },
+  "shadow": {
+    "at": "2026-11-04T10:58:24.935973+00:00",
+    "source_sha256": "c61170e119c0284dae5b3e16b91a75a0161fb20dd9794aa844fd3489390fbee8",
+    "shadow_only": true,
+    "production_writes": 0,
+    "model_calls": 0,
+    "results": [
+      {
+        "original_ticker": "COHR",
+        "article_key": "91ba7a884216e19ede247746629d3edce11b7b9a97fc7b679591c1c52fe81aac",
+        "deadline": "2026-11-02T19:26:24.273212+00:00",
+        "regex_hit": false,
+        "would_publish": false,
+        "decisions": [
+          {
+            "state": "IRRELEVANT",
+            "regex": false,
+            "error": "DECISION_MODEL_EXPIRED"
+          }
+        ]
+      },
+      {
+        "original_ticker": "COHR",
+        "article_key": "91ba7a884216e19ede247746629d3edce11b7b9a97fc7b679591c1c52fe81aac",
+        "deadline": "2026-11-02T19:26:24.273212+00:00",
+        "regex_hit": true,
+        "would_publish": true,
+        "decisions": [
+          {
+            "state": "PENDING",
+            "regex": true
+          }
+        ]
+      },
+      {
+        "original_ticker": "COHR",
+        "article_key": "4f7180a3c66c17da572d7a531118c7716ce6e53f8fdad72eeb42e2e4c95590a4",
+        "deadline": "2026-11-02T12:24:24.280564+00:00",
+        "regex_hit": false,
+        "would_publish": false,
+        "decisions": [
+          {
+            "state": "IRRELEVANT",
+            "regex": false,
+            "error": "DECISION_MODEL_EXPIRED"
+          }
+        ]
+      },
+      {
+        "original_ticker": "COHR",
+        "article_key": "4f7180a3c66c17da572d7a531118c7716ce6e53f8fdad72eeb42e2e4c95590a4",
+        "deadline": "2026-11-02T12:24:24.280564+00:00",
+        "regex_hit": true,
+        "would_publish": true,
+        "decisions": [
+          {
+            "state": "PENDING",
+            "regex": true
+          }
+        ]
+      },
+      {
+        "original_ticker": "NBIS",
+        "article_key": "899db3ae57ba77ce580ec90b95f08349e82bae6118da61ef195eaa619c9fd007",
+        "deadline": "2026-11-02T13:25:34.836327+00:00",
+        "regex_hit": false,
+        "would_publish": false,
+        "decisions": [
+          {
+            "state": "IRRELEVANT",
+            "regex": false,
+            "error": "DECISION_MODEL_EXPIRED"
+          }
+        ]
+      },
+      {
+        "original_ticker": "NBIS",
+        "article_key": "899db3ae57ba77ce580ec90b95f08349e82bae6118da61ef195eaa619c9fd007",
+        "deadline": "2026-11-02T13:25:34.836327+00:00",
+        "regex_hit": true,
+        "would_publish": true,
+        "decisions": [
+          {
+            "state": "PENDING",
+            "regex": true
+          }
+        ]
+      }
+    ]
+  },
+  "legacy_pipeline_preflight": {
+    "legacy_pending_deliveries": false,
+    "legacy_pending_model_continuations": false,
+    "collection_plane_enabled": "true"
+  },
+  "tests": {
+    "new_regressions_passed": 14,
+    "focused_recheck_passed": 38,
+    "existing_related_regressions_passed": 91,
+    "existing_skipped": 1,
+    "note": "Focused recheck overlaps the other runs; final timely-positive case additionally passed. New test file Ruff passed."
+  }
+}
