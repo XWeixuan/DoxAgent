@@ -2631,3 +2631,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-04 RSS缓存复核生产交付：c7697c88已仅发布Collector/Bus，17 HTTP/3正常RSS、54订阅核对通过。225秒物理周期113成功/1失败/1在途，Workday一次12秒请求超时RSS保底后下一轮恢复，历史失败保留；Aviation五单元19/19、The Elec POST 4/4，末次API 54/54成功。运行版本/四文件哈希一致，无重启/OOM，未新增Chrome；CRN自然新稿清缓存时效仍待真实样本，证据与报告已归档。
 2026-11-04 Message Bus by_distribution: close the decision-model window 10 minutes after first discovery; expired regex misses terminate with DECISION_MODEL_EXPIRED and cannot be reopened by model recovery, rechecks or restarts. Check before dispatch and on model completion, retain timely valid cached decisions and normal regex publication. Reuse existing discovery anchors/due_at/status writes; no schema, new queries, timers or historical backfill.
+
+2026-11-04 Reuters人工验证时序：只读账本确认当前RETRY点击后约8秒已提交，主Provider无解、备应用后仍阻断；人工Verify新增15秒被动观察，维护库存区分Provider终态/重试限额和在途状态，保留业务证明与原页，不增强自动解码。71项相关回归、6项专项及Ruff检查通过。

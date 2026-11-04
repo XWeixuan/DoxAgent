@@ -3225,8 +3225,14 @@ class SiteStrategyService:
             stage("CHECKING_CHALLENGE")
         report = VerificationReport()
         try:
-            async with asyncio.timeout(10):
-                original = await self.runtime.inspect_challenge(session.control_token)
+            if session.kind == "CHALLENGE":
+                from .human_verification import observe_human_transition
+
+                original = await observe_human_transition(
+                    lambda: self.runtime.inspect_challenge(session.control_token), on_wait=stage)
+            else:
+                async with asyncio.timeout(10):
+                    original = await self.runtime.inspect_challenge(session.control_token)
         except Exception as exc:
             original = RuntimeResponse(
                 0,
