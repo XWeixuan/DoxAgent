@@ -109,12 +109,27 @@ class MaintenanceController:
             await asyncio.sleep(2)
 
     def _inventory(self):
+        import json
+        from .human_verification import manual_review_reason
+
         repo = self.service.repository
         profiles = {p.profile_id: p for p in repo.list_profiles()}
         egresses = {e.egress_id: e for e in repo.list_egresses()}
         identities = {i.identity_id: i for _, i in repo.list_active_identities()}
         strategies = {s.site_id: (h, s) for h, s in repo.list_active_strategies()}
         scopes = self.store.list_scopes()
+        recoveries = {r.identity_id:r for r in self.store.list_recoveries(active_only=False)}
+        active = [r.recovery_id for r in recoveries.values() if r.phase != "RESOLVED"]
+        latest_jobs = {}
+        if active:
+            with repo._lock:
+                jobs = repo._connection.execute(
+                    "select recovery_id,data_json from datadome_solver_jobs where recovery_id in ("
+                    + ",".join("?" for _ in active) + ") order by created_at", active).fetchall()
+            for row in jobs:
+                latest_jobs[row["recovery_id"]] = json.loads(row["data_json"])
+        review_reasons = {identity:manual_review_reason(r, latest_jobs.get(r.recovery_id))
+                          for identity,r in recoveries.items()}
         rows = []
         entries = [
             (
@@ -218,13 +233,13 @@ class MaintenanceController:
                         "auth_last_check_reason": auth.last_check_reason,
                         "recovery_state": (
                             r.phase
-                            if (r := self.store.get_recovery(member)) and r.phase != "RESOLVED"
+                            if (r := recoveries.get(member)) and r.phase != "RESOLVED"
                             else None
                         ),
                         "recovery_handling": r.handling_mode
                         if r and r.phase != "RESOLVED"
                         else None,
-                        "recovery_review_reason": r.manual_review_reason
+                        "recovery_review_reason": review_reasons.get(member)
                         if r and r.phase != "RESOLVED"
                         else None,
                         "recovery_next_due_at": r.next_due_at
@@ -247,15 +262,13 @@ class MaintenanceController:
             "challenges": [
                 {
                     **t.model_dump(mode="json"),
-                    "review_reason": r.manual_review_reason
-                    if (r := self.store.get_recovery(t.identity_id))
-                    else None,
-                    "challenge_type": "MANUAL_REVIEW: " + r.manual_review_reason
-                    if r and r.manual_review_reason
+                    "review_reason": review_reasons.get(t.identity_id),
+                    "challenge_type": "MANUAL_REVIEW: " + review_reasons[t.identity_id]
+                    if review_reasons.get(t.identity_id)
                     else self.service.runtime.evidence_store.summary(t),
                 }
                 for t in self.store.list_challenges()
-                if not (r := self.store.get_recovery(t.identity_id)) or r.handling_mode == "HUMAN"
+                if not (r := recoveries.get(t.identity_id)) or r.handling_mode == "HUMAN"
             ],
             "vnc_ready": True,
             "sessions": [
