@@ -40,7 +40,7 @@ def bailian_glm_rounds(workspace_endpoint):
 def configured_rounds(settings):
     profile = settings.persistent_runtime_v2_api_profile
     result = {}
-    if profile in {"openrouter_haiku", "openrouter_haiku_high"}:
+    if profile in {"openrouter_haiku", "openrouter_haiku_high", "openrouter_sail_high"}:
         from .case_output_contract import VERSION
         from .case_cache import VERSION as CACHE_VERSION
 
@@ -50,7 +50,7 @@ def configured_rounds(settings):
                 provider="openrouter",
                 transport="chat_completions_json_schema",
                 provider_endpoint="google-vertex/global",
-                reasoning_effort="high" if profile == "openrouter_haiku_high" else "xhigh",
+                reasoning_effort="xhigh" if profile == "openrouter_haiku" else "high",
                 timeout_seconds=300,
                 cache_ttl="1h",
                 output_contract=VERSION,
@@ -58,6 +58,13 @@ def configured_rounds(settings):
             )
             for lane in ("W1", "W2") for rnd in ("R2", "R3")
         })
+        if profile == "openrouter_sail_high":
+            for config in result.values():
+                config.update(
+                    model="deepseek/deepseek-v4.1-flash-1017",
+                    provider_endpoint="sail-research/fp4",
+                    cache_ttl=None,  # Sail uses automatic prefix caching, not Anthropic TTLs.
+                )
     if profile in {"vertex_recall", "vertex_glm"}:
         if not settings.vertex_project:
             raise ValueError("Vertex profile requires DOXAGENT_VERTEX_PROJECT")

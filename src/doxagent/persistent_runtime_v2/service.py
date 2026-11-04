@@ -1366,6 +1366,17 @@ class PersistentRuntimeV2Service:
             "provider_stream_failed",
             "incomplete_structured_output",
         }
+        if lane in {"W1", "W2"} and round_name in {"R2", "R3"}:
+            recall_fallback = (
+                case.frozen_inputs.get("models", {}).get("case_fallback", {})
+                .get(f"{lane}:{round_name}")
+            )
+            # Only newly frozen explicit configurations opt into Case fallback.
+            # Old Cases retain their model selection and R1 retains its old policy.
+            if recall_fallback:
+                fallback_codes |= {
+                    "structured_output_validation_failed", "semantic_output_validation_failed",
+                }
         fallback_state = (
             self.journal.get("round_provider_fallback", round_key)
             if self.journal

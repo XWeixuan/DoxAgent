@@ -2635,3 +2635,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 Reuters人工验证时序：只读账本确认当前RETRY点击后约8秒已提交，主Provider无解、备应用后仍阻断；人工Verify新增15秒被动观察，维护库存区分Provider终态/重试限额和在途状态，保留业务证明与原页，不增强自动解码。71项相关回归、6项专项及Ruff检查通过。
 
 2026-11-04 Reuters人工验证发布验收：main/2bd65222仅窄发布Site Access，三模块哈希匹配，Supervisor及Chrome实例保留；备用原页被动观察15秒仍为真实阻断且终态提示正确。主身份既有流程短恢复后19:00:59再次触发，不能报告稳定恢复；未新增主动打码测试。
+
+2026-11-04 — W1R2/W1R3/W2R2/W2R3新增openrouter_sail_high配置：Sail FP4 DS1017 high为主，wire strict Schema递归补required、固定前缀隐式缓存；冻结原Haiku high/Vertex Global/1h缓存为备，复用持久化逐attempt回执与中断恢复，保留R3父轮和旧Case/R1行为。189项回归通过；发布验收见docs/sail-case-rounds-release-20261104.md。
