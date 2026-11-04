@@ -2633,3 +2633,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 Message Bus by_distribution: close the decision-model window 10 minutes after first discovery; expired regex misses terminate with DECISION_MODEL_EXPIRED and cannot be reopened by model recovery, rechecks or restarts. Check before dispatch and on model completion, retain timely valid cached decisions and normal regex publication. Reuse existing discovery anchors/due_at/status writes; no schema, new queries, timers or historical backfill.
 
 2026-11-04 Reuters人工验证时序：只读账本确认当前RETRY点击后约8秒已提交，主Provider无解、备应用后仍阻断；人工Verify新增15秒被动观察，维护库存区分Provider终态/重试限额和在途状态，保留业务证明与原页，不增强自动解码。71项相关回归、6项专项及Ruff检查通过。
+
+2026-11-04 Reuters人工验证发布验收：main/2bd65222仅窄发布Site Access，三模块哈希匹配，Supervisor及Chrome实例保留；备用原页被动观察15秒仍为真实阻断且终态提示正确。主身份既有流程短恢复后19:00:59再次触发，不能报告稳定恢复；未新增主动打码测试。
