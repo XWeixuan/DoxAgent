@@ -2641,3 +2641,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 — Sail W1R3 wire日期约束适配为年月日正则，保留本地日期校验；增加非法日历日期回归，共190项通过。发布前继续真实验证。
 
 2026-11-04 — 真实W2R3探测发现Sail输出裸C1而非Policy/Condition；Sail wire副本补充复合身份格式正则，匹配Router既有合同，不改本地Schema或业务规则。
+
+2026-11-04 — Sail四节点主备发布完成：API/Scheduler重建重启、哈希/profile/激活包核验；真实生产W1R2已用Sail high成功并命中2560缓存token，四轮隔离调用均有成功与缓存证据、Haiku备用真实可用。191项回归通过。保留最初400/429/裸C1失败及77/239秒长尾证据，不将补测成功冒充首次通过；详见docs/sail-case-rounds-release-20261104.md。
