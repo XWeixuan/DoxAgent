@@ -4,6 +4,8 @@ import subprocess
 import sys
 from datetime import UTC, datetime
 
+import pytest
+
 from doxagent.trade_execution.acceptance import create_suite, tick_suites
 from doxagent.trade_execution.intake import ExecutionIntake
 from doxagent.trade_execution.worker import WriterLock
@@ -103,8 +105,11 @@ with WriterLock(Path(sys.argv[1])) as owner:
     assert repo.require("lots", "trade:A")["remaining_qty"] == 100
 
 
-def test_unknown_submit_is_not_retried_after_restart(setup):
+@pytest.mark.parametrize("history_complete", [True, False])
+def test_unknown_submit_is_not_retried_after_restart(setup, history_complete):
     clock, repo, revision, executor, broker = setup
+    original_sync = broker.sync
+    broker.sync = lambda: {**original_sync(), "history_complete": history_complete}
     broker.order_event = lambda *args: None
     admit(repo, revision)
     broker.mode = "unfilled"
@@ -116,6 +121,27 @@ def test_unknown_submit_is_not_retried_after_restart(setup):
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry", limit=6))
     assert len(broker.sent) == 1
     assert repo.require("jobs", "trade:A:entry")["state"] == "RECONCILE_REQUIRED"
+
+
+def test_current_order_callbacks_and_fills_settle_without_completed_history(setup):
+    clock, repo, revision, executor, broker = setup
+    original_sync = broker.sync
+    broker.sync = lambda: {
+        **original_sync(),
+        "history_complete": False,
+        "history_scope": "UNAVAILABLE",
+    }
+    admit(repo, revision)
+    asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
+    assert len(broker.sent) == 1
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 198
+    clock.value = datetime.fromisoformat(repo.require("lots", "trade:A")["scheduled_exit"])
+    asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
+    assert len(broker.sent) == 2
+    assert broker.sent[-1]["side"] == "SELL"
+    assert broker.sent[-1]["quantity"] == 198
+    assert broker.positions[9939] == "50"
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 0
 
 
 def test_expiry_cancels_remainder_but_preserves_partial_exit_obligation(setup):

@@ -68,6 +68,7 @@ class IbkrSession:
         self.position_event = threading.Event()
         self.open_event = threading.Event()
         self.completed_event = threading.Event()
+        self.completed_pending = False
         self.last_sync = 0.0
         self.want_settled_cash = profile.account_type == "CASH"
         self.cash_checked_at = 0.0
@@ -97,6 +98,8 @@ class IbkrSession:
                 self.quotes.clear()
                 self.quote_ids.clear()
             self.orders.clear()
+            self.completed_pending = False
+            self.completed_event.clear()
             self.account_values.clear()
             self.portfolio.clear()
             self.last_sync = 0
@@ -386,7 +389,6 @@ class IbkrSession:
             stages[stage] = round(time.monotonic() - before, 3)
 
         self.open_event.clear()
-        self.completed_event.clear()
         self.position_event.clear()
         self.app.reqOpenOrders()
         wait_end(self.open_event, "open_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
@@ -406,8 +408,6 @@ class IbkrSession:
                     f"generation={self.connection_generation}"
                 ) from exc
             stages["executions"] = round(time.monotonic() - before, 3)
-            self.app.reqCompletedOrders(True)
-            wait_end(self.completed_event, "completed_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
             self.positions = {}
             self.app.reqPositions()
             wait_end(self.position_event, "positions", "BROKER_POSITION_SYNC_INCOMPLETE")
@@ -433,6 +433,29 @@ class IbkrSession:
                     self.account_values["SettledCash"] = self.cash_value
                 else:
                     self.account_values["SettledCashError"] = self.cash_error
+            # Gateway can retain a global pending initialLoad after a backend
+            # reconnect. Socket reconnects do not clear it. Keep current-state
+            # reconciliation available without claiming missing history is empty.
+            # There is no request ID or cancel API: never overlap this request,
+            # and let its eventual End finish only the outstanding request.
+            if not self.completed_pending:
+                self.completed_event.clear()
+                self.completed_pending = True
+                before = time.monotonic()
+                self.app.reqCompletedOrders(True)
+                if not self.completed_event.wait(self.profile.strategy.request_timeout_seconds):
+                    self._emit(
+                        "sync_history_unavailable",
+                        {
+                            "stage": "completed_orders",
+                            "generation": self.connection_generation,
+                            "action": "AWAIT_OUTSTANDING_END",
+                        },
+                    )
+                stages["completed_orders"] = round(time.monotonic() - before, 3)
+            history_complete = self.completed_event.is_set()
+            if history_complete:
+                self.completed_pending = False
             self.last_sync = time.monotonic()
             return {
                 "complete": True,
@@ -440,7 +463,8 @@ class IbkrSession:
                 "account_values": dict(self.account_values),
                 "portfolio": list(self.portfolio.values()),
                 "at": datetime.now(UTC).isoformat(),
-                "history_scope": "BROKER_SESSION_WINDOW",
+                "history_complete": history_complete,
+                "history_scope": "BROKER_SESSION_WINDOW" if history_complete else "UNAVAILABLE",
                 "connection_generation": self.connection_generation,
                 "stage_seconds": stages,
                 "informational_counts": dict(self.informational_counts),

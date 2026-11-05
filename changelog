@@ -2638,3 +2638,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-06 — BE执行恢复修复：ENTRY放弃及最终发送守卫仅使用任务自身失败次数，账户累计故障仅控制共享冷却；修复490次历史故障误伤新意图。全量IBKR对账改为顺序完成open orders/executions/completed orders，缺少结束回调则断开旧连接后按原退避恢复，保留UNKNOWN与成交对账责任；增加sync_failure证据。Gateway历史日志确认后端重连initialLoad未完成后completed-orders pending持续至每日重启。157项相关回归通过，候选Live/Paper只读完整同步通过；旧BE/INTC保持终态。
 
 2026-11-06 — BE恢复修复交付：515d66ef已仅发布Executor，镜像4b87d1097974；157项回归零跳过，Live/Paper完整只读同步及PAPER ONDS一股买卖通过。Gateway历史日志确认13:15后端重连initialLoad挂起，完成订单pending至23:45自动重启；LIVE关闭连接时自动下载订单，保留显式串行对账。LIVE按授权仅一次BUY ONDS 1股LMT4.62，券商201要求Client Portal邮件token验证，最终Cancelled、0成交/0持仓，无重试/对冲/卖出；旧BE/INTC失败保持。报告docs/be-execution-recovery-fix-acceptance-20261106.md。
+
+2026-11-06 — completed_orders复发修复：Gateway后端CCP重连后initialLoad全局pending会跨API客户端阻塞完成订单查询，串行化与API重连不足以清除。将当前挂单/成交/持仓/资金对账与完成订单历史状态分开，缺End明确history_complete=false/UNAVAILABLE，同socket保留单个pending请求等待迟到End，不重叠查询、不将缺失历史当空列表；核心对账缺End仍断线重试。保留未知提交、撤单终态及成交数量不符时的原阻塞，不重放旧BE/INTC。新增缺历史正常退出与UNKNOWN防重回归；恢复Gateway内部挂起后进行只读与严格一次LIVE ONDS 1股验收。
