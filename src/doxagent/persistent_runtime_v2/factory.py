@@ -209,6 +209,7 @@ def build_persistent_runtime_v2_service(
             model_provider=settings.codex_model_provider,
             effort=settings.persistent_runtime_v2_w3_reasoning_effort,
             timeout_seconds=settings.persistent_runtime_v2_w3_timeout_seconds,
+            time_awareness_enabled=settings.w3_time_awareness_enabled,
         )
     input_snapshot_loader = None
     if settings.ticker_initialization_control_path:

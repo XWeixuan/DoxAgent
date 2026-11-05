@@ -42,6 +42,12 @@ COPY scripts/ops/migrate_source_access_scopes.py ./scripts/ops/migrate_source_ac
 COPY README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv uv pip install --no-deps --python /app/.venv/bin/python -e /app
 COPY prompts ./prompts
+COPY deploy/codex-runtime /opt/doxagent/codex-runtime
+RUN for binary in codex codex-code-mode-host; do \
+    if [ -f "/opt/doxagent/codex-runtime/$binary" ]; then \
+      chmod 0755 "/opt/doxagent/codex-runtime/$binary"; \
+    fi; \
+    done
 COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract
 # A root checkout under umask 0077 can create 0600 files/0700 directories.
 # COPY preserves those host modes; the non-root browser owner must still import

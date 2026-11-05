@@ -284,6 +284,7 @@ class PersistentRuntimeV2Service:
         self.repository = repository
         self.responses = responses
         self.known_events = known_events
+        self._w1_bridge_heads: set[tuple] = set()
         self.policies = policies
         self.input_snapshot_loader = input_snapshot_loader
         self.prompts = prompts or RuntimeV2PromptSet.load(prompt_root)
@@ -501,6 +502,22 @@ class PersistentRuntimeV2Service:
                 "Published Runtime Policy Projection is unavailable",
             )
         assert_runtime_projection_compatible(projection)
+        from .daily_index import freeze_index, retain_new_library_facts
+        selected_execution = execution_bundle_id or (self.journal.get("execution", "active") if self.journal else None)
+        index_prompts = self.prompts
+        if selected_execution and self.execution_bundles:
+            index_prompts = RuntimeV2PromptSet(**self.execution_bundles.get(selected_execution)["prompts"])
+
+        current_index = index
+        current_root = snapshot.event_library_root if snapshot else None
+        if current_root is None:
+            current_root = str(self.known_events.reader._root) if hasattr(self.known_events, "reader") else None
+        index, index_root, index_instructions = freeze_index(self.repository, self.known_events, index,
+            source.snapshot.ticker, trading_date, current_root, created,
+            index_prompts.instructions(index_prompts.w1_r1))
+        retain_new_library_facts(self.repository, self.known_events,
+            source.snapshot.ticker, trading_date, frozen_index=index, frozen_root=index_root,
+            current_index=current_index, current_root=current_root, completed=self._w1_bridge_heads)
         provisional_version = self.repository.provisional_snapshot_version(
             source.snapshot.ticker,
             trading_date,
@@ -512,8 +529,7 @@ class PersistentRuntimeV2Service:
             closed_cycle_id=closed_cycle_id,
             created_at=created,
             trade_expired=trade_expired,
-            execution_bundle_id=execution_bundle_id
-            or (self.journal.get("execution", "active") if self.journal else None),
+            execution_bundle_id=selected_execution,
             case_id=new_runtime_v2_id("case"),
             trading_date=trading_date,
             source=source,
@@ -522,7 +538,7 @@ class PersistentRuntimeV2Service:
                 activation_revision_id=snapshot.activation_revision_id if snapshot else None,
                 document1_run_id=snapshot.document1_run_id if snapshot else None,
                 document2_run_id=snapshot.document2_run_id if snapshot else None,
-                event_library_version=index.version,
+                event_library_version=current_index.version,
                 provisional_snapshot_version=provisional_version,
                 policy_set_version=projection.policy_set_version,
                 runtime_projection_version=projection.policy_set_version,
@@ -530,9 +546,13 @@ class PersistentRuntimeV2Service:
             status=RuntimeCaseStatus.RUNNING,
         )
         case.w2_contract_version = self.w2_contract_version
+        w1_daily_pin = {"day": trading_date.isoformat(), "instructions": index_instructions,
+                        "event_library_root": index_root, "event_library_version": index.version}
+        case.frozen_inputs["w1_daily_index"] = w1_daily_pin
         provisional = self._visible_provisional(case)
         case.frozen_inputs = {
             "index": index.model_dump(mode="json"),
+            "w1_daily_index": w1_daily_pin,
             "projection": projection.model_dump(mode="json"),
             "provisional": [item.model_dump(mode="json") for item in provisional],
             "prompts": asdict(self.prompts),
@@ -684,9 +704,10 @@ class PersistentRuntimeV2Service:
         if reader is None:
             return self.repository.list_provisional(case.ticker, case.trading_date)
         values = reader(case.ticker, case.trading_date)
+        pin = case.frozen_inputs.get("w1_daily_index", {})
         maximum = (
-            self._known_for_case(case).max_event_numeric_id(
-                case.ticker, case.version_pin.event_library_version
+            self._w1_known_for_case(case).max_event_numeric_id(
+                case.ticker, pin.get("event_library_version", case.version_pin.event_library_version)
             )
             or 0
         )
@@ -694,6 +715,14 @@ class PersistentRuntimeV2Service:
             item.model_copy(update={"provisional_event_id": f"E{maximum + offset}"})
             for offset, item in enumerate(values, 1)
         ]
+
+    def _w1_known_for_case(self, case: RuntimeCase) -> RuntimeKnownEventProvider:
+        pin = case.frozen_inputs.get("w1_daily_index")
+        if pin is None:
+            return self._known_for_case(case)
+        from .daily_index import event_provider
+
+        return event_provider(self.known_events, pin.get("event_library_root"))
 
     def _known_for_case(self, case: RuntimeCase) -> RuntimeKnownEventProvider:
         if case.version_pin.event_library_root:
@@ -870,9 +899,9 @@ class PersistentRuntimeV2Service:
         provisional_ids = {item.provisional_event_id for item in provisional}
         requested_provisional = [item for item in selected_ids if item in provisional_ids]
         requested_canonical = [item for item in selected_ids if item not in provisional_ids]
-        details = self._known_for_case(case).details(
+        details = self._w1_known_for_case(case).details(
             case.ticker,
-            case.version_pin.event_library_version,
+            index.version,
             requested_canonical,
         )
         if details is None:
@@ -1289,6 +1318,9 @@ class PersistentRuntimeV2Service:
         frozen_round_prompt = getattr(prompt_set, f"{lane.lower()}_{round_name.lower()}")
         if lane == "W1" and round_name == "R3":
             frozen_round_prompt += round_prompt[len(self.prompts.w1_r3) :]
+        round_instructions = prompt_set.instructions(frozen_round_prompt)
+        if lane == "W1" and round_name == "R1" and case.frozen_inputs.get("w1_daily_index"):
+            round_instructions = case.frozen_inputs["w1_daily_index"]["instructions"]
         round_key = f"{case.case_id}:{lane}:{round_name}"
         if self.journal:
             frozen = self.journal.get("round_inputs", round_key)
@@ -1296,7 +1328,7 @@ class PersistentRuntimeV2Service:
                 frozen = {
                     "payload": payload,
                     "previous_response_id": previous_response_id,
-                    "instructions": prompt_set.instructions(frozen_round_prompt),
+                    "instructions": round_instructions,
                     "cache_context_keys": list(cache_context_keys),
                     "schema_hash": digest(output_model.model_json_schema()),
                     "inherit_context": inherit_context,
@@ -1329,7 +1361,7 @@ class PersistentRuntimeV2Service:
                 saved_round
                 if saved_round is not None
                 else {
-                    "instructions": prompt_set.instructions(frozen_round_prompt),
+                    "instructions": round_instructions,
                     "payload": payload,
                     "previous_response_id": previous_response_id,
                     "cache_context_keys": list(cache_context_keys),
@@ -1481,6 +1513,9 @@ class PersistentRuntimeV2Service:
                             "vertex_project": case.frozen_inputs.get("models", {}).get(
                                 "vertex_project", ""
                             ),
+                            **({"w1_daily_index": "w1-daily-known-index.v1"}
+                               if lane == "W1" and round_name == "R1"
+                               and case.frozen_inputs.get("w1_daily_index") else {}),
                             "runtime": "persistent_v2",
                             "case_id": case.case_id,
                             "lane": lane,

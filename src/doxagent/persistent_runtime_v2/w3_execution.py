@@ -361,6 +361,8 @@ class W3Execution:
             self._sync_route_case(case, {"thread_id": stage["thread_id"]})
             return
         if stage["result_json"] is None:
+            if hasattr(self.agent, "begin_trade_timing"):
+                self.agent.begin_trade_timing(case.case_id)
             if hasattr(self.agent, "queue_market"):
                 self.agent.queue_market(case)
             elif hasattr(self.agent, "start_market"):

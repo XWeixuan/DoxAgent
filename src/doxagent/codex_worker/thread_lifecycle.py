@@ -66,8 +66,12 @@ class AppServerThreads:
             if self.client is None:
                 from openai_codex import CodexConfig
 
+                from doxagent.settings import DoxAgentSettings
+
+                from .time_awareness import configured_codex
+
                 identity = "lifecycle-" + uuid4().hex
-                config = self.config or CodexConfig()
+                config = configured_codex(self.config or CodexConfig(), DoxAgentSettings())
                 config = replace(
                     config,
                     env={**os.environ, **(config.env or {}), "DOXAGENT_CAPSULE_ID": identity},

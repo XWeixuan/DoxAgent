@@ -268,7 +268,42 @@ class _ReplayRuntime:
                     await self.receipt_callback(request, thread, turn)
 
 
-def local_worker(worker_root: Path):
+def time_awareness_runtime():
+    """Identify the explicitly requested replay runtime without starting a model."""
+    from doxagent.settings import DoxAgentSettings
+
+    binary = DoxAgentSettings(_env_file=None).codex_runtime_bin
+    candidate = Path(binary).expanduser() if binary else None
+    path = str(candidate) if candidate is not None and candidate.is_file() else (
+        shutil.which(binary) if binary else None
+    )
+    if not path:
+        raise ValueError(
+            "--time-awareness requires DOXAGENT_CODEX_RUNTIME_BIN pointing to "
+            "an executable patched Codex runtime for this platform"
+        )
+    resolved = Path(path).resolve()
+    with resolved.open("rb") as stream:
+        header = stream.read(4)
+        if os.name == "nt" and header == b"\x7fELF":
+            raise ValueError(
+                "The patched Codex runtime is Linux-only; run the backtest in Linux/WSL "
+                "or configure a patched Windows executable"
+            )
+        if os.name != "nt" and not os.access(resolved, os.X_OK):
+            raise ValueError(f"Patched Codex runtime is not executable: {resolved}")
+        stream.seek(0)
+        fingerprint = hashlib.file_digest(stream, "sha256").hexdigest()
+    name = "codex-code-mode-host.exe" if os.name == "nt" else "codex-code-mode-host"
+    companion = resolved.with_name(name)
+    if not companion.is_file() or (os.name != "nt" and not os.access(companion, os.X_OK)):
+        raise ValueError(f"Patched Codex runtime requires executable sibling {companion}")
+    with companion.open("rb") as stream:
+        companion_sha = hashlib.file_digest(stream, "sha256").hexdigest()
+    return dict(path=str(resolved), sha256=fingerprint, companions={name: companion_sha})
+
+
+def local_worker(worker_root: Path, *, time_awareness_enabled=False):
     """Only authentication is copied; production config, MCP and env files are excluded."""
     from openai_codex import CodexConfig, Sandbox
 
@@ -276,9 +311,11 @@ def local_worker(worker_root: Path):
     from doxagent.codex_worker.local_client import LocalWorkspaceClient
     from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime
     from doxagent.codex_worker.thread_lifecycle import AppServerThreads
+    from doxagent.codex_worker.time_awareness import configured_codex
     from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
     from doxagent.settings import DoxAgentSettings
 
+    runtime_identity = time_awareness_runtime() if time_awareness_enabled else None
     home = private_home(worker_root)
     home.mkdir(parents=True, exist_ok=True)
     (home / "config.toml").write_text("[features]\nmulti_agent=false\n", encoding="utf-8")
@@ -329,7 +366,15 @@ def local_worker(worker_root: Path):
         ),
         client_name="doxagent-w3-backtest",
     )
-    settings = DoxAgentSettings(_env_file=None, ibkr_tws_enabled=False)
+    settings = DoxAgentSettings(
+        _env_file=None,
+        ibkr_tws_enabled=False,
+        w3_time_awareness_enabled=time_awareness_enabled,
+        **(dict(codex_runtime_bin=runtime_identity["path"]) if runtime_identity else {}),
+    )
+    # Pass the selected binary to both Fork helpers and the decision owner;
+    # otherwise lifecycle could select a different runtime from an env_file.
+    config = configured_codex(config, settings)
     runtime = OpenAICodexRuntime(
         config=config,
         settings=settings,

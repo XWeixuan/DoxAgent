@@ -106,6 +106,12 @@ def build_w1_r1_cached_request(request: RuntimeResponsesRequest[Any]) -> tuple[d
     size = request.provisional_cache_batch_size or 5
     if size < 1:
         raise ValueError("Provisional cache batch size must be positive")
+    dynamic_instructions = ""
+    if request.metadata.get("w1_daily_index") == "w1-daily-known-index.v1":
+        from .case_cache import split_instructions
+
+        fixed, dynamic_instructions = split_instructions(request.instructions)
+        request = replace(request, instructions=fixed)
     system = _recall_system(request)
     reference = (
         "# Read-Only Business Reference Data\n"
@@ -137,6 +143,8 @@ def build_w1_r1_cached_request(request: RuntimeResponsesRequest[Any]) -> tuple[d
         + "\n# Current Case Input\n"
         + json.dumps(dynamic, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     )
+    if dynamic_instructions:
+        suffix += "\n# Runtime Retry Correction\n" + dynamic_instructions
     base_hash = sha256((system + "\0" + reference).encode()).hexdigest()
     fingerprint = sha256(
         (system + "\0" + reference + "".join(rows[:completed])).encode()

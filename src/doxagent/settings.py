@@ -21,6 +21,12 @@ class DoxAgentSettings(BaseSettings):
     )
 
     w3_research_mcp_url: str = Field(default="http://127.0.0.1:8791/mcp/w3-research", validation_alias="DOXAGENT_W3_RESEARCH_MCP_URL")
+    w3_time_awareness_enabled: bool = Field(
+        default=False, validation_alias="DOXAGENT_W3_TIME_AWARENESS_ENABLED"
+    )
+    codex_runtime_bin: str | None = Field(
+        default=None, validation_alias="DOXAGENT_CODEX_RUNTIME_BIN"
+    )
     w3_market_refresh_seconds: float = Field(default=30, ge=15, validation_alias="DOXAGENT_W3_MARKET_REFRESH_SECONDS")
     w3_ready_luna: int = Field(default=2, ge=0, le=16, validation_alias="DOXAGENT_W3_READY_LUNA")
     w3_boot_timeout_seconds: int = Field(

@@ -455,7 +455,8 @@ class SourceOutbox:
             if serving and value['table_name'] == 'runtime_values':
                 from .serving_fields import VALUE_NAMES
                 used = VALUE_NAMES | {'policy_direction_usage', 'worker_invocations',
-                                      'trade_intents', 'analysis_trade_decisions', 'candidates'}
+                                      'trade_intents', 'analysis_trade_decisions', 'candidates',
+                                      'reference_deliveries'}
                 if row['namespace'] not in used:
                     return {**value, 'row': {}, 'serving_skipped': True}
             if serving and value['table_name'] == 'runtime_tasks':

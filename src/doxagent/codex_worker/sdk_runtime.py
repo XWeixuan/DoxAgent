@@ -27,6 +27,7 @@ from doxagent.codex_runtime.schema import (
 )
 from doxagent.codex_worker.schema import WorkerRunRequest, WorkerTurnTelemetry
 from doxagent.codex_worker.telemetry import project_turn_telemetry
+from doxagent.codex_worker.time_awareness import W3TimeControl, configured_codex
 from doxagent.codex_worker.turn_usage import read_turn_usage, rollout_path
 from doxagent.data_runtime.contracts import build_data_tool_contracts
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
@@ -66,6 +67,7 @@ class _SdkTurnHandle:
         codex_home: Path | None = None,
         request: WorkerRunRequest | None = None,
         cwd: Path | None = None,
+        time_control: W3TimeControl | None = None,
     ) -> None:
         self._thread_id = thread_id
         self.thread_id = thread_id
@@ -76,6 +78,7 @@ class _SdkTurnHandle:
         self._probe_request = request
         self._probe_cwd = cwd
         self._turn_probe = None
+        self._time_control = time_control
 
     async def _complete_usage(self, telemetry: WorkerTurnTelemetry, turn_id: str) -> None:
         if self._codex_home is None:
@@ -102,6 +105,13 @@ class _SdkTurnHandle:
                 await asyncio.sleep(0.1)
 
     async def run(self) -> WorkerTurnResult:
+        try:
+            return await self._run()
+        finally:
+            if self._time_control is not None:
+                await asyncio.to_thread(self._time_control.clear)
+
+    async def _run(self) -> WorkerTurnResult:
         if self._audit_path is not None and hasattr(self._handle, "stream"):
             from doxagent.codex_worker.w3_turn_probe import TurnProbe
 
@@ -278,7 +288,11 @@ class OpenAICodexRuntime:
         sandbox_override: Sandbox | None = None,
     ) -> None:
         self._settings = settings or DoxAgentSettings()
-        self._config = config or CodexConfig(client_name="doxagent-codex-worker")
+        self._time_control = W3TimeControl(
+            configured_codex(config, self._settings),
+            enabled=self._settings.w3_time_awareness_enabled,
+        )
+        self._config = self._time_control.config
         self._client = AsyncCodex(self._config)
         self._codex_home = Path(
             ((config.env or {}).get("CODEX_HOME") if config else None)
@@ -332,10 +346,17 @@ class OpenAICodexRuntime:
         }
 
     async def close(self) -> None:
-        await self._client.close()
+        try:
+            await self._client.close()
+        finally:
+            self._time_control.close()
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> TurnHandle:
-        return await self._start(request, cwd)
+        try:
+            return await self._start(request, cwd)
+        except BaseException:
+            self._time_control.clear()
+            raise
 
     async def prepare_fork(
         self, request: WorkerRunRequest, cwd: Path, parent_thread_id: str
@@ -767,6 +788,8 @@ class OpenAICodexRuntime:
             self.receipt_callback(thread.id, None)
         if request.w3_entry_version:
             self._resident_thread = (thread, scope, sdk_config)
+        if self._time_control.path is not None:
+            await asyncio.to_thread(self._time_control.write, request, thread.id)
         dispatched_monotonic = time.monotonic()
         dispatched_at = datetime.now(UTC).isoformat()
         handle = await measured(
@@ -803,6 +826,7 @@ class OpenAICodexRuntime:
             codex_home=self._codex_home,
             request=request,
             cwd=cwd,
+            time_control=self._time_control if self._time_control.path is not None else None,
         )
         result_handle.sdk_dispatched_monotonic = dispatched_monotonic
         result_handle.sdk_dispatched_at = dispatched_at

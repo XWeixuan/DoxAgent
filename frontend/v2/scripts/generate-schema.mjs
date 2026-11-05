@@ -81,6 +81,7 @@ if (existsSync(backendPath)) {
     walk(definitions[name]);
   };
   for (const name of [
+    "AgentOperationsPage", "OperationsOverviewPage", "OperationsOverview",
     "RevenueSnapshot", "RevenueEvaluation", "RevenueReport", "RevenueDetail", "RevenueRecord", "RevenueLeg", "RevenueHypothesis", "RevenueOrder",
     "TradingConfiguration",
     "TradingCapital",

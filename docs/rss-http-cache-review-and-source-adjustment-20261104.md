@@ -78,6 +78,20 @@ CRN 使用的 AEM 索引模型在发布页面时更新索引，平台支持内�
 - `cache-probes.json`：逐次请求、缓存头、正文哈希、前端脚本引用；静态资源与列表分开解读。
 - `parsed-listings.json`：16 源、22 个旧入口的真实响应解析结果；Quantum 此文件只列第一段 100 条，完整 200 条证明在 adapter canary 中。
 - `preproduction-canaries.json`：实际新 adapter 的解析与重复轮询、物理请求证明。
-- `regression.xml`：相关回归；最终数量与生产发布记录在验收完成后补齐。
+- `regression.xml`：257 项相关回归通过；最终 `listing-tests.xml` 的 66 项专项通过。两批有重叠，不相加计算独立测试数。
 
-生产发布、配置读回与真实周期结果待发布后补齐。任何短观察期内没有自然新稿的来源，只验收请求、解析、缓存告警和配置，不能由此宣称发稿到发现已达目标。
+生产已发布 **`c7697c88357261799994a7925561e9508c31c690`**，镜像 **`sha256:084340718b26781513f7dd81c7891f13288afd4a77aff3a190e7016ba9bc880e`**，只更新 Collector/Message Bus。运行容器镜像、build commit 和四项实际源文件哈希一致，重启次数 0、OOM=false；BODY、API、Site Access、Chrome/Supervisor 等其他组件版本未变化，资源回收 timer 已恢复 active。
+
+观察窗口为北京时间 **2026-11-04 06:15:17.548—06:19:02.849**，225.30 秒。按物理周期去除 ticker 扇出：共 115 个周期，113 CAPTURED、1 FAILED、1 DISPATCHED；终态口径 **113/114（99.12%）**，在途不计成功、不计失败，也没有删除失败样本。
+
+- Aviation 五单元 **19/19 成功**；平均执行 0.826 秒，P95 1.657 秒，due→实际请求开始均值 0.083 秒。生产缓存样本 Age 0—59 秒，并非所有请求都 MISS。保留单一外部源。
+- Army/DCD/Toms **3/3、4/4、4/4 成功**，物理请求分别只到 `www.army.mil/rss/static/0.xml`、`www.datacenterdynamics.com/en/rss/`、`www.tomshardware.com/feeds.xml`。没有先抓 HTML，也没有 `rss_fallback` 角色或强制失败。
+- The Elec **4/4 成功**；平均执行 0.721 秒，四次均为当前 Date 和 `no-cache,no-store,must-revalidate`，无原来的 STALE。
+- 唯一失败为 **06:16:39 Workday**：主请求与同出口重试均未在 12 秒总预算内取得完整响应，RSS 保底 200；失败周期持续保留，下一轮恢复。SAP/Salesforce 同源兄弟单元无失败。未为一次已自行恢复的传输故障扩大超时预算或增加额外回退链。
+- 27 个 HTTP 内部入口完成的成功请求中，共持久绑定 **106 份缓存证据**（含 Quantum 双段）；其余为正常 RSS、一次失败尝试及在途请求。该数是请求回执数，不是文章数。
+- 17 HTTP / 3 RSS 的实际配置与预期一致；只更新三个 RSS 回退源，配置重跑全部 unchanged。原 54 个启用订阅、绑定业务参数、监测词和正文契约核对不变。**06:19:36 API 读回 54/54 succeeded、无当前错误**；此前 53/54 的 Workday 失败读回也单独保留。
+- Collector 绝对采样约 261—279 MiB、25 PID，Bus 132—141 MiB；组件还处理其他来源，不能将服务总量或 CPU 快照当作本次资源增量。没有新增浏览器、身份或服务。
+
+安全发布证据在 `production/`：`release.json`、`configuration.json`、`idempotent.json`、`observation-final.json`、`deployment-verification.json`、`api-final.json`、`source-hashes.json`、`workday-timeout.json`。未导出带 Compose 环境或完整生产配置的私有快照。
+
+本观察窗口新增来源关联为 0，故只验收采集健康、范围、缓存证据与故障隔离；不能由此宣称新稿发稿到发现已达目标。CRN 的多层失效回调时效限制仍按第 2 节保留。

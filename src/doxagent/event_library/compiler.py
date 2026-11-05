@@ -153,8 +153,12 @@ class EventLibraryViewCompiler:
     def __init__(self, repository: EventLibraryRepository) -> None:
         self._repository = repository
 
-    def known_event_index(self, ticker: str, version: int | None = None) -> str:
-        events = self._repository.published_events(ticker, version)
+    def known_event_index(self, ticker: str, version: int | None = None, *, day=None) -> str:
+        if day is None:
+            events = self._repository.published_events(ticker, version)
+        else:
+            selected = self._repository.published_version(ticker) if version is None else version
+            events = self._repository.runtime_known_events(ticker, selected, day)
         lines: list[str] = []
         for event in _event_order(events):
             cells = [

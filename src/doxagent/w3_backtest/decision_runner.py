@@ -89,8 +89,10 @@ class DecisionReplayRunner:
         effort=None,
         timeout_seconds=1800,
         worker_factory=local_worker,
+        time_awareness_enabled=False,
     ):
         self.dataset, self.root = Path(dataset).resolve(), Path(run_root).resolve()
+        self.time_awareness_enabled = time_awareness_enabled
         self.profile = dict(
             model=model or "gpt-6-luna",
             effort=effort or ("medium" if model else "max"),
@@ -107,7 +109,11 @@ class DecisionReplayRunner:
         self.root.mkdir(parents=True, exist_ok=True)
         self.journal = RuntimeJournal(self.root / "runtime.sqlite3")
         self.registry = W3ThreadRegistry(self.journal)
-        self.worker, workspace = worker_factory(self.root / "worker")
+        self.worker, workspace = (
+            local_worker(self.root / "worker", time_awareness_enabled=time_awareness_enabled)
+            if worker_factory is local_worker
+            else worker_factory(self.root / "worker")
+        )
         self.agent = CodexW3AgentRunner(
             worker=self.worker,
             workspace=workspace,
@@ -117,6 +123,7 @@ class DecisionReplayRunner:
             environment=W3ExecutionEnvironment.offline(),
             timeout_seconds=timeout_seconds,
             workspace_namespace="w3-backtest-decision",
+            time_awareness_enabled=time_awareness_enabled,
         )
         self.template = None
         self._mother_lock = threading.Lock()
@@ -171,9 +178,12 @@ class DecisionReplayRunner:
         error = None
         job = None
         record = None
+        timing = None
         out = self.root / "cases" / case_key
         out.mkdir(parents=True, exist_ok=True)
         try:
+            if self.time_awareness_enabled:
+                timing = self.agent.begin_trade_timing(case.case_id)
             research = self.dataset / "research" / raw["research_key"]
             components = self.agent._wait_v4(
                 self.worker.prepare_w3_research(
@@ -288,6 +298,8 @@ class DecisionReplayRunner:
             thread_id=record.get("thread_id") if record else None,
             stages=dict(trade_decision=self.registry.stage(case.case_id, "trade_decision")),
         )
+        if self.time_awareness_enabled:
+            receipt["time_awareness"] = timing.model_dump(mode="json") if timing else None
         _write(out / "decision.json", decision)
         _write(out / "result.json", receipt)
         return receipt

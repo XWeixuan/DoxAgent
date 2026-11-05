@@ -1,0 +1,380 @@
+diff --git a/codex-rs/core/src/context/current_time_reminder.rs b/codex-rs/core/src/context/current_time_reminder.rs
+index 2273cbc..9e9a014 100644
+--- a/codex-rs/core/src/context/current_time_reminder.rs
++++ b/codex-rs/core/src/context/current_time_reminder.rs
+@@ -3,6 +3,76 @@ use chrono::Utc;
+ 
+ use super::ContextualUserFragment;
+ use codex_protocol::models::ContentItemKind;
++use codex_protocol::models::ResponseItem;
++
++pub(crate) enum W3TimeScope<'a> {
++    Exclude,
++    Turn(&'a str),
++}
++
++impl W3TimeScope<'_> {
++    pub(crate) fn includes(&self, item: &ResponseItem) -> bool {
++        let ResponseItem::Message {
++            internal_chat_message_metadata_passthrough: Some(metadata),
++            ..
++        } = item
++        else {
++            return true;
++        };
++        let Some(kinds) = &metadata.content_item_kinds else {
++            return true;
++        };
++        kinds.iter().all(|kind| {
++            let Some(turn_id) = kind.0.strip_prefix("w3.time_awareness.") else {
++                return true;
++            };
++            matches!(self, Self::Turn(current) if *current == turn_id)
++        })
++    }
++}
++
++pub(crate) struct W3TimeAwarenessReminder {
++    pub(crate) elapsed_seconds: u64,
++    pub(crate) turn_id: String,
++}
++
++impl ContextualUserFragment for W3TimeAwarenessReminder {
++    fn content_kind(&self) -> ContentItemKind {
++        ContentItemKind(format!("w3.time_awareness.{}", self.turn_id))
++    }
++
++    fn role(&self) -> &'static str {
++        "developer"
++    }
++
++    fn requires_separate_message(&self) -> bool {
++        true
++    }
++
++    fn markers(&self) -> (&'static str, &'static str) {
++        Self::type_markers()
++    }
++
++    fn type_markers() -> (&'static str, &'static str) {
++        ("<w3_time_awareness>", "</w3_time_awareness>")
++    }
++
++    fn body(&self) -> String {
++        let reminder = match self.elapsed_seconds {
++            0..120 => "",
++            120..180 => {
++                "。任务耗时较长；评估现有研判和必要核查是否已充分，若充分，请尽快提交最终结果。"
++            }
++            180..240 => {
++                "。任务耗时已明显偏长；除非仍有可能实质改变结论的高价值事实或变量待研究，请在后续几轮内尽早提交最终结果。"
++            }
++            240.. => {
++                "。停止新增调查；基于现有研判，完成现行合同要求的必要提交核验后，立即提交最终结果。"
++            }
++        };
++        format!("Elapsed: {}s{reminder}", self.elapsed_seconds)
++    }
++}
+ 
+ pub(crate) struct CurrentTimeReminder {
+     current_time: DateTime<Utc>,
+diff --git a/codex-rs/core/src/context/mod.rs b/codex-rs/core/src/context/mod.rs
+index 19af10d..d22d72a 100644
+--- a/codex-rs/core/src/context/mod.rs
++++ b/codex-rs/core/src/context/mod.rs
+@@ -74,6 +74,8 @@ pub(crate) use contextual_user_message::is_user_authorization_message;
+ pub(crate) use contextual_user_message::parse_visible_hook_prompt_message;
+ pub(crate) use current_time_reminder::CurrentTimeReminder;
+ pub(crate) use current_time_reminder::CurrentTimeUnavailable;
++pub(crate) use current_time_reminder::W3TimeAwarenessReminder;
++pub(crate) use current_time_reminder::W3TimeScope;
+ pub(crate) use developer_instructions::DeveloperInstructions;
+ pub(crate) use environments_instructions::EnvironmentsInstructions;
+ pub(crate) use guardian_approved_action::GuardianApprovedAction;
+diff --git a/codex-rs/core/src/context_manager/history.rs b/codex-rs/core/src/context_manager/history.rs
+index 2475e68..f561f4d 100644
+--- a/codex-rs/core/src/context_manager/history.rs
++++ b/codex-rs/core/src/context_manager/history.rs
+@@ -585,13 +585,34 @@ impl ContextManager {
+             .collect()
+     }
+ 
++    pub(crate) fn for_prompt_with_w3_time_scope(
++        self,
++        input_modalities: &[InputModality],
++        scope: crate::context::W3TimeScope<'_>,
++    ) -> Vec<ResponseItem> {
++        self.for_prompt_annotated_scoped(input_modalities, scope)
++            .into_iter()
++            .map(ResponseItemEnvelope::into_item)
++            .collect()
++    }
++
+     /// Returns normalized history envelopes for internal consumers that must retain metadata.
+     pub(crate) fn for_prompt_annotated(
++        self,
++        input_modalities: &[InputModality],
++    ) -> Vec<ResponseItemEnvelope> {
++        self.for_prompt_annotated_scoped(input_modalities, crate::context::W3TimeScope::Exclude)
++    }
++
++    fn for_prompt_annotated_scoped(
+         mut self,
+         input_modalities: &[InputModality],
++        scope: crate::context::W3TimeScope<'_>,
+     ) -> Vec<ResponseItemEnvelope> {
+         self.normalize_history(input_modalities);
+-        Arc::unwrap_or_clone(self.items)
++        let mut items = Arc::unwrap_or_clone(self.items);
++        items.retain(|envelope| scope.includes(&envelope.item));
++        items
+     }
+ 
+     /// Iterates over raw response items without exposing their history envelopes.
+diff --git a/codex-rs/core/src/context_manager/history_tests.rs b/codex-rs/core/src/context_manager/history_tests.rs
+index 90eaec0..7a9cd77 100644
+--- a/codex-rs/core/src/context_manager/history_tests.rs
++++ b/codex-rs/core/src/context_manager/history_tests.rs
+@@ -50,6 +50,51 @@ const EXEC_FORMAT_MAX_BYTES: usize = 10_000;
+ const EXEC_FORMAT_MAX_TOKENS: usize = 2_500;
+ const TEST_WAV_SAMPLE_RATE: u32 = 8_000;
+ 
++#[test]
++fn w3_time_history_is_append_only_within_a_turn_and_excluded_from_other_consumers() {
++    use crate::context::ContextualUserFragment;
++    use crate::context::W3TimeAwarenessReminder;
++    use crate::context::W3TimeScope;
++
++    let business = user_input_text_msg("Evaluate the event.");
++    let old = ContextualUserFragment::into(W3TimeAwarenessReminder {
++        elapsed_seconds: 301,
++        turn_id: "previous".to_string(),
++    });
++    let first = ContextualUserFragment::into(W3TimeAwarenessReminder {
++        elapsed_seconds: 73,
++        turn_id: "current".to_string(),
++    });
++    let next = ContextualUserFragment::into(W3TimeAwarenessReminder {
++        elapsed_seconds: 180,
++        turn_id: "current".to_string(),
++    });
++    let mut history = create_history_with_items(vec![business, old, first]);
++    let request = history
++        .clone()
++        .for_prompt_with_w3_time_scope(&default_input_modalities(), W3TimeScope::Turn("current"));
++    history.record_items(std::iter::once(&next), TruncationPolicy::Tokens(10_000));
++    let continuation = history
++        .clone()
++        .for_prompt_with_w3_time_scope(&default_input_modalities(), W3TimeScope::Turn("current"));
++    assert!(continuation.starts_with(&request));
++    assert_eq!(continuation.len(), request.len() + 1);
++    let expected: Vec<_> = continuation
++        .into_iter()
++        .filter(|item| W3TimeScope::Exclude.includes(item))
++        .collect();
++    assert_eq!(
++        history.clone().for_prompt(&default_input_modalities()),
++        expected
++    );
++    let compaction: Vec<_> = history
++        .for_prompt_annotated(&default_input_modalities())
++        .into_iter()
++        .map(ResponseItemEnvelope::into_item)
++        .collect();
++    assert_eq!(compaction, expected);
++}
++
+ fn unknown_content_metadata() -> InternalChatMessageMetadataPassthrough {
+     InternalChatMessageMetadataPassthrough {
+         content_item_kinds: Some(vec![ContentItemKind("unknown".to_string())]),
+diff --git a/codex-rs/core/src/session/time_reminder.rs b/codex-rs/core/src/session/time_reminder.rs
+index 92c6038..464da7d 100644
+--- a/codex-rs/core/src/session/time_reminder.rs
++++ b/codex-rs/core/src/session/time_reminder.rs
+@@ -13,6 +13,89 @@ use crate::config::CurrentTimeReminderConfig;
+ use crate::context::ContextualUserFragment;
+ use crate::context::CurrentTimeUnavailable;
+ use crate::context_manager::is_user_turn_boundary;
++use std::path::Path;
++use std::time::Duration;
++use std::time::Instant;
++
++#[cfg(test)]
++#[path = "w3_time_awareness_tests.rs"]
++mod w3_time_awareness_tests;
++
++#[derive(Default)]
++struct W3TimeSnapshot(Option<(Duration, Instant)>);
++
++#[derive(serde::Deserialize)]
++struct W3TimeControlRecord {
++    enabled: bool,
++    #[serde(default)]
++    thread_id: String,
++    #[serde(default)]
++    task_phase: String,
++    #[serde(default)]
++    case_id: String,
++    started_at_utc: Option<DateTime<Utc>>,
++}
++
++impl W3TimeSnapshot {
++    async fn read(path: &Path, thread_id: &str) -> Self {
++        let record = async {
++            let bytes = tokio::fs::read(path).await?;
++            // Consume once: a later non-decision turn cannot reuse a stale record.
++            tokio::fs::remove_file(path).await?;
++            Ok::<_, anyhow::Error>(serde_json::from_slice::<W3TimeControlRecord>(&bytes)?)
++        }
++        .await;
++        let record = match record {
++            Ok(record) => record,
++            Err(error) => {
++                tracing::warn!(%error, "W3 time context unavailable; continuing without reminders");
++                return Self::default();
++            }
++        };
++        if !record.enabled
++            || record.thread_id != thread_id
++            || record.task_phase != "trade_decision"
++            || record.case_id.is_empty()
++        {
++            return Self::default();
++        }
++        let Some(origin) = record.started_at_utc else {
++            return Self::default();
++        };
++        let elapsed = Utc::now()
++            .signed_duration_since(origin)
++            .to_std()
++            .unwrap_or_default();
++        Self(Some((elapsed, Instant::now())))
++    }
++}
++
++pub(super) async fn initialize_w3_time_awareness(sess: &Session, turn: &TurnContext) {
++    if turn.extension_data.get::<W3TimeSnapshot>().is_some() {
++        return;
++    }
++    let snapshot = match std::env::var_os("DOXAGENT_W3_TIME_CONTEXT_FILE") {
++        Some(path) => W3TimeSnapshot::read(Path::new(&path), &sess.thread_id.to_string()).await,
++        None => W3TimeSnapshot::default(),
++    };
++    turn.extension_data.insert(snapshot);
++}
++
++pub(super) async fn record_w3_time_awareness(sess: &Session, turn: &TurnContext) -> bool {
++    let Some(snapshot) = turn.extension_data.get::<W3TimeSnapshot>() else {
++        return false;
++    };
++    let Some((offset, started)) = snapshot.0 else {
++        return false;
++    };
++    let item = ContextualUserFragment::into(crate::context::W3TimeAwarenessReminder {
++        elapsed_seconds: (offset + started.elapsed()).as_secs(),
++        turn_id: turn.sub_id.clone(),
++    });
++    sess.record_conversation_items(turn, turn.model_info(), std::slice::from_ref(&item))
++        .await;
++    true
++}
+ 
+ pub(super) fn apply_persistent_defaults(config: &mut Config) {
+     if config.current_time_reminder.is_some()
+diff --git a/codex-rs/core/src/session/turn.rs b/codex-rs/core/src/session/turn.rs
+index b88b343..edf5746 100644
+--- a/codex-rs/core/src/session/turn.rs
++++ b/codex-rs/core/src/session/turn.rs
+@@ -168,6 +168,7 @@ pub(crate) async fn run_turn(
+     prewarmed_client_session: Option<ModelClientSession>,
+     cancellation_token: CancellationToken,
+ ) -> CodexResult<Option<String>> {
++    super::time_reminder::initialize_w3_time_awareness(&sess, &turn_context).await;
+     if crate::guardian::is_basic_session_source(&turn_context.session_source) {
+         crate::guardian::check_pending_guardian_input(&sess, &turn_context).await?;
+     }
+@@ -1627,7 +1628,15 @@ async fn run_sampling_request(
+     loop {
+         // Running code-mode cells can request review while this response is in flight.
+         // Keep the latest received ID until response.created replaces it.
+-        let prompt_input = if let Some(input) = initial_input.take() {
++        let w3_time_active =
++            super::time_reminder::record_w3_time_awareness(&sess, &turn_context).await;
++        let prompt_input = if w3_time_active {
++            initial_input.take();
++            sess.clone_history().await.for_prompt_with_w3_time_scope(
++                &step_context.settings.model_info.input_modalities,
++                crate::context::W3TimeScope::Turn(&turn_context.sub_id),
++            )
++        } else if let Some(input) = initial_input.take() {
+             input
+         } else {
+             sess.clone_history()
+diff --git a/codex-rs/core/src/session/w3_time_awareness_tests.rs b/codex-rs/core/src/session/w3_time_awareness_tests.rs
+new file mode 100644
+index 0000000..bfd1edf
+--- /dev/null
++++ b/codex-rs/core/src/session/w3_time_awareness_tests.rs
+@@ -0,0 +1,61 @@
++use super::*;
++use pretty_assertions::assert_eq;
++
++#[tokio::test]
++async fn w3_context_is_consumed_and_bound_to_the_decision_thread() {
++    let directory = tempfile::tempdir().unwrap();
++    let path = directory.path().join("context.json");
++    let record = serde_json::json!({
++        "enabled": true,
++        "thread_id": "child",
++        "case_id": "case-1",
++        "task_phase": "trade_decision",
++        "started_at_utc": Utc::now() - chrono::Duration::seconds(73),
++    });
++    tokio::fs::write(&path, serde_json::to_vec(&record).unwrap())
++        .await
++        .unwrap();
++    let snapshot = W3TimeSnapshot::read(&path, "child").await;
++    let (offset, started) = snapshot.0.unwrap();
++    assert!((73..75).contains(&(offset + started.elapsed()).as_secs()));
++    assert!(!path.exists());
++
++    for (thread, phase, enabled) in [
++        ("other-child", "trade_decision", true),
++        ("child", "post_decision_operations", true),
++        ("child", "w3_template", true),
++        ("child", "trade_decision", false),
++    ] {
++        let mut value = record.clone();
++        value["thread_id"] = thread.into();
++        value["task_phase"] = phase.into();
++        value["enabled"] = enabled.into();
++        tokio::fs::write(&path, serde_json::to_vec(&value).unwrap())
++            .await
++            .unwrap();
++        assert!(W3TimeSnapshot::read(&path, "child").await.0.is_none());
++    }
++}
++
++#[tokio::test]
++async fn w3_clock_offset_clamps_future_origins_and_bad_records_are_nonfatal() {
++    let directory = tempfile::tempdir().unwrap();
++    let path = directory.path().join("context.json");
++    let value = serde_json::json!({
++        "enabled": true,
++        "thread_id": "child",
++        "case_id": "case-2",
++        "task_phase": "trade_decision",
++        "started_at_utc": Utc::now() + chrono::Duration::days(1),
++    });
++    tokio::fs::write(&path, serde_json::to_vec(&value).unwrap())
++        .await
++        .unwrap();
++    assert_eq!(
++        W3TimeSnapshot::read(&path, "child").await.0.unwrap().0,
++        Duration::ZERO
++    );
++    tokio::fs::write(&path, b"partial JSON").await.unwrap();
++    assert!(W3TimeSnapshot::read(&path, "child").await.0.is_none());
++    assert!(W3TimeSnapshot::read(&path, "child").await.0.is_none());
++}

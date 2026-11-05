@@ -62,6 +62,22 @@ class PublishedEventLibraryRuntimeProvider:
     def current_index(self, ticker: str) -> KnownEventIndexSnapshot | None:
         return self.reader.known_index(ticker)
 
+    def filtered_index(self, ticker, version, day):
+        return self.reader.known_index(ticker, version=version, day=day)
+
+    def new_library_facts(self, ticker, after_version, version):
+        repository = self.reader._repository(ticker)
+        if repository is None:
+            return []
+        admissions = repository.fact_admissions(ticker, version)
+        found = {}
+        for event in repository.published_events(ticker, version):
+            for fact in event.facts:
+                first_version, _ = admissions[fact.fact_id]
+                if first_version > after_version:
+                    found.setdefault(fact.fact_id, (first_version, event, fact))
+        return sorted(found.values(), key=lambda x: (x[0], int(x[2].fact_id[1:])))
+
     def details(
         self, ticker: str, version: int, event_ids: list[str]
     ) -> EventDetailSnapshot | None:

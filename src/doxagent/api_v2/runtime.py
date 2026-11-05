@@ -11,6 +11,67 @@ from doxagent.v2_read.metrics import Metrics
 from .errors import ApiFailure
 
 
+RUNTIME_METRICS = (
+            "processed_cases",
+            "new_cases",
+            "old_cases",
+            "hit_cases",
+            "w3_cases",
+            "new_fact_candidates",
+            "executed_cases",
+            "policy_decided_cases",
+            "hot_path_seconds",
+            "hot_path_samples",
+            "w3_seconds",
+            "w3_samples",
+        )
+
+
+def prime_runtime_metrics(store, view, tickers):
+    period = view["wire"]["period"]
+    days = None if period["selected"] == "ALL" else period["current"]["trading_days"]
+    previous = period["previous"]["trading_days"] if period["previous"] else []
+    service = Metrics(store)
+    service.prime(RUNTIME_METRICS, tickers, view["seq"], [days, previous])
+    return service
+
+
+def runtime_metrics_data(store, ticker, view, service=None):
+    period = view["wire"]["period"]
+    days = None if period["selected"] == "ALL" else period["current"]["trading_days"]
+    previous = period["previous"]["trading_days"] if period["previous"] else None
+    service = service or prime_runtime_metrics(store, view, [ticker])
+    values = {
+        name: service.metric(name, [ticker], view["seq"], days=days, previous_days=previous)
+        for name in (
+            "processed_cases",
+            "new_cases",
+            "old_cases",
+            "hit_cases",
+            "w3_cases",
+            "new_fact_candidates",
+            "executed_cases",
+        )
+    }
+    for name, numerator, denominator, unit in (
+        ("hit_case_ratio", "hit_cases", "policy_decided_cases", "RATIO"),
+        ("hot_path_mean_seconds", "hot_path_seconds", "hot_path_samples", "SECONDS"),
+        ("w3_mean_seconds", "w3_seconds", "w3_samples", "SECONDS"),
+    ):
+        values[name] = service.quotient(
+            name,
+            numerator,
+            denominator,
+            [ticker],
+            view["seq"],
+            days=days,
+            previous_days=previous,
+            unit=unit,
+            comparison_applicable=period["comparison_applicable"],
+        )
+    return values
+
+
 def install(app: FastAPI) -> None:
     prefix = "/api/doxagent/v2/tickers/{ticker}/runtime"
     store, views, query, respond = (
@@ -32,57 +93,7 @@ def install(app: FastAPI) -> None:
         view = views.get(request.state.principal.user_id, args.get("view_id", ""), ticker)
         if view["wire"]["page"] != "RUNTIME":
             raise ApiFailure("SCOPE_MISMATCH", 400)
-        period = view["wire"]["period"]
-        days = None if period["selected"] == "ALL" else period["current"]["trading_days"]
-        previous = period["previous"]["trading_days"] if period["previous"] else None
-        service = Metrics(store)
-        service.prime(
-            (
-                "processed_cases",
-                "new_cases",
-                "old_cases",
-                "hit_cases",
-                "w3_cases",
-                "new_fact_candidates",
-                "executed_cases",
-                "policy_decided_cases",
-                "hot_path_seconds",
-                "hot_path_samples",
-                "w3_seconds",
-                "w3_samples",
-            ),
-            [ticker],
-            view["seq"],
-            [days, previous or []],
-        )
-        values = {
-            name: service.metric(name, [ticker], view["seq"], days=days, previous_days=previous)
-            for name in (
-                "processed_cases",
-                "new_cases",
-                "old_cases",
-                "hit_cases",
-                "w3_cases",
-                "new_fact_candidates",
-                "executed_cases",
-            )
-        }
-        for name, numerator, denominator, unit in (
-            ("hit_case_ratio", "hit_cases", "policy_decided_cases", "RATIO"),
-            ("hot_path_mean_seconds", "hot_path_seconds", "hot_path_samples", "SECONDS"),
-            ("w3_mean_seconds", "w3_seconds", "w3_samples", "SECONDS"),
-        ):
-            values[name] = service.quotient(
-                name,
-                numerator,
-                denominator,
-                [ticker],
-                view["seq"],
-                days=days,
-                previous_days=previous,
-                unit=unit,
-                comparison_applicable=period["comparison_applicable"],
-            )
+        values = runtime_metrics_data(store, ticker, view)
         return respond(request, "RuntimeMetrics", values, view_id=args["view_id"])
 
     @app.get(prefix + "/cases")

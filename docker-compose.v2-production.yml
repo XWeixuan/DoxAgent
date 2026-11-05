@@ -7,6 +7,8 @@ x-environment: &environment
   DOXAGENT_PERSISTENT_RUNTIME_V2_STORAGE_MODE: sqlite
   DOXAGENT_PERSISTENT_RUNTIME_V2_SQLITE_PATH: /data/runtime/runtime.sqlite3
   DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED: "true"
+  # W3_TIME_AWARENESS_ENABLED and CODEX_RUNTIME_BIN come only from env_file.
+  # Leave them unset here so Compose defaults cannot override the service env file.
   DOXAGENT_PERSISTENT_RUNTIME_V2_W2_R1_MODEL: anthropic/claude-haiku-5.5
   DOXAGENT_PERSISTENT_RUNTIME_V2_W1_R1_MODEL: anthropic/claude-haiku-5.5
   DOXAGENT_PERSISTENT_RUNTIME_V2_W1_PROVISIONAL_CACHE_BATCH_SIZE: "5"

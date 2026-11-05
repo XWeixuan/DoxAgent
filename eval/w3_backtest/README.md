@@ -1,3 +1,23 @@
+# 2026-11-06：复用 W3 时间感知 Harness
+
+v2 决策级回测沿用生产的真实执行起点、Worker 元数据和原生时间片段，不在业务提示词中自行拼接倒计时。默认关闭；`run --time-awareness` 显式开启，`resume` 继承该 run 的开关。Elapsed 在公共提示词母线程就绪后、每条 Case 的研究准备和子线程创建前开始；真实运行耗时不推进历史 `as_of`。同一 Case 重试沿用原起点，Template 不携带提醒。
+
+开启时通过 `DOXAGENT_CODEX_RUNTIME_BIN` 指定已打补丁、适合当前平台的 Codex 可执行文件；同目录必须有同版 `codex-code-mode-host`（Windows为exe）。run_manifest 保存主二进制与host的路径/摘要身份，恢复时校验一致。Fork 辅助进程与决策进程复用同一已选二进制。未配置或依赖不可执行时在调用模型前报错，避免将工具不可用的运行记为有效开启组。已启用 Case 的 `result.json/time_awareness` 保留真实起点；可选起点写入失败则为 null，不补建偏晚起点。配套故障与修复见[说明](../../docs/w3-runtime-code-mode-companion-repair-20261106.md)。
+
+现成产物 `deploy/codex-runtime/codex` 为 **Linux x86_64 ELF**，可在已有 Linux 容器或 WSL 回测环境中使用；Windows Python 不能直接运行该文件。Windows 原生回测需另行提供同补丁的 Windows 可执行文件。本轮复用既有 Linux 产物，没有增加跨平台构建或新的运行封装。
+
+下例供提示词修改完成后，在已有 Linux Python 回测环境中执行；当前没有运行此命令：
+
+```bash
+export DOXAGENT_CODEX_RUNTIME_BIN="$PWD/deploy/codex-runtime/codex"
+chmod u+x "$DOXAGENT_CODEX_RUNTIME_BIN" "$(dirname "$DOXAGENT_CODEX_RUNTIME_BIN")/codex-code-mode-host"
+python -m doxagent.w3_backtest run --dataset w3_curated_20261030 \
+  --run-id time-aware-01 --model gpt-6-luna --effort max --time-awareness
+python -m doxagent.w3_backtest resume --run-id time-aware-01
+```
+
+默认仍使用数据集冻结的 `prompt_source`；替换业务提示词时，用 `--prompt-root` 指向包含 AGENTS.md、skills/skill.md、contract.json、backtest.md 的完整快照，并创建新 run-id。切换开关或二进制同样使用新 run-id。仅 v2 支持此能力，旧版二阶段回测不扩展。详见[接入回执](../../docs/w3-backtest-time-awareness-adaptation-20261106.md)。
+
 # 2026-11-02：新增两条 COHR Case
 
 `w3_curated_20261030` 在原43条之上加入 `ADD-AMZN-Q3-2026`（Gold：NO_TRADE）和 `ADD-MPWR-Q3-2026`（Gold：LONG），当前正式集为45条。两条交易标的均为 COHR，使用原生产Case的消息、W1/W2、发布时间及绑定D1/D2；新增检索证据由 Terra medium 构造，行情为准备阶段远端拉取的COHR真实快照。

@@ -8,7 +8,7 @@ import sqlite3
 import threading
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -669,6 +669,60 @@ class EventLibraryRepository:
                 )
                 for row in rows
             ]
+
+    def fact_admissions(self, ticker: str, version: int):
+        """First publication of each current Fact's business content, by stable ID.
+
+        Repeated Event/reference maintenance cannot move this timestamp. A new
+        proposition/assertion/subject or occurrence is a new factual revision;
+        changing references, review clocks or other metadata is not.
+        """
+        normalized = self._ticker(ticker)
+        with self._read() as db:
+            versions = {int(r["version"]): datetime.fromisoformat(
+                (r["published_at"] or r["created_at"]).replace("Z", "+00:00"))
+                for r in db.execute("SELECT version,published_at,created_at FROM library_versions "
+                                    "WHERE ticker=? AND version<=? AND status='PUBLISHED'",
+                                    (normalized, version))}
+            rows = db.execute("SELECT fact_no,library_version,payload_json FROM canonical_fact_revisions "
+                              "WHERE ticker=? AND library_version<=? ORDER BY library_version,revision_no",
+                              (normalized, version)).fetchall()
+        seen, current = {}, {}
+        for row in rows:
+            fact_no, admitted = int(row["fact_no"]), int(row["library_version"])
+            value = json.loads(row["payload_json"])
+            # Compare business content within each stable Fact; whitespace-only
+            # reformatting and maintenance metadata do not create new admissions.
+            for field in ("proposition", "subject_time"):
+                if isinstance(value.get(field), str):
+                    value[field] = " ".join(value[field].split())
+            key = (fact_no, tuple(json.dumps(value.get(k), sort_keys=True, ensure_ascii=False)
+                for k in ("proposition", "assertion_state", "subject_time",
+                          "fact_occurred_at", "fact_occurrence_time_precision")))
+            if admitted not in versions:
+                raise EventLibraryError("Fact admission has no Published version record")
+            seen.setdefault(key, (admitted, versions[admitted]))
+            current[f"F{fact_no}"] = seen[key]
+        return current
+
+    def runtime_known_events(self, ticker: str, version: int, day: date):
+        from doxagent.semantic_clock import semantic_day
+
+        events = self.published_events(ticker, version)
+        with self._read() as db:
+            births = {f"E{r['event_no']}": datetime.fromisoformat(
+                (r["published_at"] or r["created_at"]).replace("Z", "+00:00"))
+                for r in db.execute(
+                    "SELECT e.event_no,v.published_at,v.created_at FROM canonical_events e "
+                    "JOIN library_versions v ON v.ticker=e.ticker AND v.version=e.created_version "
+                    "WHERE e.ticker=? AND e.created_version<=? AND v.status='PUBLISHED'",
+                    (self._ticker(ticker), version))}
+        facts = self.fact_admissions(ticker, version)
+        return [event for event in events if event.include_in_reference_view
+                or (event.event_id in births and day-timedelta(days=13)
+                    <= semantic_day(births[event.event_id]) <= day)
+                or any(f.fact_id in facts and day-timedelta(days=6)
+                       <= semantic_day(facts[f.fact_id][1]) <= day for f in event.facts)]
 
     def get_event(
         self, ticker: str, event_id: str, version: int | None = None

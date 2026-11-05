@@ -64,7 +64,7 @@ class PublishedEventLibraryReader:
         return EventLibraryRepository(path, read_only=True)
 
     def known_index(
-        self, ticker: str, *, version: int | None = None
+        self, ticker: str, *, version: int | None = None, day=None
     ) -> KnownEventIndexSnapshot | None:
         repository = self._repository(ticker)
         if repository is None:
@@ -72,7 +72,7 @@ class PublishedEventLibraryReader:
         selected, published_at = repository.published_metadata(ticker, version)
         if selected == 0:
             return None
-        payload = EventLibraryViewCompiler(repository).known_event_index(ticker, selected)
+        payload = EventLibraryViewCompiler(repository).known_event_index(ticker, selected, day=day)
         return KnownEventIndexSnapshot(
             ticker=ticker.upper(),
             version=selected,

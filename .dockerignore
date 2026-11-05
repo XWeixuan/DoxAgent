@@ -45,5 +45,6 @@ references/
 eval/
 exports/
 deploy/secrets/
+deploy/codex-runtime/symbols/
 /.codex/
 /.aws/

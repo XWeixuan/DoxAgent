@@ -53,6 +53,88 @@ def failed_cases_metric(store, view):
             'provisional':False}
 
 
+def select_overview_tickers(store, view, after, limit, run_state=None, health=None):
+    # Push frozen identity and filters into both branches before sorting/paging.
+    where = "kind='ticker' AND id=ticker AND ticker IN (SELECT value FROM json_each(?)) AND ticker>? AND valid_from<=? AND (? IS NULL OR json_extract(payload,'$.run_state')=?) AND (? IS NULL OR json_extract(payload,'$.health')=?)"
+    parameters = (json.dumps(view["tickers"]), after, view["seq"], run_state, run_state, health, health)
+    with store.connect() as db:
+        selected = [row[0] for row in db.execute(
+            "SELECT ticker FROM (SELECT ticker FROM object_current INDEXED BY current_identity WHERE " + where +
+            " UNION ALL SELECT ticker FROM " + store.history_table + " INDEXED BY history_recent WHERE " + where + " AND valid_to>?) ORDER BY ticker LIMIT ?",
+            (*parameters, *parameters, view["seq"], limit),
+        )]
+    return selected
+
+
+def measures(store, view, tickers, names, service=None):
+    from doxagent.v2_read.metrics import Metrics
+
+    period = view["wire"]["period"]
+    previous = period["previous"]
+    if service is None:
+        service = Metrics(store)
+        service.prime(names, tickers, view["seq"], [period["current"]["trading_days"], previous["trading_days"] if previous else []], distinct=("policy_hits",))
+    return {
+        name: service.metric(
+            name,
+            tickers,
+            view["seq"],
+            days=period["current"]["trading_days"],
+            previous_days=previous["trading_days"] if previous else None,
+            unit="USD" if name.endswith("pnl") or name == "api_token_cost" else "COUNT",
+            distinct=name == "policy_hits",
+        )
+        for name in names
+    }
+
+
+def ticker_overview_data(store, view, selected):
+    from .bus import aggregates_many
+    from doxagent.v2_read.metrics import Metrics
+    service = Metrics(store)
+    period = view["wire"]["period"]
+    service.prime(("policy_hits", "trade_executed", "trade_triggered", "messages", "api_token_cost"), selected, view["seq"],
+                  [period["current"]["trading_days"], period["previous"]["trading_days"] if period["previous"] else []],
+                  distinct=("policy_hits",))
+    source_counts = aggregates_many(store, selected, view["seq"])
+    states = store.batch_get([("ticker",ticker,ticker) for ticker in selected],view["seq"])
+    initializations = store.batch_get([("initialization",ticker,states[("ticker",ticker,ticker)]["initialization_id"]) for ticker in selected if states[("ticker",ticker,ticker)]["initialization_id"]],view["seq"])
+    latest_by_ticker = store.latest_messages_at(selected, view["seq"])
+    items = []
+    for ticker in selected:
+        state = states[("ticker",ticker,ticker)]
+        latest = latest_by_ticker.get(ticker)
+        initialization = (
+            initializations.get(("initialization",ticker,state["initialization_id"]))
+            if state["initialization_id"]
+            else None
+        )
+        items.append(
+            {
+                "state": state,
+                "last_standard_message_at": available(latest)
+                if latest
+                else missing(),
+                "source_counts": source_counts[ticker][0],
+                "metrics": measures(
+                    store, view,
+                    [ticker],
+                    ("policy_hits", "trade_executed", "trade_triggered", "messages", "api_token_cost"),
+                    service=service,
+                ),
+                "initialization": {
+                    "state": "AVAILABLE" if initialization else "UNAVAILABLE",
+                    "data": initialization,
+                    "reason": None if initialization else "SOURCE_GAP",
+                    "coverage": coverage(),
+                }
+                if state["initialization_incomplete"]
+                else None,
+            }
+        )
+    return items
+
+
 def install(app: FastAPI) -> None:
     gateway = GatewayMonitor(app.state.control.journal)
     app.state.gateway_monitor = gateway
@@ -74,33 +156,12 @@ def install(app: FastAPI) -> None:
             raise ApiFailure("SCOPE_MISMATCH", 400)
         return view
 
-    def measures(view, tickers, names, service=None):
-        from doxagent.v2_read.metrics import Metrics
-
-        period = view["wire"]["period"]
-        previous = period["previous"]
-        if service is None:
-            service = Metrics(store)
-            service.prime(names, tickers, view["seq"], [period["current"]["trading_days"], previous["trading_days"] if previous else []], distinct=("policy_hits",))
-        return {
-            name: service.metric(
-                name,
-                tickers,
-                view["seq"],
-                days=period["current"]["trading_days"],
-                previous_days=previous["trading_days"] if previous else None,
-                unit="USD" if name.endswith("pnl") or name == "api_token_cost" else "COUNT",
-                distinct=name == "policy_hits",
-            )
-            for name in names
-        }
-
     @app.get(prefix + "/overview/metrics")
     async def overview_metrics(request: Request):
         args = query(request, {"view_id"})
         view = overview_view(request, args)
         data = measures(
-            view,
+            store, view,
             view["tickers"],
             (
                 "policy_hits",
@@ -117,8 +178,6 @@ def install(app: FastAPI) -> None:
 
     @app.get(prefix + "/overview/tickers")
     async def overview_tickers(request: Request):
-        from .bus import aggregates_many
-
         args = query(request, {"view_id", "limit", "cursor", "run_state", "health"})
         view = overview_view(request, args)
         owner = request.state.principal.user_id
@@ -147,57 +206,8 @@ def install(app: FastAPI) -> None:
                 raise ApiFailure("CURSOR_EXPIRED", 410) from None
             except ValueError:
                 raise ApiFailure("INVALID_CURSOR", 400) from None
-        # Push frozen identity and filters into both branches before sorting/paging.
-        where = "kind='ticker' AND id=ticker AND ticker IN (SELECT value FROM json_each(?)) AND ticker>? AND valid_from<=? AND (? IS NULL OR json_extract(payload,'$.run_state')=?) AND (? IS NULL OR json_extract(payload,'$.health')=?)"
-        parameters = (json.dumps(view["tickers"]), after, view["seq"], run_state, run_state, health, health)
-        with store.connect() as db:
-            selected = [row[0] for row in db.execute(
-                "SELECT ticker FROM (SELECT ticker FROM object_current INDEXED BY current_identity WHERE " + where +
-                " UNION ALL SELECT ticker FROM " + store.history_table + " INDEXED BY history_recent WHERE " + where + " AND valid_to>?) ORDER BY ticker LIMIT ?",
-                (*parameters, *parameters, view["seq"], limit + 1),
-            )]
-        from doxagent.v2_read.metrics import Metrics
-        service = Metrics(store)
-        period = view["wire"]["period"]
-        service.prime(("policy_hits", "trade_executed", "trade_triggered", "messages", "api_token_cost"), selected[:limit], view["seq"],
-                      [period["current"]["trading_days"], period["previous"]["trading_days"] if period["previous"] else []],
-                      distinct=("policy_hits",))
-        source_counts = aggregates_many(store, selected[:limit], view["seq"])
-        states = store.batch_get([("ticker",ticker,ticker) for ticker in selected[:limit]],view["seq"])
-        initializations = store.batch_get([("initialization",ticker,states[("ticker",ticker,ticker)]["initialization_id"]) for ticker in selected[:limit] if states[("ticker",ticker,ticker)]["initialization_id"]],view["seq"])
-        latest_by_ticker = store.latest_messages_at(selected[:limit], view["seq"])
-        items = []
-        for ticker in selected[:limit]:
-            state = states[("ticker",ticker,ticker)]
-            latest = latest_by_ticker.get(ticker)
-            initialization = (
-                initializations.get(("initialization",ticker,state["initialization_id"]))
-                if state["initialization_id"]
-                else None
-            )
-            items.append(
-                {
-                    "state": state,
-                    "last_standard_message_at": available(latest)
-                    if latest
-                    else missing(),
-                    "source_counts": source_counts[ticker][0],
-                    "metrics": measures(
-                        view,
-                        [ticker],
-                        ("policy_hits", "trade_executed", "trade_triggered", "messages", "api_token_cost"),
-                        service=service,
-                    ),
-                    "initialization": {
-                        "state": "AVAILABLE" if initialization else "UNAVAILABLE",
-                        "data": initialization,
-                        "reason": None if initialization else "SOURCE_GAP",
-                        "coverage": coverage(),
-                    }
-                    if state["initialization_incomplete"]
-                    else None,
-                }
-            )
+        selected = select_overview_tickers(store, view, after, limit + 1, run_state, health)
+        items = ticker_overview_data(store, view, selected[:limit])
         more = len(selected) > limit
         cursor = store.save_token(owner, scope, {"after": selected[limit - 1], "view_id": args["view_id"], "seq": view["seq"]}) if more else None
         return respond(

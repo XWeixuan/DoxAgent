@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 
 from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
@@ -82,7 +82,15 @@ class WorkspaceInventoryQuery(WorkerModel):
     prefixes: list[str] = Field(default_factory=list, max_length=32)
 
 
+class W3TimeAwarenessContext(WorkerModel):
+    case_id: str = Field(min_length=1)
+    started_at_utc: AwareDatetime
+
+
 class WorkerRunRequest(WorkerModel):
+    w3_time_awareness: W3TimeAwarenessContext | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     task_phase: Literal["w3_template", "trade_decision", "post_decision_operations"] | None = None
     web_search_mode: Literal["disabled", "live"] | None = None
     workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION

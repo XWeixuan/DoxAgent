@@ -115,7 +115,10 @@ class PersistentRuntimeV2Repository(Protocol):
         published_max_event_numeric_id: int,
         case_id: str | None = None,
         originating_node: Literal["W1_R3", "W3"] | None = None,
+        already_published: bool = False,
     ) -> ProvisionalFactDetail: ...
+
+    def daily_known_index(self, ticker: str, day: date, candidate=None): ...
 
     def provisional_snapshot_version(self, ticker: str, trading_date: date) -> int: ...
 
@@ -194,6 +197,7 @@ class InMemoryPersistentRuntimeV2Repository:
         self._effects: dict[str, RuntimeEffect] = {}
         self._effect_keys: dict[str, str] = {}
         self._provisional: dict[tuple[str, date], list[ProvisionalFactDetail]] = {}
+        self._daily_indexes: dict[tuple[str, str], dict] = {}
         self._candidate_keys: dict[str, ProvisionalFactDetail] = {}
         self._counters: dict[tuple[str, date], tuple[int, int]] = {}
         self._archives: dict[str, ArchiveRecord] = {}
@@ -307,6 +311,7 @@ class InMemoryPersistentRuntimeV2Repository:
         published_max_event_numeric_id: int,
         case_id: str | None = None,
         originating_node: Literal["W1_R3", "W3"] | None = None,
+        already_published: bool = False,
     ) -> ProvisionalFactDetail:
         identity = _candidate_identity(source_message_id, candidate_index)
         key = (ticker.upper(), trading_date)
@@ -333,7 +338,17 @@ class InMemoryPersistentRuntimeV2Repository:
             self._counters[key] = (next_numeric + 1, snapshot_version)
             self._candidate_keys[identity] = value
             self._provisional.setdefault(key, []).append(value)
+            if already_published:
+                self._processed_candidate_keys.add(identity)
             return value
+
+    def daily_known_index(self, ticker, day, candidate=None):
+        import copy
+        key = (ticker.upper(), day.isoformat())
+        with self._lock:
+            if candidate is not None:
+                self._daily_indexes.setdefault(key, copy.deepcopy(candidate))
+            return copy.deepcopy(self._daily_indexes.get(key))
 
     def provisional_snapshot_version(self, ticker: str, trading_date: date) -> int:
         with self._lock:
@@ -665,6 +680,12 @@ class SQLitePersistentRuntimeV2Repository:
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_effects_running
                     ON runtime_v2_effects(effect_id) WHERE status='RUNNING';
 
+                CREATE TABLE IF NOT EXISTS runtime_v2_w1_daily_indexes (
+                    ticker TEXT NOT NULL,
+                    semantic_day TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    PRIMARY KEY(ticker,semantic_day)
+                );
                 CREATE TABLE IF NOT EXISTS runtime_v2_provisional_counters (
                     ticker TEXT NOT NULL,
                     trading_date TEXT NOT NULL,
@@ -1145,6 +1166,7 @@ class SQLitePersistentRuntimeV2Repository:
         published_max_event_numeric_id: int,
         case_id: str | None = None,
         originating_node: Literal["W1_R3", "W3"] | None = None,
+        already_published: bool = False,
     ) -> ProvisionalFactDetail:
         key = ticker.upper()
         day = trading_date.isoformat()
@@ -1200,7 +1222,7 @@ class SQLitePersistentRuntimeV2Repository:
                     (candidate_identity, provisional_event_id, ticker, trading_date,
                      source_message_id, candidate_index, runtime_signature, daily_status,
                      payload_json, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     identity,
@@ -1210,12 +1232,28 @@ class SQLitePersistentRuntimeV2Repository:
                     source_message_id,
                     candidate_index,
                     value.runtime_signature,
+                    "PROCESSED" if already_published else "PENDING",
                     self.content.encode(value.model_dump(mode="json")),
                     value.created_at.isoformat(),
                 ),
             )
             connection.commit()
             return value
+
+    @retry_sqlite_write
+    def daily_known_index(self, ticker, day, candidate=None):
+        # Compile and encode before the short insert-if-absent transaction.
+        payload = self.content.encode(candidate) if candidate is not None else None
+        with self._connect() as db:
+            db.row_factory = sqlite3.Row
+            if payload is not None:
+                db.execute("INSERT OR IGNORE INTO runtime_v2_w1_daily_indexes "
+                           "(ticker,semantic_day,payload_json) VALUES(?,?,?)",
+                           (ticker.upper(), day.isoformat(), payload))
+            row = db.execute("SELECT payload_json FROM runtime_v2_w1_daily_indexes "
+                             "WHERE ticker=? AND semantic_day=?",
+                             (ticker.upper(), day.isoformat())).fetchone()
+        return json.loads(self.content.text(row[0])) if row else None
 
     def provisional_snapshot_version(self, ticker: str, trading_date: date) -> int:
         with self._connect() as connection:

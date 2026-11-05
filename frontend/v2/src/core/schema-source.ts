@@ -1,4 +1,5 @@
 import type * as W from "@contract";
+export type WireOperationsOverview = W.Response<W.Resource<W.AgentOperationsPage>>;
 export type WireRevenueSnapshot = W.Response<W.RevenueSnapshot>;
 export type WireRevenueEvaluation = W.Response<W.RevenueEvaluation>;
 export type WireRevenueReport = W.Response<W.Resource<W.RevenueReport>>;

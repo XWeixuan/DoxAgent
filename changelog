@@ -2595,6 +2595,10 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-03 Reuters真实打码验收：a7dcec8b仅窄发布Site Access，Supervisor与Chrome/Profile保留；主原页完成RETRY→task84313566657→ready→作用域校验→原页CLEARED及CRAWLER业务证明，约34.7秒后再次拦截；备用task84313568401应用后仍受阻，不记成功。补充聚焦/按钮位回归断言29项通过，完整记录费用与持续稳定性未通过边界，见docs/reuters-retry-chain-repair-20261103.md。
 
+2026-11-03 RSS latency read-only audit: report Beijing 2026-11-02 source/article first discovery for all 30 identifiable active RSS sources with new retained records (634 messages; 464 exact comparable). Separate 252 realtime samples from 212 historical sweep samples; preserve merged/current-version exclusions and missing raw-capture coverage. Add reproducible export, frozen evidence, per-message CSV and Markdown report at docs/rss-source-publish-to-capture-latency-20261102.md. No production or product-code changes.
+
+2026-11-03 Yahoo时效只读排查：复核周一以来三渠道/Bus/Site记录，确认GraphQL及浏览器首发样本仍有10—20分钟延时；两篇现场坏例定位到所选列表返回候选前，另识别约17分钟共享HTTP故障。补充docs/yahoo-finance-latency-diagnosis-20261103.md及本地可复算证据，未修改生产实现或配置。
+
 2026-11-04 Reuters出口/Profile对照与搜索修复：三组正式Chrome短时对照均在正常搜索流程取得20/19/20条结果，确认旧逻辑将空query占位页误判零结果成功。新增正常表单查询/原生分页与query/offset绑定响应观察，直接解析浏览器实际搜索响应和发布时间，恢复验证拒绝空壳；采集排队3秒→20秒，活动备用不再误受冷启动5秒预算门槛。相关76项回归及第二页真实验证通过，保留原Profile和工作备用，详见docs/reuters-egress-profile-search-repair-20261104.md。
 
 2026-11-04 Reuters生产验收补齐：原生Ondas零结果响应省略articles，仅在query明确零结果及匹配原生响应时接受；Collector保留native published_time的EXACT精度，减少历史文章正文取时间压力。Owner已真实验收接回恢复的原主身份，保留备用及原访问速率；相关89项回归通过，首发残留的排队/切换延期与正文FULL证据分列记录。
@@ -2629,16 +2633,46 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-04 RSS入口与缓存复核：Aviation Week单一外部源改为五个真实taxonomy栏目、独立单元与跨栏目去重；Army/DCD及仍有13—16分钟缓存的Toms news恢复正常RSS。复核其余16源22入口，修复The Elec反向代理STALE及刷新参数丢失栏目，改为有筛选字段的轻量POST表单；统一检查200/304、分段Age/Date及显式STALE并保存物理请求缓存证据，CRN移除未证实必要的刷新参数并保留清缓存时效边界。257项相关回归、66项最终专项通过，详见docs/rss-http-cache-review-and-source-adjustment-20261104.md。
 
+2026-11-04 Agent只读MCP开发：新增四个stdio只读工具、跨页运营概览聚合、严格页面字段投影与Case分页/标题搜索/正文分块；复用现有API/指标/索引，增加可选内部只读凭证及Case正文关联校验，不新增业务库、索引或后台轮询。提供独立轻量镜像与Secure MCP Tunnel Compose部署包，保留既有用户认证；本地API/stdio/Linux镜像与前端验证通过，扩大回归的五项失败在改前HEAD复现。尚未部署生产或完成真实Tunnel/Dots联调，详见docs/agent-mcp-readonly-implementation-20261104.md。
+
+2026-11-04 RSS缓存复核生产交付：c7697c88已仅发布Collector/Bus，17 HTTP/3正常RSS、54订阅核对通过。225秒物理周期113成功/1失败/1在途，Workday一次12秒请求超时RSS保底后下一轮恢复，历史失败保留；Aviation五单元19/19、The Elec POST 4/4，末次API 54/54成功。运行版本/四文件哈希一致，无重启/OOM，未新增Chrome；CRN自然新稿清缓存时效仍待真实样本，证据与报告已归档。
+
 2026-11-04 Reuters人工验证时序：只读账本确认当前RETRY点击后约8秒已提交，主Provider无解、备应用后仍阻断；人工Verify新增15秒被动观察，维护库存区分Provider终态/重试限额和在途状态，保留业务证明与原页，不增强自动解码。71项相关回归、6项专项及Ruff检查通过。
+
+2026-11-04 — W1R2/W2R2 Sail Research FP4 DeepSeek 1017 high隔离评估：复用20例冻结集，30次正式调用，20/20与9/10首次可消费，明确银标15/15与8/9，费用$0.01964718；保留native Schema 400兼容探测及漏字段/错误HIT原始证据，附TPS、历史对照与离线复算脚本。未修改生产配置。报告：dev_plan/workflow_v2/deepseek_sail_fp4_high_r2_evaluation_20261104.md。
+
+2026-11-04 — Sail FP4 DS1017 low原生strict复测：仅wire Schema副本递归补全required，保持冻结业务输入/本地Schema；30/30首次可消费，无400/429，W1/W2明确银标14/15、8/9，费用$0.01487658；补充Sail high、Haiku high、百炼DS medium reasoning token及成本/TPS/逐例对照。W2 #14结构已完整但因果误HIT仍在，未改生产。报告：dev_plan/workflow_v2/deepseek_sail_fp4_low_strict_r2_evaluation_20261104.md。
 
 2026-11-05 — 对冲整数配仓修复：新接收组冻结 allocation_policy_version=2，统一固定±10个百分点，保留主仓理论上限、共享整组剩余预算；按实际成交计算对冲增量，已达范围即停止，修正分腿重复资金占用。新增无委托规划失败诊断和现有case详情展示；旧组沿用旧语义，终态失败不回放。补充独立穷举、部分成交/更正、重报价、双名额与终态回归；旧恢复测试修正断链故障注入，保留原失败状态。
 
 2026-11-05 — 对冲整数配仓远端交付：022d918c已发布Delivery/Executor及API/Projector/Web，五组件源文件与原服务覆盖配置核对通过；后端148通过加生产SDK适配器补测3通过，前端5项单测和双宽2项浏览器检查通过。新PAPER任务5张LMT、4笔成交，先主仓后对冲完成开平仓并券商回查归零；LIVE新增委托0、额度950美元不变，原INTC FAILED/CLOSED与0委托/0成交保留。报告docs/hedge-integer-allocation-implementation-acceptance-20261105.md。
 
+2026-11-06 O2 frontend visibility repair: restore reference_deliveries as a derived Serving projection input after payload slimming incorrectly skipped it. Deploy one-file Projector overlay, replay successful reference evidence into active read generation, preserve current runtime activations and source/candidate data. Add serving-capture/date/API regression and read-side replay/reconciliation scripts; production endpoint acceptance pending full replay. See docs/o2-reference-serving-application-20261106.md.
+
+2026-11-06 O2 frontend application accepted: 43 original backfill dates replayed into active production Serving, two transient lock errors recovered, another 61 missing successful days reconciled. Deployed API code plus real production read alias verify all 43 original date/detail paths and all 253 successful ticker/day date-list records. Zero unresolved replay errors; no source/candidate or activation-pointer rewrites. Proof: /data/runtime/o2-reference-serving-20261106/acceptance.verified.json.
+
+2026-11-06 Event Library精简前置勘察：核对生产scheduler九份关键源码和十ticker真实激活库，只读导出2558个Event/7931个Fact；逐条筛查全部title/date并深读MU/INTC/BE的15个Event共751条Fact。明确既有30天机制只维护Reference View、合并/无效退役需后继，不能抑制W1全索引增长；提供候选明细、Fact冗余/质量疑点、600→500及14天待定阈值建议与新节点编排边界。只读采集与统计脚本Ruff通过，三项既有机制定向测试通过；未开发/部署新精简节点，未清理生产数据。报告：docs/event-library-compaction-recon-20261106.md、docs/event-library-compaction-production-review-20261106.md。
+
+2026-11-06 — W3时间感知Harness开发：仅Trade Decision按Case真实起点累计Elapsed，在每次原生采样/流式恢复前按120/180/240秒渐进软提醒；保持请求追加前缀并过滤Operations、其他Turn及压缩输入，保留原业务提示词、交易合同、模型路由和硬超时。空元数据不序列化，旧job幂等哈希兼容；默认关闭，未部署。Python定向169项通过（1项改前失败独立复现），原生历史/时间机制及最终Linux release SDK与打包验证通过；四例真实配对方向一致但未证明整体提速。构建摘要、调试符号和证据已留存，详见docs/w3-time-awareness-harness-implementation-20261106.md。
+
+2026-11-06 W3回测复用时间感知Harness：保留既有--time-awareness入口，计时起点移至单Case研究准备及Fork前，继续复用生产Case KV与真实UTC，历史as_of不变；统一Fork/决策补丁二进制，开启时冻结路径与SHA256并明确缺失/Windows加载Linux产物错误，result.json记录起点。38项本地测试通过、1项已知旧二阶段失败排除，Ruff通过。未改业务Prompt/Rust补丁，未新增真实模型回测或部署。说明见docs/w3-backtest-time-awareness-adaptation-20261106.md。
+
 2026-11-06 — BE执行恢复修复：ENTRY放弃及最终发送守卫仅使用任务自身失败次数，账户累计故障仅控制共享冷却；修复490次历史故障误伤新意图。全量IBKR对账改为顺序完成open orders/executions/completed orders，缺少结束回调则断开旧连接后按原退避恢复，保留UNKNOWN与成交对账责任；增加sync_failure证据。Gateway历史日志确认后端重连initialLoad未完成后completed-orders pending持续至每日重启。157项相关回归通过，候选Live/Paper只读完整同步通过；旧BE/INTC保持终态。
 
 2026-11-06 — BE恢复修复交付：515d66ef已仅发布Executor，镜像4b87d1097974；157项回归零跳过，Live/Paper完整只读同步及PAPER ONDS一股买卖通过。Gateway历史日志确认13:15后端重连initialLoad挂起，完成订单pending至23:45自动重启；LIVE关闭连接时自动下载订单，保留显式串行对账。LIVE按授权仅一次BUY ONDS 1股LMT4.62，券商201要求Client Portal邮件token验证，最终Cancelled、0成交/0持仓，无重试/对冲/卖出；旧BE/INTC失败保持。报告docs/be-execution-recovery-fix-acceptance-20261106.md。
 
+2026-11-06 — W1R1独立Known Event Index实现Reference ACTIVE∪近14语义日首次入库∪近7语义日新增Fact内容筛选；新增ticker/day持久冻结及兼容Library版本/根路径，固定R1指令，重试说明移动态尾部。已结算provisional保持可见，Library直入事实经原provisional路径PROCESSED补入且不回流O2；192项核心回归通过，扩展219通过/5项基线既有失败。仅本轮补丁回写当前checkout，未发布。说明：docs/w1-daily-known-index-20261106.md。
+
+2026-11-06 — W1日冻结使用独立根路径/版本pin，Case全局Event Library及W3 Reference View保持当前激活引用，避免缓存优化回退下游研究视图；增加日内更新后Canonical详情仍读取冻结版本的回归。
+
+2026-11-06 W3时间感知自定义runtime打包纠正：全量回测工具轨迹揭示主二进制旁缺codex-code-mode-host，code-mode研究调用全部报错，原45条故障轮次已作废。为本地评测补入官方同版0.159.3 helper并记录摘要，真实补丁+真实code-mode+真实W3 MCP read+时间片段的本地模拟Responses预检通过（无真实模型调用）。构建定义改为同时产出两个二进制，manifest/构建封装检查helper摘要，Dockerfile.v2明确两者执行位；本轮未重编Rust、未部署生产。完整工具链下45条正式回测已重新启动。
+
+2026-11-06 W3 companion缺失防回归：显式开启回测时预检同目录code-mode host并冻结其摘要；新增真实原生custom exec回归。Python专项17项、原生专项3项通过，真实code-mode+W3 MCP哨兵读取预检通过。已作废仅有合法schema但研究工具失败的45条轮次，完整工具链run_verified重新执行全量；不据故障轮次推断提示词准确率或提速。详见docs/w3-runtime-code-mode-companion-repair-20261106.md。
+
 2026-11-06 — completed_orders复发修复：Gateway后端CCP重连后initialLoad全局pending会跨API客户端阻塞完成订单查询，串行化与API重连不足以清除。将当前挂单/成交/持仓/资金对账与完成订单历史状态分开，缺End明确history_complete=false/UNAVAILABLE，同socket保留单个pending请求等待迟到End，不重叠查询、不将缺失历史当空列表；核心对账缺End仍断线重试。保留未知提交、撤单终态及成交数量不符时的原阻塞，不重放旧BE/INTC。新增缺历史正常退出与UNKNOWN防重回归；恢复Gateway内部挂起后进行只读与严格一次LIVE ONDS 1股验收。
 
 2026-11-06 — completed_orders复发修复验收：de78ec13已发布，仅覆盖ibkr_session，生产三份执行源码摘要核对一致；Gateway自带05:55临时重启清除pending后恢复23:45，LIVE/PAPER完整只读同步通过。PAPER ONDS买1卖1后归零；本次新授权LIVE仅一次BUY ONDS 1，限价4.53、实成交4.50，permId1861419970，Filled，独立只读复核成交/费用/持仓/现金一致。保留1股人工验收持仓，无对冲/追加/卖出，无普通交易组自动退出；旧BE/INTC仍FAILED/CLOSED、0attempt。35项定向通过，扩展142通过/1项既有LEGACY旧错误文案断言失败，Ruff通过。报告docs/completed-orders-recurrence-fix-live-acceptance-20261106.md。
+
+2026-11-06 W3新版提示词+时间感知全量Luna/max回测完成：45/45有效交付；共同43条32→33正确，纠正2/回退1，5误交易5漏交易；全45条34正确。共同43条平均122.09→121.08s、p50 70.69→115.64s、p95 573.60→206.89s，长尾缩短但典型Case变慢；实际片段43/45，120档2条，无180/240档。故障工具链和系统Skill混入轮次全部作废不混用；原始结果保留，1条晚到审计仅分析补读。Python17、原生3及Ruff通过；未部署。报告eval/w3_backtest/runs/luna_full45_timeaware_20261106/comparison.md。
+
+2026-11-06 W3微调提示词全量Luna/max复测完成：45/45首次成功，冻结复用前轮数据/Gold/源码/SDK/运行时，仅换AGENTS和Skill。全45条中位115.64→116.04s、平均121.31→123.37s、P95 205.98→223.28s；共同43条中位110.37s仍高于最初70.69s。固定普通40条31条慢于最初，平均81.69→118.88s，故原分布问题仍在。Gold34→35正确，唯一变化MU-03-04 LONG→NO_TRADE；未改业务代码、未部署。报告eval/w3_backtest/runs/luna_full45_prompt_tuned_20261106/comparison.md。

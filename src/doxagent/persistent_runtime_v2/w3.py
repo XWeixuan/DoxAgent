@@ -465,11 +465,13 @@ class CodexW3AgentRunner:
         workspace_namespace: str = "persistent-runtime-w3",
         journal: Any = None,
         environment: W3ExecutionEnvironment | None = None,
+        time_awareness_enabled: bool = False,
     ) -> None:
         self._worker = worker
         self._case_repository = None
         self.environment = environment or W3ExecutionEnvironment()
         self._journal = journal
+        self._time_awareness_enabled = time_awareness_enabled
         self._workspace = workspace
         self._context = context_provider
         self._prompt_root = Path(prompt_root)
@@ -496,6 +498,13 @@ class CodexW3AgentRunner:
         self._asset_preparations = {}
         self._pending_v4 = {}
         self._pending_v4_lock = threading.Lock()
+
+    def begin_trade_timing(self, case_id):
+        from .w3_time_awareness import time_context
+
+        if self._time_awareness_enabled and self._journal is not None:
+            return time_context(self._journal, case_id, start=True)
+        return None
 
     def entry_enabled(self, case):
         return case.frozen_inputs.get("w3_contracts", {}).get(
@@ -897,6 +906,7 @@ class CodexW3AgentRunner:
             parse_w3_operations,
             parse_w3_trade_decision,
         )
+        from .w3_time_awareness import time_context
         from .worker_receipts import ReceiptWorker
 
         assets = case.frozen_inputs["w3_assets"]
@@ -1354,6 +1364,13 @@ class CodexW3AgentRunner:
                     output_schema=schema,
                     thread_id=record.get("thread_id"),
                     task_phase=phase,
+                    w3_time_awareness=(
+                        await read_io(
+                            time_context, self._journal, case.case_id
+                        )
+                        if phase == "trade_decision" and self._time_awareness_enabled
+                        else None
+                    ),
                     web_search_mode="disabled"
                     if phase == "w3_template"
                     else self.environment.web_search_mode,

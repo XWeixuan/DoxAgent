@@ -120,6 +120,7 @@ def execute_run(
     timeout_seconds=1800,
     model=None,
     effort=None,
+    time_awareness_enabled=False,
 ) -> dict:
     from .dataset import input_fingerprint, load_cases, read_json, write_json
     from .report import render_report
@@ -136,6 +137,13 @@ def execute_run(
         raise ValueError(f"unknown case keys: {sorted(set(keys) - available)}")
     selected = [c for c in cases if not keys or c["case_key"] in keys]
     curated = read_json(dataset / "manifest.json").get("schema_version") == "w3-backtest.dataset.v2"
+    if time_awareness_enabled and not curated:
+        raise ValueError("--time-awareness requires a curated decision-only dataset")
+    runtime_identity = None
+    if time_awareness_enabled:
+        from .runner import time_awareness_runtime
+
+        runtime_identity = time_awareness_runtime()
     prompts = Path(
         prompt_root
         or (dataset / "prompt_source" if curated else "prompts/persistent_runtime_v2/w3")
@@ -181,11 +189,16 @@ def execute_run(
         code_fingerprint=code_hash.hexdigest(),
         case_keys=[c["case_key"] for c in selected],
         model_profile=model_profile,
+        time_awareness_enabled=time_awareness_enabled,
+        **(dict(time_awareness_runtime=runtime_identity) if runtime_identity else {}),
     )
     marker = root / "run_manifest.json"
     if marker.exists():
         previous = read_json(marker)
-        if any(previous.get(k) != v for k, v in identity.items()):
+        if any(
+            previous.get(k, False if k == "time_awareness_enabled" else None) != v
+            for k, v in identity.items()
+        ):
             raise ValueError("Dataset inputs, prompts or code changed; use a new --run-id")
     else:
         write_json(
@@ -235,6 +248,7 @@ def execute_run(
             model=model,
             effort=effort,
             timeout_seconds=timeout_seconds,
+            time_awareness_enabled=time_awareness_enabled,
         )
         run_case = shared.run_case
     try:
@@ -332,6 +346,7 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--concurrency", type=int, default=4)
             command.add_argument("--prompt-root")
             command.add_argument("--timeout-seconds", type=int, default=1800)
+            command.add_argument("--time-awareness", action="store_true")
             command.add_argument("--model")
             command.add_argument("--effort", choices=("low", "medium", "high", "max"))
     for name in ("resume", "report"):
@@ -412,6 +427,7 @@ def main(argv=None):
             timeout_seconds=args.timeout_seconds,
             model=args.model,
             effort=args.effort,
+            time_awareness_enabled=args.time_awareness,
         )
     elif args.command == "resume":
         root = run_path(args.run_id)
@@ -425,6 +441,7 @@ def main(argv=None):
             timeout_seconds=manifest["timeout_seconds"],
             model=(manifest.get("model_profile") or {}).get("model"),
             effort=(manifest.get("model_profile") or {}).get("effort"),
+            time_awareness_enabled=manifest.get("time_awareness_enabled", False),
         )
     elif args.command == "report":
         from .report import render_report

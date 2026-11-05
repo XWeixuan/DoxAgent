@@ -1,7 +1,10 @@
 import asyncio
 import json
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime
 from types import SimpleNamespace
+
+import pytest
 
 from doxagent.w3_backtest.curated import parse_catalog
 from doxagent.w3_backtest.decision_runner import DecisionReplayRunner
@@ -68,16 +71,25 @@ def test_completed_prices_only():
     assert "gaps" not in json.dumps(view)
 
 
-def test_shared_mother_fresh_children_and_no_operations(tmp_path, monkeypatch):
+@pytest.mark.parametrize("time_awareness_enabled", [False, True])
+def test_shared_mother_fresh_children_and_no_operations(
+    tmp_path, monkeypatch, time_awareness_enabled
+):
+    from doxagent.persistent_runtime_v2.w3_time_awareness import time_context
     from doxagent.w3_backtest import decision_runner as module
+
+    origins = {}
+    before = datetime.now(UTC)
 
     class Worker:
         async def prepare_w3_research(self, ticker, components):
             assert set(components) == {"d1", "d2"}
+            assert bool(origins) is time_awareness_enabled
             return components
 
         async def bind_w3_context(self, case_id, phase, manifest):
             assert not ({"history", "state", "policy_usage"} & manifest.keys())
+            assert (case_id in origins) is time_awareness_enabled
             return dict(context_ref=case_id)
 
     class Agent:
@@ -85,7 +97,12 @@ def test_shared_mother_fresh_children_and_no_operations(tmp_path, monkeypatch):
         parents = []
 
         def __init__(self, **kwargs):
-            pass
+            self.journal = kwargs["journal"]
+            assert kwargs["time_awareness_enabled"] is time_awareness_enabled
+
+        def begin_trade_timing(self, case_id):
+            origins[case_id] = time_context(self.journal, case_id, start=True)
+            return origins[case_id]
 
         def _wait_v4(self, awaitable):
             return asyncio.run(awaitable)
@@ -95,9 +112,11 @@ def test_shared_mother_fresh_children_and_no_operations(tmp_path, monkeypatch):
             self.phases.append(phase)
             payload = kwargs["payload"]
             assert not (
-                {"gold", "tags", "deadline_at", "watch", "pins", "policies"} & payload.keys()
+                {"gold", "tags", "deadline_at", "watch", "pins", "policies",
+                 "started_at_utc", "time_awareness"} & payload.keys()
             )
             if phase == "w3_template":
+                assert not origins
                 assert payload == dict(template_format="w3-entry-v5")
                 return {"ready": True}, SimpleNamespace(job_id="mother", thread_id="mother")
             return dict(
@@ -154,7 +173,8 @@ def test_shared_mother_fresh_children_and_no_operations(tmp_path, monkeypatch):
     (research / "document1.md").write_text("d1")
     (research / "document2.json").write_text("{}")
     runner = DecisionReplayRunner(
-        dataset, root, prompt_root=prompts, worker_factory=lambda _: (Worker(), None)
+        dataset, root, prompt_root=prompts, worker_factory=lambda _: (Worker(), None),
+        time_awareness_enabled=time_awareness_enabled,
     )
     try:
         with ThreadPoolExecutor(2) as pool:
@@ -166,6 +186,17 @@ def test_shared_mother_fresh_children_and_no_operations(tmp_path, monkeypatch):
         assert len({r["thread_id"] for r in results}) == 2
         assert Agent.phases.count("w3_template") == 1 and Agent.phases.count("trade_decision") == 2
         assert Agent.parents == ["mother", "mother"]
+        if time_awareness_enabled:
+            assert len(origins) == 2
+            for r in results:
+                at = datetime.fromisoformat(r["time_awareness"]["started_at_utc"])
+                assert before <= at <= datetime.now(UTC)
+                assert r["cutoff_at"] == "2026-10-27T16:02:00+00:00"
+                assert time_context(runner.journal, r["replay_case_id"], start=True) == origins[
+                    r["replay_case_id"]
+                ]
+        else:
+            assert all("time_awareness" not in r for r in results)
         with runner.journal.transaction(write=False) as db:
             assert (
                 db.execute(

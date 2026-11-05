@@ -79,6 +79,8 @@ def create_app(
         os.environ.get("DOXAGENT_DASHBOARD_SUPABASE_URL", ""),
         os.environ.get("DOXAGENT_DASHBOARD_SUPABASE_PUBLISHABLE_KEY", ""),
     )
+    from .agent_read_auth import configured_auth, require_read_scope
+    auth = configured_auth(auth)
     # Fail at startup, never silently create empty source/read databases on a GET.
     with store.connect() as db:
         if db.execute("SELECT version FROM schema_meta").fetchone()[0] != ReadStore.VERSION:
@@ -208,6 +210,7 @@ def create_app(
                 if not header.startswith("Bearer "):
                     raise ApiFailure("UNAUTHORIZED", 401)
                 request.state.principal = await auth.authenticate(header[7:])
+                require_read_scope(request)
             runner = app.state.query_runner if request.method == "GET" else app.state.control_runner
             path = request.url.path
             if (runner is not None
@@ -486,6 +489,8 @@ def create_app(
     from .overview import install as install_overview
 
     install_overview(app)
+    from .agent_overview import install as install_agent_overview
+    install_agent_overview(app)
     from .trading_config import install as install_trading_config
     install_trading_config(app)
     from .downloads import install as install_downloads

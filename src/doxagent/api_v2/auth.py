@@ -24,9 +24,10 @@ class Principal:
     user_id: str
     tier: str
     expires_at: float
+    read_only: bool = False
 
     def wire(self) -> dict[str, Any]:
-        return {"user_id": self.user_id, "tier": self.tier, "can_read": True, "can_operate": True}
+        return {"user_id": self.user_id, "tier": self.tier, "can_read": True, "can_operate": not self.read_only}
 
 
 class SupabaseAuth:
