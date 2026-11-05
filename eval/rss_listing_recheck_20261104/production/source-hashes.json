@@ -1,0 +1,33 @@
+{
+  "commit": "c7697c88357261799994a7925561e9508c31c690",
+  "source_hashes": [
+    {
+      "component": "v2-message-collector",
+      "file": "src/doxagent/message_bus_v2/public_listing.py",
+      "expected": "c341b4ed8c4dd91a03d0da5ff2ffb6d2d7b5910f1958af4f08a1dedca2a1855a",
+      "actual": "c341b4ed8c4dd91a03d0da5ff2ffb6d2d7b5910f1958af4f08a1dedca2a1855a",
+      "matches": true
+    },
+    {
+      "component": "v2-message-collector",
+      "file": "src/doxagent/message_bus_v2/technology_sources.py",
+      "expected": "cbce46a9dfae0396eba415aa52b597fb3914736fb5056ba4f8b3f8c8dc67871f",
+      "actual": "cbce46a9dfae0396eba415aa52b597fb3914736fb5056ba4f8b3f8c8dc67871f",
+      "matches": true
+    },
+    {
+      "component": "v2-message-bus",
+      "file": "src/doxagent/message_bus_v2/public_listing.py",
+      "expected": "c341b4ed8c4dd91a03d0da5ff2ffb6d2d7b5910f1958af4f08a1dedca2a1855a",
+      "actual": "c341b4ed8c4dd91a03d0da5ff2ffb6d2d7b5910f1958af4f08a1dedca2a1855a",
+      "matches": true
+    },
+    {
+      "component": "v2-message-bus",
+      "file": "src/doxagent/message_bus_v2/technology_sources.py",
+      "expected": "cbce46a9dfae0396eba415aa52b597fb3914736fb5056ba4f8b3f8c8dc67871f",
+      "actual": "cbce46a9dfae0396eba415aa52b597fb3914736fb5056ba4f8b3f8c8dc67871f",
+      "matches": true
+    }
+  ]
+}

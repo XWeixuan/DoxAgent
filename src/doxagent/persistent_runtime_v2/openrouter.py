@@ -26,6 +26,32 @@ from .transport import (
 
 HAIKU_MODEL = "anthropic/claude-haiku-5.5"
 HAIKU_ENDPOINT = "google-vertex/global"
+SAIL_MODEL = "deepseek/deepseek-v4.1-flash-1017"
+SAIL_ENDPOINT = "sail-research/fp4"
+
+
+def _sail_required_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Tighten the wire copy only; local business fields/types remain unchanged."""
+    import copy
+
+    result = copy.deepcopy(schema)
+
+    def visit(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("properties"), dict):
+                value["required"] = list(value["properties"])
+            if value.get("format") == "date":
+                # Sail rejects format=date; local date parsing still checks the calendar.
+                value.pop("format")
+                value["pattern"] = r"^\d{4}-\d{2}-\d{2}$"
+            for item in value.values():
+                visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+
+    visit(result)
+    return result
 
 
 def _recall_system(request: RuntimeResponsesRequest[Any], *, contract_first: bool = False) -> str:
@@ -188,6 +214,14 @@ def build_case_schema_request(request: RuntimeResponsesRequest[Any]) -> tuple[di
     from .case_cache import VERSION as CACHE_VERSION, split_instructions
 
     schema = bailian_strict_wire_schema(request.output_model.model_json_schema())
+    sail = request.model == SAIL_MODEL and request.provider_endpoint == SAIL_ENDPOINT
+    if sail:
+        schema = _sail_required_schema(schema)
+        if request.schema_name == "w2_novel_fact_alignment_result":
+            # Router identities use escaped Policy/Condition refs, never bare C1.
+            schema["properties"]["condition_results"]["items"]["properties"][
+                "condition_ids"
+            ]["items"]["pattern"] = r"^[^/]+/[^/]+$"
     dynamic_instructions = ""
     shared_cache = request.metadata.get("case_cache_layout") == CACHE_VERSION
     system_request = request
@@ -198,7 +232,9 @@ def build_case_schema_request(request: RuntimeResponsesRequest[Any]) -> tuple[di
     fingerprint = sha256(system.encode()).hexdigest()
     blocks = [{"type": "text", "text": system,
                "cache_control": {"type": "ephemeral", "ttl": request.cache_ttl or "1h"}}]
-    messages: list[dict[str, Any]] = [{"role": "system", "content": blocks}]
+    # Sail caches identical token prefixes implicitly. Keep only fixed instructions
+    # before parent/Case/mode/repair data; Anthropic's explicit 1h path is unchanged.
+    messages: list[dict[str, Any]] = [{"role": "system", "content": system if sail else blocks}]
     if request.replay_parent:
         messages.extend([
             {"role": "user", "content": request.replay_parent[0]},
@@ -295,6 +331,23 @@ class RuntimeRecallOpenRouterClient:
             for key, config in settings["rounds"].items()
             if key in {"W1:R1", "W2:R1"} and config.get("provider") == "openrouter"
         }
+        from .case_output_contract import VERSION
+        from .case_cache import VERSION as CACHE_VERSION
+
+        case_fallback = {
+            key: dict(
+                model=HAIKU_MODEL, provider="openrouter",
+                provider_endpoint=HAIKU_ENDPOINT, reasoning_effort="high",
+                transport="chat_completions_json_schema", timeout_seconds=300,
+                cache_ttl="1h", output_contract=VERSION, case_cache_layout=CACHE_VERSION,
+            )
+            for key, config in settings["rounds"].items()
+            if key in {"W1:R2", "W1:R3", "W2:R2", "W2:R3"}
+            and config.get("model") == SAIL_MODEL
+            and config.get("provider_endpoint") == SAIL_ENDPOINT
+        }
+        if case_fallback:
+            settings["case_fallback"] = case_fallback
         return settings
 
     @staticmethod

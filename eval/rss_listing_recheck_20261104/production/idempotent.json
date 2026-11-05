@@ -1,0 +1,102 @@
+[
+  {
+    "source_id": "data_center_frontier",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "dod_contracts",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "nsf_news",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "army_news_rss",
+    "action": "unchanged",
+    "version": 3
+  },
+  {
+    "source_id": "world_nuclear_news",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "canary_media",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "technews_hardware",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "crn_cloud_security_datacenter",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "dod_releases",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "aviationweek_rss",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "utility_dive",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "etnews_rss",
+    "action": "unchanged",
+    "version": 3
+  },
+  {
+    "source_id": "quantum_zeitgeist",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "huggingnews_rss",
+    "action": "unchanged",
+    "version": 4
+  },
+  {
+    "source_id": "quantum_computing_report",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "tomshardware_rss",
+    "action": "unchanged",
+    "version": 4
+  },
+  {
+    "source_id": "dcd_infrastructure_rss",
+    "action": "unchanged",
+    "version": 3
+  },
+  {
+    "source_id": "thelec_semiconductors_rss",
+    "action": "unchanged",
+    "version": 3
+  },
+  {
+    "source_id": "defensescoop_drones",
+    "action": "unchanged",
+    "version": 2
+  },
+  {
+    "source_id": "enterprise_apps_official_rss",
+    "action": "unchanged",
+    "version": 2
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "api_projection": {
+    "bindings": 54,
+    "statuses": {
+      "succeeded": 53,
+      "failed": 1
+    },
+    "failures": [
+      {
+        "source_id": "enterprise_apps_official_rss",
+        "ticker": "SNOW",
+        "collection_active": true,
+        "collection_observed_at": "2026-11-03T22:17:28.840641+00:00",
+        "status": "failed",
+        "last_capture_at": "2026-11-03T22:15:41.548783+00:00",
+        "last_success_at": "2026-11-03T22:15:41.575124+00:00",
+        "last_dispatch_at": "2026-11-03T22:17:19.814332+00:00",
+        "last_latency_ms": 4368,
+        "last_error_code": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+        "last_error_message": "TimeoutError:",
+        "target_due_at": "2026-11-03T22:17:39.736240+00:00",
+        "next_dispatch_at": "2026-11-03T22:17:39.736240+00:00",
+        "last_window_coverage": "PARTIAL",
+        "checkpoint": {
+          "ir_endpoints": []
+        }
+      }
+    ]
+  },
+  "selected_oci_image": "sha256:084340718b26781513f7dd81c7891f13288afd4a77aff3a190e7016ba9bc880e",
+  "resolved_image_id": "sha256:084340718b26781513f7dd81c7891f13288afd4a77aff3a190e7016ba9bc880e",
+  "release_timer": "active"
+}

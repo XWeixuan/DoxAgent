@@ -1,0 +1,24 @@
+CHECK config_source            PASS profile: doxagent-readonly
+CHECK profile_load             PASS /home/mcp/.config/tunnel-client/doxagent-readonly.yaml
+CHECK tunnel_id                PASS tunnel_6aecfaf096dc8191a80d1e676208456b
+CHECK control_plane_api_key    PASS env:CONTROL_PLANE_API_KEY
+CHECK tunnels_management_url   PASS https://platform.openai.com/settings/organization/tunnels
+CHECK runtime_api_keys_url     PASS https://platform.openai.com/settings/organization/api-keys
+CHECK admin_api_keys_url       PASS https://platform.openai.com/settings/organization/admin-keys
+CHECK chatgpt_connector_settings_url PASS https://chatgpt.com/#settings/Connectors
+CHECK mcp_target               PASS /app/mcp-server.sh
+CHECK mcp_command_executable   PASS /app/mcp-server.sh
+CHECK mcp_server_reachable     SKIP stdio targets are not probed over the network
+CHECK oauth_metadata           SKIP stdio targets do not expose OAuth metadata URLs
+CHECK health_listener          PASS will bind http://127.0.0.1:8080
+CHECK ui                       PASS http://127.0.0.1:8080/ui
+CHECK codex_plugin             SKIP Codex not detected locally
+
+RESULT ok
+NEXT   tunnel-client run --profile doxagent-readonly
+
+CHECK mcp_server_reachable   SKIP
+
+CHECK oauth_metadata   SKIP
+
+CHECK codex_plugin   SKIP

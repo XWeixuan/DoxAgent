@@ -2633,6 +2633,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-04 RSS入口与缓存复核：Aviation Week单一外部源改为五个真实taxonomy栏目、独立单元与跨栏目去重；Army/DCD及仍有13—16分钟缓存的Toms news恢复正常RSS。复核其余16源22入口，修复The Elec反向代理STALE及刷新参数丢失栏目，改为有筛选字段的轻量POST表单；统一检查200/304、分段Age/Date及显式STALE并保存物理请求缓存证据，CRN移除未证实必要的刷新参数并保留清缓存时效边界。257项相关回归、66项最终专项通过，详见docs/rss-http-cache-review-and-source-adjustment-20261104.md。
 
+
 2026-11-04 Agent只读MCP开发：新增四个stdio只读工具、跨页运营概览聚合、严格页面字段投影与Case分页/标题搜索/正文分块；复用现有API/指标/索引，增加可选内部只读凭证及Case正文关联校验，不新增业务库、索引或后台轮询。提供独立轻量镜像与Secure MCP Tunnel Compose部署包，保留既有用户认证；本地API/stdio/Linux镜像与前端验证通过，扩大回归的五项失败在改前HEAD复现。尚未部署生产或完成真实Tunnel/Dots联调，详见docs/agent-mcp-readonly-implementation-20261104.md。
 
 2026-11-04 RSS缓存复核生产交付：c7697c88已仅发布Collector/Bus，17 HTTP/3正常RSS、54订阅核对通过。225秒物理周期113成功/1失败/1在途，Workday一次12秒请求超时RSS保底后下一轮恢复，历史失败保留；Aviation五单元19/19、The Elec POST 4/4，末次API 54/54成功。运行版本/四文件哈希一致，无重启/OOM，未新增Chrome；CRN自然新稿清缓存时效仍待真实样本，证据与报告已归档。
@@ -2676,3 +2677,12 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-06 W3新版提示词+时间感知全量Luna/max回测完成：45/45有效交付；共同43条32→33正确，纠正2/回退1，5误交易5漏交易；全45条34正确。共同43条平均122.09→121.08s、p50 70.69→115.64s、p95 573.60→206.89s，长尾缩短但典型Case变慢；实际片段43/45，120档2条，无180/240档。故障工具链和系统Skill混入轮次全部作废不混用；原始结果保留，1条晚到审计仅分析补读。Python17、原生3及Ruff通过；未部署。报告eval/w3_backtest/runs/luna_full45_timeaware_20261106/comparison.md。
 
 2026-11-06 W3微调提示词全量Luna/max复测完成：45/45首次成功，冻结复用前轮数据/Gold/源码/SDK/运行时，仅换AGENTS和Skill。全45条中位115.64→116.04s、平均121.31→123.37s、P95 205.98→223.28s；共同43条中位110.37s仍高于最初70.69s。固定普通40条31条慢于最初，平均81.69→118.88s，故原分布问题仍在。Gold34→35正确，唯一变化MU-03-04 LONG→NO_TRADE；未改业务代码、未部署。报告eval/w3_backtest/runs/luna_full45_prompt_tuned_20261106/comparison.md。
+
+2026-11-04 Message Bus by_distribution: close the decision-model window 10 minutes after first discovery; expired regex misses terminate with DECISION_MODEL_EXPIRED and cannot be reopened by model recovery, rechecks or restarts. Check before dispatch and on model completion, retain timely valid cached decisions and normal regex publication. Reuse existing discovery anchors/due_at/status writes; no schema, new queries, timers or historical backfill.
+2026-11-04 Reuters人工验证发布验收：main/2bd65222仅窄发布Site Access，三模块哈希匹配，Supervisor及Chrome实例保留；备用原页被动观察15秒仍为真实阻断且终态提示正确。主身份既有流程短恢复后19:00:59再次触发，不能报告稳定恢复；未新增主动打码测试。
+2026-11-04 — W1R2/W1R3/W2R2/W2R3新增openrouter_sail_high配置：Sail FP4 DS1017 high为主，wire strict Schema递归补required、固定前缀隐式缓存；冻结原Haiku high/Vertex Global/1h缓存为备，复用持久化逐attempt回执与中断恢复，保留R3父轮和旧Case/R1行为。189项回归通过；发布验收见docs/sail-case-rounds-release-20261104.md。
+2026-11-04 — Sail W1R3 wire日期约束适配为年月日正则，保留本地日期校验；增加非法日历日期回归，共190项通过。发布前继续真实验证。
+2026-11-04 — 真实W2R3探测发现Sail输出裸C1而非Policy/Condition；Sail wire副本补充复合身份格式正则，匹配Router既有合同，不改本地Schema或业务规则。
+2026-11-04 — Sail四节点主备发布完成：API/Scheduler重建重启、哈希/profile/激活包核验；真实生产W1R2已用Sail high成功并命中2560缓存token，四轮隔离调用均有成功与缓存证据、Haiku备用真实可用。191项回归通过。保留最初400/429/裸C1失败及77/239秒长尾证据，不将补测成功冒充首次通过；详见docs/sail-case-rounds-release-20261104.md。
+2026-11-06 Agent只读MCP生产发布：功能5a816432同步origin/main并仅更新API、增加Secure MCP Tunnel独立容器；官方二进制哈希、doctor、ready/health及连续poll通过，真实生产概览10 ticker和Case列表/标题搜索/详情/正文按需读取通过，写入/研究越界403。最新main专项23及前端69通过，其余20个容器未替换；ChatGPT工作区已关联，受浏览器自动化URL识别限制，插件安装与Dots实际调用待用户侧验收；运行key缺少Responses写权限，保持现有权限。见docs/agent-mcp-production-acceptance-20261106.md。
+

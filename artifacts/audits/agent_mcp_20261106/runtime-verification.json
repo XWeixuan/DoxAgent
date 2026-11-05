@@ -1,0 +1,57 @@
+{
+  "health": {
+    "healthz": {
+      "status": 200,
+      "body": "live"
+    },
+    "readyz": {
+      "status": 200,
+      "body": "ready"
+    }
+  },
+  "stats": {
+    "BlockIO": "2.5MB / 0B",
+    "CPUPerc": "0.03%",
+    "Container": "doxagent-v2-v2-agent-mcp-tunnel-1",
+    "ID": "4318507fd79f",
+    "MemPerc": "17.22%",
+    "MemUsage": "66.13MiB / 384MiB",
+    "Name": "doxagent-v2-v2-agent-mcp-tunnel-1",
+    "NetIO": "554kB / 31.8kB",
+    "PIDs": "12"
+  },
+  "restart_count": 0,
+  "oom_killed": false,
+  "ports": {},
+  "mount_destinations": [
+    "/home/mcp",
+    "/run/secrets/agent_read_token",
+    "/run/secrets/agent_tunnel_key"
+  ],
+  "unchanged_components": {
+    "/doxagent-v2-v2-executor-1": true,
+    "/doxagent-v2-v2-projector-1": true,
+    "/doxagent-v2-v2-delivery-1": true,
+    "/doxagent-v2-v2-web-1": true,
+    "/doxagent-v2-v2-scheduler-1": true,
+    "/doxagent-v2-v2-site-access-1": true,
+    "/doxagent-v2-v2-message-bus-1": true,
+    "/doxagent-v2-v2-message-collector-1": true,
+    "/doxagent-v2-v2-content-enrichment-1": true,
+    "/doxagent-v2-initialization-guardian-1": true,
+    "/doxagent-v2-v2-transport-maintenance-1": true,
+    "/doxagent-v2-v2-cdecr-executor-1": true,
+    "/doxagent-v2-v2-initialization-1": true,
+    "/doxagent-v2-v2-maintenance-1": true,
+    "/doxagent-v2-v2-o4-1": true,
+    "/doxagent-v2-codex-worker-1": true,
+    "/doxagent-v2-v2-control-1": true,
+    "/doxagent-v2-v2-chrome-supervisor-1": true,
+    "/doxagent-captcha-proxy": true,
+    "/doxagent-egress-clash": true
+  },
+  "other_components_unchanged": true,
+  "api_health": "healthy",
+  "api_image": "sha256:712187bbf10fdc093eabc698e05708c30bf42eba89df40afe4dc10ece3f3f091",
+  "mcp_image": "sha256:52f88941c355f2d816e7886c7758e1e666bd94ca65e4011be078f7200da4877b"
+}
