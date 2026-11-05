@@ -1,0 +1,20 @@
+{
+  "code_commit": "515d66ef",
+  "running_image": "sha256:4b87d1097974dd051546933844bcd59867a936bfb5fd48701ef13ed6f2f89293",
+  "tests_passed": 157,
+  "tests_skipped": 0,
+  "paper_orders": 2,
+  "paper_fills": 2,
+  "paper_final_onds_quantity": "0",
+  "live_test_orders": 1,
+  "live_test_fills": 0,
+  "live_test_final_status": "Cancelled",
+  "live_test_reject_code": 201,
+  "live_test_order_ref": "DA-ACCEPT-ONDS1-LIVE-BUY-20261106",
+  "live_test_limit": "4.62",
+  "live_onds_quantity": "0",
+  "needs_user_action": "Client Portal email-token verification; a new order requires separate authorization",
+  "old_failed_cases_preserved": true,
+  "last_readonly_verified_at": "2026-11-05T20:55:38.020098+00:00",
+  "automatic_hedge_or_exit_created": false
+}

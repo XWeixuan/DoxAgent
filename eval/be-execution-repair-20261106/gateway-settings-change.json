@@ -1,0 +1,8 @@
+{
+  "environment": "LIVE",
+  "socket_port": 4001,
+  "read_only_api": false,
+  "download_open_orders_on_connection_before": true,
+  "download_open_orders_on_connection_after": false,
+  "verification": "Observed checkbox before/after Apply in Gateway configuration; screenshots retained privately"
+}
