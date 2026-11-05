@@ -210,10 +210,10 @@ class Executor:
         current = repo.require("jobs", job["id"])
         if current["leg"] != "ENTRY" or current["state"] in {"DONE", "FAILED"}:
             return False
+        # Account failures drive shared cooldown, never a new job's lifetime budget.
         failures = max(
             current.get("entry_failures", 0),
             current.get("failures", 0),
-            self.recovery.state(current["account"]).get("failures", 0),
         )
         stale = entry_queue_expired(
             repo.require("executions", current["execution_id"]), self.journal.clock()

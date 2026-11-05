@@ -3,7 +3,6 @@ import asyncio
 import pytest
 
 from doxagent.trade_execution.executor import ENTRY_ABANDONED, Executor
-from doxagent.trade_execution.worker import maintain_connections
 from tests.test_trade_execution import admit, run_job
 from tests.test_trade_execution import setup as _setup_fixture
 
@@ -44,36 +43,64 @@ def test_third_connection_failure_permanently_abandons_entry(setup):
     assert repo.require("executions", "trade:A")["entry_reason"] == ENTRY_ABANDONED
 
 
-def test_shared_connection_failures_stop_not_due_entries_without_api_burst(setup, monkeypatch):
+def test_account_maintenance_failures_do_not_charge_waiting_entries(setup, monkeypatch):
     clock, repo, revision, executor, broker = setup
     intent = admit(repo, revision)
     repo.admit({**intent, "intent_id": "trade:B", "ticker": "BE"})
-    repo.update_job(repo.require("jobs", "trade:B:entry"), delay=3600)
     monkeypatch.setattr(
         "doxagent.trade_execution.worker.active_profile_revisions", lambda _: [revision]
     )
-    calls = []
-
-    def down():
-        calls.append(1)
-        raise ConnectionError("IBKR_HANDSHAKE_TIMEOUT")
-
-    broker.connect = down
-    for delay in [2, 5, 10]:
-        maintain_connections(executor)
-        # Maintenance defers to account recovery after the first failure.
-        if len(calls) < 3 and executor.recovery.delay("DU_TEST") == 0:
-            asyncio.run(executor.step("trade:A:entry"))
-        clock.advance(delay)
-    # Complete the third actual probe if maintenance merely observed the cooldown.
-    while len(calls) < 3:
-        asyncio.run(executor.step("trade:A:entry"))
+    broker.connect = lambda: (_ for _ in ()).throw(ConnectionError("IBKR_HANDSHAKE_TIMEOUT"))
+    for _ in range(3):
+        # Actual maintenance probes, not failures of either ENTRY task.
+        executor.recovery.fail("DU_TEST", ConnectionError("IBKR_HANDSHAKE_TIMEOUT"))
         clock.advance(executor.recovery.delay("DU_TEST"))
-    assert len(calls) == 3
+    executor.enforce_entry_failure_limits()
     for identity in ["trade:A", "trade:B"]:
-        assert repo.require("executions", identity)["entry_result"] == "FAILED"
-        assert repo.require("jobs", identity + ":entry")["entry_abandoned_at"]
+        assert repo.require("executions", identity)["entry_result"] is None
+        assert repo.require("jobs", identity + ":entry").get("entry_failures", 0) == 0
     assert not broker.sent
+
+
+@pytest.mark.parametrize("historical", [3, 490])
+def test_new_entry_does_not_inherit_account_history_at_step_or_send(setup, historical):
+    from datetime import timedelta
+
+    clock, repo, revision, executor, broker = setup
+    executor.recovery.fail("DU_TEST", ConnectionError("old outage"))
+    value = {
+        "failures": historical,
+        "error": "old outage",
+        "retry_at": (clock() + timedelta(seconds=60)).isoformat(),
+    }
+    executor.recovery.states["DU_TEST"] = value
+    repo.journal.set("execution_recovery", "DU_TEST", value)
+    admit(repo, revision)
+    asyncio.run(executor.step("trade:A:entry"))
+    job = repo.require("jobs", "trade:A:entry")
+    assert job["state"] == "READY" and job.get("entry_failures", 0) == 0
+    assert broker.connect_calls == 0 and not broker.sent
+    clock.advance(60)
+    asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
+    assert repo.require("executions", "trade:A")["entry_result"] == "FILLED"
+    assert len(broker.sent) == 1
+
+
+def test_account_cooldown_race_blocks_send_without_spending_entry_budget(setup, monkeypatch):
+    clock, repo, revision, executor, broker = setup
+    admit(repo, revision)
+    original = repo.mark_submitting
+
+    def raced(attempt, **kwargs):
+        executor.recovery.fail("DU_TEST", ConnectionError("new account failure"))
+        return original(attempt, **kwargs)
+
+    monkeypatch.setattr(repo, "mark_submitting", raced)
+    asyncio.run(executor.step("trade:A:entry"))
+    assert not broker.sent
+    assert repo.attempts("trade:A:entry")[0]["state"] == "NOT_SENT"
+    job = repo.require("jobs", "trade:A:entry")
+    assert job.get("entry_failures", 0) == 0 and not job.get("entry_abandoned_at")
 
 
 def test_cooldown_polls_do_not_consume_three_failures(setup):

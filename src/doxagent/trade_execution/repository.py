@@ -836,10 +836,13 @@ class ExecutionRepository:
                     "WHERE namespace='execution_recovery' AND key=?",
                     (job["account"],),
                 ).fetchone()
-                account_failures = json.loads(recovery[0]).get("failures", 0) if recovery else 0
+                recovery_state = json.loads(recovery[0]) if recovery else {}
+                retry_at = recovery_state.get("retry_at")
+                if retry_at and datetime.fromisoformat(retry_at) > self.journal.clock():
+                    return None  # A new account failure raced the pre-submit checks.
                 if (
                     job.get("entry_abandoned_at")
-                    or max(job.get("entry_failures", 0), job.get("failures", 0), account_failures)
+                    or max(job.get("entry_failures", 0), job.get("failures", 0))
                     >= ENTRY_FAILURE_LIMIT
                 ):
                     return None

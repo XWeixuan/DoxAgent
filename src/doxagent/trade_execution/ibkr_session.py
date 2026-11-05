@@ -337,8 +337,8 @@ class IbkrSession:
             self.requests.pop(request, None)
 
     def positions_snapshot(self) -> dict[str, Any]:
-        self.connect()
         with self.sync_lock:
+            self.connect()
             self.position_event.clear()
             self.positions = {}
             self.app.reqPositions()
@@ -354,82 +354,99 @@ class IbkrSession:
                 self.app.cancelPositions()
 
     def sync(self) -> dict[str, Any]:
-        self.connect()
         with self.sync_lock:
-            started = time.monotonic()
-            stages = {}
-
-            def wait_end(event, stage, code):
-                before = time.monotonic()
-                if not event.wait(self.profile.strategy.request_timeout_seconds):
-                    raise TimeoutError(
-                        f"{code}: stage={stage} generation={self.connection_generation} "
-                        f"elapsed={time.monotonic() - started:.3f}s"
-                    )
-                stages[stage] = round(time.monotonic() - before, 3)
-
-            self.open_event.clear()
-            self.completed_event.clear()
-            self.position_event.clear()
-            self.app.reqOpenOrders()
-            self.app.reqCompletedOrders(True)
-            from ibapi.execution import ExecutionFilter  # type: ignore[import-untyped]
-
-            request = self._request()
-            filt = ExecutionFilter()
-            filt.acctCode = self.profile.expected_account_id
-            self.app.reqExecutions(request, filt)
+            self.connect()
             try:
-                before = time.monotonic()
-                try:
-                    self._wait(request)
-                except TimeoutError as exc:
-                    raise TimeoutError(
-                        "IBKR_REQUEST_TIMEOUT: stage=executions "
-                        f"generation={self.connection_generation}"
-                    ) from exc
-                stages["executions"] = round(time.monotonic() - before, 3)
-                wait_end(self.open_event, "open_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
-                wait_end(self.completed_event, "completed_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
-                self.positions = {}
-                self.app.reqPositions()
-                wait_end(self.position_event, "positions", "BROKER_POSITION_SYNC_INCOMPLETE")
-                self.app.cancelPositions()
-                self.account_event.clear()
-                self.account_values = {}
-                self.portfolio = {}
-                self.app.reqAccountUpdates(True, self.profile.expected_account_id)
-                try:
-                    wait_end(self.account_event, "account", "BROKER_ACCOUNT_SYNC_INCOMPLETE")
-                finally:
-                    self.app.reqAccountUpdates(False, self.profile.expected_account_id)
-                if self.want_settled_cash:
-                    if time.monotonic() - self.cash_checked_at >= 10:
-                        try:
-                            self.cash_value = self.settled_cash()
-                            self.cash_error = None
-                        except (ValueError, RuntimeError, TimeoutError) as exc:
-                            self.cash_value = None
-                            self.cash_error = str(exc)
-                        self.cash_checked_at = time.monotonic()
-                    if self.cash_value:
-                        self.account_values["SettledCash"] = self.cash_value
-                    else:
-                        self.account_values["SettledCashError"] = self.cash_error
-                self.last_sync = time.monotonic()
-                return {
-                    "complete": True,
-                    "positions": dict(self.positions),
-                    "account_values": dict(self.account_values),
-                    "portfolio": list(self.portfolio.values()),
-                    "at": datetime.now(UTC).isoformat(),
-                    "history_scope": "BROKER_SESSION_WINDOW",
-                    "connection_generation": self.connection_generation,
-                    "stage_seconds": stages,
-                    "informational_counts": dict(self.informational_counts),
-                }
+                return self._sync_snapshot()
+            except TimeoutError as exc:
+                # These responses have no request ID. Reusing this socket after
+                # timeout can overlap requests or accept an old End as a new one.
+                self._emit(
+                    "sync_failure",
+                    {
+                        "error": str(exc),
+                        "generation": self.connection_generation,
+                        "action": "DISCONNECT_BEFORE_RETRY",
+                    },
+                )
+                self.close()
+                raise
+
+    def _sync_snapshot(self) -> dict[str, Any]:
+        started = time.monotonic()
+        stages = {}
+
+        def wait_end(event, stage, code):
+            before = time.monotonic()
+            if not event.wait(self.profile.strategy.request_timeout_seconds):
+                raise TimeoutError(
+                    f"{code}: stage={stage} generation={self.connection_generation} "
+                    f"elapsed={time.monotonic() - started:.3f}s"
+                )
+            stages[stage] = round(time.monotonic() - before, 3)
+
+        self.open_event.clear()
+        self.completed_event.clear()
+        self.position_event.clear()
+        self.app.reqOpenOrders()
+        wait_end(self.open_event, "open_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
+        from ibapi.execution import ExecutionFilter  # type: ignore[import-untyped]
+
+        request = self._request()
+        filt = ExecutionFilter()
+        filt.acctCode = self.profile.expected_account_id
+        self.app.reqExecutions(request, filt)
+        try:
+            before = time.monotonic()
+            try:
+                self._wait(request)
+            except TimeoutError as exc:
+                raise TimeoutError(
+                    "IBKR_REQUEST_TIMEOUT: stage=executions "
+                    f"generation={self.connection_generation}"
+                ) from exc
+            stages["executions"] = round(time.monotonic() - before, 3)
+            self.app.reqCompletedOrders(True)
+            wait_end(self.completed_event, "completed_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
+            self.positions = {}
+            self.app.reqPositions()
+            wait_end(self.position_event, "positions", "BROKER_POSITION_SYNC_INCOMPLETE")
+            self.app.cancelPositions()
+            self.account_event.clear()
+            self.account_values = {}
+            self.portfolio = {}
+            self.app.reqAccountUpdates(True, self.profile.expected_account_id)
+            try:
+                wait_end(self.account_event, "account", "BROKER_ACCOUNT_SYNC_INCOMPLETE")
             finally:
-                self.requests.pop(request, None)
+                self.app.reqAccountUpdates(False, self.profile.expected_account_id)
+            if self.want_settled_cash:
+                if time.monotonic() - self.cash_checked_at >= 10:
+                    try:
+                        self.cash_value = self.settled_cash()
+                        self.cash_error = None
+                    except (ValueError, RuntimeError, TimeoutError) as exc:
+                        self.cash_value = None
+                        self.cash_error = str(exc)
+                    self.cash_checked_at = time.monotonic()
+                if self.cash_value:
+                    self.account_values["SettledCash"] = self.cash_value
+                else:
+                    self.account_values["SettledCashError"] = self.cash_error
+            self.last_sync = time.monotonic()
+            return {
+                "complete": True,
+                "positions": dict(self.positions),
+                "account_values": dict(self.account_values),
+                "portfolio": list(self.portfolio.values()),
+                "at": datetime.now(UTC).isoformat(),
+                "history_scope": "BROKER_SESSION_WINDOW",
+                "connection_generation": self.connection_generation,
+                "stage_seconds": stages,
+                "informational_counts": dict(self.informational_counts),
+            }
+        finally:
+            self.requests.pop(request, None)
 
     def settled_cash(self):
         self.connect()
@@ -575,6 +592,14 @@ class IbkrSession:
 
             def connectionClosed(self) -> Any:
                 session.healthy = False
+                session._emit(
+                    "connection",
+                    {
+                        "status": "DISCONNECTED",
+                        "client_id": session.profile.client_id,
+                        "generation": session.connection_generation,
+                    },
+                )
 
             def error(
                 self,

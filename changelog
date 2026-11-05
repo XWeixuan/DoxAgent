@@ -2634,3 +2634,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-05 — 对冲整数配仓修复：新接收组冻结 allocation_policy_version=2，统一固定±10个百分点，保留主仓理论上限、共享整组剩余预算；按实际成交计算对冲增量，已达范围即停止，修正分腿重复资金占用。新增无委托规划失败诊断和现有case详情展示；旧组沿用旧语义，终态失败不回放。补充独立穷举、部分成交/更正、重报价、双名额与终态回归；旧恢复测试修正断链故障注入，保留原失败状态。
 
 2026-11-05 — 对冲整数配仓远端交付：022d918c已发布Delivery/Executor及API/Projector/Web，五组件源文件与原服务覆盖配置核对通过；后端148通过加生产SDK适配器补测3通过，前端5项单测和双宽2项浏览器检查通过。新PAPER任务5张LMT、4笔成交，先主仓后对冲完成开平仓并券商回查归零；LIVE新增委托0、额度950美元不变，原INTC FAILED/CLOSED与0委托/0成交保留。报告docs/hedge-integer-allocation-implementation-acceptance-20261105.md。
+
+2026-11-06 — BE执行恢复修复：ENTRY放弃及最终发送守卫仅使用任务自身失败次数，账户累计故障仅控制共享冷却；修复490次历史故障误伤新意图。全量IBKR对账改为顺序完成open orders/executions/completed orders，缺少结束回调则断开旧连接后按原退避恢复，保留UNKNOWN与成交对账责任；增加sync_failure证据。Gateway历史日志确认后端重连initialLoad未完成后completed-orders pending持续至每日重启。157项相关回归通过，候选Live/Paper只读完整同步通过；旧BE/INTC保持终态。
