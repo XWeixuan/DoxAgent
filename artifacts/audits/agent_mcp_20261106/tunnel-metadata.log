@@ -1,0 +1,13 @@
+{
+  "id": "tunnel_6aecfaf096dc8191a80d1e676208456b",
+  "name": "doxagent",
+  "description": "doxagent MCP used by dots",
+  "creator": "user-YAGvV2dsjbeqk1xap4ga3ajF",
+  "workspace_ids": [
+    "d21cbb07-93f1-4a00-9ea4-54eb4e42c696"
+  ],
+  "organization_ids": [
+    "org-BBlVfjWjoyNRGZRBNWyLGrdN"
+  ],
+  "request_id": "req_48947c1547ff41209ab0f3c22923cc77"
+}

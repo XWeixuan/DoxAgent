@@ -1,6 +1,6 @@
 # Agent 只读 MCP：实现与部署手册
 
-状态：本地开发与验证。没有部署到腾讯云、创建真实 Tunnel、调用生产业务 API 或操作交易。方案依据：[开发方案](../dev_plan/agent_mcp_readonly_plan_20261104.md)。分支为 `codex/agent-readonly-mcp`，开发基线 `e5df0ae1`；原有 changelog 内容保留。
+本文记录 2026-11-04 的本地开发与验证，当时未部署。2026-11-06 已完成生产 API/Tunnel 部署与真实数据验证，ChatGPT/Dots 调用仍待验收，详见[生产接入记录](agent-mcp-production-acceptance-20261106.md)。方案依据：[开发方案](../dev_plan/agent_mcp_readonly_plan_20261104.md)。原开发分支为 `codex/agent-readonly-mcp`，开发基线 `e5df0ae1`。
 
 ## 已实现
 
