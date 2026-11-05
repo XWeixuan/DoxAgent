@@ -1,0 +1,99 @@
+{
+  "as_of": "2026-10-01T18:38:23Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Intel Q2 2026 Form 10-Q",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "publisher": "Intel / SEC",
+      "published_at": "2026-07-24",
+      "role": "Intel 产品收入、供需和价格基线"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Intel Reports Second-Quarter 2026 Financial Results",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000155/q226earningsrelease.htm",
+      "publisher": "Intel / SEC",
+      "published_at": "2026-07-23",
+      "role": "公司结果及计划"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Desktop CPU shipments crater 20% amid high component costs",
+      "url": "https://www.tomshardware.com/pc-components/cpus/desktop-cpu-shipments-crater-20-percent-amid-high-component-costs-but-amd-gains-record-share-despite-ugly-desktop-processor-market-intel-floods-laptop-market-with-millions-of-cpus-but-amd-still-sets-all-time-share-records",
+      "publisher": "Tom's Hardware / Mercury Research",
+      "published_at": "2026-08-22",
+      "role": "CPU 量与份额基线"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Intel CEO Flags AI Supply Squeeze: Memory Prices Up 5–7x, Its CPUs Meet Just 50% of Demand",
+      "url": "https://www.trendforce.com/news/2026/09/16/news-intel-ceo-flags-ai-supply-squeeze-memory-prices-up-5-7x-its-cpus-meet-just-50-of-demand/",
+      "publisher": "TrendForce News",
+      "published_at": "2026-09-16",
+      "role": "此前 CEO 表态与供应约束"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Intel CEO/CFO Fourth Quarter 2025 Earnings Call Comments",
+      "url": "https://download.intel.com/newsroom/2026/earnings/Intel-4Q2025-Earnings-Call.pdf",
+      "publisher": "Intel",
+      "published_at": "2026-01-22",
+      "role": "此前内存短缺与产品分配"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Snapdragon X2 Elite Performance: 18 Cores in the Premium 14-Inch Class",
+      "url": "https://signal65.com/wp-content/uploads/2026/09/Signal65-Lab-Insight_Snapdragon-X2-Elite-18-Core.pdf",
+      "publisher": "Signal65",
+      "published_at": "2026-10-01",
+      "role": "本次测试原始报告"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "The Snapdragon X2 Elite Extreme beats Intel's flagship Panther Lake",
+      "url": "https://www.windowscentral.com/hardware/qualcomm/snapdragon-x2-elite-extreme-intel-amd-tests-signal65",
+      "publisher": "Windows Central",
+      "published_at": "2026-08-18",
+      "role": "此前同机构旗舰机测试"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Intel Panther Lake Core Ultra review",
+      "url": "https://arstechnica.com/gadgets/2026/02/intel-panther-lake-core-ultra-review-intels-best-laptop-cpu-in-a-very-long-time/",
+      "publisher": "Ars Technica",
+      "published_at": "2026-02-02",
+      "role": "独立产品评测基线"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Apple M5 vs. Intel Panther Lake vs. Snapdragon X2",
+      "url": "https://www.tomsguide.com/computing/apple-m5-vs-intel-vs-amd-vs-snapdragon-x2-which-chip-wins",
+      "publisher": "Tom's Guide",
+      "published_at": "2026-03-13",
+      "role": "独立多平台实测"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "PC Market Enters Volatile Territory as Memory Shortage Persists Through 2027",
+      "url": "https://www.idc.com/resource-center/blog/pc-market-enters-volatile-territory-as-memory-shortage-persists-through-2027/",
+      "publisher": "IDC",
+      "published_at": "2026-06-02",
+      "role": "PC 终端需求对照"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-10-01T18:38:23Z"
+  }
+}

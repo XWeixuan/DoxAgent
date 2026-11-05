@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "MU-01-01",
+  "ticker": "MU",
+  "original_case_id": "case_5a7956936b8745c7b1c49d3d8abaec16",
+  "research_key": "314f1c409595e1fa6efe",
+  "as_of": "2026-09-22T09:00:04Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Samsung Reportedly Ramps 4nm Capacity For Memory Chips, Stepping Up Competition With SK Hynix, Micron",
+    "body": "Samsung has allocated more than half of its existing 4nm capacity to HBM4 base-die production, according to South Korean outlet MoneyTodayThe company’s HBM revenue share climbed to 33% in Q2 from 21% in Q1, narrowing the gap with SK Hynix.Rising AI infrastructure spending could leave the HBM market undersupplied next year, creating room for Samsung to gain further share.Samsung Electronics is preparing to expand its advanced foundry capacity as surging demand for next-generation memory chips pushes its 4-nanometer production lines toward full utilization, according to South Korean business outlet MoneyToday. The move could intensify competition with SK Hynix and Micron as the three memory giants battle for share of the booming AI-chip market.  On Stocktwits, the retail sentiment for MU and SKHY was ‘neutral’ as of early Tuesday.Samsung Expands Memory CapacitySamsung is considering expanding its 4nm foundry capacity to support production of HBM4 base dies, the logic layer that sits underneath the DRAM stack and connects the memory to AI accelerators, according to the report.Unlike SK Hynix, which uses TSMC’s 12nm process for its HBM4 base die, Samsung is manufacturing the component in-house using its 4nm process.Samsung has already allocated more than half of its current 4nm capacity to HBM4 base-die production, according to MoneyToday. Demand is also coming from other customers, including Nvidia’s Groq 3 LPU, prompting Samsung to raise prices for new 4nm orders.  HBM Race Gets More CompetitiveThe capacity push comes as Samsung accelerates its HBM4 ramp. The company expects HBM4 revenue to more than triple sequentially in the third quarter and for HBM4 to account for more than 60% of its total HBM revenue in the second half.Samsung’s gains are already reshaping the competitive landscape. Counterpoint data showed Samsung’s HBM revenue share rose to 33% in the second quarter from 21% in the first, while SK hynix held 50% and Micron 18%.  The company is also considering a new 2nm production line for HBM5, whose base die is expected to use a 2nm process. That could further strengthen Samsung’s vertically integrated approach, combining memory, logic manufacturing and advanced packaging.Pressure On SK Hynix, MicronFor SK Hynix and Micron, Samsung’s faster HBM4 ramp creates another competitive challenge just as AI infrastructure spending drives unprecedented demand for high-bandwidth memory.TrendForce reported in June that Samsung was the first supplier to complete HBM4 validation and begin shipments, while SK hynix faced qualification delays and Micron remained more focused on HBM3E.  Citi expects global HBM bit demand to rise 62% next year, potentially leaving the industry undersupplied. That means Samsung’s capacity expansion could allow it to capture a larger slice of a rapidly growing market. For updates and corrections, email newsroom[at]stocktwits[dot]com.",
+    "url": "https://stocktwits.com/news-articles/markets/equity/samsung-reportedly-ramps-4nm-capacity-for-memory-chips-stepping-up-competition-with-sk-hynix-micron/cZMP1yjRBeg",
+    "publisher": "yahoo_finance_news",
+    "published_at": "2026-09-22T09:00:04Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "Samsung's specific allocation of >50% of 4nm capacity to HBM4 base-die production, and the Q2 HBM revenue share update (Samsung 33% vs 21% in Q1; SK Hynix 50%; Micron 18%) are new facts. Existing E6 only covers Q1 HBM shares (F210: Samsung 21%, F211: SK Hynix 58%), and E11 F278 only notes a general tilt toward HBM without specifying 4nm base-die allocation.",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息描述Samsung HBM4产能扩张和份额提升（Q2达33%），并提及Micron HBM市场份额18%及仍聚焦HBM3E。但三个Condition均要求Micron内部CMBU+CDBU占比或高价值bit出货/ASP在连续两个报告窗口中相对FY26 Q3基线下降，且增量由消费/传统产品承担，或Micron正式披露资格/封装/交付瓶颈。消息未提供Micron任何内部组合份额趋势、ASP数据、消费产品占比变化或自身瓶颈归因，也未满足'两个连续窗口'条件。竞争压力描述不等于Micron高价值组合指标实际转弱的披露。"
+  }
+}

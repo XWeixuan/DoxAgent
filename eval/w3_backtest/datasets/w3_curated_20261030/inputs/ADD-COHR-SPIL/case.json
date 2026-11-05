@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-COHR-SPIL",
+  "ticker": "COHR",
+  "original_case_id": "case_4586c36f021f45feb5f44213fb201ea6",
+  "research_key": "87e959d70c1dd33a49d2",
+  "as_of": "2026-10-21T10:33:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "NVIDIA and Supply Chain Partners Expand Capacity to Accelerate AI Infrastructure Buildout",
+    "body": "News Summary:\n\nSubstrate agreements with IBIDEN, Samsung Electro-Mechanics and Unimicron Technology Corporation will, in aggregate, drive a 2.5x increase in capacity over the next three years.\n\nAmkor plans to increase its advanced packaging capacity by more than 300% by the end of 2028.\n\nKYEC will build new facilities in the U.S., supported by a $1.1 billion capacity reservation advance from NVIDIA.\n\nSPIL is targeting to increase its optical-engine capacity for co-packaged optics by 15x by mid-2027, with aims for another doubling by the end of 2028.\n\nGTC Berlin—NVIDIA today announced plans with a group of supply chain partners to expand global manufacturing capacity to meet growing demand for its accelerated computing and full-stack AI factory platform.\n\nWorking with Amkor Technology, IBIDEN, King Yuan Electronics (KYEC), Samsung Electro-Mechanics, Siliconware Precision Industries (SPIL) and Unimicron Technology Corporation, NVIDIA is enabling new and existing suppliers to expand critical manufacturing capabilities across substrates, advanced packaging, testing and optical engines, strengthening the resiliency and redundancy of NVIDIA’s global supply chain.\n\n“We are in the midst of the largest infrastructure buildout in human history. Demand is extraordinary. Capacity is the constraint,” said Jensen Huang, founder and CEO of NVIDIA. “Our supply chain partners are the world’s best manufacturers. I’m grateful they are expanding capacity around the globe to scale production and help us deliver the AI supercomputing systems powering this new industrial revolution.”\n\nExpanding Substrate Capacity to Support Volume Growth\nNVIDIA plans to increase substrate capacity for its products by 2.5x over the next three years. The agreements below will contribute to this capacity expansion, with more underway.\n\nUnder an agreement signed and announced earlier this year by IBIDEN, NVIDIA is providing a multibillion-dollar capacity reservation advance to support IBIDEN’s Ono Plant in Japan. The expansion targets capacity reaching 3x current levels at the plant, with additional capacity expected to begin ramping in the first quarter of 2028.\n\nSamsung Electro-Mechanics is joining NVIDIA’s substrate supply chain, bringing immediate capacity from its existing operations in South Korea. The collaboration also supports facility upgrades and new factories in Sejong and Busan, South Korea. By 2028, production allocated to NVIDIA is projected to account for a significant portion of Samsung Electro-Mechanics’ total annual package substrate production capacity.\n\nNVIDIA is supporting Unimicron’s KF substrate manufacturing expansion in Taiwan with a capacity reservation agreement. The expansion is expected to begin adding capacity in the second quarter of 2027 and reach full capacity by mid-2028.\n\nScaling Advanced Packaging for Next-Generation Platforms \nNVIDIA and Amkor plan to expand advanced packaging capacity in South Korea, targeting a greater than 300% increase in interposer wafer capacity by the end of 2028. The planned capacity expansion, alongside Amkor’s development of new manufacturing facilities in South Korea, will support higher production volumes for NVIDIA’s current and next-generation platforms.\n\nExpanding Semiconductor Testing and Strengthening US Manufacturing \nNVIDIA expects its total semiconductor testing capacity to double from calendar 2026 to 2027, supported by buildouts in the U.S., Taiwan and Singapore.\n\nNVIDIA’s $1.1 billion capacity reservation advance to KYEC will support new U.S. testing facilities and equipment, with high-volume production targeted for April 2027.\n\nIn Singapore, expanded testing operations are expected to begin high-volume production in February 2027.\n\nCreating the Infrastructure for Co-Packaged Optics \nNVIDIA and SPIL plan to expand manufacturing capacity in Taiwan for optical engines used in co-packaged optics, supporting the growing connectivity requirements of large-scale computing infrastructure. The expansion targets an increase of 15x by mid-2027, with aims for another doubling by the end of 2028.",
+    "url": "https://nvidianews.nvidia.com/news/nvidia-and-supply-chain-partners-expand-capacity-to-accelerate-ai-infrastructure-buildout",
+    "publisher": "newswire_rss",
+    "published_at": "2026-10-21T10:33:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息核心事实为NVIDIA在GTC Berlin宣布与IBIDEN、三星电机、欣兴电子、Amkor、KYEC、SPIL的具体产能扩张协议（基板2.5x、封装>300%、KYEC获11亿美元预付、SPIL光学引擎15x等）。已加载的E30描述PCB上游材料短缺趋势，E31描述CCL/铜箔/PCB钻针供应商启动3-4年扩产计划，均属不同供应链环节和不同主体，未覆盖NVIDIA本次具体合作方、金额、倍数及时间表等核心事实。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息为NVIDIA整体供应链产能扩张公告（衬底、封装、测试、光引擎），其中SPIL面向CPO的光引擎产能15x目标属下游装配制造产能规划。Policy match_scope明确将'晶圆产能目标'及'制造工艺与许可状态'排除出Coherent产品催化范围，且C1/C2均要求Coherent合格光源向特定客户批次的实际交付/中断传导，本消息未涉及任何Coherent光源供给状态或具体批次变化。"
+  }
+}

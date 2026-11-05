@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "INTC-01-01",
+  "ticker": "INTC",
+  "original_case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+  "research_key": "fb4cd0c4d069b62c9aab",
+  "as_of": "2026-09-22T15:22:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Can Intel's Core Ultra Expansion With Googlebook Benefit the Stock?",
+    "body": "Intel Corporation INTC has extended its Core Ultra platform to new Googlebook laptops from Alphabet Inc. GOOGL powered by Intel Core Ultra Series 3 processors. Developed with Google, the new laptops are being brought to market by PC makers Acer, ASUS and Lenovo, combining Intel processing and connectivity technologies with Google's computing experience.Intel's latest processors deliver responsive performance and power efficiency for modern computing. Built on its advanced 18A process technology, the Core Ultra Series 3 integrates CPU, GPU and NPU architectures to support demanding workloads and artificial intelligence (AI)-enabled experiences. The platform is designed to help users multitask across applications while maintaining efficient power consumption for longer battery life.The company also brings enhanced connectivity features to the new Googlebook laptops, including Intel Wi-Fi 7, Dual Intel Bluetooth 6.0 and Intel Thunderbolt. These technologies deliver fast and reliable connections across different environments while supporting seamless device experiences.Building on more than a decade of collaboration between Intel and Google, the launch introduces premium laptops with modern designs, vibrant displays and next-generation features. The initiative supports Intel's efforts to deliver high-performance, efficient and AI-capable technologies across a broader range of devices.\n\nHow Are Competitors Performing in the PC Market?\n\nIntel faces competition from Qualcomm Incorporated QCOM and Advanced Micro Devices AMD. Qualcomm is strengthening its presence in the PC market with its Snapdragon X2 processors, which offer AI capabilities, performance and power efficiency. The company launched the Snapdragon C platform for affordable laptops targeting students, families and small businesses. Qualcomm is further expanding its PC portfolio through laptops from major PC manufacturers such as ASUS, HP, Lenovo and Acer.AMD is advancing in the PC market with Ryzen AI processors, which combine strong computing performance with built-in AI capabilities. The company offers Ryzen AI chips across consumer and business PCs, including laptops, desktops and workstations. AMD is working with major PC manufacturers to expand the availability of its Ryzen-powered AI PCs.\n\nINTC's Price Performance, Valuation & Estimates\n\nShares of Intel have skyrocketed 323.4% over the past year compared with the industry's growth of 31.7%.\n\nImage Source: Zacks Investment Research\n\nGoing by the price/book ratio, the company's shares currently trade at 5.96 times book value, lower than the industry average of 23.92.\n\nINTC's earnings estimates for 2026 have increased 27.1% to $1.50 per share, while those for 2027 have increased 18.8% to $1.96 over the past 60 days.\n\nIntel currently carries a Zacks Rank #3 (Hold). You can see the complete list of today's Zacks #1 Rank (Strong Buy) stocks here.\n\nWant the latest recommendations from Zacks Investment Research? Today, you can download 7 Best Stocks for the Next 30 Days. Click to get this free report\n\nIntel Corporation (INTC) : Free Stock Analysis Report\n\nQUALCOMM Incorporated (QCOM) : Free Stock Analysis Report\n\nAdvanced Micro Devices, Inc. (AMD) : Free Stock Analysis Report\n\nAlphabet Inc. (GOOGL) : Free Stock Analysis Report\n\nThis article originally published on Zacks Investment Research (zacks.com).\n\nZacks Investment Research",
+    "url": "https://finance.yahoo.com/markets/stocks/articles/intels-core-ultra-expansion-googlebook-152200497.html",
+    "publisher": "yahoo_finance_news",
+    "published_at": "2026-09-22T15:22:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "E80 only records a PLANNED state that Googlebook laptops 'will use Intel or Qualcomm processors.' The current message is Intel's own ACTUAL announcement that Core Ultra Series 3 (18A process) specifically powers new Googlebook laptops, with confirmed partners Acer, ASUS, Lenovo. The transition from planned/generic processor attribution to Intel's confirmed, specific product launch is a new core fact not covered by existing facts.",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "当前消息为Intel Core Ultra Series 3在Googlebook新形态上的产品发布/上市公告，涉及Acer、ASUS、Lenovo三家OEM将搭载18A工艺的Core Ultra Series 3笔记本推向市场。该消息未包含任何政策criterion所要求的具体触发事实：无确认的终端销售数据及据此产生的补单（pol_849bf577d74f6b102e74），无供给约束缓解或单位出货数据（pol_00aedd21578697ff89d7），无库存、延期、取消或削减信息，也非边缘AI/机器人客户量产设计承诺。消息仅为产品市场导入公告，与任何Policy的触发条件不存在具体、实质性的事实对应关系。"
+  }
+}

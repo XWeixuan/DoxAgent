@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-AMZN-Q3-2026",
+  "ticker": "COHR",
+  "original_case_id": "case_c74cdf48b5454e00b821c446d692d5e0",
+  "research_key": "87e959d70c1dd33a49d2",
+  "as_of": "2026-10-29T20:39:24.650000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Amazon Shares Drop as Huge AI Spending and Ad Revenue Miss Weigh on Q3 Results",
+    "body": "← Back to live feed · 1 stories across 1 day\nThursday, Oct 29, 2026\n1 story1 Amazon Shares Drop as Huge AI Spending and Ad Revenue Miss Weigh on Q3 Results\n AI Oct 29, 4:06 PM EDT 78/40 \n Amazon Shares Drop as Huge AI Spending and Ad Revenue Miss Weigh on Q3 Results\nAmazon shares slumped as much as 13% in extended trading after the company reported a third-quarter revenue miss and a projection for fourth-quarter profit that trailed analyst estimates. The company's advertising division brought in $19.6B, missing the $20.87B expected, while total net sales reached $201.9B against a $202.3B estimate. The decline was driven by a surge in capital expenditures for artificial intelligence infrastructure, which totaled $77.3B for the quarter—nearly $20B above forecasts—resulting in a trailing twelve-month free cash flow of negative $42.4B.\nThe losses in market value followed a report otherwise marked by efficiency and cloud strength, including a record operating margin of 13.9% and Amazon Web Services revenue growth of 39% to $46B. AWS currently operates at an annualized run rate of $184B, with Chief Executive Officer Andy Jassy forecasting growth rates above 40% for both 2027 and 2028. To sustain this expansion, the company maintained its cash capital expenditure forecast of approximately $220B for 2026, while Jassy suggested that the company's long-term trajectory could lead to multiple businesses generating $1 trillion in annual revenue within the next decade.",
+    "url": "https://huggingnews.com/earnings/amazon-shares-drop-as-huge-ai-spending-and-ad-revenue-miss-weigh-on-q3-r-84d9b3cf",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-10-29T20:39:24.650000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前未加载任何 Canonical 或 provisional facts，消息中亚马逊 Q3 收入与广告收入不及预期、AI 资本开支激增、股价下跌及 AWS 增长等核心事实均未被现有现实覆盖。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息陈述的是亚马逊Q3收入、广告收入未达预期、AI资本开支及AWS增长等财务事实，未出现落入任一match_scope的具体光学、数据中心网络采购、供应商定点或代理服务付费变化的事实；泛AI资本开支和云增长不足以召回。"
+  }
+}

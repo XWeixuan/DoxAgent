@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "BE-03-01",
+  "ticker": "BE",
+  "original_case_id": "case_b9c894cab25d44f9a460b3728e910d48",
+  "research_key": "befb2a7f17f0e2999874",
+  "as_of": "2026-09-29T14:56:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Why Bloom Energy and AI Stocks Rise Even as OpenAI Safety Concerns Persist -- Barrons.com",
+    "body": "By Callum Keown and Kit Norton The stock market doesn't like to dwell on artificial-intelligence safety fears too long. That's a good thing. After OpenAI's decision to pause the training of its latest AI models sparked a sharp selloff Monday, investors might've expected the worst Tuesday after it scrapped the launch of one altogether. But investors would've been wrong, and pleasantly so with several AI-related stocks booking substantial advances. Bloom Energy, the supplier of power solutions for data centers, rose 14% to $300.13 and was one of the best-performing stocks in the S&P 500 for the trading session. That's quite the reversal in fortunes after Bloom Energy fell nearly 9% and was the S&P 500's worst performer on Monday. One of the reasons for the sharp jump in the stock was that Fremont, Calif., home to Bloom Energy's current manufacturing site, said on LinkedIn that the company has purchased a 158,000-square-foot facility to expand its operations. Morgan Stanley analyst David Arcaro said in a research note it's an indication of \"continued strong demand\" for Bloom Energy. \"Bloom has been very thoughtful about its intention to expand capacity, only committing to do so when demand requires it. We think the purchase of a new facility would represent another signal that the company is seeing strong customer demand and the need to accelerate its expansion plans,\" Arcaro said. The analyst also noted that Ameren Corp., through its regulated electric utility in Missouri, late Monday recommended adding 500 megawatts of natural gas fuel cells through 2030. \"We would expect this to be an opportunity for Bloom, notably fairly near-term and within the baseline recommendation from AEE,\" Arcaro said. Along with Bloom Energy stock, AI infrastructure provider Vertiv Holdings and memory chip maker Micron rose 3.5% and 2.5%, respectively. The tech-heavy Nasdaq Composite was up 0.2%, outperforming S&P 500 and Dow Jones Industrial Average. There isn't much room for nuance when it comes to knee-jerk stock market reactions. Both OpenAI developments are giving off the same signal-a threat to the assumption that the AI boom will continue to grow at a rapid pace. The necessary damage was done Monday in response to that signal. There's also a buzz ahead of OpenAI's developer conference later on Tuesday. A flurry of announcements could boost AI-related stocks. The 2026 DevDay will kick off with a keynote by CEO Sam Altman at 1 p.m. Eastern time. It's also worth noting that the ChatGPT maker said it has other new models coming soon that do meet the safety bar. \"For anything regarding safety and alignment, there's a trade off. You really do need to find what's the right line between staying within scope, but also avoiding laziness in terms of how the model actually pursues tasks even when it hits friction,\" OpenAI's head of safety systems Saachi Jain said in an emailed statement to Barron's. She added that the GPT-6.1 Astra model \"didn't quite meet the bar\" in terms of staying within scope and authorization and how it communicates back to the user. Write to Callum Keown at callum.keown@dowjones.com and Kit Norton at kit.norton@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires September 29, 2026 10:56 ET (14:56 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research.",
+    "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+    "publisher": "ibkr_news",
+    "published_at": "2026-09-29T14:56:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息存在两个未被覆盖的核心新事实：(1) Bloom Energy 实际购买了 Fremont 158,000平方英尺工厂——E21 仅记录了2026-09-09的扩展产能\"计划\"(PLAN)，不含具体地产采购这一已执行动作(ACTUAL)；(2) Ameren 通过其密苏里受监管电力公司建议到2030年增加500MW天然气燃料电池——现有 Event 中无任何覆盖。股价从盘前约2%到全天涨14%属市场反应幅度变化，不构成独立核心新闻事实。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息核心事实为：(1) Bloom Energy股价因OpenAI相关事件后反弹14%；(2) Fremont市LinkedIn宣布Bloom购入158,000平方英尺设施用于扩建；(3) Morgan Stanley分析师将其解读为需求强劲信号；(4) Ameren建议2030年前增加500MW天然气燃料电池。所有事实均处于扩产投资/备货准备阶段，未披露任何设施级合格units/MW产出、两个可比周期的run-rate、生产计划达成或可供出货状态，也未陈述合格释放量低于计划或人员缺口导致错过窗口。三个Candidate Policy的trigger_boundary均未达到，全部NO HIT。"
+  }
+}

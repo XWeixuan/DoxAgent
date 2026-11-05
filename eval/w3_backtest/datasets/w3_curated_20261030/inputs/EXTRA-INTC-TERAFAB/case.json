@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "EXTRA-INTC-TERAFAB",
+  "ticker": "INTC",
+  "original_case_id": "case_9dd6c3ac9c8a4796adae3f93d31d93a1",
+  "research_key": "fb4cd0c4d069b62c9aab",
+  "as_of": "2026-10-07T07:42:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "INTC Stock Jumps Overnight: CEO Says Intel Will Keep Working With Musk's Terafab Amid TSMC Partnership Buzz - Stocktwits",
+    "body": "Lip-Bu Tan said Intel will continue working with Musk’s Terafab project.Musk said TSMC could potentially sublease part of the facility, but Intel will remain involved.Intel’s foundry business is showing signs of recovery, with revenue growth and new external customers.Intel Corp. (INTC) shares jumped about 2.5% in overnight trading heading into Wednesday after CEO Lip-Bu Tan said the chipmaker will continue working with Elon Musk’s Terafab, easing concerns that Taiwan Semiconductor Manufacturing Co. (TSM) could displace Intel in the ambitious chipmaking project.Intel will remain involved in Terafab, Tan told Bloomberg. His comments come after Musk said earlier this week that he was in discussions with TSMC over a potential collaboration around Terafab, weighing on investor sentiment toward Intel.Musk Clarifies TSMC’s Potential Terafab RoleMusk sought to put those concerns to rest Wednesday, writing on X: “No, we will build and run the fab. Let there be ZERO doubt about that.” He added that TSMC could potentially sublease part of the Terafab facility if it wanted, “but nothing more than that.”The comments followed Musk’s post earlier this week saying he was in discussions with TSMC. “Just discussions, but something may come of it,” Musk had said in response to a report about a potential partnership.INTC stock fell 2.6% Monday and another 3.2% Tuesday as investors assessed what a TSMC role could mean for Intel’s position in the project.Intel Remains Terafab Development PartnerIntel signed on as Terafab’s development partner in April, making the chipmaker a key part of Musk’s ambitious semiconductor manufacturing facility. The project, which is under development, involves building and operating a large-scale semiconductor manufacturing facility for chips needed across Musk’s companies and their AI ambitions.Tan’s comments suggest Intel’s involvement in Terafab remains intact despite TSMC’s potential participation, while Musk has added a new dimension by saying TSMC could potentially sublease part of the facility even as he weighs ​partners for the venture.Intel Revives Fab BusinessIntel’s foundry business has shown signs of recovery, with Foundry revenue rising 16% year over year to $5.4 billion in the first quarter and 31% to $5.8 billion in Q2, while its operating loss narrowed to $2.1 billion in the latest quarter.  Intel has also been adding external customers and partnerships, including Amazon Web Services and Apple, while working with potential customers to qualify its next-generation 14A process. Retail View On INTCOn Stocktwits, retail sentiment for INTC remained ‘bearish’ for a second day on Wednesday, even as traders posted upbeat commentary after Tan’s comments.“$INTC loaded up in the last hour yesterday. Let’s hope the trend continues upward,” said a trader. INTC stock is up 205% year to date.For updates and corrections, email newsroom[at]stocktwits[dot]com.",
+    "url": "https://stocktwits.com/news-articles/markets/equity/intc-stock-jumps-overnight-ceo-says-intel-will-keep-working-with-musk-s-terafab-amid-tsmc-partnership-buzz/cZDv2eMRBmE",
+    "publisher": "google_news_search_rss",
+    "published_at": "2026-10-07T07:42:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "Intel继续参与Terafab的核心事实已被F1291和E348覆盖，但Musk明确表态'TSMC可sublease部分设施但nothing more than that'以及'we will build and run the fab'是E304中F1245（仅确认在讨论TSMC合作）所不具备的新核心事实，定义了TSMC潜在角色的具体边界。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息描述的Foundry收入增长（Q1 $5.4B、Q2 $5.8B）及经营亏损$2.1B均为参考期（Q2 2026）本身的数据，而非Condition C1所要求的\"后续季度\"表现。消息未提供Q2之后任何季度的报告收入、外部客户收入（是否≤2.93亿）或利用率改善的确认信息，因此不满足\"后续季度报告收入上升+外部收入未改善+亏损未改善/利用率未改善\"的完整触发条件。"
+  }
+}

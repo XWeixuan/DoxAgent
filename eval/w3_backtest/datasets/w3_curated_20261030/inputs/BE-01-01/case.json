@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "BE-01-01",
+  "ticker": "BE",
+  "original_case_id": "case_d352e02e723b459486242d142db27af3",
+  "research_key": "befb2a7f17f0e2999874",
+  "as_of": "2026-09-24T14:30:24Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "ORCL Stock Slides To Early August Levels – $165B New Mexico Project In Focus After Company Reportedly Cites ‘Force Majeure’",
+    "body": "According to a Bloomberg report, Oracle is seeking to defer certain payments if the New Mexico AI data center misses its planned 2028 launch.",
+    "url": "https://stocktwits.com/news-articles/markets/equity/orcl-stock-slides-165-b-new-mexico-project-cites-force-majeure/cZMJ5bARB91",
+    "publisher": "yahoo_finance_news",
+    "published_at": "2026-09-24T14:30:24Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息的核心事实是：据报道 Oracle 以 force majeure 为由寻求推迟付款，条件是 New Mexico AI 数据中心未能按计划于 2028 年投产。已加载事实仅覆盖 Oracle-Bloom 合作关系建立(F2)、New Mexico 部署进行中(F46)、1.2 GW 容量签约部署(F47)，均未涉及付款推迟、force majeure 引用或2028投产节点相关的合同争议。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "本轮未提供包含具体事实陈述的 source_message，仅注入了 Policy 精简信息。没有可评估的现实观察事实，无法与任何 criterion 建立具体触发关系，因此不召回任何 Candidate Policy。"
+  }
+}

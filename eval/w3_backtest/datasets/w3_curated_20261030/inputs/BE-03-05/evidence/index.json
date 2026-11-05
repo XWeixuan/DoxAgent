@@ -1,0 +1,72 @@
+{
+  "as_of": "2026-09-30T18:50:00Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "FERC asks grid operator PJM to revise plan to shield homes from data center costs",
+      "url": "https://energynow.com/2026/09/ferc-asks-grid-operator-pjm-to-revise-plan-to-shield-homes-from-data-center-costs/",
+      "publisher": "Reuters via EnergyNow",
+      "published_at": "2026-09-30",
+      "role": "原消息正文"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Commissioner Rosner’s Concurrence in PJM’s Reliability Backstop Procurement",
+      "url": "https://www.ferc.gov/news-events/news/commissioner-rosners-concurrence-pjms-reliability-backstop-procurement-er26-3380",
+      "publisher": "FERC",
+      "published_at": "2026-09-29",
+      "role": "监管原发"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "PJM Reliability Backstop Proposal Outlines Steps to Secure New Supply",
+      "url": "https://insidelines.pjm.com/pjm-reliability-backstop-proposal-outlines-steps-to-secure-new-supply-and-maintain-reliability/",
+      "publisher": "PJM",
+      "published_at": "2026-07-31",
+      "role": "先前提案"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Bloom Energy Reports Record Second Quarter 2026 Financial Results",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-Second-Quarter-2026-Financial-Results-and-Raises-Full-Year-2026-Guidance/default.aspx",
+      "publisher": "Bloom Energy",
+      "published_at": "2026-07-28",
+      "role": "业务规模"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "PJM proposes curtailment rules for new large loads",
+      "url": "https://www.tomshardware.com/tech-industry/data-centers/new-data-centers-on-americas-largest-grid-face-first-in-line-blackouts-unless-they-bring-their-own-power",
+      "publisher": "Tom’s Hardware",
+      "published_at": "2026-08-17T13:11:38Z",
+      "role": "同期规则背景"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Bloom Energy Mid-Year Data Center Power Report",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/AI-Data-Center-Growth-Hinges-on-Solving-Both-Power-Constraints-and-Community-Concerns-Bloom-Energy-Report-Finds/default.aspx",
+      "publisher": "Bloom Energy",
+      "published_at": "2026-06-15",
+      "role": "现场供电背景"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "PJM Board decisional letter: large loads",
+      "url": "https://www.pjm.com/-/media/DotCom/documents/ferc/filings/2026/20260120-el25-49-000.pdf",
+      "publisher": "PJM",
+      "published_at": "2026-01-16",
+      "role": "先前规则背景"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-09-30T18:50:00Z"
+  }
+}

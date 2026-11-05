@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "MU-01-05",
+  "ticker": "MU",
+  "original_case_id": "case_49f2fa8f59314e6080f2f6146f1caa11",
+  "research_key": "314f1c409595e1fa6efe",
+  "as_of": "2026-09-28T11:52:08.852000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Nvidia Discloses Anthropic Contract Value Above $180B",
+    "body": "Trending \n ← Back to live feed · 1 stories across 1 day\nMonday, Sep 28, 2026\n1 story1 NEWNvidia Discloses Anthropic Contract Value Above $180B AI Sep 28, 7:42 AM EDT 5/5 \n 1\n NEWNvidia Discloses Anthropic Contract Value Above $180B\n AI Sep 28, 7:42 AM EDT 5/5\n Infrastructure commitments for generative AI have reached a new order of magnitude in recent commercial disclosures. The reported contracted value for AI lab Anthropic exceeds $180 billion, according to data attributed to Nvidia, signaling a massive allocation of computing power for the startup.\nThe figures emerged on Sept. 28 via multiple market news sources. This disclosure highlights the scale of the relationship between the primary provider of AI chips and the developers of foundational models who require vast hardware fleets to train their systems.",
+    "url": "https://huggingnews.com/ai/nvidia-discloses-anthropic-contract-value-above-180b-4b98c0dc",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-09-28T11:52:08.852000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息的核心事实是：Nvidia披露Anthropic合同价值超过1800亿美元。现有Facts中，E52记录的是Anthropic自身季度营收（~$11.5B），E55是Nvidia与资产管理公司的$500B融资交易，E96是科技公司整体>7000亿美元AI基建承诺，均不包含Nvidia披露的Anthropic具体合同金额$180B这一事实命题。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息核心事实为Nvidia披露与Anthropic的合同价值超1800亿美元，属于AI基础设施行业宏观订单规模的公开信息。该消息未涉及Micron的HBM/数据中心组合指标、竞争供应商HBM份额、DRAM/NAND价格、产品资格、产能、合同交付、汽车平台或任何具体Policy criterion所关注的Micron相关财务或运营事实。仅存在AI行业的宽泛主题关联，不构成任何Policy的trigger path。"
+  }
+}

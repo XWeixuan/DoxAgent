@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "EXTRA-INTC-OPENAI",
+  "ticker": "INTC",
+  "original_case_id": "case_1514e9e49e654055ab92d1428ec9afaf",
+  "research_key": "fb4cd0c4d069b62c9aab",
+  "as_of": "2026-10-08T17:35:18Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Stocks Sink After OpenAI Report Sours AI Trade",
+    "body": "The Nasdaq Composite took a sharp dive on Thursday afternoon after a report on OpenAI's recurring revenue rattled the AI trade.\n\nThe tech-heavy index fell 1.4%. The S&P 500 dropped 0.7%. The Dow Jones Industrial Average dipped 0.1%, or 56 points.\n\nThe downturn in stocks came after reporting from the Financial Times that OpenAI's annualized reoccurring revenue was $20 billion lower than previously signaled.",
+    "url": "https://www.barrons.com/livecoverage/stock-market-news-today-100826/card/stocks-sink-after-openai-report-sours-ai-trade-BKsGL9ZiRLoaWdN2KuCG?siteid=yhoof2",
+    "publisher": "yahoo_finance_news",
+    "published_at": "2026-10-08T17:35:18Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息的核心事实是《金融时报》报道OpenAI年化经常性收入比此前信号低200亿美元（收入下修/未达预期），以及由此引发的Nasdaq下跌1.4%等特定市场反应。E214中F960仅报道OpenAI年化收入接近700亿美元（收入水平），未涵盖\"比此前信号低200亿\"这一收入修正/缺口命题。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "当前消息为FT报道OpenAI年化经常性收入低于此前信号约200亿美元后引发的股市下跌（Nasdaq -1.4%、S&P -0.7%），属于市场情绪反应与财务数据差异报道。消息未确认任何针对Intel Xeon、IPU、ASIC、客户端CPU或Foundry的生产采购取消、部署延期、订单削减、续约终止、良率问题或供给变化等具体事实。OpenAI收入数字与Intel订单/部署之间不存在消息中已陈述的直接触发关系，不足以构成任何Policy criterion的具体observation。"
+  }
+}

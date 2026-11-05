@@ -1,0 +1,90 @@
+{
+  "as_of": "2026-09-29T11:20:00Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "AMD drops an EPYC $15,000, 256-core beast",
+      "url": "https://www.tomshardware.com/pc-components/cpus/amd-drops-an-epyc-usd15-000-256-core-bomb-epyc-9006-zen-6-venice-cpus-get-full-spec-and-pricing-treatment-from-usd700-up-to-usd14-904",
+      "publisher": "Tom’s Hardware",
+      "published_at": "2026-09-29T11:20:00Z",
+      "role": "原消息正文"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "AMD Posts the Full EPYC 9006 SKU List",
+      "url": "https://www.storagereview.com/news/amd-posts-the-full-epyc-9006-sku-list-31-venice-parts-from-700-to-14904-across-sp7-and-sp8",
+      "publisher": "StorageReview",
+      "published_at": "2026-09-26",
+      "role": "清单与先前披露"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "AMD EPYC Venice presentation",
+      "url": "https://www.amd.com/content/dam/amd/en/documents/corporate/events/advancing-ai-2025-distribution-deck.pdf",
+      "publisher": "AMD",
+      "published_at": "2025-06",
+      "role": "产品先前预期"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Intel Reports Second-Quarter 2026 Financial Results",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000155/q226earningsrelease.htm",
+      "publisher": "Intel",
+      "published_at": "2026-07-23",
+      "role": "Intel 业务规模"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Intel second-quarter 2026 report",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "publisher": "Intel",
+      "published_at": "2026-07-24",
+      "role": "竞争业务背景"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Agentic AI: AMD EPYC 9005 and 9006",
+      "url": "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+      "publisher": "AMD",
+      "published_at": "2026-07-23",
+      "role": "AMD 先前产品披露"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Intel Xeon 7 Diamond Rapids CPUs launching in 2027",
+      "url": "https://www.tomshardware.com/pc-components/cpus/intel-xeon-7-diamond-rapids-cpus-officially-launching-in-2027-on-intel-18a-p-next-gen-p-core-xeon-features-pcie-6-0-50-percent-higher-core-counts-and-twice-the-memory-bandwidth",
+      "publisher": "Tom’s Hardware",
+      "published_at": "2026-06-01",
+      "role": "Intel 同期产品对照"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Intel launches Xeon 6+ CPU",
+      "url": "https://www.datacenterdynamics.com/en/news/intel-launches-xeon-6-cpu-pitches-it-for-agentic-ai-boom/",
+      "publisher": "Data Center Dynamics",
+      "published_at": "2026-06-01",
+      "role": "同期竞争产品"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "AMD Launches 5th Gen AMD EPYC CPUs",
+      "url": "https://www.amd.com/en/newsroom/press-releases/2024-10-10-amd-launches-5th-gen-amd-epyc-cpus-maintaining-le.html",
+      "publisher": "AMD",
+      "published_at": "2024-10-10",
+      "role": "上一代对照"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-09-29T11:20:00Z"
+  }
+}

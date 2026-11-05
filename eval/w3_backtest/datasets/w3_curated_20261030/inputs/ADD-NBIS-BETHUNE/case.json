@@ -1,0 +1,27 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-NBIS-BETHUNE",
+  "ticker": "NBIS",
+  "original_case_id": "case_ead0f10cb7a3477096679b6e4832e76f",
+  "research_key": "a2ea61a13f7aa6d7df21",
+  "as_of": "2026-10-27T03:44:29Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "NBIS Stock Rises Overnight: Neocloud Reportedly Raises Nearly $280M For France Data Center",
+    "body": "Advertisement|Remove ads.\nNebius is simultaneously developing large-scale data centers in the U.S. and Finland.\nThe Nebius AI logo appears on a smartphone screen and as the background on a laptop computer screen. (Photo Illustration by Nikolas Kokovlis/NurPhoto via Getty Images)\n- Nebius is investing 8 billion euros (about $8.94 billion) to convert a former Bridgestone site in Béthune, France, into a major data center.\n- A director at the firm purchased about $122,700 worth of company stock in recent days, according to a filing.\n- Stocktwits sentiment for NBIS shifted to ‘extremely bullish’ from ‘bullish.’\nAdvertisement|Remove ads.\nNebius Group NV (NBIS) shares rose 1% in overnight trading late Monday, recovering partially after a drop in the regular session amid a steep selloff in neocloud stocks.\nFrench news outlet L’Informé reported on Monday that Nebius raised 250 million euros (about $279.3 million) for its data center near Lille in northern France, although the fundraise structure is unclear because those details are available only to the publication's subscribers.\nThe Dutch cloud company is investing 8 billion euros to convert a former Bridgestone site into a major data center, with a targeted capacity of 240 megawatts.\nAdvertisement|Remove ads.\nL’Informé reported that the first phase, totaling 60 MW capacity, will open in December. The project was announced in February.\nNebius is simultaneously developing large-scale data centers in Independence, Missouri (1.2 GW); Butler Township, Pennsylvania (1.2 GW); and, Lappeenranta, Finland (310 MW).\nSeparately, Nebius reported an insider purchase on Monday. Arne Grimme, a director at the firm, purchased 770 shares worth approximately $122,700 over three trading days, according to an exchange filing. The purchases were made under a pre-arranged trading plan.\nAdvertisement|Remove ads.\nThe developments come amid a sharp selloff in neocloud stocks in recent weeks, driven by concerns about their debt-fueled expansion and the durability of their business models.\nSpaceX and Tesla CEO Elon Musk said on Sunday that the neocloud sector will see “guppy-level death and consolidation” and that his rocket and AI firm, SpaceX, has no interest in buying out any of the companies.\nMusk said that debt markets had almost entirely shut off access to financing for companies without substantial revenue independent of AI data centers, adding that SpaceX does not fall in that category and in fact secured $40 billion in debt recently to purchase Nvidia GPUs.\nAdvertisement|Remove ads.\nNebius CEO Arkady Volozh acknowledged that neocloud companies were finding it harder to raise debt. An excerpt from Volozh’s vodcast on the sidelines of Nvidia’s GTC conference in Berlin last week was making rounds on X, where Volozh said some sources of capital, including “asset-backed financing or debt markets,” had temporarily dried up.\nHe added that Nebius had enough funding to deliver its planned capacity expansion.\nOn Stocktwits, retail sentiment for NBIS shifted to ‘extremely bullish’ from ‘bullish’ the previous day.\nAdvertisement|Remove ads.\n“$NBIS Just feels like the bottom is in,” said a trader.\nNBIS stock is down 35% so far in October, although the stock is still up 83% year to date.\nFor updates and corrections, email newsroom[at]stocktwits[dot]com.\nAdvertisement|Remove ads.\nRead Next: Anthropic’s S-1 Draws Reactions: Investor Says $100B ARR Could Be Possible By Year-End\nComments\nShare your thoughts...\nComments posted here will also appear on symbol pages.\nRead about our editorial guidelines and ethics policy",
+    "url": "https://stocktwits.com/news-articles/markets/equity/nbis-stock-rises-overnight-neocloud-reportedly-raises-nearly-280-m-for-france-data-center/cZUIuskRBzS?.tsrc=rss",
+    "publisher": "yahoo_finance_news",
+    "published_at": "2026-10-27T03:44:29Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "消息的核心新增事实为：Nebius 为法国北部里尔附近的数据中心募资 2.5 亿欧元（约 2.793 亿美元），且募资结构未披露；同时给出将 Béthune 旧普利司通厂址改造为 8 亿欧元、目标 240MW 数据中心的投资细节，首期 60MW 将于 12 月投运。这些均未被已加载事实覆盖。已覆盖部分仅为：Grimme 以预先安排交易计划买入 770 股（约 12.27 万美元），对应 E273；Musk 称债务市场对缺乏 AI 数据中心以外收入的公司几乎关闭，且 SpaceX 不会收购 neocloud 公司，对应 E63、E99；Volozh 称部分资本来源暂时枯竭但资金足以交付扩产，对应 E65、E66。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "pol_fe749e2c76294654bc54e687966d9268：消息称Nebius为法国里尔附近的数据中心筹资2.5亿欧元（约2.793亿美元），属于数据中心项目融资与资金安排范围；但明确说融资结构不清，未披露抵押、借款基数、提款条件、资产或合同适格范围及净可用额，因此不满足C1；Volozh关于资产支持融资暂时枯竭的说法属一般融资环境表述，未指出具名NBIS资产池或新的承保、折扣规则，因此不满足C2。pol_351a03ffc69e45ddaf14f78487992854：消息披露法国Béthune园区规划240MW、首期60MW将于12月开放，属于新园区容量阶段及开放排程范围；但无既有目标可比以证明提前或推迟，也非已完成集成并取得常态生产资格，故各条件未命中。"
+  },
+  "first_disclosed_at": "2026-10-26T14:58:00+01:00"
+}

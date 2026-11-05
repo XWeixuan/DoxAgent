@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "BE-02-03",
+  "ticker": "BE",
+  "original_case_id": "case_e5399f98a9d5475ca306f77cbf76a7a9",
+  "research_key": "befb2a7f17f0e2999874",
+  "as_of": "2026-09-25T14:57:17.932000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Oracle Invokes Force Majeure on $165B AI Center as Bonds Hit First Ever 8% Yield",
+    "body": "← Back to live feed · 1 stories across 1 day\nFriday, Sep 25, 2026\n1 story1 Oracle Invokes Force Majeure on $165B AI Center as Bonds Hit First Ever 8% Yield↩︎ AI Sep 24, 2:13 PM EDT 46/32 \n The tech giant has notified developer Blue Owl Capital of its intent to defer payments on Project Jupiter if the massive New Mexico AI facility misses its planned 2028 opening. Oracle cited force majeure to shield itself from costs stemming from local resistance and regulatory setbacks, including a six month delay to a critical gas pipeline. As part of the move to manage the project, Oracle has removed BorderPlex, a key partner on the site.\nThe $165B campus is part of the Stargate AI buildout for OpenAI and requires 2.45GW of Bloom Energy fuel cells for power. Credit stress for Oracle has risen as 2056 bonds yielded 8% for the first time ever, and credit default swaps hit record widths, while the project's $18B construction debt is trading below 90 cents on the dollar. Oracle maintains that the facility remains on schedule, though reports indicate the company may still be required to pay investors even if the site lacks electricity.",
+    "url": "https://huggingnews.com/ai/update-oracle-invokes-force-majeure-on-165b-ai-center-as-bonds-hit-first-237d11ef",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-09-25T14:57:17.932000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息包含多个尚未被已知事实覆盖的核心进展：1）Oracle已移除BorderPlex（项目关键合作方），这在所有已知provisional facts中均未提及；2）Oracle 2056 bonds首次收益率达8%、CDS创纪录、$18B建设债低于90美分等信用压力指标为全新事实；3）具体以2028年开幕为条件推迟付款的机制细节超出已有force majeure通知的语义范围。已知事实仅覆盖了force majeure通知本身、燃气管线延误及项目背景。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "三个Candidate均未命中。消息核心事实是Oracle对Blue Owl Capital发出'intent to defer payments'（附条件：若设施错过2028开业），并移除BorderPlex；Oracle明确声明设施'remains on schedule'。对pol_9795c572511e9fcc514e：6个月管道延迟被提及，但未公布Bloom项目新commissioning date、scope cut或cancel，不满足trigger boundary。对pol_c6f78f9f2be8ff1d1ee8：2.45GW Bloom容量未被取消或削减，'defer payments'≠'取消项目/削减承诺容量'，且为附条件意图而非已执行动作。对pol_b88a58def59b82c29eb5：criterion要求对Energy Server deployment本身的defer/cancel/downsize/renegotiate，而消息所述为Oracle与Blue Owl之间的付款条款调整（附条件），非对2.45GW Bloom部署的实际推迟或重谈；且trigger boundary要求'subsequent filings reflect the change in backlog, shipment, or revenue expectations'，消息中无此要素。"
+  }
+}

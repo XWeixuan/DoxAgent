@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "BE-02-02",
+  "ticker": "BE",
+  "original_case_id": "case_9207bf5c695042d286fc85b05efd72e1",
+  "research_key": "befb2a7f17f0e2999874",
+  "as_of": "2026-09-25T12:40:42.454000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Goldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus",
+    "body": "Trending \n ← Back to live feed · 1 stories across 1 day\nFriday, Sep 25, 2026\n1 story1 NEWGoldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus AI Sep 25, 8:18 AM EDT 4/4 \n 1\n NEWGoldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus\n AI Sep 25, 8:18 AM EDT 4/4\n Amazon, Alphabet, Microsoft, Oracle and Meta are currently investing roughly $800 billion in their technological infrastructure this year. Goldman Sachs strategists forecast these outlays will increase by 54% to $1.2 trillion in 2027, exceeding the $1.1 trillion consensus estimated by other Wall Street analysts.\nThe bank estimates that the five largest US cloud providers need approximately $300 billion in annual AI revenue to break even on these investments. Future growth in capital expenditure could be limited by rising financing costs and constraints on physical infrastructure.",
+    "url": "https://huggingnews.com/ai/goldman-forecasts-12t-ai-spend-for-us-hyperscalers-to-beat-consensus-83bb05dd",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-09-25T12:40:42.454000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "Goldman Sachs 具体预测五家美国超大规模云厂商2027年AI资本支出达$1.2T（较$800B增长54%）并超出$1.1T共识，以及$300B盈亏平衡AI营收估算，均未在已加载事实中出现。E140为穆迪对六家公司约$1T的预测，属不同机构、不同数值、不同公司范围，不构成对Goldman预测的覆盖。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "该消息为高盛对五大超算企业2027年AI总资本支出的预测（$800B→$1.2T），并泛泛提及未来capex增长可能受融资成本和物理基础设施约束限制。消息未涉及任何具名客户对Bloom的采购指令、项目许可/互联/燃料/设备里程碑、具体设计变更或监管决定等可触发任一criterion的具体事实，仅与AI电力需求主题存在宽泛关联，不构成Candidate。"
+  }
+}

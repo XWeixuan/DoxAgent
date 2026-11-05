@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-CEG-DOE",
+  "ticker": "CEG",
+  "original_case_id": "case_b239a97b254548a6aaa6a6b989becd4e",
+  "research_key": "8d4ca0d482b17b749c30",
+  "as_of": "2026-10-27T15:36:02Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "US offers Constellation Energy $5B loan for nuclear upgrades",
+    "body": "",
+    "url": "https://www.investing.com/news/pro/us-offers-constellation-5b-in-financing-for-nuclear-reactors--bloomberg-432SI-4976371",
+    "publisher": "investing_ticker_news",
+    "published_at": "2026-10-27T15:36:02Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前核心事实是美国向Constellation Energy提供50亿美元贷款用于核升级；已知E14为Google与Constellation的购电协议，E21为DOE对Vistra的42亿美元有条件贷款承诺，均未覆盖Constellation获得美国50亿美元贷款这一新进展。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息仅称美国向Constellation Energy提供50亿美元贷款用于核升级。对pol_f67eaed879e346348210cecd430311fa，该政府项目融资属于其关注范围，但并非撤回或削减已承诺资金，未满足C2。对pol_533a5b78f9e842448aeaed1887572301，该贷款属于具名核电升级项目的融资条款范围，但未显示具名客户/共有人承接成本风险，或最终工程变更导致CEG净新增至少3亿美元成本，故均仅RELATED。"
+  }
+}

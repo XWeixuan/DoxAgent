@@ -1,0 +1,90 @@
+{
+  "as_of": "2026-09-25T05:31:42.919000Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Micron Innovates From the Data Center to the Edge With NVIDIA",
+      "url": "https://micron.gcs-web.com/news-releases/news-release-details/micron-innovates-data-center-edge-nvidia",
+      "publisher": "Micron",
+      "published_at": "2025-03-18T16:24:00-04:00",
+      "role": "产品关系"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Lenovo NVIDIA GB300 NVL72 product guide",
+      "url": "https://lenovopress.lenovo.com/lp2357-lenovo-nvidia-gb300-nvl72-rack-scale-ai",
+      "publisher": "Lenovo",
+      "published_at": "2026-08-24",
+      "role": "系统内存配置"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Higher usage limits for Claude and a compute deal with SpaceX",
+      "url": "https://www.anthropic.com/news/higher-limits-spacex",
+      "publisher": "Anthropic",
+      "published_at": "2026-05-06",
+      "role": "先前部署与客户"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "NVIDIA fiscal Q2 2027 earnings call",
+      "url": "https://investor.nvidia.com/files/content_files/TRANSCRIPT_-NVIDIA-Corp-NVDA-US-Q2-2027-Earnings-Call-26-August-2026-5_00-PM-ET.pdf",
+      "publisher": "NVIDIA",
+      "published_at": "2026-08-26",
+      "role": "先前行业规模"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Micron fiscal Q3 2026 earnings call prepared remarks",
+      "url": "https://micron.gcs-web.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "publisher": "Micron",
+      "published_at": "2026-06-24",
+      "role": "公司供需与合同基线"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Micron fiscal Q3 2026 results and outlook",
+      "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+      "publisher": "Micron",
+      "published_at": "2026-06-24",
+      "role": "财报与业务规模"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "DRAM Industry Revenue Rises 59.5% QoQ in 2Q26",
+      "url": "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-09-07",
+      "role": "市场供需与对照"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "SpaceX European prospectus",
+      "url": "https://content.spacex.com/cms-assets/FINAL_Documents%20and%20Updates/SpaceX%20-%20EU%20Prospectus%20%28Approved%20by%20Bafin%29%20-%20June%205%2C%202026.pdf",
+      "publisher": "SpaceX",
+      "published_at": "2026-06-05",
+      "role": "先前部署与扩建计划"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Musk confirms fourth SpaceXAI data center in Memphis",
+      "url": "https://www.datacenterdynamics.com/en/news/musk-confirms-fourth-spacexai-data-center-in-memphis-company-starts-removing-illegal-gas-turbines/",
+      "publisher": "Data Center Dynamics",
+      "published_at": "2026-07-31",
+      "role": "先前项目与电力条件"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-09-25T05:31:42.919000Z"
+  }
+}

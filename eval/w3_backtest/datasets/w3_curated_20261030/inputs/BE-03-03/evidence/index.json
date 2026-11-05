@@ -1,0 +1,99 @@
+{
+  "as_of": "2026-09-29T18:10:19.614000Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Anthropic $518 billion buildout deals",
+      "url": "https://www.marketscreener.com/news/anthropic-s-518-billion-ai-buildout-hinges-largely-on-deals-that-cannot-be-canceled-filing-shows-ce785adddd8bf124",
+      "publisher": "Reuters via MarketScreener",
+      "published_at": "2026-09-29T06:06:00-04:00",
+      "role": "primary reporting"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Anthropic IPO prospectus shows surging costs",
+      "url": "https://www.streetinsider.com/Reuters/Anthropics%2BIPO%2Bprospectus%2Bshows%2Bsweeping%2BAI%2Bvision%2C%2Bsurging%2Bcosts/27115819.html",
+      "publisher": "Reuters via StreetInsider",
+      "published_at": "2026-09-28T19:17:00-04:00",
+      "role": "prior disclosure"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Anthropic to seek $2 trillion IPO valuation",
+      "url": "https://www.kiplinger.com/investing/ipos/anthropic-to-seek-trillion-ipo-valuation",
+      "publisher": "Kiplinger",
+      "published_at": "2026-09-29T12:14:18-04:00",
+      "role": "contemporaneous context"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Bloom Q2 2026 results",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/ex991_q226financialresults.htm",
+      "publisher": "Bloom Energy",
+      "published_at": "2026-07-28",
+      "role": "business baseline"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Bloom and Oracle expand partnership",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-and-Oracle-Expand-Strategic-Partnership-to-Deploy-up-to-2-8-GW-to-Accelerate-AI-Infrastructure-Build-Out/default.aspx",
+      "publisher": "Bloom Energy",
+      "published_at": "2026-04-13",
+      "role": "business connection"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Anthropic and Amazon expand collaboration",
+      "url": "https://www.anthropic.com/news/anthropic-amazon-compute",
+      "publisher": "Anthropic",
+      "published_at": "2026-04-20",
+      "role": "prior partnership"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Microsoft NVIDIA and Anthropic partnerships",
+      "url": "https://www.anthropic.com/news/microsoft-nvidia-anthropic-announce-strategic-partnerships",
+      "publisher": "Anthropic",
+      "published_at": "2025-11-18",
+      "role": "prior partnership"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Anthropic expands Google Cloud and TPU use",
+      "url": "https://www.googlecloudpresscorner.com/2026-04-06-Anthropic-Expands-Use-of-Google-Cloud-and-TPUs",
+      "publisher": "Google Cloud",
+      "published_at": "2026-04-06",
+      "role": "prior partnership"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Broadcom 8-K TPU agreements",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526144028/d87999d8k.htm",
+      "publisher": "Broadcom",
+      "published_at": "2026-04-06",
+      "role": "prior partnership terms"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "Amazon second quarter 2026 filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000026/amzn-20260630.htm",
+      "publisher": "Amazon",
+      "published_at": "2026-07-30",
+      "role": "prior financing terms"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-09-29T18:10:19.614000Z"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-INTC-CLASSIQ",
+  "ticker": "INTC",
+  "original_case_id": "case_b207164315e54cb4938c778a7f0c3dc6",
+  "research_key": "3db87f60a8b19e5292ce",
+  "as_of": "2026-10-26T20:01:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Intel to Buy Israeli Startup Classiq in Quantum Computing Push - Bloomberg.com",
+    "body": "Gift this article\n\nAdd us on Google\n\nContact us: Provide news feedback or report an error\n\nConfidential tip? Send a tip to our reporters\n\nSite feedback: Take our Survey\n\nBy Ian King\n\nOctober 26, 2026 at 8:01 PM UTC\n\nSave\n\nTranslate\n\nIntel Corp. agreed to buy Israeli startup Classiq Technologies Ltd. as part of a push to capitalize on quantum computing, a still-nascent field that is seeking commercial applications.\n\nThe chipmaker didn’t disclose the price it’s paying for Classiq, whose clients include BMW AG and AT&T Inc. The announcement comes just head of Intel’s third-quarter earnings report Thursday.\n\nBefore it's here, it's on the Bloomberg Terminal LEARN MORE\n\nHomeBTV+Market DataOpinionAudioOriginalsMagazineEvents\n\nNews\n\nMarketsEconomicsTechnologyPoliticsGreenCryptoAI\n\nWork & Life\n\nWealthPursuitsBusinessweekCityLabSportsEqualityManagement & Work\n\nMarket Data\n\nStocksCommoditiesRates & BondsCurrenciesFuturesSectorsEconomic Calendar\n\nExplore\n\nNewslettersExplainersPointed News QuizAlphadots GameThe Big TakeGraphicsSubmit a TipAbout Us\n\nTerms of ServiceDo Not Sell or Share My Personal InformationTrademarksPrivacy Policy\n\nCareersAdvertise\n\nAd Choices\n\nHelp©2026 Bloomberg L.P. All Rights Reserved.\n\nSubscribe now for unlimited access to Bloomberg.com and the Bloomberg app\n\nGlobal news that uncovers a new tomorrow. Cancel anytime.\n\nClaim This Offer\n\nSign InTerms of ServicePrivacy PolicyDo Not Sell or Share My Personal Information\n\nWe've updated our terms\n\nBy accepting, you agree to our updated Terms of Service, including the arbitration provision and class action waiver. You understand that we process your information as described in the Privacy Policy, which may include sharing information about your use of Bloomberg.com with third parties. Accepting does not affect your right to opt-out at any time via the Do Not Sell or Share My Personal Information link in the website footer.\n\nAccept",
+    "url": "https://www.bloomberg.com/news/articles/2026-10-26/intel-to-buy-israeli-startup-classiq-in-quantum-computing-push",
+    "publisher": "google_news_search_rss",
+    "published_at": "2026-10-26T20:01:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息的核心事实是 Intel 同意收购以色列量子计算初创公司 Classiq Technologies，且未披露交易价格。已加载的 Known Facts 与 Provisional Facts 均为空，没有任何既有事实覆盖这一收购进展，因此属于 NEW。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "pol_79a96d0aaa3d42de93e56a9e243ff424 不命中：消息仅称 Intel 同意收购 Classiq，未披露价格、现金/股票对价、新增股份、承担债务/费用或预期现金回收，未达到任一 Activation Condition；也不满足 match_scope 对正式交易材料披露对价与回收的要求。"
+  }
+}

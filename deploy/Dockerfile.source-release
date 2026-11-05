@@ -15,6 +15,12 @@ COPY pyproject.toml uv.lock README.md /app/
 # The release CLI places unchanged CDECR catalogs in the dependency stage.
 COPY src /app/src
 COPY prompts /app/prompts
+COPY deploy/codex-runtime /opt/doxagent/codex-runtime
+RUN for binary in codex codex-code-mode-host; do \
+    if [ -f "/opt/doxagent/codex-runtime/$binary" ]; then \
+      chmod 0755 "/opt/doxagent/codex-runtime/$binary"; \
+    fi; \
+    done
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY scripts/ops/migrate_source_access_scopes.py /app/scripts/ops/migrate_source_access_scopes.py
 COPY scripts/ops/message_bus_lean_acceptance.py /app/scripts/ops/message_bus_lean_acceptance.py

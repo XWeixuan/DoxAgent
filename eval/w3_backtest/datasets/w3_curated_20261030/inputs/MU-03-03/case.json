@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "MU-03-03",
+  "ticker": "MU",
+  "original_case_id": "case_4be7a686d63943aba06c2d337561135e",
+  "research_key": "314f1c409595e1fa6efe",
+  "as_of": "2026-10-05T13:49:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story. -- Barrons.com",
+    "body": "By Adam Clark Micron Technology stock was flatlining early Monday. The memory-chip maker is still contending with fears of a cyclical peak in its earnings but prices tell a different story. Micron shares were down 1.2% at $1,061.81 in early trading. The stock didn't get much of a lift from blowout earnings last week, with investors seemingly still skeptical about the sustainability of soaring profits. But the numbers suggest memory prices will only keep rising. The latest set of figures from World Semiconductor Trade Statistics showed memory sales increasing 36% in August, driven by both stronger shipment volumes and pricing. The prices of DRAM and NAND rose 8% and 5%, respectively. DRAM is short-term working memory that computers and AI hardware use to manage active data and running processes. It makes up about three quarters of Micron's revenue. NAND flash memory is used for longer-term storage. Backward-looking numbers might not be much comfort for nervous investors, but analysts expect the memory-chip boom to keep going. DRAM prices are set to rise between 15% and 20% in the fourth quarter, with NAND prices poised to rise between 12% and 20%, according to Brad Gastwirth, global head of research and market intelligence at Circular Technologies. \"Memory remains the clearest quantitative signal in our October work. Pricing continues to move higher even as consumer end markets weaken, while long term supply agreements remain a major part of customer conversations,\" Gastwirth wrote in a research note Friday. As memory prices keep going up, Micron stock only looks cheaper-even if the market remains doubtful. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires October 05, 2026 09:49 ET (13:49 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research.",
+    "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+    "publisher": "ibkr_news",
+    "published_at": "2026-10-05T13:49:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "消息包含两个尚未被覆盖的核心事实：(1) WSTS 八月数据显示 memory 销售增长 36%、DRAM 价格升 8%、NAND 价格升 5%，这一月度聚合数据点不在任何已加载 Fact 中；(2) Circular Technologies 分析师 Brad Gastwirth 给出的 Q4 预测为 DRAM 15%-20%、NAND 12%-20%，与 E217 中 F1029（DRAM 10%-15%）和 F1030（NAND 15%-20%）存在明确数值差异，且来源和发布时间不同。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "当前消息为Barron's股价评论，核心事实包括：Micron股价周一微跌1.2%、上周公布强劲财报但投资者对持续性存疑、WSTS数据确认8月DRAM/NAND价格分别上涨8%/5%、分析师预测Q4 DRAM涨15-20%/NAND涨12-20%、\"定价持续走高即使消费端走弱\"、长期供货协议仍是客户沟通重点。所有criterion关注的触发路径（如高价值组合份额下降、ASP环比转跌、产能/交付瓶颈、合同延期/退款、库存增速超收入、产品召回/资格重置、汽车项目节点、竞争供应商HBM份额上升、FY27指引偏差、卖方EPS上调含新旧值等）在本消息中均无对应具体事实；消息实际呈现的价格与需求状态与多数触发条件方向相反。"
+  }
+}

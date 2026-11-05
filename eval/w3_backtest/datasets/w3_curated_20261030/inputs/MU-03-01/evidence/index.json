@@ -1,0 +1,117 @@
+{
+  "as_of": "2026-09-30T15:57:15+08:00",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "AI server demand sustains 4Q26 memory prices",
+      "url": "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-09-30T15:52:15+08:00",
+      "role": "event disclosure"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "TrendForce third-quarter memory forecast",
+      "url": "https://www.trendforce.com/presscenter/news/20260703-13134.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-07-03",
+      "role": "prior price forecast"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Memory prices and cloud capex outlook",
+      "url": "https://www.trendforce.com/presscenter/news/20260825-13198.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-08-25",
+      "role": "prior forecast and contract limits"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Diverging DRAM and NAND 2027 outlook",
+      "url": "https://www.trendforce.com/presscenter/news/20260730-13158.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-07-30",
+      "role": "prior supply and consumer conditions"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Micron reports fiscal Q3 2026 results",
+      "url": "https://micron.gcs-web.com/index.php/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "publisher": "Micron",
+      "published_at": "2026-06-24",
+      "role": "company baseline"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Micron fiscal Q3 earnings call",
+      "url": "https://stockanalysis.com/stocks/mu/transcripts/695617-q3-2026-post-call/",
+      "publisher": "Micron via Stock Analysis",
+      "published_at": "2026-06-24",
+      "role": "company supply and agreement terms"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "TrendForce June HBM supply analysis",
+      "url": "https://www.trendforce.com/presscenter/news/20260602-13074.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-06-02",
+      "role": "prior supply and economics"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "HBM supply constraints persist",
+      "url": "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-09-29T16:03:54+08:00",
+      "role": "event disclosure"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Micron fiscal Q3 prepared remarks",
+      "url": "https://micron.gcs-web.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "publisher": "Micron",
+      "published_at": "2026-06-24",
+      "role": "company contract baseline"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "DRAM industry Q2 2026 results",
+      "url": "https://www.trendforce.com.tw/presscenter/news/20260907-13218.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-09-07",
+      "role": "industry supplier comparison"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "4Q26 memory price forecast",
+      "url": "https://www.trendforce.com/research/download/RP260924PL",
+      "publisher": "TrendForce",
+      "published_at": "2026-09-24",
+      "role": "prior research bulletin"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Beyond the memory cycle",
+      "url": "https://www.csis.org/analysis/beyond-memory-cycle-ai-hbm-and-new-semiconductor-shortage",
+      "publisher": "CSIS",
+      "published_at": "2026-09-17",
+      "role": "industry capacity and cycle"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-09-30T15:57:15+08:00"
+  }
+}

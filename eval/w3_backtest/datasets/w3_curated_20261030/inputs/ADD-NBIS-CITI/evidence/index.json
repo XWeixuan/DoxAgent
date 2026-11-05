@@ -1,0 +1,72 @@
+{
+  "as_of": "2026-10-22T11:05:00Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Nebius secures $3.5 billion financing facility with Citi",
+      "url": "https://markets.financialcontent.com/stocks/article/bizwire-2026-10-22-nebius-secures-35-billion-financing-facility-with-citi",
+      "publisher": "Nebius via Business Wire",
+      "published_at": "2026-10-22T07:00:00-04:00",
+      "role": "原发公告"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Nebius raises $775 million in first secured debt financing",
+      "url": "https://nebius.com/newsroom/nebius-raises-775-million-in-first-secured-debt-financing-to-accelerate-global-buildout",
+      "publisher": "Nebius",
+      "published_at": "2026-07-17",
+      "role": "先前融资基线"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Nebius Q2 2026 earnings call",
+      "url": "https://www.fool.com/earnings/call-transcripts/2026/08/19/nebius-nbis-q2-2026-earnings-call-transcript/",
+      "publisher": "Nebius earnings transcript",
+      "published_at": "2026-08-19",
+      "role": "资本需求与预付款"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Nebius $5 billion convertible notes offering",
+      "url": "https://nebius.com/newsroom/nebius-group-announces-pricing-of-upsized-private-offering-of-5-0-billion-of-convertible-senior-notes",
+      "publisher": "Nebius",
+      "published_at": "2026-08-19",
+      "role": "既有融资结构"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Nebius and Microsoft AI infrastructure agreement",
+      "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465925088312/tm2525580d1_ex99-1.htm",
+      "publisher": "Nebius",
+      "published_at": "2025-09-08",
+      "role": "客户合同与融资"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Nebius signs new AI infrastructure agreement with Meta",
+      "url": "https://nebius.com/newsroom/nebius-signs-new-ai-infrastructure-agreement-with-meta",
+      "publisher": "Nebius",
+      "published_at": "2026-03-16",
+      "role": "既有客户合同"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Nebius reports second quarter 2026 financial results",
+      "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465926094568/tm2622968d1_ex99-1.htm",
+      "publisher": "Nebius / SEC",
+      "published_at": "2026-08-12",
+      "role": "财务规模与投资资金"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-10-22T11:05:00Z"
+  }
+}

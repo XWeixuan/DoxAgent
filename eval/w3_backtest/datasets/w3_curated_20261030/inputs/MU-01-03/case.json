@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "MU-01-03",
+  "ticker": "MU",
+  "original_case_id": "case_32cf1d11b688492ebbe870f62b1e0be4",
+  "research_key": "314f1c409595e1fa6efe",
+  "as_of": "2026-09-24T19:37:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "How Micron Stock Could Rise Another 50% -- Barrons.com",
+    "body": "By Adam Clark Micron Technology stock has plenty left in the tank after rising nearly 600% in the past 12 months. That's the view from UBS analyst Timothy Arcuri as he looks ahead to the memory-chip company's earnings next week. Micron shares rose 0.5%to $1,077.29 Thursday. However, shares have risen more than sixfold in the past year on booming memory demand amid the artificial-intelligence race. UBS's Arcuri reiterated his target price of $1,625 and a Buy rating on the stock in a research note Wednesday. The target is based on a forward price-to-earnings multiple of eight times applied to his forecast of the company's 2029 earnings. \"While the stock remains a battleground between momentum and duration, fundamentals continue to improve with our latest round of checks pointing to a gap between supply and demand that continues to widen,\" Arcuri wrote. The immediate drivers are well-known-the need for memory in AI servers is pushing prices higher every quarter. Arcuri forecasts Micron will report fiscal fourth-quarter revenue of $52.4 billion on Sept. 30, and earnings per share of $32.50, beating the company's guidance. Looking further ahead, the UBS analyst argued Micron's earnings per share will be supported by share buybacks. Micron is currently restricted from carrying out big share buybacks or special dividends due to conditions of the Chips Act funding it received from the U.S. government back in 2024. However, the restrictions on share buybacks should expire on Dec. 9 of this year. Arcuri said Micron could start by buying back about $20 billion worth of shares a quarter, rising to around $50 billion quarterly toward the end of its fiscal year 2027, which would be September next year. Notably, Arcuri argued that even were open-market prices of memory chips to fall 80% when the current AI-driven cycle ends-which the UBS analyst argues will begin in the second half of 2028-then Micron is still set to be reporting annualized earnings higher than its current level. That's due to stock buybacks and long-term pricing agreements. Barron's previously argued Micron could double in price, when it was trading around $1,100. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires September 24, 2026 15:37 ET (19:37 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research.",
+    "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+    "publisher": "ibkr_news",
+    "published_at": "2026-09-24T19:37:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "E844（provisional）已覆盖Arcuri重申$1,625目标价和Buy评级这一基本事实，但消息包含多项尚未被覆盖的核心新事实：Arcuri具体预测FY2026 Q4营收$52.4B、EPS $32.50（高于公司E1/F4的~$50B和F17的$30-$32指引）；Dec 9限制解除后$20B/季起步、FY2027末升至$50B/季的回购情景；以及若存储价格下跌80%、H2 2028周期见顶后Micron盈利仍高于当前水平的下行韧性论证。这些具体分析师预测和情景构成消息的主要新闻进展，未被任何现有Fact覆盖。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "本条消息为UBS分析师Arcuri在Micron FY26 Q4财报发布前（9月30日）的看多观点与盈利预测，核心事实包括：股价回顾、目标价重申、供应链/需求缺口继续扩大的市场判断、预测营收$52.4B及EPS $32.50（高于公司指引）、Chips Act回购限制12月9日到期、以及即使AI周期结束价格下跌80%仍可获利的长期情景假设。消息中不存在与任何Policy criterion直接对应的具体运营或财务观察：无实际财报结果、无高价值组合份额或ASP变化的具体数据、无竞争供应商HBM份额变动、无产品资格/交付/合同事件、无库存或现金流细节、无扩产或项目状态更新。所有关键数据均为分析师前瞻预测而非已发生事实，且预测方向（收入超预期、价格上涨）与多数Policy的触发条件相反。"
+  }
+}

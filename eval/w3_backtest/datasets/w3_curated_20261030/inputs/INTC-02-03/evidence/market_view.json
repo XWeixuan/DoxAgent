@@ -1,0 +1,110 @@
+{
+  "mode": "OFFLINE_REPLAY",
+  "ticker": "INTC",
+  "observed_at": "2026-09-27T15:23:01Z",
+  "use": "TIMELINESS_AND_COMPLETION_ONLY",
+  "series": {
+    "daily": {
+      "status": "READY",
+      "columns": [
+        "time",
+        "o",
+        "h",
+        "l",
+        "c",
+        "volume",
+        "venue"
+      ],
+      "rows": [
+        [
+          "2026-09-21T04:00:00+00:00",
+          116.46,
+          124.73,
+          114.93,
+          121.78,
+          131563351,
+          "SMART"
+        ],
+        [
+          "2026-09-22T04:00:00+00:00",
+          120.07,
+          124.09,
+          120.07,
+          123.86,
+          65641787,
+          "SMART"
+        ],
+        [
+          "2026-09-23T04:00:00+00:00",
+          123.79,
+          124.25,
+          119.44,
+          122.6,
+          57639568,
+          "SMART"
+        ],
+        [
+          "2026-09-24T04:00:00+00:00",
+          120.57,
+          127.44,
+          119.55,
+          127.39,
+          88744113,
+          "SMART"
+        ],
+        [
+          "2026-09-25T04:00:00+00:00",
+          126.8,
+          126.93,
+          122.84,
+          123,
+          68311949,
+          "SMART"
+        ]
+      ],
+      "forming": [],
+      "coverage": {
+        "requested_from": "5 completed RTH sessions",
+        "requested_to": "2026-09-27T15:23:01Z"
+      }
+    },
+    "hourly": {
+      "status": "READY",
+      "columns": [
+        "time",
+        "o",
+        "h",
+        "l",
+        "c",
+        "volume",
+        "venue"
+      ],
+      "rows": [],
+      "forming": [],
+      "coverage": {
+        "requested_from": "2026-09-26T15:23:01+00:00",
+        "requested_to": "2026-09-27T15:23:01Z"
+      },
+      "session_state": "MARKET_CLOSED"
+    },
+    "fine": {
+      "status": "READY",
+      "columns": [
+        "time",
+        "o",
+        "h",
+        "l",
+        "c",
+        "volume",
+        "venue"
+      ],
+      "rows": [],
+      "forming": [],
+      "coverage": {
+        "requested_from": "2026-09-27T11:23:01+00:00",
+        "requested_to": "2026-09-27T15:23:01Z"
+      },
+      "session_state": "MARKET_CLOSED"
+    }
+  }
+}

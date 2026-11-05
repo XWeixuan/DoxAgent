@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-INTC-HAMAS",
+  "ticker": "INTC",
+  "original_case_id": "case_0871a03aa74741058eca55f260197265",
+  "research_key": "3db87f60a8b19e5292ce",
+  "as_of": "2026-10-22T08:49:33Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Israel said to give US intel that Hamas has no plans to disarm, is prepping for new war - The Times of Israel",
+    "body": "Israel said to give US intel that Hamas has no plans to disarm, is prepping for new war The Times of Israel",
+    "url": "https://www.timesofisrael.com/liveblog_entry/israel-said-to-give-us-intel-that-hamas-has-no-plans-to-disarm-is-prepping-for-new-war/",
+    "publisher": "google_news_search_rss",
+    "published_at": "2026-10-22T08:49:33Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "Known Facts 和 Provisional Facts 均为空，当前消息的核心事实（以色列向美国提供哈马斯无意解除武装、正筹备新一轮战争的情报）没有任何已加载事实覆盖，属于新信息。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息内容为以色列与哈马斯的地缘政治报道，未涉及Intel产品、制造、客户、专利、供给、财务或指数等任何Policy match_scope所描述的具体事实，无候选召回。"
+  }
+}

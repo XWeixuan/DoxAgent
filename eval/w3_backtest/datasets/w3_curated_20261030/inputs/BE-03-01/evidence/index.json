@@ -1,0 +1,90 @@
+{
+  "as_of": "2026-09-29T14:56:00Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Ameren Missouri updates 20-year energy roadmap",
+      "url": "https://ameren.mediaroom.com/2026-09-28-Ameren-Missouri-updates-20-year-energy-roadmap-to-maintain-and-develop-cost-effective-energy-resources-to-keep-grid-reliable-for-customers",
+      "publisher": "Ameren Missouri",
+      "published_at": "2026-09-28",
+      "role": "primary resource plan"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Why is Bloom Energy stock surging today?",
+      "url": "https://www.investing.com/news/stock-market-news/why-is-bloom-energy-stock-surging-today-93CH-4922958",
+      "publisher": "Investing.com",
+      "published_at": "2026-09-29T10:04:00-04:00",
+      "role": "contemporaneous account"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Bloom Q2 2026 results",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/ex991_q226financialresults.htm",
+      "publisher": "Bloom Energy",
+      "published_at": "2026-07-28",
+      "role": "business baseline"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Bloom and Oracle expand partnership",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-and-Oracle-Expand-Strategic-Partnership-to-Deploy-up-to-2-8-GW-to-Accelerate-AI-Infrastructure-Build-Out/default.aspx",
+      "publisher": "Bloom Energy",
+      "published_at": "2026-04-13",
+      "role": "business connection"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Oracle sends force majeure notice on New Mexico data center",
+      "url": "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+      "publisher": "TechCrunch",
+      "published_at": "2026-09-24T11:11:00-07:00",
+      "role": "project context and responses"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Bloom Energy doubles Fremont footprint",
+      "url": "https://content.govdelivery.com/accounts/CAFREMONT/bulletins/42c66a4",
+      "publisher": "City of Fremont",
+      "published_at": "2026-09-25",
+      "role": "primary city announcement"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Bloom Energy eyes Fremont expansion",
+      "url": "https://www.bizjournals.com/sanjose/news/2026/08/06/bloom-energy-fremont-advanced-manufacturing-ai.html",
+      "publisher": "Silicon Valley Business Journal",
+      "published_at": "2026-08-06",
+      "role": "prior facility reporting"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Bloom annual report: production capacity",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm",
+      "publisher": "Bloom Energy",
+      "published_at": "2026-02-09",
+      "role": "prior capacity"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Nebius and Bloom partner on AI infrastructure",
+      "url": "https://nebius.com/newsroom/nebius-and-bloom-energy-partner-to-power-ai-infrastructure-build-out",
+      "publisher": "Nebius",
+      "published_at": "2026-05-20",
+      "role": "customer deployment"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-09-29T14:56:00Z"
+  }
+}

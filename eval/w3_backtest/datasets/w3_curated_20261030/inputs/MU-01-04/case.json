@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "MU-01-04",
+  "ticker": "MU",
+  "original_case_id": "case_ec8be0fbcbab4a8c94ce970700b962b1",
+  "research_key": "314f1c409595e1fa6efe",
+  "as_of": "2026-09-25T05:31:42.919000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Elon Musk Deploys 660,000 Nvidia GB300 GPUs for Colossus in Q4",
+    "body": "← Back to live feed · 1 stories across 1 day\nFriday, Sep 25, 2026\n1 story1 NEWElon Musk Deploys 660,000 Nvidia GB300 GPUs for Colossus in Q4 AI Sep 24, 11:44 PM EDT 4/3 \n SpaceX will activate 220,000 Nvidia GB300 chips next week at its Minihard GPU facility to begin a quarterly expansion. This rollout includes another 220,000 units in November and a potential addition of 220,000 in late December, totaling 660,000 chips in the fourth quarter. Each installment is valued at more than $15 billion, bringing the total cost of the Q4 expansion to approximately $50 billion for the Colossus computing clusters.\nThe overall Colossus infrastructure includes Colossus 1, which consists of 150,000 H100, 50,000 H200, and 30,000 GB200 GPUs, and Colossus 2, which houses 110,000 GB200 and 440,000 GB300 GPUs. Elon Musk stated the total combined value of the GPUs exceeds $100 billion, delivering over 2 GW of compute power.",
+    "url": "https://huggingnews.com/ai/elon-musk-deploys-660000-nvidia-gb300-gpus-for-colossus-in-q4-d98b7ec6",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-09-25T05:31:42.919000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息核心事实为SpaceX在Q4部署660,000颗Nvidia GB300 GPU（分三批各220,000颗，分别于下周、11月、12月下旬），在新建Minihard设施启动，总成本约$50B。现有Event中E96仅涵盖科技巨头>$700B的AI基础设施总承诺，E4为通用供需与定价，E105为AMD数据中心收入及OpenAI/Meta部署计划，均未涉及SpaceX Colossus具体GPU部署数量、设施、时间节点和成本。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息核心事实为SpaceX在Colossus平台部署660万颗Nvidia GB300 GPU，确认AI/服务器算力需求保持强劲。但该消息未提供任何与Micron产品份额、HBM/数据中心组合、内存定价、客户合同、良率、扩产或财务指标相关的具体事实，也未涉及内存供给约束、竞争供应商HBM份额变化或产品资格等任何Policy criterion所关注的实体信息。仅凭AI算力扩容的宽泛行业信号，不构成与任何Memory具体触发路径的直接事实对应。"
+  }
+}

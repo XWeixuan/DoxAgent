@@ -1,0 +1,81 @@
+{
+  "as_of": "2026-10-06T12:00:00Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "NASA Eyes Bulk Rocket Buy for Moon Base Amid SpaceX Phaseout",
+      "url": "https://www.reddit.com/r/BlueWire/comments/1wz613f/nasa_eyes_bulk_rocket_buy_for_moon_base_amid/",
+      "publisher": "Bloomberg / Loren Grush",
+      "published_at": "2026-10-06T12:00:00Z",
+      "role": "原报道"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "NASA Provides Update on Moon Base Rovers, Landers, Missions",
+      "url": "https://www.nasa.gov/news-release/nasa-provides-update-on-moon-base-rovers-landers-missions/",
+      "publisher": "NASA",
+      "published_at": "2026-05-26",
+      "role": "月球项目基线"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "NASA VADR Launch Services",
+      "url": "https://www.nasa.gov/vadr-venture-class-acquisition-of-dedicated-and-rideshare-launch-services/",
+      "publisher": "NASA",
+      "published_at": "2025-07",
+      "role": "采购机制"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Rocket Lab Selected by NASA to Provide Neutron Launch Services Under VADR",
+      "url": "https://rocketlabcorp.com/updates/rocket-lab-selected-by-nasa-to-provide-neutron-launch-services-under-vadr-launch-contract/",
+      "publisher": "Rocket Lab",
+      "published_at": "2025-01-09",
+      "role": "Neutron 资格与能力"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Rocket Lab second quarter 2026 results",
+      "url": "https://investors.rocketlabcorp.com/node/12996/pdf",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-08-10",
+      "role": "业务规模与火箭进度"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "NASA Moon Base cargo landers update",
+      "url": "https://www.nasa.gov/missions/moon-base/nasa-provides-updates-on-moon-base-cargo-landers-tech-demonstrations/",
+      "publisher": "NASA",
+      "published_at": "2026-08",
+      "role": "项目进度"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Neutron first launch window narrows",
+      "url": "https://spaceflightnow.com/2026/08/10/window-for-2026-launch-debut-of-rocket-labs-neutron-rocket-is-narrowing-as-development-continues/",
+      "publisher": "Spaceflight Now",
+      "published_at": "2026-08-10",
+      "role": "Neutron 进度限制"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "NASA awards four lunar deliveries",
+      "url": "https://www.nasa.gov/news-release/nasa-awards-more-moon-base-science-previews-new-opportunities/",
+      "publisher": "NASA",
+      "published_at": "2026-06-30",
+      "role": "既有任务订单"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-10-06T12:00:00Z"
+  }
+}

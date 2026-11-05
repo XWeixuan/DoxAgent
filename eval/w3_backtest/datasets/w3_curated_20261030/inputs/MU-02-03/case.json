@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "MU-02-03",
+  "ticker": "MU",
+  "original_case_id": "case_36bc442141224337890f79ba2d52a48a",
+  "research_key": "314f1c409595e1fa6efe",
+  "as_of": "2026-09-29T14:43:04.893000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "OpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge",
+    "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 NEWOpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge AI Sep 29, 10:20 AM EDT 25/18 \n The creator of ChatGPT saw its business-facing sales grow by more than 100% since July to accelerate AI adoption among corporate clients. This enterprise surge helped push OpenAI's annual recurring revenue to nearly $70 billion, an increase of more than 70% since the start of the third quarter, Axios reported. The company also added more revenue from consumer subscriptions in Q3 alone than it did throughout all of 2025.\nThe revenue expansion coincides with OpenAI and rival Anthropic preparing for potential initial public offerings. Current data suggest that previous estimates of the startup's recurring revenue, including a $40 billion figure reported by Bloomberg, significantly understated its current run rate.",
+    "url": "https://huggingnews.com/earnings/openai-annual-revenue-hits-nearly-70b-following-enterprise-surge-0481a074",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-09-29T14:43:04.893000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "OpenAI ARR 从已知约 $40B（F372）跃升至近 $70B，且企业端销售自 7 月以来增长超 100%、Q3 消费者订阅收入超过整个 2025 年、OpenAI 与 Anthropic 正筹备潜在 IPO——均为 E52 已加载事实未覆盖的新核心进展。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息报道OpenAI企业收入增长推动ARR接近700亿美元，属于AI服务商业务层面的宏观需求信号。该消息未涉及Micron的任何具体指标（CMBU/CDBU占比、HBM出货、ASP、毛利率、费用结构）、产品资格或交付状态、战略合同条款、扩产项目进展，也未直接披露服务器/HBM合同价格、内存供给约束或竞争供应商份额变化。与现有Policy criteria之间仅存在\"AI行业整体需求强\"这一宽泛主题层面的间接关联，缺乏具体、直接的触发事实对应，不满足Candidate召回标准。"
+  }
+}

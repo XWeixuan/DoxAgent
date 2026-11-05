@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-COHR-CORNING",
+  "ticker": "COHR",
+  "original_case_id": "case_5e9a10c4358e4fe38167166ca80037d6",
+  "research_key": "87e959d70c1dd33a49d2",
+  "as_of": "2026-10-27T12:37:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Corning Earnings Might Be Just What Optical Networking Stocks Need Right Now",
+    "body": "Corning stock is little changed after the optical networking company reports better-than-expected third-quarter earnings.",
+    "url": "https://finance.yahoo.com/m/31d6aad7-95c8-3e21-acdf-e24457bb38e3/corning-earnings-might-be.html?.tsrc=rss",
+    "publisher": "yahoo_finance_news",
+    "published_at": "2026-10-27T12:37:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "已加载事实覆盖了Corning第三季度营收和EPS数据本身，但未覆盖“盈利超出预期”以及财报后股价基本持平的市场反应；这些构成新的核心事实。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息仅称光网络公司第三季度财报好于预期且股价变化不大，没有披露具体的产品、客户、供货、合同、资本或监管事实，未落入任一 match_scope。"
+  }
+}

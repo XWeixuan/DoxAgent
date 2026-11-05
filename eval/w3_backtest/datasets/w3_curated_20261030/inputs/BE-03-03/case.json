@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "BE-03-03",
+  "ticker": "BE",
+  "original_case_id": "case_a5d78ace5c0d462fb2ae722ff04b234f",
+  "research_key": "befb2a7f17f0e2999874",
+  "as_of": "2026-09-29T18:10:19.614000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable",
+    "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable↩︎ AI Sep 28, 7:16 PM EDT 182/87 \n Anthropic is locked into more than $518 billion of cloud, compute and infrastructure spending over 10 years with six partners, and about 80% of the total is non-cancelable or payable regardless of usage, its IPO filing shows. The commitments include $252 billion in non-cancelable compute obligations across Microsoft, Google and Amazon, and $161.2 billion in Broadcom TPU leases that are largely non-cancelable.\nThe company also agreed to pay SpaceX up to $84.5 billion through 2029 for Nvidia-based compute, nearly double the roughly $45 billion cap SpaceX disclosed in May, The Information reported. Most of the SpaceX spending can be canceled with 90 days' notice, unlike the bulk of the buildout.\nThe obligations are more than 100 times Anthropic's 2025 revenue of $4.59 billion and roughly 25 times the $20.28 billion in cash, cash equivalents and short-term investments it held at year-end. The company posted an $8.06 billion operating loss in 2025, and its $41.97 billion net loss included about $34 billion in non-cash charges tied to the rising value of financing that could convert into shares. Its two largest customers accounted for 24% of revenue, and Anthropic warned that many of its largest clients are not locked into long-term contracts and could reduce or stop spending, even as it cannot cancel most of its own compute bill. Google and Amazon, both major investors in Anthropic, supply much of the infrastructure behind Claude. The IPO could value the company above $2 trillion.",
+    "url": "https://huggingnews.com/ai/update-anthropic-locked-into-518b-of-compute-deals-80percent-non-cancela-df538fe7",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-09-29T18:10:19.614000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "E82 已覆盖 Anthropic IPO 文件中约 $518B 云/计算/基础设施义务总量，但当前消息的核心新进展包括：(1) 约 80% 为非取消性义务（标题本身即以此为核心卖点）；(2) 具体拆分为 Microsoft/Google/Amazon $252B 非取消计算义务 + Broadcom $161.2B TPU 租约；(3) 新增与 SpaceX 最高 $84.5B（至 2029）Nvidia 计算协议，约为 SpaceX 此前披露 $45B 上限的两倍；(4) $8.06B 经营亏损、客户集中度 24%、客户未锁定长期合同警告。这些均未被任何 provisional fact 覆盖，构成尚未记录的核心事实进展。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息核心事实为Anthropic IPO文件披露的$518B十年期计算与基础设施支出承诺（涉及Microsoft、Google、Amazon、Broadcom、SpaceX、Nvidia），属于AI行业资本开支规模信息。消息未涉及任何具体数据中心建设时间表、现场firm-power需求、Bloom Energy Server项目、Project Jupiter许可/互联/排期、Bloom客户部署或任何Bloom产品/运营变化。虽被标记为BE ticker，但消息内容与所有Policy criterion之间不存在具体、实质性的触发关系，仅构成AI/数据中心的宽泛主题关联，不构成Candidate召回理由。"
+  }
+}

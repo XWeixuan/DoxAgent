@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-INTC-NEWSTREET",
+  "ticker": "INTC",
+  "original_case_id": "case_a763d23e53d8457493b759f09df5f45f",
+  "research_key": "3db87f60a8b19e5292ce",
+  "as_of": "2026-10-26T12:59:56Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Intel Corp receives Investment Bank Analyst Rating Update",
+    "body": "",
+    "url": "https://www.investing.com/news/pro/new-street-research-upgrades-intel-to-buy-with-a-price-target-of-12500-4972732",
+    "publisher": "investing_ticker_news",
+    "published_at": "2026-10-26T12:59:56Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "low",
+    "reason": "现有 F1874/F1875 已记录投行对英特尔的评级/目标价更新，可覆盖标题所称“收到投行分析师评级更新”的泛化事实；但标题未给机构、评级、目标价或日期，无法确认它指其中一笔（OLD）还是另一笔尚未记录的新更新（NEW）。",
+    "result": "OLD"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "标题仅称Intel收到投行分析师评级更新，正文为空，未披露评级内容、发布机构或CPU需求持续期、制造经济性、Foundry价值或估值等具体事实，不能确认落入任一match_scope。"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "INTC-01-04",
+  "ticker": "INTC",
+  "original_case_id": "case_2420a79ef4df43e2bfc5f4792d0ce38a",
+  "research_key": "fb4cd0c4d069b62c9aab",
+  "as_of": "2026-09-30T11:15:34Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "AI’s Semiconductor Boom Has a Clear Center of Gravity: Taiwan Semiconductor",
+    "body": "Taiwan Semiconductor Manufacturing Co. Ltd. (NYSE: TSM ) remains the biggest beneficiary of the artificial intelligence semiconductor boom, with analysts at Counterpoint Research expecting its growth to accelerate through the second half of 2026 as advanced-node demand and packaging capacity remain tight. Counterpoint said Taiwan Semiconductor’s revenue rose 34% year over year and 12% sequentially to $40.2 billion in the second quarter. That gave the company about 42% of the broader Foundry 2.0 market, up from 38% in 2025. The research firm expects Taiwan Semiconductor’s full-year 2026 revenue to grow about 43%, implying growth of nearly 50% in the second half. AI Demand Keeps Taiwan Semiconductor at the Center Counterpoint Associate Director Brady Wang said the AI investment cycle has broadened across pure-play foundries, non-memory chipmakers and outsourced semiconductor assembly and test companies. However, he said Taiwan Semiconductor remains the “central beneficiary.” The firm estimates Taiwan Semiconductor’s CoWoS advanced-packaging supply-demand gap at about 20% in 2026. It expects the shortfall to narrow to roughly 10% in 2027 as in-house capacity expands toward 185,000 wafers per month. Counterpoint said Taiwan Semiconductor’s second-half growth will depend on the ramp of its N2 process, wafer price increases and planned CoWoS capacity additions. Tight packaging capacity is currently limiting AI product shipments, prompting Taiwan Semiconductor to increase back-end investment while customers develop alternative packaging options. See More: Top Value Stocks Samsung, Intel Gain As Customers Seek Alternatives Senior Analyst William Li said Samsung Electronics Co. Ltd. (OTC: SSNLF ) and Intel Corp. (NASDAQ: INTC ) are also benefiting as customers look for additional manufacturing sources. Samsung held the No. 2 foundry position with about 4% market share during the quarter, supported by SF4 and SF5 demand and higher wafer prices. Intel, meanwhile, has gained traction with its EMIB-T packaging technology, which has been adopted for Google’s next-generation TPU, according to Counterpoint. Still, Li said neither company currently matches Taiwan Semiconductor’s combination of advanced-node scale, manufacturing yields and packaging execution. AI Boom Broadens Across Chip Supply Chain The broader Foundry 2.0 market reached a record $96.6 billion in second-quarter revenue, up 25% from a year earlier and 11% sequentially. Counterpoint attributed the growth to demand for AI GPUs, custom ASICs, server CPUs, networking chips and power-management semiconductors. Non-Taiwan Semiconductor pure-play foundry revenue rose 18% year over year. Semiconductor Manufacturing International Corp. led that group with 36% growth, helped by demand for domestic AI chips in China. Hua Hong and Nexchip posted growth of 17% and 21%, respectively. Meanwhile, outsourced semiconductor assembly and test revenue rose 22% to $12.6 billion. ASE Technology posted 24% growth, while Amkor Technology, Inc. (NASDAQ: AMKR ) grew 26%, as advanced packaging, wafer probing and AI processor testing demand strengthened. Counterpoint expects the Foundry 2.0 market to maintain double-digit growth through the second half of 2026. However, it flagged CoWoS and substrate shortages, higher wafer and packaging costs, weak consumer demand and trade-policy uncertainty as key risks. TSM Price Action: Taiwan Semiconductor shares were down 0.49% at $454.72 during premarket trading on Wednesday, according to Benzinga Pro data . Photo via Shutterstock",
+    "url": "https://www.benzinga.com/markets/tech/26/09/62074203/ais-semiconductor-boom-has-a-clear-center-of-gravity-taiwan-semiconductor",
+    "publisher": "benzinga_news",
+    "published_at": "2026-09-30T11:15:34Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息的核心事实——TSMC Q2营收$40.2B(同比+34%)、Foundry 2.0市占率42%、CoWoS供需缺口约20%(2026)/10%(2027)及185K wafer/month产能目标、全年2026营收增长约43%——均未被已加载Event Fact覆盖。Intel EMIB-T被Google下一代TPU正式采用也超越了E29中UBS所述'可能引导客户转向'的条件性预期，构成新的事实进展。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息中关于Intel EMIB-T的关键表述为Counterpoint Research称EMIB-T 'has been adopted for Google's next-generation TPU'。Criterion C1要求两个里程碑同时成立：(1)具体产品完成电气、热和可靠性资格；(2)形成绑定量产订单/产能预订或首批付费good-package生产。消息仅说'adopted for'，属于设计选择/采用决策层面的陈述，未明确提及系统级资格完成或绑定商业订单/产能预订/付费量产。此外，该信息来源于研究机构(Counterpoint)分析师表述，trigger_boundary明确将'分析师观点'和'Google采用预期'列为不触发项；后文还指出Intel尚未达到TSMC的packaging execution水平，进一步说明未跨过binding production边界。"
+  }
+}

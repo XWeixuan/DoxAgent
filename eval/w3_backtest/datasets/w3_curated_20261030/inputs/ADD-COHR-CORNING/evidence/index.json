@@ -1,0 +1,72 @@
+{
+  "as_of": "2026-10-27T12:37:00Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Corning Delivers Outstanding Third-Quarter Results",
+      "url": "https://investor.corning.com/news-and-events/news/news-details/2026/Corning-Delivers-Outstanding-Third-Quarter-Results1/default.aspx",
+      "publisher": "Corning",
+      "published_at": "2026-10-27",
+      "role": "peer primary results"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Corning shares rise 3% in premarket trade after Q3 EPS, revenue beat estimates",
+      "url": "https://www.investing.com/news/earnings/corning-shares-rise-3-in-premarket-trade-after-q3-eps-revenue-beat-estimates-4975090",
+      "publisher": "Investing.com",
+      "published_at": "2026-10-27T11:21:00Z",
+      "role": "contemporaneous consensus"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Corning Second Quarter 2026 Results",
+      "url": "https://www.sec.gov/Archives/edgar/data/24741/000002474126000253/glw-20260728xex99xq22026.htm",
+      "publisher": "Corning / SEC",
+      "published_at": "2026-07-28",
+      "role": "prior guidance"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Coherent Corp. Reports Fourth Quarter and Full Year Fiscal 2026 Results",
+      "url": "https://www.coherent.com/news/press-releases/fourth-quarter-and-fiscal-year-2026-results",
+      "publisher": "Coherent",
+      "published_at": "2026-08-12",
+      "role": "issuer baseline"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "NVIDIA and Coherent Announce Strategic Partnership",
+      "url": "https://nvidianews.nvidia.com/news/nvidia-and-coherent-announce-strategic-partnership-to-develop-optics-technology-to-scale-next-generation-data-center-architecture",
+      "publisher": "NVIDIA",
+      "published_at": "2026-03-02",
+      "role": "issuer transmission"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Corning falls after forecasting weaker than expected sales",
+      "url": "https://www.marketscreener.com/news/corning-falls-over-20-after-forecasting-weaker-than-expected-sales-ce7f51ddde8fff26",
+      "publisher": "Reuters / MarketScreener",
+      "published_at": "2026-07-28",
+      "role": "prior expectation and counterpoint"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Coherent FY2026 Annual Report",
+      "url": "https://www.sec.gov/Archives/edgar/data/820318/000110465926114851/tm264290d2_ars.pdf",
+      "publisher": "Coherent / SEC",
+      "published_at": "2026-10",
+      "role": "issuer exposure and constraints"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-10-27T12:37:00Z"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-SNOW-OCI",
+  "ticker": "SNOW",
+  "original_case_id": "case_e925257ac49d4e199f5702bcc74423ff",
+  "research_key": "29dbf6f7cff1f1ad5a42",
+  "as_of": "2026-10-27T16:12:32Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Oracle to offer Snowflake as native service on its cloud",
+    "body": "© Reuters.\n\nLAS VEGAS - Oracle Corp. (NYSE:ORCL) and Snowflake Inc. (NYSE:SNOW) announced today that Snowflake AI Data Cloud will be available as a native, first-party service on Oracle Cloud Infrastructure, according to a press release statement.\n\nThe arrangement will allow customers to purchase and provision Snowflake directly through Oracle, with unified pricing and billing. Customers will be able to use Oracle Universal Credits to consume Snowflake on OCI.\n\nOracle will manage pricing, discounts, and billing for the service, providing customers with a single commercial relationship. The offering is designed to work with Oracle Fusion Cloud Applications, Oracle NetSuite, Oracle Autonomous AI Database, MySQL HeatWave, and Oracle NoSQL database.\n\n\"By making Snowflake available as a native OCI service, we’re giving customers more choice in the AI and data capabilities they can use, while simplifying how they deploy, manage, and pay for those services,\" said Clay Magouyrk, CEO of Oracle.\n\nThe service aims to enable data transfer through supported integrations and reduce cross-cloud data movement costs by allowing data to remain within OCI. Customers will maintain control over data access, use, and governance.\n\n\"Snowflake is excited to be the flagship AI data platform partner running as a first party offering inside Oracle Cloud Infrastructure,\" said Sridhar Ramaswamy, CEO of Snowflake.\n\nThe announcement was made at Oracle AI World in Las Vegas. Snowflake reported having more than 14,500 customers globally.\n\nThis article was generated with the support of AI and reviewed by an editor. For more information see our T&C.\n\nLatest comments",
+    "url": "https://www.investing.com/news/company-news/oracle-to-offer-snowflake-as-native-service-on-its-cloud-93CH-4976442",
+    "publisher": "investing_ticker_news",
+    "published_at": "2026-10-27T16:12:32Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息的核心事实是 Oracle 与 Snowflake 宣布 Snowflake AI Data Cloud 将作为 OCI 原生第一方服务提供，并涉及统一定价、计费及 Oracle Universal Credits 消费等安排；本轮已知事实为空，尚无任何 Fact 覆盖这些核心事实。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "pol_f818654e103b4a2f87fb330401c0eb13：Oracle宣布Snowflake作为OCI原生第一方服务并允许客户用Oracle Universal Credits购买，属于云商Marketplace/承诺抵扣与结算准入范围；但原文均为“will be available/will allow”，未确认该资格已生效，故不写入C1命中，仅列RELATED。pol_9d8c96e157284bb7a6c9f7dba7faa38d：该安排体现平台套装与已承诺云预算可用性，但无具体买方新项目定标或预算批准，未命中其条件，仅RELATED。pol_1e50c258ad2f4405b487a0d7900ad610：消息未涉及Snowflake自身云/模型采购合同、净价或最低承诺，排除。"
+  }
+}

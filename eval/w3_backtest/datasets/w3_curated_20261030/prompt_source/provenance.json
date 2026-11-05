@@ -1,0 +1,10 @@
+{
+  "source": "production_active",
+  "bundle_id": "d668eeec07283ce692b906ba1d40c1fef491dbf06e3b82d4d6bc8443ff8d1b97",
+  "hashes": {
+    "AGENTS.md": "a14b4d9bcf6701f8c53c217a2de5cd79c3615eff7b0df0b86e0058eb1f13db0d",
+    "skills/skill.md": "d6e0ee1a05ee349ea5691974b8095f41e2384c4fa39e4b8d34ee5e7e347009fa",
+    "contract.json": "2f00c2612092f0202b5677fd030ce2c6e3428e729fb3c89af8fbd32fc8da05be",
+    "backtest.md": "570e1b5b2adacfacbac2f714c294e2a1676b5289862d60e6d75ab0f6bf598afa"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "INTC-01-05",
+  "ticker": "INTC",
+  "original_case_id": "case_7378fdedc94241bbacdf753c94cc2f8d",
+  "research_key": "fb4cd0c4d069b62c9aab",
+  "as_of": "2026-10-01T12:50:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Micron projects tightening RAM shortages through 2028 as it generates record profit",
+    "body": "Facebook\n\nX\n\nWhatsapp\n\nReddit\n\nPinterest\n\nFlipboard\n\nEmail\n\nMicron said during its FY 2026 earnings call that RAM and storage chip shortages will worsen in 2027 and 2028, even as it announced a record gross margin of 86.25%. CEO and chairperson Sanjay Mehrotra said that the company has already sold most of its capacity for next year and that customers will have to pay more compared to 2026.\n\n“In calendar 2027 as well as 2028, we see demand exceeding supply. In fact, we see greater tightness in the industry in 2027 and in 2028 versus 2026. Overall, supply-demand environment is only getting tighter,” Mehrotra said. “We do not have line of sight to when supply and demand will return to balance.”\n\nThe memory and storage industry is not holding back on increasing production, though, with Micron saying that NAND and DRAM shipments are expected to grow in the low-to-mid 20s percentage range for the next two years. However, it seems that this is not enough to match growing demand, as it expects “the industry to remain supply constrained in both years.” Still, it seems that manufacturers are prioritizing HBM demand for AI data centers, with the company expecting shipments of these chips to grow faster than conventional DRAM.\n\nMicron and other chip manufacturers are bringing new factories online to increase output, but it’s going to take years before they can start producing chips. But even as we’re amid an unprecedented multi-year memory chip shortage, Micron also announced record financial guidance. It forecasted a record $61.5 billion FQ1 revenue and a gross margin of 86.25%, implying a gross profit of more than $53 billion. After accounting for an estimated $2.06 billion in operating expenses and a tax rate of around 15.5%, the company said its earnings per share sit at $38.15, plus or minus $1.00, for approximately 1.15 billion shares.\n\nThese are record numbers, but it’s not surprising given the amount of money being poured into AI data centers. It has gotten to the point where the memory workers from Samsung and SK hynix have demanded and received bonuses worth hundreds of thousands of dollars, with Micron’s workers in Taiwan threatening to strike if they do not receive a bigger slice of the AI pie. While this is good news for the average employee from these big companies, it’s unfortunately bad news for the average person who must pay for RAM and storage at higher prices.\n\nMicron’s prediction goes directly against the Acer CEO’s prediction that PC prices will decline by late 2027, especially as Chinese RAM chips enter the market and consumers simply refuse to pay more for expensive memory chips. We can only wait and see which of these CEOs will be correct when it comes to DRAM and NAND pricing.\n\nFollow Tom's Hardware on Google News, or add us as a preferred source, to get our latest news, analysis, & reviews in your feeds.\n\nGet Tom's Hardware's best news and in-depth reviews, straight to your inbox.\n\nJowi Morales is a tech enthusiast with years of experience working in the industry. He’s been writing with several tech publications since 2021, where he’s been interested in tech hardware and consumer electronics.",
+    "url": "https://www.tomshardware.com/pc-components/dram/micron-projects-tightening-ram-shortages-through-2028-as-it-generates-record-profit-record-86-25-percent-gross-margin-drives-over-usd53-billion-in-quarterly-profit",
+    "publisher": "tomshardware_rss",
+    "published_at": "2026-10-01T12:50:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息核心事实包含E255尚未覆盖的新内容：1）毛利率86.25%及EPS指引$38.15(±$1.00)为全新财务指标，F1101仅覆盖$615亿营收指引；2）\"已卖出明年大部分产能、客户将支付高于2026年价格\"针对全部RAM/存储，而F1100仅涉及HBM芯片供应协议；3）\"2027和2028年行业紧张程度将超过2026\"及\"看不到供需回归平衡的时间线\"的恶化方向性表述，超出F1102\"供应持续受限\"的程度描述。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息核心事实为Micron在FY2026财报电话会上对2027-2028年RAM/NAND/DRAM行业供需紧平衡的前瞻预测及HBM优先级说明，属于存储器供应商层面的行业展望。消息中不存在Intel自身确认的产品出货受限、订单延期或成本冲击，也不涉及具体Intel客户/伙伴的行动或Intel季报数据。各Policy的criterion均要求Intel或具名客户/伙伴对特定触发条件作出确认或描述具体事件（如Intel确认内存价格恶化是Q3出货缺口原因、后端伙伴确认封装starts被配给等），本消息的事实形态和归属主体与任何criterion的触发路径不构成直接、实质对应，无合理命中可能。"
+  }
+}

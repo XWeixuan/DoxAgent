@@ -351,6 +351,24 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
         finally:
             archive.stdout.close()
         if archive.wait()!=0:raise ValueError('committed build context unavailable')
+        # The optional native runtime is built separately and never committed.
+        # Carry only verified runtime files into the immutable source context.
+        runtime=repo/'deploy/codex-runtime'
+        if 'backend' in kinds and (runtime/'manifest.json').is_file():
+            native=json.loads((runtime/'manifest.json').read_text())
+            patch=context/'deploy/codex-patches/w3-time-awareness-0.159.3.patch'
+            if hashlib.sha256(patch.read_bytes()).hexdigest()!=native['patch_sha256']:
+                raise ValueError('native runtime patch does not match selected commit')
+            expected={'codex':native['binary_sha256'],
+                      'codex-code-mode-host':native['companions']['codex-code-mode-host']['sha256']}
+            for name,sha in expected.items():
+                with (runtime/name).open('rb') as stream:
+                    if hashlib.file_digest(stream,'sha256').hexdigest()!=sha:
+                        raise ValueError('native runtime hash mismatch: '+name)
+                shutil.copy2(runtime/name,context/'deploy/codex-runtime'/name)
+            for name in ('manifest.json','LICENSE.codex'):
+                shutil.copy2(runtime/name,context/'deploy/codex-runtime'/name)
+            receipt['native_runtime']=native
         # Guardian's existing source-identity contract hashes the full committed
         # archive, independently of the smaller application build context.
         archive=subprocess.Popen(['git','-C',str(repo),'archive','--format=tar',commit],stdout=subprocess.PIPE)

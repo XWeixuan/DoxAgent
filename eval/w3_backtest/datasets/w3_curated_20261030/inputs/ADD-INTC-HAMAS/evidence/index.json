@@ -1,0 +1,72 @@
+{
+  "as_of": "2026-10-22T08:49:33Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Israel said to give US intel that Hamas has no plans to disarm",
+      "url": "https://www.timesofisrael.com/liveblog_entry/israel-said-to-give-us-intel-that-hamas-has-no-plans-to-disarm-is-prepping-for-new-war/",
+      "publisher": "The Times of Israel",
+      "published_at": "2026-10-22T11:47:00+03:00",
+      "role": "原报道"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Gaza languishes a year after ceasefire",
+      "url": "https://apnews.com/article/f6c105e8f72d8b478d78312142d888ed",
+      "publisher": "Associated Press",
+      "published_at": "2026-10-10",
+      "role": "停火与各方立场"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Hamas says it will disarm if Israel halts strikes and withdraws",
+      "url": "https://apnews.com/article/3ebcae647ef8db8a7bafa97e53d050ed",
+      "publisher": "Associated Press",
+      "published_at": "2026-07-31T11:11:47Z",
+      "role": "Hamas 声明与条件"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Intel quarterly report: risks from conflict",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "publisher": "Intel",
+      "published_at": "2026-07-24",
+      "role": "Intel 以色列业务与风险"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Second worker dies after Intel plant blast",
+      "url": "https://www.timesofisrael.com/second-worker-dies-of-wounds-sustained-in-intel-plant-blast-in-southern-israel/",
+      "publisher": "The Times of Israel",
+      "published_at": "2026-10-15",
+      "role": "同期工厂事件"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Intel in Israel",
+      "url": "https://www.intel.com/content/www/us/en/corporate-responsibility/intel-in-israel.html",
+      "publisher": "Intel",
+      "published_at": null,
+      "role": "公司业务地点"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "US company to identify Gaza disarmament sites",
+      "url": "https://english.ahram.org.eg/NewsContentP/58/578773/War-on-Gaza/US-company-to-identify-sites-for-Hamas-disarmament.aspx",
+      "publisher": "Ahram Online",
+      "published_at": "2026-10-12",
+      "role": "同期外交进度"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-10-22T08:49:33Z"
+  }
+}

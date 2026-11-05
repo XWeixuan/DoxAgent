@@ -1,0 +1,72 @@
+{
+  "as_of": "2026-10-21T10:33:00Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "NVIDIA and Supply Chain Partners Expand Capacity",
+      "url": "https://nvidianews.nvidia.com/news/nvidia-and-supply-chain-partners-expand-capacity-to-accelerate-ai-infrastructure-buildout",
+      "publisher": "NVIDIA",
+      "published_at": "2026-10-21T10:33:00Z",
+      "role": "原发公告"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "NVIDIA and Coherent Announce Strategic Partnership",
+      "url": "https://coherent.gcs-web.com/news-releases/news-release-details/nvidia-and-coherent-announce-strategic-partnership-develop",
+      "publisher": "NVIDIA and Coherent",
+      "published_at": "2026-03-02",
+      "role": "既有商业关系"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "NVIDIA Announces Spectrum-X Photonics",
+      "url": "https://nvidianews.nvidia.com/_gallery/download_pdf/67d9bf5b3d6332b0a6d11f0e/",
+      "publisher": "NVIDIA",
+      "published_at": "2025-03-18",
+      "role": "既有平台及生态"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Coherent CPO collaboration with NVIDIA",
+      "url": "https://www.coherent.com/news/press-releases/coherent-recognized-as-nvidia-ecosystem-innovation-partner",
+      "publisher": "Coherent",
+      "published_at": "2025-03-18",
+      "role": "Coherent 技术关联"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Coherent fiscal fourth quarter 2026 results",
+      "url": "https://www.coherent.com/news/press-releases/fourth-quarter-and-fiscal-year-2026-results",
+      "publisher": "Coherent",
+      "published_at": "2026-08-12",
+      "role": "公司业务规模"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "NVIDIA CPO supply chain technical diagram",
+      "url": "https://www.swissphotonics.net/libraries.files/Swissphotonics_Lunch_Chat_EmmaXu_1014.pdf",
+      "publisher": "Swissphotonics",
+      "published_at": "2025-10-14",
+      "role": "供应链分工"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Spectrum-X Ethernet Photonics enters full production",
+      "url": "https://www.storagereview.com/news/nvidia-spectrum-x-ethernet-photonics-enters-full-production-with-4x-fewer-lasers-and-a-five-vendor-cpo-supply-chain",
+      "publisher": "StorageReview",
+      "published_at": "2026-08-15",
+      "role": "同期具体平台供应分工"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-10-21T10:33:00Z"
+  }
+}

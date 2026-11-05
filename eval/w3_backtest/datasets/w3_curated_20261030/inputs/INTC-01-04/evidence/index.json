@@ -1,0 +1,90 @@
+{
+  "as_of": "2026-09-30T11:15:34Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Global Foundry 2.0 Revenue Rises 25% YoY to a Record $96.6 Billion in Q2 2026",
+      "url": "https://counterpointresearch.com/en/insights/global-foundry-20-revenue-rises-25-yoy-to-a-record-966-billion-in-as-advanced",
+      "publisher": "Counterpoint Research",
+      "published_at": "2026-09-29",
+      "role": "原发研究"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Google reportedly books Intel for packaging more than 3 million TPUs in 2028",
+      "url": "https://www.tomshardware.com/tech-industry/google-reportedly-books-intel-for-more-than-3-million-tpus-in-2028",
+      "publisher": "Tom’s Hardware",
+      "published_at": "2026-06-10",
+      "role": "先前报道"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Intel reportedly in talks with Google and Amazon over advanced packaging",
+      "url": "https://www.tomshardware.com/tech-industry/semiconductors/intel-reportedly-in-talks-with-google-and-amazon-over-advanced-packaging",
+      "publisher": "Tom’s Hardware",
+      "published_at": "2026-04-07",
+      "role": "先前谈判报道"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Intel’s U.S. Advanced Packaging Enables Next-Generation AI Semiconductors",
+      "url": "https://www.intel.com/content/www/us/en/newsroom/news/intel-foundry/intels-us-advanced-packaging-enables-next-generation-ai-semiconductors.html",
+      "publisher": "Intel",
+      "published_at": "2026-07-29",
+      "role": "技术传导"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Intel 2025 annual report",
+      "url": "https://www.intc.com/filings-reports/annual-reports/content/0000050863-26-000011/intc-20251227.htm",
+      "publisher": "Intel",
+      "published_at": "2026-01-23",
+      "role": "既有业务基线"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Intel Reports Second-Quarter 2026 Financial Results",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000155/q226earningsrelease.htm",
+      "publisher": "Intel",
+      "published_at": "2026-07-23",
+      "role": "业务规模"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Intel Q2 2026 quarterly report",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "publisher": "Intel",
+      "published_at": "2026-07-24",
+      "role": "代工业务基数"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "TSMC company update",
+      "url": "https://www.kgi.com.hk/en/-/media/files/kgishk/research-reports/tw-reports/tsmc_2330-tt_01102025e.pdf",
+      "publisher": "KGI Securities",
+      "published_at": "2025-10-01",
+      "role": "封装先前预期"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "TSMC second-quarter 2026 earnings call",
+      "url": "https://www.fool.com/earnings/call-transcripts/2026/07/16/tsm-tsm-q2-2026-earnings-call-transcript/",
+      "publisher": "Motley Fool transcript of TSMC",
+      "published_at": "2026-07-16",
+      "role": "TSMC 先前指引"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-09-30T11:15:34Z"
+  }
+}

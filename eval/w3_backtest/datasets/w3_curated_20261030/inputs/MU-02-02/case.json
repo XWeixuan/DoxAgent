@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "MU-02-02",
+  "ticker": "MU",
+  "original_case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+  "research_key": "314f1c409595e1fa6efe",
+  "as_of": "2026-09-29T16:08:54+08:00",
+  "time_basis": "FIRST_AVAILABLE_PUBLICATION_PLUS_5M",
+  "message": {
+    "title": "HBM Supply Constraints Persist, 2027 Price Outlook Revised Upward with Blended ASP Forecast to Rise 121% YoY, Says TrendForce",
+    "body": "TrendForce’s latest research reveals that continued expansion in AI server demand is keeping HBM and conventional DRAM in competition for limited advanced-process and wafer capacity. Meanwhile, yields and output for next-generation products will take time to ramp, keeping memory supply tight through 2027.\n\nAgainst a backdrop of continued memory price increases, suppliers have also taken a firmer stance on raising HBM prices in 2027. TrendForce has raised its 2027 HBM price outlook to reflect persistent supply constraints, a growing share of higher-priced HBM4, and the gradual ramp-up of HBM4e in 2H27. Blended ASP is now projected to jump 121% YoY.\n\nSupply and cost constraints drive capacity adjustments, with 8-Hi emerging as a priority option\n\nTrendForce reports that GPU and ASIC manufacturers are now considering reducing HBM capacity per device. This shift is driven not by waning end-market demand but by limited HBM supply and quickly increasing system costs.\n\nCompared to earlier plans for 12-Hi HBM modules, 8-Hi configurations use fewer DRAM dies, lowering both the cost per stack and the overall GPU bill of materials. These configurations also enable the same HBM bit output to support more GPUs. Given the ongoing tight HBM supply, 8-Hi setups are expected to be a priority for evaluation by many GPU and ASIC vendors in 2027, balancing performance, supply, and cost.\n\nHowever, reducing HBM capacity does not necessarily translate into a lower price per gigabit. Each HBM stack requires one base die, and this cost does not decline proportionally with the number of DRAM layers. An 8-Hi stack has less DRAM capacity over which to spread the base-die cost than a 12-Hi stack, making its per-Gb cost actually higher. TrendForce expects 8-Hi products to carry a roughly 10–20% price premium per Gb over 12-Hi products in 2027.\n\nOverall, TrendForce expects the HBM market to remain supply-constrained in 2027. With both availability and rising costs shaping purchasing decisions, 8-Hi penetration is expected to increase as more GPU and ASIC vendors evaluate the configuration. However, its higher per-Gb cost relative to 12-Hi will remain an important consideration in specification negotiations and supply-chain planning. As a result, while adjustments to HBM capacity may help alleviate some GPU cost pressure in 2027, they are unlikely to reverse the broader trend of substantial HBM price increases.",
+    "url": "https://www.trendforce.com/presscenter/news/20260929-13255.html",
+    "publisher": "trendforce_press_releases",
+    "published_at": "2026-09-29T04:00:00Z",
+    "publication_time_basis": "DATE"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "当前消息包含三个未被加载事实覆盖的核心进展：(1) TrendForce将2027年HBM混合ASP涨幅上调至121% YoY，并给出HBM4e在2H27逐步爬坡的定价逻辑；(2) GPU/ASIC厂商因供应和成本约束将8-Hi而非12-Hi确立为2027年优先评估配置（E97仅涉及Rubin单品的4-Hi方案，非行业性8-Hi转向）；(3) 8-Hi因base-die成本分摊于更少DRAM层，预计较12-Hi存在10–20%每Gb溢价。上述均为新量化/新方向性事实。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息描述的是GPU和ASIC厂商\"正在考虑\"(considering)将HBM从12-Hi降至8-Hi，以及TrendForce预计8-Hi将在2027年\"被优先评估\"(priority for evaluation)和\"渗透率预计上升\"(expected to increase)。这些均为计划、预测和评估阶段的前瞻性表述，未达到C2所要求的\"正式量产或持续部署证据确认单颗容量低于36GB 12-high并在至少一个后续出货窗口持续存在\"的触发边界。C1方面，消息未涉及HBM被替代内存取代的任何事实。"
+  }
+}

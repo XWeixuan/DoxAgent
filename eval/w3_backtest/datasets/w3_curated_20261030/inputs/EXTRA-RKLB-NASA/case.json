@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "EXTRA-RKLB-NASA",
+  "ticker": "RKLB",
+  "original_case_id": null,
+  "research_key": "39623918585483c4a637",
+  "as_of": "2026-10-06T12:00:00Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "NASA Eyes Bulk Rocket Buy for Moon Base Amid SpaceX Phaseout",
+    "body": "Bloomberg reports that NASA was close to announcing bulk purchases of launch services for its planned roughly $30 billion permanent lunar base. The opening explains that NASA was considering buying launches across multiple rocket types to address a wider industry launch-supply shortage and preserve options for delivering cargo to the lunar surface. It then begins a quote from Moon Base program lead Carlos García-Galán describing evaluation of bulk launch buys; the public page truncates the article at that point.\n\n[Source availability: PARTIAL. Only the publicly visible opening is provided; later paywalled passages are unavailable and must not be inferred.]",
+    "url": "https://news.bloomberglaw.com/federal-contracting/nasa-eyes-bulk-rocket-buy-for-moon-base-amid-spacex-phaseout",
+    "publisher": "bloomberg-news",
+    "published_at": "2026-10-06T12:00:00Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "result": "NEW",
+    "confidence": "normal",
+    "reason": "当前消息核心事实为NASA接近宣布批量采购火箭发射服务以建设约300亿美元永久月球基地，涉及跨多种火箭类型采购以应对行业发射供应短缺。已加载Event E92仅涉及FAA提出豁免环境法规以简化商业太空发射审批的监管规则，与NASA月球基地批量发射采购在主体、事件性质和现实进展上均无重叠，核心事实完全未被覆盖。"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "消息仅描述NASA\"接近宣布\"且\"正在考虑\"跨多火箭类型批量采购发射服务用于月球基地计划，属于尚未形成的意向/规划阶段，且文章截断。未出现任何具体事实：无正式合同、task order、option行权、工作授权、发射窗口分配，也无政府拨款/采购正式决定影响至少两个RL项目，更不涉及Iridium合并或Space Systems交付事件。不落入任何match_scope。"
+  }
+}
