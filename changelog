@@ -2640,3 +2640,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-06 — BE恢复修复交付：515d66ef已仅发布Executor，镜像4b87d1097974；157项回归零跳过，Live/Paper完整只读同步及PAPER ONDS一股买卖通过。Gateway历史日志确认13:15后端重连initialLoad挂起，完成订单pending至23:45自动重启；LIVE关闭连接时自动下载订单，保留显式串行对账。LIVE按授权仅一次BUY ONDS 1股LMT4.62，券商201要求Client Portal邮件token验证，最终Cancelled、0成交/0持仓，无重试/对冲/卖出；旧BE/INTC失败保持。报告docs/be-execution-recovery-fix-acceptance-20261106.md。
 
 2026-11-06 — completed_orders复发修复：Gateway后端CCP重连后initialLoad全局pending会跨API客户端阻塞完成订单查询，串行化与API重连不足以清除。将当前挂单/成交/持仓/资金对账与完成订单历史状态分开，缺End明确history_complete=false/UNAVAILABLE，同socket保留单个pending请求等待迟到End，不重叠查询、不将缺失历史当空列表；核心对账缺End仍断线重试。保留未知提交、撤单终态及成交数量不符时的原阻塞，不重放旧BE/INTC。新增缺历史正常退出与UNKNOWN防重回归；恢复Gateway内部挂起后进行只读与严格一次LIVE ONDS 1股验收。
+
+2026-11-06 — completed_orders复发修复验收：de78ec13已发布，仅覆盖ibkr_session，生产三份执行源码摘要核对一致；Gateway自带05:55临时重启清除pending后恢复23:45，LIVE/PAPER完整只读同步通过。PAPER ONDS买1卖1后归零；本次新授权LIVE仅一次BUY ONDS 1，限价4.53、实成交4.50，permId1861419970，Filled，独立只读复核成交/费用/持仓/现金一致。保留1股人工验收持仓，无对冲/追加/卖出，无普通交易组自动退出；旧BE/INTC仍FAILED/CLOSED、0attempt。35项定向通过，扩展142通过/1项既有LEGACY旧错误文案断言失败，Ruff通过。报告docs/completed-orders-recurrence-fix-live-acceptance-20261106.md。

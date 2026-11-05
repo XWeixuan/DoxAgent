@@ -1,3 +1,5 @@
+> 后续复发与验收更新：见 [completed_orders 复发修复与 LIVE 单股验收](completed-orders-recurrence-fix-live-acceptance-20261106.md)。上一版 API 重连不足以清除 Gateway 全局 pending；后续已调整历史查询依赖、恢复 Gateway，并完成新授权的 LIVE BUY ONDS 1 股成交。
+
 # BE失败计数与LIVE完成订单查询：修复、发布与验收
 
 日期：2026-11-06，北京时间。代码 `515d66ef` 已提交并推送；运行镜像 `4b87d1097974`。

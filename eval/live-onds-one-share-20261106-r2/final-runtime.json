@@ -1,0 +1,96 @@
+{
+  "LIVE": {
+    "profile_revision": "ep_69fe18f1c528fd9ca3644519",
+    "account_type": "CASH",
+    "recovery": {},
+    "sync": {
+      "complete": true,
+      "at": "2026-11-05T21:57:04.708717+00:00",
+      "history_complete": true,
+      "history_scope": "BROKER_SESSION_WINDOW",
+      "connection_generation": 1,
+      "stage_seconds": {
+        "open_orders": 0.012,
+        "executions": 0.045,
+        "positions": 0.109,
+        "account": 0.098,
+        "completed_orders": 0.886
+      },
+      "informational_counts": {
+        "2104": 1,
+        "2106": 1,
+        "2158": 1,
+        "2100": 1
+      }
+    }
+  },
+  "PAPER": {
+    "profile_revision": "ep_7bf502b633753cde64a06b7a",
+    "account_type": "MARGIN",
+    "recovery": {},
+    "sync": {
+      "complete": true,
+      "at": "2026-11-05T00:27:19.967648+00:00",
+      "history_scope": "BROKER_SESSION_WINDOW",
+      "connection_generation": 1,
+      "stage_seconds": {
+        "executions": 0.303,
+        "open_orders": 0.0,
+        "completed_orders": 0.0,
+        "positions": 0.002,
+        "account": 0.09
+      },
+      "informational_counts": {
+        "2104": 1,
+        "2106": 1,
+        "2158": 1,
+        "2100": 23
+      }
+    }
+  },
+  "source_hashes": {
+    "ibkr_session": "7b01c587a600dee5a64fbe16790671dbdff2603f1855bd3901aaac99315d7481",
+    "executor": "4a775d96e142f94c587b133a4939a4b4edab708e9698ca5fdd9faedebf84444f",
+    "repository": "a7da1cd3abd65570b446ef2081679f25b55eb8ab240519b22ea0b2ec577e4c44"
+  },
+  "active_jobs": [],
+  "owned_lots": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "executor": {
+    "running": true,
+    "image": "sha256:71be04315849b1fafcb8140e6d6fa6d9780c88481d222d77e775997b28bbd758",
+    "restart_count": 0
+  }
+}
