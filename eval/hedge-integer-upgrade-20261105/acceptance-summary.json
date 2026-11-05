@@ -1,0 +1,26 @@
+{
+  "code_commit": "022d918c64e15ed73d050bf9ad93d3d8d5b0df20",
+  "backend_tests": {
+    "passed": 148,
+    "skipped": 3,
+    "skip_reason": "local SDK missing ibapi.order_cancel"
+  },
+  "deployed_sdk_adapter_tests": {
+    "passed": 3,
+    "skipped": 0
+  },
+  "frontend_unit_tests": 5,
+  "frontend_browser_tests": 2,
+  "independent_exhaustive_inputs": 450,
+  "old_intc_preserved": true,
+  "old_intc_attempts": 0,
+  "old_intc_fills": 0,
+  "paper_orders": 5,
+  "paper_fills": 4,
+  "paper_all_flat": true,
+  "paper_gross_pnl": "-3.82",
+  "paper_commissions": "4.066726",
+  "paper_net_pnl": "-7.886726",
+  "live_new_attempts": 0,
+  "live_principal_usd": "950"
+}
