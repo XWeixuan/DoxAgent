@@ -6,7 +6,7 @@ import json
 
 from doxagent.persistent_runtime_v2.journal import encode
 
-from .planning import TradingConfig, assets
+from .planning import ALLOCATION_POLICY_VERSION, TradingConfig, assets
 from .strategy import decimal
 
 TERMINAL = {"DONE", "FAILED"}
@@ -20,6 +20,7 @@ def initialize_execution(value, profile):
         raise ValueError("ACCOUNT_ENVIRONMENT_MISMATCH")
     value.update(
         ownership_version=2,
+        allocation_policy_version=ALLOCATION_POLICY_VERSION,
         group_state="OPENING",
         trading_config=config.model_dump(mode="json"),
         account_type=profile.account_type,
@@ -74,10 +75,10 @@ def request_exit(db, identity, now, reason):
                 job.update(state="DONE", result="FAILED", reason="POSITION_EXIT_REQUESTED")
             save_job(db, job)
         elif job["leg"] == "EXIT" and job["state"] != "DONE":
-            job.update(exit_requested_at=now,exit_reason=reason)
-            if job.get("role","MAIN") == "MAIN":
-                job["due_at"] = min(now,job["due_at"])
-            save_job(db,job)
+            job.update(exit_requested_at=now, exit_reason=reason)
+            if job.get("role", "MAIN") == "MAIN":
+                job["due_at"] = min(now, job["due_at"])
+            save_job(db, job)
 
 
 def main_notional(repo, db, identity, account):
@@ -126,10 +127,20 @@ def advance(repo, identity, *, db=None):
             job = jobs.get(attempts.get(fill["attempt_id"]))
             if job and job["leg"] == "ENTRY":
                 spent[job.get("role", "MAIN")] += decimal(fill["quantity"]) * decimal(fill["price"])
-        excess = sum(
-            (max(decimal(0), spent[role] - decimal(plan[role.lower() + "_cap"])) for role in spent),
-            decimal(0),
-        )
+        if execution.get("allocation_policy_version", 1) >= 2:
+            nominal = decimal(execution["nominal_budget_usd"])
+            excess = max(decimal(0), sum(spent.values(), decimal(0)) - nominal)
+            execution["actual_hedge_ratio"] = (
+                str(spent["HEDGE"] / spent["MAIN"]) if spent["MAIN"] else None
+            )
+        else:
+            excess = sum(
+                (
+                    max(decimal(0), spent[role] - decimal(plan[role.lower() + "_cap"]))
+                    for role in spent
+                ),
+                decimal(0),
+            )
         execution["budget_usd"] = str(decimal(base) + excess)
     main = jobs.get(identity + ":entry")
     if not main:
@@ -158,7 +169,8 @@ def advance(repo, identity, *, db=None):
             reason = "MAIN_NOT_FILLED" if not actual else "POSITION_EXIT_REQUESTED"
             hedge_entry.update(entry_abandoned_at=now, entry_abandon_reason=reason, due_at=now)
             busy = db.execute(
-                "SELECT 1 FROM te_attempts WHERE job_id=? AND state NOT IN ('SETTLED','NOT_SENT') LIMIT 1",
+                "SELECT 1 FROM te_attempts WHERE job_id=? AND state NOT IN ('SETTLED','NOT_SENT') "
+                "LIMIT 1",
                 (hedge_entry["id"],),
             ).fetchone()
             if not busy:
@@ -195,8 +207,8 @@ def advance(repo, identity, *, db=None):
             hedge_exit.update(
                 state="READY" if hedge_exit["state"] == "WAIT_MAIN" else hedge_exit["state"],
                 due_at=min(now, hedge_exit["due_at"]),
-                exit_requested_at=execution.get("exit_requested_at",now),
-                exit_reason=execution.get("exit_reason","MAIN_CLOSED"),
+                exit_requested_at=execution.get("exit_requested_at", now),
+                exit_reason=execution.get("exit_reason", "MAIN_CLOSED"),
             )
             save_job(db, hedge_exit)
     leg_ids = {leg["id"] for leg in execution.get("legs", [])}

@@ -16,6 +16,50 @@ from .repository import ReadStore, encode, instant
 from .trade_outcomes import with_execution_state
 
 
+def allocation_detail(execution):
+    """Small display summary; machine reason codes remain unchanged."""
+    diagnostics = execution.get("allocation_diagnostics", {})
+    diagnostic = diagnostics.get("HEDGE") or diagnostics.get("MAIN")
+    if not diagnostic:
+        return {}
+    plan = diagnostic.get("plan") or execution.get("plan") or {}
+    ratio = diagnostic.get("target_ratio") or plan.get("target_ratio")
+    lower = diagnostic.get("ratio_lower") or plan.get("ratio_lower")
+    upper = diagnostic.get("ratio_upper") or plan.get("ratio_upper")
+
+    def pct(value):
+        return f"{Decimal(value) * 100:.2f}%"
+
+    parts = []
+    if diagnostic.get("reason") == "NO_VALID_INTEGER_COMBINATION":
+        parts.append("预算与整数股约束下无合格组合")
+    subreason = {
+        "MAIN_BELOW_ONE_SHARE": "主仓理论额度不足一股",
+        "TWO_LEGS_UNAFFORDABLE": "整组预算不足以购买两腿各一股",
+        "INTEGER_RATIO_GAP": "允许比例内没有整数股组合",
+        "NO_VALID_INCREMENT": "剩余预算与比例范围内无法补齐整数股对冲",
+    }.get(diagnostic.get("subreason"))
+    if subreason:
+        parts.append(subreason)
+    if ratio is not None:
+        parts.append(f"目标 {pct(ratio)}")
+    if lower is not None and upper is not None:
+        parts.append(f"允许 {pct(lower)}–{pct(upper)}")
+    actual = execution.get("actual_hedge_ratio")
+    if actual is not None:
+        parts.append(f"实际 {pct(actual)}")
+    elif plan.get("actual_ratio") is not None:
+        parts.append(f"预计 {pct(plan['actual_ratio'])}")
+    budget = execution.get("nominal_budget_usd") or diagnostic.get("nominal_budget_usd")
+    if budget is not None:
+        parts.append(f"可用名义预算 ${Decimal(budget):.2f}")
+    if diagnostic.get("reason") == "NO_VALID_INTEGER_COMBINATION":
+        for key, label in [("main_price", "主仓规划价"), ("hedge_price", "对冲规划价")]:
+            if diagnostic.get(key) is not None:
+                parts.append(f"{label} ${Decimal(diagnostic[key]):.2f}")
+    return {"allocation_detail": " · ".join(parts)} if parts else {}
+
+
 def opaque(*parts: Any) -> str:
     return hashlib.sha256(encode(parts).encode()).hexdigest()
 
@@ -246,6 +290,7 @@ class ExecutionProjector:
                     **(
                         {
                             "execution_group": dict(
+                                **allocation_detail(execution),
                                 state=execution.get("group_state", "OPENING"),
                                 account_type=execution["account_type"],
                                 budget_usd=execution.get("budget_usd"),

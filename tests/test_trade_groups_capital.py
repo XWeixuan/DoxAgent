@@ -114,18 +114,24 @@ def test_integer_plan_matches_exhaustive_small_search():
                     valid = [
                         (qm, qh)
                         for qm in range(1, int(cap // mp) + 1)
-                        for qh in range(1, int((budget - cap) // hp) + 1)
-                        if Decimal(".9") * ratio
-                        <= Decimal(qh * hp) / Decimal(qm * mp)
-                        <= Decimal("1.1") * ratio
+                        for qh in range(1, int(Decimal(budget) // hp) + 1)
+                        if qm * mp + qh * hp <= budget
+                        and abs(Decimal(qh * hp) - ratio * qm * mp) <= Decimal(".10") * qm * mp
                     ]
                     if not valid:
                         with pytest.raises(ValueError, match="NO_VALID"):
                             integer_pair(Decimal(budget), ratio, Decimal(mp), Decimal(hp))
                     else:
                         plan = integer_pair(Decimal(budget), ratio, Decimal(mp), Decimal(hp))
-                        assert plan["main_quantity"] == max(qm for qm, qh in valid)
-                        assert (plan["main_quantity"], plan["hedge_quantity"]) in valid
+                        expected = min(
+                            valid,
+                            key=lambda q: (
+                                -q[0],
+                                abs(Decimal(q[1] * hp) - ratio * q[0] * mp),
+                                q[1],
+                            ),
+                        )
+                        assert (plan["main_quantity"], plan["hedge_quantity"]) == expected
 
 
 def test_main_then_hedge_and_ordered_group_exit(tmp_path):

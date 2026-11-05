@@ -2630,3 +2630,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-04 RSS入口与缓存复核：Aviation Week单一外部源改为五个真实taxonomy栏目、独立单元与跨栏目去重；Army/DCD及仍有13—16分钟缓存的Toms news恢复正常RSS。复核其余16源22入口，修复The Elec反向代理STALE及刷新参数丢失栏目，改为有筛选字段的轻量POST表单；统一检查200/304、分段Age/Date及显式STALE并保存物理请求缓存证据，CRN移除未证实必要的刷新参数并保留清缓存时效边界。257项相关回归、66项最终专项通过，详见docs/rss-http-cache-review-and-source-adjustment-20261104.md。
 
 2026-11-04 Reuters人工验证时序：只读账本确认当前RETRY点击后约8秒已提交，主Provider无解、备应用后仍阻断；人工Verify新增15秒被动观察，维护库存区分Provider终态/重试限额和在途状态，保留业务证明与原页，不增强自动解码。71项相关回归、6项专项及Ruff检查通过。
+
+2026-11-05 — 对冲整数配仓修复：新接收组冻结 allocation_policy_version=2，统一固定±10个百分点，保留主仓理论上限、共享整组剩余预算；按实际成交计算对冲增量，已达范围即停止，修正分腿重复资金占用。新增无委托规划失败诊断和现有case详情展示；旧组沿用旧语义，终态失败不回放。补充独立穷举、部分成交/更正、重报价、双名额与终态回归；旧恢复测试修正断链故障注入，保留原失败状态。

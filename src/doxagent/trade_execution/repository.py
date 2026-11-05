@@ -440,7 +440,7 @@ class ExecutionRepository:
             return value
 
     def reserve_attempt(self, job, data, cycle, broker_next_id, client_id, snapshot_at):
-        from .planning import hedge_quantity, integer_pair
+        from .planning import hedge_quantity, integer_pair, ratio_bounds
 
         with self.transaction() as db:
             current = json.loads(
@@ -488,6 +488,30 @@ class ExecutionRepository:
             ]
             spent = sum((decimal(f["quantity"]) * decimal(f["price"]) for f in fills), Decimal(0))
             filled_qty = sum(int(decimal(f["quantity"])) for f in fills)
+            policy_version = execution.get("allocation_policy_version", 1)
+            role = current.get("role", "MAIN")
+
+            def save_diagnostic(reason=None, **detail):
+                quote = data.get("quote") or {}
+                field = "ask" if data.get("side") == "BUY" else "bid"
+                summary = dict(
+                    allocation_policy_version=policy_version,
+                    at=self.journal.clock().isoformat(),
+                    role=role,
+                    price=str(sizing),
+                    reference_source="LIVE_QUOTE",
+                    reference_at=quote.get(field + "_received_at", quote.get(field + "_at")),
+                    reason=reason,
+                    **detail,
+                )
+                current["planning_diagnostic"] = summary
+                execution.setdefault("allocation_diagnostics", {})[role] = summary
+                groups.save_job(db, current)
+                db.execute(
+                    "UPDATE te_executions SET payload=? WHERE id=?",
+                    (encode(execution), execution["id"]),
+                )
+
             if not execution.get("budget_usd"):
                 budget = CapitalLedger(self).capacity(
                     db, execution, profile, decimal(cycle["equity"]), json.loads(snap[0])
@@ -509,14 +533,24 @@ class ExecutionRepository:
                             decimal(execution["trading_config"]["hedge_ratio"]),
                             sizing,
                             decimal(data["hedge_plan"]["sizing_price"]),
+                            policy_version=policy_version,
                         )
                     except ValueError as exc:
+                        detail = dict(getattr(exc, "diagnostic", {}))
+                        detail.pop("reason", None)
+                        save_diagnostic(
+                            str(exc),
+                            grant_budget_usd=str(budget),
+                            fee_reserve_usd=str(fee_reserve),
+                            hedge_reference=data.get("hedge_plan"),
+                            **detail,
+                        )
                         CapitalLedger(self).release_slots(db, job["account"])
                         return None, str(exc)
                 else:
-                    plan = dict(
-                        main_quantity=int(usable // sizing), main_cap=str(usable), hedge_cap="0"
-                    )
+                    plan = dict(main_quantity=int(usable // sizing), main_cap=str(usable))
+                    if policy_version < 2:
+                        plan["hedge_cap"] = "0"
                 if not plan["main_quantity"]:
                     CapitalLedger(self).release_slots(db, job["account"])
                     return None, "PORTFOLIO_CAPACITY_EXHAUSTED"
@@ -529,6 +563,13 @@ class ExecutionRepository:
                     < decimal(cycle["equity"]) * profile.strategy.min_entry_notional_ratio
                 ):
                     return None, "PORTFOLIO_CAPACITY_EXHAUSTED"
+                if policy_version >= 2:
+                    execution.update(
+                        grant_budget_usd=str(budget),
+                        fee_reserve_usd=str(fee_reserve),
+                        nominal_budget_usd=str(usable),
+                        hedge_tolerance_pp=10,
+                    )
                 execution.update(
                     budget_usd=str(budget),
                     plan=plan,
@@ -540,12 +581,36 @@ class ExecutionRepository:
                     (encode(execution), execution["id"]),
                 )
             plan = execution["plan"]
-            if current.get("role", "MAIN") == "MAIN":
+            if role == "MAIN":
                 cap, target = decimal(plan["main_cap"]), plan["main_quantity"]
+                save_diagnostic(
+                    plan=plan,
+                    grant_budget_usd=execution["budget_usd"],
+                    fee_reserve_usd=execution.get("fee_reserve_usd"),
+                    nominal_budget_usd=execution.get("nominal_budget_usd"),
+                    hedge_reference=execution.get("hedge_plan"),
+                )
             else:
-                cap = decimal(plan["hedge_cap"])
                 current["main_notional_usd"] = str(
                     groups.main_notional(self, db, job["execution_id"], job["account"])
+                )
+                main_notional = decimal(current["main_notional_usd"])
+                cap = (
+                    decimal(execution["nominal_budget_usd"]) - main_notional
+                    if policy_version >= 2
+                    else decimal(plan["hedge_cap"])
+                )
+                ratio = decimal(execution["trading_config"]["hedge_ratio"])
+                lower, upper = ratio_bounds(ratio, policy_version)
+                detail = dict(
+                    main_notional_usd=str(main_notional),
+                    hedge_spent_usd=str(spent),
+                    hedge_available_usd=str(cap - spent),
+                    nominal_budget_usd=execution.get("nominal_budget_usd"),
+                    target_ratio=str(ratio),
+                    ratio_lower=str(lower),
+                    ratio_upper=str(upper),
+                    actual_ratio=str(spent / main_notional) if main_notional else None,
                 )
                 try:
                     additional = hedge_quantity(
@@ -554,9 +619,18 @@ class ExecutionRepository:
                         decimal(execution["trading_config"]["hedge_ratio"]),
                         sizing,
                         spent,
+                        policy_version=policy_version,
                     )
                 except ValueError as exc:
+                    failure = dict(getattr(exc, "diagnostic", {}))
+                    failure.pop("reason", None)
+                    save_diagnostic(str(exc), **{**detail, **failure})
                     return None, str(exc)
+                save_diagnostic(
+                    "HEDGE_TARGET_SATISFIED" if additional == 0 else None,
+                    additional_quantity=additional,
+                    **detail,
+                )
                 if additional == 0:
                     return None, "HEDGE_TARGET_SATISFIED"
                 current["target_quantity"] = filled_qty + additional
@@ -654,7 +728,8 @@ class ExecutionRepository:
             rows = [
                 json.loads(r[0])
                 for r in db.execute(
-                    "SELECT a.payload FROM te_attempts a JOIN te_jobs j ON j.id=a.job_id WHERE a.state='PREPARED' AND j.state IN ('DONE','FAILED')"
+                    "SELECT a.payload FROM te_attempts a JOIN te_jobs j ON j.id=a.job_id "
+                    "WHERE a.state='PREPARED' AND j.state IN ('DONE','FAILED')"
                 )
             ]
         for attempt in rows:

@@ -64,10 +64,18 @@ export default function CaseDetails({
           </p>
           {d.lifecycle_timing && (
             <dl className="case-lifecycle-timing">
-              <dt>{d.lifecycle_timing.settled ? "接纳至决策 / 结束（秒）" : "截至视图已等待（秒）"}</dt>
+              <dt>
+                {d.lifecycle_timing.settled
+                  ? "接纳至决策 / 结束（秒）"
+                  : "截至视图已等待（秒）"}
+              </dt>
               <dd>{d.lifecycle_timing.elapsed_seconds.toFixed(2)}</dd>
               <dt>调用并集 / 未覆盖（秒）</dt>
-              <dd>{d.lifecycle_timing.invocation_union_seconds.toFixed(2)} / {d.lifecycle_timing.uncovered_seconds.toFixed(2)}{d.lifecycle_timing.partial ? " · 记录不完整" : ""}</dd>
+              <dd>
+                {d.lifecycle_timing.invocation_union_seconds.toFixed(2)} /{" "}
+                {d.lifecycle_timing.uncovered_seconds.toFixed(2)}
+                {d.lifecycle_timing.partial ? " · 记录不完整" : ""}
+              </dd>
             </dl>
           )}
           {d.failures.map((f) => (
@@ -702,7 +710,18 @@ export function RoundRows({
           </td>
           <td>{a.attempt_number}</td>
           <td>{a.status}</td>
-          <td>{valueText(a.timing.wall_seconds, (v) => v.toFixed(2))}{a.node_id === "W3" && <> · SDK {a.sdk_seconds ? valueText(a.sdk_seconds, (v) => v.toFixed(2)) : "未记录"}</>}</td>
+          <td>
+            {valueText(a.timing.wall_seconds, (v) => v.toFixed(2))}
+            {a.node_id === "W3" && (
+              <>
+                {" "}
+                · SDK{" "}
+                {a.sdk_seconds
+                  ? valueText(a.sdk_seconds, (v) => v.toFixed(2))
+                  : "未记录"}
+              </>
+            )}
+          </td>
         </tr>
       ))}
     </>
@@ -1014,11 +1033,50 @@ function Executions({
                 <span>{e.entry_result ?? e.intake_status}</span>
               </header>
               <dl>
-                {e.execution_group && <>
-                  <dt>交易组</dt><dd>{e.execution_group.account_type} · {({OPENING:"开仓中",OPEN:"持仓中",CLOSING:"退出中",CLOSED:"已退出",EXIT_BLOCKED:"退出待核对"} as Record<string,string>)[e.execution_group.state] ?? e.execution_group.state}</dd>
-                  <dt>实际主仓</dt><dd>{e.execution_group.main_side} {e.execution_group.main_asset} · 剩余 {e.execution_group.main_quantity} 股</dd>
-                  {e.execution_group.hedge_asset && <><dt>对冲仓</dt><dd>{e.execution_group.hedge_asset} · 剩余 {e.execution_group.hedge_quantity} 股{e.execution_group.hedge_result === "HEDGE_INCOMPLETE" ? " · 对冲未完成" : ""}{e.execution_group.hedge_reason ? ` · ${e.execution_group.hedge_reason}` : ""}</dd></>}
-                </>}
+                {e.execution_group && (
+                  <>
+                    <dt>交易组</dt>
+                    <dd>
+                      {e.execution_group.account_type} ·{" "}
+                      {(
+                        {
+                          OPENING: "开仓中",
+                          OPEN: "持仓中",
+                          CLOSING: "退出中",
+                          CLOSED: "已退出",
+                          EXIT_BLOCKED: "退出待核对",
+                        } as Record<string, string>
+                      )[e.execution_group.state] ?? e.execution_group.state}
+                    </dd>
+                    {e.execution_group.allocation_detail && (
+                      <>
+                        <dt>配仓诊断</dt>
+                        <dd>{e.execution_group.allocation_detail}</dd>
+                      </>
+                    )}
+                    <dt>实际主仓</dt>
+                    <dd>
+                      {e.execution_group.main_side}{" "}
+                      {e.execution_group.main_asset} · 剩余{" "}
+                      {e.execution_group.main_quantity} 股
+                    </dd>
+                    {e.execution_group.hedge_asset && (
+                      <>
+                        <dt>对冲仓</dt>
+                        <dd>
+                          {e.execution_group.hedge_asset} · 剩余{" "}
+                          {e.execution_group.hedge_quantity} 股
+                          {e.execution_group.hedge_result === "HEDGE_INCOMPLETE"
+                            ? " · 对冲未完成"
+                            : ""}
+                          {e.execution_group.hedge_reason
+                            ? ` · ${e.execution_group.hedge_reason}`
+                            : ""}
+                        </dd>
+                      </>
+                    )}
+                  </>
+                )}
                 <dt>成交数量</dt>
                 <dd>{valueText(e.filled_quantity, (v) => decimal(v, 4))}</dd>
                 <dt>成交金额</dt>
@@ -1031,7 +1089,20 @@ function Executions({
               {e.exit_strategy && (
                 <ExitStrategyStatus value={e.exit_strategy} />
               )}
-              {e.entry_reason && <p>{e.entry_reason}</p>}
+              {e.entry_reason && (
+                <p>
+                  {(
+                    {
+                      NO_VALID_INTEGER_COMBINATION:
+                        "预算与整数股约束下无合格组合",
+                      HEDGE_UNREPRESENTABLE_AFTER_PARTIAL:
+                        "主仓成交后无法补齐合格整数股对冲",
+                      HEDGE_ABOVE_RATIO_LIMIT:
+                        "实际对冲比例超过上限，保留已有仓位并按原规则退出",
+                    } as Record<string, string>
+                  )[e.entry_reason] ?? e.entry_reason}
+                </p>
+              )}
               {e.execution_reason_codes.length > 0 && (
                 <p>原因码：{e.execution_reason_codes.join("、")}</p>
               )}

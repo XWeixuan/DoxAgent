@@ -647,7 +647,9 @@ class Executor:
         with self.repository.transaction(write=False) as db:
             busy = db.execute(
                 "SELECT 1 FROM te_attempts a JOIN te_jobs j ON a.job_id=j.id "
-                "WHERE j.account=? AND COALESCE(json_extract(j.payload,'$.traded_ticker'),j.ticker)=? AND a.state NOT IN ('SETTLED','NOT_SENT')",
+                "WHERE j.account=? AND "
+                "COALESCE(json_extract(j.payload,'$.traded_ticker'),j.ticker)=? "
+                "AND a.state NOT IN ('SETTLED','NOT_SENT')",
                 (job["account"], job.get("traded_ticker", job["ticker"])),
             ).fetchone()
         if busy:
@@ -809,6 +811,7 @@ class Executor:
                         "PORTFOLIO_CAPACITY_EXHAUSTED",
                         "NO_VALID_INTEGER_COMBINATION",
                         "HEDGE_UNREPRESENTABLE_AFTER_PARTIAL",
+                        "HEDGE_ABOVE_RATIO_LIMIT",
                         "POSITION_EXIT_REQUESTED",
                         "HEDGE_TARGET_SATISFIED",
                     }:
@@ -1058,6 +1061,30 @@ class Executor:
                 else:
                     reason = "BROKER_REJECTED"
                 repo.finish(job, reason)
+            elif (
+                job["leg"] == "ENTRY"
+                and job.get("role") == "HEDGE"
+                and (execution := repo.require("executions", job["execution_id"])).get(
+                    "allocation_policy_version", 1
+                )
+                >= 2
+            ):
+                from .planning import ratio_bounds
+
+                main = decimal(job.get("main_notional_usd", 0))
+                spent = sum(
+                    (decimal(f["quantity"]) * decimal(f["price"]) for f in repo.fills(job["id"])),
+                    Decimal(0),
+                )
+                lower, upper = ratio_bounds(decimal(execution["trading_config"]["hedge_ratio"]))
+                if main and spent > upper * main:
+                    repo.finish(job, "HEDGE_ABOVE_RATIO_LIMIT")
+                elif main and spent > 0 and lower * main <= spent <= upper * main:
+                    repo.finish(job, "HEDGE_TARGET_SATISFIED", complete=True)
+                elif expired or status in {"Inactive", "Rejected"}:
+                    repo.finish(job, expired_reason if expired else "BROKER_REJECTED")
+                else:
+                    repo.update_job(job, state="READY", failures=0)
             elif status == "Filled" or filled == attempt["quantity"]:
                 repo.finish(job, "ORDER_FILLED", complete=True)
             elif status in {"Inactive", "Rejected"} or expired:

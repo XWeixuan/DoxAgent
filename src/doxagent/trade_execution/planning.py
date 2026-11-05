@@ -86,68 +86,143 @@ def assets(ticker: str, direction: str, account_type: str, config: TradingConfig
     return legs
 
 
-def integer_pair(budget: Decimal, ratio: Decimal, main_price: Decimal, hedge_price: Decimal):
-    if min(budget, ratio, main_price, hedge_price) <= 0:
-        raise ValueError("invalid plan input")
-    main_cap = budget / (1 + ratio)
-    hedge_cap = budget - main_cap
-    qm = int(main_cap // main_price)
-    while qm >= 1:
-        target = ratio * qm * main_price / hedge_price
-        low = max(1, int((target * Decimal("0.9")).to_integral_value(rounding=ROUND_CEILING)))
-        high = min(
-            int(hedge_cap // hedge_price),
-            int((target * Decimal("1.1")).to_integral_value(rounding=ROUND_FLOOR)),
-        )
-        if low <= high:
-            candidates = {
-                max(low, min(high, int(target))),
-                max(low, min(high, int(target.to_integral_value(rounding=ROUND_CEILING)))),
-            }
-            qh = min(candidates, key=lambda q: (abs(Decimal(q) - target), q))
-            return {
-                "main_quantity": qm,
-                "hedge_quantity": qh,
-                "main_cap": str(main_cap),
-                "hedge_cap": str(hedge_cap),
-            }
-        if high < 1:
-            break
-        qm = min(
-            qm - 1,
-            int(
-                (high * hedge_price / (Decimal("0.9") * ratio * main_price)).to_integral_value(
-                    rounding=ROUND_FLOOR
-                )
-            ),
-        )
-    raise ValueError("NO_VALID_INTEGER_COMBINATION")
+ALLOCATION_POLICY_VERSION = 2
+HEDGE_TOLERANCE = Decimal("0.10")
 
 
-def hedge_quantity(
-    main_notional: Decimal, cap: Decimal, ratio: Decimal, price: Decimal, spent=Decimal(0)
-):
-    target = (main_notional * ratio - spent) / price
-    low = max(
-        0 if spent else 1,
-        int(
-            ((main_notional * ratio * Decimal(".9") - spent) / price).to_integral_value(
-                rounding=ROUND_CEILING
-            )
-        ),
-    )
-    high = min(
-        int((cap - spent) // price),
-        int(
-            ((main_notional * ratio * Decimal("1.1") - spent) / price).to_integral_value(
-                rounding=ROUND_FLOOR
-            )
-        ),
-    )
-    if low > high:
-        raise ValueError("HEDGE_UNREPRESENTABLE_AFTER_PARTIAL")
+class AllocationError(ValueError):
+    """A planning rejection with bounded, persistable input/candidate evidence."""
+
+    def __init__(self, reason, **diagnostic):
+        super().__init__(reason)
+        self.diagnostic = {"reason": reason, **diagnostic}
+
+
+def ratio_bounds(ratio, policy_version=ALLOCATION_POLICY_VERSION):
+    if policy_version < 2:
+        return ratio * Decimal(".9"), ratio * Decimal("1.1")
+    return max(Decimal(0), ratio - HEDGE_TOLERANCE), ratio + HEDGE_TOLERANCE
+
+
+def _closest(low, high, target):
     candidates = {
         max(low, min(high, int(target))),
         max(low, min(high, int(target.to_integral_value(rounding=ROUND_CEILING)))),
     }
     return min(candidates, key=lambda q: (abs(Decimal(q) - target), q))
+
+
+def integer_pair(
+    budget: Decimal,
+    ratio: Decimal,
+    main_price: Decimal,
+    hedge_price: Decimal,
+    *,
+    policy_version=ALLOCATION_POLICY_VERSION,
+):
+    if min(budget, ratio, main_price, hedge_price) <= 0:
+        raise AllocationError("NO_VALID_INTEGER_COMBINATION", subreason="NON_POSITIVE_INPUT")
+    main_cap = budget / (1 + ratio)
+    lower, upper = ratio_bounds(ratio, policy_version)
+    diagnostic = dict(
+        nominal_budget_usd=str(budget),
+        main_cap=str(main_cap),
+        main_price=str(main_price),
+        hedge_price=str(hedge_price),
+        target_ratio=str(ratio),
+        ratio_lower=str(lower),
+        ratio_upper=str(upper),
+        main_quantity_max=int(main_cap // main_price),
+    )
+    # The shared remainder grows as MAIN shrinks: a jump based on a fixed
+    # hedge cap can skip the largest feasible MAIN (e.g. 1400/.4/100/222).
+    for qm in range(diagnostic["main_quantity_max"], 0, -1):
+        main = qm * main_price
+        hedge_room = budget - (main if policy_version >= 2 else main_cap)
+        low = max(1, int((lower * main / hedge_price).to_integral_value(rounding=ROUND_CEILING)))
+        high = min(
+            int(hedge_room // hedge_price),
+            int((upper * main / hedge_price).to_integral_value(rounding=ROUND_FLOOR)),
+        )
+        diagnostic.update(
+            candidate_main_quantity=qm, hedge_quantity_low=low, hedge_quantity_high=high
+        )
+        if low <= high:
+            qh = _closest(low, high, ratio * main / hedge_price)
+            plan = dict(main_quantity=qm, hedge_quantity=qh, main_cap=str(main_cap))
+            if policy_version < 2:
+                plan["hedge_cap"] = str(budget - main_cap)
+            else:
+                plan.update(
+                    allocation_policy_version=2,
+                    hedge_tolerance_pp=10,
+                    nominal_budget_usd=str(budget),
+                    hedge_theoretical_usd=str(budget - main_cap),
+                    main_notional_usd=str(main),
+                    hedge_notional_usd=str(qh * hedge_price),
+                    **{
+                        k: v
+                        for k, v in diagnostic.items()
+                        if k not in {"main_cap", "nominal_budget_usd"}
+                    },
+                    actual_ratio=str(qh * hedge_price / main),
+                )
+            return plan
+    subreason = (
+        "MAIN_BELOW_ONE_SHARE"
+        if not diagnostic["main_quantity_max"]
+        else "TWO_LEGS_UNAFFORDABLE"
+        if main_price + hedge_price > budget
+        else "INTEGER_RATIO_GAP"
+    )
+    raise AllocationError("NO_VALID_INTEGER_COMBINATION", subreason=subreason, **diagnostic)
+
+
+def hedge_quantity(
+    main_notional: Decimal,
+    cap: Decimal,
+    ratio: Decimal,
+    price: Decimal,
+    spent=Decimal(0),
+    *,
+    policy_version=ALLOCATION_POLICY_VERSION,
+):
+    lower, upper = ratio_bounds(ratio, policy_version)
+    lower_amount, upper_amount = lower * main_notional, upper * main_notional
+    diagnostic = dict(
+        main_notional_usd=str(main_notional),
+        hedge_spent_usd=str(spent),
+        hedge_price=str(price),
+        hedge_available_usd=str(cap - spent),
+        target_ratio=str(ratio),
+        ratio_lower=str(lower),
+        ratio_upper=str(upper),
+        actual_ratio=str(spent / main_notional) if main_notional else None,
+    )
+    if policy_version >= 2:
+        if main_notional <= 0:
+            raise AllocationError(
+                "HEDGE_UNREPRESENTABLE_AFTER_PARTIAL", subreason="MAIN_NOT_FILLED", **diagnostic
+            )
+        if spent > upper_amount:
+            raise AllocationError("HEDGE_ABOVE_RATIO_LIMIT", **diagnostic)
+        if spent > 0 and lower_amount <= spent <= upper_amount:
+            return 0
+    target = (main_notional * ratio - spent) / price
+    low = max(
+        0 if spent and policy_version < 2 else 1,
+        int(((lower_amount - spent) / price).to_integral_value(rounding=ROUND_CEILING)),
+    )
+    high = min(
+        int((cap - spent) // price),
+        int(((upper_amount - spent) / price).to_integral_value(rounding=ROUND_FLOOR)),
+    )
+    if low > high:
+        raise AllocationError(
+            "HEDGE_UNREPRESENTABLE_AFTER_PARTIAL",
+            subreason="NO_VALID_INCREMENT",
+            hedge_quantity_low=low,
+            hedge_quantity_high=high,
+            **diagnostic,
+        )
+    return _closest(low, high, target)

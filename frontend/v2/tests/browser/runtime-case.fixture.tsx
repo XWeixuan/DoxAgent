@@ -232,8 +232,46 @@ const details = {
         })
       : noReason,
 } as unknown as CaseDetail;
-details.lifecycle_timing = { elapsed_seconds: 1726.85, invocation_union_seconds: 683.2, uncovered_seconds: 1043.65, partial: true, settled: true, as_of: "2026-10-27T13:51:34Z" };
+details.lifecycle_timing = {
+  elapsed_seconds: 1726.85,
+  invocation_union_seconds: 683.2,
+  uncovered_seconds: 1043.65,
+  partial: true,
+  settled: true,
+  as_of: "2026-10-27T13:51:34Z",
+};
 const runtime = createRuntime(createTestAuth());
+const allocationExecutions = ["failed", "filled"].map((state) => ({
+  execution_id: `allocation-${state}`,
+  intent_id: `allocation-${state}`,
+  case_id: "fixture-case",
+  intake_status: "EXECUTION_ACCEPTED",
+  intent_status: "EXECUTION_ACCEPTED",
+  execution_state: state === "filled" ? "EXECUTED" : "NOT_EXECUTED",
+  entry_result: state === "filled" ? "FILLED" : "FAILED",
+  entry_reason: state === "filled" ? null : "NO_VALID_INTEGER_COMBINATION",
+  execution_reason_codes:
+    state === "filled" ? [] : ["NO_VALID_INTEGER_COMBINATION"],
+  filled_quantity: value(state === "filled" ? "5" : "0"),
+  filled_notional_usd: value(state === "filled" ? "300.45" : "0"),
+  first_fill_at: value("2026-11-05T00:00:00Z"),
+  execution_group: {
+    account_type: "CASH",
+    state: state === "filled" ? "OPEN" : "CLOSED",
+    main_asset: "INTC",
+    main_side: "BUY",
+    main_quantity: state === "filled" ? "5" : "0",
+    hedge_asset: "SOXS",
+    hedge_quantity: state === "filled" ? "2" : "0",
+    hedge_result: null,
+    hedge_reason: null,
+    allocation_detail:
+      state === "filled"
+        ? "目标 29.00% · 允许 19.00%–39.00% · 实际 38.50% · 可用名义预算 $473.00"
+        : "预算与整数股约束下无合格组合 · 允许比例内没有整数股组合 · 目标 29.00% · 允许 19.00%–39.00% · 可用名义预算 $473.00 · 主仓规划价 $800.00 · 对冲规划价 $58.00",
+  },
+}));
+if (mode === "allocation") details.execution_count = value(2);
 if (mode === "v4") {
   details.summary.source_name = "Reuters";
   details.w3 = resource({
@@ -367,27 +405,29 @@ if (mode === "v5" || mode === "v5-failed") {
 runtime.api.request = async (name) =>
   ({
     data:
-      name === "Candidates"
-        ? resource(
-            page([
-              {
-                candidate_id: "candidate-1",
-                originating_node: "W1_R3",
-                proposition: "Synthetic qualification newly completed.",
-                assertion_state: "ACTUAL",
-                occurrence_date: null,
-              },
-            ]),
-          )
-        : name === "Content"
-          ? resource({
-              content: reasonRef,
-              chunk_index: 0,
-              text: reasoningText,
-              next_cursor: null,
-              complete: true,
-            })
-          : resource(details),
+      name === "Executions"
+        ? resource(page(allocationExecutions))
+        : name === "Candidates"
+          ? resource(
+              page([
+                {
+                  candidate_id: "candidate-1",
+                  originating_node: "W1_R3",
+                  proposition: "Synthetic qualification newly completed.",
+                  assertion_state: "ACTUAL",
+                  occurrence_date: null,
+                },
+              ]),
+            )
+          : name === "Content"
+            ? resource({
+                content: reasonRef,
+                chunk_index: 0,
+                text: reasoningText,
+                next_cursor: null,
+                complete: true,
+              })
+            : resource(details),
     meta: { view_id: "fixture-view" },
   }) as never;
 createRoot(document.getElementById("root")!).render(

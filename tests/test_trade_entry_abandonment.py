@@ -98,6 +98,7 @@ def test_exhausted_sent_entry_only_reconciles_and_cancels_no_top_up(setup, mode)
     asyncio.run(executor.step("trade:A:entry"))
     original = broker.sync
     broker.sync = lambda: (_ for _ in ()).throw(TimeoutError("BROKER_ORDER_SYNC_INCOMPLETE"))
+    broker.healthy = False  # A broken connection cannot keep the streaming observer healthy.
     for _ in range(3):
         asyncio.run(executor.step("trade:A:entry"))
         clock.advance(executor.recovery.delay("DU_TEST"))
@@ -105,6 +106,7 @@ def test_exhausted_sent_entry_only_reconciles_and_cancels_no_top_up(setup, mode)
     assert job["state"] == "RECONCILE_REQUIRED" and job["entry_abandoned_at"]
     assert repo.require("executions", "trade:A")["entry_result"] is None
     broker.sync = original
+    broker.healthy = True
     broker.mode = "unfilled"
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
     assert len(broker.sent) == 1 and len(broker.cancels) == 1
@@ -141,6 +143,7 @@ def test_entry_failure_counter_survives_a_successful_submit(setup):
     asyncio.run(executor.step("trade:A:entry"))
     assert repo.require("jobs", "trade:A:entry")["entry_failures"] == 2
     broker.sync = lambda: (_ for _ in ()).throw(TimeoutError("BROKER_ORDER_SYNC_INCOMPLETE"))
+    broker.healthy = False  # A broken connection cannot keep the streaming observer healthy.
     clock.advance()
     asyncio.run(executor.step("trade:A:entry"))
     assert repo.require("jobs", "trade:A:entry")["entry_abandoned_at"]

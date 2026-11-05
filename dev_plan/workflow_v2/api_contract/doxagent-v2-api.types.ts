@@ -882,6 +882,7 @@ export interface ExitStrategySummary {
   valid_observations: Count; invalid_observations: Count; confirmation: (boolean | null)[];
 }
 export interface ExecutionGroupSummary {
+ allocation_detail?: string;
  state: string; account_type: "CASH" | "MARGIN"; budget_usd: DecimalString | null;
  main_asset: string; main_side: "BUY" | "SELL"; main_quantity: DecimalString;
  hedge_asset: string | null; hedge_quantity: DecimalString; hedge_result: string | null; hedge_reason: string | null;
