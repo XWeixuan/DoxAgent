@@ -218,6 +218,16 @@ export interface TickerOverview {
   metrics: { policy_hits: Metric; trade_executed: Metric; trade_triggered: Metric; messages: Metric; api_token_cost: Metric };
   initialization: Resource<InitializationProgress> | null;
 }
+/** Composition only: all fields originate in existing operational pages. */
+export interface OperationsOverview {
+  overview: TickerOverview;
+  runtime: Resource<RuntimeMetrics>;
+  bus: Resource<BusDashboard>;
+  period: PeriodContext;
+  bus_read_at: Instant;
+}
+export type OperationsOverviewPage = Page<OperationsOverview>;
+export type AgentOperationsPage = OperationsOverviewPage | Page<SourceStatus>;
 export type ParentStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 export type StepKey = "RESEARCH" | "EVENT_LIBRARY" | "EXPECTATIONS" | "POLICIES" | "SOURCES_ACTIVATION" | "START_RUNTIME";
 export interface InitializationStep {

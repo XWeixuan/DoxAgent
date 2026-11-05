@@ -635,5 +635,12 @@
     "parameters": "无",
     "response_schema": "OpenRouterBalance",
     "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/overview/operations",
+    "parameters": "`view_id,section?,ticker?,limit?,cursor?`",
+    "response_schema": "AgentOperationsPage",
+    "transport": "JSON"
   }
 ]

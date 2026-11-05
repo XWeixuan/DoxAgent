@@ -17,6 +17,24 @@ class Views:
     def __init__(self, store: ReadStore, calendar: PageCalendar) -> None:
         self.store, self.calendar = store, calendar
 
+    def period(self, page, selected, now, first):
+        return self.calendar.period(
+            selected, now, first_at=datetime.fromisoformat(first) if first else None,
+            semantic=page in {"MESSAGE_BUS", "RUNTIME", "EVENTS", "POLICIES"},
+        )
+
+    def derive(self, view, page, ticker):
+        """Request-local page scope, sharing the existing pinned watermark (no token write)."""
+        if ticker not in view["tickers"] or page not in {"RUNTIME", "MESSAGE_BUS"}:
+            raise ApiFailure("SCOPE_MISMATCH", 400)
+        with self.store.connect() as db:
+            first = db.execute("SELECT value FROM read_meta WHERE key='first_at'").fetchone()[0]
+        wire = {**view["wire"], "page": page, "ticker": ticker}
+        wire["period"] = self.period(
+            page, wire["period"]["selected"], datetime.fromisoformat(view["as_of"]), first,
+        )
+        return {**view, "wire": wire, "tickers": [ticker]}
+
     def create(
         self,
         owner: str,
@@ -107,9 +125,7 @@ class Views:
             window = (
                 None
                 if page in {"RESEARCH", "EXPECTATIONS"}
-                else self.calendar.period(
-                    selected, now, first_at=datetime.fromisoformat(first) if first else None, semantic=semantic
-                )
+                else self.period(page, selected, now, first)
             )
             value = {
                 "view_id": "pending",

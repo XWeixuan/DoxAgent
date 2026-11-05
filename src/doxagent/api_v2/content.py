@@ -16,6 +16,8 @@ def install(app: FastAPI) -> None:
     def chunk(request: Request, ticker: str, identity: str, cursor: str | None) -> Any:
         offset, index = 0, 0
         scope = "content:" + ticker + ":" + identity
+        if getattr(request.state.principal, "read_only", False):
+            scope += ":" + request.query_params["case_id"] + ":" + request.query_params["view_id"]
         if cursor:
             try:
                 token = store.token(cursor, request.state.principal.user_id, scope=scope)
@@ -52,7 +54,11 @@ def install(app: FastAPI) -> None:
 
     @app.get(PREFIX + "/tickers/{ticker}/contents/{content_id}")
     async def content(ticker: str, content_id: str, request: Request) -> Any:
-        args = query(request, {"cursor"})
+        agent = getattr(request.state.principal, "read_only", False)
+        args = query(request, {"cursor", "case_id", "view_id"} if agent else {"cursor"})
+        if agent:
+            from .agent_read_auth import require_case_content
+            require_case_content(store, views, request, ticker, content_id, args)
         return chunk(request, ticker, content_id, args.get("cursor"))
 
     @app.get(PREFIX + "/tickers/{ticker}/contents/{content_id}/citations")

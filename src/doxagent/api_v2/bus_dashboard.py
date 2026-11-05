@@ -100,7 +100,7 @@ def mean_period(store,ticker,view,source_ids):
     return float(totals.get('bus_e2e_seconds',0)/count) if count else None,count
 
 
-def dashboard_data(store,ticker,view,args):
+def dashboard_data(store,ticker,view,args,*,include_sources=True,source_after=None,source_limit=None,include_metrics=True):
     now=datetime.now(UTC)
     with store.connect() as db:
         # A minute dashboard is a live head, while the context supplies its calendar scope.
@@ -126,9 +126,14 @@ def dashboard_data(store,ticker,view,args):
         elif state=='SCHEDULED':counts['running']+=1
         else:counts['unknown']+=1
     rounds=recent_rounds(store_from_environment(),ticker,bindings,now)
-    business=recent_business(store,ticker,rounds)
-    today=source_counts_today(store,ticker,seq,view['wire']['clock']['semantic_day'])
-    for s in sources:
+    cards=sources if include_sources else []
+    if source_after is not None:
+        cards=sorted((s for s in cards if s['source']['binding_id']>source_after),
+                     key=lambda s:s['source']['binding_id'])[:source_limit+1]
+    card_ids={s['source']['binding_id'] for s in cards}
+    business=recent_business(store,ticker,{bid:r for bid,r in rounds.items() if bid in card_ids})
+    today=source_counts_today(store,ticker,seq,view['wire']['clock']['semantic_day']) if cards else None
+    for s in cards:
         sid=s['source']['source_id'];r=rounds.get(s['source']['binding_id'],{})
         samples=business.get(sid,{'latencies':[],'articles':{}})
         times=sorted(samples['latencies']);articles=samples['articles']
@@ -139,6 +144,8 @@ def dashboard_data(store,ticker,view,args):
             'p95_e2e_seconds':times[math.ceil(.95*len(times))-1] if times else None,'e2e_samples':len(times),
             'refresh_seconds':r.get('refresh_seconds'),'body_total':len(articles),'body_full':full,
             'body_ratio':full/len(articles) if articles else None}
+    if not include_metrics:
+        return {'sources':cards}
     selected=[s['source']['source_id'] for s in sources if
               (not args.get('source_id') or s['source']['source_id']==args['source_id']) and
               (not args.get('source_kind') or s['source']['kind']==args['source_kind'])]
@@ -148,9 +155,10 @@ def dashboard_data(store,ticker,view,args):
     mean,count=mean_period(store,ticker,view,selected_ids)
     # Eligibility is the current source state: exclude its whole window, including
     # earlier successes. Keep card diagnostics and the logical-round ledger intact.
-    chosen=[s['recent']['coverage'] for s in sources if s['source']['source_id'] in selected
+    chosen=[{k:rounds.get(s['source']['binding_id'],{}).get(k,0) for k in ['expected','succeeded']}
+            for s in sources if s['source']['source_id'] in selected
             and s['poll_status'] not in {'partial','failed'}
             and not (s['current_error'] or {}).get('code','').startswith('SOURCE_DEFERRED:')]
     expected=sum(c['expected'] for c in chosen);success=sum(c['succeeded'] for c in chosen)
-    return {'metrics':data,'sources':sources,'counts':counts,'mean_e2e_seconds':mean,'e2e_samples':count,
+    return {'metrics':data,'sources':cards,'counts':counts,'mean_e2e_seconds':mean,'e2e_samples':count,
             'coverage':{'expected':expected,'succeeded':success,'ratio':success/expected if expected else None}}

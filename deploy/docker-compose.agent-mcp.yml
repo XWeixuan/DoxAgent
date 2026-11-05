@@ -1,0 +1,47 @@
+# Add after the existing production/server overrides. No host port or business volume.
+services:
+  v2-api:
+    environment:
+      DOXAGENT_AGENT_READ_TOKEN_FILE: /run/secrets/agent_read_token
+    secrets:
+      - agent_read_token
+
+  v2-agent-mcp-tunnel:
+    image: ${DOXAGENT_AGENT_MCP_IMAGE:-doxagent-agent-mcp:local}
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.agent-mcp
+      target: tunnel
+      additional_contexts:
+        tunnel-client: ${DOXAGENT_TUNNEL_BINARY_DIR:?Set verified Linux binary directory}
+      args:
+        TUNNEL_CLIENT_SHA256: ${DOXAGENT_TUNNEL_CLIENT_SHA256:?Set verified binary SHA256}
+    environment:
+      DOXAGENT_AGENT_API_URL: http://v2-api:8000
+      DOXAGENT_AGENT_READ_TOKEN_FILE: /run/secrets/agent_read_token
+      DOXAGENT_TUNNEL_KEY_FILE: /run/secrets/agent_tunnel_key
+    secrets:
+      - agent_read_token
+      - agent_tunnel_key
+    volumes:
+      - agent-tunnel-home:/home/mcp
+    restart: unless-stopped
+    init: true
+    mem_limit: 384m
+    memswap_limit: 384m
+    cpus: 0.5
+    pids_limit: 32
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+    depends_on:
+      v2-api: {condition: service_started}
+
+secrets:
+  agent_read_token:
+    file: ${DOXAGENT_AGENT_READ_TOKEN_PATH:?Set internal API credential file}
+  agent_tunnel_key:
+    file: ${DOXAGENT_TUNNEL_KEY_PATH:?Set OpenAI tunnel runtime credential file}
+
+volumes:
+  agent-tunnel-home:

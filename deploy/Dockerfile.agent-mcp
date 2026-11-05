@@ -1,0 +1,26 @@
+FROM python:3.11-slim-bookworm AS mcp
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app/src HOME=/home/mcp
+WORKDIR /app
+COPY deploy/agent-mcp.lock /app/requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt \
+    && useradd --create-home --uid 10001 mcp
+COPY src/doxagent/__init__.py /app/src/doxagent/__init__.py
+COPY src/doxagent/agent_mcp /app/src/doxagent/agent_mcp
+USER mcp
+CMD ["python", "-m", "doxagent.agent_mcp"]
+
+# Supply a verified official Linux binary in this named build context. It is
+# deliberately separate from the application source and never checked into git.
+FROM mcp AS tunnel
+USER root
+ARG TUNNEL_CLIENT_SHA256
+COPY --from=tunnel-client tunnel-client /usr/local/bin/tunnel-client
+RUN test -n "$TUNNEL_CLIENT_SHA256" \
+    && echo "$TUNNEL_CLIENT_SHA256  /usr/local/bin/tunnel-client" | sha256sum -c - \
+    && chmod 755 /usr/local/bin/tunnel-client
+COPY deploy/agent-mcp-entrypoint.py /app/entrypoint.py
+COPY deploy/agent-mcp-server.sh /app/mcp-server.sh
+RUN chmod 755 /app/mcp-server.sh
+USER mcp
+ENTRYPOINT ["python", "/app/entrypoint.py"]
+CMD ["run", "--profile", "doxagent-readonly"]

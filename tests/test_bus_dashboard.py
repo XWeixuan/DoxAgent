@@ -178,6 +178,16 @@ def test_coverage_excludes_entire_window_for_current_failed_or_deferred_sources(
     result=dashboard_data(store,'MU',view,{})
     validate('BusDashboard',result)
     assert result['coverage']=={'expected':20,'succeeded':18,'ratio':.9}
+    summary=dashboard_data(store,'MU',view,{},include_sources=False)
+    assert summary['sources']==[]
+    assert {k:v for k,v in summary.items() if k!='sources'}=={k:v for k,v in result.items() if k!='sources'}
+    source_page=dashboard_data(store,'MU',view,{},source_after='',source_limit=1)
+    assert len(source_page['sources'])==2  # One row plus lookahead, not the whole collection.
+    assert source_page['coverage']==result['coverage'] and source_page['counts']==result['counts']
+    with monkeypatch.context() as source_only:
+        source_only.setattr(bus_dashboard,'current_body',lambda *a:pytest.fail('source page scanned period article bodies'))
+        cards=dashboard_data(store,'MU',view,{},source_after='',source_limit=1,include_metrics=False)
+        assert cards['sources']==source_page['sources']
     # The cards retain the observed window for diagnosis; only the KPI excludes it.
     assert all(s['recent']['coverage']['expected']==20 for s in result['sources'])
     for sid in ['failed','partial','blocked']:
