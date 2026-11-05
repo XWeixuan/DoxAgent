@@ -21,7 +21,7 @@ API 在当前生产镜像上只覆盖本功能涉及的 11 个 API 源码/契约
 
 运行配置位于 `/var/lib/doxagent/agent-mcp/compose.agent-mcp.json`，已追加到既有 release 的 `compose_base_command`；`compose.current.json` 记录两个新镜像。保留原生产/server/repair/projector/余额/正文覆盖文件。没有数据库迁移、数据回放、新公网端口或 MCP 业务卷。新增容器放在原 `doxagent-app.slice`，预算 384 MiB、0.5 CPU、32 PIDs。
 
-凭证只在服务器 `/var/lib/doxagent/agent-mcp/secrets/` 的独立文件中；运行密钥与内部 API token 分开，文件 UID 10001、mode 0400。此文及证据不包含凭证值。MCP 子进程不继承 OpenAI 运行密钥。
+生产凭证存放在服务器 `/var/lib/doxagent/agent-mcp/secrets/` 的独立文件中；运行密钥与内部 API token 分开，文件 UID 10001、mode 0400。此文及证据不包含凭证值。MCP 子进程不继承 OpenAI 运行密钥。本次密钥已通过聊天明文提供，调试交互也有一次意外终端回显，随后改为标准输入传输；建议接入后轮换该运行 key。
 
 ## 验证结果
 
