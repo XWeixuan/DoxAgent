@@ -1,0 +1,26 @@
+{
+  "name": "register-fresh-next",
+  "requested_at": "2026-11-06T21:31:20.455266+00:00",
+  "requested_url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&fields=id,title,published,published_url,subtitle&query=tag:software&_dox_poll=29900012",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&fields=id,title,published,published_url,subtitle&query=tag:software&_dox_poll=29900012",
+  "headers": {
+    "content-type": "application/json",
+    "date": "Fri, 06 Nov 2026 21:31:20 GMT",
+    "vary": "Accept-Encoding",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 d8006f736d3dc32a20a91813f2f50fa2.cloudfront.net (CloudFront)",
+    "age": "0"
+  },
+  "bytes": 11118,
+  "sha256": "528b6a27e337ded19e3bff8cf80f750f3886f0516c8de95de71ad08de12ad076",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 0.35
+}

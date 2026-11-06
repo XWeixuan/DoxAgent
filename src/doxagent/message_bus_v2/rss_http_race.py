@@ -33,6 +33,7 @@ RECIPES = {
             + "&fields=id,title,published,published_url,subtitle",
             "race_register",
             "us-standard-5",
+            fresh_query=True,
         )
         for query in ("tag:software", "(tag:off-prem%20OR%20tag:off_prem)", "tag:security")
     ),
@@ -217,8 +218,10 @@ async def execute(context, runners):
         try:
             async with asyncio.timeout(30 if name == "rss" else 15):
                 result = await runner(previous.get(name, {}))
-            proven = validate_listing(
-                events, result.acquisition_metadata.get("validated_request_ids")
+            proven = (
+                validate_listing(events, result.acquisition_metadata.get("validated_request_ids"))
+                if not result.failures and not result.site_access_deferred
+                else []
             )
             success = bool(proven) and not result.failures and not result.site_access_deferred
             error = (

@@ -3,3 +3,4 @@
 catalog.json
 jobs*.json
 overlay/
+*.log

@@ -46,4 +46,3 @@ for name,(sid,index,xpath) in groups.items():
  manifest.append(dict(source=sid,index=index,file=filename,first_url=rows[0].url,first_title=rows[0].title,first_time=rows[0].published_at.isoformat(),basis=rows[0].publication_time_basis,full_count=len(full)))
 (f/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf8')
 print([(x['source'],x['index'],x['full_count']) for x in manifest])
-

@@ -480,3 +480,38 @@ def test_migration_accepts_legacy_binding_only_required_rss_urls(tmp_path):
     assert repo.get_binding("NBIS:" + sid).source_parameters["rss_urls"] == feeds
     assert repo.get_source(sid).default_parameters["rss_urls"] == [r.feed for r in RECIPES[sid]]
     repo.close()
+
+
+async def test_rejected_http200_never_gains_parser_proof_from_race_wrapper():
+    from doxagent.message_bus_v2.schema import AcquisitionFailure
+
+    async def rejected(cp):
+        event = request_started("GET", "https://example.com/stale-list", admitted=True)
+        event.update(status_code=200, response_received_at=utc_now().isoformat())
+        return PollResult(
+            failures=[
+                AcquisitionFailure(
+                    source_id="test_race",
+                    binding_id="shared:test_race",
+                    ticker="*",
+                    error_code="HTTP_RACE_LANE_FAILED",
+                    error_message="stale cache",
+                    raw_hash="stale",
+                    original_payload={},
+                )
+            ]
+        )
+
+    async def good(cp):
+        return response("rss")
+
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        result = await execute(context(), {"http": rejected, "rss": good})
+    finally:
+        REQUESTS.reset(token)
+    assert not result.failures
+    assert not next(e for e in events if e.get("race_lane") == "http").get("list_validated")
+    assert result.acquisition_metadata["race"]["channels"]["http"]["validated_request_ids"] == []
+    assert len(result.acquisition_metadata["validated_request_ids"]) == 1
