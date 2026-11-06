@@ -68,7 +68,10 @@ def configure(service):
                     sid,
                     patch,
                     actor=UpdateActor.USER,
-                    reason="Validated low-cost HTTP + RSS race; either validated lane succeeds; original subscriptions preserved",
+                    reason=(
+                        "Validated low-cost HTTP + RSS race; either validated lane succeeds; "
+                        "original subscriptions preserved"
+                    ),
                 )
             report.append(
                 {

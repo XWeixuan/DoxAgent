@@ -1,5 +1,5 @@
 """Read-only active generation, channel health and physical cycles."""
-import collections,json,sqlite3,sys,time
+import collections,json,sqlite3,sys,time,math
 from datetime import datetime,UTC
 from pathlib import Path
 from doxagent.message_bus_v2.rss_http_race import RECIPES,IR_RECIPES
@@ -29,7 +29,7 @@ for row in rows:
  if valid:g['first_list_seconds'].append((min(valid)-datetime.fromisoformat(r['dispatch_at'])).total_seconds())
 for g in groups.values():
  for field in ['seconds','first_list_seconds']:
-  v=sorted(g.pop(field));g[field]={'samples':len(v),'mean':round(sum(v)/len(v),3) if v else None,'p95':round(v[max(0,int(len(v)*.95)-1)],3) if v else None,'max':round(max(v),3) if v else None}
+  v=sorted(g.pop(field));g[field]={'samples':len(v),'mean':round(sum(v)/len(v),3) if v else None,'p95':round(v[max(0,math.ceil(len(v)*.95)-1)],3) if v else None,'max':round(max(v),3) if v else None}
  g['errors']=g['errors'][-30:]
 heads=[]
 for r in db.execute('select source_id,binding_id,unit,head_json from units where required=1 and source_id in(select value from json_each(?))',(json.dumps(ids),)):

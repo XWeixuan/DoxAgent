@@ -1,10 +1,22 @@
 import asyncio
+import json
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
+from pathlib import Path
+from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 import pytest
 
 from doxagent.message_bus_v2.poll_trace import REQUESTS, request_started
-from doxagent.message_bus_v2.rss_http_race import execute
+from doxagent.message_bus_v2.public_listing import parse_listing
+from doxagent.message_bus_v2.rss_http_race import (
+    IR_RECIPES,
+    RECIPES,
+    endpoint_units,
+    execute,
+    poll_ir,
+)
 from doxagent.message_bus_v2.schema import (
     PollResult,
     RawMessageInput,
@@ -12,6 +24,7 @@ from doxagent.message_bus_v2.schema import (
     SourceDefinition,
     utc_now,
 )
+from doxagent.message_bus_v2.technology_sources import Capture, TechnologySource
 
 
 @asynccontextmanager
@@ -141,17 +154,6 @@ async def test_cancelled_race_stops_sibling_requests():
     assert stopped.is_set()
 
 
-# Real publisher snapshots retain the exact subscribed column and time contract.
-import json
-from datetime import datetime, timedelta
-from pathlib import Path
-from types import SimpleNamespace
-from urllib.parse import urlsplit
-
-from doxagent.message_bus_v2.rss_http_race import IR_RECIPES, RECIPES, endpoint_units, poll_ir
-from doxagent.message_bus_v2.public_listing import parse_listing
-from doxagent.message_bus_v2.technology_sources import Capture, TechnologySource
-
 FIXTURES = Path(__file__).parent / "fixtures/rss_http_race"
 SAMPLES = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf8"))
 
@@ -181,10 +183,10 @@ def test_verified_publisher_columns_and_timestamps(sample):
 
 @pytest.mark.parametrize("endpoint", list(IR_RECIPES))
 async def test_ir_lanes_keep_original_download_identity_frozen_body_and_owner(endpoint):
+    from doxagent.message_bus_v2.body_results import article_key
     from doxagent.message_bus_v2.corporate_ir.catalog import initial_endpoints, initial_source
     from doxagent.message_bus_v2.corporate_ir.parsers import parse_listing as native_parse
     from doxagent.message_bus_v2.schema import PollContext, TickerSourceBinding
-    from doxagent.message_bus_v2.body_results import article_key
 
     spec = next(s for s in initial_endpoints() if s.endpoint_id == endpoint)
     source = initial_source()
@@ -257,8 +259,8 @@ def test_unknown_subscribed_feed_is_preserved_as_rss_not_silently_dropped():
 
 
 def test_configuration_is_idempotent_and_preserves_subscriptions_and_body_settings(tmp_path):
-    from tests.fixtures.message_bus_v2 import _bus
     from scripts.ops.configure_rss_http_race import configure
+    from tests.fixtures.message_bus_v2 import _bus
 
     repo, bus = _bus(tmp_path / "bus.db")
     bus.start_ticker("INTC")
@@ -343,8 +345,8 @@ async def test_late_invalid_http200_does_not_renew_freshness_after_good_lane(tmp
 
 
 def test_race_summaries_share_one_body_job_and_real_revisions_still_schedule(tmp_path):
-    from tests.test_content_enrichment_hub import _setup, _message
     from doxagent.message_bus_v2.live import LiveQueue
+    from tests.test_content_enrichment_hub import _message, _setup
 
     repo, bus, source, binding = _setup(tmp_path)
     bus.live_queue = LiveQueue(bus)
@@ -399,8 +401,8 @@ def test_race_summaries_share_one_body_job_and_real_revisions_still_schedule(tmp
 
 
 def test_new_http_lane_acquires_proven_recent_update_to_existing_article(tmp_path):
-    from tests.test_content_enrichment_hub import _setup, _message
     from doxagent.message_bus_v2.live import LiveQueue
+    from tests.test_content_enrichment_hub import _message, _setup
 
     repo, bus, source, binding = _setup(tmp_path)
     bus.live_queue = LiveQueue(bus)
@@ -446,9 +448,9 @@ def test_new_http_lane_acquires_proven_recent_update_to_existing_article(tmp_pat
 
 
 def test_migration_accepts_legacy_binding_only_required_rss_urls(tmp_path):
-    from tests.fixtures.message_bus_v2 import _bus
     from doxagent.message_bus_v2.schema import TickerSourceBinding
     from scripts.ops.configure_rss_http_race import configure
+    from tests.fixtures.message_bus_v2 import _bus
 
     repo, bus = _bus(tmp_path / "bus.db")
     sid = "nbis_official_actor_rss"

@@ -2746,3 +2746,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - First production observation found Register list responses becoming stale after baseline. Added minute-specific HTTP cache keys and prevented failed parser/cache lanes from acquiring transport validation proof; RSS continued to keep the logical source healthy throughout.
 
 2026-11-07 Reuters dual-active routing estimate: include real tail durations in a per-identity in-memory EWMA for assignment scoring. The old site head-only estimate understated an occupied Main's long-tail work and could pin new jobs there despite earlier Backup capacity. No extra permits, requests, persistence or changes to legacy sites' admission estimates. Routing/recovery 61 passed; Collector retirement 22 passed.
+
+## 2026-11-07 — HTTP/RSS race production acceptance
+- Released runtime db08791f to Collector, Message Bus, Content Enrichment and API. Completed the full 05:37:30–05:47:30 Beijing observation: 360/360 logical physical polls succeeded, HTTP 360/360 validated; 24 intermittent corporate IR RSS 429s were covered by HTTP with no both-lane failure.
+- Verified all 28 related binding projections/configuration invariants. One natural Register article arrived in 16.35 seconds and completed FULL with a single download despite two lane captures; final evidence and the five intentional RSS-only decisions are recorded in docs/rss-http-race-implementation-and-acceptance-20261107.md.
