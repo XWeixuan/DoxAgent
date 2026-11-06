@@ -1,0 +1,29 @@
+{
+  "name": "power-categories",
+  "requested_at": "2026-11-06T20:57:11.918882+00:00",
+  "requested_url": "https://www.powermag.com/wp-json/wp/v2/categories?slug=nuclear,data-centers,legal-regulatory,safety,distributed-generation,energy-storage-2,hydrogen&per_page=30&_fields=id,slug",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 401,
+  "url": "https://www.powermag.com/wp-json/wp/v2/categories?slug=nuclear,data-centers,legal-regulatory,safety,distributed-generation,energy-storage-2,hydrogen&per_page=30&_fields=id,slug",
+  "headers": {
+    "cache-control": "public, max-age=604800",
+    "content-type": "application/json; charset=UTF-8",
+    "age": "0",
+    "via": "1.1 varnish, 1.1 varnish, 1.1 varnish, 1.1 varnish",
+    "date": "Fri, 06 Nov 2026 20:57:15 GMT",
+    "x-served-by": "cache-chi-kigq8000108-CHI, cache-fra-eddf8230039-FRA, cache-fra-eddf8230224-FRA, cache-fra-eddf8230224-FRA",
+    "x-cache": "MISS, MISS, MISS, MISS",
+    "x-cache-hits": "0, 0, 0, 0",
+    "vary": "Origin"
+  },
+  "bytes": 98,
+  "sha256": "5e624cc207e03d06cb1a83d7e8eb917c4aff2637077d8ddb4504cc2bf271da4b",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 3.205
+}

@@ -1,0 +1,163 @@
+{
+  "name": "wccftech-topic-industry-html",
+  "requested_at": "2026-11-06T20:39:08.699001+00:00",
+  "requested_url": "https://wccftech.com/topic/industry/?_dox_poll=29899958",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://wccftech.com/topic/industry/?_dox_poll=29899958",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:39:08 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "vary": "Accept-Encoding, Cookie",
+    "last-modified": "Fri, 06 Nov 2026 19:20:47 GMT",
+    "cf-cache-status": "DYNAMIC",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=11,cfOrigin;dur=6"
+  },
+  "bytes": 201769,
+  "sha256": "0801ff9a63b22b25ccb0d31359c67c77f0d36fc1c3d3e3ebb581d2378d3f411a",
+  "title": [
+    "Industry | Wccftech",
+    "Wccftech"
+  ],
+  "scripts": [
+    {
+      "src": "https://ua.realtimely.io/script.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.googletagmanager.com/gtag/js?id=G-591JRXV2QC",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1328
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 4067
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 19207
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1080
+    },
+    {
+      "src": "https://cdn.wccftech.com/wp-content/themes/wccf2021/2025/libs.js?ver=1793215504",
+      "id": "wccftech-libs-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1357
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2544
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5020
+    },
+    {
+      "src": "//wccftech.disqus.com/count.js",
+      "id": "dsq-count-scr",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.standalone.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2384
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": null,
+      "type": "module",
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Chinese Memory Chip Manufacturer CXMT Struggles In Q3 As Share Drops To 9% Amidst Aggressive Ramp From Samsung, Says Research",
+      "href": "https://wccftech.com/chinese-memory-chip-manufacturer-cxmt-struggles-in-q3-as-share-drops-to-9-amidst-aggressive-ramp-from-samsung-says-research/"
+    },
+    {
+      "title": "NVIDIA Vera Delivers 2x The Agent Speed Of AMD’s 256-Core EPYC Venice And 1.6x More Agents Per Watt Than The Frequency-Optimized 96-Core Venice",
+      "href": "https://wccftech.com/nvidia-vera-delivers-2x-the-agent-speed-of-amds-256-core-epyc-venice/"
+    },
+    {
+      "title": "NVIDIA’s Jensen Huang Summoned By U.S. Congress For A Closed Door Briefing To Address His Interactions With An Executive That’s In The Federal Spy Probe’s Crosshairs",
+      "href": "https://wccftech.com/nvidia-ceo-jensen-huang-congress-closed-door-briefing-china-spying-national-security/"
+    },
+    {
+      "title": "Meta Exec Says A Recently Elected, Data Center-Skeptic Democratic Governor Now Wants To Meet After Inauguration, As 22.5 GW Of Capacity Is Still Slated To Come Online Regardless Of",
+      "href": "https://wccftech.com/meta-exec-says-a-recently-elected-data-center-skeptic-democratic-governor-now-wants-to-meet-after-inauguration-as-22-5-gw-of-capacity-is-still-slated-to-come-online-regardless-of-politics/"
+    },
+    {
+      "title": "NVIDIA’s Vendor Financing Deals Are Not A Ponzi Scheme As It Is Slated To “Take Out $420 Billion” By Putting In $250 Billion, Says Tech Venture Capitalist Gene Munster",
+      "href": "https://wccftech.com/nvidias-vendor-financing-deals-are-not-a-ponzi-scheme-as-it-is-slated-to-take-out-420-billion-by-putting-in-250-billion-says-tech-venture-capitalist-gene-munster/"
+    },
+    {
+      "title": "TSMC’s 1-nanometer Chip Making Site Could Be In A Science Park That Also Manufactures Components For Space Use Imply Taiwanese Official’s Statements",
+      "href": "https://wccftech.com/tsmcs-1-nanometer-chip-making-site-could-be-in-a-science-park-that-also-manufactures-components-for-space-use-imply-taiwanese-officials-statements/"
+    },
+    {
+      "title": "Elon Musk Is Afraid Of Power Being “Concentrated” In My Hands, Says Sam Altman, Even As Both Have Similar Fears About AI",
+      "href": "https://wccftech.com/elon-musk-is-afraid-of-power-being-concentrated-in-my-hands-says-sam-altman-even-as-both-have-similar-fears-about-ai/"
+    },
+    {
+      "title": "Intel’s Biggest Foundry Bet Is Still On The Cards With 14A PDK 0.9 Now Available To Customers, & PDK 1.0 Close By For High-Volume Readiness",
+      "href": "https://wccftech.com/intel-foundry-14a-pdk-0-9-available-pdk-1-0-q1-2027-high-volume-manufacturing/"
+    },
+    {
+      "title": "Intel CEO Lip-Bu Tan Warns Safeguarding ‘Thousand Millions’ Of AI Agents From Unauthorized Actions Is A Key Challenge Of The AI Wave",
+      "href": "https://wccftech.com/intel-ceo-lip-bu-tan-warns-safeguarding-thousand-millions-of-ai-agents-from-unauthorized-actions-is-a-key-challenge-of-the-ai-wave/"
+    },
+    {
+      "title": "Elon Musk Defends Space AI Satellites & Asserts They Will Emit 1,300W/m² In Heat For Rapid Cooling",
+      "href": "https://wccftech.com/elon-musk-defends-space-ai-satellites-asserts-they-will-emit-1300-m%c2%b2-in-heat-for-rapid-cooling/"
+    },
+    {
+      "title": "TSMC’s 1-nanometer Manufacturing Site Likely Tipped By Taiwan’s Minister In Discussion That Included Robots",
+      "href": "https://wccftech.com/tsmcs-1-nanometer-manufacturing-site-likely-tipped-by-taiwans-minister-in-discussion-that-included-robots/"
+    },
+    {
+      "title": "AI Memory Boom Puts South Korea $70 Billion Away From $1 Trillion In Exports; Chips Now Make Up 49% Of Shipments While Small Businesses Struggle",
+      "href": "https://wccftech.com/south-korea-1-trillion-exports-ai-memory-chip-boom-semiconductors-49-percent/"
+    }
+  ],
+  "seconds": 0.242
+}

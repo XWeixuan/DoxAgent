@@ -1,0 +1,302 @@
+[
+  {
+    "source": "unmannedairspace_counteruas",
+    "index": 0,
+    "file": "unmannedairspace_counteruas-0.html",
+    "first_url": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/safran-and-msi-to-collaborate-on-c-uas-for-naval-and-land-systems/",
+    "first_title": "Safran and MSI to collaborate on C-UAS for naval and land systems",
+    "first_time": "2026-11-06T11:42:11+00:00",
+    "basis": "EXACT",
+    "full_count": 10
+  },
+  {
+    "source": "unmannedairspace_counteruas",
+    "index": 1,
+    "file": "unmannedairspace_counteruas-1.html",
+    "first_url": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/us-seeks-production-ready-maritime-counter-drone-capabilities/",
+    "first_title": "US seeks production-ready maritime counter-drone capabilities",
+    "first_time": "2026-10-26T11:12:30+00:00",
+    "basis": "EXACT",
+    "full_count": 10
+  },
+  {
+    "source": "register_software_cloud_security",
+    "index": 0,
+    "file": "register_software_cloud_security-0.json",
+    "first_url": "https://www.theregister.com/os-platforms/2026/11/06/mac-lookalikes-multiply-as-linux-raids-apples-wardrobe/5308070",
+    "first_title": "Mac lookalikes multiply as Linux raids Apple's wardrobe",
+    "first_time": "2026-11-06T17:02:00+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "register_software_cloud_security",
+    "index": 1,
+    "file": "register_software_cloud_security-1.json",
+    "first_url": "https://www.theregister.com/off-prem/2026/11/05/when-datacenters-lose-power-generators-should-kick-in-that-didnt-happen-for-google-in-london/5307739",
+    "first_title": "When datacenters lose power, generators should kick in. That didn’t happen for Google in London",
+    "first_time": "2026-11-05T06:19:54+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "register_software_cloud_security",
+    "index": 2,
+    "file": "register_software_cloud_security-2.json",
+    "first_url": "https://www.theregister.com/security/2026/11/06/digicert-admits-16-month-security-lapse-exposed-customer-information/5308097",
+    "first_title": "DigiCert admits 16-month security lapse exposed customer information",
+    "first_time": "2026-11-06T13:15:00+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "nbis_official_actor_rss",
+    "index": 0,
+    "file": "nbis_official_actor_rss-0.html",
+    "first_url": "https://clickhouse.com/blog/a-month-with-walshadow-clickhouse-managed-postgres",
+    "first_title": "What I learned from a month with WalShadow on ClickHouse Managed Postgres",
+    "first_time": "2026-11-04T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 15
+  },
+  {
+    "source": "nbis_official_actor_rss",
+    "index": 1,
+    "file": "nbis_official_actor_rss-1.json",
+    "first_url": "https://about.fb.com/news/2026/11/introducing-spaces-customize-muse-app/",
+    "first_title": "Design the Muse App, Just for You",
+    "first_time": "2026-11-06T18:00:58+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "airspaceforces_space",
+    "index": 0,
+    "file": "airspaceforces_space-0.json",
+    "first_url": "https://www.airandspaceforces.com/very-low-earth-orbit-space-force-exploring-ops-lower-altitudes/",
+    "first_title": "Very Low-Earth Orbit: How the Space Force Is Exploring Ops at Lower Altitudes",
+    "first_time": "2026-11-06T19:42:20+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "ans_nuclear_newswire",
+    "index": 0,
+    "file": "ans_nuclear_newswire-0.html",
+    "first_url": "https://www.ans.org/news/2026-11-06/article-8564/uk-energy-bill-proposes-changes-to-waste-transport-regulation/",
+    "first_title": "U.K. energy bill proposes changes to waste transport regulation",
+    "first_time": "2026-11-06T18:11:54+00:00",
+    "basis": "EXACT",
+    "full_count": 20
+  },
+  {
+    "source": "intc.press",
+    "index": 0,
+    "file": "intc.press-0.html",
+    "first_url": "https://www.intc.com/news-events/press-releases/detail/1786/intel-reports-third-quarter-2026-financial-results",
+    "first_title": "Intel Reports Third-Quarter 2026 Financial Results",
+    "first_time": "2026-10-29T20:01:00+00:00",
+    "basis": "EXACT",
+    "full_count": 12
+  },
+  {
+    "source": "rklb.ir",
+    "index": 0,
+    "file": "rklb.ir-0.html",
+    "first_url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/mission-success-rocket-lab-launches-99th-electron-mission",
+    "first_title": "MISSION SUCCESS: Rocket Lab Launches 99th Electron Mission",
+    "first_time": "2026-11-02T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 10
+  },
+  {
+    "source": "mu.ir",
+    "index": 0,
+    "file": "mu.ir-0.json",
+    "first_url": "https://investors.micron.com/news/press-release/2026/Micron-Announces-Board-of-Directors-Retirement/default.aspx",
+    "first_title": "Micron Announces Board of Directors Retirement",
+    "first_time": "2026-11-05T21:30:00+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "be.press",
+    "index": 0,
+    "file": "be.press-0.json",
+    "first_url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-Third-Quarter-2026-Financial-Results-and-Raises-Full-Year-2026-Guidance/default.aspx",
+    "first_title": "Bloom Energy Reports Record Third Quarter 2026 Financial Results and Raises Full Year 2026 Guidance",
+    "first_time": "2026-10-22T20:05:00+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "siliconangle_software",
+    "index": 0,
+    "file": "siliconangle_software-0.json",
+    "first_url": "https://siliconangle.com/2026/11/05/box-taps-nvidias-ai-models-to-build-a-rich-context-layer-for-autonomous-enterprise-agents/",
+    "first_title": "Box taps Nvidia’s AI models to build a rich context layer for autonomous enterprise agents",
+    "first_time": "2026-11-05T14:00:44+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "siliconangle_software",
+    "index": 1,
+    "file": "siliconangle_software-1.json",
+    "first_url": "https://siliconangle.com/2026/11/05/dropbox-acquires-tigris-data-for-350m-releases-new-ai-productivity-features/",
+    "first_title": "Dropbox acquires Tigris Data for $350M, releases new AI productivity features",
+    "first_time": "2026-11-06T01:28:58+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "siliconangle_software",
+    "index": 2,
+    "file": "siliconangle_software-2.json",
+    "first_url": "https://siliconangle.com/2026/11/05/openai-launches-gpt-6-cyber-a-gpt-6-astra-model-built-to-keep-vulnerability-research-in-scope/",
+    "first_title": "OpenAI launches GPT-6 Cyber, an Astra model built to keep vulnerability research in scope",
+    "first_time": "2026-11-05T22:52:25+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "siliconangle_ai",
+    "index": 0,
+    "file": "siliconangle_ai-0.json",
+    "first_url": "https://siliconangle.com/2026/11/06/aws-colleen-aubrey-stop-inventing-new-ai-metrics-its-your-business-metrics-that-matter/",
+    "first_title": "AWS’ Colleen Aubrey: Stop inventing new AI metrics — it’s your business metrics that matter",
+    "first_time": "2026-11-06T18:56:52+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "wccftech_hardware",
+    "index": 0,
+    "file": "wccftech_hardware-0.html",
+    "first_url": "https://wccftech.com/elon-musk-says-spacex-will-attempt-a-critical-breakthrough-needed-to-make-life-multiplanetary-as-its-government-derived-revenues-shrink-to-just-5-next-year/",
+    "first_title": "Elon Musk Says SpaceX Will Attempt A “Critical Breakthrough Needed To Make Life Multiplanetary,” As Its Government-Derived Revenues Shrink To Just 5% Next Year",
+    "first_time": "2026-11-06T18:05:55+00:00",
+    "basis": "EXACT",
+    "full_count": 34
+  },
+  {
+    "source": "wccftech_hardware",
+    "index": 1,
+    "file": "wccftech_hardware-1.html",
+    "first_url": "https://wccftech.com/chinese-memory-chip-manufacturer-cxmt-struggles-in-q3-as-share-drops-to-9-amidst-aggressive-ramp-from-samsung-says-research/",
+    "first_title": "Chinese Memory Chip Manufacturer CXMT Struggles In Q3 As Share Drops To 9% Amidst Aggressive Ramp From Samsung, Says Research",
+    "first_time": "2026-11-06T13:10:36+00:00",
+    "basis": "EXACT",
+    "full_count": 34
+  },
+  {
+    "source": "wccftech_hardware",
+    "index": 2,
+    "file": "wccftech_hardware-2.html",
+    "first_url": "https://wccftech.com/nvidia-cargo-heist-11-million-dollars-hardware-stolen-oakland-texas/",
+    "first_title": "NVIDIA GPUs Worth $11.4 Million Stolen From Oakland Fetch A Hefty Price Outside Of U.S. Says UC Berkeley Professor, “They Go For About 1 Million Or More Abroad”",
+    "first_time": "2026-11-06T14:48:17+00:00",
+    "basis": "EXACT",
+    "full_count": 34
+  },
+  {
+    "source": "quantum_insider",
+    "index": 0,
+    "file": "quantum_insider-0.json",
+    "first_url": "https://thequantuminsider.com/2026/11/06/pasqal-q3-revenue-decline-services-growth/",
+    "first_title": "Pasqal Reports Third-Quarter Revenue Decline as QPU Services Revenue Grows",
+    "first_time": "2026-11-06T18:36:58+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "quantum_insider",
+    "index": 1,
+    "file": "quantum_insider-1.json",
+    "first_url": "https://thequantuminsider.com/2026/11/06/cambridge-uk-quantum-superconnector-commercialisation/",
+    "first_title": "University of Cambridge Joins UK Quantum Commercialisation Initiative",
+    "first_time": "2026-11-06T18:53:02+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "quantum_insider",
+    "index": 2,
+    "file": "quantum_insider-2.json",
+    "first_url": "https://thequantuminsider.com/2026/11/06/uk-announces-new-funding-to-support-quantum-technology-commercialisation/",
+    "first_title": "UK Announces New Funding to Support Quantum Technology Commercialisation",
+    "first_time": "2026-11-06T11:30:00+00:00",
+    "basis": "EXACT",
+    "full_count": 30
+  },
+  {
+    "source": "power_magazine_energy",
+    "index": 0,
+    "file": "power_magazine_energy-0.html",
+    "first_url": "https://www.powermag.com/a-syzygy-in-nuclear-energy/",
+    "first_title": "A Syzygy in Nuclear Energy",
+    "first_time": "2026-11-05T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 30
+  },
+  {
+    "source": "power_magazine_energy",
+    "index": 1,
+    "file": "power_magazine_energy-1.html",
+    "first_url": "https://www.powermag.com/when-commercial-demand-takes-the-lead-rethinking-grid-planning-for-a-new-load-era/",
+    "first_title": "When Commercial Demand Takes the Lead: Rethinking Grid Planning for a New Load Era",
+    "first_time": "2026-11-06T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 30
+  },
+  {
+    "source": "power_magazine_energy",
+    "index": 2,
+    "file": "power_magazine_energy-2.html",
+    "first_url": "https://www.powermag.com/data-centers-affordability-and-the-ballot-box-what-the-2026-midterms-mean-for-the-power-industry/",
+    "first_title": "Data Centers, Affordability, and the Ballot Box: What the 2026 Midterms Mean for the Power Industry",
+    "first_time": "2026-11-02T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 30
+  },
+  {
+    "source": "power_magazine_energy",
+    "index": 3,
+    "file": "power_magazine_energy-3.html",
+    "first_url": "https://www.powermag.com/keeping-americas-nuclear-fleet-reliable-as-electricity-demand-grows/",
+    "first_title": "Keeping America’s Nuclear Fleet Reliable as Electricity Demand Grows",
+    "first_time": "2026-10-29T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 29
+  },
+  {
+    "source": "power_magazine_energy",
+    "index": 4,
+    "file": "power_magazine_energy-4.html",
+    "first_url": "https://www.powermag.com/grid-resilience-is-about-more-than-adding-capacity/",
+    "first_title": "Grid Resilience Is About More Than Adding Capacity",
+    "first_time": "2026-11-02T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 30
+  },
+  {
+    "source": "power_magazine_energy",
+    "index": 5,
+    "file": "power_magazine_energy-5.html",
+    "first_url": "https://www.powermag.com/major-solar-power-energy-storage-companies-merge-in-all-stock-deal/",
+    "first_title": "Major Solar Power, Energy Storage Companies Merge in All-Stock Deal",
+    "first_time": "2026-11-06T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 30
+  },
+  {
+    "source": "power_magazine_energy",
+    "index": 6,
+    "file": "power_magazine_energy-6.html",
+    "first_url": "https://www.powermag.com/hydrogen-award-finalist-total-hydrogen-solutions-texas-production-facility/",
+    "first_title": "Hydrogen Award Finalist: Total Hydrogen Solutions’ Texas Production Facility",
+    "first_time": "2026-09-29T12:00:00+00:00",
+    "basis": "DATE",
+    "full_count": 29
+  }
+]

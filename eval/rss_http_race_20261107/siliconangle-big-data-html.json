@@ -1,0 +1,206 @@
+{
+  "name": "siliconangle-big-data-html",
+  "requested_at": "2026-11-06T20:36:06.480105+00:00",
+  "requested_url": "https://siliconangle.com/category/big-data/?_dox_poll=29899956",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://siliconangle.com/category/big-data/?_dox_poll=29899956",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:36:07 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "age": "0"
+  },
+  "bytes": 169599,
+  "sha256": "f63c5a3096498ea7622c9a15c644612e389ae7bfab0425e832d572ee8513b644",
+  "title": [
+    "Big Data - SiliconANGLE"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2141
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 2525
+    },
+    {
+      "src": "https://siliconangle.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4505
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4528
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4528
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4528
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 7105
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/themes/siliconangle/js/vendor/bootstrap.min.js?ver=3.4.1",
+      "id": "sa-bootstrap-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/themes/siliconangle/scripts.js?ver=1790598035",
+      "id": "sa-scripts-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/advanced-ads/admin/assets/js/advertisement.js",
+      "id": "advanced-ads-find-adblocker-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/ajax-load-more/build/frontend/ajax-load-more.min.js?ver=8.0.1",
+      "id": "ajax-load-more-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-includes/js/dist/dom-ready.min.js?ver=3fe927cab37bf38d6a23",
+      "id": "wp-dom-ready-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255",
+      "id": "wp-hooks-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-includes/js/dist/i18n.min.js?ver=1dfe7db3940c23ea9216",
+      "id": "wp-i18n-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-includes/js/dist/a11y.min.js?ver=31c6cec5a4ff7aff483d",
+      "id": "wp-a11y-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/gravityforms/js/jquery.json.min.js?ver=2.10.5",
+      "id": "gform_json-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "gform_gravityforms-js-extra",
+      "type": null,
+      "size": 3633
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/gravityforms/js/gravityforms.min.js?ver=2.10.5",
+      "id": "gform_gravityforms-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.google.com/recaptcha/api.js?hl=en&&ver=7.1.4#038;render=explicit",
+      "id": "gform_recaptcha-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/gravityforms/js/placeholders.jquery.min.js?ver=2.10.5",
+      "id": "gform_placeholder-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/gravityforms/assets/js/dist/utils.min.js?ver=3f278756f0a3032bed328ff6a9f6c01d",
+      "id": "gform_gravityforms_utils-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/gravityforms/assets/js/dist/vendor-theme.min.js?ver=7c651d0ba638ce98b9c65141edddd567",
+      "id": "gform_gravityforms_theme_vendors-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://siliconangle.com/wp-content/plugins/gravityforms/assets/js/dist/scripts-theme.min.js?ver=301fdc9aa6144168f3b854c4c2c8f6d3",
+      "id": "gform_gravityforms_theme-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "module",
+      "size": 3056
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2425
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2430
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2430
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2430
+    }
+  ],
+  "latest_links": [],
+  "seconds": 1.476
+}

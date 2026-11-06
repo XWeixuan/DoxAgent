@@ -597,7 +597,8 @@ class GlobalPollScheduler:
             ("SHARED" if source.acquisition_mode.shared_distribution else "HEAD", {})
         ]
         if listing_enabled(source):
-            units = [(unit, {}) for unit in listing_units(source, binding)]
+            units = [(unit, {"request_multiplier": 2} if source.default_parameters.get("discovery_mode") == "http_rss_race" else {})
+                     for unit in listing_units(source, binding)]
         elif source.adapter_ref == "builtin:newswire_massive@1":
             from .newswire_sources import endpoint_units
             units = [(unit, {}) for unit in endpoint_units(source)]
@@ -2044,6 +2045,9 @@ class GlobalPollScheduler:
             capacity, _ = required_capacity(
                 rate, current[1].cost.seconds if current else 1, ceiling=ceiling
             )
+            if source.default_parameters.get("discovery_mode") == "http_rss_race":
+                # Adaptive capacity=1 would serialize the two racers before send.
+                capacity = min(ceiling, max(2, capacity))
             constraints = constraints.model_copy(update={"max_concurrency": capacity})
         browser_owned = (
             source.kind.value == "crawler"

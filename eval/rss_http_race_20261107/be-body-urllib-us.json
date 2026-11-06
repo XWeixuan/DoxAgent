@@ -1,0 +1,32 @@
+{
+  "name": "be-body-urllib-us",
+  "requested_at": "2026-11-06T21:06:24.608834+00:00",
+  "requested_url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-Third-Quarter-2026-Financial-Results-and-Raises-Full-Year-2026-Guidance/default.aspx",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 403,
+  "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-Third-Quarter-2026-Financial-Results-and-Raises-Full-Year-2026-Guidance/default.aspx",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:06:25 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "server-timing": "chlray;desc=\"a5670fdc78fbf8b2\""
+  },
+  "bytes": 6079,
+  "sha256": "17066dbf8216121064b80d0405633e008d83ebc180311944ef1b0b5d6f1c8d15",
+  "title": [
+    "Just a moment..."
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3672
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.864
+}

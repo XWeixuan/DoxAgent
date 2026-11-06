@@ -1,0 +1,22 @@
+{
+  "name": "onds-short-url",
+  "requested_at": "2026-11-06T21:02:55.636926+00:00",
+  "requested_url": "https://ir.ondas.com/news/detail/339",
+  "method": "HEAD",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://ir.ondas.com/press-releases/detail/339/ondas-plans-significant-u-s-manufacturing-expansion-to",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:02:55 GMT",
+    "expires": "Thu, 19 Nov 1981 08:52:00 GMT",
+    "cache-control": "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+    "vary": "Content-Length,User-Agent",
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "seconds": 0.185
+}

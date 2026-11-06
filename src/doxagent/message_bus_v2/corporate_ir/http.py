@@ -37,6 +37,7 @@ class PublicHttp:
         self.owns_client = client is None
         self.host_slots = {}
         self.browser = PublicBrowserPool()
+        self.routed_http = None
 
     def _client(self,host):
         if self.client is not None:return self.client
@@ -138,6 +139,26 @@ class PublicHttp:
             status, body, final = await self.browser.fetch(spec)
             return Capture(status, final, body, {}, len(body.encode()))
         url = url or spec.entry_url
+        route = spec.parser_parameters.get("body_http_route")
+        if route and url != spec.entry_url:
+            # Q4's feed works directly while its article pages require the
+            # existing curl transport/egress. Keep RSS and BODY budgets separate.
+            from ..technology_sources import TechnologyHttp, TechnologySource
+            from ..publisher_http import HTTP_CONTEXT
+
+            if urlsplit(url).hostname not in spec.allowed_article_hosts:
+                raise ValueError("IR body host not approved")
+            if self.routed_http is None:
+                self.routed_http = TechnologyHttp(purpose="BODY")
+            url = url.replace("http://", "https://", 1)
+            recipe = TechnologySource(spec.endpoint_id,spec.display_name,
+                urlsplit(url).hostname.removeprefix("www."),(url,),(),route=route)
+            token = HTTP_CONTEXT.set("body")
+            try:
+                result = await self.routed_http.fetch(url,recipe,headers=headers)
+                return Capture(result.status,result.url,result.text,result.headers,len(result.text.encode()))
+            finally:
+                HTTP_CONTEXT.reset(token)
         async with asyncio.timeout(12):
             for _ in range(5):
                 host = urlsplit(url).hostname
@@ -183,5 +204,7 @@ class PublicHttp:
 
     async def close(self):
         await self.browser.close()
+        if self.routed_http is not None:
+            await self.routed_http.close()
         for client in self.clients.values():await client.aclose()
         self.clients.clear()

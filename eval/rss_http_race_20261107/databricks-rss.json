@@ -1,0 +1,26 @@
+{
+  "name": "databricks-rss",
+  "requested_at": "2026-11-06T20:45:01.564390+00:00",
+  "requested_url": "https://www.databricks.com/feed",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.databricks.com/feed",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:45:01 GMT",
+    "content-type": "application/xml",
+    "cf-cache-status": "DYNAMIC",
+    "age": "6541",
+    "cache-control": "public, max-age=0, must-revalidate",
+    "etag": "W/\"988c06da4d3249151e559a884fba7522\"",
+    "last-modified": "Fri, 06 Nov 2026 18:23:15 GMT",
+    "vary": "accept-encoding",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=5,cfOrigin;dur=0,cfWorker;dur=11"
+  },
+  "bytes": 5932,
+  "sha256": "75666a0a3203f2f63a06b740d5ee9933020babc0b8f5adf3a675f8723d6ebf11",
+  "seconds": 0.068
+}

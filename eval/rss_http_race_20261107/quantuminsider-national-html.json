@@ -1,0 +1,155 @@
+{
+  "name": "quantuminsider-national-html",
+  "requested_at": "2026-11-06T20:41:53.583633+00:00",
+  "requested_url": "https://thequantuminsider.com/category/daily/national/?_dox_poll=29899961",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://thequantuminsider.com/category/daily/national/?_dox_poll=29899961",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:41:53 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "cf-cache-status": "DYNAMIC",
+    "cache-control": "max-age=0",
+    "expires": "Fri, 06 Nov 2026 20:41:53 GMT",
+    "vary": "Accept-Encoding,Cookie",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=283,cfOrigin;dur=0"
+  },
+  "bytes": 242343,
+  "sha256": "5b962bb7738b01b391ffd2edf544a2104f36d191fc16320a30e4aa4aa2cc3d11",
+  "title": [
+    "Policy & National - The Quantum Insider"
+  ],
+  "scripts": [
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2090
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 2419
+    },
+    {
+      "src": null,
+      "id": "tqh-js",
+      "type": null,
+      "size": 7035
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-content/plugins/tqi_editor_intelligence-4/frontend.js?ver=14.0.0",
+      "id": "tqi-frontend-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/ui/core.min.js?ver=1.14.2",
+      "id": "jquery-ui-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255",
+      "id": "wp-hooks-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "popup-maker-site-js-extra",
+      "type": null,
+      "size": 1758
+    },
+    {
+      "src": "//thequantuminsider.com/wp-content/uploads/pum/pum-site-scripts.js?defer&generated=1792955964&ver=1.25.0",
+      "id": "popup-maker-site-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "tqi-cat-js",
+      "type": null,
+      "size": 1100
+    },
+    {
+      "src": null,
+      "id": "lcn-js",
+      "type": null,
+      "size": 1104
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1097
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "University of Cambridge Joins UK Quantum Commercialisation Initiative",
+      "href": "https://thequantuminsider.com/2026/11/06/cambridge-uk-quantum-superconnector-commercialisation/"
+    },
+    {
+      "title": "ITIC Develops Taiwan-UK Partnership to Support Deep Tech Businesses",
+      "href": "https://thequantuminsider.com/2026/11/06/itic-taiwan-uk-deep-tech-investment-commercialisation/"
+    },
+    {
+      "title": "South Korea Launches Hangang Supercomputer, Plans Quantum Integration",
+      "href": "https://thequantuminsider.com/2026/11/02/south-korea-hangang-supercomputer-quantum-integration/"
+    },
+    {
+      "title": "Quantum Industry Coalition Highlights Funding Priorities For The National Quantum Initiative Reauthorization Act",
+      "href": "https://thequantuminsider.com/2026/10/30/quantum-industry-coalition-highlights-funding-priorities-for-the-national-quantum-initiative-reauthorization-act/"
+    },
+    {
+      "title": "Netpoleon India Partners With QNu Labs on Quantum-Safe Security",
+      "href": "https://thequantuminsider.com/2026/10/30/netpoleon-qnu-labs-quantum-safe-security/"
+    },
+    {
+      "title": "Speakers Point to Risk Appetite And Capital as UK Deep-Tech Bottlenecks at City Quantum & AI Summit",
+      "href": "https://thequantuminsider.com/2026/10/30/speakers-point-to-risk-appetite-and-capital-as-uk-deep-tech-bottlenecks-at-city-quantum-ai-summit/"
+    },
+    {
+      "title": "France National Quantum Update: October 2026",
+      "href": "https://thequantuminsider.com/2026/10/30/france-national-quantum-update-october-2026/"
+    },
+    {
+      "title": "What NIST’s Post-Quantum Cryptography Plan Means For Companies And Their Suppliers",
+      "href": "https://thequantuminsider.com/2026/10/28/what-nists-post-quantum-cryptography-plan-means-for-companies-and-their-suppliers/"
+    },
+    {
+      "title": "NIST Report Provides Guidelines for Transition to Post-Quantum Cryptography Standards",
+      "href": "https://thequantuminsider.com/2026/10/27/nist-report-provides-guidelines-for-transition-to-post-quantum-cryptography-standards/"
+    },
+    {
+      "title": "Guest Post: The Next Threat to Encryption May Not Need a Quantum Computer",
+      "href": "https://thequantuminsider.com/2026/10/27/guest-post-the-next-threat-to-encryption-may-not-need-a-quantum-computer/"
+    }
+  ],
+  "seconds": 0.584
+}

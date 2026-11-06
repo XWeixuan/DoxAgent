@@ -1,0 +1,22 @@
+{
+  "name": "unmanned-policies-rss",
+  "requested_at": "2026-11-06T20:22:24.600832+00:00",
+  "requested_url": "https://www.unmannedairspace.info/category/counter-uas-systems-and-policies/feed/",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.unmannedairspace.info/category/counter-uas-systems-and-policies/feed/",
+  "headers": {
+    "content-type": "application/rss+xml; charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 20:22:24 GMT",
+    "vary": "accept,content-type,Accept-Encoding,Cookie",
+    "etag": "\"1ebdfc943834c5fc2a1ebffb1b4bbe58\"",
+    "last-modified": "Fri, 06 Nov 2026 12:02:35 GMT"
+  },
+  "bytes": 61603,
+  "sha256": "387f333e136062c418e8dcd55e9501e64ce4504b331f0bf085a3283d583f9cb9",
+  "seconds": 0.62
+}

@@ -1,0 +1,33 @@
+{
+  "name": "venturebeat-data-post",
+  "requested_at": "2026-11-06T20:28:50.864866+00:00",
+  "requested_url": "https://venturebeat.com/category/data",
+  "method": "POST",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 429,
+  "url": "https://venturebeat.com/category/data",
+  "headers": {
+    "cache-control": "private, no-store, max-age=0",
+    "content-type": "text/html; charset=utf-8",
+    "vary": "Accept-Encoding",
+    "date": "Fri, 06 Nov 2026 20:28:50 GMT"
+  },
+  "bytes": 24732,
+  "sha256": "ec10d354743021069e45f2452bc7086ab8fa31c1c18d4cadf3c60aa6bf89f340",
+  "title": [
+    "Vercel Security Checkpoint"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "module",
+      "size": 13207
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.039
+}

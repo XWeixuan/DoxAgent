@@ -167,7 +167,8 @@ class Collector:
                 from ..corporate_ir.schema import endpoints
 
                 units = [
-                    ("IR:" + spec.endpoint_id, {"ir_spec": spec})
+                    ("IR:" + spec.endpoint_id, {"ir_spec": spec,
+                        "request_multiplier": 2 if spec.parser_parameters.get("http_rss_race") else 1})
                     for spec in endpoints(s, b)
                     if spec.enabled
                 ]
@@ -210,12 +211,13 @@ class Collector:
                 else min(b.polling.target_interval_seconds for b in targets)
             )
             if options.get('coverage_required', not unit.startswith("TAIL:")):
-                rates[s.source_id] += 1 / period
-                groups[s.scheduler_group] += 1 / period
+                demand = options.get("request_multiplier", 1) / period
+                rates[s.source_id] += demand
+                groups[s.scheduler_group] += demand
                 limiter_key=s.source_id
                 if s.source_id=="yahoo_finance_news":
                     limiter_key+=':'+yahoo_lane(unit)
-                limiter_rates[limiter_key]+=1/period
+                limiter_rates[limiter_key]+=demand
             phase, phase_key = phases.get(key, ((int(sha256_text(':'.join(key))[:8], 16) % max(1, period * 1000)) / 1000, None))
             options['schedule_phase_key'] = phase_key
             generation = self.generation(s, targets, options)
@@ -520,13 +522,16 @@ class Collector:
                             checkpoint = self.states[
                                 (b.binding_id, "IR:" + options["ir_spec"].endpoint_id)
                             ]["state"].get("checkpoint", {})
-                        result = await self.ir(
-                            adapter,
-                            options["ir_spec"],
-                            b,
-                            checkpoint,
-                            recovery=options.get("recovery", False),
-                        )
+                        if options["ir_spec"].parser_parameters.get("http_rss_race") and not options.get("recovery"):
+                            from ..rss_http_race import poll_ir
+                            result = await poll_ir(self, adapter, options["ir_spec"], PollContext(
+                                poll_run_id=run_id, ticker=b.ticker, source=source, binding=b,
+                                acquisition_unit=unit, checkpoint=checkpoint, requested_at=now,
+                                request_permit=self.planner._limiter(source, unit).permit, on_page=on_page))
+                        else:
+                            result = await self.ir(
+                                adapter, options["ir_spec"], b, checkpoint,
+                                recovery=options.get("recovery", False))
                     elif source.acquisition_mode.shared_distribution:
                         result = await adapter.poll_shared(
                             SharedPollContext(
@@ -537,6 +542,7 @@ class Collector:
                                 force_refresh=bool(options.get('force_refresh')),
                                 requested_at=now,
                                 request_permit=self.planner._limiter(source, unit).permit,
+                                on_page=on_page,
                             )
                         )
                     else:
@@ -569,6 +575,8 @@ class Collector:
                     state["last_error_message"] = (
                         result.failures[0].error_message if result.failures else None
                     )
+                    if "race" in result.acquisition_metadata:
+                        state["race_observation"] = result.acquisition_metadata["race"]
                     if source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION:
                         state['wire_observation']=result.acquisition_metadata
                     # A failed response still carries recovery progress. Adapters
@@ -652,7 +660,7 @@ class Collector:
                 last_error_code=reason,
                 status=(
                     "succeeded" if valid else "failed"
-                    if reason in {"HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED"}
+                    if reason in {"HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED", "HTTP_RSS_BOTH_FAILED"}
                     else "partial" if page_committed else "failed"
                 ),
             )
@@ -693,6 +701,7 @@ class Collector:
                                 e
                                 for e in events
                                 if e.get("role", "listing") == "listing"
+                                and e.get("list_validated") and e.get("proof_basis") == "TRANSPORT_SEND"
                                 and e.get("response_received_at")
                                 and (e.get("status_code") is None or 200 <= e["status_code"] < 400)
                             ]

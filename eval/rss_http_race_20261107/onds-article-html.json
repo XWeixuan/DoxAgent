@@ -1,0 +1,45 @@
+{
+  "name": "onds-article-html",
+  "requested_at": "2026-11-06T21:02:20.528500+00:00",
+  "requested_url": "https://ir.ondas.com/press-releases/detail/339/ondas-plans-significant-u-s-manufacturing-expansion-to",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://ir.ondas.com/press-releases/detail/339/ondas-plans-significant-u-s-manufacturing-expansion-to",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:02:20 GMT",
+    "expires": "Thu, 19 Nov 1981 08:52:00 GMT",
+    "cache-control": "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+    "vary": "Content-Length,User-Agent,Accept-Encoding",
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "bytes": 30467,
+  "sha256": "5d7ba24488b43e1754118112990246c1b44464f562db5c13fd3d225b45efbdb6",
+  "title": [
+    "Ondas Plans Significant U.S. Manufacturing Expansion to Scale Low-Cost ULTRA ISR Aircraft Production, Targeting 10 Aircraft per Month by 2028 :: Ondas Inc. (ONDS)"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2428
+    },
+    {
+      "src": "https://d1io3yog0oux5.cloudfront.net/_5b44dd33c0929b931e60abed65dcd52a/ondas/files/theme/js/_js/all.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "",
+      "href": "/"
+    }
+  ],
+  "seconds": 0.062
+}

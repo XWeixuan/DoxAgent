@@ -1,0 +1,200 @@
+{
+  "name": "airspaceforces-space-html",
+  "requested_at": "2026-11-06T20:39:04.002887+00:00",
+  "requested_url": "https://www.airandspaceforces.com/category/space/?_dox_poll=29899958",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.airandspaceforces.com/category/space/?_dox_poll=29899958",
+  "headers": {
+    "cache-control": "max-age=900, s-maxage=90, stale-if-error=900",
+    "content-type": "text/html; charset=UTF-8",
+    "via": "1.1 varnish, 1.1 varnish",
+    "age": "0",
+    "date": "Fri, 06 Nov 2026 20:39:04 GMT",
+    "x-served-by": "cache-iad-kiad7000137-IAD, cache-sin-wsap440096-SIN",
+    "x-cache": "MISS, MISS",
+    "x-cache-hits": "0, 0"
+  },
+  "bytes": 139452,
+  "sha256": "ee844fb4d8932ff565991345dec503b127d461b94c598699682de7a08ac9cd68",
+  "title": [
+    "Space Archives | Air & Space Forces Magazine"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1014
+    },
+    {
+      "src": "https://consent.cookiebot.com/uc.js",
+      "id": "Cookiebot",
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 2637
+    },
+    {
+      "src": "https://www.airandspaceforces.com/wp/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/wp/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/wp-video-lightbox/js/jquery.prettyPhoto.js?ver=3.1.6",
+      "id": "jquery.prettyphoto-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/wp-video-lightbox/js/video-lightbox.js?ver=3.1.6",
+      "id": "video-lightbox-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/afmag/public/js/afmag-public.js?ver=1.0.0",
+      "id": "afmag-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1017
+    },
+    {
+      "src": "https://securepubads.g.doubleclick.net/tag/js/gpt.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 3867
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 1094
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/afa-salesforce-integration/assets/js/salesforce-integration.js?ver=1.1.2",
+      "id": "afa-salesforce-integration-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/simply-gallery-block/plugins/pgc_sgb_lightbox.min.js?ver=3.3.3.3",
+      "id": "pgc-simply-gallery-plugin-lightbox-script-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/wp/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3",
+      "id": "jquery-ui-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "popup-maker-site-js-extra",
+      "type": null,
+      "size": 1968
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/popup-maker/dist/assets/site.js?defer&ver=1.23.0",
+      "id": "popup-maker-site-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/popup-maker-popup-analytics/assets/js/scripts.min.js?defer&ver=1.2.2",
+      "id": "popmake-popup-analytics-js-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/themes/afmag/dist/js/lightbox.js?ver=7.0.2",
+      "id": "lightbox-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/themes/afmag/dist/js/magazine.js?ver=7.0.2",
+      "id": "magazine-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/wp/wp-includes/js/jquery/ui/datepicker.min.js?ver=1.13.3",
+      "id": "jquery-ui-datepicker-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.airandspaceforces.com/app/plugins/ajax-load-more/build/frontend/ajax-load-more.min.js?ver=8.0.0",
+      "id": "ajax-load-more-js",
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Very Low-Earth Orbit: How the Space Force Is Exploring Ops at Lower Altitudes",
+      "href": "https://www.airandspaceforces.com/very-low-earth-orbit-space-force-exploring-ops-lower-altitudes/"
+    },
+    {
+      "title": "The Space Force Goes to War",
+      "href": "https://www.airandspaceforces.com/article/the-space-force-goes-to-war/"
+    },
+    {
+      "title": "The Space Force: GROWING—AND ARMED IN SPACE",
+      "href": "https://www.airandspaceforces.com/article/the-space-force-growing-and-armed-in-space/"
+    },
+    {
+      "title": "SATCOM AT WAR SPEED",
+      "href": "https://www.airandspaceforces.com/article/satcom-at-war-speed/"
+    },
+    {
+      "title": "Pentagon Loans $150M to LeoLabs to Build Ground Radars",
+      "href": "https://www.airandspaceforces.com/pentagon-loans-150m-to-leolabs-to-build-ground-radars/"
+    },
+    {
+      "title": "Space Force Chief Eyes Growth in Components to Meet Operational Demand",
+      "href": "https://www.airandspaceforces.com/space-force-chief-component-growth-operational-demand/"
+    },
+    {
+      "title": "Ex-CSO Saltzman to Lead Advisory Board at Voyager Technologies",
+      "href": "https://www.airandspaceforces.com/former-cso-saltzman-advisor-board-voyager/"
+    },
+    {
+      "title": "Space Force Weighs Proliferated Cislunar Satellite Constellation",
+      "href": "https://www.airandspaceforces.com/space-force-weighs-proliferated-cislunar-satellite-constellation/"
+    },
+    {
+      "title": "Promotions for Space Force’s Second-Highest Enlisted Rank Explode",
+      "href": "https://www.airandspaceforces.com/promotions-space-force-senior-master-sergeant-2026/"
+    }
+  ],
+  "seconds": 0.662
+}

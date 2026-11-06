@@ -1,0 +1,80 @@
+{
+  "name": "rklb-ir-html",
+  "requested_at": "2026-11-06T20:59:05.295846+00:00",
+  "requested_url": "https://investors.rocketlabcorp.com/news?_dox_poll=29899979",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investors.rocketlabcorp.com/news?_dox_poll=29899979",
+  "headers": {
+    "content-type": "text/html; charset=UTF-8",
+    "etag": "\"1793643918\"",
+    "last-modified": "Mon, 02 Nov 2026 18:25:18 GMT",
+    "x-cache-hits": "4499",
+    "x-drupal-dynamic-cache": "HIT",
+    "cache-control": "public, max-age=0, s-maxage=2592000",
+    "expires": "Fri, 06 Nov 2026 20:59:05 GMT",
+    "date": "Fri, 06 Nov 2026 20:59:05 GMT",
+    "vary": "Accept-Encoding"
+  },
+  "bytes": 62021,
+  "sha256": "eff1f4b324e8198cb2581a7f24ece39a4ccf5be732315931218e70be1dc25b00",
+  "title": [
+    "News | Rocket Lab Corporation"
+  ],
+  "scripts": [
+    {
+      "src": "/core/assets/vendor/modernizr/modernizr.min.js?v=3.11.7",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/sites/g/files/knoqqb100131/files/js/js_Ta1ai5Jgu6e25OvV_H-FZj9b-vpAR3TxzPWhg8ipqLg.js?scope=header&delta=1&language=en&theme=client_site&include=eJyNkGEOwiAMhS9k4EhNgW7WdbCUzrnbi0NjNP4wJOW1_Rp4jcKUDSob-XIl3bSpesqsgBllN47Vf2QOUwkEgmuO5z_ARUs6sDhRYisKCa2dIFT9W7pBSzbKnZ1RJ7KDhCAlTv5n1Q0sRjoUnfvYKsZzewb9Z3p0FxzJv4TDC94AU4IoWCugkFo3vlF47ANyaTaou_qquefdeU4j2ZPr2mFs3cqBhW2HxwdbiGu9A7BNkt8",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 1322
+    },
+    {
+      "src": "https://code.jquery.com/jquery-3.7.0.min.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/sites/g/files/knoqqb100131/files/js/js_3Iu9EhqGpGS2P1rjxF5X5PxFmvrOvP1UC098gDeqw4A.js?scope=footer&delta=1&language=en&theme=client_site&include=eJyNkGEOwiAMhS9k4EhNgW7WdbCUzrnbi0NjNP4wJOW1_Rp4jcKUDSob-XIl3bSpesqsgBllN47Vf2QOUwkEgmuO5z_ARUs6sDhRYisKCa2dIFT9W7pBSzbKnZ1RJ7KDhCAlTv5n1Q0sRjoUnfvYKsZzewb9Z3p0FxzJv4TDC94AU4IoWCugkFo3vlF47ANyaTaou_qquefdeU4j2ZPr2mFs3cqBhW2HxwdbiGu9A7BNkt8",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://assets.adobedtm.com/898335afd880/c52ee8aa1e90/launch-5ef258dce664.min.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/profiles/nasdaqir/modules/custom/nir_ckeditor_datatables/js/datatables.js?v=1.x",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/sites/g/files/knoqqb100131/files/js/js_MGn-MQ4mx5tqB1u9nFV6L-hPjPLsOcbKZqRUzgFkbhU.js?scope=footer&delta=4&language=en&theme=client_site&include=eJyNkGEOwiAMhS9k4EhNgW7WdbCUzrnbi0NjNP4wJOW1_Rp4jcKUDSob-XIl3bSpesqsgBllN47Vf2QOUwkEgmuO5z_ARUs6sDhRYisKCa2dIFT9W7pBSzbKnZ1RJ7KDhCAlTv5n1Q0sRjoUnfvYKsZzewb9Z3p0FxzJv4TDC94AU4IoWCugkFo3vlF47ANyaTaou_qquefdeU4j2ZPr2mFs3cqBhW2HxwdbiGu9A7BNkt8",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.301
+}

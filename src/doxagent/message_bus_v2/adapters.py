@@ -153,6 +153,7 @@ class AdapterRegistry:
         from .technology_sources import TechnologyAdapter
 
         self._builtins["technology_public@1"] = TechnologyAdapter()
+        self._builtins["corporate_ir@1"].listing_http = self._builtins["technology_public@1"].http
         from .thefly_source import TheFlyAdapter
 
         self._builtins["thefly_public@1"] = TheFlyAdapter(self._builtins["technology_public@1"].http)

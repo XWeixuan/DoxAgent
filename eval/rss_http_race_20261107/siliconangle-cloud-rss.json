@@ -1,0 +1,22 @@
+{
+  "name": "siliconangle-cloud-rss",
+  "requested_at": "2026-11-06T20:36:10.037928+00:00",
+  "requested_url": "https://siliconangle.com/category/cloud/feed/",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://siliconangle.com/category/cloud/feed/",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:36:10 GMT",
+    "content-type": "application/rss+xml; charset=UTF-8",
+    "last-modified": "Fri, 06 Nov 2026 18:57:52 GMT",
+    "etag": "\"9779ed07ca351d0b88a6c5bb168a184e\"",
+    "age": "0"
+  },
+  "bytes": 80519,
+  "sha256": "07b81ef16055d39053bc16edc6081ab1effdc1a57dc9c7b2b885d6460f9d39d7",
+  "seconds": 0.337
+}

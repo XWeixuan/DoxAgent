@@ -1,0 +1,23 @@
+{
+  "name": "be-ir-rss",
+  "requested_at": "2026-11-06T20:58:30.395183+00:00",
+  "requested_url": "https://investor.bloomenergy.com/rss/pressrelease.aspx",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investor.bloomenergy.com/rss/pressrelease.aspx",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:58:30 GMT",
+    "content-type": "text/xml; charset=utf-8",
+    "cf-cache-status": "HIT",
+    "cache-control": "public, max-age=120, stale-if-error=86400, stale-while-revalidate=86400",
+    "etag": "W/\"86c9cc1e6a1e9fd4bfbbff09ca5b1caf\"",
+    "vary": "Accept-Encoding"
+  },
+  "bytes": 4726,
+  "sha256": "2c41d2024617ae955d399dcf392f4939b98011839ee818f8b2d2b64a721a6a3e",
+  "seconds": 0.549
+}

@@ -1,0 +1,23 @@
+{
+  "name": "siliconangle-security-api",
+  "requested_at": "2026-11-06T20:40:08.632964+00:00",
+  "requested_url": "https://siliconangle.com/wp-json/wp/v2/posts?categories=1507578&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://siliconangle.com/wp-json/wp/v2/posts?categories=1507578&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:40:08 GMT",
+    "content-type": "application/json; charset=UTF-8",
+    "vary": "Origin"
+  },
+  "bytes": 22791,
+  "sha256": "45efe35ca595f8bfccfa6cb4783aedf5e1c7730920873e7fddfe4a6ad0e356ba",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 0.335
+}

@@ -1,0 +1,163 @@
+{
+  "name": "wccftech-department-hardware-html",
+  "requested_at": "2026-11-06T20:39:08.941847+00:00",
+  "requested_url": "https://wccftech.com/department/hardware/?_dox_poll=29899958",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://wccftech.com/department/hardware/?_dox_poll=29899958",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:39:09 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "vary": "Accept-Encoding, Cookie",
+    "last-modified": "Fri, 06 Nov 2026 19:36:30 GMT",
+    "cf-cache-status": "DYNAMIC",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=16,cfOrigin;dur=7"
+  },
+  "bytes": 200782,
+  "sha256": "e3c6192de598091294a85f4cd25f3f6d681874e6912499542514e7dcb1a36a72",
+  "title": [
+    "Hardware Archives - Wccftech",
+    "Wccftech"
+  ],
+  "scripts": [
+    {
+      "src": "https://ua.realtimely.io/script.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.googletagmanager.com/gtag/js?id=G-591JRXV2QC",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1328
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 4067
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 17936
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1080
+    },
+    {
+      "src": "https://cdn.wccftech.com/wp-content/themes/wccf2021/2025/libs.js?ver=1793215504",
+      "id": "wccftech-libs-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1357
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2544
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5020
+    },
+    {
+      "src": "//wccftech.disqus.com/count.js",
+      "id": "dsq-count-scr",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.standalone.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2384
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": null,
+      "type": "module",
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "NVIDIA GPUs Worth $11.4 Million Stolen From Oakland Fetch A Hefty Price Outside Of U.S. Says UC Berkeley Professor, “They Go For About 1 Million Or More Abroad”",
+      "href": "https://wccftech.com/nvidia-cargo-heist-11-million-dollars-hardware-stolen-oakland-texas/"
+    },
+    {
+      "title": "Microsoft Learns Its Lesson With Copilot Being Shoved Down The User’s Throat; Promises Optional Addition In Windows 11 Search UI",
+      "href": "https://wccftech.com/microsoft-windows-11-new-search-ui-copilot-integration-optional-opt-in/"
+    },
+    {
+      "title": "Chinese Memory Chip Manufacturer CXMT Struggles In Q3 As Share Drops To 9% Amidst Aggressive Ramp From Samsung, Says Research",
+      "href": "https://wccftech.com/chinese-memory-chip-manufacturer-cxmt-struggles-in-q3-as-share-drops-to-9-amidst-aggressive-ramp-from-samsung-says-research/"
+    },
+    {
+      "title": "NVIDIA Vera Delivers 2x The Agent Speed Of AMD’s 256-Core EPYC Venice And 1.6x More Agents Per Watt Than The Frequency-Optimized 96-Core Venice",
+      "href": "https://wccftech.com/nvidia-vera-delivers-2x-the-agent-speed-of-amds-256-core-epyc-venice/"
+    },
+    {
+      "title": "Windows 11 27H2 Could Be The Biggest Windows Upgrade Since 2024, With Major Performance Improvements And New Wallpapers",
+      "href": "https://wccftech.com/windows-11-27h2-could-be-the-biggest-windows-upgrade-since-2024-with-major-performance-improvements-and-new-wallpapers/"
+    },
+    {
+      "title": "NVIDIA’s Jensen Huang Summoned By U.S. Congress For A Closed Door Briefing To Address His Interactions With An Executive That’s In The Federal Spy Probe’s Crosshairs",
+      "href": "https://wccftech.com/nvidia-ceo-jensen-huang-congress-closed-door-briefing-china-spying-national-security/"
+    },
+    {
+      "title": "Meta Exec Says A Recently Elected, Data Center-Skeptic Democratic Governor Now Wants To Meet After Inauguration, As 22.5 GW Of Capacity Is Still Slated To Come Online Regardless Of",
+      "href": "https://wccftech.com/meta-exec-says-a-recently-elected-data-center-skeptic-democratic-governor-now-wants-to-meet-after-inauguration-as-22-5-gw-of-capacity-is-still-slated-to-come-online-regardless-of-politics/"
+    },
+    {
+      "title": "Data Centers Aren’t Ready For The Next AI Bottleneck; Power Infrastructure, As NVIDIA’s Kyber Racks Could Require Electricity Usage Equivalent To 500 Homes",
+      "href": "https://wccftech.com/nvidia-kyber-rubin-ultra-nvl576-600kw-power-consumption-data-center-bottleneck/"
+    },
+    {
+      "title": "NVIDIA’s Vendor Financing Deals Are Not A Ponzi Scheme As It Is Slated To “Take Out $420 Billion” By Putting In $250 Billion, Says Tech Venture Capitalist Gene Munster",
+      "href": "https://wccftech.com/nvidias-vendor-financing-deals-are-not-a-ponzi-scheme-as-it-is-slated-to-take-out-420-billion-by-putting-in-250-billion-says-tech-venture-capitalist-gene-munster/"
+    },
+    {
+      "title": "AMD Ryzen 7 5800X3D Hits Its Lowest Price Since Relaunch At $279, Giving Existing AM4 Gaming Rigs Their Best Upgrade Option",
+      "href": "https://wccftech.com/amd-ryzen-7-5800x3d-got-its-price-slashed-by-70-and-now-sits-at-just-279/"
+    },
+    {
+      "title": "Acer Technician Ruined A Gaming Laptop’s Liquid Metal Application With A Knife And Completely Forgot About Pasting The CPU, Leaving It Throttling At 105°C",
+      "href": "https://wccftech.com/acer-technician-ruins-gaming-laptop-liquid-metal-knife-thermal-paste/"
+    },
+    {
+      "title": "TSMC’s 1-nanometer Chip Making Site Could Be In A Science Park That Also Manufactures Components For Space Use Imply Taiwanese Official’s Statements",
+      "href": "https://wccftech.com/tsmcs-1-nanometer-chip-making-site-could-be-in-a-science-park-that-also-manufactures-components-for-space-use-imply-taiwanese-officials-statements/"
+    }
+  ],
+  "seconds": 0.245
+}

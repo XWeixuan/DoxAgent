@@ -1,0 +1,119 @@
+{
+  "name": "aws-aws-api",
+  "requested_at": "2026-11-06T20:47:07.387839+00:00",
+  "requested_url": "https://aws.amazon.com/blogs/aws/wp-json/wp/v2/posts?per_page=20&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 404,
+  "url": "https://aws.amazon.com/blogs/aws/wp-json/wp/v2/posts/?per_page=20&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "headers": {
+    "content-type": "text/html;charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 20:47:07 GMT",
+    "vary": "accept-encoding",
+    "x-cache": "Error from cloudfront",
+    "via": "1.1 5db67ee8d7388c50bc7de5ece07920da.cloudfront.net (CloudFront)"
+  },
+  "bytes": 300543,
+  "sha256": "889d1593672966eb15c3fa237b6fdd14791ebbdff3fb79b81357660a94f67156",
+  "title": [
+    "Error - 404 - Not Found",
+    "\n                     x\n                    "
+  ],
+  "scripts": [
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.19/polyfills/es-module-shims/es-module-shims.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/gdeps.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/head.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/munchkin.min.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.19/orchestrate.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://d0.m.awsstatic.com/awsm-acslibs/1.0/bundle/index.js",
+      "id": "awsm-csa",
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/s_code/js/3.0/awshome_s_code.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/target/1.0.128/aws-target-mediator.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cx0.m.awsstatic.com/assets/clam/2.3.0/index.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cx0.m.awsstatic.com/assets/cwr/1.0.13/index.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://prod.pa.cdn.uis.awsstatic.com/panorama-nav-init.js",
+      "id": "awsc-panorama-bundle",
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 67120
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 2225
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 6000
+    },
+    {
+      "src": "https://loader.us-east-1.prod.mrc-sunrise.marketing.aws.dev/loader.js",
+      "id": "mrc-sunrise-chat-loader",
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.449
+}

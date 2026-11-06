@@ -1,0 +1,32 @@
+{
+  "name": "mu-ir-html",
+  "requested_at": "2026-11-06T20:57:36.101536+00:00",
+  "requested_url": "https://investors.micron.com/news-releases",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 403,
+  "url": "https://investors.micron.com/news-releases",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:57:36 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "server-timing": "chlray;desc=\"a56702f1af0ffdc8\""
+  },
+  "bytes": 5460,
+  "sha256": "b67fb3ead02687aae4f8f3008fbbe00f90eaa9e52fc166656aa464588954c7c3",
+  "title": [
+    "Just a moment..."
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3053
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.214
+}

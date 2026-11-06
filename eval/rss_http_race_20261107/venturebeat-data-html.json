@@ -1,0 +1,306 @@
+{
+  "name": "venturebeat-data-html",
+  "requested_at": "2026-11-06T20:28:11.218736+00:00",
+  "requested_url": "https://venturebeat.com/category/data/?_dox_poll=29899948",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://venturebeat.com/category/data?_dox_poll=29899948",
+  "headers": {
+    "age": "9440",
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Fri, 06 Nov 2026 17:50:50 GMT",
+    "etag": "W/\"soua4nt8t831c9\"",
+    "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+  },
+  "bytes": 141728,
+  "sha256": "3caf1913d86ccbe61c36d62f95f63e21e4a609b9343256e92856c000bdf9fb05",
+  "title": [
+    "Enterprise Data Architecture & AI Pipelines | VentureBeat"
+  ],
+  "scripts": [
+    {
+      "src": "/_next/static/chunks/19d71pel7fv_2.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/2nsq1ek51g625.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/329j824l1odqw.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0g8ku62w0yb2s.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/turbopack-3we6ki65qtf15.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/342fy_b4uxpx1.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/063o3f96wyxe7.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/1ntn7efqc-iiw.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/35-w56_7028jm.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/170vd_8hb_55l.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/11bpnpo3twdri.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0_x5kjv15t-_l.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/2_omrif58bl98.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0sbxgnpsxswkv.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/3bik2djayy0m9.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0y7xkvkxflqiy.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0-cl9kt0tosfd.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0bp2se_hs1kfu.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0cz1d0mv5g_q7.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "category-collection-page-jsonld",
+      "type": "application/ld+json",
+      "size": 5030
+    },
+    {
+      "src": "/_next/static/chunks/1ycd5by80-dnr.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": "_R_",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3660
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5464
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4369
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2627
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2470
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1906
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5867
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4237
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3458
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5463
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3183
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 13411
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5093
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1090
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4883
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1515
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1754
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "When AI agents agree on the data but not what it means",
+      "href": "/data/when-ai-agents-agree-on-the-data-but-not-what-it-means"
+    },
+    {
+      "title": "Cohere's test caught an open source Qwen3.8 model trying to 'phone home' to China: what enterprises should know",
+      "href": "/data/coheres-test-caught-an-open-source-qwen3-8-model-trying-to-phone-home-to-china-what-enterprises-should-know"
+    },
+    {
+      "title": "Borderless data architectures: Empowering AI agents where your data lives",
+      "href": "/data/borderless-data-architectures-empowering-ai-agents-where-your-data-lives"
+    },
+    {
+      "title": "CTGT releases open source tool Concordance to trace why AI agents make inconsistent decisions",
+      "href": "/data/ctgt-releases-open-source-tool-concordance-to-trace-why-ai-agents-make-inconsistent-decisions"
+    },
+    {
+      "title": "Decision models like Jev handle what SQL rules cannot. Here's how data teams use them",
+      "href": "/data/decision-models-like-jev-handle-what-sql-rules-cannot-heres-how-data-teams-use-them"
+    },
+    {
+      "title": "The next-gen AI stack: Unifying data and knowledge without borders",
+      "href": "/data/the-next-gen-ai-stack-unifying-data-and-knowledge-without-borders"
+    },
+    {
+      "title": "Companies are building governed semantic layers. Most say their AI agents are getting context somewhere else",
+      "href": "/data/companies-are-building-governed-semantic-layers-most-say-their-ai-agents-are-getting-context-somewhere-else"
+    },
+    {
+      "title": "Shouldn’t customer service AI remember you? Siena to expand 'Agent of Record' combining purchase history with support and social",
+      "href": "/data/shouldnt-customer-service-ai-remember-you-siena-to-expand-agent-of-record-combining-purchase-history-with-support-and-social"
+    },
+    {
+      "title": "Exclusive: Google expands pilot program that pays developers and small businesses for proprietary, offline code (and other data)",
+      "href": "/data/exclusive-google-expands-pilot-program-that-pays-developers-and-small-businesses-for-proprietary-offline-code-and-other-data"
+    },
+    {
+      "title": "Claude Opus 5.5 uses em-dashes 99% less often and sounds more human — but still exhibits 2,548 AI writing tells",
+      "href": "/data/claude-opus-5-5-uses-em-dashes-99-less-often-and-sounds-more-human-but-still-exhibits-2-548-ai-writing-tells"
+    },
+    {
+      "title": "When the data can't move: What it takes to run enterprise AI anywhere",
+      "href": "/data/when-the-data-cant-move-what-it-takes-to-run-enterprise-ai-anywhere"
+    },
+    {
+      "title": "AWS's OpenSearch pitch ahead of OpenSearchCon: retrieval, serverless costs and agent memory",
+      "href": "/data/awss-opensearch-pitch-ahead-of-opensearchcon-retrieval-serverless-costs-and-agent-memory"
+    }
+  ],
+  "seconds": 0.029
+}

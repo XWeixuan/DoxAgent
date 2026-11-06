@@ -1,0 +1,145 @@
+{
+  "name": "aws-aws-html",
+  "requested_at": "2026-11-06T20:45:02.473083+00:00",
+  "requested_url": "https://aws.amazon.com/blogs/aws/?_dox_poll=29899964",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://aws.amazon.com/blogs/aws/?_dox_poll=29899964",
+  "headers": {
+    "content-type": "text/html;charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 20:45:02 GMT",
+    "last-modified": "Fri, 06 Nov 2026 18:01:18 GMT",
+    "vary": "accept-encoding",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 4d6f7160ff0f474239473fae02a9e6d8.cloudfront.net (CloudFront)"
+  },
+  "bytes": 1477928,
+  "sha256": "e83124d3a14394202ac4053b734f4886932991afe138990f123335ce9c546ee8",
+  "title": [
+    "AWS News Blog",
+    "\n                      x\n                     "
+  ],
+  "scripts": [
+    {
+      "src": "https://a0.awsstatic.com/libra/1.0.599/csp/csp-report.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cx0.m.awsstatic.com/assets/clam/2.3.0/index.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/aws-blog/1.0.90/js/blog-head-v2.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.14/polyfills/es-module-shims/es-module-shims.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/gdeps.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/head.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.14/orchestrate.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/s_code/js/3.0/awshome_s_code.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/target/1.0.127/aws-target-mediator.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 67188
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 6520
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 6013
+    },
+    {
+      "src": "https://a0.awsstatic.com/aws-blog/1.0.90/js/vendor/prism.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "20 years in the AWS Cloud – how time flies!",
+      "href": "/blogs/aws/20-years-in-the-aws-cloud-how-time-flies/"
+    },
+    {
+      "title": "Amazon S3 Tables now offer managed migration of Apache Hive tables to Apache Iceberg",
+      "href": "/blogs/aws/amazon-s3-tables-now-offer-managed-migration-of-apache-hive-tables-to-apache-iceberg/"
+    },
+    {
+      "title": "AWS Weekly Roundup: GPT-6.1 Terra on Bedrock, Step Functions as agent tools, and more (November 2, 2026)",
+      "href": "/blogs/aws/aws-weekly-roundup-gpt-6-1-terra-on-bedrock-step-functions-as-agent-tools-and-more-november-2-2026/"
+    },
+    {
+      "title": "AWS Weekly Roundup: Amazon Polly Generative engine, TorchNeuron for Trainium, and more (October 26, 2026)",
+      "href": "/blogs/aws/aws-weekly-roundup-amazon-polly-generative-engine-torchneuron-for-trainium-and-more-october-26-2026/"
+    },
+    {
+      "title": "AWS Continuum for code vulnerabilities is now generally available",
+      "href": "/blogs/aws/aws-continuum-for-code-vulnerabilities-is-now-generally-available/"
+    },
+    {
+      "title": "Introducing Amazon ECS Gateway: A fully-managed ingress solution for ECS services",
+      "href": "/blogs/aws/introducing-amazon-ecs-gateway-a-fully-managed-ingress-solution-for-ecs-services/"
+    },
+    {
+      "title": "AWS Weekly Roundup: AWS Lambda Web Functions, Amazon S3 on the Vercel Marketplace, and more (October 19, 2026)",
+      "href": "/blogs/aws/aws-weekly-roundup-aws-lambda-web-functions-amazon-s3-on-the-vercel-marketplace-and-more-october-19-2026/"
+    },
+    {
+      "title": "Amazon S3 is now available on the Vercel Marketplace and v0 by Vercel",
+      "href": "/blogs/aws/amazon-s3-vercel-marketplace-v0/"
+    },
+    {
+      "title": "AWS Weekly Roundup: Prime Day 2026 by the numbers, Claude Haiku 5.5, Amazon Nova 2.5 Sonic, and more (October 13, 2026)",
+      "href": "/blogs/aws/aws-weekly-roundup-prime-day-2026-by-the-numbers-claude-haiku-5-5-amazon-nova-2-5-sonic-and-more-october-13-2026/"
+    }
+  ],
+  "seconds": 0.301
+}

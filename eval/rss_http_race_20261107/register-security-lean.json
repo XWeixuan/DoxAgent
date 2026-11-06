@@ -1,0 +1,26 @@
+{
+  "name": "register-security-lean",
+  "requested_at": "2026-11-06T20:30:54.999278+00:00",
+  "requested_url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&fields=id,title,published,published_url,subtitle&query=tag:security",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&fields=id,title,published,published_url,subtitle&query=tag:security",
+  "headers": {
+    "content-type": "application/json",
+    "date": "Fri, 06 Nov 2026 20:30:55 GMT",
+    "vary": "Accept-Encoding",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 1903071a927324e2fb28199ee96c4bb2.cloudfront.net (CloudFront)",
+    "age": "0"
+  },
+  "bytes": 11201,
+  "sha256": "5d096195250743fa4e12962990912f070b06f7fb87778c91594fa33c2d140018",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 0.377
+}

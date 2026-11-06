@@ -173,6 +173,7 @@ class AcquisitionStore:
                 "last_error_code",
                 "last_error_message",
                 "next_dispatch_at",
+                "race_observation",
             )
         }
         head['coverage_plan'] = {

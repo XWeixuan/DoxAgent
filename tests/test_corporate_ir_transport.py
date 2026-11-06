@@ -120,3 +120,24 @@ async def test_httpx_conditional_304_is_success_without_location():
         result = await http.fetch(initial_endpoints()[0], headers={"If-None-Match": "baseline"})
         assert result.status == 304 and result.bytes_received == 0
         await http.close()
+
+@pytest.mark.asyncio
+async def test_body_curl_route_preserves_native_rss_transport_and_uses_body_budget(monkeypatch):
+    from types import SimpleNamespace
+    from doxagent.message_bus_v2.publisher_http import HTTP_CONTEXT
+    http=PublicHttp()
+    original=next(s for s in initial_endpoints() if s.endpoint_id=='mu.ir')
+    spec=original.model_copy(update={'parser_parameters':{**original.parser_parameters,'body_http_route':'us-standard-5'}})
+    calls=[]
+    async def fetch(url,recipe,**kwargs):
+        calls.append((url,recipe.route,HTTP_CONTEXT.get()))
+        return SimpleNamespace(status=200,url=url,text='article',headers={})
+    http.routed_http=SimpleNamespace(fetch=fetch,close=AsyncMock())
+    http._stdlib_read=lambda url,headers:Capture(200,url,'<rss/>',{},6)
+    try:
+        body=await http.fetch(spec,url='http://investors.micron.com/news/press-release/2026/example/default.aspx')
+        assert calls==[('https://investors.micron.com/news/press-release/2026/example/default.aspx','us-standard-5','body')]
+        assert body.status==200 and HTTP_CONTEXT.get() is None
+        await http.fetch(spec)
+        assert len(calls)==1
+    finally:await http.close()

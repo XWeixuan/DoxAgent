@@ -1,0 +1,22 @@
+{
+  "name": "aws-quantum-computing-conditional",
+  "requested_at": "2026-11-06T20:52:50.345474+00:00",
+  "requested_url": "https://aws.amazon.com/blogs/quantum-computing/?_dox_poll=29899972",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache",
+    "If-Modified-Since": "Thu, 05 Nov 2026 22:13:44 GMT"
+  },
+  "status": 304,
+  "url": "https://aws.amazon.com/blogs/quantum-computing/?_dox_poll=29899972",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:52:50 GMT",
+    "last-modified": "Thu, 05 Nov 2026 22:13:44 GMT",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 5706170e176cc802f944d1f0503adca0.cloudfront.net (CloudFront)"
+  },
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "seconds": 0.201
+}

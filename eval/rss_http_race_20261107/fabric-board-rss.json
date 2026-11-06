@@ -1,0 +1,21 @@
+{
+  "name": "fabric-board-rss",
+  "requested_at": "2026-11-06T20:45:01.767382+00:00",
+  "requested_url": "https://community.fabric.microsoft.com/t5/s/rss/board?board.id=fbc_fabricupdatesblogs",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://community.fabric.microsoft.com/t5/s/rss/board?board.id=fbc_fabricupdatesblogs",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:45:02 GMT",
+    "content-type": "text/xml;charset=UTF-8",
+    "vary": "Accept-Encoding",
+    "cf-cache-status": "DYNAMIC"
+  },
+  "bytes": 190772,
+  "sha256": "eaa94c32980b48cff4332dfe9052be0143e33d75757e367a79ed8515c654b6f9",
+  "seconds": 0.705
+}

@@ -1,0 +1,28 @@
+{
+  "name": "q4-api-js",
+  "requested_at": "2026-11-06T21:00:11.123184+00:00",
+  "requested_url": "https://investors.micron.com/js/module/widgets/dist/latest/evergreen.q4Api.min.js",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investors.micron.com/js/module/widgets/dist/latest/evergreen.q4Api.min.js",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:00:11 GMT",
+    "content-type": "application/javascript",
+    "cf-cache-status": "HIT",
+    "cache-control": "public, max-age=10, stale-if-error=86400, stale-while-revalidate=86400",
+    "etag": "\"ea27e82469c379736e597f49936a3a8b\"",
+    "last-modified": "Fri, 16 Oct 2026 15:27:12 GMT",
+    "vary": "Accept-Encoding",
+    "server-timing": "cfCacheStatus;desc=\"HIT\", cfEdge;dur=14,cfOrigin;dur=0,cfWorker;dur=104"
+  },
+  "bytes": 25573,
+  "sha256": "4874f91e7496be96333f1361b3eed522ea3d3dfc951a4db84e963a6641d7b7d8",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 0.973
+}

@@ -1,0 +1,32 @@
+{
+  "name": "mu-ir-article-direct",
+  "requested_at": "2026-11-06T21:04:50.546621+00:00",
+  "requested_url": "https://investors.micron.com/news/press-release/2026/Micron-Announces-Board-of-Directors-Retirement/default.aspx",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 403,
+  "url": "https://investors.micron.com/news/press-release/2026/Micron-Announces-Board-of-Directors-Retirement/default.aspx",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:04:50 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "server-timing": "chlray;desc=\"a5670d8d0d5881aa\""
+  },
+  "bytes": 5756,
+  "sha256": "c668f5da6ec230dc6f4cab4aa5a459a6368503c4ed2d8ee7c8c9514a021cd232",
+  "title": [
+    "Just a moment..."
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3349
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.24
+}

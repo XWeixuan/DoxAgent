@@ -1,0 +1,96 @@
+{
+  "name": "databricks-blog-html",
+  "requested_at": "2026-11-06T20:45:01.080345+00:00",
+  "requested_url": "https://www.databricks.com/blog?_dox_poll=29899964",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.databricks.com/blog?_dox_poll=29899964",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:45:01 GMT",
+    "content-type": "text/html; charset=utf-8",
+    "cf-cache-status": "DYNAMIC",
+    "age": "8311",
+    "cache-control": "public, max-age=0, must-revalidate",
+    "last-modified": "Fri, 06 Nov 2026 18:26:29 GMT",
+    "vary": "accept-encoding",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", geo;desc=SG, cfEdge;dur=17,cfOrigin;dur=0,cfWorker;dur=50"
+  },
+  "bytes": 747760,
+  "sha256": "e51df95d5135b25d497f4c97e5dfaabe2c8090f71229259d48accbd376ed3ae6",
+  "title": [
+    "All | Databricks Blog"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "text/plain",
+      "size": 61324
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 2238
+    },
+    {
+      "src": "https://cdn.cookielaw.org/scripttemplates/otSDKStub.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "text/plain",
+      "size": 4349
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 12902
+    },
+    {
+      "src": null,
+      "id": "gatsby-chunk-mapping",
+      "type": null,
+      "size": 2360
+    },
+    {
+      "src": "/en-blog-assets/webpack-runtime-58a221b2221a3fdc73ac.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/en-blog-assets/stylesafelist.splitCss-addc5c9d2fc9ca5ae7de.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/en-blog-assets/app-492d3dfeec0263f1bd89.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": null,
+      "type": "module",
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Announcing General Availability of Real-Time Mode for Spark Declarative Pipelines on Databricks",
+      "href": "/blog/announcing-general-availability-real-time-mode-spark-declarative-pipelines-databricks"
+    }
+  ],
+  "seconds": 0.483
+}

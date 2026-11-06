@@ -642,6 +642,10 @@ class DefenseAdapter:
         covered_endpoints = []
         retry_times = []
         requests = list(e.urls)
+        if context.acquisition_unit.startswith("FEED:"):
+            requests = [u for u in requests if "FEED:" + sha256_text(u)[:24] == context.acquisition_unit]
+            if not requests:
+                raise ValueError("defense_unknown_feed_unit")
         if e.parser == "calcalist":
             queries = (context.query_plan or {}).get("queries", [])
             if not queries:

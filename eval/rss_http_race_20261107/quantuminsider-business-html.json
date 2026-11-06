@@ -1,0 +1,155 @@
+{
+  "name": "quantuminsider-business-html",
+  "requested_at": "2026-11-06T20:41:51.137167+00:00",
+  "requested_url": "https://thequantuminsider.com/category/daily/business/?_dox_poll=29899961",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://thequantuminsider.com/category/daily/business/?_dox_poll=29899961",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:41:53 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "cf-cache-status": "DYNAMIC",
+    "cache-control": "max-age=0",
+    "expires": "Fri, 06 Nov 2026 20:41:53 GMT",
+    "vary": "Accept-Encoding,Cookie",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=473,cfOrigin;dur=0"
+  },
+  "bytes": 240600,
+  "sha256": "352aab36d48fe5cd613ce675511a9a2757dd8502ed3428df9a58371e3573c7ad",
+  "title": [
+    "Quantum Computing Business | The Quantum Insider"
+  ],
+  "scripts": [
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2090
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 2419
+    },
+    {
+      "src": null,
+      "id": "tqh-js",
+      "type": null,
+      "size": 7035
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-content/plugins/tqi_editor_intelligence-4/frontend.js?ver=14.0.0",
+      "id": "tqi-frontend-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/ui/core.min.js?ver=1.14.2",
+      "id": "jquery-ui-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255",
+      "id": "wp-hooks-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "popup-maker-site-js-extra",
+      "type": null,
+      "size": 1758
+    },
+    {
+      "src": "//thequantuminsider.com/wp-content/uploads/pum/pum-site-scripts.js?defer&generated=1792955964&ver=1.25.0",
+      "id": "popup-maker-site-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "tqi-cat-js",
+      "type": null,
+      "size": 1100
+    },
+    {
+      "src": null,
+      "id": "lcn-js",
+      "type": null,
+      "size": 1104
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1097
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": null,
+      "type": "module",
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Pasqal Reports Third-Quarter Revenue Decline as QPU Services Revenue Grows",
+      "href": "https://thequantuminsider.com/2026/11/06/pasqal-q3-revenue-decline-services-growth/"
+    },
+    {
+      "title": "ITIC Develops Taiwan-UK Partnership to Support Deep Tech Businesses",
+      "href": "https://thequantuminsider.com/2026/11/06/itic-taiwan-uk-deep-tech-investment-commercialisation/"
+    },
+    {
+      "title": "Quantum SuperConnector to Accelerate Commercial Success of UK quantum Research",
+      "href": "https://thequantuminsider.com/2026/11/06/uk-universities-quantum-commercialisation-programme/"
+    },
+    {
+      "title": "UK Announces New Funding to Support Quantum Technology Commercialisation",
+      "href": "https://thequantuminsider.com/2026/11/06/uk-announces-new-funding-to-support-quantum-technology-commercialisation/"
+    },
+    {
+      "title": "Toshiba Secures UK Contract to Develop Quantum Networking Technologies",
+      "href": "https://thequantuminsider.com/2026/11/06/toshiba-uk-contract-quantum-networking-technologies/"
+    },
+    {
+      "title": "UK NQCC Partners With Phasecraft to Expand Access to Quantum Software",
+      "href": "https://thequantuminsider.com/2026/11/06/uk-nqcc-phasecraft-quantum-software-access/"
+    },
+    {
+      "title": "QNu Labs Launches Corporate Training Programme on Quantum-Safe Security",
+      "href": "https://thequantuminsider.com/2026/11/06/qnu-labs-corporate-training-quantum-safe-security/"
+    },
+    {
+      "title": "Guest Post — Commercial Diplomacy: Building The Quantum Ecosystem",
+      "href": "https://thequantuminsider.com/2026/11/06/guest-post-commercial-diplomacy-building-the-quantum-ecosystem/"
+    },
+    {
+      "title": "ZeroTier Partners With Redapt to Deliver Post-Quantum Networking",
+      "href": "https://thequantuminsider.com/2026/11/06/zerotier-redapt-post-quantum-networking-partnership/"
+    },
+    {
+      "title": "Quantinuum Raises Revenue Outlook After Landing Its Largest Cloud Agreement",
+      "href": "https://thequantuminsider.com/2026/11/05/quantinuum-raises-revenue-outlook-after-landing-its-largest-cloud-agreement/"
+    }
+  ],
+  "seconds": 2.446
+}

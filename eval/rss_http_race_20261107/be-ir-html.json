@@ -1,0 +1,32 @@
+{
+  "name": "be-ir-html",
+  "requested_at": "2026-11-06T20:58:30.173781+00:00",
+  "requested_url": "https://investor.bloomenergy.com/press-releases",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 403,
+  "url": "https://investor.bloomenergy.com/press-releases",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:58:30 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "server-timing": "chlray;desc=\"a5670443beb986a5\""
+  },
+  "bytes": 5467,
+  "sha256": "e0f0a3eaeef730794dad726d93b1d52fabedcf9e17633a15976ab125dc80c426",
+  "title": [
+    "Just a moment..."
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3060
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.221
+}

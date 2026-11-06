@@ -12,7 +12,7 @@ import os
 import re
 import threading
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from .admission import AdmissionContext, evaluate_admission
 from .body_results import article_key, update_hint
@@ -213,11 +213,13 @@ class LiveRepository:
                 message.url,
                 message.metadata.get("identity_evidence", {}).get("url_kind", "unknown"),
             )
+            lane = message.metadata.get("discovery_lane") if source.default_parameters.get("discovery_mode") == "http_rss_race" else None
             origin = sha256_text(
                 canonical_json(
                     [
                         source.source_id + (":test" if source.delivery_mode == "test" else ""),
                         locator or message.external_id or message.source_item_key or message.url,
+                        *([lane] if lane == "http" else []),
                     ]
                 )
             )
@@ -273,6 +275,19 @@ class LiveRepository:
                     )
                 )
             )
+            if lane in {"http", "rss"} and prior and prior[1] is None:
+                # Different list summaries/clocks are independent baselines,
+                # not repeated BODY updates. Keep the original RSS origin; a
+                # newer explicit publisher revision still upgrades a first HTTP
+                # baseline, while an older sibling list cannot roll it back.
+                updated = message.metadata.get("identity_evidence", {}).get("updated_at")
+                try:
+                    stamp = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
+                    stamp = stamp.replace(tzinfo=UTC) if stamp.tzinfo is None else stamp
+                    newer = stamp > datetime.fromisoformat(prior[2])
+                except (ValueError,TypeError):
+                    newer = False
+                legacy_changed |= newer
             baseline = bootstrap
             ibkr_native = False
             ibkr_flash = message.metadata.get('ibkr_content_kind') == 'flash'

@@ -1,0 +1,85 @@
+{
+  "name": "onds-ir-current",
+  "requested_at": "2026-11-06T21:00:10.980142+00:00",
+  "requested_url": "https://ir.ondas.com/press-releases?_dox_poll=29899980",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://ir.ondas.com/press-releases?_dox_poll=29899980",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:00:11 GMT",
+    "expires": "Thu, 19 Nov 1981 08:52:00 GMT",
+    "cache-control": "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+    "vary": "Content-Length,User-Agent,Accept-Encoding",
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "bytes": 29594,
+  "sha256": "d2c522e33b9bce3e4a1f6e0664eab3a65292f4a21e3a2fb9674393aae07c03b8",
+  "title": [
+    "Press Releases :: Ondas Inc. (ONDS)"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2428
+    },
+    {
+      "src": "https://d1io3yog0oux5.cloudfront.net/_5b44dd33c0929b931e60abed65dcd52a/ondas/files/theme/js/_js/all.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "",
+      "href": "/"
+    },
+    {
+      "title": "Ondas Plans Significant U.S. Manufacturing Expansion to Scale Low-Cost ULTRA ISR Aircraft Production, Targeting 10 Aircraft per Month by 2028",
+      "href": "https://ir.ondas.com/press-releases/detail/339/ondas-plans-significant-u-s-manufacturing-expansion-to"
+    },
+    {
+      "title": "Ondas Secures Multi-Million-Dollar Counter-UAS Contracts in Europe and Asia, Accelerating Global Expansion in Aerial Defense",
+      "href": "https://ir.ondas.com/press-releases/detail/338/ondas-secures-multi-million-dollar-counter-uas-contracts-in"
+    },
+    {
+      "title": "Ondas Positions Field-Proven Aerial Security Portfolio to Support $250 Million FEMA Counter-Drone Grant Program",
+      "href": "https://ir.ondas.com/press-releases/detail/337/ondas-positions-field-proven-aerial-security-portfolio-to"
+    },
+    {
+      "title": "Ondas to Report Third Quarter 2026 Financial Results on November 12, 2026 at 8:30 AM ET",
+      "href": "https://ir.ondas.com/press-releases/detail/336/ondas-to-report-third-quarter-2026-financial-results-on"
+    },
+    {
+      "title": "Ondas Expands Airborne Defense Capabilities with EASA Certification of Advanced Missile Protection System on Bombardier Global 7500",
+      "href": "https://ir.ondas.com/press-releases/detail/335/ondas-expands-airborne-defense-capabilities-with-easa"
+    },
+    {
+      "title": "Ondas Announces Regna AI, Powered by Palantir, to Advance Sovereign AI",
+      "href": "https://ir.ondas.com/press-releases/detail/334/ondas-announces-regna-ai-powered-by-palantir-to-advance"
+    },
+    {
+      "title": "Ondas Secures Over $165 Million in New Orders Since Last Order Update",
+      "href": "https://ir.ondas.com/press-releases/detail/333/ondas-secures-over-165-million-in-new-orders-since-last"
+    },
+    {
+      "title": "Ondas Receives $56 Million Order in Precision Strike Business for Electronic Safe & Arm Devices Supporting European Loitering Munition Program",
+      "href": "https://ir.ondas.com/press-releases/detail/332/ondas-receives-56-million-order-in-precision-strike"
+    },
+    {
+      "title": "Ondas Launches Dronebuster REACH, Extending Non-Kinetic Counter-UAS Defeat to Long Range",
+      "href": "https://ir.ondas.com/press-releases/detail/331/ondas-launches-dronebuster-reach-extending-non-kinetic"
+    },
+    {
+      "title": "Ondas' Cyberhawk(TM) Secures Multi-Year Agreement for SSE plc's Electricity Network Inspection and Surveying",
+      "href": "https://ir.ondas.com/press-releases/detail/330/ondas-cyberhawktm-secures-multi-year-agreement-for-sse"
+    }
+  ],
+  "seconds": 0.143
+}

@@ -641,7 +641,7 @@ def test_proxy_explicit_stale_response_without_age_is_rejected():
 
 
 @pytest.mark.parametrize(
-    "failure_code", ["HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED"]
+    "failure_code", ["HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED", "HTTP_RSS_BOTH_FAILED"]
 )
 async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_success(
     tmp_path, monkeypatch, failure_code

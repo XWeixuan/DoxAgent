@@ -1,0 +1,309 @@
+{
+  "name": "power-data-centers-html",
+  "requested_at": "2026-11-06T21:00:30.572745+00:00",
+  "requested_url": "https://www.powermag.com/category/data-centers/?_dox_poll=29899980",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.powermag.com/category/data-centers/?_dox_poll=29899980",
+  "headers": {
+    "cache-control": "public, max-age=604800",
+    "content-type": "text/html; charset=UTF-8",
+    "age": "0",
+    "via": "1.1 varnish, 1.1 varnish, 1.1 varnish, 1.1 varnish",
+    "date": "Fri, 06 Nov 2026 21:00:33 GMT",
+    "x-served-by": "cache-chi-klot8100135-CHI, cache-fra-eddf8230200-FRA, cache-fra-eddf8230081-FRA, cache-fra-eddf8230081-FRA",
+    "x-cache": "MISS, MISS, MISS, MISS",
+    "x-cache-hits": "0, 0, 0, 0",
+    "vary": "Accept-Encoding, Cookie, Cookie"
+  },
+  "bytes": 365659,
+  "sha256": "2f4435a37c8fb5f191b13829a484b339899cd1275658e9106bdb4490c252defd",
+  "title": [
+    "Data Centers News & Insights | POWER Magazine"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 81084
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-osano-integration/assets/js/ai-osano-google-consent.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-osano-integration/assets/js/ai-osano-reprompt.js?ver=1.0.7",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cmp.osano.com/AzZnfwU2Pyhgb5yy3/d0825139-86cd-496f-8bfa-3bc2ad0d654d/osano.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 2974
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/wordpress-popular-posts/assets/js/wpp.min.js?ver=7.4.3",
+      "id": "wpp-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://securepubads.g.doubleclick.net/tag/js/gpt.js",
+      "id": "google-gpt",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/olytics.min.js",
+      "id": "olytics-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/olytics.targeting.js?v=2.2.0",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5910
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-sf-event-public/js/crawler2.js",
+      "id": "crawler-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/npm/jquery.cookie@1.4.1/jquery.cookie.min.js?ver=1.4.1",
+      "id": "jquery-cookie-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-core-ip-auth/js/ai-core-ip-check.js?ver=2.0.4",
+      "id": "ai_core_ip_check-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/olytics.tracking.js?v=2.2.0",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/combine/npm/addsearch-js-client@0.8/dist/addsearch-js-client.min.js,npm/addsearch-search-ui@0.8/dist/addsearch-search-ui.min.js?ver=2.0.13",
+      "id": "ai-addsearch-library-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "ai-addsearch-client-js-before",
+      "type": null,
+      "size": 1085
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-addsearch-integration/assets/js/ui.min.js?ver=2.0.13",
+      "id": "ai-addsearch-client-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://apps.decisionbriefs.com/js/custom/bigquery/tracking.v2.min.js?ver=1.0",
+      "id": "bigquery-tracking-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/aicore-analytics/tracking.onload.min.js?ver=1.0",
+      "id": "bigquery-tracking-onload-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/frontend-reset-password/assets/js/password-lost.js?ver=1.0.0",
+      "id": "som_reset_password_script-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/ad.min.js?ver=2.2.0",
+      "id": "ai-ad-mgmt-adblock-bait-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/block-detection.js?ver=2.2.0",
+      "id": "ai-ad-mgmt-block-detection-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://static.addtoany.com/menu/page.js",
+      "id": "addtoany-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-social-sharing/assets/js/ai_social_sharing.js?ver=1.0.2",
+      "id": "ai-social-sharing-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/duracelltomi-google-tag-manager/build/gtm4wp-form-move-tracker.js?ver=2.0.6",
+      "id": "gtm4wp-form-move-tracker-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255",
+      "id": "wp-hooks-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/dist/i18n.min.js?ver=1dfe7db3940c23ea9216",
+      "id": "wp-i18n-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/wp-parsely/build/loader.js?ver=ecf94842061bea03d54b",
+      "id": "wp-parsely-loader-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "wp-parsely-loader-js-after",
+      "type": null,
+      "size": 1630
+    },
+    {
+      "src": "https://cdn.parsely.com/keys/powermag.com/p.js?ver=3.24.3",
+      "id": "parsely-cfg",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/themes/powermag-2025/assets/dist/theme.cef8b5af5b276aaaefa8.js",
+      "id": "theme-js-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js?ver=1.8.1",
+      "id": "slickslider-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/page-links-to/dist/new-tab.js?ver=3.4.1",
+      "id": "page-links-to-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "//imasdk.googleapis.com/js/sdkloader/ima3.js",
+      "id": "google-ima-sdk-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-videos/dist/assets/ai-videos-CD7NOoVh.js",
+      "id": "ai-videos-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/ai-ad-sticky.js?ver=2.2.0",
+      "id": "ai-ad-sticky-js",
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "When Commercial Demand Takes the Lead: Rethinking Grid Planning for a New Load Era",
+      "href": "https://www.powermag.com/when-commercial-demand-takes-the-lead-rethinking-grid-planning-for-a-new-load-era/"
+    },
+    {
+      "title": "Grid Resilience Is About More Than Adding Capacity",
+      "href": "https://www.powermag.com/grid-resilience-is-about-more-than-adding-capacity/"
+    },
+    {
+      "title": "Data Centers, Affordability, and the Ballot Box: What the 2026 Midterms Mean for the Power Industry",
+      "href": "https://www.powermag.com/data-centers-affordability-and-the-ballot-box-what-the-2026-midterms-mean-for-the-power-industry/"
+    },
+    {
+      "title": "DOE Closes $5.1B Loan Package for Alliant’s Iowa, Wisconsin Gas Power and Battery Storage Buildout",
+      "href": "https://www.powermag.com/doe-closes-5-1b-loan-package-for-alliants-iowa-wisconsin-gas-power-and-battery-storage-buildout/"
+    },
+    {
+      "title": "Data Centers Can Have Both: Reliability and Sustainability Are Not Tradeoffs",
+      "href": "https://www.powermag.com/data-centers-can-have-both-reliability-and-sustainability-are-not-tradeoffs/"
+    },
+    {
+      "title": "Why Flat Performance Matters More Than Peak Efficiency in Data Center Design",
+      "href": "https://www.powermag.com/why-flat-performance-matters-more-than-peak-efficiency-in-data-center-design/"
+    },
+    {
+      "title": "Austrian Start-Up Pitches Container-Sized Thorium Reactor, With Storage Coming First",
+      "href": "https://www.powermag.com/austrian-start-up-pitches-container-sized-thorium-reactor-with-storage-coming-first/"
+    },
+    {
+      "title": "AEP, X-energy Eye 960-MW Nuclear Plant at Retired Indiana Coal Site, Backed by Amazon",
+      "href": "https://www.powermag.com/aep-x-energy-eye-960-mw-nuclear-plant-at-retired-indiana-coal-site-backed-by-amazon/"
+    },
+    {
+      "title": "NERC Reliability Standards for Data Centers and Crypto Loads Pass Final Ballot, Advance to Board Review",
+      "href": "https://www.powermag.com/nerc-reliability-standards-for-data-centers-and-crypto-loads-pass-final-ballot-advance-to-board-review/"
+    },
+    {
+      "title": "Data Centers, Gas, and Who Pays: Power Association Leaders Find Common Ground",
+      "href": "https://www.powermag.com/data-centers-gas-and-who-pays-power-association-leaders-find-common-ground/"
+    },
+    {
+      "title": "Beyond the Demand Forecast: Six Questions About Powering Data Centers From DPX 2026",
+      "href": "https://www.powermag.com/beyond-the-demand-forecast-six-questions-about-powering-data-centers-from-dpx-2026/"
+    },
+    {
+      "title": "Getting It Right Together: The State Regulatory Lens on America’s Large-Load Future",
+      "href": "https://www.powermag.com/getting-it-right-together-the-state-regulatory-lens-on-americas-large-load-future/"
+    }
+  ],
+  "seconds": 3.616
+}

@@ -1,0 +1,27 @@
+{
+  "name": "power-nuclear-rss",
+  "requested_at": "2026-11-06T20:56:39.918936+00:00",
+  "requested_url": "https://www.powermag.com/category/nuclear/feed/",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.powermag.com/category/nuclear/feed/",
+  "headers": {
+    "cache-control": "public, max-age=604800",
+    "content-type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"b663fcb763ee6f2d23266475ca1b1284\"",
+    "last-modified": "Fri, 06 Nov 2026 18:23:08 GMT",
+    "age": "868",
+    "via": "1.1 varnish, 1.1 varnish, 1.1 varnish, 1.1 varnish",
+    "date": "Fri, 06 Nov 2026 20:56:40 GMT",
+    "x-served-by": "cache-chi-kmdw8640091-CHI, cache-fra-etou8220186-FRA, cache-fra-eddf8230042-FRA, cache-fra-eddf8230042-FRA",
+    "x-cache": "HIT, HIT, MISS, MISS",
+    "x-cache-hits": "1, 7, 0, 0"
+  },
+  "bytes": 31862,
+  "sha256": "766af0cab37eb32754e05ca66c024d1b8aaf6947580e7833779a0f3fa6bb015d",
+  "seconds": 0.218
+}

@@ -1,0 +1,26 @@
+{
+  "name": "register-software-api",
+  "requested_at": "2026-11-06T20:28:11.306852+00:00",
+  "requested_url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=50&query=tag:software",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=50&query=tag:software",
+  "headers": {
+    "content-type": "application/json",
+    "date": "Fri, 06 Nov 2026 20:28:12 GMT",
+    "vary": "Accept-Encoding",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 69114e4ea0aa4e532a5be63a75c51e2c.cloudfront.net (CloudFront)",
+    "age": "0"
+  },
+  "bytes": 701776,
+  "sha256": "3232bea7dd0ce068be01a5ee65cb2ccd71e3af974b5e84e2a2c4a3cc3f6cb053",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 1.645
+}

@@ -1,0 +1,306 @@
+{
+  "name": "venturebeat-orchestration-html",
+  "requested_at": "2026-11-06T20:28:11.162770+00:00",
+  "requested_url": "https://venturebeat.com/category/orchestration/?_dox_poll=29899948",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://venturebeat.com/category/orchestration?_dox_poll=29899948",
+  "headers": {
+    "age": "9439",
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Fri, 06 Nov 2026 17:50:51 GMT",
+    "etag": "W/\"ue1vep127x32dr\"",
+    "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+  },
+  "bytes": 143126,
+  "sha256": "461e4e972ac35f903c7141a3aaaef8cd2f19a1213bcf2def656353b9ecb9bf53",
+  "title": [
+    "AI Orchestration Tools & Agentic Workflows | VentureBeat"
+  ],
+  "scripts": [
+    {
+      "src": "/_next/static/chunks/19d71pel7fv_2.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/2nsq1ek51g625.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/329j824l1odqw.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0g8ku62w0yb2s.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/turbopack-3we6ki65qtf15.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/342fy_b4uxpx1.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/063o3f96wyxe7.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/1ntn7efqc-iiw.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/35-w56_7028jm.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/170vd_8hb_55l.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/11bpnpo3twdri.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0_x5kjv15t-_l.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/2_omrif58bl98.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0sbxgnpsxswkv.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/3bik2djayy0m9.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0y7xkvkxflqiy.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0-cl9kt0tosfd.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0bp2se_hs1kfu.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0cz1d0mv5g_q7.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "category-collection-page-jsonld",
+      "type": "application/ld+json",
+      "size": 5173
+    },
+    {
+      "src": "/_next/static/chunks/1ycd5by80-dnr.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": "_R_",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3660
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5482
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4369
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2627
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1906
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5867
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4237
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3458
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2508
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5606
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3168
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 13967
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5093
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1090
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5161
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1860
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1754
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "AI teams agreed on the wrong answer in 75% of debates — and lower token bills hid the failure",
+      "href": "/orchestration/ai-teams-agreed-on-the-wrong-answer-in-75-of-debates-and-lower-token-bills-hid-the-failure"
+    },
+    {
+      "title": "Open-weight AI models are getting cheaper and better. Here's how to use them without taking on the cost of running them",
+      "href": "/orchestration/open-weight-ai-models-are-getting-cheaper-and-better-heres-how-to-use-them-without-taking-on-the-cost-of-running-them"
+    },
+    {
+      "title": "GitHub Copilot Fusion mixes models to achieve near-Opus 5.5 coding performance at half the per-task cost",
+      "href": "/orchestration/github-copilot-fusion-mixes-models-to-achieve-near-opus-5-5-coding-performance-at-half-the-per-task-cost"
+    },
+    {
+      "title": "Salesforce expands Agent Fabric with AI evaluations to trigger shutdowns when agents fail",
+      "href": "/orchestration/salesforce-details-cost-controls-and-kill-switch"
+    },
+    {
+      "title": "A coding agent’s harness can triple its cost without making it more accurate, study finds",
+      "href": "/orchestration/a-coding-agents-harness-can-triple-its-cost-without-making-it-more-accurate-study-finds"
+    },
+    {
+      "title": "The best enterprise AI is the AI employees barely notice",
+      "href": "/orchestration/the-best-enterprise-ai-is-the-ai-employees-barely-notice"
+    },
+    {
+      "title": "AI agents can have accurate data — and still make the wrong business decision",
+      "href": "/orchestration/ai-agents-can-have-accurate-data-and-still-make-the-wrong-business-decision"
+    },
+    {
+      "title": "Researchers made AI agents better by turning academic papers into working code — no retraining required",
+      "href": "/orchestration/researchers-made-ai-agents-better-by-turning-academic-papers-into-working-code-no-retraining-required"
+    },
+    {
+      "title": "Scaling AI agents requires three things: Inventory, contracts and maintained context",
+      "href": "/orchestration/scaling-ai-agents-requires-three-things-inventory-contracts-and-maintained-context"
+    },
+    {
+      "title": "Gartner says agent costs will rise fivefold by 2028 even as tokens get cheaper. Here is how to keep them in check",
+      "href": "/orchestration/gartner-says-agent-costs-will-rise-fivefold-by-2028-even-as-tokens-get-cheaper-here-is-how-to-keep-them-in-check"
+    },
+    {
+      "title": "A new framework teaches AI models to audit and repair each other’s reasoning, improving accuracy",
+      "href": "/orchestration/a-new-framework-teaches-ai-models-to-audit-and-repair-each-others-reasoning-improving-accuracy"
+    },
+    {
+      "title": "New Tool Recommendation system cuts your firm's input token costs by 37%, according to Arcade.dev",
+      "href": "/orchestration/new-tool-recommendation-system-cuts-your-firms-input-token-costs-by-37-according-to-arcade-dev"
+    }
+  ],
+  "seconds": 0.055
+}

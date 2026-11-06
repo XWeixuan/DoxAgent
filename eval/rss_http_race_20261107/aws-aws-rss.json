@@ -1,0 +1,22 @@
+{
+  "name": "aws-aws-rss",
+  "requested_at": "2026-11-06T20:45:03.313959+00:00",
+  "requested_url": "https://aws.amazon.com/blogs/aws/feed/",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://aws.amazon.com/blogs/aws/feed/",
+  "headers": {
+    "content-type": "application/rss+xml;charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 20:45:03 GMT",
+    "last-modified": "Fri, 06 Nov 2026 18:01:18 GMT",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 4d6f7160ff0f474239473fae02a9e6d8.cloudfront.net (CloudFront)"
+  },
+  "bytes": 254413,
+  "sha256": "2a39eb2e76dfd9095d753e6e4fbe97ebf99fd744fcca0918390397478bb18e9a",
+  "seconds": 0.199
+}

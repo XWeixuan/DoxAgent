@@ -1,0 +1,22 @@
+{
+  "name": "mu-ir-rss",
+  "requested_at": "2026-11-06T20:57:36.315824+00:00",
+  "requested_url": "https://investors.micron.com/rss/pressrelease.aspx",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investors.micron.com/rss/pressrelease.aspx",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:57:36 GMT",
+    "content-type": "text/xml; charset=utf-8",
+    "cf-cache-status": "HIT",
+    "cache-control": "public, max-age=120, stale-if-error=86400, stale-while-revalidate=86400",
+    "etag": "\"fd38a49a435b525bc27a7518385d3e08\""
+  },
+  "bytes": 4122,
+  "sha256": "317148846ab8b7b1e36224f9dd7b2511d57f70e3d8174af832dd2d95efaf87b0",
+  "seconds": 0.55
+}

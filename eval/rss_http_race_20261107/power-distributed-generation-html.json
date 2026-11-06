@@ -1,0 +1,309 @@
+{
+  "name": "power-distributed-generation-html",
+  "requested_at": "2026-11-06T20:56:40.136748+00:00",
+  "requested_url": "https://www.powermag.com/category/distributed-generation/?_dox_poll=29899976",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.powermag.com/category/distributed-generation/?_dox_poll=29899976",
+  "headers": {
+    "cache-control": "public, max-age=604800",
+    "content-type": "text/html; charset=UTF-8",
+    "age": "0",
+    "via": "1.1 varnish, 1.1 varnish, 1.1 varnish, 1.1 varnish",
+    "date": "Fri, 06 Nov 2026 20:56:41 GMT",
+    "x-served-by": "cache-chi-klot8100179-CHI, cache-fra-eddf8230143-FRA, cache-fra-eddf8230042-FRA, cache-fra-eddf8230042-FRA",
+    "x-cache": "MISS, MISS, MISS, MISS",
+    "x-cache-hits": "0, 0, 0, 0",
+    "vary": "Accept-Encoding, Cookie, Cookie"
+  },
+  "bytes": 367428,
+  "sha256": "d97e67e7e1d310c8c25eac85c62d59e6a52183ec9ecd7b7fcbdf70ddce026ce3",
+  "title": [
+    "Distributed Energy News & Insights | POWER Magazine"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 81084
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-osano-integration/assets/js/ai-osano-google-consent.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-osano-integration/assets/js/ai-osano-reprompt.js?ver=1.0.7",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cmp.osano.com/AzZnfwU2Pyhgb5yy3/d0825139-86cd-496f-8bfa-3bc2ad0d654d/osano.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 3061
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/wordpress-popular-posts/assets/js/wpp.min.js?ver=7.4.3",
+      "id": "wpp-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://securepubads.g.doubleclick.net/tag/js/gpt.js",
+      "id": "google-gpt",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/olytics.min.js",
+      "id": "olytics-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/olytics.targeting.js?v=2.2.0",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5910
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-sf-event-public/js/crawler2.js",
+      "id": "crawler-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/npm/jquery.cookie@1.4.1/jquery.cookie.min.js?ver=1.4.1",
+      "id": "jquery-cookie-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-core-ip-auth/js/ai-core-ip-check.js?ver=2.0.4",
+      "id": "ai_core_ip_check-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/olytics.tracking.js?v=2.2.0",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/combine/npm/addsearch-js-client@0.8/dist/addsearch-js-client.min.js,npm/addsearch-search-ui@0.8/dist/addsearch-search-ui.min.js?ver=2.0.13",
+      "id": "ai-addsearch-library-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "ai-addsearch-client-js-before",
+      "type": null,
+      "size": 1085
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-addsearch-integration/assets/js/ui.min.js?ver=2.0.13",
+      "id": "ai-addsearch-client-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://apps.decisionbriefs.com/js/custom/bigquery/tracking.v2.min.js?ver=1.0",
+      "id": "bigquery-tracking-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/aicore-analytics/tracking.onload.min.js?ver=1.0",
+      "id": "bigquery-tracking-onload-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/frontend-reset-password/assets/js/password-lost.js?ver=1.0.0",
+      "id": "som_reset_password_script-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/ad.min.js?ver=2.2.0",
+      "id": "ai-ad-mgmt-adblock-bait-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/block-detection.js?ver=2.2.0",
+      "id": "ai-ad-mgmt-block-detection-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://static.addtoany.com/menu/page.js",
+      "id": "addtoany-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-social-sharing/assets/js/ai_social_sharing.js?ver=1.0.2",
+      "id": "ai-social-sharing-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/duracelltomi-google-tag-manager/build/gtm4wp-form-move-tracker.js?ver=2.0.6",
+      "id": "gtm4wp-form-move-tracker-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255",
+      "id": "wp-hooks-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-includes/js/dist/i18n.min.js?ver=1dfe7db3940c23ea9216",
+      "id": "wp-i18n-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/wp-parsely/build/loader.js?ver=ecf94842061bea03d54b",
+      "id": "wp-parsely-loader-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "wp-parsely-loader-js-after",
+      "type": null,
+      "size": 1630
+    },
+    {
+      "src": "https://cdn.parsely.com/keys/powermag.com/p.js?ver=3.24.3",
+      "id": "parsely-cfg",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/themes/powermag-2025/assets/dist/theme.cef8b5af5b276aaaefa8.js",
+      "id": "theme-js-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js?ver=1.8.1",
+      "id": "slickslider-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/page-links-to/dist/new-tab.js?ver=3.4.1",
+      "id": "page-links-to-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "//imasdk.googleapis.com/js/sdkloader/ima3.js",
+      "id": "google-ima-sdk-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-videos/dist/assets/ai-videos-CD7NOoVh.js",
+      "id": "ai-videos-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.powermag.com/wp-content/plugins/ai-ad-management/assets/js/ai-ad-sticky.js?ver=2.2.0",
+      "id": "ai-ad-sticky-js",
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Grid Resilience Is About More Than Adding Capacity",
+      "href": "https://www.powermag.com/grid-resilience-is-about-more-than-adding-capacity/"
+    },
+    {
+      "title": "Fit Energy Will Use Gas-Powered Fuel Cells For Pennsylvania Data Center Project",
+      "href": "https://www.powermag.com/fit-energy-will-use-gas-powered-fuel-cells-for-pennsylvania-data-center-project/"
+    },
+    {
+      "title": "Asset Information Lifecycle Management: The Digital Backbone of Trusted Operations, Compliance, & AI",
+      "href": "https://www.powermag.com/white-papers/asset-information-lifecycle-management-the-digital-backbone-of-trusted-operations-compliance-ai/"
+    },
+    {
+      "title": "Transformation from Drawing Management Chaos to a More Adaptable, Resilient, and Secure Utility",
+      "href": "https://www.powermag.com/white-papers/transformation-from-drawing-management-chaos-to-a-more-adaptable-resilient-and-secure-utility/"
+    },
+    {
+      "title": "Why Engineering Document Management is Critical for Your Utility’s Future",
+      "href": "https://www.powermag.com/white-papers/why-engineering-document-management-is-critical-for-your-utilitys-future/"
+    },
+    {
+      "title": "Hydrogen Award Finalist: Total Hydrogen Solutions’ Texas Production Facility",
+      "href": "https://www.powermag.com/hydrogen-award-finalist-total-hydrogen-solutions-texas-production-facility/"
+    },
+    {
+      "title": "Keeping the Lights On — Smarter Fault Management for Data Center Power Systems",
+      "href": "https://www.powermag.com/white-papers/keeping-the-lights-on-smarter-fault-management-for-data-center-power-systems/"
+    },
+    {
+      "title": "The Business of Power, and the Power of Business",
+      "href": "https://www.powermag.com/blog/the-business-of-power-and-the-power-of-business/"
+    },
+    {
+      "title": "The Grid’s Wasted-Power Problem Has a Sector-Coupling Fix",
+      "href": "https://www.powermag.com/the-grids-wasted-power-problem-has-a-sector-coupling-fix/"
+    },
+    {
+      "title": "A Phased Framework for Adaptive Protection Migration in DER-Heavy Transmission Substations",
+      "href": "https://www.powermag.com/a-phased-framework-for-adaptive-protection-migration-in-der-heavy-transmission-substations/"
+    },
+    {
+      "title": "Why Crankcase Ventilation Matters in Engine-Based Power",
+      "href": "https://www.powermag.com/why-crankcase-ventilation-matters-in-engine-based-power/"
+    },
+    {
+      "title": "PG&E, Google, Rewiring America Launch VPP in California",
+      "href": "https://www.powermag.com/pge-google-rewiring-america-launch-vpp-in-california/"
+    }
+  ],
+  "seconds": 1.253
+}

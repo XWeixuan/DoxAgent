@@ -1,0 +1,86 @@
+{
+  "name": "rklb-article-html",
+  "requested_at": "2026-11-06T21:02:20.590458+00:00",
+  "requested_url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/mission-success-rocket-lab-launches-99th-electron-mission",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/mission-success-rocket-lab-launches-99th-electron-mission",
+  "headers": {
+    "content-type": "text/html; charset=UTF-8",
+    "etag": "\"1793643828\"",
+    "last-modified": "Mon, 02 Nov 2026 18:23:48 GMT",
+    "x-cache-hits": "530",
+    "x-drupal-dynamic-cache": "UNCACHEABLE (poor cacheability)",
+    "cache-control": "public, max-age=0, s-maxage=2592000",
+    "expires": "Fri, 06 Nov 2026 21:02:20 GMT",
+    "date": "Fri, 06 Nov 2026 21:02:20 GMT",
+    "vary": "Accept-Encoding"
+  },
+  "bytes": 39746,
+  "sha256": "9c492f2d1b33d983fd308d276f4f5e8f05c9665142d4030dc5ec8140150431dc",
+  "title": [
+    "MISSION SUCCESS: Rocket Lab Launches 99th Electron Mission | Mon, 11/02/2026 - 13:22"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 2021
+    },
+    {
+      "src": "/core/assets/vendor/modernizr/modernizr.min.js?v=3.11.7",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/sites/g/files/knoqqb100131/files/js/js_Ta1ai5Jgu6e25OvV_H-FZj9b-vpAR3TxzPWhg8ipqLg.js?scope=header&delta=1&language=en&theme=client_site&include=eJyNj8EOAjEIRH_ItJ9EaEGtsnRDWVf_3rrVmPVkODAD7zCTpbA6tOIc641tta7aQYsBKsrDS25x5wJSTQyCi-bzH-BslTYsX5mKVwNC75OEW_zKcLSqzjrYaREvU-cx7u32nfHE8SMCXvAOSARZsDVAYfPRYOX0KgZaex4e8X5u4b2feztpPQ",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 1200
+    },
+    {
+      "src": "https://code.jquery.com/jquery-3.7.0.min.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/sites/g/files/knoqqb100131/files/js/js_3Iu9EhqGpGS2P1rjxF5X5PxFmvrOvP1UC098gDeqw4A.js?scope=footer&delta=1&language=en&theme=client_site&include=eJyNj8EOAjEIRH_ItJ9EaEGtsnRDWVf_3rrVmPVkODAD7zCTpbA6tOIc641tta7aQYsBKsrDS25x5wJSTQyCi-bzH-BslTYsX5mKVwNC75OEW_zKcLSqzjrYaREvU-cx7u32nfHE8SMCXvAOSARZsDVAYfPRYOX0KgZaex4e8X5u4b2feztpPQ",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://assets.adobedtm.com/898335afd880/c52ee8aa1e90/launch-5ef258dce664.min.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/profiles/nasdaqir/modules/custom/nir_ckeditor_datatables/js/datatables.js?v=1.x",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/sites/g/files/knoqqb100131/files/js/js_yA4X6A0N__LPeZmoS6dywwxXc7LoORz4TDpC8ciFPvE.js?scope=footer&delta=4&language=en&theme=client_site&include=eJyNj8EOAjEIRH_ItJ9EaEGtsnRDWVf_3rrVmPVkODAD7zCTpbA6tOIc641tta7aQYsBKsrDS25x5wJSTQyCi-bzH-BslTYsX5mKVwNC75OEW_zKcLSqzjrYaREvU-cx7u32nfHE8SMCXvAOSARZsDVAYfPRYOX0KgZaex4e8X5u4b2feztpPQ",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.338
+}

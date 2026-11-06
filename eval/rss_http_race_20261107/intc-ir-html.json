@@ -1,0 +1,65 @@
+{
+  "name": "intc-ir-html",
+  "requested_at": "2026-11-06T20:57:36.063620+00:00",
+  "requested_url": "https://www.intc.com/news-events/press-releases",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.intc.com/news-events/press-releases",
+  "headers": {
+    "content-type": "text/html; charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 20:56:36 GMT",
+    "cache-control": "max-age=30, stale-while-revalidate=600, stale-if-error=600",
+    "vary": "Accept-Encoding",
+    "x-cache": "Hit from cloudfront",
+    "via": "1.1 63942a66187fc6907521e1d1afaf9ec4.cloudfront.net (CloudFront)",
+    "age": "60"
+  },
+  "bytes": 46600,
+  "sha256": "fbc067691f72176314bc61163a6a69e38ad42a0aeb2cf52b0eb20a8305c9a0e4",
+  "title": [
+    "Press Releases :: Intel Corporation (INTC)"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 1144
+    },
+    {
+      "src": "https://www.intel.com/content/dam/www/global/wap/performance-config.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "https://www.intel.com/ighf/50recode.2/js/headerchooser.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "https://d1io3yog0oux5.cloudfront.net/_ae41de1e3c92a2d70014908a6d92f612/intel/files/theme/js/_js/all.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://qmod.quotemedia.com/js/qmodLoader.js",
+      "id": "qmod",
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "",
+      "href": "/"
+    }
+  ],
+  "seconds": 0.031
+}

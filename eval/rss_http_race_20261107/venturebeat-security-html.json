@@ -1,0 +1,306 @@
+{
+  "name": "venturebeat-security-html",
+  "requested_at": "2026-11-06T20:28:11.248715+00:00",
+  "requested_url": "https://venturebeat.com/category/security/?_dox_poll=29899948",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://venturebeat.com/category/security?_dox_poll=29899948",
+  "headers": {
+    "age": "9440",
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Fri, 06 Nov 2026 17:50:50 GMT",
+    "etag": "W/\"vi4vi9t4z31hd\"",
+    "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+  },
+  "bytes": 141930,
+  "sha256": "c70a949f871d2dbca08334bec13b6c60162cc3dc448bfb1fe265f3649b224f6f",
+  "title": [
+    "AI Security & LLM Vulnerabilities | VentureBeat"
+  ],
+  "scripts": [
+    {
+      "src": "/_next/static/chunks/19d71pel7fv_2.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/2nsq1ek51g625.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/329j824l1odqw.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0g8ku62w0yb2s.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/turbopack-3we6ki65qtf15.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/342fy_b4uxpx1.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/063o3f96wyxe7.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/1ntn7efqc-iiw.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/35-w56_7028jm.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/170vd_8hb_55l.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/11bpnpo3twdri.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0_x5kjv15t-_l.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/2_omrif58bl98.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0sbxgnpsxswkv.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/3bik2djayy0m9.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0y7xkvkxflqiy.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0-cl9kt0tosfd.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0bp2se_hs1kfu.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/_next/static/chunks/0cz1d0mv5g_q7.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "category-collection-page-jsonld",
+      "type": "application/ld+json",
+      "size": 4956
+    },
+    {
+      "src": "/_next/static/chunks/1ycd5by80-dnr.js?dpl=dpl_3uSuJJVFMRq49VmGMCLzMA9tdZ1Z",
+      "id": "_R_",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3660
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5472
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4369
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2627
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2434
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1906
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5867
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4237
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3458
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5391
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3150
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 13297
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5093
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1090
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4647
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1830
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1754
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "AI agents don't have to break security controls to go rogue. Here's how to keep them in check",
+      "href": "/security/ai-agents-dont-have-to-break-security-controls-to-go-rogue-heres-how-to-keep-them-in-check"
+    },
+    {
+      "title": "Agents are rewriting the book on security. Can your data layer keep up?",
+      "href": "/security/agents-are-rewriting-the-book-on-security-can-your-data-layer-keep-up"
+    },
+    {
+      "title": "AI agent access is moving faster than identity controls can govern",
+      "href": "/security/ai-agent-access-is-moving-faster-than-identity-controls-can-govern"
+    },
+    {
+      "title": "AI agents are about to put least privilege to the test",
+      "href": "/security/ai-agents-are-about-to-put-least-privilege-to-the-test"
+    },
+    {
+      "title": "DeepSeek-V4.1-Flash-1017 arrives with improved benchmarks just as the U.S. government bans it from agencies — what enterprises should do",
+      "href": "/security/deepseek-v4-1-flash-1017-arrives-with-improved-benchmarks-just-as-the-u-s-government-bans-it-from-agencies-what-enterprises-should-do"
+    },
+    {
+      "title": "AI cloud security needs to prove control before agents reach production",
+      "href": "/security/ai-cloud-security-needs-to-prove-control-before-agents-reach-production"
+    },
+    {
+      "title": "Anyone can build apps with AI. But who owns them?",
+      "href": "/security/anyone-can-build-apps-with-ai-but-who-owns-them"
+    },
+    {
+      "title": "17 of 40 teams that say they enforce AI agent permissions still share the credentials behind them",
+      "href": "/security/17-of-40-teams-that-say-they-enforce-ai-agent-permissions-still-share-the-credentials-behind-them"
+    },
+    {
+      "title": "Browser security’s buying spree rests on one engine, without a clear Plan B",
+      "href": "/security/browser-securitys-buying-spree-rests-on-one-engine-without-a-clear-plan-b"
+    },
+    {
+      "title": "Anthropic’s Cyber Mission starts with 6,157 findings reported to maintainers and 516 patched",
+      "href": "/security/anthropics-cyber-mission-starts-with-6-157-findings-reported-to-maintainers-and-516-patched"
+    },
+    {
+      "title": "Microsoft's record Patch Tuesday shows why severity can't decide what gets patched first",
+      "href": "/security/microsofts-record-patch-tuesday-shows-why-severity-cant-decide-what-gets-patched-first"
+    },
+    {
+      "title": "Your vibe-coded apps are a ticking time bomb for your business. Here’s how to secure them.",
+      "href": "/security/your-vibe-coded-apps-are-a-ticking-time-bomb-for-your-business-heres-how-to-secure-them"
+    }
+  ],
+  "seconds": 0.034
+}

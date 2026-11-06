@@ -1,0 +1,155 @@
+{
+  "name": "quantuminsider-capital-markets-html",
+  "requested_at": "2026-11-06T20:41:54.168909+00:00",
+  "requested_url": "https://thequantuminsider.com/category/capital-markets/?_dox_poll=29899961",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://thequantuminsider.com/category/capital-markets/?_dox_poll=29899961",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:41:54 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "cf-cache-status": "DYNAMIC",
+    "cache-control": "max-age=0",
+    "expires": "Fri, 06 Nov 2026 20:41:54 GMT",
+    "vary": "Accept-Encoding,Cookie",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=279,cfOrigin;dur=0"
+  },
+  "bytes": 242133,
+  "sha256": "5d71f1694a449752376a7bd9a741b6e98423cc27a06c4c505954433ec59f704e",
+  "title": [
+    "Capital Markets - The Quantum Insider"
+  ],
+  "scripts": [
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2090
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 2419
+    },
+    {
+      "src": null,
+      "id": "tqh-js",
+      "type": null,
+      "size": 7035
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-content/plugins/tqi_editor_intelligence-4/frontend.js?ver=14.0.0",
+      "id": "tqi-frontend-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/jquery/ui/core.min.js?ver=1.14.2",
+      "id": "jquery-ui-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://thequantuminsider.com/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255",
+      "id": "wp-hooks-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "popup-maker-site-js-extra",
+      "type": null,
+      "size": 1758
+    },
+    {
+      "src": "//thequantuminsider.com/wp-content/uploads/pum/pum-site-scripts.js?defer&generated=1792955964&ver=1.25.0",
+      "id": "popup-maker-site-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "tqi-cat-js",
+      "type": null,
+      "size": 1100
+    },
+    {
+      "src": null,
+      "id": "lcn-js",
+      "type": null,
+      "size": 1104
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1097
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "UK Announces New Funding to Support Quantum Technology Commercialisation",
+      "href": "https://thequantuminsider.com/2026/11/06/uk-announces-new-funding-to-support-quantum-technology-commercialisation/"
+    },
+    {
+      "title": "Quantinuum Raises Revenue Outlook After Landing Its Largest Cloud Agreement",
+      "href": "https://thequantuminsider.com/2026/11/05/quantinuum-raises-revenue-outlook-after-landing-its-largest-cloud-agreement/"
+    },
+    {
+      "title": "IonQ Raises Revenue Forecast as Quarterly Sales Climb to $173.8 Million",
+      "href": "https://thequantuminsider.com/2026/11/05/ionq-raises-revenue-forecast-as-quarterly-sales-climb-to-173-8-million/"
+    },
+    {
+      "title": "Horizon Quantum Plans to Acquire Entropica Labs for $27 Million",
+      "href": "https://thequantuminsider.com/2026/11/05/horizon-quantum-acquire-entropica-labs-27-million/"
+    },
+    {
+      "title": "IQM Books €42.2 Million in Orders as Quarterly Revenue Rises 51% in Q3 2026",
+      "href": "https://thequantuminsider.com/2026/11/05/iqm-books-e42-2-million-in-orders-as-quarterly-revenue-rises-51-in-q3-2026/"
+    },
+    {
+      "title": "Quantum Base Secures £700,000 UKRI Research Fellowship",
+      "href": "https://thequantuminsider.com/2026/11/04/quantum-base-secures-ukri-research-fellowship/"
+    },
+    {
+      "title": "CQMTEK Raises More Than $15 Million For Quantum Measurement Expansion",
+      "href": "https://thequantuminsider.com/2026/11/04/cqmtek-raises-more-than-15-million-for-quantum-measurement-expansion/"
+    },
+    {
+      "title": "Germany’s Quint Raises 9.1 Million Euros to Develop Quantum Chips With Fewer Errors",
+      "href": "https://thequantuminsider.com/2026/11/03/germanys-quint-raises-9-1-million-euros-to-develop-quantum-chips-with-fewer-errors/"
+    },
+    {
+      "title": "Scottish Widows Targets Quantum Computing With UK Venture Growth Investments",
+      "href": "https://thequantuminsider.com/2026/11/02/scottish-widows-targets-quantum-computing-with-uk-venture-growth-investments/"
+    },
+    {
+      "title": "Nord Quantique Secures $10 Million DARPA Funding Extension",
+      "href": "https://thequantuminsider.com/2026/10/29/nord-quantique-10-million-darpa-funding-extension/"
+    }
+  ],
+  "seconds": 0.577
+}

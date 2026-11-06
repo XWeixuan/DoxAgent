@@ -1,0 +1,26 @@
+{
+  "name": "register-cloud-lean",
+  "requested_at": "2026-11-06T20:30:54.586401+00:00",
+  "requested_url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&fields=id,title,published,published_url,subtitle&query=(tag:off-prem%20OR%20tag:off_prem)",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&fields=id,title,published,published_url,subtitle&query=(tag:off-prem%20OR%20tag:off_prem)",
+  "headers": {
+    "content-type": "application/json",
+    "date": "Fri, 06 Nov 2026 20:30:54 GMT",
+    "vary": "Accept-Encoding",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 1903071a927324e2fb28199ee96c4bb2.cloudfront.net (CloudFront)",
+    "age": "0"
+  },
+  "bytes": 11301,
+  "sha256": "7437546eeba6783467a0c9c150d4edc66cf36cc1f76f0daa40e5743597a617b5",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 0.413
+}

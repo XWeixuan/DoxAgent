@@ -1,0 +1,130 @@
+{
+  "name": "ans-news-html",
+  "requested_at": "2026-11-06T20:41:49.532575+00:00",
+  "requested_url": "https://www.ans.org/news/?_dox_poll=29899961",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.ans.org/news/?_dox_poll=29899961",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:41:50 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "vary": "Accept-Encoding",
+    "cf-cache-status": "DYNAMIC"
+  },
+  "bytes": 91742,
+  "sha256": "4ab1c50944198213be6fdbb3498afa2d63bccabf649e5f11ee054dc373647605",
+  "title": [
+    "Nuclear Newswire -- ANS"
+  ],
+  "scripts": [
+    {
+      "src": "//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "/cdn/site/s/global_v408.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "/cdn/site/s/zoomer.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "/cdn/news/s/news_v201.js",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "https://www.ans.org/ad/js/s-1/",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "https://www.ans.org/ad/js/s-11/c-4/",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "https://www.googletagmanager.com/gtag/js?id=G-FZ1DECQ83C",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "U.K. energy bill proposes changes to waste transport regulation",
+      "href": "https://www.ans.org/news/2026-11-06/article-8564/uk-energy-bill-proposes-changes-to-waste-transport-regulation/"
+    },
+    {
+      "title": "Thea Energy, MIT collaborate on testing stellarator magnet technology",
+      "href": "https://www.ans.org/news/2026-11-06/article-8563/thea-energy-mit-collaborate-on-testing-stellarator-magnet-technology/"
+    },
+    {
+      "title": "Korean companies partner with U.S. start-ups",
+      "href": "https://www.ans.org/news/2026-11-06/article-8562/korean-companies-partner-with-us-startups/"
+    },
+    {
+      "title": "Salem power plant planning 200-MW uprate",
+      "href": "https://www.ans.org/news/2026-11-05/article-8561/salem-power-plant-planning-200mw-uprate/"
+    },
+    {
+      "title": "3D-printed tungsten tiles tested at DIII-D",
+      "href": "https://www.ans.org/news/2026-11-05/article-8560/3dprinted-tungsten-tiles-tested-at-diiid/"
+    },
+    {
+      "title": "Candidates announced for the 2027 ANS national election",
+      "href": "https://www.ans.org/news/2026-11-05/article-8559/candidates-announced-for-the-2027-ans-national-election/"
+    },
+    {
+      "title": "Oak Ridge’s Transuranic Waste Processing Center gets upgrades",
+      "href": "https://www.ans.org/news/2026-11-05/article-8558/oak-ridges-transuranic-waste-processing-center-gets-upgrades/"
+    },
+    {
+      "title": "NRC workshop addresses “bridge” between DOE authorization and NRC licensing",
+      "href": "https://www.ans.org/news/2026-11-04/article-8557/nrc-workshop-addresses-bridge-between-doe-authorization-and-nrc-licensing/"
+    },
+    {
+      "title": "Urenco touts first cylinder of LEU+ for commercial use",
+      "href": "https://www.ans.org/news/2026-11-04/article-8556/urenco-touts-first-cylinder-of-leu-for-commercial-use/"
+    },
+    {
+      "title": "NSUF awards 18 Super Rapid Turnaround Experiments",
+      "href": "https://www.ans.org/news/2026-11-04/article-8555/nsuf-awards-18-super-rapid-turnaround-experiments/"
+    },
+    {
+      "title": "PNNL is developing a new approach for creating alloys",
+      "href": "https://www.ans.org/news/2026-11-04/article-8554/pnnl-is-developing-a-new-approach-for-creating-alloys/"
+    },
+    {
+      "title": "Unleash Your Organizational Superpower Through Talent Development",
+      "href": "https://www.ans.org/news/2026-11-04/article-8499/unleash-your-organizational-superpower-through-talent-development/"
+    }
+  ],
+  "seconds": 1.147
+}

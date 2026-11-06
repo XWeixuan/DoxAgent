@@ -1,0 +1,149 @@
+{
+  "name": "aws-awsmarketplace-html",
+  "requested_at": "2026-11-06T20:45:02.775222+00:00",
+  "requested_url": "https://aws.amazon.com/blogs/awsmarketplace/?_dox_poll=29899964",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://aws.amazon.com/blogs/awsmarketplace/?_dox_poll=29899964",
+  "headers": {
+    "content-type": "text/html;charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 20:45:02 GMT",
+    "last-modified": "Thu, 05 Nov 2026 22:34:46 GMT",
+    "vary": "accept-encoding",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 4d6f7160ff0f474239473fae02a9e6d8.cloudfront.net (CloudFront)"
+  },
+  "bytes": 1477723,
+  "sha256": "f5d974b869213cda2ba24f72583326218bb5f03483e54e36a53813a9cd1ecefc",
+  "title": [
+    "AWS Marketplace",
+    "\n                      x\n                     "
+  ],
+  "scripts": [
+    {
+      "src": "https://a0.awsstatic.com/libra/1.0.599/csp/csp-report.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cx0.m.awsstatic.com/assets/clam/2.3.0/index.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/aws-blog/1.0.90/js/blog-head-v2.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.14/polyfills/es-module-shims/es-module-shims.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/gdeps.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/head.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.14/orchestrate.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/s_code/js/3.0/awshome_s_code.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/target/1.0.127/aws-target-mediator.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 67188
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 6520
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 6013
+    },
+    {
+      "src": "https://a0.awsstatic.com/aws-blog/1.0.90/js/vendor/prism.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Resolve security signals faster with Arctic Wolf’s Aurora Agentic SOC",
+      "href": "/blogs/awsmarketplace/resolve-security-signals-faster-with-arctic-wolfs-aurora-agentic-soc/"
+    },
+    {
+      "title": "Shorten the time from credential exposure to remediation with SpyCloud",
+      "href": "/blogs/awsmarketplace/shorten-the-time-from-credential-exposure-to-remediation-with-spycloud/"
+    },
+    {
+      "title": "Build AWS Marketplace SaaS metering with the metering agent skill",
+      "href": "/blogs/awsmarketplace/build-aws-marketplace-saas-metering-with-the-metering-agent-skill/"
+    },
+    {
+      "title": "Deploy enterprise multicloud connectivity in under an hour with Megaport Cloud Router in AWS Marketplace",
+      "href": "/blogs/awsmarketplace/deploy-enterprise-multicloud-connectivity-in-under-an-hour-with-megaport-cloud-router-in-aws-marketplace/"
+    },
+    {
+      "title": "Accelerate customer identity development with Auth0 MCP and Kiro CLI",
+      "href": "/blogs/awsmarketplace/accelerate-customer-identity-development-with-auth0-mcp-and-kiro-cli/"
+    },
+    {
+      "title": "Implementing SaaS subscription pricing models in AWS Marketplace",
+      "href": "/blogs/awsmarketplace/implementing-saas-subscription-pricing-models-in-aws-marketplace/"
+    },
+    {
+      "title": "How you can embed procurement into your workflows with AWS Marketplace APIs",
+      "href": "/blogs/awsmarketplace/how-you-can-embed-procurement-into-your-workflows-with-aws-marketplace-apis/"
+    },
+    {
+      "title": "Private offer auto-renewals: Scale predictable revenue with AWS Marketplace",
+      "href": "/blogs/awsmarketplace/private-offer-auto-renewals-scale-predictable-revenue-with-aws-marketplace/"
+    },
+    {
+      "title": "Enabling mandatory purchase orders and custom guidance in AWS Marketplace",
+      "href": "/blogs/awsmarketplace/enabling-mandatory-purchase-orders-and-custom-guidance-in-aws-marketplace/"
+    },
+    {
+      "title": "SaaS subscription pricing models in AWS Marketplace",
+      "href": "/blogs/awsmarketplace/saas-subscription-pricing-models-in-aws-marketplace/"
+    }
+  ],
+  "seconds": 0.272
+}

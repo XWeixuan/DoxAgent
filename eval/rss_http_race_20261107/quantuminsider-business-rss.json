@@ -1,0 +1,24 @@
+{
+  "name": "quantuminsider-business-rss",
+  "requested_at": "2026-11-06T20:41:54.746324+00:00",
+  "requested_url": "https://thequantuminsider.com/category/daily/business/feed/",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://thequantuminsider.com/category/daily/business/feed/",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:41:54 GMT",
+    "content-type": "application/rss+xml; charset=UTF-8",
+    "cf-cache-status": "DYNAMIC",
+    "cache-control": "max-age=3600",
+    "expires": "Fri, 06 Nov 2026 21:41:54 GMT",
+    "vary": "Accept-Encoding,Cookie",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=115,cfOrigin;dur=0"
+  },
+  "bytes": 121964,
+  "sha256": "23cc5bc42cdff4c324c339fb0a1a9dd751217e0e8487afd5422b7d7c33b7d6fb",
+  "seconds": 0.321
+}

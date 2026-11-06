@@ -1,0 +1,26 @@
+{
+  "name": "mu-q4-json",
+  "requested_at": "2026-11-06T21:01:03.796900+00:00",
+  "requested_url": "https://investors.micron.com/feed/PressRelease.svc/GetPressReleaseList?LanguageId=1&bodyType=0&pressReleaseDateFilter=1&categoryId=00000000-0000-0000-0000-000000000000&year=-1&startIndex=0&pageSize=30&includeTags=true&_dox_poll=29899980",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investors.micron.com/feed/PressRelease.svc/GetPressReleaseList?LanguageId=1&bodyType=0&pressReleaseDateFilter=1&categoryId=00000000-0000-0000-0000-000000000000&year=-1&startIndex=0&pageSize=30&includeTags=true&_dox_poll=29899980",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:01:04 GMT",
+    "content-type": "application/json; charset=utf-8",
+    "cf-cache-status": "MISS",
+    "cache-control": "public,max-age=10, stale-if-error=86400, stale-while-revalidate=86400",
+    "etag": "\"c8adfbb08ae18b954843e81432d24cff\"",
+    "server-timing": "cfCacheStatus;desc=\"MISS\", cfEdge;dur=21,cfOrigin;dur=0,cfWorker;dur=508"
+  },
+  "bytes": 39817,
+  "sha256": "08e113885898546c74126a58ae5d65e8a8fbb11b3177aefda3838d05bcabca47",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 1.305
+}

@@ -1,0 +1,45 @@
+{
+  "name": "onds-ir-html",
+  "requested_at": "2026-11-06T20:59:05.627870+00:00",
+  "requested_url": "https://ir.ondas.com/news-events/press-releases?_dox_poll=29899979",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 404,
+  "url": "https://ir.ondas.com/news-events/press-releases?_dox_poll=29899979",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:59:05 GMT",
+    "expires": "Thu, 19 Nov 1981 08:52:00 GMT",
+    "cache-control": "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+    "vary": "Content-Length,User-Agent",
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "bytes": 18557,
+  "sha256": "e20edcd1a10a7d31d53710da0798c584927df846484a62737dc0ccf70330d042",
+  "title": [
+    "Ondas Inc. (ONDS)"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2428
+    },
+    {
+      "src": "https://d1io3yog0oux5.cloudfront.net/_5b44dd33c0929b931e60abed65dcd52a/ondas/files/theme/js/_js/all.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "",
+      "href": "/"
+    }
+  ],
+  "seconds": 0.103
+}

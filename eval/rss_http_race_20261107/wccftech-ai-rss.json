@@ -1,0 +1,23 @@
+{
+  "name": "wccftech-ai-rss",
+  "requested_at": "2026-11-06T20:39:09.187286+00:00",
+  "requested_url": "https://wccftech.com/topic/ai/feed/",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://wccftech.com/topic/ai/feed/",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:39:09 GMT",
+    "content-type": "application/rss+xml; charset=UTF-8",
+    "vary": "Accept-Encoding, Cookie",
+    "last-modified": "Fri, 06 Nov 2026 19:17:17 GMT",
+    "cf-cache-status": "DYNAMIC",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=3,cfOrigin;dur=6"
+  },
+  "bytes": 75742,
+  "sha256": "ff2b41fa942b95c734513e8029a75aac4cbd4c7e0e3bfde1fd2b04e906b9aa51",
+  "seconds": 0.22
+}

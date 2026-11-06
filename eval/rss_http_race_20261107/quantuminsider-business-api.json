@@ -1,0 +1,27 @@
+{
+  "name": "quantuminsider-business-api",
+  "requested_at": "2026-11-06T20:44:06.713761+00:00",
+  "requested_url": "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=21&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=21&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:44:08 GMT",
+    "content-type": "application/json; charset=UTF-8",
+    "cf-cache-status": "DYNAMIC",
+    "cache-control": "max-age=0",
+    "expires": "Fri, 06 Nov 2026 20:44:08 GMT",
+    "vary": "Accept-Encoding,Cookie,Origin",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=496,cfOrigin;dur=0"
+  },
+  "bytes": 22878,
+  "sha256": "a3a48daa42661667eed47c77031a686461579d90d3d1f17350e3336e9413917d",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 1.703
+}

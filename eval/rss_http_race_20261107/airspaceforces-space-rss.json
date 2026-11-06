@@ -1,0 +1,27 @@
+{
+  "name": "airspaceforces-space-rss",
+  "requested_at": "2026-11-06T20:39:04.667459+00:00",
+  "requested_url": "https://www.airandspaceforces.com/category/space/feed/",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.airandspaceforces.com/category/space/feed/",
+  "headers": {
+    "cache-control": "max-age=1800, s-maxage=600, stale-if-error=3600, stale-while-revalidate=1800",
+    "content-type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"729854caf61bf4799e45072d3967cf38\"",
+    "last-modified": "Fri, 06 Nov 2026 19:50:01 GMT",
+    "via": "1.1 varnish, 1.1 varnish",
+    "age": "292",
+    "date": "Fri, 06 Nov 2026 20:39:04 GMT",
+    "x-served-by": "cache-iad-kiad7000073-IAD, cache-sin-wsap440096-SIN",
+    "x-cache": "MISS, HIT",
+    "x-cache-hits": "0, 0"
+  },
+  "bytes": 47169,
+  "sha256": "a925a15783cb07128b7d2e1abd6f8977d47b47ec3141bc62f3660b77d795d000",
+  "seconds": 0.006
+}

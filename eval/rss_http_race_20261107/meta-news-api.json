@@ -1,0 +1,25 @@
+{
+  "name": "meta-news-api",
+  "requested_at": "2026-11-06T20:31:22.890285+00:00",
+  "requested_url": "https://about.fb.com/wp-json/wp/v2/posts?per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://about.fb.com/wp-json/wp/v2/posts?per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:31:23 GMT",
+    "content-type": "application/json; charset=UTF-8",
+    "vary": "Accept-Encoding, accept, content-type, Origin",
+    "cache-control": "max-age=60",
+    "x-cache": "MISS"
+  },
+  "bytes": 30290,
+  "sha256": "012486241f5d0e83184fbf4612d988c2aa47dccb74efa9b295d6e732a46bf50d",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 0.416
+}

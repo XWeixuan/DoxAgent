@@ -1,0 +1,24 @@
+{
+  "name": "meta-news-rss",
+  "requested_at": "2026-11-06T20:31:23.306161+00:00",
+  "requested_url": "https://about.fb.com/news/feed/",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://about.fb.com/news/feed/",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:31:23 GMT",
+    "content-type": "application/rss+xml; charset=UTF-8",
+    "vary": "Accept-Encoding",
+    "last-modified": "Fri, 06 Nov 2026 20:02:44 GMT",
+    "etag": "W/\"cf9c99346e6f2dfe427813a1a2760007\"",
+    "x-cache": "HIT",
+    "cache-control": "max-age=300, must-revalidate"
+  },
+  "bytes": 116206,
+  "sha256": "41ee5b9a275c79bc4f8385aafa1f9002a1bd468e545ff1e110abc66e059c308f",
+  "seconds": 0.014
+}

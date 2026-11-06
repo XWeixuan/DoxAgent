@@ -1,0 +1,32 @@
+{
+  "name": "fabric-rest-json",
+  "requested_at": "2026-11-06T20:47:07.251970+00:00",
+  "requested_url": "https://community.fabric.microsoft.com/restapi/vc/boards/id/fbc_fabricupdatesblogs/threads/recent?restapi.response_format=json&restapi.response_style=values",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 403,
+  "url": "https://community.fabric.microsoft.com/restapi/vc/boards/id/fbc_fabricupdatesblogs/threads/recent?restapi.response_format=json&restapi.response_style=values",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:47:07 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "server-timing": "chlray;desc=\"a566f396ea20ff93\""
+  },
+  "bytes": 6516,
+  "sha256": "9b9180696dd7312ebf7c99b3a296abf0770dda6d47544708b11723ae02b37c38",
+  "title": [
+    "Just a moment..."
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 4109
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.136
+}

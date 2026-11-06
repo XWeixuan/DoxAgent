@@ -1,0 +1,32 @@
+{
+  "name": "fabric-board-html",
+  "requested_at": "2026-11-06T20:45:01.632781+00:00",
+  "requested_url": "https://community.fabric.microsoft.com/t5/Fabric-Updates-Blog/bg-p/fbc_fabricupdatesblogs?_dox_poll=29899964",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 403,
+  "url": "https://community.fabric.microsoft.com/t5/Fabric-Updates-Blog/bg-p/fbc_fabricupdatesblogs?_dox_poll=29899964",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:45:01 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "server-timing": "chlray;desc=\"a566f085cd0e4dce\""
+  },
+  "bytes": 6293,
+  "sha256": "f4881dafea719d5f84ac805a1fa37ea867499b1730d1d02e58a225707b155051",
+  "title": [
+    "Just a moment..."
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3886
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.134
+}

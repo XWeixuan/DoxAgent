@@ -1,0 +1,167 @@
+{
+  "name": "unmanned-tenders-html",
+  "requested_at": "2026-11-06T20:22:25.223852+00:00",
+  "requested_url": "https://www.unmannedairspace.info/category/counter-uas-systems-tenders/?_dox_poll=29899942",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.unmannedairspace.info/category/counter-uas-systems-tenders/?_dox_poll=29899942",
+  "headers": {
+    "content-type": "text/html; charset=UTF-8",
+    "vary": "accept-encoding, accept,content-type,Accept-Encoding,Cookie",
+    "date": "Fri, 06 Nov 2026 20:22:25 GMT",
+    "expires": "Fri, 06 Nov 2026 21:22:25 GMT",
+    "cache-control": "max-age=3600"
+  },
+  "bytes": 157157,
+  "sha256": "72ddf2676d711f25222a4269724345356d7ad51395c8b80c4065c65ed90aa736",
+  "title": [
+    "Counter UAS systems tenders - Unmanned airspace"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 1887
+    },
+    {
+      "src": "//www.googletagmanager.com/gtag/js?id=G-EJENBKLVZ6",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 6696
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-content/plugins/google-analytics-for-wordpress/assets/js/frontend-gtag.min.js?ver=11.3.0",
+      "id": "monsterinsights-frontend-script-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://static.addtoany.com/menu/page.js",
+      "id": "addtoany-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-includes/js/jquery/jquery.min.js?ver=3.7.1",
+      "id": "jquery-core-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1",
+      "id": "jquery-migrate-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-content/plugins/add-to-any/addtoany.min.js?ver=1.1",
+      "id": "addtoany-jquery-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-content/themes/gambit/assets/js/svgxuse.min.js?ver=1.2.6",
+      "id": "svgxuse-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-content/themes/gambit/assets/js/navigation.min.js?ver=20220224",
+      "id": "gambit-navigation-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-content/plugins/newsletter/main.js?ver=9.5.3",
+      "id": "newsletter-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://stats.wp.com/e-202645.js",
+      "id": "jetpack-stats-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-content/plugins/add-search-to-menu/public/js/ivory-search.min.js?ver=5.5.20",
+      "id": "ivory-search-scripts-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.unmannedairspace.info/wp-content/plugins/custom-twitter-feeds/js/ctf-scripts.min.js?ver=2.11.0&ver=2.11.0",
+      "id": "ctf_scripts-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "module",
+      "size": 3065
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "US seeks production-ready maritime counter-drone capabilities",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/us-seeks-production-ready-maritime-counter-drone-capabilities/"
+    },
+    {
+      "title": "Innovations sought for US Army’s electromagnetic spectrum effort",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-tenders/innovations-sought-for-us-armys-electromagnetic-spectrum-effort/"
+    },
+    {
+      "title": "US Air Force issues RFI for C-UAS capabilities at South Korean base",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/us-air-force-issues-rfi-for-c-uas-capabilities-at-south-korean-base/"
+    },
+    {
+      "title": "Indian Army seeks counter-drone mesh screens as part of layered air defence",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/indian-army-seeks-counter-drone-mesh-screens-as-part-of-layered-air-defence/"
+    },
+    {
+      "title": "US Army opens FLYTRAP 6.0. invitation for emerging C-UAS technologies",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/us-army-opens-flytrap-6-0-invitation-for-emerging-c-uas-technologies/"
+    },
+    {
+      "title": "US Air Force seeks C-UAS package to close vulnerability gaps",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/us-air-force-seeks-c-uas-package-to-close-vulnerability-gaps/"
+    },
+    {
+      "title": "UK launches new competition to find force-protection C-UAS technologies",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/uk-launches-new-competition-to-find-force-protection-c-uas-technologies/"
+    },
+    {
+      "title": "Netherlands to add kinetic capabilities to its ReDrone C-UAS",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-and-policies/netherlands-to-add-kinetic-capabilities-to-its-redrone-c-uas/"
+    },
+    {
+      "title": "AeroVironment wins USD464.8 million Army contract for LOCUST counter-UAS laser",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-tenders/aerovironment-wins-usd464-8-million-army-contract-for-locust-counter-uas-laser/"
+    },
+    {
+      "title": "Shield AI expands Tracker C-UAS integration with L3Harris VAMPIRE",
+      "href": "https://www.unmannedairspace.info/counter-uas-systems-tenders/shield-ai-expands-tracker-c-uas-integration-with-l3harris-vampire/"
+    },
+    {
+      "title": "SPONSORED EDITORIAL",
+      "href": "https://www.unmannedairspace.info/category/sponsored-editorial-1/"
+    },
+    {
+      "title": "Harmonized Skies 2026: Global technology, fragmented markets",
+      "href": "https://www.unmannedairspace.info/uncategorized/harmonized-skies-2026-global-technology-fragmented-markets/"
+    }
+  ],
+  "seconds": 0.501
+}

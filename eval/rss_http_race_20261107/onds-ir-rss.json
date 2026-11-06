@@ -1,0 +1,22 @@
+{
+  "name": "onds-ir-rss",
+  "requested_at": "2026-11-06T20:59:05.731082+00:00",
+  "requested_url": "https://ir.ondas.com/rss",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://ir.ondas.com/rss",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:59:05 GMT",
+    "expires": "Thu, 19 Nov 1981 08:52:00 GMT",
+    "cache-control": "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+    "vary": "Content-Length,User-Agent,Accept-Encoding",
+    "content-type": "application/rss+xml; charset=utf-8"
+  },
+  "bytes": 354821,
+  "sha256": "af270a8ca1c21bbcd8ef5f233a6e62795e20b4c44cb175588c0b50b77c824f7d",
+  "seconds": 0.067
+}

@@ -1,0 +1,26 @@
+{
+  "name": "rklb-ir-rss",
+  "requested_at": "2026-11-06T20:59:05.597654+00:00",
+  "requested_url": "https://investors.rocketlabcorp.com/rss.xml",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investors.rocketlabcorp.com/rss.xml",
+  "headers": {
+    "content-type": "application/rss+xml; charset=utf-8",
+    "etag": "\"1793757040\"",
+    "last-modified": "Wed, 04 Nov 2026 01:50:40 GMT",
+    "x-cache-hits": "546",
+    "x-drupal-dynamic-cache": "UNCACHEABLE (poor cacheability)",
+    "cache-control": "public, max-age=0, s-maxage=2592000",
+    "expires": "Fri, 06 Nov 2026 20:59:05 GMT",
+    "date": "Fri, 06 Nov 2026 20:59:05 GMT",
+    "vary": "Accept-Encoding"
+  },
+  "bytes": 101952,
+  "sha256": "87c391cdc3559229500ac59a8e4b437a1e68aaffdf5cf706dcbc736de038423b",
+  "seconds": 0.03
+}

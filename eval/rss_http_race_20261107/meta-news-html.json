@@ -1,0 +1,168 @@
+{
+  "name": "meta-news-html",
+  "requested_at": "2026-11-06T20:31:22.222573+00:00",
+  "requested_url": "https://about.fb.com/news/?_dox_poll=29899951",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://about.fb.com/news/?_dox_poll=29899951",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:31:22 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "vary": "Accept-Encoding",
+    "cache-control": "max-age=300, must-revalidate",
+    "x-cache": "MISS"
+  },
+  "bytes": 306936,
+  "sha256": "b3fc87f16d87dd52df3b9f3bd344baa76bedb94ed936ff2470b3fe37cb8be00a",
+  "title": [
+    "Newsroom | Meta Newsroom",
+    "Dismiss locale prompt"
+  ],
+  "scripts": [
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 1742
+    },
+    {
+      "src": "https://about.fb.com/wp-content/plugins/wp-gdpr-consent/dist/gdprconsent.js?ver=2.0.0",
+      "id": "gdprconsent-js",
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "https://about.fb.com/_static/??-eJyNyk0OQDAQQOELqfETEQtxFmowpUU7jbi9LrqwY/UW74PrEHI3jIaBF9ToYBrkbg9QDjytxKkmkyqXwKcUFL57ezJy82OQgajTo71jfiGhabY9Y8SdbvO6KYusyspCPSguQ7E=",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": "fbcorp-alert-bar-js-extra",
+      "type": "text/javascript",
+      "size": 2562
+    },
+    {
+      "src": "https://about.fb.com/_static/??-eJyNjzsOwjAQBS+EvdgFUQrEWWznodj4E7wbRXB6CqAl9G/0ZmhbVGhVUIVkRgHT1YfWF0pM6b6iP/QE39YaMHVwfEInPtBPjHVo7RahrLba6BLrLsPICGL/2rqMLsq7vm/yDvBOydybSIb6xnyeLuVshtGa0Q7HU3oB79tiWA==",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v5.0",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2751
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1884
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5108
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2749
+    },
+    {
+      "src": "https://about.fb.com/_static/??-eJyV0UGOwzAIBdALlbiNNFN1MepZiENSEttYBmfa21dRNrNzZ/8+H4T7zeAlGSVzOdSZk7pCGIwjASYML2OvDlXJ1C3qrKBfqXSLntyfrD0okrpp8FLy7hJuPKOxpCbVOvxHr5whcFphEl8VJn42M4fcWHkIBF/dueu7yO2uIJI/QqC+SAhQtckjzQiRUt36pkXvSY+lsZp4iTmQEUQZeWIaPzrCXpnwQTi2CgMb7ZVSxv0Rx+x7/Llcb/3l1l/P38sbhybPjA==",
+      "id": null,
+      "type": "text/javascript",
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "module",
+      "size": 3078
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 3017
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 29638
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "text/javascript",
+      "size": 1658
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Design the Muse App, Just for You",
+      "href": "https://about.fb.com/news/2026/11/introducing-spaces-customize-muse-app/"
+    },
+    {
+      "title": "Give Your Muse a Voice",
+      "href": "https://about.fb.com/news/2026/11/introducing-muse-ai-voice-expressive-avatars/"
+    },
+    {
+      "title": "WhatsApp Events Brings People Together Beyond the Group Chat",
+      "href": "https://about.fb.com/news/2026/11/whatsapp-events-brings-people-together-beyond-the-group-chat/"
+    },
+    {
+      "title": "Meta Partners With Five US Universities to Accelerate Medical and Scientific Breakthroughs",
+      "href": "https://about.fb.com/news/2026/10/meta-partners-with-five-us-universities-to-accelerate-medical-and-scientific-breakthroughs/"
+    },
+    {
+      "title": "L’avenir appartient à tous: Meta et INCA s’associent pour soutenir les personnes aveugles, sourdes et aveugles ou ayant une basse vision au Canada",
+      "href": "https://about.fb.com/news/2026/10/lavenir-appartient-a-tous-meta-et-inca-sassocient-pour-soutenir-les-personnes-aveugles-sourdes-et-aveugles-ou-ayant-une-basse-vision-au-canada/"
+    },
+    {
+      "title": "The Future Is for Everyone: Meta and CNIB Partner to Support Canadians Who Are Blind, Deafblind or Have Low Vision",
+      "href": "https://about.fb.com/news/2026/10/the-future-is-for-everyone-meta-and-cnib-partner-to-support-canadians-who-are-blind-deafblind-or-have-low-vision/"
+    },
+    {
+      "title": "Muse Is Now Available in Singapore: The World’s First Personal AI Agent Built for Everyone",
+      "href": "https://about.fb.com/news/2026/10/muse-is-now-available-in-singapore-the-worlds-first-personal-ai-agent-built-for-everyone/"
+    },
+    {
+      "title": "New Tools for the Admins Who Build Communities on Forum",
+      "href": "https://about.fb.com/news/2026/10/new-tools-for-the-admins-who-build-communities-on-forum/"
+    },
+    {
+      "title": "More Than Three Quarters of Small Business Owners Say AI Makes Them More Productive, But Most Need More Guidance",
+      "href": "https://about.fb.com/news/2026/10/more-than-three-quarters-of-small-business-owners-say-ai-makes-them-more-productive-but-most-need-more-guidance/"
+    },
+    {
+      "title": "Meta, Milan’s Pinacoteca di Brera, and EssilorLuxottica Expand Access to Art Through AI Glasses",
+      "href": "https://about.fb.com/news/2026/10/meta-milans-pinacoteca-di-brera-and-essilorluxottica-expand-access-to-art-through-ai-glasses/"
+    },
+    {
+      "title": "Now You Can Invite Anyone to a WhatsApp Call",
+      "href": "https://about.fb.com/news/2026/10/introducing-whatsapp-guest-calling/"
+    },
+    {
+      "title": "Farah Khan at Edits Film Festival: “Content breakthroughs come from spontaneity, relatability and realness”",
+      "href": "https://about.fb.com/news/2026/10/farah-khan-at-edits-film-festival-content-breakthroughs-come-from-spontaneity-relatability-and-realness/"
+    }
+  ],
+  "seconds": 0.667
+}

@@ -1,0 +1,149 @@
+{
+  "name": "aws-quantum-computing-html",
+  "requested_at": "2026-11-06T20:45:03.047851+00:00",
+  "requested_url": "https://aws.amazon.com/blogs/quantum-computing/?_dox_poll=29899964",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://aws.amazon.com/blogs/quantum-computing/?_dox_poll=29899964",
+  "headers": {
+    "content-type": "text/html;charset=UTF-8",
+    "date": "Fri, 06 Nov 2026 20:45:03 GMT",
+    "last-modified": "Thu, 05 Nov 2026 22:13:44 GMT",
+    "vary": "accept-encoding",
+    "x-cache": "Miss from cloudfront",
+    "via": "1.1 4d6f7160ff0f474239473fae02a9e6d8.cloudfront.net (CloudFront)"
+  },
+  "bytes": 1481241,
+  "sha256": "9652b6427cf5d9d698e13c8db9f2fb054c174b65f7d56bc1f9014e90cfe447e8",
+  "title": [
+    "AWS Quantum Technologies Blog",
+    "\n                      x\n                     "
+  ],
+  "scripts": [
+    {
+      "src": "https://a0.awsstatic.com/libra/1.0.599/csp/csp-report.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cx0.m.awsstatic.com/assets/clam/2.3.0/index.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/aws-blog/1.0.90/js/blog-head-v2.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.14/polyfills/es-module-shims/es-module-shims.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/gdeps.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/awsm-core/0.1.9/bundle/head.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/eb-csr/2.0.14/orchestrate.js",
+      "id": null,
+      "type": "module",
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/s_code/js/3.0/awshome_s_code.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://a0.awsstatic.com/target/1.0.127/aws-target-mediator.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 67188
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 6520
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/json",
+      "size": 6013
+    },
+    {
+      "src": "https://a0.awsstatic.com/aws-blog/1.0.90/js/vendor/prism.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Decoding quantum errors with NVIDIA Ising Decoding on AWS",
+      "href": "/blogs/quantum-computing/decoding-quantum-errors-with-nvidia-ising-decoding-on-aws/"
+    },
+    {
+      "title": "Running scalable hybrid quantum-classical workflows by integrating Amazon Braket with AWS Batch",
+      "href": "/blogs/quantum-computing/running-scalable-hybrid-quantum-classical-workflows-by-integrating-amazon-braket-with-aws-batch/"
+    },
+    {
+      "title": "Combating quantum noise with AWS: University of Washington Capstone Project",
+      "href": "/blogs/quantum-computing/combating-quantum-noise-with-aws-university-of-washington-capstone-project/"
+    },
+    {
+      "title": "Demonstrating genuine multipartite non-locality on quantum processors using Amazon Braket",
+      "href": "/blogs/quantum-computing/demonstrating-genuine-multipartite-non-locality-on-quantum-processors-using-amazon-braket/"
+    },
+    {
+      "title": "AWS and JPMorganChase collaborate to advance quantum computing R&D",
+      "href": "/blogs/quantum-computing/aws-and-jpmorganchase-collaborate-to-advance-quantum-computing-rd/"
+    },
+    {
+      "title": "Thermodynamic sampling of disordered materials with an analog Hamiltonian Rydberg simulator",
+      "href": "/blogs/quantum-computing/thermodynamic-sampling-of-disordered-materials-with-an-analog-hamiltonian-rydberg-simulator-2/"
+    },
+    {
+      "title": "A framework for quantum-classical integration decisions",
+      "href": "/blogs/quantum-computing/a-framework-for-quantum-classical-integration-decisions/"
+    },
+    {
+      "title": "Explore NVIDIA CUDA-Q Applications Hub and Academic Library with Amazon Braket",
+      "href": "/blogs/quantum-computing/explore-nvidia-cuda-q-applications-hub-and-academic-library-with-amazon-braket/"
+    },
+    {
+      "title": "Classiq and AWS Power Quantum-Classical Chemistry Innovation in Singapore with Hatch",
+      "href": "/blogs/quantum-computing/classiq-and-aws-power-quantum-classical-chemistry-innovation-in-singapore-with-hatch/"
+    },
+    {
+      "title": "AWS Deepens Strategic Collaboration with QuEra to Bring Fault-Tolerant Quantum Computing to Amazon Braket",
+      "href": "/blogs/quantum-computing/aws-deepens-strategic-collaboration-with-quera-to-bring-fault-tolerant-quantum-computing-to-amazon-braket/"
+    }
+  ],
+  "seconds": 0.265
+}

@@ -1,0 +1,163 @@
+{
+  "name": "wccftech-topic-ai-html",
+  "requested_at": "2026-11-06T20:39:04.673500+00:00",
+  "requested_url": "https://wccftech.com/topic/ai/?_dox_poll=29899958",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://wccftech.com/topic/ai/?_dox_poll=29899958",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:39:08 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "vary": "Accept-Encoding, Cookie",
+    "last-modified": "Fri, 06 Nov 2026 19:23:42 GMT",
+    "cf-cache-status": "DYNAMIC",
+    "server-timing": "cfCacheStatus;desc=\"DYNAMIC\", cfEdge;dur=21,cfOrigin;dur=7"
+  },
+  "bytes": 201184,
+  "sha256": "7441e260a30ca5a86eb014c99f304d4e1209941e65e195bc66b69dd3d29da2fe",
+  "title": [
+    "AI | Wccftech",
+    "Wccftech"
+  ],
+  "scripts": [
+    {
+      "src": "https://ua.realtimely.io/script.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://www.googletagmanager.com/gtag/js?id=G-591JRXV2QC",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1328
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 4067
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": "application/ld+json",
+      "size": 18922
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1080
+    },
+    {
+      "src": "https://cdn.wccftech.com/wp-content/themes/wccf2021/2025/libs.js?ver=1793215504",
+      "id": "wccftech-libs-js",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 1357
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2544
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 5020
+    },
+    {
+      "src": "//wccftech.disqus.com/count.js",
+      "id": "dsq-count-scr",
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.standalone.js",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": null,
+      "id": null,
+      "type": null,
+      "size": 2384
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": null,
+      "type": "module",
+      "size": 0
+    }
+  ],
+  "latest_links": [
+    {
+      "title": "Elon Musk Says SpaceX Will Attempt A “Critical Breakthrough Needed To Make Life Multiplanetary,” As Its Government-Derived Revenues Shrink To Just 5% Next Year",
+      "href": "https://wccftech.com/elon-musk-says-spacex-will-attempt-a-critical-breakthrough-needed-to-make-life-multiplanetary-as-its-government-derived-revenues-shrink-to-just-5-next-year/"
+    },
+    {
+      "title": "Chinese Memory Chip Manufacturer CXMT Struggles In Q3 As Share Drops To 9% Amidst Aggressive Ramp From Samsung, Says Research",
+      "href": "https://wccftech.com/chinese-memory-chip-manufacturer-cxmt-struggles-in-q3-as-share-drops-to-9-amidst-aggressive-ramp-from-samsung-says-research/"
+    },
+    {
+      "title": "NVIDIA Vera Delivers 2x The Agent Speed Of AMD’s 256-Core EPYC Venice And 1.6x More Agents Per Watt Than The Frequency-Optimized 96-Core Venice",
+      "href": "https://wccftech.com/nvidia-vera-delivers-2x-the-agent-speed-of-amds-256-core-epyc-venice/"
+    },
+    {
+      "title": "Meta Exec Says A Recently Elected, Data Center-Skeptic Democratic Governor Now Wants To Meet After Inauguration, As 22.5 GW Of Capacity Is Still Slated To Come Online Regardless Of",
+      "href": "https://wccftech.com/meta-exec-says-a-recently-elected-data-center-skeptic-democratic-governor-now-wants-to-meet-after-inauguration-as-22-5-gw-of-capacity-is-still-slated-to-come-online-regardless-of-politics/"
+    },
+    {
+      "title": "NVIDIA’s Vendor Financing Deals Are Not A Ponzi Scheme As It Is Slated To “Take Out $420 Billion” By Putting In $250 Billion, Says Tech Venture Capitalist Gene Munster",
+      "href": "https://wccftech.com/nvidias-vendor-financing-deals-are-not-a-ponzi-scheme-as-it-is-slated-to-take-out-420-billion-by-putting-in-250-billion-says-tech-venture-capitalist-gene-munster/"
+    },
+    {
+      "title": "Elon Musk Is Afraid Of Power Being “Concentrated” In My Hands, Says Sam Altman, Even As Both Have Similar Fears About AI",
+      "href": "https://wccftech.com/elon-musk-is-afraid-of-power-being-concentrated-in-my-hands-says-sam-altman-even-as-both-have-similar-fears-about-ai/"
+    },
+    {
+      "title": "OpenAI’s Greg Brockman Says AI Will Allow Death To Become A Choice, Echoing Elon Musk’s Take That “Longevity Or Semi-Immortality Is An Extremely Solvable Problem”",
+      "href": "https://wccftech.com/openais-greg-brockman-says-ai-will-allow-death-to-become-a-choice-echoing-elon-musks-take-that-longevity-or-semi-immortality-is-an-extremely-solvable-problem/"
+    },
+    {
+      "title": "Intel CEO Lip-Bu Tan Warns Safeguarding ‘Thousand Millions’ Of AI Agents From Unauthorized Actions Is A Key Challenge Of The AI Wave",
+      "href": "https://wccftech.com/intel-ceo-lip-bu-tan-warns-safeguarding-thousand-millions-of-ai-agents-from-unauthorized-actions-is-a-key-challenge-of-the-ai-wave/"
+    },
+    {
+      "title": "Elon Musk Says “Data Centers In Space Looking Pretty Appealing Right Now,” As The Blue Wave In Texas Puts 10-15 GW Of Capacity At Risk",
+      "href": "https://wccftech.com/elon-musk-says-data-centers-in-space-looking-pretty-appealing-right-now-as-the-blue-wave-in-texas-puts-10-15-gw-of-capacity-at-risk/"
+    },
+    {
+      "title": "Google Tells Schools To Accept AI Or Lose Google Search Access Entirely",
+      "href": "https://wccftech.com/google-tells-schools-to-accept-ai-or-lose-google-search-access-entirely/"
+    },
+    {
+      "title": "94% of Game Studios Use AI But Rate Their Integration 3/10, And That Gap Is Why “Made With AI” Labels Are Already Meaningless",
+      "href": "https://wccftech.com/94-percent-game-studios-use-ai-integration-labels-meaningless-sweeney/"
+    },
+    {
+      "title": "China Going For Domestic Full-Stack AI Dominance: DeepSeek Will Train Its Upcoming V5 Model From Scratch On Huawei’s Ascend 950DT-Based Atlas SuperPoDs",
+      "href": "https://wccftech.com/china-going-for-domestic-full-stack-ai-dominance-deepseek-will-train-its-upcoming-v5-model-from-scratch-on-huaweis-ascend-950dt-based-atlas-superpods/"
+    }
+  ],
+  "seconds": 4.025
+}

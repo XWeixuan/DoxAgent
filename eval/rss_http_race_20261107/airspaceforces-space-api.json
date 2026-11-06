@@ -1,0 +1,28 @@
+{
+  "name": "airspaceforces-space-api",
+  "requested_at": "2026-11-06T20:40:49.417465+00:00",
+  "requested_url": "https://www.airandspaceforces.com/wp-json/wp/v2/posts?categories=8&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://www.airandspaceforces.com/wp-json/wp/v2/posts?categories=8&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+  "headers": {
+    "content-type": "application/json; charset=UTF-8",
+    "via": "1.1 varnish, 1.1 varnish",
+    "age": "0",
+    "date": "Fri, 06 Nov 2026 20:40:49 GMT",
+    "x-served-by": "cache-iad-kcgs7200059-IAD, cache-sin-wsap440049-SIN",
+    "x-cache": "MISS, MISS",
+    "x-cache-hits": "0, 0",
+    "vary": "Origin"
+  },
+  "bytes": 18944,
+  "sha256": "d5ae986c49e20417862b0e985bf9677a710871ddfaee69471efc9ca9aa37e852",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 0.506
+}

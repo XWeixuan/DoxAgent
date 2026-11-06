@@ -241,6 +241,10 @@ RECIPES = {
 
 
 def enabled(source):
+    from .rss_http_race import enabled as race_enabled
+
+    if race_enabled(source):
+        return True
     return (
         source.source_id in RECIPES
         and source.default_parameters.get("discovery_mode") == "http_listing"
@@ -248,6 +252,10 @@ def enabled(source):
 
 
 def endpoint_units(source, binding=None):
+    from .rss_http_race import enabled as race_enabled, endpoint_units as race_units
+
+    if race_enabled(source):
+        return race_units(source, binding)
     recipes = RECIPES[source.source_id]
     if source.source_id == "enterprise_apps_official_rss" and binding is not None:
         feeds = binding.source_parameters.get("rss_urls", source.default_parameters.get("rss_urls"))
@@ -319,6 +327,10 @@ def text(node):
 
 
 def parse_listing(recipe, spec, raw, now):
+    if recipe.parser.startswith("race_"):
+        from .rss_http_race import parse_listing as parse_race
+
+        return parse_race(recipe, spec, raw, now)
     doc = (
         None
         if recipe.parser
@@ -732,6 +744,10 @@ class ListingAdapter:
         return await self._poll(context, shared=True)
 
     async def _poll(self, context, *, shared):
+        from .rss_http_race import enabled as race_enabled, poll as race_poll
+
+        if race_enabled(context.source):
+            return await race_poll(self, context, shared=shared)
         recipes = endpoint_units(context.source, getattr(context, "binding", None))
         selected = recipes.get(context.acquisition_unit)
         if selected is None:
@@ -770,7 +786,7 @@ class ListingAdapter:
             },
         )
 
-    async def _one(self, context, recipe, *, shared):
+    async def _one(self, context, recipe, *, shared, fallback=True):
         source = context.source
         host = urlsplit(recipe.url).hostname.removeprefix("www.")
         spec = TechnologySource(
@@ -966,6 +982,9 @@ class ListingAdapter:
                 raw_hash=sha256_text(recipe.url),
                 original_payload={"listing_url": recipe.url, "rss_url": recipe.feed},
             )
+            if not fallback:
+                failure.error_code = "HTTP_RACE_LANE_FAILED"
+                return PollResult(failures=[failure], window_done=False)
             fallback = copy.copy(context)
             fallback.acquisition_unit = "FEED:" + sha256_text(recipe.feed)[:24]
             fallback.checkpoint = {}

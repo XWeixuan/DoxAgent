@@ -722,6 +722,7 @@ class SharedPollContext(BusModel):
     window_cutoff: datetime | None = None
     requested_at: datetime = Field(default_factory=utc_now)
     request_permit: RequestPermitFactory = Field(exclude=True)
+    on_page: Callable[..., Any] | None = Field(default=None, exclude=True)
 
     model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
 

@@ -1,0 +1,38 @@
+{
+  "name": "spacenews-html",
+  "requested_at": "2026-11-06T20:22:25.725082+00:00",
+  "requested_url": "https://spacenews.com/?_dox_poll=29899942",
+  "method": "GET",
+  "route": "direct",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 403,
+  "url": "https://spacenews.com/?_dox_poll=29899942",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 20:22:25 GMT",
+    "content-type": "text/html",
+    "server-timing": "a8c-cdn, dc;desc=sin, cache;desc=BYPASS;dur=0.0"
+  },
+  "bytes": 1762,
+  "sha256": "fc89e2a14f48c43f7c85082a9360f737c7b13e2180a76370e7ae7a4ed6e3355f",
+  "title": [
+    "Checking your browser..."
+  ],
+  "scripts": [
+    {
+      "src": "/__challenge/probes.js?v=c3301fdb5ac5",
+      "id": null,
+      "type": null,
+      "size": 0
+    },
+    {
+      "src": "/__challenge/challenge.js?v=edc496c64ce2",
+      "id": null,
+      "type": null,
+      "size": 0
+    }
+  ],
+  "latest_links": [],
+  "seconds": 0.032
+}

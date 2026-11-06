@@ -1,0 +1,26 @@
+{
+  "name": "be-q4-json",
+  "requested_at": "2026-11-06T21:01:05.102229+00:00",
+  "requested_url": "https://investor.bloomenergy.com/feed/PressRelease.svc/GetPressReleaseList?LanguageId=1&bodyType=0&pressReleaseDateFilter=1&categoryId=00000000-0000-0000-0000-000000000000&year=-1&startIndex=0&pageSize=30&includeTags=true&_dox_poll=29899980",
+  "method": "GET",
+  "route": "us-standard-5",
+  "request_headers": {
+    "Cache-Control": "no-cache"
+  },
+  "status": 200,
+  "url": "https://investor.bloomenergy.com/feed/PressRelease.svc/GetPressReleaseList?LanguageId=1&bodyType=0&pressReleaseDateFilter=1&categoryId=00000000-0000-0000-0000-000000000000&year=-1&startIndex=0&pageSize=30&includeTags=true&_dox_poll=29899980",
+  "headers": {
+    "date": "Fri, 06 Nov 2026 21:01:06 GMT",
+    "content-type": "application/json; charset=utf-8",
+    "cf-cache-status": "MISS",
+    "cache-control": "public,max-age=10, stale-if-error=86400, stale-while-revalidate=86400",
+    "etag": "\"6a8788d5f43025d47a87edaa092fdc0f\"",
+    "server-timing": "cfCacheStatus;desc=\"MISS\", cfEdge;dur=15,cfOrigin;dur=0,cfWorker;dur=575"
+  },
+  "bytes": 34095,
+  "sha256": "0cd5bfeee752623a589131bf44c05438865d2c2b84a66e4a628e736f9c3c389b",
+  "title": [],
+  "scripts": [],
+  "latest_links": [],
+  "seconds": 1.304
+}
