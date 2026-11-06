@@ -1,0 +1,75 @@
+{
+  "rows": [
+    {
+      "ticker": "MU",
+      "version": 70,
+      "rows": 381,
+      "ok": true,
+      "seconds": 0.721
+    },
+    {
+      "ticker": "RKLB",
+      "version": 49,
+      "rows": 100,
+      "ok": true,
+      "seconds": 0.158
+    },
+    {
+      "ticker": "BE",
+      "version": 49,
+      "rows": 186,
+      "ok": true,
+      "seconds": 0.237
+    },
+    {
+      "ticker": "INTC",
+      "version": 67,
+      "rows": 377,
+      "ok": true,
+      "seconds": 1.087
+    },
+    {
+      "ticker": "NBIS",
+      "version": 24,
+      "rows": 181,
+      "ok": true,
+      "seconds": 0.356
+    },
+    {
+      "ticker": "COHR",
+      "version": 17,
+      "rows": 116,
+      "ok": true,
+      "seconds": 0.237
+    },
+    {
+      "ticker": "ONDS",
+      "version": 9,
+      "rows": 30,
+      "ok": true,
+      "seconds": 0.092
+    },
+    {
+      "ticker": "CEG",
+      "version": 17,
+      "rows": 53,
+      "ok": true,
+      "seconds": 0.131
+    },
+    {
+      "ticker": "SNOW",
+      "version": 20,
+      "rows": 143,
+      "ok": true,
+      "seconds": 0.3
+    },
+    {
+      "ticker": "IONQ",
+      "version": 7,
+      "rows": 64,
+      "ok": true,
+      "seconds": 0.061
+    }
+  ],
+  "seconds": 3.3852000150363892
+}

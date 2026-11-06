@@ -1,0 +1,39 @@
+{
+  "commit": "942c393660e3a69e97eee5f5bdfe4ad4f3f11f6d",
+  "at": 1793923862.0901537,
+  "roles": [
+    "codex-worker",
+    "v2-message-collector",
+    "v2-content-enrichment",
+    "v2-message-bus",
+    "v2-projector",
+    "v2-api",
+    "v2-executor",
+    "v2-delivery",
+    "v2-transport-maintenance",
+    "v2-control",
+    "v2-initialization",
+    "v2-cdecr-executor",
+    "v2-o4",
+    "v2-maintenance",
+    "v2-scheduler",
+    "v2-web"
+  ],
+  "images": {
+    "backend": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "web": "sha256:625317f956252102dcdf76e1e60cb8b077707eb74089e1c0dba1b0fa4be9ac9a"
+  },
+  "reconcile": {
+    "at": 1793923862.066341,
+    "available_before": 91244056576,
+    "available_after": 91244056576,
+    "retired": [],
+    "errors": [],
+    "deferred": "message pipeline resource reserve",
+    "pressure": {
+      "cpu": 30.24,
+      "io": 6.82,
+      "memory": 0.0
+    }
+  }
+}

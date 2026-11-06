@@ -1,0 +1,46 @@
+[
+  {
+    "attempt_id": "ff4b46de9bf41cce4baa1cb4-trade_decision",
+    "status": "succeeded",
+    "created_at": "2026-11-06T00:12:50.551035Z",
+    "time_context": null,
+    "native_elapsed_seconds": [
+      "3"
+    ],
+    "thread_id": "01a1ae32-62c8-7fb0-b559-2b7c7dd209b9"
+  },
+  {
+    "attempt_id": "4b804e23ac8d6d0b132d09e0-trade_decision",
+    "status": "succeeded",
+    "created_at": "2026-11-06T00:11:39.754856Z",
+    "time_context": null,
+    "native_elapsed_seconds": [
+      "12"
+    ],
+    "thread_id": "01a1ae32-5583-7423-87e7-6fc71836739c"
+  },
+  {
+    "attempt_id": "cf474183b679438c17e3a78b-trade_decision",
+    "status": "succeeded",
+    "created_at": "2026-11-06T00:03:20.372947Z",
+    "time_context": null,
+    "native_elapsed_seconds": [],
+    "thread_id": "01a1ae2a-78b5-7371-93a4-5e76ecd46bda"
+  },
+  {
+    "attempt_id": "15bb41ab9273de0d8e05c9d8-trade_decision",
+    "status": "succeeded",
+    "created_at": "2026-11-06T00:03:02.752267Z",
+    "time_context": null,
+    "native_elapsed_seconds": [],
+    "thread_id": "01a1ae2a-3d24-73f2-8773-1c98ee3aefa4"
+  },
+  {
+    "attempt_id": "be8a48a78f2b9b1ad1bafcd7-trade_decision",
+    "status": "succeeded",
+    "created_at": "2026-11-06T00:02:47.170060Z",
+    "time_context": null,
+    "native_elapsed_seconds": [],
+    "thread_id": "01a1ae25-decb-7f53-81b0-0621071c2857"
+  }
+]

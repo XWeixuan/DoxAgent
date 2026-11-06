@@ -1,0 +1,52 @@
+{
+  "regression": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "8",
+    "skipped": "3",
+    "tests": "561",
+    "time": "228.689",
+    "timestamp": "2026-11-06T07:42:19.673029+08:00",
+    "hostname": "DESKTOP-BQ2H2TD"
+  },
+  "baseline-failures": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "8",
+    "skipped": "0",
+    "tests": "8",
+    "time": "9.855",
+    "timestamp": "2026-11-06T07:46:53.579044+08:00",
+    "hostname": "DESKTOP-BQ2H2TD"
+  },
+  "final-core": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "28",
+    "time": "6.568",
+    "timestamp": "2026-11-06T07:52:32.381273+08:00",
+    "hostname": "DESKTOP-BQ2H2TD"
+  },
+  "native": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "3",
+    "time": "4.212",
+    "timestamp": "2026-11-05T23:49:28.887280+00:00",
+    "hostname": "0e6495be4db2"
+  },
+  "final-lineage-runtime": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "113",
+    "time": "22.682",
+    "timestamp": "2026-11-06T08:05:21.147075+08:00",
+    "hostname": "DESKTOP-BQ2H2TD"
+  }
+}
