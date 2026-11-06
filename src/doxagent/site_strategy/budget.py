@@ -187,7 +187,8 @@ class JointBudget:
                 interval = intervals[key] / 1000
                 ready = max(0, self._identity_next.get(key, 0) - now)
                 capacity_delay = max(0, pending + body - max(0, limit - 1)) * max(
-                    interval, self._costs.get(site_key, interval) / max(1, limit))
+                    interval, self._costs.get("identity:" + key,
+                        self._costs.get(site_key, interval)) / max(1, limit))
                 return (max(ready + pending * interval, capacity_delay),
                         self._routing_last.get((site_key, key), 0), key)
 
@@ -356,8 +357,11 @@ class JointBudget:
                 if waiter is not None and waiter in self._waiters:
                     self._waiters.remove(waiter)
                 if acquired:
+                    elapsed = time.monotonic() - executing_at
+                    if purpose is SitePurpose.CRAWLER:
+                        cost_key = "identity:" + identity_id
+                        self._costs[cost_key] = .8*self._costs.get(cost_key, elapsed) + .2*elapsed
                     if purpose is SitePurpose.CRAWLER and work_class != 'backfill':
-                        elapsed = time.monotonic() - executing_at
                         self._costs[site_key] = .8*self._costs.get(site_key, elapsed) + .2*elapsed
                     self._active -= 1
                     if work_class in {'backfill','recheck'}:self._background_active-=1

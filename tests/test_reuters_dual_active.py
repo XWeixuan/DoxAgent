@@ -98,6 +98,28 @@ def test_shared_clock_combines_healthy_capacity_without_resizing_members():
     assert members == [("main", 2, 1500), ("backup", 1, 3000)]
 
 
+@pytest.mark.asyncio
+async def test_slow_tail_cost_is_identity_specific_when_assigning_queued_work():
+    budget = JointBudget()
+    budget._costs.update({'site': .1, 'identity:main': 20, 'identity:backup': 1})
+    budget._routing_pending['main'] = 2
+    budget._identity_next['backup'] = time.monotonic() + 4
+    async with budget.route_members('site', [('main', 2, 1500), ('backup', 1, 3000)]) as selected:
+        assert selected == 'backup'  # Ready in 4s beats an already occupied slow pair.
+    assert budget._routing_pending == {'main': 2}
+
+
+@pytest.mark.asyncio
+async def test_tail_duration_updates_identity_cost_without_changing_legacy_head_estimate():
+    budget = JointBudget()
+    async with budget.permit(SitePurpose.CRAWLER, site_key='site', identity_id='main',
+        site_max_concurrency=2, site_min_interval_ms=0, identity_max_concurrency=2,
+        identity_min_interval_ms=0, timeout_seconds=1, work_class='backfill'):
+        await asyncio.sleep(.01)
+    assert budget._costs['identity:main'] >= .009
+    assert 'site' not in budget._costs
+
+
 @pytest.mark.parametrize("site,source,purpose,enabled", [
     ("reuters", "reuters_site_search", "CRAWLER", True),
     ("reuters", "reuters_site_search", "BODY", False),
