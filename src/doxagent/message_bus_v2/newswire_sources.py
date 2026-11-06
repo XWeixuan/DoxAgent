@@ -49,7 +49,8 @@ def initial_sources():
 
 def endpoint_units(source):
     if listing_enabled(source):
-        return [('TEST:' if source.delivery_mode=='test' else '')+'WIRE:listing']
+        prefix='TEST:' if source.delivery_mode=='test' else ''
+        return [prefix+'WIRE:listing']+([prefix+'WIRE:all'] if source.source_id=='globenewswire_massive' else [])
     return [('TEST:' if source.delivery_mode=='test' else '')+'WIRE:'+e['endpoint_id']
             for e in source.default_parameters['endpoints']]
 
@@ -105,7 +106,7 @@ def parse_feed(text,source,endpoint,now):
         parts=urlsplit(row.url).path.split('/')
         lang=parts[4] if source.source_id=='businesswire_massive' and len(parts)>4 else 'en'
         row.metadata['language']={'zh-HK':'zh-Hant','zh-CN':'zh-Hans'}.get(lang,lang)
-        if source.source_id=='bloomberg_massive':
+        if source.source_id in {'bloomberg_massive','globenewswire_massive'}:
             # RSS descriptions are only listing teasers; sitemap has none.
             # Keep teaser evidence, but do not turn endpoint differences into body revisions.
             row.raw_payload['listing_summary']=row.summary
@@ -125,9 +126,13 @@ class NewswireAdapter:
         raise RuntimeError('massive distribution requires shared polling')
 
     async def poll_shared(self,context):
-        if listing_enabled(context.source):
+        if listing_enabled(context.source) and context.acquisition_unit.endswith('WIRE:listing'):
             return await poll_listing(self,context)
-        return await self.poll_feed(context)
+        result=await self.poll_feed(context)
+        if listing_enabled(context.source):
+            result.acquisition_metadata['method']='rss_parallel'
+            for row in result.messages:row.metadata['discovery_method']='rss_parallel'
+        return result
 
     async def listing_request(self,context,url,recipe,headers):
         if self.slots is None:self.slots=asyncio.Semaphore(2)

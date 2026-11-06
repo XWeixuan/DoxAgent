@@ -86,7 +86,7 @@ def test_real_subscription_to_test_source_is_rejected(tmp_path):
         bus.configure_binding(ticker='MU',source_id='businesswire_massive',actor=UpdateActor.USER)
 
 
-async def test_ten_targets_use_five_physical_units_and_calendar_is_unchanged(tmp_path):
+async def test_ten_targets_use_six_physical_units_and_calendar_is_unchanged(tmp_path):
     from types import SimpleNamespace
     from doxagent.message_bus_v2.collection_plane.config import Configuration
     from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
@@ -98,7 +98,7 @@ async def test_ten_targets_use_five_physical_units_and_calendar_is_unchanged(tmp
         SimpleNamespace(),store=AcquisitionStore(tmp_path/'acquisition.db',initialize=True),
         config_loader=lambda *a,**kw:cfg)
     await collector.refresh()
-    assert len(collector.desired)==5
+    assert len(collector.desired)==6
     assert all(len(value[1])==10 for value in collector.desired.values())
     assert cfg.realtime is False
 

@@ -61,6 +61,10 @@ def test_rss_and_html_have_same_body_identity_even_when_guid_and_description_dif
     xml = f'<rss><channel><item><title>{listing.title.replace("&", "&amp;")}</title><link>{listing.url}</link><guid>provider-123</guid><pubDate>Fri, 6 Nov 2026 18:55:00 +0000</pubDate><description>RSS teaser</description></item></channel></rss>'
     rss = parse_feed(xml, source(sid), source(sid).default_parameters["endpoints"][0], NOW)[0]
     assert article_key(listing, sid) == article_key(rss, sid)
+    if sid == "globenewswire_massive":
+        from doxagent.message_bus_v2.body_results import update_hint
+        assert listing.summary is None and rss.summary is None
+        assert update_hint(listing) == update_hint(rss)
 
 
 @pytest.mark.parametrize("sid", ["prnewswire_massive", "globenewswire_massive", "access_newswire_massive"])
@@ -197,6 +201,21 @@ async def test_slow_publisher_does_not_block_another_platform():
             await slow
 
 
+async def test_globe_rss_is_independently_scheduled_and_never_waits_for_http():
+    from doxagent.message_bus_v2.newswire_sources import NewswireAdapter
+
+    adapter = NewswireAdapter()
+    rows = parse_listing(fixture("gn"), source("globenewswire_massive"), NOW)
+    adapter.poll_feed = AsyncMock(return_value=PollResult(messages=rows))
+    adapter.listing_request = AsyncMock(side_effect=AssertionError("parallel RSS must not call HTTP listing"))
+    ctx = context("globenewswire_massive").model_copy(update={"acquisition_unit": "TEST:WIRE:all"})
+    result = await adapter.poll_shared(ctx)
+    assert result.messages and result.acquisition_metadata["method"] == "rss_parallel"
+    assert all(r.metadata["discovery_method"] == "rss_parallel" for r in result.messages)
+    adapter.listing_request.assert_not_called()
+    await adapter.close()
+
+
 def test_configuration_changes_only_discovery_and_is_idempotent(tmp_path):
     from doxagent.message_bus_v2.repository import MessageBusV2Repository
     from doxagent.message_bus_v2.service import MessageBusV2Service
@@ -212,7 +231,7 @@ def test_configuration_changes_only_discovery_and_is_idempotent(tmp_path):
     assert all(r["action"] == "updated" for r in configure(bus))
     for sid in RECIPES:
         old, current = before[sid], repo.get_source(sid)
-        assert endpoint_units(current) == ["TEST:WIRE:listing"]
+        assert endpoint_units(current) == ["TEST:WIRE:listing"] + (["TEST:WIRE:all"] if sid == "globenewswire_massive" else [])
         for field in ("adapter_ref", "site_id", "content_language", "entry_url", "acquisition_mode", "scheduler_constraints", "distribution_policy", "delivery_mode", "default_polling_config"):
             assert getattr(old, field) == getattr(current, field)
         assert current.default_parameters == {**old.default_parameters, "discovery_mode": "http_listing"}

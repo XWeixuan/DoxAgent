@@ -93,11 +93,12 @@ def parse_listing(text, source, now):
             raise ValueError("wire_invalid_article_link_or_title")
         if not (urlsplit(url).path.endswith(".html") and "/news-release" in url):
             raise ValueError("wire_non_article_link")
+        summary = " ".join(summaries[0].text_content().split()) if summaries else None
         rows.append(RawMessageInput(
-            title=title, summary=" ".join(summaries[0].text_content().split()) if summaries else None,
+            title=title, summary=summary if prn else None,
             body=None, url=url, source=source.display_name, source_item_key=url,
             published_at=published.replace(tzinfo=eastern).astimezone(UTC),
-            raw_payload={"listing_time": stamp},
+            raw_payload={"listing_time": stamp, "listing_summary": summary},
             metadata={"language": language, "publication_time_precision": "minute",
                       "identity_evidence": {"id_kind": "canonical_url", "url_kind": "article"}},
         ))
