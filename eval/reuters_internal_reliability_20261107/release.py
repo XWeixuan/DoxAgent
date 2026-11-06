@@ -12,7 +12,7 @@ p = argparse.ArgumentParser()
 p.add_argument("commit")
 args = p.parse_args()
 repo = Path("/home/ubuntu/doxagent")
-commit = subprocess.check_output(["git", "rev-parse", args.commit], cwd=repo, text=True).strip()
+commit = subprocess.check_output(["git", "rev-parse", "--verify", args.commit + "^{commit}"], cwd=repo, text=True).strip()
 assert commit == args.commit and len(commit) == 40
 supervisor = "doxagent-v2-v2-chrome-supervisor-1"
 site = "doxagent-v2-v2-site-access-1"

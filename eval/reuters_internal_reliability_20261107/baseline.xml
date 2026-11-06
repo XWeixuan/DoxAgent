@@ -5,7 +5,7 @@ E    +  where None = AccessResult(served_from_shared_capture=False, capture_id=N
 E    +  and   None = AccessResult(served_from_shared_capture=False, capture_id=None, capture_acquired_at=None, capture_age_ms=None, consume...e, runtime_generation=None, exit_ip_observation=None, attempts=[], combination_skips=[], queue_wait_ms=0, network_ms=0).capture_id</failure></testcase><testcase classname="tests.test_solver_recovery_repair" name="test_reuters_legitimate_zero_results_are_business_proof[Search results for Ondas 0 results]" time="2.798"><failure message="AssertionError: assert ('UNKNOWN' == 'CLEARED'&#10;  &#10;  - CLEARED&#10;  + UNKNOWN)">tests\test_solver_recovery_repair.py:591: in test_reuters_legitimate_zero_results_are_business_proof
     assert report.challenge == "CLEARED" and report.crawler == "READY"
 E   AssertionError: assert ('UNKNOWN' == 'CLEARED'
-E     
+E
 E     - CLEARED
 E     + UNKNOWN)</failure></testcase><testcase classname="tests.test_solver_recovery_repair" name="test_reuters_legitimate_zero_results_are_business_proof[No search results match the term \u201cOndas\u201d]" time="1.706" /><testcase classname="tests.test_solver_recovery_repair" name="test_reuters_live_recipe_accepts_same_zero_result_contract" time="0.004"><failure message="AttributeError: 'types.SimpleNamespace' object has no attribute 'url'">tests\test_solver_recovery_repair.py:606: in test_reuters_live_recipe_accepts_same_zero_result_contract
     assert await capture_reuters_search(page, "Ondas", 0) == []

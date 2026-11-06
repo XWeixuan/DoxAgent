@@ -65,7 +65,7 @@ for row in r.execute("select data_json from datadome_solver_jobs where julianday
     out["jobs"].append(select(v, "job_id identity_id recovery_id status task_id created_at submitted_at "
         "applied_at provider_ready_at provider_cost cost verification_state verification_reason "
         "solver_verification recurrence_at diagnostics diagnostic_timeline"))
-out["body"] = [dict(row) for row in r.execute("select outcome,reason,count(*) n,min(completed_at) first_at," 
+out["body"] = [dict(row) for row in r.execute("select outcome,reason,count(*) n,min(completed_at) first_at,"
     "max(completed_at) last_at from body_outcomes where final_site_id='reuters' and completed_at>=? and completed_at<? "
     "and julianday(completed_at)>=julianday(?) and julianday(completed_at)<julianday(?) "
     "group by outcome,reason", (lower, upper, args.since, now))]

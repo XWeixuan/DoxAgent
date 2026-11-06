@@ -762,14 +762,15 @@ class BrowserRecoveryCoordinator:
                         )
                         from .datadome_solver import record_solver_diagnostic
 
-                        await registry_io(record_solver_diagnostic, self.service.repository,
-                            identity_id, "DOCUMENT", {
+                        if recovery.site_id == "reuters":
+                            await registry_io(record_solver_diagnostic, self.service.repository,
+                                identity_id, "DOCUMENT", {
                                 "challenge": report.challenge,
                                 "authentication": report.authentication,
                                 "outcome": report.crawler if context["purpose"] == "CRAWLER" else report.body,
                                 "reason": report.reason, "page_kind": report.original_page_kind,
                                 "evidence": "RETAINED_DOCUMENT",
-                            }, recovery_id=recovery.recovery_id)
+                                }, recovery_id=recovery.recovery_id)
                         confirmation_delay = self.datadome_solver.confirmation_delay(
                             recovery, report
                         )
@@ -1020,6 +1021,18 @@ class BrowserRecoveryCoordinator:
                             capture,
                             observed=capture.reason == "observed_document_after_verification",
                         )
+                        if recovery.site_id == "reuters":
+                            from .datadome_solver import record_solver_diagnostic
+
+                            await registry_io(record_solver_diagnostic, self.service.repository,
+                                identity_id, context["purpose"], {
+                                    "challenge": report.challenge,
+                                    "authentication": report.authentication,
+                                    "outcome": report.crawler if context["purpose"] == "CRAWLER" else report.body,
+                                    "reason": report.reason, "http_status": capture.status_code,
+                                    "body_quality": report.body,
+                                    "evidence": "RECOVERY_PROBE",
+                                }, recovery_id=recovery.recovery_id)
                         if report.challenge == "CLEARED":
                             probe_result = "BUSINESS_READY"
                             await self._commit(recovery, report, context, "fresh_probe", identity)
@@ -1093,7 +1106,8 @@ class BrowserRecoveryCoordinator:
                     update={"next_probe_at": utc_now() + timedelta(seconds=delay)}
                 )
                 await self._defer(
-                    recovery, getattr(exc, "reason_code", None) or type(exc).__name__, delay=delay
+                    recovery, getattr(exc, "reason_code", None) or type(exc).__name__,
+                    delay=delay if probe_result == "CONTROL_UNAVAILABLE" else 60,
                 )
             finally:
                 if probe:
