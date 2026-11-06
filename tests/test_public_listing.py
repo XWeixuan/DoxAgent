@@ -219,6 +219,50 @@ def test_technews_embed_uses_real_local_seconds_and_never_downloads_body():
     )
 
 
+async def test_technews_union_preserves_archive_only_cards_and_api_clock():
+    api = capture("technews_hardware")
+    payload = json.loads(api.text)
+    payload[0]["date"] = payload[0]["date"][:-2] + "17"
+    api = replace(api, text=json.dumps(payload))
+    archive = Capture(
+        200,
+        "https://technews.tw/category/semiconductor/",
+        (FIXTURES / "technews-archive-coverage.html").read_text(encoding="utf8"),
+        {},
+    )
+    http = Http(api, archive, api, archive)
+    ctx = context("technews_hardware")
+    adapter = ListingAdapter(SimpleNamespace(), http)
+    first = await adapter.poll_shared(ctx)
+    assert not first.failures and len(first.messages) == 4
+    common = next(m for m in first.messages if "phison-breaks-free" in m.url)
+    assert common.published_at.second == 17  # API seconds win over the HTML minute.
+    assert any("worlds-most-valuable" in m.url for m in first.messages)
+    assert any("transcends-shu-chongwan" in m.url for m in first.messages)
+    assert len(first.acquisition_metadata["endpoints"][0]["cache"]) == 2
+    ctx.checkpoint = first.next_checkpoint
+    second = await adapter.poll_shared(ctx)
+    assert not second.messages and not second.failures
+    from doxagent.message_bus_v2.body_results import update_hint
+
+    for message in first.messages:
+        legacy = message.model_copy(update={"published_at": message.published_at.replace(second=0)})
+        assert article_key(message, "technews_hardware") == article_key(legacy, "technews_hardware")
+        assert update_hint(message) == update_hint(legacy)
+
+
+async def test_technews_archive_failure_is_visible_even_when_api_succeeds():
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    http = Http(
+        capture("technews_hardware"),
+        Capture(503, "https://technews.tw/category/semiconductor/", "", {}),
+    )
+    result = await ListingAdapter(delegate, http).poll_shared(context("technews_hardware"))
+    assert result.failures[0].error_code == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+    assert "technews_archive_http_503" in result.failures[0].error_message
+    delegate.poll_shared.assert_awaited_once()
+
+
 class Http:
     def __init__(self, *responses):
         self.responses = list(responses)
@@ -643,10 +687,7 @@ async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_su
     assert projected["status"] == "failed"
     assert projected["last_error_message"] == "HTTP403; RSS still available"
     state = store.states()[(targets[0].binding_id, unit)]["state"]
-    assert (
-        state["status"] == "failed"
-        and state["last_error_code"] == failure_code
-    )
+    assert state["status"] == "failed" and state["last_error_code"] == failure_code
     with store.connect() as d:
         proof = json.loads(
             d.execute(

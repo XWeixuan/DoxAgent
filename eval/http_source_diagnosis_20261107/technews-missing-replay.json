@@ -1,154 +1,168 @@
 [
   {
     "url": "https://technews.tw/2026/11/05/tencent-unveils-new-gen-large-language-model-hy4-visual-understanding-open-source/",
-    "clock": null,
+    "clock": "9:40",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p5.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/google-invests-15-billion-malaysia-anwar-elevate-southeast-asian-digital-powerhouse/",
-    "clock": null,
+    "clock": "9:20",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p5.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/arm-holdings-plc-q2-fye27-investor-presentation/",
-    "clock": null,
+    "clock": "9:15",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p5.body"
   },
   {
     "url": "https://infosecu.technews.tw/2026/11/05/cybersecurity-defense-shifts-reactive-response-continuous-combat/",
-    "clock": null,
+    "clock": "8:40",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p5.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/scientists-crack-internet-scent-transmission-technology/",
-    "clock": null,
+    "clock": "8:10",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p5.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/oracle-cancels-7bn-tencent-ai-deal-under-trump-pressure/",
-    "clock": null,
+    "clock": "7:50",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p6.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/ai-agent-cybersecurity-testing-guide/",
-    "clock": null,
+    "clock": "7:40",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p6.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/honeywell-technologies-launches-new-ai-platform-at-dangotes-nigeria-refinery/",
-    "clock": null,
+    "clock": "7:30",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p6.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/why-you-should-treat-your-ai-agent-like-a-new-hire/",
-    "clock": null,
+    "clock": "7:20",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p6.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/computer-science-programs-lose-students-as-ai-replaces-jobs/",
-    "clock": null,
+    "clock": "7:10",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p6.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/exorbitant-political-donations-may-fail-to-dispel-voters-concerns-about-data-centers-and-could-hinder-the-development-of-ai/",
-    "clock": null,
+    "clock": "6:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p6.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/the-democratic-partys-return-to-a-majority-is-not-entirely-negative-for-the-development-of-ai-and-data-centers/",
-    "clock": null,
+    "clock": "6:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-ai-p6.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/major-power-suppliers-vie-800v-critical-materials-vertiv-infineon-three-year-deal/",
-    "clock": null,
+    "clock": "9:43",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/arm-holdings-plc-q2-fye27-investor-presentation/",
-    "clock": null,
+    "clock": "9:15",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/toshiba-sells-kioxia-shares-stake-drops-below-11pc/",
-    "clock": null,
+    "clock": "9:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/qualcomm-announces-fourth-quarter-and-fiscal-2026-results/",
-    "clock": null,
+    "clock": "8:50",
+    "fixed_parsed": true,
+    "old_pattern_matches": false,
+    "file": "technews-semiconductor-p4.body"
+  },
+  {
+    "url": "https://technews.tw/2026/11/05/hyundai-mobis-to-strengthen-partnerships-to-build-automotive-chip-ecosystem/",
+    "clock": "8:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/oracle-cancels-7bn-tencent-ai-deal-under-trump-pressure/",
-    "clock": null,
+    "clock": "7:50",
+    "fixed_parsed": true,
+    "old_pattern_matches": false,
+    "file": "technews-semiconductor-p4.body"
+  },
+  {
+    "url": "https://finance.technews.tw/2026/11/05/ymtc-puts-its-ipo-plans-on-hold-as-market-conditions-weaken/",
+    "clock": "7:34",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/samsung-electronics-accepts-tsmc-nvhbm-base-die-production-strategic-retreat-dual-track-capacity-concerns/",
-    "clock": null,
+    "clock": "7:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/mediatek-invites-former-intel-executive-navid-shahriari-to-join-the-company/",
-    "clock": null,
+    "clock": "6:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://finance.technews.tw/2026/11/05/intel-releases-version-0-9-of-the-intel-14a-process-pdk/",
-    "clock": null,
+    "clock": "6:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/exorbitant-political-donations-may-fail-to-dispel-voters-concerns-about-data-centers-and-could-hinder-the-development-of-ai/",
-    "clock": null,
+    "clock": "6:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"
   },
   {
     "url": "https://technews.tw/2026/11/05/the-democratic-partys-return-to-a-majority-is-not-entirely-negative-for-the-development-of-ai-and-data-centers/",
-    "clock": null,
+    "clock": "6:00",
     "fixed_parsed": true,
     "old_pattern_matches": false,
     "file": "technews-semiconductor-p4.body"

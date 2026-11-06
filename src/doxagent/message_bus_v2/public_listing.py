@@ -798,7 +798,7 @@ class ListingAdapter:
             captures = []
             if (
                 previous.get("baseline")
-                and recipe.parser != "wordpress"
+                and recipe.parser not in {"wordpress", "technews_embed"}
                 and recipe.method == "GET"
                 and not getattr(context, "force_refresh", False)
             ):
@@ -857,6 +857,17 @@ class ListingAdapter:
                         combined = json.loads(capture.text)
                         combined["posts"].extend(json.loads(second.text)["posts"])
                         capture = replace(capture, text=json.dumps(combined))
+                    elif recipe.parser == "technews_embed" and capture.status == 200:
+                        # The parent taxonomy API omits some cards on the site's
+                        # category archive. Preserve that original coverage, too.
+                        archive_url = recipe.feed.removesuffix("feed/")
+                        archive_url += "?_dox_poll=" + str(
+                            int(context.requested_at.timestamp()) // 60
+                        )
+                        archive = await self._fetch(archive_url, spec, headers=headers)
+                        if archive.status != 200:
+                            raise ValueError("technews_archive_http_" + str(archive.status))
+                        captures.append(archive)
             caches = [{"url": c.url, **cache_evidence(c, recipe)} for c in captures]
             for event in (events or [])[offset:]:
                 method = "POST" if recipe.parser == "frontier_api" else recipe.method
@@ -876,6 +887,15 @@ class ListingAdapter:
                 messages = await asyncio.to_thread(
                     parse_listing, recipe, spec, capture.text, context.requested_at
                 )
+                if recipe.parser == "technews_embed":
+                    archive_recipe = replace(
+                        recipe, url=recipe.feed.removesuffix("feed/"), parser="technews"
+                    )
+                    archive_messages = await asyncio.to_thread(
+                        parse_listing, archive_recipe, spec, captures[-1].text, context.requested_at
+                    )
+                    # Prefer API seconds when both entries carry the same article.
+                    messages = list({m.url: m for m in [*archive_messages, *messages]}.values())
             else:
                 raise ValueError("public_listing_http_" + str(capture.status))
             seen = dict(previous.get("seen", {}))

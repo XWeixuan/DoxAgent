@@ -1,0 +1,8 @@
+{
+  "html_articles": 15,
+  "api_articles": 40,
+  "api_covers_html": 13,
+  "union_articles": 42,
+  "all_html_urls_covered": true,
+  "all_common_article_keys_and_body_hints_identical": true
+}

@@ -12,7 +12,10 @@
           "published_at": "2026-11-05T17:00:00+00:00",
           "basis": "EXACT",
           "variant": "rss",
-          "origin": null,
+          "origin": {
+            "article_key": "c8249ad301781e855b02423034ea37a82cd64b457721dd1bb177dfed5ccfe54d",
+            "first_seen_at": "2026-11-06T19:34:24.378119+00:00"
+          },
           "parsed_at_same_hint": null
         },
         {
@@ -21,7 +24,10 @@
           "published_at": "2026-11-05T15:00:00+00:00",
           "basis": "EXACT",
           "variant": "rss",
-          "origin": null,
+          "origin": {
+            "article_key": "c88363a4ad92ea7a8ef4d8a42c3ae1bde1cd65ce4bd0128b32dc093661a5e727",
+            "first_seen_at": "2026-11-06T19:34:24.378119+00:00"
+          },
           "parsed_at_same_hint": null
         },
         {
@@ -30,7 +36,10 @@
           "published_at": "2026-11-05T05:01:00+00:00",
           "basis": "EXACT",
           "variant": "rss",
-          "origin": null,
+          "origin": {
+            "article_key": "8fb017fffbd0ff5897d8e58d16c5112c204e10989abd256ff13d848bc6530262",
+            "first_seen_at": "2026-11-06T19:34:24.378119+00:00"
+          },
           "parsed_at_same_hint": null
         },
         {
@@ -85,96 +94,96 @@
       "missing": []
     },
     "technews_hardware": {
-      "reference_articles": 59,
+      "reference_articles": 61,
       "source_origin_present": 40,
       "missing": [
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/major-power-suppliers-vie-800v-critical-materials-vertiv-infineon-three-year-deal/",
-          "published_at": "2026-11-05T01:43:27+00:00",
+          "published_at": "2026-11-05T01:43:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/arm-holdings-plc-q2-fye27-investor-presentation/",
-          "published_at": "2026-11-05T01:15:26+00:00",
+          "published_at": "2026-11-05T01:15:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/toshiba-sells-kioxia-shares-stake-drops-below-11pc/",
-          "published_at": "2026-11-05T01:00:58+00:00",
+          "published_at": "2026-11-05T01:00:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/qualcomm-announces-fourth-quarter-and-fiscal-2026-results/",
-          "published_at": "2026-11-05T00:50:19+00:00",
+          "published_at": "2026-11-05T00:50:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/oracle-cancels-7bn-tencent-ai-deal-under-trump-pressure/",
-          "published_at": "2026-11-04T23:50:44+00:00",
+          "published_at": "2026-11-04T23:50:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/samsung-electronics-accepts-tsmc-nvhbm-base-die-production-strategic-retreat-dual-track-capacity-concerns/",
-          "published_at": "2026-11-04T23:00:42+00:00",
+          "published_at": "2026-11-04T23:00:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/mediatek-invites-former-intel-executive-navid-shahriari-to-join-the-company/",
-          "published_at": "2026-11-04T22:00:49+00:00",
+          "published_at": "2026-11-04T22:00:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/intel-releases-version-0-9-of-the-intel-14a-process-pdk/",
-          "published_at": "2026-11-04T22:00:45+00:00",
+          "published_at": "2026-11-04T22:00:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/exorbitant-political-donations-may-fail-to-dispel-voters-concerns-about-data-centers-and-could-hinder-the-development-of-ai/",
-          "published_at": "2026-11-04T22:00:37+00:00",
+          "published_at": "2026-11-04T22:00:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/the-democratic-partys-return-to-a-majority-is-not-entirely-negative-for-the-development-of-ai-and-data-centers/",
-          "published_at": "2026-11-04T22:00:06+00:00",
+          "published_at": "2026-11-04T22:00:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
@@ -190,72 +199,90 @@
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/tencent-unveils-new-gen-large-language-model-hy4-visual-understanding-open-source/",
-          "published_at": "2026-11-05T01:40:51+00:00",
+          "published_at": "2026-11-05T01:40:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/google-invests-15-billion-malaysia-anwar-elevate-southeast-asian-digital-powerhouse/",
-          "published_at": "2026-11-05T01:20:24+00:00",
+          "published_at": "2026-11-05T01:20:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://infosecu.technews.tw/2026/11/05/cybersecurity-defense-shifts-reactive-response-continuous-combat/",
-          "published_at": "2026-11-05T00:40:07+00:00",
+          "published_at": "2026-11-05T00:40:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/scientists-crack-internet-scent-transmission-technology/",
-          "published_at": "2026-11-05T00:10:44+00:00",
+          "published_at": "2026-11-05T00:10:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/ai-agent-cybersecurity-testing-guide/",
-          "published_at": "2026-11-04T23:40:21+00:00",
+          "published_at": "2026-11-04T23:40:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://technews.tw/2026/11/05/honeywell-technologies-launches-new-ai-platform-at-dangotes-nigeria-refinery/",
-          "published_at": "2026-11-04T23:30:06+00:00",
+          "published_at": "2026-11-04T23:30:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/why-you-should-treat-your-ai-agent-like-a-new-hire/",
-          "published_at": "2026-11-04T23:20:51+00:00",
+          "published_at": "2026-11-04T23:20:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         },
         {
           "source_id": "technews_hardware",
           "url": "https://finance.technews.tw/2026/11/05/computer-science-programs-lose-students-as-ai-replaces-jobs/",
-          "published_at": "2026-11-04T23:10:48+00:00",
+          "published_at": "2026-11-04T23:10:00+00:00",
           "basis": "EXACT",
-          "variant": "official_api",
+          "variant": "official_archive",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/hyundai-mobis-to-strengthen-partnerships-to-build-automotive-chip-ecosystem/",
+          "published_at": "2026-11-05T00:00:00+00:00",
+          "basis": "EXACT",
+          "variant": "official_archive",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/ymtc-puts-its-ipo-plans-on-hold-as-market-conditions-weaken/",
+          "published_at": "2026-11-04T23:34:00+00:00",
+          "basis": "EXACT",
+          "variant": "official_archive",
           "origin": null,
           "parsed_at_same_hint": null
         }
@@ -700,6 +727,11 @@
       "file": "technews-ai-rss-p2.body",
       "sha256": "3a1e1faa87ae3667d6a037ba83472f51d64bc0a7016d8a894cc072a624410177",
       "bytes": 30413
+    },
+    {
+      "file": "technews-api-excluded-cards.body",
+      "sha256": "2315c7a7157e1e7a3d47ce6205693d498210379b564ab8a5a82ad2e1774012cf",
+      "bytes": 14247
     },
     {
       "file": "technews-api-only-article.body",
