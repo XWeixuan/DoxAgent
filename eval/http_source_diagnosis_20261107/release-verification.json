@@ -1,0 +1,31 @@
+{
+  "release": {
+    "commit": "45e0dcc56cf9ed9c4d7ab86b676e03d83dcb639f",
+    "image": "sha256:391beacd8a1aea14ad5ea249b0bb6c42b23a755166d3dcfa0f296d6750fef3ad",
+    "components": [
+      "v2-message-collector",
+      "v2-message-bus"
+    ],
+    "at": "2026-11-06T19:46:33.883805+00:00"
+  },
+  "containers": {
+    "v2-message-collector": {
+      "image": "sha256:391beacd8a1aea14ad5ea249b0bb6c42b23a755166d3dcfa0f296d6750fef3ad",
+      "status": "running",
+      "health": "healthy",
+      "oom": false,
+      "module_sha256": "4ee21ee094c61ffa503edc5e571d1c4c31a455ed3e6d15a61e4e5c66ecb426f0"
+    },
+    "v2-message-bus": {
+      "image": "sha256:391beacd8a1aea14ad5ea249b0bb6c42b23a755166d3dcfa0f296d6750fef3ad",
+      "status": "running",
+      "health": null,
+      "oom": false,
+      "module_sha256": "4ee21ee094c61ffa503edc5e571d1c4c31a455ed3e6d15a61e4e5c66ecb426f0"
+    }
+  },
+  "other_components_unchanged": true,
+  "committed_module_sha256": "4ee21ee094c61ffa503edc5e571d1c4c31a455ed3e6d15a61e4e5c66ecb426f0",
+  "all_module_hashes_match": true,
+  "configuration_hashes_unchanged": true
+}

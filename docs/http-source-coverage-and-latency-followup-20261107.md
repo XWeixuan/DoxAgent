@@ -110,3 +110,25 @@ ETNews 和 TechNews 的选定长尾不能归因于十几分钟的 DoxAgent 排�
 - `first-capture-receipts.json`：四例首次 capture 与首次 input 的确认回执。
 - `technews-missing-replay.json`：20 篇旧小时正则拒绝、修复解析通过的卡片证据。
 - 该目录本地保留 `coverage-production.json`、`tail-polls.json` 及本次保存的 `.body/.json`；生产诊断副本在 `/data/diagnostics/http-source-diagnosis-20261107/`。这些是本轮当前探测，不是事发当时历史响应。
+
+## 最终生产发布记录
+
+- 产品修复已进入 origin/main：`ffb4b437`、`45e0dcc5`；诊断报告与初始证据提交 `4ee65abf`。
+- 最终发布于北京时间 **2026-11-07 03:46:33**，Collector/Message Bus 使用提交 `45e0dcc56cf9ed9c4d7ab86b676e03d83dcb639f`，镜像 `sha256:391beacd8a1aea14ad5ea249b0bb6c42b23a755166d3dcfa0f296d6750fef3ad`。
+- 两容器的 `public_listing.py` SHA-256 均与该提交 Git blob 一致：`4ee21ee094c61ffa503edc5e571d1c4c31a455ed3e6d15a61e4e5c66ecb426f0`。Collector 健康检查正常，Bus 正常运行并持续确认接纳新 capture；未把 Bus 没有容器 Healthcheck 的情况写成已通过 Healthcheck。
+- 本次发布前后全部消息源配置、ticker 绑定、统一监测词修订、ticker 监测状态的行数和内容哈希一致；发布过程中其他组件配置未变。没有新增 Chrome/Profile。
+- CRN 抽查真实文章页原 Direct 路由仍可读取；仅更改列表 JSON 出口，不扩大 BODY 路由改动。
+
+实际观察分段保留，不将部署抖动从总账删除：
+
+| 时段（UTC 11-06） | 七个核查来源物理尝试 | 结果 |
+| --- | ---: | --- |
+| 19:46:33–19:50:07，本轮最终发布后 | 34 | 34 次 CAPTURED，目标单元全部执行；这里 CAPTURED 包含成功校验的无变化列表，不等同于新增文章数量。 |
+| 19:50:07–19:50:45，其他发布重建 Collector | 15 | 3 次成功、12 次超时失败，分布于多个独立站点；与重建启动时间重合，不据此断言单个网站或本轮代码回归。 |
+| 19:50:45–19:53:00，后续恢复段 | 30 | 29 次成功；Workday 原有入口另有 1 次超时，RSS 返回 200，但仍明确记为 HTTP_LISTING_FAILED_RSS_FALLBACK。CRN、Canary、TechNews、NSF 及 Salesforce 新单元恢复成功。 |
+
+其他会话的 `590919ed` 后续替换了 Collector，处理的是 GlobeNewswire URL 身份；它包含本轮提交，实际 `public_listing.py` 哈希保持一致。Message Bus 保持 `45e0dcc5`。这次并行发布没有覆盖本轮修复，也没有为此第三次发布本轮代码。
+
+观察中的执行耗时与 publish→发现延迟严格区分。短窗可验证入口、解析、去重、失败可见性及调度持续运行，**不能证明新文章的上游 20 分钟长尾已经消失**；没有用旧文章或探测进程伪造自然新稿时效验收。Workday 瞬时网络失败和容器启动阶段的跨站抖动作为现存边界记录，未通过扩大超时/重试链路掩盖。
+
+发布与观察证据：`release-verification.json`、`current-components.json`、`configuration-before.json`、`configuration-after.json`、`acceptance-segments.json`、`enterprise-transient.json`。完整本地探测材料保留于 `D:/DoxAgentHttpCoverage20261107/eval/http_source_diagnosis_20261107/`；生产最终发布私有回滚材料在 `/var/lib/doxagent/http-source-coverage-20261107-final/`，不在报告中输出环境配置。

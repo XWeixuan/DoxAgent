@@ -1,0 +1,18 @@
+{
+  "v2-message-collector": {
+    "commit": "590919ed45cd8e96537962a2b5da63e5291e65c2",
+    "image": "sha256:797d6cffdab525b159780f045a1f434b0056c1eeb5a2ca9d2e5459641f0f7c8d",
+    "started_at": "2026-11-06T19:50:07.419452654Z",
+    "running": true,
+    "oom": false,
+    "module_sha256": "4ee21ee094c61ffa503edc5e571d1c4c31a455ed3e6d15a61e4e5c66ecb426f0"
+  },
+  "v2-message-bus": {
+    "commit": "45e0dcc56cf9ed9c4d7ab86b676e03d83dcb639f",
+    "image": "sha256:391beacd8a1aea14ad5ea249b0bb6c42b23a755166d3dcfa0f296d6750fef3ad",
+    "started_at": "2026-11-06T19:46:22.783295911Z",
+    "running": true,
+    "oom": false,
+    "module_sha256": "4ee21ee094c61ffa503edc5e571d1c4c31a455ed3e6d15a61e4e5c66ecb426f0"
+  }
+}

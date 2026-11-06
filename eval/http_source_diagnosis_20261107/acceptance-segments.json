@@ -1,0 +1,378 @@
+{
+  "before_concurrent_release": {
+    "start": "2026-11-06T19:46:33.883805+00:00",
+    "end": "2026-11-06T19:50:07.419452+00:00",
+    "sources": {
+      "technews_hardware": {
+        "statuses": {
+          "CAPTURED": 6
+        },
+        "units": [
+          "FEED:2fcddd0f7ad7d5452dbc221e",
+          "FEED:365211cf9af517cb87395484"
+        ],
+        "errors": [],
+        "request_count": 12,
+        "mean_execution_seconds": 1.7351676666666667,
+        "max_execution_seconds": 6.009729
+      },
+      "nsf_news": {
+        "statuses": {
+          "CAPTURED": 3
+        },
+        "units": [
+          "FEED:981618343246fe95aed86647"
+        ],
+        "errors": [],
+        "request_count": 3,
+        "mean_execution_seconds": 1.465704,
+        "max_execution_seconds": 1.646027
+      },
+      "enterprise_apps_official_rss": {
+        "statuses": {
+          "CAPTURED": 12
+        },
+        "units": [
+          "FEED:49e7cb0fddd316e200d4c658",
+          "FEED:69cd0a82d11ee5cf9feef522",
+          "FEED:6fd4b135c003635798486b87",
+          "FEED:7ed0468b247f9c1341b56a38",
+          "FEED:ef7490c95438b64379a1b34c"
+        ],
+        "errors": [],
+        "request_count": 12,
+        "mean_execution_seconds": 1.0271301666666666,
+        "max_execution_seconds": 3.745309
+      },
+      "crn_cloud_security_datacenter": {
+        "statuses": {
+          "CAPTURED": 7
+        },
+        "units": [
+          "FEED:0f559d39370394f58715143f",
+          "FEED:a518927e703ee73b94eb2ec9",
+          "FEED:ffdb14036507158e4b9c311e"
+        ],
+        "errors": [],
+        "request_count": 7,
+        "mean_execution_seconds": 0.4702148571428571,
+        "max_execution_seconds": 0.81436
+      },
+      "dod_releases": {
+        "statuses": {
+          "CAPTURED": 2
+        },
+        "units": [
+          "FEED:dfc334fc62e359d686dd3b57"
+        ],
+        "errors": [],
+        "request_count": 2,
+        "mean_execution_seconds": 0.9240955,
+        "max_execution_seconds": 1.493688
+      },
+      "canary_media": {
+        "statuses": {
+          "CAPTURED": 2
+        },
+        "units": [
+          "FEED:bd9f86f953b4a5cb13216d0d"
+        ],
+        "errors": [],
+        "request_count": 2,
+        "mean_execution_seconds": 2.295402,
+        "max_execution_seconds": 2.559676
+      },
+      "etnews_rss": {
+        "statuses": {
+          "CAPTURED": 2
+        },
+        "units": [
+          "FEED:0fd4ca992c8e3868c4fb1126"
+        ],
+        "errors": [],
+        "request_count": 2,
+        "mean_execution_seconds": 0.5478255,
+        "max_execution_seconds": 0.712572
+      }
+    },
+    "bus_capture_acknowledgements": {
+      "count": 6,
+      "latest_at": "2026-11-06T19:47:59.974444+00:00"
+    }
+  },
+  "concurrent_startup": {
+    "start": "2026-11-06T19:50:07.419452+00:00",
+    "end": "2026-11-06T19:50:45+00:00",
+    "sources": {
+      "canary_media": {
+        "statuses": {
+          "CAPTURED": 1
+        },
+        "units": [
+          "FEED:bd9f86f953b4a5cb13216d0d"
+        ],
+        "errors": [],
+        "request_count": 1,
+        "mean_execution_seconds": 10.964154,
+        "max_execution_seconds": 10.964154
+      },
+      "etnews_rss": {
+        "statuses": {
+          "CAPTURED": 1
+        },
+        "units": [
+          "FEED:0fd4ca992c8e3868c4fb1126"
+        ],
+        "errors": [],
+        "request_count": 1,
+        "mean_execution_seconds": 10.141037,
+        "max_execution_seconds": 10.141037
+      },
+      "technews_hardware": {
+        "statuses": {
+          "FAILED": 2,
+          "CAPTURED": 1
+        },
+        "units": [
+          "FEED:2fcddd0f7ad7d5452dbc221e",
+          "FEED:365211cf9af517cb87395484"
+        ],
+        "errors": [
+          {
+            "at": "2026-11-06T19:50:15.380167+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          },
+          {
+            "at": "2026-11-06T19:50:15.380610+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          }
+        ],
+        "request_count": 6,
+        "mean_execution_seconds": 15.515158,
+        "max_execution_seconds": 19.047032
+      },
+      "nsf_news": {
+        "statuses": {
+          "FAILED": 1
+        },
+        "units": [
+          "FEED:981618343246fe95aed86647"
+        ],
+        "errors": [
+          {
+            "at": "2026-11-06T19:50:15.750833+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          }
+        ],
+        "request_count": 1,
+        "mean_execution_seconds": 19.069239,
+        "max_execution_seconds": 19.069239
+      },
+      "dod_releases": {
+        "statuses": {
+          "FAILED": 1
+        },
+        "units": [
+          "FEED:dfc334fc62e359d686dd3b57"
+        ],
+        "errors": [
+          {
+            "at": "2026-11-06T19:50:15.866782+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          }
+        ],
+        "request_count": 1,
+        "mean_execution_seconds": 19.02006,
+        "max_execution_seconds": 19.02006
+      },
+      "crn_cloud_security_datacenter": {
+        "statuses": {
+          "FAILED": 3
+        },
+        "units": [
+          "FEED:0f559d39370394f58715143f",
+          "FEED:a518927e703ee73b94eb2ec9",
+          "FEED:ffdb14036507158e4b9c311e"
+        ],
+        "errors": [
+          {
+            "at": "2026-11-06T19:50:15.894488+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          },
+          {
+            "at": "2026-11-06T19:50:15.894882+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          },
+          {
+            "at": "2026-11-06T19:50:15.895103+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          }
+        ],
+        "request_count": 3,
+        "mean_execution_seconds": 18.94320133333333,
+        "max_execution_seconds": 18.961892
+      },
+      "enterprise_apps_official_rss": {
+        "statuses": {
+          "FAILED": 5
+        },
+        "units": [
+          "FEED:49e7cb0fddd316e200d4c658",
+          "FEED:69cd0a82d11ee5cf9feef522",
+          "FEED:6fd4b135c003635798486b87",
+          "FEED:7ed0468b247f9c1341b56a38",
+          "FEED:ef7490c95438b64379a1b34c"
+        ],
+        "errors": [
+          {
+            "at": "2026-11-06T19:50:15.895325+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          },
+          {
+            "at": "2026-11-06T19:50:15.895605+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          },
+          {
+            "at": "2026-11-06T19:50:15.895819+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          },
+          {
+            "at": "2026-11-06T19:50:15.896001+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          },
+          {
+            "at": "2026-11-06T19:50:15.896239+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          }
+        ],
+        "request_count": 5,
+        "mean_execution_seconds": 33.083076600000005,
+        "max_execution_seconds": 40.357558
+      }
+    },
+    "bus_capture_acknowledgements": {
+      "count": 1,
+      "latest_at": "2026-11-06T19:50:35.973903+00:00"
+    }
+  },
+  "recovered": {
+    "start": "2026-11-06T19:50:45+00:00",
+    "end": "2026-11-06T19:53:00.225689+00:00",
+    "sources": {
+      "nsf_news": {
+        "statuses": {
+          "CAPTURED": 3
+        },
+        "units": [
+          "FEED:981618343246fe95aed86647"
+        ],
+        "errors": [],
+        "request_count": 3,
+        "mean_execution_seconds": 1.7330243333333335,
+        "max_execution_seconds": 2.878332
+      },
+      "crn_cloud_security_datacenter": {
+        "statuses": {
+          "CAPTURED": 7
+        },
+        "units": [
+          "FEED:0f559d39370394f58715143f",
+          "FEED:a518927e703ee73b94eb2ec9",
+          "FEED:ffdb14036507158e4b9c311e"
+        ],
+        "errors": [],
+        "request_count": 7,
+        "mean_execution_seconds": 0.5616982857142857,
+        "max_execution_seconds": 1.934533
+      },
+      "enterprise_apps_official_rss": {
+        "statuses": {
+          "CAPTURED": 9,
+          "FAILED": 1
+        },
+        "units": [
+          "FEED:49e7cb0fddd316e200d4c658",
+          "FEED:69cd0a82d11ee5cf9feef522",
+          "FEED:6fd4b135c003635798486b87",
+          "FEED:7ed0468b247f9c1341b56a38",
+          "FEED:ef7490c95438b64379a1b34c"
+        ],
+        "errors": [
+          {
+            "at": "2026-11-06T19:52:02.826156+00:00",
+            "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+            "detail": "TimeoutError:"
+          }
+        ],
+        "request_count": 12,
+        "mean_execution_seconds": 1.9632649,
+        "max_execution_seconds": 12.53748
+      },
+      "technews_hardware": {
+        "statuses": {
+          "CAPTURED": 4
+        },
+        "units": [
+          "FEED:2fcddd0f7ad7d5452dbc221e",
+          "FEED:365211cf9af517cb87395484"
+        ],
+        "errors": [],
+        "request_count": 8,
+        "mean_execution_seconds": 0.8569205,
+        "max_execution_seconds": 0.983419
+      },
+      "dod_releases": {
+        "statuses": {
+          "CAPTURED": 2
+        },
+        "units": [
+          "FEED:dfc334fc62e359d686dd3b57"
+        ],
+        "errors": [],
+        "request_count": 2,
+        "mean_execution_seconds": 0.5476679999999999,
+        "max_execution_seconds": 0.869342
+      },
+      "canary_media": {
+        "statuses": {
+          "CAPTURED": 2
+        },
+        "units": [
+          "FEED:bd9f86f953b4a5cb13216d0d"
+        ],
+        "errors": [],
+        "request_count": 2,
+        "mean_execution_seconds": 1.8290335,
+        "max_execution_seconds": 1.902969
+      },
+      "etnews_rss": {
+        "statuses": {
+          "CAPTURED": 2
+        },
+        "units": [
+          "FEED:0fd4ca992c8e3868c4fb1126"
+        ],
+        "errors": [],
+        "request_count": 2,
+        "mean_execution_seconds": 0.36804400000000004,
+        "max_execution_seconds": 0.396286
+      }
+    },
+    "bus_capture_acknowledgements": {
+      "count": 9,
+      "latest_at": "2026-11-06T19:52:55.566027+00:00"
+    }
+  }
+}
