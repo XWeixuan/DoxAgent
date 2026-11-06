@@ -1,0 +1,800 @@
+{
+  "window_start": "2026-11-04T14:30:00Z",
+  "window_end": "2026-11-05T21:00:00Z",
+  "coverage": {
+    "canary_media": {
+      "reference_articles": 4,
+      "source_origin_present": 0,
+      "missing": [
+        {
+          "source_id": "canary_media",
+          "url": "https://www.canarymedia.com/articles/utilities/pge-2b-cut-in-grid-investments",
+          "published_at": "2026-11-05T17:00:00+00:00",
+          "basis": "EXACT",
+          "variant": "rss",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "canary_media",
+          "url": "https://www.canarymedia.com/articles/offshore-wind/revolution-wind-fully-operational",
+          "published_at": "2026-11-05T15:00:00+00:00",
+          "basis": "EXACT",
+          "variant": "rss",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "canary_media",
+          "url": "https://www.canarymedia.com/articles/virtual-power-plants/virtual-power-plants-grid-ai-bust",
+          "published_at": "2026-11-05T05:01:00+00:00",
+          "basis": "EXACT",
+          "variant": "rss",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "canary_media",
+          "url": "https://www.canarymedia.com/articles/politics/top-clean-energy-wins-midterms",
+          "published_at": "2026-11-04T22:30:00+00:00",
+          "basis": "EXACT",
+          "variant": "rss",
+          "origin": null,
+          "parsed_at_same_hint": null
+        }
+      ]
+    },
+    "data_center_frontier": {
+      "reference_articles": 2,
+      "source_origin_present": 2,
+      "missing": []
+    },
+    "dod_contracts": {
+      "reference_articles": 1,
+      "source_origin_present": 1,
+      "missing": []
+    },
+    "enterprise_apps_official_rss": {
+      "reference_articles": 6,
+      "source_origin_present": 5,
+      "missing": [
+        {
+          "source_id": "enterprise_apps_official_rss",
+          "url": "https://www.salesforce.com/news/linked-content/double-recall-inside-the-agentforce-memory-update/",
+          "published_at": "2026-11-04T18:00:30+00:00",
+          "basis": "EXACT",
+          "variant": "rss",
+          "origin": null,
+          "parsed_at_same_hint": null
+        }
+      ]
+    },
+    "quantum_computing_report": {
+      "reference_articles": 4,
+      "source_origin_present": 4,
+      "missing": []
+    },
+    "etnews_rss": {
+      "reference_articles": 9,
+      "source_origin_present": 9,
+      "missing": []
+    },
+    "dod_releases": {
+      "reference_articles": 5,
+      "source_origin_present": 5,
+      "missing": []
+    },
+    "technews_hardware": {
+      "reference_articles": 59,
+      "source_origin_present": 40,
+      "missing": [
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/major-power-suppliers-vie-800v-critical-materials-vertiv-infineon-three-year-deal/",
+          "published_at": "2026-11-05T01:43:27+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/arm-holdings-plc-q2-fye27-investor-presentation/",
+          "published_at": "2026-11-05T01:15:26+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/toshiba-sells-kioxia-shares-stake-drops-below-11pc/",
+          "published_at": "2026-11-05T01:00:58+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/qualcomm-announces-fourth-quarter-and-fiscal-2026-results/",
+          "published_at": "2026-11-05T00:50:19+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/oracle-cancels-7bn-tencent-ai-deal-under-trump-pressure/",
+          "published_at": "2026-11-04T23:50:44+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/samsung-electronics-accepts-tsmc-nvhbm-base-die-production-strategic-retreat-dual-track-capacity-concerns/",
+          "published_at": "2026-11-04T23:00:42+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/mediatek-invites-former-intel-executive-navid-shahriari-to-join-the-company/",
+          "published_at": "2026-11-04T22:00:49+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/intel-releases-version-0-9-of-the-intel-14a-process-pdk/",
+          "published_at": "2026-11-04T22:00:45+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/exorbitant-political-donations-may-fail-to-dispel-voters-concerns-about-data-centers-and-could-hinder-the-development-of-ai/",
+          "published_at": "2026-11-04T22:00:37+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/the-democratic-partys-return-to-a-majority-is-not-entirely-negative-for-the-development-of-ai-and-data-centers/",
+          "published_at": "2026-11-04T22:00:06+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/91-%e4%bc%81%e6%a5%ad%e6%ad%a3%e5%9c%a8%e8%87%aa%e7%a0%94-ai-%e5%b7%a5%e5%85%b7%ef%bc%8c%e4%bd%8691-of-companies-are-building-in-house-ai-tools-but-fewer-than-half-have-a-mature-strategy%e4%b8%8d/",
+          "published_at": "2026-11-05T06:00:07+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/tencent-unveils-new-gen-large-language-model-hy4-visual-understanding-open-source/",
+          "published_at": "2026-11-05T01:40:51+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/google-invests-15-billion-malaysia-anwar-elevate-southeast-asian-digital-powerhouse/",
+          "published_at": "2026-11-05T01:20:24+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://infosecu.technews.tw/2026/11/05/cybersecurity-defense-shifts-reactive-response-continuous-combat/",
+          "published_at": "2026-11-05T00:40:07+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/scientists-crack-internet-scent-transmission-technology/",
+          "published_at": "2026-11-05T00:10:44+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/ai-agent-cybersecurity-testing-guide/",
+          "published_at": "2026-11-04T23:40:21+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://technews.tw/2026/11/05/honeywell-technologies-launches-new-ai-platform-at-dangotes-nigeria-refinery/",
+          "published_at": "2026-11-04T23:30:06+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/why-you-should-treat-your-ai-agent-like-a-new-hire/",
+          "published_at": "2026-11-04T23:20:51+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "technews_hardware",
+          "url": "https://finance.technews.tw/2026/11/05/computer-science-programs-lose-students-as-ai-replaces-jobs/",
+          "published_at": "2026-11-04T23:10:48+00:00",
+          "basis": "EXACT",
+          "variant": "official_api",
+          "origin": null,
+          "parsed_at_same_hint": null
+        }
+      ]
+    },
+    "thelec_semiconductors_rss": {
+      "reference_articles": 6,
+      "source_origin_present": 6,
+      "missing": []
+    },
+    "crn_cloud_security_datacenter": {
+      "reference_articles": 3,
+      "source_origin_present": 1,
+      "missing": [
+        {
+          "source_id": "crn_cloud_security_datacenter",
+          "url": "https://www.crn.com/news/cloud/2026/nutanix-partner-head-on-new-money-making-rebates-ai-tools-and-incentives-for-channel-partners",
+          "published_at": "2026-11-05T14:00:00+00:00",
+          "basis": "EXACT",
+          "variant": "rss",
+          "origin": null,
+          "parsed_at_same_hint": null
+        },
+        {
+          "source_id": "crn_cloud_security_datacenter",
+          "url": "https://www.crn.com/news/security/2026/crowdstrike-s-5-biggest-moves-at-fal-con-2026-europe",
+          "published_at": "2026-11-04T16:51:00+00:00",
+          "basis": "EXACT",
+          "variant": "rss",
+          "origin": null,
+          "parsed_at_same_hint": null
+        }
+      ]
+    },
+    "world_nuclear_news": {
+      "reference_articles": 5,
+      "source_origin_present": 5,
+      "missing": []
+    },
+    "utility_dive": {
+      "reference_articles": 5,
+      "source_origin_present": 5,
+      "missing": []
+    },
+    "nsf_news": {
+      "reference_articles": 0,
+      "source_origin_present": 0,
+      "missing": [],
+      "note": "No window publications in currently retained official feeds; not inferred from HTTP success."
+    },
+    "defensescoop_drones": {
+      "reference_articles": 0,
+      "source_origin_present": 0,
+      "missing": [],
+      "note": "No window publications in currently retained official feeds; not inferred from HTTP success."
+    }
+  },
+  "tails": [
+    {
+      "source_id": "etnews_rss",
+      "published_minute": "2026-11-05T02:07:00+00:00",
+      "first_candidate": "2026-11-05T02:26:22.732295+00:00",
+      "physical_polls": 20,
+      "statuses": {
+        "CAPTURED": 20
+      },
+      "mean_execution_seconds": 0.647143,
+      "max_execution_seconds": 4.821859,
+      "mean_dispatch_lag_seconds": 0.09800455,
+      "max_visible_cache_age_seconds": 1.147,
+      "cache_statuses": {
+        "none": 20
+      }
+    },
+    {
+      "source_id": "technews_hardware",
+      "published_minute": "2026-11-05T06:23:00+00:00",
+      "first_candidate": "2026-11-05T06:46:06.764238+00:00",
+      "physical_polls": 47,
+      "statuses": {
+        "FAILED": 1,
+        "CAPTURED": 46
+      },
+      "mean_execution_seconds": 0.491653595744681,
+      "max_execution_seconds": 6.432221,
+      "mean_dispatch_lag_seconds": 0.09006087234042552,
+      "max_visible_cache_age_seconds": 0.953,
+      "cache_statuses": {
+        "Miss from cloudfront": 47
+      }
+    },
+    {
+      "source_id": "technews_hardware",
+      "published_minute": "2026-11-05T09:42:00+00:00",
+      "first_candidate": "2026-11-05T10:03:36.750026+00:00",
+      "physical_polls": 44,
+      "statuses": {
+        "CAPTURED": 44
+      },
+      "mean_execution_seconds": 0.2879544772727272,
+      "max_execution_seconds": 0.505552,
+      "mean_dispatch_lag_seconds": 0.04686479545454545,
+      "max_visible_cache_age_seconds": 1.129,
+      "cache_statuses": {
+        "Miss from cloudfront": 44
+      }
+    },
+    {
+      "source_id": "dod_releases",
+      "published_minute": "2026-11-05T19:00:29+00:00",
+      "first_candidate": "2026-11-05T19:16:10.496202+00:00",
+      "physical_polls": 16,
+      "statuses": {
+        "CAPTURED": 16
+      },
+      "mean_execution_seconds": 0.29260793749999997,
+      "max_execution_seconds": 0.523727,
+      "mean_dispatch_lag_seconds": 0.04969456249999999,
+      "max_visible_cache_age_seconds": 0.754,
+      "cache_statuses": {
+        "none": 16
+      }
+    }
+  ],
+  "response_manifest": [
+    {
+      "file": "aviation-current-186836.body",
+      "sha256": "592283b69f64264d737177672aa8a754511490f0c6f0e18527e47e530f7a10d3",
+      "bytes": 154306
+    },
+    {
+      "file": "aviation-current-186841.body",
+      "sha256": "7b5dea65cafdf078295d9dbd7e099ca17560e855a10e5270dba8d885ce44d64a",
+      "bytes": 153941
+    },
+    {
+      "file": "canary-list-current.body",
+      "sha256": "9e6c3b110de2160e504743abf4d43d73201e8218a0df4d5cafd0d701a18071ed",
+      "bytes": 485663
+    },
+    {
+      "file": "canary-list-post.body",
+      "sha256": "addf29407c3a6497f907a1258d54a009dff13dee616f754a224da1f6f4900ecf",
+      "bytes": 485493
+    },
+    {
+      "file": "canary-list-sort.body",
+      "sha256": "836be075091229e5c1dfa90ad14895fdced2b5640a54f2fa83234d99bec77928",
+      "bytes": 485663
+    },
+    {
+      "file": "canary-page2-post.body",
+      "sha256": "ba6a1efe617aaef0bb452d91afa60e9eabf17c7630d396bb367fbde06739d8a1",
+      "bytes": 486649
+    },
+    {
+      "file": "canary-post-repeat.body",
+      "sha256": "d8e6ad9ac1bc514ca3d667bbf838353c7d0fc3fa5f1f23c8aa4a5db9697c8088",
+      "bytes": 484534
+    },
+    {
+      "file": "canary-rss-current.body",
+      "sha256": "d40a1049de1cb817cc8888e29fe52fb2764fd75463fcc3de542346cc2db5e0f1",
+      "bytes": 94687
+    },
+    {
+      "file": "canary-search.body",
+      "sha256": "07123742e603d4ebbc26a9219acce7d8944d4149d6072867b594644d645b5051",
+      "bytes": 486750
+    },
+    {
+      "file": "canary_media-0-list.body",
+      "sha256": "d8e6ad9ac1bc514ca3d667bbf838353c7d0fc3fa5f1f23c8aa4a5db9697c8088",
+      "bytes": 484534
+    },
+    {
+      "file": "canary_media-0-rss.body",
+      "sha256": "d40a1049de1cb817cc8888e29fe52fb2764fd75463fcc3de542346cc2db5e0f1",
+      "bytes": 94687
+    },
+    {
+      "file": "crn-cloud-body-direct.body",
+      "sha256": "280910231aa37d6b8031cfc9a8fc926500c5a2ae38b65cab0acadc54497f3388",
+      "bytes": 3105
+    },
+    {
+      "file": "crn-cloud-current.body",
+      "sha256": "49377e5390344fce5fae52bbbcad80930477e6d0231d3ebddd95f509e22ffd2a",
+      "bytes": 4541
+    },
+    {
+      "file": "crn-cloud-minute.body",
+      "sha256": "a3730030b1efe20c4e781b4f773cae2a07b70c325e639c113b6a7108b1549192",
+      "bytes": 4541
+    },
+    {
+      "file": "crn-cloud-us-repeat.body",
+      "sha256": "ca38a33e05cb5a45ec2dcfab0510e83543b80768d80ec4aa0a1df3cf8ce4bef3",
+      "bytes": 47571
+    },
+    {
+      "file": "crn-cloud-us.body",
+      "sha256": "ca38a33e05cb5a45ec2dcfab0510e83543b80768d80ec4aa0a1df3cf8ce4bef3",
+      "bytes": 47571
+    },
+    {
+      "file": "crn-datacenter-us.body",
+      "sha256": "f651cfbb5335aede2abad174d212fc42bc00fe14c3080e1a3c125e72d7508021",
+      "bytes": 44773
+    },
+    {
+      "file": "crn-security-us.body",
+      "sha256": "c04dac61134146f5cfbffbf1b321dca22f09131b8d81284c85c2ec662bba233e",
+      "bytes": 52672
+    },
+    {
+      "file": "crn_cloud_security_datacenter-0-list.body",
+      "sha256": "ca38a33e05cb5a45ec2dcfab0510e83543b80768d80ec4aa0a1df3cf8ce4bef3",
+      "bytes": 47571
+    },
+    {
+      "file": "crn_cloud_security_datacenter-0-rss.body",
+      "sha256": "87ee1493247dbb344e1fb7223dd96867a9c95aecfb8718a661e9f37a990a7632",
+      "bytes": 10271
+    },
+    {
+      "file": "crn_cloud_security_datacenter-1-list.body",
+      "sha256": "c04dac61134146f5cfbffbf1b321dca22f09131b8d81284c85c2ec662bba233e",
+      "bytes": 52672
+    },
+    {
+      "file": "crn_cloud_security_datacenter-1-rss.body",
+      "sha256": "460fd98f90177d4c4b77137de56124f0a5c8bd2ba38525ef0aa1507f3ae1ecd2",
+      "bytes": 10998
+    },
+    {
+      "file": "crn_cloud_security_datacenter-2-list.body",
+      "sha256": "f651cfbb5335aede2abad174d212fc42bc00fe14c3080e1a3c125e72d7508021",
+      "bytes": 44773
+    },
+    {
+      "file": "crn_cloud_security_datacenter-2-rss.body",
+      "sha256": "86cbafe8196f9c657acf72177ddff842c89cf9c74dae3376ff789df2756d4a4f",
+      "bytes": 11186
+    },
+    {
+      "file": "data_center_frontier-0-list.body",
+      "sha256": "363026b79f6547c165f406a13498f54ca76e20f34bff4c35d7bd2e9feaaaeb5c",
+      "bytes": 27249
+    },
+    {
+      "file": "data_center_frontier-0-rss.body",
+      "sha256": "600095f2c26d31ea4a0fe1278cff04f3b920a2850a8acc9be6fe2aa6ea8158f4",
+      "bytes": 33853
+    },
+    {
+      "file": "defensescoop_drones-0-list.body",
+      "sha256": "16c3d9c70c89bae18851e57e08bc40dbdd5604c554a9c3886f53ae835e32b5cb",
+      "bytes": 85196
+    },
+    {
+      "file": "defensescoop_drones-0-rss.body",
+      "sha256": "d98e925f32d6c2422bbed2635f5618a70c8b5d0078ccd3299514d3114901562f",
+      "bytes": 73955
+    },
+    {
+      "file": "defensescoop_drones-1-list.body",
+      "sha256": "2464205550115314f48a79680db0b3c255a0e5bbba8e37a1f0727ce0276b0642",
+      "bytes": 83531
+    },
+    {
+      "file": "defensescoop_drones-1-rss.body",
+      "sha256": "62d4a576dc8af25d7e493fdd4da496571b21d35c9fe6ace44635e6506705fc76",
+      "bytes": 72323
+    },
+    {
+      "file": "dod_contracts-0-list.body",
+      "sha256": "321896eb97efb4526362ef43de2249753131f23393069b24c0b6dfdd5ec647ae",
+      "bytes": 192035
+    },
+    {
+      "file": "dod_contracts-0-rss.body",
+      "sha256": "8b831cebcb062994c4ec72c56a098c8e176616066caddc4d89bffc1e5d5b0fa2",
+      "bytes": 28052
+    },
+    {
+      "file": "dod_releases-0-list.body",
+      "sha256": "2430862535abade2874fc18d79cd3cc267b6bc3f87c3bab3a54da4087eb34bd0",
+      "bytes": 199309
+    },
+    {
+      "file": "dod_releases-0-rss.body",
+      "sha256": "eb92f88bcb1f03061563aef1a5c4febfe83d11ffc5f7f27bc34287b1d6ab7e15",
+      "bytes": 41766
+    },
+    {
+      "file": "enterprise_apps_official_rss-0-list.body",
+      "sha256": "5ebb11e27c146a6d5319f59b9d855ac8431a5c56500a0ac1119889cfc99d87b6",
+      "bytes": 21970
+    },
+    {
+      "file": "enterprise_apps_official_rss-0-rss.body",
+      "sha256": "ce094a69ada6d1684a906720688b103b7277f3d5dfc2b6af2cf7ab079890e67c",
+      "bytes": 510223
+    },
+    {
+      "file": "enterprise_apps_official_rss-1-list.body",
+      "sha256": "4ad48b07545226878fad3045c77b8276e183aaed49c235ea4afbe172013ce73a",
+      "bytes": 31508
+    },
+    {
+      "file": "enterprise_apps_official_rss-1-rss.body",
+      "sha256": "04f2cacc1cae4a340e9ef319ee87a20659c6b394b64eb2fc856602dd230a3c10",
+      "bytes": 179601
+    },
+    {
+      "file": "enterprise_apps_official_rss-2-list.body",
+      "sha256": "e9129e9371079e5c4021252df2a56192690079b966a79911076f512f25366f7f",
+      "bytes": 221539
+    },
+    {
+      "file": "enterprise_apps_official_rss-2-rss.body",
+      "sha256": "379ec6b8f4bea8c2acdf8ae652739b34f10485a23d32ca3fac8199d713544d75",
+      "bytes": 2653
+    },
+    {
+      "file": "enterprise_apps_official_rss-3-list.body",
+      "sha256": "aa180f3c0963cb8fd28e573698db9df57220223148b2fcd53d6c559a0c04a8c3",
+      "bytes": 18140
+    },
+    {
+      "file": "enterprise_apps_official_rss-3-rss.body",
+      "sha256": "04f2cacc1cae4a340e9ef319ee87a20659c6b394b64eb2fc856602dd230a3c10",
+      "bytes": 179601
+    },
+    {
+      "file": "enterprise_apps_official_rss-4-list.body",
+      "sha256": "0255cf0cb46161a87db7745c0a778f40c6b7f55ff812a8c8e75fd15b16eb9890",
+      "bytes": 34718
+    },
+    {
+      "file": "enterprise_apps_official_rss-4-rss.body",
+      "sha256": "04f2cacc1cae4a340e9ef319ee87a20659c6b394b64eb2fc856602dd230a3c10",
+      "bytes": 179601
+    },
+    {
+      "file": "etnews-common-js.body",
+      "sha256": "deba01b668550b2e7b27f19f40170638cecbdc56cba2844a526a19157f69d851",
+      "bytes": 12581
+    },
+    {
+      "file": "etnews-minute.body",
+      "sha256": "6463ae68163d7eca08454b9570a38adbd2419655b9144a300e435f65ad22a02c",
+      "bytes": 58898
+    },
+    {
+      "file": "etnews-post.body",
+      "sha256": "268364256d57611c33d17d9c2b50d37b3a623702a1c24611ac44e8de40f39241",
+      "bytes": 58708
+    },
+    {
+      "file": "etnews-tail-article.body",
+      "sha256": "18ec480a51e94375c227d3c3e313ce09d04f4cef201a763a171a24d6fbab578d",
+      "bytes": 54533
+    },
+    {
+      "file": "etnews_rss-0-list.body",
+      "sha256": "7f60c84f27cb726f7eea97be520380b9ccc88dc831852ecda7677ddfd90abf56",
+      "bytes": 58708
+    },
+    {
+      "file": "etnews_rss-0-rss.body",
+      "sha256": "780078db0c5084b9009d25fe6af70e862f16480ff2e81f2cf0776ced6020ff0e",
+      "bytes": 55203
+    },
+    {
+      "file": "nsf_news-0-list.body",
+      "sha256": "caaa14075fa041201fb0bcff0ba2656afb700e32215099e45654f9cd18d27d95",
+      "bytes": 74792
+    },
+    {
+      "file": "nsf_news-0-rss.body",
+      "sha256": "370d534c558aa934189207882d5ec430eec3c1f9c3e0b8009c01fb844df111e9",
+      "bytes": 9754
+    },
+    {
+      "file": "quantum_computing_report-0-list.body",
+      "sha256": "5b62aa4b12874782c5f14b570a0ce7ea72438720389d412d7b690ee9c6fac72a",
+      "bytes": 161374
+    },
+    {
+      "file": "quantum_computing_report-0-rss.body",
+      "sha256": "1949e4fc842f0efff1e4d3a673cbcbe054243fb9958cabb3233c6f1d60304dd1",
+      "bytes": 19041
+    },
+    {
+      "file": "salesforce-linked.body",
+      "sha256": "aa180f3c0963cb8fd28e573698db9df57220223148b2fcd53d6c559a0c04a8c3",
+      "bytes": 18140
+    },
+    {
+      "file": "salesforce-press.body",
+      "sha256": "0255cf0cb46161a87db7745c0a778f40c6b7f55ff812a8c8e75fd15b16eb9890",
+      "bytes": 34718
+    },
+    {
+      "file": "salesforce-types.body",
+      "sha256": "61e1981cbafd92f2eeaab3012c250c096793a96d808c1b1fc44defe5d69d3fc4",
+      "bytes": 57398
+    },
+    {
+      "file": "technews-ai-100.body",
+      "sha256": "d00ae924c9867f738722ecb5d31815aaf03e56afa7974e4e8219965e7166b067",
+      "bytes": 846671
+    },
+    {
+      "file": "technews-ai-p2.body",
+      "sha256": "ce76e2df47bbb0bcb32863c8a2a741c5309463c9cd82cfed47cda0e9dec9e027",
+      "bytes": 174507
+    },
+    {
+      "file": "technews-ai-p3.body",
+      "sha256": "8d0c56f42a7c17273c6a8d1f043ca59192f1eb576b9a3a1d2e6a1e59fed75133",
+      "bytes": 175563
+    },
+    {
+      "file": "technews-ai-p4.body",
+      "sha256": "22345ac2d9f759da03e002d40e20bd739ac7112b6dc1da46aea87db838bfce66",
+      "bytes": 174093
+    },
+    {
+      "file": "technews-ai-p5.body",
+      "sha256": "dbe381a34e3fe2071908ed8fe92f9248b1762ee5fe80822e094e44e635646452",
+      "bytes": 173664
+    },
+    {
+      "file": "technews-ai-p6.body",
+      "sha256": "87089b9a55184be8811d08db16f757086080b3b80234d3ddb1e2d29282d99982",
+      "bytes": 176419
+    },
+    {
+      "file": "technews-ai-rss-p2.body",
+      "sha256": "3a1e1faa87ae3667d6a037ba83472f51d64bc0a7016d8a894cc072a624410177",
+      "bytes": 30413
+    },
+    {
+      "file": "technews-api-only-article.body",
+      "sha256": "5c539493fc491ebdb813071c8b8f8b48f237e6b937d19851a94a31a641a17d85",
+      "bytes": 139416
+    },
+    {
+      "file": "technews-api.body",
+      "sha256": "11821b7f3ebad5c82986db03b5e0c2a31d51948368034d1d5b9647063c7a7296",
+      "bytes": 344033
+    },
+    {
+      "file": "technews-embed-ai.body",
+      "sha256": "9cf4709db5e8348e736141e30aa95777c0ba1dc06f9868f4da2d01e68999d041",
+      "bytes": 70924
+    },
+    {
+      "file": "technews-embed-semiconductor.body",
+      "sha256": "017be07ab20c893e6d48736a10848f166fb859d06c33627863a7fa8638f23bd9",
+      "bytes": 72183
+    },
+    {
+      "file": "technews-post.body",
+      "sha256": "53686da4f83a0f180f4d2bcd495b1669dc1db2d816e54ccb502ac661752e8f26",
+      "bytes": 177140
+    },
+    {
+      "file": "technews-semiconductor-100.body",
+      "sha256": "5e3cc482c1a95339ccea4faf4f61b0fd59ab3ef30e28d7054a94dcd237d3a708",
+      "bytes": 820284
+    },
+    {
+      "file": "technews-semiconductor-p2.body",
+      "sha256": "fa078158d0855834d9a9132fef97a64f70e56e84eb82e7a411bd6b638fa2aa6d",
+      "bytes": 177043
+    },
+    {
+      "file": "technews-semiconductor-p3.body",
+      "sha256": "a9cd0e65bc2d45de011345884654aa1645cb6e3278c23889364127fd82a49148",
+      "bytes": 177151
+    },
+    {
+      "file": "technews-semiconductor-p4.body",
+      "sha256": "38f949395db0fc1a9cab4d9be182841021fdbcf8f18239a9fd1de7a43d7e5c7b",
+      "bytes": 176893
+    },
+    {
+      "file": "technews_hardware-0-list.body",
+      "sha256": "3b382a360570b4880d4f221584a79321e8972a5093a011c94c101c9121f43fcb",
+      "bytes": 177315
+    },
+    {
+      "file": "technews_hardware-0-rss.body",
+      "sha256": "43dc430ef279a46428740a6cb256f15e6b09ae2644122648473519e395942d4a",
+      "bytes": 40326
+    },
+    {
+      "file": "technews_hardware-1-list.body",
+      "sha256": "76865dd9292edd947dc53375626583b454a59eed59bef02a0f5dc663315339ae",
+      "bytes": 173271
+    },
+    {
+      "file": "technews_hardware-1-rss.body",
+      "sha256": "102a32cae680f820eedc4e4b8d4ee5218b6c75a263da8064c677620352988771",
+      "bytes": 38078
+    },
+    {
+      "file": "thelec_semiconductors_rss-0-list.body",
+      "sha256": "0f8a6ef2d7f2964fe73ca652be5668088a9941ac0f8d67645ab7c5d6bd73d0c4",
+      "bytes": 118793
+    },
+    {
+      "file": "thelec_semiconductors_rss-0-rss.body",
+      "sha256": "cbea5a008dc74f672f67e951a62c1102fa6454ea985dc0c9890e56ebb75acbc5",
+      "bytes": 20752
+    },
+    {
+      "file": "utility_dive-0-list.body",
+      "sha256": "a8fe0ef58dc17fbcfb39b6050dccace842e33f52c92e7b648bc0a00137caadc6",
+      "bytes": 291361
+    },
+    {
+      "file": "utility_dive-0-rss.body",
+      "sha256": "ab3738755e6d6f588911b1fa034e61453a895fad9c0cdb35c6bbb55107164b49",
+      "bytes": 9739
+    },
+    {
+      "file": "world_nuclear_news-0-list.body",
+      "sha256": "17465bab4220f61920e28b662d0648428dbb7203ef2a1196e865a54d378d8df7",
+      "bytes": 56621
+    },
+    {
+      "file": "world_nuclear_news-0-rss.body",
+      "sha256": "6e6ef211e46a7f1da59f5c829fb4f325e12c1ab552b73da6b05ae03b0b7454bd",
+      "bytes": 279226
+    }
+  ]
+}
