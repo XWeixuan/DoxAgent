@@ -228,6 +228,41 @@ def test_globe_language_and_body_identity_match_across_parallel_endpoints():
     assert update_hint(listing) == update_hint(rss)
 
 
+def test_real_hebrew_percent_escape_case_is_one_body_owner_across_both_paths(tmp_path):
+    from doxagent.message_bus_v2.body_results import article_key, update_hint
+    from doxagent.message_bus_v2.newswire_listing import canonical_article_url
+    from doxagent.message_bus_v2.live import LiveQueue
+    from doxagent.message_bus_v2.test_delivery import bindings
+    from tests.test_content_enrichment_hub import _setup
+
+    sid = "globenewswire_massive"
+    text = fixture("gn")
+    from lxml import html
+    tree = html.fromstring(text)
+    link = tree.xpath('//div[contains(@class,"mainLink")]/a')[0]
+    link.set("href", "/news-release/2026/11/06/3397854/673/he/%d7%a8%d7%95.html")
+    listing = parse_listing(html.tostring(tree, encoding="unicode"), source(sid), NOW)[0]
+    upper = canonical_article_url(listing.url)
+    xml = f'<rss><channel><item><title>{listing.title.replace("&", "&amp;")}</title><link>{upper}</link><pubDate>Fri, 6 Nov 2026 18:55:00 +0000</pubDate><description>Different teaser</description></item></channel></rss>'
+    rss = parse_feed(xml, source(sid), source(sid).default_parameters["endpoints"][0], NOW)[0]
+    assert listing.url == rss.url == upper
+    assert "%D7%A8" in upper
+    assert article_key(listing, sid) == article_key(rss, sid)
+    assert update_hint(listing) == update_hint(rss)
+    assert canonical_article_url("https://www.prnewswire.com/a%2fb.html") == "https://www.prnewswire.com/a%2fb.html"
+    repo, bus, _, _ = _setup(tmp_path)
+    s = source(sid);repo.save_source(s);bus.live_queue = LiveQueue(bus)
+    live = bus.live_queue.repository
+    from doxagent.message_bus_v2.schema import utc_now
+    for m in [listing, rss, listing]:
+        m = m.model_copy(update={"published_at": utc_now()})
+        prepared = live.prepare_input(s, [(b.binding_id, b.ticker, 0) for b in bindings(s)], [m], observed_at=utc_now().isoformat(), unit="WIRE:listing")
+        live.accept(prepared)
+    with repo._connect() as db:
+        assert db.execute("SELECT count(*) FROM live_articles WHERE source_id=?", (sid,)).fetchone()[0] == 1
+        assert db.execute("SELECT input_revision FROM live_articles WHERE source_id=?", (sid,)).fetchone()[0] == 1
+
+
 def test_configuration_changes_only_discovery_and_is_idempotent(tmp_path):
     from doxagent.message_bus_v2.repository import MessageBusV2Repository
     from doxagent.message_bus_v2.service import MessageBusV2Service

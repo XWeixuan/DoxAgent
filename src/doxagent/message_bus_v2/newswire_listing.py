@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import hashlib
+import re
 import time
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
@@ -43,6 +44,14 @@ RECIPES = {
 
 def enabled(source):
     return source.source_id in RECIPES and source.default_parameters.get("discovery_mode") == "http_listing"
+
+
+def canonical_article_url(url):
+    # RSS and HTML encode the same Hebrew/non-ASCII slug with different hex
+    # case. Percent escapes are case-insensitive; article slug text is not.
+    if urlsplit(url).hostname in {"www.globenewswire.com", "globenewswire.com"}:
+        return re.sub(r"%[0-9a-fA-F]{2}", lambda match: match[0].upper(), url)
+    return url
 
 
 def parse_listing(text, source, now):
@@ -88,7 +97,7 @@ def parse_listing(text, source, now):
             summaries = card.xpath('.//div[contains(@class,"newsTxt")]')
             parts = urlsplit(link).path.split("/")
             language = parts[7] if len(parts) > 7 else "en"
-        url = urljoin(source.entry_url, link)
+        url = canonical_article_url(urljoin(source.entry_url, link))
         if urlsplit(url).hostname != urlsplit(source.entry_url).hostname or not title:
             raise ValueError("wire_invalid_article_link_or_title")
         if not (urlsplit(url).path.endswith(".html") and "/news-release" in url):

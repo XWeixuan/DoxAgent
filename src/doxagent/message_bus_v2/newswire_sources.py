@@ -14,7 +14,7 @@ from .schema import (AcquisitionMode, DistributionPolicy, PollingConfig, PollRes
 from .industry_sources import parse_shared_feed
 from .http_routes import HTTP_EGRESSES, transport_routes
 from .publisher_http import PublisherHttpx, PublisherClients, RESPONSE_LIMIT
-from .newswire_listing import RECIPES, enabled as listing_enabled, poll_listing
+from .newswire_listing import RECIPES, canonical_article_url, enabled as listing_enabled, poll_listing
 
 TICKERS=['INTC','MU','BE','COHR','NBIS','CEG','RKLB','SNOW','ONDS','IONQ']
 CATALOG={
@@ -103,6 +103,7 @@ def parse_feed(text,source,endpoint,now):
         'https://www.newsfilecorp.com/' if source.source_id=='tmx_newsfile_massive' else endpoint['url'])
     rows=parse_shared_feed(text,feed_url=base,publisher=source.display_name,language='en',now=now)
     for row in rows:
+        if source.source_id=='globenewswire_massive':row.url=canonical_article_url(row.url)
         parts=urlsplit(row.url).path.split('/')
         lang=parts[4] if source.source_id=='businesswire_massive' and len(parts)>4 else 'en'
         if source.source_id=='globenewswire_massive' and len(parts)>7:lang=parts[7]
