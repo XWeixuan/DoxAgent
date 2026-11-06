@@ -55,6 +55,8 @@ def manual_review_reason(recovery, latest_job=None):
     """Diagnostic projection only; never changes solver/recovery admission."""
     if recovery is None or recovery.phase == "RESOLVED":
         return None
+    if getattr(recovery, "document_recovery", {}).get("control", {}).get("failures", 0):
+        return "browser_control_unavailable"
     if recovery.manual_review_reason:
         return recovery.manual_review_reason
     if recovery.handling_mode != "HUMAN":
@@ -67,8 +69,8 @@ def manual_review_reason(recovery, latest_job=None):
             return ("provider_unsolvable_manual_review"
                     if latest_job.get("reason") == "ERROR_CAPTCHA_UNSOLVABLE"
                     else "provider_failed_manual_review")
-        verification = latest_job.get("solver_verification", latest_job.get("verification_state"))
-        if status == "APPLIED" and verification == "STILL_BLOCKED":
+        verification = {latest_job.get("solver_verification"), latest_job.get("verification_state")}
+        if status == "APPLIED" and "STILL_BLOCKED" in verification:
             return "provider_result_still_blocked_manual_review"
     if recovery.scene_preparation.get("attempt_no", 0) >= 2:
         return "challenge_retry_limit_manual_review"

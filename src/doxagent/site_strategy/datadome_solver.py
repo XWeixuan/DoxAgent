@@ -1,6 +1,8 @@
 """Opt-in paid DataDome recovery. Durable task IDs, short ticks, no success without business proof."""
 
 import json
+import re
+import sqlite3
 from contextlib import nullcontext
 from datetime import datetime, timedelta
 from urllib.parse import quote, urlsplit, parse_qs
@@ -9,6 +11,72 @@ import httpx
 
 from .datadome_browser import NativeChallenge
 from .schema import digest_json, new_id, utc_now
+
+
+def record_solver_diagnostic(repository, identity_id, stage, summary, *, recovery_id=None):
+    try:
+        return _record_solver_diagnostic(repository, identity_id, stage, summary,
+                                         recovery_id=recovery_id)
+    except (sqlite3.Error, ValueError):
+        return None  # Optional evidence cannot fail an otherwise valid business operation.
+
+
+def _record_solver_diagnostic(repository, identity_id, stage, summary, *, recovery_id=None):
+    """Bounded, passive evidence from existing observations and business requests.
+
+    Only state transitions write. No document, URL, headers or credentials enter
+    the job, and a failed diagnostic never changes business admission.
+    """
+    if stage not in {"DOCUMENT", "CRAWLER", "BODY"}:
+        raise ValueError("unsupported diagnostic stage")
+    from .governance_repository import GovernanceRepository
+
+    current = GovernanceRepository(repository).get_recovery(identity_id)
+    if not current or (recovery_id and current.recovery_id != recovery_id):
+        return
+    allowed = {"challenge", "authentication", "outcome", "reason", "http_status",
+               "query_key", "proof_id", "body_quality", "page_kind", "evidence"}
+    clean = {k: v for k, v in summary.items() if k in allowed and (
+        v is None or isinstance(v, (int, bool))
+        or isinstance(v, str) and re.fullmatch(r"[A-Za-z0-9_.:-]{1,100}", v)
+    )}
+    # A new article/query is not itself a state change. Keep the evidence which
+    # established the transition, rather than rewriting on every healthy poll.
+    def state(value):
+        return {k: v for k, v in value.items() if k not in {"query_key", "proof_id", "at"}}
+
+    with repository._lock:
+        row = repository._connection.execute(
+            "select data_json from datadome_solver_jobs where recovery_id=? "
+            "order by created_at desc limit 1", (current.recovery_id,),
+        ).fetchone()
+    if not row:
+        return
+    job = json.loads(row[0])
+    if job.get("status") != "APPLIED":
+        return
+    previous = job.get("diagnostics", {}).get(stage)
+    if previous is not None and state(previous) == state(clean):
+        return
+    observation = {**clean, "at": utc_now().isoformat()}
+    with repository.transaction() as db:
+        # Re-read under the owner transaction: never overwrite concurrent proof,
+        # provider cost, or terminal fields with an older copy of the job.
+        row = db.execute("select data_json from datadome_solver_jobs where job_id=?",
+                         (job["job_id"],)).fetchone()
+        if not row:
+            return
+        job = json.loads(row[0])
+        if job.get("status") != "APPLIED":
+            return
+        previous = job.get("diagnostics", {}).get(stage)
+        if previous is not None and state(previous) == state(clean):
+            return
+        job["diagnostics"] = {**job.get("diagnostics", {}), stage: observation}
+        job["diagnostic_timeline"] = [*job.get("diagnostic_timeline", []),
+                                      {"stage": stage, **observation}][-8:]
+        db.execute("update datadome_solver_jobs set data_json=?,updated_at=? where job_id=?",
+                   (json.dumps(job), observation["at"], job["job_id"]))
 
 
 def mark_solver_outcome(
@@ -428,8 +496,7 @@ class DataDomeSolver:
         active = jobs[-1] if jobs else None
         if not active and utc_now() - recovery.opened_at > timedelta(days=7):
             return False  # Historic GC may have removed an already-paid tombstone.
-        paid_terminal = bool(active and active['status'] in {'FAILED','APPLIED','SUBMITTING','APPLYING','SUPERSEDED'})
-        if active and active["status"] in {"FAILED", "APPLIED", "SUBMITTING", "APPLYING"}:
+        if active and active["status"] in {"FAILED", "APPLIED", "SUBMITTING", "APPLYING", "SUPERSEDED"}:
             # SUBMITTING after interruption is ambiguous. Never silently buy another task.
             if active["status"] == "SUBMITTING":
                 self.fail(active, recovery, "SUBMISSION_OUTCOME_UNKNOWN")
@@ -446,9 +513,9 @@ class DataDomeSolver:
                     verification_reason="legacy_application_without_proof",
                 )
                 self.save(active)
-            if active['status'] in {'SUBMITTING','APPLYING'} or active.get('verification_reason') in {
-                'application_interrupted','application_outcome_unknown'}:
-                return False
+            # Terminal means no more browser preparation or provider submission.
+            # Existing passive confirmation/manual recovery owns the next steps.
+            return False
         if active and active["status"] == "PENDING":
             if utc_now() - datetime.fromisoformat(
                 active.get("submitted_at", active["created_at"])
@@ -483,7 +550,7 @@ class DataDomeSolver:
             # Refresh stale main-route telemetry once, outside the Profile writer.
             # The normal maintenance loop owns the half-hour cadence; never probe
             # both routes again on every five-second solver tick.
-            if (not paid_terminal or data) and (not egress.observed_at or utc_now()-egress.observed_at>timedelta(hours=1)):
+            if not egress.observed_at or utc_now()-egress.observed_at>timedelta(hours=1):
                 last=self._proof_refresh_at.get(egress.egress_id)
                 if not last or utc_now()-last>timedelta(minutes=1):
                     self._proof_refresh_at[egress.egress_id]=utc_now()
@@ -560,8 +627,6 @@ class DataDomeSolver:
                             active['reason']=reason
                             self.save(active)
                     return preparing
-                if paid_terminal:
-                    return False
                 runtime=self.coordinator.service.repository.get_identity_runtime(identity.identity_id)
                 if runtime.paid_cooldown_until and runtime.paid_cooldown_until > utc_now():
                     return False

@@ -456,7 +456,7 @@ def test_probation_fields_persist_and_do_not_end_without_natural_success(setup):
         updated.model_copy(update={"natural_success_at": utc_now()}),
         expected_generation=state.generation,
     )
-    assert service._identity_navigation_interval(scope.primary_identity_id, 3000) == 3000
+    assert 3000 < service._identity_navigation_interval(scope.primary_identity_id, 3000) < 10000
 
 
 def test_fast_relapse_persists_across_incident_and_updates_only_old_job(setup):

@@ -1656,16 +1656,20 @@ class GovernanceRepository:
             window=windows.get(purpose)
             if not window or not window.get('recovered_at') or window.get('blocked_again_at'):
                 continue
+            probation_until = window.get('probation_until')
             window['blocked_again_at']=now.isoformat()
-            window['probation_until']=None
             changed=True
             seconds=(now-datetime.fromisoformat(window['recovered_at'])).total_seconds()
-            if seconds<=120:
-                relapses.append({'previous_recovery_id':window.get('recovery_id'),
-                    'recovery_id':recovery.recovery_id,'purpose':purpose,'capability_epoch':window['capability_epoch'],
-                    'at':now.isoformat(),'previous_recovered_at':window['recovered_at'],'seconds_to_recurrence':seconds})
+            protected_seconds = max(0, (datetime.fromisoformat(probation_until)
+                - datetime.fromisoformat(window['recovered_at'])).total_seconds()) if probation_until else 0
+            relapses.append({'previous_recovery_id':window.get('recovery_id'),
+                'recovery_id':recovery.recovery_id,'purpose':purpose,'capability_epoch':window['capability_epoch'],
+                'at':now.isoformat(),'previous_recovered_at':window['recovered_at'],
+                'seconds_to_recurrence':seconds,
+                'within_recovery_window':0 <= seconds <= max(120, protected_seconds * 2 + 120)})
         if changed:
-            recent=[r for r in relapses if now-datetime.fromisoformat(r['at'])<=timedelta(minutes=15)]
+            recent=[r for r in relapses if now-datetime.fromisoformat(r['at'])<=timedelta(minutes=15)
+                    and r.get('within_recovery_window', r.get('seconds_to_recurrence', 0) <= 120)]
             # CRAWLER and BODY can report the same physical relapse separately.
             # Count another paid episode only after a fresh business recovery.
             episodes=[]
@@ -1690,12 +1694,14 @@ class GovernanceRepository:
         now = utc_now()
         policy = self.repository.get_strategy(recovery.site_id).challenge
         seconds = policy.probation_seconds if recovery.site_id == "reuters" else 0
+        recent_relapses = [r for r in runtime.recent_relapses
+                          if r.get('within_recovery_window', r.get('seconds_to_recurrence', 0) <= 120)]
         if (
             seconds
-            and len(runtime.recent_relapses) >= 2
+            and len(recent_relapses) >= 2
             and all(
                 now - datetime.fromisoformat(r["at"]) <= timedelta(minutes=30)
-                for r in runtime.recent_relapses[-2:]
+                for r in recent_relapses[-2:]
             )
         ):
             seconds = max(seconds, 900)

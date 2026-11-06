@@ -68,10 +68,16 @@ class ProfileUnavailableError(RuntimeError):
 
 
 def recovery_pending_reason(value):
+    control = getattr(value, "document_recovery", {}).get("control", {})
+    if control.get("failures", 0):
+        return "browser_control_unavailable"
     if value.manual_review_reason:
         return value.manual_review_reason
     if value.last_error == "datadome_solver_pending":
         return "datadome_solver_pending"
+    if value.last_error in {"provider_unsolvable_manual_review", "provider_failed_manual_review",
+                            "provider_result_still_blocked_manual_review", "challenge_retry_limit_manual_review"}:
+        return value.last_error
     if value.handling_mode == "HUMAN" and value.assessment.get("kind") == "INTERACTIVE":
         return "human_challenge_pending"
     return "site_recovery_pending"
@@ -1313,10 +1319,20 @@ class SiteStrategyService:
     def _identity_navigation_interval(self, identity_id, configured):
         with self.repository.read_scope():
             state = self.repository.get_identity_runtime(identity_id)
-        if state.probation_until and (
-            state.probation_until > utc_now() or not state.natural_success_at
-        ):
-            return max(configured, state.probation_interval_ms)
+        if state.probation_until:
+            now = utc_now()
+            protected = max(configured, state.probation_interval_ms)
+            if state.probation_until > now or not state.natural_success_at:
+                return protected
+            # Capacity returns gradually after probation, never as a backlog burst.
+            # No new scheduler/state: derive the ramp from the persisted window.
+            ramp_seconds = max(1, (state.probation_until - (
+                state.recovered_at or state.probation_until - timedelta(seconds=300)
+            )).total_seconds())
+            elapsed = (now - state.probation_until).total_seconds()
+            if elapsed < ramp_seconds:
+                return max(configured, round(protected - (protected - configured)
+                                             * elapsed / ramp_seconds))
         return configured
 
     def _shared_key(self, request):
@@ -2650,6 +2666,22 @@ class SiteStrategyService:
                     category.value,
                     url=request.url,
                 ))
+            if resolved.site_id == "reuters" and request.purpose in {SitePurpose.CRAWLER, SitePurpose.BODY}:
+                from .datadome_solver import record_solver_diagnostic
+
+                try:
+                    await registry_io(record_solver_diagnostic, self.repository,
+                        combination.identity_id or profile.profile_id, request.purpose.value, {
+                            "outcome": category.value if category else "SUCCESS",
+                            "reason": reason, "http_status": response.status_code,
+                            "body_quality": response.body_quality,
+                            "query_key": digest_json([request.recipe_parameters.get("query"),
+                                                       request.recipe_parameters.get("offset", 0)]),
+                            "proof_id": digest_json(request.operation_id),
+                            "evidence": "NATURAL_TRANSPORT",
+                        })
+                except (ValueError, sqlite3.Error):
+                    pass  # Optional evidence must not turn a successful capture into failure.
             last = response, category, reason, int((time.monotonic() - total_started)*1000)
             if category is not FailureCategory.TRANSIENT_TRANSPORT or retry == 1:
                 break

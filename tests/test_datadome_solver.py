@@ -301,8 +301,8 @@ async def test_paid_task_resumes_and_cookie_does_not_mark_business_success(solve
     saved = solver.jobs(value.recovery_id)[0]
     assert saved["status"] == "APPLIED" and "secret" not in json.dumps(saved)
     assert solver.coordinator.store.get_recovery(value.identity_id).phase != "RESOLVED"
-    assert await solver.tick(value, scope, identity, egress)  # Free RETRY preparation after application; no repurchase.
-    browser.prepare_retry.assert_awaited_once()
+    assert not await solver.tick(value, scope, identity, egress)
+    browser.prepare_retry.assert_not_awaited()  # Terminal result hands off to passive/manual recovery.
     assert sum(c.args[1] == 'createTask' for c in solver.provider.request.await_args_list) == 1
 
 

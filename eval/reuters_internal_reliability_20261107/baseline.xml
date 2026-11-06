@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="4" time="6.109" timestamp="2026-11-07T02:23:12.647660+08:00" hostname="DESKTOP-BQ2H2TD"><testcase classname="tests.test_solver_recovery_repair" name="test_finished_capture_does_not_replace_same_or_next_poll_network" time="1.198"><failure message="assert (None != None)&#10; +  where None = AccessResult(served_from_shared_capture=False, capture_id=None, capture_acquired_at=None, capture_age_ms=None, consume...e, runtime_generation=None, exit_ip_observation=None, attempts=[], combination_skips=[], queue_wait_ms=0, network_ms=0).capture_id&#10; +  and   None = AccessResult(served_from_shared_capture=False, capture_id=None, capture_acquired_at=None, capture_age_ms=None, consume...e, runtime_generation=None, exit_ip_observation=None, attempts=[], combination_skips=[], queue_wait_ms=0, network_ms=0).capture_id">tests\test_solver_recovery_repair.py:322: in test_finished_capture_does_not_replace_same_or_next_poll_network
+    assert first.capture_id != same.capture_id and not same.served_from_shared_capture
+E   assert (None != None)
+E    +  where None = AccessResult(served_from_shared_capture=False, capture_id=None, capture_acquired_at=None, capture_age_ms=None, consume...e, runtime_generation=None, exit_ip_observation=None, attempts=[], combination_skips=[], queue_wait_ms=0, network_ms=0).capture_id
+E    +  and   None = AccessResult(served_from_shared_capture=False, capture_id=None, capture_acquired_at=None, capture_age_ms=None, consume...e, runtime_generation=None, exit_ip_observation=None, attempts=[], combination_skips=[], queue_wait_ms=0, network_ms=0).capture_id</failure></testcase><testcase classname="tests.test_solver_recovery_repair" name="test_reuters_legitimate_zero_results_are_business_proof[Search results for Ondas 0 results]" time="2.798"><failure message="AssertionError: assert ('UNKNOWN' == 'CLEARED'&#10;  &#10;  - CLEARED&#10;  + UNKNOWN)">tests\test_solver_recovery_repair.py:591: in test_reuters_legitimate_zero_results_are_business_proof
+    assert report.challenge == "CLEARED" and report.crawler == "READY"
+E   AssertionError: assert ('UNKNOWN' == 'CLEARED'
+E     
+E     - CLEARED
+E     + UNKNOWN)</failure></testcase><testcase classname="tests.test_solver_recovery_repair" name="test_reuters_legitimate_zero_results_are_business_proof[No search results match the term \u201cOndas\u201d]" time="1.706" /><testcase classname="tests.test_solver_recovery_repair" name="test_reuters_live_recipe_accepts_same_zero_result_contract" time="0.004"><failure message="AttributeError: 'types.SimpleNamespace' object has no attribute 'url'">tests\test_solver_recovery_repair.py:606: in test_reuters_live_recipe_accepts_same_zero_result_contract
+    assert await capture_reuters_search(page, "Ondas", 0) == []
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Temp\doxagent-reuters-baseline-20261107\src\doxagent\message_bus_v2\reuters_sources.py:111: in capture_reuters_search
+    rows=await _capture_reuters_search_dom(page,query,offset,navigation=navigation)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Temp\doxagent-reuters-baseline-20261107\src\doxagent\message_bus_v2\reuters_sources.py:145: in _capture_reuters_search_dom
+    current_url = urlsplit(page.url)
+                           ^^^^^^^^
+E   AttributeError: 'types.SimpleNamespace' object has no attribute 'url'</failure></testcase></testsuite></testsuites>

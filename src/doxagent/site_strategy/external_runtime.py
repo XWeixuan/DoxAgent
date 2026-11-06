@@ -377,9 +377,21 @@ class ExternalChromeRuntime:
                     )
                 finally:
                     await cleanup.detach_transport()
-            browser = await self._playwright.chromium.connect_over_cdp(
-                instance.cdp_http_url, timeout=20_000, no_defaults=True
-            )
+            attach_started = time.monotonic()
+            logger.info("CDP attach started identity=%s instance=%s epoch=%s",
+                        identity.identity_id, instance.instance_id, epoch)
+            try:
+                browser = await self._playwright.chromium.connect_over_cdp(
+                    instance.cdp_http_url, timeout=20_000, no_defaults=True
+                )
+            except Exception as exc:
+                logger.warning("CDP attach failed identity=%s instance=%s epoch=%s elapsed_ms=%s error_type=%s",
+                               identity.identity_id, instance.instance_id, epoch,
+                               int((time.monotonic() - attach_started) * 1000), type(exc).__name__)
+                raise
+            logger.info("CDP attach finished identity=%s instance=%s epoch=%s elapsed_ms=%s",
+                        identity.identity_id, instance.instance_id, epoch,
+                        int((time.monotonic() - attach_started) * 1000))
             if len(browser.contexts) != 1:
                 raise RuntimeError("external_chrome_default_context_missing")
             cdp = _RawBrowserCDP(instance.cdp_websocket_url)

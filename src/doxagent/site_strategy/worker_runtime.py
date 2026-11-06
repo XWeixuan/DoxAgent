@@ -285,6 +285,15 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                         await self.workers.retire(identity.identity_id, graceful=False)
                         if await self.workers.graceful_drain_managed(identity):
                             continue
+                    if (identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+                            and exc.reason_code == 'browser_cdp_attach_failed'):
+                        # Retire the failed Python/Node controller, never native Chrome.
+                        # Do not replay the request; the next admitted operation gets
+                        # a fresh controller instead of reusing poisoned driver state.
+                        await self.workers.retire(identity.identity_id, graceful=False)
+                        exc.control_recovery_attempted = False
+                        exc.controller_recycled = True
+                        raise
                     if (
                         recovery
                         or exc.failure_category != "RUNTIME_UNAVAILABLE"
@@ -293,9 +302,6 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                         or deadline - time.monotonic() <= 1
                     ):
                         raise
-                    if (resolved.site_id == 'reuters' and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
-                            and exc.reason_code == 'browser_cdp_attach_failed'):
-                        raise  # One bounded transport attempt; do not repeat a full cold attach in the same budget.
                     await self.workers.retire(identity.identity_id, graceful=False)
             response.stage_timings["global_wait_ms"] = slot_wait_ms
             response.stage_timings["worker_roundtrip_ms"] = int((time.monotonic()-worker_started)*1000)

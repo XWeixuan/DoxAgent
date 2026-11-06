@@ -25,6 +25,26 @@ from .verification import VerificationReport, validate_capture, validate_crawler
 logger = logging.getLogger(__name__)
 
 
+def control_backoff(recovery, reason):
+    """Persist a bounded controller failure streak independently of page state."""
+    control = dict(recovery.document_recovery.get("control", {}))
+    failures = min(1000, control.get("failures", 0) + 1)
+    delay = (60, 120, 300, 600)[min(failures - 1, 3)]
+    control.update(failures=failures, reason=reason, last_failure_at=utc_now().isoformat())
+    return recovery.model_copy(update={
+        "document_recovery": {**recovery.document_recovery, "control": control},
+        "next_probe_at": utc_now() + timedelta(seconds=delay),
+    }), delay
+
+
+def control_available(recovery):
+    if "control" not in recovery.document_recovery:
+        return recovery
+    return recovery.model_copy(update={"document_recovery": {
+        k: v for k, v in recovery.document_recovery.items() if k != "control"
+    }})
+
+
 def register_auth_recovery(service,scope,identity,request):
     """A proven BODY login wall is recoverable without inventing a CAPTCHA task."""
     from .governance_models import BrowserRecovery
@@ -740,6 +760,16 @@ class BrowserRecoveryCoordinator:
                         report = verify_capture(
                             self.service, scope, context, capture, observed=True
                         )
+                        from .datadome_solver import record_solver_diagnostic
+
+                        await registry_io(record_solver_diagnostic, self.service.repository,
+                            identity_id, "DOCUMENT", {
+                                "challenge": report.challenge,
+                                "authentication": report.authentication,
+                                "outcome": report.crawler if context["purpose"] == "CRAWLER" else report.body,
+                                "reason": report.reason, "page_kind": report.original_page_kind,
+                                "evidence": "RETAINED_DOCUMENT",
+                            }, recovery_id=recovery.recovery_id)
                         confirmation_delay = self.datadome_solver.confirmation_delay(
                             recovery, report
                         )
@@ -920,6 +950,7 @@ class BrowserRecoveryCoordinator:
                                 else latest.last_real_probe_at
                             }
                         )
+                        recovery = control_available(recovery)
                         (await registry_io(self.store.save_recovery, recovery, expected_generation=claimed.generation))
                         if (
                             discovery
@@ -1048,11 +1079,21 @@ class BrowserRecoveryCoordinator:
                     if recovery.handling_mode == "HUMAN"
                     else (60, 120, 300, 600)[min(max(recovery.attempt_count - 1, 0), 3)]
                 )
+                if probe_timing['reason_code'] in {
+                    "browser_cdp_attach_failed", "browser_driver_unavailable",
+                    "identity_worker_disconnected", "identity_node_shutdown_unconfirmed",
+                    "identity_controller_shutdown_unconfirmed",
+                }:
+                    recovery, delay = control_backoff(recovery, probe_timing['reason_code'])
+                    probe_result = "CONTROL_UNAVAILABLE"
+                    probe_timing["control_failure_count"] = recovery.document_recovery["control"]["failures"]
+                    if probe_timing['reason_code'] == "browser_cdp_attach_failed":
+                        request_sent = False  # Other driver losses can happen after navigation.
                 recovery = recovery.model_copy(
                     update={"next_probe_at": utc_now() + timedelta(seconds=delay)}
                 )
                 await self._defer(
-                    recovery, getattr(exc, "reason_code", None) or type(exc).__name__, delay=60
+                    recovery, getattr(exc, "reason_code", None) or type(exc).__name__, delay=delay
                 )
             finally:
                 if probe:
@@ -1140,6 +1181,11 @@ class BrowserRecoveryCoordinator:
         current = (await registry_io(self.store.get_recovery, recovery.identity_id))
         if not current or current.generation != recovery.generation or current.phase == "RESOLVED":
             return
+        if reason == "verification_pending" and recovery.handling_mode == "HUMAN":
+            from .human_verification import manual_review_reason
+
+            jobs = await registry_io(self.datadome_solver.jobs, recovery.recovery_id)
+            reason = manual_review_reason(recovery, jobs[-1] if jobs else None) or reason
         value = recovery.model_copy(
             update={
                 "phase": "BACKOFF",
