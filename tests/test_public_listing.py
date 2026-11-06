@@ -508,8 +508,9 @@ def test_proxy_explicit_stale_response_without_age_is_rejected():
         )
 
 
+@pytest.mark.parametrize("failure_code", ["HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED"])
 async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_success(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, failure_code
 ):
     from doxagent.message_bus_v2.collection_plane import observability
     from doxagent.message_bus_v2.schema import AcquisitionFailure
@@ -537,7 +538,7 @@ async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_su
                         source_id=source.source_id,
                         binding_id=targets[0].binding_id,
                         ticker=targets[0].ticker,
-                        error_code="HTTP_LISTING_FAILED_RSS_FALLBACK",
+                        error_code=failure_code,
                         error_message="HTTP403; RSS still available",
                         raw_hash="test",
                         original_payload={},
@@ -554,7 +555,7 @@ async def test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_su
     state = store.states()[(targets[0].binding_id, unit)]["state"]
     assert (
         state["status"] == "failed"
-        and state["last_error_code"] == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+        and state["last_error_code"] == failure_code
     )
     with store.connect() as d:
         proof = json.loads(

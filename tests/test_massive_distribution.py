@@ -86,7 +86,7 @@ def test_real_subscription_to_test_source_is_rejected(tmp_path):
         bus.configure_binding(ticker='MU',source_id='businesswire_massive',actor=UpdateActor.USER)
 
 
-async def test_ten_targets_use_seven_physical_units_and_calendar_is_unchanged(tmp_path):
+async def test_ten_targets_use_five_physical_units_and_calendar_is_unchanged(tmp_path):
     from types import SimpleNamespace
     from doxagent.message_bus_v2.collection_plane.config import Configuration
     from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
@@ -98,7 +98,7 @@ async def test_ten_targets_use_seven_physical_units_and_calendar_is_unchanged(tm
         SimpleNamespace(),store=AcquisitionStore(tmp_path/'acquisition.db',initialize=True),
         config_loader=lambda *a,**kw:cfg)
     await collector.refresh()
-    assert len(collector.desired)==7
+    assert len(collector.desired)==5
     assert all(len(value[1])==10 for value in collector.desired.values())
     assert cfg.realtime is False
 
@@ -117,6 +117,7 @@ async def test_304_preserves_checkpoint_and_bad_feed_does_not_become_empty_succe
             return httpx.Response(self.status,text=self.body,request=httpx.Request('GET',url))
     client=Client();adapter=NewswireAdapter();adapter.clients={'direct':client}
     source=initial_sources()[0]
+    source.default_parameters['discovery_mode']='rss'
     context=SharedPollContext(run_id='test',source=source,acquisition_unit='TEST:WIRE:all',
         checkpoint={'etag':'old','seen':{'article':'hash'}},request_permit=permit)
     result=await adapter.poll_shared(context)

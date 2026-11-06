@@ -1266,7 +1266,7 @@ class GlobalPollScheduler:
                 )
             discovery_failure = next(
                 (f for f in result.failures
-                 if f.error_code == "HTTP_LISTING_FAILED_RSS_FALLBACK"), None
+                 if f.error_code in {"HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED"}), None
             )
             if mode == "REALTIME" and (
                 result.window_done or getattr(self, "_long_running", False) or discovery_failure

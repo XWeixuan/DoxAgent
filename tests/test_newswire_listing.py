@@ -1,0 +1,209 @@
+import asyncio
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
+
+import httpx
+import pytest
+
+from doxagent.message_bus_v2.newswire_listing import RECIPES, cache_evidence, parse_listing, poll_listing
+from doxagent.message_bus_v2.newswire_sources import initial_sources, endpoint_units, parse_feed
+from doxagent.message_bus_v2.schema import PollResult, SharedPollContext
+
+NOW = datetime(2026, 11, 6, 19, 0, tzinfo=UTC)
+FIXTURES = Path(__file__).parent / "fixtures" / "newswire_listing"
+
+
+def source(sid="prnewswire_massive"):
+    return next(s for s in initial_sources() if s.source_id == sid)
+
+
+@asynccontextmanager
+async def permit():
+    yield
+
+
+def context(sid="prnewswire_massive", **kwargs):
+    return SharedPollContext(run_id="test", source=source(sid), acquisition_unit="TEST:WIRE:listing",
+                             requested_at=NOW, request_permit=permit, **kwargs)
+
+
+def response(text="", status=200, headers=None):
+    return httpx.Response(status, text=text, headers=headers or {}, request=httpx.Request("GET", "https://wire.test/"))
+
+
+def fixture(name):
+    return (FIXTURES / (name + ".html")).read_text(encoding="utf8")
+
+
+@pytest.mark.parametrize("sid,name", [("prnewswire_massive", "prnewswire"), ("globenewswire_massive", "gn"), ("access_newswire_massive", "access")])
+def test_real_cards_keep_full_titles_links_eastern_time_and_minute_precision(sid, name):
+    rows = parse_listing(fixture(name), source(sid), NOW)
+    assert len(rows) == 3
+    assert all(r.body is None and r.metadata["publication_time_precision"] == "minute" for r in rows)
+    assert rows[0].published_at == datetime(2026, 11, 6, 18, 40 if name == "access" else 55, tzinfo=UTC)
+    assert not rows[0].title.startswith(("13:55", "13:40"))
+
+
+def test_prn_midnight_does_not_turn_previous_day_releases_into_fresh_news():
+    text = fixture("prnewswire").replace("13:55 ET", "Nov 05, 2026, 23:55 ET")
+    row = parse_listing(text, source(), NOW + timedelta(days=1))[0]
+    assert row.published_at == datetime(2026, 11, 6, 4, 55, tzinfo=UTC)
+
+
+@pytest.mark.parametrize("sid,name", [("prnewswire_massive", "prnewswire"), ("globenewswire_massive", "gn")])
+def test_rss_and_html_have_same_body_identity_even_when_guid_and_description_differ(sid, name):
+    from doxagent.message_bus_v2.body_results import article_key
+
+    listing = parse_listing(fixture(name), source(sid), NOW)[0]
+    xml = f'<rss><channel><item><title>{listing.title.replace("&", "&amp;")}</title><link>{listing.url}</link><guid>provider-123</guid><pubDate>Fri, 6 Nov 2026 18:55:00 +0000</pubDate><description>RSS teaser</description></item></channel></rss>'
+    rss = parse_feed(xml, source(sid), source(sid).default_parameters["endpoints"][0], NOW)[0]
+    assert article_key(listing, sid) == article_key(rss, sid)
+
+
+@pytest.mark.parametrize("sid", ["prnewswire_massive", "globenewswire_massive", "access_newswire_massive"])
+def test_challenge_or_shell_is_not_an_empty_healthy_listing(sid):
+    with pytest.raises(ValueError):
+        parse_listing("<html><title>Just a moment</title><a href='/news'>News</a></html>", source(sid), NOW)
+
+
+@pytest.mark.parametrize("headers", [{"Age": "121"}, {"Age": "invalid"}, {"Warning": "110 - stale"}])
+def test_stale_cache_is_failure(headers):
+    assert cache_evidence(response(headers=headers), "https://wire.test", "GET").get("error")
+
+
+async def test_second_poll_unchanged_listing_does_not_repeat_body_inputs():
+    adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(fixture("prnewswire")), "direct")), poll_feed=AsyncMock())
+    first = await poll_listing(adapter, context())
+    assert len(first.messages) == 3 and not first.failures
+    second = await poll_listing(adapter, context(checkpoint=first.next_checkpoint))
+    assert not second.messages and not second.failures
+    adapter.poll_feed.assert_not_called()
+    assert adapter.listing_request.call_args.args[2]["method"] == "POST"
+
+
+async def test_304_requires_prior_validated_baseline_and_preserves_seen():
+    adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(status=304), "direct")), poll_feed=AsyncMock(return_value=PollResult()))
+    missing = await poll_listing(adapter, context("globenewswire_massive"))
+    assert missing.failures and not missing.window_done
+    cp = {"head": {"baseline": True, "etag": "v1"}, "seen": {"url": "digest"}}
+    result = await poll_listing(adapter, context("globenewswire_massive", checkpoint=cp))
+    assert not result.failures and result.next_checkpoint == cp
+    assert adapter.listing_request.call_args.args[-1] == {"If-None-Match": "v1"}
+
+
+async def test_http_failure_retains_rss_messages_but_never_renews_listing_health():
+    from doxagent.message_bus_v2.poll_trace import REQUESTS, REQUEST_ROLE
+
+    rows = parse_listing(fixture("prnewswire"), source(), NOW)
+    roles = []
+    async def rss(ctx):
+        roles.append(REQUEST_ROLE.get())
+        assert ctx.checkpoint == {}
+        return PollResult(messages=rows, next_checkpoint={"seen": {"rss": "not_primary"}})
+
+    adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(status=403), "direct")), poll_feed=rss)
+    events = []
+    token = REQUESTS.set(events)
+    try:
+        result = await poll_listing(adapter, context())
+    finally:
+        REQUESTS.reset(token)
+    assert result.failures[0].error_code == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+    assert len(result.messages) == 3 and not result.window_done
+    assert result.next_checkpoint == {} and result.acquisition_metadata["validated_request_ids"] == []
+    assert roles == ["rss_fallback", "rss_fallback"]
+    assert all(r.metadata["discovery_method"] == "rss_fallback" for r in result.messages)
+
+
+async def test_access_does_not_invent_blog_rss_as_fallback():
+    adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(status=403), "us-standard-5")), poll_feed=AsyncMock())
+    result = await poll_listing(adapter, context("access_newswire_massive"))
+    assert result.failures[0].error_code == "HTTP_LISTING_FAILED"
+    adapter.poll_feed.assert_not_called()
+
+
+async def test_paging_covers_burst_and_failed_second_page_keeps_first_page_news(monkeypatch):
+    monkeypatch.setitem(RECIPES, "prnewswire_massive", {**RECIPES["prnewswire_massive"], "size": 3})
+    second = fixture("prnewswire").replace("13:55 ET", "13:20 ET").replace("302932308", "302932999")
+    adapter = SimpleNamespace(listing_request=AsyncMock(side_effect=[(response(fixture("prnewswire")), "direct"), (response(second), "direct")]), poll_feed=AsyncMock(return_value=PollResult()))
+    result = await poll_listing(adapter, context())
+    assert not result.failures and adapter.listing_request.await_count == 2
+    assert "page=2" in adapter.listing_request.call_args.args[1]
+    assert len(result.messages) == 3  # The new second-page identity is outside the admission window.
+    adapter.listing_request.side_effect = [(response(fixture("prnewswire")), "direct"), (response(status=403), "direct")]
+    result = await poll_listing(adapter, context())
+    assert result.failures and len(result.messages) == 3
+    assert all(r.metadata["discovery_method"] == "http_listing_partial" for r in result.messages)
+
+
+async def test_cache_age_failure_is_auditable_and_falls_back_instead_of_claiming_freshness():
+    adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(fixture("prnewswire"), headers={"age": "500", "cache-control": "max-age=60"}), "direct")), poll_feed=AsyncMock(return_value=PollResult()))
+    result = await poll_listing(adapter, context())
+    assert result.failures and result.acquisition_metadata["cache"][0]["age"] == "500"
+    assert "cache_age" in result.failures[0].error_message
+
+
+@pytest.mark.parametrize("sid", ["businesswire_massive", "tmx_newsfile_massive"])
+async def test_reviewed_challenges_do_not_hammer_http_or_start_browser(sid):
+    adapter = SimpleNamespace(listing_request=AsyncMock(), poll_feed=AsyncMock(return_value=PollResult()))
+    result = await poll_listing(adapter, context(sid))
+    assert result.failures and "review required" in result.failures[0].error_message
+    adapter.listing_request.assert_not_called()
+    adapter.poll_feed.assert_awaited_once()
+
+
+async def test_revocation_cancellation_never_trigger_fallback():
+    from doxagent.message_bus_v2.collection_override import CollectionStopped
+
+    adapter = SimpleNamespace(listing_request=AsyncMock(side_effect=CollectionStopped("revoked")), poll_feed=AsyncMock())
+    with pytest.raises(CollectionStopped):
+        await poll_listing(adapter, context())
+    adapter.poll_feed.assert_not_called()
+    adapter.listing_request.side_effect = asyncio.CancelledError()
+    with pytest.raises(asyncio.CancelledError):
+        await poll_listing(adapter, context())
+    adapter.poll_feed.assert_not_called()
+
+
+async def test_slow_publisher_does_not_block_another_platform():
+    async def fetch(ctx, *args):
+        if ctx.source.source_id == "prnewswire_massive":
+            await asyncio.Event().wait()
+        return response(fixture("gn")), "direct"
+
+    adapter = SimpleNamespace(listing_request=fetch, poll_feed=AsyncMock())
+    slow = asyncio.create_task(poll_listing(adapter, context()))
+    try:
+        good = await asyncio.wait_for(poll_listing(adapter, context("globenewswire_massive")), 1)
+        assert good.messages and not good.failures and not slow.done()
+    finally:
+        slow.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await slow
+
+
+def test_configuration_changes_only_discovery_and_is_idempotent(tmp_path):
+    from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    from doxagent.message_bus_v2.service import MessageBusV2Service
+    from doxagent.message_bus_v2.schema import SourceKind
+    from scripts.ops.configure_newswire_http import configure
+
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo)
+    for s in initial_sources():
+        s.default_parameters.pop("discovery_mode", None)
+        bus.register_source(s.model_copy(update={"kind": SourceKind.API}))
+    before = {s.source_id: s for s in repo.list_sources()}
+    assert all(r["action"] == "updated" for r in configure(bus))
+    for sid in RECIPES:
+        old, current = before[sid], repo.get_source(sid)
+        assert endpoint_units(current) == ["TEST:WIRE:listing"]
+        for field in ("adapter_ref", "site_id", "content_language", "entry_url", "acquisition_mode", "scheduler_constraints", "distribution_policy", "delivery_mode", "default_polling_config"):
+            assert getattr(old, field) == getattr(current, field)
+        assert current.default_parameters == {**old.default_parameters, "discovery_mode": "http_listing"}
+    assert repo.get_source("bloomberg_massive") == before["bloomberg_massive"]
+    assert all(r["action"] == "unchanged" for r in configure(bus))
+    repo.close()

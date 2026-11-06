@@ -569,6 +569,8 @@ class Collector:
                     state["last_error_message"] = (
                         result.failures[0].error_message if result.failures else None
                     )
+                    if source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION:
+                        state['wire_observation']=result.acquisition_metadata
                     # A failed response still carries recovery progress. Adapters
                     # advance a page cursor only after their page callback commits.
                     # Never discard failure counts/Retry-After for an empty list.
@@ -583,8 +585,6 @@ class Collector:
                     if remaining:
                         await on_page(remaining, validated_request_ids=result.acquisition_metadata.get('validated_request_ids'))
                     if valid:
-                        if source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION:
-                            state['wire_observation']=result.acquisition_metadata
                         state['checkpoint']=result.next_checkpoint or committed_checkpoint
                         if options.get('roster'):
                             state['association_roster']=options['roster']
@@ -652,7 +652,7 @@ class Collector:
                 last_error_code=reason,
                 status=(
                     "succeeded" if valid else "failed"
-                    if reason == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+                    if reason in {"HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED"}
                     else "partial" if page_committed else "failed"
                 ),
             )

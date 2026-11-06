@@ -53,7 +53,7 @@ def binding_states(tickers=None):
         captures = [s.get("last_capture_at") for s in states]
         healthy = all(s.get("status") == "succeeded" for s in states)
         errors = [s.get("last_error_code") for s in states if s.get("last_error_code")]
-        fallback_failed = "HTTP_LISTING_FAILED_RSS_FALLBACK" in errors
+        fallback_failed = bool({"HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED"}.intersection(errors))
         result[binding] = {
             'collection_active': bool(active),
             "collection_observed_at": observed,
@@ -72,7 +72,7 @@ def binding_states(tickers=None):
             "last_error_code": errors[0] if errors else None,
             "last_error_message": next(
                 (s.get("last_error_message") for s in states
-                 if s.get("last_error_code") == "HTTP_LISTING_FAILED_RSS_FALLBACK"), None
+                 if s.get("last_error_code") in {"HTTP_LISTING_FAILED_RSS_FALLBACK", "HTTP_LISTING_FAILED"}), None
             ),
             "target_due_at": min((s.get("next_dispatch_at") for s in states if s.get('next_dispatch_at')),default=None) if active else None,
             "next_dispatch_at": min((s.get("next_dispatch_at") for s in states if s.get('next_dispatch_at')),default=None) if active else None,
