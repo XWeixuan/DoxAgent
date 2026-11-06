@@ -333,7 +333,15 @@ class Collector:
         units = {
             u: {k: v for k, v in r["state"].items() if k in PollState.model_fields}
             for (bid, u), r in self.states.items()
-            if bid == binding.binding_id and r.get("required", 0) >= 0
+            if bid == binding.binding_id and (
+                r.get("required", 0) >= 0
+                # Retired completion is still planning evidence for this head.
+                # Dropping it resurrects the same finished Reuters tail every
+                # configuration refresh; it does not make the tail executable.
+                or (binding.source_id == "reuters_site_search" and u.startswith("TAIL:")
+                    and self.states.get((bid, "QUERY:" + u[5:]), {}).get("required", -1) >= 0
+                    and r["state"].get("checkpoint", {}).get("queries", {}).get(u[5:], {}).get("done"))
+            )
         }
         return state.model_copy(update={"units": units})
 
