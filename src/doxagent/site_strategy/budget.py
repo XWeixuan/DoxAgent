@@ -155,6 +155,17 @@ class JointBudget:
         self._routing_last: dict[tuple[str, str], int] = {}
         self._routing_sequence = 0
 
+    @staticmethod
+    def combined_interval_ms(configured, members):
+        """Combine admitted members' existing rates; never resize a member.
+
+        The legacy one-browser site clock must not cap two healthy browsers at
+        one browser's throughput. All physical identity permits still apply.
+        """
+        if len(members) < 2 or any(interval <= 0 for _, _, interval in members):
+            return configured
+        return min(configured, ceil(1 / sum(1 / interval for _, _, interval in members)))
+
     @asynccontextmanager
     async def route_members(self, site_key, members):
         """Choose ONE member; normal permits still own all physical admission.

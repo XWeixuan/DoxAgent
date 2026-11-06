@@ -89,6 +89,15 @@ async def test_two_members_share_the_same_site_rate_and_concurrency_limit():
     assert budget._active == 0
 
 
+def test_shared_clock_combines_healthy_capacity_without_resizing_members():
+    members = [("main", 2, 1500), ("backup", 1, 3000)]
+    assert JointBudget.combined_interval_ms(1500, members) == 1000
+    assert JointBudget.combined_interval_ms(1500, members[:1]) == 1500
+    assert JointBudget.combined_interval_ms(1500, members[1:]) == 1500
+    assert JointBudget.combined_interval_ms(0, members) == 0
+    assert members == [("main", 2, 1500), ("backup", 1, 3000)]
+
+
 @pytest.mark.parametrize("site,source,purpose,enabled", [
     ("reuters", "reuters_site_search", "CRAWLER", True),
     ("reuters", "reuters_site_search", "BODY", False),

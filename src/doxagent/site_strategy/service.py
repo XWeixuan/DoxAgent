@@ -1871,6 +1871,9 @@ class SiteStrategyService:
                     identity = await registry_io(self.repository.get_identity, identity_id)
                     members.append((identity_id, identity.access.max_concurrency, identity.access.min_interval_ms))
                 if members:
+                    resolved = resolved.model_copy(update={"access": resolved.access.model_copy(update={
+                        "min_interval_ms": self.budgets.joint.combined_interval_ms(
+                            resolved.access.min_interval_ms, members)})})
                     async with self.budgets.joint.route_members(resolved.runtime_key, members) as selected:
                         result = await self._execute_uncached_selected(request, resolved=resolved,
                                                                        preferred_identity=selected)
