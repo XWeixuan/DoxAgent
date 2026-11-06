@@ -1848,7 +1848,8 @@ class SiteStrategyService:
 
     async def _execute_uncached(self, request: AccessRequest, *, resolved=None) -> AccessResult:
         resolved = resolved or await registry_io(self._resolve_request, request)
-        if (resolved.enabled and resolved.site_id == "reuters" and request.purpose is SitePurpose.CRAWLER
+        if (resolved.enabled and resolved.site_id == "reuters"
+                and request.purpose in {SitePurpose.CRAWLER, SitePurpose.BODY}
                 and request.mode is not AccessMode.HTTP_PUBLIC
                 and not any(k.startswith(("_maintenance", "_recovery")) for k in request.recipe_parameters)):
             from .governance_models import dual_active_crawler
@@ -1856,24 +1857,32 @@ class SiteStrategyService:
 
             scope = await registry_io(GovernanceRepository(self.repository).get_scope,
                                       resolved.match_evidence.get("scope_id", ""))
-            if dual_active_crawler(scope, request.purpose):
-                combinations = await registry_io(self._purpose_combinations, resolved, request.purpose)
+            if dual_active_crawler(scope, SitePurpose.CRAWLER):
+                combinations = await registry_io(self._purpose_combinations, resolved, SitePurpose.CRAWLER)
                 _, choices, _ = await self.health.candidates(resolved.runtime_key, combinations,
-                    excluded=set(request.excluded_combinations), transport=request.mode, purpose=request.purpose)
+                    excluded=set(request.excluded_combinations), transport=request.mode, purpose=SitePurpose.CRAWLER)
                 members = []
                 for choice in choices:
                     identity_id = choice.identity_id or choice.combination_id
-                    status = await registry_io(self.failover.candidate_status, scope, identity_id, request.purpose)
+                    status = await registry_io(self.failover.candidate_status, scope, identity_id, SitePurpose.CRAWLER)
                     if not status["selectable"]:
-                        if status.get("eligible"):
-                            await self.failover.schedule_async(scope, request.purpose, candidate_id=identity_id)
+                        if status.get("eligible") and request.purpose is SitePurpose.CRAWLER:
+                            await self.failover.schedule_async(scope, SitePurpose.CRAWLER, candidate_id=identity_id)
                         continue
                     identity = await registry_io(self.repository.get_identity, identity_id)
                     members.append((identity_id, identity.access.max_concurrency, identity.access.min_interval_ms))
                 if members:
                     resolved = resolved.model_copy(update={"access": resolved.access.model_copy(update={
+                        "max_concurrency": max(resolved.access.max_concurrency,
+                            sum(limit for _, limit, _ in members)) if len(members) > 1
+                            else resolved.access.max_concurrency,
                         "min_interval_ms": self.budgets.joint.combined_interval_ms(
                             resolved.access.min_interval_ms, members)})})
+                    if request.purpose is SitePurpose.BODY:
+                        # Same aggregate clock/slots, existing BODY route and auth
+                        # eligibility. A legacy site cap must not strand BODY
+                        # behind two concurrent crawler pages in a three-slot pool.
+                        return await self._execute_uncached_selected(request, resolved=resolved)
                     async with self.budgets.joint.route_members(resolved.runtime_key, members) as selected:
                         result = await self._execute_uncached_selected(request, resolved=resolved,
                                                                        preferred_identity=selected)

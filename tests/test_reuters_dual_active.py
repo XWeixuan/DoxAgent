@@ -159,6 +159,37 @@ async def test_service_dispatches_both_members_without_route_generation_flapping
 
 
 @pytest.mark.asyncio
+async def test_source_combines_existing_page_slots_and_restores_single_member_envelope(setup, monkeypatch):
+    repo, service, _, scope, request, resolved, _ = setup
+    for member, limit, interval in [(scope.primary_identity_id, 2, 1500),
+                                     (scope.fallback_identity_id, 1, 3000)]:
+        identity = repo.get_identity(member)
+        repo.apply_identity(identity.model_copy(update={'access': identity.access.model_copy(update={
+            'max_concurrency': limit, 'min_interval_ms': interval})}),
+            expected_revision=identity.revision, actor='test')
+    resolved = resolved.model_copy(update={'access': resolved.access.model_copy(update={
+        'max_concurrency': 2, 'min_interval_ms': 1500})})
+    monkeypatch.setattr(service, '_resolve_request', lambda _: resolved)
+    original = service._execute_uncached_selected
+    envelopes = []
+
+    async def observe(request, *, resolved, preferred_identity=None):
+        envelopes.append((resolved.access.max_concurrency, resolved.access.min_interval_ms))
+        return await original(request, resolved=resolved, preferred_identity=preferred_identity)
+
+    monkeypatch.setattr(service, '_execute_uncached_selected', observe)
+    await service._execute_uncached(request)
+    body = await service._execute_uncached(request.model_copy(update={'purpose': SitePurpose.BODY}))
+    assert 'routing_balanced' not in body.stage_timings
+    monkeypatch.setattr(service.failover, 'candidate_status', lambda _, identity, purpose: {
+        'selectable': identity == scope.primary_identity_id, 'eligible': False})
+    await service._execute_uncached(request)
+    assert envelopes == [(3, 1000), (3, 1000), (2, 1500)]
+    assert resolved.access.max_concurrency == 2 and resolved.access.min_interval_ms == 1500
+    assert service.budgets.joint.max_concurrency == 4  # The process-wide ceiling is unchanged.
+
+
+@pytest.mark.asyncio
 async def test_member_blocked_after_assignment_is_not_contacted(setup, monkeypatch):
     _, service, _, scope, request, _, attempts = setup
     calls = collections.Counter()
