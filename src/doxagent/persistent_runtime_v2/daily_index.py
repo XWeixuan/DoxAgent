@@ -15,6 +15,49 @@ def event_provider(default, root):
 VERSION = "w1-daily-known-index.v1"
 
 
+def fact_candidate(event, fact):
+    occurred = event.occurred_at if fact.fact_occurred_at == "SAME" else fact.fact_occurred_at
+    try:
+        occurred = date.fromisoformat(occurred) if occurred else None
+    except ValueError:
+        occurred = None
+    return RuntimeFactCandidate(proposition=fact.proposition,
+        assertion_state=fact.assertion_state, subject_time=fact.subject_time,
+        occurrence_date=occurred, entities=[])
+
+
+def fact_content(candidate):
+    value = candidate.model_dump(mode="json", exclude={"entities"})
+    for field in ("proposition", "subject_time"):
+        if isinstance(value.get(field), str):
+            value[field] = " ".join(value[field].split())
+    return json.dumps(value, sort_keys=True)
+
+
+def frozen_fact_contents(default_provider, ticker, root, version, cache=None):
+    """All frozen Library facts, including Events omitted from the compact index."""
+    key = (ticker.upper(), root, version)
+    if cache is not None and key in cache:
+        return cache[key]
+    source = event_provider(default_provider, root)
+    read = getattr(source, "published_facts", None)
+    contents = frozenset(fact_content(fact_candidate(event, fact))
+                         for event, fact in read(ticker, version)) if read else frozenset()
+    if cache is not None:
+        if len(cache) >= 128:
+            cache.clear()
+        cache[key] = contents
+    return contents
+
+
+def visible_library_bridges(values, frozen_contents):
+    # Preserve raw records and historical frozen Case inputs. Only future Case
+    # snapshots drop bridge content that was already in the frozen Library.
+    return [value for value in values
+            if not value.source_message_id.startswith("library-bridge:")
+            or fact_content(value.candidate) not in frozen_contents]
+
+
 def freeze_index(repository, provider, index, ticker, day, root, at, instructions):
     frozen = repository.daily_known_index(ticker, day)
     if frozen is None:
@@ -31,7 +74,8 @@ def freeze_index(repository, provider, index, ticker, day, root, at, instruction
 
 
 def retain_new_library_facts(repository, default_provider, ticker, day, *,
-                             frozen_index, frozen_root, current_index, current_root, completed=None):
+                             frozen_index, frozen_root, current_index, current_root, completed=None,
+                             frozen_contents=None):
     """Already-published supplemental facts use the existing provisional wire path.
 
     Persist them as PROCESSED atomically so O2 never reimports them. Runtime-born
@@ -50,26 +94,19 @@ def retain_new_library_facts(repository, default_provider, ticker, day, *,
         ticker, frozen_index.version) or 0
     after = frozen_index.version if frozen_root == current_root else 0
     values = repository.list_provisional(ticker, day)
-    def content(candidate):
-        return json.dumps(candidate.model_dump(mode="json", exclude={"entities"}), sort_keys=True)
-    seen = {content(value.candidate) for value in values}
+    if frozen_contents is None:
+        frozen_contents = frozen_fact_contents(default_provider, ticker, frozen_root, frozen_index.version)
+    seen = {fact_content(value.candidate) for value in values} | frozen_contents
     for version, event, fact in changed(ticker, after, current_index.version):
-        occurred = event.occurred_at if fact.fact_occurred_at == "SAME" else fact.fact_occurred_at
-        try:
-            occurred = date.fromisoformat(occurred) if occurred else None
-        except ValueError:
-            occurred = None
-        candidate = RuntimeFactCandidate(proposition=fact.proposition,
-            assertion_state=fact.assertion_state, subject_time=fact.subject_time,
-            occurrence_date=occurred, entities=[])
-        if content(candidate) in seen:
+        candidate = fact_candidate(event, fact)
+        if fact_content(candidate) in seen:
             continue
         root_hash = sha256(str(current_root).encode()).hexdigest()[:16]
         repository.allocate_provisional(ticker=ticker, trading_date=day,
             source_message_id=f"library-bridge:{ticker}:{day}:{root_hash}:v{version}:{fact.fact_id}",
             candidate_index=0, candidate=candidate, published_max_event_numeric_id=maximum,
             already_published=True)
-        seen.add(content(candidate))
+        seen.add(fact_content(candidate))
     if completed is not None:
         if len(completed) >= 128:
             completed.clear()

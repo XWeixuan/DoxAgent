@@ -285,6 +285,7 @@ class PersistentRuntimeV2Service:
         self.responses = responses
         self.known_events = known_events
         self._w1_bridge_heads: set[tuple] = set()
+        self._w1_frozen_fact_contents: dict[tuple, frozenset] = {}
         self.policies = policies
         self.input_snapshot_loader = input_snapshot_loader
         self.prompts = prompts or RuntimeV2PromptSet.load(prompt_root)
@@ -502,7 +503,7 @@ class PersistentRuntimeV2Service:
                 "Published Runtime Policy Projection is unavailable",
             )
         assert_runtime_projection_compatible(projection)
-        from .daily_index import freeze_index, retain_new_library_facts
+        from .daily_index import freeze_index, retain_new_library_facts, frozen_fact_contents
         selected_execution = execution_bundle_id or (self.journal.get("execution", "active") if self.journal else None)
         index_prompts = self.prompts
         if selected_execution and self.execution_bundles:
@@ -517,7 +518,9 @@ class PersistentRuntimeV2Service:
             index_prompts.instructions(index_prompts.w1_r1))
         retain_new_library_facts(self.repository, self.known_events,
             source.snapshot.ticker, trading_date, frozen_index=index, frozen_root=index_root,
-            current_index=current_index, current_root=current_root, completed=self._w1_bridge_heads)
+            current_index=current_index, current_root=current_root, completed=self._w1_bridge_heads,
+            frozen_contents=frozen_fact_contents(self.known_events, source.snapshot.ticker,
+                index_root, index.version, self._w1_frozen_fact_contents))
         provisional_version = self.repository.provisional_snapshot_version(
             source.snapshot.ticker,
             trading_date,
@@ -701,10 +704,15 @@ class PersistentRuntimeV2Service:
 
     def _visible_provisional(self, case: RuntimeCase) -> list[ProvisionalFactDetail]:
         reader = getattr(self.repository, "visible_provisional", None)
-        if reader is None:
-            return self.repository.list_provisional(case.ticker, case.trading_date)
-        values = reader(case.ticker, case.trading_date)
+        values = (reader or self.repository.list_provisional)(case.ticker, case.trading_date)
         pin = case.frozen_inputs.get("w1_daily_index", {})
+        if pin:
+            from .daily_index import frozen_fact_contents, visible_library_bridges
+            values = visible_library_bridges(values, frozen_fact_contents(
+                self.known_events, case.ticker, pin.get("event_library_root"),
+                pin["event_library_version"], self._w1_frozen_fact_contents))
+        if reader is None:
+            return values
         maximum = (
             self._w1_known_for_case(case).max_event_numeric_id(
                 case.ticker, pin.get("event_library_version", case.version_pin.event_library_version)

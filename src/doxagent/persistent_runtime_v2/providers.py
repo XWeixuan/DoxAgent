@@ -65,6 +65,13 @@ class PublishedEventLibraryRuntimeProvider:
     def filtered_index(self, ticker, version, day):
         return self.reader.known_index(ticker, version=version, day=day)
 
+    def published_facts(self, ticker, version):
+        repository = self.reader._repository(ticker)
+        if repository is None:
+            return []
+        return [(event, fact) for event in repository.published_events(ticker, version)
+                for fact in event.facts]
+
     def new_library_facts(self, ticker, after_version, version):
         repository = self.reader._repository(ticker)
         if repository is None:
