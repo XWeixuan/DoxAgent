@@ -17,6 +17,13 @@ def configure(service):
                 report.append({"source_id": sid, "action": "absent"})
                 continue
             params = {**source.default_parameters, "discovery_mode": "http_rss_race"}
+            if (
+                "rss_urls" in source.parameter_schema.get("required", [])
+                and "rss_urls" not in params
+            ):
+                # Existing generic sources can require URLs only on bindings.
+                # Once defaults are nonempty, the service validates them too.
+                params["rss_urls"] = [r.feed for r in RECIPES[sid]]
             if sid == "corporate_ir_press_releases":
                 endpoints = []
                 for original in params["endpoints"]:

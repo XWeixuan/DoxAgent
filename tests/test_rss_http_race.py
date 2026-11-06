@@ -443,3 +443,40 @@ def test_new_http_lane_acquires_proven_recent_update_to_existing_article(tmp_pat
     with repo._connect() as db:
         assert db.execute("select input_revision from live_articles").fetchone()[0] == 2
     repo.close()
+
+
+def test_migration_accepts_legacy_binding_only_required_rss_urls(tmp_path):
+    from tests.fixtures.message_bus_v2 import _bus
+    from doxagent.message_bus_v2.schema import TickerSourceBinding
+    from scripts.ops.configure_rss_http_race import configure
+
+    repo, bus = _bus(tmp_path / "bus.db")
+    sid = "nbis_official_actor_rss"
+    source = SourceDefinition(
+        source_id=sid,
+        display_name="Official actors",
+        kind="api",
+        adapter_ref="builtin:newswire_rss",
+        acquisition_mode="by_ticker",
+        scheduler_group="actor",
+        parameter_schema={
+            "type": "object",
+            "properties": {"rss_urls": {"type": "array", "items": {"type": "string"}}},
+            "required": ["rss_urls"],
+            "additionalProperties": False,
+        },
+    )
+    bus.register_source(source)
+    feeds = [RECIPES[sid][0].feed]
+    repo.save_binding(
+        TickerSourceBinding(
+            binding_id="NBIS:" + sid,
+            ticker="NBIS",
+            source_id=sid,
+            source_parameters={"rss_urls": feeds},
+        )
+    )
+    configure(bus)
+    assert repo.get_binding("NBIS:" + sid).source_parameters["rss_urls"] == feeds
+    assert repo.get_source(sid).default_parameters["rss_urls"] == [r.feed for r in RECIPES[sid]]
+    repo.close()
