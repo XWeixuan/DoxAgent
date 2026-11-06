@@ -1,0 +1,1225 @@
+{
+  "observed_at": "2026-11-06T16:13:18.780408+00:00",
+  "cutoff": "2026-11-06T16:09:35.591398+00:00",
+  "profile": "openai_luna_r2_high",
+  "cases": [
+    {
+      "case_id": "case_04de54caaac04cbc9095d491b36273fe",
+      "ticker": "SNOW",
+      "created_at": "2026-11-06T16:12:38.561821+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_9746ce0e48604127854163723ead8b76",
+      "ticker": "CEG",
+      "created_at": "2026-11-06T16:12:07.649907+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_bd4ada4b206f4c36b77b4c0eb0c529ed",
+      "ticker": "IONQ",
+      "created_at": "2026-11-06T16:11:54.816420+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_e686dc3c3e3547358d0e64af75f38464",
+      "ticker": "COHR",
+      "created_at": "2026-11-06T16:11:35.658882+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_cfaa5f58f0f948c1a92e0972b862b7db",
+      "ticker": "COHR",
+      "created_at": "2026-11-06T16:11:34.540513+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_63e20749625349a0807dba019ec0c1a3",
+      "ticker": "SNOW",
+      "created_at": "2026-11-06T16:11:29.792136+00:00",
+      "status": "COMPLETED",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_9e6e184ac7a54d86a3c14670d03393c3",
+      "ticker": "NBIS",
+      "created_at": "2026-11-06T16:11:29.310705+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_b3589227204a4866a54921df3a0a30f6",
+      "ticker": "NBIS",
+      "created_at": "2026-11-06T16:11:29.131619+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_9752ad7566f544c7be83e14db0424dc1",
+      "ticker": "NBIS",
+      "created_at": "2026-11-06T16:11:28.984489+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_69d21b27a7ee42609ccbe5262e1e63bd",
+      "ticker": "MU",
+      "created_at": "2026-11-06T16:11:28.737062+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_e1f340a373924d53b0dc3116781480bc",
+      "ticker": "MU",
+      "created_at": "2026-11-06T16:11:28.571712+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_c83c7b129c734a67a4de5f5f9af23336",
+      "ticker": "INTC",
+      "created_at": "2026-11-06T16:11:28.118364+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_48687b92e2ca4a02acd9bb8ea1c38b8a",
+      "ticker": "INTC",
+      "created_at": "2026-11-06T16:11:27.593151+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_b2276dc4518b411eacdf294f57a632d7",
+      "ticker": "INTC",
+      "created_at": "2026-11-06T16:11:26.923186+00:00",
+      "status": "COMPLETED",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_97f3d94324c34b3b8ef01a49b6976803",
+      "ticker": "COHR",
+      "created_at": "2026-11-06T16:11:25.479135+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    },
+    {
+      "case_id": "case_8dae6a9bb424466baecee0d8e848be42",
+      "ticker": "CEG",
+      "created_at": "2026-11-06T16:10:33.649558+00:00",
+      "status": "PENDING_W3",
+      "execution_bundle_id": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+      "rounds": {
+        "W1:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "30m",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "gpt-6-luna",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openai",
+          "provider_endpoint": "https://api.openai.com/v1/responses",
+          "reasoning_effort": "high",
+          "service_tier": "fast",
+          "timeout_seconds": 300,
+          "transport": "responses_json_schema"
+        }
+      },
+      "fallbacks": {
+        "W1:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        },
+        "W2:R2": {
+          "cache_ttl": "1h",
+          "case_cache_layout": "case-static-prefix.v1",
+          "model": "anthropic/claude-haiku-5.5",
+          "output_contract": "case-output-invariants.v1",
+          "provider": "openrouter",
+          "provider_endpoint": "google-vertex/global",
+          "reasoning_effort": "high",
+          "timeout_seconds": 300,
+          "transport": "chat_completions_json_schema"
+        }
+      }
+    }
+  ],
+  "turns": [
+    {
+      "recorded_at": "2026-11-06T16:12:57.226610+00:00",
+      "ticker": "SNOW",
+      "case_id": "case_04de54caaac04cbc9095d491b36273fe",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 4547,
+      "output_tokens": 1086,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 6422,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00152056"
+    },
+    {
+      "recorded_at": "2026-11-06T16:12:37.570331+00:00",
+      "ticker": "CEG",
+      "case_id": "case_9746ce0e48604127854163723ead8b76",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 4364,
+      "output_tokens": 785,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 6205,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00118296"
+    },
+    {
+      "recorded_at": "2026-11-06T16:12:18.392500+00:00",
+      "ticker": "IONQ",
+      "case_id": "case_bd4ada4b206f4c36b77b4c0eb0c529ed",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3308,
+      "output_tokens": 204,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2361,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00039076"
+    },
+    {
+      "recorded_at": "2026-11-06T16:12:06.706312+00:00",
+      "ticker": "MU",
+      "case_id": "case_e1f340a373924d53b0dc3116781480bc",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3450,
+      "output_tokens": 254,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2127,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00046916"
+    },
+    {
+      "recorded_at": "2026-11-06T16:12:03.594027+00:00",
+      "ticker": "MU",
+      "case_id": "case_69d21b27a7ee42609ccbe5262e1e63bd",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3297,
+      "output_tokens": 183,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 1938,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00036756"
+    },
+    {
+      "recorded_at": "2026-11-06T16:12:01.679411+00:00",
+      "ticker": "COHR",
+      "case_id": "case_cfaa5f58f0f948c1a92e0972b862b7db",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3451,
+      "output_tokens": 208,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2239,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00042336"
+    },
+    {
+      "recorded_at": "2026-11-06T16:12:01.411131+00:00",
+      "ticker": "COHR",
+      "case_id": "case_e686dc3c3e3547358d0e64af75f38464",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3298,
+      "output_tokens": 133,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 1832,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00031776"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:56.574535+00:00",
+      "ticker": "NBIS",
+      "case_id": "case_b3589227204a4866a54921df3a0a30f6",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3644,
+      "output_tokens": 577,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 3915,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00083096"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:54.574451+00:00",
+      "ticker": "NBIS",
+      "case_id": "case_9752ad7566f544c7be83e14db0424dc1",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3343,
+      "output_tokens": 195,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2190,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00038876"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:52.784279+00:00",
+      "ticker": "NBIS",
+      "case_id": "case_9e6e184ac7a54d86a3c14670d03393c3",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3298,
+      "output_tokens": 105,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 1547,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00028976"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:52.728118+00:00",
+      "ticker": "INTC",
+      "case_id": "case_48687b92e2ca4a02acd9bb8ea1c38b8a",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3451,
+      "output_tokens": 226,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2397,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00044136"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:52.527292+00:00",
+      "ticker": "INTC",
+      "case_id": "case_b2276dc4518b411eacdf294f57a632d7",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3343,
+      "output_tokens": 213,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2602,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00040676"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:52.304191+00:00",
+      "ticker": "INTC",
+      "case_id": "case_c83c7b129c734a67a4de5f5f9af23336",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3298,
+      "output_tokens": 167,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2638,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00035176"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:50.660984+00:00",
+      "ticker": "SNOW",
+      "case_id": "case_63e20749625349a0807dba019ec0c1a3",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3343,
+      "output_tokens": 226,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2162,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00041976"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:45.804091+00:00",
+      "ticker": "COHR",
+      "case_id": "case_97f3d94324c34b3b8ef01a49b6976803",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3343,
+      "output_tokens": 229,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2768,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00042276"
+    },
+    {
+      "recorded_at": "2026-11-06T16:11:33.879951+00:00",
+      "ticker": "CEG",
+      "case_id": "case_8dae6a9bb424466baecee0d8e848be42",
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "service_tier": "fast",
+      "error_code": null,
+      "input_tokens": 3465,
+      "output_tokens": 201,
+      "cached_input_tokens": 2638,
+      "cache_write_input_tokens": 0,
+      "latency_ms": 2697,
+      "actual_service_tier": "fast",
+      "cost_usd": "0.00041916"
+    }
+  ]
+}

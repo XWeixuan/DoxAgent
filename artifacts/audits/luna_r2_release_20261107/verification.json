@@ -1,0 +1,256 @@
+{
+  "verified_at": "2026-11-06T16:10:17.160027+00:00",
+  "commit": "f3f5a7becf2c3ad4ceb6fccd9b209ebd19007e19",
+  "image": "sha256:d531b1a3634d10b37f5cf88029a39536b9783935e5176c13252ef968fe0e525c",
+  "containers": [
+    {
+      "name": "doxagent-v2-v2-api-1",
+      "image": "sha256:d531b1a3634d10b37f5cf88029a39536b9783935e5176c13252ef968fe0e525c",
+      "started_at": "2026-11-06T16:08:08.013633833Z",
+      "health": "healthy",
+      "restarts": 0,
+      "hashes": {
+        "src/doxagent/settings.py": "9c1055faeada85877fed7728ce73b6e90e8b86c4641fb36f257afc656778e7c5",
+        "src/doxagent/persistent_runtime_v2/factory.py": "e9898611bbee701dc1dc60da602ed51f5c147bee1ae7ba56bc1c394ad9b39b48",
+        "src/doxagent/persistent_runtime_v2/future_model_profiles.py": "4de5f732411679feafefac8820c318176262e5b1affb33cbf93ce73dd34cb469",
+        "src/doxagent/persistent_runtime_v2/openrouter.py": "2cd2cb654ebcbb6ece3b53d6b6b2f0ba8126a43f75961635d32301115cfe25e4",
+        "src/doxagent/persistent_runtime_v2/openai_platform.py": "c336750b2694228b0f777d230d049201dbd8fe4b524714761ae5071840cf68e3",
+        "src/doxagent/persistent_runtime_v2/schema.py": "c088f8ce5fcb9b20c66a5658f58be258065be6281ff505f1489ec31fcbd102a1",
+        "src/doxagent/persistent_runtime_v2/service.py": "3ee42bc08f3977152238401ab49231e955b061c393ba6bbc1df58512925b024c",
+        "src/doxagent/v2_read/pricing.py": "b4ea2bc8152b98d6a171fe1e2c047a67b9cdae629870068eefb723d460c47dde"
+      }
+    },
+    {
+      "name": "doxagent-v2-v2-scheduler-1",
+      "image": "sha256:d531b1a3634d10b37f5cf88029a39536b9783935e5176c13252ef968fe0e525c",
+      "started_at": "2026-11-06T16:08:44.331498963Z",
+      "health": null,
+      "restarts": 0,
+      "hashes": {
+        "src/doxagent/settings.py": "9c1055faeada85877fed7728ce73b6e90e8b86c4641fb36f257afc656778e7c5",
+        "src/doxagent/persistent_runtime_v2/factory.py": "e9898611bbee701dc1dc60da602ed51f5c147bee1ae7ba56bc1c394ad9b39b48",
+        "src/doxagent/persistent_runtime_v2/future_model_profiles.py": "4de5f732411679feafefac8820c318176262e5b1affb33cbf93ce73dd34cb469",
+        "src/doxagent/persistent_runtime_v2/openrouter.py": "2cd2cb654ebcbb6ece3b53d6b6b2f0ba8126a43f75961635d32301115cfe25e4",
+        "src/doxagent/persistent_runtime_v2/openai_platform.py": "c336750b2694228b0f777d230d049201dbd8fe4b524714761ae5071840cf68e3",
+        "src/doxagent/persistent_runtime_v2/schema.py": "c088f8ce5fcb9b20c66a5658f58be258065be6281ff505f1489ec31fcbd102a1",
+        "src/doxagent/persistent_runtime_v2/service.py": "3ee42bc08f3977152238401ab49231e955b061c393ba6bbc1df58512925b024c",
+        "src/doxagent/v2_read/pricing.py": "b4ea2bc8152b98d6a171fe1e2c047a67b9cdae629870068eefb723d460c47dde"
+      }
+    },
+    {
+      "name": "doxagent-v2-v2-projector-1",
+      "image": "sha256:d531b1a3634d10b37f5cf88029a39536b9783935e5176c13252ef968fe0e525c",
+      "started_at": "2026-11-06T16:08:34.062917824Z",
+      "health": null,
+      "restarts": 0,
+      "hashes": {
+        "src/doxagent/settings.py": "9c1055faeada85877fed7728ce73b6e90e8b86c4641fb36f257afc656778e7c5",
+        "src/doxagent/persistent_runtime_v2/factory.py": "e9898611bbee701dc1dc60da602ed51f5c147bee1ae7ba56bc1c394ad9b39b48",
+        "src/doxagent/persistent_runtime_v2/future_model_profiles.py": "4de5f732411679feafefac8820c318176262e5b1affb33cbf93ce73dd34cb469",
+        "src/doxagent/persistent_runtime_v2/openrouter.py": "2cd2cb654ebcbb6ece3b53d6b6b2f0ba8126a43f75961635d32301115cfe25e4",
+        "src/doxagent/persistent_runtime_v2/openai_platform.py": "c336750b2694228b0f777d230d049201dbd8fe4b524714761ae5071840cf68e3",
+        "src/doxagent/persistent_runtime_v2/schema.py": "c088f8ce5fcb9b20c66a5658f58be258065be6281ff505f1489ec31fcbd102a1",
+        "src/doxagent/persistent_runtime_v2/service.py": "3ee42bc08f3977152238401ab49231e955b061c393ba6bbc1df58512925b024c",
+        "src/doxagent/v2_read/pricing.py": "b4ea2bc8152b98d6a171fe1e2c047a67b9cdae629870068eefb723d460c47dde"
+      }
+    }
+  ],
+  "activation": {
+    "activated_at": "2026-11-06T16:09:35.591398+00:00",
+    "previous_execution": "c00bf6cc8ee31a63e4bb264bf9f85106a70210f9b48d9b4c85d42f54715b07dd",
+    "active_execution": "e571f4f9b797666ea62cd5881b241324651a1a984441f0d81fbde30add3bc11a",
+    "prompts_unchanged": true,
+    "contracts_unchanged": true,
+    "other_nodes_unchanged": true,
+    "rounds": {
+      "W1:R2": {
+        "model": "gpt-6-luna",
+        "provider": "openai",
+        "transport": "responses_json_schema",
+        "provider_endpoint": "https://api.openai.com/v1/responses",
+        "reasoning_effort": "high",
+        "timeout_seconds": 300,
+        "cache_ttl": "30m",
+        "output_contract": "case-output-invariants.v1",
+        "case_cache_layout": "case-static-prefix.v1",
+        "service_tier": "fast"
+      },
+      "W2:R2": {
+        "model": "gpt-6-luna",
+        "provider": "openai",
+        "transport": "responses_json_schema",
+        "provider_endpoint": "https://api.openai.com/v1/responses",
+        "reasoning_effort": "high",
+        "timeout_seconds": 300,
+        "cache_ttl": "30m",
+        "output_contract": "case-output-invariants.v1",
+        "case_cache_layout": "case-static-prefix.v1",
+        "service_tier": "fast"
+      }
+    },
+    "fallbacks": {
+      "W1:R2": {
+        "model": "anthropic/claude-haiku-5.5",
+        "provider": "openrouter",
+        "provider_endpoint": "google-vertex/global",
+        "reasoning_effort": "high",
+        "transport": "chat_completions_json_schema",
+        "timeout_seconds": 300,
+        "cache_ttl": "1h",
+        "output_contract": "case-output-invariants.v1",
+        "case_cache_layout": "case-static-prefix.v1"
+      },
+      "W2:R2": {
+        "model": "anthropic/claude-haiku-5.5",
+        "provider": "openrouter",
+        "provider_endpoint": "google-vertex/global",
+        "reasoning_effort": "high",
+        "transport": "chat_completions_json_schema",
+        "timeout_seconds": 300,
+        "cache_ttl": "1h",
+        "output_contract": "case-output-invariants.v1",
+        "case_cache_layout": "case-static-prefix.v1"
+      }
+    }
+  },
+  "smoke": {
+    "calls": [
+      {
+        "node": "W1R2",
+        "ordinal": 1,
+        "fallback": false,
+        "model": "gpt-6-luna",
+        "provider": "openai",
+        "effort": "high",
+        "latency_ms": 3993,
+        "input_tokens": 4038,
+        "cached_tokens": 2638,
+        "write_tokens": 0,
+        "output_tokens": 222,
+        "reasoning_tokens": 148,
+        "service_tier": "fast",
+        "prefix": "6a68e69cd744ad2975d9c7886ff99d3a933f880b39d39d33de10980561bd2036",
+        "cost_usd": "0.00055476",
+        "cost_basis": "ESTIMATED",
+        "output": {
+          "result": "NEW",
+          "confidence": "normal",
+          "reference_ids": [],
+          "fact_attributions": [],
+          "reason": "LS Electric与Bloom Energy新签1,853亿韩元供货合同，涉及宾夕法尼亚州数据中心项目；已知事实未覆盖这项合同进展。"
+        }
+      },
+      {
+        "node": "W1R2",
+        "ordinal": 3,
+        "fallback": false,
+        "model": "gpt-6-luna",
+        "provider": "openai",
+        "effort": "high",
+        "latency_ms": 4419,
+        "input_tokens": 3417,
+        "cached_tokens": 2638,
+        "write_tokens": 0,
+        "output_tokens": 509,
+        "reasoning_tokens": 438,
+        "service_tier": "fast",
+        "prefix": "6a68e69cd744ad2975d9c7886ff99d3a933f880b39d39d33de10980561bd2036",
+        "cost_usd": "0.00071756",
+        "cost_basis": "ESTIMATED",
+        "output": {
+          "result": "OLD",
+          "confidence": "normal",
+          "reference_ids": [
+            "E2680"
+          ],
+          "fact_attributions": [],
+          "reason": "核心事实——Intel基里亚特盖特工厂发生爆炸并造成至少三人受伤——已由 E2680 覆盖。"
+        }
+      },
+      {
+        "node": "W2R2",
+        "ordinal": 1,
+        "fallback": false,
+        "model": "gpt-6-luna",
+        "provider": "openai",
+        "effort": "high",
+        "latency_ms": 12916,
+        "input_tokens": 8352,
+        "cached_tokens": 0,
+        "write_tokens": 3084,
+        "output_tokens": 2517,
+        "reasoning_tokens": 2346,
+        "service_tier": "fast",
+        "prefix": "df3b62ef2fbe1156636dbb913687960ab197a0f5f212d7e2cc22b11fa0ee62b3",
+        "cost_usd": "0.0043416",
+        "cost_basis": "ESTIMATED",
+        "output": {
+          "policy_hit": false,
+          "policy_related": true,
+          "policy_ids": [],
+          "hit_condition_ids": [],
+          "confidence": "normal",
+          "reason": "pol_166db6d355584fed81b09eaed51650cf：Bloom与LS Electric签署设备供货合同并约定交付窗口，属于已签供货安排；但未披露付款时点、取消或改配权变化，未满足触发条件。pol_caf37545d669448ea06097ecabb90784：虽涉及开关设备和变压器交付，但未说明其影响具名Bloom站址的关键路径，范围条件不满足。",
+          "related_policy_ids": [
+            "pol_166db6d355584fed81b09eaed51650cf"
+          ]
+        }
+      },
+      {
+        "node": "W2R2",
+        "ordinal": 3,
+        "fallback": false,
+        "model": "gpt-6-luna",
+        "provider": "openai",
+        "effort": "high",
+        "latency_ms": 6012,
+        "input_tokens": 5288,
+        "cached_tokens": 3084,
+        "write_tokens": 0,
+        "output_tokens": 1032,
+        "reasoning_tokens": 914,
+        "service_tier": "fast",
+        "prefix": "df3b62ef2fbe1156636dbb913687960ab197a0f5f212d7e2cc22b11fa0ee62b3",
+        "cost_usd": "0.00153448",
+        "cost_basis": "ESTIMATED",
+        "output": {
+          "policy_hit": false,
+          "policy_related": true,
+          "policy_ids": [],
+          "hit_condition_ids": [],
+          "confidence": "normal",
+          "reason": "该消息称 Intel Kiryat Gat 工厂发生爆炸并有人员受伤，属于厂区事故相关事实；但未确认生产停顿、批次扣留或其他生产影响，未满足 C1、C2 或 C3。",
+          "related_policy_ids": [
+            "pol_cece5821b48b4d38b666945b2569e63d"
+          ]
+        }
+      },
+      {
+        "node": "W1R2",
+        "ordinal": 1,
+        "fallback": true,
+        "model": "anthropic/claude-haiku-5.5",
+        "provider": "openrouter",
+        "effort": "high",
+        "latency_ms": 5902,
+        "input_tokens": 7179,
+        "cached_tokens": 4784,
+        "write_tokens": 0,
+        "output_tokens": 750,
+        "reasoning_tokens": 576,
+        "service_tier": null,
+        "prefix": "6a68e69cd744ad2975d9c7886ff99d3a933f880b39d39d33de10980561bd2036",
+        "cost_usd": "0.00066234",
+        "cost_basis": "REPORTED",
+        "output": {
+          "result": "NEW",
+          "confidence": "normal",
+          "reference_ids": [],
+          "fact_attributions": [],
+          "reason": "核心事实为LS Electric与Bloom Energy签订1853亿韩元开关设备及配电变压器供货合同，用于宾夕法尼亚州数据中心燃料电池项目；已知事实中没有该合同或LS Electric供货的覆盖。已知Provisional E1308涉及SEOJIN SYSTEM，主体不同，不能覆盖该事实。"
+        }
+      }
+    ],
+    "openai_key_fingerprint": "3f4738b577a4"
+  }
+}
