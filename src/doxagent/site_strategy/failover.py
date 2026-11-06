@@ -10,6 +10,7 @@ from .governance_repository import GovernanceRepository, capability_fingerprint
 from .schema import AccessCombination, AccessMode, AccessRequest, SitePurpose, utc_now
 from .storage import registry_io
 from .verification import body_verification_url, validate_capture, validate_crawler_capture
+from .governance_models import dual_active_crawler
 
 
 class FailoverCoordinator:
@@ -161,7 +162,6 @@ class FailoverCoordinator:
         )
         if not candidate_id or candidate_id == active_id:
             return None
-        key = (scope.scope_id, purpose)
         if not scope.fallback_identity_id:
             return None
         if not self.candidate_status(scope, candidate_id, purpose).get("eligible", False):
@@ -184,6 +184,7 @@ class FailoverCoordinator:
         egress = repo.get_egress(identity.egress_id)
         if (
             candidate_id == scope.fallback_identity_id
+            and not dual_active_crawler(scope, purpose)
             and main_egress.node_ref != "DIRECT"
             and (
                 not self.store.egress_region(main_egress)
@@ -259,7 +260,7 @@ class FailoverCoordinator:
                 before = (await registry_io(self.service.repository.get_runtime, f"scope:{scope.scope_id}"))
                 active = before.active_combination_id or scope.primary_identity_id
                 if (
-                    purpose is not SitePurpose.BODY
+                    (purpose is not SitePurpose.BODY and not dual_active_crawler(scope, purpose))
                     or not (await registry_io(self.candidate_status, scope, active, SitePurpose.CRAWLER))["selectable"]
                 ):
                     try:
@@ -386,7 +387,8 @@ class FailoverCoordinator:
             capability = member.capabilities.get("BODY", {}) if member else {}
             if len(capability.get("subscription_samples", [])) < 2:
                 return {"ready": False, "reason": "two_subscription_article_checks_required"}
-        if not primary and before.active_combination_id != identity_id:
+        if (not primary and before.active_combination_id != identity_id
+                and not dual_active_crawler(scope, purpose)):
             main = service.repository.get_identity(scope.primary_identity_id)
             main_egress = service.repository.get_egress(main.egress_id)
             if main_egress.node_ref != "DIRECT" and (
@@ -400,7 +402,8 @@ class FailoverCoordinator:
                 or (await registry_io(self.store.egress_region, main_egress)) != (await registry_io(self.store.egress_region, egress))
             ):
                 return {"ready": False, "reason": "fallback_same_region_unverified"}
-        cold = not primary and before.active_combination_id != identity_id
+        cold = (not primary and before.active_combination_id != identity_id
+                and not dual_active_crawler(scope, purpose))
         async with service.profile_use.control(profile.profile_id, identity_id):
             recovery = (await registry_io(self.store.get_recovery, identity_id))
             if recovery and recovery.phase != "RESOLVED":
@@ -477,7 +480,7 @@ class FailoverCoordinator:
         await service.health.clear_purpose_denial(resolved.runtime_key, identity_id, purpose)
         active = before.active_combination_id or scope.primary_identity_id
         if (
-            purpose is not SitePurpose.BODY
+            (purpose is not SitePurpose.BODY and not dual_active_crawler(scope, purpose))
             or not (await registry_io(self.candidate_status, scope, active, SitePurpose.CRAWLER))["selectable"]
         ):
             try:

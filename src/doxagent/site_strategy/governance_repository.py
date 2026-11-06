@@ -92,7 +92,9 @@ def capability_fingerprint(repository, scope, identity, egress, *, site=None, ru
             identity.model_dump(mode="json"),
             egress.generation,
             egress.observed_ip,
-            scope.revision,
+            (scope.verification_plan.get('_routing_capability_revision', scope.revision)
+             if scope.owner_site_id == 'reuters' and scope.source_id == 'reuters_site_search'
+             else scope.revision),
             site.revision if site else 0,
             scope.verification_plan.get("contract", "body_v2.2/listing_v1"),
             runtime.session_revision,
@@ -219,19 +221,27 @@ class GovernanceRepository:
                 raise ValueError("scope references an unknown identity")
             primary = identities[0]
             primary_egress = self.repository.get_egress(primary.egress_id)
+            # Routing-only Reuters updates/rollback must not resize established
+            # identities merely to make their resource limits identical.
+            independent_capacity = (scope.owner_site_id == "reuters"
+                and scope.source_id == "reuters_site_search" and previous_scope is not None
+                and previous_scope.primary_identity_id == scope.primary_identity_id
+                and previous_scope.fallback_identity_id == scope.fallback_identity_id)
             for identity in identities:
                 if identity.owner_scope_id not in (None, scope.scope_id):
                     raise ValueError("identity belongs to another scope")
+                from .governance_models import dual_active_crawler
+
                 if (
                     identity.runtime_kind,
                     identity.browser_release,
                     identity.environment,
-                    identity.access,
+                    None if independent_capacity or dual_active_crawler(scope, "CRAWLER") else identity.access,
                 ) != (
                     primary.runtime_kind,
                     primary.browser_release,
                     primary.environment,
-                    primary.access,
+                    None if independent_capacity or dual_active_crawler(scope, "CRAWLER") else primary.access,
                 ):
                     raise ValueError("fallback must use the same runtime and environment")
                 egress = self.repository.get_egress(identity.egress_id)
@@ -250,6 +260,19 @@ class GovernanceRepository:
                 if owner and owner[0] != scope.scope_id:
                     raise ValueError(f"identity {member} already owned by {owner[0]}")
             stored = scope.model_copy(update={"revision": (current or 0) + 1})
+            if independent_capacity:
+                def contract(spec):
+                    value = spec.model_dump(exclude={"revision"})
+                    value['verification_plan'] = {k: v for k, v in value['verification_plan'].items()
+                        if k not in {'crawler_routing', '_routing_capability_revision'}}
+                    return value
+
+                plan = dict(stored.verification_plan)
+                plan.pop('_routing_capability_revision', None)
+                if contract(scope) == contract(previous_scope):
+                    plan['_routing_capability_revision'] = previous_scope.verification_plan.get(
+                        '_routing_capability_revision', previous_scope.revision)
+                stored = stored.model_copy(update={'verification_plan': plan})
             connection.execute(
                 "insert into source_access_scopes values(?,?,?,?,?) "
                 "on conflict(scope_id) do update set source_id=excluded.source_id,"
@@ -1662,11 +1685,17 @@ class GovernanceRepository:
             seconds=(now-datetime.fromisoformat(window['recovered_at'])).total_seconds()
             protected_seconds = max(0, (datetime.fromisoformat(probation_until)
                 - datetime.fromisoformat(window['recovered_at'])).total_seconds()) if probation_until else 0
+            recovery_window = max(120, protected_seconds * 2 + 120)
+            if window.get('first_identity_use_at'):
+                first_use_seconds = (datetime.fromisoformat(window['first_identity_use_at'])
+                                     - datetime.fromisoformat(window['recovered_at'])).total_seconds()
+                recovery_window = max(recovery_window, first_use_seconds + protected_seconds + 120)
             relapses.append({'previous_recovery_id':window.get('recovery_id'),
                 'recovery_id':recovery.recovery_id,'purpose':purpose,'capability_epoch':window['capability_epoch'],
                 'at':now.isoformat(),'previous_recovered_at':window['recovered_at'],
                 'seconds_to_recurrence':seconds,
-                'within_recovery_window':0 <= seconds <= max(120, protected_seconds * 2 + 120)})
+                'within_recovery_window':0 <= seconds <= recovery_window,
+                'first_identity_use_at': window.get('first_identity_use_at')})
         if changed:
             recent=[r for r in relapses if now-datetime.fromisoformat(r['at'])<=timedelta(minutes=15)
                     and r.get('within_recovery_window', r.get('seconds_to_recurrence', 0) <= 120)]

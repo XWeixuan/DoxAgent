@@ -8,6 +8,13 @@ from pydantic import Field, model_validator
 from .schema import SiteModel, new_id, utc_now
 
 
+def dual_active_crawler(scope, purpose):
+    return bool(scope and scope.owner_site_id == "reuters"
+                and scope.source_id == "reuters_site_search"
+                and str(purpose) == "CRAWLER"
+                and scope.verification_plan.get("crawler_routing") == "dual_active")
+
+
 class SourceAccessScope(SiteModel):
     scope_id: str = Field(pattern=r"^(source|publisher):[a-z0-9_.:-]+$")
     source_id: str | None = None

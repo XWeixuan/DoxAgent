@@ -151,6 +151,49 @@ class JointBudget:
         self._last_background=0.0
         self._identity_body: dict[str, int] = {}
         self._costs: dict[str, float] = {}
+        self._routing_pending: dict[str, int] = {}
+        self._routing_last: dict[tuple[str, str], int] = {}
+        self._routing_sequence = 0
+
+    @asynccontextmanager
+    async def route_members(self, site_key, members):
+        """Choose ONE member; normal permits still own all physical admission.
+
+        members supplies identity_id, max_concurrency, min_interval_ms. These
+        counters represent assignments, not extra permits or website requests.
+        """
+        if not members:
+            raise ValueError("routing_requires_a_member")
+        intervals = {key: await asyncio.to_thread(self.identity_interval, key, interval)
+                     for key, limit, interval in members}
+        async with self._condition:
+            now = time.monotonic()
+
+            def score(member):
+                key, limit, _ = member
+                pending = self._routing_pending.get(key, 0)
+                body = self._identity_body.get(key, 0)
+                interval = intervals[key] / 1000
+                ready = max(0, self._identity_next.get(key, 0) - now)
+                capacity_delay = max(0, pending + body - max(0, limit - 1)) * max(
+                    interval, self._costs.get(site_key, interval) / max(1, limit))
+                return (max(ready + pending * interval, capacity_delay),
+                        self._routing_last.get((site_key, key), 0), key)
+
+            selected = min(members, key=score)[0]
+            self._routing_sequence += 1
+            self._routing_last[site_key, selected] = self._routing_sequence
+            self._routing_pending[selected] = self._routing_pending.get(selected, 0) + 1
+        try:
+            yield selected
+        finally:
+            async with self._condition:
+                remaining = self._routing_pending[selected] - 1
+                if remaining:
+                    self._routing_pending[selected] = remaining
+                else:
+                    self._routing_pending.pop(selected, None)
+                self._condition.notify_all()
 
     @asynccontextmanager
     async def control_navigation(self, identity_id, *, interval_ms, deadline):

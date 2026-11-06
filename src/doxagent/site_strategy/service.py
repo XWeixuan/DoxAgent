@@ -1329,7 +1329,14 @@ class SiteStrategyService:
             ramp_seconds = max(1, (state.probation_until - (
                 state.recovered_at or state.probation_until - timedelta(seconds=300)
             )).total_seconds())
-            elapsed = (now - state.probation_until).total_seconds()
+            ramp_start = state.probation_until
+            for window in state.capability_windows.values():
+                first_use = window.get("first_identity_use_at")
+                if (first_use and window.get("recovery_id") == state.last_recovery_id
+                        and window.get("recovered_at")
+                        and datetime.fromisoformat(window["recovered_at"]) == state.recovered_at):
+                    ramp_start = max(ramp_start, datetime.fromisoformat(first_use))
+            elapsed = max(0, (now - ramp_start).total_seconds())
             if elapsed < ramp_seconds:
                 return max(configured, round(protected - (protected - configured)
                                              * elapsed / ramp_seconds))
@@ -1840,6 +1847,40 @@ class SiteStrategyService:
         return rows
 
     async def _execute_uncached(self, request: AccessRequest, *, resolved=None) -> AccessResult:
+        resolved = resolved or await registry_io(self._resolve_request, request)
+        if (resolved.enabled and resolved.site_id == "reuters" and request.purpose is SitePurpose.CRAWLER
+                and request.mode is not AccessMode.HTTP_PUBLIC
+                and not any(k.startswith(("_maintenance", "_recovery")) for k in request.recipe_parameters)):
+            from .governance_models import dual_active_crawler
+            from .governance_repository import GovernanceRepository
+
+            scope = await registry_io(GovernanceRepository(self.repository).get_scope,
+                                      resolved.match_evidence.get("scope_id", ""))
+            if dual_active_crawler(scope, request.purpose):
+                combinations = await registry_io(self._purpose_combinations, resolved, request.purpose)
+                _, choices, _ = await self.health.candidates(resolved.runtime_key, combinations,
+                    excluded=set(request.excluded_combinations), transport=request.mode, purpose=request.purpose)
+                members = []
+                for choice in choices:
+                    identity_id = choice.identity_id or choice.combination_id
+                    status = await registry_io(self.failover.candidate_status, scope, identity_id, request.purpose)
+                    if not status["selectable"]:
+                        if status.get("eligible"):
+                            await self.failover.schedule_async(scope, request.purpose, candidate_id=identity_id)
+                        continue
+                    identity = await registry_io(self.repository.get_identity, identity_id)
+                    members.append((identity_id, identity.access.max_concurrency, identity.access.min_interval_ms))
+                if members:
+                    async with self.budgets.joint.route_members(resolved.runtime_key, members) as selected:
+                        result = await self._execute_uncached_selected(request, resolved=resolved,
+                                                                       preferred_identity=selected)
+                        return result.model_copy(update={"stage_timings": {**result.stage_timings,
+                            "routing_balanced": 1, "routing_members": len(members),
+                            "routing_selected_member": int(selected == scope.fallback_identity_id)}})
+        return await self._execute_uncached_selected(request, resolved=resolved)
+
+    async def _execute_uncached_selected(self, request: AccessRequest, *, resolved=None,
+                                         preferred_identity=None) -> AccessResult:
         started = time.monotonic()
         resolved = resolved or (await registry_io(self._resolve_request, request))
         if resolved.runtime_key in self._switching_scopes:
@@ -1872,6 +1913,7 @@ class SiteStrategyService:
             purpose=request.purpose,
         )
         scope = None
+        balanced = False
         if resolved.match_evidence.get("scope_id"):
             from .governance_repository import GovernanceRepository
 
@@ -1879,6 +1921,9 @@ class SiteStrategyService:
                 resolved.match_evidence["scope_id"]
             ))
             if scope and request.mode is not AccessMode.HTTP_PUBLIC:
+                from .governance_models import dual_active_crawler
+
+                balanced = dual_active_crawler(scope, request.purpose)
                 candidates = [
                     c
                     for c in candidates
@@ -1886,6 +1931,8 @@ class SiteStrategyService:
                         scope, c.identity_id or c.combination_id, request.purpose
                     ))["selectable"]
                 ]
+                if balanced and preferred_identity:
+                    candidates.sort(key=lambda c: (c.identity_id or c.combination_id) != preferred_identity)
         if not candidates:
             if scope and request.mode is not AccessMode.HTTP_PUBLIC:
                 for candidate in (scope.primary_identity_id, scope.fallback_identity_id):
@@ -1968,6 +2015,7 @@ class SiteStrategyService:
                 scope
                 and combination.identity_id == scope.fallback_identity_id
                 and route.active_combination_id != scope.fallback_identity_id
+                and not balanced
                 and remaining < 5
             ):
                 activation = (await self.failover.schedule_async(scope, request.purpose))
@@ -2002,6 +2050,7 @@ class SiteStrategyService:
                 and combination.identity_id == scope.fallback_identity_id
                 and egress
                 and route.active_combination_id != scope.fallback_identity_id
+                and not balanced
             ):
                 primary = (await registry_io(self.repository.get_identity, scope.primary_identity_id))
                 main_egress = (await registry_io(self.repository.get_egress, primary.egress_id))
@@ -2095,6 +2144,10 @@ class SiteStrategyService:
             queue_started = time.monotonic()
             try:
                 async with permit as queue_wait_ms:
+                    if balanced and not (await registry_io(self.failover.candidate_status,
+                        scope, identity.identity_id, request.purpose))["selectable"]:
+                        unavailable += 1
+                        continue  # A queued assignment cannot ignore a newly blocked/maintained identity.
                     current = (await registry_io(self.repository.get_runtime, resolved.runtime_key))
                     async with self.profile_use.business(
                         profile.profile_id, browser=request.mode is not AccessMode.HTTP_PUBLIC
@@ -2456,6 +2509,12 @@ class SiteStrategyService:
                 ))
                 identity_state = (await registry_io(self.repository.get_identity_runtime, identity.identity_id))
                 windows={k:dict(v) for k,v in identity_state.capability_windows.items()}
+                if identity_state.probation_until and not identity_state.natural_success_at:
+                    for value in windows.values():
+                        if (value.get('recovery_id') == identity_state.last_recovery_id
+                                and value.get('recovered_at') and identity_state.recovered_at
+                                and datetime.fromisoformat(value['recovered_at']) == identity_state.recovered_at):
+                            value.setdefault('first_identity_use_at', utc_now().isoformat())
                 window=windows.get(request.purpose.value)
                 if window and not window.get('blocked_again_at'):
                     window['last_success_at']=utc_now().isoformat()
