@@ -216,6 +216,18 @@ async def test_globe_rss_is_independently_scheduled_and_never_waits_for_http():
     await adapter.close()
 
 
+def test_globe_language_and_body_identity_match_across_parallel_endpoints():
+    from doxagent.message_bus_v2.body_results import article_key, update_hint
+
+    sid = "globenewswire_massive"
+    listing = parse_listing(fixture("gn").replace("/en/", "/fr/"), source(sid), NOW)[0]
+    xml = f'<rss><channel><item><title>{listing.title.replace("&", "&amp;")}</title><link>{listing.url}</link><pubDate>Fri, 6 Nov 2026 18:55:00 +0000</pubDate><description>Different teaser</description></item></channel></rss>'
+    rss = parse_feed(xml, source(sid), source(sid).default_parameters["endpoints"][0], NOW)[0]
+    assert listing.metadata["language"] == rss.metadata["language"] == "fr"
+    assert article_key(listing, sid) == article_key(rss, sid)
+    assert update_hint(listing) == update_hint(rss)
+
+
 def test_configuration_changes_only_discovery_and_is_idempotent(tmp_path):
     from doxagent.message_bus_v2.repository import MessageBusV2Repository
     from doxagent.message_bus_v2.service import MessageBusV2Service

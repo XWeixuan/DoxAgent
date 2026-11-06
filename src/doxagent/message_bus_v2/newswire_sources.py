@@ -105,6 +105,7 @@ def parse_feed(text,source,endpoint,now):
     for row in rows:
         parts=urlsplit(row.url).path.split('/')
         lang=parts[4] if source.source_id=='businesswire_massive' and len(parts)>4 else 'en'
+        if source.source_id=='globenewswire_massive' and len(parts)>7:lang=parts[7]
         row.metadata['language']={'zh-HK':'zh-Hant','zh-CN':'zh-Hans'}.get(lang,lang)
         if source.source_id in {'bloomberg_massive','globenewswire_massive'}:
             # RSS descriptions are only listing teasers; sitemap has none.
