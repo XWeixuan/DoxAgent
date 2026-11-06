@@ -1,0 +1,114 @@
+[
+  {
+    "identity": "digitimes-de-1",
+    "instance": "5584793148dc4bb7a77b8aa25d53037f",
+    "pid": 388180,
+    "running": true,
+    "targets": [
+      {
+        "target": "EDCA2EB62B45534805750302A7647473",
+        "original": true,
+        "reads": [
+          {
+            "method": "Page.getFrameTree",
+            "result": "OK",
+            "ms": 3
+          },
+          {
+            "method": "DOM.getDocument",
+            "result": "OK",
+            "ms": 1
+          }
+        ]
+      },
+      {
+        "target": "8070FC1F623222EBDE25B8D65C84C70C",
+        "original": false,
+        "reads": [
+          {
+            "method": "Page.getFrameTree",
+            "result": "OK",
+            "ms": 1
+          },
+          {
+            "method": "DOM.getDocument",
+            "result": "OK",
+            "ms": 1
+          }
+        ]
+      },
+      {
+        "target": "124750FACD642C4D1C71DE2252097E57",
+        "original": false,
+        "reads": [
+          {
+            "method": "Page.getFrameTree",
+            "result": "OK",
+            "ms": 1
+          },
+          {
+            "method": "DOM.getDocument",
+            "result": "OK",
+            "ms": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "identity": "reuters-backup",
+    "instance": "5cfab0be20b14154849cce7b12782dad",
+    "pid": 1011505,
+    "running": true,
+    "targets": [
+      {
+        "target": "6AA6C851194AAEFC28E498AEA893FC72",
+        "original": true,
+        "reads": [
+          {
+            "method": "Page.getFrameTree",
+            "result": "OK",
+            "ms": 5
+          },
+          {
+            "method": "DOM.getDocument",
+            "result": "OK",
+            "ms": 1
+          }
+        ]
+      },
+      {
+        "target": "8552A991AC8C5CFD7E330A08E06D85C5",
+        "original": false,
+        "reads": [
+          {
+            "method": "Page.getFrameTree",
+            "result": "TimeoutError",
+            "ms": 2002
+          },
+          {
+            "method": "DOM.getDocument",
+            "result": "TimeoutError",
+            "ms": 2002
+          }
+        ]
+      },
+      {
+        "target": "FCC0BC51693FF0D7517F8EEEA41347EB",
+        "original": false,
+        "reads": [
+          {
+            "method": "Page.getFrameTree",
+            "result": "OK",
+            "ms": 1
+          },
+          {
+            "method": "DOM.getDocument",
+            "result": "OK",
+            "ms": 1
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "lines": [
+    "identity_operation_failed trace=59cd5f43511d49c0 category=RUNTIME_UNAVAILABLE error=RuntimeError frames=[('identity_worker.py', 'dispatch', 209), ('browser_operations.py', 'execute_browser_operation', 28), ('runtime.py', '_browser', 1335), ('runtime.py', '_browser_impl', 2145), ('browser_runtime.py', '__aexit__', 202), ('external_runtime.py', '__aexit__', 61), ('runtime.py', '_close_owned_page', 888), ('targets.py', 'close_native_target', 24)]",
+    "identity_operation_failed trace=42a3cd93dac44275 category=TRANSIENT_TRANSPORT error=Error frames=[('runtime.py', '_browser_impl', 1709), ('reuters_sources.py', 'capture_reuters_search', 111), ('reuters_sources.py', '_capture_reuters_search_dom', 161), ('_generated.py', 'content', 9799), ('_page.py', 'content', 545), ('_frame.py', 'content', 501), ('_connection.py', 'send', 76), ('_connection.py', 'wrap_api_call', 632)]"
+  ]
+}

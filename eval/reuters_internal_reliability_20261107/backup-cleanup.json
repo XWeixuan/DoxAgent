@@ -1,0 +1,21 @@
+{
+  "kept": [
+    "reuters-internal-20261106T182527Z.sqlite3",
+    "reuters-internal-20261106T185320Z.sqlite3"
+  ],
+  "removed": [
+    {
+      "file": "reuters-internal-20261106T182604Z.sqlite3",
+      "bytes": 1293713408
+    },
+    {
+      "file": "reuters-internal-20261106T182937Z.sqlite3",
+      "bytes": 1293713408
+    },
+    {
+      "file": "reuters-internal-20261106T184507Z.sqlite3",
+      "bytes": 1294024704
+    }
+  ],
+  "bytes_released": 3881451520
+}

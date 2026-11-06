@@ -1,0 +1,30 @@
+[
+  {
+    "allocation_id": "allocation_09295b7863d047469a02a91a242b22e7",
+    "target_id": "6AA6C851194AAEFC28E498AEA893FC72",
+    "owner_kind": "CHALLENGE",
+    "state": "LIVE",
+    "created_at": "2026-11-05T17:47:12.858937Z",
+    "updated_at": "2026-11-05T17:47:25.633194Z",
+    "sessions": [],
+    "challenge_tasks": [
+      {
+        "task_id": "challenge_6031a1355d7a4ed8b5809311d22746af",
+        "state": "WAITING_HUMAN",
+        "opened_at": "2026-11-05T17:47:25.633104Z",
+        "resolved_at": null,
+        "superseded_by": null
+      }
+    ]
+  },
+  {
+    "allocation_id": "allocation_37a50eeec86a46e2bb8a0e9f4310dbe7",
+    "target_id": "8552A991AC8C5CFD7E330A08E06D85C5",
+    "owner_kind": "BUSINESS",
+    "state": "CLOSED",
+    "created_at": "2026-11-05T00:41:19.201754Z",
+    "updated_at": "2026-11-05T00:41:20.708313Z",
+    "sessions": [],
+    "challenge_tasks": []
+  }
+]
