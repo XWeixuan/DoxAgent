@@ -190,6 +190,40 @@ async def test_source_combines_existing_page_slots_and_restores_single_member_en
 
 
 @pytest.mark.asyncio
+async def test_fast_head_estimate_cannot_serialize_the_three_existing_pool_slots(setup):
+    repo, service, _, scope, request, resolved, _ = setup
+    for member, limit in [(scope.primary_identity_id, 2), (scope.fallback_identity_id, 1)]:
+        identity = repo.get_identity(member)
+        repo.apply_identity(identity.model_copy(update={'access': identity.access.model_copy(update={
+            'max_concurrency': limit})}), expected_revision=identity.revision, actor='test')
+    service.budgets.joint._costs[resolved.runtime_key] = .01
+    entered, release = asyncio.Event(), asyncio.Event()
+    active = collections.Counter()
+    peak = 0
+
+    async def hold(request, resolved, combination, profile, egress):
+        nonlocal peak
+        active[combination.identity_id] += 1
+        peak = max(peak, sum(active.values()))
+        if peak == 3:
+            entered.set()
+        await release.wait()
+        active[combination.identity_id] -= 1
+        return RuntimeResponse(200, request.url, {}, body='<article>normal</article>'), None, 'ok', 10
+
+    service._attempt = AsyncMock(side_effect=hold)
+    tasks = [asyncio.create_task(service._execute_uncached(request.model_copy(update={
+        'operation_id': str(i), 'recipe_parameters': {'query': 'Micron', '_poll_rate': .8}}))) for i in range(3)]
+    try:
+        await asyncio.wait_for(entered.wait(), 2)
+        assert active[scope.primary_identity_id] == 2 and active[scope.fallback_identity_id] == 1
+    finally:
+        release.set()
+        await asyncio.gather(*tasks)
+    assert peak == 3 and not service.budgets.joint._routing_pending
+
+
+@pytest.mark.asyncio
 async def test_member_blocked_after_assignment_is_not_contacted(setup, monkeypatch):
     _, service, _, scope, request, _, attempts = setup
     calls = collections.Counter()

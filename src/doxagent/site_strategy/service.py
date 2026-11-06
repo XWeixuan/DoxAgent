@@ -2149,7 +2149,10 @@ class SiteStrategyService:
                     work_class=request.work_class,
                     work_age_seconds=request.work_age_seconds,
                     due_at=request.recipe_parameters.get('_poll_due_at'),
-                    expected_rate=float(request.recipe_parameters.get('_poll_rate', 0)),
+                    # The legacy head-only EWMA excludes TAIL cost and can
+                    # shrink a healthy dual pool to one slot. Existing physical
+                    # member/global limits govern this explicitly sized pool.
+                    expected_rate=0 if balanced else float(request.recipe_parameters.get('_poll_rate', 0)),
                 )
             )
             attempting = False
