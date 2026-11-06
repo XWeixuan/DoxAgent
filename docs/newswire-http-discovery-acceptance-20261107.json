@@ -1,0 +1,976 @@
+{
+  "start": "2026-11-06T19:50:45.743194+00:00",
+  "end": "2026-11-06T20:00:45.743194+00:00",
+  "observed_seconds": 600.0,
+  "endpoint_window": {
+    "start": "2026-11-06T19:50:45.743194+00:00",
+    "end": "2026-11-06T20:00:47.214611+00:00",
+    "seconds": 601.471417
+  },
+  "sources": {
+    "access_newswire_massive": {
+      "units": {
+        "TEST:WIRE:listing": {
+          "physical_cycles": 20,
+          "statuses": {
+            "CAPTURED": 20
+          },
+          "methods": {
+            "http_listing": 20
+          },
+          "elapsed": {
+            "n": 20,
+            "mean": 0.462,
+            "p95": 0.521,
+            "max": 0.61
+          },
+          "dispatch_delay": {
+            "n": 20,
+            "mean": 0.084,
+            "p95": 0.136,
+            "max": 0.416
+          },
+          "intervals": {
+            "n": 19,
+            "mean": 29.996,
+            "p95": 30.322,
+            "max": 30.322
+          }
+        }
+      },
+      "new_article_owners": 0,
+      "new_publications": 0,
+      "body": {},
+      "publish_to_capture": {
+        "n": 0
+      },
+      "capture_to_bus_accept": {
+        "n": 0
+      },
+      "publish_to_bus_accept": {
+        "n": 0
+      },
+      "published_during_window_capture": {
+        "n": 0
+      },
+      "articles": []
+    },
+    "businesswire_massive": {
+      "units": {
+        "TEST:WIRE:listing": {
+          "physical_cycles": 20,
+          "statuses": {
+            "FAILED": 20
+          },
+          "methods": {
+            "rss_fallback": 20
+          },
+          "elapsed": {
+            "n": 20,
+            "mean": 2.64,
+            "p95": 3.14,
+            "max": 3.284
+          },
+          "dispatch_delay": {
+            "n": 20,
+            "mean": 0.072,
+            "p95": 0.179,
+            "max": 0.188
+          },
+          "intervals": {
+            "n": 19,
+            "mean": 30.005,
+            "p95": 30.17,
+            "max": 30.17
+          }
+        }
+      },
+      "new_article_owners": 3,
+      "new_publications": 1,
+      "body": {
+        "UNAVAILABLE": 2,
+        "FETCH_DUE": 1
+      },
+      "publish_to_capture": {
+        "n": 3,
+        "mean": 316.877,
+        "p95": 417.296,
+        "max": 417.296
+      },
+      "capture_to_bus_accept": {
+        "n": 3,
+        "mean": 0.117,
+        "p95": 0.135,
+        "max": 0.135
+      },
+      "publish_to_bus_accept": {
+        "n": 3,
+        "mean": 316.994,
+        "p95": 417.431,
+        "max": 417.431
+      },
+      "published_during_window_capture": {
+        "n": 1,
+        "mean": 206.735,
+        "p95": 206.735,
+        "max": 206.735
+      },
+      "articles": [
+        {
+          "url": "https://www.businesswire.com/news/home/20261105356209/es/",
+          "title": "EURONAVAL 2026: Naval Group y el Technology Innovation Institute (TII) firman un acuerdo para aunar sus conocimientos especializados en tecnologías submarinas autónomas avanzadas",
+          "published_at": "2026-11-06T19:44:00Z",
+          "first_seen_at": "2026-11-06T19:50:57.295888+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:50:57.430898+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "UNAVAILABLE",
+          "last_error": "empty_extract",
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.businesswire.com/news/home/20261106558786/en/NASDAQ-MDGL-INVESTIGATION-ALERT-Madrigal-Pharmaceuticals-Inc.-Investors-are-Encouraged-to-Contact-Kessler-Topaz-Meltzer-Check-LLP/",
+          "title": "NASDAQ: MDGL INVESTIGATION ALERT: Madrigal Pharmaceuticals, Inc. Investors are Encouraged to Contact Kessler Topaz Meltzer & Check, LLP",
+          "published_at": "2026-11-06T19:49:00Z",
+          "first_seen_at": "2026-11-06T19:54:26.601061+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:54:26.734133+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "UNAVAILABLE",
+          "last_error": "empty_extract",
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.businesswire.com/news/home/20261105833026/pl/",
+          "title": "EURONAVAL 2026: Naval Group i Instytut Innowacji Technologicznych (TII) podpisują umowę w celu połączenia wiedzy fachowej w dziedzinie zaawansowanych autonomicznych technologii podwodnych",
+          "published_at": "2026-11-06T19:56:00Z",
+          "first_seen_at": "2026-11-06T19:59:26.735224+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:59:26.818364+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": null,
+          "last_error": "test_publisher_cooldown",
+          "fetch_total": 0
+        }
+      ]
+    },
+    "globenewswire_massive": {
+      "units": {
+        "TEST:WIRE:all": {
+          "physical_cycles": 20,
+          "statuses": {
+            "CAPTURED": 20
+          },
+          "methods": {
+            "rss_parallel": 20
+          },
+          "elapsed": {
+            "n": 20,
+            "mean": 0.394,
+            "p95": 0.657,
+            "max": 0.775
+          },
+          "dispatch_delay": {
+            "n": 20,
+            "mean": 0.053,
+            "p95": 0.096,
+            "max": 0.14
+          },
+          "intervals": {
+            "n": 19,
+            "mean": 30.001,
+            "p95": 30.125,
+            "max": 30.125
+          }
+        },
+        "TEST:WIRE:listing": {
+          "physical_cycles": 20,
+          "statuses": {
+            "CAPTURED": 20
+          },
+          "methods": {
+            "http_listing": 20
+          },
+          "elapsed": {
+            "n": 20,
+            "mean": 0.287,
+            "p95": 0.643,
+            "max": 1.009
+          },
+          "dispatch_delay": {
+            "n": 20,
+            "mean": 0.063,
+            "p95": 0.118,
+            "max": 0.12
+          },
+          "intervals": {
+            "n": 19,
+            "mean": 29.996,
+            "p95": 30.113,
+            "max": 30.113
+          }
+        }
+      },
+      "new_article_owners": 2,
+      "new_publications": 1,
+      "body": {
+        "FULL": 2
+      },
+      "publish_to_capture": {
+        "n": 2,
+        "mean": 143.179,
+        "p95": 167.416,
+        "max": 167.416
+      },
+      "capture_to_bus_accept": {
+        "n": 2,
+        "mean": 0.229,
+        "p95": 0.298,
+        "max": 0.298
+      },
+      "publish_to_bus_accept": {
+        "n": 2,
+        "mean": 143.408,
+        "p95": 167.714,
+        "max": 167.714
+      },
+      "published_during_window_capture": {
+        "n": 1,
+        "mean": 118.942,
+        "p95": 118.942,
+        "max": 118.942
+      },
+      "articles": [
+        {
+          "url": "https://www.globenewswire.com/news-release/2026/11/06/3397856/0/en/tactfolio-inc-launches-ai-compatible-platform-for-building-backtesting-and-automating-trading-strategies.html",
+          "title": "Tactfolio Inc. Launches AI-Compatible Platform for Building, Backtesting, and Automating Trading Strategies",
+          "published_at": "2026-11-06T19:48:00Z",
+          "first_seen_at": "2026-11-06T19:50:47.416476+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:50:47.714455+00:00",
+          "first_unit": "TEST:WIRE:all",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.globenewswire.com/news-release/2026/11/06/3397857/0/en/trreb-welcomes-federal-budget-measures-to-boost-housing-supply-and-affordability.html",
+          "title": "TRREB Welcomes Federal Budget Measures to Boost Housing Supply and Affordability",
+          "published_at": "2026-11-06T19:52:00Z",
+          "first_seen_at": "2026-11-06T19:53:58.941722+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:53:59.100953+00:00",
+          "first_unit": "TEST:WIRE:all",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        }
+      ]
+    },
+    "prnewswire_massive": {
+      "units": {
+        "TEST:WIRE:listing": {
+          "physical_cycles": 20,
+          "statuses": {
+            "CAPTURED": 20
+          },
+          "methods": {
+            "http_listing": 20
+          },
+          "elapsed": {
+            "n": 20,
+            "mean": 1.265,
+            "p95": 3.007,
+            "max": 4.527
+          },
+          "dispatch_delay": {
+            "n": 20,
+            "mean": 0.058,
+            "p95": 0.1,
+            "max": 0.104
+          },
+          "intervals": {
+            "n": 19,
+            "mean": 29.998,
+            "p95": 30.096,
+            "max": 30.096
+          }
+        }
+      },
+      "new_article_owners": 6,
+      "new_publications": 5,
+      "body": {
+        "FULL": 4,
+        "PARTIAL": 2
+      },
+      "publish_to_capture": {
+        "n": 6,
+        "mean": 69.036,
+        "p95": 108.541,
+        "max": 108.541
+      },
+      "capture_to_bus_accept": {
+        "n": 6,
+        "mean": 0.558,
+        "p95": 2.33,
+        "max": 2.33
+      },
+      "publish_to_bus_accept": {
+        "n": 6,
+        "mean": 69.594,
+        "p95": 110.871,
+        "max": 110.871
+      },
+      "published_during_window_capture": {
+        "n": 5,
+        "mean": 72.453,
+        "p95": 108.541,
+        "max": 108.541
+      },
+      "articles": [
+        {
+          "url": "https://www.prnewswire.com/news-releases/what-does-gildan-activewear-incs-18-8-stock-drop-mean-for-investors-the-law-offices-of-howard-g-smith-outlines-securities-fraud-class-action-lead-plaintiff-deadline-302931654.html",
+          "title": "What Does Gildan Activewear Inc.'s 18.8% Stock Drop Mean for Investors? The Law Offices of Howard G. Smith Outlines Securities Fraud Class Action Lead Plaintiff Deadline",
+          "published_at": "2026-11-06T19:50:00Z",
+          "first_seen_at": "2026-11-06T19:50:51.951673+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:50:52.122928+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/sass-magazine-celebrates-release-of-2026-cozy-issue-302932243.html",
+          "title": "Sass Magazine Celebrates Release of 2026 COZY Issue",
+          "published_at": "2026-11-06T19:51:00Z",
+          "first_seen_at": "2026-11-06T19:52:18.424446+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:52:18.565106+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "PARTIAL",
+          "last_error": "publisher_loop",
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/gigli-launches-daily-functional-line-and-skinny-mocktails-redefining-wellness--everyday-beverages-302932277.html",
+          "title": "Gigli Launches Daily Functional Line and SKINNY Mocktails Redefining Wellness & Everyday Beverages",
+          "published_at": "2026-11-06T19:53:00Z",
+          "first_seen_at": "2026-11-06T19:53:48.469865+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:53:48.667405+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-mntn-inc-investors-that-we-are-investigating-the-company-for-violations-of-securities-laws-302932230.html",
+          "title": "Robbins LLP Reminds MNTN, Inc. Investors That We Are Investigating the Company for Violations of Securities Laws",
+          "published_at": "2026-11-06T19:55:00Z",
+          "first_seen_at": "2026-11-06T19:56:18.296332+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:56:18.565711+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "PARTIAL",
+          "last_error": "publisher_loop",
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/quantinuum-presenta-los-resultados-del-tercer-trimestre-de-2026-302932354.html",
+          "title": "Quantinuum presenta los resultados del tercer trimestre de 2026",
+          "published_at": "2026-11-06T19:55:00Z",
+          "first_seen_at": "2026-11-06T19:56:48.540944+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:56:50.870792+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-app-investors-of-the-november-16-2026-lead-plaintiff-deadline-harmed-investors-should-contact-the-firm-for-information-about-leading-the-class-action-against-applovin-corporation-302932229.html",
+          "title": "Robbins LLP Reminds APP Investors of the November 16, 2026 Lead Plaintiff Deadline; Harmed Investors Should Contact the Firm for Information About Leading the Class Action Against AppLovin Corporation",
+          "published_at": "2026-11-06T19:57:00Z",
+          "first_seen_at": "2026-11-06T19:57:48.534246+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:57:48.772507+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        }
+      ]
+    },
+    "tmx_newsfile_massive": {
+      "units": {
+        "TEST:WIRE:listing": {
+          "physical_cycles": 20,
+          "statuses": {
+            "FAILED": 20
+          },
+          "methods": {
+            "rss_fallback": 20
+          },
+          "elapsed": {
+            "n": 20,
+            "mean": 0.503,
+            "p95": 1.915,
+            "max": 2.918
+          },
+          "dispatch_delay": {
+            "n": 20,
+            "mean": 0.063,
+            "p95": 0.103,
+            "max": 0.213
+          },
+          "intervals": {
+            "n": 19,
+            "mean": 30.005,
+            "p95": 30.11,
+            "max": 30.11
+          }
+        }
+      },
+      "new_article_owners": 2,
+      "new_publications": 1,
+      "body": {
+        "FULL": 2
+      },
+      "publish_to_capture": {
+        "n": 2,
+        "mean": 35.276,
+        "p95": 51.546,
+        "max": 51.546
+      },
+      "capture_to_bus_accept": {
+        "n": 2,
+        "mean": 0.194,
+        "p95": 0.269,
+        "max": 0.269
+      },
+      "publish_to_bus_accept": {
+        "n": 2,
+        "mean": 35.47,
+        "p95": 51.664,
+        "max": 51.664
+      },
+      "published_during_window_capture": {
+        "n": 1,
+        "mean": 19.007,
+        "p95": 19.007,
+        "max": 19.007
+      },
+      "articles": [
+        {
+          "url": "https://www.newsfilecorp.com/release/322883/TIGO-ENERGY-DEADLINE-ROSEN-THE-FIRST-FILING-FIRM-Encourages-Tigo-Energy-Inc.-Investors-to-Secure-Counsel-Before-Important-Deadline-in-Securities-Class-Action-First-Filed-by-the-Firm-TYGO",
+          "title": "TIGO ENERGY DEADLINE: ROSEN, THE FIRST FILING FIRM, Encourages Tigo Energy, Inc. Investors to Secure Counsel Before Important Deadline in Securities Class Action First Filed by the Firm - TYGO",
+          "published_at": "2026-11-06T19:50:00Z",
+          "first_seen_at": "2026-11-06T19:50:51.545756+00:00",
+          "first_bus_accepted_at": "2026-11-06T19:50:51.663938+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        },
+        {
+          "url": "https://www.newsfilecorp.com/release/322906/Torrent-Gold-to-Acquire-Sunset-Tungsten-Project",
+          "title": "Torrent Gold to Acquire Sunset Tungsten Project",
+          "published_at": "2026-11-06T20:00:00Z",
+          "first_seen_at": "2026-11-06T20:00:19.006795+00:00",
+          "first_bus_accepted_at": "2026-11-06T20:00:19.275973+00:00",
+          "first_unit": "TEST:WIRE:listing",
+          "outcome": "FULL",
+          "last_error": null,
+          "fetch_total": 1
+        }
+      ]
+    }
+  },
+  "endpoint_observation": {
+    "access_http": {
+      "requests": 21,
+      "errors": [],
+      "new_rows": 0,
+      "publish_to_first_visible": {
+        "n": 0
+      },
+      "age": {
+        "n": 21,
+        "mean": 52.81,
+        "p95": 108.0,
+        "max": 115.0
+      },
+      "request_seconds": {
+        "n": 21,
+        "mean": 0.607,
+        "p95": 1.223,
+        "max": 1.446
+      },
+      "articles": []
+    },
+    "gn_http": {
+      "requests": 21,
+      "errors": [],
+      "new_rows": 1,
+      "publish_to_first_visible": {
+        "n": 1,
+        "mean": 166.364,
+        "p95": 166.364,
+        "max": 166.364
+      },
+      "age": {
+        "n": 0
+      },
+      "request_seconds": {
+        "n": 21,
+        "mean": 0.049,
+        "p95": 0.098,
+        "max": 0.121
+      },
+      "articles": [
+        {
+          "url": "https://www.globenewswire.com/news-release/2026/11/06/3397857/0/en/trreb-welcomes-federal-budget-measures-to-boost-housing-supply-and-affordability.html",
+          "published": "2026-11-06T19:52:00+00:00",
+          "title": "TRREB Welcomes Federal Budget Measures to Boost Housing Supply and Affordability",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:54:46.363659+00:00"
+        }
+      ]
+    },
+    "gn_rss": {
+      "requests": 21,
+      "errors": [],
+      "new_rows": 3,
+      "publish_to_first_visible": {
+        "n": 3,
+        "mean": 76.798,
+        "p95": 136.937,
+        "max": 136.937
+      },
+      "age": {
+        "n": 0
+      },
+      "request_seconds": {
+        "n": 21,
+        "mean": 0.595,
+        "p95": 1.249,
+        "max": 1.961
+      },
+      "articles": [
+        {
+          "url": "https://www.globenewswire.com/news-release/2026/11/06/3397857/0/en/trreb-welcomes-federal-budget-measures-to-boost-housing-supply-and-affordability.html",
+          "published": "2026-11-06T19:52:00+00:00",
+          "title": "TRREB Welcomes Federal Budget Measures to Boost Housing Supply and Affordability",
+          "precision": null,
+          "first_at": "2026-11-06T19:54:16.936940+00:00"
+        },
+        {
+          "url": "https://www.globenewswire.com/news-release/2026/11/06/3397859/0/en/remittix-launches-earn-with-weekly-payouts-and-up-to-21-4-apy-on-supported-eth-usdt-and-usdc-deposits.html",
+          "published": "2026-11-06T20:00:00+00:00",
+          "title": "Remittix Launches Earn With Weekly Payouts and Up to 21.4% APY on Supported ETH, USDT and USDC Deposits",
+          "precision": null,
+          "first_at": "2026-11-06T20:00:46.728108+00:00"
+        },
+        {
+          "url": "https://www.globenewswire.com/news-release/2026/11/06/3397860/9788/en/bronstein-gewirtz-grossman-llc-urges-compass-inc-investors-to-act-class-action-filed-alleging-investor-harm.html",
+          "published": "2026-11-06T20:00:00+00:00",
+          "title": "Bronstein, Gewirtz & Grossman LLC Urges Compass, Inc. Investors to Act: Class Action Filed Alleging Investor Harm",
+          "precision": null,
+          "first_at": "2026-11-06T20:00:46.728108+00:00"
+        }
+      ]
+    },
+    "prn_get": {
+      "requests": 21,
+      "errors": [],
+      "new_rows": 5,
+      "publish_to_first_visible": {
+        "n": 5,
+        "mean": 87.873,
+        "p95": 135.886,
+        "max": 135.886
+      },
+      "age": {
+        "n": 21,
+        "mean": 27.857,
+        "p95": 52.0,
+        "max": 57.0
+      },
+      "request_seconds": {
+        "n": 21,
+        "mean": 0.199,
+        "p95": 0.289,
+        "max": 0.75
+      },
+      "articles": [
+        {
+          "url": "https://www.prnewswire.com/news-releases/sass-magazine-celebrates-release-of-2026-cozy-issue-302932243.html",
+          "published": "2026-11-06T19:51:00+00:00",
+          "title": "Sass Magazine Celebrates Release of 2026 COZY Issue",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:52:15.819081+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/gigli-launches-daily-functional-line-and-skinny-mocktails-redefining-wellness--everyday-beverages-302932277.html",
+          "published": "2026-11-06T19:53:00+00:00",
+          "title": "Gigli Launches Daily Functional Line and SKINNY Mocktails Redefining Wellness & Everyday Beverages",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:54:15.840799+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-mntn-inc-investors-that-we-are-investigating-the-company-for-violations-of-securities-laws-302932230.html",
+          "published": "2026-11-06T19:55:00+00:00",
+          "title": "Robbins LLP Reminds MNTN, Inc. Investors That We Are Investigating the Company for Violations of Securities Laws",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:56:16.000924+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/quantinuum-presenta-los-resultados-del-tercer-trimestre-de-2026-302932354.html",
+          "published": "2026-11-06T19:55:00+00:00",
+          "title": "Quantinuum presenta los resultados del tercer trimestre de 2026",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:57:15.886340+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-app-investors-of-the-november-16-2026-lead-plaintiff-deadline-harmed-investors-should-contact-the-firm-for-information-about-leading-the-class-action-against-applovin-corporation-302932229.html",
+          "published": "2026-11-06T19:57:00+00:00",
+          "title": "Robbins LLP Reminds APP Investors of the November 16, 2026 Lead Plaintiff Deadline; Harmed Investors Should Contact the Firm for Information About Leading the Class Action Against AppLovin Corporation",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:58:15.816444+00:00"
+        }
+      ]
+    },
+    "prn_post": {
+      "requests": 21,
+      "errors": [],
+      "new_rows": 6,
+      "publish_to_first_visible": {
+        "n": 6,
+        "mean": 46.636,
+        "p95": 106.666,
+        "max": 106.666
+      },
+      "age": {
+        "n": 0
+      },
+      "request_seconds": {
+        "n": 21,
+        "mean": 0.959,
+        "p95": 1.135,
+        "max": 1.684
+      },
+      "articles": [
+        {
+          "url": "https://www.prnewswire.com/news-releases/sass-magazine-celebrates-release-of-2026-cozy-issue-302932243.html",
+          "published": "2026-11-06T19:51:00+00:00",
+          "title": "Sass Magazine Celebrates Release of 2026 COZY Issue",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:51:46.787173+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/gigli-launches-daily-functional-line-and-skinny-mocktails-redefining-wellness--everyday-beverages-302932277.html",
+          "published": "2026-11-06T19:53:00+00:00",
+          "title": "Gigli Launches Daily Functional Line and SKINNY Mocktails Redefining Wellness & Everyday Beverages",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:54:16.484821+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-mntn-inc-investors-that-we-are-investigating-the-company-for-violations-of-securities-laws-302932230.html",
+          "published": "2026-11-06T19:55:00+00:00",
+          "title": "Robbins LLP Reminds MNTN, Inc. Investors That We Are Investigating the Company for Violations of Securities Laws",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:55:16.682357+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/quantinuum-presenta-los-resultados-del-tercer-trimestre-de-2026-302932354.html",
+          "published": "2026-11-06T19:55:00+00:00",
+          "title": "Quantinuum presenta los resultados del tercer trimestre de 2026",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:56:46.665838+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-app-investors-of-the-november-16-2026-lead-plaintiff-deadline-harmed-investors-should-contact-the-firm-for-information-about-leading-the-class-action-against-applovin-corporation-302932229.html",
+          "published": "2026-11-06T19:57:00+00:00",
+          "title": "Robbins LLP Reminds APP Investors of the November 16, 2026 Lead Plaintiff Deadline; Harmed Investors Should Contact the Firm for Information About Leading the Class Action Against AppLovin Corporation",
+          "precision": "minute",
+          "first_at": "2026-11-06T19:57:16.698624+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/what-does-yiren-digital-ltds-44-05-stock-drop-mean-for-investors-the-law-offices-of-howard-g-smith-outlines-securities-fraud-class-action-lead-plaintiff-deadline-302931656.html",
+          "published": "2026-11-06T20:00:00+00:00",
+          "title": "What Does Yiren Digital Ltd.'s 44.05% Stock Drop Mean for Investors? The Law Offices of Howard G. Smith Outlines Securities Fraud Class Action Lead Plaintiff Deadline",
+          "precision": "minute",
+          "first_at": "2026-11-06T20:00:16.497514+00:00"
+        }
+      ]
+    },
+    "prn_rss": {
+      "requests": 21,
+      "errors": [],
+      "new_rows": 5,
+      "publish_to_first_visible": {
+        "n": 5,
+        "mean": 100.073,
+        "p95": 195.962,
+        "max": 195.962
+      },
+      "age": {
+        "n": 21,
+        "mean": 22.857,
+        "p95": 38.0,
+        "max": 39.0
+      },
+      "request_seconds": {
+        "n": 21,
+        "mean": 0.155,
+        "p95": 0.322,
+        "max": 0.341
+      },
+      "articles": [
+        {
+          "url": "https://www.prnewswire.com/news-releases/sass-magazine-celebrates-release-of-2026-cozy-issue-302932243.html",
+          "published": "2026-11-06T19:51:00+00:00",
+          "title": "Sass Magazine Celebrates Release of 2026 COZY Issue",
+          "precision": null,
+          "first_at": "2026-11-06T19:52:15.969905+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/gigli-launches-daily-functional-line-and-skinny-mocktails-redefining-wellness--everyday-beverages-302932277.html",
+          "published": "2026-11-06T19:53:00+00:00",
+          "title": "Gigli Launches Daily Functional Line and SKINNY Mocktails Redefining Wellness & Everyday Beverages",
+          "precision": null,
+          "first_at": "2026-11-06T19:54:16.260389+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-mntn-inc-investors-that-we-are-investigating-the-company-for-violations-of-securities-laws-302932230.html",
+          "published": "2026-11-06T19:55:00+00:00",
+          "title": "Robbins LLP Reminds MNTN, Inc. Investors That We Are Investigating the Company for Violations of Securities Laws",
+          "precision": null,
+          "first_at": "2026-11-06T19:56:16.209636+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-app-investors-of-the-november-16-2026-lead-plaintiff-deadline-harmed-investors-should-contact-the-firm-for-information-about-leading-the-class-action-against-applovin-corporation-302932229.html",
+          "published": "2026-11-06T19:57:00+00:00",
+          "title": "Robbins LLP Reminds APP Investors of the November 16, 2026 Lead Plaintiff Deadline; Harmed Investors Should Contact the Firm for Information About Leading the Class Action Against AppLovin Corporation",
+          "precision": null,
+          "first_at": "2026-11-06T19:58:15.961973+00:00"
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/quantinuum-presenta-los-resultados-del-tercer-trimestre-de-2026-302932354.html",
+          "published": "2026-11-06T19:55:00+00:00",
+          "title": "Quantinuum presenta los resultados del tercer trimestre de 2026",
+          "precision": null,
+          "first_at": "2026-11-06T19:58:15.961973+00:00"
+        }
+      ]
+    }
+  },
+  "paired_comparison": {
+    "prn_post_vs_prn_get": {
+      "paired": 5,
+      "left_earlier": 4,
+      "right_earlier": 0,
+      "within_five_seconds": 1,
+      "left_minus_right": {
+        "n": 5,
+        "mean": -35.209,
+        "p95": 0.644,
+        "max": 0.644
+      },
+      "articles": [
+        {
+          "url": "https://www.prnewswire.com/news-releases/gigli-launches-daily-functional-line-and-skinny-mocktails-redefining-wellness--everyday-beverages-302932277.html",
+          "title": "Gigli Launches Daily Functional Line and SKINNY Mocktails Redefining Wellness & Everyday Beverages",
+          "published": "2026-11-06T19:53:00+00:00",
+          "left_at": "2026-11-06T19:54:16.484821+00:00",
+          "right_at": "2026-11-06T19:54:15.840799+00:00",
+          "left_minus_right_seconds": 0.644
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/sass-magazine-celebrates-release-of-2026-cozy-issue-302932243.html",
+          "title": "Sass Magazine Celebrates Release of 2026 COZY Issue",
+          "published": "2026-11-06T19:51:00+00:00",
+          "left_at": "2026-11-06T19:51:46.787173+00:00",
+          "right_at": "2026-11-06T19:52:15.819081+00:00",
+          "left_minus_right_seconds": -29.032
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-app-investors-of-the-november-16-2026-lead-plaintiff-deadline-harmed-investors-should-contact-the-firm-for-information-about-leading-the-class-action-against-applovin-corporation-302932229.html",
+          "title": "Robbins LLP Reminds APP Investors of the November 16, 2026 Lead Plaintiff Deadline; Harmed Investors Should Contact the Firm for Information About Leading the Class Action Against AppLovin Corporation",
+          "published": "2026-11-06T19:57:00+00:00",
+          "left_at": "2026-11-06T19:57:16.698624+00:00",
+          "right_at": "2026-11-06T19:58:15.816444+00:00",
+          "left_minus_right_seconds": -59.118
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-mntn-inc-investors-that-we-are-investigating-the-company-for-violations-of-securities-laws-302932230.html",
+          "title": "Robbins LLP Reminds MNTN, Inc. Investors That We Are Investigating the Company for Violations of Securities Laws",
+          "published": "2026-11-06T19:55:00+00:00",
+          "left_at": "2026-11-06T19:55:16.682357+00:00",
+          "right_at": "2026-11-06T19:56:16.000924+00:00",
+          "left_minus_right_seconds": -59.319
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/quantinuum-presenta-los-resultados-del-tercer-trimestre-de-2026-302932354.html",
+          "title": "Quantinuum presenta los resultados del tercer trimestre de 2026",
+          "published": "2026-11-06T19:55:00+00:00",
+          "left_at": "2026-11-06T19:56:46.665838+00:00",
+          "right_at": "2026-11-06T19:57:15.886340+00:00",
+          "left_minus_right_seconds": -29.221
+        }
+      ]
+    },
+    "prn_post_vs_prn_rss": {
+      "paired": 5,
+      "left_earlier": 4,
+      "right_earlier": 0,
+      "within_five_seconds": 1,
+      "left_minus_right": {
+        "n": 5,
+        "mean": -47.409,
+        "p95": 0.224,
+        "max": 0.224
+      },
+      "articles": [
+        {
+          "url": "https://www.prnewswire.com/news-releases/gigli-launches-daily-functional-line-and-skinny-mocktails-redefining-wellness--everyday-beverages-302932277.html",
+          "title": "Gigli Launches Daily Functional Line and SKINNY Mocktails Redefining Wellness & Everyday Beverages",
+          "published": "2026-11-06T19:53:00+00:00",
+          "left_at": "2026-11-06T19:54:16.484821+00:00",
+          "right_at": "2026-11-06T19:54:16.260389+00:00",
+          "left_minus_right_seconds": 0.224
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/sass-magazine-celebrates-release-of-2026-cozy-issue-302932243.html",
+          "title": "Sass Magazine Celebrates Release of 2026 COZY Issue",
+          "published": "2026-11-06T19:51:00+00:00",
+          "left_at": "2026-11-06T19:51:46.787173+00:00",
+          "right_at": "2026-11-06T19:52:15.969905+00:00",
+          "left_minus_right_seconds": -29.183
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-app-investors-of-the-november-16-2026-lead-plaintiff-deadline-harmed-investors-should-contact-the-firm-for-information-about-leading-the-class-action-against-applovin-corporation-302932229.html",
+          "title": "Robbins LLP Reminds APP Investors of the November 16, 2026 Lead Plaintiff Deadline; Harmed Investors Should Contact the Firm for Information About Leading the Class Action Against AppLovin Corporation",
+          "published": "2026-11-06T19:57:00+00:00",
+          "left_at": "2026-11-06T19:57:16.698624+00:00",
+          "right_at": "2026-11-06T19:58:15.961973+00:00",
+          "left_minus_right_seconds": -59.263
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/robbins-llp-reminds-mntn-inc-investors-that-we-are-investigating-the-company-for-violations-of-securities-laws-302932230.html",
+          "title": "Robbins LLP Reminds MNTN, Inc. Investors That We Are Investigating the Company for Violations of Securities Laws",
+          "published": "2026-11-06T19:55:00+00:00",
+          "left_at": "2026-11-06T19:55:16.682357+00:00",
+          "right_at": "2026-11-06T19:56:16.209636+00:00",
+          "left_minus_right_seconds": -59.527
+        },
+        {
+          "url": "https://www.prnewswire.com/news-releases/quantinuum-presenta-los-resultados-del-tercer-trimestre-de-2026-302932354.html",
+          "title": "Quantinuum presenta los resultados del tercer trimestre de 2026",
+          "published": "2026-11-06T19:55:00+00:00",
+          "left_at": "2026-11-06T19:56:46.665838+00:00",
+          "right_at": "2026-11-06T19:58:15.961973+00:00",
+          "left_minus_right_seconds": -89.296
+        }
+      ]
+    },
+    "gn_http_vs_gn_rss": {
+      "paired": 1,
+      "left_earlier": 0,
+      "right_earlier": 1,
+      "within_five_seconds": 0,
+      "left_minus_right": {
+        "n": 1,
+        "mean": 29.427,
+        "p95": 29.427,
+        "max": 29.427
+      },
+      "articles": [
+        {
+          "url": "https://www.globenewswire.com/news-release/2026/11/06/3397857/0/en/trreb-welcomes-federal-budget-measures-to-boost-housing-supply-and-affordability.html",
+          "title": "TRREB Welcomes Federal Budget Measures to Boost Housing Supply and Affordability",
+          "published": "2026-11-06T19:52:00+00:00",
+          "left_at": "2026-11-06T19:54:46.363659+00:00",
+          "right_at": "2026-11-06T19:54:16.936940+00:00",
+          "left_minus_right_seconds": 29.427
+        }
+      ]
+    }
+  },
+  "isolation": {
+    "raw_messages": 0,
+    "standard_messages": 0,
+    "ticker_source_bindings": 0
+  },
+  "test_publications": [],
+  "runtime": {
+    "at": "2026-11-06T20:01:43.717272+00:00",
+    "components": {
+      "v2-message-collector": {
+        "commit": "590919ed45cd8e96537962a2b5da63e5291e65c2",
+        "image": "sha256:797d6cffdab525b159780f045a1f434b0056c1eeb5a2ca9d2e5459641f0f7c8d",
+        "accepted_at": 1793994622.5222251,
+        "status": "running",
+        "started_at": "2026-11-06T19:50:07.419452654Z",
+        "restarts": 0,
+        "health": "healthy"
+      },
+      "v2-message-bus": {
+        "commit": "45e0dcc56cf9ed9c4d7ab86b676e03d83dcb639f",
+        "image": "sha256:391beacd8a1aea14ad5ea249b0bb6c42b23a755166d3dcfa0f296d6750fef3ad",
+        "accepted_at": 1793994389.4087725,
+        "status": "running",
+        "started_at": "2026-11-06T19:46:22.783295911Z",
+        "restarts": 0,
+        "health": null
+      },
+      "v2-api": {
+        "commit": "d2820f7613cfc30c4b7804760efc8b10b93d0b6f",
+        "image": "sha256:cafc5fb9deab6863dd99c88234a042506940dae4493c6e671764cdfd0774521c",
+        "accepted_at": 1793992606.949937,
+        "status": "running",
+        "started_at": "2026-11-06T19:16:07.091499055Z",
+        "restarts": 0,
+        "health": "healthy"
+      },
+      "v2-content-enrichment": {
+        "commit": "942c393660e3a69e97eee5f5bdfe4ad4f3f11f6d",
+        "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+        "accepted_at": 1793923675.3390694,
+        "status": "running",
+        "started_at": "2026-11-06T00:07:49.542294208Z",
+        "restarts": 0,
+        "health": null
+      }
+    }
+  },
+  "controls_unchanged": {
+    "ticker_source_bindings": true,
+    "ticker_monitoring_term_revisions": true,
+    "source_definitions": true,
+    "default_profiles": true
+  },
+  "duplicate_new_url_owners": 0,
+  "canonical_gn_live_identity": {
+    "equal": true,
+    "body_owner": [
+      {
+        "article_key": "test_daaf4ca2cf7f14766cec28e05153aa93d6e17c25d91f6c6bb25502fbafc931fc",
+        "outcome": "FULL",
+        "fetch_total": 1
+      }
+    ]
+  },
+  "matched_source_hashes": 18,
+  "checked_source_hashes": 18,
+  "test_model_decisions": 0,
+  "terms_and_binding_controls": {
+    "ticker_source_bindings": {
+      "count": 323,
+      "sha256": "aa4d1cca129ebf92b46710c91d565b2b9a43fc9216be2b99829922b7382275ec"
+    },
+    "ticker_monitoring_term_revisions": {
+      "count": 40,
+      "sha256": "7a950c6f62c7fead84d1637f8d9ea12fe709b0acf2e0797b51db520fa3c51257"
+    },
+    "source_definitions": {
+      "count": 103,
+      "sha256": "14aa0ccfaefbcc9c360757e4be74dbff51fe573eb0d22257aa12eb5a6273bed1"
+    },
+    "default_profiles": {
+      "count": 1,
+      "sha256": "5edabe139f9ec167d5ac48eb9a1613f31aae8b70d8a0943f2196e0f881b22897"
+    }
+  },
+  "note": "Five sources remain test-only. Failed RSS fallback cycles are not successful HTTP discovery; minute timestamps are not second-exact."
+}
