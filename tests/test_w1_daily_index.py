@@ -93,6 +93,21 @@ def test_nested_minimal_branches_keep_original_fact_admission_and_event_birth(tm
         assert db.execute('SELECT count(*) FROM library_versions').fetchone()[0] == 2
 
 
+def test_retired_publication_clocks_use_only_proven_age_bounds(tmp_path):
+    _, repo, provider = library(tmp_path)
+    publish(repo, 1, boundary(DAY-timedelta(days=25)), [event(1), event(2, ref=True)])
+    publish(repo, 2, boundary(DAY-timedelta(days=20)), [event(1)])
+    with repo._write() as db:
+        db.execute('DELETE FROM library_versions WHERE version=1')
+    assert repo.fact_admissions('MU', 2)['F1'] == (1, None)
+    # Even the next retained publication is older than both protection windows.
+    assert {line.split(' | ')[0] for line in provider.filtered_index('MU', 2, DAY)
+            .known_event_index.splitlines()} == {'E2'}
+    # An uncertain clock overlapping a historical window must not hide an Event.
+    assert {line.split(' | ')[0] for line in provider.filtered_index('MU', 2, DAY-timedelta(days=19))
+            .known_event_index.splitlines()} == {'E1','E2'}
+
+
 @pytest.mark.parametrize("kind", ["memory", "sqlite"])
 def test_day_freeze_and_post_o2_visibility_with_no_reimport(tmp_path,kind):
     root, repo, provider = library(tmp_path)

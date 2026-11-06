@@ -729,9 +729,9 @@ class EventLibraryRepository:
             key = (fact_no, tuple(json.dumps(value.get(k), sort_keys=True, ensure_ascii=False)
                 for k in ("proposition", "assertion_state", "subject_time",
                           "fact_occurred_at", "fact_occurrence_time_precision")))
-            if admitted not in versions:
-                raise EventLibraryError("Fact admission has no Published version record")
-            seen.setdefault(key, (admitted, versions[admitted]))
+            # Retained historical snapshots may have retired older publication
+            # clocks. Keep that uncertainty instead of inventing a timestamp.
+            seen.setdefault(key, (admitted, versions.get(admitted)))
             current[f"F{fact_no}"] = seen[key]
         return current
 
@@ -741,17 +741,29 @@ class EventLibraryRepository:
         events = self.published_events(ticker, version)
         history = self._admission_history(self._ticker(ticker), version)
         versions = history[0]
+        ordered_versions = sorted(versions)
+
+        def recent(admission, days):
+            admitted, at = admission
+            lower = day-timedelta(days=days-1)
+            if at is not None:
+                return lower <= semantic_day(at) <= day
+            # Version ordering gives an upper bound even after old clocks were
+            # retired. Exclude only when it proves the whole window has passed;
+            # overlapping uncertainty retains the Event as the legacy index did.
+            upper = next((versions[v] for v in ordered_versions if v >= admitted), None)
+            return upper is None or semantic_day(upper) >= lower
+
         with self._read() as db:
-            births = {f"E{r['event_no']}": versions[int(r["created_version"])]
+            births = {f"E{r['event_no']}": (int(r["created_version"]),
+                       versions.get(int(r["created_version"])))
                 for r in db.execute(
                     "SELECT event_no,created_version FROM canonical_events "
                     "WHERE ticker=? AND created_version<=?", (self._ticker(ticker), version))}
         facts = self._fact_admission_map(*history)
         return [event for event in events if event.include_in_reference_view
-                or (event.event_id in births and day-timedelta(days=13)
-                    <= semantic_day(births[event.event_id]) <= day)
-                or any(f.fact_id in facts and day-timedelta(days=6)
-                       <= semantic_day(facts[f.fact_id][1]) <= day for f in event.facts)]
+                or (event.event_id in births and recent(births[event.event_id], 14))
+                or any(f.fact_id in facts and recent(facts[f.fact_id], 7) for f in event.facts)]
 
     def get_event(
         self, ticker: str, event_id: str, version: int | None = None

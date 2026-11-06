@@ -56,3 +56,7 @@ Known Index和W1R1固定指令一起冻结；当日提示词资产更新时，W1
 - test_event_library_time_reference_repair.py::test_supersession_requires_both_sides_and_normalizes_target_reason
 
 这些是既有CDECR/D2/校验预期问题，本轮没有修改对应模块以消除失败。测试为确定性程序与本地SQLite/固定模型回执测试；没有真实LLM质量评估或缓存服务命中率测试，也未自动部署。
+
+## Production compatibility correction (2026-11-06)
+
+Production preflight exposed minimal branch snapshots and native-retained libraries with retired publication metadata. Admission lookup now follows existing branch sidecars, reading only revisions after each base. Missing historical clocks remain `None`; the next retained publication supplies an age upper bound, never a fabricated admission time. An Event is excluded only when the bound proves it is outside the window. Overlapping uncertainty retains the Event, consistent with the legacy full index. This preserves historical research coverage without changing stored Events, Facts, activation pointers, or minimal-branch storage. Nested branch reversion and retired-clock regressions were added.
