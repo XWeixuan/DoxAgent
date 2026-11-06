@@ -161,10 +161,10 @@ async def poll_listing(adapter, context):
                 for row in parsed:
                     row.metadata["discovery_method"] = "http_listing"
                     row.raw_payload["listing_url"] = url
-                    rows[row.url] = row
+                    rows.setdefault(row.url, row)
                 # Visit every card, including equal timestamps. Follow pages on
                 # bursts/recovery until a known article or the admission boundary.
-                if set(old).intersection(r.url for r in parsed) or min(r.published_at for r in parsed) <= cutoff or len(parsed) < recipe["size"]:
+                if set(old).intersection(r.url for r in parsed) or max(r.published_at for r in parsed) <= cutoff or len(parsed) < recipe["size"]:
                     break
             else:
                 raise ValueError("wire_listing_window_overflow:no_overlap_within_four_pages")

@@ -127,7 +127,7 @@ async def test_access_does_not_invent_blog_rss_as_fallback():
 
 async def test_paging_covers_burst_and_failed_second_page_keeps_first_page_news(monkeypatch):
     monkeypatch.setitem(RECIPES, "prnewswire_massive", {**RECIPES["prnewswire_massive"], "size": 3})
-    second = fixture("prnewswire").replace("13:55 ET", "13:20 ET").replace("302932308", "302932999")
+    second = fixture("prnewswire").replace("13:55 ET", "13:20 ET").replace("13:48 ET", "13:20 ET").replace("13:41 ET", "13:20 ET").replace("302932308", "302932999")
     adapter = SimpleNamespace(listing_request=AsyncMock(side_effect=[(response(fixture("prnewswire")), "direct"), (response(second), "direct")]), poll_feed=AsyncMock(return_value=PollResult()))
     result = await poll_listing(adapter, context())
     assert not result.failures and adapter.listing_request.await_count == 2
@@ -144,6 +144,18 @@ async def test_cache_age_failure_is_auditable_and_falls_back_instead_of_claiming
     result = await poll_listing(adapter, context())
     assert result.failures and result.acquisition_metadata["cache"][0]["age"] == "500"
     assert "cache_age" in result.failures[0].error_message
+
+
+async def test_one_old_outlier_cannot_hide_fresh_articles_on_the_next_page(monkeypatch):
+    monkeypatch.setitem(RECIPES, "prnewswire_massive", {**RECIPES["prnewswire_massive"], "size": 3})
+    first = fixture("prnewswire").replace("13:55 ET", "13:20 ET")
+    second = fixture("prnewswire").replace("302932308", "302932999")
+    adapter = SimpleNamespace(listing_request=AsyncMock(side_effect=[(response(first), "direct"), (response(second), "direct"), (response(first), "direct"), (response(first), "direct")]), poll_feed=AsyncMock(return_value=PollResult()))
+    # Prior known articles only live on the second page in this burst.
+    old_url = parse_listing(second, source(), NOW)[0].url
+    result = await poll_listing(adapter, context(checkpoint={"seen": {old_url: "old"}}))
+    assert not result.failures and adapter.listing_request.await_count == 2
+    assert any(r.url == old_url for r in result.messages)
 
 
 @pytest.mark.parametrize("sid", ["businesswire_massive", "tmx_newsfile_massive"])
