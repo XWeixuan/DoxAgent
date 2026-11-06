@@ -279,6 +279,7 @@ class RuntimeRecallOpenRouterClient:
         w1_provisional_cache_batch_size: int = 5,
         round_overrides: dict[str, Any] | None = None,
         vertex_project: str = "",
+        openai_api_key: str = "",
     ) -> None:
         # A missing primary credential is handled as an attempt failure so the
         # orchestrator can use its frozen Bailian fallback instead of failing startup.
@@ -291,6 +292,8 @@ class RuntimeRecallOpenRouterClient:
         self.w1_provisional_cache_batch_size = w1_provisional_cache_batch_size
         self._api_key = api_key
         self._vertex = None
+        self._openai = None
+        self._openai_api_key = openai_api_key
         self._round_overrides = round_overrides or {}
         self._vertex_project = vertex_project
         self._client = client or httpx.Client()
@@ -299,6 +302,8 @@ class RuntimeRecallOpenRouterClient:
         self._client.close()
         if self._vertex is not None:
             self._vertex.client.close()
+        if self._openai is not None:
+            self._openai.close()
 
     def model_settings(self) -> dict[str, Any]:
         settings = self.bailian.model_settings()
@@ -343,8 +348,8 @@ class RuntimeRecallOpenRouterClient:
             )
             for key, config in settings["rounds"].items()
             if key in {"W1:R2", "W1:R3", "W2:R2", "W2:R3"}
-            and config.get("model") == SAIL_MODEL
-            and config.get("provider_endpoint") == SAIL_ENDPOINT
+            and ((config.get("model") == SAIL_MODEL and config.get("provider_endpoint") == SAIL_ENDPOINT)
+                 or config.get("provider") == "openai")
         }
         if case_fallback:
             settings["case_fallback"] = case_fallback
@@ -365,6 +370,11 @@ class RuntimeRecallOpenRouterClient:
         )
 
     def complete(self, request: RuntimeResponsesRequest[T]) -> RuntimeResponsesResult[T]:
+        if request.provider == "openai":
+            if self._openai is None:
+                from .openai_platform import OpenAIPlatformClient
+                self._openai = OpenAIPlatformClient(self._openai_api_key)
+            return self._openai.complete(request)
         if request.provider == "vertex":
             if self._vertex is None:
                 import os

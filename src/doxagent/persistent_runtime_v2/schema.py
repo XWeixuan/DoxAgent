@@ -504,9 +504,10 @@ class RuntimeModelTurn(RuntimeV2Model):
     response_id: str | None = None
     previous_response_id: str | None = None
     model: str
-    provider: Literal["bailian", "openrouter", "vertex"] = "bailian"
+    provider: Literal["bailian", "openrouter", "vertex", "openai"] = "bailian"
     provider_endpoint: str | None = None
-    cache_ttl: Literal["5m", "1h"] | None = None
+    cache_ttl: Literal["5m", "1h", "30m", "12h"] | None = None
+    service_tier: Literal["default", "fast", "priority"] | None = None
     provisional_cache_batch_size: int | None = Field(default=None, ge=1)
     reasoning_effort: Literal["low", "medium", "high", "xhigh"] = "medium"
     transport: Literal["responses_json_schema", "responses_json_object", "chat_completions_json_schema", "chat_completions_json_object", "vertex_anthropic"] = "responses_json_schema"

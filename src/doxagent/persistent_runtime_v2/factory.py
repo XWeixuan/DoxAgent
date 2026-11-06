@@ -121,6 +121,7 @@ def build_persistent_runtime_v2_service(
     responses = RuntimeRecallOpenRouterClient(
         bailian,
         api_key=settings.openrouter_api_key.get_secret_value() if settings.openrouter_api_key else "",
+        openai_api_key=settings.openai_api_key.get_secret_value() if settings.openai_api_key else "",
         round_overrides=round_overrides,
         vertex_project=settings.vertex_project,
         w2_r1_model=settings.persistent_runtime_v2_w2_r1_model,

@@ -67,9 +67,9 @@ def normalize(provider: str, usage: dict, *, ttl: str | None = None) -> dict:
         result["cache_write_1h_input_tokens"] = count(creation.get("ephemeral_1h_input_tokens"))
     else:
         if result["input_tokens"] is None:
-            result["input_tokens"] = count(native.get("prompt_tokens"))
+            result["input_tokens"] = count(native.get("prompt_tokens", native.get("input_tokens")))
         if result["output_tokens"] is None:
-            result["output_tokens"] = count(native.get("completion_tokens"))
+            result["output_tokens"] = count(native.get("completion_tokens", native.get("output_tokens")))
         details = native.get("prompt_tokens_details") or native.get("input_tokens_details") or {}
         if result["cached_input_tokens"] is None:
             result["cached_input_tokens"] = count(details.get("cached_tokens"))
@@ -77,7 +77,7 @@ def normalize(provider: str, usage: dict, *, ttl: str | None = None) -> dict:
             result["cache_write_input_tokens"] = count(details.get("cache_write_tokens"))
         if result["reasoning_tokens"] is None:
             result["reasoning_tokens"] = count(
-                (native.get("completion_tokens_details") or {}).get("reasoning_tokens")
+                (native.get("completion_tokens_details") or native.get("output_tokens_details") or {}).get("reasoning_tokens")
             )
     if raw.get("output_complete") is False:
         result["output_tokens"] = None
@@ -93,7 +93,7 @@ def normalize(provider: str, usage: dict, *, ttl: str | None = None) -> dict:
         result["cache_write_5m_input_tokens"] = None
         result["cache_write_1h_input_tokens"] = None
     incoming, read = result["input_tokens"], result["cached_input_tokens"]
-    cached_write = write if provider in {"vertex", "openrouter"} else 0
+    cached_write = write if provider in {"vertex", "openrouter", "openai"} else 0
     uncached = (
         incoming - read - cached_write
         if all(v is not None for v in (incoming, read, cached_write))
@@ -168,6 +168,8 @@ def price(
     }
     if channel != "API":
         return {**result, "reason": "CODEX_SUBSCRIPTION_NOT_PRICED"}
+    if provider == "openai" and model == "gpt-6-luna":
+        return _price_luna(result, usage, endpoint)
     rule, multiplier = None, Decimal(1)
     if provider == "bailian":
         rule = RULES["bailian"].get(model)
@@ -274,4 +276,40 @@ def price(
             for key in empty:
                 if key != "total_cost_usd":
                     result[key] = None
+    return result
+
+
+def _price_luna(result, usage, endpoint):
+    """Versioned native tariff; actual service tier, not a requested-tier guess."""
+    result.update(price_version="openai-luna-20261106-v1",
+        price_source="https://developers.openai.com/api/docs/pricing",
+        tariff_as_of="2026-11-06",currency="USD")
+    raw=usage.get("provider_usage") or {};native=raw.get("usage",raw)
+    tier=raw.get("service_tier",native.get("service_tier"))
+    if endpoint != "https://api.openai.com/v1/responses" or tier not in {"default","fast","priority"}:
+        return result
+    incoming=usage.get("input_tokens")
+    if incoming is None:
+        return {**result,"reason":"NOT_RECORDED"}
+    scale=Decimal(2 if tier in {"fast","priority"} else 1)
+    input_scale=scale*(2 if incoming>272000 else 1)
+    output_scale=scale*(Decimal("1.5") if incoming>272000 else 1)
+    details=(native.get("input_tokens_details") or {}).get("cache_write_tokens_details") or {}
+    write=usage.get("cache_write_input_tokens")
+    w30=count(details.get("ttl_30m_tokens"));w12=count(details.get("ttl_12h_tokens"))
+    if write==0:w30=w12=0
+    def component(n,rate,multiplier):
+        return Decimal(n)*Decimal(rate)*multiplier/MILLION if n is not None else None
+    result["noncached_input_cost_usd"]=component(usage.get("input_tokens_uncached"),"0.10",input_scale)
+    result["cached_input_cost_usd"]=component(usage.get("cached_input_tokens"),"0.01",input_scale)
+    result["output_cost_usd"]=component(usage.get("output_tokens"),"0.50",output_scale)
+    if write is not None and w30 is not None and w12 is not None and w30+w12==write:
+        result["cache_write_cost_usd"]=component(w30,"0.125",input_scale)+component(w12,"0.25",input_scale)
+    parts=[result[k] for k in ["noncached_input_cost_usd","cached_input_cost_usd","cache_write_cost_usd"]]
+    if all(p is not None for p in parts):result["input_cost_usd"]=sum(parts)
+    if result["input_cost_usd"] is not None and result["output_cost_usd"] is not None:
+        total=result["input_cost_usd"]+result["output_cost_usd"]
+        result.update(total_cost_usd=total,calculated_cost_native=total,cost_basis="ESTIMATED",reason=None,
+            price_rule_id=f"openai:gpt-6-luna:{tier}:{'long' if incoming>272000 else 'short'}:20261106-v1")
+    else:result["reason"]="NOT_RECORDED"
     return result

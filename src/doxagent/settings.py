@@ -619,6 +619,7 @@ class DoxAgentSettings(BaseSettings):
     openrouter_api_key: SecretStr | None = Field(
         default=None, validation_alias="OPENROUTER_API_KEY"
     )
+    openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
     message_bus_jev_enabled: bool = Field(
         default=False, validation_alias="DOXAGENT_MESSAGE_BUS_JEV_ENABLED"
     )
@@ -882,7 +883,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
     persistent_runtime_v2_api_profile: Literal[
-        "current", "vertex_recall", "bailian_glm", "vertex_glm", "bailian_deepseek", "openrouter_haiku", "openrouter_haiku_high", "openrouter_sail_high"
+        "current", "vertex_recall", "bailian_glm", "vertex_glm", "bailian_deepseek", "openrouter_haiku", "openrouter_haiku_high", "openrouter_sail_high", "openai_luna_r2_high"
     ] = Field(
         default="current", validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_API_PROFILE"
     )

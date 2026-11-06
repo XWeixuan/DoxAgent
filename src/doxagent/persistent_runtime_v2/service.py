@@ -1462,7 +1462,8 @@ class PersistentRuntimeV2Service:
 
         if fallback_state is None and recall_fallback and turns:
             latest = turns[-1]
-            if latest.provider == "openrouter" and latest.error_code in fallback_codes:
+            if (latest.provider == model_settings.get("provider", "bailian")
+                and latest.model == model_settings["model"] and latest.error_code in fallback_codes):
                 fallback_state = activate_fallback(len(turns), latest.error_code)
         if fallback_state:
             model_settings = fallback_state["model_settings"]
@@ -1539,6 +1540,8 @@ class PersistentRuntimeV2Service:
                             "case_id": case.case_id,
                             "lane": lane,
                             "round": round_name,
+                            **({"service_tier": model_settings["service_tier"]}
+                               if model_settings.get("service_tier") else {}),
                             **({"output_contract": model_settings["output_contract"]}
                                if model_settings.get("output_contract") else {}),
                             **({"case_cache_layout": model_settings["case_cache_layout"]}

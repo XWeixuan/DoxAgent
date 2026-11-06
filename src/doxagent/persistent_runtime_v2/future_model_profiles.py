@@ -40,7 +40,7 @@ def bailian_glm_rounds(workspace_endpoint):
 def configured_rounds(settings):
     profile = settings.persistent_runtime_v2_api_profile
     result = {}
-    if profile in {"openrouter_haiku", "openrouter_haiku_high", "openrouter_sail_high"}:
+    if profile in {"openrouter_haiku", "openrouter_haiku_high", "openrouter_sail_high", "openai_luna_r2_high"}:
         from .case_output_contract import VERSION
         from .case_cache import VERSION as CACHE_VERSION
 
@@ -58,13 +58,19 @@ def configured_rounds(settings):
             )
             for lane in ("W1", "W2") for rnd in ("R2", "R3")
         })
-        if profile == "openrouter_sail_high":
+        if profile in {"openrouter_sail_high", "openai_luna_r2_high"}:
             for config in result.values():
                 config.update(
                     model="deepseek/deepseek-v4.1-flash-1017",
                     provider_endpoint="sail-research/fp4",
                     cache_ttl=None,  # Sail uses automatic prefix caching, not Anthropic TTLs.
                 )
+        if profile == "openai_luna_r2_high":
+            for lane in ("W1", "W2"):
+                result[f"{lane}:R2"].update(model="gpt-6-luna", provider="openai",
+                    provider_endpoint="https://api.openai.com/v1/responses",
+                    transport="responses_json_schema", reasoning_effort="high",
+                    service_tier="fast", cache_ttl="30m")
     if profile in {"vertex_recall", "vertex_glm"}:
         if not settings.vertex_project:
             raise ValueError("Vertex profile requires DOXAGENT_VERTEX_PROJECT")
