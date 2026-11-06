@@ -670,6 +670,41 @@ class EventLibraryRepository:
                 for row in rows
             ]
 
+    def _admission_history(self, ticker: str, version: int):
+        """Read publication history through the existing minimal-branch lineage.
+
+        A minimal branch retains only its base snapshot and subsequent changes.
+        Its sidecar identifies the immutable source of all earlier revisions.
+        Read only changes after each branch base, avoiding copied snapshots.
+        """
+        versions, rows, visited = {}, [], set()
+        path, ceiling = self.path, version
+        while True:
+            resolved = path.resolve()
+            if resolved in visited:
+                raise EventLibraryError("Cyclic Event Library branch lineage")
+            visited.add(resolved)
+            sidecar = Path(str(path) + ".branch.json")
+            branch = json.loads(sidecar.read_text(encoding="utf-8")) if sidecar.is_file() else None
+            base = int(branch["base_version"]) if branch else -1
+            repository = EventLibraryRepository(path, read_only=True)
+            with repository._read() as db:
+                for r in db.execute(
+                    "SELECT version,published_at,created_at FROM library_versions "
+                    "WHERE ticker=? AND version<=? AND status='PUBLISHED'", (ticker, ceiling)
+                ):
+                    versions.setdefault(int(r["version"]), datetime.fromisoformat(
+                        (r["published_at"] or r["created_at"]).replace("Z", "+00:00")))
+                rows.extend(db.execute(
+                    "SELECT fact_no,library_version,revision_no,payload_json "
+                    "FROM canonical_fact_revisions WHERE ticker=? AND library_version>? "
+                    "AND library_version<=?", (ticker, base, ceiling)).fetchall())
+            if branch is None:
+                break
+            path, ceiling = Path(branch["source"]), min(ceiling, base)
+        rows.sort(key=lambda r: (r["library_version"], r["revision_no"]))
+        return versions, rows
+
     def fact_admissions(self, ticker: str, version: int):
         """First publication of each current Fact's business content, by stable ID.
 
@@ -678,15 +713,10 @@ class EventLibraryRepository:
         changing references, review clocks or other metadata is not.
         """
         normalized = self._ticker(ticker)
-        with self._read() as db:
-            versions = {int(r["version"]): datetime.fromisoformat(
-                (r["published_at"] or r["created_at"]).replace("Z", "+00:00"))
-                for r in db.execute("SELECT version,published_at,created_at FROM library_versions "
-                                    "WHERE ticker=? AND version<=? AND status='PUBLISHED'",
-                                    (normalized, version))}
-            rows = db.execute("SELECT fact_no,library_version,payload_json FROM canonical_fact_revisions "
-                              "WHERE ticker=? AND library_version<=? ORDER BY library_version,revision_no",
-                              (normalized, version)).fetchall()
+        return self._fact_admission_map(*self._admission_history(normalized, version))
+
+    @staticmethod
+    def _fact_admission_map(versions, rows):
         seen, current = {}, {}
         for row in rows:
             fact_no, admitted = int(row["fact_no"]), int(row["library_version"])
@@ -709,15 +739,14 @@ class EventLibraryRepository:
         from doxagent.semantic_clock import semantic_day
 
         events = self.published_events(ticker, version)
+        history = self._admission_history(self._ticker(ticker), version)
+        versions = history[0]
         with self._read() as db:
-            births = {f"E{r['event_no']}": datetime.fromisoformat(
-                (r["published_at"] or r["created_at"]).replace("Z", "+00:00"))
+            births = {f"E{r['event_no']}": versions[int(r["created_version"])]
                 for r in db.execute(
-                    "SELECT e.event_no,v.published_at,v.created_at FROM canonical_events e "
-                    "JOIN library_versions v ON v.ticker=e.ticker AND v.version=e.created_version "
-                    "WHERE e.ticker=? AND e.created_version<=? AND v.status='PUBLISHED'",
-                    (self._ticker(ticker), version))}
-        facts = self.fact_admissions(ticker, version)
+                    "SELECT event_no,created_version FROM canonical_events "
+                    "WHERE ticker=? AND created_version<=?", (self._ticker(ticker), version))}
+        facts = self._fact_admission_map(*history)
         return [event for event in events if event.include_in_reference_view
                 or (event.event_id in births and day-timedelta(days=13)
                     <= semantic_day(births[event.event_id]) <= day)

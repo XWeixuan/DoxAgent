@@ -2688,3 +2688,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 
 2026-11-06 Full local-development integration: merge origin/main with W3 time awareness, W1 daily Known Index, O2 reference Serving and trading recovery changes. Extend the existing source-release path to package the separately built, hash-verified Codex runtime and code-mode companion. Keep credentials, raw audit outputs and debug symbols outside Git; production release verification follows.
+
+2026-11-06 Production preflight found W1 daily-index admission lookup incompatible with minimal Event branches. Follow the existing immutable branch sidecars for original publication clocks and substantive Fact revisions, reading only changes after each branch base; preserve slim branch storage and original admission semantics, including reverted content. Add nested-branch regression before rebuilding the release.

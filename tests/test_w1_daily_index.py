@@ -73,6 +73,26 @@ def test_union_uses_admission_not_occurrence_and_ignores_maintenance(tmp_path):
     assert "E2 |" not in PublishedEventLibraryReader(root).reference_view("MU").reference_view
 
 
+def test_nested_minimal_branches_keep_original_fact_admission_and_event_birth(tmp_path):
+    from doxagent.persistent_runtime_v2.event_branch import branch_library
+
+    root, repo, _ = library(tmp_path)
+    old = boundary(DAY-timedelta(days=40))
+    publish(repo, 1, old, [event(1), event(2), event(4, ref=True)])
+    publish(repo, 2, boundary(DAY-timedelta(days=1)), [event(1), event(3)])
+    branch = branch_library(repo.path, tmp_path/'branch/US/MU/event_library.sqlite3', 'MU', 2)
+    publish(branch, 3, boundary(DAY), [event(1, facts=[{
+        'fact_id':'F1', 'proposition':'temporary new content', 'assertion_state':'ACTUAL'}])])
+    nested = branch_library(branch.path, tmp_path/'nested/US/MU/event_library.sqlite3', 'MU', 3)
+    publish(nested, 4, boundary(DAY), [event(1)])  # Reverting content is not a new admission.
+    provider = PublishedEventLibraryRuntimeProvider(PublishedEventLibraryReader(tmp_path/'nested'))
+    selected = provider.filtered_index('MU', 4, DAY)
+    assert {line.split(' | ')[0] for line in selected.known_event_index.splitlines()} == {'E3','E4'}
+    assert nested.fact_admissions('MU', 4)['F1'] == (1, old)
+    with nested._read() as db:
+        assert db.execute('SELECT count(*) FROM library_versions').fetchone()[0] == 2
+
+
 @pytest.mark.parametrize("kind", ["memory", "sqlite"])
 def test_day_freeze_and_post_o2_visibility_with_no_reimport(tmp_path,kind):
     root, repo, provider = library(tmp_path)
