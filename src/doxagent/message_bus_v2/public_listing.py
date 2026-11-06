@@ -88,23 +88,28 @@ RECIPES = {
             "https://www.canarymedia.com/rss.rss",
             "https://www.canarymedia.com/articles",
             "canary",
-            fresh_query=True,
+            # GET's rendered list remains stale even behind fresh CDN responses.
+            # This read-only list POST is uncached at both the edge and origin.
+            method="POST",
         ),
     ),
     "technews_hardware": tuple(
         Listing(
             "https://technews.tw/category/" + p + "/feed/",
-            "https://technews.tw/category/" + p + "/",
-            "technews",
+            "https://technews.tw/wp-json/wp/v2/posts?categories="
+            + category
+            + "&per_page=40&context=embed",
+            "technews_embed",
             fresh_query=True,
         )
-        for p in ("semiconductor", "ai")
+        for p, category in (("semiconductor", "93648"), ("ai", "19819"))
     ),
     "crn_cloud_security_datacenter": tuple(
         Listing(
             "https://www.crn.com/news/" + p + "/rss.xml",
             "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=" + p,
             "crn",
+            "us-standard-5",
         )
         for p in ("cloud", "security", "data-center")
     ),
@@ -219,6 +224,18 @@ RECIPES = {
             "workday",
             fresh_query=True,
         ),
+        # Salesforce's official feed includes custom post types, not just posts.
+        # Keep them as independent units of the same external source/feed.
+        *(
+            Listing(
+                "https://www.salesforce.com/news/feed/",
+                "https://www.salesforce.com/news/wp-json/wp/v2/"
+                + kind
+                + "?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+                "wp_rest",
+            )
+            for kind in ("sf_linked_content", "sf_press_release")
+        ),
     ),
 }
 
@@ -304,7 +321,8 @@ def text(node):
 def parse_listing(recipe, spec, raw, now):
     doc = (
         None
-        if recipe.parser in {"frontier_api", "wordpress", "hugging", "crn", "wp_rest"}
+        if recipe.parser
+        in {"frontier_api", "wordpress", "hugging", "crn", "wp_rest", "technews_embed"}
         else html.fromstring(raw)
     )
     rows = []
@@ -387,6 +405,24 @@ def parse_listing(recipe, spec, raw, now):
                         text(summaries[0]) if summaries else None,
                     )
                 )
+        # The featured story is excluded from the latest-news grid by the site.
+        for node in doc.xpath(
+            '//*[contains(concat(" ",normalize-space(@class)," ")," featured-news-teaser__text ")]'
+        ):
+            links = node.xpath(".//h2/a[@href]")
+            dates = node.xpath('.//*[contains(@class,"featured-news-teaser__date")]')
+            if links and dates:
+                from dateutil.parser import parse
+
+                summaries = node.xpath('.//*[contains(@class,"featured-news-teaser__description")]')
+                rows.append(
+                    (
+                        links[0].get("href"),
+                        text(links[0]),
+                        parse(text(dates[0])).date().isoformat(),
+                        text(summaries[0]) if summaries else None,
+                    )
+                )
     elif recipe.parser == "army":
         from dateutil.parser import parse
 
@@ -432,14 +468,24 @@ def parse_listing(recipe, spec, raw, now):
             links = node.xpath('.//a[contains(@href,"/articles/")][.//h3]')
             dates = node.xpath(".//time/@datetime")
             if links and dates:
-                rows.append((links[0].get("href"), text(links[0]), dates[0], None))
+                # Cards stamp every article at noon; only the calendar day is real.
+                rows.append((links[0].get("href"), text(links[0]), dates[0][:10], None))
+    elif recipe.parser == "technews_embed":
+        # WP 4.7 ignores _fields. embed omits full bodies and exposes local date,
+        # not date_gmt; the publisher's explicit timezone is Asia/Taipei.
+        for row in json.loads(raw):
+            date = datetime.fromisoformat(row["date"]).replace(tzinfo=ZoneInfo("Asia/Taipei"))
+            rows.append((row["link"], row["title"]["rendered"], date.isoformat(), None))
     elif recipe.parser == "technews":
         for node in doc.xpath('//article[starts-with(@id,"post-")]'):
             links = node.xpath('.//h1[@class="entry-title"]/a[@href]')
-            match = re.search(r"(\d{4}) 年 (\d{2}) 月 (\d{2}) 日 (\d{2}:\d{2})", text(node))
+            match = re.search(r"(\d{4}) 年 (\d{2}) 月 (\d{2}) 日 (\d{1,2}:\d{2})", text(node))
             if links and match:
+                hour, minute = match[4].split(":")
                 date = (
-                    datetime.fromisoformat(f"{match[1]}-{match[2]}-{match[3]}T{match[4]}")
+                    datetime.fromisoformat(
+                        f"{match[1]}-{match[2]}-{match[3]}T{int(hour):02d}:{minute}"
+                    )
                     .replace(tzinfo=ZoneInfo("Asia/Taipei"))
                     .isoformat()
                 )
@@ -753,6 +799,7 @@ class ListingAdapter:
             if (
                 previous.get("baseline")
                 and recipe.parser != "wordpress"
+                and recipe.method == "GET"
                 and not getattr(context, "force_refresh", False)
             ):
                 headers.update(

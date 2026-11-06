@@ -131,6 +131,94 @@ def test_dates_are_not_fabricated_as_exact():
     assert rows("etnews_rss")[0].published_at.hour == 7  # 16:00 KST.
 
 
+@pytest.mark.parametrize(
+    "sid,fixture,expected_basis,expected_hour",
+    [
+        ("technews_hardware", "technews-single-hour.html", "EXACT", 1),
+        ("nsf_news", "nsf-featured.html", "DATE", None),
+        ("canary_media", "canary-noon.html", "DATE", None),
+    ],
+)
+def test_real_coverage_gaps_and_synthetic_card_clocks(sid, fixture, expected_basis, expected_hour):
+    recipe = RECIPES[sid][0]
+    if fixture == "technews-single-hour.html":
+        recipe = replace(recipe, parser="technews")
+    messages = parse_listing(
+        recipe, spec_for(sid, recipe), (FIXTURES / fixture).read_text(encoding="utf8"), NOW
+    )
+    assert len(messages) == 1
+    assert messages[0].publication_time_basis == expected_basis
+    if expected_hour is not None:
+        assert messages[0].published_at.hour == expected_hour
+
+
+async def test_canary_uses_uncached_read_only_post_and_preserves_delta():
+    raw = (FIXTURES / "canary-noon.html").read_text(encoding="utf8")
+    http = Http(Capture(200, RECIPES["canary_media"][0].url, raw, {}))
+    adapter = ListingAdapter(SimpleNamespace(), http)
+    ctx = context("canary_media")
+    ctx.checkpoint = {
+        "listings": {
+            RECIPES["canary_media"][0].url: {
+                "baseline": True,
+                "etag": '"stale-get"',
+                "modified": "Fri, 06 Nov 2026 19:00:00 GMT",
+            }
+        }
+    }
+    first = await adapter.poll_shared(ctx)
+    assert len(first.messages) == 1 and not first.failures
+    ctx.checkpoint = first.next_checkpoint
+    second = await adapter.poll_shared(ctx)
+    assert not second.messages and not second.failures
+    assert all(c[2]["method"] == "POST" for c in http.calls)
+    assert all("_dox_poll" not in c[0] for c in http.calls)
+    assert all("If-None-Match" not in c[2]["headers"] for c in http.calls)
+    assert all("If-Modified-Since" not in c[2]["headers"] for c in http.calls)
+
+
+def test_salesforce_custom_types_share_source_and_keep_isolated_units():
+    source = definition("enterprise_apps_official_rss")
+    units = endpoint_units(
+        source,
+        SimpleNamespace(source_parameters={"rss_urls": ["https://www.salesforce.com/news/feed/"]}),
+    )
+    assert len(units) == 3
+    assert len({r.feed for r in units.values()}) == 1
+    for kind in ["linked", "press"]:
+        recipe = next(
+            r
+            for r in units.values()
+            if f"sf_{'linked_content' if kind == 'linked' else 'press_release'}?" in r.url
+        )
+        messages = parse_listing(
+            recipe,
+            spec_for(source.source_id, recipe),
+            (FIXTURES / f"salesforce-{kind}.json").read_text(encoding="utf8"),
+            NOW,
+        )
+        assert messages and all(m.publication_time_basis == "EXACT" for m in messages)
+        assert all(m.body is None for m in messages)
+
+
+async def test_crn_uses_verified_fixed_http_egress():
+    http = Http(capture("crn_cloud_security_datacenter"))
+    result = await ListingAdapter(SimpleNamespace(), http).poll_shared(
+        context("crn_cloud_security_datacenter")
+    )
+    assert not result.failures
+    assert http.calls[0][1].route == "us-standard-5"
+
+
+def test_technews_embed_uses_real_local_seconds_and_never_downloads_body():
+    message = rows("technews_hardware", 1)[0]
+    assert message.published_at == datetime(2026, 11, 6, 16, 0, 45, tzinfo=UTC)
+    assert message.publication_time_basis == "EXACT" and message.body is None
+    assert all(
+        "context=embed" in r.url and "per_page=40" in r.url for r in RECIPES["technews_hardware"]
+    )
+
+
 class Http:
     def __init__(self, *responses):
         self.responses = list(responses)
@@ -689,7 +777,9 @@ def test_enterprise_internal_feed_opt_out_is_preserved():
         source_id=source.source_id,
         source_parameters={"rss_urls": [salesforce.feed]},
     )
-    assert list(endpoint_units(source, binding).values()) == [salesforce]
+    selected = list(endpoint_units(source, binding).values())
+    assert len(selected) == 3 and salesforce in selected
+    assert all(r.feed == salesforce.feed for r in selected)
 
 
 async def test_quantum_two_pages_preserve_200_item_window_and_both_transport_proofs():
