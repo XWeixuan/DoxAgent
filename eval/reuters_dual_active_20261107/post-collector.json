@@ -1,0 +1,2615 @@
+{
+  "since": "2026-11-06T21:33:23Z",
+  "until": "2026-11-06T21:36:31.153608+00:00",
+  "polling_owner": "acquisition.sqlite3; retired bus poll tables are not used",
+  "events": [
+    {
+      "category": "ACCESS_RESULT",
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "disposition": "SUCCESS",
+      "result": null,
+      "reason": "ok",
+      "count": 74
+    },
+    {
+      "category": "ACCESS_RESULT",
+      "identity": "reuters-backup",
+      "purpose": "CRAWLER",
+      "disposition": "SUCCESS",
+      "result": null,
+      "reason": "ok",
+      "count": 53
+    },
+    {
+      "category": "ACCESS_RESULT",
+      "identity": null,
+      "purpose": "CRAWLER",
+      "disposition": "BUDGET_DEFERRED",
+      "result": null,
+      "reason": "site_queue_timeout",
+      "count": 15
+    }
+  ],
+  "observed_transport_starts": [
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:33Z",
+      "auxiliary": false,
+      "count": 16
+    },
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:33Z",
+      "auxiliary": true,
+      "count": 6
+    },
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:34Z",
+      "auxiliary": false,
+      "count": 22
+    },
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:34Z",
+      "auxiliary": true,
+      "count": 3
+    },
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:35Z",
+      "auxiliary": false,
+      "count": 24
+    },
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:35Z",
+      "auxiliary": true,
+      "count": 5
+    },
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:36Z",
+      "auxiliary": false,
+      "count": 12
+    },
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:36Z",
+      "auxiliary": true,
+      "count": 4
+    },
+    {
+      "identity": "reuters-backup",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:33Z",
+      "auxiliary": false,
+      "count": 11
+    },
+    {
+      "identity": "reuters-backup",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:34Z",
+      "auxiliary": false,
+      "count": 17
+    },
+    {
+      "identity": "reuters-backup",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:35Z",
+      "auxiliary": false,
+      "count": 16
+    },
+    {
+      "identity": "reuters-backup",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:35Z",
+      "auxiliary": true,
+      "count": 1
+    },
+    {
+      "identity": "reuters-backup",
+      "purpose": "CRAWLER",
+      "utc_minute": "2026-11-06T21:36Z",
+      "auxiliary": false,
+      "count": 9
+    }
+  ],
+  "probes": {
+    "started": 0,
+    "finished": 0,
+    "unclosed": [],
+    "receipts": {}
+  },
+  "routing": [
+    {
+      "eligible_members": 2,
+      "assigned_backup": 0,
+      "actual_identity": "digitimes-de-1",
+      "disposition": "SUCCESS",
+      "work_class": "backfill",
+      "count": 34
+    },
+    {
+      "eligible_members": 1,
+      "assigned_backup": 1,
+      "actual_identity": "reuters-backup",
+      "disposition": "SUCCESS",
+      "work_class": "foreground",
+      "count": 4
+    },
+    {
+      "eligible_members": 2,
+      "assigned_backup": 0,
+      "actual_identity": "digitimes-de-1",
+      "disposition": "SUCCESS",
+      "work_class": "foreground",
+      "count": 40
+    },
+    {
+      "eligible_members": 1,
+      "assigned_backup": 1,
+      "actual_identity": "reuters-backup",
+      "disposition": "SUCCESS",
+      "work_class": "backfill",
+      "count": 2
+    },
+    {
+      "eligible_members": 1,
+      "assigned_backup": 1,
+      "actual_identity": null,
+      "disposition": "BUDGET_DEFERRED",
+      "work_class": "backfill",
+      "count": 5
+    },
+    {
+      "eligible_members": 2,
+      "assigned_backup": 1,
+      "actual_identity": "reuters-backup",
+      "disposition": "SUCCESS",
+      "work_class": "foreground",
+      "count": 36
+    },
+    {
+      "eligible_members": 2,
+      "assigned_backup": 0,
+      "actual_identity": null,
+      "disposition": "BUDGET_DEFERRED",
+      "work_class": "backfill",
+      "count": 5
+    },
+    {
+      "eligible_members": 2,
+      "assigned_backup": 1,
+      "actual_identity": "reuters-backup",
+      "disposition": "SUCCESS",
+      "work_class": "backfill",
+      "count": 9
+    },
+    {
+      "eligible_members": 2,
+      "assigned_backup": 1,
+      "actual_identity": null,
+      "disposition": "BUDGET_DEFERRED",
+      "work_class": "backfill",
+      "count": 5
+    },
+    {
+      "eligible_members": 2,
+      "assigned_backup": 0,
+      "actual_identity": "reuters-backup",
+      "disposition": "SUCCESS",
+      "work_class": "foreground",
+      "count": 1
+    },
+    {
+      "eligible_members": 2,
+      "assigned_backup": 0,
+      "actual_identity": "reuters-backup",
+      "disposition": "SUCCESS",
+      "work_class": "backfill",
+      "count": 1
+    }
+  ],
+  "successful_operation_ids_multiple_identities": 0,
+  "access_by_minute": [
+    {
+      "minute": "2026-11-06T21:33Z",
+      "purpose": "CRAWLER",
+      "disposition": "BUDGET_DEFERRED",
+      "reason": "site_queue_timeout",
+      "count": 5
+    },
+    {
+      "minute": "2026-11-06T21:33Z",
+      "purpose": "CRAWLER",
+      "disposition": "SUCCESS",
+      "reason": "ok",
+      "count": 24
+    },
+    {
+      "minute": "2026-11-06T21:34Z",
+      "purpose": "CRAWLER",
+      "disposition": "BUDGET_DEFERRED",
+      "reason": "site_queue_timeout",
+      "count": 4
+    },
+    {
+      "minute": "2026-11-06T21:34Z",
+      "purpose": "CRAWLER",
+      "disposition": "SUCCESS",
+      "reason": "ok",
+      "count": 41
+    },
+    {
+      "minute": "2026-11-06T21:35Z",
+      "purpose": "CRAWLER",
+      "disposition": "BUDGET_DEFERRED",
+      "reason": "site_queue_timeout",
+      "count": 4
+    },
+    {
+      "minute": "2026-11-06T21:35Z",
+      "purpose": "CRAWLER",
+      "disposition": "SUCCESS",
+      "reason": "ok",
+      "count": 41
+    },
+    {
+      "minute": "2026-11-06T21:36Z",
+      "purpose": "CRAWLER",
+      "disposition": "BUDGET_DEFERRED",
+      "reason": "site_queue_timeout",
+      "count": 2
+    },
+    {
+      "minute": "2026-11-06T21:36Z",
+      "purpose": "CRAWLER",
+      "disposition": "SUCCESS",
+      "reason": "ok",
+      "count": 21
+    }
+  ],
+  "success_latency": [
+    {
+      "identity": "digitimes-de-1",
+      "purpose": "CRAWLER",
+      "n": 74,
+      "network_mean_ms": 4035,
+      "network_p95_ms": 8856,
+      "queue_p95_ms": 17242
+    },
+    {
+      "identity": "reuters-backup",
+      "purpose": "CRAWLER",
+      "n": 53,
+      "network_mean_ms": 1730,
+      "network_p95_ms": 3577,
+      "queue_p95_ms": 12810
+    }
+  ],
+  "recoveries": [
+    {
+      "identity_id": "reuters-backup",
+      "recovery_id": "recovery_f013c45e96b14b39902e658d876f5c97",
+      "phase": "RESOLVED",
+      "handling_mode": "HUMAN",
+      "opened_at": "2026-11-05T17:47:25.631336Z",
+      "next_due_at": "2026-11-06T18:48:57.834545Z",
+      "next_probe_at": "2026-11-06T18:47:50.628488Z",
+      "probe_stage": "BUSINESS_READY",
+      "last_error": null,
+      "original_instance_id": "5cfab0be20b14154849cce7b12782dad",
+      "original_target_id": "6AA6C851194AAEFC28E498AEA893FC72",
+      "page_status": "PRESENT",
+      "attempt_count": 1078,
+      "resolved_at": "2026-11-06T18:47:57.834545Z",
+      "resolved_by": "fresh_probe",
+      "control": null,
+      "preparation": {
+        "status": "CLICKED",
+        "attempt_no": 2,
+        "finished_at": null
+      }
+    },
+    {
+      "identity_id": "digitimes-de-1",
+      "recovery_id": "recovery_820da450a3c74805b70c48e060fa4da9",
+      "phase": "RESOLVED",
+      "handling_mode": "HUMAN",
+      "opened_at": "2026-11-06T17:24:53.760116Z",
+      "next_due_at": "2026-11-06T20:11:09.036832Z",
+      "next_probe_at": "2026-11-06T19:47:55.183295Z",
+      "probe_stage": "STILL_BLOCKED",
+      "last_error": null,
+      "original_instance_id": "5584793148dc4bb7a77b8aa25d53037f",
+      "original_target_id": "EDCA2EB62B45534805750302A7647473",
+      "page_status": "LOST",
+      "attempt_count": 14,
+      "resolved_at": "2026-11-06T20:10:09.036832Z",
+      "resolved_by": "manual_verification",
+      "control": null,
+      "preparation": {
+        "status": "CLICKED",
+        "attempt_no": 2,
+        "finished_at": null
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "job_id": "dd_2c63c0dcae4e43feac0d7bc4c2ec3a10",
+      "identity_id": "reuters-backup",
+      "recovery_id": "recovery_f013c45e96b14b39902e658d876f5c97",
+      "status": "APPLIED",
+      "task_id": 84336671814,
+      "created_at": "2026-11-05T17:50:58.255155+00:00",
+      "submitted_at": "2026-11-05T17:50:58.256969+00:00",
+      "applied_at": "2026-11-05T17:51:33.833669+00:00",
+      "provider_ready_at": "2026-11-05T17:51:32.500395+00:00",
+      "provider_cost": "0.00145",
+      "cost": "0.00145",
+      "verification_state": "STILL_BLOCKED",
+      "verification_reason": "confirmation_window_expired",
+      "solver_verification": "INDETERMINATE",
+      "recurrence_at": null,
+      "diagnostics": {
+        "DOCUMENT": {
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "page_kind": null,
+          "evidence": "RETAINED_DOCUMENT",
+          "at": "2026-11-06T18:26:38.033162+00:00"
+        },
+        "CRAWLER": {
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "48250c82ae1f6c61cf72cfe8b40ed48907701a56a3dbb71ee6ed303317e14556",
+          "proof_id": "a3726fa37f71163f863e9759e588f42ae242397ea8db468d67d88ebeb8213032",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T18:48:06.707579+00:00"
+        },
+        "BODY": {
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": "FULL",
+          "query_key": "221733ba36840953d9f42366315dc22ae547051f4d9ba5099e8384b02c1b0023",
+          "proof_id": "9e1e5dfaf7c184f81fb6796bbe306eceb6761eca5748dc6ae9c59a4095412f32",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T18:53:19.223244+00:00"
+        }
+      },
+      "diagnostic_timeline": [
+        {
+          "stage": "DOCUMENT",
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "page_kind": null,
+          "evidence": "RETAINED_DOCUMENT",
+          "at": "2026-11-06T18:26:38.033162+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "challenge": "CLEARED",
+          "authentication": "UNKNOWN",
+          "outcome": "READY",
+          "reason": "not_tested",
+          "http_status": 200,
+          "body_quality": "NOT_TESTED",
+          "evidence": "RECOVERY_PROBE",
+          "at": "2026-11-06T18:47:57.828311+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "48250c82ae1f6c61cf72cfe8b40ed48907701a56a3dbb71ee6ed303317e14556",
+          "proof_id": "a3726fa37f71163f863e9759e588f42ae242397ea8db468d67d88ebeb8213032",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T18:48:06.707579+00:00"
+        },
+        {
+          "stage": "BODY",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": "FULL",
+          "query_key": "221733ba36840953d9f42366315dc22ae547051f4d9ba5099e8384b02c1b0023",
+          "proof_id": "9e1e5dfaf7c184f81fb6796bbe306eceb6761eca5748dc6ae9c59a4095412f32",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T18:53:19.223244+00:00"
+        }
+      ]
+    },
+    {
+      "job_id": "dd_60e83628a9a245a0bcae6a4623823402",
+      "identity_id": "digitimes-de-1",
+      "recovery_id": "recovery_820da450a3c74805b70c48e060fa4da9",
+      "status": "APPLIED",
+      "task_id": 84347387868,
+      "created_at": "2026-11-06T17:26:11.213108+00:00",
+      "submitted_at": "2026-11-06T17:26:11.214483+00:00",
+      "applied_at": "2026-11-06T17:28:08.392254+00:00",
+      "provider_ready_at": "2026-11-06T17:28:03.019109+00:00",
+      "provider_cost": "0.00145",
+      "cost": "0.00145",
+      "verification_state": "STILL_BLOCKED",
+      "verification_reason": "confirmation_window_expired",
+      "solver_verification": "INDETERMINATE",
+      "recurrence_at": null,
+      "diagnostics": {
+        "DOCUMENT": {
+          "challenge": "UNKNOWN",
+          "authentication": "UNKNOWN",
+          "outcome": "CONTENT_ERROR",
+          "reason": "crawler_contract_not_satisfied",
+          "page_kind": null,
+          "evidence": "RETAINED_DOCUMENT",
+          "at": "2026-11-06T19:45:11.042102+00:00"
+        },
+        "CRAWLER": {
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "714b85247a83bb522a686f40cfbb9eda103080c5d06246eca19c81f58c40d025",
+          "proof_id": "031f9672eff8445a956288e01f4a2a990949f882da02ac37487cb3f6b6175e4a",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:36:07.571538+00:00"
+        }
+      },
+      "diagnostic_timeline": [
+        {
+          "stage": "CRAWLER",
+          "outcome": "TRANSIENT_TRANSPORT",
+          "http_status": 0,
+          "body_quality": null,
+          "query_key": "38a8078d63ac00a49664efd5fd6e566169b3376682bfdaf26f205bdfd18d75ea",
+          "proof_id": "8a267abbb409f0b9507965abf4e14ea84a5fa04e87da29995ff463616ded878b",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:31:11.684091+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "38a8078d63ac00a49664efd5fd6e566169b3376682bfdaf26f205bdfd18d75ea",
+          "proof_id": "8a267abbb409f0b9507965abf4e14ea84a5fa04e87da29995ff463616ded878b",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:31:13.212925+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "TRANSIENT_TRANSPORT",
+          "http_status": 0,
+          "body_quality": null,
+          "query_key": "71ef66677d8cda0fea81f091cc56f1a48712bc3dc86f7c147dfe8885bb555195",
+          "proof_id": "5ef1512fa5b29fd69523aa1cd415907529e286965235369ab8f73acedfe8186c",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:33:16.833055+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "0f7173199e2e7efc5cb295496677dd36e91278b1083ac5c7f63abbf667036a14",
+          "proof_id": "b8d018346ca615f5471aa12176e662d7166b1ce5cfc2ce6584fdebc1bcc7d228",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:33:17.993654+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "TRANSIENT_TRANSPORT",
+          "http_status": 0,
+          "body_quality": null,
+          "query_key": "584b6c3cac67752dc2bdd00a7281aad29510913ceec8679d9a584e436643fad5",
+          "proof_id": "0f623a103e35c90cec5974f1dc2b171fb928a25bb46746820a7ae672a510c891",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:34:39.885955+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "584b6c3cac67752dc2bdd00a7281aad29510913ceec8679d9a584e436643fad5",
+          "proof_id": "0f623a103e35c90cec5974f1dc2b171fb928a25bb46746820a7ae672a510c891",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:34:42.384474+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "TRANSIENT_TRANSPORT",
+          "http_status": 0,
+          "body_quality": null,
+          "query_key": "714b85247a83bb522a686f40cfbb9eda103080c5d06246eca19c81f58c40d025",
+          "proof_id": "031f9672eff8445a956288e01f4a2a990949f882da02ac37487cb3f6b6175e4a",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:36:06.192248+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "714b85247a83bb522a686f40cfbb9eda103080c5d06246eca19c81f58c40d025",
+          "proof_id": "031f9672eff8445a956288e01f4a2a990949f882da02ac37487cb3f6b6175e4a",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-06T21:36:07.571538+00:00"
+        }
+      ]
+    }
+  ],
+  "identity_runtime": [
+    {
+      "identity_id": "digitimes-de-1",
+      "operational_state": "AVAILABLE",
+      "recovered_at": "2026-11-06T20:10:09.037143Z",
+      "probation_until": "2026-11-06T20:15:09.037143Z",
+      "probation_interval_ms": 10000,
+      "natural_success_at": "2026-11-06T21:36:29.132156Z",
+      "recent_relapses": [
+        {
+          "previous_recovery_id": "recovery_b6aa1a68d14d443fb70412844a423105",
+          "recovery_id": "recovery_a31144472463464db5352aed43ad8f35",
+          "purpose": "CRAWLER",
+          "capability_epoch": 79,
+          "at": "2026-11-03T06:52:59.625305+00:00",
+          "previous_recovered_at": "2026-11-03T06:52:21.003374+00:00",
+          "seconds_to_recurrence": 38.621931
+        },
+        {
+          "previous_recovery_id": "recovery_a31144472463464db5352aed43ad8f35",
+          "recovery_id": "recovery_1ed5f4a7e70642a9afe7e75399f8dc42",
+          "purpose": "CRAWLER",
+          "capability_epoch": 80,
+          "at": "2026-11-03T08:22:11.297226+00:00",
+          "previous_recovered_at": "2026-11-03T08:21:22.190951+00:00",
+          "seconds_to_recurrence": 49.106275
+        },
+        {
+          "previous_recovery_id": "recovery_1ed5f4a7e70642a9afe7e75399f8dc42",
+          "recovery_id": "recovery_2e51438e4cfb44898c37afff29f3a785",
+          "purpose": "CRAWLER",
+          "capability_epoch": 81,
+          "at": "2026-11-03T10:32:24.584394+00:00",
+          "previous_recovered_at": "2026-11-03T10:31:37.418391+00:00",
+          "seconds_to_recurrence": 47.166003
+        },
+        {
+          "previous_recovery_id": "recovery_2e51438e4cfb44898c37afff29f3a785",
+          "recovery_id": "recovery_ef54dc8e66b34fb1870f006ed38a7128",
+          "purpose": "CRAWLER",
+          "capability_epoch": 82,
+          "at": "2026-11-03T11:51:08.359825+00:00",
+          "previous_recovered_at": "2026-11-03T11:50:27.782290+00:00",
+          "seconds_to_recurrence": 40.577535
+        },
+        {
+          "previous_recovery_id": "recovery_ef54dc8e66b34fb1870f006ed38a7128",
+          "recovery_id": "recovery_7aa57ab2dcc34191b66bc2bef856408c",
+          "purpose": "CRAWLER",
+          "capability_epoch": 83,
+          "at": "2026-11-03T13:10:15.195655+00:00",
+          "previous_recovered_at": "2026-11-03T13:09:28.104531+00:00",
+          "seconds_to_recurrence": 47.091124
+        },
+        {
+          "previous_recovery_id": "recovery_7aa57ab2dcc34191b66bc2bef856408c",
+          "recovery_id": "recovery_06606fedd8864c5583b42fc7c1a9808a",
+          "purpose": "CRAWLER",
+          "capability_epoch": 84,
+          "at": "2026-11-03T14:40:35.101668+00:00",
+          "previous_recovered_at": "2026-11-03T14:40:00.392923+00:00",
+          "seconds_to_recurrence": 34.708745
+        },
+        {
+          "previous_recovery_id": "recovery_c43b26838d014c0d8e2ac0e7d399ac91",
+          "recovery_id": "recovery_4fc5e29c60eb4b90af92d3f69597148e",
+          "purpose": "CRAWLER",
+          "capability_epoch": 93,
+          "at": "2026-11-05T06:29:36.079680+00:00",
+          "previous_recovered_at": "2026-11-05T06:29:25.350294+00:00",
+          "seconds_to_recurrence": 10.729386
+        },
+        {
+          "previous_recovery_id": "recovery_4fc5e29c60eb4b90af92d3f69597148e",
+          "recovery_id": "recovery_da9ba3f3c2614fc5b2ea67f618f3f8d1",
+          "purpose": "CRAWLER",
+          "capability_epoch": 94,
+          "at": "2026-11-05T07:49:15.837180+00:00",
+          "previous_recovered_at": "2026-11-05T07:49:00.785990+00:00",
+          "seconds_to_recurrence": 15.05119
+        }
+      ],
+      "instance_id": "5584793148dc4bb7a77b8aa25d53037f",
+      "capability_windows": {
+        "CRAWLER": {
+          "capability_epoch": 102,
+          "recovery_id": "recovery_820da450a3c74805b70c48e060fa4da9",
+          "recovered_at": "2026-11-06T20:10:09.037143+00:00",
+          "last_success_at": "2026-11-06T21:36:29.132092+00:00",
+          "blocked_again_at": null,
+          "probation_until": "2026-11-06T20:15:09.037143+00:00",
+          "first_identity_use_at": "2026-11-06T20:48:51.800515+00:00",
+          "natural_queries": [
+            "1810ee8e7f33011f3e090da60e72ae865ae97d9aef6462ffc7d7aab37af016e2",
+            "f895e1386bfa4246aee8c63a79ba2a2fa1df2430378fea3cbb7931cd00452e9c",
+            "d793db1330959ea944df1fc48b48cdc611de7bb14607c89e281fdedc0f1841ce"
+          ]
+        }
+      }
+    },
+    {
+      "identity_id": "reuters-backup",
+      "operational_state": "AVAILABLE",
+      "recovered_at": "2026-11-06T18:47:57.834554Z",
+      "probation_until": "2026-11-06T18:52:57.834554Z",
+      "probation_interval_ms": 10000,
+      "natural_success_at": "2026-11-06T21:36:28.109412Z",
+      "recent_relapses": [
+        {
+          "previous_recovery_id": "recovery_53db5c9f60a741899544d94b20bae279",
+          "recovery_id": "recovery_e078921537674a9a96cd2e8311cc777c",
+          "purpose": "CRAWLER",
+          "capability_epoch": 80,
+          "at": "2026-11-03T06:53:38.226484+00:00",
+          "previous_recovered_at": "2026-11-03T06:52:54.174295+00:00",
+          "seconds_to_recurrence": 44.052189
+        },
+        {
+          "previous_recovery_id": "recovery_e078921537674a9a96cd2e8311cc777c",
+          "recovery_id": "recovery_156b88437a58468196ccb5e73e3d4daa",
+          "purpose": "CRAWLER",
+          "capability_epoch": 81,
+          "at": "2026-11-03T08:22:49.890642+00:00",
+          "previous_recovered_at": "2026-11-03T08:21:57.358390+00:00",
+          "seconds_to_recurrence": 52.532252
+        },
+        {
+          "previous_recovery_id": "recovery_156b88437a58468196ccb5e73e3d4daa",
+          "recovery_id": "recovery_089de0e3a0f348d496479c85bba21723",
+          "purpose": "CRAWLER",
+          "capability_epoch": 82,
+          "at": "2026-11-03T10:02:02.399865+00:00",
+          "previous_recovered_at": "2026-11-03T10:01:21.477488+00:00",
+          "seconds_to_recurrence": 40.922377
+        },
+        {
+          "previous_recovery_id": "recovery_089de0e3a0f348d496479c85bba21723",
+          "recovery_id": "recovery_5315c7f742da4151af9d91b84d105a2b",
+          "purpose": "CRAWLER",
+          "capability_epoch": 83,
+          "at": "2026-11-03T11:20:29.757852+00:00",
+          "previous_recovered_at": "2026-11-03T11:19:49.832813+00:00",
+          "seconds_to_recurrence": 39.925039
+        },
+        {
+          "previous_recovery_id": "recovery_5315c7f742da4151af9d91b84d105a2b",
+          "recovery_id": "recovery_40ae01f15a544065adff9f8233904494",
+          "purpose": "CRAWLER",
+          "capability_epoch": 84,
+          "at": "2026-11-03T12:29:59.316624+00:00",
+          "previous_recovered_at": "2026-11-03T12:29:19.029475+00:00",
+          "seconds_to_recurrence": 40.287149
+        },
+        {
+          "previous_recovery_id": "recovery_40ae01f15a544065adff9f8233904494",
+          "recovery_id": "recovery_ac37df62b22e413f95a56bfb1f71c147",
+          "purpose": "CRAWLER",
+          "capability_epoch": 85,
+          "at": "2026-11-03T13:48:48.068608+00:00",
+          "previous_recovered_at": "2026-11-03T13:48:08.435726+00:00",
+          "seconds_to_recurrence": 39.632882
+        },
+        {
+          "previous_recovery_id": "recovery_9dcc87ab2c1a4f668065b8515664eba8",
+          "recovery_id": "recovery_37fe4f70655946fa850a470b81710ef7",
+          "purpose": "CRAWLER",
+          "capability_epoch": 87,
+          "at": "2026-11-04T00:16:16.457480+00:00",
+          "previous_recovered_at": "2026-11-04T00:16:04.590178+00:00",
+          "seconds_to_recurrence": 11.867302
+        },
+        {
+          "previous_recovery_id": "recovery_37fe4f70655946fa850a470b81710ef7",
+          "recovery_id": "recovery_40c211add02f43aaaa82fdb4a26285f0",
+          "purpose": "CRAWLER",
+          "capability_epoch": 88,
+          "at": "2026-11-04T01:34:10.734212+00:00",
+          "previous_recovered_at": "2026-11-04T01:33:52.028908+00:00",
+          "seconds_to_recurrence": 18.705304
+        }
+      ],
+      "instance_id": "5cfab0be20b14154849cce7b12782dad",
+      "capability_windows": {
+        "CRAWLER": {
+          "capability_epoch": 94,
+          "recovery_id": "recovery_f013c45e96b14b39902e658d876f5c97",
+          "recovered_at": "2026-11-06T18:47:57.834554+00:00",
+          "last_success_at": "2026-11-06T21:36:28.109344+00:00",
+          "blocked_again_at": null,
+          "probation_until": "2026-11-06T18:52:57.834554+00:00",
+          "natural_queries": [
+            "64c3e7166f868c8b71cbbe5d15f88b88b0678bfdd81ca1b203d25dec7e2f7c32",
+            "cfd19e864721d8955b058d401b1a7bb382552140d295901fa5d6e3ad1bf33977",
+            "dafc80da4b7c4b2bebb57eac45425eb3579e4cf45689e0645ce4db6aed3af537"
+          ]
+        }
+      }
+    }
+  ],
+  "identity_configuration": [
+    {
+      "identity_id": "digitimes-de-1",
+      "runtime_kind": "external_chrome",
+      "profile_id": "digitimes-de-1",
+      "access": {
+        "max_concurrency": 2,
+        "min_interval_ms": 1500
+      }
+    },
+    {
+      "identity_id": "reuters-backup",
+      "runtime_kind": "external_chrome",
+      "profile_id": "reuters-backup",
+      "access": {
+        "max_concurrency": 1,
+        "min_interval_ms": 3000
+      }
+    }
+  ],
+  "scope": {
+    "scope_id": "source:reuters_site_search",
+    "revision": 3,
+    "primary_identity_id": "digitimes-de-1",
+    "fallback_identity_id": "reuters-backup",
+    "verification_plan": {
+      "network_redundancy": "IP_DISTINCT_SAME_REGION",
+      "fallback_state": "UNVERIFIED",
+      "contract": "body_v2.2/listing_v1",
+      "default_publisher": true,
+      "crawler": {
+        "url": "https://www.reuters.com/site-search/?query=Micron",
+        "recipe_ref": "builtin:reuters_search@1",
+        "recipe_parameters": {
+          "query": "Micron"
+        }
+      },
+      "crawler_routing": "dual_active",
+      "_routing_capability_revision": 2
+    }
+  },
+  "route": {
+    "generation": 970,
+    "active_combination_id": "reuters-backup",
+    "members": {
+      "digitimes-de-1": {
+        "state": "READY",
+        "manual_attention_required": false,
+        "cooldown_until": null,
+        "purpose_rejected_until": {},
+        "last_error_code": null
+      },
+      "reuters-backup": {
+        "state": "READY",
+        "manual_attention_required": false,
+        "cooldown_until": null,
+        "purpose_rejected_until": {},
+        "last_error_code": null
+      }
+    }
+  },
+  "owned_targets": [
+    {
+      "identity_id": "digitimes-de-1",
+      "state": "ALLOCATING",
+      "n": 1
+    },
+    {
+      "identity_id": "digitimes-de-1",
+      "state": "CLOSED",
+      "n": 4596
+    },
+    {
+      "identity_id": "digitimes-de-1",
+      "state": "LIVE",
+      "n": 6
+    },
+    {
+      "identity_id": "digitimes-de-1",
+      "state": "LOST",
+      "n": 6
+    },
+    {
+      "identity_id": "reuters-backup",
+      "state": "CLOSED",
+      "n": 917
+    },
+    {
+      "identity_id": "reuters-backup",
+      "state": "CLOSE_PENDING",
+      "n": 1
+    },
+    {
+      "identity_id": "reuters-backup",
+      "state": "LIVE",
+      "n": 2
+    },
+    {
+      "identity_id": "reuters-backup",
+      "state": "LOST",
+      "n": 9
+    }
+  ],
+  "auth": [
+    {
+      "identity_id": "digitimes-de-1",
+      "auth_state": "VALID",
+      "verified_at": "2026-10-24T13:56:51.208282Z",
+      "reason_code": "challenge_cleared",
+      "last_check_at": "2026-11-06T20:10:09.034043Z",
+      "last_check_reason": "challenge_cleared"
+    },
+    {
+      "identity_id": "reuters-1",
+      "auth_state": "UNKNOWN",
+      "verified_at": null,
+      "reason_code": "migrated_legacy_profile",
+      "last_check_at": null,
+      "last_check_reason": null
+    },
+    {
+      "identity_id": "reuters-2",
+      "auth_state": "UNKNOWN",
+      "verified_at": null,
+      "reason_code": "migrated_legacy_profile",
+      "last_check_at": null,
+      "last_check_reason": null
+    },
+    {
+      "identity_id": "reuters-backup",
+      "auth_state": "VALID",
+      "verified_at": "2026-10-24T15:17:13.282321Z",
+      "reason_code": "not_tested",
+      "last_check_at": "2026-11-06T18:47:57.832194Z",
+      "last_check_reason": "not_tested"
+    },
+    {
+      "identity_id": "reuters-direct-1",
+      "auth_state": "UNKNOWN",
+      "verified_at": null,
+      "reason_code": "migrated_legacy_profile",
+      "last_check_at": null,
+      "last_check_reason": null
+    }
+  ],
+  "body": [],
+  "poll_states": [
+    {
+      "ticker": "INTC",
+      "units": {
+        "QUERY:115a02603bc7df9ef5c9bcdd": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:37.563554+00:00",
+          "last_attempt_at": "2026-11-06T21:35:29.810356+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:29.786332+00:00",
+          "target_due_at": "2026-11-03T19:17:29.786332+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:bbf0464a833edfa9962ce4f5": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:12.351795+00:00",
+          "last_attempt_at": "2026-11-06T21:36:06.746562+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:06.709409+00:00",
+          "target_due_at": "2026-11-03T19:18:06.709409+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:e73a8ade59a4666d397341ac": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:18.247473+00:00",
+          "last_attempt_at": "2026-11-06T21:36:13.726385+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:13.632486+00:00",
+          "target_due_at": "2026-11-03T19:18:13.632486+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "BE",
+      "units": {
+        "QUERY:3e6db9ee568c8d10d62f1845": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:45.301307+00:00",
+          "last_attempt_at": "2026-11-06T21:35:34.481734+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:34.401717+00:00",
+          "target_due_at": "2026-11-03T19:17:34.401717+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:07f410a0f9f03f7deac5d39d": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:31.798477+00:00",
+          "last_attempt_at": "2026-11-06T21:35:25.317954+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:25.170948+00:00",
+          "target_due_at": "2026-11-03T19:18:25.170948+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:d4ae8f74386b434385ec20e4": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:52.986748+00:00",
+          "last_attempt_at": "2026-11-06T21:35:50.596889+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:50.555563+00:00",
+          "target_due_at": "2026-11-03T19:17:50.555563+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:3e6db9ee568c8d10d62f1845": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:55.093030+00:00",
+          "last_attempt_at": "2026-11-06T21:35:33.801145+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:33.593110+00:00",
+          "target_due_at": "2026-11-06T21:34:33.593110+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:d4ae8f74386b434385ec20e4": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:07.792018+00:00",
+          "last_attempt_at": "2026-11-06T21:35:37.886381+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:37.797815+00:00",
+          "target_due_at": "2026-11-06T21:33:37.797815+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:07f410a0f9f03f7deac5d39d": {
+          "status": "failed",
+          "last_success_at": "2026-11-06T21:34:04.621466+00:00",
+          "last_attempt_at": "2026-11-06T21:35:55.584217+00:00",
+          "last_error_code": "TimeoutError",
+          "next_dispatch_at": "2026-11-06T21:36:55.507837+00:00",
+          "target_due_at": "2026-11-06T21:34:55.507837+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "CEG",
+      "units": {
+        "QUERY:c8364ae9213cd4844f861c55": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:46.053109+00:00",
+          "last_attempt_at": "2026-11-06T21:35:43.738586+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:43.632486+00:00",
+          "target_due_at": "2026-11-03T19:17:43.632486+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:511db9bb3e2e55498275ef22": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:49.861722+00:00",
+          "last_attempt_at": "2026-11-06T21:35:41.517567+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:41.324794+00:00",
+          "target_due_at": "2026-11-03T19:17:41.324794+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:511db9bb3e2e55498275ef22": {
+          "status": "failed",
+          "last_success_at": "2026-11-06T21:34:02.924581+00:00",
+          "last_attempt_at": "2026-11-06T21:35:42.590212+00:00",
+          "last_error_code": "site_queue_timeout",
+          "next_dispatch_at": "2026-11-06T21:36:42.390618+00:00",
+          "target_due_at": "2026-11-06T21:30:42.390618+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:c8364ae9213cd4844f861c55": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:29.139896+00:00",
+          "last_attempt_at": "2026-11-06T21:36:17.485571+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:17.433292+00:00",
+          "target_due_at": "2026-11-06T21:36:17.433292+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "COHR",
+      "units": {
+        "QUERY:c99a2545cb4cae9c816cde16": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:16.671591+00:00",
+          "last_attempt_at": "2026-11-06T21:36:09.249748+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:09.017101+00:00",
+          "target_due_at": "2026-11-03T19:18:09.017101+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:55c1dadfd56fb9bf0c998cef": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:36.531323+00:00",
+          "last_attempt_at": "2026-11-06T21:35:27.546589+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:27.478640+00:00",
+          "target_due_at": "2026-11-03T19:18:27.478640+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:e88d32f42cbfe00032594375": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:25.275590+00:00",
+          "last_attempt_at": "2026-11-06T21:36:18.339596+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:18.247871+00:00",
+          "target_due_at": "2026-11-03T19:18:18.247871+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:e88d32f42cbfe00032594375": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:28.759772+00:00",
+          "last_attempt_at": "2026-11-06T21:36:15.732749+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:15.634307+00:00",
+          "target_due_at": "2026-11-06T21:33:15.634307+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "IONQ",
+      "units": {
+        "QUERY:15edf0c59fe1c0b8cb82eaf6": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:08.052496+00:00",
+          "last_attempt_at": "2026-11-06T21:36:04.497627+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:04.401717+00:00",
+          "target_due_at": "2026-11-03T19:18:04.401717+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:b97fd70e91eacbac70d6d26c": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:43.904064+00:00",
+          "last_attempt_at": "2026-11-06T21:35:39.864895+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:39.017101+00:00",
+          "target_due_at": "2026-11-03T19:17:39.017101+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:15edf0c59fe1c0b8cb82eaf6": {
+          "status": "failed",
+          "last_success_at": "2026-11-06T21:33:28.512688+00:00",
+          "last_attempt_at": "2026-11-06T21:35:24.381537+00:00",
+          "last_error_code": "site_queue_timeout",
+          "next_dispatch_at": "2026-11-06T21:36:24.363139+00:00",
+          "target_due_at": "2026-11-06T21:34:24.363139+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "MU",
+      "units": {
+        "QUERY:9ba69d9f990ce5ee75d82521": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:33.846175+00:00",
+          "last_attempt_at": "2026-11-06T21:35:23.243275+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:22.863255+00:00",
+          "target_due_at": "2026-11-03T19:18:22.863255+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:0bef390cb3599f92e366d6f5": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:48.478826+00:00",
+          "last_attempt_at": "2026-11-06T21:35:46.041829+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:45.940178+00:00",
+          "target_due_at": "2026-11-03T19:17:45.940178+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:600ddc5e3602e9d96fe57308": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:58.156146+00:00",
+          "last_attempt_at": "2026-11-06T21:35:55.586270+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:55.170948+00:00",
+          "target_due_at": "2026-11-03T19:17:55.170948+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:0bef390cb3599f92e366d6f5": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:21.614640+00:00",
+          "last_attempt_at": "2026-11-06T21:36:15.050895+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:14.984829+00:00",
+          "target_due_at": "2026-11-06T21:33:14.984829+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:600ddc5e3602e9d96fe57308": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:35.602468+00:00",
+          "last_attempt_at": "2026-11-06T21:35:21.442624+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:17.833988+00:00",
+          "target_due_at": "2026-11-06T21:33:17.833988+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "NBIS",
+      "units": {
+        "QUERY:83c238d2641e5a73ee1ea1ae": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:50.155615+00:00",
+          "last_attempt_at": "2026-11-06T21:35:48.333395+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:48.247871+00:00",
+          "target_due_at": "2026-11-03T19:17:48.247871+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:7a5aadc72c153005bc434274": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:59.351112+00:00",
+          "last_attempt_at": "2026-11-06T21:35:57.564909+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:57.478640+00:00",
+          "target_due_at": "2026-11-03T19:17:57.478640+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:37621b03cf0eb4927684aa62": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:36.135147+00:00",
+          "last_attempt_at": "2026-11-06T21:35:32.198548+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:32.094024+00:00",
+          "target_due_at": "2026-11-03T19:17:32.094024+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:83c238d2641e5a73ee1ea1ae": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:45.963725+00:00",
+          "last_attempt_at": "2026-11-06T21:35:33.104080+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:32.472884+00:00",
+          "target_due_at": "2026-11-06T21:36:32.472884+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:7a5aadc72c153005bc434274": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:02.256627+00:00",
+          "last_attempt_at": "2026-11-06T21:35:40.241650+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:40.195900+00:00",
+          "target_due_at": "2026-11-06T21:32:40.195900+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "ONDS",
+      "units": {
+        "QUERY:ef2937764c68dc261d180b31": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:28.142860+00:00",
+          "last_attempt_at": "2026-11-06T21:36:20.584844+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:20.555563+00:00",
+          "target_due_at": "2026-11-03T19:18:20.555563+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:d47e5ec7707ca473d4427a16": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:06.429622+00:00",
+          "last_attempt_at": "2026-11-06T21:36:02.250070+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:02.094024+00:00",
+          "target_due_at": "2026-11-03T19:18:02.094024+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:7e53e08eb2462e63aa412eba": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:17.412324+00:00",
+          "last_attempt_at": "2026-11-06T21:36:11.402889+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:11.324794+00:00",
+          "target_due_at": "2026-11-03T19:18:11.324794+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:7e53e08eb2462e63aa412eba": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:34:42.639112+00:00",
+          "last_attempt_at": "2026-11-06T21:34:27.315640+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:28.898518+00:00",
+          "target_due_at": "2026-11-06T21:36:28.898518+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "RKLB",
+      "units": {
+        "QUERY:2f44b0e005d5e40bffbab4b2": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:22.058922+00:00",
+          "last_attempt_at": "2026-11-06T21:36:15.976936+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:15.940178+00:00",
+          "target_due_at": "2026-11-03T19:18:15.940178+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:52306a3154b125713c1aa968": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:39.871391+00:00",
+          "last_attempt_at": "2026-11-06T21:35:36.723626+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:36.709409+00:00",
+          "target_due_at": "2026-11-03T19:17:36.709409+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "QUERY:4372f027b66d91ede29179a8": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:57.228113+00:00",
+          "last_attempt_at": "2026-11-06T21:35:52.909477+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:52.863255+00:00",
+          "target_due_at": "2026-11-03T19:17:52.863255+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:4372f027b66d91ede29179a8": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:35:50.138050+00:00",
+          "last_attempt_at": "2026-11-06T21:35:40.751081+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:40.673556+00:00",
+          "target_due_at": "2026-11-06T21:34:40.673556+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:2f44b0e005d5e40bffbab4b2": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:12.349679+00:00",
+          "last_attempt_at": "2026-11-06T21:36:02.809969+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:06.167852+00:00",
+          "target_due_at": "2026-11-06T21:37:06.167852+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    },
+    {
+      "ticker": "SNOW",
+      "units": {
+        "QUERY:19fddb1afdaf75a354710f75": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:02.372166+00:00",
+          "last_attempt_at": "2026-11-06T21:35:59.864557+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:36:59.786332+00:00",
+          "target_due_at": "2026-11-03T19:17:59.786332+00:00",
+          "schedule_interval_seconds": 60
+        },
+        "TAIL:19fddb1afdaf75a354710f75": {
+          "status": "succeeded",
+          "last_success_at": "2026-11-06T21:36:09.555477+00:00",
+          "last_attempt_at": "2026-11-06T21:36:02.325614+00:00",
+          "last_error_code": null,
+          "next_dispatch_at": "2026-11-06T21:37:02.046084+00:00",
+          "target_due_at": "2026-11-06T21:32:02.046084+00:00",
+          "schedule_interval_seconds": 60
+        }
+      }
+    }
+  ],
+  "poll_runs": [
+    {
+      "ticker": "BE",
+      "unit": "QUERY:07f410a0f9f03f7deac5d39d",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:25.369991+00:00",
+      "last_at": "2026-11-06T21:35:25.317954+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "QUERY:07f410a0f9f03f7deac5d39d",
+      "status": "DISPATCHED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:36:25.296068+00:00",
+      "last_at": "2026-11-06T21:36:25.296068+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "QUERY:3e6db9ee568c8d10d62f1845",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:34.436685+00:00",
+      "last_at": "2026-11-06T21:35:34.481734+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "QUERY:d4ae8f74386b434385ec20e4",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:50.620033+00:00",
+      "last_at": "2026-11-06T21:35:50.596889+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:07f410a0f9f03f7deac5d39d",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:33:56.221239+00:00",
+      "last_at": "2026-11-06T21:33:56.221239+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:07f410a0f9f03f7deac5d39d",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:34:56.050685+00:00",
+      "last_at": "2026-11-06T21:34:56.050685+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:07f410a0f9f03f7deac5d39d",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:55.584217+00:00",
+      "last_at": "2026-11-06T21:35:55.584217+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:3e6db9ee568c8d10d62f1845",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:35:33.801145+00:00",
+      "last_at": "2026-11-06T21:35:33.801145+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:3e6db9ee568c8d10d62f1845",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:34:33.688062+00:00",
+      "last_at": "2026-11-06T21:34:33.688062+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:d4ae8f74386b434385ec20e4",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:33:37.887754+00:00",
+      "last_at": "2026-11-06T21:35:37.886381+00:00"
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:d4ae8f74386b434385ec20e4",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:34:37.903528+00:00",
+      "last_at": "2026-11-06T21:34:37.903528+00:00"
+    },
+    {
+      "ticker": "CEG",
+      "unit": "QUERY:511db9bb3e2e55498275ef22",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:41.397675+00:00",
+      "last_at": "2026-11-06T21:35:41.517567+00:00"
+    },
+    {
+      "ticker": "CEG",
+      "unit": "QUERY:c8364ae9213cd4844f861c55",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:43.902281+00:00",
+      "last_at": "2026-11-06T21:35:43.738586+00:00"
+    },
+    {
+      "ticker": "CEG",
+      "unit": "TAIL:511db9bb3e2e55498275ef22",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:33:42.460762+00:00",
+      "last_at": "2026-11-06T21:33:42.460762+00:00"
+    },
+    {
+      "ticker": "CEG",
+      "unit": "TAIL:511db9bb3e2e55498275ef22",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 2,
+      "first_at": "2026-11-06T21:34:42.453471+00:00",
+      "last_at": "2026-11-06T21:35:42.590212+00:00"
+    },
+    {
+      "ticker": "CEG",
+      "unit": "TAIL:c8364ae9213cd4844f861c55",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:16.230019+00:00",
+      "last_at": "2026-11-06T21:36:17.485571+00:00"
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:55c1dadfd56fb9bf0c998cef",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:27.556557+00:00",
+      "last_at": "2026-11-06T21:35:27.546589+00:00"
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:55c1dadfd56fb9bf0c998cef",
+      "status": "DISPATCHED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:36:27.578123+00:00",
+      "last_at": "2026-11-06T21:36:27.578123+00:00"
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:c99a2545cb4cae9c816cde16",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:09.239783+00:00",
+      "last_at": "2026-11-06T21:36:09.249748+00:00"
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:c99a2545cb4cae9c816cde16",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:09.107260+00:00",
+      "last_at": "2026-11-06T21:35:09.107260+00:00"
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:e88d32f42cbfe00032594375",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:19.530814+00:00",
+      "last_at": "2026-11-06T21:36:18.339596+00:00"
+    },
+    {
+      "ticker": "COHR",
+      "unit": "TAIL:e88d32f42cbfe00032594375",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:15.640847+00:00",
+      "last_at": "2026-11-06T21:36:15.732749+00:00"
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:115a02603bc7df9ef5c9bcdd",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:29.942521+00:00",
+      "last_at": "2026-11-06T21:35:29.810356+00:00"
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:115a02603bc7df9ef5c9bcdd",
+      "status": "DISPATCHED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:36:29.798910+00:00",
+      "last_at": "2026-11-06T21:36:29.798910+00:00"
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:bbf0464a833edfa9962ce4f5",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:07.534359+00:00",
+      "last_at": "2026-11-06T21:36:06.746562+00:00"
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:bbf0464a833edfa9962ce4f5",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:06.771866+00:00",
+      "last_at": "2026-11-06T21:35:06.771866+00:00"
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:e73a8ade59a4666d397341ac",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:13.676325+00:00",
+      "last_at": "2026-11-06T21:36:13.726385+00:00"
+    },
+    {
+      "ticker": "INTC",
+      "unit": "TAIL:bbf0464a833edfa9962ce4f5",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:24.692150+00:00",
+      "last_at": "2026-11-06T21:36:17.261656+00:00"
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "QUERY:15edf0c59fe1c0b8cb82eaf6",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:04.633904+00:00",
+      "last_at": "2026-11-06T21:36:04.497627+00:00"
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "QUERY:b97fd70e91eacbac70d6d26c",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:39.113533+00:00",
+      "last_at": "2026-11-06T21:35:39.864895+00:00"
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "TAIL:15edf0c59fe1c0b8cb82eaf6",
+      "status": "DISPATCHED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:36:24.828085+00:00",
+      "last_at": "2026-11-06T21:36:24.828085+00:00"
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "TAIL:15edf0c59fe1c0b8cb82eaf6",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1,
+      "first_at": "2026-11-06T21:34:24.589966+00:00",
+      "last_at": "2026-11-06T21:34:24.589966+00:00"
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "TAIL:15edf0c59fe1c0b8cb82eaf6",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:24.381537+00:00",
+      "last_at": "2026-11-06T21:35:24.381537+00:00"
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "TAIL:b97fd70e91eacbac70d6d26c",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:14.196518+00:00",
+      "last_at": "2026-11-06T21:36:14.639922+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "QUERY:0bef390cb3599f92e366d6f5",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:45.961851+00:00",
+      "last_at": "2026-11-06T21:35:46.041829+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "QUERY:600ddc5e3602e9d96fe57308",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:55.263712+00:00",
+      "last_at": "2026-11-06T21:35:55.586270+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "QUERY:9ba69d9f990ce5ee75d82521",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:23.031127+00:00",
+      "last_at": "2026-11-06T21:35:23.243275+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "QUERY:9ba69d9f990ce5ee75d82521",
+      "status": "DISPATCHED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:36:22.965997+00:00",
+      "last_at": "2026-11-06T21:36:22.965997+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:0bef390cb3599f92e366d6f5",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:15.054066+00:00",
+      "last_at": "2026-11-06T21:36:15.050895+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:0bef390cb3599f92e366d6f5",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:21.441924+00:00",
+      "last_at": "2026-11-06T21:35:21.441924+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:600ddc5e3602e9d96fe57308",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:35:21.442624+00:00",
+      "last_at": "2026-11-06T21:35:21.442624+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:600ddc5e3602e9d96fe57308",
+      "status": "DISPATCHED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:36:18.003274+00:00",
+      "last_at": "2026-11-06T21:36:18.003274+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:600ddc5e3602e9d96fe57308",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:34:17.918126+00:00",
+      "last_at": "2026-11-06T21:34:17.918126+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:9ba69d9f990ce5ee75d82521",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:33:50.629066+00:00",
+      "last_at": "2026-11-06T21:35:51.468543+00:00"
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:9ba69d9f990ce5ee75d82521",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:34:51.507257+00:00",
+      "last_at": "2026-11-06T21:34:51.507257+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "QUERY:37621b03cf0eb4927684aa62",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:32.135559+00:00",
+      "last_at": "2026-11-06T21:35:32.198548+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "QUERY:7a5aadc72c153005bc434274",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:57.505740+00:00",
+      "last_at": "2026-11-06T21:35:57.564909+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "QUERY:83c238d2641e5a73ee1ea1ae",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:48.377466+00:00",
+      "last_at": "2026-11-06T21:35:48.333395+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:37621b03cf0eb4927684aa62",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:04.785577+00:00",
+      "last_at": "2026-11-06T21:36:08.130678+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:37621b03cf0eb4927684aa62",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:08.063293+00:00",
+      "last_at": "2026-11-06T21:35:08.063293+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:7a5aadc72c153005bc434274",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:40.290247+00:00",
+      "last_at": "2026-11-06T21:35:40.241650+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:7a5aadc72c153005bc434274",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:33:40.222592+00:00",
+      "last_at": "2026-11-06T21:33:40.222592+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:83c238d2641e5a73ee1ea1ae",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:33.137890+00:00",
+      "last_at": "2026-11-06T21:35:33.104080+00:00"
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:83c238d2641e5a73ee1ea1ae",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:33:33.226164+00:00",
+      "last_at": "2026-11-06T21:33:33.226164+00:00"
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "QUERY:7e53e08eb2462e63aa412eba",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:11.411782+00:00",
+      "last_at": "2026-11-06T21:36:11.402889+00:00"
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "QUERY:7e53e08eb2462e63aa412eba",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:11.402686+00:00",
+      "last_at": "2026-11-06T21:35:11.402686+00:00"
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "QUERY:d47e5ec7707ca473d4427a16",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:02.239450+00:00",
+      "last_at": "2026-11-06T21:36:02.250070+00:00"
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "QUERY:ef2937764c68dc261d180b31",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:22.614945+00:00",
+      "last_at": "2026-11-06T21:36:20.584844+00:00"
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "TAIL:7e53e08eb2462e63aa412eba",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:33:36.841468+00:00",
+      "last_at": "2026-11-06T21:34:27.315640+00:00"
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "TAIL:7e53e08eb2462e63aa412eba",
+      "status": "DISPATCHED",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-06T21:36:29.001917+00:00",
+      "last_at": "2026-11-06T21:36:29.001917+00:00"
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "QUERY:2f44b0e005d5e40bffbab4b2",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:15.952652+00:00",
+      "last_at": "2026-11-06T21:36:15.976936+00:00"
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "QUERY:4372f027b66d91ede29179a8",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:52.913958+00:00",
+      "last_at": "2026-11-06T21:35:52.909477+00:00"
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "QUERY:52306a3154b125713c1aa968",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:33:36.845662+00:00",
+      "last_at": "2026-11-06T21:35:36.723626+00:00"
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "TAIL:2f44b0e005d5e40bffbab4b2",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:00.866884+00:00",
+      "last_at": "2026-11-06T21:36:02.809969+00:00"
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "TAIL:2f44b0e005d5e40bffbab4b2",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:02.865440+00:00",
+      "last_at": "2026-11-06T21:35:02.865440+00:00"
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "TAIL:4372f027b66d91ede29179a8",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:33:32.348201+00:00",
+      "last_at": "2026-11-06T21:35:40.751081+00:00"
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "TAIL:4372f027b66d91ede29179a8",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 1,
+      "first_at": "2026-11-06T21:34:40.699721+00:00",
+      "last_at": "2026-11-06T21:34:40.699721+00:00"
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "QUERY:19fddb1afdaf75a354710f75",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 3,
+      "first_at": "2026-11-06T21:34:00.070494+00:00",
+      "last_at": "2026-11-06T21:35:59.864557+00:00"
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "TAIL:19fddb1afdaf75a354710f75",
+      "status": "CAPTURED",
+      "reason": null,
+      "n": 2,
+      "first_at": "2026-11-06T21:34:02.200879+00:00",
+      "last_at": "2026-11-06T21:36:02.325614+00:00"
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "TAIL:19fddb1afdaf75a354710f75",
+      "status": "FAILED",
+      "reason": "CANCELLED",
+      "n": 1,
+      "first_at": "2026-11-06T21:35:02.170297+00:00",
+      "last_at": "2026-11-06T21:35:02.170297+00:00"
+    }
+  ],
+  "query_coverage": [
+    {
+      "ticker": "INTC",
+      "required_queries": 3,
+      "captured_complete_cycles": 2,
+      "last_complete_dispatch_at": "2026-11-06T21:36:06.746562+00:00",
+      "seen_in_incomplete_cycle": 1
+    },
+    {
+      "ticker": "BE",
+      "required_queries": 3,
+      "captured_complete_cycles": 3,
+      "last_complete_dispatch_at": "2026-11-06T21:35:50.596889+00:00",
+      "seen_in_incomplete_cycle": 0
+    },
+    {
+      "ticker": "CEG",
+      "required_queries": 2,
+      "captured_complete_cycles": 3,
+      "last_complete_dispatch_at": "2026-11-06T21:35:43.738586+00:00",
+      "seen_in_incomplete_cycle": 0
+    },
+    {
+      "ticker": "COHR",
+      "required_queries": 3,
+      "captured_complete_cycles": 2,
+      "last_complete_dispatch_at": "2026-11-06T21:36:09.249748+00:00",
+      "seen_in_incomplete_cycle": 1
+    },
+    {
+      "ticker": "IONQ",
+      "required_queries": 2,
+      "captured_complete_cycles": 3,
+      "last_complete_dispatch_at": "2026-11-06T21:36:04.497627+00:00",
+      "seen_in_incomplete_cycle": 0
+    },
+    {
+      "ticker": "MU",
+      "required_queries": 3,
+      "captured_complete_cycles": 3,
+      "last_complete_dispatch_at": "2026-11-06T21:35:55.586270+00:00",
+      "seen_in_incomplete_cycle": 0
+    },
+    {
+      "ticker": "NBIS",
+      "required_queries": 3,
+      "captured_complete_cycles": 3,
+      "last_complete_dispatch_at": "2026-11-06T21:35:57.564909+00:00",
+      "seen_in_incomplete_cycle": 0
+    },
+    {
+      "ticker": "ONDS",
+      "required_queries": 3,
+      "captured_complete_cycles": 2,
+      "last_complete_dispatch_at": "2026-11-06T21:36:11.402889+00:00",
+      "seen_in_incomplete_cycle": 1
+    },
+    {
+      "ticker": "RKLB",
+      "required_queries": 3,
+      "captured_complete_cycles": 3,
+      "last_complete_dispatch_at": "2026-11-06T21:36:15.976936+00:00",
+      "seen_in_incomplete_cycle": 0
+    },
+    {
+      "ticker": "SNOW",
+      "required_queries": 1,
+      "captured_complete_cycles": 3,
+      "last_complete_dispatch_at": "2026-11-06T21:35:59.864557+00:00",
+      "seen_in_incomplete_cycle": 0
+    }
+  ],
+  "capture_gaps": [
+    {
+      "ticker": "MU",
+      "unit": "QUERY:9ba69d9f990ce5ee75d82521",
+      "captures": 4,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 61.618114,
+      "steady_max_seconds": 61.618114,
+      "median_seconds": 61.618114,
+      "max_seconds": 62.597142
+    },
+    {
+      "ticker": "INTC",
+      "unit": "TAIL:bbf0464a833edfa9962ce4f5",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 118.371251,
+      "max_seconds": 118.371251
+    },
+    {
+      "ticker": "BE",
+      "unit": "QUERY:07f410a0f9f03f7deac5d39d",
+      "captures": 4,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 66.792857,
+      "steady_max_seconds": 66.792857,
+      "median_seconds": 58.069841,
+      "max_seconds": 66.792857
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:55c1dadfd56fb9bf0c998cef",
+      "captures": 4,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 55.033832,
+      "steady_max_seconds": 55.033832,
+      "median_seconds": 55.033832,
+      "max_seconds": 63.569465
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:115a02603bc7df9ef5c9bcdd",
+      "captures": 4,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 55.456313,
+      "steady_max_seconds": 55.456313,
+      "median_seconds": 55.456313,
+      "max_seconds": 60.641569
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "QUERY:37621b03cf0eb4927684aa62",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 56.374218,
+      "max_seconds": 56.374218
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "TAIL:4372f027b66d91ede29179a8",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 115.446519,
+      "max_seconds": 115.446519
+    },
+    {
+      "ticker": "BE",
+      "unit": "QUERY:3e6db9ee568c8d10d62f1845",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 66.099825,
+      "max_seconds": 66.099825
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "TAIL:7e53e08eb2462e63aa412eba",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 109.460422,
+      "max_seconds": 109.460422
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "QUERY:52306a3154b125713c1aa968",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 60.173206,
+      "max_seconds": 60.173206
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:d4ae8f74386b434385ec20e4",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 131.453757,
+      "max_seconds": 131.453757
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "QUERY:b97fd70e91eacbac70d6d26c",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 60.814261,
+      "max_seconds": 60.814261
+    },
+    {
+      "ticker": "CEG",
+      "unit": "QUERY:511db9bb3e2e55498275ef22",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 63.053954,
+      "max_seconds": 63.053954
+    },
+    {
+      "ticker": "CEG",
+      "unit": "TAIL:511db9bb3e2e55498275ef22",
+      "captures": 1,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 0,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": null,
+      "max_seconds": null
+    },
+    {
+      "ticker": "CEG",
+      "unit": "QUERY:c8364ae9213cd4844f861c55",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 59.841416,
+      "max_seconds": 59.841416
+    },
+    {
+      "ticker": "MU",
+      "unit": "QUERY:0bef390cb3599f92e366d6f5",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 63.497995,
+      "max_seconds": 63.497995
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "QUERY:83c238d2641e5a73ee1ea1ae",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 66.562974,
+      "max_seconds": 66.562974
+    },
+    {
+      "ticker": "BE",
+      "unit": "QUERY:d4ae8f74386b434385ec20e4",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 64.988922,
+      "max_seconds": 64.988922
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:9ba69d9f990ce5ee75d82521",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 112.500371,
+      "max_seconds": 112.500371
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "QUERY:4372f027b66d91ede29179a8",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 59.17853,
+      "max_seconds": 59.17853
+    },
+    {
+      "ticker": "MU",
+      "unit": "QUERY:600ddc5e3602e9d96fe57308",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 63.833522,
+      "max_seconds": 63.833522
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:07f410a0f9f03f7deac5d39d",
+      "captures": 1,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 0,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": null,
+      "max_seconds": null
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "QUERY:7a5aadc72c153005bc434274",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 63.167049,
+      "max_seconds": 63.167049
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "QUERY:19fddb1afdaf75a354710f75",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 58.37812,
+      "max_seconds": 58.37812
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "TAIL:2f44b0e005d5e40bffbab4b2",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 124.06015,
+      "max_seconds": 124.06015
+    },
+    {
+      "ticker": "SNOW",
+      "unit": "TAIL:19fddb1afdaf75a354710f75",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 112.835674,
+      "max_seconds": 112.835674
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "QUERY:d47e5ec7707ca473d4427a16",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 58.794639,
+      "max_seconds": 58.794639
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "QUERY:15edf0c59fe1c0b8cb82eaf6",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 61.547645,
+      "max_seconds": 61.547645
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:37621b03cf0eb4927684aa62",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 113.933097,
+      "max_seconds": 113.933097
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:bbf0464a833edfa9962ce4f5",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 119.374059,
+      "max_seconds": 119.374059
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:c99a2545cb4cae9c816cde16",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 125.075534,
+      "max_seconds": 125.075534
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "QUERY:7e53e08eb2462e63aa412eba",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 121.637767,
+      "max_seconds": 121.637767
+    },
+    {
+      "ticker": "INTC",
+      "unit": "QUERY:e73a8ade59a4666d397341ac",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 53.964359,
+      "steady_max_seconds": 53.964359,
+      "median_seconds": 65.168706,
+      "max_seconds": 65.168706
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "TAIL:b97fd70e91eacbac70d6d26c",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 33.660757,
+      "steady_max_seconds": 33.660757,
+      "median_seconds": 82.6188,
+      "max_seconds": 82.6188
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:0bef390cb3599f92e366d6f5",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 98.962825,
+      "max_seconds": 98.962825
+    },
+    {
+      "ticker": "COHR",
+      "unit": "TAIL:e88d32f42cbfe00032594375",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 55.776163,
+      "steady_max_seconds": 55.776163,
+      "median_seconds": 65.680972,
+      "max_seconds": 65.680972
+    },
+    {
+      "ticker": "RKLB",
+      "unit": "QUERY:2f44b0e005d5e40bffbab4b2",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 51.145475,
+      "steady_max_seconds": 51.145475,
+      "median_seconds": 72.405572,
+      "max_seconds": 72.405572
+    },
+    {
+      "ticker": "CEG",
+      "unit": "TAIL:c8364ae9213cd4844f861c55",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 63.734714,
+      "steady_max_seconds": 63.734714,
+      "median_seconds": 63.734714,
+      "max_seconds": 63.734714
+    },
+    {
+      "ticker": "COHR",
+      "unit": "QUERY:e88d32f42cbfe00032594375",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 57.205756,
+      "steady_max_seconds": 57.205756,
+      "median_seconds": 65.38821,
+      "max_seconds": 65.38821
+    },
+    {
+      "ticker": "ONDS",
+      "unit": "QUERY:ef2937764c68dc261d180b31",
+      "captures": 3,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 60.418538,
+      "steady_max_seconds": 60.418538,
+      "median_seconds": 60.418538,
+      "max_seconds": 60.418538
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:83c238d2641e5a73ee1ea1ae",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 54.68749,
+      "max_seconds": 54.68749
+    },
+    {
+      "ticker": "NBIS",
+      "unit": "TAIL:7a5aadc72c153005bc434274",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": 62.107692,
+      "max_seconds": 62.107692
+    },
+    {
+      "ticker": "MU",
+      "unit": "TAIL:600ddc5e3602e9d96fe57308",
+      "captures": 2,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 2,
+      "steady_median_seconds": 61.400547,
+      "steady_max_seconds": 61.400547,
+      "median_seconds": 61.400547,
+      "max_seconds": 61.400547
+    },
+    {
+      "ticker": "BE",
+      "unit": "TAIL:3e6db9ee568c8d10d62f1845",
+      "captures": 1,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": null,
+      "max_seconds": null
+    },
+    {
+      "ticker": "IONQ",
+      "unit": "TAIL:15edf0c59fe1c0b8cb82eaf6",
+      "captures": 1,
+      "basis": "cycle_finished_at",
+      "steady_since": "2026-11-06T21:35:23+00:00",
+      "steady_captures": 1,
+      "steady_median_seconds": null,
+      "steady_max_seconds": null,
+      "median_seconds": null,
+      "max_seconds": null
+    }
+  ],
+  "containers": [
+    {
+      "role": "v2-site-access",
+      "id": "6671fe3752be",
+      "started_at": "2026-11-06T21:16:04.611368599Z",
+      "commit": "5c95dfdfbd5ced7d09b4748634f74e0b32a1a15b",
+      "restarts": 0
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "id": "37881d9a4b92",
+      "started_at": "2026-11-01T22:08:10.817942609Z",
+      "commit": "ae5f3f8ada5299ab7be528c57a16d8a12224b735",
+      "restarts": 0
+    },
+    {
+      "role": "v2-message-collector",
+      "id": "30c97e74920f",
+      "started_at": "2026-11-06T21:35:14.751878872Z",
+      "commit": "db08791f",
+      "restarts": 0
+    },
+    {
+      "role": "v2-content-enrichment",
+      "id": "642c3c99180e",
+      "started_at": "2026-11-06T21:35:45.849717626Z",
+      "commit": "db08791f",
+      "restarts": 0
+    }
+  ],
+  "resources": {
+    "disk_free": 56146419712,
+    "mem_available": "13520560 kB",
+    "cpu_pressure": "some avg10=70.81 avg60=72.26 avg300=66.91 total=180329507368\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+    "registry_wal_bytes": 14885592
+  }
+}

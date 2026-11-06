@@ -1,0 +1,6 @@
+/doxagent-v2-v2-chrome-supervisor-1 cpu_ns=0 cpu_quota=0 cpuset= memory=10737418240 memory_reservation=0 pids=4096
+/doxagent-v2-v2-site-access-1 cpu_ns=0 cpu_quota=0 cpuset= memory=10737418240 memory_reservation=0 pids=2048
+/doxagent-v2-v2-message-collector-1 cpu_ns=0 cpu_quota=0 cpuset= memory=4294967296 memory_reservation=0 pids=384
+doxagent-v2-v2-chrome-supervisor-1 CPU=52.47% RAM=5.635GiB / 10GiB PIDs=1686
+doxagent-v2-v2-site-access-1 CPU=16.30% RAM=2.684GiB / 10GiB PIDs=412
+doxagent-v2-v2-message-collector-1 CPU=49.25% RAM=437.6MiB / 4GiB PIDs=25

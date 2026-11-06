@@ -1,0 +1,13 @@
+........................................................................ [ 88%]
+.........                                                                [100%]
+============================== warnings summary ===============================
+tests/test_identity_control_workers.py::test_actual_instance_replacement_retires_only_old_target_facts[False-managed_playwright]
+tests/test_identity_control_workers.py::test_actual_instance_replacement_retires_only_old_target_facts[False-external_chrome]
+tests/test_identity_control_workers.py::test_actual_instance_replacement_retires_only_old_target_facts[True-managed_playwright]
+tests/test_identity_control_workers.py::test_actual_instance_replacement_retires_only_old_target_facts[True-external_chrome]
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\pydantic\main.py:542: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `enum` - serialized value may not be as expected [field_name='operational_state', input_value='UNHEALTHY', input_type=str])
+    return self.__pydantic_serializer__.to_json(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+81 passed, 4 warnings in 138.94s (0:02:18)

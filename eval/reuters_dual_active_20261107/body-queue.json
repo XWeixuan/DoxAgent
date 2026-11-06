@@ -1,0 +1,218 @@
+[
+  {
+    "at": "2026-11-06T21:49:27.115839+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3001,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:49:37.229963+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 2999,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:49:47.463291+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:49:57.319794+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3005,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:50:07.806779+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:50:17.016032+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:50:26.673330+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:50:35.825092+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3001,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:50:46.475027+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:50:55.803503+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3145,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:51:04.235618+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3007,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:51:13.650616+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:51:22.174807+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:51:32.927985+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:51:43.606289+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:52:02.737342+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:52:18.908966+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3005,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:52:30.393740+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3019,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:52:39.007333+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3017,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:52:49.472929+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:53:55.555801+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:54:04.032340+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 2999,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:54:22.292929+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3001,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  },
+  {
+    "at": "2026-11-06T21:54:35.322668+00:00",
+    "effective_scope_id": "source:reuters_site_search",
+    "network_ms": 0,
+    "queue_wait_ms": 3000,
+    "reason": "site_queue_timeout",
+    "stage_timings": {},
+    "work_class": "recheck"
+  }
+]

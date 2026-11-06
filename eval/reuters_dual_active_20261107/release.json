@@ -1,0 +1,31 @@
+{
+  "commit": "9e1782c65789f6d10d13a7c7c7b13fa293ef5845",
+  "started_at": "2026-11-06T20:47:24.100940+00:00",
+  "finished_at": "2026-11-06T20:48:20.530569+00:00",
+  "returncode": 0,
+  "supervisor_unchanged": true,
+  "site": {
+    "id": "c5aaf1e5489489374d534bee632bc9012afd31bd9fed3499f2c08f080c2342cd",
+    "image": "sha256:cf1040867d976ee8226496dc4b8e2dcde9d9a5a8dcaff2b57eaf2f9fe7ef4f77",
+    "started_at": "2026-11-06T20:48:08.758905264Z",
+    "health": "healthy"
+  },
+  "private_log": "/var/lib/doxagent/releases/reuters-dual-active-20261106T204719Z.log",
+  "backup": "/var/lib/doxagent/releases/backups/reuters-dual-active-20261106T204719Z.sqlite3",
+  "hashes": {
+    "site_strategy/datadome_solver.py": "d4a1ae46e690b800066824d3847f352195e9f1dba95a28f348597ef4fb6846f5",
+    "site_strategy/external_runtime.py": "56800b7a57d1ddb1663fe045e44840895fea7ad709e08d90e221f1ee50f2c468",
+    "site_strategy/governance_repository.py": "c74d3681122d449681d2c7b1dee843ae065aa41604ec3e62d20e61f88e72af2c",
+    "site_strategy/human_verification.py": "5744150bd317b9a4db6ce1183a355a235552119bff5e8cc533094df5e87d37d5",
+    "site_strategy/recovery.py": "c2037796f1b54ad1159f039fbd4d9b790652b89b4fdfe853faa228507542d37d",
+    "site_strategy/service.py": "9abe7774695f7debe3296f3cdee9c564e2ed8331f0ae9db331e8b65e5ee47043",
+    "site_strategy/worker_runtime.py": "79c303c10de0576de5477daaf5bfc55500899606ee320f8c4926cd52535e1edc",
+    "site_strategy/targets.py": "5cba4e3f684b651658082f08156326cd5e95408b18fc127169eeabba85671870",
+    "site_strategy/runtime.py": "ec9e8788ef31ef3da20c9fd825bbb1fc4956c09a746e40ad5da103e65ed1a237",
+    "message_bus_v2/reuters_sources.py": "1be746a479395ba436dd3ed341324a10646a8531371234c2a1ddbb695af3c62b",
+    "site_strategy/budget.py": "9bbd9b4b22a2946c61881d65ff64965500f67e7b3938ba207c4054ade95e1474",
+    "site_strategy/failover.py": "295ed32b0f9a07cb9caef760ce01e56dd7ea07708d3a584d5b3940059073aca9",
+    "site_strategy/governance_models.py": "ce70759cd502d3f53a093256f37234423ccf94d5036ce06f553b61091c088b79"
+  },
+  "hashes_match": true
+}

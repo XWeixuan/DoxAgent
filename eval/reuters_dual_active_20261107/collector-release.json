@@ -1,0 +1,16 @@
+{
+  "commit": "0a2f9d20f680f8aa03dbd4048ca4dd3224ab49a0",
+  "started_at": "2026-11-06T21:32:12.486383+00:00",
+  "finished_at": "2026-11-06T21:33:22.562714+00:00",
+  "returncode": 0,
+  "private_log": "/var/lib/doxagent/releases/reuters-tail-retirement-20261106T213212Z.log",
+  "collector": {
+    "id": "798c5a8256bc0c32f1e36b0e86f678bb4634d171f66c01a124fb75d6165649e5",
+    "started_at": "2026-11-06T21:33:07.343767633Z",
+    "health": "healthy"
+  },
+  "other_containers_unchanged": true,
+  "expected_hash": "ef3eba92bb5778995b605f5106c24afe65e30d2f8e683c898a20a24a5dc40599",
+  "actual_hash": "ef3eba92bb5778995b605f5106c24afe65e30d2f8e683c898a20a24a5dc40599",
+  "hashes_match": true
+}
