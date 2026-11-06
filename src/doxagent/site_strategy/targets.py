@@ -1,9 +1,27 @@
 """Exact target ownership across controller connections; no age/blank-page sweeps."""
 
+import asyncio
+
 from .governance_models import ChallengeTask, OwnedBrowserTarget
 from .governance_repository import GovernanceRepository
 from .schema import utc_now
 from .storage import registry_io
+
+
+async def close_native_target(cdp, target_id):
+    """A close ACK is not proof that Chrome destroyed the exact owned page."""
+    async with asyncio.timeout(3):
+        try:
+            await cdp.send("Target.closeTarget", {"targetId": target_id})
+        except Exception:
+            pass  # A lost reply is safe only when native absence is observed.
+        for delay in (0, 0.1, 0.3):
+            if delay:
+                await asyncio.sleep(delay)
+            observed = await cdp.send("Target.getTargets")
+            if not any(str(t["targetId"]) == target_id for t in observed["targetInfos"]):
+                return
+    raise RuntimeError("owned_target_cleanup_pending")
 
 
 class TargetOwner:
@@ -24,10 +42,24 @@ class TargetOwner:
             with self.store.repository.transaction() as connection:
                 target = self.store.get_target(payload["allocation_id"])
                 expected_ref = payload.get("owner_ref")
-                if not target or target.state in {"LOST", "CLOSED"} or (
+                if not target or target.state == "LOST" or (
                     target.owner_kind != "BUSINESS" and target.owner_ref != expected_ref
                 ):
                     return {"claimed": False}
+                if target.state == "CLOSED":
+                    # Reconcile a proven native survivor, never reclaim an
+                    # unknown target or a human/recovery original.
+                    recovery = self.store.get_recovery(target.identity_id)
+                    task = self.store.current_challenge(target.identity_id)
+                    protected = (recovery and recovery.phase != "RESOLVED"
+                                 and recovery.original_allocation_id == target.allocation_id)
+                    if (target.owner_kind != "BUSINESS"
+                            or payload.get("native_target_id") != target.target_id
+                            or payload.get("native_instance_id") != target.browser_instance_id
+                            or protected or task and task.allocation_id == target.allocation_id
+                            or any(s.state == "OPEN" and s.allocation_id == target.allocation_id
+                                   for s in self.store.list_sessions())):
+                        return {"claimed": False}
                 self.store._write_target(connection, target.model_copy(update={"state": "CLOSE_PENDING"}))
                 return {"claimed": True}
         if action == "state":
@@ -93,7 +125,7 @@ class TargetOwner:
             )
         )
 
-    def list_for_instance(self, identity_id, instance_id):
+    def list_for_instance(self, identity_id, instance_id, *, live_target_ids=None):
         repo = self.store.repository
         with repo._lock:
             rows = repo._connection.execute(
@@ -101,6 +133,15 @@ class TargetOwner:
                 "where identity_id=? and browser_instance_id=? and state not in ('CLOSED','LOST')",
                 (identity_id, instance_id),
             ).fetchall()
+            if live_target_ids:
+                # Only native IDs already returned by Chrome: no historical scan
+                # of closed rows on every attach/cleanup tick.
+                rows += repo._connection.execute(
+                    "select data_json from owned_browser_targets where browser_instance_id=? "
+                    "and target_id in (" + ",".join("?" for _ in live_target_ids) + ") "
+                    "and identity_id=? and owner_kind='BUSINESS' and state='CLOSED'",
+                    (instance_id, *live_target_ids, identity_id),
+                ).fetchall()
         values = [OwnedBrowserTarget.model_validate_json(row[0]) for row in rows]
         recovery = self.store.get_recovery(identity_id)
         task = self.store.current_challenge(identity_id)
@@ -119,7 +160,8 @@ class TargetOwner:
         result = await cdp.send("Target.getTargets")
         live = {str(t["targetId"]): t for t in result["targetInfos"]}
         outcomes = []
-        for target in (await registry_io(self.list_for_instance, identity_id, instance_id)):
+        for target in (await registry_io(self.list_for_instance, identity_id, instance_id,
+                                        live_target_ids=list(live))):
             if not target.target_id:
                 matched = [key for key, info in live.items() if info.get("url") == target.marker]
                 if len(matched) == 1:
@@ -132,12 +174,13 @@ class TargetOwner:
                     (await registry_io(self.store.save_challenge, task.model_copy(update={"state": "TARGET_LOST"})))
             elif target.owner_kind == "BUSINESS" or target.state == "CLOSE_PENDING":
                 claimed = await self.event("close_claim", {"allocation_id": target.allocation_id,
-                    "owner_ref": target.owner_ref if target.state == "CLOSE_PENDING" else None})
+                    "owner_ref": target.owner_ref if target.state == "CLOSE_PENDING" else None,
+                    "native_target_id": target.target_id, "native_instance_id": instance_id})
                 if not claimed["claimed"]:
                     continue
                 pending = (await registry_io(self.store.get_target, target.allocation_id))
                 try:
-                    await cdp.send("Target.closeTarget", {"targetId": target.target_id})
+                    await close_native_target(cdp, target.target_id)
                 except Exception:
                     pass  # Durable pending record survives this connection.
                 else:

@@ -125,7 +125,8 @@ async def test_cold_attach_reconciles_owned_business_before_playwright(monkeypat
         async def send(self,method,params=None):
             order.append((method,params))
             if method=='Target.getTargets':
-                return {'targetInfos':[{'targetId':'business'},{'targetId':'human'}]}
+                return {'targetInfos':([] if getattr(self,'closed',False) else [{'targetId':'business'}])+[{'targetId':'human'}]}
+            if method=='Target.closeTarget':self.closed=True
             return {'success':True}
     monkeypatch.setattr(module,'_RawBrowserCDP',CDP)
     async def event(action,payload):

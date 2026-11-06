@@ -286,7 +286,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                         if await self.workers.graceful_drain_managed(identity):
                             continue
                     if (identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
-                            and exc.reason_code == 'browser_cdp_attach_failed'):
+                            and exc.reason_code in {'browser_cdp_attach_failed', 'owned_target_cleanup_pending'}):
                         # Retire the failed Python/Node controller, never native Chrome.
                         # Do not replay the request; the next admitted operation gets
                         # a fresh controller instead of reusing poisoned driver state.

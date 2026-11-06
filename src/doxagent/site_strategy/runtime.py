@@ -871,7 +871,7 @@ class PersistentBrowserPool:
 
 
 async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5,
-                            owner_ref: str | None = None) -> None:
+                            owner_ref: str | None = None, confirm_native: bool = False) -> None:
     """Bound cleanup separately: cancellation does not bound awaited finally blocks."""
     target_id = getattr(page, "_doxagent_target_id", None)
     owner = getattr(page, "_doxagent_target_owner", None)
@@ -882,12 +882,17 @@ async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: 
             return  # A completed handoff wins over this old connection's finally.
     if target_id:
         # CDP does not wait for Playwright's unbounded abort acknowledgement.
-        try:
-            await cdp.send("Target.closeTarget", {"targetId": target_id})
-        except Exception:
-            observed = await cdp.send("Target.getTargets")
-            if any(str(t["targetId"]) == target_id for t in observed["targetInfos"]):
-                raise
+        if confirm_native:
+            from .targets import close_native_target
+
+            await close_native_target(cdp, target_id)
+        else:
+            try:
+                await cdp.send("Target.closeTarget", {"targetId": target_id})
+            except Exception:
+                observed = await cdp.send("Target.getTargets")
+                if any(str(t["targetId"]) == target_id for t in observed["targetInfos"]):
+                    raise
         getattr(cdp, "_owned_targets", set()).discard(target_id)
         if owner and allocation_id:
             await owner.event("state", {"allocation_id": allocation_id, "state": "CLOSED"})

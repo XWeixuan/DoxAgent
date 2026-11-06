@@ -1096,6 +1096,7 @@ class BrowserRecoveryCoordinator:
                     "browser_cdp_attach_failed", "browser_driver_unavailable",
                     "identity_worker_disconnected", "identity_node_shutdown_unconfirmed",
                     "identity_controller_shutdown_unconfirmed",
+                    "owned_target_cleanup_pending",
                 }:
                     recovery, delay = control_backoff(recovery, probe_timing['reason_code'])
                     probe_result = "CONTROL_UNAVAILABLE"

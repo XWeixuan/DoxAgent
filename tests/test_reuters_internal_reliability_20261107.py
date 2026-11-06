@@ -16,6 +16,7 @@ from doxagent.site_strategy.schema import AccessRequest, BrowserRuntimeKind, utc
 from doxagent.site_strategy.service import recovery_pending_reason
 from doxagent.site_strategy.worker_manager import IdentityOperationError
 from doxagent.site_strategy.worker_runtime import WorkerSiteAccessRuntime
+from doxagent.site_strategy.targets import TargetOwner
 from tests import test_browser_recovery as base
 from tests import test_datadome_solver as paid
 
@@ -31,14 +32,15 @@ def solver_setup(setup):
 
 
 @pytest.mark.asyncio
-async def test_attach_failure_retires_controller_without_replay_or_native_drain(setup):
+@pytest.mark.parametrize("reason", ["browser_cdp_attach_failed", "owned_target_cleanup_pending"])
+async def test_attach_failure_retires_controller_without_replay_or_native_drain(setup, reason):
     repo, _, store, scope = setup
     retained, target, _ = base.retained(setup)
     identity = repo.get_identity(scope.primary_identity_id).model_copy(
         update={"runtime_kind": BrowserRuntimeKind.EXTERNAL_CHROME})
     runtime = WorkerSiteAccessRuntime.__new__(WorkerSiteAccessRuntime)
     runtime.repository = repo
-    error = IdentityOperationError("RUNTIME_UNAVAILABLE", "browser_cdp_attach_failed")
+    error = IdentityOperationError("RUNTIME_UNAVAILABLE", reason)
     runtime.workers = SimpleNamespace(command=AsyncMock(side_effect=error), retire=AsyncMock())
     runtime._business_slots = asyncio.Semaphore(1)
     runtime._recovery_slots = asyncio.Semaphore(1)
@@ -192,3 +194,72 @@ async def test_terminal_reason_is_shared_by_source_and_maintenance(solver_setup)
     current = solver.coordinator.store.get_recovery(identity.identity_id)
     assert recovery_pending_reason(current) == manual_review_reason(current, job)
     assert current.last_error == "provider_result_still_blocked_manual_review"
+
+
+@pytest.mark.asyncio
+async def test_native_surviving_closed_business_is_reclaimed_but_original_and_unknown_are_kept(setup):
+    repo, _, store, _ = setup
+    recovery, original, _ = base.retained(setup, human=True)
+    orphan = store.save_target(OwnedBrowserTarget(identity_id=recovery.identity_id,
+        browser_instance_id="chrome", worker_epoch=1, target_id="stale-closed",
+        owner_kind="BUSINESS", state="CLOSED"))
+    owner = TargetOwner(repo)
+    assert all(t.target_id != orphan.target_id for t in owner.list_for_instance(recovery.identity_id, "chrome"))
+    live = {original.target_id, orphan.target_id, "unknown-human"}
+    closed = []
+
+    async def send(method, params=None):
+        if method == "Target.getTargets":
+            return {"targetInfos": [{"targetId": t} for t in live]}
+        assert method == "Target.closeTarget"
+        closed.append(params["targetId"])
+        live.discard(params["targetId"])
+        return {"success": True}
+
+    await owner.reconcile(SimpleNamespace(send=send), recovery.identity_id, "chrome")
+    assert closed == [orphan.target_id]
+    assert store.get_target(orphan.allocation_id).state == "CLOSED"
+    assert live == {original.target_id, "unknown-human"}
+    assert store.get_target(original.allocation_id).owner_kind == "CHALLENGE"
+
+
+@pytest.mark.asyncio
+async def test_positive_close_ack_without_native_absence_remains_pending(setup):
+    repo, _, store, scope = setup
+    orphan = store.save_target(OwnedBrowserTarget(identity_id=scope.primary_identity_id,
+        browser_instance_id="chrome", worker_epoch=1, target_id="still-live", state="LIVE"))
+    cdp = SimpleNamespace(send=AsyncMock(side_effect=lambda method, params=None: (
+        {"targetInfos": [{"targetId": "still-live"}]} if method == "Target.getTargets" else {"success": True})))
+    await TargetOwner(repo).reconcile(cdp, scope.primary_identity_id, "chrome")
+    assert store.get_target(orphan.allocation_id).state == "CLOSE_PENDING"
+
+
+def test_closed_bookkeeping_cannot_override_current_human_original(setup):
+    repo, _, store, _ = setup
+    recovery, original, _ = base.retained(setup, human=True)
+    with pytest.raises(ValueError, match="human-owned targets"):
+        store.save_target(original.model_copy(update={"owner_kind": "BUSINESS", "state": "CLOSED"}))
+    result = TargetOwner(repo)._event("close_claim", {"allocation_id": original.allocation_id,
+        "native_target_id": original.target_id, "native_instance_id": "chrome"})
+    assert not result["claimed"]
+    assert store.get_recovery(recovery.identity_id).original_target_id == original.target_id
+
+
+@pytest.mark.asyncio
+async def test_external_failed_cleanup_releases_lease_but_keeps_durable_pending(monkeypatch):
+    from doxagent.site_strategy.external_runtime import _ExternalLease
+
+    lease = object.__new__(_ExternalLease)
+    owner = SimpleNamespace(event=AsyncMock())
+    lease.page = SimpleNamespace(_doxagent_target_owner=owner, _doxagent_allocation_id="allocation")
+    lease.entry = SimpleNamespace(cdp=None, active_pages=1, last_used=0)
+    lease.adapter = SimpleNamespace(_lock=asyncio.Lock(), _page_slots=asyncio.Semaphore(0))
+    lease._closed = False
+    monkeypatch.setattr("doxagent.site_strategy.external_runtime._close_owned_page",
+                        AsyncMock(side_effect=RuntimeError("owned_target_cleanup_pending")))
+    with pytest.raises(RuntimeError):
+        await lease.__aexit__(None, None, None)
+    assert lease._closed and lease.entry.active_pages == 0
+    assert lease.adapter._page_slots._value == 1
+    assert owner.event.await_args.args == ("state", {"allocation_id": "allocation",
+        "state": "CLOSE_PENDING", "cleanup_failed": True})

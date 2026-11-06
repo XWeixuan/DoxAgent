@@ -2605,7 +2605,7 @@ class SiteStrategyService:
                     else classify_exception(exc)
                 )
                 control_failure = reason in {'browser_cdp_attach_failed', 'browser_driver_unavailable',
-                    'identity_worker_disconnected', 'identity_worker_deadline'}
+                    'identity_worker_disconnected', 'identity_worker_deadline', 'owned_target_cleanup_pending'}
                 if category is FailureCategory.RUNTIME_UNAVAILABLE and not control_failure:
                     identity_id = combination.identity_id or profile.profile_id
                     identity_runtime = (await registry_io(self.repository.get_identity_runtime, identity_id))
@@ -4102,7 +4102,7 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
     if re.fullmatch(r"[a-z][a-z0-9_]{0,127}", message) and message.startswith(
-        ("original_", "exact_", "maintenance_", "controller_", "viewer_", "invalid_")
+        ("original_", "exact_", "maintenance_", "controller_", "viewer_", "invalid_", "owned_target_")
     ):
         return FailureCategory.RUNTIME_UNAVAILABLE, message
     if "exceeds frame" in message or "response exceeds frame budget" in message:

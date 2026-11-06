@@ -561,6 +561,7 @@ async def test_replaced_auto_scene_cleanup_keeps_ownership_and_cannot_close_new_
             side_effect=[
                 {"targetInfos": [{"targetId": "original"}, {"targetId": "new-human"}]},
                 {"success": True},
+                {"targetInfos": [{"targetId": "new-human"}]},
             ]
         )
     )
@@ -568,7 +569,8 @@ async def test_replaced_auto_scene_cleanup_keeps_ownership_and_cannot_close_new_
     assert store.get_target(old.allocation_id).owner_kind == "RECOVERY"
     assert store.get_target(old.allocation_id).state == "CLOSED"
     assert store.get_target(new.allocation_id).state == "LIVE"
-    assert cdp.send.await_args_list[-1].args == ("Target.closeTarget", {"targetId": "original"})
+    assert any(call.args == ("Target.closeTarget", {"targetId": "original"})
+               for call in cdp.send.await_args_list)
 
 
 @pytest.mark.asyncio

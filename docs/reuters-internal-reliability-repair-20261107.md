@@ -29,3 +29,11 @@
 发布前只读快照：备用仍为 browser_cdp_attach_failed，累计 attempt_count=1067；主身份 verification_pending。磁盘约79GiB余量，具备窄发布空间。远端 main 留有另一维护的 changelog 修改，发布使用不可变 Git 提交，不覆盖该工作区改动。
 
 发布与真实运行结果将在窄发布后补充；未证实搜索/正文恢复前，不标为生产业务验收通过。
+
+## 真实运行中进一步定位的控制层根因
+
+对已有标签页各做一次有界本地 CDP 读取（无导航、输入、reload、自动附着/恢复 renderer），主身份3个标签页均正常；备用原页6AA6…及另一页正常，唯独8552A991AC8C5CFD7E330A08E06D85C5的 Page.getFrameTree/DOM.getDocument 均2秒超时。所有权核实：它是11月5日00:41 UTC创建、1.5秒后就记为CLOSED的 BUSINESS 页，没有任何人工会话或 Challenge 引用。它仍然活在原生 Chrome 中。
+
+旧代码把关闭ACK当成实际销毁，并且只查询非CLOSED/LOST记录，因此该遗留页永久逃过清理，又卡住 Playwright 对现有页面的初始化。这解释了为什么重建控制Worker仍不够。
+
+追加精确修复：冷附着先取得原生target清单，仅按这些ID索引查找同Chrome实例的CLOSED业务遗留页；Owner原子校验身份/实例/target及人工原页引用后重新声明CLOSE_PENDING。实际关闭需观察原生target消失才记CLOSED。External业务页正常收尾也采用同一确认，失败则保留CLOSE_PENDING并在finally释放控制lease，避免新增槽位泄漏。未知页面、当前Challenge及人工维护页保持原有保护。没有按年龄或URL扫页，也没有重建Chrome。

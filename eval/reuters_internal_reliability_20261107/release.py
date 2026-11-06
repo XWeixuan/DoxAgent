@@ -47,7 +47,7 @@ receipt = {"commit": commit, "started_at": started,
            "supervisor_unchanged": container(supervisor) == before, "site": container(site),
            "private_log": str(log), "backup": str(backup)}
 files = ["datadome_solver.py", "external_runtime.py", "governance_repository.py", "human_verification.py",
-         "recovery.py", "service.py", "worker_runtime.py"]
+         "recovery.py", "service.py", "worker_runtime.py", "targets.py", "runtime.py"]
 if code == 0:
     expected = {f: hashlib.sha256(subprocess.check_output(
         ["git", "show", commit + ":src/doxagent/site_strategy/" + f], cwd=repo)).hexdigest() for f in files}

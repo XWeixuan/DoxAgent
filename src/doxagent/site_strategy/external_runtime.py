@@ -18,6 +18,7 @@ from .browser_runtime import RuntimeProvenance
 from .runtime import EXPECTED_PLAYWRIGHT_VERSION, _close_owned_page, _RawBrowserCDP
 from .schema import BrowserIdentitySpec, BrowserResidency, BrowserRuntimeKind, ProxyEgress
 from .supervisor_client import ChromeSupervisorClient, SupervisorInstance
+from .targets import close_native_target
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class _ExternalLease:
         if self._closed:
             return
         try:
-            await _close_owned_page(self.page, self.entry.cdp)
+            await _close_owned_page(self.page, self.entry.cdp, confirm_native=True)
         except BaseException:
             owner = getattr(self.page, "_doxagent_target_owner", None)
             allocation = getattr(self.page, "_doxagent_allocation_id", None)
@@ -65,11 +66,12 @@ class _ExternalLease:
                 await owner.event("state", {"allocation_id": allocation,
                     "state": "CLOSE_PENDING", "cleanup_failed": True})
             raise
-        self._closed = True
-        async with self.adapter._lock:
-            self.entry.active_pages -= 1
-            self.entry.last_used = time.monotonic()
-        self.adapter._page_slots.release()
+        finally:
+            self._closed = True
+            async with self.adapter._lock:
+                self.entry.active_pages -= 1
+                self.entry.last_used = time.monotonic()
+            self.adapter._page_slots.release()
         if self.adapter._rotation_due and not self.adapter.rotation_paused:
             try:
                 await self.adapter.maintain_driver()
@@ -430,15 +432,16 @@ class ExternalChromeRuntime:
         self._target_cleanup_tasks[key] = asyncio.create_task(cleanup())
 
     async def _reconcile_targets(self, entry, *, pending_only=False):
+        targets = (await entry.cdp.send("Target.getTargets"))["targetInfos"]
+        live = {str(t["targetId"]): t for t in targets}
         records = await self.target_owner.event(
             "list",
             {
                 "identity_id": entry.identity.identity_id,
                 "instance_id": entry.instance.instance_id,
+                "live_target_ids": list(live),
             },
         )
-        targets = (await entry.cdp.send("Target.getTargets"))["targetInfos"]
-        live = {str(t["targetId"]): t for t in targets}
         for record in records:
             if pending_only and record['state'] != 'CLOSE_PENDING':
                 continue  # Never close a sibling's live business or a human original.
@@ -461,13 +464,12 @@ class ExternalChromeRuntime:
             if record["owner_kind"] != "BUSINESS" and record["state"] != "CLOSE_PENDING":
                 continue
             claim = await self.target_owner.event("close_claim", {"allocation_id": allocation_id,
-                "owner_ref": record.get("owner_ref") if record["state"] == "CLOSE_PENDING" else None})
+                "owner_ref": record.get("owner_ref") if record["state"] == "CLOSE_PENDING" else None,
+                "native_target_id": target_id, "native_instance_id": entry.instance.instance_id})
             if not claim["claimed"]:
                 continue
             try:
-                result = await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
-                if result.get('success') is False:
-                    raise RuntimeError('target_close_unconfirmed')
+                await close_native_target(entry.cdp, target_id)
             except Exception as exc:
                 raise RuntimeError("owned_target_cleanup_pending") from exc
             await self.target_owner.event(

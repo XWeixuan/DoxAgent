@@ -187,7 +187,7 @@ async def test_cross_connection_cleanup_is_exact_and_close_failure_is_durable(se
             if method == "Target.getTargets":
                 return {
                     "targetInfos": [
-                        {"targetId": "business", "url": orphan.marker},
+                        *([] if getattr(self, "closed", False) else [{"targetId": "business", "url": orphan.marker}]),
                         {"targetId": "human", "url": "https://example.com/"},
                         {"targetId": "unknown", "url": "about:blank"},
                     ]
@@ -195,6 +195,7 @@ async def test_cross_connection_cleanup_is_exact_and_close_failure_is_durable(se
             calls.append(parameters["targetId"])
             if self.failed:
                 raise OSError("connection lost during close")
+            self.closed = True
             return {"success": True}
 
     cdp = CDP()
