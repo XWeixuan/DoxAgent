@@ -10,17 +10,22 @@ from .storage import registry_io
 
 async def close_native_target(cdp, target_id):
     """A close ACK is not proof that Chrome destroyed the exact owned page."""
-    async with asyncio.timeout(3):
-        try:
-            await cdp.send("Target.closeTarget", {"targetId": target_id})
-        except Exception:
-            pass  # A lost reply is safe only when native absence is observed.
-        for delay in (0, 0.1, 0.3):
-            if delay:
-                await asyncio.sleep(delay)
-            observed = await cdp.send("Target.getTargets")
-            if not any(str(t["targetId"]) == target_id for t in observed["targetInfos"]):
-                return
+    try:
+        async with asyncio.timeout(3):
+            try:
+                await cdp.send("Target.closeTarget", {"targetId": target_id})
+            except Exception:
+                pass  # A lost reply is safe only when native absence is observed.
+            for delay in (0, 0.1, 0.3, 0.6, 1.0):
+                if delay:
+                    await asyncio.sleep(delay)
+                observed = await cdp.send("Target.getTargets")
+                if not any(str(t["targetId"]) == target_id for t in observed["targetInfos"]):
+                    return
+    except Exception as exc:
+        # Cleanup failures must not masquerade as network failures and replay
+        # an already captured article/search request.
+        raise RuntimeError("owned_target_cleanup_pending") from exc
     raise RuntimeError("owned_target_cleanup_pending")
 
 

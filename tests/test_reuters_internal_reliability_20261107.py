@@ -263,3 +263,30 @@ async def test_external_failed_cleanup_releases_lease_but_keeps_durable_pending(
     assert lease.adapter._page_slots._value == 1
     assert owner.event.await_args.args == ("state", {"allocation_id": "allocation",
         "state": "CLOSE_PENDING", "cleanup_failed": True})
+
+
+@pytest.mark.asyncio
+async def test_http_error_survives_failed_snapshot_without_re_navigation(monkeypatch):
+    from doxagent.message_bus_v2 import reuters_sources as module
+
+    response = SimpleNamespace(status=403, all_headers=AsyncMock(side_effect=RuntimeError("gone")))
+    page = SimpleNamespace(url="https://www.reuters.com/site-search/", evaluate=AsyncMock(return_value={}),
+        goto=AsyncMock(return_value=response), content=AsyncMock(side_effect=RuntimeError("page navigating")))
+    monkeypatch.setattr(module, "wait_for_native_document_redirect", AsyncMock(return_value=response))
+    with pytest.raises(RuntimeError) as error:
+        await module._capture_reuters_search_dom(page, "Micron", 0, navigation={})
+    assert error.value.status_code == 403 and error.value.response_body == ""
+    page.goto.assert_awaited_once()
+    page.content.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_failed_native_close_proof_is_control_error_not_transport_retry():
+    from doxagent.site_strategy.service import classify_exception
+    from doxagent.site_strategy.targets import close_native_target
+
+    cdp = SimpleNamespace(send=AsyncMock(side_effect=TimeoutError()))
+    with pytest.raises(RuntimeError) as error:
+        await close_native_target(cdp, "owned")
+    category, reason = classify_exception(error.value)
+    assert category.value == "RUNTIME_UNAVAILABLE" and reason == "owned_target_cleanup_pending"

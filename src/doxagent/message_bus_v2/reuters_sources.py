@@ -158,8 +158,14 @@ async def _capture_reuters_search_dom(page: Any, query: str, offset: int, *, nav
     if status >= 400:
         error = RuntimeError(f"Reuters search returned HTTP {status}")
         error.status_code = status
-        error.response_body = await page.content()
-        headers = await response.all_headers() if response else {}
+        try:
+            error.response_body = await page.content()
+        except Exception:
+            error.response_body = ""  # Diagnostic navigation races must not erase the known HTTP error.
+        try:
+            headers = await response.all_headers() if response else {}
+        except Exception:
+            headers = {}
         error.response_headers = {
             key: value
             for key, value in headers.items()

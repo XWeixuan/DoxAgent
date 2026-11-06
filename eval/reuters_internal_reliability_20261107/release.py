@@ -48,10 +48,11 @@ receipt = {"commit": commit, "started_at": started,
            "private_log": str(log), "backup": str(backup)}
 files = ["datadome_solver.py", "external_runtime.py", "governance_repository.py", "human_verification.py",
          "recovery.py", "service.py", "worker_runtime.py", "targets.py", "runtime.py"]
+files = ["site_strategy/" + f for f in files] + ["message_bus_v2/reuters_sources.py"]
 if code == 0:
     expected = {f: hashlib.sha256(subprocess.check_output(
-        ["git", "show", commit + ":src/doxagent/site_strategy/" + f], cwd=repo)).hexdigest() for f in files}
-    script = "import hashlib,json; from pathlib import Path; print(json.dumps({f:hashlib.sha256(Path('/app/src/doxagent/site_strategy',f).read_bytes()).hexdigest() for f in " + repr(files) + "}))"
+        ["git", "show", commit + ":src/doxagent/" + f], cwd=repo)).hexdigest() for f in files}
+    script = "import hashlib,json; from pathlib import Path; print(json.dumps({f:hashlib.sha256(Path('/app/src/doxagent',f).read_bytes()).hexdigest() for f in " + repr(files) + "}))"
     actual = json.loads(subprocess.check_output(["docker", "exec", site, "python", "-c", script]))
     receipt["hashes"] = actual
     receipt["hashes_match"] = expected == actual
