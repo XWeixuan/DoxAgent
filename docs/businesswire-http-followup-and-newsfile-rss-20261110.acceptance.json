@@ -1,0 +1,207 @@
+{
+  "observed_at": "2026-11-09T22:40:31.953961+00:00",
+  "since": "2026-11-09T22:30:15+00:00",
+  "elapsed_seconds": 616.954,
+  "sources": [
+    {
+      "source_id": "businesswire_massive",
+      "mode": "http_listing",
+      "kind": "crawler",
+      "version": 2,
+      "delivery_mode": "test",
+      "targets": [
+        "INTC",
+        "MU",
+        "BE",
+        "COHR",
+        "NBIS",
+        "CEG",
+        "RKLB",
+        "SNOW",
+        "ONDS",
+        "IONQ"
+      ]
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "mode": "rss",
+      "kind": "api",
+      "version": 3,
+      "delivery_mode": "test",
+      "targets": [
+        "INTC",
+        "MU",
+        "BE",
+        "COHR",
+        "NBIS",
+        "CEG",
+        "RKLB",
+        "SNOW",
+        "ONDS",
+        "IONQ"
+      ]
+    }
+  ],
+  "cycles": {
+    "businesswire_massive": {
+      "physical_runs": 21,
+      "statuses": {
+        "CAPTURED": 21
+      },
+      "duration_seconds": {
+        "count": 21,
+        "mean": 0.917,
+        "median": 0.609,
+        "p95": 1.816,
+        "maximum": 2.352
+      },
+      "dispatch_gap_seconds": {
+        "count": 20,
+        "mean": 29.999,
+        "median": 30.001,
+        "p95": 30.082,
+        "maximum": 30.11
+      },
+      "pages": [
+        1
+      ],
+      "methods": [
+        "http_listing"
+      ]
+    },
+    "tmx_newsfile_massive": {
+      "physical_runs": 21,
+      "statuses": {
+        "CAPTURED": 21
+      },
+      "duration_seconds": {
+        "count": 21,
+        "mean": 0.57,
+        "median": 0.313,
+        "p95": 1.324,
+        "maximum": 1.842
+      },
+      "dispatch_gap_seconds": {
+        "count": 20,
+        "mean": 30.011,
+        "median": 29.989,
+        "p95": 30.121,
+        "maximum": 30.205
+      },
+      "pages": [
+        0
+      ],
+      "methods": [
+        "rss"
+      ]
+    }
+  },
+  "new_articles": [
+    {
+      "source_id": "businesswire_massive",
+      "url": "https://www.businesswire.com/news/home/20261109331701/en/Square-Nine-Leads-%24206-Million-Financing-for-Aline-Accounting-Partners/",
+      "title": "Square Nine Leads $206 Million Financing for Aline Accounting Partners",
+      "published_at": "2026-11-09T22:30:00Z",
+      "first_seen_at": "2026-11-09T22:30:54.498959+00:00",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "last_error": "deadline_exceeded",
+      "publication_to_first_seen_seconds": 54.499
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "url": "https://www.newsfilecorp.com/release/323187/Go-Metals-Announces-NonBrokered-Private-Placement",
+      "title": "Go Metals Announces Non-Brokered Private Placement",
+      "published_at": "2026-11-09T22:33:00Z",
+      "first_seen_at": "2026-11-09T22:33:16.584517+00:00",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "last_error": "deadline_exceeded",
+      "publication_to_first_seen_seconds": 16.585
+    },
+    {
+      "source_id": "businesswire_massive",
+      "url": "https://www.businesswire.com/news/home/20261109555922/en/California-IBank-Reaches-Milestone-Connecting-Small-Businesses-to-More-Than-%245-Million-in-Private-Lending/",
+      "title": "California IBank Reaches Milestone, Connecting Small Businesses to More Than $5 Million in Private Lending",
+      "published_at": "2026-11-09T22:33:00Z",
+      "first_seen_at": "2026-11-09T22:33:54.489580+00:00",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "last_error": "deadline_exceeded",
+      "publication_to_first_seen_seconds": 54.49
+    }
+  ],
+  "isolation": {
+    "raw_messages": 0,
+    "standard_messages": 0,
+    "ticker_source_bindings": 0
+  },
+  "unchanged_controls": {
+    "ticker_source_bindings": true,
+    "ticker_monitoring_term_revisions": true,
+    "source_definitions": true,
+    "default_profiles": true
+  },
+  "all_five_isolation": {
+    "raw_messages_test_source_rows": 0,
+    "standard_messages_test_source_rows": 0,
+    "real_test_bindings": 0,
+    "test_model_decisions": 0
+  },
+  "identity_verification": {
+    "at": "2026-11-09T22:34:16.239082+00:00",
+    "web_items": 30,
+    "rss_items": 4408,
+    "common": 28,
+    "different_url": 3,
+    "same_keys": true,
+    "same_hints": true,
+    "all_retained_owners": true,
+    "reserved_identities": 4007
+  },
+  "release": {
+    "components": {
+      "v2-message-collector": {
+        "commit": "8c203e62199d45c54584c166a865a932f790b584",
+        "image": "sha256:af09e99d8af184db50a0bc81625d99cc362091534ce58739427cb0006d4d200b",
+        "accepted_at": 1794263371.192871,
+        "container": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "StartedAt": "2026-11-09T22:29:21.486589704Z"
+        }
+      },
+      "v2-message-bus": {
+        "commit": "8c203e62199d45c54584c166a865a932f790b584",
+        "image": "sha256:af09e99d8af184db50a0bc81625d99cc362091534ce58739427cb0006d4d200b",
+        "accepted_at": 1794263385.5591962,
+        "container": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "StartedAt": "2026-11-09T22:29:38.484064924Z"
+        }
+      },
+      "v2-content-enrichment": {
+        "commit": "8c203e62199d45c54584c166a865a932f790b584",
+        "image": "sha256:af09e99d8af184db50a0bc81625d99cc362091534ce58739427cb0006d4d200b",
+        "accepted_at": 1794263399.888706,
+        "container": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "StartedAt": "2026-11-09T22:29:52.411231325Z"
+        }
+      }
+    }
+  },
+  "tests": {
+    "passed": 54,
+    "skipped": 1,
+    "ruff": "E9,F passed"
+  }
+}
