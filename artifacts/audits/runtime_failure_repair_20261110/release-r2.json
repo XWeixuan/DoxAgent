@@ -1,0 +1,19 @@
+{
+  "commit": "cfe94fcad151684a2c86fce94defeaba5d5af68f",
+  "files": {
+    "src/doxagent/persistent_runtime_v2/service.py": "14556c8d222956eca47c550bfb2d766fc7bc628de673dcb0a7433f0d9e8a1ec2",
+    "src/doxagent/persistent_runtime_v2/repository.py": "fc878edab378c7afd32ad4096f1e5ac7dabe54b77310cb2a102543b324c5fca4",
+    "src/doxagent/persistent_runtime_v2/daily.py": "da2f172b760c38ef87395af35686aef11abf0883868f888500b99a0f54bd11a4",
+    "src/doxagent/persistent_runtime_v2/w3.py": "9308341c07c8c6f1b97477d5a6e6920ed8bb4bd792c4a9c1b9dfce2dd1c5d2ab",
+    "src/doxagent/persistent_runtime_v2/w3_execution.py": "30f12aa22817218b0bff5caec7e7106c2e3095c392d749fa63bfd5d16e45a6b7"
+  },
+  "bases": {
+    "v2-scheduler": "sha256:811dacc850e668180b4da8f76c7325e04028b0b6080ddfdb526965aec6e12529"
+  },
+  "images": {
+    "v2-scheduler": "sha256:1cb724e61c8f325239688877e9da1815a2c28a9d86f8aaf3fb2bad0fa539fed9"
+  },
+  "released_at": "2026-11-09T19:23:52.417509+00:00",
+  "completed_at": "2026-11-09T19:24:04.623031+00:00",
+  "reconcile_errors": []
+}
