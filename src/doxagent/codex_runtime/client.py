@@ -250,6 +250,9 @@ class HttpCodexWorkerClient:
             base_url=base_url,
             headers={"Authorization": f"Bearer {bearer_token}"},
             timeout=httpx.Timeout(30, read=60),
+            # SSE owns a socket for the model wait. It must not consume a fixed
+            # 100-connection budget needed by live W3 materialization/results.
+            limits=httpx.Limits(max_connections=None, max_keepalive_connections=20),
             # Local worker traffic must never be diverted through an inherited
             # HTTP(S)_PROXY. Remote worker URLs retain the normal proxy policy.
             trust_env=not _is_loopback_url(base_url),

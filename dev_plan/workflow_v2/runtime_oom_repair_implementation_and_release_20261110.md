@@ -36,3 +36,9 @@
 
 
 结果等待链路专项：Http client 会 await queued/running observer；旧 observe_job 同步 journal.set 最多反复等锁 30 秒，多次进度事件可先于终态消费累积等待。这个字段只是 UI 进度，不是阶段结果。现复用原 write_lock 做立即可用检查，争用时跳过此次进度写入，不增加任务/队列；真正 Worker receipt、RESULT_SAVED、业务 commit 的持久化及 fencing 均保持。回归直接持有业务 writer 验证 observer 立即返回，空闲时仍正确保存 UI 状态。
+
+
+SSE 配套检查：Httpx 默认共享 100 条活动连接，SSE 长连接会占用这份预算，从而可能把排队转移到 materialize / result RPC。已改 max_connections=None，仍只保留 20 条空闲 keepalive；不增加常驻进程或模型并发。新增真实本地 TCP 回归同时持有 120 条 SSE，再验证同一 client 的普通 RPC 立即可用。生产某条 WorkerUnavailable 的原始异常未留存，不据空错误字符串认定它一定是 PoolTimeout。
+
+
+ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMITTED 同一事务写入，RESULT_SAVED 不再提前创建标记，防止 housekeeping 抢先清理。回归覆盖 RESULT_SAVED、commit rollback、commit success 三种状态；正常阶段交接和保存结果的重试入口不变。

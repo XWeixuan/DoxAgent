@@ -100,12 +100,15 @@ class W3ThreadRegistry:
                 "AND status!='COMMITTED'",
                 (prepared, thread_id, worker_job_id, case_id, phase),
             )
-            if worker_job_id:
-                db.execute("INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
-                           (worker_job_id, encode({'case_id': case_id})))
 
     def commit_stage(self, db, case_id, phase, disposition=None):
         assert_write_lease(db)
+        row = db.execute("SELECT worker_job_id FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?",
+                         (case_id, phase)).fetchone()
+        if row and row[0]:
+            # Publish cleanup eligibility in the same transaction as COMMITTED.
+            db.execute("INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
+                       (row[0], encode({'case_id': case_id})))
         db.execute(
             "UPDATE runtime_v2_w3_stages SET status='COMMITTED',committed_at=?,"
             "disposition=?,error=NULL WHERE case_id=? AND phase=?",

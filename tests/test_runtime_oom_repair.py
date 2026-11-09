@@ -443,3 +443,66 @@ def test_busy_ui_progress_never_blocks_completed_model_consumer(tmp_path):
         thread.join()
     runner._observe_phase_job(case, "trade_decision", job)
     assert journal.get("w3_job_state", "case")["worker_job_id"] == "job"
+
+
+@pytest.mark.asyncio
+async def test_120_live_sse_waits_do_not_queue_materialization_transport():
+    client = HttpCodexWorkerClient("http://127.0.0.1", "unused")
+    release, all_entered = asyncio.Event(), asyncio.Event()
+    active = [0]
+
+    async def serve(reader, writer):
+        try:
+            header = await reader.readuntil(b"\r\n\r\n")
+            if b"/probe " in header:
+                writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}")
+            else:
+                writer.write(
+                    b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\n"
+                )
+                await writer.drain()
+                active[0] += 1
+                if active[0] == 120:
+                    all_entered.set()
+                await release.wait()
+                writer.write(b'data: {"sequence":5,"event_type":"job.succeeded"}\n\n')
+            await writer.drain()
+        finally:
+            writer.close()
+            await writer.wait_closed()
+
+    server = await asyncio.start_server(serve, "127.0.0.1", 0)
+    port = server.sockets[0].getsockname()[1]
+    client._client.base_url = f"http://127.0.0.1:{port}"
+    tasks = [asyncio.create_task(client._wait_job_event(str(i), -1)) for i in range(120)]
+    try:
+        await asyncio.wait_for(all_entered.wait(), 5)
+        response = await asyncio.wait_for(client._client.get("/probe"), 1)
+        assert response.status_code == 200
+    finally:
+        release.set()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        await client._client.aclose()
+        server.close()
+        await server.wait_closed()
+
+
+def test_ack_eligibility_is_atomic_with_business_commit(tmp_path):
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.w3_threads import W3ThreadRegistry
+
+    journal = RuntimeJournal(tmp_path / "runtime.sqlite3")
+    registry = W3ThreadRegistry(journal)
+    registry.begin_stage("case", "trade_decision")
+    registry.save_result(
+        "case", "trade_decision", {"action": "NO_TRADE"}, thread_id="thread", worker_job_id="job"
+    )
+    assert journal.get("w3_ack_pending", "job") is None
+    with pytest.raises(RuntimeError):
+        with journal.transaction() as db:
+            registry.commit_stage(db, "case", "trade_decision")
+            raise RuntimeError("rollback")
+    assert journal.get("w3_ack_pending", "job") is None
+    with journal.transaction() as db:
+        registry.commit_stage(db, "case", "trade_decision")
+    assert journal.get("w3_ack_pending", "job") == {"case_id": "case"}

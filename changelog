@@ -2778,3 +2778,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-10 Runtime result handoff: prioritize terminal Worker receipts on the existing writer, avoid unchanged W3 stage-ref updates, and make timing diagnostics yield the business writer rather than racing it. Models and business result contracts unchanged.
 
 2026-11-10 W3 latency: make auxiliary queued/running UI progress persistence best-effort on the existing writer, so its previous 30s retry loop cannot block SSE/model-result consumption. Durable results and business fencing remain unchanged.
+
+2026-11-10 W3 SSE transport: remove the inherited 100-active-connection HTTP pool ceiling while retaining 20 idle keepalive sockets; 120 simultaneous SSE waits no longer queue materialization/result HTTP requests. Actual Case ownership still bounds active requests.
+
+2026-11-10 W3 ACK boundary: publish ACK eligibility atomically with COMMITTED rather than RESULT_SAVED, so housekeeping cannot acknowledge a phase before its business commit. Rollback retains the original Worker result.
