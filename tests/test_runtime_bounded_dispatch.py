@@ -98,8 +98,14 @@ def test_expired_lease_does_not_reclaim_a_live_local_owner(tmp_path, monkeypatch
 
 
 @pytest.mark.parametrize("phase", ["trade_decision", "post_decision_operations"])
-def test_success_resumes_directly_to_commit_without_repreparing(tmp_path, monkeypatch, phase):
+@pytest.mark.parametrize("post_commit_retry", [False, True])
+def test_success_resumes_directly_to_commit_without_repreparing(
+    tmp_path, monkeypatch, phase, post_commit_retry
+):
+    import sqlite3
+
     from doxagent.persistent_runtime_v2.w3 import W3Error
+    from doxagent.persistent_runtime_v2.schema import utc_now
 
     service, journal, agent, _ = runtime(tmp_path, "NO_TRADE")
     case = enqueue(service)
@@ -109,6 +115,26 @@ def test_success_resumes_directly_to_commit_without_repreparing(tmp_path, monkey
     prepared = []
     requested = []
     prepare, run = agent.prepare_case, agent.run_phase
+    execution = service._v4_execution()
+    sync = execution._sync_route_case
+    commits = []
+    commit = execution.registry.commit_stage
+
+    def count_commit(*args):
+        commits.append(args[2])
+        return commit(*args)
+
+    def fail_after_commit(*args):
+        if (
+            post_commit_retry
+            and execution.registry.stage(case.case_id, phase)["status"] == "COMMITTED"
+        ):
+            monkeypatch.setattr(execution, "_sync_route_case", sync)
+            raise sqlite3.OperationalError("database is locked")
+        return sync(*args)
+
+    monkeypatch.setattr(execution.registry, "commit_stage", count_commit)
+    monkeypatch.setattr(execution, "_sync_route_case", fail_after_commit)
 
     def count_prepare(value):
         prepared.append(value.case_id)
@@ -135,7 +161,28 @@ def test_success_resumes_directly_to_commit_without_repreparing(tmp_path, monkey
         deadline = time.monotonic() + 5
         while service._active_effect_ids and time.monotonic() < deadline:
             time.sleep(0.005)
+        if post_commit_retry:
+            assert service._effect_continuations
+            retry = next(
+                e
+                for e in service.repository.list_effects(case.case_id)
+                if e.status == "PENDING_RETRY"
+            )
+            with journal.transaction() as db:
+                db.execute(
+                    "UPDATE runtime_v2_effects SET available_at=? WHERE effect_id=?",
+                    (utc_now().isoformat(), retry.effect_id),
+                )
+            others = tuple(
+                e.effect_id
+                for e in service.repository.list_effects(case.case_id)
+                if e.effect_id != retry.effect_id
+            )
+            claimed = service.repository.claim_effects(limit=1, exclude_ids=others)
+            assert claimed[0].effect_id == retry.effect_id
+            assert service._process_claimed_effect(claimed[0]) == 1
         assert service._v4_execution().registry.stage(case.case_id, phase)["status"] == "COMMITTED"
+        assert commits == [phase]
         assert len(requested) == len(prepared) == 1
         assert not service._effect_continuations
     finally:

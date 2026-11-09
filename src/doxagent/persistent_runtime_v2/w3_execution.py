@@ -424,6 +424,8 @@ class W3Execution:
                 reader = getattr(exc, "phase_result", None)
                 if reader:
                     def continue_trade():
+                        if self.registry.stage(case.case_id, TRADE_PHASE)["status"] == "COMMITTED":
+                            return self.trade(case)
                         decision, job = reader()
                         self.registry.save_result(
                             case.case_id, TRADE_PHASE, decision,
@@ -625,6 +627,9 @@ class W3Execution:
                 reader = getattr(exc, "phase_result", None)
                 if reader:
                     def continue_operations():
+                        if (self.registry.stage(case.case_id, OPERATIONS_PHASE)["status"]
+                            == "COMMITTED"):
+                            return self.operations(case)
                         result, job = reader()
                         self.registry.save_result(
                             case.case_id, OPERATIONS_PHASE, result,
