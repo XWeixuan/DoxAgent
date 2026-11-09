@@ -185,6 +185,9 @@ async def test_pressure_keeps_handoff_and_one_ready_per_profile(tmp_path):
     await runtime.reap_idle(pressure=True)
     assert closed == ["luna2"]
     await runtime.reap_idle(all_idle=True)
+    assert len(closed) == 3  # Even critical idle reaping preserves the live stage handoff.
+    runtime.pool[0].handoff_until = 0
+    await runtime.reap_idle(all_idle=True)
     assert len(closed) == 4
 
 

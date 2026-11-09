@@ -224,7 +224,6 @@ class W3Execution:
             self.registry.ready_template(
                 template["record_id"], job.thread_id, template["lease_token"]
             )
-            self._ack(job.job_id)
             template["thread_id"] = job.thread_id
             if hasattr(self.agent, "configure_ready"):
                 self.agent.configure_ready(
@@ -386,7 +385,6 @@ class W3Execution:
             event_keys = resolve_event_subjects(
                 self.journal, case, event_matches(case.model_dump(mode="json"))
             )
-            record = self._thread(case, context, research, event_keys)
             history, matches = history_payload(
                 self.journal, self.service.repository, case, membership
             )
@@ -415,6 +413,7 @@ class W3Execution:
             if research:
                 payload["research_path"] = "context/research/" + research[0]
                 self.journal.set("w3_case_research", case.case_id, payload["research_path"])
+            record = self._thread(case, context, research, event_keys)
             try:
                 decision, job = self.agent.run_phase(
                     case=case, record=record, phase=TRADE_PHASE,
@@ -423,17 +422,10 @@ class W3Execution:
             except W3Error as exc:
                 reader = getattr(exc, "phase_result", None)
                 if reader:
-                    def continue_trade():
-                        if self.registry.stage(case.case_id, TRADE_PHASE)["status"] == "COMMITTED":
-                            return self.trade(case)
-                        decision, job = reader()
-                        self.registry.save_result(
-                            case.case_id, TRADE_PHASE, decision,
-                            thread_id=record["thread_id"], worker_job_id=job.job_id,
-                        )
-                        self._ack(job.job_id)
-                        self._commit_trade(case, record, decision)
-                    exc.effect_continuation = continue_trade
+                    from functools import partial
+                    exc.effect_continuation = partial(
+                        self._resume_result, case.case_id, TRADE_PHASE, record["record_id"], reader
+                    )
                 raise
             self.registry.save_result(
                 case.case_id,
@@ -442,13 +434,27 @@ class W3Execution:
                 thread_id=record["thread_id"],
                 worker_job_id=job.job_id,
             )
-            self._ack(job.job_id)
         else:
             decision = contract_models(case.w3_contract_version)[0].model_validate(
                 stage["result_json"]
             )
             record = self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
         return self._commit_trade(case, record, decision)
+
+    def _resume_result(self, case_id, phase, record_id, reader):
+        case = self.service.repository.get_case(case_id)
+        stage = self.registry.stage(case_id, phase)
+        if stage["result_json"] is None:
+            result, job = reader()
+            self.registry.save_result(case_id, phase, result,
+                                      thread_id=job.thread_id, worker_job_id=job.job_id)
+        # Resume the durable result, never prepare context or invoke the model again.
+        return self.trade(case) if phase == TRADE_PHASE else self.operations(case)
+
+    def _queue_ack(self, case_id, phase):
+        job_id = self.registry.stage(case_id, phase).get("worker_job_id")
+        if job_id:
+            self.service._effect_executor.submit(self._ack, job_id)
 
     def _commit_trade(self, case, record, decision):
         case.w3_trade_decision = decision.model_dump(mode="json")
@@ -489,6 +495,7 @@ class W3Execution:
             self.service.repository.save_case(case)
         self._sync_route_case(case, record)
         self.service._wake_effects()
+        self._queue_ack(case.case_id, TRADE_PHASE)
         if getattr(self.agent, "entry_enabled", lambda c: False)(case):
             # A failed stop notification is recovered by the prepared deadline.
             try:
@@ -626,18 +633,10 @@ class W3Execution:
             except W3Error as exc:
                 reader = getattr(exc, "phase_result", None)
                 if reader:
-                    def continue_operations():
-                        if (self.registry.stage(case.case_id, OPERATIONS_PHASE)["status"]
-                            == "COMMITTED"):
-                            return self.operations(case)
-                        result, job = reader()
-                        self.registry.save_result(
-                            case.case_id, OPERATIONS_PHASE, result,
-                            thread_id=record["thread_id"], worker_job_id=job.job_id,
-                        )
-                        self._ack(job.job_id)
-                        self._commit_operations(case, record, result, trade_stage, state)
-                    exc.effect_continuation = continue_operations
+                    from functools import partial
+                    exc.effect_continuation = partial(
+                        self._resume_result, case.case_id, OPERATIONS_PHASE, record["record_id"], reader
+                    )
                 raise
             self.registry.save_result(
                 case.case_id,
@@ -646,7 +645,6 @@ class W3Execution:
                 thread_id=record["thread_id"],
                 worker_job_id=job.job_id,
             )
-            self._ack(job.job_id)
         else:
             result = contract_models(case.w3_contract_version)[1].model_validate(
                 stage["result_json"]
@@ -789,6 +787,8 @@ class W3Execution:
         self.service.repository.save_case(case)
         self._sync_route_case(case, record)
         self.registry.release(case.case_id)
+
+        self._queue_ack(case.case_id, OPERATIONS_PHASE)
 
     def _fallback_archive(self, case, result, trade_stage):
         if not is_unified_contract(case.w3_contract_version):
@@ -1180,6 +1180,10 @@ class W3Execution:
             ]
         for job_id in acknowledgements:
             self._ack(job_id)
+        with self.journal.transaction(write=False, expand=False) as db:
+            releases = db.execute("SELECT key,payload FROM runtime_values WHERE namespace='w3_release_pending' LIMIT 20").fetchall()
+        for case_id, raw in releases:
+            self._release_unused(case_id, json.loads(raw))
         for record in rows:
             try:
                 if not record["thread_id"]:
@@ -1232,7 +1236,9 @@ class W3Execution:
                     )
         thread_done = bool(markers.get("thread_phase_done")) or len(rows) < 20
         legacy_done = not legacy["more"]
-        more = not thread_done or not legacy_done or len(acknowledgements) == 20
+        with self.journal.transaction(write=False, expand=False) as db:
+            pending_release = db.execute("SELECT 1 FROM runtime_values WHERE namespace='w3_release_pending' LIMIT 1").fetchone()
+        more = not thread_done or not legacy_done or len(acknowledgements) == 20 or bool(pending_release)
         delay = timedelta(seconds=5) if more else timedelta(hours=1 if failed else 24)
         with self.journal.transaction() as db:
             for key, value in {
@@ -1254,6 +1260,17 @@ class W3Execution:
             (time.monotonic() - started) * 1000,
             (time.thread_time() - cpu_started) * 1000,
         )
+
+    def _release_unused(self, case_id, record_id):
+        try:
+            if self.agent.release_unused_case(case_id, record_id).get("released"):
+                with self.journal.transaction() as db:
+                    db.execute("DELETE FROM runtime_values WHERE namespace='w3_release_pending' AND key=?", (case_id,))
+        except Exception as exc:
+            from .journal import LeaseLost, RuntimeStopping
+            if isinstance(exc, (LeaseLost, RuntimeStopping)):
+                raise
+            logging.getLogger(__name__).warning("Unused W3 release pending: %s", type(exc).__name__)
 
     def record_failure(self, case_id, phase, exc, *, retryable):
         case = self.service.repository.get_case(case_id)
@@ -1288,6 +1305,13 @@ class W3Execution:
             if owned:
                 self._sync_route_case(case, owned)
         if not retryable:
+            if phase == TRADE_PHASE and hasattr(self.agent, "release_unused_case"):
+                stage = self.registry.stage(case_id, phase) or {}
+                record_id = (stage.get("input_refs") or {}).get("record_id")
+                if record_id:
+                    self.journal.set("w3_release_pending", case_id, record_id)
+                    self.journal.set("w3_housekeeping", "next_at", self.journal.clock().isoformat())
+                    self._release_unused(case_id, record_id)
             if phase == TRADE_PHASE and hasattr(self.agent, "stop_market"):
                 try:
                     self.agent.stop_market(case_id)

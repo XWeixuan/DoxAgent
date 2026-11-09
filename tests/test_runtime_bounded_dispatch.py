@@ -17,7 +17,8 @@ from tests.test_runtime_effect_claim_cost import add, seeded
 from tests.test_w3_v4 import enqueue, runtime
 
 
-def test_model_waits_do_not_cap_w3_concurrency_or_hold_worker_threads(tmp_path, monkeypatch):
+@pytest.mark.parametrize("count", [40, 200])
+def test_model_waits_do_not_cap_w3_concurrency_or_hold_worker_threads(tmp_path, monkeypatch, count):
     from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner
 
     service, journal, _, _ = runtime(tmp_path)
@@ -35,10 +36,10 @@ def test_model_waits_do_not_cap_w3_concurrency_or_hold_worker_threads(tmp_path, 
     consumed = []
     lock = Lock()
     case = enqueue(service)
-    for i in range(39):
+    for i in range(count - 1):
         service.repository.enqueue_effect(
             RuntimeEffect(
-                case_id=case.case_id, effect_type="archive_message", idempotency_key=f"test-{i}"
+                case_id=case.case_id, effect_type="route_to_w3", idempotency_key=f"test-{i}"
             )
         )
     for effect in service.repository.list_effects(case.case_id):
@@ -56,15 +57,15 @@ def test_model_waits_do_not_cap_w3_concurrency_or_hold_worker_threads(tmp_path, 
 
     monkeypatch.setattr(service, "_execute_effect", execute)
     try:
-        assert service.dispatch_pending_effects(limit=40) == 40
+        assert service.dispatch_pending_effects(limit=count) == count
         deadline = time.monotonic() + 10
         while (
-            len(calls) != 40 or len(service._phase_waiters) != 40
+            len(calls) != count or len(service._phase_waiters) != count
         ) and time.monotonic() < deadline:
             time.sleep(0.005)
-        assert len(calls) == 40 and len(service._phase_waiters) == 40
-        assert len(service._active_effect_ids) == 40
-        assert len(service._effect_executor._threads) <= 32
+        assert len(calls) == count and len(service._phase_waiters) == count
+        assert len(service._active_effect_ids) == count
+        assert len(service._effect_executor._threads) <= 8
         assert service.dispatch_pending_effects() == 0
         first = next(iter(responses))
         responses[first].set_result("answer")
@@ -80,8 +81,8 @@ def test_model_waits_do_not_cap_w3_concurrency_or_hold_worker_threads(tmp_path, 
         runner._loop.call_soon_threadsafe(runner._loop.stop)
         loop_thread.join()
         runner._loop.close()
-    assert not service._active_effect_ids and len(consumed) == 40
-    assert len(set(calls)) == len(calls) == 40
+    assert not service._active_effect_ids and len(consumed) == count
+    assert len(set(calls)) == len(calls) == count
 
 
 def test_expired_lease_does_not_reclaim_a_live_local_owner(tmp_path, monkeypatch):

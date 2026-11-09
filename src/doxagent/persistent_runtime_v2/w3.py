@@ -584,6 +584,7 @@ class CodexW3AgentRunner:
             record_id=record["record_id"],
             parent_thread_id=record["parent_id"],
             profile=profile,
+            execution_lane='background' if case.runtime_mode == 'CLOSED' else 'realtime',
         )
         try:
             value = self._wait_v4(self._worker.claim_w3_ready(request))
@@ -602,6 +603,9 @@ class CodexW3AgentRunner:
     def stop_market(self, case_id):
         if hasattr(self._worker, "stop_w3_market"):
             return self._wait_v4(self._worker.stop_w3_market(case_id))
+
+    def release_unused_case(self, case_id, record_id):
+        return self._wait_v4(self._worker.release_unused_case(case_id, record_id))
 
     def start_market(self, case):
         from datetime import timedelta
@@ -1130,6 +1134,7 @@ class CodexW3AgentRunner:
                             "w3_context_v2",
                             frozen_key,
                             binding,
+                            priority=0,
                             retry=True,
                         )
                     )
@@ -1409,7 +1414,7 @@ class CodexW3AgentRunner:
                     model_provider=profile["provider"],
                     effort=profile["effort"],
                     execution_lane="background"
-                    if phase in {"w3_template", OPERATIONS_PHASE}
+                    if phase == 'w3_template' or case.runtime_mode == 'CLOSED'
                     else "realtime",
                 )
             ),

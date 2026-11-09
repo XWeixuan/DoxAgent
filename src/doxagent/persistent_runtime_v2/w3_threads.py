@@ -59,6 +59,9 @@ class W3ThreadRegistry:
 
     @observed("stage.begin")
     def begin_stage(self, case_id, phase, *, thread_id=None, input_refs=None):
+        existing = self.stage(case_id, phase)
+        if existing is not None:
+            return existing
         with self.journal.transaction() as db:
             assert_write_lease(db)
             db.execute(
@@ -80,6 +83,7 @@ class W3ThreadRegistry:
 
     def save_result(self, case_id, phase, result, *, thread_id, worker_job_id=None):
         payload = result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+        prepared = encode(payload)
         with self.journal.transaction() as db:
             assert_write_lease(db)
             old = db.execute(
@@ -94,8 +98,11 @@ class W3ThreadRegistry:
                 "UPDATE runtime_v2_w3_stages SET result_json=?,thread_id=?,"
                 "worker_job_id=?,status='RESULT_SAVED' WHERE case_id=? AND phase=? "
                 "AND status!='COMMITTED'",
-                (encode(payload), thread_id, worker_job_id, case_id, phase),
+                (prepared, thread_id, worker_job_id, case_id, phase),
             )
+            if worker_job_id:
+                db.execute("INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
+                           (worker_job_id, encode({'case_id': case_id})))
 
     def commit_stage(self, db, case_id, phase, disposition=None):
         assert_write_lease(db)
@@ -236,6 +243,16 @@ class W3ThreadRegistry:
             )
 
     def link(self, record, kind, subjects, case_id):
+        subjects = tuple(subjects)
+        if not subjects:
+            return
+        with self.journal.transaction(write=False) as db:
+            existing = {r[0] for r in db.execute(
+                'SELECT subject_key FROM runtime_v2_w3_thread_links WHERE record_id=? AND link_kind=?',
+                (record['record_id'], kind))}
+        subjects = tuple(key for key in subjects if key not in existing)
+        if not subjects:
+            return
         with self.journal.transaction() as db:
             assert_write_lease(db)
             db.executemany(

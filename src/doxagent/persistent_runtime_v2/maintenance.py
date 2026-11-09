@@ -48,12 +48,37 @@ class RuntimeMaintenance:
         self.control = InitializationRepository(settings.ticker_initialization_control_path)
         self.worker_factory = worker_factory
         self.o2_factory, self.o3_factory = o2_factory, o3_factory
-        self.resource_gc_due = True
+        self.resource_gc_due = False
 
-    def collect_resources(self):
+    async def _retain_infrastructure_failure(self, durable, job):
+        from doxagent.control_io import write_io
+
+        from .maintenance_recovery import transient_failure
+
+        # The HTTP client raises for infrastructure exhaustion before returning
+        # the job. Retain its confirmed terminal receipt so ReceiptWorker can
+        # advance the dispatch generation after the task's cooldown.
+        if (
+            job.status == "failed"
+            and job.execution_phase == "SETTLED"
+            and not job.cleanup_error
+            and transient_failure(job.error_code or "", job.error_message or "")
+        ):
+            await write_io(
+                self.journal.path,
+                self.journal.set,
+                "worker_receipts",
+                durable.last_identity,
+                job.model_dump(mode="json"),
+                retry=True,
+            )
+
+    def collect_resources(self, *, should_yield=None):
         from .resource_gc import collect
         self.resource_gc_due=False
-        return collect(self.journal,self.settings.ticker_initialization_control_path,limit=4)
+        from doxagent.message_bus_v2.pressure import background_allowed
+        return collect(self.journal,self.settings.ticker_initialization_control_path,limit=4,
+                       should_yield=lambda: not background_allowed() or bool(should_yield and should_yield()))
 
     def _frame(self, task: dict[str, Any]) -> dict[str, Any]:
         current = self.control.active_revision(task["ticker"])
@@ -173,6 +198,7 @@ class RuntimeMaintenance:
             recover_timeouts=True,
             recover_artifacts=True,
         )
+        durable.on_update = lambda job: self._retain_infrastructure_failure(durable, job)
         reference_task = {**task, "id": run_id}
         # Freeze O2/O3 assets before dispatch and materialize only immutable snapshots.
         assets = self.journal.get("maintenance_assets", run_id)
@@ -497,21 +523,23 @@ class RuntimeMaintenance:
                     code = "WORKER_INFRA_RECOVERY_EXHAUSTED"
                     break
                 cause = cause.__cause__
-            # Only a confirmed MCP startup failure is safe to redispatch.
-            # Uncertain jobs and quarantined cleanup still require reconciliation.
+            # Durable Worker identity handles transport reconciliation; uncertain
+            # jobs and quarantined cleanup must not mint a new dispatch.
             exhausted = code == "WORKER_INFRA_RECOVERY_EXHAUSTED"
-            mcp_startup = exhausted and "required MCP servers failed to initialize" in str(exc)
+            from .maintenance_recovery import transient_failure
+
+            infrastructure = transient_failure(code or type(exc).__name__, str(exc))
             raise MaintenancePhaseFailure(
                 str(exc),
                 phase=phase,
                 code=code or type(exc).__name__,
-                scope="infrastructure" if mcp_startup else "phase",
-                retryable=(not isinstance(exc, ValueError) and not exhausted) or mcp_startup,
+                scope="infrastructure" if infrastructure else "phase",
+                retryable=(not isinstance(exc, ValueError) and not exhausted) or infrastructure,
             ) from exc
         finally:
             if hasattr(worker, "aclose"):
                 await worker.aclose()
-            self.resource_gc_due=True
+            self.resource_gc_due=False
 
     def _admit(self, revision):
         from doxagent.workflows.codex_document3.repository import SQLiteDocument3PolicyRepository

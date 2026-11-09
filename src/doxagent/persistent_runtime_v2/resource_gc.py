@@ -7,41 +7,35 @@ from pathlib import Path
 import shutil
 import sqlite3
 import time
-from functools import lru_cache
 
 from doxagent.trade_execution.worker import WriterLock
 from doxagent.v2_read.maintenance import atomic_json
-from doxagent.v2_read.native_content import NativeContent
 from .retained_events import build
 
 REFERENCE_OWNER_SQL="json_extract(payload,'$.event_library_root','$.root','$.ticker','$.status','$.event_library_version','$.version','$.before.version','$.after.version','$.before.\"$doxagent_content_v1\"','$.before.bytes','$.after.\"$doxagent_content_v1\"','$.after.bytes')"
 
 
-def migrate(journal):
+TASK_RUN = "coalesce(json_extract(receipt,'$._gc_owner.run_id'),json_extract(receipt,'$.frame.run_id'))"
+TASK_ROOT = "coalesce(json_extract(receipt,'$._gc_owner.event_library_root'),json_extract(receipt,'$.frame.base.artifacts.event_library.root'))"
+TASK_VERSION = "coalesce(json_extract(receipt,'$._gc_owner.event_library_version'),json_extract(receipt,'$.frame.base.artifacts.event_library.version'))"
+ACT_ROOT = "json_extract(payload,'$.artifacts.event_library.root')"
+
+
+def migrate(journal, control_path=None):
     with journal.transaction(write=False) as db:
         names={r[0] for r in db.execute('SELECT name FROM sqlite_master')}
-        ready='runtime_reference_owner' in names and ('runtime_v2_cases' not in names or 'runtime_case_library_owner' in names)
-        if ready:return
-    with journal.transaction() as db:
-        db.execute('CREATE INDEX IF NOT EXISTS runtime_reference_owner ON runtime_values('+REFERENCE_OWNER_SQL+") WHERE namespace='reference_deliveries'")
-        if 'runtime_v2_cases' in names:
-            db.execute("CREATE INDEX IF NOT EXISTS runtime_case_library_owner ON runtime_v2_cases(json_extract(payload_json,'$.version_pin.event_library_root'))")
-
-
-@lru_cache(maxsize=4096)
-def frame_owner(path, raw):
-    value=NativeContent(path).decode(json.loads(raw)) if raw else {}
-    return dict(run_id=value.get('run_id'),base=dict(artifacts=(value.get('base') or {}).get('artifacts',{})))
-
-
-@lru_cache(maxsize=4096)
-def activation_refs(path,ticker,raw):
-    return tuple(event_refs(NativeContent(path).decode(json.loads(raw)),ticker))
-
-
-@lru_cache(maxsize=4096)
-def snapshot_version(path,digest,size):
-    return NativeContent(path).decode({'$doxagent_content_v1':digest,'bytes':size})['version']
+    required={'runtime_reference_owner','runtime_gc_task_run','runtime_gc_task_root'}
+    if 'runtime_v2_cases' in names: required.add('runtime_case_library_owner')
+    if not required <= names:
+        with journal.transaction() as db:
+            db.execute('CREATE INDEX IF NOT EXISTS runtime_reference_owner ON runtime_values('+REFERENCE_OWNER_SQL+") WHERE namespace='reference_deliveries'")
+            if 'runtime_v2_cases' in names:
+                db.execute("CREATE INDEX IF NOT EXISTS runtime_case_library_owner ON runtime_v2_cases(json_extract(payload_json,'$.version_pin.event_library_root'))")
+            db.execute('CREATE INDEX IF NOT EXISTS runtime_gc_task_run ON runtime_tasks('+TASK_RUN+')')
+            db.execute('CREATE INDEX IF NOT EXISTS runtime_gc_task_root ON runtime_tasks(kind,status,'+TASK_ROOT+')')
+    if control_path:
+        with closing(sqlite3.connect(control_path)) as db, db:
+            db.execute('CREATE INDEX IF NOT EXISTS runtime_gc_activation_root ON activation_revisions('+ACT_ROOT+')')
 
 
 def event_refs(value,ticker=None):
@@ -63,79 +57,53 @@ def event_refs(value,ticker=None):
 
 
 def referenced(journal,control_path,*,now=None,only_root=None):
-    now=now or journal.clock();refs={};protected=set();runs={}
-    def add(value,ticker=None,active=False):
-        for root,symbol,version in event_refs(value,ticker):
-            if only_root is not None and root!=only_root:continue
-            refs.setdefault(root,{}).setdefault(symbol,set()).add(version)
-            if active:protected.add(root)
-    def activation(raw,ticker,active=False):
-        for root,symbol,version in activation_refs(str(control_path),ticker,raw):
-            if only_root is not None and root!=only_root:continue
-            refs.setdefault(root,{}).setdefault(symbol,set()).add(version)
-            if active:protected.add(root)
+    if only_root is None:
+        raise ValueError('resource references require one candidate root')
+    now=now or journal.clock(); refs={}; protected=set(); runs={}
+    def add(root,ticker,version):
+        if root == only_root and isinstance(version,int):
+            refs.setdefault(root,{}).setdefault(ticker,set()).add(version)
+    # Small metadata only. Unknown native metadata retains the candidate.
     with closing(sqlite3.connect(Path(control_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
-        db.row_factory=NativeContent(control_path).row
         active={r[0] for r in db.execute('SELECT revision_id FROM ticker_active_revision')}
-        for revision,ticker,payload in db.execute('SELECT revision_id,ticker,payload AS encoded_payload FROM activation_revisions'):
-            activation(payload,ticker,revision in active)
-    with journal.transaction(write=False) as db:
+        with journal.transaction(write=False, expand=False) as runtime:
+            if runtime.execute("SELECT 1 FROM sqlite_master WHERE name='v2_ticker_control'").fetchone():
+                active.update(r[0] for r in runtime.execute("SELECT json_extract(payload,'$.activation_id') FROM v2_ticker_control"))
+        rows=db.execute('SELECT revision_id,ticker,'+ACT_ROOT+",json_extract(payload,'$.artifacts.event_library.version'),json_extract(payload,'$.artifacts.\"$doxagent_content_v1\"'),json_extract(payload,'$.artifacts.event_library.\"$doxagent_content_v1\"') FROM activation_revisions WHERE "+ACT_ROOT+'=? OR '+ACT_ROOT+' IS NULL',(only_root,)).fetchall()
+    for identity,ticker,root,version,opaque,opaque_event in rows:
+        add(root,ticker,version)
+        if opaque or opaque_event or root==only_root and identity in active:protected.add(only_root)
+    with journal.transaction(write=False, expand=False) as db:
         names={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        # Runtime control can be newer than the initialization pointer.
-        if 'v2_ticker_control' in names:
-            for ticker,payload in db.execute('SELECT ticker,payload FROM v2_ticker_control'):
-                value=json.loads(payload)
-                revision=value.get('activation_id')
-                if revision:
-                    with closing(sqlite3.connect(Path(control_path).resolve().as_uri()+'?mode=ro',uri=True)) as c:
-                        c.row_factory=NativeContent(control_path).row
-                        row=c.execute('SELECT payload AS encoded_payload FROM activation_revisions WHERE revision_id=?',(revision,)).fetchone()
-                        if row:activation(row[0],ticker,True)
+        cases=[]
         if 'runtime_v2_cases' in names:
-            scope=" WHERE json_extract(payload_json,'$.version_pin.event_library_root')=?" if only_root is not None else ''
-            for root,ticker,version,status in db.execute("SELECT json_extract(payload_json,'$.version_pin.event_library_root'),ticker,json_extract(payload_json,'$.version_pin.event_library_version'),status FROM runtime_v2_cases"+scope,(only_root,) if scope else ()):
-                if root and version is not None:
-                    refs.setdefault(root,{}).setdefault(ticker,set()).add(int(version))
-                    if status not in {'COMPLETED','FAILED','UNAVAILABLE'}:protected.add(root)
-        scope=" AND (status IN ('PENDING','RUNNING','HELD') OR (status='FAILED' AND updated_at>?))" if only_root is not None else ''
-        for task in db.execute("SELECT id,ticker,status,json_extract(receipt,'$.frame') AS frame_json,updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION')"+scope,((now-timedelta(days=7)).isoformat(),) if scope else ()):
-            identity,ticker,status,raw,at=tuple(task);frame=frame_owner(str(journal.path),raw);run=frame.get('run_id')
-            age=(now-datetime.fromisoformat(at)).total_seconds()
-            active=status in {'PENDING','RUNNING','HELD'} or status=='FAILED' and age<7*86400
-            # A completed frame is audit metadata. Published activations and
-            # Case version pins retain its valuable native history explicitly.
-            if active:
-                add(frame,ticker,True)
-                inputs=db.execute('SELECT inputs FROM runtime_tasks WHERE id=?',(identity,)).fetchone()[0]
-                add(json.loads(inputs),ticker,True)
-            if run:
-                candidate=str(journal.path.resolve().parent/'runtime_artifacts'/run/'events')
-                if active:protected.add(candidate)
-                runs[run]=dict(task=identity,status=status,at=at,active=active)
-        # Reference bodies can contain millions of Fact/rendered-text fields.
-        # Their physical dependency is the typed root and before/after version.
-        # Extract those scalars in SQLite, never recursively walk the full body.
-        indexed=' INDEXED BY runtime_reference_owner' if db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_reference_owner'").fetchone() else ''
-        for raw, in db.execute('SELECT '+REFERENCE_OWNER_SQL+' AS owner_json FROM runtime_values'+indexed+" WHERE namespace='reference_deliveries'"):
-            eroot,root,ticker,status,eversion,version,before,after,bhash,bsize,ahash,asize=json.loads(raw)
-            if before is None and bhash:before=snapshot_version(str(journal.path),bhash,bsize)
-            if after is None and ahash:after=snapshot_version(str(journal.path),ahash,asize)
-            add(dict(root=eroot or root,ticker=ticker,version=eversion if eversion is not None else version,
-                     before=dict(version=before),after=dict(version=after)),active=status not in {'SUCCEEDED','FAILED'})
-        # w3_library_lineage is a logical identity alias, not a file dependency
-        # (w3_context compares it as a string). Keep those small rows intact.
-        # Live W3 stages can retain a Case whose general status already settled.
-        if 'runtime_v2_w3_stages' in names and 'runtime_v2_cases' in names:
-            for root, in db.execute("SELECT DISTINCT json_extract(c.payload_json,'$.version_pin.event_library_root') FROM runtime_v2_w3_stages s JOIN runtime_v2_cases c USING(case_id) WHERE s.status IN ('PENDING','RUNNING','RESULT_SAVED') AND s.accepted_at>?",((now-timedelta(days=7)).isoformat(),)):
-                if root:protected.add(root)
+            cases=db.execute("SELECT ticker,json_extract(payload_json,'$.version_pin.event_library_version'),status FROM runtime_v2_cases INDEXED BY runtime_case_library_owner WHERE json_extract(payload_json,'$.version_pin.event_library_root')=?",(only_root,)).fetchall()
+        tasks=db.execute('SELECT id,ticker,status,'+TASK_RUN+','+TASK_ROOT+','+TASK_VERSION+",json_extract(receipt,'$.frame.\"$doxagent_content_v1\"'),updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION') AND status IN ('PENDING','RUNNING','HELD','FAILED') AND ("+TASK_ROOT+'=? OR '+TASK_ROOT+' IS NULL)',(only_root,)).fetchall()
+        indexed=' INDEXED BY runtime_reference_owner'
+        deliveries=[r[0] for r in db.execute('SELECT '+REFERENCE_OWNER_SQL+' AS owner_json FROM runtime_values'+indexed+" WHERE namespace='reference_deliveries'")]
+        if 'runtime_v2_w3_stages' in names:
+            retained=db.execute("SELECT 1 FROM runtime_v2_cases c INDEXED BY runtime_case_library_owner JOIN runtime_v2_w3_stages s USING(case_id) WHERE json_extract(c.payload_json,'$.version_pin.event_library_root')=? AND s.status IN ('PENDING','RUNNING','RESULT_SAVED') AND s.accepted_at>? LIMIT 1",(only_root,(now-timedelta(days=7)).isoformat())).fetchone()
+            if retained:protected.add(only_root)
+    for ticker,version,status in cases:
+        add(only_root,ticker,version)
+        if status not in {'COMPLETED','FAILED','UNAVAILABLE'}:protected.add(only_root)
+    for identity,ticker,status,run,root,version,opaque,at in tasks:
+        if status=='FAILED' and (now-datetime.fromisoformat(at)).total_seconds()>=7*86400:continue
+        add(root,ticker,version)
+        if root==only_root or opaque:protected.add(only_root)
+        if run and str(journal.path.resolve().parent/'runtime_artifacts'/run/'events')==only_root:protected.add(only_root)
+    for raw in deliveries:
+        eroot,root,ticker,status,eversion,version,before,after,bhash,bsize,ahash,asize=json.loads(raw)
+        root=eroot or root
+        if root!=only_root:continue
+        for v in (eversion if eversion is not None else version,before,after):add(root,ticker,v)
+        if status not in {'SUCCEEDED','FAILED'} or before is None and bhash or after is None and ahash:protected.add(root)
     jobs=journal.path.resolve().parent.parent/'workspaces'/'worker-jobs.sqlite3'
     if jobs.is_file():
         with closing(sqlite3.connect(jobs.as_uri()+'?mode=ro',uri=True)) as db:
             active=[r[0] for r in db.execute("SELECT json_extract(payload,'$.run_id') FROM jobs WHERE status IN ('queued','running')")]
-        artifacts=journal.path.resolve().parent/'runtime_artifacts'
-        if artifacts.exists():
-            for run in ([Path(only_root).parent] if only_root is not None else artifacts.iterdir()):
-                if any(value==run.name or (value or '').startswith(run.name+'-') for value in active):protected.add(str(run/'events'))
+        run=Path(only_root).parent.name
+        if any(value==run or (value or '').startswith(run+'-') for value in active):protected.add(only_root)
     return refs,protected,runs
 
 
@@ -174,7 +142,7 @@ def allocated(path):
     return total
 
 
-def compact_one(journal,control_path,identity,run,path,versions,now):
+def compact_one(journal,control_path,identity,run,path,versions,now, should_yield=None):
     ticker=path.parent.name;staging=path.with_suffix('.native-staging')
     with WriterLock(path.with_suffix('.retirement')):
         for suffix in ('','-wal','-shm','.native-retained.json'):Path(str(staging)+suffix).unlink(missing_ok=True)
@@ -182,7 +150,7 @@ def compact_one(journal,control_path,identity,run,path,versions,now):
             stat=path.stat();wal=Path(str(path)+'-wal')
             w=wal.stat() if wal.exists() else None
             return (stat.st_size,stat.st_mtime_ns,(w.st_size,w.st_mtime_ns) if w and w.st_size else None)
-        stat=fingerprint();proof=build(path,staging,ticker,versions)
+        stat=fingerprint();proof=build(path,staging,ticker,versions,should_yield=should_yield)
         # Detect any committed Runtime change while checking references. Heavy
         # decoding, /proc scanning and fsync must never own the business writer.
         with closing(sqlite3.connect(journal.path)) as watch:
@@ -246,62 +214,68 @@ def compact_process(journal,runs,protected,now,*,limit=64):
     return changed
 
 
-def collect(journal,control_path,*,now=None,limit=8,dry_run=False):
+def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=None):
     now=now or journal.clock();root=journal.path.resolve().parent/'runtime_artifacts'
     report=dict(at=now.isoformat(),retired=[],compacted=[],skipped=[],available_before=shutil.disk_usage(root.parent).free)
     if not root.exists():return report
-    migrate(journal)
+    migrate(journal,control_path)
+    previous=root/'last-resource-exit.json'
+    try:cursor=json.loads(previous.read_text()).get('cursor','')
+    except (OSError,ValueError):cursor=''
+    paths=sorted(p for p in root.iterdir() if p.is_dir() and not p.is_symlink())
+    paths=[p for p in paths if p.name>cursor]
+    deadline=time.monotonic()+2
+    def pause():return time.monotonic()>=deadline or bool(should_yield and should_yield())
     with WriterLock(root/'resource-retirement'):
-        refs,protected,runs=referenced(journal,control_path,now=now)
-        for run in sorted(root.iterdir()):
-            if len(report['retired'])+len(report['compacted'])>=limit:break
-            if not run.is_dir() or run.is_symlink():continue
+        for run in paths[:max(8,limit*4)]:
+            if pause():break
+            report['cursor']=run.name
             if run.name.startswith('.retiring-'):
                 if not dry_run:shutil.rmtree(run)
                 continue
-            events=run/'events';identity=str(events);info=runs.get(run.name)
+            with journal.transaction(write=False,expand=False) as db:
+                row=db.execute('SELECT id,status,updated_at FROM runtime_tasks WHERE '+TASK_RUN+'=? LIMIT 1',(run.name,)).fetchone()
+            info=dict(task=row[0],status=row[1],at=row[2]) if row else None
+            stamp=datetime.fromisoformat(info['at']) if info else datetime.fromtimestamp(run.stat().st_mtime,UTC)
+            failed=info is None or info['status']=='FAILED'
+            if info and info['status'] not in {'SUCCEEDED','FAILED'}:continue
+            if (now-stamp).total_seconds()<(7*86400 if failed else 48*3600):continue
+            identity=str(run/'events')
+            refs,protected,_=referenced(journal,control_path,now=now,only_root=identity)
+            if pause():break
             if identity in protected:continue
-            # An old superseded frame may no longer be in current receipts. It
-            # still gets the failed-run window, rather than an endless unknown hold.
-            stamp=datetime.fromtimestamp(run.stat().st_mtime,UTC)
-            if info:stamp=datetime.fromisoformat(info['at'])
-            age=(now-stamp).total_seconds();failed=info is None or info['status']=='FAILED'
-            if age<(7*86400 if failed else 48*3600):continue
             if opened_below(run):report['skipped'].append(dict(run=run.name,reason='open descriptor'));continue
             used=refs.get(identity,{})
             if not used:
                 if dry_run:report['retired'].append(dict(run=run.name,allocated=allocated(run)));continue
-                # Admission and task-frame changes are fenced by the Runtime
-                # writer. Recheck current pointers before the actual exit.
                 with closing(sqlite3.connect(journal.path)) as watch:
                     revision=watch.execute('PRAGMA data_version').fetchone()[0]
-                    _refs,_protected,_runs=referenced(journal,control_path,now=now,only_root=identity)
-                    if identity in _refs or identity in _protected or opened_below(run):continue
-                    size=allocated(run)
-                    tombstone=run.with_name('.retiring-'+run.name)
+                    newrefs,newprotected,_=referenced(journal,control_path,now=now,only_root=identity)
+                    if identity in newrefs or identity in newprotected or opened_below(run) or pause():continue
+                    size=allocated(run);tombstone=run.with_name('.retiring-'+run.name)
                     receipt=dict(run=run.name,allocated=size,at=now.isoformat())
                     with journal.transaction(operation='resource.retire.publish') as db:
                         if watch.execute('PRAGMA data_version').fetchone()[0]!=revision:continue
                         os.replace(run,tombstone)
                         db.execute("INSERT OR REPLACE INTO runtime_values VALUES('resource_retired',?,?)",(run.name,json.dumps(receipt)))
-                    # Removal owns only the retired name, after the writer ends.
-                    shutil.rmtree(tombstone)
-                    report['retired'].append(receipt)
-                continue
-            for path in events.glob('US/*/event_library.sqlite3'):
-                ticker=path.parent.name;versions=used.get(ticker) or used.get(None)
-                if not versions:continue
-                marker=Path(str(path)+'.native-retained.json')
-                if marker.is_file():
-                    previous=json.loads(marker.read_text())
-                    if previous.get('verified') and (set(versions)-{0})<=set(previous.get('versions',[])):continue
-                if dry_run:report['compacted'].append(dict(run=run.name,path=str(path),versions=sorted(versions)));continue
-                try:
-                    proof=compact_one(journal,control_path,identity,run,path,versions,now)
-                    if proof:report['compacted'].append(proof)
-                except (OSError,ValueError,RuntimeError,sqlite3.Error) as exc:
-                    report['skipped'].append(dict(run=run.name,path=str(path),reason=type(exc).__name__+':'+str(exc)[:250]))
-        if not dry_run:report['process_requests_retired']=compact_process(journal,runs,protected,now)
+                    shutil.rmtree(tombstone);report['retired'].append(receipt)
+            else:
+                for path in (run/'events').glob('US/*/event_library.sqlite3'):
+                    versions=used.get(path.parent.name) or used.get(None)
+                    if not versions:continue
+                    marker=Path(str(path)+'.native-retained.json')
+                    if marker.is_file():
+                        prior=json.loads(marker.read_text())
+                        if prior.get('verified') and (set(versions)-{0})<=set(prior.get('versions',[])):continue
+                    if dry_run:report['compacted'].append(dict(run=run.name,path=str(path),versions=sorted(versions)));continue
+                    try:
+                        proof=compact_one(journal,control_path,identity,run,path,versions,now,pause)
+                        if proof:report['compacted'].append(proof)
+                    except (OSError,ValueError,RuntimeError,sqlite3.Error) as exc:
+                        report['skipped'].append(dict(run=run.name,reason=str(exc)[:200]))
+            if info and not dry_run and not pause():compact_process(journal,{run.name:info},protected,now)
+            if len(report['retired'])+len(report['compacted'])>=limit:break
+        if not paths or report.get('cursor')==paths[-1].name:report['cursor']=''
         report['available_after']=shutil.disk_usage(root.parent).free
-        atomic_json(root/'last-resource-exit.json',report)
+        atomic_json(previous,report)
     return report

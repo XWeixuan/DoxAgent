@@ -23,14 +23,19 @@ def atomic_at(db, ticker, version):
     return list(db.execute("SELECT i.runtime_scope,i.runtime_atomic_id,i.runtime_atomic_version,i.runtime_signature,i.resolution,i.target_event_no,i.target_fact_no,i.batch_id,b.updated_at FROM origin.delta_items i JOIN origin.delta_batches b ON b.batch_id=i.batch_id WHERE b.ticker=? AND b.published_version<=? AND NOT EXISTS(SELECT 1 FROM origin.delta_items n JOIN origin.delta_batches nb ON nb.batch_id=n.batch_id WHERE n.runtime_scope=i.runtime_scope AND n.runtime_atomic_id=i.runtime_atomic_id AND nb.published_version<=? AND (nb.published_version>b.published_version OR nb.published_version=b.published_version AND n.rowid>i.rowid))",(ticker,version,version)))
 
 
-def snapshot_digest(repository,ticker,version):
+def snapshot_digest(repository,ticker,version,should_yield=None):
     """Include inactive native Events, fact status/redirect and exact birth IDs."""
+    def check():
+        if should_yield and should_yield(): raise RuntimeError("resource_gc_yield")
+    check()
     digest=hashlib.sha256()
     def add(value):digest.update(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode());digest.update(b'\n')
     with repository._read() as db:
+        if should_yield: db.set_progress_handler(lambda: int(should_yield()), 1000)
         events=[r[0] for r in db.execute('SELECT event_no FROM canonical_events WHERE ticker=? AND created_version<=? ORDER BY event_no',(ticker,version))]
         facts=[r[0] for r in db.execute('SELECT fact_no FROM canonical_facts WHERE ticker=? AND created_version<=? ORDER BY fact_no',(ticker,version))]
         for number in events:
+            check()
             add(repository._event_from_connection(db,ticker,number,version).model_dump(mode='json'))
         for number in facts:
             row=db.execute('SELECT status,redirect_to_fact_no FROM canonical_fact_states WHERE ticker=? AND fact_no=? AND library_version<=? ORDER BY library_version DESC LIMIT 1',(ticker,number,version)).fetchone()
@@ -39,13 +44,15 @@ def snapshot_digest(repository,ticker,version):
             for number in numbers:
                 row=db.execute('SELECT identity,provenance FROM v2_native_identities WHERE collection=? AND native_key=json_array(?,?)',(collection,ticker,number)).fetchone()
                 add([collection,number,tuple(row) if row else None])
+    check()
     compiler=EventLibraryViewCompiler(repository)
     add(compiler.known_event_index(ticker,version));add(compiler.reference_view(ticker,version))
     selected,at=repository.published_metadata(ticker,version);add([selected,at.isoformat() if at else None])
     return digest.hexdigest()
 
 
-def build(source,target,ticker,versions):
+def build(source,target,ticker,versions,should_yield=None):
+    if should_yield and should_yield(): raise RuntimeError("resource_gc_yield")
     source=Path(source).resolve(strict=True);target=Path(target).resolve()
     if target.exists() or source==target:raise ValueError('retained native target must be new')
     original=EventLibraryRepository(source,read_only=True)
@@ -53,6 +60,7 @@ def build(source,target,ticker,versions):
     if not versions or min(versions)<1:raise ValueError('retained branch needs published versions')
     target.parent.mkdir(parents=True,exist_ok=True);EventLibraryRepository(target)
     with closing(sqlite3.connect(target.as_uri(),uri=True)) as db,db:
+        if should_yield: db.set_progress_handler(lambda: int(should_yield()), 1000)
         db.row_factory=sqlite3.Row;db.execute('ATTACH DATABASE ? AS origin',(source.as_uri()+'?mode=ro',));db.execute('BEGIN IMMEDIATE')
         if db.execute('SELECT count(*) FROM origin.library_heads').fetchone()[0]!=1:raise ValueError('historical branch must have one ticker')
         db.execute('CREATE TEMP TABLE selected_versions(version INTEGER PRIMARY KEY)')
@@ -90,7 +98,7 @@ def build(source,target,ticker,versions):
         if db.execute('PRAGMA quick_check').fetchone()[0]!='ok':raise ValueError('native compact integrity failed')
     compact=EventLibraryRepository(target,read_only=True);proof={}
     for version in versions:
-        before=snapshot_digest(original,ticker,version);after=snapshot_digest(compact,ticker,version)
+        before=snapshot_digest(original,ticker,version,should_yield);after=snapshot_digest(compact,ticker,version,should_yield)
         if before!=after:raise ValueError('retained native snapshot/birth differs')
         proof[str(version)]=before
     report=dict(format='doxagent.retained-native-branch.1',ticker=ticker,versions=versions,

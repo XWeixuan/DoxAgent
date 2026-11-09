@@ -1,0 +1,9 @@
+{
+  "v2-scheduler": {
+    "src/doxagent/persistent_runtime_v2/coordinator.py": "5fdd65110d96b16dcc0b0542b5dad69086662c4fe36a1de797aa9b56ea279d74",
+    "src/doxagent/persistent_runtime_v2/maintenance.py": "52f4bf0257ea5e026a3d2a53a0c4533db899b92c77082fba059bff379abeb0af",
+    "src/doxagent/persistent_runtime_v2/journal.py": "5f4ec87a01ff15e25a1a5e921ddf08b4695ab28cb2747b63fca2695db718da97",
+    "src/doxagent/persistent_runtime_v2/maintenance_recovery.py": "14f397e71839bb90cdfdd155ac96382e9f3b04619190515ebba77ddb62d2b942",
+    "src/doxagent/persistent_runtime_v2/bounded_inputs.py": "d62101b15cf4387a91820d9d05a78a0645e7811eea8a2f509778a30428bffd6d"
+  }
+}

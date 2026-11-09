@@ -415,7 +415,7 @@ class WorkerThreadLifecycle:
         binding = {
             "deadline": initial.get("prepare_deadline_at"),
             "checked": 0.0,
-            "priority": 0 if request.source_case_id is not None else 1,
+            "priority": 0 if request.source_case_id is not None and request.execution_lane != 'background' else 1,
         }
         if not binding["deadline"] and request.source_case_id is not None:
             accepted = initial.get("created_at")
@@ -433,14 +433,14 @@ class WorkerThreadLifecycle:
                 def read_slot_binding():
                     with closing(self.jobs.store.connect()) as db:
                         row = db.execute(
-                            "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
+                            "SELECT prepare_deadline_at,case_id,execution_lane FROM w3_ready_slots WHERE id=?",
                             (request.record_id,),
                         ).fetchone()
                     return row
 
                 row = await read_io(read_slot_binding)
                 if row and row[1]:
-                    binding.update(priority=0, deadline=row[0])
+                    binding.update(priority=0 if row[2] != 'background' else 1, deadline=row[0])
 
         async def budget():
             await refresh_binding()
@@ -589,12 +589,15 @@ class WorkerThreadLifecycle:
                 w3_entry_version=profile.get("w3_entry_version"),
                 web_search_mode=profile.get("web_search_mode") or "live",
                 timeout_seconds=int(profile.get("timeout_seconds") or "600"),
+                execution_lane='realtime' if priority() == 0 else 'background',
             )
             runtime = self.jobs._runtime
             if getattr(runtime, "manages_startup_capacity", False):
                 return await runtime.prepare_fork(execution, cwd, request.parent_thread_id)
             # Embedded/legacy runtimes lack stage callbacks; conservatively mark dispatch.
             await checkpoint("FORK_DISPATCHED")
+            if execution.execution_lane == "realtime":
+                return await runtime.prepare_fork(execution, cwd, request.parent_thread_id)
             async with self.jobs._startup:
                 return await runtime.prepare_fork(execution, cwd, request.parent_thread_id)
 
@@ -602,7 +605,8 @@ class WorkerThreadLifecycle:
         try:
             # This task owns execution directly: cancelling it awaits capsule cleanup.
             with startup_scope(
-                key=key, priority=priority, deadline=await budget(), progress=checkpoint
+                key=key, priority=priority, deadline=await budget(), progress=checkpoint,
+                realtime=lambda: priority() == 0,
             ):
                 async with asyncio.timeout(None) as timer:
 

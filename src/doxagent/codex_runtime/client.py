@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import ipaddress
+import json
 import time
 from contextvars import ContextVar
 from typing import Any, Protocol
@@ -112,6 +113,13 @@ class HttpCodexWorkerClient:
     async def stop_w3_market(self, case_id):
         response = await self._client.post("/v1/w3/market/stop", json={"case_id": case_id})
         response.raise_for_status()
+
+    async def release_unused_case(self, case_id, record_id):
+        response = await self._client.post(
+            "/v1/w3/ready-slots/release-unused", json=dict(case_id=case_id, record_id=record_id)
+        )
+        response.raise_for_status()
+        return response.json()
 
     async def get_thread_operation(self, key):
         from urllib.parse import quote
@@ -266,6 +274,21 @@ class HttpCodexWorkerClient:
         )
         unavailable_since: float | None = None
         observed_status = None
+        cursor = -1
+
+        async def observe(current):
+            nonlocal observed_status
+            status = (current.job_id, current.status, current.execution_phase)
+            if on_update is not None and status != observed_status:
+                import inspect
+
+                from doxagent.control_io import read_io
+
+                update = await read_io(on_update, current)
+                if inspect.isawaitable(update):
+                    await update
+                observed_status = status
+
         try:
             while job is None or job.status in {"queued", "running"}:
                 try:
@@ -280,26 +303,15 @@ class HttpCodexWorkerClient:
                         continue
                     response.raise_for_status()
                     job = WorkerJob.model_validate(response.json())
-                    current_status = (job.job_id, job.status, job.execution_phase)
-                    if on_update is not None and current_status != observed_status:
-                        import inspect
-
-                        from doxagent.control_io import read_io
-
-                        update = await read_io(on_update, job)
-                        if inspect.isawaitable(update):
-                            await update
-                        observed_status = current_status
+                    await observe(job)
                     unavailable_since = None
                     if job.status in {"queued", "running"}:
-                        # W3's trade commit is latency-sensitive; retain the
-                        # configured polling policy for other workflow nodes.
-                        interval = (
-                            min(self._poll_seconds, 0.1)
-                            if str(request.node) == "persistent_runtime_w3"
-                            else self._poll_seconds
-                        )
-                        await asyncio.sleep(interval)
+                        if str(request.node) == "persistent_runtime_w3":
+                            cursor = await self._wait_job_event(
+                                job.job_id, cursor, on_update=observe
+                            )
+                        else:
+                            await asyncio.sleep(self._poll_seconds)
                 except (httpx.TransportError, httpx.HTTPStatusError) as exc:
                     if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code < 500:
                         raise
@@ -329,6 +341,24 @@ class HttpCodexWorkerClient:
             raise
         except httpx.HTTPError as exc:
             raise WorkerUnavailable(str(exc)) from exc
+
+    async def _wait_job_event(self, job_id, after, *, on_update=None):
+        # Durable SSE cursor; reconnect to the same Job. A terminal status with
+        # already-ACKed events closes the stream and is fetched once by run().
+        async with self._client.stream(
+            "GET", f"/v1/jobs/{job_id}/events", params={"after": after}
+        ) as response:
+            response.raise_for_status()
+            async for line in response.aiter_lines():
+                if not line.startswith("data:"):
+                    continue
+                event = json.loads(line[5:].strip())
+                after = max(after, event["sequence"])
+                if event["event_type"] in {"job.succeeded", "job.failed", "job.cancelled"}:
+                    return after
+                if event["event_type"] == "job.running" and on_update is not None:
+                    await on_update(WorkerJob.model_validate(event["payload"]))
+        return after
 
     async def cancel(self, job_id: str) -> WorkerJob | None:
         try:

@@ -199,6 +199,10 @@ def create_worker_app(
         market.start(payload)
         return {"accepted": True}
 
+    @app.post("/v1/w3/ready-slots/release-unused", dependencies=[Depends(require_service_auth)])
+    async def release_unused_case(payload: dict):
+        return await ready_slots.release_unused_case(payload['case_id'], payload['record_id'])
+
     @app.post("/v1/w3/ready-slots/configure", dependencies=[Depends(require_service_auth)])
     async def configure_ready(payload: dict):
         from contextlib import closing
@@ -500,7 +504,7 @@ def create_worker_app(
     ) -> StreamingResponse:
         from doxagent.control_io import read_io
 
-        if await read_io(jobs.get, job_id) is None:
+        if await read_io(jobs.store.status, job_id) is None:
             raise HTTPException(status_code=404, detail="job not found")
 
         async def generate() -> AsyncIterator[str]:

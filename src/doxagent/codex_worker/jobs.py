@@ -140,6 +140,7 @@ class WorkerJobManager:
                 owner_holds=partial(business_holds, session_retention_settings),
             )
         self._condition = asyncio.Condition()
+        self._event_revision = 0
         self._submit_locks = {}
         self._schedule_lock = asyncio.Lock()
         self.loop_lag = {}
@@ -431,10 +432,7 @@ class WorkerJobManager:
         snapshot = self.safety.read()
         realtime = await read_io(self.store.queued, lane="realtime")
         background = await read_io(self.store.queued, lane="background")
-        if snapshot.level is SafetyLevel.CRITICAL:
-            await self._mark_waiting(realtime + background, "SAFETY_CRITICAL")
-            return
-        if snapshot.level is SafetyLevel.PRESSURE:
+        if snapshot.level in {SafetyLevel.CRITICAL, SafetyLevel.PRESSURE}:
             await self._mark_waiting(background, "SAFETY_PRESSURE")
             queued = realtime
             wave_size = 1
@@ -467,6 +465,10 @@ class WorkerJobManager:
             request = await read_io(self.store.request, job_id)
             if request is None:
                 continue
+            realtime_w3 = str(request.node) == 'persistent_runtime_w3' and _execution_lane(request) == 'realtime'
+            if snapshot.level is SafetyLevel.CRITICAL and not realtime_w3:
+                await self._mark_waiting([job_id], 'SAFETY_CRITICAL')
+                continue
             # W1/W2/W3 and their required preparation keep the existing
             # admission policy. Only deferrable research/initialization waits.
             if request.research_lane.value != "persistent_runtime":
@@ -480,7 +482,7 @@ class WorkerJobManager:
                 "can_start_warm",
                 lambda _: False,
             )(request.thread_id)
-            if not warm and (launched >= wave_size or now < self._next_launch_at):
+            if not realtime_w3 and not warm and (launched >= wave_size or now < self._next_launch_at):
                 continue
             effective_subagents = (
                 min(self.subagents, request.max_subagents) if request.allow_subagents else 0
@@ -522,7 +524,7 @@ class WorkerJobManager:
             self._tasks[job_id] = task
             self._starting.add(job_id)
             task.add_done_callback(partial(self._task_done, job_id))
-            launched += int(not warm)
+            launched += int(not warm and not realtime_w3)
         if launched:
             self._next_launch_at = now + self.launch_interval_seconds
 
@@ -846,7 +848,10 @@ class WorkerJobManager:
 
     async def events(self, job_id: str, after_sequence: int = -1) -> AsyncIterator[WorkerEvent]:
         while True:
-            if await read_io(self.store.get, job_id) is None:
+            async with self._condition:
+                revision = self._event_revision
+            status = await read_io(self.store.status, job_id)
+            if status is None:
                 return
             pending = await read_io(self.store.events, job_id, after_sequence)
             for event in pending:
@@ -854,13 +859,15 @@ class WorkerJobManager:
                 yield event
             if len(pending) == 128:
                 continue
-            if (await read_io(self.store.get, job_id)).status in {
+            if status in {
                 "succeeded",
                 "failed",
                 "cancelled",
             }:
                 return
             async with self._condition:
+                if revision != self._event_revision:
+                    continue
                 timed_out = False
                 try:
                     async with asyncio.timeout(self.EVENT_HEARTBEAT_SECONDS):
@@ -916,8 +923,9 @@ class WorkerJobManager:
             cold_start_started = time.monotonic()
             try:
                 managed = getattr(self._runtime, "manages_startup_capacity", False)
+                direct = str(request.node) == 'persistent_runtime_w3' and _execution_lane(request) == 'realtime'
                 with span("worker.startup_wait"):
-                    if not managed:
+                    if not managed and not direct:
                         await self._startup.acquire()
                 try:
                     with span("worker.runtime_start"):
@@ -926,7 +934,7 @@ class WorkerJobManager:
                         ):
                             handle = await self._runtime.start(request, run_root)
                 finally:
-                    if not managed:
+                    if not managed and not direct:
                         self._startup.release()
             finally:
                 self._starting.discard(job_id)
@@ -1091,6 +1099,12 @@ class WorkerJobManager:
             return job
 
         job = await write_io(self.store.path, update_record, priority=0, retry=True)
+        if job.status in {"succeeded", "failed", "cancelled"}:
+            # The durable result is consumable now; audit-file I/O must not hold
+            # the terminal notification behind a second copy of that result.
+            async with self._condition:
+                self._event_revision += 1
+                self._condition.notify_all()
         await blocking(self._persist, job)
         await self._emit(
             job_id,
@@ -1106,6 +1120,7 @@ class WorkerJobManager:
 
         await write_io(self.store.path, self.store.event, job_id, event_type, payload, retry=True)
         async with self._condition:
+            self._event_revision += 1
             self._condition.notify_all()
 
     def _persist(self, job: WorkerJob) -> None:

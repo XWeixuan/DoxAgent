@@ -515,32 +515,45 @@ class RuntimeJournal:
                 ),
             )
 
+    def _save_receipt(self, task, receipt, *, finish=False):
+        def save():
+            with self.transaction(write=False, expand=False) as db:
+                raw = db.execute('SELECT receipt FROM runtime_tasks WHERE id=?', (task['id'],)).fetchone()[0]
+            value = {**json.loads(self.content.text(raw)), **receipt}
+            frame = value.get('frame')
+            if isinstance(frame, dict):
+                ref = ((frame.get('base') or {}).get('artifacts') or {}).get('event_library') or {}
+                value['_gc_owner'] = dict(run_id=frame.get('run_id'),
+                                         event_library_root=ref.get('root'),
+                                         event_library_version=ref.get('version'))
+            prepared = self.content.encode(value)
+            with self.transaction(expand=False) as db:
+                row = self.fence(db, task)
+                if row['receipt'] != raw:
+                    raise sqlite3.OperationalError('database is locked')
+                db.execute('UPDATE runtime_tasks SET receipt=?,updated_at=?' +
+                           (",status='SUCCEEDED'" if finish else '') + ' WHERE id=?',
+                           (prepared, self.clock().isoformat(), task['id']))
+                if finish:
+                    db.execute('UPDATE runtime_gaps SET closed=1 WHERE task_id=?', (task['id'],))
+            task['receipt'] = value
+        retry_write(save)
+
     def checkpoint(self, task: dict[str, Any], **receipt: Any) -> None:
-        with self.transaction() as db:
-            row = self.fence(db, task)
-            value = {**json.loads(row["receipt"]), **receipt}
-            db.execute(
-                "UPDATE runtime_tasks SET receipt=?,updated_at=? WHERE id=?",
-                (self.content.encode(value), self.clock().isoformat(), task["id"]),
-            )
-            task["receipt"] = value
+        self._save_receipt(task, receipt)
 
     def finish(self, task: dict[str, Any], **receipt: Any) -> None:
-        with self.transaction() as db:
-            row = self.fence(db, task)
-            value = {**json.loads(row["receipt"]), **receipt}
-            db.execute(
-                "UPDATE runtime_tasks SET status='SUCCEEDED',receipt=?,updated_at=? WHERE id=?",
-                (self.content.encode(value), self.clock().isoformat(), task["id"]),
-            )
-            db.execute("UPDATE runtime_gaps SET closed=1 WHERE task_id=?", (task["id"],))
+        self._save_receipt(task, receipt, finish=True)
 
     def fail(self, task: dict[str, Any], error: Exception, *, retryable: bool = True) -> None:
-        with self.transaction() as db:
-            row = self.fence(db, task)
+        def save():
+            with self.transaction(write=False, expand=False) as db:
+                row = dict(self.fence(db, task))
+            raw = row["receipt"]
+            can_retry = retryable
             count = row["failures"] + 1
             failures, maximum, delay = count, row["max_failures"], 5
-            receipt = json.loads(row["receipt"])
+            receipt = json.loads(self.content.text(raw))
             if row["kind"] == "MAINTENANCE" and isinstance(error, MaintenancePhaseFailure):
                 # O2 map/edit/review and O3 each get their own bounded budget.
                 # Startup outages must not spend the later semantic phase's retries.
@@ -550,7 +563,7 @@ class RuntimeJournal:
                 counters[key] = failures
                 maximum = 3 if error.scope == "infrastructure" else row["max_failures"]
                 delay = (60, 300, 900)[min(failures - 1, 2)]
-                retryable = retryable and error.retryable
+                can_retry = can_retry and error.retryable
                 receipt.update(
                     phase_failures=counters,
                     last_phase_failure={
@@ -559,22 +572,37 @@ class RuntimeJournal:
                         "code": error.code,
                         "count": failures,
                         "maximum": maximum,
+                        "retryable": error.retryable,
                     },
                 )
-            status = "PENDING" if retryable and failures < maximum else "FAILED"
-            db.execute(
-                "UPDATE runtime_tasks SET status=?,failures=?,due_at=?,updated_at=?,receipt=? "
-                "WHERE id=?",
-                (
-                    status,
-                    count,
-                    (self.clock() + timedelta(seconds=delay)).isoformat(),
-                    self.clock().isoformat(),
-                    self.content.encode(receipt),
-                    task["id"],
-                ),
-            )
-            self._gap(db, task["id"], task["ticker"], type(error).__name__, str(error)[:1000])
+            status = "PENDING" if can_retry and failures < maximum else "FAILED"
+            if row["kind"] in {"MAINTENANCE", "SWEEP"}:
+                from .maintenance_recovery import transient_failure
+
+                if transient_failure(getattr(error, "code", type(error).__name__), str(error)):
+                    # Keep phase counts/checkpoints; a settled infrastructure outage
+                    # cools down instead of requiring a human to reopen the task.
+                    status = "PENDING"
+                    delay = (60, 300, 900, 3600)[min(failures - 1, 3)]
+            prepared = self.content.encode(receipt)
+            with self.transaction(expand=False) as db:
+                current = self.fence(db, task)
+                if current['receipt'] != raw or current['failures'] != row['failures']:
+                    raise sqlite3.OperationalError('database is locked')
+                db.execute(
+                        "UPDATE runtime_tasks SET status=?,failures=?,due_at=?,updated_at=?,receipt=? "
+                    "WHERE id=?",
+                    (
+                        status,
+                        count,
+                        (self.clock() + timedelta(seconds=delay)).isoformat(),
+                        self.clock().isoformat(),
+                        prepared,
+                        task["id"],
+                    ),
+                )
+                self._gap(db, task["id"], task["ticker"], type(error).__name__, str(error)[:1000])
+        retry_write(save)
 
     def _gap(
         self, db: sqlite3.Connection, identity: str, ticker: str, code: str, detail: str

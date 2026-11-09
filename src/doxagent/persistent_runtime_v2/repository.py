@@ -31,6 +31,7 @@ from .schema import (
     RuntimeEffectStatus,
     RuntimeFactCandidate,
     RuntimeModelTurn,
+    RuntimeSideEffect,
     SourceMessageEnvelope,
     TradeRecord,
     W3CoverageGapRecord,
@@ -100,7 +101,7 @@ class PersistentRuntimeV2Repository(Protocol):
     def enqueue_effect(self, effect: RuntimeEffect) -> RuntimeEffect: ...
 
     def claim_effects(
-        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = ()
+        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = (), lane: str | None = None
     ) -> list[RuntimeEffect]: ...
 
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect: ...
@@ -271,12 +272,18 @@ class InMemoryPersistentRuntimeV2Repository:
             return effect
 
     def claim_effects(
-        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = ()
+        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = (), lane: str | None = None
     ) -> list[RuntimeEffect]:
         now = utc_now()
         claimed: list[RuntimeEffect] = []
         with self._lock:
             for effect in sorted(self._effects.values(), key=lambda item: item.created_at):
+                case = self._cases.get(effect.case_id)
+                realtime = (effect.effect_type in {RuntimeSideEffect.ROUTE_TO_W3,
+                            RuntimeSideEffect.W3_POST_DECISION}
+                            and (case is None or case.runtime_mode != 'CLOSED'))
+                if lane is not None and (lane == 'realtime_w3') != realtime:
+                    continue
                 if len(claimed) >= limit:
                     break
                 if (
@@ -1033,7 +1040,7 @@ class SQLitePersistentRuntimeV2Repository:
 
     @retry_sqlite_write
     def claim_effects(
-        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = ()
+        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = (), lane: str | None = None
     ) -> list[RuntimeEffect]:
         if limit < 1:
             return []
@@ -1042,6 +1049,11 @@ class SQLitePersistentRuntimeV2Repository:
             " AND effect_id NOT IN (" + ",".join("?" for _ in exclude_ids) + ")"
             if exclude_ids else ""
         )
+        if lane is not None:
+            realtime = ("(effect_type IN ('route_to_w3','w3_post_decision') AND "
+                        "coalesce((SELECT json_extract(c.payload_json,'$.runtime_mode') "
+                        "FROM runtime_v2_cases c WHERE c.case_id=runtime_v2_effects.case_id),'REALTIME')!='CLOSED')")
+            exclusions += ' AND ' + (realtime if lane == 'realtime_w3' else 'NOT ' + realtime)
         with self._lock, self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
             pending = db.execute(
@@ -1092,20 +1104,25 @@ class SQLitePersistentRuntimeV2Repository:
         return [RuntimeEffect.model_validate_json(self.content.text(raw)) for raw in payloads]
 
     @retry_sqlite_write
-    def renew_effects(self, effects: tuple[RuntimeEffect, ...]) -> None:
+    def renew_effects(self, effects: tuple[RuntimeEffect, ...]) -> tuple[str, ...]:
         if not effects:
-            return
+            return ()
         now = utc_now()
         until = (now + timedelta(seconds=120)).isoformat()
+        lost = []
         with self._connect() as db:
-            db.executemany(
-                "UPDATE runtime_v2_effects SET updated_at=?,payload_json=json_set(payload_json,"
-                "'$.updated_at',?,'$.lease_until',?) WHERE effect_id=? AND status='RUNNING' "
-                "AND json_extract(payload_json,'$.lease_token')=? "
-                "AND json_extract(payload_json,'$.lease_until')>?",
-                [(now.isoformat(), now.isoformat(), until, e.effect_id, e.lease_token,
-                  now.isoformat()) for e in effects],
-            )
+            for effect in effects:
+                changed = db.execute(
+                    "UPDATE runtime_v2_effects SET updated_at=?,payload_json=json_set(payload_json,"
+                    "'$.updated_at',?,'$.lease_until',?) WHERE effect_id=? AND status='RUNNING' "
+                    "AND json_extract(payload_json,'$.lease_token')=? "
+                    "AND json_extract(payload_json,'$.lease_until')>?",
+                    (now.isoformat(), now.isoformat(), until, effect.effect_id,
+                     effect.lease_token, now.isoformat()),
+                ).rowcount
+                if not changed:
+                    lost.append(effect.effect_id)
+        return tuple(lost)
 
     @retry_sqlite_write
     def renew_effect(self, effect: RuntimeEffect) -> None:

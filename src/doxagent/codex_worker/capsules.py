@@ -391,6 +391,11 @@ class CapsuleRuntime:
 
     async def _reserve(self, thread_id):
         async with self._lock:
+            if thread_id is not None and any(
+                c.thread_id == thread_id and (c.busy or getattr(c, "cleanup_state", None))
+                for c in self.pool
+            ):
+                raise CapsuleError("CAPSULE_CLEANUP_QUARANTINED", "original thread owner still active")
             idle = [c for c in self.pool if not c.busy and self.live(c)]
             if thread_id is not None:
                 match = next((c for c in idle if c.thread_id == thread_id), None)
@@ -484,7 +489,7 @@ class CapsuleRuntime:
     async def _prepare(self, request, cwd, parent_thread_id):
         capsule = await self._take(None)
         try:
-            async with self.admission.handshake:
+            async with self.admission.handshake_for():
                 await progress(
                     "FORK_DISPATCHED" if parent_thread_id else "RESUMING_CHILD",
                     capsule_id=getattr(capsule, "identity", None),
@@ -521,6 +526,11 @@ class CapsuleRuntime:
         await self._dispose_batch(selected)
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> Capsule:
+        realtime = str(request.node) == 'persistent_runtime_w3' and request.execution_lane != 'background'
+        with startup_scope(key=self.key(request), priority=0 if realtime else 1, realtime=realtime):
+            return await self._start_owned(request, cwd)
+
+    async def _start_owned(self, request: WorkerRunRequest, cwd: Path) -> Capsule:
         try:
             with span("capsule.acquire"):
                 capsule = await self._take(request.thread_id)
@@ -536,7 +546,7 @@ class CapsuleRuntime:
         boot_already_ready = capsule.healthy
         capsule.healthy = False
         capsule.run_command_sent = False
-        async with self.admission.handshake:
+        async with self.admission.handshake_for():
             capsule.run_command_sent = True
             await capsule.send(
                 {
@@ -614,6 +624,7 @@ class CapsuleRuntime:
                 )
                 or (
                     not c.busy
+                    and getattr(c, "handoff_until", 0) <= time.monotonic()
                     and (
                         all_idle
                         or not self.live(c)

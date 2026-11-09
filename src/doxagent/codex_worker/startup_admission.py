@@ -12,8 +12,10 @@ _scope = ContextVar("startup_scope", default=None)
 
 
 @contextmanager
-def startup_scope(*, key, priority=0, deadline=None, progress=None):
-    token = _scope.set(dict(key=key, priority=priority, deadline=deadline, progress=progress))
+def startup_scope(*, key, priority=0, deadline=None, progress=None, realtime=False):
+    token = _scope.set(
+        dict(key=key, priority=priority, deadline=deadline, progress=progress, realtime=realtime)
+    )
     try:
         yield
     finally:
@@ -64,7 +66,9 @@ class PriorityGate:
         }
 
     @asynccontextmanager
-    async def acquire(self, priority=0, allowed=lambda: True, timeout=180, label=None):
+    async def acquire(
+        self, priority=0, allowed=lambda: True, timeout=180, label=None, bypass=lambda: False
+    ):
         rank = priority if callable(priority) else lambda: priority
         owner = asyncio.current_task()
         admitted = False
@@ -78,7 +82,7 @@ class PriorityGate:
                     entry = (rank, self.sequence, time.monotonic())
                     self.waiters.append(entry)
                     try:
-                        while (
+                        while not bypass() and (
                             self.active
                             or min(self.waiters, key=lambda x: (x[0](), x[1])) != entry
                             or not allowed()
@@ -90,10 +94,11 @@ class PriorityGate:
                                     await self.condition.wait()
                             except TimeoutError:
                                 pass
-                        self.active = admitted = True
-                        self._owner = owner
-                        self._owner_since = time.monotonic()
-                        self._owner_label = label
+                        if not bypass():
+                            self.active = admitted = True
+                            self._owner = owner
+                            self._owner_since = time.monotonic()
+                            self._owner_label = label
                     finally:
                         self.waiters.remove(entry)
                         self.condition.notify_all()
@@ -152,6 +157,10 @@ class StartupAdmission:
     @asynccontextmanager
     async def boot(self, *, priority=None):
         scope = _scope.get() or {}
+        realtime = scope.get("realtime", False)
+        if realtime() if callable(realtime) else realtime:
+            yield
+            return
         rank = priority if priority is not None else scope.get("priority", 0)
         rank = (
             rank
@@ -168,5 +177,24 @@ class StartupAdmission:
             ),
             remaining(180),
             label=scope.get("key"),
+            bypass=lambda: realtime() if callable(realtime) else realtime,
         ):
             yield
+
+    @asynccontextmanager
+    async def handshake_for(self):
+        realtime = (_scope.get() or {}).get("realtime", False)
+        acquired = False
+        try:
+            while not (realtime() if callable(realtime) else realtime):
+                try:
+                    async with asyncio.timeout(0.25):
+                        await self.handshake.acquire()
+                    acquired = True
+                    break
+                except TimeoutError:
+                    pass
+            yield
+        finally:
+            if acquired:
+                self.handshake.release()

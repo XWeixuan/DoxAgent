@@ -47,6 +47,7 @@ class W3ReadySlots:
                 "ready_recovery_count",
                 "recovery_error",
                 "prepare_deadline_at",
+                "execution_lane",
                 "retire_next_at",
                 "retire_checked_at",
                 "retire_error",
@@ -55,6 +56,7 @@ class W3ReadySlots:
                     db.execute(f"ALTER TABLE w3_ready_slots ADD COLUMN {column} TEXT")
             db.execute("CREATE INDEX IF NOT EXISTS w3_ready_state_scope ON "
                        "w3_ready_slots(state,scope,id,thread_id,case_id)")
+            db.execute("CREATE INDEX IF NOT EXISTS w3_ready_run ON w3_ready_slots(run_id)")
             db.execute("CREATE INDEX IF NOT EXISTS w3_ready_scope_times ON "
                        "w3_ready_slots(scope,failed_at DESC,ready_at)")
             # Old unclaimed slots lost their resident SDK on Worker restart.
@@ -296,7 +298,7 @@ class W3ReadySlots:
                 def resume_binding():
                     with closing(self.jobs.store.connect()) as db:
                         bound = db.execute(
-                            "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
+                            "SELECT prepare_deadline_at,case_id,execution_lane FROM w3_ready_slots WHERE id=?",
                             (identity,),
                         ).fetchone()
                     return bound
@@ -346,6 +348,7 @@ class W3ReadySlots:
                     priority=0 if bound and bound[1] else 1,
                     deadline=work_deadline,
                     progress=resume_progress,
+                    realtime=bool(bound and bound[1] and bound[2] != 'background'),
                 ):
                     async with asyncio.timeout(max(0.001, work_deadline - time.time())):
                         await resume()
@@ -390,6 +393,7 @@ class W3ReadySlots:
                     )
 
             await write_io(self.jobs.store.path, publish_ready, retry=True)
+            await self._handoff_private(identity)
         except asyncio.CancelledError:
             raise
         except Exception as exc:
@@ -627,7 +631,70 @@ class W3ReadySlots:
                 self._start_build(result["slot_id"], config)
         if key in self.configs:
             await self.fill(key)
+        await self._handoff_private(result['slot_id'])
         return result
+
+    async def _handoff_private(self, identity):
+        def binding():
+            with closing(self.jobs.store.connect()) as db:
+                return db.execute(
+                    'SELECT thread_id,case_id,prepare_deadline_at FROM w3_ready_slots WHERE id=?',
+                    (identity,),
+                ).fetchone()
+        row = await read_io(binding)
+        if row and row[1] and row[0]:
+            runtime = self.jobs._runtime
+            if not hasattr(runtime, "_lock"):
+                return
+            async with runtime._lock:
+                for capsule in runtime.pool:
+                    if capsule.thread_id == row[0] and capsule.ready_slot:
+                        capsule.ready_slot = False
+                        capsule.handoff_until = time.monotonic() + max(
+                            0, float(row[2] or 0) - time.time()
+                        )
+
+    async def release_unused_case(self, case_id, record_id):
+        """Fence late submissions, then release only an unused physical resident."""
+        def abandon():
+            with closing(self.jobs.store.connect()) as db, db:
+                db.row_factory = __import__("sqlite3").Row
+                db.execute("BEGIN IMMEDIATE")
+                row = db.execute(
+                    "SELECT * FROM w3_ready_slots WHERE case_id=? AND record_id=?",
+                    (case_id, record_id),
+                ).fetchone()
+                if row is None:
+                    return None
+                accepted = db.execute(
+                    "SELECT 1 FROM jobs INDEXED BY jobs_run_owner "
+                    "WHERE json_extract(payload,'$.run_id')=? "
+                    "AND json_extract(payload,'$.attempt_id') LIKE ? LIMIT 1",
+                    (row['run_id'], case_id[-24:] + '-%'),
+                ).fetchone()
+                if accepted:
+                    return {"accepted": True}
+                operation = db.execute(
+                    "SELECT status FROM w3_thread_operations WHERE operation_key=?",
+                    ('w3-slot-fork:' + row['id'],),
+                ).fetchone()
+                if operation and operation[0] == 'CREATING':
+                    return {"preparing": True}
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='USED',error='CASE_PREPARATION_RELEASED' "
+                    "WHERE id=?", (row['id'],),
+                )
+                return dict(row)
+        row = await write_io(self.jobs.store.path, abandon, retry=True)
+        if row is None:
+            return {"released": True}
+        if row.get('accepted'):
+            return {"released": True, "accepted_job": True}
+        if row.get('preparing'):
+            return {"released": False}
+        if row['thread_id']:
+            await self.jobs._runtime.release_thread(row['thread_id'])
+        return {"released": True}
 
     def _claim(self, request, key):
         with closing(self.jobs.store.connect()) as db, db:
@@ -642,6 +709,8 @@ class W3ReadySlots:
                     "w3_ready_identity_conflict", "ready-slot claim parameters changed"
                 )
             if row and row["error"]:
+                if row["error"] == 'CASE_PREPARATION_RELEASED':
+                    raise ReadySlotError('w3_ready_case_released', 'Terminal Case preparation released')
                 operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + row["id"])
                 if not operation or operation["status"] == "FAILED":
                     raise ReadySlotError(
@@ -673,16 +742,20 @@ class W3ReadySlots:
                     identity = row["id"]
                 db.execute(
                     "UPDATE w3_ready_slots SET state='BOUND',case_id=?,record_id=?,"
-                    "bound_at=?,claim_kind=? WHERE id=?",
+                    "bound_at=?,claim_kind=?,execution_lane=? WHERE id=?",
                     (
                         request["case_id"],
                         request["record_id"],
                         datetime.now(UTC).isoformat(),
                         "POOL_HIT" if row and row["state"] == "READY" else "POOL_MISS",
+                        request.get('execution_lane', 'realtime'),
                         identity,
                     ),
                 )
                 row = db.execute("SELECT * FROM w3_ready_slots WHERE id=?", (identity,)).fetchone()
+            if row['execution_lane'] is None:
+                db.execute('UPDATE w3_ready_slots SET execution_lane=? WHERE id=?',
+                           (request.get('execution_lane', 'realtime'), row['id']))
             if not row["prepare_deadline_at"]:
                 db.execute(
                     "UPDATE w3_ready_slots SET prepare_deadline_at=? WHERE id=?",

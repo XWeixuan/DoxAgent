@@ -24,6 +24,7 @@ class JobStore:
                     status TEXT NOT NULL, payload TEXT NOT NULL, request TEXT,
                     priority INTEGER NOT NULL DEFAULT 0);
                 CREATE INDEX IF NOT EXISTS jobs_status ON jobs(status, sequence);
+                CREATE INDEX IF NOT EXISTS jobs_run_owner ON jobs(json_extract(payload,'$.run_id'));
                 CREATE TABLE IF NOT EXISTS events (
                     job_id TEXT NOT NULL, sequence INTEGER NOT NULL, payload TEXT NOT NULL,
                     PRIMARY KEY(job_id, sequence));
@@ -49,14 +50,32 @@ class JobStore:
         db.execute("PRAGMA synchronous=FULL")
         return db
 
+    def status(self, job_id: str) -> str | None:
+        with closing(self.connect()) as db:
+            row = db.execute("SELECT status FROM jobs WHERE id=?", (job_id,)).fetchone()
+        return row[0] if row else None
+
     def get(self, job_id: str) -> WorkerJob | None:
         with closing(self.connect()) as db:
             row = db.execute("SELECT payload FROM jobs WHERE id=?", (job_id,)).fetchone()
         return WorkerJob.model_validate_json(row[0]) if row else None
 
     def save(self, job: WorkerJob, request: WorkerRunRequest | None = None) -> None:
+        payload = job.model_dump_json()
+        request_payload = request.model_dump_json() if request else None
         with closing(self.connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
+            if request is not None and request.task_phase in {
+                "trade_decision", "post_decision_operations"
+            } and db.execute(
+                "SELECT 1 FROM sqlite_master WHERE name='w3_ready_slots'"
+            ).fetchone():
+                released = db.execute(
+                    "SELECT case_id FROM w3_ready_slots WHERE run_id=? "
+                    "AND error='CASE_PREPARATION_RELEASED'", (request.run_id,)
+                ).fetchall()
+                if any(request.attempt_id.startswith(row[0][-24:] + "-") for row in released):
+                    raise ValueError("W3_CASE_PREPARATION_RELEASED")
             if (
                 request is not None
                 and not db.execute("SELECT 1 FROM jobs WHERE id=?", (job.job_id,)).fetchone()
@@ -73,8 +92,8 @@ class JobStore:
                 (
                     job.job_id,
                     job.status,
-                    job.model_dump_json(),
-                    request.model_dump_json() if request else None,
+                    payload,
+                    request_payload,
                     int(
                         request is not None and request.research_lane.value == "persistent_runtime"
                     ),

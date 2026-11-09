@@ -10,6 +10,49 @@ from doxagent.semantic_clock import boundary
 BATCH = 100
 
 
+def has_pending_records(repository, case):
+    """Only notifications without an owner need a fresh, Case-local lookup."""
+    if hasattr(repository, "path"):
+        with repository._connect() as db:
+            if db.execute(
+                "SELECT 1 FROM runtime_v2_admission_exclusions WHERE source_message_id=? "
+                "UNION ALL SELECT 1 FROM runtime_values WHERE namespace='invalid_admissions' "
+                "AND key=? AND payload!='false' LIMIT 1",
+                (case.source.source_message_id, case.source.source_message_id),
+            ).fetchone():
+                return False
+            if db.execute(
+                "SELECT 1 FROM runtime_v2_candidates WHERE source_message_id=? "
+                "AND daily_status='PENDING' LIMIT 1",
+                (case.source.source_message_id,),
+            ).fetchone():
+                return True
+            return any(
+                db.execute(
+                    f"SELECT 1 FROM {table} WHERE case_id=? AND daily_status='PENDING' LIMIT 1",
+                    (case.case_id,),
+                ).fetchone()
+                for table in (
+                    "runtime_v2_trade_records",
+                    "runtime_v2_badcases",
+                    "runtime_v2_w3_coverage_gaps",
+                )
+            )
+    return any(
+        records(
+            repository,
+            [
+                {
+                    "case_id": case.case_id,
+                    "source_message_id": case.source.source_message_id,
+                    "trading_date": str(case.trading_date),
+                }
+            ],
+            ticker=case.ticker,
+        ).values()
+    )
+
+
 def predicate(ticker: str, inputs: dict[str, Any]) -> tuple[str, list[Any]]:
     clauses = [
         "c.ticker=?",
@@ -151,9 +194,11 @@ def unfinished(repository: Any, journal: Any, task: dict[str, Any]) -> bool:
             )
     # In-memory test backend has no native files or historical hydration.
     selected = members(repository, journal, task, freeze=False)
-    if any(e.status.value not in {"COMPLETED", "FAILED"}
-           and e.effect_type.value != "w3_post_decision"
-           for c in selected for e in repository.list_effects(c["case_id"])):
+    if any(
+        e.status.value not in {"COMPLETED", "FAILED"} and e.effect_type.value != "w3_post_decision"
+        for c in selected
+        for e in repository.list_effects(c["case_id"])
+    ):
         return True
     sources = {c["source_message_id"] for c in selected}
     for t in journal.tasks(ticker=ticker, kind="CASE", active_only=True):

@@ -43,6 +43,7 @@ class CaseMaterializeRequest(WorkerModel):
 
 
 class W3PrepareRequest(WorkerModel):
+    execution_lane: Literal['realtime', 'background'] | None = Field(default=None, exclude_if=lambda v: v is None)
     operation_key: str = Field(min_length=1, max_length=512)
     record_id: str
     source_case_id: str | None
