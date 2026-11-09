@@ -8,10 +8,11 @@ import random
 import time
 from collections.abc import Callable
 from concurrent.futures import CancelledError, Future, ThreadPoolExecutor
+from contextlib import nullcontext
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
-from threading import Lock, Thread, current_thread
+from threading import Event, Lock, Thread, current_thread
 from time import perf_counter
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 from zoneinfo import ZoneInfo
@@ -91,7 +92,7 @@ from .transport import (
     _cache_optimized_input,
 )
 from .w2_alignment import W2_CONTRACT, assessment, validate_alignment
-from .w3 import W3Agent, W3Error
+from .w3 import W3Agent, W3Error, defer_phase_waits
 from .w3_contracts import is_two_phase_contract, is_unified_contract
 
 if TYPE_CHECKING:
@@ -279,7 +280,6 @@ class PersistentRuntimeV2Service:
         input_snapshot_loader: Callable[[str], RuntimeInputSnapshot | None] | None = None,
         journal: RuntimeJournal | None = None,
         w2_contract_version: str | None = None,
-        effect_concurrency: int = 16,
     ) -> None:
         self.w2_contract_version = w2_contract_version
         self.repository = repository
@@ -312,7 +312,7 @@ class PersistentRuntimeV2Service:
         self._hot_executors_lock = Lock()
         self._hot_executors_closed = False
         self._effect_executor = ThreadPoolExecutor(
-            max_workers=2,
+            max_workers=32,
             thread_name_prefix="prv2-effect",
         )
         self._closed = False
@@ -320,11 +320,15 @@ class PersistentRuntimeV2Service:
         self._close_lock = Lock()
         self._w3_threads: set[Thread] = set()
         self._w3_threads_lock = Lock()
-        if effect_concurrency < 1:
-            raise ValueError("effect_concurrency must be positive")
-        self._effect_concurrency = effect_concurrency
         self._effect_dispatch_lock = Lock()
         self._active_effect_ids: set[str] = set()
+        self._active_effects: dict[str, RuntimeEffect] = {}
+        self._running_effect_ids: set[str] = set()
+        self._phase_waiters: dict[str, Future] = {}
+        self._effect_continuations: dict[str, Callable] = {}
+        self._effect_renew_stop = Event()
+        self._effect_renew_thread = None
+        self._effect_transport_started = False
 
     def __enter__(self) -> PersistentRuntimeV2Service:
         return self
@@ -349,11 +353,17 @@ class PersistentRuntimeV2Service:
             while True:
                 with self._w3_threads_lock:
                     threads = list(self._w3_threads)
-                if not threads:
+                    active = bool(self._active_effect_ids)
+                if not threads and not active:
                     break
+                if not threads:
+                    time.sleep(0.01)
                 for thread in threads:
                     thread.join()
             self._effect_executor.shutdown(wait=True, cancel_futures=False)
+            self._effect_renew_stop.set()
+            if self._effect_renew_thread:
+                self._effect_renew_thread.join(timeout=1)
             if self._w3_agent is not None:
                 self._w3_agent.close()
             close_responses = getattr(self.responses, "close", None)
@@ -1834,20 +1844,43 @@ class PersistentRuntimeV2Service:
             self._effect_executor.submit(self.dispatch_pending_effects, limit=20)
 
     def dispatch_pending_effects(self, *, limit: int = 20) -> int:
-        """Claim only physical capacity; the durable inbox holds the remaining work."""
+        """W3 model concurrency is unchanged; waiting phases own no OS thread."""
         with self._effect_dispatch_lock:
             return self._dispatch_effects_with_capacity(limit)
 
     def _dispatch_effects_with_capacity(self, limit: int) -> int:
         with self._w3_threads_lock:
+            completed = [self._active_effects[key] for key, future in self._phase_waiters.items()
+                         if future.done() and key not in self._running_effect_ids]
+        for effect in completed:
+            self._resume_phase(effect)
+        with self._w3_threads_lock:
             active = tuple(self._active_effect_ids)
-        capacity = min(limit, self._effect_concurrency - len(active))
-        if self._draining or self._closed or capacity < 1:
+        if self._draining or self._closed or limit < 1:
             return 0
+        if not self._effect_transport_started:
+            try:
+                self._effect_executor.submit(lambda: None).result()
+            except RuntimeError as exc:
+                if str(exc) != "can't start new thread":
+                    raise
+                return 0
+            self._effect_transport_started = True
+        if self._effect_renew_thread is None:
+            self._effect_renew_thread = Thread(
+                target=self._renew_active_effects, name="runtime-effect-renewal", daemon=True
+            )
+            try:
+                self._effect_renew_thread.start()
+            except RuntimeError as exc:
+                self._effect_renew_thread = None
+                if str(exc) != "can't start new thread":
+                    raise
+                return 0
 
         claim_at = utc_now()
         claim_started = perf_counter()
-        effects = self.repository.claim_effects(limit=capacity, exclude_ids=active)
+        effects = self.repository.claim_effects(limit=limit, exclude_ids=active)
         claim_ms = round((perf_counter() - claim_started) * 1000, 3)
         dispatched = 0
         ordered = sorted(
@@ -1862,12 +1895,13 @@ class PersistentRuntimeV2Service:
         )
         with self._w3_threads_lock:
             self._active_effect_ids.update(effect.effect_id for effect in effects)
+            self._active_effects.update((effect.effect_id, effect) for effect in effects)
         started = set()
         try:
             for effect in ordered:
-                thread = Thread(
-                    target=self._run_w3_effect_thread,
-                    args=(
+                try:
+                    self._effect_executor.submit(
+                        self._run_w3_effect_thread,
                         effect,
                         {
                             "effect_claim_started_at": claim_at.isoformat(),
@@ -1876,20 +1910,15 @@ class PersistentRuntimeV2Service:
                             "effect_dispatched_at": utc_now().isoformat(),
                             "dispatch_monotonic": perf_counter(),
                         },
-                    ),
-                    name=f"prv2-w3-{effect.case_id[-8:]}",
-                    daemon=False,
-                )
-                with self._w3_threads_lock:
-                    self._w3_threads.add(thread)
-                try:
-                    thread.start()
+                    )
                 except RuntimeError as exc:
-                    with self._w3_threads_lock:
-                        self._w3_threads.discard(thread)
                     if str(exc) != "can't start new thread":
                         raise
-                    logging.getLogger(__name__).warning("Effect dispatch deferred: thread capacity")
+                    # submit enqueues before growing the stdlib pool. An existing
+                    # worker will consume this exact work item; do not requeue it.
+                    started.add(effect.effect_id)
+                    dispatched += 1
+                    logging.getLogger(__name__).warning("Effect queued on existing worker capacity")
                     break
                 started.add(effect.effect_id)
                 dispatched += 1
@@ -1898,6 +1927,9 @@ class PersistentRuntimeV2Service:
                 self._active_effect_ids.difference_update(
                     effect.effect_id for effect in ordered if effect.effect_id not in started
                 )
+                for effect in ordered:
+                    if effect.effect_id not in started:
+                        self._active_effects.pop(effect.effect_id, None)
             for effect in ordered:
                 if effect.effect_id not in started:
                     try:
@@ -1910,6 +1942,48 @@ class PersistentRuntimeV2Service:
                             raise
         return dispatched
 
+    def _renew_active_effects(self):
+        while not self._effect_renew_stop.wait(20):
+            with self._w3_threads_lock:
+                effects = tuple(self._active_effects.values())
+            try:
+                batch = getattr(self.repository, "renew_effects", None)
+                if batch:
+                    batch(effects)
+                else:
+                    for effect in effects:
+                        self.repository.renew_effect(effect)
+            except Exception as exc:
+                logging.getLogger(__name__).warning(
+                    "Effect lease renewal delayed: %s", type(exc).__name__
+                )
+
+    def _resume_phase(self, effect):
+        with self._w3_threads_lock:
+            pending = self._phase_waiters.get(effect.effect_id)
+            if (pending is None or not pending.done()
+                or effect.effect_id in self._running_effect_ids):
+                return
+            self._phase_waiters.pop(effect.effect_id)
+            if pending.cancelled() or pending.exception() is not None:
+                self._effect_continuations.pop(effect.effect_id, None)
+            self._running_effect_ids.add(effect.effect_id)
+            thread = Thread(target=self._run_w3_effect_thread, args=(effect,), daemon=False,
+                            name="prv2-w3-resume")
+            try:
+                thread.start()  # Completed decisions bypass preparation backlog.
+            except RuntimeError as exc:
+                if str(exc) != "can't start new thread":
+                    self._running_effect_ids.discard(effect.effect_id)
+                    self._phase_waiters[effect.effect_id] = pending
+                    raise
+            else:
+                # Shutdown must never see a Thread whose start has not completed.
+                self._w3_threads.add(thread)
+                return
+        # Reuse already-created workers if the OS cannot create this short continuation.
+        self._effect_executor.submit(self._run_w3_effect_thread, effect)
+
     def _run_w3_effect_thread(
         self,
         effect: RuntimeEffect,
@@ -1919,12 +1993,22 @@ class PersistentRuntimeV2Service:
         dispatched = timing.pop("dispatch_monotonic", None)
         if dispatched is not None:
             timing["effect_thread_start_ms"] = round((perf_counter() - dispatched) * 1000, 3)
+        phase_token = defer_phase_waits.set(True)
         try:
+            with self._w3_threads_lock:
+                self._running_effect_ids.add(effect.effect_id)
             self._process_claimed_effect(effect, dispatch_timing=timing)
         finally:
+            defer_phase_waits.reset(phase_token)
             with self._w3_threads_lock:
                 self._w3_threads.discard(current_thread())
-                self._active_effect_ids.discard(effect.effect_id)
+                self._running_effect_ids.discard(effect.effect_id)
+                waiting = effect.effect_id in self._phase_waiters
+                if not waiting:
+                    self._active_effect_ids.discard(effect.effect_id)
+                    self._active_effects.pop(effect.effect_id, None)
+            if waiting:
+                self._resume_phase(effect)
             if self.coordinator is not None and not self._draining:
                 self.coordinator.wake_effects()
 
@@ -1960,7 +2044,10 @@ class PersistentRuntimeV2Service:
             from .heartbeat import heartbeat
 
             renew = getattr(self.repository, "renew_effect", lambda value: None)
-            with heartbeat(lambda: renew(effect)), write_scope("effect", effect, utc_now):
+            with self._w3_threads_lock:
+                registered = effect.effect_id in self._active_effects
+            pulse = nullcontext() if registered else heartbeat(lambda: renew(effect))
+            with pulse, write_scope("effect", effect, utc_now):
                 if self.journal and effect.effect_type in {
                     RuntimeSideEffect.ROUTE_TO_W3,
                     RuntimeSideEffect.W3_POST_DECISION,
@@ -1968,13 +2055,27 @@ class PersistentRuntimeV2Service:
                     from doxagent.w3_timing import effect_trace
 
                     with effect_trace(effect, self.journal, **(dispatch_timing or {})):
-                        self._execute_effect(effect)
+                        continuation = self._effect_continuations.get(effect.effect_id)
+                        if continuation:
+                            continuation()
+                            self._effect_continuations.pop(effect.effect_id, None)
+                        else:
+                            self._execute_effect(effect)
                 else:
                     self._execute_effect(effect)
         except Exception as exc:
             from .journal import LeaseLost
 
             if isinstance(exc, LeaseLost):
+                return 0
+            pending = getattr(exc, "pending_future", None)
+            if getattr(exc, "code", None) == "w3_pending_external" and pending is not None:
+                with self._w3_threads_lock:
+                    self._phase_waiters[effect.effect_id] = pending
+                    continuation = getattr(exc, "effect_continuation", None)
+                    if continuation:
+                        self._effect_continuations[effect.effect_id] = continuation
+                pending.add_done_callback(lambda _: self._resume_phase(effect))
                 return 0
             if (isinstance(exc, ControlError) or is_sqlite_contention(exc)
                 or isinstance(exc, RuntimeError) and str(exc) == "can't start new thread"):
@@ -2019,6 +2120,8 @@ class PersistentRuntimeV2Service:
                 "w3_ready_prepare_failed",
             }:
                 retryable = False
+            if not retryable:
+                self._effect_continuations.pop(effect.effect_id, None)
             failed = effect.model_copy(
                 update={
                     "status": (

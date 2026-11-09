@@ -1,5 +1,6 @@
 import asyncio
 import json
+import time
 from types import SimpleNamespace
 
 import pytest
@@ -122,6 +123,9 @@ def test_durable_trace_does_not_change_trade_first_semantics(tmp_path):
         for thread in threads:
             thread.join(timeout=5)
             assert not thread.is_alive()
+        deadline = time.monotonic() + 5
+        while service._active_effect_ids and time.monotonic() < deadline:
+            time.sleep(0.005)
         assert service.repository.get_case(case.case_id).w3_operations_status == "COMMITTED"
         with journal.transaction(write=False) as db:
             receipts = [

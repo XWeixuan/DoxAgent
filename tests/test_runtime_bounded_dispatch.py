@@ -1,53 +1,87 @@
+import asyncio
 import json
-from concurrent.futures import ThreadPoolExecutor
+import time
+from concurrent.futures import Future
 from datetime import timedelta
-from threading import Event, Lock
+from threading import Lock, Thread
+from types import SimpleNamespace
+
+import pytest
 
 from doxagent.persistent_runtime_v2.daily import RuntimeDeltaBatchAdapter
 from doxagent.persistent_runtime_v2.schema import (
     RuntimeEffect,
-    RuntimeEffectStatus,
     RuntimeFactCandidate,
 )
 from tests.test_runtime_effect_claim_cost import add, seeded
 from tests.test_w3_v4 import enqueue, runtime
 
 
-def test_dispatch_claims_only_free_capacity_and_leaves_backlog_durable(tmp_path, monkeypatch):
+def test_model_waits_do_not_cap_w3_concurrency_or_hold_worker_threads(tmp_path, monkeypatch):
+    from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner
+
     service, journal, _, _ = runtime(tmp_path)
-    service._effect_concurrency = 2
-    release = Event()
-    started = []
+    runner = object.__new__(CodexW3AgentRunner)
+    runner.environment = SimpleNamespace(mode="PRODUCTION")
+    runner._closed = False
+    runner._pending_v4 = {}
+    runner._pending_v4_lock = Lock()
+    runner._timeout_seconds = 5
+    runner._loop = asyncio.new_event_loop()
+    loop_thread = Thread(target=runner._loop.run_forever)
+    loop_thread.start()
+    responses = {}
+    calls = []
+    consumed = []
     lock = Lock()
     case = enqueue(service)
-    for i in range(4):
+    for i in range(39):
         service.repository.enqueue_effect(
             RuntimeEffect(
                 case_id=case.case_id, effect_type="archive_message", idempotency_key=f"test-{i}"
             )
         )
+    for effect in service.repository.list_effects(case.case_id):
+        responses[effect.effect_id] = Future()
 
-    def process(effect, **kwargs):
+    async def remote(identity):
         with lock:
-            started.append(effect.effect_id)
-        assert release.wait(5)
-        service.repository.save_effect(
-            effect.model_copy(update={"status": RuntimeEffectStatus.COMPLETED})
-        )
+            calls.append(identity)
+        return await asyncio.wrap_future(responses[identity])
 
-    monkeypatch.setattr(service, "_process_claimed_effect", process)
+    def execute(effect):
+        assert runner._wait_v4(remote(effect.effect_id), key=effect.effect_id) == "answer"
+        with lock:
+            consumed.append(effect.effect_id)
+
+    monkeypatch.setattr(service, "_execute_effect", execute)
     try:
-        with ThreadPoolExecutor(max_workers=4) as pool:
-            results = list(pool.map(lambda _: service.dispatch_pending_effects(), range(4)))
-        assert sum(results) == 2
-        assert len(service._active_effect_ids) == 2
-        assert len(service._w3_threads) == 2
-        statuses = [e.status for e in service.repository.list_effects(case.case_id)]
-        assert statuses.count("RUNNING") == 2 and statuses.count("PENDING") == 3
+        assert service.dispatch_pending_effects(limit=40) == 40
+        deadline = time.monotonic() + 10
+        while (
+            len(calls) != 40 or len(service._phase_waiters) != 40
+        ) and time.monotonic() < deadline:
+            time.sleep(0.005)
+        assert len(calls) == 40 and len(service._phase_waiters) == 40
+        assert len(service._active_effect_ids) == 40
+        assert len(service._effect_executor._threads) <= 32
+        assert service.dispatch_pending_effects() == 0
+        first = next(iter(responses))
+        responses[first].set_result("answer")
+        deadline = time.monotonic() + 2
+        while first not in consumed and time.monotonic() < deadline:
+            time.sleep(0.005)
+        assert first in consumed  # Completion continuation has no 5s retry/poll delay.
     finally:
-        release.set()
+        for response in responses.values():
+            if not response.done():
+                response.set_result("answer")
         service.close()
-    assert not service._active_effect_ids and len(set(started)) == 2
+        runner._loop.call_soon_threadsafe(runner._loop.stop)
+        loop_thread.join()
+        runner._loop.close()
+    assert not service._active_effect_ids and len(consumed) == 40
+    assert len(set(calls)) == len(calls) == 40
 
 
 def test_expired_lease_does_not_reclaim_a_live_local_owner(tmp_path, monkeypatch):
@@ -61,6 +95,75 @@ def test_expired_lease_does_not_reclaim_a_live_local_owner(tmp_path, monkeypatch
     ]
     assert repo.claim_effects(limit=2, exclude_ids=("live",)) == []
     assert repo.claim_effects(limit=1)[0].effect_id == "live"
+
+
+@pytest.mark.parametrize("phase", ["trade_decision", "post_decision_operations"])
+def test_success_resumes_directly_to_commit_without_repreparing(tmp_path, monkeypatch, phase):
+    from doxagent.persistent_runtime_v2.w3 import W3Error
+
+    service, journal, agent, _ = runtime(tmp_path, "NO_TRADE")
+    case = enqueue(service)
+    if phase == "post_decision_operations":
+        assert service.process_pending_effects() == 1
+    pending = Future()
+    prepared = []
+    requested = []
+    prepare, run = agent.prepare_case, agent.run_phase
+
+    def count_prepare(value):
+        prepared.append(value.case_id)
+        return prepare(value)
+
+    def defer(**kwargs):
+        if kwargs["phase"] != phase:
+            return run(**kwargs)
+        requested.append(kwargs)
+        error = W3Error("w3_pending_external", "in flight")
+        error.pending_future = pending
+        error.phase_result = pending.result
+        raise error
+
+    monkeypatch.setattr(agent, "prepare_case", count_prepare)
+    monkeypatch.setattr(agent, "run_phase", defer)
+    try:
+        assert service.dispatch_pending_effects() == 1
+        deadline = time.monotonic() + 5
+        while not service._phase_waiters and time.monotonic() < deadline:
+            time.sleep(0.005)
+        assert len(requested) == len(prepared) == 1
+        pending.set_result(run(**requested[0]))
+        deadline = time.monotonic() + 5
+        while service._active_effect_ids and time.monotonic() < deadline:
+            time.sleep(0.005)
+        assert service._v4_execution().registry.stage(case.case_id, phase)["status"] == "COMMITTED"
+        assert len(requested) == len(prepared) == 1
+        assert not service._effect_continuations
+    finally:
+        if not pending.done():
+            pending.set_result(run(**requested[0]))
+        service.close()
+
+
+def test_shared_renewal_preserves_token_and_never_revives_an_expired_lease(tmp_path, monkeypatch):
+    repo, now = seeded(tmp_path, monkeypatch)
+    with repo._connect() as db:
+        db.execute("DELETE FROM runtime_v2_effects WHERE effect_id LIKE 'history-%'")
+    add(repo, now, "valid", age=20, status="RUNNING", lease=now + timedelta(seconds=30))
+    add(repo, now, "expired", age=30, status="RUNNING", lease=now - timedelta(seconds=1))
+    add(repo, now, "wrong-token", age=10, status="RUNNING", lease=now + timedelta(seconds=30))
+    effects = {e.effect_id: e for e in repo.list_effects("case")}
+    repo.renew_effects(
+        (
+            effects["valid"],
+            effects["expired"],
+            effects["wrong-token"].model_copy(update={"lease_token": 999}),
+        )
+    )
+    saved = {e.effect_id: e for e in repo.list_effects("case")}
+    assert saved["valid"].lease_until == now + timedelta(seconds=120)
+    assert saved["valid"].lease_token == effects["valid"].lease_token
+    assert saved["expired"] == effects["expired"]
+    assert saved["wrong-token"] == effects["wrong-token"]
 
 
 def test_thread_start_pressure_defers_without_spending_business_attempts(tmp_path, monkeypatch):
@@ -80,7 +183,7 @@ def test_thread_start_pressure_defers_without_spending_business_attempts(tmp_pat
         assert service.dispatch_pending_effects() == 0
         assert not service._active_effect_ids and not service._w3_threads
         assert all(
-            e.status == "PENDING_RETRY" and e.attempt_count == 0
+            e.status in {"PENDING", "PENDING_RETRY"} and e.attempt_count == 0
             for e in service.repository.list_effects(case.case_id)
         )
         assert service.repository.get_case(case.case_id).status == "PENDING_W3"

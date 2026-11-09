@@ -1092,6 +1092,22 @@ class SQLitePersistentRuntimeV2Repository:
         return [RuntimeEffect.model_validate_json(self.content.text(raw)) for raw in payloads]
 
     @retry_sqlite_write
+    def renew_effects(self, effects: tuple[RuntimeEffect, ...]) -> None:
+        if not effects:
+            return
+        now = utc_now()
+        until = (now + timedelta(seconds=120)).isoformat()
+        with self._connect() as db:
+            db.executemany(
+                "UPDATE runtime_v2_effects SET updated_at=?,payload_json=json_set(payload_json,"
+                "'$.updated_at',?,'$.lease_until',?) WHERE effect_id=? AND status='RUNNING' "
+                "AND json_extract(payload_json,'$.lease_token')=? "
+                "AND json_extract(payload_json,'$.lease_until')>?",
+                [(now.isoformat(), now.isoformat(), until, e.effect_id, e.lease_token,
+                  now.isoformat()) for e in effects],
+            )
+
+    @retry_sqlite_write
     def renew_effect(self, effect: RuntimeEffect) -> None:
         from .journal import LeaseLost
 

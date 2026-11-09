@@ -8,6 +8,7 @@ import json
 import re
 import threading
 from collections import OrderedDict
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -55,6 +56,8 @@ from .schema import (
 )
 from .w3_models import execution_profile
 from .w3_research_store import ENTRY, compact
+
+defer_phase_waits = ContextVar("runtime_defer_w3_phase_waits", default=False)
 
 
 def research_pin_key(case):
@@ -670,7 +673,26 @@ class CodexW3AgentRunner:
                     self._pending_v4[key] = pending
             else:
                 coroutine.close()
+        yielded = False
         try:
+            if (key is not None and defer_phase_waits.get()
+                and self.environment.mode == "PRODUCTION" and not pending.done()):
+                # The original coroutine/dispatch continues. Its Effect owner
+                # resumes immediately on completion instead of occupying a thread.
+                yielded = True
+                error = W3Error(
+                    "w3_pending_external", "Original W3 phase is in flight", step="MODEL"
+                )
+                error.pending_future = pending
+                def consume_phase_result():
+                    try:
+                        return pending.result()
+                    finally:
+                        with self._pending_v4_lock:
+                            if self._pending_v4.get(key) is pending:
+                                self._pending_v4.pop(key)
+                error.phase_result = consume_phase_result
+                raise error
             return pending.result(timeout=self._timeout_seconds + 90)
         except TimeoutError:
             if pending.done():
@@ -689,7 +711,7 @@ class CodexW3AgentRunner:
                 step="MODEL",
             )
         finally:
-            if key is not None and pending.done():
+            if key is not None and pending.done() and not yielded:
                 with self._pending_v4_lock:
                     if self._pending_v4.get(key) is pending:
                         del self._pending_v4[key]

@@ -415,14 +415,24 @@ class W3Execution:
             if research:
                 payload["research_path"] = "context/research/" + research[0]
                 self.journal.set("w3_case_research", case.case_id, payload["research_path"])
-            decision, job = self.agent.run_phase(
-                case=case,
-                record=record,
-                phase=TRADE_PHASE,
-                payload=payload,
-                context=context,
-                research=research,
-            )
+            try:
+                decision, job = self.agent.run_phase(
+                    case=case, record=record, phase=TRADE_PHASE,
+                    payload=payload, context=context, research=research,
+                )
+            except W3Error as exc:
+                reader = getattr(exc, "phase_result", None)
+                if reader:
+                    def continue_trade():
+                        decision, job = reader()
+                        self.registry.save_result(
+                            case.case_id, TRADE_PHASE, decision,
+                            thread_id=record["thread_id"], worker_job_id=job.job_id,
+                        )
+                        self._ack(job.job_id)
+                        self._commit_trade(case, record, decision)
+                    exc.effect_continuation = continue_trade
+                raise
             self.registry.save_result(
                 case.case_id,
                 TRADE_PHASE,
@@ -436,6 +446,9 @@ class W3Execution:
                 stage["result_json"]
             )
             record = self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
+        return self._commit_trade(case, record, decision)
+
+    def _commit_trade(self, case, record, decision):
         case.w3_trade_decision = decision.model_dump(mode="json")
         trade, override = self._trade_record(case, decision)
         operations = RuntimeEffect(
@@ -587,7 +600,7 @@ class W3Execution:
         if stage["result_json"] is None:
             context = self.agent.prepare_case(case)
             candidate = self.journal.get("candidates", "candidate:" + case.case_id)
-            result, job = self.agent.run_phase(
+            phase_arguments = dict(
                 case=case,
                 record=record,
                 phase=OPERATIONS_PHASE,
@@ -606,6 +619,21 @@ class W3Execution:
                 ),
                 context=context,
             )
+            try:
+                result, job = self.agent.run_phase(**phase_arguments)
+            except W3Error as exc:
+                reader = getattr(exc, "phase_result", None)
+                if reader:
+                    def continue_operations():
+                        result, job = reader()
+                        self.registry.save_result(
+                            case.case_id, OPERATIONS_PHASE, result,
+                            thread_id=record["thread_id"], worker_job_id=job.job_id,
+                        )
+                        self._ack(job.job_id)
+                        self._commit_operations(case, record, result, trade_stage, state)
+                    exc.effect_continuation = continue_operations
+                raise
             self.registry.save_result(
                 case.case_id,
                 OPERATIONS_PHASE,
@@ -618,6 +646,9 @@ class W3Execution:
             result = contract_models(case.w3_contract_version)[1].model_validate(
                 stage["result_json"]
             )
+        return self._commit_operations(case, record, result, trade_stage, state)
+
+    def _commit_operations(self, case, record, result, trade_stage, state):
         if result.delta_candidates:
             maximum = self.service._known_for_case(case).max_event_numeric_id(
                 case.ticker, case.version_pin.event_library_version
