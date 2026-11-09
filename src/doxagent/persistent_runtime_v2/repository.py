@@ -31,6 +31,7 @@ from .schema import (
     RuntimeEffectStatus,
     RuntimeFactCandidate,
     RuntimeModelTurn,
+    SourceMessageEnvelope,
     TradeRecord,
     W3CoverageGapRecord,
     W3RouteCase,
@@ -98,7 +99,9 @@ class PersistentRuntimeV2Repository(Protocol):
 
     def enqueue_effect(self, effect: RuntimeEffect) -> RuntimeEffect: ...
 
-    def claim_effects(self, *, limit: int = 20) -> list[RuntimeEffect]: ...
+    def claim_effects(
+        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = ()
+    ) -> list[RuntimeEffect]: ...
 
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect: ...
 
@@ -267,7 +270,9 @@ class InMemoryPersistentRuntimeV2Repository:
             self._effect_keys[effect.idempotency_key] = effect.effect_id
             return effect
 
-    def claim_effects(self, *, limit: int = 20) -> list[RuntimeEffect]:
+    def claim_effects(
+        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = ()
+    ) -> list[RuntimeEffect]:
         now = utc_now()
         claimed: list[RuntimeEffect] = []
         with self._lock:
@@ -275,7 +280,8 @@ class InMemoryPersistentRuntimeV2Repository:
                 if len(claimed) >= limit:
                     break
                 if (
-                    effect.status
+                    effect.effect_id in exclude_ids
+                    or effect.status
                     not in {
                         RuntimeEffectStatus.PENDING,
                         RuntimeEffectStatus.PENDING_RETRY,
@@ -942,6 +948,23 @@ class SQLitePersistentRuntimeV2Repository:
             (source_message_id,),
         )
 
+    def get_case_source(self, source_message_id: str) -> SourceMessageEnvelope | None:
+        # O2 needs publication time/source identity, never the frozen research pack.
+        return self._read_model(
+            SourceMessageEnvelope,
+            "SELECT json_extract(payload_json,'$.source') AS payload_json "
+            "FROM runtime_v2_cases WHERE source_message_id=?",
+            (source_message_id,),
+        )
+
+    def get_case_sweep_id(self, case_id: str) -> str | None:
+        with self._connect() as db:
+            row = db.execute(
+                "SELECT json_extract(payload_json,'$.sweep_id') FROM runtime_v2_cases "
+                "WHERE case_id=?", (case_id,),
+            ).fetchone()
+        return row[0] if row else None
+
     @retry_sqlite_write
     def append_turn(self, turn: RuntimeModelTurn) -> RuntimeModelTurn:
         encoded_payload = self.content.encode(turn.model_dump(mode="json"))
@@ -1009,28 +1032,35 @@ class SQLitePersistentRuntimeV2Repository:
         return effect
 
     @retry_sqlite_write
-    def claim_effects(self, *, limit: int = 20) -> list[RuntimeEffect]:
+    def claim_effects(
+        self, *, limit: int = 20, exclude_ids: tuple[str, ...] = ()
+    ) -> list[RuntimeEffect]:
         if limit < 1:
             return []
         now = utc_now()
+        exclusions = (
+            " AND effect_id NOT IN (" + ",".join("?" for _ in exclude_ids) + ")"
+            if exclude_ids else ""
+        )
         with self._lock, self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
             pending = db.execute(
                 "SELECT effect_id,available_at,rowid AS sequence FROM runtime_v2_effects "
                 "INDEXED BY idx_runtime_v2_effects_pending "
                 "WHERE status IN ('PENDING','PENDING_RETRY') AND available_at<=? "
-                "ORDER BY available_at,rowid LIMIT ?",
-                (now.isoformat(), limit),
+                + exclusions + " ORDER BY available_at,rowid LIMIT ?",
+                (now.isoformat(), *exclude_ids, limit),
             ).fetchall()
             expired = db.execute(
                 "SELECT effect_id,available_at,rowid AS sequence FROM runtime_v2_effects "
                 "INDEXED BY idx_runtime_v2_effects_running "
                 "WHERE status='RUNNING' AND (json_extract(payload_json,'$.lease_until')<=? "
                 "OR (json_extract(payload_json,'$.lease_until') IS NULL AND updated_at<=?)) "
-                "ORDER BY available_at,rowid LIMIT ?",
+                + exclusions + " ORDER BY available_at,rowid LIMIT ?",
                 (
                     now.isoformat(),
                     (now - timedelta(seconds=120)).isoformat(),
+                    *exclude_ids,
                     limit,
                 ),
             ).fetchall()

@@ -279,6 +279,7 @@ class PersistentRuntimeV2Service:
         input_snapshot_loader: Callable[[str], RuntimeInputSnapshot | None] | None = None,
         journal: RuntimeJournal | None = None,
         w2_contract_version: str | None = None,
+        effect_concurrency: int = 16,
     ) -> None:
         self.w2_contract_version = w2_contract_version
         self.repository = repository
@@ -319,6 +320,11 @@ class PersistentRuntimeV2Service:
         self._close_lock = Lock()
         self._w3_threads: set[Thread] = set()
         self._w3_threads_lock = Lock()
+        if effect_concurrency < 1:
+            raise ValueError("effect_concurrency must be positive")
+        self._effect_concurrency = effect_concurrency
+        self._effect_dispatch_lock = Lock()
+        self._active_effect_ids: set[str] = set()
 
     def __enter__(self) -> PersistentRuntimeV2Service:
         return self
@@ -1828,14 +1834,23 @@ class PersistentRuntimeV2Service:
             self._effect_executor.submit(self.dispatch_pending_effects, limit=20)
 
     def dispatch_pending_effects(self, *, limit: int = 20) -> int:
-        """Dispatch W3 without a global pool; ticker slots provide the sole cap."""
+        """Claim only physical capacity; the durable inbox holds the remaining work."""
+        with self._effect_dispatch_lock:
+            return self._dispatch_effects_with_capacity(limit)
+
+    def _dispatch_effects_with_capacity(self, limit: int) -> int:
+        with self._w3_threads_lock:
+            active = tuple(self._active_effect_ids)
+        capacity = min(limit, self._effect_concurrency - len(active))
+        if self._draining or self._closed or capacity < 1:
+            return 0
 
         claim_at = utc_now()
         claim_started = perf_counter()
-        effects = self.repository.claim_effects(limit=limit)
+        effects = self.repository.claim_effects(limit=capacity, exclude_ids=active)
         claim_ms = round((perf_counter() - claim_started) * 1000, 3)
         dispatched = 0
-        for effect in sorted(
+        ordered = sorted(
             effects,
             key=lambda value: (
                 value.effect_type
@@ -1844,11 +1859,12 @@ class PersistentRuntimeV2Service:
                     RuntimeSideEffect.W3_POST_DECISION,
                 }
             ),
-        ):
-            if effect.effect_type in {
-                RuntimeSideEffect.ROUTE_TO_W3,
-                RuntimeSideEffect.W3_POST_DECISION,
-            }:
+        )
+        with self._w3_threads_lock:
+            self._active_effect_ids.update(effect.effect_id for effect in effects)
+        started = set()
+        try:
+            for effect in ordered:
                 thread = Thread(
                     target=self._run_w3_effect_thread,
                     args=(
@@ -1866,14 +1882,32 @@ class PersistentRuntimeV2Service:
                 )
                 with self._w3_threads_lock:
                     self._w3_threads.add(thread)
-                thread.start()
+                try:
+                    thread.start()
+                except RuntimeError as exc:
+                    with self._w3_threads_lock:
+                        self._w3_threads.discard(thread)
+                    if str(exc) != "can't start new thread":
+                        raise
+                    logging.getLogger(__name__).warning("Effect dispatch deferred: thread capacity")
+                    break
+                started.add(effect.effect_id)
                 dispatched += 1
-            else:
-                if self.coordinator is not None:
-                    self._effect_executor.submit(self._process_claimed_effect, effect)
-                    dispatched += 1
-                else:
-                    dispatched += self._process_claimed_effect(effect)
+        finally:
+            with self._w3_threads_lock:
+                self._active_effect_ids.difference_update(
+                    effect.effect_id for effect in ordered if effect.effect_id not in started
+                )
+            for effect in ordered:
+                if effect.effect_id not in started:
+                    try:
+                        self.repository.save_effect(effect.model_copy(update={
+                            "status": RuntimeEffectStatus.PENDING_RETRY,
+                            "available_at": utc_now() + timedelta(seconds=5),
+                        }))
+                    except Exception as exc:
+                        if not isinstance(exc, LeaseLost) and not is_sqlite_contention(exc):
+                            raise
         return dispatched
 
     def _run_w3_effect_thread(
@@ -1890,6 +1924,9 @@ class PersistentRuntimeV2Service:
         finally:
             with self._w3_threads_lock:
                 self._w3_threads.discard(current_thread())
+                self._active_effect_ids.discard(effect.effect_id)
+            if self.coordinator is not None and not self._draining:
+                self.coordinator.wake_effects()
 
     def _process_claimed_effect(
         self,
@@ -1898,12 +1935,16 @@ class PersistentRuntimeV2Service:
         dispatch_timing: dict[str, Any] | None = None,
     ) -> int:
         if self.journal and effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
-            case = self.repository.get_case(effect.case_id)
+            reader = getattr(self.repository, "get_case_sweep_id", None)
+            if reader is not None:
+                sweep_id = reader(effect.case_id)
+            else:
+                case = self.repository.get_case(effect.case_id)
+                sweep_id = case.sweep_id if case else None
             if (
-                case
-                and case.sweep_id
-                and self.journal.get_task(case.sweep_id)
-                and not self.journal.get("w3_batch", case.sweep_id)
+                sweep_id
+                and self.journal.get_task(sweep_id)
+                and not self.journal.get("w3_batch", sweep_id)
             ):
                 self.repository.save_effect(
                     effect.model_copy(
@@ -1935,7 +1976,8 @@ class PersistentRuntimeV2Service:
 
             if isinstance(exc, LeaseLost):
                 return 0
-            if isinstance(exc, ControlError) or is_sqlite_contention(exc):
+            if (isinstance(exc, ControlError) or is_sqlite_contention(exc)
+                or isinstance(exc, RuntimeError) and str(exc) == "can't start new thread"):
                 self.repository.save_effect(
                     effect.model_copy(
                         update={

@@ -118,8 +118,13 @@ class RuntimeDeltaBatchAdapter:
         )
 
     def _atomic(self, item: ProvisionalFactDetail) -> FrozenRuntimeAtomic:
-        case = self.repository.get_case_by_source(item.source_message_id)
-        if case is None:
+        source_reader = getattr(self.repository, "get_case_source", None)
+        if source_reader is not None:
+            source = source_reader(item.source_message_id)
+        else:
+            case = self.repository.get_case_by_source(item.source_message_id)
+            source = case.source if case else None
+        if source is None:
             raise ValueError("Runtime candidate source Case is unavailable")
         candidate = item.candidate
         if candidate.occurrence_date is not None:
@@ -130,11 +135,11 @@ class RuntimeDeltaBatchAdapter:
                 source_message_id=item.source_message_id,
             )
         else:
-            source_time = case.source.occurrence_source_time
+            source_time = source.occurrence_source_time
             occurrence = OccurrenceDateCandidate(
                 candidate_date=source_time.astimezone(_EASTERN).date(),
                 source_kind=OccurrenceDateCandidateSource.SOURCE_PUBLISHED_AT,
-                source_id=case.source.source_id,
+                source_id=source.source_id,
                 source_message_id=item.source_message_id,
             )
         return FrozenRuntimeAtomic(
