@@ -324,3 +324,35 @@ def test_stopping_is_control_recovery_without_spending_case_attempt(tmp_path, mo
         assert service.repository.get_case(case.case_id).status == "PENDING_W3"
     finally:
         service.close()
+
+
+def test_effect_renewal_waits_on_existing_local_writer_before_opening_sql_writer(
+    tmp_path, monkeypatch
+):
+    from threading import Thread
+    from doxagent.control_io import write_lock
+    from tests.test_runtime_effect_claim_cost import seeded, add
+    from datetime import timedelta
+
+    repo, now = seeded(tmp_path, monkeypatch)
+    add(repo, now, "live", age=1, status="RUNNING", lease=now + timedelta(seconds=60))
+    with repo._connect() as db:
+        db.execute("DELETE FROM runtime_v2_effects WHERE effect_id LIKE 'history-%'")
+    effect = repo.list_effects("case")[0]
+    started, done = Event(), Event()
+
+    def renew():
+        started.set()
+        repo.renew_effects((effect,))
+        done.set()
+
+    with write_lock(repo.path):
+        thread = Thread(target=renew)
+        thread.start()
+        assert started.wait(1)
+        assert not done.wait(0.05)
+        # A waiting local heartbeat must not retain the SQLite WAL writer.
+        with repo._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+    thread.join(2)
+    assert done.is_set()

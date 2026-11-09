@@ -18,6 +18,8 @@ from typing import Any, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel
 
+from doxagent.control_io import write_lock
+
 from .fencing import FencedConnection
 from .schema import (
     ArchiveRecord,
@@ -1054,7 +1056,7 @@ class SQLitePersistentRuntimeV2Repository:
                         "coalesce((SELECT json_extract(c.payload_json,'$.runtime_mode') "
                         "FROM runtime_v2_cases c WHERE c.case_id=runtime_v2_effects.case_id),'REALTIME')!='CLOSED')")
             exclusions += ' AND ' + (realtime if lane == 'realtime_w3' else 'NOT ' + realtime)
-        with self._lock, self._connect() as db:
+        with write_lock(self.path), self._lock, self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
             pending = db.execute(
                 "SELECT effect_id,available_at,rowid AS sequence FROM runtime_v2_effects "
@@ -1110,7 +1112,7 @@ class SQLitePersistentRuntimeV2Repository:
         now = utc_now()
         until = (now + timedelta(seconds=120)).isoformat()
         lost = []
-        with self._connect() as db:
+        with write_lock(self.path), self._connect() as db:
             for effect in effects:
                 changed = db.execute(
                     "UPDATE runtime_v2_effects SET updated_at=?,payload_json=json_set(payload_json,"
@@ -1129,7 +1131,7 @@ class SQLitePersistentRuntimeV2Repository:
         from .journal import LeaseLost
 
         now = utc_now()
-        with self._connect() as db:
+        with write_lock(self.path), self._connect() as db:
             changed = db.execute(
                 "UPDATE runtime_v2_effects SET updated_at=?,payload_json=json_set(payload_json,"
                 "'$.updated_at',?,'$.lease_until',?) WHERE effect_id=? AND status='RUNNING' "
@@ -1149,7 +1151,7 @@ class SQLitePersistentRuntimeV2Repository:
     @retry_sqlite_write
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect:
         encoded_payload = self.content.encode(effect.model_dump(mode="json"))
-        with self._connect() as connection:
+        with write_lock(self.path), self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             old = connection.execute(
                 "SELECT status,json_extract(payload_json,'$.lease_token'),json_extract(payload_json,'$.lease_until') "

@@ -23,3 +23,10 @@
 ## 发布后观察
 
 待追加：实际提交、镜像、恢复时间、10 分钟主机/容器资源与 Case 进展。采样只读 rowid 小窗、active job 索引、cgroup 与 PSI，不执行历史大统计。本次 10 分钟观察不代表已经覆盖下一交易日真实波峰。
+
+
+## 首轮观察发现的补充项
+
+首轮资源已回落，未 OOM；但不能判为业务验收通过。约 80 个准备/续接任务仍在短写争用，W3 尚未推进到新的模型 Job。实际 /proc/locks 将 WAL writer 指向 Scheduler；py-spy 栈同时看到共享续租提交、其他 Effect repo 写入和大量 journal.begin 等待。Effect 的 claim/save/renew 原本绕过 journal 已有的数据库级 write_lock，形成同进程两套竞争入口；这四条短 SQL 路径现复用同一个现有锁，不扩大业务并发限制、不创建新队列，Native 编码仍在锁外。新增回归验证：心跳等待本地 writer 时尚未占用 SQLite writer。
+
+另一个采样时刻 Executor 持有数据库 PENDING lock。已确认其 164 个执行 Job 全部 DONE、没有未完成提交，再单独重启 Executor；重启后 W3 等待仍存在，因此没有把 Executor 写成唯一根因。最终发布后重新计满 10 分钟观察，首轮低内存不能替代最终验收。
