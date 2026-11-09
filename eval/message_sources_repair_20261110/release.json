@@ -1,0 +1,31 @@
+{
+  "commit": "9f2ac400c29cd893b71ee2d5edd388b7577eef6f",
+  "started_at": "2026-11-09T23:39:50.168073+00:00",
+  "collector_before": {
+    "id": "5279d4b57b96",
+    "started_at": "2026-11-09T22:29:21.486589704Z",
+    "state": "running",
+    "health": "healthy",
+    "commit": "8c203e62199d45c54584c166a865a932f790b584",
+    "recheck": "false"
+  },
+  "returncode": 0,
+  "finished_at": "2026-11-09T23:41:21.919319+00:00",
+  "collector_after": {
+    "id": "1e15344dbc0a",
+    "started_at": "2026-11-09T23:41:07.939416757Z",
+    "state": "running",
+    "health": "healthy",
+    "commit": "9f2ac400c29cd893b71ee2d5edd388b7577eef6f",
+    "recheck": "false"
+  },
+  "protected_unchanged": {
+    "v2-site-access": true,
+    "v2-chrome-supervisor": true,
+    "v2-api": true,
+    "v2-message-bus": true,
+    "v2-content-enrichment": true
+  },
+  "private_log": "/var/lib/doxagent/releases/sources-quota-aviation-20261109T233950Z.log",
+  "source_hash_matches": true
+}
