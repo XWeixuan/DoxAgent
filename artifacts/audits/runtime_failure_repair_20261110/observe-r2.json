@@ -1,0 +1,395 @@
+{
+  "at": "2026-11-09T19:32:53.449171+00:00",
+  "cutoff": "2026-11-09T19:24:04+00:00",
+  "cases": [
+    {
+      "status": "ADJUDICATED",
+      "n": 20
+    },
+    {
+      "status": "COMPLETED",
+      "n": 587
+    },
+    {
+      "status": "FAILED",
+      "n": 180
+    },
+    {
+      "status": "PENDING_W3",
+      "n": 309
+    },
+    {
+      "status": "RUNNING",
+      "n": 5
+    },
+    {
+      "status": "UNAVAILABLE",
+      "n": 1
+    }
+  ],
+  "new_failed": [
+    {
+      "case_id": "case_8fe45ef7db874e8b947592fa9d8472c8",
+      "ticker": "MU",
+      "updated_at": "2026-11-09T19:29:59.660445+00:00",
+      "code": "w3_ready_prepare_failed",
+      "message": "trade_decision/PREPARE: ready-slot preparation failed: TimeoutError"
+    },
+    {
+      "case_id": "case_2e7ba693fe9e4f56adf9ce77d32664a3",
+      "ticker": "COHR",
+      "updated_at": "2026-11-09T19:30:05.807587+00:00",
+      "code": "w3_ready_prepare_failed",
+      "message": "trade_decision/PREPARE: ready-slot preparation failed: bound prepare deadline exceeded"
+    },
+    {
+      "case_id": "case_ca870e8e074d4f09b4c3d265d73ce3bd",
+      "ticker": "MU",
+      "updated_at": "2026-11-09T19:30:08.171621+00:00",
+      "code": "w3_ready_prepare_failed",
+      "message": "trade_decision/PREPARE: ready-slot preparation failed: bound prepare deadline exceeded"
+    }
+  ],
+  "effects": [
+    {
+      "effect_type": "archive_message",
+      "status": "COMPLETED",
+      "n": 13
+    },
+    {
+      "effect_type": "archive_message",
+      "status": "RUNNING",
+      "n": 17
+    },
+    {
+      "effect_type": "emit_delta",
+      "status": "COMPLETED",
+      "n": 9
+    },
+    {
+      "effect_type": "emit_delta",
+      "status": "PENDING_RETRY",
+      "n": 1
+    },
+    {
+      "effect_type": "emit_delta",
+      "status": "RUNNING",
+      "n": 13
+    },
+    {
+      "effect_type": "route_to_w3",
+      "status": "COMPLETED",
+      "n": 18
+    },
+    {
+      "effect_type": "route_to_w3",
+      "status": "FAILED",
+      "n": 3
+    },
+    {
+      "effect_type": "route_to_w3",
+      "status": "PENDING_RETRY",
+      "n": 5
+    },
+    {
+      "effect_type": "route_to_w3",
+      "status": "RUNNING",
+      "n": 252
+    },
+    {
+      "effect_type": "w3_post_decision",
+      "status": "COMPLETED",
+      "n": 2
+    },
+    {
+      "effect_type": "w3_post_decision",
+      "status": "PENDING_RETRY",
+      "n": 1
+    },
+    {
+      "effect_type": "w3_post_decision",
+      "status": "RUNNING",
+      "n": 116
+    }
+  ],
+  "stages": [
+    {
+      "phase": "post_decision_operations",
+      "status": "COMMITTED",
+      "n": 2
+    },
+    {
+      "phase": "post_decision_operations",
+      "status": "PENDING",
+      "n": 45
+    },
+    {
+      "phase": "trade_decision",
+      "status": "COMMITTED",
+      "n": 20
+    },
+    {
+      "phase": "trade_decision",
+      "status": "FAILED",
+      "n": 3
+    },
+    {
+      "phase": "trade_decision",
+      "status": "PENDING",
+      "n": 103
+    },
+    {
+      "phase": "trade_decision",
+      "status": "RESULT_SAVED",
+      "n": 1
+    }
+  ],
+  "sdk_to_commit": [
+    {
+      "case_id": "case_aca3660ab3dd4a87baa9972e6c2a42e0",
+      "phase": "post_decision_operations",
+      "worker_job_id": "0a4b51205db106ad7949dba1d788d75346bec6e5a3b68aafc0ba5da9d2e14cfb",
+      "committed_at": "2026-11-09T19:24:19.743256+00:00",
+      "sdk_completed_at": "2026-11-09T15:56:19.825536+00:00",
+      "sdk_to_commit_s": 12479.918
+    },
+    {
+      "case_id": "case_637a5725afde45cfaa2f23bd472ecc68",
+      "phase": "trade_decision",
+      "worker_job_id": "dcd6d72f8de7e43e92d61d259851a59e7e337cff239aec19c67e162a3901abb6",
+      "committed_at": "2026-11-09T19:27:02.961979+00:00",
+      "sdk_completed_at": "2026-11-09T19:10:21.986250+00:00",
+      "sdk_to_commit_s": 1000.976
+    },
+    {
+      "case_id": "case_a18cc42fbdc84b5f931a9155497cddd8",
+      "phase": "trade_decision",
+      "worker_job_id": "b6bdf96af87c82997d491bf4f5f8c0033297663e5f42efd084d804fd68e07235",
+      "committed_at": "2026-11-09T19:27:21.783813+00:00",
+      "sdk_completed_at": "2026-11-09T19:27:05.472299+00:00",
+      "sdk_to_commit_s": 16.312
+    },
+    {
+      "case_id": "case_33e85525ed274fefa0c4474594ed1c7d",
+      "phase": "trade_decision",
+      "worker_job_id": "645c12f00c7348228a03acf60aeafc5f15500f122faa569b2ee0be9eae276781",
+      "committed_at": "2026-11-09T19:27:24.069760+00:00",
+      "sdk_completed_at": "2026-11-09T19:27:07.135488+00:00",
+      "sdk_to_commit_s": 16.934
+    },
+    {
+      "case_id": "case_c6402a6c37d04c388a595ee9c9e4e8c0",
+      "phase": "trade_decision",
+      "worker_job_id": "72577dad16c6a8b8929b18e3fd742f17c3d034e19fcc177b7540ffcfec21b488",
+      "committed_at": "2026-11-09T19:27:36.403269+00:00",
+      "sdk_completed_at": "2026-11-09T19:27:12.776322+00:00",
+      "sdk_to_commit_s": 23.627
+    },
+    {
+      "case_id": "case_91f5f6aafade4c94bee125c72b4fc2f1",
+      "phase": "trade_decision",
+      "worker_job_id": "a167e602e3ee1dbe795dac3ca7b00f5a51df306e30a01b752082fd1419dc0e7b",
+      "committed_at": "2026-11-09T19:28:20.813666+00:00",
+      "sdk_completed_at": "2026-11-09T19:27:46.395983+00:00",
+      "sdk_to_commit_s": 34.418
+    },
+    {
+      "case_id": "case_dd7cda97574140899d7f8d9ae42e2f36",
+      "phase": "trade_decision",
+      "worker_job_id": "91dc5317aeafe4d7b9ea270c506565c22bcb8adb352f66949c0c4be20dab07f5",
+      "committed_at": "2026-11-09T19:29:11.960515+00:00",
+      "sdk_completed_at": "2026-11-09T19:28:24.319885+00:00",
+      "sdk_to_commit_s": 47.641
+    },
+    {
+      "case_id": "case_088de6bf656f4a15aac7463f1e0a1d17",
+      "phase": "trade_decision",
+      "worker_job_id": "a22c9906870800a41ec1ae26370bf6eaae2bf572142e1a3c05837b5c383fba22",
+      "committed_at": "2026-11-09T19:29:15.786056+00:00",
+      "sdk_completed_at": "2026-11-09T19:28:33.767361+00:00",
+      "sdk_to_commit_s": 42.019
+    },
+    {
+      "case_id": "case_a5ffa0bc07ad4f6ba1fc919c3cca8612",
+      "phase": "trade_decision",
+      "worker_job_id": "fe0740ff24fe1e7306789c9fb189d7dd04df0e329da76e18b8695c6b28f65309",
+      "committed_at": "2026-11-09T19:29:40.721446+00:00",
+      "sdk_completed_at": "2026-11-09T19:28:58.570084+00:00",
+      "sdk_to_commit_s": 42.151
+    },
+    {
+      "case_id": "case_d594dc1f7fcc42bd8ef1fcefb7065b9e",
+      "phase": "trade_decision",
+      "worker_job_id": "2309d3858a04577605bbb9f07b880790e73098f89404f6a496cb862aaf22e602",
+      "committed_at": "2026-11-09T19:29:41.268408+00:00",
+      "sdk_completed_at": "2026-11-09T19:28:52.879453+00:00",
+      "sdk_to_commit_s": 48.389
+    },
+    {
+      "case_id": "case_6db1a583031943d185df514e9845735f",
+      "phase": "trade_decision",
+      "worker_job_id": "a4f67345b8b1d9eb46d009e9b0a6e6017eff0be96d78f157845298f4bb82d3c4",
+      "committed_at": "2026-11-09T19:30:29.995110+00:00",
+      "sdk_completed_at": "2026-11-09T19:29:22.356214+00:00",
+      "sdk_to_commit_s": 67.639
+    },
+    {
+      "case_id": "case_cd5f8bd7f81646cda44ea124a9f59c83",
+      "phase": "trade_decision",
+      "worker_job_id": "9c176ffbc01f756de1b61685f76bda6d6fa7fae1426ce17bdb442b564bc8bf2d",
+      "committed_at": "2026-11-09T19:31:01.107096+00:00",
+      "sdk_completed_at": "2026-11-09T19:29:54.967480+00:00",
+      "sdk_to_commit_s": 66.14
+    },
+    {
+      "case_id": "case_434c4851e79e436aa61c5eb79109fbb0",
+      "phase": "trade_decision",
+      "worker_job_id": "1eac287bb4ba82a8e0a85c89c484a008c7ed23e1dfe57bbb6eaf0a2fd499841c",
+      "committed_at": "2026-11-09T19:31:38.942772+00:00",
+      "sdk_completed_at": "2026-11-09T19:30:12.732316+00:00",
+      "sdk_to_commit_s": 86.21
+    },
+    {
+      "case_id": "case_f2a2fe8132f04d1995adb74430ce4a1e",
+      "phase": "trade_decision",
+      "worker_job_id": "cce24b471aca0120ac89fdf116957a9871a79762555845a631333b33d2deb189",
+      "committed_at": "2026-11-09T19:31:39.155489+00:00",
+      "sdk_completed_at": "2026-11-09T12:56:10.565232+00:00",
+      "sdk_to_commit_s": 23728.59
+    },
+    {
+      "case_id": "case_22d2e0e63f3b41289360d69fae480de9",
+      "phase": "trade_decision",
+      "worker_job_id": "56a25d8c30fbc58d940ffb828fe4802e64094d3d9bc87b38af2707d6e1f01c2a",
+      "committed_at": "2026-11-09T19:31:39.999766+00:00",
+      "sdk_completed_at": "2026-11-09T16:45:51.269135+00:00",
+      "sdk_to_commit_s": 9948.731
+    },
+    {
+      "case_id": "case_205eb06b7f984c108d5df6eaacda5f0c",
+      "phase": "trade_decision",
+      "worker_job_id": "69ebf03eb84ab072cb78d1d510bab1321861c0fd0f329c18b7a7e40f8634e63e",
+      "committed_at": "2026-11-09T19:31:45.791865+00:00",
+      "sdk_completed_at": "2026-11-09T19:30:50.795339+00:00",
+      "sdk_to_commit_s": 54.997
+    },
+    {
+      "case_id": "case_3beaba2629fc4c22b36b53d646b5460b",
+      "phase": "trade_decision",
+      "worker_job_id": "1ac60d0218670c06ba4d27f31f1329f65f9dd56c145b4a899c94ff53ccf38187",
+      "committed_at": "2026-11-09T19:31:46.682347+00:00",
+      "sdk_completed_at": "2026-11-09T19:30:05.853004+00:00",
+      "sdk_to_commit_s": 100.829
+    },
+    {
+      "case_id": "case_c8ebb70804294ddebe99108f33d11ff3",
+      "phase": "post_decision_operations",
+      "worker_job_id": "95ec96177dc6703cab755529ddcda4656766b0e60a8177f06bf4367e3209f6ac",
+      "committed_at": "2026-11-09T19:31:51.282252+00:00",
+      "sdk_completed_at": "2026-11-09T14:59:13.954127+00:00",
+      "sdk_to_commit_s": 16357.328
+    },
+    {
+      "case_id": "case_41a4e2835cec43e69728a4360b6906cb",
+      "phase": "trade_decision",
+      "worker_job_id": "c25e623084c375911702d9ca3ae393414b902234fbf7aafafdd648c9bdd01ec2",
+      "committed_at": "2026-11-09T19:31:52.191917+00:00",
+      "sdk_completed_at": "2026-11-09T19:31:29.794629+00:00",
+      "sdk_to_commit_s": 22.397
+    },
+    {
+      "case_id": "case_ce92512afd344084a9d4695a1d2bb051",
+      "phase": "trade_decision",
+      "worker_job_id": "7dd77896510f33517ca2d6fb525894ac86042b2e9eebc352f451be819a896849",
+      "committed_at": "2026-11-09T19:32:13.912593+00:00",
+      "sdk_completed_at": "2026-11-09T19:31:32.895608+00:00",
+      "sdk_to_commit_s": 41.017
+    },
+    {
+      "case_id": "case_0bb2c28363584844af3fafa0fb9fa24b",
+      "phase": "trade_decision",
+      "worker_job_id": "5dc89e77c658a4a4a3d446c5cc052001f24e6f10c59d7ae051630d1333e7b879",
+      "committed_at": "2026-11-09T19:32:39.315418+00:00",
+      "sdk_completed_at": "2026-11-09T19:31:40.730232+00:00",
+      "sdk_to_commit_s": 58.585
+    },
+    {
+      "case_id": "case_151fc952d8994c3a8058b553b5e4d5fd",
+      "phase": "trade_decision",
+      "worker_job_id": "a06e9334e425daaf3f1adb7b5ed3c6d19a0cba956cdb5f5879951e58fad62ef1",
+      "committed_at": "2026-11-09T19:32:42.713795+00:00",
+      "sdk_completed_at": "2026-11-09T19:31:53.905002+00:00",
+      "sdk_to_commit_s": 48.809
+    }
+  ],
+  "turns": [
+    {
+      "lane": "W1",
+      "round_name": "R1",
+      "status": "OK",
+      "code": null,
+      "n": 13
+    },
+    {
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "code": null,
+      "n": 15
+    },
+    {
+      "lane": "W1",
+      "round_name": "R3",
+      "status": "OK",
+      "code": null,
+      "n": 9
+    },
+    {
+      "lane": "W1",
+      "round_name": "R3",
+      "status": "PENDING_RETRY",
+      "code": "provider_stream_failed",
+      "n": 9
+    },
+    {
+      "lane": "W2",
+      "round_name": "R1",
+      "status": "OK",
+      "code": null,
+      "n": 17
+    },
+    {
+      "lane": "W2",
+      "round_name": "R2",
+      "status": "OK",
+      "code": null,
+      "n": 6
+    },
+    {
+      "lane": "W2",
+      "round_name": "R3",
+      "status": "OK",
+      "code": null,
+      "n": 4
+    },
+    {
+      "lane": "W2",
+      "round_name": "R3",
+      "status": "PENDING_RETRY",
+      "code": "provider_stream_failed",
+      "n": 4
+    }
+  ],
+  "v2-scheduler": {
+    "image": "sha256:1cb724e61c8f325239688877e9da1815a2c28a9d86f8aaf3fb2bad0fa539fed9",
+    "started": "2026-11-09T19:23:53.796818282Z",
+    "restarts": 0,
+    "pids": "77\n384\nmax 0"
+  },
+  "v2-codex-worker": {
+    "image": "sha256:b8be1e5f16f13b5b4f07fa9ebaabfb53dc772e35304a9cc613dd2416feb7bd52",
+    "started": "2026-11-09T12:52:36.602679617Z",
+    "restarts": 0,
+    "pids": "1301\n4096\nmax 0"
+  }
+}

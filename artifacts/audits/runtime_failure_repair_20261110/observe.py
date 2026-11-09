@@ -15,7 +15,7 @@ out['cases'] = rows('SELECT status,count(*) n FROM runtime_v2_cases WHERE tradin
 out['new_failed'] = rows("SELECT case_id,ticker,updated_at,json_extract(payload_json,'$.error_code') code,json_extract(payload_json,'$.error_message') message FROM runtime_v2_cases WHERE status='FAILED' AND updated_at>=? ORDER BY updated_at", (cutoff,))
 out['effects'] = rows("SELECT effect_type,status,count(*) n FROM runtime_v2_effects WHERE updated_at>=? GROUP BY effect_type,status", (cutoff,))
 out['stages'] = rows("SELECT phase,status,count(*) n FROM runtime_v2_w3_stages WHERE accepted_at>=? OR committed_at>=? GROUP BY phase,status", (cutoff,cutoff))
-stages = rows("SELECT case_id,phase,worker_job_id,committed_at FROM runtime_v2_w3_stages WHERE status='COMMITTED' AND committed_at>=? ORDER BY committed_at LIMIT 200", (cutoff,))
+stages = rows("SELECT case_id,phase,worker_job_id,committed_at FROM runtime_v2_w3_stages WHERE status='COMMITTED' AND committed_at>=? ORDER BY committed_at DESC LIMIT 30", (cutoff,))
 worker = connect(root/'workspaces/worker-jobs.sqlite3')
 timings=[]
 for stage in stages:
@@ -27,10 +27,12 @@ for stage in stages:
         delay=(datetime.datetime.fromisoformat(stage['committed_at'])-datetime.datetime.fromisoformat(sdk)).total_seconds()
         timings.append(dict(stage, sdk_completed_at=sdk, sdk_to_commit_s=round(delay,3)))
 out['sdk_to_commit']=timings
-out['turns']=rows("SELECT lane,round_name,status,json_extract(payload_json,'$.error_code') code,count(*) n FROM runtime_v2_turns WHERE created_at>=? GROUP BY lane,round_name,status,code",(cutoff,))
+out['turns_sample_limit']=2000
+out['turns']=rows("SELECT lane,round_name,status,count(*) n FROM runtime_v2_turns WHERE rowid>(SELECT coalesce(max(rowid),0)-2000 FROM runtime_v2_turns) AND created_at>=? GROUP BY lane,round_name,status",(cutoff,))
 for role in ['v2-scheduler','v2-codex-worker']:
     name=('doxagent-v2-codex-worker-1' if role == 'v2-codex-worker' else 'doxagent-v2-'+role+'-1')
     info=json.loads(subprocess.check_output(['docker','inspect',name]))[0]
     cmd=['docker','exec',name,'sh','-c','cat /sys/fs/cgroup/pids.current /sys/fs/cgroup/pids.max /sys/fs/cgroup/pids.events']
     out[role]={'image':info['Image'],'started':info['State']['StartedAt'],'restarts':info['RestartCount'], 'pids':subprocess.check_output(cmd,text=True).strip()}
+out['finished_at']=datetime.datetime.now(datetime.timezone.utc).isoformat()
 print(json.dumps(out,ensure_ascii=False))
