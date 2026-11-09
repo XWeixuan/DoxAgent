@@ -2788,3 +2788,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-10 Runtime 发布验收补充：恢复窗口实际出现 64 个 Ready 私有 Capsule / 56 个无模型 Job，资源验收失败并停止 Scheduler/Worker。已完成绑定的 Ready claim 改走索引窄读，绕过全局 slot lock、Worker 写队列和公共补货；首次 HTTP claim 仅 await 原 build task（20 秒分段），消除 100ms 写入轮询，取消不取消原 Fork。Ready 发布时同步标记 CASE，Scheduler 绑定回执走现有 priority=0 短写；不改模型、业务规则和 Fork 身份。
 2026-11-10 Source outage production acceptance: Collector-only exact-SHA 9f2ac400 release/hash verified; browser/service owners and recheck=false preserved. Five-minute natural window: AviationWeek 26 captured runs, no failure; 33/34 baseline failed sources now have all current required units succeeded. Overall production 76/77, test 6/6 latest fully green; Reuters still has manual-review primary and backup queue pressure, not claimed stable. Preserve transient failures and BODY gaps in docs/message-sources-proxy-recovery-20261110.md.
+
+2026-11-10 W3 Ready 回执补充：公共 refill 复用现有 tasks 按 profile 去重异步推进，首次领取等待原 build 但不等待其后台补货；回归刻意阻塞 refill，已准备 Case 仍即时回执，保留原 Fork/工作区身份。

@@ -56,3 +56,6 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 定点元数据确认该窗口 64 个 Slot 发布 Ready，其中 56 个 run 无模型 Job；不是 64 个正常活跃模型。Worker claim 每次都排入同一个 slot lock、执行 reconcile 和写事务，并 await 公共 fill；Scheduler 的已准备绑定回执仍直接竞争普通 journal writer。已完成绑定的重试现改为 case/record 索引窄读、身份核验和原私有交接，不进入上述公共写路径。HTTP 首次准备等待已有 build task（分段 20 秒，断连不取消原 Fork），准备完成即回读同一 Slot，减少原 100ms claim 写轮询。公共补货保留在已有 build.finally 与后台 prepare_assets，不作为实时 claim 回执前置条件。CASE 身份与 Ready 发布同事务，终态 tombstone / 已受理 Job fencing 不变。Scheduler 小绑定回执复用现有 priority=0 write_io，并跳过相同字段 UPDATE。
 
 这些是已定位等待路径的窄修复；其对生产资源回落的效果仍以再次发布的完整 10 分钟观察为准，不能仅以本地回归或新机制推断通过。
+
+
+补货退出依赖复核：build.finally 的公共 fill 也改为复用现有 tasks、按 profile 去重的独立后台任务，不令首次 HTTP claim 的原 build 完成被公共补货卡住；claim 消耗公共 Ready 后仍即时触发补货，避免等 30 秒周期才预热。没有新的 registry、线程池或容量门槛。刻意阻塞 refill 的真实协程回归验证第一次已准备回执仍在 1 秒内返回。

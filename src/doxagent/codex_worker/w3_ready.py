@@ -114,6 +114,22 @@ class W3ReadySlots:
         if identity not in self.tasks and not self.closed:
             self.tasks[identity] = asyncio.create_task(self.build(identity, config))
 
+    def _schedule_fill(self, key):
+        identity = 'refill:' + key
+        if self.closed or key not in self.configs or identity in self.tasks:
+            return
+
+        async def replenish():
+            try:
+                await self.fill(key)
+            except Exception as exc:
+                from doxagent.control_io import diagnostic_warning
+                diagnostic_warning(__name__, 'W3 public refill will retry: %s', type(exc).__name__)
+            finally:
+                self.tasks.pop(identity, None)
+
+        self.tasks[identity] = asyncio.create_task(replenish())
+
     def _fill(self, key, config):
         if not config.get("active_public", True):
             return
@@ -465,8 +481,7 @@ class W3ReadySlots:
                 self.tasks[identity] = asyncio.create_task(resume_build())
             elif not self.closed:
                 key = sha(compact([config["parent_thread_id"], config["profile"], ENTRY]))
-                if key in self.configs:
-                    await self.fill(key)
+                self._schedule_fill(key)
 
     async def retire(self, *, dry_run=False):
         if not getattr(self.jobs, "_processes_recovered", True):
@@ -642,6 +657,7 @@ class W3ReadySlots:
         # Join the existing preparation owner; repeated claims must not create
         # a 100ms write/reconcile loop ahead of an already-ready live Case.
         # Public replenishment remains in build.finally / prepare_assets.
+        self._schedule_fill(key)
         task = self.tasks.get(result['slot_id'])
         if wait and not result['thread_id'] and task is not None:
             await asyncio.wait({task}, timeout=20)

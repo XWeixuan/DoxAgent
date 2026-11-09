@@ -582,7 +582,11 @@ async def test_completed_ready_claim_bypasses_background_writer_and_slot_lock(tm
 
     owner = None
     try:
-        first = await slots.claim(request, wait=True)
+        refill = asyncio.Event()
+        async def blocked_refill(key):
+            await refill.wait()
+        slots.fill = blocked_refill
+        first = await asyncio.wait_for(slots.claim(request, wait=True), 1)
         assert first['status'] == 'COMPLETED'
         assert jobs._runtime.forks == 1
         owner = asyncio.create_task(write_io(jobs.store.path, hold))
