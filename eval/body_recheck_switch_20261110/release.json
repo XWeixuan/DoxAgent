@@ -1,0 +1,48 @@
+{
+  "commit": "5f0b3deaac9e326c3794eef72464b32c1c8c0dfd",
+  "started_at": "2026-11-09T21:53:11.015923+00:00",
+  "finished_at": "2026-11-09T21:54:37.505539+00:00",
+  "returncode": 0,
+  "protected_unchanged": true,
+  "roles": {
+    "v2-api": {
+      "id": "48bfa36421b674a7ab340c24de0a798da548905b0cae19599338c3fe2c6eda08",
+      "started_at": "2026-11-09T21:53:51.042608482Z",
+      "status": "running",
+      "health": "healthy",
+      "commit": "5f0b3deaac9e326c3794eef72464b32c1c8c0dfd",
+      "recheck_switch": "false"
+    },
+    "v2-message-bus": {
+      "id": "dc9a2a1b62ceb4187f7a2c2d0348f33caa167ffdb2dd8ed67c5b4e4d26da9cc8",
+      "started_at": "2026-11-09T21:54:17.227003788Z",
+      "status": "running",
+      "health": null,
+      "commit": "5f0b3deaac9e326c3794eef72464b32c1c8c0dfd",
+      "recheck_switch": "false"
+    },
+    "v2-content-enrichment": {
+      "id": "d7a01ee57eeee37bff22205f62a43ba38605e419e90e0a15cf9813ab7fcec7ea",
+      "started_at": "2026-11-09T21:54:28.484145203Z",
+      "status": "running",
+      "health": null,
+      "commit": "5f0b3deaac9e326c3794eef72464b32c1c8c0dfd",
+      "recheck_switch": "false"
+    }
+  },
+  "private_log": "/var/lib/doxagent/releases/body-recheck-off-20261109T215311Z.log",
+  "checks": {
+    "v2-api": {
+      "recheck_enabled": false,
+      "hashes_match": true
+    },
+    "v2-message-bus": {
+      "recheck_enabled": false,
+      "hashes_match": true
+    },
+    "v2-content-enrichment": {
+      "recheck_enabled": false,
+      "hashes_match": true
+    }
+  }
+}

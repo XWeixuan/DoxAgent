@@ -1,0 +1,144 @@
+{
+  "at": "2026-11-09T21:41:33.025246+00:00",
+  "disk_free": 40384368640,
+  "roles": [
+    {
+      "role": "v2-api",
+      "id": "35721711a804",
+      "commit": "db08791f",
+      "started_at": "2026-11-09T20:42:39.254606461Z",
+      "status": "running",
+      "recheck_switch": null
+    },
+    {
+      "role": "v2-message-bus",
+      "id": "a8819ca5aef6",
+      "commit": "db08791f",
+      "started_at": "2026-11-09T20:42:39.259718774Z",
+      "status": "running",
+      "recheck_switch": null
+    },
+    {
+      "role": "v2-content-enrichment",
+      "id": "642c3c99180e",
+      "commit": "db08791f",
+      "started_at": "2026-11-09T20:42:39.253929946Z",
+      "status": "running",
+      "recheck_switch": null
+    },
+    {
+      "role": "v2-message-collector",
+      "id": "30c97e74920f",
+      "commit": "db08791f",
+      "started_at": "2026-11-09T20:42:39.233823347Z",
+      "status": "running",
+      "recheck_switch": null
+    },
+    {
+      "role": "v2-site-access",
+      "id": "0cbb9f07183f",
+      "commit": "3dcf8b34ba536e682ec8e05a9fc2bf388db15d9a",
+      "started_at": "2026-11-09T20:42:39.916718164Z",
+      "status": "running",
+      "recheck_switch": null
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "id": "37881d9a4b92",
+      "commit": "ae5f3f8ada5299ab7be528c57a16d8a12224b735",
+      "started_at": "2026-11-09T20:42:39.229749663Z",
+      "status": "running",
+      "recheck_switch": null
+    }
+  ],
+  "live": [
+    {
+      "work_kind": "capability_resume",
+      "state": "MERGED",
+      "n": 68
+    },
+    {
+      "work_kind": "capability_resume",
+      "state": "READY",
+      "n": 78
+    },
+    {
+      "work_kind": "content_update",
+      "state": "MERGED",
+      "n": 5
+    },
+    {
+      "work_kind": "content_update",
+      "state": "NOT_APPLICABLE",
+      "n": 2
+    },
+    {
+      "work_kind": "content_update",
+      "state": "READY",
+      "n": 486
+    },
+    {
+      "work_kind": "new_article",
+      "state": "FETCH_DUE",
+      "n": 402
+    },
+    {
+      "work_kind": "new_article",
+      "state": "MERGED",
+      "n": 385
+    },
+    {
+      "work_kind": "new_article",
+      "state": "NOT_APPLICABLE",
+      "n": 24
+    },
+    {
+      "work_kind": "new_article",
+      "state": "READY",
+      "n": 1727
+    },
+    {
+      "work_kind": "recheck",
+      "state": "FETCHING",
+      "n": 1
+    },
+    {
+      "work_kind": "recheck",
+      "state": "FETCH_DUE",
+      "n": 3807
+    },
+    {
+      "work_kind": "recheck",
+      "state": "MERGED",
+      "n": 108
+    },
+    {
+      "work_kind": "recheck",
+      "state": "READY",
+      "n": 19958
+    }
+  ],
+  "legacy": [],
+  "body_last_10m": [
+    {
+      "work_class": null,
+      "disposition": null,
+      "n": 9
+    },
+    {
+      "work_class": "foreground",
+      "disposition": "ACCESS_EXHAUSTED",
+      "n": 3
+    },
+    {
+      "work_class": "recheck",
+      "disposition": "ACCESS_EXHAUSTED",
+      "n": 29
+    },
+    {
+      "work_class": "recheck",
+      "disposition": "SUCCESS",
+      "n": 13
+    }
+  ]
+}
