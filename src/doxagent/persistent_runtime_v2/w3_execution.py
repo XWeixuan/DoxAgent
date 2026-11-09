@@ -329,12 +329,13 @@ class W3Execution:
                 accepted_at=accepted_at,
             )
         refs = self.registry.stage(case.case_id, TRADE_PHASE).get("input_refs") or {}
-        refs.update(record_id=owned["record_id"], operation_key="w3-fork:" + owned["record_id"])
-        with self.journal.transaction() as db:
-            db.execute(
-                "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
-                (encode(refs), case.case_id, TRADE_PHASE),
-            )
+        wanted = dict(refs, record_id=owned["record_id"], operation_key="w3-fork:" + owned["record_id"])
+        if refs != wanted:
+            with self.journal.transaction() as db:
+                db.execute(
+                    "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                    (encode(wanted), case.case_id, TRADE_PHASE),
+                )
         if not owned["thread_id"] and not getattr(self.agent, "supports_prepare", False):
             child = self.agent.fork_thread(
                 ThreadForkRequest(

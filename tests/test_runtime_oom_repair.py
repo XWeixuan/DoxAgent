@@ -356,3 +356,57 @@ def test_effect_renewal_waits_on_existing_local_writer_before_opening_sql_writer
             db.execute("BEGIN IMMEDIATE")
     thread.join(2)
     assert done.is_set()
+
+
+@pytest.mark.asyncio
+async def test_phase_terminal_receipts_use_existing_high_priority_writer(tmp_path, monkeypatch):
+    from tests.test_persistent_runtime_worker_receipts import _request, _Worker
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.worker_receipts import ReceiptWorker
+    import doxagent.persistent_runtime_v2.worker_receipts as module
+
+    journal = RuntimeJournal(tmp_path / "runtime.sqlite3")
+    worker = _Worker()
+    worker.requests = [None]
+    writes = []
+    original = module.write_io
+
+    async def observed(path, function, *args, **kwargs):
+        if args and args[0] in ("worker_invocations", "worker_receipts"):
+            writes.append((args[0], kwargs.get("priority")))
+        return await original(path, function, *args, **kwargs)
+
+    monkeypatch.setattr(module, "write_io", observed)
+    request = _request("gpt-6-luna", "attempt").model_copy(update={"task_phase": "trade_decision"})
+    await ReceiptWorker(worker, journal, "case", case_id="case").run(request)
+    assert writes == [("worker_invocations", 0), ("worker_receipts", 0)]
+
+
+def test_timing_diagnostics_yield_busy_business_writer(tmp_path):
+    from threading import Thread
+    from doxagent.control_io import write_lock
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.w3_timing import effect_trace
+
+    journal = RuntimeJournal(tmp_path / "runtime.sqlite3")
+    entered, leave = Event(), Event()
+
+    def hold():
+        with write_lock(journal.path):
+            entered.set()
+            leave.wait(2)
+
+    thread = Thread(target=hold)
+    thread.start()
+    assert entered.wait(1)
+    effect = RuntimeEffect(case_id="case", effect_type="route_to_w3", idempotency_key="case")
+    try:
+        started = time.monotonic()
+        with effect_trace(effect, journal):
+            pass
+        assert time.monotonic() - started < 0.2
+        assert journal.get("w3_boundary_timing", effect.effect_id + ":0") is None
+        assert list((tmp_path / "boundary-timing").glob("*.json"))
+    finally:
+        leave.set()
+        thread.join()

@@ -30,3 +30,6 @@
 首轮资源已回落，未 OOM；但不能判为业务验收通过。约 80 个准备/续接任务仍在短写争用，W3 尚未推进到新的模型 Job。实际 /proc/locks 将 WAL writer 指向 Scheduler；py-spy 栈同时看到共享续租提交、其他 Effect repo 写入和大量 journal.begin 等待。Effect 的 claim/save/renew 原本绕过 journal 已有的数据库级 write_lock，形成同进程两套竞争入口；这四条短 SQL 路径现复用同一个现有锁，不扩大业务并发限制、不创建新队列，Native 编码仍在锁外。新增回归验证：心跳等待本地 writer 时尚未占用 SQLite writer。
 
 另一个采样时刻 Executor 持有数据库 PENDING lock。已确认其 164 个执行 Job 全部 DONE、没有未完成提交，再单独重启 Executor；重启后 W3 等待仍存在，因此没有把 Executor 写成唯一根因。最终发布后重新计满 10 分钟观察，首轮低内存不能替代最终验收。
+
+
+补齐结果路径：Worker terminal invocation/receipt 与 quota 收尾使用既有 priority=0，二阶段 parse-issue 回执同样提升优先级；没有变化的 W3 stage input_refs 不再开写事务。另发现 effect_trace 的原生诊断 INSERT 仍绕过业务 writer，现只在现有 writer 立即可用时记录 SQLite，否则沿用原文件 trace，不抢业务写锁。没有增加线程池、缓存或调度服务。最终资源观察及结果消费验收以最后版本重新计时为准。

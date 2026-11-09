@@ -219,6 +219,7 @@ class ReceiptWorker:
                     "ordinal": (await read_io(self.journal.get, "worker_generation", identity, 0))
                     + 1,
                 },
+                priority=0 if request.task_phase is not None else 1,
                 retry=True,
             )
         )
@@ -229,11 +230,12 @@ class ReceiptWorker:
                 "worker_receipts",
                 identity,
                 job.model_dump(mode="json"),
+                priority=0 if request.task_phase is not None else 1,
                 retry=True,
             )
         )
         if request.task_phase is not None:
-            (await write_io(self.journal.path, self._check_quota, job, retry=True))
+            (await write_io(self.journal.path, self._check_quota, job, priority=0, retry=True))
         await self._recover_o3_patch(identity, frozen, job)
         return WorkerJob.model_validate(job)
 

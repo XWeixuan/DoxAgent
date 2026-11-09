@@ -210,16 +210,25 @@ def effect_trace(effect, journal, **dispatch_timing):
                 key = f"{effect.effect_id}:{effect.lease_token}"
                 if hasattr(journal, "path"):
                     # Diagnostics must not inherit the runtime's 30s business lock wait.
-                    db = sqlite3.connect(journal.path, timeout=0.01)
-                    try:
-                        with db:
-                            db.execute(
-                                "INSERT INTO runtime_values(namespace,key,payload) VALUES(?,?,?) "
-                                "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
-                                ("w3_boundary_timing", key, json.dumps(receipt)),
-                            )
-                    finally:
-                        db.close()
+                    from doxagent.control_io import write_lock
+
+                    gate = write_lock(journal.path)
+                    if gate.acquire(blocking=False):
+                        try:
+                            db = sqlite3.connect(journal.path, timeout=0)
+                            try:
+                                with db:
+                                    db.execute(
+                                        "INSERT INTO runtime_values(namespace,key,payload) VALUES(?,?,?) "
+                                        "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
+                                        ("w3_boundary_timing", key, json.dumps(receipt)),
+                                    )
+                            finally:
+                                db.close()
+                        finally:
+                            gate.release()
+                    else:
+                        save_trace(trace, Path(journal.path).parent / "boundary-timing")
                 else:
                     journal.set("w3_boundary_timing", key, receipt)
             except Exception as exc:

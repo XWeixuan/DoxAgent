@@ -1439,6 +1439,7 @@ class CodexW3AgentRunner:
                         "w3_action_parse_issues",
                         case.case_id,
                         issues,
+                        priority=0,
                         retry=True,
                     )
                 )
