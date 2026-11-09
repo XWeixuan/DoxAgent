@@ -15,7 +15,11 @@ def article_key(message, source_id: str) -> str:
     evidence = message.metadata.get("identity_evidence", {})
     url = dedup.article_url(message.url, dedup.url_kind(message, source_id))
     # Only a provider-declared article identity can substitute for a verified URL.
-    locator = story_id(message, source_id) or url or (
+    wire_identity = None
+    if source_id == "businesswire_massive":
+        from .newswire_listing import businesswire_item_key
+        wire_identity = businesswire_item_key(message.url)
+    locator = wire_identity or story_id(message, source_id) or url or (
         f"{source_id}:{message.external_id}"
         if evidence.get("id_kind") == "stable_article" and message.external_id
         else f"{source_id}:{message.external_id or message.source_item_key or message.url}"

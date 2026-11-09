@@ -8,7 +8,41 @@ from doxagent.message_bus_v2.newswire_listing import RECIPES, RSS_ONLY_SOURCES
 from doxagent.message_bus_v2.schema import UpdateActor
 
 
+def preserve_businesswire_owners(repository):
+    """Reserve new provider identities against retained owners, without rewriting history."""
+    from doxagent.message_bus_v2.body_results import article_key, update_hint
+    from doxagent.message_bus_v2.newswire_listing import businesswire_item_key
+    from doxagent.message_bus_v2.schema import RawMessageInput, utc_now, sha256_text, canonical_json
+
+    with repository._connect() as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='live_articles'").fetchone():
+            return 0
+        rows = db.execute("SELECT article_key,url,title,first_seen_at,delivery_mode FROM live_articles "
+            "WHERE source_id='businesswire_massive' AND delivery_mode='test' AND state!='MERGED' "
+            "ORDER BY CASE WHEN outcome IN ('FULL','SHORT_FULL') THEN 1 ELSE 0 END DESC,first_seen_at,article_key").fetchall()
+    owners = {}
+    for row in rows:
+        identity = businesswire_item_key(row['url'])
+        if not identity:
+            continue
+        language = identity.rsplit(':', 1)[-1]
+        language = {'zh-hk':'zh-Hant', 'zh-cn':'zh-Hans'}.get(language, language)
+        message = RawMessageInput(url=row['url'], title=row['title'], published_at=utc_now(), raw_payload={},
+            metadata={'language':language, '_delivery_mode':row['delivery_mode'],
+                      'identity_evidence':{'url_kind':'article'}})
+        origin = sha256_text(canonical_json(['businesswire_massive:test', identity]))
+        owners.setdefault(article_key(message, 'businesswire_massive'), (row, origin, update_hint(message)))
+    with repository.transaction() as db:
+        for canonical, (row, origin, hint) in owners.items():
+            db.execute("INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','canonical','',?,'[]')",
+                ('canonical:'+canonical, row['article_key'], row['first_seen_at']))
+            db.execute("INSERT OR IGNORE INTO live_origins VALUES(?,?,'businesswire_massive','WIRE:identity',?,?,'[]')",
+                (origin, row['article_key'], hint, row['first_seen_at']))
+    return len(owners)
+
+
 def configure(service):
+    preserved = preserve_businesswire_owners(service.repository)
     report = []
     with service.repository.atomic_intake():
         for sid, recipe in RECIPES.items():
@@ -21,7 +55,8 @@ def configure(service):
             mode = "rss" if sid in RSS_ONLY_SOURCES else "http_listing"
             kind = "api" if mode == "rss" else "crawler"
             if source.default_parameters.get("discovery_mode") == mode and source.kind == kind:
-                report.append(dict(source_id=sid, action="unchanged", version=source.version))
+                report.append(dict(source_id=sid, action="unchanged", version=source.version,
+                                   **({'retained_body_identities':preserved} if sid == 'businesswire_massive' else {})))
                 continue
             updated = service.update_source(sid, {
                 "kind": kind,

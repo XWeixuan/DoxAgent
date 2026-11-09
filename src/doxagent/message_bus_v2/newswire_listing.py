@@ -9,6 +9,7 @@ import json
 import re
 import time
 from datetime import UTC, datetime, timedelta
+from html import unescape
 from types import SimpleNamespace
 from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
@@ -61,6 +62,14 @@ def canonical_article_url(url):
     return url
 
 
+def businesswire_item_key(url):
+    parts = urlsplit(url)
+    match = re.match(r"^/news/home/(\d+)/([a-zA-Z-]+)(?:/|$)", parts.path)
+    if parts.hostname in {"www.businesswire.com", "businesswire.com"} and match:
+        return "businesswire:"+match[1]+":"+match[2].lower()
+    return None
+
+
 def parse_businesswire(text, source):
     data = None
     for match in re.finditer(r'"news":\s*(?=\{)', text):
@@ -75,11 +84,12 @@ def parse_businesswire(text, source):
         raise ValueError("businesswire_rsc_news_missing_or_challenge")
     rows = []
     for item in data["items"]:
-        identifier, language, title = item.get("newsItemId", ""), item.get("language", ""), item.get("headline", "")
-        if not re.fullmatch(r"\d+", identifier) or not re.fullmatch(r"[a-zA-Z-]+", language) or not title:
+        identifier, language, headline = item.get("newsItemId", ""), item.get("language", ""), item.get("headline", "")
+        if not re.fullmatch(r"\d+", identifier) or not re.fullmatch(r"[a-zA-Z-]+", language) or not headline:
             raise ValueError("businesswire_invalid_article_identity")
+        title = unescape(headline)
         # Match the publisher's client link builder, not an invented URL slug.
-        slug = re.sub(r"[^a-zA-Z0-9\-\s.€$£¥_]", "", title.strip()) if language == "en" else ""
+        slug = re.sub(r"[^a-zA-Z0-9\-\s.€$£¥_]", "", headline.strip()) if language == "en" else ""
         slug = re.sub(r"\s+", "-", slug)[:1000]
         url = canonical_article_url("https://www.businesswire.com/news/home/"+identifier+"/"+language+("/"+quote(slug, safe="-_.!~*'()") if slug else ""))
         published = datetime.fromisoformat(item["releaseDate"].replace("Z", "+00:00"))

@@ -312,6 +312,8 @@ def test_businesswire_real_rsc_data_and_original_rss_share_identity_and_body_hin
         assert rss.url == row.url and article_key(row, sid) == article_key(rss, sid)
         assert update_hint(row) == update_hint(rss)
         assert canonical_article_url(row.url.rstrip("/")) == row.url
+    packet['news']['items'][0]['headline']='Acme &amp; Partners'
+    assert parse_listing(json.dumps(packet), source(sid), NOW)[0].title=='Acme & Partners'
 
 
 async def test_businesswire_uses_readonly_rsc_post_and_rejects_ignored_pagination(monkeypatch):
@@ -342,3 +344,45 @@ async def test_newsfile_is_intentional_rss_without_http_failure_or_browser():
     adapter.poll_feed.assert_awaited_once()
     adapter.listing_request.assert_not_called()
     await adapter.close()
+
+
+def test_businesswire_id_ignores_actual_rss_and_frontend_slug_differences(tmp_path):
+    from doxagent.message_bus_v2.body_results import article_key, update_hint
+    from doxagent.message_bus_v2.live import LiveQueue
+    from doxagent.message_bus_v2.schema import RawMessageInput, utc_now
+    from doxagent.message_bus_v2 import deduplication as dedup
+    from scripts.ops.configure_newswire_http import preserve_businesswire_owners
+    from tests.test_content_enrichment_hub import _setup
+
+    sid = 'businesswire_massive';title='Royal Australasian College of Surgeons Targets AU$2.1 Million in Savings With HPE Private Cloud'
+    rss_url='https://www.businesswire.com/news/home/20261109710510/en/Royal-Australasian-College-of-Surgeons-Targets-AU2.1-Million-in-Savings-With-HPE-Private-Cloud/'
+    web_url=rss_url.replace('AU2.1','AU%242.1')
+    message=RawMessageInput(url=rss_url,title=title,published_at=utc_now(),raw_payload={},metadata={'language':'en','_delivery_mode':'test','identity_evidence':{'url_kind':'article'}})
+    web=message.model_copy(update={'url':web_url})
+    assert article_key(message,sid)==article_key(web,sid)
+    assert update_hint(message)==update_hint(web)
+    assert article_key(message,'other')!=article_key(web,'other')  # Narrow source scope.
+    repo,bus,_,_=_setup(tmp_path);s=source(sid);repo.save_source(s);bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
+    # Seed retained pre-migration URL identities exactly as the old code did.
+    from doxagent.message_bus_v2.schema import sha256_text,canonical_json
+    from unittest.mock import patch
+    def old_key(m,source_id):return 'test_'+sha256_text(canonical_json([dedup.article_url(m.url,'article'),'public','en']))
+    with patch('doxagent.message_bus_v2.live_repository.article_key',old_key), patch('doxagent.message_bus_v2.newswire_listing.businesswire_item_key',return_value=None):
+        for m in [message,web]:
+            live.accept(live.prepare_input(s,[],[m],observed_at=utc_now().isoformat(),unit='WIRE:all'))
+    retained=old_key(message,sid)
+    with repo._connect() as db:
+        db.execute("UPDATE live_articles SET state='READY',outcome='FULL',body_digest='retained-full-body' WHERE article_key=?",(retained,))
+    assert preserve_businesswire_owners(repo)==1
+    for m in [web,message,web]:
+        live.accept(live.prepare_input(s,[],[m],observed_at=utc_now().isoformat(),unit='WIRE:listing'))
+    with repo._connect() as db:
+        assert db.execute('SELECT count(*) FROM live_articles WHERE source_id=?',(sid,)).fetchone()[0]==2  # History retained; no new owner.
+        old=db.execute('SELECT state,body_digest,input_revision FROM live_articles WHERE article_key=?',(retained,)).fetchone()
+        assert tuple(old)==('READY','retained-full-body',1)
+        assert db.execute('SELECT article_key FROM live_origins WHERE origin_key=?',('canonical:'+article_key(web,sid),)).fetchone()[0]==retained
+    assert preserve_businesswire_owners(repo)==1
+    changed=web.model_copy(update={'title':title+' UPDATED','url':web.url.replace('Private-Cloud','Private-Cloud-Updated')})
+    live.accept(live.prepare_input(s,[],[changed],observed_at=utc_now().isoformat(),unit='WIRE:listing'))
+    with repo._connect() as db:
+        assert tuple(db.execute('SELECT state,input_revision FROM live_articles WHERE article_key=?',(retained,)).fetchone())==('FETCH_DUE',2)

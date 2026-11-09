@@ -213,6 +213,9 @@ class LiveRepository:
                 message.url,
                 message.metadata.get("identity_evidence", {}).get("url_kind", "unknown"),
             )
+            if source.source_id == 'businesswire_massive':
+                from .newswire_listing import businesswire_item_key
+                locator = businesswire_item_key(message.url) or locator
             lane = message.metadata.get("discovery_lane") if source.default_parameters.get("discovery_mode") == "http_rss_race" else None
             origin = sha256_text(
                 canonical_json(
