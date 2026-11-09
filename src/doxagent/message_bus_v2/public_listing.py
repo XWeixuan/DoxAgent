@@ -127,6 +127,7 @@ RECIPES = {
             "https://aviationweek.com/taxonomy/term/" + topic,
             "aviation",
             "us-standard-5",
+            fresh_query=True,
         )
         for topic in AVIATION_TOPICS
     ),

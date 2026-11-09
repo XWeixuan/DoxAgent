@@ -1,0 +1,56 @@
+[
+  {
+    "egress_id": "jp-standard-6",
+    "status": "READY",
+    "observed_ip": "205.198.126.114",
+    "consecutive_probe_failures": 0,
+    "last_probe_error": null,
+    "next_probe_at": "2026-11-09T23:59:51.655397Z",
+    "generation": 7
+  },
+  {
+    "egress_id": "us-standard-5",
+    "status": "READY",
+    "observed_ip": "205.198.126.113",
+    "consecutive_probe_failures": 0,
+    "last_probe_error": null,
+    "next_probe_at": "2026-11-09T23:59:53.635141Z",
+    "generation": 6
+  },
+  {
+    "egress_id": "nl-standard-2",
+    "status": "READY",
+    "observed_ip": "205.198.126.114",
+    "consecutive_probe_failures": 0,
+    "last_probe_error": null,
+    "next_probe_at": "2026-11-09T23:59:55.020103Z",
+    "generation": 7
+  },
+  {
+    "egress_id": "de-standard-1",
+    "status": "READY",
+    "observed_ip": "205.198.126.113",
+    "consecutive_probe_failures": 0,
+    "last_probe_error": null,
+    "next_probe_at": "2026-11-09T23:59:56.374932Z",
+    "generation": 3
+  },
+  {
+    "egress_id": "tr-standard-1",
+    "status": "READY",
+    "observed_ip": "185.40.106.84",
+    "consecutive_probe_failures": 0,
+    "last_probe_error": null,
+    "next_probe_at": "2026-11-10T00:00:00.539516Z",
+    "generation": 2
+  },
+  {
+    "egress_id": "server-direct",
+    "status": "READY",
+    "observed_ip": "43.163.67.97",
+    "consecutive_probe_failures": 0,
+    "last_probe_error": null,
+    "next_probe_at": "2026-11-10T00:00:01.770962Z",
+    "generation": 2
+  }
+]

@@ -1,0 +1,43 @@
+[
+  {
+    "fresh_query": false,
+    "status": 200,
+    "headers": {
+      "date": "Mon, 09 Nov 2026 23:35:56 GMT",
+      "cf-cache-status": "DYNAMIC",
+      "age": "321",
+      "cache-control": "max-age=31536000, public",
+      "x-cache": "HIT"
+    },
+    "bytes": 154338,
+    "freshness_error": "public_listing_stale_cache_age:321.0",
+    "articles": 25
+  },
+  {
+    "fresh_query": true,
+    "status": 200,
+    "headers": {
+      "date": "Mon, 09 Nov 2026 23:35:58 GMT",
+      "cf-cache-status": "DYNAMIC",
+      "age": "0",
+      "cache-control": "max-age=31536000, public",
+      "x-cache": "MISS"
+    },
+    "bytes": 154401,
+    "freshness": {
+      "observed_age_seconds": 0.34,
+      "age_basis": "age_and_date",
+      "max_age_seconds": 120,
+      "headers": {
+        "age": "0",
+        "date": "Mon, 09 Nov 2026 23:35:58 GMT",
+        "cache-control": "max-age=31536000, public",
+        "last-modified": "Mon, 09 Nov 2026 23:35:57 GMT",
+        "x-cache": "MISS",
+        "cf-cache-status": "DYNAMIC",
+        "x-drupal-dynamic-cache": "MISS"
+      }
+    },
+    "articles": 25
+  }
+]

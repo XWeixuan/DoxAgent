@@ -502,7 +502,8 @@ def test_aviation_topics_have_distinct_units_and_article_identity_overlaps():
 async def test_aviation_combined_poll_deduplicates_internal_topics():
     class TopicsHttp(Http):
         async def fetch(self, url, spec, **kwargs):
-            index = next(i for i, r in enumerate(RECIPES["aviationweek_rss"]) if r.url == url)
+            base = urlsplit(url)._replace(query="", fragment="").geturl()
+            index = next(i for i, r in enumerate(RECIPES["aviationweek_rss"]) if r.url == base)
             self.responses = [capture("aviationweek_rss", index)]
             return await super().fetch(url, spec, **kwargs)
 
@@ -513,6 +514,33 @@ async def test_aviation_combined_poll_deduplicates_internal_topics():
     assert not result.failures
     assert len(result.messages) == len(expected)
     assert len(result.next_checkpoint["listings"]) == 5
+
+
+async def test_aviation_refresh_keeps_checkpoint_validators_and_article_delta():
+    recipe = RECIPES["aviationweek_rss"][0]
+    assert all(r.fresh_query for r in RECIPES["aviationweek_rss"])
+    http = Http(capture("aviationweek_rss", headers={"age": "0", "etag": '"v1"'}))
+    ctx = context("aviationweek_rss")
+    adapter = ListingAdapter(SimpleNamespace(), http)
+    first = await adapter.poll_shared(ctx)
+    assert first.messages and not first.failures
+    ctx.checkpoint = first.next_checkpoint
+    ctx.requested_at += timedelta(minutes=1)
+    second = await adapter.poll_shared(ctx)
+    assert not second.messages and not second.failures
+    assert http.calls[0][0] != http.calls[1][0]
+    assert all(url.startswith(recipe.url + "?_dox_poll=") for url, _, _ in http.calls)
+    assert http.calls[1][2]["headers"]["If-None-Match"] == '"v1"'
+    assert list(second.next_checkpoint["listings"]) == [recipe.url]
+
+
+async def test_aviation_refresh_does_not_accept_a_stale_response():
+    delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
+    http = Http(capture("aviationweek_rss", headers={"age": "321"}))
+    result = await ListingAdapter(delegate, http).poll_shared(context("aviationweek_rss"))
+    assert result.failures[0].error_code == "HTTP_LISTING_FAILED_RSS_FALLBACK"
+    assert "public_listing_stale_cache_age" in result.failures[0].error_message
+    delegate.poll_shared.assert_awaited_once()
 
 
 async def test_aviation_separate_topic_captures_deduplicate_in_existing_bus(tmp_path, monkeypatch):
