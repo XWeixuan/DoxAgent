@@ -506,3 +506,54 @@ def test_ack_eligibility_is_atomic_with_business_commit(tmp_path):
     with journal.transaction() as db:
         registry.commit_stage(db, "case", "trade_decision")
     assert journal.get("w3_ack_pending", "job") == {"case_id": "case"}
+
+
+def test_failed_market_diagnostic_never_blocks_shared_w3_loop(tmp_path):
+    from threading import Thread
+    from doxagent.control_io import write_lock
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner
+
+    journal = RuntimeJournal(tmp_path / "runtime.sqlite3")
+    failed, entered, release, written = Event(), Event(), Event(), Event()
+
+    class Worker:
+        async def start_w3_market(self, manifest):
+            failed.set()
+            raise RuntimeError("market unavailable")
+
+    runner = CodexW3AgentRunner(worker=Worker(), workspace=None, context_provider=None,
+                               journal=journal, prompt_root=tmp_path)
+    runner.entry_enabled = lambda case: True
+    gap = journal.gap
+
+    def save(*args):
+        gap(*args)
+        written.set()
+
+    journal.gap = save
+
+    def hold():
+        with write_lock(journal.path):
+            entered.set()
+            release.wait(5)
+
+    thread = Thread(target=hold)
+    thread.start()
+    assert entered.wait(1)
+    try:
+        runner.queue_market(SimpleNamespace(case_id="case", ticker="MU"))
+        assert failed.wait(1)
+        # Force the failed request's completion callback before the probe.
+        async def probe():
+            await asyncio.sleep(0.05)
+            return "transport alive"
+        assert asyncio.run_coroutine_threadsafe(probe(), runner._loop).result(0.5) == "transport alive"
+        assert not written.is_set()
+        release.set()
+        assert written.wait(2)
+        assert journal.gaps("MU")[0]["code"] == "RuntimeError"
+    finally:
+        release.set()
+        thread.join()
+        runner.close()

@@ -630,25 +630,42 @@ class CodexW3AgentRunner:
             return
         from datetime import UTC, timedelta
 
-        pending = asyncio.run_coroutine_threadsafe(
-            self._worker.start_w3_market(
-                dict(
-                    case_id=case.case_id,
-                    ticker=case.ticker,
-                    mode=self.environment.mode,
-                    deadline_at=(
-                        datetime.now(UTC) + timedelta(seconds=self._timeout_seconds + 60)
-                    ).isoformat(),
+        case_id, ticker = case.case_id, case.ticker
+
+        async def prepare():
+            try:
+                await self._worker.start_w3_market(
+                    dict(
+                        case_id=case_id,
+                        ticker=ticker,
+                        mode=self.environment.mode,
+                        deadline_at=(
+                            datetime.now(UTC) + timedelta(seconds=self._timeout_seconds + 60)
+                        ).isoformat(),
+                    )
                 )
-            ),
-            self._loop,
-        )
+            except Exception as exc:
+                # This coroutine shares the live W3 transport loop. A diagnostic
+                # must await the existing SQL owner, never wait on SQLite here.
+                await write_io(
+                    self._journal.path,
+                    self._journal.gap,
+                    "w3-market-prepare", ticker, type(exc).__name__, str(exc),
+                    retry=True,
+                )
+
+        pending = asyncio.run_coroutine_threadsafe(prepare(), self._loop)
 
         def observed(future):
             try:
                 future.result()
             except Exception as exc:
-                self._journal.gap("w3-market-prepare", case.ticker, type(exc).__name__, str(exc))
+                from doxagent.control_io import diagnostic_warning
+
+                diagnostic_warning(
+                    __name__, "W3 market preparation diagnostic unavailable: %s",
+                    type(exc).__name__,
+                )
 
         pending.add_done_callback(observed)
 

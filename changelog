@@ -2782,3 +2782,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-10 W3 SSE transport: remove the inherited 100-active-connection HTTP pool ceiling while retaining 20 idle keepalive sockets; 120 simultaneous SSE waits no longer queue materialization/result HTTP requests. Actual Case ownership still bounds active requests.
 
 2026-11-10 W3 ACK boundary: publish ACK eligibility atomically with COMMITTED rather than RESULT_SAVED, so housekeeping cannot acknowledge a phase before its business commit. Rollback retains the original Worker result.
+
+2026-11-10 Runtime 事故修复补充：现场栈证实 W3 行情预取失败的 done callback 在共享 asyncio loop 同步等待 journal.gap 写锁，现改为 await 既有 write_io；诊断落库失败只走已有非阻塞日志，不拖住模型 SSE 与工作区 RPC。增加持有 SQLite writer 时共享 loop 仍推进、释放后诊断仍落库的回归。

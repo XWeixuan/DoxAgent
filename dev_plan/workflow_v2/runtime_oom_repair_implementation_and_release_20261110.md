@@ -42,3 +42,8 @@ SSE 配套检查：Httpx 默认共享 100 条活动连接，SSE 长连接会占�
 
 
 ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMITTED 同一事务写入，RESULT_SAVED 不再提前创建标记，防止 housekeeping 抢先清理。回归覆盖 RESULT_SAVED、commit rollback、commit success 三种状态；正常阶段交接和保存结果的重试入口不变。
+
+
+最后现场栈（07:25 CST 后）：prv2-w3-async 阻塞于 queue_market 的 Future done callback → journal.gap → transaction；这是辅助行情失败诊断同步等待 SQL，能够停住所有同 loop SSE、回执和 HTTP 工作。现将失败处理移入原协程，await 既有 write_io；失败诊断本身异常只用已有 diagnostic_warning。回归持有 writer 并模拟行情失败，验证同 loop 的独立协程在 0.5 秒内完成，释放 writer 后诊断仍写入。没有新增线程池、业务并发门槛或模型调用。
+
+工作区 DiskBudget 单槽和 workspace 全局锁确有潜在后台相互等待，但本次两次 Worker 栈均未见这些操作持有者，不能将其写为此次 MATERIALIZE 超时的已证实根因；本轮没有未经归因全局移除文件一致性锁。
