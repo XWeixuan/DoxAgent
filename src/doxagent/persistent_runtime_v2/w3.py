@@ -920,6 +920,35 @@ class CodexW3AgentRunner:
                 exc.w3_step = "MATERIALIZE"
             raise
 
+    def _observe_phase_job(self, case, phase, job):
+        # Live UI progress is auxiliary; a busy business writer must never hold
+        # the model result/SSE reader behind this optional status update.
+        if phase != "trade_decision" or job.status not in {"queued", "running"} or self._case_repository is None:
+            return
+        from doxagent.control_io import write_lock
+        from .journal import encode, is_sqlite_contention
+
+        state = dict(status="RUNNING" if job.status == "running" else "PENDING",
+                     phase=phase, step=job.execution_phase, worker_job_id=job.job_id)
+        case.error_code = case.error_message = None
+        case.updated_at = self._journal.clock()
+        case.frozen_inputs["w3_execution_state"] = state
+        payload = encode(state)
+        gate = write_lock(self._journal.path)
+        if not gate.acquire(blocking=False):
+            return
+        try:
+            try:
+                with self._journal.transaction(timeout=0, operation="w3.progress", expand=False) as db:
+                    db.execute("INSERT INTO runtime_values VALUES('w3_job_state',?,?) "
+                               "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
+                               (case.case_id, payload))
+            except Exception as exc:
+                if not is_sqlite_contention(exc):
+                    raise
+        finally:
+            gate.release()
+
     async def _run_phase_materialized(
         self, *, case, record, phase, payload, context=None, research=None
     ):
@@ -1341,25 +1370,6 @@ class CodexW3AgentRunner:
                 )
             )
 
-        def observe_job(job):
-            if (
-                phase != "trade_decision"
-                or job.status not in {"queued", "running"}
-                or self._case_repository is None
-            ):
-                return
-            case.error_code = case.error_message = None
-            case.updated_at = self._journal.clock()
-            case.frozen_inputs["w3_execution_state"] = dict(
-                status="RUNNING" if job.status == "running" else "PENDING",
-                phase=phase,
-                step=job.execution_phase,
-                worker_job_id=job.job_id,
-            )
-            self._journal.set(
-                "w3_job_state", case.case_id, case.frozen_inputs["w3_execution_state"]
-            )
-
         worker = ReceiptWorker(
             self._worker,
             self._journal,
@@ -1368,7 +1378,8 @@ class CodexW3AgentRunner:
             source_case_id=case.case_id
             if phase == "w3_template" and not case.case_id.startswith("public-")
             else None,
-            on_update=observe_job if phase == "trade_decision" else None,
+            on_update=(lambda job: self._observe_phase_job(case, phase, job))
+            if phase == "trade_decision" else None,
             repair_output=phase == OPERATIONS_PHASE,
             replace_failed_model=bool(self._execution_model_override)
             and "w3_execution_profile" not in case.frozen_inputs,

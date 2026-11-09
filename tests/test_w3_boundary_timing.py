@@ -112,6 +112,9 @@ def test_durable_trace_does_not_change_trade_first_semantics(tmp_path):
                     "SELECT payload FROM runtime_values WHERE namespace='w3_boundary_timing'"
                 )
             ]
+        if not records:
+            records = [json.loads(path.read_text()) for path in
+                       (journal.path.parent / "boundary-timing").glob("*.json")]
         assert len(records) == 1
         assert records[0]["case_id"] == case.case_id
         assert "stage.begin" in records[0]["totals"]
@@ -134,6 +137,8 @@ def test_durable_trace_does_not_change_trade_first_semantics(tmp_path):
                     "SELECT payload FROM runtime_values WHERE namespace='w3_boundary_timing'"
                 )
             ]
+        receipts.extend(json.loads(path.read_text()) for path in
+                        (journal.path.parent / "boundary-timing").glob("*.json"))
         dispatched = next(row for row in receipts if "effect_claim_elapsed_ms" in row)
         assert dispatched["effect_claim_batch_size"] == 1
         assert dispatched["effect_claim_elapsed_ms"] >= 0

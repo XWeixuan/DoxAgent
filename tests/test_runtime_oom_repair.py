@@ -410,3 +410,36 @@ def test_timing_diagnostics_yield_busy_business_writer(tmp_path):
     finally:
         leave.set()
         thread.join()
+
+
+def test_busy_ui_progress_never_blocks_completed_model_consumer(tmp_path):
+    from threading import Thread
+    from doxagent.control_io import write_lock
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner
+
+    journal = RuntimeJournal(tmp_path / "runtime.sqlite3")
+    runner = object.__new__(CodexW3AgentRunner)
+    runner._journal = journal
+    runner._case_repository = object()
+    entered, leave = Event(), Event()
+
+    def hold():
+        with write_lock(journal.path):
+            entered.set()
+            leave.wait(2)
+
+    thread = Thread(target=hold)
+    thread.start()
+    assert entered.wait(1)
+    case = SimpleNamespace(case_id="case", frozen_inputs={})
+    job = SimpleNamespace(job_id="job", status="running", execution_phase="RUNNING")
+    try:
+        started = time.monotonic()
+        runner._observe_phase_job(case, "trade_decision", job)
+        assert time.monotonic() - started < 0.1
+    finally:
+        leave.set()
+        thread.join()
+    runner._observe_phase_job(case, "trade_decision", job)
+    assert journal.get("w3_job_state", "case")["worker_job_id"] == "job"

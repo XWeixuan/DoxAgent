@@ -33,3 +33,6 @@
 
 
 补齐结果路径：Worker terminal invocation/receipt 与 quota 收尾使用既有 priority=0，二阶段 parse-issue 回执同样提升优先级；没有变化的 W3 stage input_refs 不再开写事务。另发现 effect_trace 的原生诊断 INSERT 仍绕过业务 writer，现只在现有 writer 立即可用时记录 SQLite，否则沿用原文件 trace，不抢业务写锁。没有增加线程池、缓存或调度服务。最终资源观察及结果消费验收以最后版本重新计时为准。
+
+
+结果等待链路专项：Http client 会 await queued/running observer；旧 observe_job 同步 journal.set 最多反复等锁 30 秒，多次进度事件可先于终态消费累积等待。这个字段只是 UI 进度，不是阶段结果。现复用原 write_lock 做立即可用检查，争用时跳过此次进度写入，不增加任务/队列；真正 Worker receipt、RESULT_SAVED、业务 commit 的持久化及 fencing 均保持。回归直接持有业务 writer 验证 observer 立即返回，空闲时仍正确保存 UI 状态。
