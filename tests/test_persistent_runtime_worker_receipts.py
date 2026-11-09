@@ -121,7 +121,11 @@ async def test_operations_repair_changes_actual_frozen_prompt_only_once(tmp_path
 
 
 @pytest.mark.asyncio
-async def test_quota_pauses_account_without_repeating_model_requests(tmp_path):
+@pytest.mark.parametrize("failure,seconds", [
+    ("usage_limit_exceeded", 900),
+    ("http_status_code=429; exceeded retry limit, last status: 429 Too Many Requests", 60),
+])
+async def test_quota_pauses_account_without_repeating_model_requests(tmp_path, failure, seconds):
     from datetime import timedelta
 
     from doxagent.codex_runtime.errors import W3PreparationError
@@ -133,7 +137,7 @@ async def test_quota_pauses_account_without_repeating_model_requests(tmp_path):
         async def run(self, request):
             job = await super().run(request)
             return (
-                job.model_copy(update={"error_message": "usage_limit_exceeded"})
+                job.model_copy(update={"error_message": failure})
                 if len(self.requests) == 1
                 else job
             )
@@ -145,7 +149,13 @@ async def test_quota_pauses_account_without_repeating_model_requests(tmp_path):
         with pytest.raises(W3PreparationError):
             await receipt.run(request)
     assert len(worker.requests) == 1
-    now[0] += timedelta(minutes=16)
+    pause = journal.get("w3_provider_pause", "codex")
+    assert datetime.fromisoformat(pause["until"]) == now[0] + timedelta(seconds=seconds)
+    # A second Case must not buy another request while the account is paused.
+    with pytest.raises(W3PreparationError):
+        await ReceiptWorker(worker, journal, "other", case_id="other").run(request)
+    assert len(worker.requests) == 1
+    now[0] += timedelta(seconds=seconds + 1)
     assert (await receipt.run(request)).status == "succeeded"
     assert len(worker.requests) == 2
     assert not journal.get("w3_provider_pause", "codex")

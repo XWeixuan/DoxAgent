@@ -250,17 +250,24 @@ class ReceiptWorker:
             self.journal.delete("w3_provider_pause", "codex")
             return
         message = str(getattr(job, "error_message", "") or "").lower()
-        if job and ("usage_limit_exceeded" in message or "usage limit" in message):
+        usage_limit = "usage_limit_exceeded" in message or "usage limit" in message
+        rate_limit = bool(re.search(
+            r"http_status_code\s*[=:]\s*429\b|last status:\s*429\b|\brate_limit_exceeded\b",
+            message,
+        ))
+        if job and str(job.status) == "failed" and (usage_limit or rate_limit):
             if (observed or not pause) and pause.get("job_id") != job.job_id:
                 pause = dict(
                     job_id=job.job_id,
-                    code="usage_limit_exceeded",
-                    until=(self.journal.clock() + timedelta(minutes=15)).isoformat(),
+                    code="usage_limit_exceeded" if usage_limit else "provider_rate_limited",
+                    until=(self.journal.clock() + timedelta(
+                        seconds=900 if usage_limit else 60
+                    )).isoformat(),
                 )
                 self.journal.set("w3_provider_pause", "codex", pause)
         if pause.get("until") and datetime.fromisoformat(pause["until"]) > self.journal.clock():
             raise W3PreparationError(
-                "w3_provider_paused", "Codex usage limit; retry after " + pause["until"]
+                "w3_provider_paused", "Codex provider paused; retry after " + pause["until"]
             )
         if pause.get("until"):
             # One original Case probes recovery; do not release the entire backlog at once.

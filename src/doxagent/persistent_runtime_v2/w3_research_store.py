@@ -330,10 +330,10 @@ class W3ResearchStore:
 
     def bind(self, case_id, phase, manifest):
         manifest = dict(manifest)
-        manifest["snapshot_catalog"] = [
+        manifest["snapshot_catalog"] = sorted([
             {k: v for k, v in obj.items() if k not in {"body", "sources"}}
             for obj in self.objects({**manifest, "components": {}})
-        ]
+        ], key=compact)
         manifest = dict(manifest)
         refs = {}
         for key in ("policy_usage", "history", "state", "events", "evidence", "market_view"):
@@ -355,15 +355,30 @@ class W3ResearchStore:
                 atomic(seed_path, secrets.token_bytes(32))
             import hmac
 
-            token = "w3ctx_" + hmac.new(seed_path.read_bytes(), data, hashlib.sha256).hexdigest()
-            atomic(self.contexts / (identity + ".json"), data)
             with closing(self.connect()) as db, db:
                 previous = db.execute(
                     "SELECT manifest_sha FROM w3_case_contexts WHERE case_id=? AND phase=?",
                     (case_id, phase),
                 ).fetchone()
                 if previous and previous[0] != identity:
-                    raise ValueError("frozen W3 context cannot change during a phase")
+                    # Older bindings derived catalog order from dict insertion order.
+                    # Journal JSON round-trips sort those keys. Reuse the exact old
+                    # bytes/token only when this derived ordering is the sole change.
+                    previous_data = (self.contexts / (previous[0] + ".json")).read_bytes()
+                    if sha(previous_data) != previous[0]:
+                        raise ValueError("frozen W3 context checksum mismatch")
+                    previous_manifest = json.loads(previous_data)
+                    normalized = dict(previous_manifest)
+                    normalized["snapshot_catalog"] = sorted(
+                        previous_manifest.get("snapshot_catalog", []), key=compact
+                    )
+                    if normalized != manifest:
+                        raise ValueError("frozen W3 context cannot change during a phase")
+                    data, identity, manifest = previous_data, previous[0], previous_manifest
+                token = "w3ctx_" + hmac.new(
+                    seed_path.read_bytes(), data, hashlib.sha256
+                ).hexdigest()
+                atomic(self.contexts / (identity + ".json"), data)
                 db.execute(
                     "INSERT OR IGNORE INTO w3_case_contexts VALUES(?,?,?,?,?,'ACTIVE')",
                     (

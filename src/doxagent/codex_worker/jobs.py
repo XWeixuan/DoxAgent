@@ -151,9 +151,11 @@ class WorkerJobManager:
     async def _capture_identity(
         self, request: WorkerRunRequest, thread: str, turn: str | None
     ) -> None:
-        for key in self._active:
+        # Disk reads yield to the dispatcher, which can add/remove active jobs.
+        for key in tuple(self._active):
             job = await read_io(self.store.get, key)
-            if job.run_id == request.run_id and job.attempt_id == request.attempt_id:
+            if (key in self._active and job is not None
+                and job.run_id == request.run_id and job.attempt_id == request.attempt_id):
                 await self._update(key, thread_id=thread, turn_id=turn)
                 return
 
