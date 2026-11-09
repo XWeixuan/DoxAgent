@@ -258,7 +258,7 @@ def create_worker_app(
     @app.post("/v1/w3/ready-slots/claim", dependencies=[Depends(require_service_auth)])
     async def claim_ready(payload: dict):
         try:
-            return await ready_slots.claim(payload)
+            return await ready_slots.claim(payload, wait=True)
         except ValueError as exc:
             raise HTTPException(
                 409,

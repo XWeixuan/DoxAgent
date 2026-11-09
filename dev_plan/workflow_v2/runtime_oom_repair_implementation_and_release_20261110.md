@@ -47,3 +47,12 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 最后现场栈（07:25 CST 后）：prv2-w3-async 阻塞于 queue_market 的 Future done callback → journal.gap → transaction；这是辅助行情失败诊断同步等待 SQL，能够停住所有同 loop SSE、回执和 HTTP 工作。现将失败处理移入原协程，await 既有 write_io；失败诊断本身异常只用已有 diagnostic_warning。回归持有 writer 并模拟行情失败，验证同 loop 的独立协程在 0.5 秒内完成，释放 writer 后诊断仍写入。没有新增线程池、业务并发门槛或模型调用。
 
 工作区 DiskBudget 单槽和 workspace 全局锁确有潜在后台相互等待，但本次两次 Worker 栈均未见这些操作持有者，不能将其写为此次 MATERIALIZE 超时的已证实根因；本轮没有未经归因全局移除文件一致性锁。
+
+
+## 9b9e0516 发布验收失败及第二次隔离
+
+07:31:29 CST 开始最后一轮观察后，原积压推进，但内存在约 5 分钟内再次增长：Worker 约 17GiB，主机最低可用约 1.6GiB、2GiB Swap 接近用满，I/O PSI full 也明显增长。07:37 左右紧急停止 Scheduler/Worker 并临时 restart=no，交易 Executor/Delivery 保留运行。停止后可用内存回到约 20GiB。**这轮不能记为通过；后半段停服后的低资源不计验收。**
+
+定点元数据确认该窗口 64 个 Slot 发布 Ready，其中 56 个 run 无模型 Job；不是 64 个正常活跃模型。Worker claim 每次都排入同一个 slot lock、执行 reconcile 和写事务，并 await 公共 fill；Scheduler 的已准备绑定回执仍直接竞争普通 journal writer。已完成绑定的重试现改为 case/record 索引窄读、身份核验和原私有交接，不进入上述公共写路径。HTTP 首次准备等待已有 build task（分段 20 秒，断连不取消原 Fork），准备完成即回读同一 Slot，减少原 100ms claim 写轮询。公共补货保留在已有 build.finally 与后台 prepare_assets，不作为实时 claim 回执前置条件。CASE 身份与 Ready 发布同事务，终态 tombstone / 已受理 Job fencing 不变。Scheduler 小绑定回执复用现有 priority=0 write_io，并跳过相同字段 UPDATE。
+
+这些是已定位等待路径的窄修复；其对生产资源回落的效果仍以再次发布的完整 10 分钟观察为准，不能仅以本地回归或新机制推断通过。

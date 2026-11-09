@@ -57,6 +57,7 @@ class W3ReadySlots:
             db.execute("CREATE INDEX IF NOT EXISTS w3_ready_state_scope ON "
                        "w3_ready_slots(state,scope,id,thread_id,case_id)")
             db.execute("CREATE INDEX IF NOT EXISTS w3_ready_run ON w3_ready_slots(run_id)")
+            db.execute("CREATE INDEX IF NOT EXISTS w3_ready_case ON w3_ready_slots(case_id,record_id)")
             db.execute("CREATE INDEX IF NOT EXISTS w3_ready_scope_times ON "
                        "w3_ready_slots(scope,failed_at DESC,ready_at)")
             # Old unclaimed slots lost their resident SDK on Worker restart.
@@ -391,6 +392,11 @@ class W3ReadySlots:
                         "ELSE 'BOUND' END WHERE id=?",
                         (thread_id, identity),
                     )
+                    db.execute(
+                        "UPDATE w3_thread_registry SET kind='CASE' WHERE thread_id=? "
+                        "AND kind!='CASE' AND EXISTS (SELECT 1 FROM w3_ready_slots "
+                        "WHERE id=? AND case_id IS NOT NULL)", (thread_id, identity),
+                    )
 
             await write_io(self.jobs.store.path, publish_ready, retry=True)
             await self._handoff_private(identity)
@@ -620,8 +626,12 @@ class W3ReadySlots:
         )
         return preview
 
-    async def claim(self, request):
+    async def claim(self, request, *, wait=False):
         key = sha(compact([request["parent_thread_id"], request["profile"], ENTRY]))
+        result = await read_io(self._completed_binding, request, key)
+        if result is not None:
+            await self._handoff_private(result['slot_id'])
+            return result
         async with self.lock:
             await write_io(self.jobs.store.path, self.reconcile_residents, retry=True)
             result, config = await write_io(
@@ -629,10 +639,37 @@ class W3ReadySlots:
             )
             if not result["thread_id"]:
                 self._start_build(result["slot_id"], config)
-        if key in self.configs:
-            await self.fill(key)
+        # Join the existing preparation owner; repeated claims must not create
+        # a 100ms write/reconcile loop ahead of an already-ready live Case.
+        # Public replenishment remains in build.finally / prepare_assets.
+        task = self.tasks.get(result['slot_id'])
+        if wait and not result['thread_id'] and task is not None:
+            await asyncio.wait({task}, timeout=20)
+            completed = await read_io(self._completed_binding, request, key)
+            if completed is not None:
+                result = completed
         await self._handoff_private(result['slot_id'])
         return result
+
+    def _completed_binding(self, request, key):
+        with closing(self.jobs.store.connect()) as db:
+            db.row_factory = __import__('sqlite3').Row
+            row = db.execute(
+                "SELECT s.* FROM w3_ready_slots s JOIN w3_thread_registry t "
+                "ON t.thread_id=s.thread_id WHERE s.case_id=? AND s.record_id=? "
+                "AND s.state='BOUND' AND s.error IS NULL AND t.kind='CASE'",
+                (request['case_id'], request['record_id']),
+            ).fetchone()
+        if row is None:
+            return None
+        if row['scope'] != key:
+            raise ReadySlotError('w3_ready_identity_conflict', 'ready-slot claim parameters changed')
+        return dict(
+            status='COMPLETED', thread_id=row['thread_id'], run_id=row['run_id'],
+            slot_id=row['id'], error=None, capsule_id=row['capsule_id'],
+            claim_kind=row['claim_kind'],
+            bind_operation_key='w3-slot-bind:' + request['case_id'] + ':' + request['record_id'],
+        )
 
     async def _handoff_private(self, identity):
         def binding():

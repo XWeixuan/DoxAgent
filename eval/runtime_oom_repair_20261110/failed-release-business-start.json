@@ -1,0 +1,686 @@
+[
+  {
+    "case_id": "case_5ee74e3878ba49cf8d35442cb471aad1",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_6daed4f7aa8046808c21096106ee4a80",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_592bc9ba064c44c4a2449f63cc9c3daa",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_57d28349ef8e4542ae9f61c06ff85cef",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_504b7e13e14e446cbc6546652fee0381",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_04174b46b7ad4fefbace2966ebff6d9f",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_980aa0f4db9a4827ba3e7e5e184a4d62",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_f5988a9262f94f74a8ac6949a9511628",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_4407d4587bf540e2b31649b6f43940bf",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_03d3c0f1c7e74bf08fa0387a829dc402",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_5db125c25e2843429a3dfe1f911d8e75",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_608a67db14104700a1fc547209f54796",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_f03d86ed0bc44ad4aa00dec731d8bd2d",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_8da59dc1341f4292914b8a64d91f1042",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "SNOW"
+  },
+  {
+    "case_id": "case_475b4e4a820e41609ca2a5057266f9c2",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_86c917b2fbc447ea8e5ddba7264a1fa1",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_20a1cd9547114fb9a361be6c663b4fb9",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_d13fb85a06914572a687a64fd3c88fdf",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_1924f5bfc2f64643a856c8aa94567dc5",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_894cd1c0b2f04475954b01d9af7cd198",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_bb5ee5b1caab44d28bfd60ff65330ab8",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "NBIS"
+  },
+  {
+    "case_id": "case_0dcfd5fcd36e4c5595c6e97f03905b35",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_6dc80207a2c744f1af5353dfed6b065e",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": "trade_decision/MATERIALIZE: ConnectTimeout",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "INTC"
+  },
+  {
+    "case_id": "case_64396b0a06c64d6fb93f598fa50d281b",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "INTC"
+  },
+  {
+    "case_id": "case_345785ba9cb141d18df476d5c90413bb",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "CEG"
+  },
+  {
+    "case_id": "case_3c87b2ba45754dc0955fdf5f20885eb2",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "CEG"
+  },
+  {
+    "case_id": "case_3a846345b01a4593a6f2b902f0a0c499",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_dd858bb5af1145579706ce3a6e151f12",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_91027bafae694865b8dcf4816e198535",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_d9ee00f593104b2d9f3fdf34f8108742",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_d459a92050094c8abfda76f502e484f5",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_485360cad21d431992608841d1628d55",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_75398706e5a74589951286e8a5d91851",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_0158fd300a5941068903a8e0234f9d94",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_a072f7699ad745e8905c7d447e90f393",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_310dd81c5aa5400aa44b3e4ca92e3ba0",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_12b0e03f770c4d31821fd09d6067f7eb",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_d0a67229504745e59cc5acf6ff3087e1",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "INTC"
+  },
+  {
+    "case_id": "case_12b1eaced9724caa94c537a479d99ee3",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "CEG"
+  },
+  {
+    "case_id": "case_34e0b791a61142c28a4b6761da370728",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_d28996555c164d4c905941904f1bff6a",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_eb46e144afad4affa9f67fa5ab50cb84",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_d321adfd85054c759b450cf0382444f7",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_84c3d72bb543490ba45c177b8ba1ccb1",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_f618b8d23f164cdda4344c4a08b7c5f3",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_db52c227306e4623af08c2be2d606a60",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_5dedcf02d3cd4bf695178a1f099be357",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_c40bf23b49804a1688edf4283ce28798",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_8f5e622d7c9c4084b7ed247d7724d511",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_24b03c99f3494921bad9db386ec26fb8",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_d435cb6c6d844845a28f10602ccced16",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_8f18e29a4aa34124ac18f8000f58f7b6",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_8eecbff63c3a4f8c9ae4980025602097",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_bfbfc58b4e2342e4928f719ba02835e0",
+    "phase": "trade_decision",
+    "status": "FAILED",
+    "error": "trade_decision/MATERIALIZE: ConnectTimeout",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "MU"
+  },
+  {
+    "case_id": "case_d81d64fcce7d45798092fab7ecfe35e9",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_60782f19e4c2495c8dd9bf6aa60f635b",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_a63e5c736813488e991aca290d7e2b36",
+    "phase": "trade_decision",
+    "status": "FAILED",
+    "error": "trade_decision/MATERIALIZE: WorkerUnavailable",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_8117a3af5c1242829634ab260edb5e50",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_c372907bcdef4763bf4bbf833b0dde90",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_8d6c41c595f54a1bae6a41fcbd024e80",
+    "phase": "post_decision_operations",
+    "status": "FAILED",
+    "error": "post_decision_operations/MATERIALIZE: WorkerUnavailable",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_8d6c41c595f54a1bae6a41fcbd024e80",
+    "phase": "trade_decision",
+    "status": "COMMITTED",
+    "error": null,
+    "worker_job_id": "3ebf5716b89540f73732e185039c4e47edf32a2380714e5a4967c29c619846ae",
+    "committed_at": "2026-11-09T23:11:28.578994+00:00",
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_261ed25f917549e1894afff183ec87a3",
+    "phase": "trade_decision",
+    "status": "FAILED",
+    "error": "trade_decision/MATERIALIZE: WorkerUnavailable",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_fbc40dba3e314e18a75821c9815162b0",
+    "phase": "trade_decision",
+    "status": "FAILED",
+    "error": "trade_decision/MATERIALIZE: WorkerUnavailable",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_18008f70f6184bddb2f29e74d7df1ca0",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": "trade_decision/MATERIALIZE: ConnectTimeout",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_552642f15cb048e5a623d9822a73f144",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_e4d67bcb18894535969c380eb9a249ce",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_6c531a4181e84d1b9d3f9e2e8d7d5943",
+    "phase": "trade_decision",
+    "status": "FAILED",
+    "error": "trade_decision/MATERIALIZE: WorkerUnavailable",
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "RKLB"
+  },
+  {
+    "case_id": "case_c2e6538275b544f887d65f3134f304bf",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "ONDS"
+  },
+  {
+    "case_id": "case_9e351d1fc545499c8aaafea59248cce6",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "ONDS"
+  },
+  {
+    "case_id": "case_abc9d3e57da749a7a6d7fdb7922c3db8",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "ONDS"
+  },
+  {
+    "case_id": "case_75e7f4a5e18945b79b55376bde72a474",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "NBIS"
+  },
+  {
+    "case_id": "case_d693a9d929b847908a1b45404d532210",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "NBIS"
+  },
+  {
+    "case_id": "case_547eeed5f6df4f8ea2e0b732bc57abb5",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "NBIS"
+  },
+  {
+    "case_id": "case_e99349dca95146aeb35ed352a2c31758",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "NBIS"
+  },
+  {
+    "case_id": "case_4ea516f111ed4df1adce478363521b18",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  },
+  {
+    "case_id": "case_363593c6377e4463a3f8e9f7ce25898b",
+    "phase": "trade_decision",
+    "status": "PENDING",
+    "error": null,
+    "worker_job_id": null,
+    "committed_at": null,
+    "ticker": "IONQ"
+  }
+]

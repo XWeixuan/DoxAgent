@@ -593,11 +593,21 @@ class CodexW3AgentRunner:
                 raise
             self.configure_ready(case, {"thread_id": record["parent_id"]}, active_public=False)
             value = self._wait_v4(self._worker.claim_w3_ready(request))
-        with self._journal.transaction() as db:
-            db.execute(
-                "UPDATE runtime_v2_w3_threads SET thread_id=?,workspace=? WHERE record_id=?",
-                (value["thread_id"], value["run_id"], record["record_id"]),
-            )
+        async def save_binding():
+            def save():
+                from .fencing import assert_write_lease
+
+                with self._journal.transaction(operation="w3.ready_binding") as db:
+                    assert_write_lease(db)
+                    db.execute(
+                        "UPDATE runtime_v2_w3_threads SET thread_id=?,workspace=? WHERE record_id=? "
+                        "AND (thread_id IS NOT ? OR workspace IS NOT ?)",
+                        (value["thread_id"], value["run_id"], record["record_id"],
+                         value["thread_id"], value["run_id"]),
+                    )
+            await write_io(self._journal.path, save, priority=0, retry=True)
+
+        self._wait_v4(save_binding())
         record.update(thread_id=value["thread_id"], workspace=value["run_id"])
 
     def stop_market(self, case_id):

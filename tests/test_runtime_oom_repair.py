@@ -557,3 +557,44 @@ def test_failed_market_diagnostic_never_blocks_shared_w3_loop(tmp_path):
         release.set()
         thread.join()
         runner.close()
+
+
+@pytest.mark.asyncio
+async def test_completed_ready_claim_bypasses_background_writer_and_slot_lock(tmp_path):
+    from doxagent.control_io import write_io
+
+    workspaces = LocalWorkspaceStore(tmp_path)
+    jobs = SimpleNamespace(store=JobStore(tmp_path), _runtime=Runtime(), _startup=asyncio.Semaphore(3))
+    jobs.thread_lifecycle = WorkerThreadLifecycle(jobs, workspaces)
+    with closing(jobs.store.connect()) as db, db:
+        db.execute("INSERT INTO w3_thread_registry VALUES('parent','TEMPLATE',NULL,'mother','ACTIVE')")
+    slots = W3ReadySlots(jobs, workspaces,
+                         SimpleNamespace(w3_ready_luna=0, w3_ready_sol=0), SimpleNamespace(ready={}))
+    profile = dict(model="gpt-6-luna", provider=None, effort="max")
+    await slots.configure(dict(parent_thread_id="parent", profile=profile,
+                               instructions={"AGENTS.md": "public"}))
+    request = dict(case_id="case", record_id="record", parent_thread_id="parent", profile=profile)
+    entered, release = Event(), Event()
+
+    def hold():
+        entered.set()
+        release.wait(5)
+
+    owner = None
+    try:
+        first = await slots.claim(request, wait=True)
+        assert first['status'] == 'COMPLETED'
+        assert jobs._runtime.forks == 1
+        owner = asyncio.create_task(write_io(jobs.store.path, hold))
+        while not entered.is_set():
+            await asyncio.sleep(0.005)
+        async with slots.lock:
+            results = await asyncio.wait_for(asyncio.gather(*(slots.claim(request) for _ in range(40))), 1)
+        assert all(r['thread_id'] == first['thread_id'] for r in results)
+        assert jobs._runtime.forks == 1
+    finally:
+        release.set()
+        if owner:
+            await owner
+        await slots.close()
+        await jobs.thread_lifecycle.close()

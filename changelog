@@ -2785,3 +2785,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-10 Runtime 事故修复补充：现场栈证实 W3 行情预取失败的 done callback 在共享 asyncio loop 同步等待 journal.gap 写锁，现改为 await 既有 write_io；诊断落库失败只走已有非阻塞日志，不拖住模型 SSE 与工作区 RPC。增加持有 SQLite writer 时共享 loop 仍推进、释放后诊断仍落库的回归。
 2026-11-10 Message source outage repair: verified subscription quota exhaustion as the shared proxy TLS/egress-withdrawal cause; after user quota reset, six existing owner probes pass without node, Profile or subscription changes. Enable the existing minute-bucket fresh query for five AviationWeek topics: CDN ignored no-cache and returned Age=321, while the same route/query returned Age=0 with 25 parsed articles. Preserve 120-second freshness rejection, RSS fallback visibility, checkpoints, article identity, BODY rules and scheduling. Public-listing regression: 79 passed.
+
+2026-11-10 Runtime 发布验收补充：恢复窗口实际出现 64 个 Ready 私有 Capsule / 56 个无模型 Job，资源验收失败并停止 Scheduler/Worker。已完成绑定的 Ready claim 改走索引窄读，绕过全局 slot lock、Worker 写队列和公共补货；首次 HTTP claim 仅 await 原 build task（20 秒分段），消除 100ms 写入轮询，取消不取消原 Fork。Ready 发布时同步标记 CASE，Scheduler 绑定回执走现有 priority=0 短写；不改模型、业务规则和 Fork 身份。

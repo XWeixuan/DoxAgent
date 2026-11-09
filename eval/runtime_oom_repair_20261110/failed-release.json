@@ -1,0 +1,8 @@
+{
+  "commit": "9b9e0516e44c58d76ace984e28518996b16fb430",
+  "image": "sha256:8f76de4a0d2ceab003c6ef49a80ae9afd1635bc7e3752f13ae2d35f2d0320e7f",
+  "previous": "sha256:6ad50b205921175affe23f9062a95687326a5ec387f3df5ed76dd18d5b885ded",
+  "files": {
+    "src/doxagent/persistent_runtime_v2/w3.py": "8f30d23d5e18554b4be4c46d03bccf420bfea8e614b6ea9d1b3d2d6148f935e6"
+  }
+}
