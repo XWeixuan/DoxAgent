@@ -5,11 +5,12 @@ from __future__ import annotations
 import asyncio
 import copy
 import hashlib
+import json
 import re
 import time
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
 
 from lxml import html
@@ -32,14 +33,16 @@ RECIPES = {
         "method": "GET", "routes": ["us-standard-5"], "size": 20,
     },
     "businesswire_massive": {
-        "url": "https://www.businesswire.com/newsroom?language=en",
-        "review": "HTTP 403 on newsroom/legacy paths, direct and existing US egress; browser review required",
+        "url": "https://www.businesswire.com/newsroom?page={page}",
+        "method": "POST", "routes": ["direct"], "size": 10, "max_pages": 8,
+        "headers": {"RSC": "1"},
     },
     "tmx_newsfile_massive": {
         "url": "https://www.newsfilecorp.com/search",
         "review": "AWS WAF JavaScript challenge (202) on search/news GET and POST, direct and US egress; browser review required",
     },
 }
+RSS_ONLY_SOURCES = {"tmx_newsfile_massive"}
 
 
 def enabled(source):
@@ -51,7 +54,44 @@ def canonical_article_url(url):
     # case. Percent escapes are case-insensitive; article slug text is not.
     if urlsplit(url).hostname in {"www.globenewswire.com", "globenewswire.com"}:
         return re.sub(r"%[0-9a-fA-F]{2}", lambda match: match[0].upper(), url)
+    parts = urlsplit(url)
+    if parts.hostname in {"www.businesswire.com", "businesswire.com"} and re.match(r"^/news/home/\d+/[^/]+", parts.path):
+        # Keep the old RSS article locator, including its terminal slash.
+        return urlunsplit(("https", "www.businesswire.com", parts.path.rstrip("/")+"/", "", ""))
     return url
+
+
+def parse_businesswire(text, source):
+    data = None
+    for match in re.finditer(r'"news":\s*(?=\{)', text):
+        try:
+            candidate, _ = json.JSONDecoder().raw_decode(text[match.end():])
+        except ValueError:
+            continue
+        if isinstance(candidate, dict) and isinstance(candidate.get("items"), list):
+            data = candidate
+            break
+    if not data or not data["items"] or not isinstance(data.get("currentPage"), int):
+        raise ValueError("businesswire_rsc_news_missing_or_challenge")
+    rows = []
+    for item in data["items"]:
+        identifier, language, title = item.get("newsItemId", ""), item.get("language", ""), item.get("headline", "")
+        if not re.fullmatch(r"\d+", identifier) or not re.fullmatch(r"[a-zA-Z-]+", language) or not title:
+            raise ValueError("businesswire_invalid_article_identity")
+        # Match the publisher's client link builder, not an invented URL slug.
+        slug = re.sub(r"[^a-zA-Z0-9\-\s.€$£¥_]", "", title.strip()) if language == "en" else ""
+        slug = re.sub(r"\s+", "-", slug)[:1000]
+        url = canonical_article_url("https://www.businesswire.com/news/home/"+identifier+"/"+language+("/"+quote(slug, safe="-_.!~*'()") if slug else ""))
+        published = datetime.fromisoformat(item["releaseDate"].replace("Z", "+00:00"))
+        if published.tzinfo is None:
+            raise ValueError("businesswire_publication_timezone_missing")
+        rows.append(RawMessageInput(title=title, summary=None, body=None, url=url,
+            source=source.display_name, source_item_key=url, published_at=published,
+            raw_payload={"newsItemId": identifier, "listing_summary": item.get("teaser"), "releaseDate": item["releaseDate"]},
+            metadata={"language": {"zh-HK":"zh-Hant", "zh-CN":"zh-Hans"}.get(language, language),
+                      "publication_time_precision":"second", "listing_page":data["currentPage"],
+                      "identity_evidence":{"id_kind":"canonical_url", "url_kind":"article"}}))
+    return rows
 
 
 def parse_listing(text, source, now):
@@ -59,6 +99,8 @@ def parse_listing(text, source, now):
 
     if source.source_id == "access_newswire_massive":
         return parse_access(text, now)
+    if source.source_id == "businesswire_massive":
+        return parse_businesswire(text, source)
     root = html.fromstring(text)
     rows = []
     eastern = ZoneInfo("America/New_York")
@@ -149,9 +191,9 @@ async def poll_listing(adapter, context):
             # every 30 seconds until the user chooses a browser/authorized path.
             raise ValueError(recipe["review"])
         async with asyncio.timeout(12):
-            for page in range(1, 5):
+            for page in range(1, recipe.get("max_pages", 4)+1):
                 url = recipe["url"].format(page=page)
-                headers = {}
+                headers = dict(recipe.get("headers", {}))
                 if page == 1 and recipe["method"] == "GET" and head.get("baseline") and not context.force_refresh:
                     headers = {name: head[key] for name, key in
                                [("If-None-Match", "etag"), ("If-Modified-Since", "modified")] if head.get(key)}
@@ -166,6 +208,8 @@ async def poll_listing(adapter, context):
                 if response.status_code != 200:
                     raise ValueError("wire_listing_http_" + str(response.status_code))
                 parsed = await asyncio.to_thread(parse_listing, response.text, source, context.requested_at)
+                if any(row.metadata.get("listing_page", page) != page for row in parsed):
+                    raise ValueError("wire_listing_requested_page_ignored")
                 if page == 1:
                     head = dict(baseline=True, etag=response.headers.get("etag"), modified=response.headers.get("last-modified"))
                 for row in parsed:
@@ -177,7 +221,7 @@ async def poll_listing(adapter, context):
                 if set(old).intersection(r.url for r in parsed) or max(r.published_at for r in parsed) <= cutoff or len(parsed) < recipe["size"]:
                     break
             else:
-                raise ValueError("wire_listing_window_overflow:no_overlap_within_four_pages")
+                raise ValueError("wire_listing_window_overflow:no_overlap_within_page_budget")
         seen = dict(old)
         delta = []
         for row in rows.values():

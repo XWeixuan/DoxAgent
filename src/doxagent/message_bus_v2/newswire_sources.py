@@ -14,7 +14,7 @@ from .schema import (AcquisitionMode, DistributionPolicy, PollingConfig, PollRes
 from .industry_sources import parse_shared_feed
 from .http_routes import HTTP_EGRESSES, transport_routes
 from .publisher_http import PublisherHttpx, PublisherClients, RESPONSE_LIMIT
-from .newswire_listing import RECIPES, canonical_article_url, enabled as listing_enabled, poll_listing
+from .newswire_listing import RECIPES, RSS_ONLY_SOURCES, canonical_article_url, enabled as listing_enabled, poll_listing
 
 TICKERS=['INTC','MU','BE','COHR','NBIS','CEG','RKLB','SNOW','ONDS','IONQ']
 CATALOG={
@@ -37,13 +37,13 @@ def bloomberg_body_limitation(url):
 
 
 def initial_sources():
-    return [SourceDefinition(source_id=sid,display_name=name,kind=SourceKind.CRAWLER if sid in RECIPES else SourceKind.API,
+    return [SourceDefinition(source_id=sid,display_name=name,kind=SourceKind.CRAWLER if sid in RECIPES and sid not in RSS_ONLY_SOURCES else SourceKind.API,
         adapter_ref='builtin:newswire_massive@1',acquisition_mode=AcquisitionMode.MASSIVE_DISTRIBUTION,
         delivery_mode='test',entry_url=urls[0][1],content_language='en',scheduler_group='massive.'+sid,
         scheduler_constraints=SchedulerConstraints(max_concurrency=2 if sid=="bloomberg_massive" else 1,minimum_request_gap_seconds=1),
         distribution_policy=DistributionPolicy(test_tickers=TICKERS,jev_enabled=False,require_complete_body=True),
         default_parameters={'endpoints':[{'endpoint_id':eid,'url':url,'format':'html' if eid=='http' else 'sitemap' if eid=='sitemap' else 'rss'} for eid,url in urls],
-                            'feed_http_routes':routes, **({'discovery_mode':'http_listing'} if sid in RECIPES else {})},default_polling_config=PollingConfig(target_interval_seconds=30))
+                            'feed_http_routes':routes, **({'discovery_mode':'rss' if sid in RSS_ONLY_SOURCES else 'http_listing'} if sid in RECIPES else {})},default_polling_config=PollingConfig(target_interval_seconds=30))
         for sid,(name,urls,routes) in CATALOG.items()]
 
 
@@ -103,12 +103,12 @@ def parse_feed(text,source,endpoint,now):
         'https://www.newsfilecorp.com/' if source.source_id=='tmx_newsfile_massive' else endpoint['url'])
     rows=parse_shared_feed(text,feed_url=base,publisher=source.display_name,language='en',now=now)
     for row in rows:
-        if source.source_id=='globenewswire_massive':row.url=canonical_article_url(row.url)
+        if source.source_id in {'globenewswire_massive','businesswire_massive'}:row.url=canonical_article_url(row.url)
         parts=urlsplit(row.url).path.split('/')
         lang=parts[4] if source.source_id=='businesswire_massive' and len(parts)>4 else 'en'
         if source.source_id=='globenewswire_massive' and len(parts)>7:lang=parts[7]
         row.metadata['language']={'zh-HK':'zh-Hant','zh-CN':'zh-Hans'}.get(lang,lang)
-        if source.source_id in {'bloomberg_massive','globenewswire_massive'}:
+        if source.source_id in {'bloomberg_massive','globenewswire_massive','businesswire_massive'}:
             # RSS descriptions are only listing teasers; sitemap has none.
             # Keep teaser evidence, but do not turn endpoint differences into body revisions.
             row.raw_payload['listing_summary']=row.summary

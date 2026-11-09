@@ -1,4 +1,5 @@
 import asyncio
+import json
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -162,7 +163,7 @@ async def test_one_old_outlier_cannot_hide_fresh_articles_on_the_next_page(monke
     assert any(r.url == old_url for r in result.messages)
 
 
-@pytest.mark.parametrize("sid", ["businesswire_massive", "tmx_newsfile_massive"])
+@pytest.mark.parametrize("sid", ["tmx_newsfile_massive"])
 async def test_reviewed_challenges_do_not_hammer_http_or_start_browser(sid):
     adapter = SimpleNamespace(listing_request=AsyncMock(), poll_feed=AsyncMock(return_value=PollResult()))
     result = await poll_listing(adapter, context(sid))
@@ -278,10 +279,66 @@ def test_configuration_changes_only_discovery_and_is_idempotent(tmp_path):
     assert all(r["action"] == "updated" for r in configure(bus))
     for sid in RECIPES:
         old, current = before[sid], repo.get_source(sid)
-        assert endpoint_units(current) == ["TEST:WIRE:listing"] + (["TEST:WIRE:all"] if sid == "globenewswire_massive" else [])
+        rss = sid == "tmx_newsfile_massive"
+        assert endpoint_units(current) == (["TEST:WIRE:all"] if rss else ["TEST:WIRE:listing"] + (["TEST:WIRE:all"] if sid == "globenewswire_massive" else []))
         for field in ("adapter_ref", "site_id", "content_language", "entry_url", "acquisition_mode", "scheduler_constraints", "distribution_policy", "delivery_mode", "default_polling_config"):
             assert getattr(old, field) == getattr(current, field)
-        assert current.default_parameters == {**old.default_parameters, "discovery_mode": "http_listing"}
+        assert current.default_parameters == {**old.default_parameters, "discovery_mode": "rss" if rss else "http_listing"}
+        assert current.kind == ("api" if rss else "crawler")
     assert repo.get_source("bloomberg_massive") == before["bloomberg_massive"]
     assert all(r["action"] == "unchanged" for r in configure(bus))
     repo.close()
+
+
+def bw_packet():
+    return json.loads((FIXTURES / "businesswire.json").read_text(encoding="utf-8-sig"))
+
+
+def test_businesswire_real_rsc_data_and_original_rss_share_identity_and_body_hint():
+    from doxagent.message_bus_v2.body_results import article_key, update_hint
+    from doxagent.message_bus_v2.newswire_listing import canonical_article_url
+
+    sid = "businesswire_massive"
+    packet = bw_packet()
+    rows = parse_listing('9:["$",null,'+json.dumps(packet)+']', source(sid), NOW)
+    assert len(rows) == 3 and {r.metadata["language"] for r in rows} == {"en", "es"}
+    assert rows[0].published_at.tzinfo is not None
+    for row in rows:
+        assert row.body is None and row.summary is None
+        assert row.raw_payload["listing_summary"]
+        assert row.url.endswith("/")
+        xml = f'<rss><channel><item><title>{row.title.replace("&", "&amp;")}</title><link>{row.url}?feedref=tracking</link><pubDate>Mon, 9 Nov 2026 21:55:00 UT</pubDate><description>Different RSS teaser</description></item></channel></rss>'
+        rss = parse_feed(xml, source(sid), source(sid).default_parameters["endpoints"][0], NOW)[0]
+        assert rss.url == row.url and article_key(row, sid) == article_key(rss, sid)
+        assert update_hint(row) == update_hint(rss)
+        assert canonical_article_url(row.url.rstrip("/")) == row.url
+
+
+async def test_businesswire_uses_readonly_rsc_post_and_rejects_ignored_pagination(monkeypatch):
+    sid = "businesswire_massive"
+    data = bw_packet()
+    # A repeated first page must not silently masquerade as page two.
+    monkeypatch.setitem(RECIPES, sid, {**RECIPES[sid], "size": 3})
+    adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(json.dumps(data)), "direct")), poll_feed=AsyncMock(return_value=PollResult()))
+    now = datetime.fromisoformat(data["news"]["items"][0]["releaseDate"].replace("Z", "+00:00")) + timedelta(minutes=1)
+    result = await poll_listing(adapter, context(sid).model_copy(update={"requested_at": now}))
+    assert result.failures and "requested_page_ignored" in result.failures[0].error_message
+    assert adapter.listing_request.call_args.args[2]["method"] == "POST"
+    assert adapter.listing_request.call_args.args[-1] == {"RSC": "1"}
+    assert result.messages  # Keep the successfully parsed first page.
+
+
+async def test_newsfile_is_intentional_rss_without_http_failure_or_browser():
+    from doxagent.message_bus_v2.newswire_sources import NewswireAdapter
+
+    s = source("tmx_newsfile_massive")
+    assert s.kind == "api" and s.default_parameters["discovery_mode"] == "rss"
+    assert endpoint_units(s) == ["TEST:WIRE:all"]
+    adapter = NewswireAdapter()
+    adapter.poll_feed = AsyncMock(return_value=PollResult())
+    adapter.listing_request = AsyncMock(side_effect=AssertionError("Newsfile must remain RSS"))
+    result = await adapter.poll_shared(context(s.source_id).model_copy(update={"acquisition_unit":"TEST:WIRE:all"}))
+    assert not result.failures
+    adapter.poll_feed.assert_awaited_once()
+    adapter.listing_request.assert_not_called()
+    await adapter.close()

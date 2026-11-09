@@ -1,10 +1,10 @@
-"""Migrate only five test wire discoveries; preserve BODY, targets and all bindings."""
+"""Configure verified wire discovery and intentional RSS; preserve BODY and isolation."""
 
 import argparse
 import json
 from pathlib import Path
 
-from doxagent.message_bus_v2.newswire_listing import RECIPES
+from doxagent.message_bus_v2.newswire_listing import RECIPES, RSS_ONLY_SOURCES
 from doxagent.message_bus_v2.schema import UpdateActor
 
 
@@ -18,18 +18,22 @@ def configure(service):
                 continue
             if source.delivery_mode != "test":
                 raise ValueError("expected existing isolated test source: " + sid)
-            if source.default_parameters.get("discovery_mode") == "http_listing" and source.kind == "crawler":
+            mode = "rss" if sid in RSS_ONLY_SOURCES else "http_listing"
+            kind = "api" if mode == "rss" else "crawler"
+            if source.default_parameters.get("discovery_mode") == mode and source.kind == kind:
                 report.append(dict(source_id=sid, action="unchanged", version=source.version))
                 continue
             updated = service.update_source(sid, {
-                "kind": "crawler",
+                "kind": kind,
                 "parameter_schema": {**source.parameter_schema, "properties": {
                     **source.parameter_schema.get("properties", {}),
                     "discovery_mode": {"type": "string", "enum": ["http_listing", "rss"]}}},
-                "default_parameters": {**source.default_parameters, "discovery_mode": "http_listing"},
-            }, actor=UpdateActor.USER, reason="Verified low-cost wire discovery; BODY unchanged; blocked candidates keep failed RSS fallback")
+                "default_parameters": {**source.default_parameters, "discovery_mode": mode},
+            }, actor=UpdateActor.USER, reason="Verified low-cost wire discovery; intentional Newsfile RSS choice; BODY and test isolation unchanged")
             report.append(dict(source_id=sid, action="updated", version=updated.version,
-                               listing=recipe["url"], review=recipe.get("review")))
+                               discovery_mode=mode,
+                               listing=source.default_parameters["endpoints"][0]["url"] if mode == "rss" else recipe["url"],
+                               review=recipe.get("review") if mode == "http_listing" else None))
     return report
 
 
