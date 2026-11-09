@@ -1,0 +1,58 @@
+[
+  {
+    "trading_date": "2026-11-02",
+    "n": 1464,
+    "frozen_avg": 1654348.0,
+    "frozen_max": 2641453,
+    "case_row_avg": 7555.0
+  },
+  {
+    "trading_date": "2026-11-03",
+    "n": 1354,
+    "frozen_avg": 1530615.0,
+    "frozen_max": 2735630,
+    "case_row_avg": 7498.0
+  },
+  {
+    "trading_date": "2026-11-04",
+    "n": 1389,
+    "frozen_avg": 1558398.0,
+    "frozen_max": 2733060,
+    "case_row_avg": 7343.0
+  },
+  {
+    "trading_date": "2026-11-05",
+    "n": 1528,
+    "frozen_avg": 1589990.0,
+    "frozen_max": 2792551,
+    "case_row_avg": 7145.0
+  },
+  {
+    "trading_date": "2026-11-06",
+    "n": 1073,
+    "frozen_avg": 1699144.0,
+    "frozen_max": 4402737,
+    "case_row_avg": 7627.0
+  },
+  {
+    "trading_date": "2026-11-07",
+    "n": 9,
+    "frozen_avg": 1291176.0,
+    "frozen_max": 2288944,
+    "case_row_avg": 5809.0
+  },
+  {
+    "trading_date": "2026-11-08",
+    "n": 280,
+    "frozen_avg": 1530125.0,
+    "frozen_max": 2443187,
+    "case_row_avg": 7931.0
+  },
+  {
+    "trading_date": "2026-11-09",
+    "n": 534,
+    "frozen_avg": 1519316.0,
+    "frozen_max": 2493477,
+    "case_row_avg": 7602.0
+  }
+]

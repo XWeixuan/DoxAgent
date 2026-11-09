@@ -1,0 +1,127 @@
+{
+  "samples": 204,
+  "top_leaf": [
+    [
+      "('model_validate_json', '/app/.venv/lib/python3.11/site-packages/pydantic/main.py', 782)",
+      55
+    ],
+    [
+      "('iterencode', '/usr/local/lib/python3.11/json/encoder.py', 258)",
+      43
+    ],
+    [
+      "('raw_decode', '/usr/local/lib/python3.11/json/decoder.py', 353)",
+      24
+    ],
+    [
+      "('loads', '/usr/local/lib/python3.11/json/__init__.py', 341)",
+      12
+    ],
+    [
+      "('_event_from_connection', '/app/src/doxagent/event_library/repository.py', 880)",
+      8
+    ],
+    [
+      "('_run_w3_effect_thread', '/app/src/doxagent/persistent_runtime_v2/service.py', 1889)",
+      6
+    ],
+    [
+      "('decompress', '/usr/local/lib/python3.11/gzip.py', 606)",
+      4
+    ],
+    [
+      "('execute', '/app/src/doxagent/persistent_runtime_v2/fencing.py', 71)",
+      4
+    ],
+    [
+      "('decode', '/usr/local/lib/python3.11/json/decoder.py', 337)",
+      3
+    ],
+    [
+      "('authority', '/app/.venv/lib/python3.11/site-packages/httpx/_urlparse.py', 170)",
+      2
+    ],
+    [
+      "('<listcomp>', '/app/src/doxagent/persistent_runtime_v2/daily.py', 83)",
+      2
+    ],
+    [
+      "('open', '/usr/local/lib/python3.11/pathlib.py', 1044)",
+      2
+    ],
+    [
+      "('model_dump', '/app/.venv/lib/python3.11/site-packages/pydantic/main.py', 475)",
+      2
+    ],
+    [
+      "('pack', '/app/src/doxagent/v2_read/native_content.py', 44)",
+      2
+    ],
+    [
+      "('iterencode', '/usr/local/lib/python3.11/json/encoder.py', 249)",
+      1
+    ]
+  ],
+  "top_business": [
+    [
+      "('_read_model', '/app/src/doxagent/persistent_runtime_v2/repository.py', 1680)",
+      51
+    ],
+    [
+      "('text', '/app/src/doxagent/v2_read/native_content.py', 126)",
+      39
+    ],
+    [
+      "('decode', '/app/src/doxagent/v2_read/native_content.py', 107)",
+      34
+    ],
+    [
+      "('run', '/app/src/doxagent/codex_runtime/client.py', 275)",
+      13
+    ],
+    [
+      "('pack', '/app/src/doxagent/v2_read/native_content.py', 44)",
+      8
+    ],
+    [
+      "('_event_from_connection', '/app/src/doxagent/event_library/repository.py', 880)",
+      8
+    ],
+    [
+      "('_run_w3_effect_thread', '/app/src/doxagent/persistent_runtime_v2/service.py', 1889)",
+      6
+    ],
+    [
+      "('read_all', '/app/src/doxagent/v2_read/content_files.py', 87)",
+      5
+    ],
+    [
+      "('execute', '/app/src/doxagent/persistent_runtime_v2/fencing.py', 71)",
+      4
+    ],
+    [
+      "('save_case', '/app/src/doxagent/persistent_runtime_v2/repository.py', 823)",
+      4
+    ],
+    [
+      "('run', '/app/src/doxagent/codex_runtime/client.py', 282)",
+      3
+    ],
+    [
+      "('_run_loop', '/app/src/doxagent/persistent_runtime_v2/w3.py', 654)",
+      3
+    ],
+    [
+      "('<listcomp>', '/app/src/doxagent/persistent_runtime_v2/daily.py', 83)",
+      2
+    ],
+    [
+      "('read_all', '/app/src/doxagent/v2_read/content_files.py', 80)",
+      2
+    ],
+    [
+      "('_task', '/app/src/doxagent/persistent_runtime_v2/journal.py', 255)",
+      2
+    ]
+  ]
+}

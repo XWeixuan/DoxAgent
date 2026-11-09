@@ -1,0 +1,19 @@
+{
+  "commit": "30797b6e48402e9a53fca4ed82aeb3ba67cb67da",
+  "files": {
+    "src/doxagent/codex_worker/jobs.py": "202e8f428fae9cc9b4ab91ef5df5cc64f45fd404c24436bcbbbf9ddba45c68f9",
+    "src/doxagent/persistent_runtime_v2/w3_research_store.py": "a290beb6f3f5c3bb12ca85b103e9d98ad69cbeaf3da5d2b4abfc71226315f114",
+    "src/doxagent/persistent_runtime_v2/worker_receipts.py": "7edee465e1439e4dd710ac0279a97becd70a74bdff2aa5714cc1b8887b63598e"
+  },
+  "bases": {
+    "codex-worker": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "v2-scheduler": "sha256:71b14f46e90d736c0e2d4b9911e3a0bc9b77edb125a70fcc08ee27dc17658dca"
+  },
+  "images": {
+    "codex-worker": "sha256:b8be1e5f16f13b5b4f07fa9ebaabfb53dc772e35304a9cc613dd2416feb7bd52",
+    "v2-scheduler": "sha256:5cd022010b35de40c7a0c26f62c87b54fa04c46dcdace054bf9f874c8b678b3f"
+  },
+  "released_at": "2026-11-09T12:52:01.110988+00:00",
+  "completed_at": "2026-11-09T12:53:07.532393+00:00",
+  "reconcile_errors": []
+}

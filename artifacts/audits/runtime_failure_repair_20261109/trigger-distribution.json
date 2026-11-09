@@ -1,0 +1,322 @@
+{
+  "daily": [
+    {
+      "trading_date": "2026-11-01",
+      "cases": 293,
+      "failed": 40,
+      "w3": 194,
+      "ctx_error": 2,
+      "rate_error": 0,
+      "dictionary_error": 2
+    },
+    {
+      "trading_date": "2026-11-02",
+      "cases": 1464,
+      "failed": 3,
+      "w3": 727,
+      "ctx_error": 0,
+      "rate_error": 1,
+      "dictionary_error": 2
+    },
+    {
+      "trading_date": "2026-11-03",
+      "cases": 1354,
+      "failed": 6,
+      "w3": 917,
+      "ctx_error": 0,
+      "rate_error": 0,
+      "dictionary_error": 5
+    },
+    {
+      "trading_date": "2026-11-04",
+      "cases": 1389,
+      "failed": 5,
+      "w3": 1036,
+      "ctx_error": 0,
+      "rate_error": 3,
+      "dictionary_error": 0
+    },
+    {
+      "trading_date": "2026-11-05",
+      "cases": 1528,
+      "failed": 0,
+      "w3": 1135,
+      "ctx_error": null,
+      "rate_error": null,
+      "dictionary_error": null
+    },
+    {
+      "trading_date": "2026-11-06",
+      "cases": 1073,
+      "failed": 0,
+      "w3": 841,
+      "ctx_error": null,
+      "rate_error": null,
+      "dictionary_error": null
+    },
+    {
+      "trading_date": "2026-11-07",
+      "cases": 9,
+      "failed": 3,
+      "w3": 9,
+      "ctx_error": 2,
+      "rate_error": 0,
+      "dictionary_error": 0
+    },
+    {
+      "trading_date": "2026-11-08",
+      "cases": 280,
+      "failed": 81,
+      "w3": 212,
+      "ctx_error": 42,
+      "rate_error": 0,
+      "dictionary_error": 0
+    },
+    {
+      "trading_date": "2026-11-09",
+      "cases": 527,
+      "failed": 95,
+      "w3": 408,
+      "ctx_error": 104,
+      "rate_error": 14,
+      "dictionary_error": 2
+    }
+  ],
+  "contexts": [
+    {
+      "trading_date": "2026-11-01",
+      "manifests": 159,
+      "missing_bindings": 2
+    },
+    {
+      "trading_date": "2026-11-02",
+      "manifests": 727,
+      "missing_bindings": 0
+    },
+    {
+      "trading_date": "2026-11-03",
+      "manifests": 917,
+      "missing_bindings": 0
+    },
+    {
+      "trading_date": "2026-11-04",
+      "manifests": 1036,
+      "missing_bindings": 0
+    },
+    {
+      "trading_date": "2026-11-05",
+      "manifests": 1135,
+      "missing_bindings": 0
+    },
+    {
+      "trading_date": "2026-11-06",
+      "manifests": 841,
+      "missing_bindings": 0
+    },
+    {
+      "trading_date": "2026-11-07",
+      "manifests": 7,
+      "missing_bindings": 2
+    },
+    {
+      "trading_date": "2026-11-08",
+      "manifests": 167,
+      "missing_bindings": 42
+    },
+    {
+      "trading_date": "2026-11-09",
+      "manifests": 351,
+      "missing_bindings": 110
+    }
+  ],
+  "weekend_hourly": [
+    {
+      "hour": "2026-11-07T00",
+      "mode": "REALTIME",
+      "cases": 21,
+      "w3": 19
+    },
+    {
+      "hour": "2026-11-07T01",
+      "mode": "REALTIME",
+      "cases": 32,
+      "w3": 22
+    },
+    {
+      "hour": "2026-11-07T02",
+      "mode": "REALTIME",
+      "cases": 13,
+      "w3": 8
+    },
+    {
+      "hour": "2026-11-07T03",
+      "mode": "REALTIME",
+      "cases": 6,
+      "w3": 4
+    },
+    {
+      "hour": "2026-11-07T04",
+      "mode": "REALTIME",
+      "cases": 2,
+      "w3": 1
+    },
+    {
+      "hour": "2026-11-07T05",
+      "mode": "REALTIME",
+      "cases": 10,
+      "w3": 8
+    },
+    {
+      "hour": "2026-11-07T06",
+      "mode": "REALTIME",
+      "cases": 10,
+      "w3": 9
+    },
+    {
+      "hour": "2026-11-07T07",
+      "mode": "CLOSED",
+      "cases": 2,
+      "w3": 2
+    },
+    {
+      "hour": "2026-11-07T16",
+      "mode": "CLOSED",
+      "cases": 1,
+      "w3": 1
+    },
+    {
+      "hour": "2026-11-07T19",
+      "mode": "CLOSED",
+      "cases": 1,
+      "w3": 1
+    },
+    {
+      "hour": "2026-11-07T23",
+      "mode": "CLOSED",
+      "cases": 5,
+      "w3": 5
+    },
+    {
+      "hour": "2026-11-08T07",
+      "mode": "CLOSED",
+      "cases": 280,
+      "w3": 212
+    },
+    {
+      "hour": "2026-11-09T07",
+      "mode": "CLOSED",
+      "cases": 305,
+      "w3": 221
+    },
+    {
+      "hour": "2026-11-09T07",
+      "mode": "REALTIME",
+      "cases": 27,
+      "w3": 24
+    },
+    {
+      "hour": "2026-11-09T08",
+      "mode": "CLOSED",
+      "cases": 1,
+      "w3": 0
+    },
+    {
+      "hour": "2026-11-09T08",
+      "mode": "REALTIME",
+      "cases": 29,
+      "w3": 28
+    },
+    {
+      "hour": "2026-11-09T09",
+      "mode": "REALTIME",
+      "cases": 18,
+      "w3": 17
+    },
+    {
+      "hour": "2026-11-09T10",
+      "mode": "REALTIME",
+      "cases": 16,
+      "w3": 12
+    },
+    {
+      "hour": "2026-11-09T11",
+      "mode": "REALTIME",
+      "cases": 53,
+      "w3": 48
+    },
+    {
+      "hour": "2026-11-09T12",
+      "mode": "REALTIME",
+      "cases": 78,
+      "w3": 58
+    }
+  ],
+  "maintenance": [
+    {
+      "day": "2026-11-05",
+      "kind": "MAINTENANCE",
+      "status": "SUCCEEDED",
+      "n": 12
+    },
+    {
+      "day": "2026-11-06",
+      "kind": "MAINTENANCE",
+      "status": "HELD",
+      "n": 38
+    },
+    {
+      "day": "2026-11-06",
+      "kind": "MAINTENANCE",
+      "status": "SUCCEEDED",
+      "n": 68
+    },
+    {
+      "day": "2026-11-07",
+      "kind": "MAINTENANCE",
+      "status": "SUCCEEDED",
+      "n": 141
+    },
+    {
+      "day": "2026-11-08",
+      "kind": "MAINTENANCE",
+      "status": "SUCCEEDED",
+      "n": 222
+    },
+    {
+      "day": "2026-11-08",
+      "kind": "SWEEP",
+      "status": "SUCCEEDED",
+      "n": 11
+    },
+    {
+      "day": "2026-11-09",
+      "kind": "MAINTENANCE",
+      "status": "PENDING",
+      "n": 13
+    },
+    {
+      "day": "2026-11-09",
+      "kind": "MAINTENANCE",
+      "status": "RUNNING",
+      "n": 3
+    },
+    {
+      "day": "2026-11-09",
+      "kind": "MAINTENANCE",
+      "status": "SUCCEEDED",
+      "n": 61
+    },
+    {
+      "day": "2026-11-09",
+      "kind": "SWEEP",
+      "status": "RUNNING",
+      "n": 1
+    },
+    {
+      "day": "2026-11-09",
+      "kind": "SWEEP",
+      "status": "SUCCEEDED",
+      "n": 13
+    }
+  ]
+}

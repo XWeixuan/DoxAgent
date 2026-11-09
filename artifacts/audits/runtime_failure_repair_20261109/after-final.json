@@ -1,0 +1,220 @@
+{
+  "at": "2026-11-09T13:09:49.630355+00:00",
+  "cutoff": "2026-11-09T12:53:07",
+  "cases_created": [
+    {
+      "ticker": "COHR",
+      "status": "PENDING_W3",
+      "n": 1
+    },
+    {
+      "ticker": "COHR",
+      "status": "RUNNING",
+      "n": 3
+    },
+    {
+      "ticker": "INTC",
+      "status": "PENDING_W3",
+      "n": 2
+    },
+    {
+      "ticker": "INTC",
+      "status": "RUNNING",
+      "n": 2
+    },
+    {
+      "ticker": "MU",
+      "status": "PENDING_W3",
+      "n": 2
+    },
+    {
+      "ticker": "NBIS",
+      "status": "PENDING_W3",
+      "n": 1
+    },
+    {
+      "ticker": "NBIS",
+      "status": "RUNNING",
+      "n": 1
+    }
+  ],
+  "case_failures": [],
+  "w3_committed": [
+    {
+      "phase": "post_decision_operations",
+      "n": 1,
+      "first": "2026-11-09T12:53:49.301246+00:00",
+      "last": "2026-11-09T12:53:49.301246+00:00"
+    },
+    {
+      "phase": "trade_decision",
+      "n": 13,
+      "first": "2026-11-09T12:53:41.140531+00:00",
+      "last": "2026-11-09T13:07:28.067583+00:00"
+    }
+  ],
+  "w3_latest": [
+    {
+      "case_id": "case_6ee1b5b00d804fe098dc996bab72d78b",
+      "phase": "trade_decision",
+      "status": "COMMITTED",
+      "accepted_at": "2026-11-09T12:39:02.805105+00:00",
+      "committed_at": "2026-11-09T13:07:28.067583+00:00",
+      "error": null
+    },
+    {
+      "case_id": "case_2f9e1a6536ad47cfb1bf46b0b4c702c7",
+      "phase": "trade_decision",
+      "status": "COMMITTED",
+      "accepted_at": "2026-11-09T12:35:39.653697+00:00",
+      "committed_at": "2026-11-09T13:07:21.120095+00:00",
+      "error": null
+    },
+    {
+      "case_id": "case_8f7ab0f56400414cbe268cf0a232e5b1",
+      "phase": "trade_decision",
+      "status": "COMMITTED",
+      "accepted_at": "2026-11-09T12:40:59.105447+00:00",
+      "committed_at": "2026-11-09T13:06:46.489320+00:00",
+      "error": null
+    },
+    {
+      "case_id": "case_c53222833bac428d87257ec8d1e69071",
+      "phase": "trade_decision",
+      "status": "COMMITTED",
+      "accepted_at": "2026-11-09T12:40:47.331018+00:00",
+      "committed_at": "2026-11-09T13:06:34.065529+00:00",
+      "error": null
+    },
+    {
+      "case_id": "case_9ae4378eb7574d738311c81c9861230c",
+      "phase": "trade_decision",
+      "status": "COMMITTED",
+      "accepted_at": "2026-11-09T12:47:47.700581+00:00",
+      "committed_at": "2026-11-09T13:06:11.164768+00:00",
+      "error": null
+    },
+    {
+      "case_id": "case_6c5f6ca9cc724fd98c94881b319b2388",
+      "phase": "trade_decision",
+      "status": "COMMITTED",
+      "accepted_at": "2026-11-09T12:32:31.888706+00:00",
+      "committed_at": "2026-11-09T13:05:03.955405+00:00",
+      "error": null
+    }
+  ],
+  "turns_created": [
+    {
+      "lane": "W1",
+      "round_name": "R1",
+      "status": "OK",
+      "provider": "openrouter",
+      "model": "anthropic/claude-haiku-5.5",
+      "code": null,
+      "n": 24
+    },
+    {
+      "lane": "W1",
+      "round_name": "R2",
+      "status": "OK",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "code": null,
+      "n": 25
+    },
+    {
+      "lane": "W1",
+      "round_name": "R3",
+      "status": "OK",
+      "provider": "openrouter",
+      "model": "anthropic/claude-haiku-5.5",
+      "code": null,
+      "n": 3
+    },
+    {
+      "lane": "W1",
+      "round_name": "R3",
+      "status": "PENDING_RETRY",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4.1-flash-1017",
+      "code": "provider_stream_failed",
+      "n": 3
+    },
+    {
+      "lane": "W2",
+      "round_name": "R1",
+      "status": "OK",
+      "provider": "openrouter",
+      "model": "anthropic/claude-haiku-5.5",
+      "code": null,
+      "n": 24
+    },
+    {
+      "lane": "W2",
+      "round_name": "R2",
+      "status": "OK",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "code": null,
+      "n": 11
+    },
+    {
+      "lane": "W2",
+      "round_name": "R3",
+      "status": "OK",
+      "provider": "openrouter",
+      "model": "anthropic/claude-haiku-5.5",
+      "code": null,
+      "n": 12
+    },
+    {
+      "lane": "W2",
+      "round_name": "R3",
+      "status": "PENDING_RETRY",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4.1-flash-1017",
+      "code": "provider_stream_failed",
+      "n": 10
+    }
+  ],
+  "cases_today": [
+    {
+      "status": "ADJUDICATED",
+      "n": 1
+    },
+    {
+      "status": "COMPLETED",
+      "n": 302
+    },
+    {
+      "status": "FAILED",
+      "n": 95
+    },
+    {
+      "status": "PENDING_W3",
+      "n": 122
+    },
+    {
+      "status": "RUNNING",
+      "n": 21
+    }
+  ],
+  "worker_w3_new": [
+    {
+      "status": "running",
+      "phase": "trade_decision",
+      "n": 1
+    },
+    {
+      "status": "succeeded",
+      "phase": "post_decision_operations",
+      "n": 1
+    },
+    {
+      "status": "succeeded",
+      "phase": "trade_decision",
+      "n": 33
+    }
+  ],
+  "worker_failures": []
+}

@@ -1,0 +1,275 @@
+{
+  "schema_version": "w3-boundary-timing-v1",
+  "case_id": "case_2bc7f9990ecb4199931443acc971cfcf",
+  "effect_id": "effect_3e35a479260041d68f18085f5a54348d",
+  "phase": "route_to_w3",
+  "lease_token": 3,
+  "effect_created_at": "2026-11-09T11:54:25.520511+00:00",
+  "effect_available_at": "2026-11-09T11:56:51.792799+00:00",
+  "effect_attempt_count": 0,
+  "effect_age_at_start_ms": 161888.206,
+  "effect_claim_started_at": "2026-11-09T11:57:02.365054+00:00",
+  "effect_claim_elapsed_ms": 2854.119,
+  "effect_claim_batch_size": 20,
+  "effect_dispatched_at": "2026-11-09T11:57:05.357887+00:00",
+  "effect_thread_start_ms": 0.109,
+  "started_at": "2026-11-09T11:57:07.408735+00:00",
+  "elapsed_ms": 99727.092,
+  "events": [
+    {
+      "span_id": 1,
+      "parent_span_id": null,
+      "name": "journal.connect",
+      "offset_ms": 3201.952,
+      "elapsed_ms": 0.278,
+      "error_type": null
+    },
+    {
+      "span_id": 2,
+      "parent_span_id": null,
+      "name": "journal.begin",
+      "offset_ms": 3202.263,
+      "elapsed_ms": 6.498,
+      "error_type": null,
+      "write": false
+    },
+    {
+      "span_id": 3,
+      "parent_span_id": null,
+      "name": "journal.commit",
+      "offset_ms": 3295.662,
+      "elapsed_ms": 0.044,
+      "error_type": null,
+      "write": false
+    },
+    {
+      "span_id": 6,
+      "parent_span_id": 5,
+      "name": "journal.connect",
+      "offset_ms": 3320.894,
+      "elapsed_ms": 2.164,
+      "error_type": null
+    },
+    {
+      "span_id": 7,
+      "parent_span_id": 5,
+      "name": "journal.begin",
+      "offset_ms": 3323.204,
+      "elapsed_ms": 11752.013,
+      "error_type": null,
+      "write": true
+    },
+    {
+      "span_id": 8,
+      "parent_span_id": 5,
+      "name": "journal.commit",
+      "offset_ms": 15099.771,
+      "elapsed_ms": 21.172,
+      "error_type": null,
+      "write": true
+    },
+    {
+      "span_id": 9,
+      "parent_span_id": 5,
+      "name": "journal.connect",
+      "offset_ms": 15162.531,
+      "elapsed_ms": 2.469,
+      "error_type": null
+    },
+    {
+      "span_id": 10,
+      "parent_span_id": 5,
+      "name": "journal.begin",
+      "offset_ms": 15165.048,
+      "elapsed_ms": 0.04,
+      "error_type": null,
+      "write": false
+    },
+    {
+      "span_id": 11,
+      "parent_span_id": 5,
+      "name": "journal.commit",
+      "offset_ms": 15198.714,
+      "elapsed_ms": 0.2,
+      "error_type": null,
+      "write": false
+    },
+    {
+      "span_id": 12,
+      "parent_span_id": 5,
+      "name": "stage.accepted",
+      "offset_ms": 15209.503,
+      "elapsed_ms": 0.021,
+      "error_type": null,
+      "accepted_at": "2026-11-09T11:54:40.074853+00:00",
+      "status": "PENDING"
+    },
+    {
+      "span_id": 5,
+      "parent_span_id": 4,
+      "name": "stage.begin",
+      "offset_ms": 3320.827,
+      "elapsed_ms": 11888.715,
+      "error_type": null
+    },
+    {
+      "span_id": 18,
+      "parent_span_id": 4,
+      "name": "history.membership",
+      "offset_ms": 16325.351,
+      "elapsed_ms": 381.801,
+      "error_type": null
+    },
+    {
+      "span_id": 25,
+      "parent_span_id": 4,
+      "name": "context.prepare",
+      "offset_ms": 17207.672,
+      "elapsed_ms": 354.543,
+      "error_type": null
+    },
+    {
+      "span_id": 32,
+      "parent_span_id": 4,
+      "name": "thread.resolve_event_subjects",
+      "offset_ms": 17600.966,
+      "elapsed_ms": 0.043,
+      "error_type": null
+    },
+    {
+      "span_id": 33,
+      "parent_span_id": 4,
+      "name": "case.thread_prepare",
+      "offset_ms": 17601.033,
+      "elapsed_ms": 26529.938,
+      "error_type": null
+    },
+    {
+      "span_id": 52,
+      "parent_span_id": 4,
+      "name": "history.payload",
+      "offset_ms": 44131.015,
+      "elapsed_ms": 128.836,
+      "error_type": null
+    },
+    {
+      "span_id": 56,
+      "parent_span_id": 4,
+      "name": "case.events",
+      "offset_ms": 44259.917,
+      "elapsed_ms": 134.571,
+      "error_type": null
+    },
+    {
+      "span_id": 60,
+      "parent_span_id": 4,
+      "name": "case.payload",
+      "offset_ms": 44394.536,
+      "elapsed_ms": 724.959,
+      "error_type": null
+    },
+    {
+      "span_id": 102,
+      "parent_span_id": 76,
+      "name": "case.context_bind",
+      "offset_ms": 67859.971,
+      "elapsed_ms": 53.154,
+      "error_type": null
+    },
+    {
+      "span_id": 76,
+      "parent_span_id": 4,
+      "name": "phase.materialize_and_model",
+      "offset_ms": 45133.934,
+      "elapsed_ms": 54196.902,
+      "error_type": "OperationalError"
+    },
+    {
+      "span_id": 4,
+      "parent_span_id": null,
+      "name": "case.trade",
+      "offset_ms": 3320.786,
+      "elapsed_ms": 96033.122,
+      "error_type": "OperationalError"
+    }
+  ],
+  "totals": {
+    "journal.connect": {
+      "count": 44,
+      "elapsed_ms": 389.268,
+      "errors": 0
+    },
+    "journal.begin": {
+      "count": 44,
+      "elapsed_ms": 42679.605,
+      "errors": 20
+    },
+    "journal.commit": {
+      "count": 24,
+      "elapsed_ms": 70.521,
+      "errors": 0
+    },
+    "stage.accepted": {
+      "count": 1,
+      "elapsed_ms": 0.021,
+      "errors": 0
+    },
+    "stage.begin": {
+      "count": 1,
+      "elapsed_ms": 11888.715,
+      "errors": 0
+    },
+    "history.membership": {
+      "count": 1,
+      "elapsed_ms": 381.801,
+      "errors": 0
+    },
+    "context.prepare": {
+      "count": 1,
+      "elapsed_ms": 354.543,
+      "errors": 0
+    },
+    "thread.resolve_event_subjects": {
+      "count": 1,
+      "elapsed_ms": 0.043,
+      "errors": 0
+    },
+    "case.thread_prepare": {
+      "count": 1,
+      "elapsed_ms": 26529.938,
+      "errors": 0
+    },
+    "history.payload": {
+      "count": 1,
+      "elapsed_ms": 128.836,
+      "errors": 0
+    },
+    "case.events": {
+      "count": 1,
+      "elapsed_ms": 134.571,
+      "errors": 0
+    },
+    "case.payload": {
+      "count": 1,
+      "elapsed_ms": 724.959,
+      "errors": 0
+    },
+    "case.context_bind": {
+      "count": 1,
+      "elapsed_ms": 53.154,
+      "errors": 0
+    },
+    "phase.materialize_and_model": {
+      "count": 1,
+      "elapsed_ms": 54196.902,
+      "errors": 1
+    },
+    "case.trade": {
+      "count": 1,
+      "elapsed_ms": 96033.122,
+      "errors": 1
+    }
+  },
+  "active_spans": [],
+  "events_truncated": true
+}

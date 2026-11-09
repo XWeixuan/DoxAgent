@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-11-09T12:53:59.245516+00:00",
+  "case_id": "case_2bc7f9990ecb4199931443acc971cfcf",
+  "http_statuses": [
+    200,
+    200
+  ],
+  "binding_identical": true,
+  "original_manifest_preserved": true,
+  "case_unchanged": true
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "day": "2026-11-02",
+    "scope": "DAILY",
+    "n": 10,
+    "succeeded": 10
+  },
+  {
+    "day": "2026-11-02",
+    "scope": "SUPPLEMENTAL",
+    "n": 75,
+    "succeeded": 75
+  },
+  {
+    "day": "2026-11-02",
+    "scope": "SWEEP",
+    "n": 10,
+    "succeeded": 10
+  },
+  {
+    "day": "2026-11-03",
+    "scope": "DAILY",
+    "n": 10,
+    "succeeded": 10
+  },
+  {
+    "day": "2026-11-03",
+    "scope": "SUPPLEMENTAL",
+    "n": 2,
+    "succeeded": 2
+  },
+  {
+    "day": "2026-11-04",
+    "scope": "DAILY",
+    "n": 10,
+    "succeeded": 10
+  },
+  {
+    "day": "2026-11-04",
+    "scope": "SUPPLEMENTAL",
+    "n": 2,
+    "succeeded": 2
+  },
+  {
+    "day": "2026-11-05",
+    "scope": "DAILY",
+    "n": 10,
+    "succeeded": 10
+  },
+  {
+    "day": "2026-11-06",
+    "scope": "DAILY",
+    "n": 10,
+    "succeeded": 10
+  },
+  {
+    "day": "2026-11-06",
+    "scope": "SUPPLEMENTAL",
+    "n": 223,
+    "succeeded": 185
+  },
+  {
+    "day": "2026-11-08",
+    "scope": "SUPPLEMENTAL",
+    "n": 211,
+    "succeeded": 211
+  },
+  {
+    "day": "2026-11-08",
+    "scope": "SWEEP",
+    "n": 11,
+    "succeeded": 11
+  },
+  {
+    "day": "2026-11-09",
+    "scope": "SUPPLEMENTAL",
+    "n": 64,
+    "succeeded": 51
+  },
+  {
+    "day": "2026-11-09",
+    "scope": "SWEEP",
+    "n": 13,
+    "succeeded": 10
+  }
+]
