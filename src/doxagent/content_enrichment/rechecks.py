@@ -7,6 +7,8 @@ from doxagent.message_bus_v2.schema import utc_now, new_id, sha256_text
 
 
 def enqueue_due(repository, limit=4):
+    if not repository.body_recheck_enabled:
+        return 0
     now = utc_now()
     with repository._connect() as db:
         if db.execute("SELECT count(*) FROM (SELECT 1 FROM content_enrichment_jobs WHERE status IN ('queued','retry_wait','running') AND json_extract(data_json,'$.work_kind')='recheck' LIMIT 8)").fetchone()[0]>=8:

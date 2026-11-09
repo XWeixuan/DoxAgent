@@ -54,6 +54,7 @@ def test_body_reuse_is_not_a_publication_receipt_and_failed_old_owner_cannot_era
 
 def test_update_hint_and_due_recheck_have_one_durable_sequence(tmp_path):
     results = ArticleBodyResults(MessageBusV2Repository(tmp_path / "bus.db"))
+    results.repository.body_recheck_enabled = True
     original, now = message(), datetime.now(UTC)
     row, _ = results.schedule(original, "source", now=now)
     key = row["fetch_key"]
@@ -140,6 +141,7 @@ def test_verified_redirect_alias_reuses_large_body_without_crossing_paid_scope(t
 
 def test_published_identity_links_syndicated_url_without_resetting_recheck_or_new_cohort(tmp_path):
     results = ArticleBodyResults(MessageBusV2Repository(tmp_path / 'bus.db'))
+    results.repository.body_recheck_enabled = True
     original, now = message(), datetime.now(UTC)
     row, _ = results.schedule(original, 'source', now=now)
     key = row['fetch_key']

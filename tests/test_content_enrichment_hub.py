@@ -572,6 +572,7 @@ async def test_independent_recheck_updates_original_without_republication(tmp_pa
     from doxagent.content_enrichment.rechecks import enqueue_due
     from doxagent.message_bus_v2.body_results import ArticleBodyResults
     repo,bus,source,binding=_setup(tmp_path)
+    repo.body_recheck_enabled = True
     bus.enqueue_enrichment(source=source,binding=binding,message=_message(910),bootstrap=False,poll_run_id='first')
     class Extractor:
         calls=0
@@ -665,6 +666,7 @@ def test_foreground_body_claim_skips_recheck_backlog_through_partial_index(tmp_p
     from doxagent.content_enrichment.schema import EnrichmentJobStatus
 
     repo,bus,source,binding=_setup(tmp_path)
+    repo.body_recheck_enabled = True
     now=utc_now()
     job,_=bus.enqueue_enrichment(source=source,binding=binding,message=_message(61003),bootstrap=False,poll_run_id='claim-index')
     recheck=job.model_copy(update={'work_kind':'recheck','status':EnrichmentJobStatus.QUEUED})

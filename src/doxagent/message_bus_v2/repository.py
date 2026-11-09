@@ -102,8 +102,10 @@ class _BorrowedConnection:
 
 class MessageBusV2Repository:
     def __init__(self, sqlite_path: str | Path, *, terminal_receipts_enabled: bool = True,
+                 body_recheck_enabled: bool = False,
                  initialize: bool | None = None) -> None:
         self.terminal_receipts_enabled = terminal_receipts_enabled
+        self.body_recheck_enabled = body_recheck_enabled
         self._atomic_connection = ContextVar("bus_atomic_connection", default=None)
         self._scope_connection = ContextVar("bus_scope_connection", default=None)
         self.path = Path(sqlite_path)
@@ -1789,6 +1791,8 @@ class MessageBusV2Repository:
     ) -> list[EnrichmentJob]:
         """Drain legacy work with scalar claims; hydrate only claimed packets."""
         current=(now or utc_now()).astimezone(UTC)
+        allow_rechecks = allow_rechecks and self.body_recheck_enabled
+        recheck_filter = "" if self.body_recheck_enabled else " AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
         stamp=current.isoformat()
         lease=(current+timedelta(seconds=lease_seconds)).isoformat()
         with self._connect() as db:
@@ -1798,7 +1802,7 @@ class MessageBusV2Repository:
                 "ORDER BY created_at LIMIT ?",(stamp,max(64,limit))))
             # Expired owners must be recovered even when the foreground lookahead is full.
             rows=list(db.execute("SELECT job_id,data_json AS job_packet FROM content_enrichment_jobs "
-                "WHERE status='running' AND lease_expires_at<=? ORDER BY lease_expires_at LIMIT ?",
+                "WHERE status='running' AND lease_expires_at<=? " + recheck_filter + "ORDER BY lease_expires_at LIMIT ?",
                 (stamp,limit)))+rows
             rechecking=db.execute("SELECT 1 FROM content_enrichment_jobs WHERE status='running' "
                 "AND lease_expires_at>? AND json_extract(data_json,'$.work_kind')='recheck' LIMIT 1",(stamp,)).fetchone()

@@ -106,6 +106,7 @@ def build_message_bus_v2_service(
             registry.close()
 
     repository = MessageBusV2Repository(settings.message_bus_v2_sqlite_path,
+        body_recheck_enabled=settings.content_enrichment_recheck_enabled,
         terminal_receipts_enabled=settings.message_bus_enrichment_terminal_receipts_enabled)
     service = MessageBusV2Service(
         repository,

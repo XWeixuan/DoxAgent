@@ -258,8 +258,7 @@ class ArticleBodyResults:
             )
         )
 
-    @staticmethod
-    def reusable(result: dict, message, now: datetime | None = None) -> bool:
+    def reusable(self, result: dict, message, now: datetime | None = None) -> bool:
         from doxagent.content_enrichment.quality import short_subscription_preview
         source_id = message.metadata.get("body_observation_source_id")
         verified_hint = result.get("verified_hints", {}).get(source_id, result.get("verified_hint"))
@@ -269,7 +268,8 @@ class ArticleBodyResults:
             and result.get("content")
             and not short_subscription_preview(result['content'])
             and verified_hint == update_hint(message)
-            and result.get("next_check_at", "") > (now or utc_now()).isoformat()
+            and (not self.repository.body_recheck_enabled
+                 or result.get("next_check_at", "") > (now or utc_now()).isoformat())
         )
 
     def schedule(self, message, source_id: str, *, now=None, known_article=None) -> tuple[dict, str]:

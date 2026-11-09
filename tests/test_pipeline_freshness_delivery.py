@@ -271,6 +271,7 @@ async def test_future_identical_input_reuses_receipt_and_independent_pump_preser
     from doxagent.message_bus_v2.polling import CaptureIntake
     from tests.test_body_completion_receipts import Extractor
     repo,bus,source,binding = _setup(tmp_path)
+    repo.body_recheck_enabled = True
     message = _message(600001)
     intake, hub = CaptureIntake(bus), ContentEnrichmentHub(repo,bus,extractor=Extractor())
     def capture(run):

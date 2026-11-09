@@ -537,6 +537,9 @@ class DoxAgentSettings(BaseSettings):
         default=True,
         validation_alias="DOXAGENT_MESSAGE_BUS_V2_CONTENT_ENRICHMENT_ENABLED",
     )
+    content_enrichment_recheck_enabled: bool = Field(
+        default=False, validation_alias="DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED",
+    )
     message_bus_v2_hidden_news_domains: str = Field(
         default="",
         validation_alias="DOXAGENT_MESSAGE_BUS_V2_HIDDEN_NEWS_DOMAINS",

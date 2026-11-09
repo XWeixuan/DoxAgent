@@ -468,7 +468,8 @@ class LiveRepository:
                         ),
                     )
                 elif (
-                    old["state"] == "READY"
+                    self.bus.body_recheck_enabled
+                    and old["state"] == "READY"
                     and old["body_digest"]
                     and old["checked_at"]
                     and old["next_check_at"]
@@ -595,6 +596,7 @@ class LiveRepository:
         stamp = now.isoformat()
         recent = (now - timedelta(minutes=30)).isoformat()
         claimed = []
+        recheck_filter = "" if self.bus.body_recheck_enabled else " AND work_kind<>'recheck' "
         with self.bus._connect() as db:
             if background:
                 limit = min(limit, 1)
@@ -615,7 +617,7 @@ class LiveRepository:
             publishers = db.execute(
                 "SELECT publisher,min(due_at) first_due,max(first_seen_at) newest,max(first_seen_at>=? OR work_kind='content_update') urgent FROM live_articles "
                 "WHERE state='FETCH_DUE' AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
-                "GROUP BY publisher ORDER BY min(delivery_mode='test')," + ('first_due,newest DESC' if background else 'urgent DESC,newest DESC,first_due') + " LIMIT 64",
+                + recheck_filter + "GROUP BY publisher ORDER BY min(delivery_mode='test')," + ('first_due,newest DESC' if background else 'urgent DESC,newest DESC,first_due') + " LIMIT 64",
                 (recent, stamp, int(background)),
             ).fetchall()
             rows = []
@@ -625,7 +627,7 @@ class LiveRepository:
                     rows += db.execute(
                         "SELECT article_key,input_revision FROM live_articles WHERE state='FETCH_DUE' "
                         "AND publisher=? AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
-                        "ORDER BY (delivery_mode='test')," + ('due_at,first_seen_at' if background else "(first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at") + " LIMIT ?",
+                        + recheck_filter + "ORDER BY (delivery_mode='test')," + ('due_at,first_seen_at' if background else "(first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at") + " LIMIT ?",
                         (publisher[0], stamp, int(background), *([] if background else [recent]), available),
                     ).fetchall()
                 if len(rows) >= limit:
@@ -633,7 +635,7 @@ class LiveRepository:
             if len(rows) < limit:
                 rows += db.execute(
                     "SELECT article_key,input_revision FROM live_articles WHERE state='FETCHING' "
-                    "AND lease_until<=? ORDER BY lease_until LIMIT ?",
+                    "AND lease_until<=? " + recheck_filter + "ORDER BY lease_until LIMIT ?",
                     (stamp, limit - len(rows)),
                 ).fetchall()
         if not rows:
@@ -1004,11 +1006,13 @@ class LiveRepository:
         now = utc_now()
         stamp = now.isoformat()
         cutoff = (now - timedelta(hours=24)).isoformat()
+        recheck_filter = "" if self.bus.body_recheck_enabled else (
+            " AND work_kind<>'recheck' AND last_error IN ('site_recovery_pending','domain_cooldown') ")
         with self.bus._connect() as db:
             rows = db.execute(
                 "SELECT article_key,last_error FROM live_articles WHERE state='READY' "
                 "AND next_check_at<=? AND (first_seen_at>=? OR last_error IN ('site_recovery_pending','domain_cooldown')) "
-                "ORDER BY next_check_at LIMIT ?",
+                + recheck_filter + "ORDER BY next_check_at LIMIT ?",
                 (stamp, cutoff, limit),
             ).fetchall()
             expired = db.execute(

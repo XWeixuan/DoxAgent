@@ -724,6 +724,7 @@ async def test_unchanged_recheck_retains_result_ref_and_native_files(tmp_path):
     from doxagent.message_bus_v2.schema import utc_now, RawMessageInput
 
     repo, bus, source, binding = _setup(tmp_path)
+    repo.body_recheck_enabled = True
     bus.live_queue = LiveQueue(bus)
     live = bus.live_queue.repository
     rows = live.prepare_input(
@@ -861,6 +862,7 @@ async def test_old_unpublished_recheck_executes_once_without_publishing_expired_
     import json
 
     repo, bus, source, binding = _setup(tmp_path)
+    repo.body_recheck_enabled = True
     now = utc_now()
     old = now - timedelta(days=2)
     message = _message(197).model_copy(update={"published_at": old})
