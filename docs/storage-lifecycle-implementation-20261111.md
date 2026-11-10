@@ -98,3 +98,5 @@ Bus采用SQLite自身原子VACUUM，避免不一致cp和在线文件替换。操
 ### 05:00补充状态
 
 已合并main至a0a249d9，保留W3 Luna Fast及并行业务更新。精确文件候选源码cfe7b649，以当前Worker实际镜像14121db49ff6为底，仅覆盖initialization_owners/snapshot_retention/session_retention三个文件，候选7172bb5619e5。当前Worker仍有5个在途Job，未替换。采集角色aff392a3e876的Acquisition maintenance/store与当前提交逐字节一致，明确不为它额外切换容器；构建时产生的同源码Collector候选不发布，由既有48h候选生命周期退出。
+
+最新main业务合并（含W3 JSON解码、Luna供应商配置）的交叉收尾检查：`merged-closeout.xml`为67通过、2跳过，未发模型请求；与此前各组重叠，不合计为独立总数。
