@@ -1,0 +1,9 @@
+{
+  "commit": "f87bcdfe9815152857bb84fef90d1055db31e6ba",
+  "parent": "sha256:52f88941c355f2d816e7886c7758e1e666bd94ca65e4011be078f7200da4877b",
+  "image": "sha256:c2f11b4f5b9b8331b2967720c8b811c34fbd8ea079c3a838c9659ccb06cd7a00",
+  "paths": {
+    "src/doxagent/agent_mcp/__main__.py": "c1f19afac2eeb8232b9eecd6cd643a4e91f040842271cb92c7fc32dce98c2969",
+    "src/doxagent/agent_mcp/notifications.py": "07d6cbf22878f7e97ff0dcc8334dc0c911663ee53d5fafe675a9f1d455c1d9d9"
+  }
+}

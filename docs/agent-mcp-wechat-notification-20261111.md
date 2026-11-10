@@ -32,4 +32,32 @@ MCP 标注：新工具 `readOnlyHint=false`、`destructiveHint=false`、`idempot
 
 本地验证：通知路由/输入边界、三级消息、异步受理、失败/超时不重试、凭证不回显、真实 MCP 协议发现/分发，以及原只读 MCP/Bus 回归合计 **44 项通过**。Ruff 和 diff 检查通过；测试中的 HTTP 发送全部使用 MockTransport，不产生微信消息。
 
-生产部署、真实单次发送及个人微信实收确认结果将在下文追加；不能以接口受理代替实收验收。
+## 生产与真实微信验收
+
+功能提交 `f87bcdfe` 已推送至 origin/main。只更新 `v2-agent-mcp-tunnel`，镜像 `sha256:c2f11b4f5b9b8331b2967720c8b811c34fbd8ea079c3a838c9659ccb06cd7a00`；保留原官方 Tunnel 二进制与所有依赖，仅覆盖 MCP 入口和新增通知模块。远端仓库其他任务的未提交 changelog 保留，使用 fetched commit 的 git archive 打包本次文件。
+
+生产覆盖文件 `/var/lib/doxagent/agent-mcp/wechat-20261111/compose.wechat.json` 已纳入原 release 的完整 Compose 命令；使用既有发布锁和健康回滚，仅新增 secret 挂载。`healthz` / `readyz` 均为 200，控制面轮询正常，容器无重启/OOM。其他 **21 个**已有容器 ID 保持不变，包含 API、采集、研究和 Executor。空闲采样约 88.26 MiB / 384 MiB、0.05% CPU、12 PIDs，仅为一次采样，不代表长期峰值。
+
+在部署后的实际 Linux stdio MCP 会话中，发现五个工具并确认新工具的非只读、非幂等标注。随后**只调用一次**通知工具发送测试 `WX-20261111-01`：
+
+```json
+{
+  "data": {
+    "status": "accepted",
+    "delivery": "unconfirmed",
+    "channel": "wechat",
+    "level": "INFO",
+    "provider_code": 200,
+    "short_code": "5477e8baa786443f848e8d867c6e6f22"
+  },
+  "meta": {"submitted_at": "2026-11-10T17:09:50.792549+00:00"}
+}
+```
+
+北京时间 **2026-11-11 01:09:50**，该工具调用耗时约 1 秒。上述为 MCP 对 PushPlus 接口响应的固定字段投影；`delivery=unconfirmed` 是工具当时的准确状态。之后用户在本轮 ChatGPT 回复 **“已收到，正文清晰”**，确认个人微信实收同一测试编号，单独记录在 `handset-confirmation.json`。没有因收到确认而篡改原接口收据。未调用 PushPlus 开放管理接口、开通 AccessKey 或新增投递状态轮询。
+
+同一生产会话再调用原概览工具（limit=1）成功，原四查询工具保持只读标注。当前 ChatGPT 连接缓存仍可能只显示旧四工具；刷新 DoxAgent 插件的工具列表后即可让 Dots 使用新工具。本轮真实推送来自部署后 MCP stdio 验收，不冒充 Dots 已完成插件刷新后的调用。
+
+证据位于 `artifacts/audits/agent_mcp_wechat_20261111/`：功能镜像与源码哈希、真实 MCP 响应、健康/资源/其他容器未替换检查、44 项测试收据及用户实收确认。服务器完整私密发布记录在 `/var/lib/doxagent/agent-mcp/wechat-20261111/`；其中 state/compose.before 不作为公共交付附件。
+
+如需撤回通知能力，停用该工具或恢复 MCP 上一镜像并移除微信 secret 的覆盖即可；无需回滚业务库、API、研究或交易服务。原四工具仍可继续使用。
