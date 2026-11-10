@@ -27,7 +27,7 @@ def test_published_inputs_exit_but_adopted_and_unique_evidence_and_w3_stay(tmp_p
             db.execute('INSERT INTO codex_runtime_records VALUES(?,?,?)',('citations',run,json.dumps(dict(relative_path='context/source.html'))))
             with store.connect() as jobs:
                 jobs.execute('INSERT INTO jobs(id,status,payload,request) VALUES(?,?,?,?)',(run,'succeeded',json.dumps(dict(run_id=run,finished_at=at)),json.dumps(dict(node='document3'))))
-    monkeypatch.setattr(retention,'business_holds',lambda *a,**kw:{('run','held')})
+    monkeypatch.setattr(retention,'run_held',lambda settings,run:run=='held')
     report=retention.collect(workspaces,SimpleNamespace(store=store),SimpleNamespace(codex_runtime_sqlite_path=source),now=now)
     assert [r['run'] for r in report['runs']]==['published','runtime-maintain-old']
     assert report['errors'][0]['run']=='corrupt'
@@ -49,7 +49,7 @@ def test_unpublished_terminal_inputs_exit_without_losing_results_or_resumable_ru
             db.execute('INSERT INTO codex_runtime_records VALUES(?,?,?)',('citations',run,json.dumps(dict(relative_path='context/cited.html'))))
             with store.connect() as jobs:
                 jobs.execute('INSERT INTO jobs(id,status,payload,request) VALUES(?,?,?,?)',(run,status,json.dumps(dict(run_id=run,finished_at=at)),json.dumps(dict(node=node))))
-    monkeypatch.setattr(retention,'business_holds',lambda *a,**kw:{('run','held')})
+    monkeypatch.setattr(retention,'run_held',lambda settings,run:run=='held')
     settings=SimpleNamespace(codex_runtime_sqlite_path=source);jobs=SimpleNamespace(store=store)
     report=retention.collect(workspaces,jobs,settings,now=now)
     assert not report['errors']

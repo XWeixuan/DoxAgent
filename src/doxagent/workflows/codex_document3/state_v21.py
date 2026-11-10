@@ -25,6 +25,8 @@ class StateV21:
         self.path = str(path)
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
+        from doxagent.v2_read.native_content import NativeContent
+        self.codec = NativeContent(path)
         with self.connect() as db:
             db.executescript("""
             CREATE TABLE IF NOT EXISTS codex_document3_v21_runs
@@ -42,6 +44,16 @@ class StateV21:
               (run_id TEXT PRIMARY KEY,ticker TEXT NOT NULL,version INTEGER NOT NULL,
                UNIQUE(ticker,version));
             """)
+            from doxagent.v2_read.artifact_registry import migrate, native_triggers
+            migrate(db)
+            if not db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_artifact_codex_document3_v21_runs_INSERT'").fetchone():
+                native_triggers(db, 'codex_document3_v21_runs', ['payload'], 'json_array(NEW.run_id)')
+
+    def _pack(self, values):
+        # Existing immutable Native CAS; unchanged large fields stay as references.
+        large = {'prepared', 'base', 'base_coverage', 'final', 'final_candidates', 'handoff'}
+        return {key: json.loads(self.codec.encode({key: value}))[key] if key in large else value
+                for key, value in values.items()}
 
     @contextmanager
     def connect(self):
@@ -54,6 +66,7 @@ class StateV21:
             db.close()
 
     def start(self, run_id, identity, payload):
+        stored = self._pack(payload)
         with self.lock, self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute(
@@ -63,10 +76,13 @@ class StateV21:
             if row:
                 if row["identity"] != key:
                     raise ValueError("V21 replay input identity mismatch")
-                return json.loads(row["payload"])
+                existing = self.codec.decode(json.loads(row["payload"]))
+                if existing.get('resource_retirement'):
+                    raise ValueError('D3_RUN_RETIRED_NEW_RUN_REQUIRED')
+                return existing
             db.execute(
                 "INSERT INTO codex_document3_v21_runs VALUES(?,?,?)",
-                (run_id, key, canonical(payload)),
+                (run_id, key, canonical(stored)),
             )
             return payload
 
@@ -75,21 +91,69 @@ class StateV21:
             row = db.execute(
                 "SELECT payload FROM codex_document3_v21_runs WHERE run_id=?", (run_id,)
             ).fetchone()
-            return json.loads(row[0]) if row else None
+            stored = json.loads(row[0]) if row else None
+        value = self.codec.decode(stored) if stored is not None else None
+        if value and value.get('resource_retirement'):
+            staged = self.get_staged_by_run(run_id)
+            if staged:
+                value.setdefault('final', staged[0].get('policies', []))
+                value.setdefault('handoff', staged[1])
+        return value
 
     def update(self, run_id, **values):
+        packed = self._pack(values)
         with self.lock, self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute(
                 "SELECT payload FROM codex_document3_v21_runs WHERE run_id=?", (run_id,)
             ).fetchone()
             payload = json.loads(row[0])
-            payload.update(values)
+            if payload.get('resource_retirement'):
+                raise ValueError('D3_RUN_RETIRED_NEW_RUN_REQUIRED')
+            payload.update(packed)
             db.execute(
                 "UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?",
                 (canonical(payload), run_id),
             )
-            return payload
+        return self.codec.decode(payload)
+
+    def settle(self, run_id, *, at=None, authority):
+        """Publication/activation is independent of COMPLETE vs PARTIAL quality."""
+        from datetime import UTC, datetime
+        with self.connect() as db:
+            row = db.execute('SELECT payload FROM codex_document3_v21_runs WHERE run_id=?', (run_id,)).fetchone()
+            if not row:
+                return
+            value = json.loads(row[0])
+            if value.get('settlement'):
+                return
+            value['settlement'] = {'at': at or datetime.now(UTC).isoformat(), 'authority': authority}
+            db.execute('UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?', (canonical(value), run_id))
+
+    def retire(self, run_id, *, now, authority):
+        """Caller fences live business/jobs; retain exact staged version and audit identity."""
+        with self.lock, self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT payload FROM codex_document3_v21_runs WHERE run_id=?', (run_id,)).fetchone()
+            staged = db.execute('SELECT payload,receipt FROM codex_document3_v21_staged_sets WHERE run_id=?', (run_id,)).fetchone()
+            if not row or not staged:
+                return None
+            value = json.loads(row[0])
+            if value.get('resource_retirement'):
+                return value['resource_retirement']
+            before = len(row[0].encode())
+            removed = {}
+            for key in ('prepared', 'base', 'base_coverage', 'final', 'final_candidates', 'handoff',
+                        'shell_discovery_input', 'open_discovery_input'):
+                if key in value:
+                    removed[key] = digest(value.pop(key))
+            receipt = {'at': now.isoformat(), 'authority': authority, 'resume_allowed': False,
+                       'fields_sha256': removed, 'before_json_bytes': before}
+            value['resource_retirement'] = receipt
+            raw = canonical(value)
+            receipt['after_json_bytes'] = len(raw.encode())
+            db.execute('UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?', (canonical(value), run_id))
+        return receipt
 
     def task(self, run_id, key):
         with self.connect() as db:

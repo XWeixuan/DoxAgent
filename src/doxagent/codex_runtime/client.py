@@ -468,12 +468,13 @@ class HttpCodexWorkerClient:
                 files[item.relative_path] = item
         return WorkspaceInventory(run_id=run_id, files=[files[p] for p in sorted(files)])
 
-    async def snapshot(self, run_id: str, snapshot_id: str) -> None:
+    async def snapshot(self, run_id: str, snapshot_id: str, *, initialization_id: str | None = None) -> None:
         await self._request(
             "POST",
             f"/v1/workspaces/{run_id}/snapshots/{snapshot_id}",
             run_id=run_id,
             operation="snapshot",
+            params={"initialization_id": initialization_id} if initialization_id else None,
         )
 
     async def fork_snapshot(self, run_id: str, snapshot_id: str, destination_run_id: str) -> None:

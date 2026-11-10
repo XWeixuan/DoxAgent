@@ -104,23 +104,50 @@ def record_repair_references(state, containers):
     state['repair_images']=sorted(references)
 
 
-def capacity_snapshot(root, containers, *, now=None):
-    """One small host-owned daily sample; du counts hardlinks once per volume."""
+def capacity_snapshot(root,containers,*,now=None):
+    """Rotate independent directory groups; keep last complete values on timeout."""
     if os.name != 'posix':return
     now=now or time.time();directory=root/'capacity';directory.mkdir(exist_ok=True)
     destination=directory/(datetime.fromtimestamp(now).strftime('%Y-%m-%d')+'.json')
-    if not destination.exists():
-        mounts={m['Source'] for c in containers for m in c.get('Mounts',[]) if m.get('Type')=='volume'}
-        targets=sorted(mounts | {str(root),'/var/lib/containerd'})
-        samples=[]
-        for target in targets:
-            if not Path(target).exists():continue
-            try:result=subprocess.run(['du','-x','-B1','-d1',target],capture_output=True,text=True,timeout=240)
-            except subprocess.TimeoutExpired as exc:
-                from types import SimpleNamespace
-                result=SimpleNamespace(stdout=(exc.stdout or b'').decode() if isinstance(exc.stdout,bytes) else exc.stdout or '',stderr='incomplete: daily scan time budget reached')
-            samples.append(dict(path=target,entries=[dict(bytes=int(row.split('\t',1)[0]),path=row.split('\t',1)[1]) for row in result.stdout.splitlines() if '\t' in row],error=result.stderr[:500] or None))
-        atomic(destination,dict(at=now,root=dict(zip(('total','used','free'),shutil.disk_usage('/'))),volumes=samples,owners=owner_status(containers)))
+    mounts={m['Source'] for c in containers for m in c.get('Mounts',[]) if m.get('Type')=='volume'}
+    targets={str(root),'/var/lib/containerd','/var/log'}
+    for mount in mounts:
+        path=Path(mount)
+        if path.is_dir():
+            children=[p for p in path.iterdir() if p.is_dir() and not p.is_symlink()]
+            targets.update(map(str,children)) if children else targets.add(mount)
+    targets=sorted(targets)
+    progress=directory/'scan-progress.json'
+    prior=json.loads(progress.read_text()) if progress.exists() else {}
+    cursor=prior.get('cursor','')
+    page=[p for p in targets if p>cursor][:2]
+    if not page:page=targets[:2]
+    value=json.loads(destination.read_text()) if destination.exists() else {'volumes':[]}
+    samples={v['path']:v for v in value.get('volumes',[])}
+    for target in page:
+        if not Path(target).exists():continue
+        try:
+            result=subprocess.run(['du','-x','-B1','-d1',target],capture_output=True,text=True,timeout=25)
+            error=result.stderr[:500] or None
+            stdout=result.stdout
+        except subprocess.TimeoutExpired as exc:
+            stdout=exc.stdout or ''
+            if isinstance(stdout,bytes):stdout=stdout.decode(errors='replace')
+            error='incomplete: directory group scan time budget reached'
+        entry=dict(path=target,at=now,entries=[dict(bytes=int(row.split('\t',1)[0]),path=row.split('\t',1)[1])
+                   for row in stdout.splitlines() if '\t' in row],error=error)
+        if error and target in samples and not samples[target].get('error'):
+            samples[target]['latest_incomplete']={'at':now,'error':error}
+        else:samples[target]=entry
+    value.update(at=now,root=dict(zip(('total','used','free'),shutil.disk_usage('/'))),
+                 volumes=list(samples.values()),owners=owner_status(containers),
+                 directory_groups=targets,scan_cursor=page[-1] if page else '',
+                 incomplete_groups=[p for p in targets if p not in samples or samples[p].get('error')],
+                 group_totals_are_not_additive=True)
+    free=value['root']['free']
+    value['capacity_risk']='CRITICAL' if free<20*1024**3 else 'LOW_HEADROOM' if free<40*1024**3 else 'OK'
+    atomic(destination,value)
+    atomic(progress,dict(cursor=page[-1] if page else '',at=now))
     for path in directory.glob('????-??-??.json'):
         if now-path.stat().st_mtime>30*86400:path.unlink()
 
@@ -133,7 +160,7 @@ def owner_status(containers):
     for root in sorted(mounts):
         base=Path(root)
         if not (base/'read/v2.sqlite3').is_file():continue
-        for name,relative in [('read','read/v2.sqlite3'),('research','research/research.sqlite3'),('initialization','initialization/control.sqlite3'),('bus','bus/bus.sqlite3'),('runtime','runtime/runtime.sqlite3')]:
+        for name,relative in [('read','read/v2.sqlite3'),('research','research/research.sqlite3'),('initialization','initialization/control.sqlite3'),('bus','bus/bus.sqlite3'),('runtime','runtime/runtime.sqlite3'),('acquisition','bus/acquisition.sqlite3'),('worker','workspaces/worker-jobs.sqlite3')]:
             path=base/relative
             if not path.is_file():continue
             path=path.resolve()
@@ -156,6 +183,12 @@ def owner_status(containers):
                         if 'v2_source_exception_pins' in tables:entry['exception_pins']=list(db.execute('SELECT consumer,count(*) FROM v2_source_exception_pins GROUP BY consumer'))
                         if 'v2_transport_gc_state' in tables:entry['transport_exit']=list(db.execute('SELECT * FROM v2_transport_gc_state'))
                         if 'v2_native_ref_scan' in tables:entry['native_refs_pending']=list(db.execute('SELECT owner,cursor FROM v2_native_ref_scan WHERE done=0'))
+                    if name=='acquisition':
+                        entry['retention']=db.execute("SELECT value FROM meta WHERE key='retention'").fetchone()
+                    if name=='worker':
+                        entry['retention']=list(db.execute("SELECT key,value FROM metadata WHERE key IN ('resource_retention','session_retention','session_retention_deferred','workspace_exit_cursor')"))
+                    if name=='read' and Path(str(path)+'.gc.json').is_file():
+                        entry['gc']=json.loads(Path(str(path)+'.gc.json').read_text())
                     db.set_progress_handler(None,0)
             except (OSError,sqlite3.Error) as exc:entry['error']=str(exc)[:200]
             result[name]=entry
@@ -251,7 +284,8 @@ def reconcile(root, state):
     protected = protected_images(state,images,containers)
     for image in images:
         tags = image.get('RepoTags') or []
-        owned = [t for t in tags if t.split(':',1)[0].startswith('doxagent-')]
+        owned = [t for t in tags if t.split(':',1)[0].startswith('doxagent-') or
+                 (t.split(':',1)[0]=='doxagent' and t.partition(':')[2].startswith(('o2-auto-','storage-')))]
         known=image['Id'] in state.get('owned_images',[])
         if image['Id'] in protected or not owned and not (known and not tags):
             continue

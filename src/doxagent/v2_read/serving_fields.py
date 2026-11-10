@@ -29,6 +29,9 @@ VALUE_NAMES={
 def select(kind,identity,value):
     if value is None or not kind.startswith('native:'):return value
     table=kind[7:]
+    if table in {'poll_runs','poll_captures'}:
+        from doxagent.message_bus_v2.collection_plane.observability import store_from_environment
+        if store_from_environment() is not None:return None
     if table in CONTROL:return value
     if table=='live_deliveries':
         # Only first-discovery anchors and the published identity, never the

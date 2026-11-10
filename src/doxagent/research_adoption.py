@@ -67,11 +67,12 @@ def inspect_source(spec):
             raise ValueError("source release differs from approved manifest")
         if policy.document2_ref.run_id != spec["d2_run"] or policy.ticker != spec["ticker"]:
             raise ValueError("source D2/Policy provenance mismatch")
-        run = json.loads(
+        from doxagent.v2_read.native_content import NativeContent
+        run = NativeContent(spec["source_database"]).decode(json.loads(
             db.execute(
                 "SELECT payload FROM codex_document3_v21_runs WHERE run_id=?", (spec["d3_run"],)
             ).fetchone()[0]
-        )
+        ))
         return policy, receipt, run
 
 

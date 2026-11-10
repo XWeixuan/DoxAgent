@@ -119,6 +119,15 @@ def maintain_profile(root, directory_key, *, allow_cache=False, seconds=1, now=N
                 deadline - 0.1,
                 time.monotonic() + min(0.25, max(0, deadline - time.monotonic()) / 3),
             )
+            from doxagent.v2_read.maintenance import atomic_json
+            import json
+            marker=directory/'.cache-gc.json'
+            try:offset=int(json.loads(marker.read_text()).get('offset',0))
+            except (OSError,ValueError):offset=0
+            if cache_directories:
+                offset %= len(cache_directories)
+                cache_directories=cache_directories[offset:]+cache_directories[:offset]
+                atomic_json(marker,{'offset':offset+1,'at':instant})
             for target in cache_directories:
                 entries, _ = _files(target, deadline=scan_deadline)
                 candidates.extend(entries)
@@ -126,10 +135,11 @@ def maintain_profile(root, directory_key, *, allow_cache=False, seconds=1, now=N
             # A bounded partial scan is a safe lower bound for regenerable
             # caches. Do not perpetually defer large trees, or spend the whole
             # budget scanning and leave no time for deleting known files.
-            if total > 512 * 1024**2:
+            if total > 512 * 1024**2 or any(instant-s.st_mtime>7*86400 for _,s in candidates):
                 for path, info in sorted(candidates, key=lambda item: item[1].st_mtime):
-                    if total <= 256 * 1024**2 or time.monotonic() >= deadline:
+                    if time.monotonic() >= deadline:
                         break
+                    if total<=256*1024**2 and instant-info.st_mtime<=7*86400:continue
                     path.unlink(missing_ok=True)
                     total -= info.st_size
                     deleted += info.st_size

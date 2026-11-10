@@ -179,9 +179,9 @@ def compact_process(journal,runs,protected,now,*,limit=64):
     changed=[]
     for run,info in runs.items():
         if info['status'] not in {'SUCCEEDED','FAILED'}:continue
-        days=7 if info['status']=='SUCCEEDED' else 14
+        days=1 if info['status']=='SUCCEEDED' else 14
         if (now-datetime.fromisoformat(info['at'])).total_seconds()<days*86400:continue
-        if str(journal.path.resolve().parent/'runtime_artifacts'/run/'events') in protected:continue
+        if info['status']=='FAILED' and str(journal.path.resolve().parent/'runtime_artifacts'/run/'events') in protected:continue
         def terminal(db):
             task=db.execute('SELECT status,updated_at FROM runtime_tasks WHERE id=?',(info['task'],)).fetchone()
             return task and task[0]==info['status'] and (now-datetime.fromisoformat(task[1])).total_seconds()>=days*86400
@@ -220,16 +220,19 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
     if not root.exists():return report
     migrate(journal,control_path)
     previous=root/'last-resource-exit.json'
-    try:cursor=json.loads(previous.read_text()).get('cursor','')
-    except (OSError,ValueError):cursor=''
+    try:prior=json.loads(previous.read_text());cursor=prior.get('cursor','')
+    except (OSError,ValueError):prior={};cursor=''
+    pending=list(dict.fromkeys(prior.get('pending',[])))
     paths=sorted(p for p in root.iterdir() if p.is_dir() and not p.is_symlink())
-    paths=[p for p in paths if p.name>cursor]
-    deadline=time.monotonic()+2
-    def pause():return time.monotonic()>=deadline or bool(should_yield and should_yield())
+    retry=[p for p in paths if p.name in pending[:1]]
+    paths=retry+[p for p in paths if p.name>cursor and p not in retry]
+    deadline=time.monotonic()+5
+    def pause():return time.monotonic()>=deadline
     with WriterLock(root/'resource-retirement'):
         for run in paths[:max(8,limit*4)]:
             if pause():break
             report['cursor']=run.name
+            if run.name in pending:pending.remove(run.name)
             if run.name.startswith('.retiring-'):
                 if not dry_run:shutil.rmtree(run)
                 continue
@@ -239,10 +242,18 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
             stamp=datetime.fromisoformat(info['at']) if info else datetime.fromtimestamp(run.stat().st_mtime,UTC)
             failed=info is None or info['status']=='FAILED'
             if info and info['status'] not in {'SUCCEEDED','FAILED'}:continue
+            if info and info['status']=='SUCCEEDED' and (now-stamp).total_seconds()<48*3600:
+                if not dry_run:
+                    changed=compact_process(journal,{run.name:info},set(),now,limit=8)
+                    report.setdefault('process_compacted',[]).extend(changed)
+                continue
             if (now-stamp).total_seconds()<(7*86400 if failed else 48*3600):continue
             identity=str(run/'events')
             refs,protected,_=referenced(journal,control_path,now=now,only_root=identity)
-            if pause():break
+            if pause():pending.append(run.name);break
+            if info and not dry_run:
+                changed=compact_process(journal,{run.name:info},protected,now,limit=8)
+                report.setdefault('process_compacted',[]).extend(changed)
             if identity in protected:continue
             if opened_below(run):report['skipped'].append(dict(run=run.name,reason='open descriptor'));continue
             used=refs.get(identity,{})
@@ -269,13 +280,20 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
                         if prior.get('verified') and (set(versions)-{0})<=set(prior.get('versions',[])):continue
                     if dry_run:report['compacted'].append(dict(run=run.name,path=str(path),versions=sorted(versions)));continue
                     try:
-                        proof=compact_one(journal,control_path,identity,run,path,versions,now,pause)
+                        if should_yield and should_yield():
+                            pending.append(run.name)
+                            report['skipped'].append(dict(run=run.name,reason='active realtime; deferred heavy compaction'))
+                            break
+                        heavy_deadline=time.monotonic()+30
+                        proof=compact_one(journal,control_path,identity,run,path,versions,now,
+                                          lambda:time.monotonic()>=heavy_deadline)
                         if proof:report['compacted'].append(proof)
                     except (OSError,ValueError,RuntimeError,sqlite3.Error) as exc:
+                        pending.append(run.name)
                         report['skipped'].append(dict(run=run.name,reason=str(exc)[:200]))
-            if info and not dry_run and not pause():compact_process(journal,{run.name:info},protected,now)
             if len(report['retired'])+len(report['compacted'])>=limit:break
         if not paths or report.get('cursor')==paths[-1].name:report['cursor']=''
+        report['pending']=list(dict.fromkeys(pending))
         report['available_after']=shutil.disk_usage(root.parent).free
         atomic_json(previous,report)
     return report

@@ -344,7 +344,7 @@ class RuntimeCoordinator:
             self._storage_next = perf_counter() + 900
         if cleanup and self._storage_future is None and perf_counter() >= self._storage_next:
             from doxagent.message_bus_v2.pressure import background_allowed
-            if background_allowed() and not self.runtime.realtime_w3_active():
+            if background_allowed():
                 self._storage_future = self._background.submit(
                     cleanup, should_yield=self.runtime.realtime_w3_active)
         if self.journal.get("pause", ticker):

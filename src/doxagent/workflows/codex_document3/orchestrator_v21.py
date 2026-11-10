@@ -175,6 +175,8 @@ class Document3OrchestratorV21:
     async def _freeze(self, run_id, identity, mode, prepare):
         self.workspace.bind(run_id)
         existing = self.state.run(run_id)
+        if existing and existing.get('resource_retirement'):
+            raise ValueError('D3_RUN_RETIRED_NEW_RUN_REQUIRED')
         if existing and existing.get("prepared"):
             result = self.state.start(run_id, identity, existing)
             if (

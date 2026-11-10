@@ -123,7 +123,7 @@ class LocalWorkspaceStore:
             for name, content in files.items():
                 self.write_text(run_id, name, content)
 
-    def snapshot(self, run_id: str, snapshot_id: str) -> None:
+    def snapshot(self, run_id: str, snapshot_id: str, *, initialization_id: str | None = None) -> None:
         """Immutable pre-node copy, outside the agent-visible workspace."""
         self._validate_identifier(snapshot_id, "snapshot_id")
         source = self.ensure_run(run_id)
@@ -134,16 +134,19 @@ class LocalWorkspaceStore:
             if owner.exists() and json.loads(owner.read_text()).get('state')=='RETIRED':
                 raise AttemptConflict('INITIALIZATION_SNAPSHOT_RETIRED_NEW_EXECUTION_REQUIRED')
             if destination.is_dir():
-                if shared:self._record_snapshot_owner(owner,run_id,snapshot_id)
+                if shared:self._record_snapshot_owner(owner,run_id,snapshot_id,initialization_id)
                 return
             destination.parent.mkdir(parents=True, exist_ok=True)
             self._copy_atomic(source, destination,shared_snapshot=shared)
-            if shared:self._record_snapshot_owner(owner,run_id,snapshot_id)
+            if shared:self._record_snapshot_owner(owner,run_id,snapshot_id,initialization_id)
 
-    def _record_snapshot_owner(self,path,run_id,snapshot_id):
+    def _record_snapshot_owner(self,path,run_id,snapshot_id,initialization_id=None):
         from doxagent.v2_read.maintenance import atomic_json
-        if path.is_file():return
-        atomic_json(path,dict(workspace_run_id=run_id,snapshot_id=snapshot_id,state='LIVE'))
+        value=json.loads(path.read_text()) if path.is_file() else dict(workspace_run_id=run_id,snapshot_id=snapshot_id,state='LIVE')
+        if initialization_id:
+            if value.get('initialization_id') not in {None,initialization_id}:raise AttemptConflict('SNAPSHOT_OWNER_MISMATCH')
+            value['initialization_id']=initialization_id
+        atomic_json(path,value)
 
     def fork_snapshot(self, run_id: str, snapshot_id: str, destination_run_id: str) -> None:
         self._validate_identifier(snapshot_id, "snapshot_id")

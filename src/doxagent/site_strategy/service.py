@@ -760,6 +760,15 @@ class SiteStrategyService:
                     maintain_profile, root, profile.directory_key, allow_cache=True
                 )
                 dirty.discard(profile_id)
+        # Small rotating cold-profile page; owner locks/process checks fence identity state.
+        profiles=await registry_io(self.repository.list_profiles)
+        after=getattr(self,'_cache_profile_cursor','')
+        page=sorted((p for p in profiles if p.profile_id>after),key=lambda p:p.profile_id)[:4]
+        for profile in page:
+            self._cache_profile_cursor=profile.profile_id
+            if not profile.maintenance_session_id:
+                await asyncio.to_thread(maintain_profile,root,profile.directory_key,allow_cache=True,seconds=.5)
+        if not page:self._cache_profile_cursor=''
         await asyncio.to_thread(self.profile_storage.maintain)
         await asyncio.to_thread(self.runtime.evidence_store.prune)
 
