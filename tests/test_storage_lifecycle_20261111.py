@@ -125,7 +125,8 @@ def test_operation_snapshot_reuses_attempt_and_keeps_only_verified_successor(tmp
     with closing(sqlite3.connect(second)) as db:assert db.execute('SELECT id FROM identity').fetchone()[0]==1
 
 
-def test_settled_partial_d3_workspace_exits_after_one_day_but_published_artifact_stays(tmp_path):
+@pytest.mark.parametrize('child_owner,active_sibling',[(False,False),(True,False),(True,True)])
+def test_settled_partial_d3_workspace_exits_after_one_day_but_published_artifact_stays(tmp_path,child_owner,active_sibling):
     import hashlib
     from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
     from doxagent.codex_worker.job_store import JobStore
@@ -134,9 +135,11 @@ def test_settled_partial_d3_workspace_exits_after_one_day_but_published_artifact
     now=datetime.now(UTC);at=(now-timedelta(days=2)).isoformat();run='runtime-maintain-test-o3'
     workspaces=LocalWorkspaceStore(tmp_path/'workspaces');jobs=SimpleNamespace(store=JobStore(workspaces.root))
     workspaces.write_text(run,'artifacts/final.md','canonical result')
-    workspaces.write_text(run,'output/final/final.md','canonical result')
-    workspaces.write_text(run,'output/final/unique.md','unique unpublished evidence')
-    workspaces.write_text(run,'context/context.json','x'*100_000)
+    child=run+'-s0001' if child_owner else run
+    if child_owner:workspaces.write_text(run,'context/context.json','p'*100_000)
+    workspaces.write_text(child,'output/final/final.md','canonical result')
+    workspaces.write_text(child,'output/final/unique.md','unique unpublished evidence')
+    workspaces.write_text(child,'context/context.json','x'*100_000)
     source=tmp_path/'research.db';state=StateV21(source)
     state.start(run,{'ticker':'MU'},{'status':'PARTIAL','phase':'STAGED','prepared':{'files':{'large':'x'*100_000}},'candidate_handoff':{'version':1}})
     state.settle(run,at=at,authority='published-candidate')
@@ -147,14 +150,20 @@ def test_settled_partial_d3_workspace_exits_after_one_day_but_published_artifact
         db.execute('INSERT INTO codex_runtime_records VALUES(?,?,?)',('bundles',run,canonical(bundle)))
         db.execute('INSERT INTO codex_document3_v21_staged_sets VALUES(?,?,?,?,?)',('MU',1,run,canonical({'policies':[]}),canonical({'files':{}})))
     with closing(jobs.store.connect()) as db,db:
-        db.execute('INSERT INTO jobs(id,status,payload) VALUES(?,?,?)',('job','succeeded',canonical({'run_id':run,'finished_at':at})))
+        db.execute('INSERT INTO jobs(id,status,payload) VALUES(?,?,?)',('job','succeeded',canonical({'run_id':child,'finished_at':at})))
+        if active_sibling:db.execute('INSERT INTO jobs(id,status,payload) VALUES(?,?,?)',('active','running',canonical({'run_id':run+'-s0002','updated_at':at})))
     settings=SimpleNamespace(codex_runtime_sqlite_path=source,persistent_runtime_v2_sqlite_path=None,ticker_initialization_control_path=None)
     result=collect(workspaces,jobs,settings,now=now)
+    if active_sibling:
+        assert not result['runs'] and (workspaces.root/child/'context/context.json').exists()
+        assert 'prepared' in state.run(run)
+        return
     assert not result['errors'] and result['runs'][0]['retirement_basis']=='settled'
     assert not (workspaces.root/run/'context/context.json').exists()
+    assert not (workspaces.root/child/'context/context.json').exists()
     assert (workspaces.root/run/'artifacts/final.md').read_text()=='canonical result'
-    assert not (workspaces.root/run/'output/final/final.md').exists()
-    assert (workspaces.root/run/'output/final/unique.md').read_text()=='unique unpublished evidence'
+    assert not (workspaces.root/child/'output/final/final.md').exists()
+    assert (workspaces.root/child/'output/final/unique.md').read_text()=='unique unpublished evidence'
     assert 'prepared' not in state.run(run)
 
 
@@ -284,3 +293,34 @@ def test_poll_current_candidate_cursor_advances_past_recent_protected_prefix(tmp
     for _ in range(7):_poll_current(store,now,4,time.monotonic()+1)
     assert store.get('native:poll_runs','MU','old-z') is None
     assert store.get('native:poll_runs','MU','000') is not None
+
+
+def test_initialization_child_workspace_honors_parent_manual_recovery(tmp_path):
+    from doxagent.codex_worker.session_retention import run_held
+    parent='init-mu-'+'a'*32;path=tmp_path/'control.db'
+    with sqlite3.connect(path) as db:
+        db.execute('CREATE TABLE initialization_runs(id TEXT PRIMARY KEY,payload TEXT)')
+        db.execute('INSERT INTO initialization_runs VALUES(?,?)',(parent,json.dumps({'status':'FAILED','manual_resume_required':True})))
+    settings=SimpleNamespace(ticker_initialization_control_path=path,persistent_runtime_v2_sqlite_path=None)
+    assert run_held(settings,parent+'-d3-s0001')
+
+
+@pytest.mark.parametrize('status',['SUCCEEDED','RUNNING'])
+def test_runtime_o2_partial_workspace_inherits_real_parent_settlement(tmp_path,status):
+    from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+    from doxagent.codex_worker.job_store import JobStore
+    from doxagent.codex_worker.workspace_retention import collect
+    now=datetime.now(UTC);at=(now-timedelta(days=2)).isoformat();parent='runtime-maintain-'+'a'*24;child=parent+'-o2'
+    source=tmp_path/'research.db';runtime=tmp_path/'runtime.db'
+    with sqlite3.connect(source) as db:db.execute('CREATE TABLE codex_runtime_records(record_type,run_id,payload_json)')
+    with sqlite3.connect(runtime) as db:
+        db.execute('CREATE TABLE runtime_tasks(status,updated_at,receipt)')
+        db.execute('INSERT INTO runtime_tasks VALUES(?,?,?)',(status,at,json.dumps({'_gc_owner':{'run_id':parent}})))
+    workspaces=LocalWorkspaceStore(tmp_path/'workspaces');jobs=SimpleNamespace(store=JobStore(workspaces.root))
+    workspaces.write_text(child,'context/context.json','x'*100_000)
+    with closing(jobs.store.connect()) as db,db:db.execute('INSERT INTO jobs(id,status,payload) VALUES(?,?,?)',('partial','failed',json.dumps({'run_id':child,'finished_at':at})))
+    settings=SimpleNamespace(codex_runtime_sqlite_path=source,persistent_runtime_v2_sqlite_path=runtime,ticker_initialization_control_path=None)
+    result=collect(workspaces,jobs,settings,now=now)
+    assert not result['errors']
+    assert (workspaces.root/child/'context/context.json').exists()==(status=='RUNNING')
+    if status=='SUCCEEDED':assert result['runs'][0]['retirement_basis']=='settled'

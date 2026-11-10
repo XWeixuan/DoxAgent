@@ -192,13 +192,17 @@ class TerminalSessions:
 
 def run_held(settings, run):
     """Candidate-only process recovery holds; provenance alone does not pin input copies."""
-    roots = [run, run.removesuffix('-o3')]
+    import re
+    roots=list(dict.fromkeys([run,run.removesuffix('-o3'),*(m[1] for m in [
+        re.match(r'^(runtime-maintain-[0-9a-f]{24})(?:-|$)',run),
+        re.match(r'^(init-[a-z0-9.-]+-[0-9a-f]{32})(?:-|$)',run)] if m)]))
+    placeholders=','.join('?' for _ in roots)
     checks = [
         (getattr(settings,'persistent_runtime_v2_sqlite_path',None),
          "SELECT 1 FROM runtime_tasks WHERE coalesce(json_extract(receipt,'$._gc_owner.run_id'),"
-         "json_extract(receipt,'$.frame.run_id')) IN (?,?) AND status NOT IN ('SUCCEEDED','FAILED','CANCELLED') LIMIT 1"),
+         "json_extract(receipt,'$.frame.run_id')) IN ("+placeholders+") AND status NOT IN ('SUCCEEDED','FAILED','CANCELLED') LIMIT 1"),
         (getattr(settings,'ticker_initialization_control_path',None),
-         "SELECT 1 FROM initialization_runs WHERE id IN (?,?) AND "
+         "SELECT 1 FROM initialization_runs WHERE id IN ("+placeholders+") AND "
          "(json_extract(payload,'$.status') NOT IN ('SUCCEEDED','FAILED','CANCELLED') OR "
          "json_extract(payload,'$.manual_resume_required')=1) LIMIT 1"),
     ]
