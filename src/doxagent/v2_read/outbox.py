@@ -222,7 +222,16 @@ class SourceOutbox:
                         f"DROP TRIGGER IF EXISTS {quoted('v2_capture_' + table + '_' + operation)}"
                     )
                     alias = "OLD" if operation == "DELETE" else "NEW"
-                    values = ",".join(f"'{r[1]}',{alias}.{quoted(r[1])}" for r in columns)
+                    # json_set/json_remove may carry SQLite's JSON subtype
+                    # through NEW/OLD into a trigger. These source columns are
+                    # SQL TEXT, including inside the immutable receipt envelope.
+                    # Concatenation strips only the subtype (NULL stays NULL).
+                    values = ",".join(
+                        f"'{r[1]}'," + (f"({alias}.{quoted(r[1])} || '')"
+                            if r[1] in {'payload', 'payload_json', 'inputs', 'receipt', 'data_json'}
+                            else f"{alias}.{quoted(r[1])}")
+                        for r in columns
+                    )
                     if table == 'poll_states':
                         # The Owner retains full checkpoints. Read versions need
                         # health/counts and small endpoint summaries, not input lists.
@@ -455,6 +464,12 @@ class SourceOutbox:
             if not decode:
                 return dict(value)
             row = json.loads(value['payload'])
+            # Read historical receipts captured before the producer stripped
+            # the JSON subtype. Normalize the envelope in memory, then use the
+            # same Native resolver; never edit immutable receipts or source rows.
+            for column in ('payload', 'payload_json', 'inputs', 'receipt', 'data_json'):
+                if isinstance(row.get(column), (dict, list)):
+                    row[column] = json.dumps(row[column], ensure_ascii=False, separators=(',', ':'))
             if serving and value['table_name'] == 'runtime_values':
                 from .serving_fields import VALUE_NAMES
                 used = VALUE_NAMES | {'policy_direction_usage', 'worker_invocations',

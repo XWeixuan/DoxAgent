@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="6" time="2.249" timestamp="2026-11-11T06:58:10.295768+08:00" hostname="DESKTOP-BQ2H2TD"><testcase classname="tests.v2_backend.test_json_subtype_receipts" name="test_json_function_updates_capture_text_columns_as_text[payload]" time="0.059"><failure message="AssertionError: assert 'object' == 'text'&#10;  &#10;  - text&#10;  + object">E   AssertionError: assert 'object' == 'text'
+      
+      - text
+      + object</failure></testcase><testcase classname="tests.v2_backend.test_json_subtype_receipts" name="test_json_function_updates_capture_text_columns_as_text[payload_json]" time="0.057"><failure message="AssertionError: assert 'object' == 'text'&#10;  &#10;  - text&#10;  + object">E   AssertionError: assert 'object' == 'text'
+      
+      - text
+      + object</failure></testcase><testcase classname="tests.v2_backend.test_json_subtype_receipts" name="test_json_function_updates_capture_text_columns_as_text[data_json]" time="0.089"><failure message="AssertionError: assert 'object' == 'text'&#10;  &#10;  - text&#10;  + object">E   AssertionError: assert 'object' == 'text'
+      
+      - text
+      + object</failure></testcase><testcase classname="tests.v2_backend.test_json_subtype_receipts" name="test_json_function_updates_capture_text_columns_as_text[inputs]" time="0.078"><failure message="AssertionError: assert 'object' == 'text'&#10;  &#10;  - text&#10;  + object">E   AssertionError: assert 'object' == 'text'
+      
+      - text
+      + object</failure></testcase><testcase classname="tests.v2_backend.test_json_subtype_receipts" name="test_json_function_updates_capture_text_columns_as_text[receipt]" time="0.057"><failure message="AssertionError: assert 'object' == 'text'&#10;  &#10;  - text&#10;  + object">E   AssertionError: assert 'object' == 'text'
+      
+      - text
+      + object</failure></testcase><testcase classname="tests.v2_backend.test_json_subtype_receipts" name="test_historical_object_envelope_repairs_w3_pending_without_model_replay" time="0.724"><failure message="AssertionError: assert False&#10; +  where False = isinstance({'case_id': 'case-1', 'closed_cycle_id': None, 'completed_at': '2026-10-10T12:00:00Z', 'contract_version': 'persistent-runtime.v2', ...}, str)">E   AssertionError: assert False
+     +  where False = isinstance({'case_id': 'case-1', 'closed_cycle_id': None, 'completed_at': '2026-10-10T12:00:00Z', 'contract_version': 'persistent-runtime.v2', ...}, str)</failure></testcase></testsuite></testsuites>
