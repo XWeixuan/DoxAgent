@@ -19,14 +19,15 @@ def test_five_second_gate_is_whole_case_not_individual_phases(tmp_path):
     cid='case_0123456789abcdef0123456789abcdef'
     with sqlite3.connect(runtime) as db:
         db.executescript('''CREATE TABLE runtime_v2_cases(case_id TEXT,created_at TEXT,payload_json TEXT);
-            CREATE TABLE runtime_v2_effects(effect_id TEXT,case_id TEXT,effect_type TEXT,status TEXT,created_at TEXT);
+            CREATE TABLE runtime_v2_effects(effect_id TEXT,case_id TEXT,effect_type TEXT,status TEXT,payload_json TEXT);
             CREATE TABLE runtime_v2_w3_stages(case_id TEXT,phase TEXT,status TEXT,worker_job_id TEXT);
             CREATE TABLE runtime_values(namespace TEXT,key TEXT,payload TEXT,PRIMARY KEY(namespace,key));''')
         db.execute('INSERT INTO runtime_v2_cases VALUES(?,?,?)',(cid,stamp(0),'{"runtime_mode":"REALTIME"}'))
         db.execute('INSERT INTO runtime_v2_cases VALUES(?,?,?)',('future',stamp(100),'{"runtime_mode":"REALTIME"}'))
         for phase,eid,start,end in [('trade_decision','trade',0,11),('post_decision_operations','ops',11,22)]:
             db.execute('INSERT INTO runtime_v2_effects VALUES(?,?,?,?,?)',
-                       (eid,cid,'route_to_w3' if eid=='trade' else 'w3_post_decision','COMPLETED',stamp(start)))
+                       (eid,cid,'route_to_w3' if eid=='trade' else 'w3_post_decision','COMPLETED',
+                        json.dumps({'created_at':stamp(start)})))
             db.execute('INSERT INTO runtime_v2_w3_stages VALUES(?,?,?,?)',(cid,phase,'COMMITTED',eid))
             db.execute('INSERT INTO runtime_values VALUES(?,?,?)',('w3_boundary_timing',eid+':1',
                        json.dumps({'started_at':stamp(start),'finished_at':stamp(end),

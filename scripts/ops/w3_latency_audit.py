@@ -62,7 +62,8 @@ def audit(runtime,jobs,*,since,until=None,limit=300):
         if (instant(case['created_at'])<instant(since) or case['mode']=='CLOSED'
             or until and instant(case['created_at'])>instant(until)):continue
         cid=case['case_id']
-        effects=[dict(r) for r in db.execute("SELECT effect_id,effect_type,status,created_at "
+        effects=[dict(r) for r in db.execute("SELECT effect_id,effect_type,status,"
+                 "json_extract(payload_json,'$.created_at') created_at "
                  "FROM runtime_v2_effects WHERE case_id=? AND effect_type IN "
                  "('route_to_w3','w3_post_decision')",(cid,))]
         if not effects:continue
