@@ -176,6 +176,7 @@ class UnifiedRuntimeSchedulerService:
                 admitted = admit_runtime_revisions(
                     InitializationRepository(control_path, initialize=False), self
                 )
+                self.admission_degraded_reason = None
             except Exception:
                 logging.getLogger(__name__).exception("runtime new admission deferred")
                 self.admission_degraded_reason = "INITIALIZATION_CONTROL_UNAVAILABLE"

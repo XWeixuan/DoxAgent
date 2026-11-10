@@ -118,6 +118,41 @@ class RunnerV21:
                 return record
             if record.get("pending_acceptance") is not None:
                 return await self._commit(run_id, key, record)
+            if (
+                record.get("io_phase") == "WAIT_WORKER"
+                and record.get("io_inputs")
+                and record.get("request")
+            ):
+                # The durable request already owns frozen workspace inputs. Reattach
+                # before reconstructing history/navigation from later accepted work.
+                worker = getattr(self.legacy._worker, "worker", self.legacy._worker)
+                request = WorkerRunRequest.model_validate(record["request"])
+                job = await worker.run(request)
+                record.update(
+                    job=job.model_dump(mode="json"), io_phase="COLLECT_OUTPUTS",
+                    worker_error="" if job.status == "succeeded" else job.error_message or job.error_code or job.status,
+                )
+                self.state.save_task(run_id, key, record)
+                runtime = self.legacy._runtime_repository
+                if runtime:
+                    runtime.save_attempt(NodeAttempt(
+                        workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
+                        research_lane=ResearchLane.DOCUMENT3,
+                        run_id=run_id, ticker=ticker, cutoff_at=as_of,
+                        node=NODES[phase], attempt_id=request.attempt_id,
+                        attempt_number=record["attempt_count"], thread_id=job.thread_id,
+                        status=AttemptStatus.SUCCEEDED if job.status == "succeeded" else AttemptStatus.FAILED,
+                        started_at=job.started_at or utc_now(), completed_at=job.finished_at or utc_now(),
+                        error_message=None if job.status == "succeeded" else job.error_message or job.error_code,
+                    ))
+                    if job.thread_id:
+                        runtime.save_thread(ThreadRecord(
+                            workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
+                            research_lane=ResearchLane.DOCUMENT3, ticker=ticker,
+                            run_id=record["workspace_run_id"], agent_role=CodexD3AgentRole.O3,
+                            thread_id=job.thread_id, model=request.model or "",
+                            model_provider=request.model_provider,
+                        ))
             if record.get("io_phase") == "COLLECT_OUTPUTS" and record.get("io_inputs"):
                 accepted = await self._collect(run_id, key, record, outputs, timing)
                 if accepted is not None:
@@ -524,6 +559,7 @@ class RunnerV21:
         record.pop("job", None)
         record.pop("io_inputs", None)
         record.pop("baseline_outputs", None)
+        record.pop("context_generation", None)
         self.state.save_task(run_id, key, record)
         return None
 

@@ -163,27 +163,29 @@ def admit_runtime_revisions(
         proofs = scheduler._runtime_admission_proofs = {}
     for revision in control.active_revisions():
         ticker, identity = revision["ticker"], revision["revision_id"]
-        if not control.current_revision_admitted(ticker, identity, "bus"):
-            continue
-        state = scheduler.repository.get_state(ticker)
-        from doxagent.persistent_runtime_v2.journal import RuntimeJournal
-        from doxagent.v2_control.repository import ControlRepository
-
-        journal = getattr(getattr(scheduler, "runtime_v2_service", None), "journal", None)
-        desired = (
-            ControlRepository(journal).get(ticker) if isinstance(journal, RuntimeJournal) else None
-        )
-        if state and state.metadata.get("activation_revision_id") == identity:
-            if state.status not in {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED} and not (
-                desired and desired.get("admission_allowed")
-            ):
-                continue
-        proof = (
-            (identity, desired.get("epoch"), desired.get("requested_mode"))
-            if desired
-            else (identity, None, None)
-        )
         try:
+            if not control.current_revision_admitted(ticker, identity, "bus"):
+                continue
+            state = scheduler.repository.get_state(ticker)
+            from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+            from doxagent.v2_control.repository import ControlRepository
+
+            journal = getattr(getattr(scheduler, "runtime_v2_service", None), "journal", None)
+            desired = (
+                ControlRepository(journal).get(ticker)
+                if isinstance(journal, RuntimeJournal)
+                else None
+            )
+            if state and state.metadata.get("activation_revision_id") == identity:
+                if state.status not in {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED} and not (
+                    desired and desired.get("admission_allowed")
+                ):
+                    continue
+            proof = (
+                (identity, desired.get("epoch"), desired.get("requested_mode"))
+                if desired
+                else (identity, None, None)
+            )
             current = bool(
                 state
                 and state.status in {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED}
@@ -208,6 +210,11 @@ def admit_runtime_revisions(
             if not current:
                 proofs.pop(ticker, None)
                 scheduler.admit_activation(ticker, identity)
+            if control.revision_acknowledged(
+                ticker, identity, "runtime", max_age=15
+            ) or control.acknowledge_revision(ticker, identity, "runtime"):
+                proofs[ticker] = proof
+                ready.add(ticker)
         except Exception as exc:
             try:
                 control.admission_error(ticker, identity, "runtime", exc)
@@ -217,9 +224,4 @@ def admit_runtime_revisions(
                 "runtime activation pending for %s: %s", ticker, type(exc).__name__
             )
             continue
-        if control.revision_acknowledged(
-            ticker, identity, "runtime", max_age=15
-        ) or control.acknowledge_revision(ticker, identity, "runtime"):
-            proofs[ticker] = proof
-            ready.add(ticker)
     return ready

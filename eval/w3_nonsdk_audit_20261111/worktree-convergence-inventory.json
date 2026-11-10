@@ -1,0 +1,286 @@
+{
+  "branch": "codex/agent-readonly-mcp",
+  "head": "bc0136cd549fca3b37d2d619aab6577334d5d5cc",
+  "main_base": "b4f18aca",
+  "paths": [
+    {
+      "path": "changelog",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "82e6173be1e3bc95d3b04eb211f1a4cc510db6547d8356a34b323b4f07c29acc"
+    },
+    {
+      "path": "src/doxagent/codex_runtime/client.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "e7de93e810842c525c0c9b1e897b973bf270ea41f397d86f4aa373b6b1e33ef8"
+    },
+    {
+      "path": "src/doxagent/codex_worker/app.py",
+      "classification": "already_in_main",
+      "source_sha256": "988882c0833a73354fb2768c60770981a51b02b3118cd06899fde4f72e58fcd6"
+    },
+    {
+      "path": "src/doxagent/codex_worker/capsules.py",
+      "classification": "already_in_main",
+      "source_sha256": "d4b96c2913e4161ce06563345d2c2d58b6fb2529a27a76a9c5e1da5a9b4734ea"
+    },
+    {
+      "path": "src/doxagent/codex_worker/job_store.py",
+      "classification": "already_in_main",
+      "source_sha256": "b84abd64071d657b0dcd4e483857a783f319a9e6413f3c85c9f87acf4f8c7392"
+    },
+    {
+      "path": "src/doxagent/codex_worker/jobs.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "12d338c3d1f4aca3e3a4d9bde655f9d0ee579461bf343797f3a2cef08834d778"
+    },
+    {
+      "path": "src/doxagent/codex_worker/process_tree.py",
+      "classification": "already_in_main",
+      "source_sha256": "2857f027bd704cc663f21ea0fc6903299d1cb8016f235a05c82753e4b0260d4a"
+    },
+    {
+      "path": "src/doxagent/codex_worker/schema.py",
+      "classification": "already_in_main",
+      "source_sha256": "891a6f5d722fe07e3e064550a498ff18091cb8ec552b37fdc8bd27eecd398f2c"
+    },
+    {
+      "path": "src/doxagent/codex_worker/startup_admission.py",
+      "classification": "already_in_main",
+      "source_sha256": "fecdbc4b4ef84b9980136471bc16d31745a98c5f263cc0836b1ba4e0c672d135"
+    },
+    {
+      "path": "src/doxagent/codex_worker/thread_lifecycle.py",
+      "classification": "already_in_main",
+      "source_sha256": "2728c03d00c15e692433743a9c3f12c87d24b971c6646ff5a42475b2fdb0d5b8"
+    },
+    {
+      "path": "src/doxagent/codex_worker/w3_ready.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "47c0156e4d094e993b742856d47c4fb957b2f5f8d9ace0393ed8ee88ccb50e5d"
+    },
+    {
+      "path": "src/doxagent/control_io.py",
+      "classification": "already_in_main",
+      "source_sha256": "055f0d4f14d3f48efb0eb8ec2376ad4087d3bcdbcdbc9699b91ce720d91b40ed"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/bounded_inputs.py",
+      "classification": "already_in_main",
+      "source_sha256": "d62101b15cf4387a91820d9d05a78a0645e7811eea8a2f509778a30428bffd6d"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/coordinator.py",
+      "classification": "already_in_main",
+      "source_sha256": "bc633fa17a6d90991461264cbbd08ca030bc669a16d5f9a354d276fda422f614"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/daily.py",
+      "classification": "already_in_main",
+      "source_sha256": "da2f172b760c38ef87395af35686aef11abf0883868f888500b99a0f54bd11a4"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/factory.py",
+      "classification": "already_in_main",
+      "source_sha256": "e9898611bbee701dc1dc60da602ed51f5c147bee1ae7ba56bc1c394ad9b39b48"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/future_model_profiles.py",
+      "classification": "already_in_main",
+      "source_sha256": "6df626b1273d5df3db3fc6e23debe310bd67126760a1c73cc101bb3c298f1c03"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/journal.py",
+      "classification": "already_in_main",
+      "source_sha256": "6816e9fce4657249fa13d9c51c8cf1c525505c871d92f82826f4ca4660aa3330"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/maintenance.py",
+      "classification": "already_in_main",
+      "source_sha256": "8d40d8da6902d933125f837da6ebbcc3b2335089219940ace805036104461b22"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/openrouter.py",
+      "classification": "already_in_main",
+      "source_sha256": "9f3308558f4511ab1f427befd383e150b783f102bc7765da854ee17dfdff1488"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/repository.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "6a217e4073f41a7e0673d804442906c81fbb2523303cb8ee9e20dfe782138b00"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/resource_gc.py",
+      "classification": "already_in_main",
+      "source_sha256": "ff52abfdbf6464b6f120a8bf720781ffb2c5c07972498874aeed310821f57c42"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/retained_events.py",
+      "classification": "already_in_main",
+      "source_sha256": "b4424863272e18b0a0d955372748c7293c6547feb3f68542a567a08dcc058979"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/schema.py",
+      "classification": "already_in_main",
+      "source_sha256": "c088f8ce5fcb9b20c66a5658f58be258065be6281ff505f1489ec31fcbd102a1"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/service.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "277b6f519ae87a3299a81668871eeafcb7d232aa301e0aae67a0b9129099a992"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/w3.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "0dd7b4f941e420c46bc59405432ee9ff64d010bde6686e6e225b4685b2540592"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/w3_execution.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "25cb8a52bbf0c24960ec3d799b84a8041d4e3ae3f630e3f3d2be439a579a3f79"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/w3_research_store.py",
+      "classification": "already_in_main",
+      "source_sha256": "a290beb6f3f5c3bb12ca85b103e9d98ad69cbeaf3da5d2b4abfc71226315f114"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/w3_threads.py",
+      "classification": "already_in_main",
+      "source_sha256": "812de890c37979d41267ccbadd7058d7b86c81ae4c0a538fad7ddd23aa0bb4b7"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/worker_receipts.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "ba012ebfdee253eb0ad6e83b94df7c61d516efc312ede4d0733c6a32930d12b3"
+    },
+    {
+      "path": "src/doxagent/runtime_scheduler/service.py",
+      "classification": "integrate_reviewed_delta",
+      "source_sha256": "4bcbb60760a9ed716e9239992570658a3aaa095962185946d3f3db4a407ea88f"
+    },
+    {
+      "path": "src/doxagent/runtime_scheduler/v2.py",
+      "classification": "integrate_reviewed_delta",
+      "source_sha256": "6fe1d220506bd29a9023e9617a4f216275013c7beaadc619dcffa223cc0f8a38"
+    },
+    {
+      "path": "src/doxagent/settings.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "3128af046c4f03e1425486ef25796e5d6018037b7edd449d597a6aa2119f549d"
+    },
+    {
+      "path": "src/doxagent/ticker_initialization/consumers.py",
+      "classification": "integrate_reviewed_delta",
+      "source_sha256": "81c5864cfaa5e90673c5b96184e34d353e903522f072b78b257550b63bcc232c"
+    },
+    {
+      "path": "src/doxagent/v2_read/pricing.py",
+      "classification": "already_in_main",
+      "source_sha256": "b4ea2bc8152b98d6a171fe1e2c047a67b9cdae629870068eefb723d460c47dde"
+    },
+    {
+      "path": "src/doxagent/w3_timing.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "751b1ecf0293859b575f46ce1d1c7c9eec5097dfeefd9d9bfde153e9a4922997"
+    },
+    {
+      "path": "src/doxagent/workflows/codex_document3/orchestrator_v21.py",
+      "classification": "integrate_reviewed_delta",
+      "source_sha256": "e8c11befa002022d3cbd10efd8b8ab3f1dea6f81d89f88b058c68378ef49f98c"
+    },
+    {
+      "path": "src/doxagent/workflows/codex_document3/runner_v21.py",
+      "classification": "integrate_reviewed_delta",
+      "source_sha256": "5bc86cd4e6fdcc7a507891b107bc81d19dc263fd87a74e7a461e44b0cb4ec107"
+    },
+    {
+      "path": "tests/test_codex_document3_v21_maintenance.py",
+      "classification": "integrate_reviewed_delta",
+      "source_sha256": "eb42f7c6a7cc6af18dbd046b19d517d6569a837bf08ec11c4fc8aeeb561cac9c"
+    },
+    {
+      "path": "tests/test_persistent_runtime_worker_receipts.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "9d5e40360d4d41408b8b4e604e4553b399aed06a6f8523952b9801da691f19e2"
+    },
+    {
+      "path": "tests/test_w3_boundary_timing.py",
+      "classification": "already_in_main",
+      "source_sha256": "b1cc48ca7b367edb6b27c1671cd956d3e8c30c25919300c2d83b5a13911f0900"
+    },
+    {
+      "path": "tests/test_w3_startup_admission.py",
+      "classification": "already_in_main",
+      "source_sha256": "fc2d8932d414c4e12e7e1c65ac1ae676a9cc131d5d781b58c461a60e6ac3d8fc"
+    },
+    {
+      "path": "scripts/ops/runtime_oom_observe_20261110.py",
+      "classification": "already_in_main",
+      "source_sha256": "6d6686dfccfed06f4c1761b794e6d256b072c381b86e3631c2f41dab80ff84cc"
+    },
+    {
+      "path": "scripts/ops/runtime_oom_release_20261110.py",
+      "classification": "already_in_main",
+      "source_sha256": "9cae9d6246ff7dd87e0ecfda5f9f915788934851ec793582a523f5dde864257a"
+    },
+    {
+      "path": "scripts/ops/runtime_oom_repair_files_20261110.json",
+      "classification": "already_in_main",
+      "source_sha256": "7229ca3c92275863eba0735320f7abc6c3fd5a7c0b4011bd96fb3f691d2efee8"
+    },
+    {
+      "path": "scripts/ops/runtime_oom_writer_followup_20261110.py",
+      "classification": "already_in_main",
+      "source_sha256": "9e051f736ace90bcd550764b85a5f7a4a748eea233189d4a00cc5406d0c321f3"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/maintenance_recovery.py",
+      "classification": "already_in_main",
+      "source_sha256": "14f397e71839bb90cdfdd155ac96382e9f3b04619190515ebba77ddb62d2b942"
+    },
+    {
+      "path": "src/doxagent/persistent_runtime_v2/openai_platform.py",
+      "classification": "already_in_main",
+      "source_sha256": "a3c4a8b6ba032e115be67c5f6e73ed2e91399259528c15b7364e8515c42cf16a"
+    },
+    {
+      "path": "tests/test_maintenance_automatic_recovery.py",
+      "classification": "integrate_reviewed_delta",
+      "source_sha256": "37e1439e088f6575b93425b2bab22f30765922a5acdeb0aff177b258c6e5b817"
+    },
+    {
+      "path": "tests/test_openai_luna_recall.py",
+      "classification": "already_in_main",
+      "source_sha256": "3f5ee9daf341dff7b23551c6e90326ddc076b545913ba0d85f6c84cdf9d335d2"
+    },
+    {
+      "path": "tests/test_openai_luna_rounds.py",
+      "classification": "already_in_main",
+      "source_sha256": "cb581c89a190bd57391cd845d8da93e57a63063230fd3925039797f67c84f41d"
+    },
+    {
+      "path": "tests/test_runtime_bounded_dispatch.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "388da96624a4b626dbca0b1e8da0aa85183275ffe92a55965b20a0918d2a2b0e"
+    },
+    {
+      "path": "tests/test_runtime_failure_repair_20261109.py",
+      "classification": "already_in_main",
+      "source_sha256": "6daa8ce891866d1f092527c045a04c0c44640c62764fb3bfb4a83bb61b36ea11"
+    },
+    {
+      "path": "tests/test_runtime_oom_repair.py",
+      "classification": "retain_current_main_reviewed",
+      "source_sha256": "72d0f71950dd2509445fa9288227280602b4a2c9682a21699389d94616b190e0"
+    }
+  ],
+  "reviewed_paths": [
+    "src/doxagent/runtime_scheduler/service.py",
+    "src/doxagent/runtime_scheduler/v2.py",
+    "src/doxagent/ticker_initialization/consumers.py",
+    "src/doxagent/workflows/codex_document3/orchestrator_v21.py",
+    "src/doxagent/workflows/codex_document3/runner_v21.py",
+    "tests/test_codex_document3_v21_maintenance.py",
+    "tests/test_maintenance_automatic_recovery.py"
+  ]
+}
