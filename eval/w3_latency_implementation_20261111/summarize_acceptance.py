@@ -9,7 +9,7 @@ def summarize(root):
     result={}
     for name in ['build.json','release.json']:
         if (root/name).exists():result[name]=json.loads((root/name).read_bytes())
-    for name in ['acceptance-frozen.json','acceptance-final.json','acceptance-10min.json']:
+    for name in ['acceptance-frozen.json','acceptance-final.json','acceptance-followthrough.json','acceptance-10min.json']:
         if not (root/name).exists():continue
         value=json.loads((root/name).read_bytes())
         keys=['at','since','until','summary','full_case','trace_count','case_rows','case_ids',

@@ -525,6 +525,613 @@
       }
     ]
   },
+  "acceptance-followthrough.json": {
+    "at": "2026-11-10T21:32:56.909665+00:00",
+    "since": "2026-11-10T21:15:00.093150+00:00",
+    "until": "2026-11-10T21:25:02.184854+00:00",
+    "summary": {
+      "trade_decision": {
+        "total": 11,
+        "complete": 11,
+        "incomplete": 0,
+        "internal_s": {
+          "n": 11,
+          "p50": 2.980947732925415,
+          "p95": 6.065934896469116,
+          "maximum": 6.065934896469116,
+          "over5": 1
+        },
+        "boundary_internal_s": {
+          "n": 11,
+          "p50": 2.7890889644622803,
+          "p95": 5.5481181144714355,
+          "maximum": 5.5481181144714355,
+          "over5": 1
+        },
+        "sdk_envelope_s": {
+          "n": 11,
+          "p50": 64.72417187690735,
+          "p95": 142.61360883712769,
+          "maximum": 142.61360883712769,
+          "over5": 11
+        },
+        "nested_dox_tool_s": {
+          "n": 11,
+          "p50": 0.371502161026001,
+          "p95": 0.9527077674865723,
+          "maximum": 0.9527077674865723,
+          "over5": 0
+        },
+        "parts": {
+          "eligible_to_job": {
+            "n": 11,
+            "p50": 1.408052921295166,
+            "p95": 2.753221035003662,
+            "maximum": 2.753221035003662,
+            "over5": 0
+          },
+          "job_queue": {
+            "n": 11,
+            "p50": 0.07719993591308594,
+            "p95": 0.1652839183807373,
+            "maximum": 0.1652839183807373,
+            "over5": 0
+          },
+          "worker_startup": {
+            "n": 11,
+            "p50": 0.08229303359985352,
+            "p95": 0.6564040184020996,
+            "maximum": 0.6564040184020996,
+            "over5": 0
+          },
+          "finished_to_commit": {
+            "n": 11,
+            "p50": 0.6168780326843262,
+            "p95": 2.7093091011047363,
+            "maximum": 2.7093091011047363,
+            "over5": 0
+          },
+          "commit_to_owner_end": {
+            "n": 11,
+            "p50": 0.24391484260559082,
+            "p95": 0.7490639686584473,
+            "maximum": 0.7490639686584473,
+            "over5": 0
+          }
+        }
+      },
+      "post_decision_operations": {
+        "total": 11,
+        "complete": 11,
+        "incomplete": 0,
+        "internal_s": {
+          "n": 11,
+          "p50": 3.0674338340759277,
+          "p95": 6.69173789024353,
+          "maximum": 6.69173789024353,
+          "over5": 2
+        },
+        "boundary_internal_s": {
+          "n": 11,
+          "p50": 2.798146963119507,
+          "p95": 6.69173789024353,
+          "maximum": 6.69173789024353,
+          "over5": 1
+        },
+        "sdk_envelope_s": {
+          "n": 11,
+          "p50": 81.75017786026001,
+          "p95": 229.49713110923767,
+          "maximum": 229.49713110923767,
+          "over5": 11
+        },
+        "nested_dox_tool_s": {
+          "n": 11,
+          "p50": 0,
+          "p95": 1.8640003204345703,
+          "maximum": 1.8640003204345703,
+          "over5": 0
+        },
+        "parts": {
+          "eligible_to_job": {
+            "n": 11,
+            "p50": 1.0576980113983154,
+            "p95": 3.222424030303955,
+            "maximum": 3.222424030303955,
+            "over5": 0
+          },
+          "job_queue": {
+            "n": 11,
+            "p50": 0.0663139820098877,
+            "p95": 1.0134460926055908,
+            "maximum": 1.0134460926055908,
+            "over5": 0
+          },
+          "worker_startup": {
+            "n": 11,
+            "p50": 0.03531503677368164,
+            "p95": 0.6661899089813232,
+            "maximum": 0.6661899089813232,
+            "over5": 0
+          },
+          "finished_to_commit": {
+            "n": 11,
+            "p50": 1.0627729892730713,
+            "p95": 2.331835985183716,
+            "maximum": 2.331835985183716,
+            "over5": 0
+          },
+          "commit_to_owner_end": {
+            "n": 11,
+            "p50": 0.11014389991760254,
+            "p95": 0.20965313911437988,
+            "maximum": 0.20965313911437988,
+            "over5": 0
+          }
+        }
+      }
+    },
+    "full_case": {
+      "n": 11,
+      "p50": 5.894324064254761,
+      "p95": 12.0086088180542,
+      "maximum": 12.0086088180542,
+      "over5": 9
+    },
+    "trace_count": 197,
+    "case_rows": [
+      {
+        "case_id": "case_0ca2e5bfe7374ac5949181f2c507b967",
+        "non_sdk_s": 3.5005862712860107,
+        "boundary_non_sdk_s": 3.1290841102600098,
+        "nested_dox_tool_s": 0.371502161026001
+      },
+      {
+        "case_id": "case_624e8164edfc472dbf77f74b396c5d29",
+        "non_sdk_s": 5.894324064254761,
+        "boundary_non_sdk_s": 4.951256036758423,
+        "nested_dox_tool_s": 0.9430680274963379
+      },
+      {
+        "case_id": "case_abcd062d4f6c48c999d9aaf2efae3765",
+        "non_sdk_s": 9.233919620513916,
+        "boundary_non_sdk_s": 7.555740118026733,
+        "nested_dox_tool_s": 1.6781795024871826
+      },
+      {
+        "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+        "non_sdk_s": 7.192260026931763,
+        "boundary_non_sdk_s": 6.401299238204956,
+        "nested_dox_tool_s": 0.7909607887268066
+      },
+      {
+        "case_id": "case_9b2a312dfa524c0d91959d4d4750843e",
+        "non_sdk_s": 5.375826835632324,
+        "boundary_non_sdk_s": 5.375826835632324,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_dd0c792afdf142a5b677b5acca78f2ee",
+        "non_sdk_s": 5.306727886199951,
+        "boundary_non_sdk_s": 5.306727886199951,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_d0dbbbb2594b47a4924cfbb9576d59b2",
+        "non_sdk_s": 5.1285459995269775,
+        "boundary_non_sdk_s": 4.574257135391235,
+        "nested_dox_tool_s": 0.5542888641357422
+      },
+      {
+        "case_id": "case_f9eef207e0d24f44ba1a4bfdaf81de0d",
+        "non_sdk_s": 4.486875057220459,
+        "boundary_non_sdk_s": 4.486875057220459,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_838b74d1b8894fd2930ba2a8c1a29c19",
+        "non_sdk_s": 6.9528703689575195,
+        "boundary_non_sdk_s": 6.0188210010528564,
+        "nested_dox_tool_s": 0.9340493679046631
+      },
+      {
+        "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+        "non_sdk_s": 12.0086088180542,
+        "boundary_non_sdk_s": 11.490792036056519,
+        "nested_dox_tool_s": 0.5178167819976807
+      },
+      {
+        "case_id": "case_da3856bac10f4703a6ed0044dfed6621",
+        "non_sdk_s": 7.328106880187988,
+        "boundary_non_sdk_s": 4.636393785476685,
+        "nested_dox_tool_s": 2.6917130947113037
+      }
+    ],
+    "case_ids": [
+      "case_0ca2e5bfe7374ac5949181f2c507b967",
+      "case_624e8164edfc472dbf77f74b396c5d29",
+      "case_abcd062d4f6c48c999d9aaf2efae3765",
+      "case_5357abcc6bbd494db906f19095c4cb37",
+      "case_9b2a312dfa524c0d91959d4d4750843e",
+      "case_dd0c792afdf142a5b677b5acca78f2ee",
+      "case_d0dbbbb2594b47a4924cfbb9576d59b2",
+      "case_f9eef207e0d24f44ba1a4bfdaf81de0d",
+      "case_838b74d1b8894fd2930ba2a8c1a29c19",
+      "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "case_da3856bac10f4703a6ed0044dfed6621"
+    ],
+    "selector_truncated": false,
+    "metadata_budget_exhausted": false,
+    "log_budgets": {
+      "v2-scheduler": {
+        "bytes": 771487,
+        "byte_cap_reached": false,
+        "tail_cap_reached": false
+      },
+      "codex-worker": {
+        "bytes": 1281786,
+        "byte_cap_reached": false,
+        "tail_cap_reached": false
+      }
+    },
+    "trace_parse_errors": 0,
+    "unattributed_tool_receipts": 0,
+    "external_provider_wait_excluded_s": 0,
+    "phases": [
+      {
+        "case_id": "case_0ca2e5bfe7374ac5949181f2c507b967",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.1505632400512695,
+        "parts": {
+          "eligible_to_job": 1.1950311660766602,
+          "job_queue": 0.05325198173522949,
+          "worker_startup": 0.06722497940063477,
+          "finished_to_commit": 0.2014758586883545,
+          "commit_to_owner_end": 0.14752507209777832
+        },
+        "sdk_envelope_s": 80.65442204475403,
+        "nested_dox_tool_s": 0.371502161026001
+      },
+      {
+        "case_id": "case_0ca2e5bfe7374ac5949181f2c507b967",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 1.4975481033325195,
+        "parts": {
+          "eligible_to_job": 0.5081110000610352,
+          "job_queue": 0.0355830192565918,
+          "worker_startup": 0.017287015914916992,
+          "finished_to_commit": 0.7501208782196045,
+          "commit_to_owner_end": 0.09309911727905273
+        },
+        "sdk_envelope_s": 81.01895499229431,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_624e8164edfc472dbf77f74b396c5d29",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.1068949699401855,
+        "parts": {
+          "eligible_to_job": 1.001249074935913,
+          "job_queue": 0.04007291793823242,
+          "worker_startup": 0.08651208877563477,
+          "finished_to_commit": 0.38716793060302734,
+          "commit_to_owner_end": 0.18383288383483887
+        },
+        "sdk_envelope_s": 83.63319706916809,
+        "nested_dox_tool_s": 0.2714860439300537
+      },
+      {
+        "case_id": "case_624e8164edfc472dbf77f74b396c5d29",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 3.971261978149414,
+        "parts": {
+          "eligible_to_job": 0.6675288677215576,
+          "job_queue": 0.0663139820098877,
+          "worker_startup": 0.03531503677368164,
+          "finished_to_commit": 1.952009916305542,
+          "commit_to_owner_end": 0.12612605094909668
+        },
+        "sdk_envelope_s": 185.92142796516418,
+        "nested_dox_tool_s": 0.6715819835662842
+      },
+      {
+        "case_id": "case_abcd062d4f6c48c999d9aaf2efae3765",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 4.438452959060669,
+        "parts": {
+          "eligible_to_job": 1.9487278461456299,
+          "job_queue": 0.0352170467376709,
+          "worker_startup": 0.06251215934753418,
+          "finished_to_commit": 0.8071620464324951,
+          "commit_to_owner_end": 0.4598710536956787
+        },
+        "sdk_envelope_s": 96.70320081710815,
+        "nested_dox_tool_s": 0.9527077674865723
+      },
+      {
+        "case_id": "case_abcd062d4f6c48c999d9aaf2efae3765",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 5.255337715148926,
+        "parts": {
+          "eligible_to_job": 1.261159896850586,
+          "job_queue": 0.2900710105895996,
+          "worker_startup": 0.1847531795501709,
+          "finished_to_commit": 2.331835985183716,
+          "commit_to_owner_end": 0.08528304100036621
+        },
+        "sdk_envelope_s": 159.84858298301697,
+        "nested_dox_tool_s": 0.7254717350006104
+      },
+      {
+        "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 4.476494073867798,
+        "parts": {
+          "eligible_to_job": 1.1779589653015137,
+          "job_queue": 0.030714035034179688,
+          "worker_startup": 0.06998419761657715,
+          "finished_to_commit": 2.7093091011047363,
+          "commit_to_owner_end": 0.3516678810119629
+        },
+        "sdk_envelope_s": 38.16079497337341,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 3.0674338340759277,
+        "parts": {
+          "eligible_to_job": 1.2446918487548828,
+          "job_queue": 0.04048609733581543,
+          "worker_startup": 0.030143022537231445,
+          "finished_to_commit": 0.6606998443603516,
+          "commit_to_owner_end": 0.13440608978271484
+        },
+        "sdk_envelope_s": 81.75017786026001,
+        "nested_dox_tool_s": 0.7909607887268066
+      },
+      {
+        "case_id": "case_9b2a312dfa524c0d91959d4d4750843e",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.8868210315704346,
+        "parts": {
+          "eligible_to_job": 1.419555902481079,
+          "job_queue": 0.05098605155944824,
+          "worker_startup": 0.6564040184020996,
+          "finished_to_commit": 0.43889498710632324,
+          "commit_to_owner_end": 0.21438813209533691
+        },
+        "sdk_envelope_s": 54.75659799575806,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_9b2a312dfa524c0d91959d4d4750843e",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.7033939361572266,
+        "parts": {
+          "eligible_to_job": 1.190075159072876,
+          "job_queue": 0.09741902351379395,
+          "worker_startup": 0.05084586143493652,
+          "finished_to_commit": 1.0627729892730713,
+          "commit_to_owner_end": 0.07573890686035156
+        },
+        "sdk_envelope_s": 29.38229012489319,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_dd0c792afdf142a5b677b5acca78f2ee",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.7211859226226807,
+        "parts": {
+          "eligible_to_job": 1.408052921295166,
+          "job_queue": 0.11267614364624023,
+          "worker_startup": 0.08229303359985352,
+          "finished_to_commit": 0.6786520481109619,
+          "commit_to_owner_end": 0.21260499954223633
+        },
+        "sdk_envelope_s": 17.71413803100586,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_dd0c792afdf142a5b677b5acca78f2ee",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.798146963119507,
+        "parts": {
+          "eligible_to_job": 0.8707940578460693,
+          "job_queue": 0.06502294540405273,
+          "worker_startup": 0.030776023864746094,
+          "finished_to_commit": 1.3558340072631836,
+          "commit_to_owner_end": 0.08782291412353516
+        },
+        "sdk_envelope_s": 26.50206208229065,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_d0dbbbb2594b47a4924cfbb9576d59b2",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 3.027772903442383,
+        "parts": {
+          "eligible_to_job": 0.7899169921875,
+          "job_queue": 0.0902099609375,
+          "worker_startup": 0.07841014862060547,
+          "finished_to_commit": 0.9334900379180908,
+          "commit_to_owner_end": 0.2743539810180664
+        },
+        "sdk_envelope_s": 64.72417187690735,
+        "nested_dox_tool_s": 0.5542888641357422
+      },
+      {
+        "case_id": "case_d0dbbbb2594b47a4924cfbb9576d59b2",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.375127077102661,
+        "parts": {
+          "eligible_to_job": 1.0252399444580078,
+          "job_queue": 0.09702205657958984,
+          "worker_startup": 0.054882049560546875,
+          "finished_to_commit": 0.9546020030975342,
+          "commit_to_owner_end": 0.16881179809570312
+        },
+        "sdk_envelope_s": 37.10300588607788,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_f9eef207e0d24f44ba1a4bfdaf81de0d",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.7890889644622803,
+        "parts": {
+          "eligible_to_job": 1.4874370098114014,
+          "job_queue": 0.15069007873535156,
+          "worker_startup": 0.19311308860778809,
+          "finished_to_commit": 0.5753748416900635,
+          "commit_to_owner_end": 0.23680996894836426
+        },
+        "sdk_envelope_s": 34.72206902503967,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_f9eef207e0d24f44ba1a4bfdaf81de0d",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 1.934596061706543,
+        "parts": {
+          "eligible_to_job": 1.0576980113983154,
+          "job_queue": 0.07937216758728027,
+          "worker_startup": 0.0203399658203125,
+          "finished_to_commit": 0.5518248081207275,
+          "commit_to_owner_end": 0.07767605781555176
+        },
+        "sdk_envelope_s": 58.620980978012085,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_838b74d1b8894fd2930ba2a8c1a29c19",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 4.001383304595947,
+        "parts": {
+          "eligible_to_job": 2.315880060195923,
+          "job_queue": 0.1213388442993164,
+          "worker_startup": 0.14208197593688965,
+          "finished_to_commit": 0.463961124420166,
+          "commit_to_owner_end": 0.24391484260559082
+        },
+        "sdk_envelope_s": 64.21849799156189,
+        "nested_dox_tool_s": 0.595069408416748
+      },
+      {
+        "case_id": "case_838b74d1b8894fd2930ba2a8c1a29c19",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 3.195401906967163,
+        "parts": {
+          "eligible_to_job": 0.7627220153808594,
+          "job_queue": 0.0359189510345459,
+          "worker_startup": 0.035318851470947266,
+          "finished_to_commit": 1.4645848274230957,
+          "commit_to_owner_end": 0.20965313911437988
+        },
+        "sdk_envelope_s": 99.91721200942993,
+        "nested_dox_tool_s": 0.33897995948791504
+      },
+      {
+        "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 6.065934896469116,
+        "parts": {
+          "eligible_to_job": 2.753221035003662,
+          "job_queue": 0.1652839183807373,
+          "worker_startup": 0.08867716789245605,
+          "finished_to_commit": 0.9155399799346924,
+          "commit_to_owner_end": 0.7490639686584473
+        },
+        "sdk_envelope_s": 142.61360883712769,
+        "nested_dox_tool_s": 0.5178167819976807
+      },
+      {
+        "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 6.69173789024353,
+        "parts": {
+          "eligible_to_job": 3.222424030303955,
+          "job_queue": 1.0134460926055908,
+          "worker_startup": 0.6661899089813232,
+          "finished_to_commit": 1.593919038772583,
+          "commit_to_owner_end": 0.11014389991760254
+        },
+        "sdk_envelope_s": 105.13471603393555,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_da3856bac10f4703a6ed0044dfed6621",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.980947732925415,
+        "parts": {
+          "eligible_to_job": 0.9022860527038574,
+          "job_queue": 0.07719993591308594,
+          "worker_startup": 0.06300091743469238,
+          "finished_to_commit": 0.6168780326843262,
+          "commit_to_owner_end": 0.40030694007873535
+        },
+        "sdk_envelope_s": 84.80206608772278,
+        "nested_dox_tool_s": 0.8277127742767334
+      },
+      {
+        "case_id": "case_da3856bac10f4703a6ed0044dfed6621",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 4.747466087341309,
+        "parts": {
+          "eligible_to_job": 1.770117998123169,
+          "job_queue": 0.04132795333862305,
+          "worker_startup": 0.019791841506958008,
+          "finished_to_commit": 0.8285419940948486,
+          "commit_to_owner_end": 0.13730406761169434
+        },
+        "sdk_envelope_s": 229.49713110923767,
+        "nested_dox_tool_s": 1.8640003204345703
+      }
+    ]
+  },
   "resource": {
     "samples": 41,
     "errors": 0,

@@ -1,6 +1,6 @@
 # W3 时效优化实施与生产验收报告（2026-11-11）
 
-本轮已按实际工作量设定预算、实施有证据的优化、合入 origin/main 并正式发布，完成固定版本10分钟资源观察。**完整Case内部P95仍为7.192秒，5秒硬指标未通过；本轮不能作为性能目标已经完成。****不能以回归通过、单阶段低于5秒或少数快Case，宣布完整Case的非SDK P95≤5秒已经达标。**
+本轮已按实际工作量设定预算、实施有证据的优化、合入 origin/main 并正式发布，完成固定版本10分钟资源观察。**固定11例跟踪至全部完成后，Trade/Operations/完整Case内部P95为6.066/6.692/12.009秒，5秒硬指标未通过；本轮不能作为性能目标已经完成。****不能以回归通过、单阶段低于5秒或少数快Case，宣布完整Case的非SDK P95≤5秒已经达标。**
 
 ## 1. 独立工程预算与计量
 
@@ -111,12 +111,32 @@ Trade预算P50/P95=0.8/2.2秒，Operations=0.6/1.8秒，完整Case=1.5/4.5秒，
 
 **结论：发布/基础正确性与本次资源观察通过，完整Case时效未通过；单阶段暂低于5秒不等于累计达标，更不等于高峰稳定P95通过。** 原55例21.05秒与当前7.192秒不是严格AB，仅可作为不同生产窗口现象比较。
 
-最终最慢Case `case_5357abcc6bbd494db906f19095c4cb37` 的直接证据：
+10分钟截断时最慢已完成Case `case_5357abcc6bbd494db906f19095c4cb37` 的直接证据：
 
 - Trade内部4.476s：到Job1.178s，队列31ms，启动70ms，Worker标记结束→业务commit 2.709s，尾部352ms。
 - 其中Worker结束21:23:33.312732 UTC，Scheduler收到结果21:23:35.102217，间隔**1.789s**；收到后到commit约920ms。Future完成到续接派发0.015ms、线程启动2.872ms，不能把1.789s归因于Future。
 - Trade续接Case读取341ms，业务阶段本体261ms，Effect保存167ms；相应SQLite-BEGIN只有0.619ms、本地gate 0.048ms，**不支持把该阶段全部归因于SQLite锁**。
 - Operations内部3.067s，其中三次本地研究工具208/246/337ms，总计约0.791s已经加回内部，不能因发生在SDK Turn中而扣除。它们执行器排队仅约0.2–3.5ms，主要是实际读取/解码工作而非共享线程池排队。
+
+为避免只看先完成的Case，继续跟踪**同一份11例名单**至05:32:56，最终11/11两阶段全部COMMITTED、证据完整，没有加入后续新Case。完整固定cohort结果覆盖前述截断子集，最终判定以此为准：
+
+| 完整固定cohort | 样本数 | P50 | P95 | >5秒 |
+| --- | ---: | ---: | ---: | ---: |
+| Trade | 11 | 2.981s | **6.066s** | 1/11 |
+| Operations | 11 | 3.067s | **6.692s** | 2/11 |
+| 完整Case | 11 | 5.894s | **12.009s** | **9/11** |
+
+**三个口径均未通过。** 仍未覆盖正常开盘及100例条件，但不能以样本少否认已经存在的超标。验收摘要同时保留10分钟截断与完整名单跟踪，避免存活/先完成样本偏差。
+
+完整名单最慢例为`case_ff22bcae08964e9297e9ce58efdc02e4`，不是单一SSE问题：
+
+- Trade 6.066s，Operations 6.692s，累计按并集12.009s；本地研究工具0.518s已经计入Trade。
+- Trade入口到Job2.753s，Ops3.222s；Ops Job队列1.013s、启动0.666s，确有内部派发延迟，不能称外部Provider等待。
+- Ops首次`stage.begin`实际802ms，其中同窗gate累计335ms、SQLite-BEGIN约250ms并出现2次争用；不能继续把这一例说成完全没有锁问题。
+- Ops结果续接5次写入合计885ms、3次重试等待79ms；该续接的gate累计215ms、SQLite-BEGIN约290ms/2次争用。它们有区间重叠，不能直接全相加，但均必须保留在内部。
+- Future交接0.014/0.017ms、线程启动0.241/0.321ms，仍不是主要瓶颈；Ready claim141ms而非数秒，没有证据需要更换slot策略。Trade提交后尾部749ms，其中Effect保存334ms；没有通过提前结束owner计时隐藏它。
+
+后续除结果交接外，还必须查明这些**有时间证据的writer持有者及跨进程争用**，以及Job已受理至启动1.013s内的实际dispatcher工作/唤醒/排队；现有片段不能证明是哪个后台任务持锁，更不能直接认定线程池容量不足。不要以增加重试、调整时限或新资源门槛代替定位。现阶段不为尚未分清的瓶颈继续叠加结构性机制。
 
 需继续针对两个剩余点探测后优化，优先级不再是Future重写、增大池或改slot排序：
 
@@ -129,7 +149,7 @@ Trade预算P50/P95=0.8/2.2秒，Operations=0.6/1.8秒，完整Case=1.5/4.5秒，
 
 ## 8. 证据与复核
 
-- [最终版本/逐阶段统计/资源摘要](../../eval/w3_latency_implementation_20261111/final-production-summary.json)、[22文件版本指纹](../../eval/w3_latency_implementation_20261111/final-version-proof.json)。
+- [最终版本/逐阶段统计/资源摘要](../../eval/w3_latency_implementation_20261111/final-production-summary.json)、[22文件版本指纹](../../eval/w3_latency_implementation_20261111/final-version-proof.json)、[两个超标Case的精简分段trace](../../eval/w3_latency_implementation_20261111/remaining-bottlenecks.json)。
 - [第一轮8a生产窗](../../eval/w3_latency_implementation_20261111/cohort-8a-summary.json)、[第二轮29f生产窗](../../eval/w3_latency_implementation_20261111/cohort-29f-summary.json)、[跨发布耗时下界](../../eval/w3_latency_implementation_20261111/cross-release-lower-bound.json)。
 - [218项合并回归](../../eval/w3_latency_implementation_20261111/merged-followup-regression.xml)、[Native/恢复161项](../../eval/w3_latency_implementation_20261111/decode-regression.xml)、[发布与下界9项](../../eval/w3_latency_implementation_20261111/publication-boundary-regression.xml)。
 - 同目录保留只读日历、编码、Native读取、线程历史及隔离I/O因果探针。完整带trace原始账本保存在主机私有`/var/lib/doxagent/releases/w3-latency-*/`，不导出完整Prompt、消息正文或密钥。

@@ -1,0 +1,1359 @@
+{
+  "at": "2026-11-10T21:32:56.909665+00:00",
+  "traces": [
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:22:54.071224+00:00",
+      "finished_at": "2026-11-10T21:22:54.518945+00:00",
+      "elapsed_ms": 447.734,
+      "totals": {
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 117.527,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 44,
+          "elapsed_ms": 1.606,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 44,
+          "elapsed_ms": 116.706,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 44,
+          "elapsed_ms": 19.781,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 10,
+          "elapsed_ms": 0.288,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 10,
+          "elapsed_ms": 0.179,
+          "errors": 0
+        },
+        "stage.accepted": {
+          "count": 1,
+          "elapsed_ms": 0.007,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 29.851,
+          "errors": 0
+        },
+        "history.membership": {
+          "count": 1,
+          "elapsed_ms": 31.667,
+          "errors": 0
+        },
+        "history.global_snapshot": {
+          "count": 1,
+          "elapsed_ms": 4.757,
+          "errors": 0
+        },
+        "context.prepare": {
+          "count": 1,
+          "elapsed_ms": 29.038,
+          "errors": 0
+        },
+        "thread.resolve_event_subjects": {
+          "count": 1,
+          "elapsed_ms": 0.041,
+          "errors": 0
+        },
+        "history.payload": {
+          "count": 1,
+          "elapsed_ms": 31.64,
+          "errors": 0
+        },
+        "case.events": {
+          "count": 1,
+          "elapsed_ms": 0.386,
+          "errors": 0
+        },
+        "case.trading_context": {
+          "count": 1,
+          "elapsed_ms": 3.477,
+          "errors": 0
+        },
+        "case.payload": {
+          "count": 1,
+          "elapsed_ms": 3.908,
+          "errors": 0
+        },
+        "case.thread_prepare": {
+          "count": 1,
+          "elapsed_ms": 48.32,
+          "errors": 0
+        },
+        "case.trade": {
+          "count": 1,
+          "elapsed_ms": 248.496,
+          "errors": 1
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.007,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "effect.body_return": {
+          "at": "2026-11-10T21:22:54.504044+00:00",
+          "result": 0
+        }
+      },
+      "effect_thread_start_ms": 1.357
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "phase_io",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:22:54.520220+00:00",
+      "finished_at": "2026-11-10T21:23:35.344582+00:00",
+      "elapsed_ms": 40824.362,
+      "totals": {
+        "journal.connect": {
+          "count": 18,
+          "elapsed_ms": 46.009,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 18,
+          "elapsed_ms": 403.476,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 18,
+          "elapsed_ms": 25.783,
+          "errors": 0
+        },
+        "io.read": {
+          "count": 17,
+          "elapsed_ms": 432.856,
+          "errors": 0,
+          "queued_ms": 50.592
+        },
+        "journal.gate": {
+          "count": 10,
+          "elapsed_ms": 34.669,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 10,
+          "elapsed_ms": 12.248,
+          "errors": 0
+        },
+        "io.write": {
+          "count": 6,
+          "elapsed_ms": 353.219,
+          "errors": 0,
+          "queued_ms": 18.289
+        },
+        "case.context_bind": {
+          "count": 1,
+          "elapsed_ms": 64.316,
+          "errors": 0
+        },
+        "thread.ready_claim": {
+          "count": 1,
+          "elapsed_ms": 43.993,
+          "errors": 0
+        },
+        "worker.result_received": {
+          "count": 1,
+          "elapsed_ms": 0.01,
+          "errors": 0
+        },
+        "worker.receipt_encode": {
+          "count": 1,
+          "elapsed_ms": 29.466,
+          "errors": 0
+        },
+        "worker.receipt_saved": {
+          "count": 1,
+          "elapsed_ms": 0.017,
+          "errors": 0
+        },
+        "worker.roundtrip.trade_decision": {
+          "count": 1,
+          "elapsed_ms": 40526.799,
+          "errors": 0
+        },
+        "phase.validate": {
+          "count": 1,
+          "elapsed_ms": 0.905,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "worker.result_received": {
+          "at": "2026-11-10T21:23:35.102217+00:00",
+          "job_id": "8df5e8ebcc35059206c5d145372736db28cc448a955b04cc0998873a6c1f5a5d",
+          "status": "succeeded",
+          "worker_finished_at": "2026-11-10T21:23:33.312732+00:00"
+        },
+        "worker.receipt_saved": {
+          "at": "2026-11-10T21:23:35.342752+00:00",
+          "job_id": "8df5e8ebcc35059206c5d145372736db28cc448a955b04cc0998873a6c1f5a5d"
+        }
+      },
+      "effect_thread_start_ms": 1.357
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:23:35.348196+00:00",
+      "finished_at": "2026-11-10T21:23:36.373709+00:00",
+      "elapsed_ms": 1025.514,
+      "totals": {
+        "phase.continuation_started": {
+          "count": 1,
+          "elapsed_ms": 0.014,
+          "errors": 0
+        },
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 341.02,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 6,
+          "elapsed_ms": 1.47,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 6,
+          "elapsed_ms": 44.674,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 6,
+          "elapsed_ms": 3.36,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 2,
+          "elapsed_ms": 0.048,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 2,
+          "elapsed_ms": 0.619,
+          "errors": 0
+        },
+        "io.write": {
+          "count": 2,
+          "elapsed_ms": 120.263,
+          "errors": 0,
+          "queued_ms": 2.8930000000000002
+        },
+        "phase.result_saved": {
+          "count": 1,
+          "elapsed_ms": 0.011,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 0.947,
+          "errors": 0
+        },
+        "phase.business_committed": {
+          "count": 1,
+          "elapsed_ms": 0.014,
+          "errors": 0
+        },
+        "case.trade": {
+          "count": 1,
+          "elapsed_ms": 260.78,
+          "errors": 0
+        },
+        "effect.save": {
+          "count": 1,
+          "elapsed_ms": 167.333,
+          "errors": 0
+        },
+        "case.finish_control": {
+          "count": 1,
+          "elapsed_ms": 31.094,
+          "errors": 0
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.012,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "phase.continuation_started": {
+          "at": "2026-11-10T21:23:35.462811+00:00",
+          "task_phase": "trade_decision"
+        },
+        "phase.result_saved": {
+          "at": "2026-11-10T21:23:35.912958+00:00",
+          "task_phase": "trade_decision",
+          "job_id": "8df5e8ebcc35059206c5d145372736db28cc448a955b04cc0998873a6c1f5a5d"
+        },
+        "phase.business_committed": {
+          "at": "2026-11-10T21:23:36.022041+00:00",
+          "task_phase": "trade_decision"
+        },
+        "effect.body_return": {
+          "at": "2026-11-10T21:23:36.373584+00:00",
+          "result": 1
+        }
+      },
+      "future_handoff_ms": 0.015,
+      "effect_thread_start_ms": 2.872
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:23:36.256965+00:00",
+      "finished_at": "2026-11-10T21:23:36.813011+00:00",
+      "elapsed_ms": 556.03,
+      "totals": {
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 263.159,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 15,
+          "elapsed_ms": 6.823,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 15,
+          "elapsed_ms": 57.705,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 15,
+          "elapsed_ms": 15.832,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 2,
+          "elapsed_ms": 0.053,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 2,
+          "elapsed_ms": 0.031,
+          "errors": 0
+        },
+        "stage.accepted": {
+          "count": 1,
+          "elapsed_ms": 0.005,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 33.302,
+          "errors": 0
+        },
+        "history.global_snapshot": {
+          "count": 1,
+          "elapsed_ms": 36.692,
+          "errors": 0
+        },
+        "context.prepare": {
+          "count": 1,
+          "elapsed_ms": 19.296,
+          "errors": 0
+        },
+        "case.operations": {
+          "count": 1,
+          "elapsed_ms": 217.065,
+          "errors": 1
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.007,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "effect.body_return": {
+          "at": "2026-11-10T21:23:36.812915+00:00",
+          "result": 0
+        }
+      },
+      "effect_thread_start_ms": 0.953
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:24:29.681113+00:00",
+      "finished_at": "2026-11-10T21:24:30.414291+00:00",
+      "elapsed_ms": 733.165,
+      "totals": {
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 94.139,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 44,
+          "elapsed_ms": 3.124,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 44,
+          "elapsed_ms": 281.694,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 44,
+          "elapsed_ms": 24.803,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 10,
+          "elapsed_ms": 21.366,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 10,
+          "elapsed_ms": 35.539,
+          "errors": 0
+        },
+        "stage.accepted": {
+          "count": 1,
+          "elapsed_ms": 0.006,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 41.373,
+          "errors": 0
+        },
+        "history.membership": {
+          "count": 1,
+          "elapsed_ms": 39.795,
+          "errors": 0
+        },
+        "history.global_snapshot": {
+          "count": 1,
+          "elapsed_ms": 10.252,
+          "errors": 0
+        },
+        "context.prepare": {
+          "count": 1,
+          "elapsed_ms": 118.347,
+          "errors": 0
+        },
+        "thread.resolve_event_subjects": {
+          "count": 1,
+          "elapsed_ms": 0.049,
+          "errors": 0
+        },
+        "history.payload": {
+          "count": 1,
+          "elapsed_ms": 87.896,
+          "errors": 0
+        },
+        "case.events": {
+          "count": 1,
+          "elapsed_ms": 3.291,
+          "errors": 0
+        },
+        "case.trading_context": {
+          "count": 1,
+          "elapsed_ms": 6.659,
+          "errors": 0
+        },
+        "case.payload": {
+          "count": 1,
+          "elapsed_ms": 7.039,
+          "errors": 0
+        },
+        "case.thread_prepare": {
+          "count": 1,
+          "elapsed_ms": 124.424,
+          "errors": 0
+        },
+        "case.trade": {
+          "count": 1,
+          "elapsed_ms": 546.454,
+          "errors": 1
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.007,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "effect.body_return": {
+          "at": "2026-11-10T21:24:30.414195+00:00",
+          "result": 0
+        }
+      },
+      "effect_thread_start_ms": 2.536
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "phase_io",
+      "task_phase": "post_decision_operations",
+      "started_at": "2026-11-10T21:23:36.815586+00:00",
+      "finished_at": "2026-11-10T21:24:59.444180+00:00",
+      "elapsed_ms": 82628.591,
+      "totals": {
+        "journal.connect": {
+          "count": 13,
+          "elapsed_ms": 5.004,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 13,
+          "elapsed_ms": 191.273,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 13,
+          "elapsed_ms": 16.193,
+          "errors": 0
+        },
+        "io.read": {
+          "count": 11,
+          "elapsed_ms": 77.935,
+          "errors": 0,
+          "queued_ms": 25.421999999999997
+        },
+        "journal.gate": {
+          "count": 6,
+          "elapsed_ms": 0.158,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 6,
+          "elapsed_ms": 3.496,
+          "errors": 0
+        },
+        "io.write": {
+          "count": 6,
+          "elapsed_ms": 325.136,
+          "errors": 0,
+          "queued_ms": 9.466000000000001
+        },
+        "case.context_bind": {
+          "count": 1,
+          "elapsed_ms": 59.043,
+          "errors": 0
+        },
+        "worker.result_received": {
+          "count": 1,
+          "elapsed_ms": 0.015,
+          "errors": 0
+        },
+        "worker.receipt_encode": {
+          "count": 1,
+          "elapsed_ms": 21.605,
+          "errors": 0
+        },
+        "worker.receipt_saved": {
+          "count": 1,
+          "elapsed_ms": 0.012,
+          "errors": 0
+        },
+        "worker.roundtrip.post_decision_operations": {
+          "count": 1,
+          "elapsed_ms": 82245.029,
+          "errors": 0
+        },
+        "phase.validate": {
+          "count": 1,
+          "elapsed_ms": 59.303,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "worker.result_received": {
+          "at": "2026-11-10T21:24:59.307850+00:00",
+          "job_id": "4d5f86851dea7b05616e1615b0b33f774b90f4ea9e2ea5a58d80dab2c5caf9ef",
+          "status": "succeeded",
+          "worker_finished_at": "2026-11-10T21:24:59.253586+00:00"
+        },
+        "worker.receipt_saved": {
+          "at": "2026-11-10T21:24:59.383520+00:00",
+          "job_id": "4d5f86851dea7b05616e1615b0b33f774b90f4ea9e2ea5a58d80dab2c5caf9ef"
+        }
+      },
+      "effect_thread_start_ms": 0.953
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:24:59.449891+00:00",
+      "finished_at": "2026-11-10T21:25:00.048692+00:00",
+      "elapsed_ms": 598.803,
+      "totals": {
+        "phase.continuation_started": {
+          "count": 1,
+          "elapsed_ms": 0.012,
+          "errors": 0
+        },
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 167.974,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 8,
+          "elapsed_ms": 3.777,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 8,
+          "elapsed_ms": 72.599,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 8,
+          "elapsed_ms": 3.469,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 2,
+          "elapsed_ms": 0.039,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 2,
+          "elapsed_ms": 0.137,
+          "errors": 0
+        },
+        "io.write": {
+          "count": 2,
+          "elapsed_ms": 136.683,
+          "errors": 0,
+          "queued_ms": 0.461
+        },
+        "phase.result_saved": {
+          "count": 1,
+          "elapsed_ms": 0.01,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 1.155,
+          "errors": 0
+        },
+        "phase.business_committed": {
+          "count": 1,
+          "elapsed_ms": 0.014,
+          "errors": 0
+        },
+        "case.operations": {
+          "count": 1,
+          "elapsed_ms": 203.765,
+          "errors": 0
+        },
+        "effect.save": {
+          "count": 1,
+          "elapsed_ms": 70.873,
+          "errors": 0
+        },
+        "case.finish_control": {
+          "count": 1,
+          "elapsed_ms": 62.589,
+          "errors": 0
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.009,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "phase.continuation_started": {
+          "at": "2026-11-10T21:24:59.452135+00:00",
+          "task_phase": "post_decision_operations"
+        },
+        "phase.result_saved": {
+          "at": "2026-11-10T21:24:59.711010+00:00",
+          "task_phase": "post_decision_operations",
+          "job_id": "4d5f86851dea7b05616e1615b0b33f774b90f4ea9e2ea5a58d80dab2c5caf9ef"
+        },
+        "phase.business_committed": {
+          "at": "2026-11-10T21:24:59.914286+00:00",
+          "task_phase": "post_decision_operations"
+        },
+        "effect.body_return": {
+          "at": "2026-11-10T21:25:00.048600+00:00",
+          "result": 1
+        }
+      },
+      "future_handoff_ms": 0.015,
+      "effect_thread_start_ms": 1.469
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "phase_io",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:24:30.415565+00:00",
+      "finished_at": "2026-11-10T21:26:56.017344+00:00",
+      "elapsed_ms": 145601.783,
+      "totals": {
+        "journal.connect": {
+          "count": 18,
+          "elapsed_ms": 17.795,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 18,
+          "elapsed_ms": 487.09,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 18,
+          "elapsed_ms": 167.531,
+          "errors": 0
+        },
+        "io.read": {
+          "count": 19,
+          "elapsed_ms": 719.138,
+          "errors": 0,
+          "queued_ms": 70.763
+        },
+        "journal.gate": {
+          "count": 10,
+          "elapsed_ms": 46.052,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 10,
+          "elapsed_ms": 5.751,
+          "errors": 0
+        },
+        "io.write": {
+          "count": 6,
+          "elapsed_ms": 441.497,
+          "errors": 0,
+          "queued_ms": 213.28199999999998
+        },
+        "case.context_bind": {
+          "count": 1,
+          "elapsed_ms": 408.776,
+          "errors": 0
+        },
+        "thread.ready_claim": {
+          "count": 1,
+          "elapsed_ms": 140.993,
+          "errors": 0
+        },
+        "worker.result_received": {
+          "count": 1,
+          "elapsed_ms": 0.016,
+          "errors": 0
+        },
+        "worker.receipt_encode": {
+          "count": 1,
+          "elapsed_ms": 25.556,
+          "errors": 0
+        },
+        "worker.receipt_saved": {
+          "count": 1,
+          "elapsed_ms": 0.011,
+          "errors": 0
+        },
+        "worker.roundtrip.trade_decision": {
+          "count": 1,
+          "elapsed_ms": 144507.083,
+          "errors": 0
+        },
+        "phase.validate": {
+          "count": 1,
+          "elapsed_ms": 0.686,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "worker.result_received": {
+          "at": "2026-11-10T21:26:55.853805+00:00",
+          "job_id": "f44c5e2a3a39d095f224d0491319da002d6c3ba923071eb95efe302873ae7260",
+          "status": "succeeded",
+          "worker_finished_at": "2026-11-10T21:26:55.652627+00:00"
+        },
+        "worker.receipt_saved": {
+          "at": "2026-11-10T21:26:56.014637+00:00",
+          "job_id": "f44c5e2a3a39d095f224d0491319da002d6c3ba923071eb95efe302873ae7260"
+        }
+      },
+      "effect_thread_start_ms": 2.536
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:26:56.018248+00:00",
+      "finished_at": "2026-11-10T21:26:57.317231+00:00",
+      "elapsed_ms": 1298.983,
+      "totals": {
+        "phase.continuation_started": {
+          "count": 1,
+          "elapsed_ms": 0.013,
+          "errors": 0
+        },
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 312.505,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 6,
+          "elapsed_ms": 0.547,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 6,
+          "elapsed_ms": 74.738,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 6,
+          "elapsed_ms": 11.188,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 2,
+          "elapsed_ms": 0.091,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 2,
+          "elapsed_ms": 0.037,
+          "errors": 0
+        },
+        "io.write": {
+          "count": 2,
+          "elapsed_ms": 112.432,
+          "errors": 0,
+          "queued_ms": 8.343
+        },
+        "phase.result_saved": {
+          "count": 1,
+          "elapsed_ms": 0.017,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 1.768,
+          "errors": 0
+        },
+        "phase.business_committed": {
+          "count": 1,
+          "elapsed_ms": 0.013,
+          "errors": 0
+        },
+        "case.trade": {
+          "count": 1,
+          "elapsed_ms": 497.848,
+          "errors": 0
+        },
+        "effect.save": {
+          "count": 1,
+          "elapsed_ms": 333.852,
+          "errors": 0
+        },
+        "case.finish_control": {
+          "count": 1,
+          "elapsed_ms": 20.709,
+          "errors": 0
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.009,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "phase.continuation_started": {
+          "at": "2026-11-10T21:26:56.075380+00:00",
+          "task_phase": "trade_decision"
+        },
+        "phase.result_saved": {
+          "at": "2026-11-10T21:26:56.464288+00:00",
+          "task_phase": "trade_decision",
+          "job_id": "f44c5e2a3a39d095f224d0491319da002d6c3ba923071eb95efe302873ae7260"
+        },
+        "phase.business_committed": {
+          "at": "2026-11-10T21:26:56.568167+00:00",
+          "task_phase": "trade_decision"
+        },
+        "effect.body_return": {
+          "at": "2026-11-10T21:26:57.317105+00:00",
+          "result": 1
+        }
+      },
+      "future_handoff_ms": 0.014,
+      "effect_thread_start_ms": 0.241
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:26:56.962051+00:00",
+      "finished_at": "2026-11-10T21:26:58.058310+00:00",
+      "elapsed_ms": 1096.257,
+      "totals": {
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 97.377,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 15,
+          "elapsed_ms": 1.563,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 15,
+          "elapsed_ms": 752.57,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 15,
+          "elapsed_ms": 102.527,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 7,
+          "elapsed_ms": 334.731,
+          "errors": 0
+        },
+        "journal.retry_wait": {
+          "count": 5,
+          "elapsed_ms": 125.447,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 4,
+          "elapsed_ms": 249.749,
+          "errors": 2
+        },
+        "stage.accepted": {
+          "count": 1,
+          "elapsed_ms": 0.01,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 802.419,
+          "errors": 0
+        },
+        "history.global_snapshot": {
+          "count": 1,
+          "elapsed_ms": 10.623,
+          "errors": 0
+        },
+        "context.prepare": {
+          "count": 1,
+          "elapsed_ms": 13.592,
+          "errors": 0
+        },
+        "case.operations": {
+          "count": 1,
+          "elapsed_ms": 963.112,
+          "errors": 1
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.006,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "effect.body_return": {
+          "at": "2026-11-10T21:26:58.058214+00:00",
+          "result": 0
+        }
+      },
+      "effect_thread_start_ms": 8.658
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "phase_io",
+      "task_phase": "post_decision_operations",
+      "started_at": "2026-11-10T21:26:58.059233+00:00",
+      "finished_at": "2026-11-10T21:28:46.835213+00:00",
+      "elapsed_ms": 108775.98,
+      "totals": {
+        "journal.connect": {
+          "count": 13,
+          "elapsed_ms": 10.771,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 13,
+          "elapsed_ms": 322.783,
+          "errors": 0
+        },
+        "journal.commit": {
+          "count": 13,
+          "elapsed_ms": 397.98,
+          "errors": 0
+        },
+        "io.read": {
+          "count": 11,
+          "elapsed_ms": 310.102,
+          "errors": 0,
+          "queued_ms": 6.831999999999998
+        },
+        "journal.gate": {
+          "count": 6,
+          "elapsed_ms": 0.202,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 6,
+          "elapsed_ms": 2.845,
+          "errors": 0
+        },
+        "io.write": {
+          "count": 6,
+          "elapsed_ms": 1039.466,
+          "errors": 0,
+          "queued_ms": 4.998
+        },
+        "case.context_bind": {
+          "count": 1,
+          "elapsed_ms": 328.16,
+          "errors": 0
+        },
+        "worker.result_received": {
+          "count": 1,
+          "elapsed_ms": 0.014,
+          "errors": 0
+        },
+        "worker.receipt_encode": {
+          "count": 1,
+          "elapsed_ms": 12.029,
+          "errors": 0
+        },
+        "worker.receipt_saved": {
+          "count": 1,
+          "elapsed_ms": 0.011,
+          "errors": 0
+        },
+        "worker.roundtrip.post_decision_operations": {
+          "count": 1,
+          "elapsed_ms": 107729.357,
+          "errors": 0
+        },
+        "phase.validate": {
+          "count": 1,
+          "elapsed_ms": 27.564,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "worker.result_received": {
+          "at": "2026-11-10T21:28:46.744847+00:00",
+          "job_id": "59e694561a2f53b10cc3d3fc3426d99d3f317f2691b3db5ede26b9433f91399e",
+          "status": "succeeded",
+          "worker_finished_at": "2026-11-10T21:28:46.690558+00:00"
+        },
+        "worker.receipt_saved": {
+          "at": "2026-11-10T21:28:46.804358+00:00",
+          "job_id": "59e694561a2f53b10cc3d3fc3426d99d3f317f2691b3db5ede26b9433f91399e"
+        }
+      },
+      "effect_thread_start_ms": 8.658
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "effect_owner",
+      "started_at": "2026-11-10T21:28:46.839303+00:00",
+      "finished_at": "2026-11-10T21:28:48.394621+00:00",
+      "elapsed_ms": 1555.319,
+      "totals": {
+        "phase.continuation_started": {
+          "count": 1,
+          "elapsed_ms": 0.01,
+          "errors": 0
+        },
+        "case.read": {
+          "count": 1,
+          "elapsed_ms": 278.152,
+          "errors": 0
+        },
+        "journal.connect": {
+          "count": 11,
+          "elapsed_ms": 12.912,
+          "errors": 0
+        },
+        "journal.begin": {
+          "count": 11,
+          "elapsed_ms": 705.231,
+          "errors": 3
+        },
+        "journal.commit": {
+          "count": 8,
+          "elapsed_ms": 6.539,
+          "errors": 0
+        },
+        "journal.gate": {
+          "count": 5,
+          "elapsed_ms": 214.54,
+          "errors": 0
+        },
+        "journal.sqlite_begin": {
+          "count": 4,
+          "elapsed_ms": 289.698,
+          "errors": 2
+        },
+        "io.write": {
+          "count": 5,
+          "elapsed_ms": 884.635,
+          "errors": 3,
+          "queued_ms": 21.110999999999997
+        },
+        "io.write_retry_delay": {
+          "count": 3,
+          "elapsed_ms": 79.225,
+          "errors": 0
+        },
+        "phase.result_saved": {
+          "count": 1,
+          "elapsed_ms": 0.016,
+          "errors": 0
+        },
+        "stage.begin": {
+          "count": 1,
+          "elapsed_ms": 0.213,
+          "errors": 0
+        },
+        "phase.business_committed": {
+          "count": 1,
+          "elapsed_ms": 0.019,
+          "errors": 0
+        },
+        "case.operations": {
+          "count": 1,
+          "elapsed_ms": 293.631,
+          "errors": 0
+        },
+        "effect.save": {
+          "count": 1,
+          "elapsed_ms": 62.819,
+          "errors": 0
+        },
+        "case.finish_control": {
+          "count": 1,
+          "elapsed_ms": 44.562,
+          "errors": 0
+        },
+        "effect.body_return": {
+          "count": 1,
+          "elapsed_ms": 0.01,
+          "errors": 0
+        }
+      },
+      "milestones": {
+        "phase.continuation_started": {
+          "at": "2026-11-10T21:28:46.839425+00:00",
+          "task_phase": "post_decision_operations"
+        },
+        "phase.result_saved": {
+          "at": "2026-11-10T21:28:47.992987+00:00",
+          "task_phase": "post_decision_operations",
+          "job_id": "59e694561a2f53b10cc3d3fc3426d99d3f317f2691b3db5ede26b9433f91399e"
+        },
+        "phase.business_committed": {
+          "at": "2026-11-10T21:28:48.284477+00:00",
+          "task_phase": "post_decision_operations"
+        },
+        "effect.body_return": {
+          "at": "2026-11-10T21:28:48.394481+00:00",
+          "result": 1
+        }
+      },
+      "future_handoff_ms": 0.017,
+      "effect_thread_start_ms": 0.321
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "context_bind",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:22:54.694325+00:00",
+      "finished_at": "2026-11-10T21:22:54.715509+00:00",
+      "elapsed_ms": 21.182,
+      "totals": {
+        "file_io.call": {
+          "count": 1,
+          "elapsed_ms": 20.073,
+          "errors": 0,
+          "queued_ms": 0.767
+        }
+      }
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "context_bind",
+      "task_phase": "post_decision_operations",
+      "started_at": "2026-11-10T21:23:37.012426+00:00",
+      "finished_at": "2026-11-10T21:23:37.047960+00:00",
+      "elapsed_ms": 35.53,
+      "totals": {
+        "file_io.call": {
+          "count": 1,
+          "elapsed_ms": 34.956,
+          "errors": 0,
+          "queued_ms": 0.133
+        }
+      }
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "research_tool",
+      "task_phase": "post_decision_operations",
+      "started_at": "2026-11-10T21:23:48.202061+00:00",
+      "finished_at": "2026-11-10T21:23:48.410374+00:00",
+      "elapsed_ms": 208.323,
+      "totals": {
+        "io.read": {
+          "count": 1,
+          "elapsed_ms": 206.334,
+          "errors": 0,
+          "queued_ms": 1.651
+        }
+      }
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "research_tool",
+      "task_phase": "post_decision_operations",
+      "started_at": "2026-11-10T21:23:52.059123+00:00",
+      "finished_at": "2026-11-10T21:23:52.304782+00:00",
+      "elapsed_ms": 245.658,
+      "totals": {
+        "io.read": {
+          "count": 1,
+          "elapsed_ms": 239.293,
+          "errors": 0,
+          "queued_ms": 3.489
+        }
+      }
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "context_bind",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:24:30.995588+00:00",
+      "finished_at": "2026-11-10T21:24:31.081186+00:00",
+      "elapsed_ms": 85.595,
+      "totals": {
+        "file_io.call": {
+          "count": 1,
+          "elapsed_ms": 71.501,
+          "errors": 0,
+          "queued_ms": 7.092
+        }
+      }
+    },
+    {
+      "case_id": "case_5357abcc6bbd494db906f19095c4cb37",
+      "segment": "research_tool",
+      "task_phase": "post_decision_operations",
+      "started_at": "2026-11-10T21:24:34.128150+00:00",
+      "finished_at": "2026-11-10T21:24:34.465139+00:00",
+      "elapsed_ms": 336.987,
+      "totals": {
+        "io.read": {
+          "count": 1,
+          "elapsed_ms": 336.015,
+          "errors": 0,
+          "queued_ms": 0.158
+        }
+      }
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "research_tool",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:24:45.167787+00:00",
+      "finished_at": "2026-11-10T21:24:45.512663+00:00",
+      "elapsed_ms": 344.878,
+      "totals": {
+        "io.read": {
+          "count": 1,
+          "elapsed_ms": 343.94,
+          "errors": 0,
+          "queued_ms": 0.598
+        }
+      }
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "research_tool",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:24:51.239625+00:00",
+      "finished_at": "2026-11-10T21:24:51.329650+00:00",
+      "elapsed_ms": 90.038,
+      "totals": {
+        "io.read": {
+          "count": 1,
+          "elapsed_ms": 83.407,
+          "errors": 0,
+          "queued_ms": 0.156
+        }
+      }
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "research_tool",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:24:58.577810+00:00",
+      "finished_at": "2026-11-10T21:24:58.587696+00:00",
+      "elapsed_ms": 9.888,
+      "totals": {
+        "io.read": {
+          "count": 1,
+          "elapsed_ms": 2.579,
+          "errors": 1,
+          "queued_ms": 0.145
+        }
+      }
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "research_tool",
+      "task_phase": "trade_decision",
+      "started_at": "2026-11-10T21:25:06.135879+00:00",
+      "finished_at": "2026-11-10T21:25:06.208909+00:00",
+      "elapsed_ms": 73.03,
+      "totals": {
+        "io.read": {
+          "count": 1,
+          "elapsed_ms": 72.007,
+          "errors": 0,
+          "queued_ms": 0.703
+        }
+      }
+    },
+    {
+      "case_id": "case_ff22bcae08964e9297e9ce58efdc02e4",
+      "segment": "context_bind",
+      "task_phase": "post_decision_operations",
+      "started_at": "2026-11-10T21:26:58.527094+00:00",
+      "finished_at": "2026-11-10T21:26:58.838809+00:00",
+      "elapsed_ms": 311.711,
+      "totals": {
+        "file_io.call": {
+          "count": 1,
+          "elapsed_ms": 311.368,
+          "errors": 0,
+          "queued_ms": 0.126
+        }
+      }
+    }
+  ]
+}
