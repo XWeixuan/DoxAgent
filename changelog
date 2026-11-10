@@ -2812,3 +2812,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-10 W1R1/W2R1 OpenAI recall adapter: add opt-in gpt-6-luna/high/fast profile with explicit 12h fixed-prefix and completed-provisional caching; preserve R2/R3 and frozen Cases; persist single Haiku/high/1h fallback. Offline coverage 250 passed. Paired live evaluation and recall-quality gate recorded in docs/luna-r1-12h-cache-evaluation-20261110.md; production activation withheld pending W2R1 recall acceptance.
 2026-11-10 Operator explicitly approved publishing both Luna high/fast R1 nodes with Haiku high fallback after reviewing the recall evaluation; retain test evidence and existing role-specific production fixes.
+
+2026-11-10 Luna R1 release accepted after explicit operator approval: origin/main 9376a8de, API/Scheduler immutable role overlays preserve existing source differences; W1R1/W2R1 now OpenAI gpt-6-luna/high/fast with explicit 12h cache and frozen Haiku/high/1h fallback. Four real primary/fallback probes succeeded; 14 natural R1 calls all OK/fast. Prompts/contracts/R2/R3 and 21 other containers unchanged. See docs/luna-r1-release-20261110.md.
