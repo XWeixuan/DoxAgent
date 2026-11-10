@@ -100,3 +100,9 @@ Bus采用SQLite自身原子VACUUM，避免不一致cp和在线文件替换。操
 已合并main至a0a249d9，保留W3 Luna Fast及并行业务更新。精确文件候选源码cfe7b649，以当前Worker实际镜像14121db49ff6为底，仅覆盖initialization_owners/snapshot_retention/session_retention三个文件，候选7172bb5619e5。当前Worker仍有5个在途Job，未替换。采集角色aff392a3e876的Acquisition maintenance/store与当前提交逐字节一致，明确不为它额外切换容器；构建时产生的同源码Collector候选不发布，由既有48h候选生命周期退出。
 
 最新main业务合并（含W3 JSON解码、Luna供应商配置）的交叉收尾检查：`merged-closeout.xml`为67通过、2跳过，未发模型请求；与此前各组重叠，不合计为独立总数。
+
+### 发布窗口解除后的最终Worker发布
+
+W3会话已通知窗口结束（Scheduler62d6be3311df、Worker14121db49ff6，主机工具/main47117b71）。新增d08df6dd操作门禁：复用既有W3 Effect结果消费空闲检查，并在确认Job空闲后，以短SQLite writer admission fence覆盖停止旧Worker的步骤；新Job必须先持久化再派发模型，因此堵住检查与停止之间的新受理竞态。不修改运行时准入策略/业务并发。Job繁忙、Effect繁忙、并发提交及锁释放等合计10项发布边界回归通过。
+
+最终候选从最新实际Worker与当前配置重新构建，仅三份I1源码，保留Scheduler和其全部更新。有限运维进程只暂停已枚举六个非W3生产者，保留现有模型和实时Scheduler；长模型按1800秒间隔等一批自然结束，最后最多5分钟选择W3消费完毕的空闲窗口。失败或超时均恢复原来在运行且未被其他发布替换的生产者；不留daemon/cron，不取消Job。实际执行结果将在完成后补充。
