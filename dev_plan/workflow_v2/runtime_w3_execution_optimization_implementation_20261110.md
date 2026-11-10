@@ -128,6 +128,7 @@ python scripts/ops/w3_latency_audit.py --runtime PATH/runtime.sqlite3 --jobs PAT
 - 主回归 155 项通过：receipt/Provider、Future、两阶段、Ready、资源释放、租约、提交后 ACK、研究冻结与启动准入。
 - 补充事务回滚、POST 前取消、非额度探测恢复后，25 项定向回归通过；这里与主回归有重合，不能相加成独立测试数量。
 - 整 Case 5 秒统计测试另行通过，覆盖两个阶段各 3 秒应累计失败、Provider 等待及固定窗口不串扰。
+- 整合最新 origin/main（e93e2557，含独立 R1 发布）后，最终完整回归 **158 项通过 / 80.85 秒**，3 条依赖弃用警告。代码提交为 `e697595e`，测试证据为 `integrated-regression.xml`；本分支没有覆盖 R1 模型配置或 fallback。
 - 真实本地 SQLite writer 占用约 300ms 后，结果在释放后不到 1 秒完成，没有修改 timeout 配置，也不走原 5 秒 Effect 延后。
 - 模拟 POST 已受理但返回超时，实际序列为 GET404→POST超时→GET原成功 Job，仅一次 POST。
 - GET500、503、timeout 均断言无 POST、无 generation 变化。
