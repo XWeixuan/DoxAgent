@@ -1,8 +1,9 @@
 """One-time operator-approved recovery. Existing request/Job identities are immutable.
 
 Prepare only with Scheduler/Worker stopped. Existing Effect.available_at and
-Job.next_retry_at hold the exact snapshot. A finite helper releases two Cases
-at a time; new realtime Cases are never included. No runtime queue or schema.
+Job.next_retry_at hold the exact snapshot. A finite helper releases the
+operator-configured number of Cases; new realtime Cases are never included.
+No runtime queue or schema.
 """
 import argparse
 from contextlib import contextmanager

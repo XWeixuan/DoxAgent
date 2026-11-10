@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-10T16:17:43.752109+00:00",
+  "previous": 2,
+  "capacity": 16,
+  "cases": 163,
+  "done_before": 11,
+  "active_before": 2,
+  "authorization": "operator requested 16 concurrent historical Cases"
+}

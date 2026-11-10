@@ -1,0 +1,16 @@
+{
+  "first": "2026-11-10T16:18:35.483225+00:00",
+  "last": "2026-11-10T16:21:35.483316+00:00",
+  "samples": 13,
+  "capacity": 16,
+  "min_available_gib": 8.506172180175781,
+  "end_available_gib": 11.262130737304688,
+  "worker_peak_gib": 7.982730865478516,
+  "business_oom_or_restart": false,
+  "kernel_oom_delta": 0,
+  "final_pressure": {
+    "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=846058496\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=685259542",
+    "io": "some avg10=1.17 avg60=1.56 avg300=1.74 total=4994542309\nfull avg10=0.00 avg60=0.16 avg300=0.25 total=2306141677",
+    "cpu": "some avg10=58.12 avg60=57.03 avg300=52.33 total=22015535776\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0"
+  }
+}

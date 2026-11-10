@@ -58,6 +58,8 @@
 
 00:17:43 用户要求升至 16 并行。已只修改原 manifest.capacity 并重启临时脚本，原名单、progress、Job 和两个业务容器未重建；调整前已收尾 11 个。操作回执位于 `/var/lib/doxagent/releases/w3-backlog-capacity-16-20261111.json`。下节 11 分钟观察是最初 2 并行窗口，不能冒充 16 并行的验收。
 
+追加的 16 并行观察：00:18:35–00:21:35，共 13 次、180 秒采样，可用内存最低 8.51GiB、结束 11.26GiB，Worker 峰值 7.98GiB；业务容器无 OOM/自动重启、kernel OOM 增量 0，结束时内存 full PSI avg10=0。00:21:06 时已收尾 17 个、16 个同时推进。该短窗不代替持续负载验收。
+
 若临时脚本异常退出，未放行的历史项保持等待，新实时 Case 不被它拦截。恢复时重用同一 manifest/progress，禁止重建名单或把全部 deadline 批量改成 now：
 
 ```bash
