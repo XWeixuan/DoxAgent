@@ -1407,7 +1407,7 @@ class PersistentRuntimeV2Service:
         if (
             lane in {"W1", "W2"}
             and round_name == "R1"
-            and model_settings.get("provider") == "openrouter"
+            and model_settings.get("provider") in {"openrouter", "openai"}
         ):
             recall_fallback = (
                 case.frozen_inputs.get("models", {}).get("recall_fallback", {}).get(f"{lane}:R1")

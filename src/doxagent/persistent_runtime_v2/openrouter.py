@@ -334,7 +334,7 @@ class RuntimeRecallOpenRouterClient:
                 {"timeout_seconds": settings["w12_timeout_seconds"], **config}
             )
             for key, config in settings["rounds"].items()
-            if key in {"W1:R1", "W2:R1"} and config.get("provider") == "openrouter"
+            if key in {"W1:R1", "W2:R1"} and config.get("provider") in {"openrouter", "openai"}
         }
         from .case_output_contract import VERSION
         from .case_cache import VERSION as CACHE_VERSION
@@ -358,6 +358,12 @@ class RuntimeRecallOpenRouterClient:
     @staticmethod
     def recall_fallback_settings(primary: dict[str, Any]) -> dict[str, Any]:
         """Freeze a separate provider attempt; never hide two calls in one receipt."""
+        if primary.get("provider") == "openai":
+            return dict(model=HAIKU_MODEL, provider="openrouter",
+                provider_endpoint=HAIKU_ENDPOINT, reasoning_effort="high",
+                timeout_seconds=primary.get("timeout_seconds", 180),
+                transport="chat_completions_json_schema", cache_ttl="1h",
+                provisional_cache_batch_size=primary.get("provisional_cache_batch_size"))
         return dict(
             model="qwen3.8-flash",
             provider="bailian",

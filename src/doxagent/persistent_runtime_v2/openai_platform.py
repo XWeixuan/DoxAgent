@@ -1,6 +1,7 @@
-"""Native OpenAI R2 transport; orchestration owns all retries and fallback."""
+"""Native OpenAI recall/R2 transport; orchestration owns retries and fallback."""
 import copy
 import json
+from dataclasses import replace
 from time import perf_counter
 
 import httpx
@@ -12,12 +13,26 @@ ENDPOINT = "https://api.openai.com/v1/responses"
 
 
 def build_request(request):
-    from .openrouter import build_case_schema_request
-    if (request.model != "gpt-6-luna" or request.metadata.get("round") != "R2"
+    from .openrouter import build_case_schema_request, build_w1_r1_cached_request, build_w2_r1_cached_request
+    if (request.model != "gpt-6-luna" or request.metadata.get("round") not in {"R1", "R2"}
         or request.metadata.get("lane") not in {"W1", "W2"}
         or request.provider_endpoint not in {None, ENDPOINT}):
-        raise RuntimeResponsesError("provider_route_invalid", "OpenAI route requires W1/W2 Luna R2", retryable=False)
-    original, fingerprint = build_case_schema_request(request)
+        raise RuntimeResponsesError("provider_route_invalid", "OpenAI route requires W1/W2 Luna R1/R2", retryable=False)
+    recall = request.metadata["round"] == "R1"
+    ttl = request.cache_ttl or ("12h" if recall else "30m")
+    if ttl not in {"30m", "12h"}:
+        raise RuntimeResponsesError("provider_route_invalid", "OpenAI cache TTL requires 30m or 12h", retryable=False)
+    if recall:
+        if request.inherit_context or request.replay_parent:
+            raise RuntimeResponsesError("provider_route_invalid", "Recall R1 requires explicit inputs", retryable=False)
+        from .case_cache import split_instructions
+        fixed, correction = split_instructions(request.instructions)
+        builder = build_w1_r1_cached_request if request.metadata["lane"] == "W1" else build_w2_r1_cached_request
+        original, fingerprint = builder(replace(request, instructions=fixed))
+        if correction:
+            original["messages"][-1]["content"][-1]["text"] += "\n# Runtime Retry Correction\n" + correction
+    else:
+        original, fingerprint = build_case_schema_request(request)
     messages = []
     for message in original["messages"]:
         if isinstance(message["content"], str):
@@ -27,9 +42,9 @@ def build_request(request):
             for block in message["content"]:
                 item = {"type": "input_text", "text": block["text"]}
                 if "cache_control" in block:
-                    item["prompt_cache_breakpoint"] = {"mode": "explicit", "ttl": request.cache_ttl or "30m"}
+                    item["prompt_cache_breakpoint"] = {"mode": "explicit", "ttl": ttl}
                 content.append(item)
-        messages.append({"role": message["role"], "content": content})
+        messages.append({"role": "developer" if recall and message["role"] == "system" else message["role"], "content": content})
     schema = copy.deepcopy(original["response_format"]["json_schema"]["schema"])
     def tighten(value):
         if isinstance(value, dict):
@@ -42,8 +57,10 @@ def build_request(request):
     return dict(model=request.model, reasoning={"effort": request.reasoning_effort or "high"},
         service_tier=request.metadata.get("service_tier", "fast"), input=messages,
         text={"format": {"type": "json_schema", "name": request.schema_name, "strict": True, "schema": schema}},
-        prompt_cache_options={"mode": "explicit", "ttl": request.cache_ttl or "30m"},
-        prompt_cache_key="w12-"+fingerprint[:56], max_output_tokens=65536, stream=True, store=False), fingerprint
+        prompt_cache_options={"mode": "explicit", "ttl": ttl},
+        # R1 session_id hashes the immutable base, not the growing provisional tail.
+        prompt_cache_key=original["session_id"][:64] if recall else "w12-"+fingerprint[:56],
+        max_output_tokens=65536, stream=True, store=False), fingerprint
 
 
 class OpenAIPlatformClient:
