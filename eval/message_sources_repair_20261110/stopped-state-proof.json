@@ -1,0 +1,70 @@
+{
+  "at": "2026-11-10T00:25:54.875225+00:00",
+  "roles": [
+    {
+      "role": "v2-site-access",
+      "id": "0cbb9f07183f",
+      "status": "exited",
+      "exit_code": 143,
+      "finished_at": "2026-11-10T00:19:00.414767439Z",
+      "oom_killed": false,
+      "restart_count": 0,
+      "restart_policy": {
+        "Name": "unless-stopped",
+        "MaximumRetryCount": 0
+      }
+    },
+    {
+      "role": "v2-chrome-supervisor",
+      "id": "37881d9a4b92",
+      "status": "exited",
+      "exit_code": 137,
+      "finished_at": "2026-11-10T00:19:00.784836261Z",
+      "oom_killed": false,
+      "restart_count": 0,
+      "restart_policy": {
+        "Name": "unless-stopped",
+        "MaximumRetryCount": 0
+      }
+    },
+    {
+      "role": "v2-scheduler",
+      "id": "5cced9025a76",
+      "status": "exited",
+      "exit_code": 137,
+      "finished_at": "2026-11-10T00:18:56.118253483Z",
+      "oom_killed": false,
+      "restart_count": 0,
+      "restart_policy": {
+        "Name": "unless-stopped",
+        "MaximumRetryCount": 0
+      }
+    },
+    {
+      "role": "codex-worker",
+      "id": "89c4db795529",
+      "status": "exited",
+      "exit_code": 137,
+      "finished_at": "2026-11-10T00:18:54.582546991Z",
+      "oom_killed": false,
+      "restart_count": 0,
+      "restart_policy": {
+        "Name": "unless-stopped",
+        "MaximumRetryCount": 0
+      }
+    },
+    {
+      "role": "v2-message-collector",
+      "id": "1e15344dbc0a",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "oom_killed": false,
+      "restart_count": 0,
+      "restart_policy": {
+        "Name": "unless-stopped",
+        "MaximumRetryCount": 0
+      }
+    }
+  ]
+}

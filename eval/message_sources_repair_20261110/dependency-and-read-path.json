@@ -1,0 +1,38 @@
+{
+  "v2-api": {
+    "collection_enabled": "true",
+    "data_path": "/data/bus/bus.sqlite3",
+    "manual_stop": false,
+    "health": "healthy"
+  },
+  "v2-message-collector": {
+    "collection_enabled": "true",
+    "data_path": "/data/bus/bus.sqlite3",
+    "manual_stop": false,
+    "health": "healthy"
+  },
+  "v2-message-bus": {
+    "collection_enabled": "true",
+    "data_path": "/data/bus/bus.sqlite3",
+    "manual_stop": false,
+    "health": null
+  },
+  "v2-content-enrichment": {
+    "collection_enabled": "true",
+    "data_path": "/data/bus/bus.sqlite3",
+    "manual_stop": false,
+    "health": null
+  },
+  "v2-site-access": {
+    "collection_enabled": "true",
+    "data_path": "/data/bus/bus.sqlite3",
+    "manual_stop": true,
+    "health": "unhealthy"
+  },
+  "v2-chrome-supervisor": {
+    "collection_enabled": "true",
+    "data_path": null,
+    "manual_stop": true,
+    "health": "unhealthy"
+  }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "name": "doxagent-v2-v2-chrome-supervisor-1",
+    "id": "37881d9a4b92",
+    "state": "running",
+    "health": "healthy",
+    "pid": 455714,
+    "namespace": "net:[4026532747]",
+    "network_mode": "doxagent-v2_default"
+  },
+  {
+    "name": "doxagent-v2-v2-site-access-1",
+    "id": "0cbb9f07183f",
+    "state": "running",
+    "health": "healthy",
+    "pid": 456623,
+    "namespace": "net:[4026532747]",
+    "network_mode": "container:37881d9a4b92c5ee079828904d0232e9ece70b50093d652f31df8d3280614518"
+  }
+]

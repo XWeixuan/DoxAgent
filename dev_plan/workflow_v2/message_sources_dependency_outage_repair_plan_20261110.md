@@ -39,3 +39,7 @@
 SDxCentral 在依赖恢复后仍 chrome_start_failed。Supervisor 内存分配器只排除 _instances/_starting，未检查 /tmp 的 X11 锁及套接字。SIGKILL 后 :104 的锁 PID=369 已被复用为 ThreadPoolForeg，socket 不可连接；同 UID 启动 Xvfb :104 直接以1退出并报 Server is already active for display 104。它会反复选择同一坏显示号，普通重试不会恢复。
 
 修复只在 _reserve_display 跳过内存已用、磁盘锁或套接字已存在的显示号，使用 lexists 同时覆盖断链；不删除不确定归属的锁、不清 Profile、不降低 sandbox。回归模拟僵尸锁、套接字、活跃/启动中显示号同时存在。该确认项使先前不重建 Supervisor 的约束需要一次必要例外：记录当前待办和截图索引，精确发布 Supervisor 与 Site Access，保留持久 Profile、镜像版本约束及原业务配置，校验新 namespace；不更新 Runtime 维护角色。
+
+## 最后发现及范围边界
+
+最终新版本观察超过十分钟，X11修复后SDxCentral自然采集和独立FULL正文通过；当前79/83 Source全部当前单元成功。但末窗Safety=PRESSURE、可用内存约865MiB、memory PSI full avg10=52.45，整机持续稳定验收不通过，不能声称已彻底根治复发。已询问并行Runtime维护状态，继续保留该协调项；不擅自改变模型/交易并发或中断另一维护。详见[实施和验收记录](../../docs/message-sources-dependency-restart-repair-20261110.md)。

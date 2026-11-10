@@ -1,0 +1,1082 @@
+{
+  "since": "2026-11-10T00:41:57",
+  "until": "2026-11-10T00:53:56.355006+00:00",
+  "source_count": 83,
+  "all_units_succeeded": 79,
+  "original_failure_comparison": [
+    {
+      "source_id": "barrons_ticker_news",
+      "units": 20,
+      "succeeded": 20,
+      "errors": {}
+    },
+    {
+      "source_id": "ctee_semiconductor",
+      "units": 2,
+      "succeeded": 2,
+      "errors": {}
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "units": 2,
+      "succeeded": 0,
+      "errors": {
+        "publisher_endpoint_backoff": 2
+      }
+    },
+    {
+      "source_id": "digitimes_semiconductors",
+      "units": 5,
+      "succeeded": 5,
+      "errors": {}
+    },
+    {
+      "source_id": "globenewswire_search",
+      "units": 27,
+      "succeeded": 27,
+      "errors": {}
+    },
+    {
+      "source_id": "globenewswire_semiconductors_rss",
+      "units": 5,
+      "succeeded": 5,
+      "errors": {}
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "units": 10,
+      "succeeded": 10,
+      "errors": {}
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "units": 10,
+      "succeeded": 10,
+      "errors": {}
+    },
+    {
+      "source_id": "reuters_site_search",
+      "units": 31,
+      "succeeded": 16,
+      "errors": {
+        "site_queue_timeout": 15
+      }
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "units": 5,
+      "succeeded": 5,
+      "errors": {}
+    },
+    {
+      "source_id": "spacenews_rss",
+      "units": 1,
+      "succeeded": 1,
+      "errors": {}
+    },
+    {
+      "source_id": "trendforce_news",
+      "units": 5,
+      "succeeded": 5,
+      "errors": {}
+    },
+    {
+      "source_id": "trendforce_press_releases",
+      "units": 5,
+      "succeeded": 5,
+      "errors": {}
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "units": 30,
+      "succeeded": 30,
+      "errors": {}
+    }
+  ],
+  "remaining": [
+    {
+      "source_id": "dcd_energy_ticker",
+      "errors": {
+        "publisher_endpoint_backoff": 2
+      }
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "errors": {
+        "publisher_endpoint_backoff": 6
+      }
+    },
+    {
+      "source_id": "reuters_site_search",
+      "errors": {
+        "site_queue_timeout": 15
+      }
+    },
+    {
+      "source_id": "calcalist_search",
+      "errors": {
+        "RuntimeError": 3
+      }
+    }
+  ],
+  "natural_physical_cycles": [
+    {
+      "source_id": "power_magazine_energy",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 82
+    },
+    {
+      "source_id": "ibkr_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 92
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 512
+    },
+    {
+      "source_id": "corporate_ir_press_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 219
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 28
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "status": "FAILED",
+      "reason": "publisher_endpoint_backoff",
+      "n": 18
+    },
+    {
+      "source_id": "sec_edgar",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 174
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 37
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 86
+    },
+    {
+      "source_id": "aviationweek_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 44
+    },
+    {
+      "source_id": "reuters_site_search",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 165
+    },
+    {
+      "source_id": "barrons_ticker_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 183
+    },
+    {
+      "source_id": "globenewswire_search",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 249
+    },
+    {
+      "source_id": "access_newswire_massive",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 18
+    },
+    {
+      "source_id": "ans_nuclear_newswire",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 10
+    },
+    {
+      "source_id": "thefly_ticker_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 81
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 128
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 92
+    },
+    {
+      "source_id": "benzinga_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 91
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 45
+    },
+    {
+      "source_id": "google_news_search_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 82
+    },
+    {
+      "source_id": "siliconangle_software",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 28
+    },
+    {
+      "source_id": "nro_press_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 10
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 3
+    },
+    {
+      "source_id": "thelec_semiconductors_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 10
+    },
+    {
+      "source_id": "lakehouse_platform_official_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 19
+    },
+    {
+      "source_id": "canary_media",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 10
+    },
+    {
+      "source_id": "doe_energy_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 37
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 55
+    },
+    {
+      "source_id": "etnews_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 10
+    },
+    {
+      "source_id": "ionq_quantum_actors_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 28
+    },
+    {
+      "source_id": "venturebeat_software",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 28
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "defensescoop_drones",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 19
+    },
+    {
+      "source_id": "calcalist_search",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 13
+    },
+    {
+      "source_id": "aws_platform_marketplace_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 27
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 86
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 27
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 8
+    },
+    {
+      "source_id": "reuters_site_search",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 129
+    },
+    {
+      "source_id": "digitimes_semiconductors",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "optical_systems_official_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 27
+    },
+    {
+      "source_id": "siliconangle_ai",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "airspaceforces_space",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "quantum_insider",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 27
+    },
+    {
+      "source_id": "nrc_news_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 18
+    },
+    {
+      "source_id": "unmannedairspace_counteruas",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 18
+    },
+    {
+      "source_id": "defensescoop_space",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 18
+    },
+    {
+      "source_id": "quantum_zeitgeist",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "breakingdefense_space",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "national_quantum_initiative",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "army_news_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "technews_hardware",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 18
+    },
+    {
+      "source_id": "darpa_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "digitimes_tw_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "globenewswire_semiconductors_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "nbis_official_actor_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 18
+    },
+    {
+      "source_id": "businesswire_massive",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 18
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 8
+    },
+    {
+      "source_id": "venturebeat_ai",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "dod_contracts",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "data_center_frontier",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "nsf_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "ssc_newsroom",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "trendforce_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "iridium_press_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "spacenews_rss",
+      "status": "FAILED",
+      "reason": "publisher_http_429",
+      "n": 4
+    },
+    {
+      "source_id": "trendforce_press_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "nasa_2026_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "army_news_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "spacecom_launches",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "ctee_semiconductor",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "utility_dive",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 8
+    },
+    {
+      "source_id": "ionq_nautilus_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "nrc_event_notifications",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "aviationweek_rocketlab",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "dod_releases",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "nist_news",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "shephard_uncrewed",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 9
+    },
+    {
+      "source_id": "spacenews_rss",
+      "status": "CAPTURED",
+      "reason": "",
+      "n": 5
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "status": "FAILED",
+      "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+      "n": 1
+    },
+    {
+      "source_id": "calcalist_search",
+      "status": "FAILED",
+      "reason": "RuntimeError",
+      "n": 15
+    },
+    {
+      "source_id": "thefly_ticker_news",
+      "status": "FAILED",
+      "reason": "ConnectionError",
+      "n": 1
+    },
+    {
+      "source_id": "aviationweek_rss",
+      "status": "FAILED",
+      "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+      "n": 2
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 2
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "status": "FAILED",
+      "reason": "site_queue_timeout",
+      "n": 4
+    },
+    {
+      "source_id": "thefly_ticker_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "status": "FAILED",
+      "reason": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+      "n": 1
+    },
+    {
+      "source_id": "access_newswire_massive",
+      "status": "FAILED",
+      "reason": "HTTP_LISTING_FAILED",
+      "n": 1
+    },
+    {
+      "source_id": "corporate_ir_press_releases",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "status": "FAILED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "status": "FAILED",
+      "reason": "publisher_endpoint_backoff",
+      "n": 1
+    },
+    {
+      "source_id": "reuters_site_search",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 10
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 2
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "status": "CAPTURED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source_id": "benzinga_news",
+      "status": "CAPTURED",
+      "reason": "TimeoutError",
+      "n": 1
+    },
+    {
+      "source_id": "aws_platform_marketplace_rss",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "corporate_ir_press_releases",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "barrons_ticker_news",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "ibkr_news",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "google_news_search_rss",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "status": "DISPATCHED",
+      "reason": "",
+      "n": 1
+    }
+  ],
+  "business_body_outcomes": [
+    {
+      "final_site_id": "generic",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 3,
+      "last": "2026-11-10T00:47:52.435659+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "PARTIAL",
+      "reason": "incomplete_extract",
+      "n": 1,
+      "last": "2026-11-10T00:43:11.872373+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "empty_extract",
+      "n": 6,
+      "last": "2026-11-10T00:50:32.346597+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "render_required",
+      "n": 1,
+      "last": "2026-11-10T00:49:30.224221+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "transport_timeout",
+      "n": 1,
+      "last": "2026-11-10T00:42:02.493813+00:00"
+    },
+    {
+      "final_site_id": "yahoo_finance",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 2,
+      "last": "2026-11-10T00:47:17.732502+00:00"
+    }
+  ],
+  "sdx_independent_body_canary": {
+    "source_id": "sdxcentral_news",
+    "url": "https://www.sdxcentral.com/news/mike-sievert-steps-down-from-t-mobile-us-board/",
+    "succeeded": true,
+    "outcome": "FULL",
+    "reason": null,
+    "content_length": 1735,
+    "http_status": 200
+  },
+  "api_live": {
+    "at": "2026-11-10T00:54:26.718621+00:00",
+    "ticker_states": {
+      "BE": {
+        "succeeded": 35,
+        "partial": 3
+      },
+      "CEG": {
+        "succeeded": 27,
+        "partial": 4
+      },
+      "COHR": {
+        "succeeded": 34,
+        "partial": 4
+      },
+      "INTC": {
+        "succeeded": 33,
+        "partial": 3
+      },
+      "MU": {
+        "succeeded": 32,
+        "partial": 3
+      },
+      "NBIS": {
+        "succeeded": 35,
+        "partial": 3
+      },
+      "SNOW": {
+        "succeeded": 28,
+        "partial": 2
+      },
+      "ONDS": {
+        "succeeded": 24,
+        "partial": 3
+      },
+      "RKLB": {
+        "succeeded": 29,
+        "partial": 2
+      },
+      "IONQ": {
+        "succeeded": 26,
+        "partial": 1
+      }
+    },
+    "abnormal": [
+      {
+        "binding_id": "BE:dcd_energy_ticker",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-09T23:48:58.225207+00:00"
+      },
+      {
+        "binding_id": "BE:dcd_infrastructure_rss",
+        "status": "partial",
+        "error": "publisher_endpoint_backoff",
+        "last_success": "2026-11-10T00:49:46.785439+00:00"
+      },
+      {
+        "binding_id": "CEG:dcd_infrastructure_rss",
+        "status": "partial",
+        "error": "publisher_endpoint_backoff",
+        "last_success": "2026-11-10T00:49:46.785439+00:00"
+      },
+      {
+        "binding_id": "COHR:dcd_infrastructure_rss",
+        "status": "partial",
+        "error": "publisher_endpoint_backoff",
+        "last_success": "2026-11-10T00:49:46.785439+00:00"
+      },
+      {
+        "binding_id": "INTC:dcd_infrastructure_rss",
+        "status": "partial",
+        "error": "publisher_endpoint_backoff",
+        "last_success": "2026-11-10T00:49:46.785439+00:00"
+      },
+      {
+        "binding_id": "MU:dcd_infrastructure_rss",
+        "status": "partial",
+        "error": "publisher_endpoint_backoff",
+        "last_success": "2026-11-10T00:49:46.785439+00:00"
+      },
+      {
+        "binding_id": "NBIS:dcd_infrastructure_rss",
+        "status": "partial",
+        "error": "publisher_endpoint_backoff",
+        "last_success": "2026-11-10T00:49:46.785439+00:00"
+      },
+      {
+        "binding_id": "BE:reuters_site_search",
+        "status": "partial",
+        "error": "site_queue_timeout",
+        "last_success": "2026-11-10T00:47:31.290376+00:00"
+      },
+      {
+        "binding_id": "CEG:dcd_energy_ticker",
+        "status": "partial",
+        "error": "publisher_endpoint_backoff",
+        "last_success": "2026-11-09T23:49:28.500691+00:00"
+      },
+      {
+        "binding_id": "CEG:power_magazine_energy",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:08.663093+00:00"
+      },
+      {
+        "binding_id": "CEG:reuters_site_search",
+        "status": "partial",
+        "error": "site_queue_timeout",
+        "last_success": "2026-11-10T00:48:39.496715+00:00"
+      },
+      {
+        "binding_id": "COHR:investorshub_ticker_news",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:09.563299+00:00"
+      },
+      {
+        "binding_id": "COHR:reuters_site_search",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:43:10.629514+00:00"
+      },
+      {
+        "binding_id": "COHR:sdxcentral_news",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:10.304553+00:00"
+      },
+      {
+        "binding_id": "INTC:sdxcentral_news",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:10.304553+00:00"
+      },
+      {
+        "binding_id": "MU:sdxcentral_news",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:10.304553+00:00"
+      },
+      {
+        "binding_id": "NBIS:sdxcentral_news",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:10.304553+00:00"
+      },
+      {
+        "binding_id": "SNOW:sdxcentral_news",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:10.304553+00:00"
+      },
+      {
+        "binding_id": "INTC:reuters_site_search",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:48:23.544839+00:00"
+      },
+      {
+        "binding_id": "MU:reuters_site_search",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:46:41.134815+00:00"
+      },
+      {
+        "binding_id": "NBIS:reuters_site_search",
+        "status": "partial",
+        "error": "site_queue_timeout",
+        "last_success": "2026-11-10T00:49:43.050779+00:00"
+      },
+      {
+        "binding_id": "ONDS:calcalist_search",
+        "status": "partial",
+        "error": "RuntimeError",
+        "last_success": "2026-11-10T00:45:28.086027+00:00"
+      },
+      {
+        "binding_id": "ONDS:corporate_ir_press_releases",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:38.983190+00:00"
+      },
+      {
+        "binding_id": "ONDS:reuters_site_search",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:49:56.493609+00:00"
+      },
+      {
+        "binding_id": "RKLB:reuters_site_search",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:43:48.041376+00:00"
+      },
+      {
+        "binding_id": "RKLB:yahoo_finance_news",
+        "status": "partial",
+        "error": "TimeoutError",
+        "last_success": "2026-11-10T00:50:37.115275+00:00"
+      },
+      {
+        "binding_id": "SNOW:reuters_site_search",
+        "status": "partial",
+        "error": "site_queue_timeout",
+        "last_success": "2026-11-10T00:49:00.246585+00:00"
+      },
+      {
+        "binding_id": "IONQ:reuters_site_search",
+        "status": "partial",
+        "error": "site_queue_timeout",
+        "last_success": "2026-11-10T00:46:33.423007+00:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "commit": "9a38f508f372f9d021a1cc3dae48e610f7ce56ae",
+  "started_at": "2026-11-10T00:34:53.034279+00:00",
+  "before": {
+    "v2-message-collector": {
+      "id": "1e15344dbc0a",
+      "started_at": "2026-11-09T23:41:07.939416757Z",
+      "state": "running",
+      "health": "healthy",
+      "commit": "9f2ac400c29cd893b71ee2d5edd388b7577eef6f",
+      "recheck": "false"
+    },
+    "v2-content-enrichment": {
+      "id": "9a404711bf79",
+      "started_at": "2026-11-09T22:29:52.411231325Z",
+      "state": "running",
+      "health": null,
+      "commit": "8c203e62199d45c54584c166a865a932f790b584",
+      "recheck": "false"
+    }
+  },
+  "returncode": 0,
+  "finished_at": "2026-11-10T00:36:03.016433+00:00",
+  "after": {
+    "v2-message-collector": {
+      "id": "16a5c1053616",
+      "started_at": "2026-11-10T00:35:38.244592136Z",
+      "state": "running",
+      "health": "healthy",
+      "commit": "9a38f508f372f9d021a1cc3dae48e610f7ce56ae",
+      "recheck": "false"
+    },
+    "v2-content-enrichment": {
+      "id": "7ec1979fe62f",
+      "started_at": "2026-11-10T00:35:52.75598444Z",
+      "state": "running",
+      "health": null,
+      "commit": "9a38f508f372f9d021a1cc3dae48e610f7ce56ae",
+      "recheck": "false"
+    }
+  },
+  "protected_unchanged": {
+    "v2-site-access": true,
+    "v2-chrome-supervisor": true,
+    "v2-api": true,
+    "v2-message-bus": true,
+    "v2-scheduler": true,
+    "codex-worker": true
+  },
+  "private_log": "/var/lib/doxagent/releases/sources-dependency-repair-20261110T003453Z.log",
+  "source_hash_matches": {
+    "v2-message-collector": true,
+    "v2-content-enrichment": true
+  }
+}

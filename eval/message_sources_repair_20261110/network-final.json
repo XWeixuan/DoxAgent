@@ -1,0 +1,14 @@
+[
+  {
+    "role": "v2-chrome-supervisor",
+    "id": "9bc69ac8eab0",
+    "health": "healthy",
+    "namespace": "net:[4026532858]"
+  },
+  {
+    "role": "v2-site-access",
+    "id": "929d1ee74af9",
+    "health": "healthy",
+    "namespace": "net:[4026532858]"
+  }
+]
