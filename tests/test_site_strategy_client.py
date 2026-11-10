@@ -24,6 +24,69 @@ async def _client_with_transport(transport: httpx.MockTransport) -> SiteAccessCl
     return client
 
 
+@pytest.mark.parametrize("action", ["resolve", "execute"])
+@pytest.mark.parametrize("error_type", [httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout])
+async def test_owner_connection_failure_keeps_type_and_identifies_shared_dependency(action, error_type):
+    error = error_type("owner unavailable")
+    calls = 0
+
+    def respond(_request):
+        nonlocal calls
+        calls += 1
+        raise error
+
+    client = await _client_with_transport(httpx.MockTransport(respond))
+    try:
+        with pytest.raises(error_type) as caught:
+            if action == "resolve":
+                await client.resolve("https://www.trendforce.com/news/")
+            else:
+                await client.execute(_access_request())
+    finally:
+        await client.close()
+    assert caught.value is error
+    assert error.reason_code == "site_access_unavailable"
+    assert calls == 1
+
+
+@pytest.mark.parametrize("action", ["resolve", "execute"])
+async def test_owner_failure_after_stale_connection_retry_is_still_identified(action):
+    calls = 0
+    error = httpx.ConnectError("owner stopped after pooled connection closed")
+
+    def respond(_request):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise httpx.ReadError("stale pooled connection")
+        raise error
+
+    client = await _client_with_transport(httpx.MockTransport(respond))
+    try:
+        with pytest.raises(httpx.ConnectError) as caught:
+            if action == "resolve":
+                await client.resolve("https://www.trendforce.com/news/")
+            else:
+                await client.execute(_access_request())
+    finally:
+        await client.close()
+    assert caught.value is error and error.reason_code == "site_access_unavailable"
+    assert calls == 2
+
+
+async def test_publisher_refusal_result_is_not_reclassified_as_owner_failure():
+    request = _access_request()
+    payload = dict(request_id=request.request_id, operation_id=request.operation_id,
+        disposition="ACCESS_EXHAUSTED", site_id="trendforce", runtime_key="trendforce",
+        strategy_revision=1, reason_code="http_403")
+    client = await _client_with_transport(httpx.MockTransport(lambda _: httpx.Response(200,json=payload)))
+    try:
+        result = await client.execute(request)
+    finally:
+        await client.close()
+    assert result.disposition.value == "ACCESS_EXHAUSTED" and result.reason_code == "http_403"
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("error_type", [httpx.ReadError, httpx.RemoteProtocolError])
 async def test_read_only_access_retries_once_with_same_request_id(

@@ -123,10 +123,14 @@ class SiteAccessClient:
         if revision is not None:
             params["revision"] = revision
         try:
-            response = await self._client.get("/v1/resolve", params=params, timeout=15)
-        except (httpx.ReadError, httpx.RemoteProtocolError):
-            # A stale pooled connection can close before this read-only request returns.
-            response = await self._client.get("/v1/resolve", params=params, timeout=15)
+            try:
+                response = await self._client.get("/v1/resolve", params=params, timeout=15)
+            except (httpx.ReadError, httpx.RemoteProtocolError):
+                # A stale pooled connection can close before this read-only request returns.
+                response = await self._client.get("/v1/resolve", params=params, timeout=15)
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout) as exc:
+            exc.reason_code = "site_access_unavailable"
+            raise
         response.raise_for_status()
         return ResolvedSite.model_validate(response.json())
 
@@ -179,6 +183,11 @@ class SiteAccessClient:
                         timeout=timeout,
                         headers={"X-Site-Access-Protocol": "3"},
                     )
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout) as exc:
+            # This HTTP hop is the shared owner RPC, not the publisher website.
+            # Keep the original exception type and all existing retry semantics.
+            exc.reason_code = "site_access_unavailable"
+            raise
         except TimeoutError as exc:
             raise httpx.ReadTimeout(
                 f"Site Access RPC exceeded {seconds:g}s including cleanup"
