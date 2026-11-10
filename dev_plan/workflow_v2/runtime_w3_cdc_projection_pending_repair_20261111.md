@@ -1,6 +1,6 @@
 # W3 大量显示 PENDING：CDC JSON subtype 回归与修复
 
-2026-11-11（北京时间）。这是已执行排查/修复记录，发布及存量恢复结果在后文补齐。
+2026-11-11（北京时间）。已完成生产排查、修复、发布及存量投影恢复。
 
 ## 结论与实际影响
 
@@ -33,13 +33,13 @@
 
 ## 实际修复边界
 
-仅修改`src/doxagent/v2_read/outbox.py`：
+CDC 修复修改`src/doxagent/v2_read/outbox.py`：
 
 - Producer触发器对payload/payload_json/data_json/inputs/receipt等既有SQL JSON文本列使用`|| ''`剥离SQLite JSON subtype，保留原字符串内容及NULL。覆盖INSERT/UPDATE/DELETE，既有专门薄回执规则保持。
 - Reader在内存中将历史回执里已嵌入的dict/list恢复为文本封装，再走同一个Native解析器。保留原不可变回执和原Source seq，不改源Case或历史模型结果。
 - 已有entity/contribution水位继续防止乱序repair覆盖更新状态；不新增队列、缓存或业务状态机。
 
-仅发布Projector单文件overlay并显式重装Runtime Case捕获触发器；保持Runtime、Worker、Prompt/Skill、模型、Schema、路由、交易、冻结上下文和并发不变。存量只通过既有投影repair/水位恢复，不启动W3、不重放交易，不重建Read库或重置全局checkpoint。
+第一批发布Projector单文件overlay并显式重装Runtime Case捕获触发器；随后为下述旧计时缺陷分别发布Projector/API单文件overlay。保持Runtime、Worker、Prompt/Skill、模型、Schema、路由、交易、冻结上下文和并发不变。存量只通过既有投影repair/水位恢复，不启动W3、不重放交易，不重建Read库或重置全局checkpoint。
 
 ## 验证
 
@@ -49,7 +49,36 @@
 
 ## 发布、存量恢复与最终验收
 
-待实际发布后填写。验收必须同时检查源业务状态、Read gap和API字段，而不是只看服务健康或checkpoint。
+### 发布与数据修复
+
+全部代码和验证证据已提交至 origin/main。CDC 主修复 b5b25dbd 合入 74ed8cdc；有界恢复脚本 07b2f452；计时兼容修复及最终执行代码 389f7ea34e4281a3f1978a713fcf2ce3948efd30。
+
+1. 07:07:12 发布 CDC Projector，镜像 842d8aa92ad8；生产同版本 SQLite 3.40.1 的隔离探测验证新触发器输出字符串、历史对象回执可正确读取。随后仅重装 runtime_v2_cases 捕获触发器，耗时 68ms。
+2. 07:13 对冻结清单的 232 条回执进行一次性恢复：208 条修复、24 条已被正常修复而跳过，失败0、延后0。使用现有 Projector WriterLock 与 ingest 水位，短暂暂停 Projector 接管其锁；没有暂停 Runtime/Worker。未清空其他历史 gap。
+3. 07:27:53 发布保留时间字段的 Projector，镜像 d6cc80d4901f；07:28:58 发布旧行兼容 API，镜像 12c0f1084e2a。使用正式 storage_release 锁与组件发布清单，基于当前已验收镜像叠加单文件，保留其他会话的已发布代码、配置及环境变量。
+
+最终生产文件 SHA256：
+
+| 角色/文件 | SHA256 |
+| --- | --- |
+| Projector outbox.py | 64181799ee73dca27bf1d023ce7568a84fc3f81e8f7b7853f6fcf4b6426cb100 |
+| Projector serving_fields.py | c792ef83f86f902d0ff3d4f153b4736fdeae1658817559c51b3f1ca65583a89c |
+| API case_detail.py | 0431a0384f5cd3c51fdf6d1a587c02eb7a8036f2cfa041ea43587c7b596e4439 |
+
+Scheduler、Worker仍为原镜像62d6be3311df、64c3564fce85，启动时间仍为06:46:51、06:46:30；本次未重启它们。API已healthy，Projector运行正常。
+
+### 最终验收
+
+- 原清单86个Case：源两阶段完成86，Read不一致0、未知0；源updated_at变化0。当前runtime KeyError投影缺口为0。
+- 两个选定BE Case均显示NO_TRADE、Operations COMMITTED，两阶段attempt SUCCEEDED。详情elapsed分别为90.449150秒、90.856198秒，settled=true；再次读取第一例仍为同一数值，确认已停止增长。
+- 原始不可变回执保留，源Case不改写，没有重发模型Job、没有交易重放，也没有全量Read重建或全局checkpoint重置。
+- CDC组合回归62项通过；补充计时/API组合26项通过。既有runtime_tasks瘦身测试契约冲突已在原main复现，未混入本修复。
+- 旧ValueError/PROVENANCE_UNVERIFIED缺口不属于此次Subtype回归，未宣称全部历史gap清零。
+- 本轮解决结果显示与计时正确性；不将lifecycle uncovered_seconds当成完整非SDK分阶段计时，也不宣称此前P95≤5秒目标已经验收。
+
+可复核证据位于 `eval/w3_cdc_receipt_repair_20261111/`：before.json、after-live.json、after.json、verified-final.json、api-after.json、release-final.json及对应pytest XML。远端私有发布清单位于 `/var/lib/doxagent/releases/w3-cdc-*`，含配置的private文件不进入Git、不外发。
+
+存储会话06:45:58–06:46:54发布使用其用户单独授权的优先窗口，实际检查队列为空、取消调用0，替换Worker后恢复同一Scheduler；这解释06:46启动时间，但不能解释04:33已出现的CDC格式回归。未发现本次存储治理引入所报阻塞的证据。
 
 ## 追加：旧详情计时契约不一致
 

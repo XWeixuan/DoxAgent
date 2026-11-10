@@ -1,0 +1,54 @@
+[
+  {
+    "at": "2026-11-10T23:29:02.243Z",
+    "case_id": "case_0ca2e5bfe7374ac5949181f2c507b967",
+    "summary": {
+      "title": {
+        "reason": null,
+        "state": "AVAILABLE",
+        "value": "Archrock to Acquire HiVolt Energy Holdings, LLC"
+      },
+      "first_round_tags": [],
+      "source_name": "globenewswire",
+      "source": {
+        "name": "GlobeNewswire Search",
+        "kind": "crawler"
+      }
+    },
+    "timing": {
+      "elapsed_seconds": 90.44915,
+      "settled": true,
+      "invocation_union_seconds": 84.929656,
+      "uncovered_seconds": 5.519494000000009,
+      "partial": false
+    },
+    "decision": "NO_TRADE",
+    "operations": "COMMITTED"
+  },
+  {
+    "at": "2026-11-10T23:29:03.819Z",
+    "case_id": "case_a2bb726ac40e43c5b4ad0ab7680c5c31",
+    "summary": {
+      "title": {
+        "reason": null,
+        "state": "AVAILABLE",
+        "value": "CoreWeave Says Qualified Demand Through 2027 Is 10 Times Its Available Capacity"
+      },
+      "first_round_tags": [],
+      "source_name": "huggingnews.com",
+      "source": {
+        "name": "HuggingNews Atom",
+        "kind": "crawler"
+      }
+    },
+    "timing": {
+      "elapsed_seconds": 90.856198,
+      "settled": true,
+      "invocation_union_seconds": 82.937166,
+      "uncovered_seconds": 7.919032000000001,
+      "partial": false
+    },
+    "decision": "NO_TRADE",
+    "operations": "COMMITTED"
+  }
+]
