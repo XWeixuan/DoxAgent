@@ -63,7 +63,9 @@ def test_terminal_delivery_validation_failure_is_visible(tmp_path):
     assert failed["status"] == "DELIVERY_FAILED"
     assert failed["submitted"] is True
     assert failed["delivery_failure"]["code"] == "PROFILE_VALIDATION_FAILED"
-    assert "shared cycle must not set target_notional_usd" in failed["delivery_failure"]["detail"]
+    detail = failed["delivery_failure"]["detail"]
+    assert "capital_model" in detail and "target_notional_usd" in detail
+    assert "Extra inputs are not permitted" in detail
     assert journal.get_task("delivery:trade:test")["status"] == "FAILED"
     assert asyncio.run(service.deliver(RejectingAdapter())) == 0
 

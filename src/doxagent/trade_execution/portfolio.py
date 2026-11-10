@@ -59,7 +59,12 @@ def margin_after(
         raise ValueError("MARGIN_CHECK_UNAVAILABLE")
     row = rows[0]
     message = str(row.get("reject_reason") or row.get("warning") or "").lower()
-    if any(part in message for part in ("margin", "insufficient funds", "equity with loan")):
+    # A validated preview may carry informational margin warnings. Only a
+    # denial or the numerical funds check below establishes insufficient funds.
+    if "insufficient" in message or (
+        "equity with loan" in message
+        and any(word in message for word in ("below", "less than", "must exceed"))
+    ):
         raise ValueError("INSUFFICIENT_MARGIN")
     if row.get("reject_reason"):
         raise ValueError("MARGIN_CHECK_UNAVAILABLE")

@@ -69,6 +69,10 @@ def parser() -> Any:
     cmd.add_argument("--symbol", default="MU")
     cmd.add_argument("--what-if", action="store_true")
     cmd.add_argument("--output")
+    cmd = sub.add_parser("set-ticker-limit")
+    cmd.add_argument("--profile", required=True)
+    cmd.add_argument("--max-concurrent-tickers", type=int, required=True)
+    cmd.add_argument("--reason", required=True)
     cmd = sub.add_parser("run-worker")
     cmd.add_argument("--once", action="store_true")
     sub.add_parser("status")
@@ -250,7 +254,23 @@ def main() -> Any:
         if args.command == "allocate-capital":
             output = ledger.allocate(account, args.amount, args.id, args.reason)
         else:
-            output = ledger.adjust(account, args.amount, args.id, args.reason, args.effective_at, fee_kind=args.fee_kind, execution_id=args.execution_id)
+            output = ledger.adjust(
+                account,
+                args.amount,
+                args.id,
+                args.reason,
+                args.effective_at,
+                fee_kind=args.fee_kind,
+                execution_id=args.execution_id,
+            )
+    elif args.command == "set-ticker-limit":
+        from .capital import CapitalLedger
+
+        output = CapitalLedger(repo).set_ticker_limit(
+            repo.profile(args.profile).expected_account_id,
+            args.max_concurrent_tickers,
+            args.reason,
+        )
     elif args.command == "import-profile":
         profile = ExecutionProfile.model_validate_json(Path(args.file).read_text(encoding="utf-8"))
         output = {"revision": repo.import_profile(profile)}
