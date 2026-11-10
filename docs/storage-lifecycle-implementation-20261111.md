@@ -13,14 +13,14 @@
 | T1 | root 候选/引用范围索引、pending 续批；廉价过程退出不等待 W3 空闲，重压缩可让步；已发布维护 frame24h 后退出重复内容，保留 base revision/冻结选择/哈希 | Case/Effect/交易、活跃W3、被引用 Event 版本保留；原任务不可原地复活 |
 | Native | 显式 owner exit 进入既有队列；继续全 owner 对账、snapshot lease、其他 artifact_ref/hold 与5min quarantine | 不把“退一个owner”当“删除共享内容”；老无主内容仍有7d orphan grace |
 | Runtime CDC | producer 不再为 runtime_tasks 捕获 inputs/receipt，前端仍有状态进度，源任务保有原始上下文 | 修正了此前仅 reader 跳过、producer 仍写重复载荷的缺口；历史传输按既有 ACK/pin 退出 |
-| I1 | 新 snapshot 写 initialization_id；旧 marker/attempt/唯一 run 前缀映射；有限页和游标记录 unknown | 当前、必要前驱、rerun pin、真实 manual-resume hold 保留；不擅自取消旧失败恢复责任 |
+| I1 | 新 snapshot 写 initialization_id；主库与既有ops刷新控制库联合归属，跨库恢复保护；有限页和游标记录 unknown | 当前、必要前驱、rerun pin、真实 manual-resume hold 保留；不擅自取消旧失败恢复责任 |
 | S1 | W3 registry DELETED 的 fork 可退出；拆开已退休 fork 的模板继承边与真实 subagent 父子边；SDK全树维护6h且空闲运行 | 活跃模板/分支与真实子任务链保留，不把SDK全树查询放入热派发 |
 | B1/B2 | 操作备份 helper 同次复用一致 SQLite 快照，验证新恢复点后退旧；Site owner 每10min 轮转16 profile，7d旧白名单缓存退出 | helper不等于完整Native/profile灾备；手工任意cp不自动纳管；浏览器身份和活动/人工恢复 profile 保留 |
 | 发布/容量 | 复用现有release owner，精确纳管遗留镜像tag；容量目录分组独立轮转，超时保留上次完整值；worker/acquisition/read receipt 汇总 | 不全局prune、不删volume；现役/回滚/其他引用镜像保留；40/20GiB风险提示不自动停业务 |
 
 ## 验证
 
-复用既有 Python 环境，所有新增测试临时数据位于 D 盘。`eval/storage_lifecycle_20261111/` 含 JUnit 证据：regression 95、pipeline 101、release-cases14、source-final70、native-final30、core-final86、freeze13 均通过；各组重叠，不能相加为独立测试总数。覆盖百万 Read 账本、10万保护物理记录、阶段失败已提交结果、MVCC前像、共享Native引用、D3回滚、已结算PARTIAL工作区、浏览器身份、Runtime冻结选择和producer薄回执。
+复用既有 Python 环境，所有新增测试临时数据位于 D 盘。`eval/storage_lifecycle_20261111/` 含 JUnit 证据：regression95、pipeline101、release-cases14、source-final70、native-final30、core-final86、freeze13，以及merged-final46、latest-main89、ledgers-merged31均通过；各组重叠，不能相加为独立测试总数。覆盖百万 Read 账本、10万保护物理记录、阶段失败已提交结果、MVCC前像、共享Native引用、D3回滚、已结算PARTIAL工作区、浏览器身份、Runtime冻结选择和producer薄回执。
 
 旧 `test_bus_snapshot_rebuilds_message_search_from_thin_body_reference` 的 inline正文断言在干净 main ace2b960 同样失败；仅将测试适配既有 `@body`/content_search 合同并验证分块后的实际检索，没有借机改产品搜索。C盘最初临时目录不足的一项测试已转D盘完整重跑通过。Ruff F/E9 与 diff whitespace 检查在发布前执行。
 
@@ -38,7 +38,7 @@ python -m doxagent.workflows.codex_document3.state_v21 --inline-for-rollback /da
 
 ## 生产执行与验收（11月11日）
 
-本轮完成了 R1/R2、A1、D1/D2、T1 以及 I1/S1/B1/B2、发布/容量规则的代码实装与对应角色发布。**这不是整个方案的长期验收全部通过**：Read/Acquisition 仍在追平历史积压，旧初始化快照缺失的 owner/恢复责任仍有未关闭项，24h/72h/7d自然窗口和完整前端因果性能验收尚未完成。
+本轮完成了 R1/R2、A1、D1/D2、T1 以及 I1/S1/B1/B2、发布/容量规则的代码实装与对应角色发布。**这不是整个方案的长期验收全部通过**：Read/Acquisition 仍在追平历史积压，初始化快照多控制库补丁待最后一次Worker安全发布，3份独立Document2快照及未放弃恢复责任仍有未关闭项，24h/72h/7d自然窗口和完整前端因果性能验收尚未完成。
 
 ### 生产版本与发布边界
 
@@ -54,7 +54,7 @@ python -m doxagent.workflows.codex_document3.state_v21 --inline-for-rollback /da
 | --- | --- | --- |
 | Bus单库物理压缩 | 主库28,021,735,424→13,358,657,536字节，约26.10→12.44GiB；业务主键摘要、CDC epoch/head/retained_floor一致，quick_check=ok，checkpoint=[0,0,0] | 主库减少约13.66GiB；没有删新的业务行 |
 | 同一压缩操作窗口根盘df | 可用46,650,757,120→62,285,328,384字节，净增约14.56GiB | 含同时自然写入/缓存/日志变化，不能与上行相加 |
-| 最终容量取样 | 03:16–03:24约57.8GiB可用，所有正常业务容器在运行 | 不是70GiB目标已经达成；此前40.105GiB应急清理属于上一阶段，不计本轮收益 |
+| 容量取样 | 04:58:25根盘58,338,545,664字节（约54.33GiB）可用、使用86%；正在自然写入 | 不是70GiB目标已经达成；此前40.105GiB应急清理属于上一阶段，不计本轮收益 |
 | Read真实GC | 收尾镜像74轮中68轮有已提交进度；object_history退出47,653行、contributions_history47,652、metric_buckets_history47,652、changes47,776、commits47,276 | 取样期间的提交计数，非物理GiB；6轮零提交和剩余预算中断仍如实保留 |
 | Acquisition | 分阶段提交无错误；一次receipt退出33 unit-hour、512 physical候选；最老eligible细账从审计的10/30 18:00推进至10/30 22:00 UTC | 更老的SCHEDULE合法前驱仍在；不能拿全表min(dispatch_at)当退出水位。旧于7d的摘要会按原规则立即退出，unit_hours暂为0不等于未归档 |
 | D3定向存量结算 | 8个独立已发布run，过程JSON合计76,267,943→5,101,358字节，约缩减93.3%；16个父/子目录回执退出2256个文件，退出前分配量88,678,400字节 | 同一D3父/子receipt含相同retirement证明，按8个唯一run去重；JSON瘦身形成可复用页，不冒充df收益 |
@@ -78,7 +78,7 @@ Bus采用SQLite自身原子VACUUM，避免不一致cp和在线文件替换。操
 
 ### 仍未关闭的事项与明确保留
 
-- **I1遗留恢复责任没有全部关闭。** 本次完整清单833份实际存在的快照：293可对应当前Control owner；417可定位到已有发布源的历史initialization，但当前Control已无对应run；123仍缺少可靠owner映射。逐项定位见 `eval/storage_lifecycle_20261111/snapshot-owner-inventory.json`。不同取样窗口/旧receipt不能将原“unknown307”当成当前完整总数。当前/必要前驱/rerun pin/真实manual-resume继续保护；没有因有published源或年久就自动取消原现场恢复义务。新建snapshot已传入initialization_id，轮转与未知原因可见；这不等于833份历史快照都已获准清退。
+- **I1补充审查纠正了主库单一视角。** BE/INTC/IONQ/COHR独立刷新各有`/data/ops/*/control.sqlite3`，共享同一Worker数据卷。最新完整只读清单849份，846份可唯一对应5个实际控制库；余下3份都属于`d2ws-652706d70fc0dbd8253b4bd894251b8a`，没有可靠initialization owner，继续保留。此前主库单查的293/417/123分组不能再解释为真实owner遗失，已被多库证据替代。新补丁按execution优先、显式owner/最长前缀补足，保存具体控制库；当前Runtime、主生产头/必要前驱、跨库rerun和真实manual-resume保持保护。独立ops本地成功头不会永久保护过期过程快照。`ledgers-merged.xml`31项回归通过，生产新代码进程内只读预演4.74s、10个候选/22保护/0未知/0错误（仅当前页，不能外推全量）；候选镜像已构建，最后Worker发布需避开另一会话窗口并等待已受理Job自然结束，尚不算已上线。
 - 未发布且没有明确放弃恢复责任的失败run继续原恢复窗口；没有将所有FAILED自动按72h删掉。不能把Job cancelled直接当作D3业务弃权：Worker close也会写cancelled。收尾候选4a07b15c因此撤回且未上线；无权威交接的D3 prepared/唯一草稿仍保留，明确放弃原现场恢复的owner事件尚未自动补齐，普通FAILED不隐含放弃恢复。
 - 原计划的24h、72h、7d自然业务验收，以及固定窗口Overview/消息/Research/Policy/Event/Case的完整前后p50/p95因果对照未完成。不能把磁盘释放换算成前端加速，也不能用本地测试替代长期吞吐收敛。
 - published_documents/staged/PolicySet唯一定义与精确历史版本继续保留。未把5.04GiB发布文档全部视为垃圾；不新增资产平台，也未触动明确暂缓的W3完整研究资料/Context重复物化。
@@ -93,4 +93,8 @@ Bus采用SQLite自身原子VACUUM，避免不一致cp和在线文件替换。操
 
 ## 并行发布协调
 
-用户告知另一Codex会话正在发布、稍后恢复。本会话停止继续切换/重启容器与暂停生产者；后续仅在其恢复后只读核验。已终止本会话未获安全窗口的额外Worker候选部署。远端工作副本changelog有其他未提交修改，未覆盖；生产以各角色实际镜像与冻结源码hash为准。
+用户告知另一Codex会话正在发布、稍后恢复。本会话停止继续切换/重启容器与暂停生产者；当前窗口内仅做只读核验和无容器切换的候选构建；窗口结束后再争取Worker自然空闲窗口。已终止本会话未获安全窗口的额外Worker候选部署。远端工作副本changelog有其他未提交修改，未覆盖；生产以各角色实际镜像与冻结源码hash为准。
+
+### 05:00补充状态
+
+已合并main至a0a249d9，保留W3 Luna Fast及并行业务更新。精确文件候选源码cfe7b649，以当前Worker实际镜像14121db49ff6为底，仅覆盖initialization_owners/snapshot_retention/session_retention三个文件，候选7172bb5619e5。当前Worker仍有5个在途Job，未替换。采集角色aff392a3e876的Acquisition maintenance/store与当前提交逐字节一致，明确不为它额外切换容器；构建时产生的同源码Collector候选不发布，由既有48h候选生命周期退出。
