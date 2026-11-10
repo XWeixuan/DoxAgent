@@ -12,6 +12,13 @@ from .journal import LeaseLost
 _lease: ContextVar[Any] = ContextVar("runtime_write_lease", default=None)
 
 
+def effect_owner_token():
+    lease = _lease.get()
+    if lease is not None and lease[0] == 'effect':
+        return lease[1].effect_id, lease[1].lease_token
+    return None
+
+
 @contextmanager
 def write_scope(kind: str, value: Any, clock: Callable[[], datetime]) -> Iterator[None]:
     token = _lease.set((kind, value, clock))

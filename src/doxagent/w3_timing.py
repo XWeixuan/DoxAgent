@@ -104,6 +104,7 @@ class BoundaryTrace:
                 schema_version="w3-boundary-timing-v1",
                 **self.identity,
                 started_at=self.started_at,
+                finished_at=datetime.now(UTC).isoformat(),
                 elapsed_ms=round((time.perf_counter_ns() - self.started) / 1e6, 3),
                 events=list(self.events),
                 totals={k: dict(v) for k, v in self.totals.items()},
@@ -141,6 +142,13 @@ def observed(name):
         return synchronous
 
     return decorate
+
+
+def provider_wait(reason, until):
+    trace = _current.get()
+    if trace is not None:
+        trace.identity['provider_wait'] = dict(
+            **reason, observed_at=datetime.now(UTC).isoformat(), retry_at=until.isoformat())
 
 
 def snapshot_current():

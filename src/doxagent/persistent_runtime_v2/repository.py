@@ -1106,6 +1106,51 @@ class SQLitePersistentRuntimeV2Repository:
         return [RuntimeEffect.model_validate_json(self.content.text(raw)) for raw in payloads]
 
     @retry_sqlite_write
+    def reconcile_provider_waits(self, *, limit=100):
+        """Clear only obsolete provider deadlines, using existing pending indexes."""
+        now = utc_now().isoformat()
+        # Healthy pumps never acquire the writer for an empty reconciliation.
+        with self._connect() as db:
+            pending = db.execute(
+                "SELECT 1 FROM runtime_v2_effects INDEXED BY idx_runtime_v2_effects_pending "
+                "WHERE status IN ('PENDING','PENDING_RETRY') AND status='PENDING_RETRY' "
+                "AND available_at>? AND effect_type IN ('route_to_w3','w3_post_decision') "
+                "AND (json_extract(payload_json,'$.payload.provider_wait.reason')='usage_limit' "
+                "OR json_extract(payload_json,'$.last_error') LIKE 'Codex provider paused%' "
+                "OR json_extract(payload_json,'$.last_error') LIKE 'Codex quota recovery probe%') LIMIT 1",
+                (now,)).fetchone()
+        if not pending:
+            return 0
+        with write_lock(self.path), self._connect() as db:
+            row = db.execute("SELECT payload FROM runtime_values WHERE namespace='w3_provider_pause' "
+                             "AND key='codex'").fetchone()
+            pause = json.loads(row[0]) if row else {}
+            active = (pause.get('code') != 'provider_rate_limited'
+                      and (pause.get('probe_until') or pause.get('until') or '') > now)
+            rows = db.execute(
+                "SELECT effect_id,payload_json FROM runtime_v2_effects INDEXED BY idx_runtime_v2_effects_pending "
+                "WHERE status IN ('PENDING','PENDING_RETRY') AND status='PENDING_RETRY' AND available_at>? "
+                "AND effect_type IN ('route_to_w3','w3_post_decision') AND ("
+                "json_extract(payload_json,'$.payload.provider_wait.reason')='usage_limit' "
+                "OR (json_extract(payload_json,'$.payload.provider_wait') IS NULL AND "
+                "(json_extract(payload_json,'$.last_error') LIKE 'Codex provider paused%' "
+                "OR json_extract(payload_json,'$.last_error') LIKE 'Codex quota recovery probe%'))) "
+                "AND (json_extract(payload_json,'$.payload.provider_wait') IS NULL OR ?=0 "
+                "OR coalesce(json_extract(payload_json,'$.payload.provider_wait.pause_job_id'),'')<>?) "
+                "LIMIT ?", (now,int(active),pause.get('job_id',''),limit)).fetchall()
+            changed = 0
+            for identity, raw in rows:
+                value = json.loads(raw)
+                waiting = value.get('payload',{}).get('provider_wait')
+                if waiting and active and waiting.get('pause_job_id') == pause.get('job_id'):
+                    continue
+                db.execute("UPDATE runtime_v2_effects SET available_at=?,payload_json="
+                           "json_set(payload_json,'$.available_at',?) WHERE effect_id=? "
+                           "AND status='PENDING_RETRY'",(now,now,identity))
+                changed += 1
+            return changed
+
+    @retry_sqlite_write
     def renew_effects(self, effects: tuple[RuntimeEffect, ...]) -> tuple[str, ...]:
         if not effects:
             return ()

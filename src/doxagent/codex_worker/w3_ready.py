@@ -647,13 +647,14 @@ class W3ReadySlots:
         if result is not None:
             await self._handoff_private(result['slot_id'])
             return result
-        async with self.lock:
-            await write_io(self.jobs.store.path, self.reconcile_residents, retry=True)
-            result, config = await write_io(
-                self.jobs.store.path, self._claim, request, key, retry=True
-            )
-            if not result["thread_id"]:
-                self._start_build(result["slot_id"], config)
+        # SQLite already arbitrates the claim. A background fill holding the
+        # inventory mutex must not become a second real-time admission queue.
+        result, config = await write_io(
+            self.jobs.store.path, self._claim, request, key,
+            priority=0 if request.get('execution_lane') != 'background' else 1, retry=True
+        )
+        if not result["thread_id"]:
+            self._start_build(result["slot_id"], config)  # no await; loop-owned de-dup
         # Join the existing preparation owner; repeated claims must not create
         # a 100ms write/reconcile loop ahead of an already-ready live Case.
         # Public replenishment remains in build.finally / prepare_assets.
@@ -777,12 +778,20 @@ class W3ReadySlots:
                 )
                 row = db.execute("SELECT * FROM w3_ready_slots WHERE id=?", (row["id"],)).fetchone()
             if row is None:
-                row = db.execute(
-                    "SELECT * FROM w3_ready_slots WHERE scope=? "
-                    "AND state IN ('READY','BUILDING') AND case_id IS NULL "
-                    "ORDER BY state DESC LIMIT 1",
-                    (key,),
-                ).fetchone()
+                while True:
+                    row = db.execute(
+                        "SELECT * FROM w3_ready_slots WHERE scope=? "
+                        "AND state IN ('READY','BUILDING') AND case_id IS NULL "
+                        "ORDER BY state DESC LIMIT 1", (key,),
+                    ).fetchone()
+                    pool = getattr(self.jobs._runtime,'pool',None)
+                    if row is None or row['state'] != 'READY' or pool is None:
+                        break
+                    if any(c.thread_id == row['thread_id'] and c.healthy and c.process is not None
+                           and c.process.returncode is None for c in pool):
+                        break
+                    db.execute("UPDATE w3_ready_slots SET state='RETIRING',error='resident reaped' "
+                               "WHERE id=? AND state='READY'",(row['id'],))
                 if row is None:
                     config = self.configs.get(key)
                     if config is None:

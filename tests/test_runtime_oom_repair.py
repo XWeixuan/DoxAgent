@@ -372,14 +372,17 @@ async def test_phase_terminal_receipts_use_existing_high_priority_writer(tmp_pat
     original = module.write_io
 
     async def observed(path, function, *args, **kwargs):
-        if args and args[0] in ("worker_invocations", "worker_receipts"):
-            writes.append((args[0], kwargs.get("priority")))
+        if function.__name__ == 'save_terminal':
+            writes.append(kwargs.get('priority'))
         return await original(path, function, *args, **kwargs)
 
     monkeypatch.setattr(module, "write_io", observed)
     request = _request("gpt-6-luna", "attempt").model_copy(update={"task_phase": "trade_decision"})
-    await ReceiptWorker(worker, journal, "case", case_id="case").run(request)
-    assert writes == [("worker_invocations", 0), ("worker_receipts", 0)]
+    receipt = ReceiptWorker(worker, journal, "case", case_id="case")
+    job = await receipt.run(request)
+    assert writes == [0]
+    assert journal.get('worker_invocations',job.job_id)['job']['job_id'] == job.job_id
+    assert journal.get('worker_receipts',receipt.last_identity)['job_id'] == job.job_id
 
 
 def test_timing_diagnostics_yield_busy_business_writer(tmp_path):

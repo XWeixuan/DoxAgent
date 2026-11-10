@@ -8,7 +8,6 @@ import time
 from datetime import datetime
 
 from doxagent.codex_worker.schema import ThreadForkRequest
-from doxagent.control_io import short_write
 from doxagent.w3_timing import observed
 from doxagent.workflows.codex_document3.schema import PolicyDecision
 
@@ -62,6 +61,9 @@ class W3Execution:
         self.service = service
         self.journal = service.journal
         self.registry = W3ThreadRegistry(self.journal)
+        bind = getattr(self.agent, 'bind_recovery_notifier', None)
+        if bind:
+            bind(self.service._wake_effects)
 
     @property
     def agent(self):
@@ -362,6 +364,10 @@ class W3Execution:
             self._sync_route_case(case, {"thread_id": stage["thread_id"]})
             return
         if stage["result_json"] is None:
+            record = self.registry.owned(case.case_id)
+            recovered = self._recover_result(case, TRADE_PHASE, record)
+            if recovered is not None:
+                return self._commit_trade(case,record,recovered)
             if hasattr(self.agent, "begin_trade_timing"):
                 self.agent.begin_trade_timing(case.case_id)
             if hasattr(self.agent, "queue_market"):
@@ -429,13 +435,8 @@ class W3Execution:
                         self._resume_result, case.case_id, TRADE_PHASE, record["record_id"], reader
                     )
                 raise
-            self.registry.save_result(
-                case.case_id,
-                TRADE_PHASE,
-                decision,
-                thread_id=record["thread_id"],
-                worker_job_id=job.job_id,
-            )
+            self._write_result(lambda: self.registry.save_result(
+                case.case_id, TRADE_PHASE, decision, thread_id=record["thread_id"], worker_job_id=job.job_id))
         else:
             decision = contract_models(case.w3_contract_version)[0].model_validate(
                 stage["result_json"]
@@ -443,23 +444,38 @@ class W3Execution:
             record = self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
         return self._commit_trade(case, record, decision)
 
-    @short_write()
     def _resume_result(self, case_id, phase, record_id, reader):
         case = self.service.repository.get_case(case_id)
         stage = self.registry.stage(case_id, phase)
         if stage["result_json"] is None:
             result, job = reader()
-            self.registry.save_result(case_id, phase, result,
-                                      thread_id=job.thread_id, worker_job_id=job.job_id)
+            self._write_result(lambda: self.registry.save_result(case_id, phase, result,
+                                      thread_id=job.thread_id, worker_job_id=job.job_id))
         # Resume the durable result, never prepare context or invoke the model again.
         return self.trade(case) if phase == TRADE_PHASE else self.operations(case)
+
+    def _write_result(self, callback):
+        writer = getattr(self.agent, 'write_result', None)
+        return writer(callback) if writer else callback()
+
+    def _recover_result(self, case, phase, record):
+        recover = getattr(self.agent, 'recover_phase_result', None)
+        recovered = recover(case,phase,record) if recover else None
+        if recovered is None:
+            precheck = getattr(self.agent, 'precheck_phase', None)
+            if precheck:
+                precheck(case,phase,record)
+            return None
+        result, job = recovered
+        self._write_result(lambda: self.registry.save_result(case.case_id,phase,result,
+                           thread_id=job.thread_id,worker_job_id=job.job_id))
+        return result
 
     def _queue_ack(self, case_id, phase):
         job_id = self.registry.stage(case_id, phase).get("worker_job_id")
         if job_id:
             self.service._effect_executor.submit(self._ack, job_id)
 
-    @short_write()
     def _commit_trade(self, case, record, decision):
         case.w3_trade_decision = decision.model_dump(mode="json")
         trade, override = self._trade_record(case, decision)
@@ -470,31 +486,33 @@ class W3Execution:
         )
         # The output transaction never waits for the operations model or delivery network.
         prepared_case = self._prepare_case_payload(case)
-        with self.journal.transaction() as db:
-            assert_write_lease(db)
-            outcome = (
-                TradeOutputService(self.journal).record_in_transaction(
-                    db, case, trade, disposition_override=override
+        def commit():
+            with self.journal.transaction() as db:
+                assert_write_lease(db)
+                outcome = (
+                    TradeOutputService(self.journal).record_in_transaction(
+                        db, case, trade, disposition_override=override
+                    )
+                    if trade
+                    else "NO_TRADE"
                 )
-                if trade
-                else "NO_TRADE"
-            )
-            if outcome == "POLICY_AUTHORIZATION_NOT_ADMITTED":
-                raise W3Error(
-                    "policy_authorization_pending", "Retry the saved decision after admission"
+                if outcome == "POLICY_AUTHORIZATION_NOT_ADMITTED":
+                    raise W3Error(
+                        "policy_authorization_pending", "Retry the saved decision after admission"
+                    )
+                self.registry.commit_stage(db, case.case_id, TRADE_PHASE, outcome)
+                self._restore_trade(
+                    case,
+                    dict(
+                        result_json=case.w3_trade_decision,
+                        committed_at=self.journal.clock().isoformat(),
+                        disposition=outcome,
+                    ),
+                    persist=False,
                 )
-            self.registry.commit_stage(db, case.case_id, TRADE_PHASE, outcome)
-            self._restore_trade(
-                case,
-                dict(
-                    result_json=case.w3_trade_decision,
-                    committed_at=self.journal.clock().isoformat(),
-                    disposition=outcome,
-                ),
-                persist=False,
-            )
-            self._save_case_in_transaction(db, case, prepared_case)
-            self._enqueue_in_transaction(db, operations)
+                self._save_case_in_transaction(db, case, prepared_case)
+                self._enqueue_in_transaction(db, operations)
+        self._write_result(commit)
         if not hasattr(self.service.repository, "path"):
             self.service.repository.save_case(case)
         self._sync_route_case(case, record)
@@ -599,6 +617,9 @@ class W3Execution:
         record = self.registry.owned(case.case_id)
         if not record or record["thread_id"] != trade_stage["thread_id"]:
             raise W3Error("w3_case_thread_missing", "Cannot replace the Case thread for operations")
+        if stage["result_json"] is None:
+            self._recover_result(case, OPERATIONS_PHASE, record)
+            stage = self.registry.stage(case.case_id, OPERATIONS_PHASE)
         if stage["result_json"] is None and self.journal.clock() >= datetime.fromisoformat(
             record["expires_at"]
         ):
@@ -642,20 +663,14 @@ class W3Execution:
                         self._resume_result, case.case_id, OPERATIONS_PHASE, record["record_id"], reader
                     )
                 raise
-            self.registry.save_result(
-                case.case_id,
-                OPERATIONS_PHASE,
-                result,
-                thread_id=record["thread_id"],
-                worker_job_id=job.job_id,
-            )
+            self._write_result(lambda: self.registry.save_result(
+                case.case_id, OPERATIONS_PHASE, result, thread_id=record["thread_id"], worker_job_id=job.job_id))
         else:
             result = contract_models(case.w3_contract_version)[1].model_validate(
                 stage["result_json"]
             )
         return self._commit_operations(case, record, result, trade_stage, state)
 
-    @short_write()
     def _commit_operations(self, case, record, result, trade_stage, state):
         if result.delta_candidates:
             maximum = self.service._known_for_case(case).max_event_numeric_id(
@@ -744,52 +759,55 @@ class W3Execution:
         event_subjects = event_matches(
             case.model_dump(mode="json") | {"w3_operations_status": "COMMITTED"}
         )
-        with self.journal.transaction() as db:
-            assert_write_lease(db)
-            if policy_consumption.get_value(db, "w3_operations_applied", case.case_id) is None:
-                watch = apply_v4_actions(
-                    db, case=case, result=result, frozen=state, now=self.journal.clock()
+        def commit():
+            with self.journal.transaction() as db:
+                assert_write_lease(db)
+                if policy_consumption.get_value(db, "w3_operations_applied", case.case_id) is None:
+                    watch = apply_v4_actions(
+                        db, case=case, result=result, frozen=state, now=self.journal.clock()
+                    )
+                    pins = apply_pin_actions(
+                        db,
+                        case=case,
+                        actions=result.pin_actions,
+                        frozen=state["pins"],
+                        now=self.journal.clock(),
+                    )
+                    policy_consumption.put_value(
+                        db,
+                        "w3_operations_applied",
+                        case.case_id,
+                        dict(
+                            ticker=case.ticker,
+                            case_id=case.case_id,
+                            watch=watch,
+                            pins=pins,
+                            validation_issues=policy_consumption.get_value(
+                                db, "w3_action_parse_issues", case.case_id
+                            )
+                            or [],
+                        ),
+                    )
+                if archive is not None and hasattr(self.service.repository, "path"):
+                    self.service.repository.save_archive_in_transaction(db, archive, archive_payload)
+                self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
+                db.executemany(
+                    "INSERT OR IGNORE INTO runtime_v2_w3_thread_links VALUES(?,?,?,?,?)",
+                    [
+                        (record["record_id"], case.ticker, "EVENT", key, case.case_id)
+                        for key in event_subjects
+                    ],
                 )
-                pins = apply_pin_actions(
-                    db,
-                    case=case,
-                    actions=result.pin_actions,
-                    frozen=state["pins"],
-                    now=self.journal.clock(),
-                )
-                policy_consumption.put_value(
-                    db,
-                    "w3_operations_applied",
-                    case.case_id,
-                    dict(
-                        ticker=case.ticker,
-                        case_id=case.case_id,
-                        watch=watch,
-                        pins=pins,
-                        validation_issues=policy_consumption.get_value(
-                            db, "w3_action_parse_issues", case.case_id
-                        )
-                        or [],
-                    ),
-                )
-            if archive is not None and hasattr(self.service.repository, "path"):
-                self.service.repository.save_archive_in_transaction(db, archive, archive_payload)
-            self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
-            db.executemany(
-                "INSERT OR IGNORE INTO runtime_v2_w3_thread_links VALUES(?,?,?,?,?)",
-                [
-                    (record["record_id"], case.ticker, "EVENT", key, case.case_id)
-                    for key in event_subjects
-                ],
-            )
-            case.w3_operations_status = "COMMITTED"
-            case.w3_operations_error = None
-            self._save_case_in_transaction(db, case, prepared_case)
+                case.w3_operations_status = "COMMITTED"
+                case.w3_operations_error = None
+                self._save_case_in_transaction(db, case, prepared_case)
+        self._write_result(commit)
         if archive is not None and not hasattr(self.service.repository, "path"):
             self.service.repository.save_archive(archive)
         case.w3_operations_status = "COMMITTED"
         case.w3_operations_error = None
-        self.service.repository.save_case(case)
+        if not hasattr(self.service.repository, 'path'):
+            self.service.repository.save_case(case)
         self._sync_route_case(case, record)
         self.registry.release(case.case_id)
 

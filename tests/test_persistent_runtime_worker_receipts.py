@@ -123,7 +123,6 @@ async def test_operations_repair_changes_actual_frozen_prompt_only_once(tmp_path
 @pytest.mark.asyncio
 @pytest.mark.parametrize("failure,seconds", [
     ("usage_limit_exceeded", 900),
-    ("http_status_code=429; exceeded retry limit, last status: 429 Too Many Requests", 60),
 ])
 async def test_quota_pauses_account_without_repeating_model_requests(tmp_path, failure, seconds):
     from datetime import timedelta

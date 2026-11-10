@@ -27,7 +27,7 @@ from doxagent.codex_runtime.schema import (
     PublishedDocument,
     ResearchLane,
 )
-from doxagent.codex_worker.schema import WorkerRunRequest
+from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 from doxagent.control_io import read_io, write_io
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.w3_timing import measured, observed, span
@@ -705,9 +705,18 @@ class CodexW3AgentRunner:
             coroutine.close()
             raise W3Error("w3_runner_closed", "W3 runner is closed")
         with self._pending_v4_lock:
+            from .fencing import effect_owner_token
+            from .journal import LeaseLost, RuntimeStopping
+            current_owner = effect_owner_token()
             pending = self._pending_v4.get(key) if key is not None else None
+            if (pending is not None and pending.done()
+                and getattr(pending, 'effect_owner', None) != current_owner
+                and (pending.cancelled() or isinstance(pending.exception(),(LeaseLost,RuntimeStopping)))):
+                self._pending_v4.pop(key, None)
+                pending = None
             if pending is None:
                 pending = asyncio.run_coroutine_threadsafe(coroutine, self._loop)
+                pending.effect_owner = current_owner
                 if key is not None:
                     self._pending_v4[key] = pending
             else:
@@ -932,6 +941,52 @@ class CodexW3AgentRunner:
 
     def acknowledge_job(self, job_id):
         return self._wait_v4(self._worker.acknowledge_job(job_id))
+
+    def write_result(self, callback):
+        # Reuse the existing priority writer and its unchanged short SQL policy.
+        # Only the SQL callback belongs here, never preparation/network I/O.
+        return self._wait_v4(write_io(self._journal.path, callback, priority=0, retry=True))
+
+    def bind_recovery_notifier(self, callback):
+        self._recovery_notifier = callback
+
+    def recover_phase_result(self, case, phase, record):
+        if not record:
+            return None
+        from .worker_receipts import ReceiptWorker
+        identity = (f"runtime-worker:{case.case_id}:{record['workspace']}:"
+                    f"persistent_runtime_w3:{phase}:{case.case_id}")
+        receipt = self._journal.get('worker_receipts', identity)
+        if not receipt or receipt.get('status') != 'succeeded':
+            return None
+        if self._journal.get('worker_rejected', identity, False):
+            return None
+        worker = ReceiptWorker(self._worker,self._journal,case.case_id,case_id=case.case_id)
+        worker.last_identity = identity
+        context = self.prepare_case(case)  # exact pinned reference/contract validation
+        job = WorkerJob.model_validate(receipt)
+        return self._wait_v4(self._validate_phase_job(case,phase,job,context,worker))
+
+    def precheck_phase(self, case, phase, record):
+        from .worker_receipts import ReceiptWorker
+        pause = self._journal.get('w3_provider_pause','codex',{})
+        if not pause or pause.get('code') == 'provider_rate_limited':
+            return
+        if record:
+            identity = (f"runtime-worker:{case.case_id}:{record['workspace']}:"
+                        f"persistent_runtime_w3:{phase}:{case.case_id}")
+            frozen = self._journal.get('worker_requests',identity)
+            receipt = self._journal.get('worker_receipts',identity)
+            if frozen and not receipt:
+                return  # Possibly accepted: lookup/reconnect before any admission.
+            if receipt and receipt.get('status') == 'succeeded' and not self._journal.get('worker_rejected',identity,False):
+                return
+        when = pause.get('probe_until') or pause.get('until')
+        if (str(pause.get('probe_owner','')).startswith('runtime-worker:')
+            and pause.get('until') and datetime.fromisoformat(pause['until']) <= self._journal.clock()):
+            return  # Reconcile legacy phantom ownership at definitive Job lookup.
+        if when and datetime.fromisoformat(when) > self._journal.clock():
+            ReceiptWorker(self._worker,self._journal,case.case_id)._paused(pause)
 
     def run_phase(self, *, case, record, phase, payload, context=None, research=None):
         return self._wait_v4(
@@ -1427,6 +1482,7 @@ class CodexW3AgentRunner:
             on_update=(lambda job: self._observe_phase_job(case, phase, job))
             if phase == "trade_decision" else None,
             repair_output=phase == OPERATIONS_PHASE,
+            on_recovery=getattr(self, '_recovery_notifier', None),
             replace_failed_model=bool(self._execution_model_override)
             and "w3_execution_profile" not in case.frozen_inputs,
         )
@@ -1476,6 +1532,11 @@ class CodexW3AgentRunner:
                 )
             ),
         )
+        return await self._validate_phase_job(case,phase,job,context,worker)
+
+    async def _validate_phase_job(self, case, phase, job, context, worker):
+        from .w3_contracts import (OPERATIONS_PHASE, W3_LEGACY_CONTRACT,
+                                  parse_w3_operations, parse_w3_trade_decision, is_unified_contract)
         if job.status != "succeeded" or not job.final_response or not job.thread_id:
             raise W3Error(
                 job.error_code or "w3_phase_failed", job.error_message or job.status, step="MODEL"
@@ -1542,7 +1603,7 @@ class CodexW3AgentRunner:
                 ):
                     raise ValueError("selected Condition must be present in the frozen PolicySet")
         except (ValueError, ValidationError) as exc:
-            worker.reject_output(str(exc))
+            await write_io(self._journal.path, worker.reject_output, str(exc), priority=0, retry=True)
             raise W3Error("w3_phase_output_invalid", str(exc)[:4000], step="VALIDATE") from exc
         return result, job
 
@@ -1781,11 +1842,11 @@ class CodexW3AgentRunner:
                 )
         except ValidationError as exc:
             if self._journal:
-                worker.reject_output("invalid structured output")
+                await write_io(self._journal.path, worker.reject_output, "invalid structured output", priority=0, retry=True)
             raise W3Error("w3_invalid_structured_output", str(exc)[:4000]) from exc
         if result.w3_case_id != w3_case.w3_case_id:
             if self._journal:
-                worker.reject_output("case correlation mismatch")
+                await write_io(self._journal.path, worker.reject_output, "case correlation mismatch", priority=0, retry=True)
             raise W3Error(
                 "w3_case_correlation_mismatch",
                 "W3 output belongs to a different Case",
@@ -1794,7 +1855,7 @@ class CodexW3AgentRunner:
             self._validate_semantics(w3_case.mode, result, context)
         except W3Error:
             if self._journal:
-                worker.reject_output("semantic output rejected")
+                await write_io(self._journal.path, worker.reject_output, "semantic output rejected", priority=0, retry=True)
             raise
         return result, job.thread_id, context.version_pin
 

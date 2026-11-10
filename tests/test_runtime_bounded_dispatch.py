@@ -163,7 +163,7 @@ def test_success_resumes_directly_to_commit_without_repreparing(
         while service._active_effect_ids and time.monotonic() < deadline:
             time.sleep(0.005)
         if post_commit_retry:
-            assert service._effect_continuations
+            assert not service._effect_continuations  # durable stage owns the retry now
             retry = next(
                 e
                 for e in service.repository.list_effects(case.case_id)

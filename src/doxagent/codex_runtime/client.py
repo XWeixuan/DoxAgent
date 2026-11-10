@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import ipaddress
 import json
 import time
@@ -23,6 +24,12 @@ from doxagent.codex_worker.schema import (
 )
 from doxagent.observations.models import PersistedObservation
 from doxagent.w3_timing import observed, span
+
+
+def dispatch_job_id(request):
+    if not request.idempotency_key:
+        raise ValueError("job recovery requires the original idempotency key")
+    return hashlib.sha256(f"{request.run_id}:{request.idempotency_key}".encode()).hexdigest()
 
 
 class CodexWorkerClient(Protocol):
@@ -266,11 +273,38 @@ class HttpCodexWorkerClient:
     def workspace_view(self, *, transport_attempts=1):
         return WorkspaceHttpView(self, transport_attempts)
 
+    async def lookup_job(self, request: WorkerRunRequest) -> WorkerJob | None:
+        """Only an authenticated, definitive 404 means this dispatch is absent."""
+        identity = dispatch_job_id(request)
+        job = await self.lookup_job_id(identity)
+        if job is None:
+            return None
+        payload = request.model_dump(mode="json")
+        for name in ("task_phase", "web_search_mode"):
+            if payload.get(name) is None:
+                payload.pop(name, None)
+        expected = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+        if (job.job_id != identity or job.run_id != request.run_id
+            or job.attempt_id != request.attempt_id or job.request_sha256 != expected):
+            raise ValueError("persisted Job does not match the frozen dispatch")
+        return job
+
+    async def lookup_job_id(self, identity):
+        response = await self._client.get(f"/v1/jobs/{identity}")
+        if response.status_code == 404:
+            return None
+        response.raise_for_status()
+        return WorkerJob.model_validate(response.json())
+
     async def run_with_observer(self, request, observer):
         return await self.run(request, on_update=observer)
 
-    async def run(self, request: WorkerRunRequest, *, on_update=None) -> WorkerJob:
-        job: WorkerJob | None = None
+    async def resume_job(self, request, job, *, on_update=None):
+        return await self.run(request, on_update=on_update, existing_job=job)
+
+    async def run(self, request: WorkerRunRequest, *, on_update=None,
+                  existing_job: WorkerJob | None = None) -> WorkerJob:
+        job = existing_job
         original_request = request
         request = request.model_copy(
             update={"idempotency_key": request.idempotency_key or uuid4().hex}
@@ -278,6 +312,7 @@ class HttpCodexWorkerClient:
         unavailable_since: float | None = None
         observed_status = None
         cursor = -1
+        post_started = False
 
         async def observe(current):
             nonlocal observed_status
@@ -295,11 +330,17 @@ class HttpCodexWorkerClient:
         try:
             while job is None or job.status in {"queued", "running"}:
                 try:
-                    response = (
-                        await self._client.post("/v1/jobs", json=request.model_dump(mode="json"))
-                        if job is None
-                        else await self._client.get(f"/v1/jobs/{job.job_id}")
-                    )
+                    if job is None and str(request.node) == "persistent_runtime_w3":
+                        # Reconcile again after ANY unknown POST outcome. Never
+                        # reinterpret timeout/5xx as permission to dispatch.
+                        job = await self.lookup_job(request)
+                        if job is not None and job.status not in {"queued", "running"}:
+                            break
+                    if job is None:
+                        post_started = True
+                        response = await self._client.post('/v1/jobs',json=request.model_dump(mode='json'))
+                    else:
+                        response = await self._client.get(f'/v1/jobs/{job.job_id}')
                     if response.status_code == 429:
                         # Admission wait is not a failed execution, even for a full queue.
                         await asyncio.sleep(5)
@@ -338,7 +379,8 @@ class HttpCodexWorkerClient:
                     job.error_message or "infrastructure recovery exhausted"
                 )
             return job
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
+            exc.job_not_submitted = job is None and not post_started
             if job is not None and original_request.idempotency_key is None:
                 await asyncio.shield(self.cancel(job.job_id))
             raise

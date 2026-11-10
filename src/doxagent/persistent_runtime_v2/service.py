@@ -1854,6 +1854,11 @@ class PersistentRuntimeV2Service:
             return self._dispatch_effects_with_capacity(limit)
 
     def _dispatch_effects_with_capacity(self, limit: int) -> int:
+        reconcile = getattr(self.repository, 'reconcile_provider_waits', None)
+        if reconcile:
+            batch = max(20, limit * 5)
+            if reconcile(limit=batch) == batch and self.coordinator is not None:
+                self.coordinator.wake_effects()
         with self._w3_threads_lock:
             completed = [self._active_effects[key] for key, future in self._phase_waiters.items()
                          if future.done() and key not in self._running_effect_ids]
@@ -2005,8 +2010,6 @@ class PersistentRuntimeV2Service:
                 or effect.effect_id in self._running_effect_ids):
                 return
             self._phase_waiters.pop(effect.effect_id)
-            if pending.cancelled() or pending.exception() is not None:
-                self._effect_continuations.pop(effect.effect_id, None)
             self._running_effect_ids.add(effect.effect_id)
             thread = Thread(target=self._run_w3_effect_thread, args=(effect,), daemon=False,
                             name="prv2-w3-resume")
@@ -2053,12 +2056,24 @@ class PersistentRuntimeV2Service:
             if self.coordinator is not None and not self._draining:
                 self.coordinator.wake_effects()
 
-    def _process_claimed_effect(
+    def _process_claimed_effect(self, effect, *, dispatch_timing=None):
+        if self.journal and effect.effect_type in {
+            RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION
+        }:
+            from doxagent.w3_timing import effect_trace
+            with effect_trace(effect, self.journal, **(dispatch_timing or {})):
+                return self._process_claimed_effect_inner(effect, dispatch_timing=dispatch_timing)
+        return self._process_claimed_effect_inner(effect, dispatch_timing=dispatch_timing)
+
+    def _process_claimed_effect_inner(
         self,
         effect: RuntimeEffect,
         *,
         dispatch_timing: dict[str, Any] | None = None,
     ) -> int:
+        if 'provider_wait' in effect.payload:
+            effect = effect.model_copy(update={'payload': {
+                k:v for k,v in effect.payload.items() if k != 'provider_wait'}})
         if self.journal and effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
             reader = getattr(self.repository, "get_case_sweep_id", None)
             if reader is not None:
@@ -2093,15 +2108,11 @@ class PersistentRuntimeV2Service:
                     RuntimeSideEffect.ROUTE_TO_W3,
                     RuntimeSideEffect.W3_POST_DECISION,
                 }:
-                    from doxagent.w3_timing import effect_trace
-
-                    with effect_trace(effect, self.journal, **(dispatch_timing or {})):
-                        continuation = self._effect_continuations.get(effect.effect_id)
-                        if continuation:
-                            continuation()
-                            self._effect_continuations.pop(effect.effect_id, None)
-                        else:
-                            self._execute_effect(effect)
+                    continuation = self._effect_continuations.pop(effect.effect_id, None)
+                    if continuation:
+                        continuation()
+                    else:
+                        self._execute_effect(effect)
                 else:
                     self._execute_effect(effect)
         except Exception as exc:
@@ -2141,19 +2152,23 @@ class PersistentRuntimeV2Service:
                 "w3_prepare_pending",
                 "w3_pending_external",
                 "w3_provider_paused",
+                "w3_dispatch_unknown",
             }:
                 available_at = utc_now() + timedelta(seconds=5)
-                if getattr(exc, "code", None) == "w3_provider_paused" and self.journal:
-                    pause = self.journal.get("w3_provider_pause", "codex", {})
-                    until = pause.get("probe_until") or pause.get("until")
-                    if until:
-                        available_at = max(available_at, datetime.fromisoformat(until))
+                payload = dict(effect.payload)
+                if getattr(exc, "retry_at", None) is not None:
+                    available_at = max(utc_now(), exc.retry_at)
+                if getattr(exc, 'provider_wait', None):
+                    payload['provider_wait'] = exc.provider_wait
+                    from doxagent.w3_timing import provider_wait
+                    provider_wait(exc.provider_wait, available_at)
                 self.repository.save_effect(
                     effect.model_copy(
                         update=dict(
                             status=RuntimeEffectStatus.PENDING_RETRY,
                             available_at=available_at,
                             last_error=str(exc) or type(exc).__name__,
+                            payload=payload,
                         )
                     )
                 )
