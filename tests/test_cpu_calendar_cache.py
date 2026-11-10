@@ -109,3 +109,36 @@ def test_reconcile_only_writes_when_day_or_mode_changes(tmp_path, monkeypatch):
     coordinator.calendar.closed_cycle = lambda day: day.isoformat()
     coordinator.reconcile("MU")
     assert write.call_count == 3
+
+
+def test_bounded_calendar_matches_full_horizon_for_real_sessions(tmp_path):
+    import exchange_calendars
+    reference=exchange_calendars.get_calendar('XNYS',start='2000-01-01',end='2040-12-31')
+    owner=MarketCalendar(RuntimeJournal(tmp_path/'calendar.db'))
+    # Full years include early closes, DST changes, leap days, Sandy's ad hoc
+    # closure, and both original horizon edges. Compare facts, not the algorithm.
+    for year in [2000,2012,2024,2026,2040]:
+        day=date(year,1,1)
+        while day.year==year:
+            if reference.first_session.date() <= day <= reference.last_session.date():
+                actual=owner._load_calendar(day)
+                expected=reference.is_session(day.isoformat())
+                assert actual.is_session(day.isoformat())==expected
+                if expected:
+                    assert actual.session_open(day.isoformat())==reference.session_open(day.isoformat())
+                    assert actual.session_close(day.isoformat())==reference.session_close(day.isoformat())
+            day+=timedelta(days=1)
+        assert owner._calendar_window==(date(max(2000,year-1),1,1),date(min(2040,year+1),12,31))
+    with pytest.raises(ValueError):
+        owner._load_calendar(date(1999,12,31)).is_session('1999-12-31')
+
+
+def test_session_exit_keeps_next_year_and_early_close_semantics(tmp_path):
+    from doxagent.trade_execution.sessions import Sessions
+    from zoneinfo import ZoneInfo
+    owner=Sessions(RuntimeJournal(tmp_path/'sessions.db'))
+    et=ZoneInfo('America/New_York')
+    # Day after Thanksgiving closes at13:00; at12:30 the exit moves to Monday.
+    assert owner.exit_at(datetime(2026,11,27,12,29,tzinfo=et))==datetime(2026,11,27,12,30,tzinfo=et)
+    assert owner.exit_at(datetime(2026,11,27,12,30,tzinfo=et))==datetime(2026,11,30,15,30,tzinfo=et)
+    assert owner.exit_at(datetime(2026,12,31,15,31,tzinfo=et))==datetime(2027,1,4,15,30,tzinfo=et)

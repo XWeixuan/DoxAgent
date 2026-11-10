@@ -930,14 +930,21 @@ class W3Execution:
 
     def _prepare_case_payload(self, case):
         if hasattr(self.service.repository, "content"):
-            return json.loads(self.service.repository.content.encode(case.model_dump(mode="json")))
+            # These are the only large result fields changed by the two commits.
+            # Frozen research/source/W1/W2 already have durable Native references.
+            return json.loads(self.service.repository.content.encode(case.model_dump(
+                mode="json", include={"w3_trade_decision", "w3_operations_result"}
+            )))
         return None
 
     def _save_case_in_transaction(self, db, case, prepared=None):
         if hasattr(self.service.repository, "path"):
-            # Only small fields decided by the commit guard are patched under the lock.
-            # Preserve the legacy recovery helper signature; hot paths pre-encode.
-            payload = dict(prepared) if prepared is not None else self._prepare_case_payload(case)
+            # The explicit recovery helper still persists its whole modified Case,
+            # including execution state. Normal phase commits patch their fields
+            # onto the current row, retaining immutable Native refs and concurrent
+            # completion fields instead of encoding the frozen context again.
+            payload = (dict(prepared) if prepared is not None else json.loads(
+                self.service.repository.content.encode(case.model_dump(mode="json"))))
             payload.update(
                 case.model_dump(
                     mode="json",
@@ -954,11 +961,15 @@ class W3Execution:
                     },
                 )
             )
+            expression = "?"
+            parameters = [encode(payload)]
+            if prepared is not None:
+                expression = "json_set(payload_json," + ",".join("?,json(?)" for _ in payload) + ")"
+                parameters = [part for key, value in payload.items() for part in ("$." + key, encode(value))]
             db.execute(
-                "UPDATE runtime_v2_cases SET payload_json=?,status=?,technical_status=?,"
+                "UPDATE runtime_v2_cases SET payload_json=" + expression + ",status=?,technical_status=?,"
                 "updated_at=? WHERE case_id=?",
-                (
-                    encode(payload),
+                (*parameters,
                     case.status.value,
                     case.technical_status.value,
                     self.journal.clock().isoformat(),

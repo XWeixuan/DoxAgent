@@ -959,6 +959,32 @@ class SQLitePersistentRuntimeV2Repository:
             (source_message_id,),
         )
 
+    def completed_w3_projection_payload(self, case_id: str):
+        """Only terminal view fields; do not hydrate frozen research to notify."""
+        from .w3_contracts import W3_CONTRACT, W3_LEGACY_CONTRACT
+        with self._connect() as db:
+            db.row_factory = sqlite3.Row
+            row = db.execute(
+                "SELECT c.case_id,c.ticker,c.trading_date,c.status case_status,c.technical_status,"
+                "coalesce(json_extract(c.payload_json,'$.resolved_route.primary_route'),"
+                "json_extract(c.payload_json,'$.route.primary_route')) primary_route,"
+                "json_extract(c.payload_json,'$.route.primary_route') initial_route,"
+                "json_extract(c.payload_json,'$.resolved_route.primary_route') resolved_route,"
+                "(json_extract(c.payload_json,'$.w3_result') IS NOT NULL OR "
+                "json_extract(c.payload_json,'$.w3_trade_decision') IS NOT NULL) w3_resolved,"
+                "json_extract(c.payload_json,'$.version_pin.event_library_version') event_library_version,"
+                "json_extract(c.payload_json,'$.version_pin.policy_set_version') policy_set_version,"
+                "json_extract(c.payload_json,'$.hot_path_latency_ms') hot_path_latency_ms,"
+                "coalesce(json_extract(c.payload_json,'$.updated_at'),c.updated_at) updated_at,"
+                "(SELECT count(*) FROM runtime_v2_turns t WHERE t.case_id=c.case_id) model_turn_count "
+                "FROM runtime_v2_cases c WHERE c.case_id=? AND c.status='COMPLETED' "
+                "AND c.technical_status='OK' AND json_extract(c.payload_json,'$.completed_at') IS NOT NULL "
+                "AND json_extract(c.payload_json,'$.decision_completed_at') IS NOT NULL "
+                "AND json_extract(c.payload_json,'$.w3_contract_version') IN (?,?)",
+                (case_id,W3_CONTRACT,W3_LEGACY_CONTRACT),
+            ).fetchone()
+        return dict(row) if row else None
+
     def get_case_source(self, source_message_id: str) -> SourceMessageEnvelope | None:
         # O2 needs publication time/source identity, never the frozen research pack.
         return self._read_model(

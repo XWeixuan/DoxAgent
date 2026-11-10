@@ -212,6 +212,10 @@ class RuntimeV2ProjectionOutbox:
         value = RuntimeTerminalProjection.from_case(
             case, model_turn_count=model_turn_count
         )
+        self.enqueue_terminal(value)
+
+    def enqueue_terminal(self, payload: RuntimeTerminalProjection | dict[str,Any]) -> None:
+        value = RuntimeTerminalProjection.model_validate(payload)
         self._enqueue("terminal_case", value.case_id, value.model_dump(mode="json"))
 
     def enqueue_daily(self, run: DailyCloseRun) -> None:

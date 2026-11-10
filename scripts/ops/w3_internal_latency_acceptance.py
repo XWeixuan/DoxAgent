@@ -34,7 +34,7 @@ def collect(since,until=None,ids=None):
     data=collector.collect(case_ids=ids) if ids else {'cases':[],'budget_exhausted':False}
     traces=[];log_budgets={};parse_errors=0;unattributed_tools=0;id_set=set(ids)
     for role in ['v2-scheduler','codex-worker']:
-        proc=subprocess.Popen(['docker','logs','--since',since,'--tail','6000','doxagent-v2-'+role+'-1'],
+        proc=subprocess.Popen(['docker','logs','--since',since,'--tail','50000','doxagent-v2-'+role+'-1'],
                               stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         total=0;lines=0;truncated=False
         try:
@@ -54,7 +54,7 @@ def collect(since,until=None,ids=None):
         finally:
             proc.stdout.close()
             if proc.poll() is None:proc.kill();proc.wait()
-        log_budgets[role]={'bytes':total,'byte_cap_reached':truncated,'tail_cap_reached':lines>=6000}
+        log_budgets[role]={'bytes':total,'byte_cap_reached':truncated,'tail_cap_reached':lines>=50000}
     owners={}
     for trace in traces:
         if trace.get('segment')!='effect_owner' or not trace.get('segment_complete'):continue

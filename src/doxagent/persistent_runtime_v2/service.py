@@ -2225,6 +2225,17 @@ class PersistentRuntimeV2Service:
             }
         )
         self.repository.save_effect(done)
+        if effect.effect_type in {RuntimeSideEffect.ROUTE_TO_W3,RuntimeSideEffect.W3_POST_DECISION}:
+            reader = getattr(self.repository,'completed_w3_projection_payload',None)
+            if reader is not None:
+                from doxagent.w3_timing import span
+                with span('case.finish_control'):
+                    payload = reader(effect.case_id)
+                    if payload is not None:
+                        if self._projection_outbox is not None:
+                            self._projection_outbox.enqueue_terminal(payload)
+                            self._effect_executor.submit(self._projection_outbox.flush,limit=20)
+                        return 1
         self._refresh_case_completion(effect.case_id)
         return 1
 

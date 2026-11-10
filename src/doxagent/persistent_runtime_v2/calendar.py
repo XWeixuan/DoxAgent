@@ -9,6 +9,7 @@ from importlib.metadata import version
 from typing import Any
 
 from .journal import RuntimeJournal
+from doxagent.w3_timing import observed
 
 
 class MarketCalendar:
@@ -16,6 +17,7 @@ class MarketCalendar:
         self.journal = journal
         self.name = name
         self._calendar: Any = None
+        self._calendar_window: tuple[date, date] | None = None
         self._version: str | None = None
 
     @property
@@ -24,13 +26,22 @@ class MarketCalendar:
             self._version = f"{self.name}:{version('exchange-calendars')}"
         return self._version
 
-    def _load_calendar(self):
-        if self._calendar is None:
+    @observed('calendar.load')
+    def _load_calendar(self, day: date | None = None):
+        # Searches move at most one year. Construct the queried year and its
+        # neighbors, keeping the existing supported horizon and single memo.
+        start, end = date(2000, 1, 1), date(2040, 12, 31)
+        if day is not None and start <= day <= end:
+            start, end = date(max(2000, day.year-1), 1, 1), date(min(2040, day.year+1), 12, 31)
+        outside = day is not None and self._calendar_window is not None and not (
+            self._calendar_window[0] <= day <= self._calendar_window[1])
+        if self._calendar is None or outside:
             import exchange_calendars  # type: ignore[import-untyped]
 
             self._calendar = exchange_calendars.get_calendar(
-                self.name, start="2000-01-01", end="2040-12-31"
+                self.name, start=start.isoformat(), end=end.isoformat()
             )
+            self._calendar_window = start, end
         return self._calendar
 
     def is_session(self, day: date) -> bool:
@@ -42,7 +53,7 @@ class MarketCalendar:
         try:
             if cached is not None and cached.get("version") == self.calendar_version:
                 return bool(cached["session"])
-            result = bool(self._load_calendar().is_session(day.isoformat()))
+            result = bool(self._load_calendar(day).is_session(day.isoformat()))
             self.journal.set("calendar", key, {"session": result, "version": self.calendar_version})
             return result
         except Exception:
@@ -73,7 +84,7 @@ class MarketCalendar:
                 return datetime.fromisoformat(cached["open"]), datetime.fromisoformat(
                     cached["close"]
                 )
-            calendar = self._load_calendar()
+            calendar = self._load_calendar(day)
             bounds = (
                 calendar.session_open(day.isoformat()).to_pydatetime(),
                 calendar.session_close(day.isoformat()).to_pydatetime(),
