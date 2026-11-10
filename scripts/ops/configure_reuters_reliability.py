@@ -7,10 +7,8 @@ replacement. Lifecycle-only changes preserve the existing Supervisor instance.
 import argparse
 import copy
 import json
-import os
 import sqlite3
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -137,20 +135,14 @@ def main():
     if args.apply and changes:
         root = path.parent / "backups"
         root.mkdir(exist_ok=True, mode=0o700)
-        backup = root / (
-            "reuters-reliability-"
-            + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-            + ".sqlite3"
-        )
-        fd = os.open(backup, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        os.close(fd)
-        with sqlite3.connect(backup) as target:
-            db.backup(target)
+        from doxagent.v2_read.operation_backup import snapshot,finish
+        backup=snapshot(path,root,family='site-registry',operation=json.dumps(changes,sort_keys=True))
         summary["backup"] = str(backup)
         summary["applied"] = []
         for endpoint, payload in changes:
             result = api(endpoint, payload)
             summary["applied"].append({"path": endpoint, "revision": result.get("revision")})
+        summary['retired_backups']=finish(backup,success=True)
     db.close()
     print(json.dumps(summary))
 

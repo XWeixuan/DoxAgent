@@ -61,6 +61,10 @@ def collect(workspaces, jobs, settings, *, now=None, limit=8, dry_run=False):
     owners=workspaces.root/'.init-owners';retired=workspaces.root/'.init-retired'
     if not owners.is_dir():return report
     with WriterLock(workspaces.root/'initialization-snapshot-retirement'):
+        progress=workspaces.root/'.init-retention.json'
+        try:after=json.loads(progress.read_text()).get('cursor','')
+        except (OSError,ValueError):after=''
+        page=sorted((p for p in owners.glob('*.json') if p.name>after),key=lambda p:p.name)[:32]
         # Complete an interrupted filesystem exit; its durable RETIRED marker
         # already prevents new forks/recreation under the same identity.
         if not dry_run and retired.is_dir():
@@ -69,7 +73,7 @@ def collect(workspaces, jobs, settings, *, now=None, limit=8, dry_run=False):
                 if re.fullmatch('[a-f0-9]{32}',target.name) and target.is_dir() and not target.is_symlink() and marker.is_file() and json.loads(marker.read_text()).get('state')=='RETIRED':shutil.rmtree(target)
         with closing(sqlite3.connect(path,timeout=2)) as db:
             runs,held,pinned=protection(db,settings.persistent_runtime_v2_sqlite_path)
-            for marker in owners.glob('*.json'):
+            for marker in page:
                 if len(report['retired'])>=limit:break
                 try:
                     value=json.loads(marker.read_text())
@@ -85,9 +89,20 @@ def collect(workspaces, jobs, settings, *, now=None, limit=8, dry_run=False):
                                 retired.mkdir(exist_ok=True);os.replace(target,retired/identity)
                             shutil.rmtree(retired/identity)
                         continue
-                    parent=db.execute('SELECT run_id FROM initialization_attempts WHERE execution_id=?',(snapshot,)).fetchone()
-                    if not parent or parent[0] not in runs:report['unknown']+=1;continue
-                    parent=parent[0];owner=runs[parent]
+                    parent=value.get('initialization_id')
+                    if not parent:
+                        match=db.execute('SELECT run_id FROM initialization_attempts WHERE execution_id=?',(snapshot,)).fetchone()
+                        parent=match[0] if match else None
+                    if not parent:
+                        matches=[r for r in runs if run==r or run.startswith(r+'-')]
+                        if len(matches)==1:parent=matches[0]
+                    if parent not in runs:
+                        report['unknown']+=1
+                        report.setdefault('unknown_samples',[]).append(dict(workspace=run,snapshot=snapshot))
+                        continue
+                    owner=runs[parent]
+                    if value.get('initialization_id')!=parent and not dry_run:
+                        value['initialization_id']=parent;atomic_json(marker,value)
                     at=owner['at'];age=timedelta(days=14 if owner['status']=='FAILED' else 2)
                     if parent in held or identity in pinned or not at or now-datetime.fromisoformat(at)<age:report['protected']+=1;continue
                     target=workspaces.root/'.init'/identity
@@ -109,5 +124,7 @@ def collect(workspaces, jobs, settings, *, now=None, limit=8, dry_run=False):
                     shutil.rmtree(retired/identity);report['retired'].append(identity)
                 except (ValueError,OSError,sqlite3.Error) as exc:report['errors'].append(dict(owner=marker.name,error=str(exc)[:200]))
         if not dry_run:
+            atomic_json(progress,{'cursor':after if len(report['retired'])>=limit else page[-1].name if page else '',
+                                  'at':now.isoformat(),'scanned':len(page),'unknown':report.get('unknown_samples',[])})
             with workspaces._lock:report['unused_contents']=collect_unused(workspaces.root/'.init-contents')
     return report

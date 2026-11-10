@@ -107,9 +107,13 @@ def test_bus_snapshot_rebuilds_message_search_from_thin_body_reference(tmp_path)
     message=store.get('message','MU','message')
     assert message['body']==native['body_ref']
     from doxagent.v2_read.projectors import DomainProjectors
-    assert DomainProjectors(store).message_search('MU',native)=='Article\n'+body
+    marker=DomainProjectors(store).message_search('MU',native)
+    assert marker=='@body:'+native['body_ref']['sha256']
     with store.connect() as db:
-        assert db.execute("SELECT search_text FROM object_current WHERE kind='message'").fetchone()[0]==('Article\n'+body).casefold()
+        assert db.execute("SELECT search_text FROM object_current WHERE kind='message'").fetchone()[0]==marker
+        assert db.execute('SELECT text FROM content_search WHERE digest=?',(native['body_ref']['sha256'],)).fetchone()[0]==body.casefold()
+        seq=store.highwater(db)
+    assert [r['id'] for r in store.page('message','MU',seq,q='needle-after-chunk-boundary')]==['message']
 
 
 def test_receipt_envelope_pins_nested_native_hash_and_delete_releases_owner(tmp_path):

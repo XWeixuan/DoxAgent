@@ -210,6 +210,9 @@ class SourceOutbox:
                             "UPDATE v2_backfill_checkpoint SET position=0 WHERE table_name='runtime_values'"
                         )
                 columns = list(db.execute(f"PRAGMA table_info({quoted(table)})"))
+                if self.source=='runtime' and table=='runtime_tasks':
+                    # Serving consumes task progress only. Process inputs remain at their owner.
+                    columns=[r for r in columns if r[1] not in {'inputs','receipt'}]
                 if table == 'poll_captures':
                     columns = [r for r in columns if r[1] not in {
                         'payload_json','receipt_json','claim_token','lease_until','queue_at','not_before'}]

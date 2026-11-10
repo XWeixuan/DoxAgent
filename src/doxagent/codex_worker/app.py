@@ -123,12 +123,17 @@ def create_worker_app(
         await asyncio.to_thread(research.initialize)
         jobs.start()
         preparation = asyncio.create_task(prepare_assets())
+        from .resource_maintenance import run as maintain_resources
+        resource_maintenance=asyncio.create_task(maintain_resources(workspaces,jobs,settings)) if runtime is None else None
         async with research_mcp.manager.run():
             try:
                 yield
             finally:
                 preparation.cancel()
                 await asyncio.gather(preparation, return_exceptions=True)
+                if resource_maintenance is not None:
+                    resource_maintenance.cancel()
+                    await asyncio.gather(resource_maintenance,return_exceptions=True)
                 await market.close()
                 await ready_slots.close()
                 try:
@@ -378,10 +383,14 @@ def create_worker_app(
     async def snapshot_workspace(
         run_id: str,
         snapshot_id: str,
+        initialization_id: str | None = None,
         x_workspace_capability: str | None = Header(default=None),
     ) -> dict[str, bool]:
         require_capability(run_id, "snapshot", x_workspace_capability)
-        await disk.run(workspaces.snapshot, run_id, snapshot_id)
+        if initialization_id:
+            await disk.run(workspaces.snapshot, run_id, snapshot_id, initialization_id=initialization_id)
+        else:
+            await disk.run(workspaces.snapshot, run_id, snapshot_id)
         return {"ready": True}
 
     @app.post(

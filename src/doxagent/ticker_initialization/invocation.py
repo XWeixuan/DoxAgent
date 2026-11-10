@@ -84,7 +84,11 @@ async def freeze_invocation(child: Any, kind: str, arguments: dict[str, Any]) ->
     workspace_run_id = f"{run_id}-{arguments['owner'].lower()}" if kind == "d3_v21" else run_id
     if kind == "d3_v21":
         workspace.bind(run_id)
-    await snapshot(workspace_run_id, child.node.execution_id)
+    import inspect
+    if 'initialization_id' in inspect.signature(snapshot).parameters:
+        await snapshot(workspace_run_id, child.node.execution_id,initialization_id=child.run.initialization_id)
+    else:
+        await snapshot(workspace_run_id, child.node.execution_id)
     child.checkpoint(
         invocation=invocation,
         snapshot={

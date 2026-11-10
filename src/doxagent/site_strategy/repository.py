@@ -638,13 +638,19 @@ class SiteStrategyRepository:
             ).fetchone()
         return BrowserProfile.model_validate_json(row["data_json"]) if row else None
 
-    def list_profiles(self, site_id: str | None = None) -> list[BrowserProfile]:
+    def list_profiles(self, site_id: str | None = None, *, after: str | None = None, limit: int | None = None) -> list[BrowserProfile]:
         sql = "select data_json from browser_profiles"
         params: tuple[object, ...] = ()
+        where=[]
         if site_id:
-            sql += " where site_id=?"
-            params = (site_id,)
+            where.append('site_id=?');params+=(site_id,)
+        if after is not None:
+            where.append('profile_id>?');params+=(after,)
+        if where:sql+=' where '+' and '.join(where)
         sql += " order by profile_id"
+        if limit is not None:
+            if not 1<=limit<=1000:raise ValueError('profile page must be 1..1000')
+            sql+=' limit ?';params+=(limit,)
         with self._lock:
             rows = self._connection.execute(sql, params).fetchall()
         return [BrowserProfile.model_validate_json(row["data_json"]) for row in rows]

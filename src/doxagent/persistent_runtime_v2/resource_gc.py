@@ -80,7 +80,13 @@ def referenced(journal,control_path,*,now=None,only_root=None):
             cases=db.execute("SELECT ticker,json_extract(payload_json,'$.version_pin.event_library_version'),status FROM runtime_v2_cases INDEXED BY runtime_case_library_owner WHERE json_extract(payload_json,'$.version_pin.event_library_root')=?",(only_root,)).fetchall()
         tasks=db.execute('SELECT id,ticker,status,'+TASK_RUN+','+TASK_ROOT+','+TASK_VERSION+",json_extract(receipt,'$.frame.\"$doxagent_content_v1\"'),updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION') AND status IN ('PENDING','RUNNING','HELD','FAILED') AND ("+TASK_ROOT+'=? OR '+TASK_ROOT+' IS NULL)',(only_root,)).fetchall()
         indexed=' INDEXED BY runtime_reference_owner'
-        deliveries=[r[0] for r in db.execute('SELECT '+REFERENCE_OWNER_SQL+' AS owner_json FROM runtime_values'+indexed+" WHERE namespace='reference_deliveries'")]
+        deliveries=[]
+        for prefix in ('['+json.dumps(only_root,ensure_ascii=False)+',',
+                       '[null,'+json.dumps(only_root,ensure_ascii=False)+',',
+                       '["",'+json.dumps(only_root,ensure_ascii=False)+','):
+            deliveries.extend(r[0] for r in db.execute('SELECT '+REFERENCE_OWNER_SQL+' AS owner_json FROM runtime_values'+indexed+
+                " WHERE namespace='reference_deliveries' AND "+REFERENCE_OWNER_SQL+'>=? AND '+REFERENCE_OWNER_SQL+'<?',
+                (prefix,prefix+'\uffff')))
         if 'runtime_v2_w3_stages' in names:
             retained=db.execute("SELECT 1 FROM runtime_v2_cases c INDEXED BY runtime_case_library_owner JOIN runtime_v2_w3_stages s USING(case_id) WHERE json_extract(c.payload_json,'$.version_pin.event_library_root')=? AND s.status IN ('PENDING','RUNNING','RESULT_SAVED') AND s.accepted_at>? LIMIT 1",(only_root,(now-timedelta(days=7)).isoformat())).fetchone()
             if retained:protected.add(only_root)
@@ -179,9 +185,9 @@ def compact_process(journal,runs,protected,now,*,limit=64):
     changed=[]
     for run,info in runs.items():
         if info['status'] not in {'SUCCEEDED','FAILED'}:continue
-        days=7 if info['status']=='SUCCEEDED' else 14
+        days=1 if info['status']=='SUCCEEDED' else 14
         if (now-datetime.fromisoformat(info['at'])).total_seconds()<days*86400:continue
-        if str(journal.path.resolve().parent/'runtime_artifacts'/run/'events') in protected:continue
+        if info['status']=='FAILED' and str(journal.path.resolve().parent/'runtime_artifacts'/run/'events') in protected:continue
         def terminal(db):
             task=db.execute('SELECT status,updated_at FROM runtime_tasks WHERE id=?',(info['task'],)).fetchone()
             return task and task[0]==info['status'] and (now-datetime.fromisoformat(task[1])).total_seconds()>=days*86400
@@ -214,22 +220,77 @@ def compact_process(journal,runs,protected,now,*,limit=64):
     return changed
 
 
+def compact_frame(journal,control_path,run,info,now):
+    """A successful published maintenance frame is process input, not canonical history."""
+    if not control_path or info['status']!='SUCCEEDED' or now-datetime.fromisoformat(info['at'])<timedelta(days=1):return None
+    with journal.transaction(write=False,expand=False) as db:
+        row=db.execute('SELECT ticker,receipt FROM runtime_tasks WHERE id=? AND status=\'SUCCEEDED\'',(info['task'],)).fetchone()
+        if not row:return None
+        ticker,raw=row
+        value=json.loads(raw)
+        if not value.get('frame') or value.get('process_retired'):return None
+        names={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        exiting=[r[0] for r in db.execute("SELECT artifact_id FROM artifact_ref WHERE owner_type='runtime_tasks' AND owner_id=json_array(?)",(info['task'],))] if 'artifact_ref' in names else []
+    with closing(sqlite3.connect(Path(control_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
+        if not db.execute('SELECT 1 FROM activation_revisions WHERE revision_id=? AND ticker=?',(run+'-activation',ticker)).fetchone():return None
+    value=journal.content.decode(value)
+    frame=value.pop('frame')
+    if frame.get('run_id')!=run:return None
+    event=(frame.get('base',{}).get('artifacts',{}).get('event_library') or {})
+    base_revision=frame.get('base',{}).get('revision_id')
+    if not base_revision:return None
+    with closing(sqlite3.connect(Path(control_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
+        if not db.execute('SELECT 1 FROM activation_revisions WHERE revision_id=? AND ticker=?',(base_revision,ticker)).fetchone():return None
+    case_ids=frame.get('case_ids',[])
+    if not case_ids and any(frame.get(k) for k in ('candidates','trades','badcases','gaps')):return None
+    if case_ids:
+        with journal.transaction(write=False,expand=False) as db:
+            if 'runtime_v2_cases' not in names:return None
+            if db.execute('SELECT value FROM json_each(?) ids WHERE NOT EXISTS '
+                          '(SELECT 1 FROM runtime_v2_cases c WHERE c.case_id=ids.value) LIMIT 1',
+                          (json.dumps(case_ids),)).fetchone():return None
+    from .journal import encode
+    import hashlib
+    encoded_frame=encode(frame).encode()
+    proof=dict(at=now.isoformat(),activation_revision=run+'-activation',frame_sha256=hashlib.sha256(encoded_frame).hexdigest(),
+               frame_payload_bytes=len(encoded_frame),resume_allowed=False,
+               base_revision=frame.get('base',{}).get('revision_id'),
+               frozen_selection={k:frame[k] for k in ('case_ids','effect_versions','models','execution_bundle_id','policy_consumption') if k in frame})
+    owner=value.setdefault('_gc_owner',{})
+    for key,item in dict(run_id=run,event_library_root=event.get('root'),event_library_version=event.get('version')).items():
+        if not owner.get(key):owner[key]=item
+    value.update(process_retired=True,retired_frame=proof)
+    payload=journal.content.encode(value)
+    with journal.transaction(operation='resource.frame.publish') as db:
+        changed=db.execute("UPDATE runtime_tasks SET receipt=? WHERE id=? AND status='SUCCEEDED' AND updated_at=? AND receipt=?",
+                           (payload,info['task'],info['at'],raw)).rowcount
+        if changed:
+            from doxagent.v2_read.source_native_gc import queue_owner_exit
+            queue_owner_exit(db,exiting)
+    return {k:v for k,v in proof.items() if k!='frozen_selection'} if changed else None
+
+
 def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=None):
     now=now or journal.clock();root=journal.path.resolve().parent/'runtime_artifacts'
     report=dict(at=now.isoformat(),retired=[],compacted=[],skipped=[],available_before=shutil.disk_usage(root.parent).free)
     if not root.exists():return report
     migrate(journal,control_path)
     previous=root/'last-resource-exit.json'
-    try:cursor=json.loads(previous.read_text()).get('cursor','')
-    except (OSError,ValueError):cursor=''
+    try:prior=json.loads(previous.read_text());cursor=prior.get('cursor','')
+    except (OSError,ValueError):prior={};cursor=''
+    pending=list(dict.fromkeys(prior.get('pending',[])))
     paths=sorted(p for p in root.iterdir() if p.is_dir() and not p.is_symlink())
-    paths=[p for p in paths if p.name>cursor]
-    deadline=time.monotonic()+2
-    def pause():return time.monotonic()>=deadline or bool(should_yield and should_yield())
+    retry=[p for p in paths if p.name in pending[:1]]
+    scan_paths=[p for p in paths if p.name>cursor]
+    paths=retry+[p for p in scan_paths if p not in retry]
+    report['cursor']=cursor
+    deadline=time.monotonic()+5
+    def pause():return time.monotonic()>=deadline
     with WriterLock(root/'resource-retirement'):
         for run in paths[:max(8,limit*4)]:
             if pause():break
-            report['cursor']=run.name
+            report['cursor']=max(report['cursor'],run.name)
+            if run.name in pending:pending.remove(run.name)
             if run.name.startswith('.retiring-'):
                 if not dry_run:shutil.rmtree(run)
                 continue
@@ -239,10 +300,22 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
             stamp=datetime.fromisoformat(info['at']) if info else datetime.fromtimestamp(run.stat().st_mtime,UTC)
             failed=info is None or info['status']=='FAILED'
             if info and info['status'] not in {'SUCCEEDED','FAILED'}:continue
+            if info and info['status']=='SUCCEEDED' and (now-stamp).total_seconds()<48*3600:
+                if not dry_run:
+                    changed=compact_process(journal,{run.name:info},set(),now,limit=8)
+                    report.setdefault('process_compacted',[]).extend(changed)
+                    proof=compact_frame(journal,control_path,run.name,info,now)
+                    if proof:report.setdefault('frames_compacted',[]).append(proof)
+                continue
             if (now-stamp).total_seconds()<(7*86400 if failed else 48*3600):continue
             identity=str(run/'events')
             refs,protected,_=referenced(journal,control_path,now=now,only_root=identity)
-            if pause():break
+            if pause():pending.append(run.name);break
+            if info and not dry_run:
+                changed=compact_process(journal,{run.name:info},protected,now,limit=8)
+                report.setdefault('process_compacted',[]).extend(changed)
+                proof=compact_frame(journal,control_path,run.name,info,now)
+                if proof:report.setdefault('frames_compacted',[]).append(proof)
             if identity in protected:continue
             if opened_below(run):report['skipped'].append(dict(run=run.name,reason='open descriptor'));continue
             used=refs.get(identity,{})
@@ -269,13 +342,20 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
                         if prior.get('verified') and (set(versions)-{0})<=set(prior.get('versions',[])):continue
                     if dry_run:report['compacted'].append(dict(run=run.name,path=str(path),versions=sorted(versions)));continue
                     try:
-                        proof=compact_one(journal,control_path,identity,run,path,versions,now,pause)
+                        if should_yield and should_yield():
+                            pending.append(run.name)
+                            report['skipped'].append(dict(run=run.name,reason='active realtime; deferred heavy compaction'))
+                            break
+                        heavy_deadline=time.monotonic()+30
+                        proof=compact_one(journal,control_path,identity,run,path,versions,now,
+                                          lambda:time.monotonic()>=heavy_deadline)
                         if proof:report['compacted'].append(proof)
                     except (OSError,ValueError,RuntimeError,sqlite3.Error) as exc:
+                        pending.append(run.name)
                         report['skipped'].append(dict(run=run.name,reason=str(exc)[:200]))
-            if info and not dry_run and not pause():compact_process(journal,{run.name:info},protected,now)
             if len(report['retired'])+len(report['compacted'])>=limit:break
-        if not paths or report.get('cursor')==paths[-1].name:report['cursor']=''
+        if not scan_paths or report.get('cursor')==scan_paths[-1].name:report['cursor']=''
+        report['pending']=list(dict.fromkeys(pending))
         report['available_after']=shutil.disk_usage(root.parent).free
         atomic_json(previous,report)
     return report

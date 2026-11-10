@@ -78,6 +78,7 @@ class AcquisitionStore:
                     CREATE INDEX IF NOT EXISTS captures_pending ON captures(status,not_before,observed_at);
                     CREATE INDEX IF NOT EXISTS captures_source_ready ON captures(status,source_id,not_before,observed_at);
                     CREATE INDEX IF NOT EXISTS captures_time ON captures(observed_at,capture_id);
+                    CREATE INDEX IF NOT EXISTS captures_run ON captures(run_id,status);
                     CREATE TABLE IF NOT EXISTS inputs(input_key TEXT PRIMARY KEY,observed_at TEXT NOT NULL);
                     CREATE INDEX IF NOT EXISTS inputs_time ON inputs(observed_at);
                     CREATE TABLE IF NOT EXISTS first_seen(identity TEXT PRIMARY KEY,observed_at TEXT NOT NULL);

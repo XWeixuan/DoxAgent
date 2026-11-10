@@ -760,6 +760,21 @@ class SiteStrategyService:
                     maintain_profile, root, profile.directory_key, allow_cache=True
                 )
                 dirty.discard(profile_id)
+        # Small rotating cold-profile page; owner locks/process checks fence identity state.
+        from doxagent.v2_read.maintenance import atomic_json
+        import json
+        progress=root/'.cache-owner.json'
+        try:after=json.loads(progress.read_text()).get('cursor','')
+        except (OSError,ValueError):after=''
+        page=await registry_io(self.repository.list_profiles,after=after,limit=16)
+        for profile in page:
+            self._cache_profile_cursor=profile.profile_id
+            if not profile.maintenance_session_id:
+                await asyncio.to_thread(maintain_profile,root,profile.directory_key,allow_cache=True,seconds=.5)
+        if not page:self._cache_profile_cursor=''
+        atomic_json(progress,{'cursor':self._cache_profile_cursor,'at':__import__('time').time(),'scanned':len(page)})
+        from doxagent.v2_read.operation_backup import reconcile as retire_operation_backups
+        await asyncio.to_thread(retire_operation_backups,self.repository.path.parent/'backups')
         await asyncio.to_thread(self.profile_storage.maintain)
         await asyncio.to_thread(self.runtime.evidence_store.prune)
 

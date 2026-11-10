@@ -49,6 +49,24 @@ async def test_owned_terminal_tree_exits_but_final_result_and_w3_descendants_sta
 
 
 @pytest.mark.asyncio
+async def test_retired_w3_fork_is_independent_of_live_template_but_active_subagents_hold_it(tmp_path):
+    now=datetime.now(UTC);store=JobStore(tmp_path);sdk=SDK(tmp_path,now)
+    for t in ('template','retired','with-child'):sdk.add(t)
+    for t in ('retired','with-child'):
+        sdk.threads[t].update(forkedFromId='template',sessionId='template')
+        job(store,t,now,run='w3-case-'+t,age=30)
+    job(store,'template',now,run='w3-template-live',age=30)
+    sdk.add('active-child','with-child',active=True)
+    with closing(store.connect()) as db,db:
+        db.execute('CREATE TABLE w3_thread_registry(thread_id PRIMARY KEY,kind,parent_id,run_id,status)')
+        db.executemany('INSERT INTO w3_thread_registry VALUES(?,?,?,?,?)',[(t,'CASE','template','w3-case-'+t,'DELETED') for t in ('retired','with-child')])
+        db.execute("INSERT INTO w3_thread_registry VALUES('template','TEMPLATE',NULL,'w3-template-live','ACTIVE')")
+    report=await TerminalSessions(SimpleNamespace(store=store),sdk).collect(now=now)
+    assert report['deleted']==['retired']
+    assert {'template','with-child','active-child'}<=sdk.threads.keys()
+
+
+@pytest.mark.asyncio
 async def test_active_descendant_and_recovery_owner_protect_entire_tree(tmp_path):
     now=datetime.now(UTC);store=JobStore(tmp_path);sdk=SDK(tmp_path,now)
     for t,parent in [('parent',None),('active','parent'),('resume',None),('failed',None)]:sdk.add(t,parent)

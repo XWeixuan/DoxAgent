@@ -154,5 +154,7 @@ async def finalize_candidate_v21(
             published_at=policy.published_at,
         )
     )
-    state.update(run_id, candidate_handoff=handoff.model_dump(mode="json"))
+    if not state.run(run_id).get('resource_retirement'):
+        state.update(run_id, candidate_handoff=handoff.model_dump(mode="json"))
+    state.settle(run_id, authority='published-candidate')
     return handoff

@@ -437,7 +437,8 @@ def run_gc(store, *, once=False, interval=15, budget=2):
             import sqlite3
             while time.monotonic() - started < budget:
                 try:
-                    result = collect(store, limit=batch, time_floor=result.get("time_floor"))
+                    result = collect(store, limit=batch, budget=max(.001, budget-(time.monotonic()-started)),
+                                     time_floor=result.get("time_floor"))
                 except sqlite3.OperationalError as exc:
                     errors.append(str(exc))
                     if "locked" not in str(exc):
@@ -447,6 +448,13 @@ def run_gc(store, *, once=False, interval=15, budget=2):
                     continue
                 for name, count in result["deleted"].items():
                     total[name] = total.get(name, 0) + count
+                if result.get('errors'):
+                    errors.extend(result['errors'])
+                    # A later stage exhausting this tick does not invalidate
+                    # earlier commits or justify throttling every fast stage.
+                    if not any(result['deleted'].values()):
+                        batch=max(16,batch//2)
+                        break
                 if result.get('cycle_complete') or (not any(result["deleted"].values()) and not result.get("scanned")):
                     break
                 batch = min(500, batch * 2)
@@ -455,6 +463,9 @@ def run_gc(store, *, once=False, interval=15, budget=2):
                               "protected_sources": result.get("protected_sources"),
                               "policy": result.get("policy"),
                               "elapsed_seconds": time.monotonic() - started}), flush=True)
+            atomic_json(Path(str(store.path)+'.gc.json'),dict(at=datetime.now(UTC).isoformat(),
+                deleted=total,errors=errors,retention_floor=result.get('retention_floor'),
+                next_stage=result.get('next_stage'),elapsed_seconds=time.monotonic()-started))
             from .artifact_registry import collect_diagnostics
             try:
                 files = collect_diagnostics(store, now=datetime.now(UTC), limit=25)
