@@ -450,7 +450,11 @@ def run_gc(store, *, once=False, interval=15, budget=2):
                     total[name] = total.get(name, 0) + count
                 if result.get('errors'):
                     errors.extend(result['errors'])
-                    batch = max(10, batch // 2)
+                    # A later stage exhausting this tick does not invalidate
+                    # earlier commits or justify throttling every fast stage.
+                    if not any(result['deleted'].values()):
+                        batch=max(16,batch//2)
+                        break
                 if result.get('cycle_complete') or (not any(result["deleted"].values()) and not result.get("scanned")):
                     break
                 batch = min(500, batch * 2)

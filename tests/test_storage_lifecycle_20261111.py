@@ -264,3 +264,23 @@ def test_runtime_capture_leaves_process_payload_at_owner_and_keeps_progress(tmp_
         assert db.execute("SELECT inputs,receipt FROM runtime_tasks WHERE id='task'").fetchone()==(inputs,inputs)
     assert source.event(2)['row']['status']=='SUCCEEDED'
     assert 'inputs' not in source.event(2)['row']
+
+
+def test_poll_current_candidate_cursor_advances_past_recent_protected_prefix(tmp_path,monkeypatch):
+    import time
+    from doxagent.v2_read.repository import ReadStore
+    from doxagent.v2_read.serving_gc import _poll_current
+    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
+    monkeypatch.setenv('DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH',str(tmp_path/'bus.sqlite3'))
+    monkeypatch.setenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','false')
+    AcquisitionStore(tmp_path/'acquisition.sqlite3',initialize=True)
+    store=ReadStore(tmp_path/'read.db');store.migrate();now=datetime.now(UTC)
+    store.ingest('fixture','1',[dict(kind='native:poll_runs',ticker='MU',id=f'{i:03}',
+        data={'dispatch_at':now.isoformat()}) for i in range(25)]+[
+        dict(kind='native:poll_runs',ticker='MU',id='old-z',data={'dispatch_at':(now-timedelta(days=3)).isoformat()})])
+    monkeypatch.setenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','true')
+    first,seen=_poll_current(store,now,4,time.monotonic()+1)
+    assert seen==4 and first['poll_current']==0
+    for _ in range(7):_poll_current(store,now,4,time.monotonic()+1)
+    assert store.get('native:poll_runs','MU','old-z') is None
+    assert store.get('native:poll_runs','MU','000') is not None

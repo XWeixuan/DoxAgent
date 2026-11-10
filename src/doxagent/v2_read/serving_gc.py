@@ -40,7 +40,7 @@ def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
         delta, seen = {}, 0
         try:
             if name == 'poll_current':
-                delta, seen = _poll_current(store, now, limit, deadline)
+                delta, seen = _poll_current(store, now, min(limit,16), deadline)
             with store.connect(write=True, timeout=.05) as db:
                 db.set_progress_handler(lambda: time.monotonic() >= deadline, 1000)
                 # Pins are rechecked under the writer fence for every independent commit.

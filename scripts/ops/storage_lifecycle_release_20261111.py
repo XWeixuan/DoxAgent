@@ -53,7 +53,7 @@ def build(audit,commit,baseline,release):
             if (hashlib.sha256(raw).hexdigest() if raw else None)!=(old['sha256'] if old else None):
                 raise ValueError('production source changed: '+role+' '+path)
         groups.setdefault(info['Image'],[]).append(role)
-    labels=infos['v2-scheduler']['Config']['Labels']
+    labels=inspect('v2-scheduler')['Config']['Labels']
     base=['docker','compose','--env-file',str(REPO/'.env.v2'),'-p',labels['com.docker.compose.project']]
     for path in labels['com.docker.compose.project.config_files'].split(','):
         if path!=str(ROOT/'compose.current.json'):base+=['-f',path]
@@ -98,6 +98,7 @@ def build(audit,commit,baseline,release):
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['build','deploy','reconcile'])
     p.add_argument('--commit',required=True);p.add_argument('--baseline',type=Path)
+    p.add_argument('--roles',nargs='+',help='build only explicitly selected changed roles')
     args=p.parse_args();os.umask(0o077)
     commit=command('sudo','-u','ubuntu','git','-C',str(REPO),'rev-parse',args.commit)
     if len(commit)!=40:raise ValueError('full source commit required')
@@ -105,7 +106,9 @@ def main():
     release=load_release(audit,commit)
     with release.lock(ROOT):
         if args.action=='build':
-            build(audit,commit,json.loads(args.baseline.read_bytes()),release)
+            baseline=json.loads(args.baseline.read_bytes())
+            if args.roles:baseline['roles']={r:baseline['roles'][r] for r in args.roles}
+            build(audit,commit,baseline,release)
         elif args.action=='deploy':
             manifest=json.loads((audit/'manifest.private.json').read_bytes())
             guardian=inspect('initialization-guardian')
@@ -115,7 +118,7 @@ def main():
             # Worker replacement must never cancel accepted model work.
             db=__import__('sqlite3').connect('file:/var/lib/docker/volumes/doxagent-v2_v2-data/_data/workspaces/worker-jobs.sqlite3?mode=ro',uri=True)
             try:
-                if db.execute("SELECT 1 FROM jobs WHERE status IN ('queued','running') LIMIT 1").fetchone():
+                if 'codex-worker' in manifest['components'] and db.execute("SELECT 1 FROM jobs WHERE status IN ('queued','running') LIMIT 1").fetchone():
                     raise ValueError('Worker has accepted work; finish producer drain before deploy')
             finally:db.close()
             for role,image in manifest['baseline'].items():

@@ -81,9 +81,9 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
                         settlement=row[0] or bundle.get('published_at') or bundle.get('updated_at')
             runtime_path=getattr(settings,'persistent_runtime_v2_sqlite_path',None)
             if not settlement and runtime_path and Path(runtime_path).is_file():
-                from doxagent.persistent_runtime_v2.resource_gc import TASK_RUN
+                task_run="coalesce(json_extract(receipt,'$._gc_owner.run_id'),json_extract(receipt,'$.frame.run_id'))"
                 with closing(sqlite3.connect(Path(runtime_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
-                    row=db.execute('SELECT updated_at FROM runtime_tasks WHERE '+TASK_RUN+"=? AND status='SUCCEEDED' LIMIT 1",(run,)).fetchone()
+                    row=db.execute('SELECT updated_at FROM runtime_tasks WHERE '+task_run+"=? AND status='SUCCEEDED' LIMIT 1",(run,)).fetchone()
                     if row:settlement=row[0]
             days=1 if settlement else (3 if all(s=='cancelled' for s,_,_,_ in owners) else 7 if all(s=='succeeded' for s,_,_,_ in owners) else 14)
             if any(now-datetime.fromisoformat(at)<timedelta(days=days) for _,at,_,_ in owners):continue
