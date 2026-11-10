@@ -207,10 +207,12 @@ class RuntimeJournal:
                     deadline = started + (self.busy_timeout_seconds if timeout is None else timeout)
                     db.execute("PRAGMA busy_timeout=100")
                     while True:
-                        held = gate.acquire(timeout=0.1)
+                        with span('journal.gate', operation=operation):
+                            held = gate.acquire(timeout=0.1)
                         if held:
                             try:
-                                db.execute("BEGIN IMMEDIATE")
+                                with span('journal.sqlite_begin', operation=operation):
+                                    db.execute("BEGIN IMMEDIATE")
                                 break
                             except sqlite3.OperationalError as exc:
                                 gate.release()
@@ -219,7 +221,8 @@ class RuntimeJournal:
                                     raise
                         if time.monotonic() >= deadline:
                             raise sqlite3.OperationalError("database is locked")
-                        time.sleep(0.025)
+                        with span('journal.retry_wait', operation=operation):
+                            time.sleep(0.025)
                 else:
                     db.execute("BEGIN")
             acquired = time.monotonic()
@@ -239,10 +242,12 @@ class RuntimeJournal:
             elapsed = time.monotonic() - started
             if elapsed >= 0.25 or primary_code:
                 from doxagent.control_io import diagnostic_warning
+                from doxagent.w3_timing import current_identity
+                identity = current_identity()
 
                 diagnostic_warning(
                     __name__,
-                    "runtime_transaction pid=%s operation=%s write=%s elapsed_ms=%s wait_ms=%s sqlite_code=%s hold_ms=%s commit_ms=%s db=%s",
+                    "runtime_transaction pid=%s operation=%s write=%s elapsed_ms=%s wait_ms=%s sqlite_code=%s hold_ms=%s commit_ms=%s db=%s case_id=%s effect_id=%s",
                     os.getpid(),
                     operation,
                     write,
@@ -257,6 +262,8 @@ class RuntimeJournal:
                     else 0,
                     round((time.monotonic() - commit_started) * 1000) if commit_started else 0,
                     self.path.name,
+                    identity.get('case_id'),
+                    identity.get('effect_id'),
                 )
 
     @staticmethod

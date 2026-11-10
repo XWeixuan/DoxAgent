@@ -164,6 +164,10 @@ def runtime(tmp_path, kind="EXPERT_TRADE"):
 
 def enqueue(service, identity="case-1"):
     case, projection = fixture_case(identity)
+    # This orchestration fixture starts a fresh message on the frozen clock;
+    # the generic source fixture predates it and correctly triggers the live
+    # 12-minute execution cutoff otherwise.
+    case.source = case.source.model_copy(update={"message_bus_event_time": service.journal.clock()})
     case.w3_contract_version = W3_CONTRACT
     case.orchestration_revision = 3
     case.status = RuntimeCaseStatus.PENDING_W3

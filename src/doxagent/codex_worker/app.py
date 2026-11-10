@@ -163,16 +163,21 @@ def create_worker_app(
 
     @app.post("/v1/w3/research/prepare", dependencies=[Depends(require_service_auth)])
     async def prepare_research(payload: dict):
-        components = await disk.run(research.install, payload["components"], payload["ticker"])
+        from doxagent.w3_timing import segment_trace
+        with segment_trace('research_install',ticker=payload['ticker']):
+            components = await blocking(research.install, payload["components"], payload["ticker"])
         market.warm_fixed(payload["ticker"])
         return {"components": components}
 
     @app.post("/v1/w3/contexts", dependencies=[Depends(require_service_auth)])
     async def bind_research(payload: dict):
+        from doxagent.w3_timing import segment_trace
         try:
-            result = await disk.run(
-                research.bind, payload["case_id"], payload["phase"], payload["manifest"]
-            )
+            with segment_trace('context_bind',
+                               case_id=payload['case_id'],task_phase=payload['phase']):
+                result = await blocking(
+                    research.bind, payload["case_id"], payload["phase"], payload["manifest"]
+                )
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from exc
         if payload["phase"] == "trade_decision":
@@ -334,8 +339,10 @@ def create_worker_app(
 
     @app.post("/v1/research-packs/{pack_id}", dependencies=[Depends(require_service_auth)])
     async def research_pack(pack_id: str, request: ResearchPackRequest):
+        from doxagent.w3_timing import segment_trace
         try:
-            await disk.run(workspaces.ensure_research_pack, pack_id, request.files)
+            with segment_trace('research_pack',pack_id=pack_id):
+                await blocking(workspaces.ensure_research_pack, pack_id, request.files)
             return {"ready": True}
         except FileNotFoundError as exc:
             raise HTTPException(404, "pack not installed") from exc
@@ -348,7 +355,9 @@ def create_worker_app(
     ):
         require_capability(run_id, "write", x_workspace_capability)
         try:
-            await disk.run(workspaces.materialize_case, run_id, request.packs, request.files)
+            from doxagent.w3_timing import segment_trace
+            with segment_trace('materialize',run_id=run_id):
+                await blocking(workspaces.materialize_case, run_id, request.packs, request.files)
         except FileNotFoundError as exc:
             raise HTTPException(409, "research_pack_missing") from exc
         return {"ready": True}

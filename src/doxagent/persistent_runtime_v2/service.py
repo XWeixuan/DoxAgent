@@ -1888,94 +1888,66 @@ class PersistentRuntimeV2Service:
                     raise
                 return 0
 
-        claim_at = utc_now()
-        claim_started = perf_counter()
-        effects = self.repository.claim_effects(limit=limit, exclude_ids=active, lane='realtime_w3')
-        with self._w3_threads_lock:
-            capacity = min(limit-len(effects), 8-len(self._background_effect_ids))
-        background = self.repository.claim_effects(
-            limit=capacity, exclude_ids=active, lane='background') if capacity > 0 else []
-        effects += background
-        with self._w3_threads_lock:
-            self._background_effect_ids.update(e.effect_id for e in background)
-        claim_ms = round((perf_counter() - claim_started) * 1000, 3)
+        from doxagent.w3_timing import span
+        claimed, started = [], set()
         dispatched = 0
-        ordered = sorted(
-            effects,
-            key=lambda value: (
-                value.effect_type
-                not in {
-                    RuntimeSideEffect.ROUTE_TO_W3,
-                    RuntimeSideEffect.W3_POST_DECISION,
-                }
-            ),
-        )
-        with self._w3_threads_lock:
-            self._active_effect_ids.update(effect.effect_id for effect in effects)
-            self._active_effects.update((effect.effect_id, effect) for effect in effects)
-        started = set()
         try:
-            for effect in ordered:
-                if effect.effect_id not in self._background_effect_ids:
-                    thread = Thread(target=self._run_w3_effect_thread, args=(effect, {
-                        "effect_claim_started_at": claim_at.isoformat(),
-                        "effect_claim_elapsed_ms": claim_ms,
-                        "effect_claim_batch_size": len(effects),
-                        "effect_dispatched_at": utc_now().isoformat(),
-                        "dispatch_monotonic": perf_counter(),
-                    }), name='prv2-w3-prepare', daemon=False)
+            for lane in ('realtime_w3', 'background'):
+                capacity = limit - len(claimed)
+                with self._w3_threads_lock:
+                    active = tuple(self._active_effect_ids)
+                    if lane == 'background':
+                        capacity = min(capacity, 8-len(self._background_effect_ids))
+                if capacity < 1:
+                    break
+                claim_at, claim_started = utc_now(), perf_counter()
+                with span('effect.claim', lane=lane):
+                    effects = self.repository.claim_effects(limit=capacity, exclude_ids=active, lane=lane)
+                claim_ms = round((perf_counter()-claim_started)*1000,3)
+                claimed.extend(effects)
+                with self._w3_threads_lock:
+                    self._active_effect_ids.update(e.effect_id for e in effects)
+                    self._active_effects.update((e.effect_id,e) for e in effects)
+                    if lane == 'background':
+                        self._background_effect_ids.update(e.effect_id for e in effects)
+                for effect in effects:
+                    timing = dict(effect_claim_started_at=claim_at.isoformat(),
+                                  effect_claim_elapsed_ms=claim_ms,
+                                  effect_claim_batch_size=len(effects),
+                                  effect_dispatched_at=utc_now().isoformat(),
+                                  dispatch_monotonic=perf_counter())
                     try:
-                        with self._w3_threads_lock:
-                            thread.start()
-                            self._w3_threads.add(thread)
+                        if lane == 'realtime_w3':
+                            thread = Thread(target=self._run_w3_effect_thread,args=(effect,timing),
+                                            name='prv2-w3-prepare',daemon=False)
+                            with self._w3_threads_lock:
+                                thread.start()
+                                self._w3_threads.add(thread)
+                        else:
+                            self._effect_executor.submit(self._run_w3_effect_thread,effect,timing)
                     except RuntimeError as exc:
                         if str(exc) != "can't start new thread":
                             raise
-                        break
+                        return dispatched
                     started.add(effect.effect_id)
                     dispatched += 1
-                    continue
-                try:
-                    self._effect_executor.submit(
-                        self._run_w3_effect_thread,
-                        effect,
-                        {
-                            "effect_claim_started_at": claim_at.isoformat(),
-                            "effect_claim_elapsed_ms": claim_ms,
-                            "effect_claim_batch_size": len(effects),
-                            "effect_dispatched_at": utc_now().isoformat(),
-                            "dispatch_monotonic": perf_counter(),
-                        },
-                    )
-                except RuntimeError as exc:
-                    if str(exc) != "can't start new thread":
-                        raise
-                    # submit enqueues before growing the stdlib pool. An existing
-                    # worker will consume this exact work item; do not requeue it.
-                    started.add(effect.effect_id)
-                    dispatched += 1
-                    logging.getLogger(__name__).warning("Effect queued on existing worker capacity")
-                    break
-                started.add(effect.effect_id)
-                dispatched += 1
+                # Realtime owners are running before any background SQL claim.
         finally:
             with self._w3_threads_lock:
-                self._active_effect_ids.difference_update(
-                    effect.effect_id for effect in ordered if effect.effect_id not in started
-                )
-                for effect in ordered:
+                for effect in claimed:
                     if effect.effect_id not in started:
-                        self._active_effects.pop(effect.effect_id, None)
+                        self._active_effect_ids.discard(effect.effect_id)
+                        self._active_effects.pop(effect.effect_id,None)
                         self._background_effect_ids.discard(effect.effect_id)
-            for effect in ordered:
+            for effect in claimed:
                 if effect.effect_id not in started:
                     try:
                         self.repository.save_effect(effect.model_copy(update={
                             "status": RuntimeEffectStatus.PENDING_RETRY,
-                            "available_at": utc_now() + timedelta(seconds=5),
+                            "available_at": utc_now()+timedelta(seconds=5),
                         }))
                     except Exception as exc:
-                        if not isinstance(exc, LeaseLost) and not is_sqlite_contention(exc):
+                        if not isinstance(exc,LeaseLost) and not is_sqlite_contention(exc):
                             raise
         return dispatched
 
@@ -2011,7 +1983,10 @@ class PersistentRuntimeV2Service:
                 return
             self._phase_waiters.pop(effect.effect_id)
             self._running_effect_ids.add(effect.effect_id)
-            thread = Thread(target=self._run_w3_effect_thread, args=(effect,), daemon=False,
+            timing = dict(future_done_at=getattr(pending,'w3_done_at',None),
+                          future_handoff_ms=round((perf_counter()-getattr(pending,'w3_done_monotonic',perf_counter()))*1000,3),
+                          dispatch_monotonic=perf_counter())
+            thread = Thread(target=self._run_w3_effect_thread, args=(effect,timing), daemon=False,
                             name="prv2-w3-resume")
             try:
                 thread.start()  # Completed decisions bypass preparation backlog.
@@ -2025,7 +2000,7 @@ class PersistentRuntimeV2Service:
                 self._w3_threads.add(thread)
                 return
         # Reuse already-created workers if the OS cannot create this short continuation.
-        self._effect_executor.submit(self._run_w3_effect_thread, effect)
+        self._effect_executor.submit(self._run_w3_effect_thread, effect, timing)
 
     def _run_w3_effect_thread(
         self,
@@ -2036,33 +2011,43 @@ class PersistentRuntimeV2Service:
         dispatched = timing.pop("dispatch_monotonic", None)
         if dispatched is not None:
             timing["effect_thread_start_ms"] = round((perf_counter() - dispatched) * 1000, 3)
-        phase_token = defer_phase_waits.set(True)
-        try:
-            with self._w3_threads_lock:
-                self._running_effect_ids.add(effect.effect_id)
-            self._process_claimed_effect(effect, dispatch_timing=timing)
-        finally:
-            defer_phase_waits.reset(phase_token)
-            with self._w3_threads_lock:
-                self._w3_threads.discard(current_thread())
-                self._running_effect_ids.discard(effect.effect_id)
-                waiting = effect.effect_id in self._phase_waiters
-                if not waiting:
-                    self._active_effect_ids.discard(effect.effect_id)
-                    self._active_effects.pop(effect.effect_id, None)
-                    self._background_effect_ids.discard(effect.effect_id)
-            if waiting:
-                self._resume_phase(effect)
-            if self.coordinator is not None and not self._draining:
-                self.coordinator.wake_effects()
+        from doxagent.w3_timing import effect_trace
+        trace_scope = effect_trace(effect,self.journal,**timing) if self.journal and effect.effect_type in {
+            RuntimeSideEffect.ROUTE_TO_W3,RuntimeSideEffect.W3_POST_DECISION} else nullcontext()
+        with trace_scope:
+            phase_token = defer_phase_waits.set(True)
+            try:
+                with self._w3_threads_lock:
+                    self._running_effect_ids.add(effect.effect_id)
+                self._process_claimed_effect(effect, dispatch_timing=timing)
+            finally:
+                defer_phase_waits.reset(phase_token)
+                with self._w3_threads_lock:
+                    self._w3_threads.discard(current_thread())
+                    self._running_effect_ids.discard(effect.effect_id)
+                    waiting = effect.effect_id in self._phase_waiters
+                    if not waiting:
+                        self._active_effect_ids.discard(effect.effect_id)
+                        self._active_effects.pop(effect.effect_id, None)
+                        self._background_effect_ids.discard(effect.effect_id)
+                if waiting:
+                    self._resume_phase(effect)
+                if self.coordinator is not None and not self._draining:
+                    self.coordinator.wake_effects()
 
     def _process_claimed_effect(self, effect, *, dispatch_timing=None):
         if self.journal and effect.effect_type in {
             RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION
         }:
-            from doxagent.w3_timing import effect_trace
-            with effect_trace(effect, self.journal, **(dispatch_timing or {})):
-                return self._process_claimed_effect_inner(effect, dispatch_timing=dispatch_timing)
+            from doxagent.w3_timing import current_identity,effect_trace,mark
+            if current_identity().get('effect_id')==effect.effect_id:
+                result=self._process_claimed_effect_inner(effect,dispatch_timing=dispatch_timing)
+                mark('effect.body_return',result=result)
+                return result
+            with effect_trace(effect,self.journal,**(dispatch_timing or {})):
+                result=self._process_claimed_effect_inner(effect,dispatch_timing=dispatch_timing)
+                mark('effect.body_return',result=result)
+                return result
         return self._process_claimed_effect_inner(effect, dispatch_timing=dispatch_timing)
 
     def _process_claimed_effect_inner(
@@ -2134,7 +2119,11 @@ class PersistentRuntimeV2Service:
                     continuation = getattr(exc, "effect_continuation", None)
                     if continuation:
                         self._effect_continuations[effect.effect_id] = continuation
-                pending.add_done_callback(lambda _: self._resume_phase(effect))
+                def resume(done):
+                    done.w3_done_at = utc_now().isoformat()
+                    done.w3_done_monotonic = perf_counter()
+                    self._resume_phase(effect)
+                pending.add_done_callback(resume)
                 return 0
             if (isinstance(exc, ControlError) or is_sqlite_contention(exc)
                 or isinstance(exc, RuntimeError) and str(exc) == "can't start new thread"):

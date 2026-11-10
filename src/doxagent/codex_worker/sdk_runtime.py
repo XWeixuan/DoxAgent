@@ -740,6 +740,9 @@ class OpenAICodexRuntime:
                     sandbox=sandbox,
                     approval_mode=ApprovalMode.deny_all,
                     config=sdk_config,
+                    # W3 consumes only the ID. Excluding response history does
+                    # not alter the stored conversation or the model's context.
+                    **({'include_turns':False} if str(request.node)=='persistent_runtime_w3' else {}),
                 ),
             )
         else:

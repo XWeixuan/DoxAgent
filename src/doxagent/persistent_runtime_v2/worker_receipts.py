@@ -210,6 +210,9 @@ class ReceiptWorker:
             if str(request.node) == "persistent_runtime_w3":
                 exc.w3_step = "MODEL"
             raise
+        from doxagent.w3_timing import mark, span
+        mark('worker.result_received', job_id=job.job_id, status=job.status,
+             worker_finished_at=job.finished_at.isoformat() if job.finished_at else None)
         job_data = job.model_dump(mode="json")
         invocation = dict(
             receipt_key=identity, job=job_data, ticker=request.ticker, node=str(request.node),
@@ -227,8 +230,9 @@ class ReceiptWorker:
                 seconds=900 if invocation["provider_outcome"] == "usage_limit" else 60
             )).isoformat()
         # Native file encoding must not run inside the shared short-write owner.
-        encoded_invocation, encoded_job = await read_io(lambda: (
-            self.journal.content.encode(invocation), self.journal.content.encode(job_data)))
+        with span('worker.receipt_encode'):
+            encoded_invocation, encoded_job = await read_io(lambda: (
+                self.journal.content.encode(invocation), self.journal.content.encode(job_data)))
 
         def save_terminal():
             with self.journal.transaction(operation="worker.terminal") as db:
@@ -249,6 +253,7 @@ class ReceiptWorker:
 
         recovered = await write_io(self.journal.path, save_terminal,
                                    priority=0 if request.task_phase is not None else 1, retry=True)
+        mark('worker.receipt_saved', job_id=job.job_id)
         if recovered:
             self._notify_recovery()
         if request.task_phase is not None:

@@ -24,7 +24,6 @@ SOURCES = (
     "etnews_rss",
     "ctee_semiconductor",
     "digitimes_tw_rss",
-    "globenewswire_semiconductors_rss",
 )
 
 

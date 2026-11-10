@@ -427,6 +427,8 @@ class W3ResearchStore:
         if sha(data) != row["manifest_sha"]:
             raise ValueError("context checksum mismatch")
         manifest = json.loads(data)
+        from doxagent.w3_timing import identify
+        identify(case_id=row['case_id'],task_phase=row['phase'])
         for key, identity in manifest.pop("snapshot_refs", {}).items():
             if snapshot_keys is not None and key not in snapshot_keys:
                 continue

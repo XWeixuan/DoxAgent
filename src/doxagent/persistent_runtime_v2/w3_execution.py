@@ -176,8 +176,9 @@ class W3Execution:
                     initializing = True
         sync_event_links(self.journal, ticker, pin.event_library_root, pin.event_library_version)
         if not initializing:
-            self.journal.set("w3_public_preparation", ticker, identity)
-            if new_public:
+            if self.journal.get("w3_public_preparation", ticker) != identity:
+                self.journal.set("w3_public_preparation", ticker, identity)
+            if new_public and self.journal.get("w3_entry_active", ticker) != active:
                 self.journal.set("w3_entry_active", ticker, active)
 
     @observed("case.events")
@@ -445,12 +446,15 @@ class W3Execution:
         return self._commit_trade(case, record, decision)
 
     def _resume_result(self, case_id, phase, record_id, reader):
+        from doxagent.w3_timing import mark
+        mark('phase.continuation_started', task_phase=phase)
         case = self.service.repository.get_case(case_id)
         stage = self.registry.stage(case_id, phase)
         if stage["result_json"] is None:
             result, job = reader()
             self._write_result(lambda: self.registry.save_result(case_id, phase, result,
                                       thread_id=job.thread_id, worker_job_id=job.job_id))
+            mark('phase.result_saved', task_phase=phase, job_id=job.job_id)
         # Resume the durable result, never prepare context or invoke the model again.
         return self.trade(case) if phase == TRADE_PHASE else self.operations(case)
 
@@ -513,6 +517,8 @@ class W3Execution:
                 self._save_case_in_transaction(db, case, prepared_case)
                 self._enqueue_in_transaction(db, operations)
         self._write_result(commit)
+        from doxagent.w3_timing import mark
+        mark('phase.business_committed',task_phase=TRADE_PHASE)
         if not hasattr(self.service.repository, "path"):
             self.service.repository.save_case(case)
         self._sync_route_case(case, record)
@@ -672,6 +678,10 @@ class W3Execution:
         return self._commit_operations(case, record, result, trade_stage, state)
 
     def _commit_operations(self, case, record, result, trade_stage, state):
+        repository = self.service.repository
+        atomic = hasattr(repository, 'allocate_provisional_in_transaction')
+        provisionals = []
+        keys = []
         if result.delta_candidates:
             maximum = self.service._known_for_case(case).max_event_numeric_id(
                 case.ticker, case.version_pin.event_library_version
@@ -680,9 +690,9 @@ class W3Execution:
                 raise W3Error(
                     "event_library_max_id_unavailable", "Published Event maximum is unavailable"
                 )
-            keys = []
             for index, candidate in enumerate(result.delta_candidates):
-                self.service.repository.allocate_provisional(
+                allocate = repository.prepare_provisional if atomic else repository.allocate_provisional
+                prepared = allocate(
                     case_id=case.case_id,
                     originating_node="W3",
                     ticker=case.ticker,
@@ -692,6 +702,8 @@ class W3Execution:
                     candidate=candidate,
                     published_max_event_numeric_id=maximum,
                 )
+                if atomic:
+                    provisionals.append(prepared)
                 keys.append(
                     encode(
                         [
@@ -702,7 +714,8 @@ class W3Execution:
                         ]
                     )
                 )
-            self.registry.link(record, "EVENT", keys, case.case_id)
+            if not atomic:
+                self.registry.link(record, "EVENT", keys, case.case_id)
         unified = is_unified_contract(case.w3_contract_version)
         hit_ids = (
             (case.w2_final.policy_ids if case.w2_final.policy_hit else [])
@@ -710,9 +723,11 @@ class W3Execution:
             else result.policy.policy_ids
         )
         policy_reason = case.w2_final.reason if unified else result.policy.reason
+        daily_record = None
+        daily_table = None
         if result.novelty.result.value == "NEW" and not hit_ids:
-            self.service.repository.save_w3_coverage_gap(
-                W3CoverageGapRecord(
+            daily_table = 'runtime_v2_w3_coverage_gaps'
+            daily_record = W3CoverageGapRecord(
                     case_id=case.case_id,
                     w3_case_id="w3:" + case.case_id,
                     ticker=case.ticker,
@@ -731,11 +746,10 @@ class W3Execution:
                             else {}
                         ),
                     },
-                )
             )
         if result.novelty.result.value == "OLD" and hit_ids:
-            self.service.repository.save_badcase(
-                BadcaseRecord(
+            daily_table = 'runtime_v2_badcases'
+            daily_record = BadcaseRecord(
                     case_id=case.case_id,
                     ticker=case.ticker,
                     trading_date=case.trading_date,
@@ -746,8 +760,11 @@ class W3Execution:
                     policy_set_version=case.version_pin.policy_set_version,
                     w1_reason=result.novelty.reason,
                     w2_reason=policy_reason,
-                )
             )
+        if daily_record is not None and not atomic:
+            save = repository.save_badcase if daily_table == 'runtime_v2_badcases' else repository.save_w3_coverage_gap
+            save(daily_record)
+        daily_payload = repository.content.encode(daily_record.model_dump(mode='json')) if atomic and daily_record else None
         case.w3_operations_result = result.model_dump(mode="json")
         prepared_case = self._prepare_case_payload(case)
         archive = self._fallback_archive(case, result, trade_stage)
@@ -759,9 +776,15 @@ class W3Execution:
         event_subjects = event_matches(
             case.model_dump(mode="json") | {"w3_operations_status": "COMMITTED"}
         )
+        route_case = self._route_case_update(case, record, operations_status='COMMITTED') if atomic else None
+        route_payload = repository.content.encode(route_case.model_dump(mode='json')) if route_case else None
         def commit():
             with self.journal.transaction() as db:
                 assert_write_lease(db)
+                for provisional in provisionals:
+                    repository.allocate_provisional_in_transaction(db, provisional)
+                if daily_record is not None and atomic:
+                    repository.save_daily_record_in_transaction(db, daily_table, daily_record, daily_payload)
                 if policy_consumption.get_value(db, "w3_operations_applied", case.case_id) is None:
                     watch = apply_v4_actions(
                         db, case=case, result=result, frozen=state, now=self.journal.clock()
@@ -795,21 +818,29 @@ class W3Execution:
                     "INSERT OR IGNORE INTO runtime_v2_w3_thread_links VALUES(?,?,?,?,?)",
                     [
                         (record["record_id"], case.ticker, "EVENT", key, case.case_id)
-                        for key in event_subjects
+                        for key in dict.fromkeys(keys + event_subjects)
                     ],
                 )
                 case.w3_operations_status = "COMMITTED"
                 case.w3_operations_error = None
                 self._save_case_in_transaction(db, case, prepared_case)
+                if atomic:
+                    if route_case:
+                        repository.save_w3_case_in_transaction(db, route_case, route_payload)
+                    db.execute('UPDATE runtime_v2_w3_threads SET owner_case_id=NULL,lease_until=NULL WHERE owner_case_id=?',
+                               (case.case_id,))
         self._write_result(commit)
+        from doxagent.w3_timing import mark
+        mark('phase.business_committed',task_phase=OPERATIONS_PHASE)
         if archive is not None and not hasattr(self.service.repository, "path"):
             self.service.repository.save_archive(archive)
         case.w3_operations_status = "COMMITTED"
         case.w3_operations_error = None
         if not hasattr(self.service.repository, 'path'):
             self.service.repository.save_case(case)
-        self._sync_route_case(case, record)
-        self.registry.release(case.case_id)
+        if not atomic:
+            self._sync_route_case(case, record)
+            self.registry.release(case.case_id)
 
         self._queue_ack(case.case_id, OPERATIONS_PHASE)
 
@@ -860,13 +891,12 @@ class W3Execution:
             ),
         )
 
-    def _sync_route_case(self, case, record):
+    def _route_case_update(self, case, record, **updates):
         from .schema import W3CaseStatus, W3ThreadKind
 
         route_case = self.service.repository.get_w3_case(case.case_id)
         if route_case:
-            self.service.repository.save_w3_case(
-                route_case.model_copy(
+            return route_case.model_copy(
                     update=dict(
                         status=W3CaseStatus.RESOLVED,
                         thread_id=record["thread_id"],
@@ -875,9 +905,13 @@ class W3Execution:
                         operations_result=case.w3_operations_result,
                         operations_status=case.w3_operations_status,
                         resolved_route=case.resolved_route,
-                    )
-                )
+                    ) | updates
             )
+
+    def _sync_route_case(self, case, record):
+        route_case = self._route_case_update(case, record)
+        if route_case:
+            self.service.repository.save_w3_case(route_case)
 
     def _restore_trade(self, case, stage, *, persist=True):
         case.w3_trade_decision = stage["result_json"]

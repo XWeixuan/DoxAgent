@@ -41,6 +41,8 @@ COPY --from=source-files /source/src ./src
 COPY scripts/ops/migrate_source_access_scopes.py ./scripts/ops/migrate_source_access_scopes.py
 COPY README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv uv pip install --no-deps --python /app/.venv/bin/python -e /app
+COPY scripts/ops/compile_w3_imports.py ./scripts/ops/compile_w3_imports.py
+RUN python scripts/ops/compile_w3_imports.py
 COPY prompts ./prompts
 COPY deploy/codex-runtime /opt/doxagent/codex-runtime
 RUN for binary in codex codex-code-mode-host; do \

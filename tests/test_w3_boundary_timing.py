@@ -13,6 +13,12 @@ from doxagent.w3_timing import BoundaryTrace, effect_trace, file_trace, observed
 from tests.test_w3_v4 import enqueue, runtime
 
 
+def flush_timing():
+    # Only tests wait for optional diagnostics. Production never joins this queue.
+    from doxagent.control_io import _diagnostics
+    _diagnostics.join()
+
+
 def test_trace_crosses_async_and_thread_boundaries_without_content():
     @observed("sync")
     def child():
@@ -77,7 +83,7 @@ def test_truncation_keeps_complete_file_totals():
     assert summary["totals"]["file"]["bytes"] == 3000
 
 
-def test_timing_sink_does_not_inherit_business_database_lock_wait(tmp_path):
+def test_timing_sink_does_not_inherit_business_database_lock_wait(tmp_path,caplog):
     import sqlite3
     import time
 
@@ -97,24 +103,18 @@ def test_timing_sink_does_not_inherit_business_database_lock_wait(tmp_path):
         blocker.close()
     assert business_result == "preserved"
     assert time.perf_counter() - started < 2
-    assert list((tmp_path / "boundary-timing").glob("*.json"))
+    flush_timing()
+    assert any('w3_boundary_timing ' in r.getMessage() for r in caplog.records)
 
 
-def test_durable_trace_does_not_change_trade_first_semantics(tmp_path):
+def test_durable_trace_does_not_change_trade_first_semantics(tmp_path,caplog):
     service, journal, _, _ = runtime(tmp_path, "NO_TRADE")
     try:
         case = enqueue(service)
         assert service.process_pending_effects() == 1
-        with journal.transaction(write=False) as db:
-            records = [
-                json.loads(r[0])
-                for r in db.execute(
-                    "SELECT payload FROM runtime_values WHERE namespace='w3_boundary_timing'"
-                )
-            ]
-        if not records:
-            records = [json.loads(path.read_text()) for path in
-                       (journal.path.parent / "boundary-timing").glob("*.json")]
+        flush_timing()
+        records = [json.loads(r.getMessage().split('w3_boundary_timing ',1)[1])
+                   for r in caplog.records if r.name.endswith('.receipts')]
         assert len(records) == 1
         assert records[0]["case_id"] == case.case_id
         assert "stage.begin" in records[0]["totals"]
@@ -130,15 +130,9 @@ def test_durable_trace_does_not_change_trade_first_semantics(tmp_path):
         while service._active_effect_ids and time.monotonic() < deadline:
             time.sleep(0.005)
         assert service.repository.get_case(case.case_id).w3_operations_status == "COMMITTED"
-        with journal.transaction(write=False) as db:
-            receipts = [
-                json.loads(row[0])
-                for row in db.execute(
-                    "SELECT payload FROM runtime_values WHERE namespace='w3_boundary_timing'"
-                )
-            ]
-        receipts.extend(json.loads(path.read_text()) for path in
-                        (journal.path.parent / "boundary-timing").glob("*.json"))
+        flush_timing()
+        receipts = [json.loads(r.getMessage().split('w3_boundary_timing ',1)[1])
+                    for r in caplog.records if r.name.endswith('.receipts')]
         dispatched = next(row for row in receipts if "effect_claim_elapsed_ms" in row)
         assert dispatched["effect_claim_batch_size"] == 1
         assert dispatched["effect_claim_elapsed_ms"] >= 0

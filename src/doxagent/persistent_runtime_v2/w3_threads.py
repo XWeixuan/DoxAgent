@@ -118,6 +118,15 @@ class W3ThreadRegistry:
         )
 
     def template(self, ticker, key, compatibility):
+        # A published compatibility key is immutable. Normal periodic preparation
+        # must not join the business writer just to rediscover a READY template.
+        with self.journal.transaction(write=False) as db:
+            ready = db.execute(
+                "SELECT * FROM runtime_v2_w3_threads WHERE template_key=? AND status='READY'",
+                (key,),
+            ).fetchone()
+        if ready is not None:
+            return dict(ready), False
         now = self.journal.clock()
         with self.journal.transaction() as db:
             assert_write_lease(db)

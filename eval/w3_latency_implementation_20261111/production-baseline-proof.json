@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-10T19:37:48.680009+00:00",
+  "roles": {
+    "v2-scheduler": {
+      "image": "sha256:f1cb5cb240a8c934d28de93dfbcf5309e571f04428023e3e2c5e348c922ce63b",
+      "accepted_commit": "79caa5cc00b257bb522dc2c36647f878c31e96cf",
+      "started_at": "2026-11-10T19:05:47.808633823Z",
+      "files": {
+        "src/doxagent/control_io.py": "055f0d4f14d3f48efb0eb8ec2376ad4087d3bcdbcdbc9699b91ce720d91b40ed",
+        "src/doxagent/w3_timing.py": "a19b019739af7c04cbd546b5756fd1c22c6c4563ce4a077d1ceeb6078fdeb455",
+        "src/doxagent/persistent_runtime_v2/w3_research_store.py": "a290beb6f3f5c3bb12ca85b103e9d98ad69cbeaf3da5d2b4abfc71226315f114",
+        "src/doxagent/persistent_runtime_v2/coordinator.py": "44d905089c04f8327158533235158b16e4306accc00eccd7d683c37ace10b80f",
+        "src/doxagent/persistent_runtime_v2/journal.py": "6816e9fce4657249fa13d9c51c8cf1c525505c871d92f82826f4ca4660aa3330",
+        "src/doxagent/persistent_runtime_v2/repository.py": "fb7f2f0b41128b58b0edc2e54a46901bec61fc9a690e456d1254446040a3e56a",
+        "src/doxagent/persistent_runtime_v2/service.py": "d20500690fd862330e87717def5e83c39d88f368effc2c427d49fa153a06f192",
+        "src/doxagent/persistent_runtime_v2/w3.py": "19c8a77a67d5163e6fb17a0cc787a78c915d5805e7e0082d026ff408daf33a1b",
+        "src/doxagent/persistent_runtime_v2/w3_execution.py": "122e47f5c01717effb24f6ee67b72ef292be2d4be02ad3067a9a6f075383080e",
+        "src/doxagent/persistent_runtime_v2/w3_threads.py": "812de890c37979d41267ccbadd7058d7b86c81ae4c0a538fad7ddd23aa0bb4b7",
+        "src/doxagent/persistent_runtime_v2/worker_receipts.py": "0ebfe6f1c0806901061ab52ef096b417ac9711e232337009a31e63a01e4fc42d"
+      }
+    },
+    "codex-worker": {
+      "image": "sha256:43233a7a908a9bac59c07d0ee7dfee4b081201aaeb211e33dd1f2cd258918c97",
+      "accepted_commit": "earnings-startup-emlink-20261111",
+      "started_at": "2026-11-10T19:32:50.05290539Z",
+      "files": {
+        "src/doxagent/control_io.py": "3e755f364325dc5592e2f2d4c1de3a4490d3f5c9a6dbef5112e9b53b3c6befdc",
+        "src/doxagent/w3_timing.py": "2ee6c571b78a80cc280d4c54a3c5f23aa10d790d98031098fe436c0bf04ee20e",
+        "src/doxagent/persistent_runtime_v2/w3_research_store.py": "a290beb6f3f5c3bb12ca85b103e9d98ad69cbeaf3da5d2b4abfc71226315f114",
+        "src/doxagent/codex_worker/app.py": "fd3d81c7204349a3cc79639827568805c310972580ce133cacc4d6da432c9b10",
+        "src/doxagent/codex_worker/io_budget.py": "917483335d47ed0f5c862a3025810d001b9c7f1f84dce9c6e8a0faae306a83a9",
+        "src/doxagent/codex_worker/sdk_runtime.py": "d8d55e36626b93a87bc38da4d95f698769425c001bbd228e4eceb95d1eed2f57",
+        "src/doxagent/mcp/w3_research_server.py": "ce03993392cb589747bb6206f97dca1d7242f8002c8d705b1c9a9071e5ba383b"
+      }
+    }
+  }
+}

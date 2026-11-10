@@ -136,32 +136,34 @@ class ResearchMcp:
         return result
 
     async def call_tool(self, ctx, params):
-        try:
-            args = params.arguments or {}
-            if params.name == "market_view":
-                from doxagent.control_io import read_io
+        from doxagent.w3_timing import segment_trace
+        with segment_trace('research_tool',tool=params.name,capsule_id=self.capsule.get()):
+            try:
+                args = params.arguments or {}
+                if params.name == "market_view":
+                    from doxagent.control_io import read_io
 
-                result = await read_io(self._market_read, args)
-            else:
-                from doxagent.control_io import read_io
+                    result = await read_io(self._market_read, args)
+                else:
+                    from doxagent.control_io import read_io
 
-                result = await read_io(self.store.call, params.name, args)
-            self.calls += 1
-            return types.CallToolResult(
-                content=[types.TextContent(type="text", text=compact(result))]
-            )
-        except (ValueError, KeyError, PermissionError, FileNotFoundError) as exc:
-            return types.CallToolResult(
-                isError=True,
-                content=[
-                    types.TextContent(
-                        type="text",
-                        text=compact(
-                            {"error": type(exc).__name__, "message": str(exc), "complete": False}
-                        ),
-                    )
-                ],
-            )
+                    result = await read_io(self.store.call, params.name, args)
+                self.calls += 1
+                return types.CallToolResult(
+                    content=[types.TextContent(type="text", text=compact(result))]
+                )
+            except (ValueError, KeyError, PermissionError, FileNotFoundError) as exc:
+                return types.CallToolResult(
+                    isError=True,
+                    content=[
+                        types.TextContent(
+                            type="text",
+                            text=compact(
+                                {"error": type(exc).__name__, "message": str(exc), "complete": False}
+                            ),
+                        )
+                    ],
+                )
 
     async def __call__(self, scope, receive, send):
         headers = dict(scope.get("headers", []))
