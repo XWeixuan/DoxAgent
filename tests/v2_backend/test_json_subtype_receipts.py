@@ -13,6 +13,36 @@ from tests.test_w3_v5_execution import setup_case
 from scripts.ops.repair_w3_cdc_receipts_20261111 import repair
 
 
+def test_compact_case_retains_timestamps_consumed_by_detail_timing(tmp_path):
+    from doxagent.api_v2.case_detail import lifecycle_timing
+    from doxagent.api_v2.case_evidence import CaseEvidence
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    value=dict(case_id='c',status='COMPLETED',created_at='2026-11-11T00:00:00+00:00',
+               decision_completed_at='2026-11-11T00:01:00+00:00',completed_at='2026-11-11T00:01:00+00:00',
+               updated_at='2026-11-11T00:02:00+00:00',source=dict(snapshot=dict(ticker='MU')))
+    seq=store.ingest('fixture','case',[dict(kind='native:runtime_v2_cases',ticker='MU',id='c',data=value)])
+    evidence=CaseEvidence(store,'MU','c',seq)
+    fields=evidence.fields('native:runtime_v2_cases','c',['created_at','decision_completed_at','completed_at','status','updated_at'])
+    assert fields['completed_at']==value['completed_at']
+    timing=lifecycle_timing(evidence,fields,dict(received_at=value['created_at']),'2026-11-11T04:00:00+00:00')
+    assert timing['settled'] and timing['elapsed_seconds']==60
+
+
+@pytest.mark.parametrize('status,recorded,settled',[
+    ('COMPLETED',True,True),('PENDING_W3',True,False),('COMPLETED',False,False),
+])
+def test_legacy_compact_case_clock_uses_only_recorded_terminal_boundary(tmp_path,status,recorded,settled):
+    from doxagent.api_v2.case_detail import lifecycle_timing
+    from doxagent.api_v2.case_evidence import CaseEvidence
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    summary=dict(received_at='2026-11-11T00:00:00+00:00',
+                 completed_at=dict(state='AVAILABLE' if recorded else 'NOT_RECORDED',
+                                   value='2026-11-11T00:01:00+00:00' if recorded else None))
+    timing=lifecycle_timing(CaseEvidence(store,'MU','c',0),dict(status=status),summary,'2026-11-11T04:00:00+00:00')
+    assert timing['settled']==settled
+    assert timing['elapsed_seconds']==(60 if settled else 14400)
+
+
 @pytest.mark.parametrize('column',['payload','payload_json','data_json','inputs','receipt'])
 def test_json_function_updates_capture_text_columns_as_text(tmp_path,column):
     path=tmp_path/'source.db'

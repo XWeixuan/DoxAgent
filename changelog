@@ -2889,3 +2889,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 W3 CDC投影修复：SQLite JSON函数部分更新带JSON subtype进入NEW/OLD，使TEXT回执列被嵌为对象；采集触发器统一剥离subtype，读取兼容已有对象/数组封装并沿用Native解析。仅修复Read投影，保留原回执、Runtime Case/Job及交易；增加SQL实测与W3终态端到端回归。
 
 2026-11-11 W3存量投影恢复：增加仅接受显式KeyError坐标的有限运维回放，复用既有FormalProjectors/ReadStore和原水位；不写Runtime、不重跑模型，持原Projector锁并逐事件提交，可重入。
+
+2026-11-11 Case详情计时收尾：Read瘦身白名单保留现有API已消费的created_at/completed_at/decision_completed_at，防止已完成Case仍settled=false并持续增长；保留其余瘦身规则，零业务/Agent Schema变化。
+
+2026-11-11 历史Case详情计时兼容：旧Read行没有终止时间时，仅对已完成Case使用已有Summary记录的completed_at；不凭当前时间/updated_at合成结果，不改变在途Case，避免为旧字段缺口全量回灌冻结上下文。

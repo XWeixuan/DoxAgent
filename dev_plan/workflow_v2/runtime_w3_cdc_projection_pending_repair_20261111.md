@@ -50,3 +50,9 @@
 ## 发布、存量恢复与最终验收
 
 待实际发布后填写。验收必须同时检查源业务状态、Read gap和API字段，而不是只看服务健康或checkpoint。
+
+## 追加：旧详情计时契约不一致
+
+存量回执修复后，86个Case的Read状态均已与源一致，但详情的lifecycle_timing仍settled=false。进一步确认：Read CASE_FIELDS从00ee814c（10/18）起未保留created_at/completed_at/decision_completed_at，44d9f4f7（10/28）增加的详情计时却依赖这些字段，导致完成Case按当前as_of无限增长。该问题属于旧Read字段瘦身与后来API消费者未对齐，不是本次11/11 Worker三文件发布引入。新增用例在原逻辑复现None终止时间。
+
+修复只保留已被API使用的三个小时间字段，并让旧Read行在缺字段时仅对COMPLETED Case使用已有Summary中AVAILABLE的completed_at。无记录时间仍未知、在途Case仍继续计时，不制造结束时间，不改现有decision_completed_at优先口径。该兼容路径使旧历史无需全量回灌冻结上下文。发布仅涉及Projector与API的精确单文件层，Scheduler/Worker不重启。

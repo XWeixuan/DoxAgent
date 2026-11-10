@@ -41,6 +41,13 @@ def lifecycle_timing(evidence, case, summary, as_of):
         or case.get("completed_at")
         or (case.get("updated_at") if case.get("status") in {"FAILED", "UNAVAILABLE"} else None)
     )
+    if not final and case.get("status") == "COMPLETED":
+        # Older compact Read rows omitted native stop timestamps. The Case
+        # summary already carries the recorded boundary; use it without a
+        # full-history rebuild or inventing a stop time for an in-flight Case.
+        recorded = summary.get("completed_at") or {}
+        if recorded.get("state") == "AVAILABLE":
+            final = recorded.get("value")
     end = final or as_of
     begin, finish = datetime.fromisoformat(start), datetime.fromisoformat(end)
     elapsed = max(0, (finish - begin).total_seconds())

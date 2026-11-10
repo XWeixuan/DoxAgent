@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import signal
 import sqlite3
+import argparse
 from datetime import UTC,datetime
 
 os.nice(15);signal.alarm(30)
@@ -12,11 +13,12 @@ from doxagent.v2_read.outbox import SourceOutbox
 root=Path('/data');runtime=root/'runtime/runtime.sqlite3'
 alias=json.loads((root/'read/active.json').read_bytes());read=Path(alias['path'])
 source=SourceOutbox(runtime,'runtime')
+p=argparse.ArgumentParser();p.add_argument('--baseline',type=Path);args=p.parse_args()
 result=dict(at=datetime.now(UTC).isoformat(),gaps=[],cases=[],unknown=[])
 with sqlite3.connect(read.resolve().as_uri()+'?mode=ro',uri=True,timeout=.1) as r:
     gaps=r.execute("SELECT event FROM gaps WHERE source='runtime' AND reason='KeyError' LIMIT 1001").fetchall()
     assert len(gaps)<=1000,'bounded audit exceeded'
-    ids=set()
+    ids={c['case_id'] for c in json.loads(args.baseline.read_bytes())['cases']} if args.baseline else set()
     for (event,) in gaps:
         if not event.isdigit():continue
         packet=source.event(int(event),decode=False)

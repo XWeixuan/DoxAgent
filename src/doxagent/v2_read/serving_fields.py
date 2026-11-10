@@ -18,6 +18,8 @@ CASE_FIELDS={
     'orchestration_revision','w2_final','w2_round1','w2_skipped','w3_result',
     'w3_contract_version','w3_trade_decision','w3_operations_result','w3_operations_status','w3_operations_error',
     'error_code','error_message','updated_at','status',
+    # Case detail's existing lifecycle clock needs its recorded stop boundary.
+    'created_at','completed_at','decision_completed_at',
 }
 VALUE_NAMES={
     'policy_authorization_head','policy_watch_applied','policy_watch_validation',
