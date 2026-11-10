@@ -387,6 +387,7 @@ def _history_match_state(raw, content):
     return content.decode(selected)
 
 
+@observed('case.trading_context')
 def trading_context(case, journal=None):
     from doxagent.semantic_clock import expires_at
 

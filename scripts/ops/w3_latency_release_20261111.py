@@ -86,7 +86,7 @@ def main():
                 recipe = ['FROM ' + base, 'USER root']
                 recipe += ['COPY --chmod=0644 ' + p + ' /app/' + p for p in hashes]
                 recipe += ['COPY --chmod=0644 compile_w3_imports.py /tmp/compile_w3_imports.py',
-                           'RUN umask 022 && python /tmp/compile_w3_imports.py',
+                           'RUN umask 022 && python /tmp/compile_w3_imports.py' + (' --calendar' if role=='v2-scheduler' else ''),
                            'USER ' + (info['Config'].get('User') or 'root')]
                 check = 'import hashlib;' + ''.join(
                     'assert hashlib.sha256(open(' + repr('/app/' + p) + ',"rb").read()).hexdigest()==' + repr(h) + ';'

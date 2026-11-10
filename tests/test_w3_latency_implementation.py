@@ -220,3 +220,62 @@ def test_effect_and_scalar_case_completion_roll_back_together(tmp_path):
         with journal.transaction(write=False,expand=False) as db:
             assert db.execute('SELECT status FROM runtime_v2_effects WHERE effect_id=?',(effect.effect_id,)).fetchone()[0]=='RUNNING'
     finally:service.close()
+
+
+def test_w3_terminal_projection_matches_full_case_without_native_expansion(tmp_path,monkeypatch):
+    from doxagent.persistent_runtime_v2.projection import RuntimeTerminalProjection,RuntimeV2ProjectionOutbox
+    service,_,_,case,_=setup_case(tmp_path,hit=False,novelty='NEW')
+    try:
+        service.process_pending_effects()
+        value=service.repository.get_case(case.case_id)
+        value.frozen_inputs['large_frozen_evidence']='x'*50000
+        service.repository.save_case(value)
+        expected=RuntimeTerminalProjection.from_case(value,model_turn_count=len(service.repository.list_turns(case.case_id)))
+        def unexpected(*args,**kwargs):raise AssertionError('terminal notification hydrated Native evidence')
+        monkeypatch.setattr(service.repository.content,'decode',unexpected)
+        payload=service.repository.completed_w3_projection_payload(case.case_id)
+        assert RuntimeTerminalProjection.model_validate(payload)==expected
+        outbox=RuntimeV2ProjectionOutbox(tmp_path/'outbox.db',database_url='unused')
+        received=[];outbox.sink=SimpleNamespace(upsert=lambda kind,payload:received.append((kind,payload)))
+        outbox.enqueue_terminal(payload)
+        assert outbox.flush()==1
+        assert received==[('terminal_case',expected.model_dump(mode='json'))]
+    finally:service.close()
+
+
+def test_normal_w3_effect_skips_full_completion_refresh(tmp_path,monkeypatch):
+    service,_,_,_,_=setup_case(tmp_path,hit=False,novelty='NEW')
+    def unexpected(*args,**kwargs):raise AssertionError('full completion refresh is redundant')
+    monkeypatch.setattr(service,'_refresh_case_completion',unexpected)
+    try:
+        assert service.process_pending_effects()==1
+    finally:service.close()
+
+
+def test_phase_commit_preserves_frozen_references_and_concurrent_fields(tmp_path,monkeypatch):
+    service,journal,_,case,_=setup_case(tmp_path,hit=False,novelty='NEW')
+    try:
+        case.frozen_inputs['large_evidence']='immutable '*10000
+        service.repository.save_case(case)
+        with journal.transaction(write=False,expand=False) as db:
+            frozen=db.execute("SELECT json_extract(payload_json,'$.frozen_inputs') FROM runtime_v2_cases WHERE case_id=?",
+                              (case.case_id,)).fetchone()[0]
+        assert '$doxagent_content_v1' in frozen
+        encode=service.repository.content.encode
+        def small(value,**kwargs):
+            assert 'frozen_inputs' not in value,'phase re-encoded frozen inputs'
+            return encode(value,**kwargs)
+        monkeypatch.setattr(service.repository.content,'encode',small)
+        case.w3_trade_decision={'decision':'NO_TRADE','reason':'test'}
+        execution=service._v4_execution()
+        prepared=execution._prepare_case_payload(case)
+        with journal.transaction(expand=False) as db:
+            db.execute("UPDATE runtime_v2_cases SET payload_json=json_set(payload_json,'$.completed_at','concurrent') WHERE case_id=?",
+                       (case.case_id,))
+            execution._save_case_in_transaction(db,case,prepared)
+        with journal.transaction(write=False,expand=False) as db:
+            row=db.execute("SELECT json_extract(payload_json,'$.frozen_inputs'),json_extract(payload_json,'$.completed_at'),"
+                           "json_extract(payload_json,'$.w3_trade_decision.decision') FROM runtime_v2_cases WHERE case_id=?",
+                           (case.case_id,)).fetchone()
+        assert tuple(row)==(frozen,'concurrent','NO_TRADE')
+    finally:service.close()

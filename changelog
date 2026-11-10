@@ -2853,3 +2853,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 Cadence observation follow-up: the legacy IR resolver overwrites endpoint cadence from the ticker binding, so source-level MU IR=30s alone still executed at 20s. Preserve BE press/MU IR 30-second floors in the existing per-unit scheduler (including phase/demand calculation); MU newsroom remains 20s and slower user bindings remain slower. Restart the final 15-minute acceptance window after the narrow Collector release.
 
 2026-11-11 W3 publication verification: all212 focused regressions passed; fresh-process Worker entrypoint regression additionally verifies timing receipts reach the existing console while global logging stays WARNING. Candidate checked-hash bytecode is readable and source-matched; no SDK/model probe calls. Operator approved a finite non-W3 producer pause to drain original accepted Jobs, preserving realtime dispatch. No permanent admission/queue/pool changes.
+
+2026-11-11 W3性能后续：按请求年份构造必要交易日程并预编译日历依赖；阶段提交保留冻结Native引用、仅更新W3字段；终态投影改为标量查询，保留原事务、租约、恢复及投影契约。附只读因果探针与回归。
