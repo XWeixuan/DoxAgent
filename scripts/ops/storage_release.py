@@ -159,14 +159,23 @@ def owner_status(containers):
     mounts={m['Source'] for c in containers for m in c.get('Mounts',[]) if m.get('Destination')=='/data' and m.get('Type')=='volume'}
     for root in sorted(mounts):
         base=Path(root)
-        if not (base/'read/v2.sqlite3').is_file():continue
+        read_path=base/'read/v2.sqlite3'
+        alias=base/'read/active.json'
+        if alias.is_file():
+            try:
+                target=Path(json.loads(alias.read_text())['path'])
+                read_path=base/target.relative_to('/data') if target.is_absolute() else alias.parent/target
+                if not read_path.resolve().is_relative_to((base/'read').resolve()):raise ValueError('read alias escaped its volume')
+            except (ValueError,KeyError,OSError) as exc:result['read_alias']={'error':str(exc)};read_path=base/'read/.invalid-alias'
         for name,relative in [('read','read/v2.sqlite3'),('research','research/research.sqlite3'),('initialization','initialization/control.sqlite3'),('bus','bus/bus.sqlite3'),('runtime','runtime/runtime.sqlite3'),('acquisition','bus/acquisition.sqlite3'),('worker','workspaces/worker-jobs.sqlite3')]:
-            path=base/relative
+            path=read_path if name=='read' else base/relative
             if not path.is_file():continue
             path=path.resolve()
             entry=dict(database_bytes=path.stat().st_size,wal_bytes=Path(str(path)+'-wal').stat().st_size if Path(str(path)+'-wal').exists() else 0)
+            if name=='read' and Path(str(path)+'.gc.json').is_file():
+                entry['gc']=json.loads(Path(str(path)+'.gc.json').read_text())
             try:
-                with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=2) as db:
+                with contextlib.closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=2)) as db:
                     deadline=time.monotonic()+3;db.set_progress_handler(lambda:time.monotonic()>deadline,10000)
                     entry['reusable_page_bytes']=db.execute('PRAGMA freelist_count').fetchone()[0]*db.execute('PRAGMA page_size').fetchone()[0]
                     tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -187,8 +196,6 @@ def owner_status(containers):
                         entry['retention']=db.execute("SELECT value FROM meta WHERE key='retention'").fetchone()
                     if name=='worker':
                         entry['retention']=list(db.execute("SELECT key,value FROM metadata WHERE key IN ('resource_retention','session_retention','session_retention_deferred','workspace_exit_cursor')"))
-                    if name=='read' and Path(str(path)+'.gc.json').is_file():
-                        entry['gc']=json.loads(Path(str(path)+'.gc.json').read_text())
                     db.set_progress_handler(None,0)
             except (OSError,sqlite3.Error) as exc:entry['error']=str(exc)[:200]
             result[name]=entry

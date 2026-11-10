@@ -148,7 +148,7 @@ def main():
             release.atomic(audit/'release.json',{'at':datetime.now(UTC).isoformat(),'commit':commit,'result':result})
             temporary=ROOT/'storage_release.py.pending';temporary.write_bytes(git(commit,'scripts/ops/storage_release.py'))
             os.replace(temporary,ROOT/'storage_release.py')
-            print(json.dumps({'deployed':order,'commit':commit}),flush=True)
+            print(json.dumps({'deployed':list(manifest['components']),'commit':commit}),flush=True)
         else:
             state=json.loads((ROOT/'state.json').read_bytes())
             print(json.dumps(release.reconcile(ROOT,state)),flush=True)

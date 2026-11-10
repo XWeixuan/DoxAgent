@@ -12,6 +12,17 @@ spec=importlib.util.spec_from_file_location('storage_release',Path(__file__).par
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 
+def test_owner_capacity_uses_active_read_generation_and_keeps_gc_receipt(tmp_path):
+    from doxagent.v2_read.repository import ReadStore
+    path=tmp_path/'read/serving/v2.sqlite3';path.parent.mkdir(parents=True)
+    ReadStore(path).migrate()
+    (tmp_path/'read/active.json').write_text(json.dumps({'path':'/data/read/serving/v2.sqlite3'}))
+    Path(str(path)+'.gc.json').write_text(json.dumps({'deleted':{'object_history':500}}))
+    result=release.owner_status([{'Mounts':[{'Destination':'/data','Type':'volume','Source':str(tmp_path)}]}])
+    assert result['read']['database_bytes']==path.stat().st_size
+    assert result['read']['gc']['deleted']['object_history']==500
+
+
 def test_status_remains_readable_during_a_deploy_writer_lock(tmp_path,monkeypatch,capsys):
     def writer_lock(*args):raise AssertionError('read-only status acquired the deploy lock')
     monkeypatch.setattr(release,'lock',writer_lock)
