@@ -13,9 +13,23 @@ import queue
 import threading
 import time
 from concurrent.futures import Future
+from contextlib import contextmanager
 from pathlib import Path
 
 SHORT_WRITE = contextvars.ContextVar("short_sql_write", default=False)
+
+
+@contextmanager
+def short_write():
+    """Give completed-result SQL the same priority as the existing async owner.
+
+    This marks the caller; it acquires no lock and cannot hold one over I/O.
+    """
+    token = SHORT_WRITE.set(True)
+    try:
+        yield
+    finally:
+        SHORT_WRITE.reset(token)
 
 _registry_lock = threading.Lock()
 _owners = {}

@@ -824,3 +824,67 @@ async def test_empty_transport_failure_retains_error_type():
             await client.materialize_case('case',{}, {})
     finally:
         await client.aclose()
+
+
+def test_completed_result_overtakes_ordinary_sql_waiters(tmp_path):
+    from threading import Thread
+    from doxagent.control_io import SHORT_WRITE, write_lock
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.w3_threads import W3ThreadRegistry
+
+    journal = RuntimeJournal(tmp_path / 'runtime.sqlite3')
+    registry = W3ThreadRegistry(journal)
+    registry.begin_stage('case', 'trade_decision')
+    original = journal.transaction
+    order, errors = [], []
+
+    @contextmanager
+    def tracked(*args, **kwargs):
+        with original(*args, **kwargs) as db:
+            if kwargs.get('write', True):
+                order.append('result' if SHORT_WRITE.get() else 'ordinary')
+            yield db
+
+    journal.transaction = tracked
+    gate = write_lock(journal.path)
+
+    def ordinary():
+        try:
+            journal.set('ordinary', 'key', 1)
+        except Exception as exc:
+            errors.append(exc)
+
+    def result():
+        try:
+            registry.save_result('case', 'trade_decision', {'decision': 'NO_TRADE'},
+                                 thread_id='thread', worker_job_id='job')
+            assert not SHORT_WRITE.get()
+        except Exception as exc:
+            errors.append(exc)
+
+    threads = [Thread(target=ordinary), Thread(target=result)]
+    with gate:
+        for index, thread in enumerate(threads):
+            thread.start()
+            due = time.monotonic() + 2
+            while len(gate._waiters) < index + 1 and time.monotonic() < due:
+                time.sleep(.001)
+            assert len(gate._waiters) == index + 1
+    for thread in threads:
+        thread.join(3)
+        assert not thread.is_alive()
+    assert not errors
+    assert order == ['result', 'ordinary']
+    assert registry.stage('case', 'trade_decision')['status'] == 'RESULT_SAVED'
+    assert journal.get('w3_ack_pending', 'job') is None
+
+
+def test_completed_result_priority_restores_on_failure(tmp_path):
+    from doxagent.control_io import SHORT_WRITE
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.w3_threads import W3ThreadRegistry
+
+    registry = W3ThreadRegistry(RuntimeJournal(tmp_path / 'runtime.sqlite3'))
+    with pytest.raises(ValueError, match='phase must be registered'):
+        registry.save_result('missing', 'trade_decision', {}, thread_id='thread')
+    assert not SHORT_WRITE.get()

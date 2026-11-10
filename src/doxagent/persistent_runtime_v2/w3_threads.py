@@ -7,6 +7,7 @@ from datetime import timedelta
 from uuid import uuid4
 
 from doxagent.w3_timing import observed, span
+from doxagent.control_io import short_write
 
 from .fencing import assert_write_lease
 from .journal import encode
@@ -81,6 +82,7 @@ class W3ThreadRegistry:
             pass
         return result
 
+    @short_write()
     def save_result(self, case_id, phase, result, *, thread_id, worker_job_id=None):
         payload = result.model_dump(mode="json") if hasattr(result, "model_dump") else result
         prepared = encode(payload)

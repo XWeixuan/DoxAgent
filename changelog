@@ -2805,3 +2805,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-10 W3 P0-2 顺序补齐：批量 materialization 的新入口直到研究/context manifest 准备及绑定、prompt/schema 字节构造完成后，才 await 原 Ready claim；最后只发布小型 Case 文件并派发模型。保留原 Slot/Fork、公共 Ready 命中、原 workspace/Thread 关联与冻结 manifest 重试身份；不新增队列、模型调用或并发限制。绑定失败的回归证明尚未领取物理资源。
 
 2026-11-10 W3 诊断补充：晚领取 Ready 的失败仍标为 PREPARE，HTTP 空异常字符串至少保留 ReadTimeout / ConnectTimeout 等类型名；异常类别、重试、取消和业务 Schema 不变。
+
+2026-11-10 Runtime OOM follow-up: production stack and 22 new-job samples exposed ordinary-priority synchronous W3 result/commit writes (finish-to-commit median 222s). Reuse existing short-write context for immutable result save, durable-result continuation and trade/operations commits; no new locks, worker limits, model/prompt/schema/trading changes. Concurrent result write overtakes ordinary SQL backlog and priority resets on errors.

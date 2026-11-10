@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 
 from doxagent.codex_worker.schema import ThreadForkRequest
+from doxagent.control_io import short_write
 from doxagent.w3_timing import observed
 from doxagent.workflows.codex_document3.schema import PolicyDecision
 
@@ -442,6 +443,7 @@ class W3Execution:
             record = self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
         return self._commit_trade(case, record, decision)
 
+    @short_write()
     def _resume_result(self, case_id, phase, record_id, reader):
         case = self.service.repository.get_case(case_id)
         stage = self.registry.stage(case_id, phase)
@@ -457,6 +459,7 @@ class W3Execution:
         if job_id:
             self.service._effect_executor.submit(self._ack, job_id)
 
+    @short_write()
     def _commit_trade(self, case, record, decision):
         case.w3_trade_decision = decision.model_dump(mode="json")
         trade, override = self._trade_record(case, decision)
@@ -652,6 +655,7 @@ class W3Execution:
             )
         return self._commit_operations(case, record, result, trade_stage, state)
 
+    @short_write()
     def _commit_operations(self, case, record, result, trade_stage, state):
         if result.delta_candidates:
             maximum = self.service._known_for_case(case).max_event_numeric_id(
