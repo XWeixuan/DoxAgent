@@ -1,0 +1,398 @@
+{
+  "build.json": {
+    "commit": "29fecbc18b92efdf0d4ba32cf19204fb474fb0d9",
+    "at": "2026-11-10T21:00:49.333827+00:00",
+    "roles": {
+      "v2-scheduler": {
+        "previous": "sha256:3a50500e51d92a54d668fb3b906475bcd5a2686a4ce8d329cc9025884db689e6",
+        "image": "sha256:f7a86385b4364ef5e8b4f5e3454bc302c3f8aa1e7a560c9700dc8b1653af07e7",
+        "files": {
+          "src/doxagent/control_io.py": "9c96211bf60f42f8ad2db02009515ce3a0fde2238e8b7c1a8a01a5c93240a06d",
+          "src/doxagent/w3_timing.py": "be351f255267dc96c8bc24730328e2b3b61b3762468a686fd92e274c95bedf80",
+          "src/doxagent/persistent_runtime_v2/w3_research_store.py": "4dae2c3ace5fcaba23bcae87c1572773bf14208afcc22e6cb61bf57a5bdcfdfb",
+          "src/doxagent/persistent_runtime_v2/coordinator.py": "e51da7cac576e522833ff7b1d6d6041e2efddf5a57a60c980fda88b04f5f1850",
+          "src/doxagent/persistent_runtime_v2/journal.py": "72789a87211f5bef344a39ba162a82ece8436f1c56601b203f6295dcaba8f277",
+          "src/doxagent/persistent_runtime_v2/repository.py": "4819d30a2184b093a60de3876390c49eeb0c51d8c77c34650eae42cf7fa0a4e9",
+          "src/doxagent/persistent_runtime_v2/service.py": "ab8d0d258807151133cbf90c3dbc3b1ad32dbd92157356b9375f21bcc9597282",
+          "src/doxagent/persistent_runtime_v2/w3.py": "f7737b24dbd32f53c57d5cd959788ddf94644e98d4f08b4a00a12bf9d29dc04a",
+          "src/doxagent/persistent_runtime_v2/w3_execution.py": "6d567b76fefe76c2170110ef013be730c1114b3c3b841eeef1d4ff97d9f6f946",
+          "src/doxagent/persistent_runtime_v2/w3_threads.py": "4dd7e43953883f838e515b9cfad9507941569a464d856d5520a48d9b6e3b4744",
+          "src/doxagent/persistent_runtime_v2/worker_receipts.py": "6186238a4e21c14e99d2be5b00adcfd5a06b2aa6359a7d28a73c553010979de1",
+          "src/doxagent/persistent_runtime_v2/calendar.py": "8f2afd3a65c092a01a97289bedcbd4a99bc710acd30183429b47dc48c77af0cd",
+          "src/doxagent/persistent_runtime_v2/w3_context.py": "8ecae9e247c783a4b6d5624f11605e4642a498ca10de05fe7c76b28de535da02",
+          "src/doxagent/persistent_runtime_v2/projection.py": "99929f1b807dfe475f3ac223e5c6dd43eff0a75af91f018c15537fcf5174fe0a"
+        }
+      }
+    }
+  },
+  "release.json": {
+    "commit": "29fecbc18b92efdf0d4ba32cf19204fb474fb0d9",
+    "roles": [
+      "v2-scheduler"
+    ],
+    "at": "2026-11-10T21:02:03.019933+00:00"
+  },
+  "acceptance-frozen.json": {
+    "at": "2026-11-10T21:10:07.868891+00:00",
+    "since": "2026-11-10T21:02:03+00:00",
+    "until": "2026-11-10T21:10:07.119948+00:00",
+    "summary": {
+      "trade_decision": {
+        "total": 4,
+        "complete": 4,
+        "incomplete": 0,
+        "internal_s": {
+          "n": 4,
+          "p50": 3.0036308765411377,
+          "p95": 4.1227662563323975,
+          "maximum": 4.1227662563323975,
+          "over5": 0
+        },
+        "boundary_internal_s": {
+          "n": 4,
+          "p50": 2.8534998893737793,
+          "p95": 4.1227662563323975,
+          "maximum": 4.1227662563323975,
+          "over5": 0
+        },
+        "sdk_envelope_s": {
+          "n": 4,
+          "p50": 10.471365928649902,
+          "p95": 67.89187097549438,
+          "maximum": 67.89187097549438,
+          "over5": 4
+        },
+        "nested_dox_tool_s": {
+          "n": 4,
+          "p50": 0,
+          "p95": 0.1501309871673584,
+          "maximum": 0.1501309871673584,
+          "over5": 0
+        },
+        "parts": {
+          "eligible_to_job": {
+            "n": 4,
+            "p50": 1.6850268840789795,
+            "p95": 2.0402731895446777,
+            "maximum": 2.0402731895446777,
+            "over5": 0
+          },
+          "job_queue": {
+            "n": 4,
+            "p50": 0.047013044357299805,
+            "p95": 0.0644991397857666,
+            "maximum": 0.0644991397857666,
+            "over5": 0
+          },
+          "worker_startup": {
+            "n": 4,
+            "p50": 0.12031388282775879,
+            "p95": 0.7113690376281738,
+            "maximum": 0.7113690376281738,
+            "over5": 0
+          },
+          "finished_to_commit": {
+            "n": 4,
+            "p50": 0.4164309501647949,
+            "p95": 0.9151208400726318,
+            "maximum": 0.9151208400726318,
+            "over5": 0
+          },
+          "commit_to_owner_end": {
+            "n": 4,
+            "p50": 0.18341898918151855,
+            "p95": 0.31201815605163574,
+            "maximum": 0.31201815605163574,
+            "over5": 0
+          }
+        }
+      },
+      "post_decision_operations": {
+        "total": 4,
+        "complete": 3,
+        "incomplete": 1,
+        "internal_s": {
+          "n": 3,
+          "p50": 1.4734671115875244,
+          "p95": 2.5049660205841064,
+          "maximum": 2.5049660205841064,
+          "over5": 0
+        },
+        "boundary_internal_s": {
+          "n": 3,
+          "p50": 1.4734671115875244,
+          "p95": 2.5049660205841064,
+          "maximum": 2.5049660205841064,
+          "over5": 0
+        },
+        "sdk_envelope_s": {
+          "n": 3,
+          "p50": 14.135889053344727,
+          "p95": 113.1388201713562,
+          "maximum": 113.1388201713562,
+          "over5": 3
+        },
+        "nested_dox_tool_s": {
+          "n": 3,
+          "p50": 0,
+          "p95": 0,
+          "maximum": 0,
+          "over5": 0
+        },
+        "parts": {
+          "eligible_to_job": {
+            "n": 3,
+            "p50": 0.7124669551849365,
+            "p95": 1.3496458530426025,
+            "maximum": 1.3496458530426025,
+            "over5": 0
+          },
+          "job_queue": {
+            "n": 3,
+            "p50": 0.03850507736206055,
+            "p95": 0.043411970138549805,
+            "maximum": 0.043411970138549805,
+            "over5": 0
+          },
+          "worker_startup": {
+            "n": 3,
+            "p50": 0.022755861282348633,
+            "p95": 0.0267179012298584,
+            "maximum": 0.0267179012298584,
+            "over5": 0
+          },
+          "finished_to_commit": {
+            "n": 3,
+            "p50": 0.5616469383239746,
+            "p95": 0.8595759868621826,
+            "maximum": 0.8595759868621826,
+            "over5": 0
+          },
+          "commit_to_owner_end": {
+            "n": 3,
+            "p50": 0.0387110710144043,
+            "p95": 0.15318703651428223,
+            "maximum": 0.15318703651428223,
+            "over5": 0
+          }
+        }
+      }
+    },
+    "full_case": {
+      "n": 3,
+      "p50": 5.284215211868286,
+      "p95": 5.405628204345703,
+      "maximum": 5.405628204345703,
+      "over5": 2
+    },
+    "trace_count": 34,
+    "case_rows": [
+      {
+        "case_id": "case_36484d84ab2d4f6591bac13331c16c42",
+        "non_sdk_s": 5.405628204345703,
+        "boundary_non_sdk_s": 5.405628204345703,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_75a5e4ce1562494698b7cee8e9907ea3",
+        "non_sdk_s": 3.85893177986145,
+        "boundary_non_sdk_s": 3.708800792694092,
+        "nested_dox_tool_s": 0.1501309871673584
+      },
+      {
+        "case_id": "case_3282f3b033f043afa559161ab3125970",
+        "non_sdk_s": 5.284215211868286,
+        "boundary_non_sdk_s": 5.284215211868286,
+        "nested_dox_tool_s": 0
+      }
+    ],
+    "case_ids": [
+      "case_36484d84ab2d4f6591bac13331c16c42",
+      "case_75a5e4ce1562494698b7cee8e9907ea3",
+      "case_b448eb2624794de581b9ae0dc977d071",
+      "case_3282f3b033f043afa559161ab3125970"
+    ],
+    "selector_truncated": false,
+    "metadata_budget_exhausted": false,
+    "log_budgets": {
+      "v2-scheduler": {
+        "bytes": 150908,
+        "byte_cap_reached": false,
+        "tail_cap_reached": false
+      },
+      "codex-worker": {
+        "bytes": 573129,
+        "byte_cap_reached": false,
+        "tail_cap_reached": false
+      }
+    },
+    "trace_parse_errors": 0,
+    "unattributed_tool_receipts": 0,
+    "external_provider_wait_excluded_s": 0,
+    "phases": [
+      {
+        "case_id": "case_36484d84ab2d4f6591bac13331c16c42",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 3.0840811729431152,
+        "parts": {
+          "eligible_to_job": 1.5953259468078613,
+          "job_queue": 0.04333305358886719,
+          "worker_startup": 0.7113690376281738,
+          "finished_to_commit": 0.4164309501647949,
+          "commit_to_owner_end": 0.18341898918151855
+        },
+        "sdk_envelope_s": 9.801072835922241,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_36484d84ab2d4f6591bac13331c16c42",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.5049660205841064,
+        "parts": {
+          "eligible_to_job": 1.3496458530426025,
+          "job_queue": 0.043411970138549805,
+          "worker_startup": 0.02268815040588379,
+          "finished_to_commit": 0.8595759868621826,
+          "commit_to_owner_end": 0.15318703651428223
+        },
+        "sdk_envelope_s": 7.706959962844849,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_75a5e4ce1562494698b7cee8e9907ea3",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 3.0036308765411377,
+        "parts": {
+          "eligible_to_job": 1.6850268840789795,
+          "job_queue": 0.0644991397857666,
+          "worker_startup": 0.12031388282775879,
+          "finished_to_commit": 0.592073917388916,
+          "commit_to_owner_end": 0.3076589107513428
+        },
+        "sdk_envelope_s": 67.89187097549438,
+        "nested_dox_tool_s": 0.1501309871673584
+      },
+      {
+        "case_id": "case_75a5e4ce1562494698b7cee8e9907ea3",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 1.1629598140716553,
+        "parts": {
+          "eligible_to_job": 0.7124669551849365,
+          "job_queue": 0.037841081619262695,
+          "worker_startup": 0.0267179012298584,
+          "finished_to_commit": 0.2792470455169678,
+          "commit_to_owner_end": 0.03832197189331055
+        },
+        "sdk_envelope_s": 113.1388201713562,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_b448eb2624794de581b9ae0dc977d071",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 2.580491065979004,
+        "parts": {
+          "eligible_to_job": 1.9255049228668213,
+          "job_queue": 0.047013044357299805,
+          "worker_startup": 0.11826896667480469,
+          "finished_to_commit": 0.20086884498596191,
+          "commit_to_owner_end": 0.1795341968536377
+        },
+        "sdk_envelope_s": 25.32228398323059,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_b448eb2624794de581b9ae0dc977d071",
+        "phase": "post_decision_operations",
+        "complete": false,
+        "missing": [
+          "not_committed",
+          "owner_return_boundary"
+        ],
+        "known_job_queue_s": 0.04719805717468262
+      },
+      {
+        "case_id": "case_3282f3b033f043afa559161ab3125970",
+        "phase": "trade_decision",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 4.1227662563323975,
+        "parts": {
+          "eligible_to_job": 2.0402731895446777,
+          "job_queue": 0.05597686767578125,
+          "worker_startup": 0.6498711109161377,
+          "finished_to_commit": 0.9151208400726318,
+          "commit_to_owner_end": 0.31201815605163574
+        },
+        "sdk_envelope_s": 10.471365928649902,
+        "nested_dox_tool_s": 0
+      },
+      {
+        "case_id": "case_3282f3b033f043afa559161ab3125970",
+        "phase": "post_decision_operations",
+        "complete": true,
+        "missing": [],
+        "non_sdk_s": 1.4734671115875244,
+        "parts": {
+          "eligible_to_job": 0.6997270584106445,
+          "job_queue": 0.03850507736206055,
+          "worker_startup": 0.022755861282348633,
+          "finished_to_commit": 0.5616469383239746,
+          "commit_to_owner_end": 0.0387110710144043
+        },
+        "sdk_envelope_s": 14.135889053344727,
+        "nested_dox_tool_s": 0
+      }
+    ]
+  },
+  "resource": {
+    "samples": 41,
+    "errors": 0,
+    "first": "2026-11-10T21:02:19.710505+00:00",
+    "last": "2026-11-10T21:12:19.710424+00:00",
+    "elapsed_s": 600.0,
+    "min_available_gib": 11.48086166381836,
+    "vmstat_delta": {
+      "pswpin": 6671,
+      "pswpout": 467,
+      "oom_kill": 0
+    },
+    "roles": {
+      "v2-scheduler": {
+        "images": [
+          "sha256:23294f30df9f04e037b2db6ab1f3f482d7378c515edda6d94215f0a1b6597bc1",
+          "sha256:f7a86385b4364ef5e8b4f5e3454bc302c3f8aa1e7a560c9700dc8b1653af07e7"
+        ],
+        "started_at": [
+          "2026-11-10T21:01:47.448772134Z",
+          "2026-11-10T21:10:58.695584497Z"
+        ],
+        "max_restarts": 0,
+        "oom": false,
+        "all_running": false,
+        "max_memory_gib": 0.7792701721191406
+      },
+      "codex-worker": {
+        "images": [
+          "sha256:14121db49ff670bcad9d015c3c090b17c8aac2c1fce61d4e4c281196c6e15a39"
+        ],
+        "started_at": [
+          "2026-11-10T20:48:07.809903966Z"
+        ],
+        "max_restarts": 0,
+        "oom": false,
+        "all_running": true,
+        "max_memory_gib": 5.235328674316406
+      }
+    }
+  }
+}

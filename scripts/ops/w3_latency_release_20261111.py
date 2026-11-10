@@ -1,6 +1,7 @@
 """Reviewed W3 overlays on accepted images; reuse the canonical release owner."""
 import argparse
 import copy
+from contextlib import closing
 from datetime import UTC, datetime
 import hashlib
 import importlib.util
@@ -31,6 +32,24 @@ def source(role, path):
     raw = subprocess.check_output(['docker', 'cp', 'doxagent-v2-' + role + '-1:/app/' + path, '-'])
     with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
         return archive.extractfile(archive.getmembers()[0]).read()
+
+
+def assert_scheduler_idle(database, *, now=None):
+    # Operator-only check. A successful Worker Job can still have a live result
+    # consumer; Job count alone is not an idle Scheduler. No runtime gate/queue.
+    stamp=(now or datetime.now(UTC)).isoformat()
+    with closing(sqlite3.connect(
+        Path(database).resolve().as_uri()+'?mode=ro',uri=True,timeout=.1
+    )) as db:
+        active=db.execute(
+            "SELECT 1 FROM runtime_v2_effects WHERE status IN ('RUNNING','PENDING','PENDING_RETRY') "
+            "AND effect_type IN ('route_to_w3','w3_post_decision') AND ("
+            "(status='RUNNING' AND (json_extract(payload_json,'$.lease_until') IS NULL OR "
+            "json_extract(payload_json,'$.lease_until')>?)) OR "
+            "(status IN ('PENDING','PENDING_RETRY') AND available_at<=?)) LIMIT 1",(stamp,stamp)
+        ).fetchone()
+    if active:
+        raise ValueError('Scheduler has eligible W3 work or a live result owner; keep serving')
 
 
 def main():
@@ -124,6 +143,8 @@ def main():
                         raise ValueError('Worker has accepted work; wait for a natural idle publication window')
                 finally:
                     db.close()
+            if 'v2-scheduler' in manifest['components']:
+                assert_scheduler_idle('/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime/runtime.sqlite3')
             for name in ['state.json', 'compose.current.json']:
                 (audit / (name + '.before.private')).write_bytes((ROOT / name).read_bytes())
             for entry in inspect('initialization-guardian')['Config'].get('Env', []):

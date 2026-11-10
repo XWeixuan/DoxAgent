@@ -2871,3 +2871,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-11 W3 Native读取后续：get_case保留新鲜主键读取与完整业务校验，Native展开后直接验证，取消完整JSON再编码/再解析；不新增缓存。实际两例相等性和CPU/墙钟探针、正常/缺失Case与恢复回归覆盖。
 2026-11-11 W1R3/W2R3: add explicit OpenAI Luna high/fast profile with fixed 30m prompt cache and Haiku high/Google Vertex Global/1h fallback; replay immutable R2 input/output for native R3 and encode assistant history as output_text; preserve all existing nodes, prompts and business schemas. Six real native R3 replays plus two Haiku probes succeeded, including W2 alignment validation.
+
+2026-11-11 W3验收下界补充：缺owner日志但已持久化stage提交的Case，保留Worker完成至stage提交及内部耗时的已知下界；跨独立发布的成功结果交接等待仍计内部，不能当Provider等待或静默丢弃。验收回归2项通过。
+
+2026-11-11 W3发布窗口：一次性发布脚本补活跃/已可执行W3 Effect只读检查，Job结束不等于成功结果已消费；发现仍有owner则保持服务、不停止Scheduler。不改实时调度、不新增运行时门槛。

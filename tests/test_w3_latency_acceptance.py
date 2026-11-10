@@ -25,7 +25,8 @@ def test_real_completion_retry_and_nested_tools_are_all_counted(monkeypatch,miss
     phases=['trade_decision','post_decision_operations']
     effects=[dict(effect_id='t',effect_type='route_to_w3',created_at=stamp(0),status='COMPLETED'),
              dict(effect_id='o',effect_type='w3_post_decision',created_at=stamp(4.5),status='COMPLETED')]
-    stages=[dict(phase=p,status='COMMITTED',worker_job_id=j) for p,j in zip(phases,['t2','o1'])]
+    stages=[dict(phase=p,status='COMMITTED',worker_job_id=j,committed_at=stamp(n))
+            for p,j,n in zip(phases,['t2','o1'],[4.5,7.6])]
     jobs=[]
     for phase,j,created,started,sdk_start,sdk_end,end in [
         (phases[0],'t1',.1,.2,1,2,2.1),
@@ -60,6 +61,8 @@ def test_real_completion_retry_and_nested_tools_are_all_counted(monkeypatch,miss
     if missing:
         assert not operations['complete']
         assert 'business_commit_return_boundary' in operations['missing']
+        assert operations['known_result_to_stage_commit_lower_bound_s']==pytest.approx(.5)
+        assert operations['known_boundary_internal_lower_bound_s']==pytest.approx(2)
         assert value['full_case']['n']==0
     else:
         assert operations['non_sdk_s']==pytest.approx(2.5)

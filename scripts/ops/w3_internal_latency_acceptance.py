@@ -93,6 +93,16 @@ def collect(since,until=None,ids=None):
                 if not commit:row['missing'].append('business_commit_return_boundary')
             if row['missing']:
                 row['known_job_queue_s']=sum(max(0,(instant(j['started_at']) or upper)-instant(j['created_at'])) for j in jobs)
+                committed=instant(stage.get('committed_at'))
+                current=next((j for j in jobs if j['id']==stage.get('worker_job_id')),None)
+                if committed and current and current.get('finished_at'):
+                    # A persisted stage timestamp precedes actual SQL return.
+                    # Retain this lower bound even when a deployment removed
+                    # the final owner log; never silently drop the slow Case.
+                    row['known_result_to_stage_commit_lower_bound_s']=max(0,committed-instant(current['finished_at']))
+                    if jobs and not any(m.startswith('sdk_timing:') for m in row['missing']):
+                        clipped=[(max(a,start),min(b,committed)) for a,b in sdk if b>start and a<committed]
+                        row['known_boundary_internal_lower_bound_s']=max(0,committed-start-seconds(clipped))
                 rows.append(row);continue
             end=instant(owner['finished_at']);sdk=[(max(a,start),min(b,end)) for a,b in sdk if b>start and a<end]
             tools=[t for t in traces if t.get('segment')=='research_tool' and t.get('case_id')==case['case_id'] and t.get('task_phase')==phase]
