@@ -124,17 +124,25 @@ def _poll_current(store, now, limit, deadline):
     if store_from_environment() is None:
         return {}, 0
     cutoff=(now-timedelta(hours=48)).isoformat()
-    rows=[]
+    rows=[];progress=[];scanned=0
     with store.connect() as db:
         db.set_progress_handler(lambda:time.monotonic()>=deadline,1000)
         for kind in ('native:poll_runs','native:poll_captures'):
-            rows.extend(db.execute("SELECT kind,ticker,id,valid_from FROM object_current WHERE kind=? AND "
-                "kind IN ('native:poll_runs','native:poll_captures') AND "
-                "coalesce(json_extract(payload,'$.dispatch_at'),json_extract(payload,'$.observed_at'))<? "
-                "ORDER BY ticker,coalesce(json_extract(payload,'$.dispatch_at'),json_extract(payload,'$.observed_at')),valid_from LIMIT ?",
-                (kind,cutoff,min(limit,128))).fetchall())
+            key='gc_poll_current_'+kind
+            prior=db.execute('SELECT value FROM read_meta WHERE key=?',(key,)).fetchone()
+            after=json.loads(prior[0]) if prior else ['', '']
+            page=db.execute("SELECT kind,ticker,id,valid_from,coalesce(json_extract(payload,'$.dispatch_at'),"
+                "json_extract(payload,'$.observed_at')) FROM object_current INDEXED BY current_native_identity "
+                "WHERE kind=? AND (id,ticker)>(?,?) ORDER BY id,ticker LIMIT ?",
+                (kind,*after,min(limit,512))).fetchall()
+            rows.extend(tuple(r[:4]) for r in page if r[4] and r[4]<cutoff)
+            scanned+=len(page)
+            progress.append((key,json.dumps([page[-1][2],page[-1][1]] if page else ['', ''])))
     if rows:
         import hashlib
-        identity=hashlib.sha256(json.dumps([tuple(r) for r in rows]).encode()).hexdigest()
+        identity=hashlib.sha256(json.dumps(rows).encode()).hexdigest()
         store.ingest('read-retention',identity,[dict(kind=r[0],ticker=r[1],id=r[2],data=None) for r in rows])
-    return {'poll_current':len(rows)},len(rows)
+    # Advance only after a successful MVCC commit; retries never skip an exit.
+    with store.connect(write=True,timeout=.05) as db:
+        for key,value in progress:_meta(db,key,value)
+    return {'poll_current':len(rows)},scanned

@@ -67,10 +67,12 @@ def build(audit,commit,baseline,release):
             target.write_bytes(raw);hashes[path]=hashlib.sha256(raw).hexdigest()
         base_tag='doxagent-v2:storage-base-'+image[7:19]
         subprocess.run(['docker','tag',image,base_tag],check=True)
-        lines=['FROM '+base_tag,'USER root']+['COPY '+p+' /app/'+p for p in paths]
+        lines=['FROM '+base_tag,'USER root']+['COPY --chmod=0644 '+p+' /app/'+p for p in paths]
         lines+=['RUN python -m compileall -q '+' '.join('/app/'+p for p in paths),
                 'LABEL com.doxagent.storage-lifecycle.commit="'+commit+'"',
                 'USER '+(infos[roles[0]]['Config'].get('User') or 'root')]
+        smoke=';'.join('compile(open('+repr('/app/'+p)+').read(),'+repr(p)+',"exec")' for p in paths)
+        lines+=['RUN python -c '+__import__('shlex').quote(smoke)]
         (context/'Dockerfile').write_text('\n'.join(lines)+'\n')
         tag='doxagent-v2:storage-'+commit[:12]+'-'+image[7:19]
         subprocess.run(['docker','build','-t',tag,str(context)],check=True)

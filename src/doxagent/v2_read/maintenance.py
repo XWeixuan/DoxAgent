@@ -437,7 +437,7 @@ def run_gc(store, *, once=False, interval=15, budget=2):
             import sqlite3
             while time.monotonic() - started < budget:
                 try:
-                    result = collect(store, limit=batch, budget=min(.5, max(.001, budget-(time.monotonic()-started))),
+                    result = collect(store, limit=batch, budget=max(.001, budget-(time.monotonic()-started)),
                                      time_floor=result.get("time_floor"))
                 except sqlite3.OperationalError as exc:
                     errors.append(str(exc))
