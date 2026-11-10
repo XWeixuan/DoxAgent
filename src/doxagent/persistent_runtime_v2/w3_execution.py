@@ -517,6 +517,8 @@ class W3Execution:
                 self._save_case_in_transaction(db, case, prepared_case)
                 self._enqueue_in_transaction(db, operations)
         self._write_result(commit)
+        from doxagent.w3_timing import mark
+        mark('phase.business_committed',task_phase=TRADE_PHASE)
         if not hasattr(self.service.repository, "path"):
             self.service.repository.save_case(case)
         self._sync_route_case(case, record)
@@ -828,6 +830,8 @@ class W3Execution:
                     db.execute('UPDATE runtime_v2_w3_threads SET owner_case_id=NULL,lease_until=NULL WHERE owner_case_id=?',
                                (case.case_id,))
         self._write_result(commit)
+        from doxagent.w3_timing import mark
+        mark('phase.business_committed',task_phase=OPERATIONS_PHASE)
         if archive is not None and not hasattr(self.service.repository, "path"):
             self.service.repository.save_archive(archive)
         case.w3_operations_status = "COMMITTED"

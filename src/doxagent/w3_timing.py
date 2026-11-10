@@ -166,6 +166,13 @@ def current_identity():
     return dict(trace.identity) if trace else {}
 
 
+def identify(**identity):
+    trace=_current.get()
+    if trace is not None:
+        with trace.lock:
+            trace.identity.update(identity)
+
+
 def mark(name, **counts):
     at=datetime.now(UTC).isoformat()
     trace=_current.get()

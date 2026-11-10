@@ -2011,34 +2011,42 @@ class PersistentRuntimeV2Service:
         dispatched = timing.pop("dispatch_monotonic", None)
         if dispatched is not None:
             timing["effect_thread_start_ms"] = round((perf_counter() - dispatched) * 1000, 3)
-        phase_token = defer_phase_waits.set(True)
-        try:
-            with self._w3_threads_lock:
-                self._running_effect_ids.add(effect.effect_id)
-            self._process_claimed_effect(effect, dispatch_timing=timing)
-        finally:
-            defer_phase_waits.reset(phase_token)
-            with self._w3_threads_lock:
-                self._w3_threads.discard(current_thread())
-                self._running_effect_ids.discard(effect.effect_id)
-                waiting = effect.effect_id in self._phase_waiters
-                if not waiting:
-                    self._active_effect_ids.discard(effect.effect_id)
-                    self._active_effects.pop(effect.effect_id, None)
-                    self._background_effect_ids.discard(effect.effect_id)
-            if waiting:
-                self._resume_phase(effect)
-            if self.coordinator is not None and not self._draining:
-                self.coordinator.wake_effects()
+        from doxagent.w3_timing import effect_trace
+        trace_scope = effect_trace(effect,self.journal,**timing) if self.journal and effect.effect_type in {
+            RuntimeSideEffect.ROUTE_TO_W3,RuntimeSideEffect.W3_POST_DECISION} else nullcontext()
+        with trace_scope:
+            phase_token = defer_phase_waits.set(True)
+            try:
+                with self._w3_threads_lock:
+                    self._running_effect_ids.add(effect.effect_id)
+                self._process_claimed_effect(effect, dispatch_timing=timing)
+            finally:
+                defer_phase_waits.reset(phase_token)
+                with self._w3_threads_lock:
+                    self._w3_threads.discard(current_thread())
+                    self._running_effect_ids.discard(effect.effect_id)
+                    waiting = effect.effect_id in self._phase_waiters
+                    if not waiting:
+                        self._active_effect_ids.discard(effect.effect_id)
+                        self._active_effects.pop(effect.effect_id, None)
+                        self._background_effect_ids.discard(effect.effect_id)
+                if waiting:
+                    self._resume_phase(effect)
+                if self.coordinator is not None and not self._draining:
+                    self.coordinator.wake_effects()
 
     def _process_claimed_effect(self, effect, *, dispatch_timing=None):
         if self.journal and effect.effect_type in {
             RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION
         }:
-            from doxagent.w3_timing import effect_trace
-            with effect_trace(effect, self.journal, **(dispatch_timing or {})) as trace:
-                result = self._process_claimed_effect_inner(effect, dispatch_timing=dispatch_timing)
-                trace.identity['effect_body_return'] = result
+            from doxagent.w3_timing import current_identity,effect_trace,mark
+            if current_identity().get('effect_id')==effect.effect_id:
+                result=self._process_claimed_effect_inner(effect,dispatch_timing=dispatch_timing)
+                mark('effect.body_return',result=result)
+                return result
+            with effect_trace(effect,self.journal,**(dispatch_timing or {})):
+                result=self._process_claimed_effect_inner(effect,dispatch_timing=dispatch_timing)
+                mark('effect.body_return',result=result)
                 return result
         return self._process_claimed_effect_inner(effect, dispatch_timing=dispatch_timing)
 
