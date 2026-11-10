@@ -103,7 +103,8 @@ def initial_sources() -> list[SourceDefinition]:
         "exchange": {"type": "string", "enum": ["NASDAQ", "NYSE", "AMEX"]},
     }
     from .x_official import initial_source as x_source
-    return [
+    from .polling_cadence import RETIRED_SOURCES, source_defaults
+    sources = [
         x_source(),
         initial_sec_source(),
         *defense_sources(),
@@ -401,6 +402,8 @@ def initial_sources() -> list[SourceDefinition]:
         *massive_sources(),
     ]
 
+    return [source_defaults(source) for source in sources if source.source_id not in RETIRED_SOURCES]
+
 
 def initial_default_profile() -> DefaultMonitoringProfile:
     polling = PollingConfig(
@@ -409,7 +412,8 @@ def initial_default_profile() -> DefaultMonitoringProfile:
         alert_after_seconds=1800,
         active_windows=[],
     )
-    return DefaultMonitoringProfile(
+    from .polling_cadence import SOURCE_INTERVALS
+    profile = DefaultMonitoringProfile(
         profile_id="default",
         entries=[
             DefaultProfileEntry(
@@ -467,6 +471,10 @@ def initial_default_profile() -> DefaultMonitoringProfile:
             "polling and the 02:00 ET closed-day sweep"
         ),
     )
+
+    return profile.model_copy(update={"entries": [entry.model_copy(update={"polling": entry.polling.model_copy(
+        update={"target_interval_seconds": SOURCE_INTERVALS.get(entry.source_id, entry.polling.target_interval_seconds)})})
+        for entry in profile.entries]})
 
 
 __all__ = ["initial_default_profile", "initial_sources"]
