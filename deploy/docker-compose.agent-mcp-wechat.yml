@@ -1,0 +1,12 @@
+# Optional: append to the existing MCP/production release Compose files.
+# Only the MCP process receives this credential; the business API is unchanged.
+services:
+  v2-agent-mcp-tunnel:
+    environment:
+      DOXAGENT_PUSHPLUS_TOKEN_FILE: /run/secrets/agent_pushplus_token
+    secrets:
+      - agent_pushplus_token
+
+secrets:
+  agent_pushplus_token:
+    file: ${DOXAGENT_PUSHPLUS_TOKEN_PATH:?Set PushPlus owner credential file}

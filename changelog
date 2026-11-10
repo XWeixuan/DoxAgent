@@ -2829,3 +2829,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 Historical16-slot follow-up: 180s/13 samples, available RAM minimum8.51GiB/end11.26GiB, Worker peak7.98GiB; no business-container restart/OOM or kernel OOM in this window. Manifest capacity16 confirmed,17 historical Cases closed and16 active at00:21:06; long-running5s performance acceptance remains pending.
 
 2026-11-11 agent-readonly-mcp convergence: audit all54 tracked/untracked code paths;33 already match main and9 W3 files are exact pre-fix e93e2557 copies. Preserve current W3/ordinary429/original-Job/Ready fixes and Content Recheck configuration. Integrate missing per-ticker admission/ACK isolation and degradation clearing, maintenance health, D3 frozen WAIT_WORKER resume and pre-dispatch storage recovery with regression coverage; no W3 performance implementation in this step.
+
+2026-11-11 MCP微信通知：复用现有stdio/Tunnel新增可选send_wechat_notification，仅标题/正文/INFO-WARNING-CRITICAL三级输入，固定PushPlus本人wechat纯文本渠道，独立secret；原四数据查询工具保持只读，不改API/交易系统。明确外部副作用、异步受理与实收边界，超时不自动重发；通知及原MCP/Bus共44项通过，待单容器发布和真实微信实收验收。见docs/agent-mcp-wechat-notification-20261111.md。
