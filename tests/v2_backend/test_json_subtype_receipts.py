@@ -10,6 +10,7 @@ from doxagent.v2_read.projector import ProjectionWorker,native
 from doxagent.v2_read.projectors import DomainProjectors
 from doxagent.v2_read.repository import ReadStore
 from tests.test_w3_v5_execution import setup_case
+from scripts.ops.repair_w3_cdc_receipts_20261111 import repair
 
 
 @pytest.mark.parametrize('column',['payload','payload_json','data_json','inputs','receipt'])
@@ -62,7 +63,10 @@ def test_historical_object_envelope_repairs_w3_pending_without_model_replay(tmp_
         assert isinstance(json.loads(raw['payload'])['payload_json'],dict)
         assert isinstance(event['row']['payload_json'],str)
         assert native(event)['frozen_inputs']['large_evidence']==before['frozen_inputs']['large_evidence']
-        assert worker._events(source,[seq],lambda n:source.event(n,serving=True),budget=5)==1
+        store.ingest('runtime',str(seq),[],position=seq,gap='KeyError')
+        result=repair(store,source,[seq],budget=5)
+        assert result['repaired']==[seq] and not result['failures']
+        assert repair(store,source,[seq],budget=5)['skipped']==[seq]
         projected=store.get('case',case.ticker,case.case_id)
         assert projected['status']=='COMPLETED'
         assert projected['w3_decision']['value']=='NO_TRADE'

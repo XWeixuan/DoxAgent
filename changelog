@@ -2887,3 +2887,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 — Add an account-level concurrent ticker quota and set-ticker-limit CLI. Count opening, held and closing groups atomically without splitting the existing MARGIN budget or charging hedge legs a separate ticker slot. Distinguish informational margin warnings from rejected previews while retaining funds checks and the margin buffer. Add simulated execution/exit and quota regressions; align retired LEGACY validation assertions with the current schema.
 
 2026-11-11 W3 CDC投影修复：SQLite JSON函数部分更新带JSON subtype进入NEW/OLD，使TEXT回执列被嵌为对象；采集触发器统一剥离subtype，读取兼容已有对象/数组封装并沿用Native解析。仅修复Read投影，保留原回执、Runtime Case/Job及交易；增加SQL实测与W3终态端到端回归。
+
+2026-11-11 W3存量投影恢复：增加仅接受显式KeyError坐标的有限运维回放，复用既有FormalProjectors/ReadStore和原水位；不写Runtime、不重跑模型，持原Projector锁并逐事件提交，可重入。
