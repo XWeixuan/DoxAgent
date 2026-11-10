@@ -66,3 +66,13 @@ def test_cache_key_changes_with_subminute_poll_not_every_request():
     assert fresh_query_bucket(context) == 6
     context.requested_at = datetime.fromtimestamp(140, UTC)
     assert fresh_query_bucket(context) == 7
+
+
+def test_mixed_ir_binding_cannot_override_rate_limited_endpoint_floor():
+    from types import SimpleNamespace as N
+    source = N(source_id='corporate_ir_press_releases')
+    assert unit_interval(source, 'IR:mu.ir', 20) == 30
+    assert unit_interval(source, 'IR:mu.newsroom', 20) == 20
+    assert unit_interval(source, 'IR:be.press', 20) == 30
+    assert unit_interval(source, 'TAIL:IR:mu.ir', 20) == 30
+    assert unit_interval(source, 'IR:mu.ir', 60) == 60
