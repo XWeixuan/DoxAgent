@@ -38,7 +38,7 @@ python -m doxagent.workflows.codex_document3.state_v21 --inline-for-rollback /da
 
 ## 生产执行与验收（11月11日）
 
-本轮完成了 R1/R2、A1、D1/D2、T1 以及 I1/S1/B1/B2、发布/容量规则的代码实装与对应角色发布。**这不是整个方案的长期验收全部通过**：Read/Acquisition 仍在追平历史积压，初始化快照多控制库补丁待最后一次Worker安全发布，3份独立Document2快照及未放弃恢复责任仍有未关闭项，24h/72h/7d自然窗口和完整前端因果性能验收尚未完成。
+本轮已完成 R1/R2、A1、D1/D2、T1、S1/B1/B2及发布/容量规则的代码实装与对应角色发布；I1基础修复已部署，补充的多控制库归属修复待最后一次Worker安全发布。**这不是整个方案的长期验收全部通过**：Read/Acquisition 仍在追平历史积压，初始化快照多控制库补丁待最后一次Worker安全发布，3份独立Document2快照及未放弃恢复责任仍有未关闭项，24h/72h/7d自然窗口和完整前端因果性能验收尚未完成。
 
 ### 生产版本与发布边界
 
@@ -98,3 +98,5 @@ Bus采用SQLite自身原子VACUUM，避免不一致cp和在线文件替换。操
 ### 05:00补充状态
 
 已合并main至a0a249d9，保留W3 Luna Fast及并行业务更新。精确文件候选源码cfe7b649，以当前Worker实际镜像14121db49ff6为底，仅覆盖initialization_owners/snapshot_retention/session_retention三个文件，候选7172bb5619e5。当前Worker仍有5个在途Job，未替换。采集角色aff392a3e876的Acquisition maintenance/store与当前提交逐字节一致，明确不为它额外切换容器；构建时产生的同源码Collector候选不发布，由既有48h候选生命周期退出。
+
+最新main业务合并（含W3 JSON解码、Luna供应商配置）的交叉收尾检查：`merged-closeout.xml`为67通过、2跳过，未发模型请求；与此前各组重叠，不合计为独立总数。

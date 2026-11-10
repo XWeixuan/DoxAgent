@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-10T20:58:25.300155+00:00",
+  "roles": {
+    "codex-worker": {
+      "image": "sha256:14121db49ff670bcad9d015c3c090b17c8aac2c1fce61d4e4c281196c6e15a39",
+      "running": true,
+      "files": {
+        "src/doxagent/codex_worker/initialization_owners.py": null,
+        "src/doxagent/codex_worker/snapshot_retention.py": {
+          "sha256": "7accb6042dbcd27e3bc0d9c8ee8a2f7df05d0c13bdafcbfcb37e0ef133074e73"
+        },
+        "src/doxagent/codex_worker/session_retention.py": {
+          "sha256": "e4496a149f5c10fb812ee1784ebeb83fa94c50bcc04a73a7c6c7740c1163db56"
+        }
+      },
+      "collection_plane": "true"
+    },
+    "v2-message-collector": {
+      "image": "sha256:aff392a3e876f3c219a8dfe29712aade44f793818eecbde40ccc78e2e4670e24",
+      "running": true,
+      "files": {
+        "src/doxagent/message_bus_v2/collection_plane/maintenance.py": {
+          "sha256": "2770bf766a9fb06c536646fb66d035a247ced037430e77d5c5f5dfe70fd84d05"
+        },
+        "src/doxagent/message_bus_v2/collection_plane/store.py": {
+          "sha256": "62c86ed4cf4c2d546bb2eff42d2e06fbd7be7b9a7b3b12c549b8eddc0e001c93"
+        }
+      },
+      "collection_plane": "true"
+    }
+  },
+  "worker_jobs": [
+    [
+      "running",
+      5
+    ]
+  ],
+  "disk": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/vda3      400937631744 341618774016 58338545664  86% /\n",
+  "candidate_commit": "cfe7b649854aae83be258169578fe17ca56c1964",
+  "candidates": {
+    "codex-worker": {
+      "base": "sha256:14121db49ff670bcad9d015c3c090b17c8aac2c1fce61d4e4c281196c6e15a39",
+      "candidate": "sha256:7172bb5619e552d7c1c5fb00315dc61839be149862c866b0e10afbccd35d323f"
+    },
+    "v2-message-collector": {
+      "base": "sha256:aff392a3e876f3c219a8dfe29712aade44f793818eecbde40ccc78e2e4670e24",
+      "candidate": "sha256:3df45504d92f1f2bb910d0591b83c7c8eeda56e608199de588c414699b528350"
+    }
+  },
+  "worker_pending_reason": "Concurrent Scheduler/Worker acceptance window; accepted model work is not interrupted",
+  "collector_action": "No deployment: selected source files already match exact current code"
+}

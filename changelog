@@ -2875,3 +2875,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 W3验收下界补充：缺owner日志但已持久化stage提交的Case，保留Worker完成至stage提交及内部耗时的已知下界；跨独立发布的成功结果交接等待仍计内部，不能当Provider等待或静默丢弃。验收回归2项通过。
 
 2026-11-11 W3发布窗口：一次性发布脚本补活跃/已可执行W3 Effect只读检查，Job结束不等于成功结果已消费；发现仍有owner则保持服务、不停止Scheduler。不改实时调度、不新增运行时门槛。
+2026-11-11 Luna R3 production accepted: ecbdd2bc published to origin/main and applied to immutable API/Scheduler role images. W1R3/W2R3 OpenAI gpt-6-luna high/fast with fixed 30m cache; Haiku high/Google Vertex Global/1h fallback. Eight deployed-code real replay calls succeeded; prompts/contracts/R1/R2 unchanged, 22 other containers preserved. Natural R3 sample count remains zero in the short initial window. Evidence docs/luna-r3-release-20261111.md.
+
+2026-11-11 Luna R3 natural acceptance: one new W1R3 and one new W2R3 both OK on gpt-6-luna/high/fast with REPLAY_PARENT; receipts retain the logical R2 parent ID while the native HTTP request omits previous_response_id. Published configuration and primary/fallback checks remain valid; natural receipts recorded in docs/luna-r3-release-20261111.md.
