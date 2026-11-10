@@ -23,6 +23,22 @@ def test_owner_capacity_uses_active_read_generation_and_keeps_gc_receipt(tmp_pat
     assert result['read']['gc']['deleted']['object_history']==500
 
 
+def test_capacity_keeps_last_complete_group_sample_across_midnight(tmp_path,monkeypatch):
+    from datetime import datetime
+    import os
+    now=__import__('time').time();folder=tmp_path/'capacity';folder.mkdir()
+    old={'path':str(tmp_path),'at':now-86400,'entries':[{'path':str(tmp_path),'bytes':1234}],'error':None}
+    (folder/(datetime.fromtimestamp(now-86400).strftime('%Y-%m-%d')+'.json')).write_text(json.dumps({'volumes':[old]}))
+    monkeypatch.setattr(release,'os',SimpleNamespace(name='posix',fchmod=lambda *a:None,fsync=os.fsync))
+    monkeypatch.setattr(release.shutil,'disk_usage',lambda _:(1000,400,600))
+    def timeout(*a,**k):raise subprocess.TimeoutExpired('du',25)
+    monkeypatch.setattr(release.subprocess,'run',timeout)
+    release.capacity_snapshot(tmp_path,[],now=now)
+    result=json.loads((folder/(datetime.fromtimestamp(now).strftime('%Y-%m-%d')+'.json')).read_text())
+    sample=next(r for r in result['volumes'] if r['path']==str(tmp_path))
+    assert sample['entries']==old['entries'] and sample['at']==old['at']
+
+
 def test_status_remains_readable_during_a_deploy_writer_lock(tmp_path,monkeypatch,capsys):
     def writer_lock(*args):raise AssertionError('read-only status acquired the deploy lock')
     monkeypatch.setattr(release,'lock',writer_lock)

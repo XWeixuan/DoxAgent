@@ -122,7 +122,9 @@ def capacity_snapshot(root,containers,*,now=None):
     cursor=prior.get('cursor','')
     page=[p for p in targets if p>cursor][:2]
     if not page:page=targets[:2]
-    value=json.loads(destination.read_text()) if destination.exists() else {'volumes':[]}
+    previous_days=sorted(directory.glob('????-??-??.json'))
+    prior_day=previous_days[-1] if previous_days else None
+    value=json.loads(destination.read_text()) if destination.exists() else json.loads(prior_day.read_text()) if prior_day else {'volumes':[]}
     samples={v['path']:v for v in value.get('volumes',[])}
     for target in page:
         if not Path(target).exists():continue
