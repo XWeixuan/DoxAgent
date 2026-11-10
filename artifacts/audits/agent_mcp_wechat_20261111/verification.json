@@ -1,0 +1,61 @@
+{
+  "image": "sha256:c2f11b4f5b9b8331b2967720c8b811c34fbd8ea079c3a838c9659ccb06cd7a00",
+  "health": {
+    "healthz": {
+      "status": 200,
+      "body": "live"
+    },
+    "readyz": {
+      "status": 200,
+      "body": "ready"
+    }
+  },
+  "stats": {
+    "BlockIO": "40.8MB / 0B",
+    "CPUPerc": "0.05%",
+    "Container": "doxagent-v2-v2-agent-mcp-tunnel-1",
+    "ID": "cf6ca985cf84",
+    "MemPerc": "22.98%",
+    "MemUsage": "88.26MiB / 384MiB",
+    "Name": "doxagent-v2-v2-agent-mcp-tunnel-1",
+    "NetIO": "51.5kB / 12.4kB",
+    "PIDs": "12"
+  },
+  "restart_count": 0,
+  "oom_killed": false,
+  "ports": {},
+  "mount_destinations": [
+    "/home/mcp",
+    "/run/secrets/agent_pushplus_token",
+    "/run/secrets/agent_read_token",
+    "/run/secrets/agent_tunnel_key"
+  ],
+  "other_containers_unchanged": true,
+  "unchanged_containers": {
+    "/doxagent-v2-v2-scheduler-1": true,
+    "/doxagent-v2-v2-cdecr-executor-1": true,
+    "/doxagent-v2-v2-initialization-1": true,
+    "/doxagent-v2-codex-worker-1": true,
+    "/doxagent-v2-v2-api-1": true,
+    "/doxagent-v2-v2-site-access-1": true,
+    "/doxagent-v2-v2-chrome-supervisor-1": true,
+    "/doxagent-v2-v2-content-enrichment-1": true,
+    "/doxagent-v2-v2-message-collector-1": true,
+    "/doxagent-v2-v2-message-bus-1": true,
+    "/doxagent-v2-initialization-guardian-1": true,
+    "/doxagent-v2-v2-o4-1": true,
+    "/doxagent-v2-v2-maintenance-1": true,
+    "/doxagent-v2-v2-projector-1": true,
+    "/doxagent-v2-v2-web-1": true,
+    "/doxagent-v2-v2-control-1": true,
+    "/doxagent-v2-v2-transport-maintenance-1": true,
+    "/doxagent-v2-v2-delivery-1": true,
+    "/doxagent-v2-v2-executor-1": true,
+    "/doxagent-captcha-proxy": true,
+    "/doxagent-egress-clash": true
+  },
+  "poll": [
+    "commands_poll_cycles_total{otel_scope_name=\"controlplane\",otel_scope_schema_url=\"\",otel_scope_version=\"\"} 5",
+    "commands_poll_last_successful_timestamp_seconds{otel_scope_name=\"controlplane\",otel_scope_schema_url=\"\",otel_scope_version=\"\"} 1.794330635e+09"
+  ]
+}
