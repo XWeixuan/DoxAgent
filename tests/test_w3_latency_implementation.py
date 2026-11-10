@@ -279,3 +279,19 @@ def test_phase_commit_preserves_frozen_references_and_concurrent_fields(tmp_path
                            (case.case_id,)).fetchone()
         assert tuple(row)==(frozen,'concurrent','NO_TRADE')
     finally:service.close()
+
+
+def test_case_native_read_matches_json_contract_without_text_roundtrip(tmp_path,monkeypatch):
+    from doxagent.persistent_runtime_v2.schema import RuntimeCase
+    service,journal,_,case,_=setup_case(tmp_path,hit=False,novelty='NEW')
+    try:
+        case.frozen_inputs['large_evidence']='immutable '*10000
+        service.repository.save_case(case)
+        with journal.transaction(write=False,expand=False) as db:
+            raw=db.execute('SELECT payload_json FROM runtime_v2_cases WHERE case_id=?',(case.case_id,)).fetchone()[0]
+        expected=RuntimeCase.model_validate_json(service.repository.content.text(raw))
+        def unexpected(*args,**kwargs):raise AssertionError('Native JSON text roundtrip')
+        monkeypatch.setattr(service.repository.content,'text',unexpected)
+        assert service.repository.get_case(case.case_id)==expected
+        assert service.repository.get_case('missing') is None
+    finally:service.close()

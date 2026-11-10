@@ -1,4 +1,4 @@
-"""Native OpenAI recall/R2 transport; orchestration owns retries and fallback."""
+"""Native OpenAI W1/W2 transport; orchestration owns retries and fallback."""
 import copy
 import json
 from dataclasses import replace
@@ -14,10 +14,10 @@ ENDPOINT = "https://api.openai.com/v1/responses"
 
 def build_request(request):
     from .openrouter import build_case_schema_request, build_w1_r1_cached_request, build_w2_r1_cached_request
-    if (request.model != "gpt-6-luna" or request.metadata.get("round") not in {"R1", "R2"}
+    if (request.model != "gpt-6-luna" or request.metadata.get("round") not in {"R1", "R2", "R3"}
         or request.metadata.get("lane") not in {"W1", "W2"}
         or request.provider_endpoint not in {None, ENDPOINT}):
-        raise RuntimeResponsesError("provider_route_invalid", "OpenAI route requires W1/W2 Luna R1/R2", retryable=False)
+        raise RuntimeResponsesError("provider_route_invalid", "OpenAI route requires W1/W2 Luna R1/R2/R3", retryable=False)
     recall = request.metadata["round"] == "R1"
     ttl = request.cache_ttl or ("12h" if recall else "30m")
     if ttl not in {"30m", "12h"}:
@@ -36,7 +36,7 @@ def build_request(request):
     messages = []
     for message in original["messages"]:
         if isinstance(message["content"], str):
-            content = [{"type": "input_text", "text": message["content"]}]
+            content = [{"type": "output_text" if message["role"] == "assistant" else "input_text", "text": message["content"]}]
         else:
             content = []
             for block in message["content"]:
@@ -54,6 +54,8 @@ def build_request(request):
         elif isinstance(value, list):
             for child in value:tighten(child)
     tighten(schema)
+    if request.schema_name == "w2_novel_fact_alignment_result":
+        schema["properties"]["condition_results"]["items"]["properties"]["condition_ids"]["items"]["pattern"] = r"^[^/]+/[^/]+$"
     return dict(model=request.model, reasoning={"effort": request.reasoning_effort or "high"},
         service_tier=request.metadata.get("service_tier", "fast"), input=messages,
         text={"format": {"type": "json_schema", "name": request.schema_name, "strict": True, "schema": schema}},

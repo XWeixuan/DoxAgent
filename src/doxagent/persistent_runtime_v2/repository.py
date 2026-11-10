@@ -946,11 +946,17 @@ class SQLitePersistentRuntimeV2Repository:
 
     @observed('case.read')
     def get_case(self, case_id: str) -> RuntimeCase | None:
-        return self._read_model(
-            RuntimeCase,
-            "SELECT payload_json FROM runtime_v2_cases WHERE case_id = ?",
-            (case_id,),
-        )
+        with self._connect() as db:
+            db.row_factory = sqlite3.Row
+            row = db.execute("SELECT payload_json FROM runtime_v2_cases WHERE case_id = ?", (case_id,)).fetchone()
+        if not row:
+            return None
+        raw = row[0]
+        if '$doxagent_content_v1' in raw or '$doxagent_definition_v4' in raw:
+            # Native expansion already produces a JSON-shaped Python value.
+            # Avoid serializing all frozen research only to parse it again.
+            return RuntimeCase.model_validate(self.content.decode(json.loads(raw)))
+        return RuntimeCase.model_validate_json(raw)
 
     def get_case_by_source(self, source_message_id: str) -> RuntimeCase | None:
         return self._read_model(
