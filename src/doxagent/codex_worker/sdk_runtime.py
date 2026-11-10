@@ -442,7 +442,10 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
         if request.node == CodexPersistentRuntimeNode.W3:
-            sdk_config["service_tier"] = "default"
+            # W3's Policy routes retain Sol/default; only Luna uses Fast.
+            luna_fast = execution_model == "gpt-6-luna"
+            sdk_config["service_tier"] = "fast" if luna_fast else "default"
+            sdk_config["features.fast_mode"] = luna_fast
         if request.node in {
             CodexD3Node.O3_DISCOVERY,
             CodexD3Node.O3_PLANNING,
