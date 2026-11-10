@@ -1,0 +1,37 @@
+{
+  "codex-worker": {
+    "files": {
+      "src/doxagent/codex_worker/app.py": "988882c0833a73354fb2768c60770981a51b02b3118cd06899fde4f72e58fcd6",
+      "src/doxagent/codex_worker/capsules.py": "5897cc1db11ccd509409eeed1dd5c720f1c527edb260cecf96da15d0eaa4f5f0",
+      "src/doxagent/codex_worker/job_store.py": "b84abd64071d657b0dcd4e483857a783f319a9e6413f3c85c9f87acf4f8c7392",
+      "src/doxagent/codex_worker/jobs.py": "a959d182051c92ad8a67c0c0fa86d0fb0a915303a8a7fa0a2ff8ec04e37175b1",
+      "src/doxagent/codex_worker/schema.py": "891a6f5d722fe07e3e064550a498ff18091cb8ec552b37fdc8bd27eecd398f2c",
+      "src/doxagent/codex_worker/startup_admission.py": "fecdbc4b4ef84b9980136471bc16d31745a98c5f263cc0836b1ba4e0c672d135",
+      "src/doxagent/codex_worker/thread_lifecycle.py": "7a3aea47b8ab0636fb895ff2d990cf996f3d919a5a9e833dbd781840562dc16a",
+      "src/doxagent/codex_worker/w3_ready.py": "47c0156e4d094e993b742856d47c4fb957b2f5f8d9ace0393ed8ee88ccb50e5d"
+    },
+    "mismatches": []
+  },
+  "v2-scheduler": {
+    "files": {
+      "src/doxagent/codex_runtime/client.py": "448f8aa496222b171cb268b0393d9ba2f15f3e2d6748e69988abfad42387f0f4",
+      "src/doxagent/codex_worker/schema.py": "891a6f5d722fe07e3e064550a498ff18091cb8ec552b37fdc8bd27eecd398f2c",
+      "src/doxagent/control_io.py": "5c73405906941777950a54a98cf3178ea35254f4225ee676263dc340f74692f8",
+      "src/doxagent/persistent_runtime_v2/bounded_inputs.py": "d62101b15cf4387a91820d9d05a78a0645e7811eea8a2f509778a30428bffd6d",
+      "src/doxagent/persistent_runtime_v2/coordinator.py": "bc633fa17a6d90991461264cbbd08ca030bc669a16d5f9a354d276fda422f614",
+      "src/doxagent/persistent_runtime_v2/journal.py": "6816e9fce4657249fa13d9c51c8cf1c525505c871d92f82826f4ca4660aa3330",
+      "src/doxagent/persistent_runtime_v2/maintenance.py": "8d40d8da6902d933125f837da6ebbcc3b2335089219940ace805036104461b22",
+      "src/doxagent/persistent_runtime_v2/maintenance_recovery.py": "14f397e71839bb90cdfdd155ac96382e9f3b04619190515ebba77ddb62d2b942",
+      "src/doxagent/persistent_runtime_v2/repository.py": "6a217e4073f41a7e0673d804442906c81fbb2523303cb8ee9e20dfe782138b00",
+      "src/doxagent/persistent_runtime_v2/resource_gc.py": "ff52abfdbf6464b6f120a8bf720781ffb2c5c07972498874aeed310821f57c42",
+      "src/doxagent/persistent_runtime_v2/retained_events.py": "b4424863272e18b0a0d955372748c7293c6547feb3f68542a567a08dcc058979",
+      "src/doxagent/persistent_runtime_v2/service.py": "712d2854297333e067337b87c69b211cff4dc7805a36df3debdc7d12f62b568e",
+      "src/doxagent/persistent_runtime_v2/w3.py": "a1a208cc84f3e39d49f4297ef24bd07a1734ae86bcf46239b259b783d7575ca5",
+      "src/doxagent/persistent_runtime_v2/w3_execution.py": "3bca95fbe7c74568076cfe6693e6ace3e3a1fcb129de903f3aa91adb742bcf4f",
+      "src/doxagent/persistent_runtime_v2/w3_threads.py": "e711ffcf2f93a22063361b7e95292d50206deebc093cbedfdcaaca37ef18f202",
+      "src/doxagent/persistent_runtime_v2/worker_receipts.py": "ba012ebfdee253eb0ad6e83b94df7c61d516efc312ede4d0733c6a32930d12b3",
+      "src/doxagent/w3_timing.py": "751b1ecf0293859b575f46ce1d1c7c9eec5097dfeefd9d9bfde153e9a4922997"
+    },
+    "mismatches": []
+  }
+}

@@ -2797,3 +2797,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-10 Worker 热路径回收遗漏修复：移除启动 60 秒后自动触发的全局 Session/Workspace/Snapshot 历史回收及其定时任务。保留原显式维护函数、session tombstone 校验、实时 Capsule 释放/回收和候选范围 Runtime GC。旧 helper 依赖全局 SDK 树、全部 Job / 研究证据与 Native owner 扫描，不得在实时派发循环运行；未引入替代扫描或删除历史数据。51 项相关回归通过。
 2026-11-10 Source dependency outage: current Site Access and Supervisor were explicitly stopped at 08:19 (Docker manual-stop flags true, not OOM); resume only those existing containers/Profile volumes and verify matching network namespaces, leave Runtime maintenance roles stopped. SiteAccessClient now labels internal RPC ConnectError/ConnectTimeout/PoolTimeout as site_access_unavailable on the original exception, including failed stale-connection retry; no publisher-result, retry, deadline or business-rule change. 40 focused client/maintenance regressions passed.
+
+2026-11-10 W3 冷启动读放大：新 spawn 的 Capsule / lifecycle SDK 只需记录已知 PID 的 start_ticks，改为读取该 PID 的 /proc/stat，移除每次启动强制扫描整机所有进程 environ。跨进程后代归属、回收扫描与 PID start_ticks 信号校验不变；52 项相关回归通过。

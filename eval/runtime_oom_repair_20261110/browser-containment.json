@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-10T00:16:45.823631+00:00",
+  "roles": {
+    "doxagent-v2-v2-site-access-1": {
+      "status": "running",
+      "memory_bytes": 3628269568,
+      "pids": 601
+    },
+    "doxagent-v2-v2-chrome-supervisor-1": {
+      "status": "running",
+      "memory_bytes": 5073838080,
+      "pids": 1994
+    }
+  }
+}

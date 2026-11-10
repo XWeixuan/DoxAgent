@@ -78,3 +78,8 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 进一步代码复核确认，前面 P0-6 只修了 Scheduler 资源 GC，遗漏 WorkerJobManager 启动 60 秒后自动触发 _collect_owned_resources：TerminalSessions.collect 在事件循环同步 owned/business_holds 全量读与 Native 解码；Workspace collector 在选 limit=4 之前枚举全体 Job 和研究证据，并为每个候选重复 paths_in；Snapshot collector 又全局计算保护集合。这些无范围上界的回收仍可能与恢复叠加；早先已抓到 Workspace collector 的活动线程，但没有事发前每 PID PSS/I/O 数据，不能编造本轮占用百分比或宣称它是唯一原因。
 
 修复采用减法：实时 Worker 派发循环不再自动执行这三种全历史 sweep，保留原显式静默维护入口及所有删除前 fencing，不另造全局目录 / 反向引用平台。缺少候选范围引用元数据时保留旧输入和 session；该批旧派生数据的广域回收需静默维护窗口显式执行，自动的范围化版本不在本轮扩张实现。实时 Capsule 清理、W3 终态未用资源释放、ACK 压缩、候选范围的 Runtime resource_gc 均继续运行。回归以 overdue sweep + 正常 Job 验证热派发不启动全历史扫描，同时显式维护函数仍可调用；51 项通过。
+
+
+冷启动读放大同步修复：Capsule.launch 和 lifecycle SDK initialize 原先为获取刚 spawn 的 PID start_ticks 调用 owned_processes(refresh=True)，从而每次启动都扫描 /proc 的全部进程环境并竞争全局 scanner lock。两处均改为只读取刚创建的精确 PID /proc/<pid>/stat；不动后代所有权扫描、随机执行身份和发送信号前的 start_ticks 核对。回归覆盖含括号的进程名、精确 PID 单文件读取及已退出进程。与 Worker 调度/Ready/清理共 52 项回归通过。
+
+恢复顺序采用一次性的事故隔离步骤：先恢复已受理 Job 的 Worker，Scheduler 与浏览器保持暂停；没有新增模型并发门槛。09:28 时约 100 任务正在恢复、主机约 23GiB 可用；09:32 降至 9 个 Job、Worker 约 6.6GiB、主机约 14.5GiB 可用、无新的 Worker OOM。该数据有 Scheduler/浏览器暂停的条件，不能据此归因 GC 单项或作全服务验收。已受理任务自然结束后恢复其余角色，最终另记完整窗口。

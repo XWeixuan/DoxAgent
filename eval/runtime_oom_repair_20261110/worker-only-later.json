@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-10T00:32:30.158153+00:00",
+  "worker_memory": 7110696960,
+  "worker_pids": 874,
+  "events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "host": {
+    "MemAvailable": 15215840,
+    "SwapTotal": 2097148,
+    "SwapFree": 789240
+  },
+  "io": "some avg10=0.71 avg60=2.57 avg300=7.22 total=909427699\nfull avg10=0.36 avg60=0.70 avg300=4.28 total=538224687\n"
+}

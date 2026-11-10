@@ -86,11 +86,11 @@ class AppServerThreads:
                             await client.start()
                             proc = getattr(getattr(client, "_sync", None), "_proc", None)
                             if proc is not None:
-                                from .process_tree import owned_processes
+                                from .process_tree import pid_start_ticks
 
-                                owned = await asyncio.to_thread(owned_processes, identity, refresh=True)
+                                started = await asyncio.to_thread(pid_start_ticks, proc.pid)
                                 self.identities[client].update(
-                                    pid=proc.pid, start_ticks=owned.get(proc.pid, (None, 0))[0]
+                                    pid=proc.pid, start_ticks=started
                                 )
                             self._record(client, "SDK_INITIALIZE")
                             await client.initialize()

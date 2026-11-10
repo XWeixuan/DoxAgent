@@ -723,3 +723,19 @@ async def test_live_worker_never_starts_legacy_global_retention(tmp_path, monkey
         assert calls == ['global scan']
     finally:
         await manager.close()
+
+
+def test_new_process_identity_reads_only_its_exact_stat(monkeypatch):
+    from pathlib import Path
+    from doxagent.codex_worker.process_tree import pid_start_ticks
+
+    reads = []
+    fields = ['S'] + ['0'] * 18 + ['1234567']
+    def stat(path, *args, **kwargs):
+        reads.append(str(path))
+        return '42 (worker (child)) ' + ' '.join(fields)
+    monkeypatch.setattr(Path, 'read_text', stat)
+    assert pid_start_ticks(42) == '1234567'
+    assert reads == [str(Path('/proc/42/stat'))]
+    monkeypatch.setattr(Path, 'read_text', lambda *args, **kwargs: (_ for _ in ()).throw(FileNotFoundError()))
+    assert pid_start_ticks(42) is None

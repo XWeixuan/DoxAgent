@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-10T00:28:42.559694+00:00",
+  "memory_bytes": 4017025024,
+  "roles": {
+    "worker_main": 2,
+    "capsule_python": 82,
+    "codex": 2
+  },
+  "rss_by_role_bytes": {
+    "worker_main": 217804800,
+    "capsule_python": 3807203328,
+    "codex": 458444800
+  },
+  "worker_main_pids": [
+    445381,
+    445428
+  ],
+  "host": {
+    "MemAvailable": 24191464,
+    "SwapTotal": 2097148,
+    "SwapFree": 759972
+  }
+}

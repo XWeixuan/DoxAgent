@@ -14,6 +14,14 @@ _sampled_at = 0.0
 _snapshot_lock = threading.Lock()
 
 
+def pid_start_ticks(pid):
+    """Identity of a PID just returned by spawn; no host-wide ownership scan."""
+    try:
+        return Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()[19]
+    except (OSError, IndexError):
+        return None
+
+
 def process_owners(*, refresh=False):
     """One host scan serves all owners; signals still check PID start ticks."""
     global _snapshot, _sampled_at

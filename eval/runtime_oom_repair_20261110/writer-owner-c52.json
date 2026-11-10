@@ -1,0 +1,50 @@
+[
+  {
+    "address": 124242679457344,
+    "description": "<_thread.RLock at 0x70ff80c66640>",
+    "owner": 124241542358720,
+    "thread": "prv2-w3-prepare",
+    "frames": [
+      [
+        "FencedConnection.execute",
+        71
+      ],
+      [
+        "SQLitePersistentRuntimeV2Repository.save_effect",
+        1156
+      ],
+      [
+        "retry_sqlite_write.<locals>.run.<locals>.<lambda>",
+        60
+      ],
+      [
+        "retry_write",
+        49
+      ],
+      [
+        "retry_sqlite_write.<locals>.run",
+        60
+      ],
+      [
+        "PersistentRuntimeV2Service._process_claimed_effect",
+        2130
+      ],
+      [
+        "PersistentRuntimeV2Service._run_w3_effect_thread",
+        2040
+      ],
+      [
+        "Thread.run",
+        982
+      ],
+      [
+        "Thread._bootstrap_inner",
+        1045
+      ],
+      [
+        "Thread._bootstrap",
+        1002
+      ]
+    ]
+  }
+]

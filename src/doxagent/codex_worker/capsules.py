@@ -16,7 +16,7 @@ from doxagent.codex_runtime.schema import CodexAgentRole, ResearchLane
 from doxagent.w3_timing import observed, span
 
 from .cleanup import await_owned
-from .process_tree import owned_processes, signal_owned, terminate_owned
+from .process_tree import owned_processes, pid_start_ticks, signal_owned, terminate_owned
 from .result_receipt import receipt_path
 from .schema import WorkerRunRequest, WorkerTurnTelemetry
 from .sdk_runtime import WorkerTurnResult
@@ -80,14 +80,14 @@ class Capsule:
             limit=16 * 1024 * 1024,
         )
         self._stderr_task = asyncio.create_task(self._drain_stderr())
-        owned = await asyncio.to_thread(owned_processes, self.identity, refresh=True)
+        started = await asyncio.to_thread(pid_start_ticks, self.process.pid)
         (directory / "owner.json").write_text(
             json.dumps(
                 {
                     "pid": self.process.pid,
                     "identity": self.identity,
                     "pgid": self.process.pid if os.name == "posix" else None,
-                    "start_ticks": owned.get(self.process.pid, (None, 0))[0],
+                    "start_ticks": started,
                 }
             ),
             encoding="utf-8",
