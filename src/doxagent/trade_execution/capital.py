@@ -1,4 +1,4 @@
-"""Own strategy capital and two CASH slots; broker equity never sets the budget."""
+"""Own strategy capital and account ticker quotas; broker equity never sets the budget."""
 
 from __future__ import annotations
 
@@ -20,7 +20,8 @@ def initialize(db):
         CREATE TABLE IF NOT EXISTS te_capital_events (
             id TEXT PRIMARY KEY,account TEXT NOT NULL,kind TEXT NOT NULL,
             amount TEXT NOT NULL,effective_at TEXT NOT NULL,payload TEXT NOT NULL);
-        CREATE INDEX IF NOT EXISTS te_capital_events_account ON te_capital_events(account,effective_at);
+        CREATE INDEX IF NOT EXISTS te_capital_events_account
+            ON te_capital_events(account,effective_at);
         CREATE TABLE IF NOT EXISTS te_cash_slots (
             account TEXT NOT NULL,slot INTEGER NOT NULL,ticker TEXT,
             PRIMARY KEY(account,slot),UNIQUE(account,ticker));
@@ -46,6 +47,19 @@ def get(db, namespace, key, default=None):
 class CapitalLedger:
     def __init__(self, repo):
         self.repo = repo
+
+    def set_ticker_limit(self, account, limit, reason, *, actor="local-admin"):
+        if type(limit) is not int or limit < 1 or not reason.strip():
+            raise ValueError("positive integer ticker limit and reason required")
+        value = dict(
+            max_concurrent_tickers=limit,
+            reason=reason,
+            actor=actor,
+            changed_at=self.repo.journal.clock().isoformat(),
+        )
+        with self.repo.transaction() as db:
+            put(db, "execution_account_limits", account, value)
+        return value
 
     def allocate(self, account, amount, identity, reason, *, actor="local-admin"):
         amount = decimal(amount)
@@ -322,18 +336,26 @@ class CapitalLedger:
         groups = self.groups(db, account, execution["id"])
         locked = sum((decimal(g["budget_usd"]) for g in groups), ZERO)
         own = sum((decimal(g["budget_usd"]) for g in groups if g["ticker"] == ticker), ZERO)
+        limit = get(db, "execution_account_limits", account, {}).get("max_concurrent_tickers")
+        if limit is None and profile.account_type == "CASH":
+            limit = 2  # Compatibility for already-pinned CASH profiles.
+        active = {g["ticker"] for g in groups}
+        if limit is not None and ticker not in active and len(active) >= limit:
+            return ZERO
         if profile.account_type == "MARGIN":
             return max(ZERO, min(equity - own, equity * Decimal("1.5") - locked))
-        for slot in (0, 1):
+        ticker_budget = equity / limit
+        self.release_slots(db, account)
+        for slot in range(limit):
             db.execute("INSERT OR IGNORE INTO te_cash_slots VALUES(?,?,NULL)", (account, slot))
         row = db.execute(
             "SELECT slot FROM te_cash_slots WHERE account=? AND ticker=?", (account, ticker)
         ).fetchone()
         if row is None:
             row = db.execute(
-                "SELECT slot FROM te_cash_slots WHERE account=? AND ticker IS NULL ORDER BY "
-                "slot LIMIT 1",
-                (account,),
+                "SELECT slot FROM te_cash_slots WHERE account=? AND slot<? AND ticker IS NULL "
+                "ORDER BY slot LIMIT 1",
+                (account, limit),
             ).fetchone()
             if row is None:
                 return ZERO
@@ -377,7 +399,7 @@ class CapitalLedger:
             unspent += max(ZERO, decimal(group["budget_usd"]) - spent)
         return max(
             ZERO,
-            min(equity / 2 - own, equity - locked, wallet["cash"] - unspent, balance - unspent),
+            min(ticker_budget - own, equity - locked, wallet["cash"] - unspent, balance - unspent),
         )
 
     def release_slots(self, db, account):
