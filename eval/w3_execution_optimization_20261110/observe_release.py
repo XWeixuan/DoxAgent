@@ -1,5 +1,6 @@
 """Finite, read-only release observation; no model requests or mutations."""
 import argparse
+from contextlib import closing
 from datetime import UTC, datetime
 import json
 from pathlib import Path
@@ -35,11 +36,11 @@ def snapshot():
         except Exception as exc:result['roles'][role]={'error':type(exc).__name__}
     connect=lambda p:sqlite3.connect('file:'+str(p)+'?mode=ro',uri=True,timeout=1)
     try:
-        with connect(ROOT/'workspaces/worker-jobs.sqlite3') as db:
+        with closing(connect(ROOT/'workspaces/worker-jobs.sqlite3')) as db:
             result['active_jobs']=dict(db.execute("SELECT status,count(*) FROM jobs WHERE status IN ('queued','running') GROUP BY status"))
             result['recent_jobs']=[dict(sequence=r[0],job_id=r[1],status=r[2],phase=r[3],error_code=r[4]) for r in db.execute(
                 "SELECT sequence,id,status,json_extract(request,'$.task_phase'),json_extract(payload,'$.error_code') FROM jobs ORDER BY sequence DESC LIMIT 30")]
-        with connect(ROOT/'runtime/runtime.sqlite3') as db:
+        with closing(connect(ROOT/'runtime/runtime.sqlite3')) as db:
             row=db.execute("SELECT payload FROM runtime_values WHERE namespace='w3_provider_pause' AND key='codex'").fetchone()
             result['pause']=json.loads(row[0]) if row else None
             cases=db.execute('SELECT case_id,status,technical_status FROM runtime_v2_cases ORDER BY rowid DESC LIMIT 200').fetchall()

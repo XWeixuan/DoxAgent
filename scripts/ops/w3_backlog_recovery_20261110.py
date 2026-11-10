@@ -5,6 +5,7 @@ Job.next_retry_at hold the exact snapshot. A finite helper releases two Cases
 at a time; new realtime Cases are never included. No runtime queue or schema.
 """
 import argparse
+from contextlib import contextmanager
 from datetime import UTC, datetime
 import json
 from pathlib import Path
@@ -16,10 +17,15 @@ HOLD='9999-12-31T00:00:00+00:00'
 HOLD_EPOCH=datetime.fromisoformat(HOLD).timestamp()
 W3=('route_to_w3','w3_post_decision')
 
+@contextmanager
 def connect(path):
     db=sqlite3.connect(path,timeout=.1)
     db.row_factory=sqlite3.Row
-    return db
+    try:
+        with db:
+            yield db
+    finally:
+        db.close()
 
 def save(path,value):
     path=Path(path);temporary=path.with_suffix('.tmp')

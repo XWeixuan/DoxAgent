@@ -8,7 +8,7 @@ import pytest
 from scripts.ops.w3_backlog_recovery_20261110 import prepare,step,HOLD,HOLD_EPOCH
 
 
-def test_exact_old_cohort_is_held_two_cases_release_and_new_realtime_is_unchanged(tmp_path):
+def test_exact_old_cohort_is_held_two_cases_release_and_new_realtime_is_unchanged(tmp_path,monkeypatch):
     runtime,jobs,manifest=tmp_path/'runtime.db',tmp_path/'jobs.db',tmp_path/'recovery.json'
     cases=['case_'+str(n).zfill(32) for n in range(4)]
     with sqlite3.connect(runtime) as db:
@@ -45,7 +45,21 @@ def test_exact_old_cohort_is_held_two_cases_release_and_new_realtime_is_unchange
         assert db.execute('SELECT id,request FROM jobs').fetchall()==frozen
     # No progress, no repeated control-field writes or manifest rewrite.
     progress=manifest.with_suffix('.progress.json');before=progress.stat().st_mtime_ns
-    step(state,manifest);assert progress.stat().st_mtime_ns==before
+    import scripts.ops.w3_backlog_recovery_20261110 as recovery
+    original=sqlite3.connect
+    closed=[]
+    class Tracked(sqlite3.Connection):
+        def close(self):
+            closed.append(self)
+            return super().close()
+    opened=[]
+    def tracked(*args,**kwargs):
+        result=original(*args,**kwargs,factory=Tracked);opened.append(result);return result
+    with monkeypatch.context() as patch:
+        patch.setattr(recovery.sqlite3,'connect',tracked)
+        for _ in range(4):step(state,manifest)
+        assert len(closed)==len(opened) and opened  # A finite helper must not accumulate DB handles/caches.
+    assert progress.stat().st_mtime_ns==before
     with sqlite3.connect(runtime) as db:db.execute("UPDATE runtime_v2_effects SET status='COMPLETED' WHERE effect_id='0'")
     with sqlite3.connect(jobs) as db:db.execute("UPDATE jobs SET status='succeeded' WHERE id='0'")
     assert step(state,manifest)['done']==1
