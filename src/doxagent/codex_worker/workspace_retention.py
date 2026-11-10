@@ -42,7 +42,9 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
             from doxagent.v2_read.native_content import NativeContent
             codec=NativeContent(source)
             published={run:codec.decode(json.loads(raw)) for run,raw in db.execute("SELECT run_id,payload_json FROM codex_runtime_records WHERE record_type='bundles' AND json_extract(payload_json,'$.status')='published'")}
-            evidence=list(db.execute("SELECT run_id,payload_json FROM codex_runtime_records WHERE record_type IN ('bundles','artifacts','documents','citations','sources')"))
+            # Bodies are canonical content, never filesystem references. Do not
+            # expand every published document/source body on each owner pass.
+            evidence=list(db.execute("SELECT run_id,json_remove(payload_json,'$.content_text','$.captured_text') FROM codex_runtime_records WHERE record_type IN ('bundles','artifacts','documents','citations','sources')"))
             tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             if 'codex_local_sources' in tables:evidence+=list(db.execute('SELECT run_id,source_metadata_json FROM codex_local_sources'))
             if 'codex_local_citation_manifests' in tables:evidence+=list(db.execute('SELECT run_id,manifest_json FROM codex_local_citation_manifests'))
