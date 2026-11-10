@@ -739,3 +739,88 @@ def test_new_process_identity_reads_only_its_exact_stat(monkeypatch):
     assert reads == [str(Path('/proc/42/stat'))]
     monkeypatch.setattr(Path, 'read_text', lambda *args, **kwargs: (_ for _ in ()).throw(FileNotFoundError()))
     assert pid_start_ticks(42) is None
+
+
+@pytest.mark.parametrize('fail_binding', [False, True])
+def test_static_phase_binding_precedes_physical_ready_claim(tmp_path, fail_binding):
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner
+    from doxagent.persistent_runtime_v2.w3_research_store import W3ResearchStore
+    from doxagent.persistent_runtime_v2.w3_threads import W3ThreadRegistry
+    from tests.test_persistent_runtime_w3 import _Context, _Workspace
+    from tests.test_runtime_policy_direction_usage import fixture_case
+    from tests.test_w3_case_models import ModelWorker
+
+    journal = RuntimeJournal(tmp_path / 'runtime.sqlite3')
+    W3ThreadRegistry(journal)
+    order = []
+    store = W3ResearchStore(tmp_path / 'research')
+    case, _ = fixture_case()
+    case.frozen_inputs.update(w3_assets={'w3/AGENTS.md':'agents','w3/skills/skill.md':'skill'},
+                             w3_contracts={'w3_entry_version':'w3-entry-v5'})
+
+    class Workspace(_Workspace):
+        async def ensure_research_pack(self, *args):
+            order.append('pack')
+        async def materialize_case(self, run, packs, files):
+            order.append('materialize')
+            assert run == 'w3-ready-late'
+            for path, content in files.items():
+                await self.write_text(run, path, content)
+
+    class Worker(ModelWorker):
+        async def prepare_w3_research(self, ticker, components):
+            return store.install(components, ticker)
+        async def bind_w3_context(self, case_id, phase, manifest):
+            order.append('bind')
+            assert 'claim' not in order
+            if fail_binding:
+                raise ValueError('binding unavailable')
+            return store.bind(case_id, phase, manifest)
+        async def claim_w3_ready(self, request):
+            assert journal.get('w3_context_v2',case.case_id+':trade_decision')
+            order.append('claim')
+            return dict(thread_id='child',run_id='w3-ready-late')
+        async def run(self, request):
+            order.append('model')
+            return await super().run(request)
+
+    workspace, worker = Workspace(), Worker()
+    runner = CodexW3AgentRunner(worker=worker, workspace=workspace, context_provider=_Context(),
+                               prompt_root=tmp_path, journal=journal, timeout_seconds=30)
+    record=dict(record_id='r',workspace='unclaimed',thread_id=None,parent_id='mother')
+    try:
+        runner.prepare_public_assets(case)
+        context = runner.prepare_case(case)
+        def run():
+            return runner.run_phase(case=case,record=record,phase='trade_decision',payload={},context=context)
+        if fail_binding:
+            with pytest.raises(ValueError, match='binding unavailable'):
+                run()
+            assert 'claim' not in order and 'model' not in order
+        else:
+            run()
+            assert order.index('bind') < order.index('claim') < order.index('materialize') < order.index('model')
+            frozen = journal.get('w3_context_manifest_v2',case.case_id+':trade_decision')
+            run()
+            assert journal.get('w3_context_manifest_v2',case.case_id+':trade_decision') == frozen
+            assert order.count('claim') == order.count('bind') == order.count('model') == 1
+            assert worker.requests[0].run_id == 'w3-ready-late'
+    finally:
+        runner.close()
+
+
+@pytest.mark.asyncio
+async def test_empty_transport_failure_retains_error_type():
+    from doxagent.codex_runtime.errors import WorkerUnavailable
+
+    client = HttpCodexWorkerClient('http://127.0.0.1', 'unused', capability_secret='x'*32)
+    await client._client.aclose()
+    async def failed(request):
+        raise httpx.ReadTimeout('')
+    client._client = httpx.AsyncClient(base_url='http://127.0.0.1', transport=httpx.MockTransport(failed))
+    try:
+        with pytest.raises(WorkerUnavailable, match='ReadTimeout'):
+            await client.materialize_case('case',{}, {})
+    finally:
+        await client.aclose()

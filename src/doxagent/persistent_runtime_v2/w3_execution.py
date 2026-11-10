@@ -349,7 +349,7 @@ class W3Execution:
             owned["thread_id"] = child["thread_id"]
             self.registry.set_thread(owned["record_id"], owned["thread_id"])
         self.registry.link(owned, "POLICY", policy_associations(case.w2_final), case.case_id)
-        if new_entry and not owned["thread_id"]:
+        if new_entry and not owned["thread_id"] and not getattr(self.agent, "late_ready_claim", False):
             self.agent.claim_ready(case, owned, profile)
         return owned
 

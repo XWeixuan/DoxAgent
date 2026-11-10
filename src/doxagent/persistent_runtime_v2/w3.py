@@ -554,6 +554,11 @@ class CodexW3AgentRunner:
     def configure_ready(self, case, template, *, active_public=True):
         if not self.entry_enabled(case):
             return
+        return self._wait_v4(self._worker.configure_w3_ready(
+            self._ready_configuration(case, template, active_public=active_public)
+        ))
+
+    def _ready_configuration(self, case, template, *, active_public=True):
         profile = execution_profile(
             case,
             model=self._model,
@@ -562,23 +567,26 @@ class CodexW3AgentRunner:
             override=self._execution_model_override,
         )
         assets = case.frozen_inputs["w3_assets"]
-        return self._wait_v4(
-            self._worker.configure_w3_ready(
-                dict(
-                    parent_thread_id=template["thread_id"],
-                    active_public=active_public,
-                    profile=profile,
-                    web_search_mode=self.environment.web_search_mode,
-                    instructions={
-                        "AGENTS.md": assets["w3/AGENTS.md"],
-                        "skills/skill.md": assets["w3/skills/skill.md"],
-                    },
-                )
-            )
+        return dict(
+            parent_thread_id=template["thread_id"],
+            active_public=active_public,
+            profile=profile,
+            web_search_mode=self.environment.web_search_mode,
+            instructions={
+                "AGENTS.md": assets["w3/AGENTS.md"],
+                "skills/skill.md": assets["w3/skills/skill.md"],
+            },
         )
 
-    @observed("thread.ready_claim")
+    @property
+    def late_ready_claim(self):
+        return hasattr(self._workspace, "materialize_case")
+
     def claim_ready(self, case, record, profile):
+        return self._wait_v4(self._claim_ready(case, record, profile))
+
+    @observed("thread.ready_claim")
+    async def _claim_ready(self, case, record, profile):
         request = dict(
             case_id=case.case_id,
             record_id=record["record_id"],
@@ -587,27 +595,27 @@ class CodexW3AgentRunner:
             execution_lane='background' if case.runtime_mode == 'CLOSED' else 'realtime',
         )
         try:
-            value = self._wait_v4(self._worker.claim_w3_ready(request))
+            value = await self._worker.claim_w3_ready(request)
         except Exception as exc:
             if getattr(exc, "code", None) != "w3_ready_unconfigured":
                 raise
-            self.configure_ready(case, {"thread_id": record["parent_id"]}, active_public=False)
-            value = self._wait_v4(self._worker.claim_w3_ready(request))
-        async def save_binding():
-            def save():
-                from .fencing import assert_write_lease
+            await self._worker.configure_w3_ready(self._ready_configuration(
+                case, {"thread_id": record["parent_id"]}, active_public=False
+            ))
+            value = await self._worker.claim_w3_ready(request)
+        def save():
+            from .fencing import assert_write_lease
 
-                with self._journal.transaction(operation="w3.ready_binding") as db:
-                    assert_write_lease(db)
-                    db.execute(
-                        "UPDATE runtime_v2_w3_threads SET thread_id=?,workspace=? WHERE record_id=? "
-                        "AND (thread_id IS NOT ? OR workspace IS NOT ?)",
-                        (value["thread_id"], value["run_id"], record["record_id"],
-                         value["thread_id"], value["run_id"]),
-                    )
-            await write_io(self._journal.path, save, priority=0, retry=True)
+            with self._journal.transaction(operation="w3.ready_binding") as db:
+                assert_write_lease(db)
+                db.execute(
+                    "UPDATE runtime_v2_w3_threads SET thread_id=?,workspace=? WHERE record_id=? "
+                    "AND (thread_id IS NOT ? OR workspace IS NOT ?)",
+                    (value["thread_id"], value["run_id"], record["record_id"],
+                     value["thread_id"], value["run_id"]),
+                )
 
-        self._wait_v4(save_binding())
+        await write_io(self._journal.path, save, priority=0, retry=True)
         record.update(thread_id=value["thread_id"], workspace=value["run_id"])
 
     def stop_market(self, case_id):
@@ -1329,6 +1337,17 @@ class CodexW3AgentRunner:
                     },
                     separators=(",", ":"),
                 )
+            # Everything above is static/pinned work, including manifest
+            # publication. Claim a physical resident only for the final small
+            # file batch and dispatch; relative file/prompt bytes stay intact.
+            if new_entry and phase == "trade_decision" and not record.get("thread_id"):
+                try:
+                    await self._claim_ready(case, record, profile)
+                except Exception as exc:
+                    if not getattr(exc, "w3_step", None):
+                        exc.w3_step = "PREPARE"
+                    raise
+                run_id = record["workspace"]
             await self._workspace.materialize_case(run_id, packs, files)
         if (
             phase == "trade_decision"

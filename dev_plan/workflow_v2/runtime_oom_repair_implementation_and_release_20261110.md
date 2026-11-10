@@ -83,3 +83,10 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 冷启动读放大同步修复：Capsule.launch 和 lifecycle SDK initialize 原先为获取刚 spawn 的 PID start_ticks 调用 owned_processes(refresh=True)，从而每次启动都扫描 /proc 的全部进程环境并竞争全局 scanner lock。两处均改为只读取刚创建的精确 PID /proc/<pid>/stat；不动后代所有权扫描、随机执行身份和发送信号前的 start_ticks 核对。回归覆盖含括号的进程名、精确 PID 单文件读取及已退出进程。与 Worker 调度/Ready/清理共 52 项回归通过。
 
 恢复顺序采用一次性的事故隔离步骤：先恢复已受理 Job 的 Worker，Scheduler 与浏览器保持暂停；没有新增模型并发门槛。09:28 时约 100 任务正在恢复、主机约 23GiB 可用；09:32 降至 9 个 Job、Worker 约 6.6GiB、主机约 14.5GiB 可用、无新的 Worker OOM。该数据有 Scheduler/浏览器暂停的条件，不能据此归因 GC 单项或作全服务验收。已受理任务自然结束后恢复其余角色，最终另记完整窗口。
+
+
+## P0-2 顺序补齐：真正完成静态准备后才领取物理进程
+
+全服务恢复窗口仍出现膨胀，说明仅把 history/labels/payload 推到 _thread 前并不充分：_run_phase_materialized 中 manifest 冻结、context bind、prompt/schema 构造还在实际 Ready claim 之后。现对生产已有的 batch workspace 路径延后 claim：_thread 只取得原逻辑 record；异步 phase 完成上述静态材料、原 context binding 和原冻结字节后，再 await 同一个 Ready claim / 原高优先级绑定回执，更新原 record 的真实 workspace，随后一次发布相对路径的小文件批次并提交原 Job。公共预热与原 Thread 复用仍在，legacy 非 batch 路径保持原行为。没有新增分片、reserve 状态、容量门槛、线程池或模型阶段。
+
+回归分别覆盖 bind 失败时不 claim / 不派发模型、正常 bind→claim→materialize→model 顺序、第二次运行复用相同 manifest 和模型 receipt、不再次 claim / 调模型；实际 Task 的 run_id 指向原 Ready 返回的 workspace。Snapshot accepted_at、原冻结 manifest/token 与历史成员不重建，行情仍沿用已有早期 queue_market 与绑定机制。此次只更新 Scheduler，Worker 正在进行的模型不重启。

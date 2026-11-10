@@ -343,7 +343,7 @@ class HttpCodexWorkerClient:
                 await asyncio.shield(self.cancel(job.job_id))
             raise
         except httpx.HTTPError as exc:
-            raise WorkerUnavailable(str(exc)) from exc
+            raise WorkerUnavailable(str(exc) or type(exc).__name__) from exc
 
     async def _wait_job_event(self, job_id, after, *, on_update=None):
         # Durable SSE cursor; reconnect to the same Job. A terminal status with
@@ -371,7 +371,7 @@ class HttpCodexWorkerClient:
             response.raise_for_status()
             return WorkerJob.model_validate(response.json())
         except httpx.HTTPError as exc:
-            raise WorkerUnavailable(str(exc)) from exc
+            raise WorkerUnavailable(str(exc) or type(exc).__name__) from exc
 
     async def write_text(
         self,
@@ -543,10 +543,10 @@ class HttpCodexWorkerClient:
                 return response
             except httpx.TransportError as exc:
                 if attempt + 1 == attempts:
-                    raise WorkerUnavailable(str(exc)) from exc
+                    raise WorkerUnavailable(str(exc) or type(exc).__name__) from exc
                 await asyncio.sleep(0.25 * (attempt + 1))
             except httpx.HTTPError as exc:
-                raise WorkerUnavailable(str(exc)) from exc
+                raise WorkerUnavailable(str(exc) or type(exc).__name__) from exc
         raise AssertionError("workspace request exhausted without a result")
 
     async def aclose(self) -> None:
