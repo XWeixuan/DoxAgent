@@ -15,6 +15,8 @@ R3原先通过前轮上下文工作，原OpenAI适配仅支持R1/R2。如果只�
 
 Responses历史assistant内容使用output_text；native strict wire Schema递归required处理沿用现有实现。W2条件引用在发送副本上要求完整Policy/Condition身份，现有本地严格布尔值及覆盖校验继续执行；未新增业务字段。
 
+业务回执中的previous_response_id仍保留原R2逻辑关联用于追踪；原生HTTP请求不携带该字段。REPLAY_PARENT表示实际上下文由冻结的父输入/输出构成，不依赖服务端response继承。
+
 API Schema与模型参数参考[官方Luna文档](https://developers.openai.com/api/docs/models/gpt-6-luna)、[Fast mode](https://developers.openai.com/api/docs/guides/fast-mode)。
 
 ## 回归与真实验证
