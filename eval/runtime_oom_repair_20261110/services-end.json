@@ -1,0 +1,156 @@
+[
+  {
+    "name": "/doxagent-v2-v2-scheduler-1",
+    "image": "sha256:d80b752fe2c6bdaa8eb9480b0b417b3206b27d4f9aaa82b78f44072e4ec8d688",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-codex-worker-1",
+    "image": "sha256:9f6f40e8f4471b15a60c5e00caa924d1c245f77ca26d66871f46e3cac97c5f16",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-site-access-1",
+    "image": "sha256:58f63593412922478e9caa98dac3cd7947fa1521d62988c3fe854030690e366c",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-chrome-supervisor-1",
+    "image": "sha256:d55858c58d0d9c4e51ad7eef58b9116e063c3cce2faf6dc2ed3aacc26187a2dd",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-content-enrichment-1",
+    "image": "sha256:5830172a0365d8d47a8d8b215db761c9594783abe4dcf12662e68b9c19d22a0b",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-message-collector-1",
+    "image": "sha256:5830172a0365d8d47a8d8b215db761c9594783abe4dcf12662e68b9c19d22a0b",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-message-bus-1",
+    "image": "sha256:af09e99d8af184db50a0bc81625d99cc362091534ce58739427cb0006d4d200b",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-initialization-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-initialization-guardian-1",
+    "image": "sha256:6c78ff86e51cb459102c576e4dff92c4c0bd13f65c1c9a5363578f2afec6874b",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-o4-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-cdecr-executor-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-maintenance-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-api-1",
+    "image": "sha256:a8b82f6beba6734943eee79b15784f45741473c2616db00829f66a6ba6cdd237",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-projector-1",
+    "image": "sha256:d531b1a3634d10b37f5cf88029a39536b9783935e5176c13252ef968fe0e525c",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-web-1",
+    "image": "sha256:625317f956252102dcdf76e1e60cb8b077707eb74089e1c0dba1b0fa4be9ac9a",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-control-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-transport-maintenance-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-delivery-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-executor-1",
+    "image": "sha256:2267bdbdb478a75c67a49eab945e4783f4f621b4354cf957f284944880861670",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-v2-v2-agent-mcp-tunnel-1",
+    "image": "sha256:52f88941c355f2d816e7886c7758e1e666bd94ca65e4011be078f7200da4877b",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-captcha-proxy",
+    "image": "sha256:650d21f00ba6f762108e1e5528d15de061abf4dd939bb7102bc27c5c8308487d",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  },
+  {
+    "name": "/doxagent-egress-clash",
+    "image": "sha256:739edd73a352d6beb82fad6790ef9d417a4d6f061584cc3cab1bd4536d1c60e5",
+    "running": true,
+    "oom_killed": false,
+    "restarts": 0
+  }
+]

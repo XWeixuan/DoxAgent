@@ -2,6 +2,9 @@
 
 2026-11-10，依据同目录完整事故方案执行。模型、Prompt、Skill、LLM Schema、路由、交易规则、冻结历史窗口不变。
 
+**最终状态：修复已合入 origin/main 并发布，09:22:13—09:32:13 CST 完成全服务 10 分钟观察。129 项相关回归通过。监测组件无新 OOM/重启；263 个近期 Case 的限定检查无新增失败。实时 W3 41 次采样队列均为零，Worker 内存随积压消退回落。**最后一轮同期浏览器、消息源、交易与维护服务均运行，未采用停服后的资源回落冒充验收。完整统计和限制见文末。
+
+
 ## 已实施
 
 - W3 私有 Ready 绑定取消公共 ready 豁免，保留原准备期限与正常 90 秒阶段交接；终态未提交 Job 的 Case 通过内部幂等接口释放物理 Capsule，保留逻辑 Thread、工作区和业务证据。释放与 Job 接受在同一 SQLite writer 内仲裁，按 Case attempt 身份阻止迟到的首次提交，已受理 Job 不被误杀。
@@ -22,7 +25,7 @@
 
 ## 发布后观察
 
-待追加：实际提交、镜像、恢复时间、10 分钟主机/容器资源与 Case 进展。采样只读 rowid 小窗、active job 索引、cgroup 与 PSI，不执行历史大统计。本次 10 分钟观察不代表已经覆盖下一交易日真实波峰。
+最终补丁于 09:22 CST 发布，完整服务的最终 600 秒采样结果见本文最后的验收表。采样只读 Case rowid 小窗、active job 索引、精确 Case/Job 主键、cgroup 与 PSI，不执行历史大统计。此前失败或停服窗口均在下文单独保留，不计为验收通过。
 
 
 ## 首轮观察发现的补充项
@@ -71,7 +74,7 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 
 ## 最后一轮窗口仍失败：Worker 独立全历史回收入口遗漏
 
-798da8b1 后实际 Job 与业务提交已恢复（窗口中段最近 250 个 Case 观察到 8 个决策提交，3 个抽查均在提交后完成 ACK），但后半段再次出现严重内存 / I/O 压力。Worker 持久状态有 71 个排队 W3 Job（trade 55、operations 16）及约 40 个运行 Job；不能因这些数量就认定内存全部属于活跃模型。新隔离完成时间：09:18:54 Worker、09:18:56 Scheduler、09:19:00 两个浏览器相关容器。四者均未被 Docker 标为 OOMKilled；后续还须核验内核全局 OOM 记录。此前 10 分钟采样因系统停顿实际延长至约 765 秒，最后状态不可记为通过。
+798da8b1 后实际 Job 与业务提交已恢复（窗口中段最近 250 个 Case 观察到 8 个决策提交，3 个抽查均在提交后完成 ACK），但后半段再次出现严重内存 / I/O 压力。Worker 持久状态有 71 个排队 W3 Job（trade 55、operations 16）及约 40 个运行 Job；不能因这些数量就认定内存全部属于活跃模型。新隔离完成时间：08:18:54 Worker、08:18:56 Scheduler、08:19:00 两个浏览器相关容器。四者均未被 Docker 标为 OOMKilled；后续还须核验内核全局 OOM 记录。此前 10 分钟采样因系统停顿实际延长至约 765 秒，最后状态不可记为通过。
 
 本次现场浏览器 cgroup 同时占用：Site Access 3,628,269,568 bytes / 601 PIDs，Chrome supervisor 5,073,838,080 bytes / 1994 PIDs，约 8.10GiB。它是实际共存资源，不能说只是 Runtime 独占整机，也没有将浏览器认定为所有事故的唯一根因。因 Docker/SSH 响应变慢，已准备按精确模块与 cgroup 身份紧急终止 Runtime；执行时目标已停止，未额外 kill 进程。
 
@@ -82,7 +85,7 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 
 冷启动读放大同步修复：Capsule.launch 和 lifecycle SDK initialize 原先为获取刚 spawn 的 PID start_ticks 调用 owned_processes(refresh=True)，从而每次启动都扫描 /proc 的全部进程环境并竞争全局 scanner lock。两处均改为只读取刚创建的精确 PID /proc/<pid>/stat；不动后代所有权扫描、随机执行身份和发送信号前的 start_ticks 核对。回归覆盖含括号的进程名、精确 PID 单文件读取及已退出进程。与 Worker 调度/Ready/清理共 52 项回归通过。
 
-恢复顺序采用一次性的事故隔离步骤：先恢复已受理 Job 的 Worker，Scheduler 与浏览器保持暂停；没有新增模型并发门槛。09:28 时约 100 任务正在恢复、主机约 23GiB 可用；09:32 降至 9 个 Job、Worker 约 6.6GiB、主机约 14.5GiB 可用、无新的 Worker OOM。该数据有 Scheduler/浏览器暂停的条件，不能据此归因 GC 单项或作全服务验收。已受理任务自然结束后恢复其余角色，最终另记完整窗口。
+恢复顺序采用一次性的事故隔离步骤：先恢复已受理 Job 的 Worker，Scheduler 与浏览器保持暂停；没有新增模型并发门槛。08:28 时约 100 任务正在恢复、主机约 23GiB 可用；08:32 降至 9 个 Job、Worker 约 6.6GiB、主机约 14.5GiB 可用、无新的 Worker OOM。该数据有 Scheduler/浏览器暂停的条件，不能据此归因 GC 单项或作全服务验收。已受理任务自然结束后恢复其余角色，最终另记完整窗口。
 
 
 ## P0-2 顺序补齐：真正完成静态准备后才领取物理进程
@@ -90,3 +93,45 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 全服务恢复窗口仍出现膨胀，说明仅把 history/labels/payload 推到 _thread 前并不充分：_run_phase_materialized 中 manifest 冻结、context bind、prompt/schema 构造还在实际 Ready claim 之后。现对生产已有的 batch workspace 路径延后 claim：_thread 只取得原逻辑 record；异步 phase 完成上述静态材料、原 context binding 和原冻结字节后，再 await 同一个 Ready claim / 原高优先级绑定回执，更新原 record 的真实 workspace，随后一次发布相对路径的小文件批次并提交原 Job。公共预热与原 Thread 复用仍在，legacy 非 batch 路径保持原行为。没有新增分片、reserve 状态、容量门槛、线程池或模型阶段。
 
 回归分别覆盖 bind 失败时不 claim / 不派发模型、正常 bind→claim→materialize→model 顺序、第二次运行复用相同 manifest 和模型 receipt、不再次 claim / 调模型；实际 Task 的 run_id 指向原 Ready 返回的 workspace。Snapshot accepted_at、原冻结 manifest/token 与历史成员不重建，行情仍沿用已有早期 queue_market 与绑定机制。此次只更新 Scheduler，Worker 正在进行的模型不重启。
+
+
+## 结果提交优先级补齐与最终验收口径
+
+3376b07a 的完整服务窗口为 09:07:05—09:17:05 CST，41 次采样、600 秒，没有停止服务来降低后半段资源。主机可用内存最低 6.32GiB，结束 6.58GiB；I/O PSI full 窗口占比约 0.69%，无内核 OOM、容器 OOM 或重启；但 Swap 从约 1675MiB 增至 2048MiB，仍有资源压力。固定最近 250 个 Case 中，85 个决策和 29 个后续处理提交，未新增失败 Effect；22 个窗口内新建且已提交的 Worker Job，结束到提交中位 222.46 秒、最大 464.61 秒。**该窗口资源和业务进展恢复，但时效性不合格，不能算最终通过。**这些 Job 对应恢复积压，不能把“新建 Job”表述为“新鲜实时消息”。
+
+随后不输出 locals 的现场 Python 栈确认：17 个结果保存、15 个 operations commit、3 个 trade commit 等仍以普通优先级争用进程内 write_lock；short-write owner 本身已空闲。之前只给异步绑定/receipt 设置优先级，漏掉同步完成结果的入口。0b011358 复用既有 SHORT_WRITE ContextVar，给 save_result、已保存结果续接、trade/operations 提交标记同一短写优先级。标记不持锁，网络与文件操作仍不占用 SQLite writer；不打断当前事务，不新增 owner/线程池/状态表/容量门槛。结果不可变、租约 fencing、提交后 ACK、原交易保护均保留。
+
+新增真实多线程回归在普通 SQL 已排队时验证完整 RESULT_SAVED 写入先行、失败后恢复原上下文，且保存结果不提前创建 ACK。最终相关回归 **129 通过**，包括 Ready、续接、Worker 资源、边界时点、原 MCP 协议和离线回放。另一次扩展 W3 v4 旧用例检查为 43 通过、4 失败，四项均期待历史消息 READY 而实际被既有 RUNTIME_DELAY_EXCEEDED 保护拒绝；将本次优先级装饰器替换为 no-op 后，原 W3 v4 同样 14 通过、同四项失败。没有更改过期保护来绿化测试。
+
+最终代码发布：Scheduler `0b011358937a05da65c775dc205d4dcfdc476e39`，镜像 `sha256:d80b752fe2c6bdaa8eb9480b0b417b3206b27d4f9aaa82b78f44072e4ec8d688`。Worker 已在此前发布 `05d6062222e1ee5c83233f07276a6a1d2fb582f4`（包含 baf4ecc5 修复），镜像 `sha256:9f6f40e8f4471b15a60c5e00caa924d1c245f77ca26d66871f46e3cac97c5f16`。最终补丁仅重建重启 Scheduler，没有中断 Worker 在途模型。逐文件 hash 与 canonical release state 已核对；其他会话的消息源/SiteAccess/Chrome 修复保留。
+
+运行维护边界：本次没有新增 W3 人工并发上限、延长模型或 Case 超时，也没有重放历史失败交易或改写历史 Case。旧式 Session/Workspace/Snapshot **全历史自动回收已从热派发路径移除**，暂时只保留显式静默维护入口；即时 Capsule 退出、未用私有资源释放、提交后 ACK 以及候选范围 Runtime GC 仍运行。旧派生文件可能保留更久，后续需要维护窗口执行广域清理；不在本轮扩张为新引用索引平台。
+
+
+## 最终 600 秒完整服务验收
+
+时间：2026-11-10 **09:22:13—09:32:13 CST**（01:22:13—01:32:13 UTC），41 次采样、无采样错误。期间未发布、重启或暂停组件。结束时 22 个现有容器全部运行；已核对 Scheduler / Worker 实际文件 hash、实际镜像与 canonical release state 一致。源码提交后的最终报告提交不触发再次构建或重启。
+
+| 指标 | 实测 |
+| --- | --- |
+| 主机可用内存 | 开始 10.25GiB，最低 5.99GiB，结束 11.48GiB |
+| Worker 内存 / PID | 峰值 12.58GiB / 1737，结束 6.28GiB / 678 |
+| Scheduler 内存 | 峰值及结束 1.53GiB |
+| Worker / Scheduler 平均 CPU | 1.17 / 1.13 个核 |
+| I/O PSI full | 窗口 stall 占比 0.82%，一分钟均值最高 1.02% |
+| 主盘平均读 / 写 | 5.73 / 17.15MiB/s |
+| Swap 存量 | 开始 2044.4MiB，结束 2046.1MiB，仍接近 2GiB 满额；未执行 swapoff |
+| OOM / 重启 | 内核窗口查询无新 OOM；监测的 7 个角色 OOM kill / restart 增量均 0 |
+| Worker 排队 | 实时 41 次采样均 0；后台开始 15，结束 0；结束运行中 Job 7 |
+| Worker 共享 loop | over-250ms 次数增量 0；旧历史 max lag 不清零伪装成新低值 |
+| 263 个近期 Case 提交 | trade_decision 27，post_decision_operations 39，共 66，66 个均已完成 ACK |
+| 限定 cohort 新失败 | Case 0、Effect 0；未抹去历史失败 |
+| 窗口内新建且消费的 Job | 46；模型结束→commit p50 1.51s，p95 9.32s，最大 19.16s |
+| 防止只看成功提交的交叉核查 | 63 个窗口内结束的成功 Job，结束后逐一核对，无已结束但未提交结果 |
+| 新绑定私有资源 | 17 个 Slot 全部已有对应 Job；未见新绑定后无 Job 的遗留 |
+
+业务统计取观察开始与结束的最新 250 个 Case 的并集，共 263 个，逐 Case/Job 索引定点读取，不是全库全部历史统计。46 个新建 Job 大部分属于恢复积压；其中 2 个窗口内新建 Case 对应 4 个 Job，未将旧消息恢复错误表述为新实时流量。不同观察轮次恢复负载不同，前后时延改善不能解释为单项补丁的严格同负载基准。
+
+该结果满足本次授权的发布后 10 分钟观察：资源在活跃任务回落时回收，模型完成结果能及时消费，实时工作没有容量闸门排队，业务持续进展。**尚未覆盖下一次真实开盘波峰，不能声称极端流量或所有未来故障均已解决。** Swap 存量仍高，浏览器同时占用约 10GiB 是真实共存成本；本轮没有扩大 Swap/PID 上限或压低 W3 并发来掩盖问题。
+
+安全证据：`eval/runtime_oom_repair_20261110/observation-summary.json`、`business-end.json`、`completion-crosscheck.json`、`source-and-service-verification.json`、`final-release-regression.xml`。远端最终窗口目录：`/var/lib/doxagent/releases/runtime-oom-resultpriority-0b011358937a/`。失败/隔离窗口另存且不混用，全部记录见该目录 README。

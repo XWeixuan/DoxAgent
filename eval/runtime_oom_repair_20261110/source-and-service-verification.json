@@ -1,0 +1,60 @@
+{
+  "codex-worker": {
+    "commit": "05d6062222e1ee5c83233f07276a6a1d2fb582f4",
+    "image": "sha256:9f6f40e8f4471b15a60c5e00caa924d1c245f77ca26d66871f46e3cac97c5f16",
+    "canonical_image": "sha256:9f6f40e8f4471b15a60c5e00caa924d1c245f77ca26d66871f46e3cac97c5f16",
+    "running": true,
+    "files": {
+      "src/doxagent/codex_worker/app.py": "988882c0833a73354fb2768c60770981a51b02b3118cd06899fde4f72e58fcd6",
+      "src/doxagent/codex_worker/capsules.py": "d4b96c2913e4161ce06563345d2c2d58b6fb2529a27a76a9c5e1da5a9b4734ea",
+      "src/doxagent/codex_worker/job_store.py": "b84abd64071d657b0dcd4e483857a783f319a9e6413f3c85c9f87acf4f8c7392",
+      "src/doxagent/codex_worker/jobs.py": "12d338c3d1f4aca3e3a4d9bde655f9d0ee579461bf343797f3a2cef08834d778",
+      "src/doxagent/codex_worker/schema.py": "891a6f5d722fe07e3e064550a498ff18091cb8ec552b37fdc8bd27eecd398f2c",
+      "src/doxagent/codex_worker/startup_admission.py": "fecdbc4b4ef84b9980136471bc16d31745a98c5f263cc0836b1ba4e0c672d135",
+      "src/doxagent/codex_worker/thread_lifecycle.py": "2728c03d00c15e692433743a9c3f12c87d24b971c6646ff5a42475b2fdb0d5b8",
+      "src/doxagent/codex_worker/w3_ready.py": "47c0156e4d094e993b742856d47c4fb957b2f5f8d9ace0393ed8ee88ccb50e5d",
+      "src/doxagent/codex_worker/process_tree.py": "2857f027bd704cc663f21ea0fc6903299d1cb8016f235a05c82753e4b0260d4a"
+    },
+    "mismatches": []
+  },
+  "v2-scheduler": {
+    "commit": "0b011358937a05da65c775dc205d4dcfdc476e39",
+    "image": "sha256:d80b752fe2c6bdaa8eb9480b0b417b3206b27d4f9aaa82b78f44072e4ec8d688",
+    "canonical_image": "sha256:d80b752fe2c6bdaa8eb9480b0b417b3206b27d4f9aaa82b78f44072e4ec8d688",
+    "running": true,
+    "files": {
+      "src/doxagent/codex_runtime/client.py": "e7de93e810842c525c0c9b1e897b973bf270ea41f397d86f4aa373b6b1e33ef8",
+      "src/doxagent/persistent_runtime_v2/bounded_inputs.py": "d62101b15cf4387a91820d9d05a78a0645e7811eea8a2f509778a30428bffd6d",
+      "src/doxagent/persistent_runtime_v2/coordinator.py": "bc633fa17a6d90991461264cbbd08ca030bc669a16d5f9a354d276fda422f614",
+      "src/doxagent/persistent_runtime_v2/journal.py": "6816e9fce4657249fa13d9c51c8cf1c525505c871d92f82826f4ca4660aa3330",
+      "src/doxagent/persistent_runtime_v2/maintenance.py": "8d40d8da6902d933125f837da6ebbcc3b2335089219940ace805036104461b22",
+      "src/doxagent/persistent_runtime_v2/maintenance_recovery.py": "14f397e71839bb90cdfdd155ac96382e9f3b04619190515ebba77ddb62d2b942",
+      "src/doxagent/persistent_runtime_v2/repository.py": "6a217e4073f41a7e0673d804442906c81fbb2523303cb8ee9e20dfe782138b00",
+      "src/doxagent/persistent_runtime_v2/resource_gc.py": "ff52abfdbf6464b6f120a8bf720781ffb2c5c07972498874aeed310821f57c42",
+      "src/doxagent/persistent_runtime_v2/retained_events.py": "b4424863272e18b0a0d955372748c7293c6547feb3f68542a567a08dcc058979",
+      "src/doxagent/persistent_runtime_v2/service.py": "712d2854297333e067337b87c69b211cff4dc7805a36df3debdc7d12f62b568e",
+      "src/doxagent/persistent_runtime_v2/w3.py": "0dd7b4f941e420c46bc59405432ee9ff64d010bde6686e6e225b4685b2540592",
+      "src/doxagent/persistent_runtime_v2/w3_execution.py": "25cb8a52bbf0c24960ec3d799b84a8041d4e3ae3f630e3f3d2be439a579a3f79",
+      "src/doxagent/persistent_runtime_v2/w3_threads.py": "812de890c37979d41267ccbadd7058d7b86c81ae4c0a538fad7ddd23aa0bb4b7",
+      "src/doxagent/codex_worker/schema.py": "891a6f5d722fe07e3e064550a498ff18091cb8ec552b37fdc8bd27eecd398f2c",
+      "src/doxagent/control_io.py": "055f0d4f14d3f48efb0eb8ec2376ad4087d3bcdbcdbc9699b91ce720d91b40ed",
+      "src/doxagent/w3_timing.py": "751b1ecf0293859b575f46ce1d1c7c9eec5097dfeefd9d9bfde153e9a4922997",
+      "src/doxagent/persistent_runtime_v2/worker_receipts.py": "ba012ebfdee253eb0ad6e83b94df7c61d516efc312ede4d0733c6a32930d12b3"
+    },
+    "mismatches": []
+  },
+  "v2-site-access": {
+    "running": true,
+    "restarts": 0,
+    "image": "sha256:58f63593412922478e9caa98dac3cd7947fa1521d62988c3fe854030690e366c",
+    "memory_current": 4001439744,
+    "pids": 590
+  },
+  "v2-chrome-supervisor": {
+    "running": true,
+    "restarts": 0,
+    "image": "sha256:d55858c58d0d9c4e51ad7eef58b9116e063c3cce2faf6dc2ed3aacc26187a2dd",
+    "memory_current": 6478368768,
+    "pids": 1835
+  }
+}

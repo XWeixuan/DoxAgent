@@ -1,0 +1,121 @@
+{
+  "start": "2026-11-10T01:22:13.847440+00:00",
+  "end": "2026-11-10T01:32:13.847403+00:00",
+  "duration_s": 599.9799999999999,
+  "samples": 41,
+  "sample_errors": 0,
+  "available_gib": {
+    "start": 10.250621795654297,
+    "end": 11.475990295410156,
+    "minimum": 5.991825103759766
+  },
+  "swap_mib": {
+    "start": 2044.3671875,
+    "end": 2046.08203125,
+    "peak": 2047.98828125
+  },
+  "containers": {
+    "codex-worker": {
+      "max_memory_gib": 12.57907485961914,
+      "end_memory_gib": 6.275581359863281,
+      "max_pids": 1737,
+      "end_pids": 678,
+      "restart_delta": 0,
+      "oom_kill_delta": 0,
+      "end_status": "running",
+      "average_cpu_cores": 1.1679269425647525
+    },
+    "v2-scheduler": {
+      "max_memory_gib": 1.5313873291015625,
+      "end_memory_gib": 1.5313873291015625,
+      "max_pids": 87,
+      "end_pids": 80,
+      "restart_delta": 0,
+      "oom_kill_delta": 0,
+      "end_status": "running",
+      "average_cpu_cores": 1.1326720074002468
+    },
+    "v2-maintenance": {
+      "max_memory_gib": 0.07300186157226562,
+      "end_memory_gib": 0.07300186157226562,
+      "max_pids": 2,
+      "end_pids": 2,
+      "restart_delta": 0,
+      "oom_kill_delta": 0,
+      "end_status": "running",
+      "average_cpu_cores": 0.0052807010233674465
+    },
+    "v2-o4": {
+      "max_memory_gib": 0.06623458862304688,
+      "end_memory_gib": 0.06623458862304688,
+      "max_pids": 10,
+      "end_pids": 10,
+      "restart_delta": 0,
+      "oom_kill_delta": 0,
+      "end_status": "running",
+      "average_cpu_cores": 0.00028938797959932
+    },
+    "v2-cdecr-executor": {
+      "max_memory_gib": 0.0505523681640625,
+      "end_memory_gib": 0.0258941650390625,
+      "max_pids": 3,
+      "end_pids": 2,
+      "restart_delta": 0,
+      "oom_kill_delta": 0,
+      "end_status": "running",
+      "average_cpu_cores": 0.08122971265708859
+    },
+    "v2-initialization": {
+      "max_memory_gib": 0.07918167114257812,
+      "end_memory_gib": 0.07892990112304688,
+      "max_pids": 11,
+      "end_pids": 11,
+      "restart_delta": 0,
+      "oom_kill_delta": 0,
+      "end_status": "running",
+      "average_cpu_cores": 0.009008521950731693
+    },
+    "initialization-guardian": {
+      "max_memory_gib": 0.0602264404296875,
+      "end_memory_gib": 0.0596160888671875,
+      "max_pids": 2,
+      "end_pids": 2,
+      "restart_delta": 0,
+      "oom_kill_delta": 0,
+      "end_status": "running",
+      "average_cpu_cores": 0.0005646888229607655
+    }
+  },
+  "io_psi_full": {
+    "max_avg10": 1.91,
+    "max_avg60": 1.02,
+    "window_stall_percent": 0.8188197939931332
+  },
+  "memory_psi_full": {
+    "max_avg10": 0.42,
+    "max_avg60": 0.23,
+    "window_stall_percent": 0.06914197139904664
+  },
+  "disk": {
+    "read_mib_per_s": 5.7325942440268856,
+    "write_mib_per_s": 17.14984330857904
+  },
+  "active_jobs": {
+    "start": [
+      [
+        "queued",
+        15
+      ],
+      [
+        "running",
+        24
+      ]
+    ],
+    "end": [
+      [
+        "running",
+        7
+      ]
+    ]
+  }
+}

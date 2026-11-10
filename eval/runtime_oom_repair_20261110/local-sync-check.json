@@ -1,0 +1,134 @@
+[
+  {
+    "path": "scripts/ops/runtime_oom_observe_20261110.py",
+    "state": "same"
+  },
+  {
+    "path": "scripts/ops/runtime_oom_release_20261110.py",
+    "state": "same"
+  },
+  {
+    "path": "scripts/ops/runtime_oom_repair_files_20261110.json",
+    "state": "same"
+  },
+  {
+    "path": "scripts/ops/runtime_oom_writer_followup_20261110.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/codex_runtime/client.py",
+    "state": "known:c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5"
+  },
+  {
+    "path": "src/doxagent/codex_worker/app.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/codex_worker/capsules.py",
+    "state": "known:f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5"
+  },
+  {
+    "path": "src/doxagent/codex_worker/job_store.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/codex_worker/jobs.py",
+    "state": "known:f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1"
+  },
+  {
+    "path": "src/doxagent/codex_worker/process_tree.py",
+    "state": "known:f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,f8bf7654^"
+  },
+  {
+    "path": "src/doxagent/codex_worker/schema.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/codex_worker/startup_admission.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/codex_worker/thread_lifecycle.py",
+    "state": "known:f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5"
+  },
+  {
+    "path": "src/doxagent/codex_worker/w3_ready.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/control_io.py",
+    "state": "known:798da8b1,8fcb1cc5,baf4ecc5,3376b07a"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/bounded_inputs.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/coordinator.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/journal.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/maintenance.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/maintenance_recovery.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/repository.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/resource_gc.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/retained_events.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/service.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/w3.py",
+    "state": "known:c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/w3_execution.py",
+    "state": "known:76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/w3_threads.py",
+    "state": "known:c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a"
+  },
+  {
+    "path": "src/doxagent/persistent_runtime_v2/worker_receipts.py",
+    "state": "same"
+  },
+  {
+    "path": "src/doxagent/w3_timing.py",
+    "state": "same"
+  },
+  {
+    "path": "tests/test_runtime_bounded_dispatch.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  },
+  {
+    "path": "tests/test_runtime_oom_repair.py",
+    "state": "known:798da8b1"
+  },
+  {
+    "path": "tests/test_w3_boundary_timing.py",
+    "state": "same"
+  },
+  {
+    "path": "tests/test_w3_startup_admission.py",
+    "state": "known:HEAD,f8bf7654,3e3b5d65,76a879d5,35716294,c7e4f337,9b9e0516,c7cef3d5,c52a38ad,798da8b1,8fcb1cc5,baf4ecc5,3376b07a,0b011358"
+  }
+]

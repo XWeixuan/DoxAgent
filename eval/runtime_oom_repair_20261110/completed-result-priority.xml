@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="47" time="14.172" timestamp="2026-11-10T09:20:01.142639+08:00" hostname="DESKTOP-BQ2H2TD"><testcase classname="tests.test_runtime_oom_repair" name="test_eight_blocked_background_effects_do_not_queue_realtime" time="0.455" /><testcase classname="tests.test_runtime_oom_repair" name="test_realtime_bypasses_background_boot_and_handshake_even_under_pressure" time="0.002" /><testcase classname="tests.test_runtime_oom_repair" name="test_terminal_unused_release_fences_late_post_but_preserves_accepted_job[False]" time="0.406" /><testcase classname="tests.test_runtime_oom_repair" name="test_terminal_unused_release_fences_late_post_but_preserves_accepted_job[True]" time="0.597" /><testcase classname="tests.test_runtime_oom_repair" name="test_sse_revision_closes_read_wait_race_without_loading_job" time="0.001" /><testcase classname="tests.test_runtime_oom_repair" name="test_sse_client_resumes_cursor_and_fetches_only_job_events" time="0.063" /><testcase classname="tests.test_runtime_oom_repair" name="test_checkpoint_native_io_never_owns_writer_and_publishes_gc_header" time="0.153" /><testcase classname="tests.test_runtime_oom_repair" name="test_queued_public_preparation_promotes_without_waiting_for_background_owner" time="0.258" /><testcase classname="tests.test_runtime_oom_repair" name="test_gc_yields_before_history_and_uses_only_candidate_metadata" time="0.165" /><testcase classname="tests.test_runtime_oom_repair" name="test_realtime_bypass_still_protects_same_uncertain_thread" time="0.004" /><testcase classname="tests.test_runtime_oom_repair" name="test_stopping_is_control_recovery_without_spending_case_attempt" time="0.347" /><testcase classname="tests.test_runtime_oom_repair" name="test_effect_renewal_waits_on_existing_local_writer_before_opening_sql_writer" time="0.417" /><testcase classname="tests.test_runtime_oom_repair" name="test_phase_terminal_receipts_use_existing_high_priority_writer" time="0.119" /><testcase classname="tests.test_runtime_oom_repair" name="test_timing_diagnostics_yield_busy_business_writer" time="0.096" /><testcase classname="tests.test_runtime_oom_repair" name="test_busy_ui_progress_never_blocks_completed_model_consumer" time="0.102" /><testcase classname="tests.test_runtime_oom_repair" name="test_120_live_sse_waits_do_not_queue_materialization_transport" time="0.580" /><testcase classname="tests.test_runtime_oom_repair" name="test_ack_eligibility_is_atomic_with_business_commit" time="0.137" /><testcase classname="tests.test_runtime_oom_repair" name="test_failed_market_diagnostic_never_blocks_shared_w3_loop" time="0.157" /><testcase classname="tests.test_runtime_oom_repair" name="test_completed_ready_claim_bypasses_background_writer_and_slot_lock" time="0.511" /><testcase classname="tests.test_runtime_oom_repair" name="test_terminal_short_writer_goes_before_waiting_ordinary_writes" time="0.013" /><testcase classname="tests.test_runtime_oom_repair" name="test_sql_gate_reentrancy_timeout_and_best_effort_do_not_leak" time="0.030" /><testcase classname="tests.test_runtime_oom_repair" name="test_journal_scalar_reads_reuse_connection_without_retaining_snapshot" time="0.107" /><testcase classname="tests.test_runtime_oom_repair" name="test_live_worker_never_starts_legacy_global_retention" time="0.533" /><testcase classname="tests.test_runtime_oom_repair" name="test_new_process_identity_reads_only_its_exact_stat" time="0.000" /><testcase classname="tests.test_runtime_oom_repair" name="test_static_phase_binding_precedes_physical_ready_claim[False]" time="0.320" /><testcase classname="tests.test_runtime_oom_repair" name="test_static_phase_binding_precedes_physical_ready_claim[True]" time="0.275" /><testcase classname="tests.test_runtime_oom_repair" name="test_empty_transport_failure_retains_error_type" time="0.010" /><testcase classname="tests.test_runtime_oom_repair" name="test_completed_result_overtakes_ordinary_sql_waiters" time="0.120" /><testcase classname="tests.test_runtime_oom_repair" name="test_completed_result_priority_restores_on_failure" time="0.113" /><testcase classname="tests.test_w3_v4" name="test_trade_is_durable_before_operations_and_operations_cannot_retrade[NO_TRADE]" time="0.522" /><testcase classname="tests.test_w3_v4" name="test_trade_is_durable_before_operations_and_operations_cannot_retrade[POLICY_TRADE]" time="0.426"><failure message="AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'&#10;  &#10;  - READY&#10;  + RUNTIME_DELAY_EXCEEDED">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3532/test_trade_is_durable_before_o1')
+kind = 'POLICY_TRADE'
+
+    @pytest.mark.parametrize("kind", ["NO_TRADE", "POLICY_TRADE", "EXPERT_TRADE"])
+    def test_trade_is_durable_before_operations_and_operations_cannot_retrade(tmp_path, kind):
+        service, journal, agent, _ = runtime(tmp_path, kind)
+        try:
+            case = enqueue(service)
+            assert service.process_pending_effects() == 1
+            saved = service.repository.get_case(case.case_id)
+            assert saved.status == RuntimeCaseStatus.COMPLETED
+            assert saved.w3_operations_status == "PENDING"
+            assert not service.repository.list_provisional("MU", case.trading_date)
+            intents = journal.values("trade_intents")
+            assert len(intents) == (kind != "NO_TRADE")
+            if intents:
+&gt;               assert intents[0]["status"] == "READY"
+E               AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'
+E                 
+E                 - READY
+E                 + RUNTIME_DELAY_EXCEEDED
+
+tests\test_w3_v4.py:194: AssertionError</failure></testcase><testcase classname="tests.test_w3_v4" name="test_trade_is_durable_before_operations_and_operations_cannot_retrade[EXPERT_TRADE]" time="0.389"><failure message="AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'&#10;  &#10;  - READY&#10;  + RUNTIME_DELAY_EXCEEDED">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3532/test_trade_is_durable_before_o2')
+kind = 'EXPERT_TRADE'
+
+    @pytest.mark.parametrize("kind", ["NO_TRADE", "POLICY_TRADE", "EXPERT_TRADE"])
+    def test_trade_is_durable_before_operations_and_operations_cannot_retrade(tmp_path, kind):
+        service, journal, agent, _ = runtime(tmp_path, kind)
+        try:
+            case = enqueue(service)
+            assert service.process_pending_effects() == 1
+            saved = service.repository.get_case(case.case_id)
+            assert saved.status == RuntimeCaseStatus.COMPLETED
+            assert saved.w3_operations_status == "PENDING"
+            assert not service.repository.list_provisional("MU", case.trading_date)
+            intents = journal.values("trade_intents")
+            assert len(intents) == (kind != "NO_TRADE")
+            if intents:
+&gt;               assert intents[0]["status"] == "READY"
+E               AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'
+E                 
+E                 - READY
+E                 + RUNTIME_DELAY_EXCEEDED
+
+tests\test_w3_v4.py:194: AssertionError</failure></testcase><testcase classname="tests.test_w3_v4" name="test_saved_decision_survives_output_failure_without_new_model_call" time="0.506" /><testcase classname="tests.test_w3_v4" name="test_failed_operations_do_not_fail_or_repeat_committed_trade" time="0.573" /><testcase classname="tests.test_w3_v4" name="test_busy_policy_thread_forks_and_idle_policy_thread_resumes" time="0.868" /><testcase classname="tests.test_w3_v4" name="test_old_entry_and_information_tags_are_independent" time="0.001" /><testcase classname="tests.test_w3_v4" name="test_expiry_does_not_renew_on_operations_or_retry_and_deletes_only_child" time="0.597" /><testcase classname="tests.test_w3_v4" name="test_history_has_no_count_cap_and_freezes_execution_state" time="0.580" /><testcase classname="tests.test_w3_v4" name="test_pending_operations_do_not_hold_daily_maintenance" time="0.460" /><testcase classname="tests.test_w3_v4" name="test_admitted_old_case_can_trade_and_closed_case_only_creates_a_candidate[POLICY_TRADE]" time="0.395"><failure message="AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'&#10;  &#10;  - READY&#10;  + RUNTIME_DELAY_EXCEEDED">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3532/test_admitted_old_case_can_tra0')
+kind = 'POLICY_TRADE'
+
+    @pytest.mark.parametrize("kind", ["POLICY_TRADE", "EXPERT_TRADE"])
+    def test_admitted_old_case_can_trade_and_closed_case_only_creates_a_candidate(tmp_path, kind):
+        service, journal, _, _ = runtime(tmp_path, kind)
+        try:
+            case = enqueue(service, "old-low")
+            case.w1_final = W1NoveltyResult(
+                result="OLD", confidence="low", reference_ids=["E1"], reason="uncertain old"
+            )
+            journal.set(
+                "round_inputs",
+                f"{case.case_id}:W1:R2",
+                {
+                    "payload": {
+                        "event_details": {
+                            "canonical_events": [
+                                {
+                                    "event_id": "E1",
+                                    "canonical_summary": "known production baseline",
+                                    "facts": [],
+                                }
+                            ],
+                            "provisional_events": [],
+                        }
+                    },
+                },
+            )
+            service.repository.save_case(case)
+            assert service.process_pending_effects() == 1
+&gt;           assert journal.values("trade_intents")[0]["status"] == "READY"
+E           AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'
+E             
+E             - READY
+E             + RUNTIME_DELAY_EXCEEDED
+
+tests\test_w3_v4.py:423: AssertionError</failure></testcase><testcase classname="tests.test_w3_v4" name="test_admitted_old_case_can_trade_and_closed_case_only_creates_a_candidate[EXPERT_TRADE]" time="0.442"><failure message="AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'&#10;  &#10;  - READY&#10;  + RUNTIME_DELAY_EXCEEDED">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3532/test_admitted_old_case_can_tra1')
+kind = 'EXPERT_TRADE'
+
+    @pytest.mark.parametrize("kind", ["POLICY_TRADE", "EXPERT_TRADE"])
+    def test_admitted_old_case_can_trade_and_closed_case_only_creates_a_candidate(tmp_path, kind):
+        service, journal, _, _ = runtime(tmp_path, kind)
+        try:
+            case = enqueue(service, "old-low")
+            case.w1_final = W1NoveltyResult(
+                result="OLD", confidence="low", reference_ids=["E1"], reason="uncertain old"
+            )
+            journal.set(
+                "round_inputs",
+                f"{case.case_id}:W1:R2",
+                {
+                    "payload": {
+                        "event_details": {
+                            "canonical_events": [
+                                {
+                                    "event_id": "E1",
+                                    "canonical_summary": "known production baseline",
+                                    "facts": [],
+                                }
+                            ],
+                            "provisional_events": [],
+                        }
+                    },
+                },
+            )
+            service.repository.save_case(case)
+            assert service.process_pending_effects() == 1
+&gt;           assert journal.values("trade_intents")[0]["status"] == "READY"
+E           AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'READY'
+E             
+E             - READY
+E             + RUNTIME_DELAY_EXCEEDED
+
+tests\test_w3_v4.py:423: AssertionError</failure></testcase><testcase classname="tests.test_w3_v4" name="test_v4_bundle_requires_external_assets_and_can_be_published_without_activation" time="0.187" /><testcase classname="tests.test_w3_v4" name="test_pin_cancel_cannot_delete_a_recreated_pin_for_the_same_message" time="0.094" /><testcase classname="tests.test_w3_v4" name="test_pin_capacity_is_atomic_and_pin_expiry_is_not_session_ttl" time="0.121" /><testcase classname="tests.test_w3_v4" name="test_operations_reject_transaction_fields_but_isolate_bad_actions" time="0.001" /><testcase classname="tests.test_w3_v4" name="test_research_slices_preserve_code_fences_and_complete_unit_policy" time="0.001" /><testcase classname="tests.test_w3_v4" name="test_source_identity_and_date_precision" time="0.001" /></testsuite></testsuites>

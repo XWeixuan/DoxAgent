@@ -1,0 +1,94 @@
+{
+  "terminal_jobs_finished_in_window": 63,
+  "finished_not_committed_at_check": [],
+  "new_failed_cases": [],
+  "new_bound_slots": 17,
+  "new_bound_without_job": 0,
+  "bound": [
+    {
+      "case_id": "case_647bce5756f74a18879e4ae96428f362",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_9d8571dde5ab4aae914aa4eff614860b",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_8b97659ce2954f76954896f5b9a4322e",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_e33acdcbfa81457aa46b370321530382",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_86edd470c05c499d8853de7b7e05f314",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_5e585ae4cd1c41688f7cbf24061b4bac",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_a1484a9c89bd413582784c10f43a4e2c",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_10caed0e7c3948f5907908ebc7047d2a",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_82bf17716ad74907829c047b576ba6b1",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_7e5cb24c332f470f829b64a0560099cb",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_ff6f4e0582ec407d8aca72fa3281c0f0",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_3180bee3f0664e439eae004a3962800f",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_b931867cfe104d3591171e02ae3a649e",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_04ed76b2b34a41a48faa02e63e12668a",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_0d7476c12e564dc7a371d471e2b1fc46",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_5045134e28dd4ed899d95c8e874be51d",
+      "state": "USED",
+      "job_count": 2
+    },
+    {
+      "case_id": "case_5a770226650a45b2b54226d3cc8140c9",
+      "state": "USED",
+      "job_count": 2
+    }
+  ]
+}

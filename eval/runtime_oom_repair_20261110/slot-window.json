@@ -1,0 +1,46 @@
+{
+  "elapsed_s": 362.28,
+  "slots_bound_in_window_selected250": 4,
+  "slots_without_accepted_job": 0,
+  "slot_states": {
+    "USED": 4
+  },
+  "slots": [
+    {
+      "slot_id": "304cee9dc10b4c149337240ee59bfde0",
+      "state": "USED",
+      "bound_at": "2026-11-10T01:22:17.891363+00:00",
+      "job_states": [
+        "succeeded",
+        "succeeded"
+      ]
+    },
+    {
+      "slot_id": "127ec1c741ae4d368814c8ae6d7b63d3",
+      "state": "USED",
+      "bound_at": "2026-11-10T01:24:33.766809+00:00",
+      "job_states": [
+        "succeeded",
+        "succeeded"
+      ]
+    },
+    {
+      "slot_id": "13cfa0a3f5f74a0998a6b0e312b7bbad",
+      "state": "USED",
+      "bound_at": "2026-11-10T01:23:36.049167+00:00",
+      "job_states": [
+        "succeeded",
+        "succeeded"
+      ]
+    },
+    {
+      "slot_id": "8b56f49de36141af8a3b462a78ab23ce",
+      "state": "USED",
+      "bound_at": "2026-11-10T01:23:33.252804+00:00",
+      "job_states": [
+        "succeeded",
+        "succeeded"
+      ]
+    }
+  ]
+}

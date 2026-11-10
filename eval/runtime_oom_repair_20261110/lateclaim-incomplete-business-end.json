@@ -1,0 +1,284 @@
+{
+  "start": "2026-11-10T01:07:05.450686+00:00",
+  "end": "2026-11-10T01:17:05.450755+00:00",
+  "cohort": 250,
+  "commits": 114,
+  "phases": {
+    "post_decision_operations": 29,
+    "trade_decision": 85
+  },
+  "new_failed_effects": [],
+  "acked": 83,
+  "new_jobs_consumed": 22,
+  "new_job_commit_after_finish_s": {
+    "min": 31.29927,
+    "max": 464.6083,
+    "median": 222.457607
+  },
+  "new_jobs": [
+    {
+      "case_id": "case_d684f5048a4d4552b2644ac6d08cba54",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:16:43.588438+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:10:47.148548Z",
+        "2026-11-10T01:12:18.918812Z"
+      ]
+    },
+    {
+      "case_id": "case_0a7411f892fe47b69946a01037a333a9",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:13:37.350219+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:08:15.288200Z",
+        "2026-11-10T01:08:34.858127Z"
+      ]
+    },
+    {
+      "case_id": "case_2816ca63f2114055b3044fd258f70fb7",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:12:37.534602+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:07:33.509147Z",
+        "2026-11-10T01:08:50.316138Z"
+      ]
+    },
+    {
+      "case_id": "case_bedc613c153940a68ff9683bc72ad031",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:11:41.922138+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:08:07.437206Z",
+        "2026-11-10T01:08:51.932341Z"
+      ]
+    },
+    {
+      "case_id": "case_c604c6777bc849b89e6400fa303da699",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:15:15.691611+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:12:44.406477Z",
+        "2026-11-10T01:13:44.687162Z"
+      ]
+    },
+    {
+      "case_id": "case_363593c6377e4463a3f8e9f7ce25898b",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:12:59.357476+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:08:15.334247Z",
+        "2026-11-10T01:08:41.061539Z"
+      ]
+    },
+    {
+      "case_id": "case_c2e6538275b544f887d65f3134f304bf",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:14:50.571374+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:08:00.017867Z",
+        "2026-11-10T01:08:20.914967Z"
+      ]
+    },
+    {
+      "case_id": "case_18008f70f6184bddb2f29e74d7df1ca0",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:16:39.919803+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:13:08.664360Z",
+        "2026-11-10T01:14:05.807229Z"
+      ]
+    },
+    {
+      "case_id": "case_60782f19e4c2495c8dd9bf6aa60f635b",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:12:22.128779+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:08:06.846979Z",
+        "2026-11-10T01:08:41.503842Z"
+      ]
+    },
+    {
+      "case_id": "case_d81d64fcce7d45798092fab7ecfe35e9",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:11:18.923241+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:07:31.582505Z",
+        "2026-11-10T01:07:55.168338Z"
+      ]
+    },
+    {
+      "case_id": "case_5dedcf02d3cd4bf695178a1f099be357",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:15:06.857230+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:12:48.111245Z",
+        "2026-11-10T01:13:54.863261Z"
+      ]
+    },
+    {
+      "case_id": "case_a072f7699ad745e8905c7d447e90f393",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:15:35.232736+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:11:28.084569Z",
+        "2026-11-10T01:11:52.775129Z"
+      ]
+    },
+    {
+      "case_id": "case_0158fd300a5941068903a8e0234f9d94",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:14:07.295815+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:07:51.840496Z",
+        "2026-11-10T01:08:34.399491Z"
+      ]
+    },
+    {
+      "case_id": "case_3a846345b01a4593a6f2b902f0a0c499",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:16:42.978660+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:07:33.259561Z",
+        "2026-11-10T01:08:58.370360Z"
+      ]
+    },
+    {
+      "case_id": "case_d13fb85a06914572a687a64fd3c88fdf",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:15:43.029086+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:08:06.410738Z",
+        "2026-11-10T01:10:41.143969Z"
+      ]
+    },
+    {
+      "case_id": "case_608a67db14104700a1fc547209f54796",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:13:28.520736+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:09:00.306854Z",
+        "2026-11-10T01:11:42.383629Z"
+      ]
+    },
+    {
+      "case_id": "case_4407d4587bf540e2b31649b6f43940bf",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:14:39.179480+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:09:13.884743Z",
+        "2026-11-10T01:09:26.646588Z"
+      ]
+    },
+    {
+      "case_id": "case_980aa0f4db9a4827ba3e7e5e184a4d62",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:14:45.151278+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:10:38.209509Z",
+        "2026-11-10T01:12:38.756585Z"
+      ]
+    },
+    {
+      "case_id": "case_504b7e13e14e446cbc6546652fee0381",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:13:28.846277+00:00",
+      "job": [
+        "succeeded",
+        1,
+        1,
+        "2026-11-10T01:08:15.445762Z",
+        "2026-11-10T01:12:57.547007Z"
+      ]
+    },
+    {
+      "case_id": "case_592bc9ba064c44c4a2449f63cc9c3daa",
+      "phase": "trade_decision",
+      "committed_at": "2026-11-10T01:16:22.713475+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:08:05.961301Z",
+        "2026-11-10T01:13:18.123631Z"
+      ]
+    },
+    {
+      "case_id": "case_aa53ef3ed5a34bec8a3861a9fb27b7b6",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:13:55.081157+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:07:51.083637Z",
+        "2026-11-10T01:08:11.608015Z"
+      ]
+    },
+    {
+      "case_id": "case_5c58308623274de79f2b56dd795c96be",
+      "phase": "post_decision_operations",
+      "committed_at": "2026-11-10T01:13:27.987366+00:00",
+      "job": [
+        "succeeded",
+        0,
+        0,
+        "2026-11-10T01:09:55.449738Z",
+        "2026-11-10T01:11:23.429626Z"
+      ]
+    }
+  ]
+}

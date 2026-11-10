@@ -1,0 +1,169 @@
+{
+  "v2-scheduler": {
+    "transaction_lines": 117,
+    "largest": [
+      {
+        "pid": "6",
+        "operation": "journal.reconcile_interrupted:310",
+        "write": "False",
+        "elapsed_ms": "5610",
+        "wait_ms": "1",
+        "sqlite_code": "None",
+        "hold_ms": "5609",
+        "commit_ms": "0"
+      },
+      {
+        "pid": "6",
+        "operation": "w3_execution.operations:608",
+        "write": "True",
+        "elapsed_ms": "3828",
+        "wait_ms": "3764",
+        "sqlite_code": "None",
+        "hold_ms": "59",
+        "commit_ms": "5"
+      },
+      {
+        "pid": "6",
+        "operation": "w3_threads.begin_stage:66",
+        "write": "True",
+        "elapsed_ms": "3461",
+        "wait_ms": "3449",
+        "sqlite_code": "None",
+        "hold_ms": "1",
+        "commit_ms": "11"
+      },
+      {
+        "pid": "6",
+        "operation": "task.claim",
+        "write": "True",
+        "elapsed_ms": "3008",
+        "wait_ms": "3005",
+        "sqlite_code": "None",
+        "hold_ms": "0",
+        "commit_ms": "3"
+      },
+      {
+        "pid": "6",
+        "operation": "w3_threads.begin_stage:66",
+        "write": "True",
+        "elapsed_ms": "2814",
+        "wait_ms": "2802",
+        "sqlite_code": "None",
+        "hold_ms": "7",
+        "commit_ms": "5"
+      },
+      {
+        "pid": "6",
+        "operation": "w3_threads.begin_stage:66",
+        "write": "True",
+        "elapsed_ms": "2792",
+        "wait_ms": "2789",
+        "sqlite_code": "None",
+        "hold_ms": "0",
+        "commit_ms": "3"
+      },
+      {
+        "pid": "6",
+        "operation": "w3_threads.begin_stage:66",
+        "write": "True",
+        "elapsed_ms": "2786",
+        "wait_ms": "2781",
+        "sqlite_code": "None",
+        "hold_ms": "0",
+        "commit_ms": "4"
+      }
+    ],
+    "error_lines": 18
+  },
+  "v2-executor": {
+    "transaction_lines": 19,
+    "largest": [
+      {
+        "pid": "7",
+        "operation": "acceptance.tick_suites:59",
+        "write": "True",
+        "elapsed_ms": "991",
+        "wait_ms": "989",
+        "sqlite_code": "None",
+        "hold_ms": "0",
+        "commit_ms": "1"
+      },
+      {
+        "pid": "7",
+        "operation": "value.execution_scheduler",
+        "write": "True",
+        "elapsed_ms": "451",
+        "wait_ms": "446",
+        "sqlite_code": "None",
+        "hold_ms": "1",
+        "commit_ms": "3"
+      },
+      {
+        "pid": "7",
+        "operation": "value.execution_scheduler",
+        "write": "True",
+        "elapsed_ms": "406",
+        "wait_ms": "398",
+        "sqlite_code": "None",
+        "hold_ms": "2",
+        "commit_ms": "6"
+      },
+      {
+        "pid": "7",
+        "operation": "value.execution_scheduler",
+        "write": "True",
+        "elapsed_ms": "327",
+        "wait_ms": "320",
+        "sqlite_code": "None",
+        "hold_ms": "2",
+        "commit_ms": "5"
+      },
+      {
+        "pid": "7",
+        "operation": "value.read.execution_connections",
+        "write": "False",
+        "elapsed_ms": "301",
+        "wait_ms": "1",
+        "sqlite_code": "None",
+        "hold_ms": "298",
+        "commit_ms": "2"
+      },
+      {
+        "pid": "7",
+        "operation": "repository.heartbeat:200",
+        "write": "True",
+        "elapsed_ms": "279",
+        "wait_ms": "256",
+        "sqlite_code": "None",
+        "hold_ms": "18",
+        "commit_ms": "5"
+      },
+      {
+        "pid": "7",
+        "operation": "value.v2_workers",
+        "write": "True",
+        "elapsed_ms": "278",
+        "wait_ms": "177",
+        "sqlite_code": "None",
+        "hold_ms": "52",
+        "commit_ms": "49"
+      }
+    ],
+    "error_lines": 20
+  },
+  "v2-api": {
+    "transaction_lines": 0,
+    "largest": [],
+    "error_lines": 0
+  },
+  "v2-projector": {
+    "transaction_lines": 0,
+    "largest": [],
+    "error_lines": 0
+  },
+  "v2-maintenance": {
+    "transaction_lines": 0,
+    "largest": [],
+    "error_lines": 4
+  }
+}
