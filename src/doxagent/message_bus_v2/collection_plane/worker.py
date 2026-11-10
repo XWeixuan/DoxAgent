@@ -27,6 +27,7 @@ from ..schema import (
 from ..scheduler import GlobalPollScheduler
 from ..search_plan import build_query_plan
 from ..yahoo_sources import yahoo_lane
+from ..polling_cadence import unit_interval
 from .config import Configuration, ConfigurationLoader, load
 from .store import AcquisitionStore, path_for, required_unit
 
@@ -52,6 +53,7 @@ def balanced_phases(desired):
         if unit.startswith('TAIL:'):
             continue
         period = options['ir_spec'].target_interval_seconds if 'ir_spec' in options else min(b.polling.target_interval_seconds for b in targets)
+        period = unit_interval(source, unit, period)
         route = yahoo_lane(unit) if source.source_id == 'yahoo_finance_news' else 'all'
         groups[(source.source_id, period, route)].append(key)
     phases = {}
@@ -210,6 +212,7 @@ class Collector:
                 if "ir_spec" in options
                 else min(b.polling.target_interval_seconds for b in targets)
             )
+            period = unit_interval(s, unit, period)
             if options.get('coverage_required', not unit.startswith("TAIL:")):
                 demand = options.get("request_multiplier", 1) / period
                 rates[s.source_id] += demand

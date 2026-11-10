@@ -20,6 +20,18 @@ from .technology_sources import TechnologySource, article
 
 PRIMARY_TIMEOUT_SECONDS = 12
 DEFAULT_MAX_CACHE_AGE_SECONDS = 120
+
+
+def fresh_query_bucket(context):
+    """Keep cache freshness aligned with the configured sub-minute polling cadence."""
+    bindings = getattr(context, "bindings", None) or [getattr(context, "binding", None)]
+    intervals = [b.polling.target_interval_seconds for b in bindings if b is not None]
+    if not intervals:
+        source = getattr(context, "source", None)
+        config = getattr(source, "default_polling_config", None)
+        intervals = [getattr(config, "target_interval_seconds", 60)]
+    return int(context.requested_at.timestamp()) // max(1, min(60, min(intervals)))
+
 # Deliberate RSS choices are normal RSS polls, not failed crawler fallbacks.
 RSS_ONLY_SOURCES = {"army_news_rss", "dcd_infrastructure_rss", "tomshardware_rss"}
 AVIATION_TOPICS = {
@@ -832,7 +844,7 @@ class ListingAdapter:
                     url += (
                         ("&" if "?" in url else "?")
                         + "_dox_poll="
-                        + str(int(context.requested_at.timestamp()) // 60)
+                        + str(fresh_query_bucket(context))
                     )
                 if recipe.parser == "frontier_api":
                     headers["x-tenant-key"] = "ebm_datacenterfrontier"
@@ -879,7 +891,7 @@ class ListingAdapter:
                         # category archive. Preserve that original coverage, too.
                         archive_url = recipe.feed.removesuffix("feed/")
                         archive_url += "?_dox_poll=" + str(
-                            int(context.requested_at.timestamp()) // 60
+                            fresh_query_bucket(context)
                         )
                         archive = await self._fetch(archive_url, spec, headers=headers)
                         if archive.status != 200:
