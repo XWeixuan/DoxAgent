@@ -12,6 +12,33 @@ spec=importlib.util.spec_from_file_location('storage_release',Path(__file__).par
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 
+def test_owner_capacity_uses_active_read_generation_and_keeps_gc_receipt(tmp_path):
+    from doxagent.v2_read.repository import ReadStore
+    path=tmp_path/'read/serving/v2.sqlite3';path.parent.mkdir(parents=True)
+    ReadStore(path).migrate()
+    (tmp_path/'read/active.json').write_text(json.dumps({'path':'/data/read/serving/v2.sqlite3'}))
+    Path(str(path)+'.gc.json').write_text(json.dumps({'deleted':{'object_history':500}}))
+    result=release.owner_status([{'Mounts':[{'Destination':'/data','Type':'volume','Source':str(tmp_path)}]}])
+    assert result['read']['database_bytes']==path.stat().st_size
+    assert result['read']['gc']['deleted']['object_history']==500
+
+
+def test_capacity_keeps_last_complete_group_sample_across_midnight(tmp_path,monkeypatch):
+    from datetime import datetime
+    import os
+    now=__import__('time').time();folder=tmp_path/'capacity';folder.mkdir()
+    old={'path':str(tmp_path),'at':now-86400,'entries':[{'path':str(tmp_path),'bytes':1234}],'error':None}
+    (folder/(datetime.fromtimestamp(now-86400).strftime('%Y-%m-%d')+'.json')).write_text(json.dumps({'volumes':[old]}))
+    monkeypatch.setattr(release,'os',SimpleNamespace(name='posix',fchmod=lambda *a:None,fsync=os.fsync))
+    monkeypatch.setattr(release.shutil,'disk_usage',lambda _:(1000,400,600))
+    def timeout(*a,**k):raise subprocess.TimeoutExpired('du',25)
+    monkeypatch.setattr(release.subprocess,'run',timeout)
+    release.capacity_snapshot(tmp_path,[],now=now)
+    result=json.loads((folder/(datetime.fromtimestamp(now).strftime('%Y-%m-%d')+'.json')).read_text())
+    sample=next(r for r in result['volumes'] if r['path']==str(tmp_path))
+    assert sample['entries']==old['entries'] and sample['at']==old['at']
+
+
 def test_status_remains_readable_during_a_deploy_writer_lock(tmp_path,monkeypatch,capsys):
     def writer_lock(*args):raise AssertionError('read-only status acquired the deploy lock')
     monkeypatch.setattr(release,'lock',writer_lock)
@@ -98,13 +125,18 @@ def test_retirement_requires_bootstrapped_rollback_inventory(tmp_path):
     with pytest.raises(ValueError,match='bootstrap'):release.reconcile(tmp_path,{})
 
 
-def test_optional_image_inventory_and_gc_defer_under_pipeline_pressure(tmp_path,monkeypatch):
+def test_hourly_exit_owner_is_not_permanently_starved_by_cpu_pressure(tmp_path,monkeypatch):
     state={'format':'doxagent.component-releases.1','components':{'bus':{'current':{'image':'live'}}}}
     monkeypatch.setattr(release,'reclamation_pressure',lambda:{'io':80})
     monkeypatch.setattr(release.shutil,'disk_usage',lambda _:SimpleNamespace(free=30*1024**3))
-    monkeypatch.setattr(release,'inspect_images',lambda:(_ for _ in ()).throw(AssertionError('optional inventory ran under pressure')))
+    monkeypatch.setattr(release,'inspect_images',lambda:[image('old','doxagent-v2:old'),image('live','doxagent-v2:live')])
+    monkeypatch.setattr(release,'inspect_containers',lambda:[])
+    monkeypatch.setattr(release,'run',lambda *a,**k:'')
+    monkeypatch.setattr(release.subprocess,'run',lambda *a,**k:None)
+    monkeypatch.setattr(release,'capacity_snapshot',lambda *a:None)
     result=release.reconcile(tmp_path,state)
-    assert result['deferred']=='message pipeline resource reserve' and state['cleanup_pending']
+    assert result['retired']==[{'tag':'doxagent-v2:old','image':'old'}]
+    assert result['pressure']=={'io':80} and not state['cleanup_pending']
 
 
 def test_companion_exits_with_its_guardian_and_live_reference_survives_promotion():
