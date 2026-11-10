@@ -22,6 +22,74 @@ _owners = {}
 _locks = {}
 
 
+class _WriteLock:
+    """Reentrant SQL mutex; the existing short-write owner goes next.
+
+    RLock permits waiting ordinary writers to repeatedly barge ahead of that
+    owner, defeating its priority queue. Wake one eligible waiter, not every
+    blocked Case, and never interrupt the current transaction.
+    """
+
+    def __init__(self):
+        self._guard = threading.Lock()
+        self._owner = None
+        self._depth = 0
+        self._sequence = itertools.count()
+        self._waiters = []
+
+    def _wake(self):
+        if self._owner is None and self._waiters:
+            min(self._waiters, key=lambda w: w[:2])[2].set()
+
+    def acquire(self, blocking=True, timeout=-1):
+        ident = threading.get_ident()
+        with self._guard:
+            if self._owner == ident:
+                self._depth += 1
+                return True
+            if self._owner is None and not self._waiters:
+                self._owner, self._depth = ident, 1
+                return True
+            if not blocking or timeout == 0:
+                return False
+            waiter = (0 if SHORT_WRITE.get() else 1, next(self._sequence), threading.Event())
+            self._waiters.append(waiter)
+            self._wake()
+        deadline = time.monotonic() + timeout if timeout >= 0 else None
+        acquired = False
+        try:
+            while waiter[2].wait(None if deadline is None else max(0, deadline - time.monotonic())):
+                with self._guard:
+                    waiter[2].clear()
+                    if self._owner is None and min(self._waiters, key=lambda w: w[:2]) is waiter:
+                        self._waiters.remove(waiter)
+                        self._owner, self._depth = ident, 1
+                        acquired = True
+                        return True
+            return False
+        finally:
+            if not acquired:
+                with self._guard:
+                    self._waiters.remove(waiter)
+                    self._wake()
+
+    def release(self):
+        with self._guard:
+            if self._owner != threading.get_ident():
+                raise RuntimeError('cannot release un-acquired write lock')
+            self._depth -= 1
+            if not self._depth:
+                self._owner = None
+                self._wake()
+
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, *exc):
+        self.release()
+
+
 def database_key(path):
     return os.path.normcase(str(Path(path).resolve()))
 
@@ -29,7 +97,7 @@ def database_key(path):
 def write_lock(path):
     key = database_key(path)
     with _registry_lock:
-        return _locks.setdefault(key, threading.RLock())
+        return _locks.setdefault(key, _WriteLock())
 
 
 class _Owner:

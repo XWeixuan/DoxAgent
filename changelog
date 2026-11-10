@@ -2790,3 +2790,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-10 Source outage production acceptance: Collector-only exact-SHA 9f2ac400 release/hash verified; browser/service owners and recheck=false preserved. Five-minute natural window: AviationWeek 26 captured runs, no failure; 33/34 baseline failed sources now have all current required units succeeded. Overall production 76/77, test 6/6 latest fully green; Reuters still has manual-review primary and backup queue pressure, not claimed stable. Preserve transient failures and BODY gaps in docs/message-sources-proxy-recovery-20261110.md.
 
 2026-11-10 W3 Ready 回执补充：公共 refill 复用现有 tasks 按 profile 去重异步推进，首次领取等待原 build 但不等待其后台补货；回归刻意阻塞 refill，已准备 Case 仍即时回执，保留原 Fork/工作区身份。
+
+2026-11-10 Runtime 写入优先级修复：现场确认 priority=0 回执仍等待现有进程内 RLock，普通 save_effect 不断抢先。原 write_lock 原位改为可重入、短写 owner 优先、同级 FIFO 的互斥；每次只唤醒下一个等待者，不新增 SQL owner/线程池/业务容量门槛。覆盖 20 个普通 writer 前优先提交终态写、重入、立即让出和超时移除。
+
+2026-11-10 Runtime 标量读开销：Journal 仅在线程内复用默认只读连接，每次 BEGIN/commit/rollback 仍独立，嵌套或显式 timeout 用独立连接；没有跨调用持有快照或数据缓存。生产库只读 20 次探针 207.02ms→8.70ms，相关 74 项回归通过。

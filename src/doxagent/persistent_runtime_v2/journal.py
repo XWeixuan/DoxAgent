@@ -11,6 +11,7 @@ import json
 import os
 import random
 import sqlite3
+import threading
 import time
 from collections.abc import Callable, Iterator
 from contextlib import closing, contextmanager
@@ -92,6 +93,7 @@ class RuntimeJournal:
     ) -> None:
         self.path = Path(path)
         self.busy_timeout_seconds = max(0, busy_timeout_seconds)
+        self._reads = threading.local()
         from doxagent.v2_read.native_content import NativeContent
 
         self.content = NativeContent(self.path)
@@ -182,9 +184,16 @@ class RuntimeJournal:
         from doxagent.w3_timing import span
 
         with span("journal.connect"):
-            db = sqlite3.connect(
+            # Calendar/history/stage scalar reads share the current short
+            # thread's connection, not its snapshot. Reopening the production
+            # schema on every scalar lookup is expensive under a Case burst.
+            cached = getattr(self._reads, "connection", None) if not write and timeout is None else None
+            reusable = not write and timeout is None and (cached is None or not cached.in_transaction)
+            db = cached if reusable and cached is not None else sqlite3.connect(
                 self.path, timeout=self.busy_timeout_seconds if timeout is None else timeout
             )
+            if reusable and cached is None:
+                self._reads.connection = db
         db.row_factory = self.content.row if expand else sqlite3.Row
         from doxagent.control_io import write_lock
 
@@ -223,7 +232,8 @@ class RuntimeJournal:
             db.rollback()
             raise
         finally:
-            db.close()
+            if not reusable:
+                db.close()
             if held:
                 gate.release()
             elapsed = time.monotonic() - started

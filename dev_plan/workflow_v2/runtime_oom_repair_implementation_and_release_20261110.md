@@ -59,3 +59,11 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 
 
 补货退出依赖复核：build.finally 的公共 fill 也改为复用现有 tasks、按 profile 去重的独立后台任务，不令首次 HTTP claim 的原 build 完成被公共补货卡住；claim 消耗公共 Ready 后仍即时触发补货，避免等 30 秒周期才预热。没有新的 registry、线程池或容量门槛。刻意阻塞 refill 的真实协程回归验证第一次已准备回执仍在 1 秒内返回。
+
+
+## 短写优先级仍被进程锁抹平
+
+第二轮资源观察已看到内存平台回落，但没有新模型 Job / 业务提交，不能作完整验收。现场仅提取锁地址与线程栈（不输出 locals 业务内容），核验现有 write_lock 被普通 save_effect / BEGIN 路径持有，35 个同类线程及 priority=0 绑定回执等待。既有 PriorityQueue 的优先级到线程 RLock 为止被抹平，竞争重试可不断越过短写 owner。现仅替换 write_lock 的内部互斥实现：保持同一数据库一个可重入互斥，既有 SHORT_WRITE owner 优先，同级 FIFO，逐个 Event 唤醒；不打断当前事务，不新建 writer、线程池、业务并发上限或额外持久状态。既有 SQLite busy timeout、rollback、fencing、async 外层 retry 保留。回归验证 20 个排队普通 writer 中短写 owner 先完成，以及重入、timeout 移除、best-effort observer 不占队。
+
+
+同批减少实际标量读开销：RuntimeJournal 默认读复用当前线程的一条 SQLite 连接，读事务仍每次 BEGIN / commit（异常 rollback），没有跨调用快照。嵌套读取与指定 timeout 单独连接；写连接及所有业务事务不共用该连接。生产同一镜像的独立只读子进程、同一 miss key 20 次探针：原版 207.02ms，新版 8.70ms。该探针未写生产库、未替换运行进程模块。回归验证 20 次读只建一次连接，另一连接更新立刻可见、嵌套隔离和异常后无残留事务。74 项聚焦回归通过；扩展 49 通过、1 个 CLOSED recovery 旧夹具不进入子任务，在恢复原 RLock 后同样失败，未改业务日/恢复规则来令其通过。

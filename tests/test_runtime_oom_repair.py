@@ -602,3 +602,93 @@ async def test_completed_ready_claim_bypasses_background_writer_and_slot_lock(tm
             await owner
         await slots.close()
         await jobs.thread_lifecycle.close()
+
+
+@pytest.mark.asyncio
+async def test_terminal_short_writer_goes_before_waiting_ordinary_writes(tmp_path):
+    from threading import Thread
+    from doxagent.control_io import write_io, write_lock
+
+    gate = write_lock(tmp_path / 'runtime.sqlite3')
+    order, threads = [], []
+    gate.acquire()
+    try:
+        for n in range(20):
+            def ordinary(n=n):
+                with gate:
+                    order.append(n)
+            thread = Thread(target=ordinary)
+            threads.append(thread)
+            thread.start()
+        critical = asyncio.create_task(write_io(tmp_path / 'runtime.sqlite3',
+                                                lambda: consume(), priority=0))
+
+        def consume():
+            with gate:
+                order.append('terminal')
+
+        deadline = time.monotonic() + 2
+        while len(gate._waiters) < 21 and time.monotonic() < deadline:
+            await asyncio.sleep(0.005)
+        assert len(gate._waiters) == 21
+    finally:
+        gate.release()
+    await critical
+    for thread in threads:
+        thread.join(2)
+        assert not thread.is_alive()
+    assert order[0] == 'terminal'
+    assert sorted(x for x in order if x != 'terminal') == list(range(20))
+
+
+def test_sql_gate_reentrancy_timeout_and_best_effort_do_not_leak(tmp_path):
+    from threading import Thread
+    from doxagent.control_io import write_lock
+
+    gate = write_lock(tmp_path / 'runtime.sqlite3')
+    outcomes = []
+    with gate:
+        with gate:
+            assert gate.acquire(blocking=False)
+            gate.release()
+            def attempt():
+                outcomes.extend([gate.acquire(blocking=False), gate.acquire(timeout=0.02)])
+            thread = Thread(target=attempt)
+            thread.start()
+            thread.join(1)
+            assert not thread.is_alive()
+        assert outcomes == [False, False]
+    assert gate.acquire(timeout=0.1)
+    gate.release()
+    assert not gate._waiters
+
+
+def test_journal_scalar_reads_reuse_connection_without_retaining_snapshot(tmp_path, monkeypatch):
+    from doxagent.persistent_runtime_v2 import journal as module
+
+    journal = module.RuntimeJournal(tmp_path / 'runtime.sqlite3')
+    journal.set('values', 'key', 1)
+    connect, calls = module.sqlite3.connect, []
+
+    def opened(*args, **kwargs):
+        calls.append(1)
+        return connect(*args, **kwargs)
+
+    monkeypatch.setattr(module.sqlite3, 'connect', opened)
+    for _ in range(20):
+        assert journal.get('values', 'key') == 1
+    assert len(calls) == 1
+    assert not journal._reads.connection.in_transaction
+    # Another writer is visible immediately; no frozen SQLite snapshot crosses calls.
+    with connect(journal.path) as db:
+        db.execute("UPDATE runtime_values SET payload='2' WHERE namespace='values' AND key='key'")
+    assert journal.get('values', 'key') == 2
+    with pytest.raises(RuntimeError):
+        with journal.transaction(write=False) as db:
+            db.execute('SELECT * FROM runtime_values').fetchall()
+            with journal.transaction(write=False) as nested:
+                assert nested is not db
+            raise RuntimeError('reader interrupted')
+    assert not journal._reads.connection.in_transaction
+    journal.set('values', 'key', 3)
+    assert journal.get('values', 'key') == 3
