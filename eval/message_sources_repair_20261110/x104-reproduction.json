@@ -1,0 +1,1 @@
+{"returncode": 1, "stderr": "(EE) \nFatal server error:\n(EE) Server is already active for display 104\n\tIf this server is no longer running, remove /tmp/.X104-lock\n\tand start again.\n(EE) \n"}

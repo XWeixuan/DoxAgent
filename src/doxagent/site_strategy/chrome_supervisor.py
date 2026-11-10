@@ -649,7 +649,10 @@ class ChromeSupervisor:
     def _reserve_display(self) -> int:
         used = {item.display_number for item in self._instances.values()} | {v[1] for v in self._starting.values()}
         value = self.display_start
-        while value in used:
+        # A killed container can retain X11 files whose old PID is now reused.
+        # Do not delete or adopt those displays; reserve a genuinely free one.
+        while (value in used or os.path.lexists(f"/tmp/.X{value}-lock")
+               or os.path.lexists(f"/tmp/.X11-unix/X{value}")):
             value += 1
         return value
 

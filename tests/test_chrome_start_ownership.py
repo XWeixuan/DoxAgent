@@ -5,6 +5,28 @@ from unittest.mock import AsyncMock
 import pytest
 
 from doxagent.site_strategy.chrome_supervisor import ChromeSupervisor
+
+
+def test_display_reservation_skips_stale_locks_sockets_and_owned_displays(monkeypatch):
+    from types import SimpleNamespace
+    from doxagent.site_strategy import chrome_supervisor
+
+    owner = object.__new__(ChromeSupervisor)
+    owner.display_start = 100
+    owner._instances = {"live": SimpleNamespace(display_number=100)}
+    owner._starting = {"starting": (9223, 103, 5923)}
+    artifacts = {"/tmp/.X101-lock", "/tmp/.X11-unix/X102"}
+    checked = []
+
+    def exists(path):
+        checked.append(path)
+        return path in artifacts
+
+    monkeypatch.setattr(chrome_supervisor.os.path, "lexists", exists)
+    assert owner._reserve_display() == 104
+    assert set(checked) >= artifacts
+    # Same dead artifacts remain on disk; no PID-based deletion/adoption.
+    assert owner._reserve_display() == 104
 from doxagent.site_strategy.schema import BrowserIdentitySpec, ProxyEgress
 
 

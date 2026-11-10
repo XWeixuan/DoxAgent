@@ -33,3 +33,9 @@
 - 至少覆盖数轮及十分钟自然窗口，中间允许瞬时失败；终态与窗口内历史分别列出，Reuters 等真实 Challenge 可以保留。
 - 查当前仍失败项的持久 endpoint/网络回执，优先修明确内部故障；不为清零提高上游允许年龄、放宽订阅限制、降低目标频率或增加高频探测。
 - 更新 changelog、main 提交与必要角色精确版本发布，记录重启前后 ID、镜像、Profile 保留及仍待人工事项。明确此前完整审计缺口，不虚构“永不复发”。
+
+## 续查新增的已确认深层缺陷：X11 残留与 PID 复用
+
+SDxCentral 在依赖恢复后仍 chrome_start_failed。Supervisor 内存分配器只排除 _instances/_starting，未检查 /tmp 的 X11 锁及套接字。SIGKILL 后 :104 的锁 PID=369 已被复用为 ThreadPoolForeg，socket 不可连接；同 UID 启动 Xvfb :104 直接以1退出并报 Server is already active for display 104。它会反复选择同一坏显示号，普通重试不会恢复。
+
+修复只在 _reserve_display 跳过内存已用、磁盘锁或套接字已存在的显示号，使用 lexists 同时覆盖断链；不删除不确定归属的锁、不清 Profile、不降低 sandbox。回归模拟僵尸锁、套接字、活跃/启动中显示号同时存在。该确认项使先前不重建 Supervisor 的约束需要一次必要例外：记录当前待办和截图索引，精确发布 Supervisor 与 Site Access，保留持久 Profile、镜像版本约束及原业务配置，校验新 namespace；不更新 Runtime 维护角色。
