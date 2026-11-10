@@ -305,6 +305,18 @@ def test_initialization_child_workspace_honors_parent_manual_recovery(tmp_path):
     assert run_held(settings,parent+'-d3-s0001')
 
 
+def test_abandoned_d3_without_staged_authority_keeps_unique_draft(tmp_path):
+    from doxagent.workflows.codex_document3.state_v21 import StateV21
+    state=StateV21(tmp_path/'research.db');now=datetime.now(UTC)
+    state.start('cancelled',{'ticker':'MU'},{'prepared':{'files':{'copy':'x'*100_000}},
+        'final':[{'unique_draft':'preserve'}],'handoff':{'unpublished':'evidence'}})
+    assert state.retire('cancelled',now=now,authority='not-settled') is None
+    proof=state.retire('cancelled',now=now,authority='cancelled-terminal-owner',abandoned=True)
+    value=state.run('cancelled')
+    assert proof and 'prepared' not in value
+    assert value['final']==[{'unique_draft':'preserve'}] and value['handoff']=={'unpublished':'evidence'}
+
+
 @pytest.mark.parametrize('status',['SUCCEEDED','RUNNING'])
 def test_runtime_o2_partial_workspace_inherits_real_parent_settlement(tmp_path,status):
     from doxagent.codex_worker.workspace_store import LocalWorkspaceStore

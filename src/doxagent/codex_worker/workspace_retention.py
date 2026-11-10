@@ -168,9 +168,12 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False,run_ids=No
                 # Submission is fenced by the retirement metadata; unlink outside writer locks.
                 for path in candidates:
                     info=path.stat();path.unlink();receipt['files']+=1;receipt['allocated']+=getattr(info,'st_blocks',(info.st_size+511)//512)*512
-                if settlement:
+                abandoned=not settlement and all(status=='cancelled' for status,_,_,_ in owners)
+                d3_owner=families.get(run,run) if abandoned else authority_run
+                if settlement or abandoned and d3_owner in d3_roots:
                     from doxagent.workflows.codex_document3.state_v21 import StateV21
-                    receipt['d3']=StateV21(source).retire(authority_run,now=now,authority='published-candidate')
+                    receipt['d3']=StateV21(source).retire(d3_owner,now=now,
+                        authority='cancelled-terminal-owner' if abandoned else 'published-candidate',abandoned=abandoned)
                 receipt['complete']=True;atomic_json(marker,receipt)
                 report['runs'].append(receipt)
             except (OSError,ValueError,sqlite3.Error) as exc:report['errors'].append(dict(run=run,error=str(exc)[:250]))

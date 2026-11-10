@@ -131,13 +131,13 @@ class StateV21:
             value['settlement'] = {'at': at or datetime.now(UTC).isoformat(), 'authority': authority}
             db.execute('UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?', (canonical(value), run_id))
 
-    def retire(self, run_id, *, now, authority):
+    def retire(self, run_id, *, now, authority, abandoned=False):
         """Caller fences live business/jobs; retain exact staged version and audit identity."""
         with self.lock, self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row = db.execute('SELECT payload FROM codex_document3_v21_runs WHERE run_id=?', (run_id,)).fetchone()
             staged = db.execute('SELECT payload,receipt FROM codex_document3_v21_staged_sets WHERE run_id=?', (run_id,)).fetchone()
-            if not row or not staged:
+            if not row or not staged and not abandoned:
                 return None
             value = json.loads(row[0])
             if value.get('resource_retirement'):
@@ -145,8 +145,9 @@ class StateV21:
             before = len(row[0].encode())
             exiting=[r[0] for r in db.execute("SELECT artifact_id FROM artifact_ref WHERE owner_type='codex_document3_v21_runs' AND owner_id=json_array(?)",(run_id,))]
             removed = {}
-            for key in ('prepared', 'base', 'base_coverage', 'final', 'final_candidates', 'handoff',
-                        'shell_discovery_input', 'open_discovery_input'):
+            fields=('prepared','base','base_coverage','shell_discovery_input','open_discovery_input')
+            if staged:fields+=('final','final_candidates','handoff')
+            for key in fields:
                 if key in value:
                     removed[key] = digest(value.pop(key))
             receipt = {'at': now.isoformat(), 'authority': authority, 'resume_allowed': False,

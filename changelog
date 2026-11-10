@@ -2849,3 +2849,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 Host release owner starvation: production CPU PSI avg60=56.86 exceeded the old10 threshold, indefinitely deferring all image retirement and capacity receipts. Remove that blanket early return from the existing hourly low-priority owner; keep active-build exclusion and exact live/rollback/template/Compose protections. Add pressure regression; no new daemon or business concurrency change.
 
 2026-11-11 Capacity midnight boundary: carry forward per-group last-complete samples into the next daily receipt instead of resetting the cache while its scan cursor continues. Verify timeout plus day rollover preservation without introducing another scanner.
+
+2026-11-11 Explicit cancelled-owner D3 exit: after the existing72h cancellation window and active/recovery/sibling fences, release abandoned prepared/base copies even when no staged authority was created. Keep unique unpublished final/candidate/handoff evidence; ordinary failed or resumable runs are not implicitly abandoned. Cover no-staged draft preservation.
