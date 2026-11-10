@@ -1,0 +1,31 @@
+{
+  "commit": "c232f094361080d5ac6f9fa2c58e88be44e62522",
+  "started_at": "2026-11-10T19:52:37.641272+00:00",
+  "collector_before": {
+    "id": "876d168fb8bd",
+    "started_at": "2026-11-10T19:29:43.847152129Z",
+    "state": "running",
+    "health": "healthy",
+    "commit": "03f44d4c550f09c60f71a23f3e9a7ef140b9b99d",
+    "recheck": "false"
+  },
+  "returncode": 0,
+  "finished_at": "2026-11-10T19:54:00.183058+00:00",
+  "collector_after": {
+    "id": "22febbc663bd",
+    "started_at": "2026-11-10T19:53:43.198099812Z",
+    "state": "running",
+    "health": "healthy",
+    "commit": "c232f094361080d5ac6f9fa2c58e88be44e62522",
+    "recheck": "false"
+  },
+  "protected_unchanged": {
+    "v2-site-access": true,
+    "v2-chrome-supervisor": true,
+    "v2-api": true,
+    "v2-message-bus": true,
+    "v2-content-enrichment": true
+  },
+  "private_log": "/var/lib/doxagent/releases/source-cadence-ir-floor-20261110T195237Z.log",
+  "source_hash_matches": true
+}

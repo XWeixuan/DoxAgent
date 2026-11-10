@@ -1,0 +1,38 @@
+{
+  "minutes": 15.0,
+  "scopes": 87,
+  "success": 11198,
+  "failed": 253,
+  "deferred": 0,
+  "inflight": 224,
+  "observed_required_units": 348,
+  "interval_mismatches": [],
+  "new_human_tasks": [],
+  "recovery_events": [],
+  "new_solver_jobs": [],
+  "legacy": {
+    "tikhub_x_search": {
+      "registered": false,
+      "bindings": 0,
+      "scope_enabled": null,
+      "default_profile_references": 0
+    },
+    "tikhub_x_user_posts": {
+      "registered": false,
+      "bindings": 0,
+      "scope_enabled": null,
+      "default_profile_references": 0
+    },
+    "globenewswire_semiconductors_rss": {
+      "registered": false,
+      "bindings": 0,
+      "scope_enabled": false,
+      "default_profile_references": 0
+    }
+  },
+  "body_outcomes": {
+    "FULL": 35,
+    "UNAVAILABLE": 11,
+    "PARTIAL": 8
+  }
+}

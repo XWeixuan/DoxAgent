@@ -1,0 +1,11 @@
+{
+  "first_window": [
+    "2026-11-10T19:31:30Z",
+    "2026-11-10T19:46:30Z"
+  ],
+  "start": "2026-11-10T19:54:30Z",
+  "deadline": "2026-11-10T20:09:30Z",
+  "duration_minutes": 15,
+  "collector_commit": "c232f094361080d5ac6f9fa2c58e88be44e62522",
+  "notes": "Final window after fixing MU IR binding override; original first window retained. No additional website/provider requests."
+}
