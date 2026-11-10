@@ -108,7 +108,6 @@ class WorkerJobManager:
         self._dispatch_failures = 0
         self._observation_gc_task = None
         self._observation_gc_at = 0.0
-        self._session_gc_at = time.monotonic() + 60
         self._settling = {}
         self._settle_retries = {}
         self._cleanup_quarantines = {}
@@ -130,7 +129,6 @@ class WorkerJobManager:
         self.thread_lifecycle = WorkerThreadLifecycle(self, workspaces)
         self.session_retention = None
         self._retention_settings = session_retention_settings
-        self._session_gc_task = None
         if session_retention_settings is not None:
             from .session_retention import TerminalSessions, business_holds
 
@@ -240,6 +238,13 @@ class WorkerJobManager:
         )
 
     async def _collect_owned_resources(self):
+        """Explicit quiet maintenance, never a live dispatcher side effect.
+
+        These legacy collectors require global session/evidence/reference scans.
+        Keep their retirement fences and manual entry point, but do not start
+        them on Worker boot or between real-time model submissions. Runtime's
+        candidate-scoped resource collector is scheduled separately.
+        """
         from .workspace_retention import collect
 
         result = await self.session_retention.collect()
@@ -309,35 +314,6 @@ class WorkerJobManager:
             )  # Original completions may commit during cleanup.
             self._processes_recovered = True
         while not self._closed:
-            if (
-                self.session_retention is not None
-                and time.monotonic() >= self._session_gc_at
-                and (self._session_gc_task is None or self._session_gc_task.done())
-            ):
-                if self._session_gc_task is not None:
-                    try:
-                        if not self._session_gc_task.cancelled():
-                            (
-                                await write_io(
-                                    self.store.path,
-                                    self.store.metadata,
-                                    "session_retention",
-                                    self._session_gc_task.result(),
-                                    retry=True,
-                                )
-                            )
-                    except Exception as exc:
-                        (
-                            await write_io(
-                                self.store.path,
-                                self.store.metadata,
-                                "session_retention",
-                                {"error": str(exc)[:250]},
-                                retry=True,
-                            )
-                        )
-                self._session_gc_task = asyncio.create_task(self._collect_owned_resources())
-                self._session_gc_at = time.monotonic() + 600
             if time.monotonic() >= self._observation_gc_at and (
                 self._observation_gc_task is None or self._observation_gc_task.done()
             ):
@@ -748,9 +724,6 @@ class WorkerJobManager:
         if self._observation_gc_task is not None:
             self._observation_gc_task.cancel()
             await asyncio.gather(self._observation_gc_task, return_exceptions=True)
-        if self._session_gc_task is not None:
-            self._session_gc_task.cancel()
-            await asyncio.gather(self._session_gc_task, return_exceptions=True)
         if self._pump is not None:
             self._pump.cancel()
             await asyncio.gather(self._pump, return_exceptions=True)

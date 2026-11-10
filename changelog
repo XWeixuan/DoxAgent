@@ -2794,3 +2794,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-10 Runtime 写入优先级修复：现场确认 priority=0 回执仍等待现有进程内 RLock，普通 save_effect 不断抢先。原 write_lock 原位改为可重入、短写 owner 优先、同级 FIFO 的互斥；每次只唤醒下一个等待者，不新增 SQL owner/线程池/业务容量门槛。覆盖 20 个普通 writer 前优先提交终态写、重入、立即让出和超时移除。
 
 2026-11-10 Runtime 标量读开销：Journal 仅在线程内复用默认只读连接，每次 BEGIN/commit/rollback 仍独立，嵌套或显式 timeout 用独立连接；没有跨调用持有快照或数据缓存。生产库只读 20 次探针 207.02ms→8.70ms，相关 74 项回归通过。
+
+2026-11-10 Worker 热路径回收遗漏修复：移除启动 60 秒后自动触发的全局 Session/Workspace/Snapshot 历史回收及其定时任务。保留原显式维护函数、session tombstone 校验、实时 Capsule 释放/回收和候选范围 Runtime GC。旧 helper 依赖全局 SDK 树、全部 Job / 研究证据与 Native owner 扫描，不得在实时派发循环运行；未引入替代扫描或删除历史数据。51 项相关回归通过。

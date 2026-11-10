@@ -692,3 +692,34 @@ def test_journal_scalar_reads_reuse_connection_without_retaining_snapshot(tmp_pa
     assert not journal._reads.connection.in_transaction
     journal.set('values', 'key', 3)
     assert journal.get('values', 'key') == 3
+
+
+@pytest.mark.asyncio
+async def test_live_worker_never_starts_legacy_global_retention(tmp_path, monkeypatch):
+    from tests.test_worker_resource_budget import Runtime, request
+
+    monkeypatch.setattr('doxagent.message_bus_v2.pressure.background_allowed', lambda: True)
+    runtime = Runtime()
+    runtime.gate.set()
+    manager = WorkerJobManager(runtime, LocalWorkspaceStore(tmp_path))
+    calls = []
+    manager.session_retention = SimpleNamespace(validate_submit=lambda request: None)
+    manager._session_gc_at = 0  # A previously overdue sweep cannot sneak into boot.
+
+    async def global_sweep():
+        calls.append('global scan')
+        return {}
+
+    manager._collect_owned_resources = global_sweep
+    try:
+        manager.start()
+        job = await manager.submit(request(500))
+        until = time.monotonic() + 3
+        while manager.get(job.job_id).status not in {'succeeded','failed'} and time.monotonic() < until:
+            await asyncio.sleep(0.01)
+        assert manager.get(job.job_id).status == 'succeeded'
+        assert not calls
+        await manager._collect_owned_resources()  # Explicit maintenance remains available.
+        assert calls == ['global scan']
+    finally:
+        await manager.close()

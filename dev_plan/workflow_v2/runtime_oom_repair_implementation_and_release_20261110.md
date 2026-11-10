@@ -67,3 +67,14 @@ ACK 边界复核：ACK eligibility 标记改为在 commit_stage 与业务 COMMIT
 
 
 同批减少实际标量读开销：RuntimeJournal 默认读复用当前线程的一条 SQLite 连接，读事务仍每次 BEGIN / commit（异常 rollback），没有跨调用快照。嵌套读取与指定 timeout 单独连接；写连接及所有业务事务不共用该连接。生产同一镜像的独立只读子进程、同一 miss key 20 次探针：原版 207.02ms，新版 8.70ms。该探针未写生产库、未替换运行进程模块。回归验证 20 次读只建一次连接，另一连接更新立刻可见、嵌套隔离和异常后无残留事务。74 项聚焦回归通过；扩展 49 通过、1 个 CLOSED recovery 旧夹具不进入子任务，在恢复原 RLock 后同样失败，未改业务日/恢复规则来令其通过。
+
+
+## 最后一轮窗口仍失败：Worker 独立全历史回收入口遗漏
+
+798da8b1 后实际 Job 与业务提交已恢复（窗口中段最近 250 个 Case 观察到 8 个决策提交，3 个抽查均在提交后完成 ACK），但后半段再次出现严重内存 / I/O 压力。Worker 持久状态有 71 个排队 W3 Job（trade 55、operations 16）及约 40 个运行 Job；不能因这些数量就认定内存全部属于活跃模型。新隔离完成时间：09:18:54 Worker、09:18:56 Scheduler、09:19:00 两个浏览器相关容器。四者均未被 Docker 标为 OOMKilled；后续还须核验内核全局 OOM 记录。此前 10 分钟采样因系统停顿实际延长至约 765 秒，最后状态不可记为通过。
+
+本次现场浏览器 cgroup 同时占用：Site Access 3,628,269,568 bytes / 601 PIDs，Chrome supervisor 5,073,838,080 bytes / 1994 PIDs，约 8.10GiB。它是实际共存资源，不能说只是 Runtime 独占整机，也没有将浏览器认定为所有事故的唯一根因。因 Docker/SSH 响应变慢，已准备按精确模块与 cgroup 身份紧急终止 Runtime；执行时目标已停止，未额外 kill 进程。
+
+进一步代码复核确认，前面 P0-6 只修了 Scheduler 资源 GC，遗漏 WorkerJobManager 启动 60 秒后自动触发 _collect_owned_resources：TerminalSessions.collect 在事件循环同步 owned/business_holds 全量读与 Native 解码；Workspace collector 在选 limit=4 之前枚举全体 Job 和研究证据，并为每个候选重复 paths_in；Snapshot collector 又全局计算保护集合。这些无范围上界的回收仍可能与恢复叠加；早先已抓到 Workspace collector 的活动线程，但没有事发前每 PID PSS/I/O 数据，不能编造本轮占用百分比或宣称它是唯一原因。
+
+修复采用减法：实时 Worker 派发循环不再自动执行这三种全历史 sweep，保留原显式静默维护入口及所有删除前 fencing，不另造全局目录 / 反向引用平台。缺少候选范围引用元数据时保留旧输入和 session；该批旧派生数据的广域回收需静默维护窗口显式执行，自动的范围化版本不在本轮扩张实现。实时 Capsule 清理、W3 终态未用资源释放、ACK 压缩、候选范围的 Runtime resource_gc 均继续运行。回归以 overdue sweep + 正常 Job 验证热派发不启动全历史扫描，同时显式维护函数仍可调用；51 项通过。

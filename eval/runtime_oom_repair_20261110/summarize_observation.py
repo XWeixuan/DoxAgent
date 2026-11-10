@@ -32,7 +32,8 @@ def summarize(path):
             end_pids=int(last.get("pids.current",0)),
             restart_delta=last["restarts"]-first["restarts"],
             oom_kill_delta=events(last.get("memory.events","oom_kill 0"))["oom_kill"]-events(first.get("memory.events","oom_kill 0"))["oom_kill"],
-            end_status=last["status"])
+            end_status=last["status"],
+            average_cpu_cores=(events(last.get("cpu.stat","usage_usec 0"))["usage_usec"]-events(first.get("cpu.stat","usage_usec 0"))["usage_usec"])/duration/1000000)
     for kind in ["io","memory"]:
         result[kind+"_psi_full"]=dict(
             max_avg10=max(psi(x["psi"][kind])["avg10"] for x in rows),
