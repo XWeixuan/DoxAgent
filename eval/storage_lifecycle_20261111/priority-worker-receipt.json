@@ -1,0 +1,78 @@
+{
+  "started_at": "2026-11-10T22:45:58.091864+00:00",
+  "pid": 3633438,
+  "authorization": "interrupt current model Jobs and prioritize release",
+  "released": true,
+  "containers": [
+    {
+      "name": "doxagent-v2-v2-scheduler-1",
+      "id": "1ea3a16b07cfa8f61bf4807ee85c62f74ab2245bd52abed3b0957ccd2136b2e8",
+      "was_running": true
+    },
+    {
+      "name": "doxagent-ionq-refresh-20261110",
+      "id": "c53d91e51b48ea917aef5912bd62c4fca01b13085b4bf153564dfaa8de694978",
+      "was_running": true
+    },
+    {
+      "name": "doxagent-cohr-refresh-20261110",
+      "id": "552b21b685021b4274dcf54b6e05c75acbfe37f0d7ead8ecd6c27f11307d83e8",
+      "was_running": true
+    },
+    {
+      "name": "doxagent-v2-v2-initialization-1",
+      "id": "2524022e85a03aa53d45408f808669a9ae3b85aec160658d8df41715e27fd32e",
+      "was_running": true
+    },
+    {
+      "name": "doxagent-v2-v2-cdecr-executor-1",
+      "id": "974550495dba7aab2abd6c2ac8b1054fd3013f756c42d347c093a68812a96bcf",
+      "was_running": true
+    },
+    {
+      "name": "doxagent-v2-v2-o4-1",
+      "id": "ac9c81831594360e63fe45f62417525812a3ca02d40a2b561592583f558592b5",
+      "was_running": true
+    },
+    {
+      "name": "doxagent-v2-initialization-guardian-1",
+      "id": "204ce157d2d06c53d051fe4073d3d583af8ed0017e897a2f41ff0c2a3d062f10",
+      "was_running": true
+    }
+  ],
+  "resumed": [
+    {
+      "name": "doxagent-v2-v2-scheduler-1",
+      "result": "running"
+    },
+    {
+      "name": "doxagent-ionq-refresh-20261110",
+      "result": "running"
+    },
+    {
+      "name": "doxagent-cohr-refresh-20261110",
+      "result": "running"
+    },
+    {
+      "name": "doxagent-v2-v2-initialization-1",
+      "result": "running"
+    },
+    {
+      "name": "doxagent-v2-v2-cdecr-executor-1",
+      "result": "running"
+    },
+    {
+      "name": "doxagent-v2-v2-o4-1",
+      "result": "running"
+    },
+    {
+      "name": "doxagent-v2-initialization-guardian-1",
+      "result": "running"
+    }
+  ],
+  "previous_owner_finished": "2026-11-10T22:46:00.171514+00:00",
+  "initial_jobs": [],
+  "cancellation_results": [],
+  "worker_image": "sha256:64c3564fce85b3f24d1b44330b3aa5cceaa7a7a7ed919aec2ef2cdf7ffc98f56",
+  "finished_at": "2026-11-10T22:46:54.429704+00:00"
+}

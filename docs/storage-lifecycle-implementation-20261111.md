@@ -38,7 +38,7 @@ python -m doxagent.workflows.codex_document3.state_v21 --inline-for-rollback /da
 
 ## 生产执行与验收（11月11日）
 
-本轮已完成 R1/R2、A1、D1/D2、T1、S1/B1/B2及发布/容量规则的代码实装与对应角色发布；I1基础修复已部署，补充的多控制库归属修复待最后一次Worker安全发布。**这不是整个方案的长期验收全部通过**：Read/Acquisition 仍在追平历史积压，初始化快照多控制库补丁待最后一次Worker安全发布，3份独立Document2快照及未放弃恢复责任仍有未关闭项，24h/72h/7d自然窗口和完整前端因果性能验收尚未完成。
+本轮已完成 R1/R2、A1、D1/D2、T1、I1/S1/B1/B2及发布/容量规则的代码实装与对应角色发布；最后的I1多控制库归属修复已于06:46独立发布。**这不是整个方案的长期验收全部通过**：Read/Acquisition 仍在追平历史积压，3份独立Document2快照及未放弃恢复责任仍有未关闭项，24h/72h/7d自然窗口和完整前端因果性能验收尚未完成。
 
 ### 生产版本与发布边界
 
@@ -54,7 +54,7 @@ python -m doxagent.workflows.codex_document3.state_v21 --inline-for-rollback /da
 | --- | --- | --- |
 | Bus单库物理压缩 | 主库28,021,735,424→13,358,657,536字节，约26.10→12.44GiB；业务主键摘要、CDC epoch/head/retained_floor一致，quick_check=ok，checkpoint=[0,0,0] | 主库减少约13.66GiB；没有删新的业务行 |
 | 同一压缩操作窗口根盘df | 可用46,650,757,120→62,285,328,384字节，净增约14.56GiB | 含同时自然写入/缓存/日志变化，不能与上行相加 |
-| 容量取样 | 04:58:25根盘58,338,545,664字节（约54.33GiB）可用、使用86%；正在自然写入 | 不是70GiB目标已经达成；此前40.105GiB应急清理属于上一阶段，不计本轮收益 |
+| 最终容量取样 | 06:54:48根盘约54.5GiB可用、使用86%；正在自然写入 | 不是70GiB目标已经达成；此前40.105GiB应急清理属于上一阶段，不计本轮收益 |
 | Read真实GC | 收尾镜像74轮中68轮有已提交进度；object_history退出47,653行、contributions_history47,652、metric_buckets_history47,652、changes47,776、commits47,276 | 取样期间的提交计数，非物理GiB；6轮零提交和剩余预算中断仍如实保留 |
 | Acquisition | 分阶段提交无错误；一次receipt退出33 unit-hour、512 physical候选；最老eligible细账从审计的10/30 18:00推进至10/30 22:00 UTC | 更老的SCHEDULE合法前驱仍在；不能拿全表min(dispatch_at)当退出水位。旧于7d的摘要会按原规则立即退出，unit_hours暂为0不等于未归档 |
 | D3定向存量结算 | 8个独立已发布run，过程JSON合计76,267,943→5,101,358字节，约缩减93.3%；16个父/子目录回执退出2256个文件，退出前分配量88,678,400字节 | 同一D3父/子receipt含相同retirement证明，按8个唯一run去重；JSON瘦身形成可复用页，不冒充df收益 |
@@ -78,7 +78,7 @@ Bus采用SQLite自身原子VACUUM，避免不一致cp和在线文件替换。操
 
 ### 仍未关闭的事项与明确保留
 
-- **I1补充审查纠正了主库单一视角。** BE/INTC/IONQ/COHR独立刷新各有`/data/ops/*/control.sqlite3`，共享同一Worker数据卷。最新完整只读清单849份，846份可唯一对应5个实际控制库；余下3份都属于`d2ws-652706d70fc0dbd8253b4bd894251b8a`，没有可靠initialization owner，继续保留。此前主库单查的293/417/123分组不能再解释为真实owner遗失，已被多库证据替代。新补丁按execution优先、显式owner/最长前缀补足，保存具体控制库；当前Runtime、主生产头/必要前驱、跨库rerun和真实manual-resume保持保护。独立ops本地成功头不会永久保护过期过程快照。`ledgers-merged.xml`31项回归通过，生产新代码进程内只读预演4.74s、10个候选/22保护/0未知/0错误（仅当前页，不能外推全量）；候选镜像已构建，最后Worker发布需避开另一会话窗口并等待已受理Job自然结束，尚不算已上线。
+- **I1补充审查纠正了主库单一视角。** BE/INTC/IONQ/COHR独立刷新各有`/data/ops/*/control.sqlite3`，共享同一Worker数据卷。审计取样的完整只读清单849份，846份可唯一对应5个实际控制库；余下3份都属于`d2ws-652706d70fc0dbd8253b4bd894251b8a`，没有可靠initialization owner，继续保留。此前主库单查的293/417/123分组不能再解释为真实owner遗失，已被多库证据替代。新补丁按execution优先、显式owner/最长前缀补足，保存具体控制库；当前Runtime、主生产头/必要前驱、跨库rerun和真实manual-resume保持保护。独立ops本地成功头不会永久保护过期过程快照。`ledgers-merged.xml`31项回归通过，生产新代码进程内只读预演4.74s、10个候选/22保护/0未知/0错误（仅当前页，不能外推全量）；最终187d79f3候选已在用户要求优先发布后，于06:46上线；以下最终回执替代此前待发布状态。
 - 未发布且没有明确放弃恢复责任的失败run继续原恢复窗口；没有将所有FAILED自动按72h删掉。不能把Job cancelled直接当作D3业务弃权：Worker close也会写cancelled。收尾候选4a07b15c因此撤回且未上线；无权威交接的D3 prepared/唯一草稿仍保留，明确放弃原现场恢复的owner事件尚未自动补齐，普通FAILED不隐含放弃恢复。
 - 原计划的24h、72h、7d自然业务验收，以及固定窗口Overview/消息/Research/Policy/Event/Case的完整前后p50/p95因果对照未完成。不能把磁盘释放换算成前端加速，也不能用本地测试替代长期吞吐收敛。
 - published_documents/staged/PolicySet唯一定义与精确历史版本继续保留。未把5.04GiB发布文档全部视为垃圾；不新增资产平台，也未触动明确暂缓的W3完整研究资料/Context重复物化。
@@ -106,3 +106,30 @@ Bus采用SQLite自身原子VACUUM，避免不一致cp和在线文件替换。操
 W3会话已通知窗口结束（Scheduler62d6be3311df、Worker14121db49ff6，主机工具/main47117b71）。新增d08df6dd操作门禁：复用既有W3 Effect结果消费空闲检查，并在确认Job空闲后，以短SQLite writer admission fence覆盖停止旧Worker的步骤；新Job必须先持久化再派发模型，因此堵住检查与停止之间的新受理竞态。不修改运行时准入策略/业务并发。Job繁忙、Effect繁忙、并发提交及锁释放等合计10项发布边界回归通过。
 
 最终候选从最新实际Worker与当前配置重新构建，仅三份I1源码，保留Scheduler和其全部更新。有限运维进程只暂停已枚举六个非W3生产者，保留现有模型和实时Scheduler；长模型按1800秒间隔等一批自然结束，最后最多5分钟选择W3消费完毕的空闲窗口。失败或超时均恢复原来在运行且未被其他发布替换的生产者；不留daemon/cron，不取消Job。实际执行结果将在完成后补充。
+
+### 首个有限发布窗口的实际结果与角色边界修正
+
+05:44:57–06:20:07，d08候选未发布，六个生产者均恢复。原3个D3 Job全部SUCCEEDED，无取消；窗口末次仍有1个W3 Job，未找到同时满足Job与Effect空闲的时刻。回执没有单独证明Effect是唯一阻塞，不能把整次未发布都归因于Effect门禁。
+
+继续审查明确：Scheduler停止会切断结果消费者，因此保留其Effect空闲检查；单独Worker停止时Scheduler继续运行，成功Job/请求/receipt都在持久卷。既有HttpCodexWorkerClient对传输/5xx按原Job重试，未知lookup由W3PreparationError回到PENDING_RETRY且不换generation。故187d79f3将Effect门禁限定于实际包含Scheduler的发布，Worker仍必须全部Job空闲，并以短SQLite writer fence阻止检查后新模型受理。新增503/500/连接中断的成功结果恢复测试，无POST重发；发布/Provider恢复组合32项通过。未修改任何产品业务恢复、模型并发或重试参数。
+
+06:34:01启动第二个有限窗口，PID3608905，候选64c3564fce85，当前仅暂停原六个非W3生产者；约07:04检查已有模型自然结束。此进程在界面权限切换/命令中断后仍存活，恢复工作时已核对并未重复启动。Scheduler62d6be3311df和原Worker14121db49ff6持续运行，最终结果待回填。
+
+### 最终优先发布：06:45:58–06:46:54
+
+用户明确改为“现在中断模型任务优先发布”。先向此前等待进程PID3608905发送SIGTERM，等待其finally恢复六个生产者并退出，再由唯一新进程接管。为避免再受理模型，暂时停止同一Scheduler容器及六个非W3生产者；检查队列时已经为空，取消API实际调用0次，未据此宣称先前所有时刻都没有模型任务。随后由既有canonical release锁、短Job提交写锁、健康门禁和promote完成Worker发布。未增加永久force模式、运行时队列或模型限制。
+
+最终Worker镜像`64c3564fce85b3f24d1b44330b3aa5cceaa7a7a7ed919aec2ef2cdf7ffc98f56`，三份I1源码来自`187d79f3896d926d4b750a6aafb58a4456f6e53b`；基底为此前`14121db49ff6`，保留W3 Fast、Luna/Provider和其他业务补丁。Scheduler仅短停/恢复，镜像仍为`62d6be3311df`、原容器ID不变。七个暂停角色均按原不可变ID恢复，Worker健康检查通过；没有覆盖浏览器身份、发布成果、金融状态或恢复输入。
+
+生产回执：`/var/lib/doxagent/releases/storage-lifecycle-priority-worker-20261111/window.json`；canonical源码/镜像/health回执：`storage-lifecycle-187d79f3896d/`。此次约56秒发布及此前有限生产者暂停窗口均不计入自然稳定性/业务性能验收。所有等待/发布helper均为有限进程，不留后台daemon；生产常规退出仍由原组件和hourly release owner执行。
+
+### 最终只读验收与剩余观察边界
+
+北京时间06:54:48，三份Worker源码SHA-256均与187d79f3的构建回执一致；所有本轮相关常驻角色在运行，Worker/Collector/Site/CDECR健康检查通过。Scheduler和其余临时暂停的常驻生产者均已恢复。IONQ/COHR两个一次性刷新容器恢复启动后分别于06:46:58/59以exit0退出，无OOM、无错误，不为制造“全为running”而再启动已退出的一次性命令；其业务run状态不等于整条初始化已完成。
+
+- 新Worker首轮自然owner（2026-11-10T22:51:36.313149+00:00 UTC）已读取全部5个控制库，实际退出15份过期快照、保护17份，当前候选页unknown=0、errors=[]，另回收11个无引用内容。当前页0未知不能代替全量审计，历史3份独立Document2归属仍保留。Workspaces同一轮有10份结算回执、无错误；不与此前定向样本重复累计收益。
+- Acquisition最新回执归档12个unit-hour，候选小时2026-11-02T08:00:00+00:00，各退出阶段errors=[]；相较审计10/30已继续推进。按正常owner滚动，不额外重跑全库。
+- Read最新已提交退出：`{"changes": 2000, "commit_retention": 892, "commits": 2000, "content_search": 0, "contributions_history": 0, "cursors": 0, "definitions": 0, "metric_buckets_history": 2000, "object_history": 1500, "poll_current": 96, "views": 0}`；尾部错误/预算中断如实为`[{"error": "interrupted", "stage": "poll_current"}]`，下一阶段`poll_current`。提交与游标可见不等于全部过期积压已清零。
+- 最终可用54.5GiB，约70GiB运维目标仍未达成；不能将逻辑行数、快照数量、CAS条数加成物理GiB。宿主release timer为active，脚本SHA仍为`8db638ac724f6e4984bbb3b8cd75ad19534c813ad05f00e4231f27ba8d36c3ab`；未留下本轮发布/等待进程或新增cron。普通未发布候选由既有48h候选生命周期退出，无需全Docker prune。
+
+开发和生产发布收尾已完成；24h/72h/7d自然业务观察、完整前端前后因果性能验收，以及没有业务放弃事件的恢复责任仍单列，不宣称长期治理已经全部验收。W3完整研究/Context存储架构继续明确暂缓。后续不为等待长窗口而继续扩张开发或建立高频Codex轮询。
