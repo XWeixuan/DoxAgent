@@ -13,8 +13,8 @@ def collect_inputs(workspaces,jobs,settings):
     from .snapshot_retention import collect as snapshots
     report={'at':datetime.now(UTC).isoformat()}
     for name,action in (
-        ('workspaces',lambda:collect(workspaces,jobs,settings,limit=4)),
-        ('initialization_snapshots',lambda:snapshots(workspaces,jobs,settings,limit=8)),
+        ('workspaces',lambda:collect(workspaces,jobs,settings,limit=32)),
+        ('initialization_snapshots',lambda:snapshots(workspaces,jobs,settings,limit=16)),
     ):
         try:report[name]=action()
         except Exception as exc:report[name]={'error':type(exc).__name__+':'+str(exc)[:250]}
@@ -30,7 +30,7 @@ def quiet(jobs):
 async def run(workspaces,jobs,settings):
     session_next=time.monotonic()+6*3600
     while True:
-        await asyncio.sleep(900)
+        await asyncio.sleep(300)
         try:
             await asyncio.to_thread(collect_inputs,workspaces,jobs,settings)
             # SDK tree listing remains an infrequent quiet-maintenance operation.

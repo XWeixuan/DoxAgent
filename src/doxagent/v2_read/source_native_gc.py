@@ -7,13 +7,22 @@ import shutil
 import time
 
 from .outbox import quoted
-from .source_lifecycle import native_hashes,replace_packet_refs
+from .source_lifecycle import replace_packet_refs
 
 
 def migrate(db):
     db.execute('CREATE TABLE IF NOT EXISTS v2_native_ref_scan(owner TEXT PRIMARY KEY,cursor INTEGER,done INTEGER)')
     db.execute('CREATE TABLE IF NOT EXISTS v2_native_exit(id TEXT PRIMARY KEY,not_before REAL)')
     db.execute('CREATE TABLE IF NOT EXISTS v2_native_inventory(id INTEGER PRIMARY KEY CHECK(id=1),after_digest TEXT)')
+
+
+def queue_owner_exit(db,identities):
+    """Explicit process-owner settlement; every other reference still protects content."""
+    identities=list(identities)
+    if not identities:return
+    migrate(db)
+    db.executemany("INSERT INTO v2_native_exit VALUES(?,-1) ON CONFLICT(id) DO UPDATE SET not_before="
+        "CASE WHEN (SELECT state FROM artifact WHERE id=excluded.id)='LIVE' THEN -1 ELSE v2_native_exit.not_before END",[(x,) for x in identities])
 
 
 def orphan_refs(db,table,owner,keys,*,limit,started,seconds,packet=False):
@@ -146,7 +155,21 @@ def collect(source, *, now=None, limit=32):
             report['deferred']='current-source-snapshot'
             return report
         if not db.execute('SELECT 1 FROM v2_native_ref_scan LIMIT 1').fetchone() or db.execute('SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1').fetchone():return report
-        candidates=db.execute("SELECT a.id FROM artifact a WHERE a.state='LIVE' AND a.codec='json-chunks-v1' AND a.location='native-files/'||substr(a.id,1,2)||'/'||a.id AND a.created_at<? AND NOT ("+protected+") LIMIT ?",((now-timedelta(days=7)).isoformat(),limit)).fetchall()
+        early=db.execute("SELECT a.id FROM v2_native_exit e JOIN artifact a ON a.id=e.id WHERE e.not_before<0 "
+                         "AND a.state='LIVE' ORDER BY e.id LIMIT ?",(limit,)).fetchall()
+        candidates=[]
+        for row in early:
+            if db.execute('SELECT 1 FROM artifact a WHERE a.id=? AND ('+protected+')',row).fetchone():
+                digest=row[0]
+                if not re.fullmatch('[0-9a-f]{64}',digest):raise ValueError('invalid native identity')
+                p=root/'native-files'/digest[:2]/digest;q=quarantine/digest
+                if p.is_symlink() or q.is_symlink():raise ValueError('linked native CAS')
+                if not p.exists() and q.exists():p.parent.mkdir(exist_ok=True,parents=True);q.rename(p)
+                elif q.exists():shutil.rmtree(q)
+                db.execute('DELETE FROM v2_native_exit WHERE id=?',row)
+            else:candidates.append(row)
+        if not early:
+            candidates=db.execute("SELECT a.id FROM artifact a WHERE a.state='LIVE' AND a.codec='json-chunks-v1' AND a.location='native-files/'||substr(a.id,1,2)||'/'||a.id AND a.created_at<? AND NOT ("+protected+") LIMIT ?",((now-timedelta(days=7)).isoformat(),limit)).fetchall()
         for digest, in candidates:
             if not re.fullmatch('[0-9a-f]{64}',digest):raise ValueError('invalid native identity')
             p=root/'native-files'/digest[:2]/digest;q=quarantine/digest
@@ -161,6 +184,7 @@ def collect(source, *, now=None, limit=32):
                 report['quarantined']+=1
             else:
                 db.execute("UPDATE artifact SET state='DELETED' WHERE id=?",(digest,))
+                db.execute('DELETE FROM v2_native_exit WHERE id=?',(digest,))
         for digest,not_before in db.execute('SELECT id,not_before FROM v2_native_exit LIMIT ?',(limit,)).fetchall():
             p=root/'native-files'/digest[:2]/digest;q=quarantine/digest
             if p.is_symlink() or q.is_symlink():raise ValueError('linked native quarantine')
@@ -169,6 +193,8 @@ def collect(source, *, now=None, limit=32):
                 elif q.exists():shutil.rmtree(q)
                 db.execute("UPDATE artifact SET state='LIVE' WHERE id=?",(digest,))
                 db.execute('DELETE FROM v2_native_exit WHERE id=?',(digest,));continue
+            if not_before<0 and db.execute("SELECT 1 FROM artifact WHERE id=? AND state='LIVE'",(digest,)).fetchone():
+                continue  # Pending explicit exits have not entered quarantine yet.
             if not_before>time.time():continue
             if q.exists():
                 for f in q.iterdir():

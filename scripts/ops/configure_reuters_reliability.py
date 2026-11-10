@@ -7,10 +7,8 @@ replacement. Lifecycle-only changes preserve the existing Supervisor instance.
 import argparse
 import copy
 import json
-import os
 import sqlite3
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 

@@ -2,7 +2,6 @@
 import asyncio
 from contextlib import closing
 from datetime import UTC,datetime,timedelta
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -70,7 +69,7 @@ class TerminalSessions:
                               and age>=(7 if status=='succeeded' else 14)*86400
                               and (output if status=='succeeded' else error or status=='cancelled'))
                     for identity in ids:
-                        owned.setdefault(identity,[]).append(dict(job=job,path=str(path),run=run,eligible=eligible))
+                        owned.setdefault(identity,[]).append(dict(job=job,path=str(path),run=run,eligible=eligible,retired_fork=identity in retired_w3))
                         if not eligible:protected.add(identity)
                 if db.execute("SELECT 1 FROM sqlite_master WHERE name='w3_thread_registry'").fetchone():
                     protected.update(r[0] for r in db.execute("SELECT thread_id FROM w3_thread_registry WHERE status<>'DELETED'"))
@@ -89,12 +88,14 @@ class TerminalSessions:
         return threads
 
     @staticmethod
-    def groups(threads):
+    def groups(threads,retired_forks=()):
         edges={};sessions={}
         for identity,row in threads.items():
-            for parent in {row.get('forkedFromId'),row.get('parentThreadId')} - {None}:
+            parents={row.get('parentThreadId')}
+            if identity not in retired_forks:parents.add(row.get('forkedFromId'))
+            for parent in parents - {None}:
                 edges.setdefault(identity,set()).add(parent);edges.setdefault(parent,set()).add(identity)
-            session=row.get('sessionId')
+            session=row.get('sessionId') if identity not in retired_forks else None
             if session:
                 anchor=sessions.setdefault(session,identity)
                 edges.setdefault(anchor,set()).add(identity);edges.setdefault(identity,set()).add(anchor)
@@ -106,7 +107,9 @@ class TerminalSessions:
         report=dict(eligible_threads=0,deleted=[],errors=[],protected=0,allocated_before_deleted=0)
         try:
             with WriterLock(self.jobs.store.root/'session-retirement'):
-                threads=await self.listing();owned,protected=await asyncio.to_thread(self.owned,now);edges=self.groups(threads)
+                threads=await self.listing();owned,protected=await asyncio.to_thread(self.owned,now)
+                retired={t for t,jobs in owned.items() if jobs and all(j.get('retired_fork') for j in jobs)}
+                edges=self.groups(threads,retired)
                 for identity,row in threads.items():
                     if row.get('status',{}).get('type')=='active':protected.add(identity)
                     # Unknown roots are not Worker-owned sessions. Subagents can

@@ -123,3 +123,144 @@ def test_operation_snapshot_reuses_attempt_and_keeps_only_verified_successor(tmp
     finish(second,success=True)
     assert not first.exists() and second.exists()
     with closing(sqlite3.connect(second)) as db:assert db.execute('SELECT id FROM identity').fetchone()[0]==1
+
+
+def test_settled_partial_d3_workspace_exits_after_one_day_but_published_artifact_stays(tmp_path):
+    import hashlib
+    from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+    from doxagent.codex_worker.job_store import JobStore
+    from doxagent.codex_worker.workspace_retention import collect
+    from doxagent.workflows.codex_document3.state_v21 import StateV21,canonical
+    now=datetime.now(UTC);at=(now-timedelta(days=2)).isoformat();run='runtime-maintain-test-o3'
+    workspaces=LocalWorkspaceStore(tmp_path/'workspaces');jobs=SimpleNamespace(store=JobStore(workspaces.root))
+    workspaces.write_text(run,'artifacts/final.md','canonical result')
+    workspaces.write_text(run,'output/final/final.md','canonical result')
+    workspaces.write_text(run,'output/final/unique.md','unique unpublished evidence')
+    workspaces.write_text(run,'context/context.json','x'*100_000)
+    source=tmp_path/'research.db';state=StateV21(source)
+    state.start(run,{'ticker':'MU'},{'status':'PARTIAL','phase':'STAGED','prepared':{'files':{'large':'x'*100_000}},'candidate_handoff':{'version':1}})
+    state.settle(run,at=at,authority='published-candidate')
+    with state.connect() as db:
+        db.execute('CREATE TABLE codex_runtime_records(record_type,run_id,payload_json)')
+        bundle={'status':'published','published_at':at,'artifacts':[{'relative_path':'artifacts/final.md',
+                'sha256':hashlib.sha256(b'canonical result').hexdigest()}]}
+        db.execute('INSERT INTO codex_runtime_records VALUES(?,?,?)',('bundles',run,canonical(bundle)))
+        db.execute('INSERT INTO codex_document3_v21_staged_sets VALUES(?,?,?,?,?)',('MU',1,run,canonical({'policies':[]}),canonical({'files':{}})))
+    with closing(jobs.store.connect()) as db,db:
+        db.execute('INSERT INTO jobs(id,status,payload) VALUES(?,?,?)',('job','succeeded',canonical({'run_id':run,'finished_at':at})))
+    settings=SimpleNamespace(codex_runtime_sqlite_path=source,persistent_runtime_v2_sqlite_path=None,ticker_initialization_control_path=None)
+    result=collect(workspaces,jobs,settings,now=now)
+    assert not result['errors'] and result['runs'][0]['retirement_basis']=='settled'
+    assert not (workspaces.root/run/'context/context.json').exists()
+    assert (workspaces.root/run/'artifacts/final.md').read_text()=='canonical result'
+    assert not (workspaces.root/run/'output/final/final.md').exists()
+    assert (workspaces.root/run/'output/final/unique.md').read_text()=='unique unpublished evidence'
+    assert 'prepared' not in state.run(run)
+
+
+def test_small_cold_cache_exits_without_touching_identity(tmp_path,monkeypatch):
+    import os,time
+    from doxagent.site_strategy.resource_gc import maintain_profile
+    monkeypatch.setattr('doxagent.site_strategy.runtime.profile_browser_processes',lambda _:[])
+    cache=tmp_path/'identity/Default/Code Cache';cache.mkdir(parents=True)
+    old=cache/'old';old.write_text('rebuildable');os.utime(old,(time.time()-8*86400,)*2)
+    fresh=cache/'fresh';fresh.write_text('recent')
+    cookie=cache.parent/'Cookies';cookie.write_text('identity')
+    result=maintain_profile(tmp_path,'identity',allow_cache=True,seconds=2)
+    assert result['deleted_bytes']>0 and not old.exists()
+    assert fresh.exists() and cookie.read_text()=='identity'
+
+
+def test_legacy_poll_head_exit_preserves_a_live_mvcc_view(tmp_path,monkeypatch):
+    from doxagent.v2_read.repository import ReadStore
+    from doxagent.v2_read.serving_gc import collect
+    from doxagent.v2_read.serving_fields import select
+    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
+    monkeypatch.delenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED',raising=False)
+    now=datetime.now(UTC);store=ReadStore(tmp_path/'read.db');store.migrate()
+    old={'dispatch_at':(now-timedelta(days=3)).isoformat(),'status':'FAILED'}
+    recent={'dispatch_at':now.isoformat(),'status':'CAPTURED'}
+    seq=store.ingest('bus','legacy',[dict(kind='native:poll_runs',ticker='MU',id='old',data=old),
+                                    dict(kind='native:poll_runs',ticker='MU',id='recent',data=recent)])
+    store.save_token('reader','scope',{'seq':seq},view=True)
+    AcquisitionStore(tmp_path/'acquisition.sqlite3',initialize=True)
+    monkeypatch.setenv('DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH',str(tmp_path/'bus.sqlite3'))
+    monkeypatch.setenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','true')
+    result=collect(store,now=now,budget=2)
+    assert result['deleted']['poll_current']==1
+    assert store.get('native:poll_runs','MU','old') is None
+    assert store.get('native:poll_runs','MU','old',seq)['status']=='FAILED'
+    assert store.get('native:poll_runs','MU','recent')['status']=='CAPTURED'
+    assert select('native:poll_runs','future',recent) is None
+
+
+def test_explicit_d3_exit_does_not_wait_orphan_grace_and_shared_inputs_stay(tmp_path):
+    from doxagent.workflows.codex_document3.state_v21 import StateV21,canonical
+    from doxagent.v2_read.source_native_gc import collect,migrate
+    path=tmp_path/'research.db';state=StateV21(path)
+    for number in (1,2):
+        run=str(number)
+        state.start(run,{'ticker':'MU'},{'prepared':{'files':{'same':'x'*100_000}}})
+        with state.connect() as db:
+            db.execute('INSERT INTO codex_document3_v21_staged_sets VALUES(?,?,?,?,?)',('MU',number,run,canonical({'policies':[]}),canonical({'files':{}})))
+    with state.connect() as db:
+        db.execute('CREATE TABLE v2_source_consumers(id TEXT PRIMARY KEY,updated_at TEXT)')
+        migrate(db);db.execute("INSERT INTO v2_native_ref_scan VALUES('fixture-complete',0,1)")
+    source=SimpleNamespace(path=path,connection=lambda write=False:sqlite3.connect(path))
+    state.retire('1',now=datetime.now(UTC),authority='published')
+    assert collect(source)['quarantined']==0
+    assert state.run('2')['prepared']['files']['same']=='x'*100_000
+    state.retire('2',now=datetime.now(UTC),authority='published')
+    assert collect(source)['quarantined']==1
+
+
+def test_d3_input_format_has_a_reversible_old_reader_path(tmp_path):
+    from doxagent.workflows.codex_document3.state_v21 import StateV21,inline_for_rollback
+    path=tmp_path/'research.db';state=StateV21(path);value={'prepared':{'files':{'f':'x'*50_000}}}
+    state.start('run',{},value)
+    assert inline_for_rollback(path)['rewritten']==1
+    with state.connect() as db:assert json.loads(db.execute('SELECT payload FROM codex_document3_v21_runs').fetchone()[0])==value
+    state.start('during-rollout',{},value)
+    with state.connect() as db:assert json.loads(db.execute("SELECT payload FROM codex_document3_v21_runs WHERE run_id='during-rollout'").fetchone()[0])==value
+
+
+def test_completed_maintenance_frame_keeps_frozen_selection_and_canonical_revision(tmp_path):
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal,encode
+    from doxagent.persistent_runtime_v2.resource_gc import compact_frame
+    now=datetime.now(UTC);at=(now-timedelta(days=2)).isoformat();journal=RuntimeJournal(tmp_path/'runtime.db')
+    run='runtime-maintain-one';journal.put_task('task','MU','MAINTENANCE',{'cutoff':at})
+    base={'revision_id':'base','artifacts':{'event_library':{'root':'/events','version':1}},'canonical':'x'*100_000}
+    frame={'run_id':run,'base':base,'case_ids':[],'effect_versions':{},'policy_consumption':[{'policy_id':'P1','generation':1}]}
+    receipt=journal.content.encode({'frame':frame,'o3':{'version':2}})
+    with journal.transaction() as db:
+        db.execute("UPDATE runtime_tasks SET status='SUCCEEDED',updated_at=?,receipt=? WHERE id='task'",(at,receipt))
+    control=tmp_path/'control.db'
+    with sqlite3.connect(control) as db:
+        db.execute('CREATE TABLE activation_revisions(revision_id PRIMARY KEY,ticker,payload)')
+        db.executemany('INSERT INTO activation_revisions VALUES(?,?,?)',[('base','MU',encode(base)),(run+'-activation','MU','{}')])
+    proof=compact_frame(journal,control,run,{'task':'task','status':'SUCCEEDED','at':at},now)
+    assert proof['frame_payload_bytes']>100_000
+    with journal.transaction(write=False) as db:value=json.loads(db.execute("SELECT receipt FROM runtime_tasks WHERE id='task'").fetchone()[0])
+    assert 'frame' not in value and value['o3']=={'version':2}
+    assert value['retired_frame']['frozen_selection']['policy_consumption']==frame['policy_consumption']
+    assert value['retired_frame']['base_revision']=='base' and not value['retired_frame']['resume_allowed']
+    assert not compact_frame(journal,control,run,{'task':'task','status':'SUCCEEDED','at':at},now)
+
+
+def test_runtime_capture_leaves_process_payload_at_owner_and_keeps_progress(tmp_path):
+    from doxagent.v2_read.outbox import SourceOutbox
+    path=tmp_path/'runtime.db'
+    with sqlite3.connect(path) as db:
+        db.execute('CREATE TABLE runtime_tasks(id TEXT PRIMARY KEY,ticker TEXT,status TEXT,inputs TEXT,receipt TEXT)')
+        db.execute("CREATE TRIGGER v2_capture_runtime_tasks_INSERT AFTER INSERT ON runtime_tasks BEGIN SELECT json_object('inputs',NEW.inputs,'receipt',NEW.receipt); END")
+    source=SourceOutbox(path,'runtime');source.migrate(('runtime_tasks',))
+    inputs=json.dumps({'files':{'full':'x'*100_000}})
+    with sqlite3.connect(path) as db:
+        db.execute('INSERT INTO runtime_tasks VALUES(?,?,?,?,?)',('task','MU','RUNNING',inputs,'{}'))
+        db.execute("UPDATE runtime_tasks SET status='SUCCEEDED',receipt=? WHERE id='task'",(inputs,))
+        packets=[json.loads(r[0]) for r in db.execute('SELECT payload FROM v2_source_receipts ORDER BY id')]
+        assert all('inputs' not in p and 'receipt' not in p for p in packets)
+        assert [p['status'] for p in packets]==['RUNNING','SUCCEEDED']
+        assert db.execute("SELECT inputs,receipt FROM runtime_tasks WHERE id='task'").fetchone()==(inputs,inputs)
+    assert source.event(2)['row']['status']=='SUCCEEDED'
+    assert 'inputs' not in source.event(2)['row']

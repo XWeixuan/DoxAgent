@@ -51,6 +51,7 @@ class StateV21:
 
     def _pack(self, values):
         # Existing immutable Native CAS; unchanged large fields stay as references.
+        if (Path(self.path).parent/'.d3-native-inputs-disabled').exists():return values
         large = {'prepared', 'base', 'base_coverage', 'final', 'final_candidates', 'handoff'}
         return {key: json.loads(self.codec.encode({key: value}))[key] if key in large else value
                 for key, value in values.items()}
@@ -142,6 +143,7 @@ class StateV21:
             if value.get('resource_retirement'):
                 return value['resource_retirement']
             before = len(row[0].encode())
+            exiting=[r[0] for r in db.execute("SELECT artifact_id FROM artifact_ref WHERE owner_type='codex_document3_v21_runs' AND owner_id=json_array(?)",(run_id,))]
             removed = {}
             for key in ('prepared', 'base', 'base_coverage', 'final', 'final_candidates', 'handoff',
                         'shell_discovery_input', 'open_discovery_input'):
@@ -153,6 +155,9 @@ class StateV21:
             raw = canonical(value)
             receipt['after_json_bytes'] = len(raw.encode())
             db.execute('UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?', (canonical(value), run_id))
+            # Explicit owner exit uses the existing quarantine queue, not the 7d orphan-put grace.
+            from doxagent.v2_read.source_native_gc import queue_owner_exit
+            queue_owner_exit(db,exiting)
         return receipt
 
     def task(self, run_id, key):
@@ -363,3 +368,28 @@ class StateV21:
                 (run_id,),
             ).fetchone()
             return (json.loads(row[0]), json.loads(row[1])) if row else None
+
+
+def inline_for_rollback(path):
+    """Run with D3 writers drained before selecting a pre-codec rollback image."""
+    path=Path(path).resolve(strict=True)
+    (path.parent/'.d3-native-inputs-disabled').touch(mode=0o600)
+    state=StateV21(path);cursor=0;rewritten=0
+    while True:
+        with state.connect() as db:
+            row=db.execute('SELECT rowid,payload FROM codex_document3_v21_runs WHERE rowid>? ORDER BY rowid LIMIT 1',(cursor,)).fetchone()
+        if not row:break
+        cursor,raw=row
+        if '$doxagent_content_v1' not in raw:continue
+        value=state.codec.decode(json.loads(raw))
+        with state.connect() as db:
+            db.execute('UPDATE codex_document3_v21_runs SET payload=? WHERE rowid=? AND payload=?',(canonical(value),cursor,raw))
+        rewritten+=1
+    return {'rewritten':rewritten,'native_inputs_enabled':False}
+
+
+if __name__=='__main__':
+    import argparse
+    parser=argparse.ArgumentParser(description='Inline D3 inputs before an old-reader rollback; drain writers first.')
+    parser.add_argument('--inline-for-rollback',type=Path,required=True)
+    print(json.dumps(inline_for_rollback(parser.parse_args().inline_for_rollback)))

@@ -139,6 +139,8 @@ class RuntimeMaintenance:
         return frame
 
     async def __call__(self, task: dict[str, Any]) -> dict[str, Any]:
+        if task.get('receipt',{}).get('process_retired'):
+            raise ValueError('TERMINAL_MAINTENANCE_INPUTS_RETIRED_NEW_RUN_REQUIRED')
         prior_frame = task["receipt"].get("frame")
         existing = self.control.active_revision(task["ticker"])
         if prior_frame:

@@ -1,4 +1,4 @@
-"""Small operation-owned SQLite restore points; repeated attempts reuse one snapshot."""
+"""Operation-owned SQLite snapshots; external Native/profile files are not archived here."""
 from contextlib import closing
 from datetime import UTC,datetime,timedelta
 import hashlib
@@ -29,7 +29,7 @@ def snapshot(source,root,*,family,operation):
                 dst.execute('SELECT name FROM sqlite_master LIMIT 1').fetchone()
             pending.chmod(0o600);os.replace(pending,target)
             atomic_json(marker,dict(owner='doxagent.operation-backup.1',source=str(source),family=family,
-                operation=operation,file=target.name,at=datetime.now(UTC).isoformat(),state='PENDING'))
+                operation_sha256=hashlib.sha256(operation.encode()).hexdigest(),file=target.name,at=datetime.now(UTC).isoformat(),state='PENDING'))
         finally:pending.unlink(missing_ok=True)
     return target
 

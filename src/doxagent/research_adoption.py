@@ -6,7 +6,6 @@ import argparse
 import asyncio
 import hashlib
 import json
-import shutil
 import sqlite3
 from datetime import datetime
 from pathlib import Path

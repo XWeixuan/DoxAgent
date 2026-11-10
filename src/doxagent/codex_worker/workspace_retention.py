@@ -3,7 +3,6 @@ from contextlib import closing
 from datetime import UTC,datetime,timedelta
 import hashlib
 import json
-import os
 from pathlib import Path
 import sqlite3
 
@@ -115,8 +114,15 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
                         if path.name.endswith(('.db','.sqlite','.sqlite3','-wal','-shm')):continue
                         if path.name in {'task.json','context.json','AGENTS.md','agent.md','skill.md','manifest.json'} and (not settlement or path.stat().st_size<=65536):continue
                         candidates.append(path)
+                duplicate_outputs=0
+                if settlement:
+                    published_hashes={a['sha256'] for a in artifacts}
+                    for path in (directory/'output'/'final').glob('*'):
+                        if not path.is_file() or path.is_symlink() or path.resolve() in retained:continue
+                        with path.open('rb') as stream:sha=hashlib.file_digest(stream,'sha256').hexdigest()
+                        if sha in published_hashes:candidates.append(path);duplicate_outputs+=1
                 if opened_below(directory):continue
-                receipt=dict(run=run,publication=artifacts,owner_revision=revision,retirement_basis='settled' if settlement else 'published' if run in published else 'terminal-unpublished-inputs',retained_reference_files=len(retained),files=0,allocated=0,at=now.isoformat(),complete=False)
+                receipt=dict(run=run,publication=artifacts,owner_revision=revision,retirement_basis='settled' if settlement else 'published' if run in published else 'terminal-unpublished-inputs',retained_reference_files=len(retained),duplicate_outputs=duplicate_outputs,files=0,allocated=0,at=now.isoformat(),complete=False)
                 if dry_run:
                     receipt.update(files=len(candidates),allocated=sum(getattr(p.stat(),'st_blocks',(p.stat().st_size+511)//512)*512 for p in candidates));report['runs'].append(receipt);continue
                 # Serialize with Worker submission metadata, then take its file

@@ -664,7 +664,6 @@ def release_components(root, state, repo, commit, components, *, collection_migr
         # service, never a one-off temporary runtime or an in-container code patch.
         override=root/'compose.current.json'
         configuration=json.loads(override.read_text()) if override.exists() else {'services':{}}
-        old_migration=configuration['services'].get('v2-migrate')
         configuration['services']['v2-migrate']={'image':built['images']['backend']['image'],
             'command':['python','-m','doxagent.message_bus_v2.collection_plane.install'],
             'environment':{'DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED':'true'}}
