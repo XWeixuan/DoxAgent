@@ -1,0 +1,88 @@
+﻿scope,configured_seconds,successful_cycles,failed_cycles,deferred_cycles,inflight,success_pct,prior_successful,prior_failed,actual_success_gap_p50,actual_success_gap_p95,full_cycle_p95,reasons
+airspaceforces_space,20,44,0,0,1,100.0,15,0,19.426,24.418,9.052,{}
+ans_nuclear_newswire,20,44,0,0,1,100.0,15,0,19.72,24.62,9.451,{}
+army_news_releases,20,42,2,0,1,95.45,15,0,19.815,24.196,11.237,"{""RuntimeError"": 2}"
+army_news_rss,20,43,1,0,1,97.73,15,0,19.783,23.373,11.227,"{""RuntimeError"": 1}"
+aviationweek_rocketlab,20,40,4,0,1,90.91,15,0,19.958,44.627,12.25,"{""UNPROVEN_LISTING"": 3, ""RuntimeError"": 1}"
+aviationweek_rss,60,72,1,0,2,98.63,75,0,59.625,65.469,12.044,"{""HTTP_LISTING_FAILED_RSS_FALLBACK"": 1}"
+aws_platform_marketplace_rss,20,131,0,0,3,100.0,45,0,19.783,24.887,10.855,{}
+barrons_ticker_news,20,842,36,0,20,95.9,299,0,19.807,25.889,11.991,"{""SiteAccessError"": 17, ""site_queue_timeout"": 16, ""UNPROVEN_LISTING"": 3}"
+benzinga_news,15,399,19,0,9,95.45,150,0,16.454,52.828,45.001,"{""TimeoutError"": 21}"
+breakingdefense_space,20,44,0,0,1,100.0,15,0,19.58,23.914,9.984,{}
+calcalist_search,60,31,25,0,1,55.36,0,60,60.252,437.264,20.396,"{""RuntimeError"": 25}"
+canary_media,20,36,7,0,1,83.72,15,0,19.731,43.792,13.78,"{""UNPROVEN_LISTING"": 6, ""HTTP_LISTING_FAILED_RSS_FALLBACK"": 1}"
+corporate_ir_press_releases|IR:be.press,30,29,0,0,1,100.0,30,0,28.837,36.163,9.864,{}
+corporate_ir_press_releases|IR:ceg.press,20,44,0,0,1,100.0,30,0,19.683,24.411,8.044,{}
+corporate_ir_press_releases|IR:cohr.corporate,20,44,0,0,1,100.0,30,0,20.017,24.431,9.906,{}
+corporate_ir_press_releases|IR:cohr.financial,20,44,0,0,1,100.0,30,0,19.805,24.8,10.995,{}
+corporate_ir_press_releases|IR:intc.press,20,44,0,0,1,100.0,30,0,19.838,24.745,11.049,{}
+corporate_ir_press_releases|IR:mu.ir,20,29,0,0,1,100.0,29,0,30.618,33.687,12.596,{}
+corporate_ir_press_releases|IR:mu.newsroom,20,44,1,0,0,97.78,28,2,19.383,24.131,11.956,"{""TimeoutError"": 1}"
+corporate_ir_press_releases|IR:nbis.press,20,43,1,0,1,97.73,30,0,19.719,24.814,11.174,"{""TimeoutError"": 1}"
+corporate_ir_press_releases|IR:onds.press,20,41,4,0,0,91.11,30,0,19.827,38.095,12.587,"{""ConnectTimeout"": 3, ""TimeoutError"": 1}"
+corporate_ir_press_releases|IR:rklb.ir,20,44,0,0,1,100.0,29,0,20.161,23.397,13.036,{}
+corporate_ir_press_releases|IR:rklb.updates,20,44,0,0,1,100.0,30,0,19.634,26.802,11.167,{}
+corporate_ir_press_releases|IR:snow.press,20,44,0,0,1,100.0,30,0,19.89,24.68,9.189,{}
+crn_cloud_security_datacenter,20,133,0,0,2,100.0,45,0,19.654,24.831,10.419,{}
+ctee_semiconductor,60,15,0,0,0,100.0,14,0,60.015,60.282,8.948,{}
+darpa_news,20,44,0,0,1,100.0,15,0,19.901,25.006,10.273,{}
+data_center_frontier,20,44,0,0,1,100.0,15,0,19.347,24.762,12.258,{}
+dcd_energy_ticker,20,89,0,0,1,100.0,30,0,19.865,25.384,10.352,{}
+dcd_infrastructure_rss,20,44,0,0,1,100.0,15,0,19.74,24.804,10.047,{}
+defensescoop_drones,20,84,2,0,2,97.67,30,0,19.697,25.659,10.041,"{""HTTP_LISTING_FAILED_RSS_FALLBACK"": 2}"
+defensescoop_space,20,42,2,0,1,95.45,14,1,19.682,24.281,10.721,"{""UNPROVEN_LISTING"": 2}"
+digitimes_semiconductors,60,15,0,0,0,100.0,15,0,59.939,61.213,7.503,{}
+digitimes_tw_rss,20,43,1,0,1,97.73,15,0,19.425,23.716,11.508,"{""TimeoutError"": 1}"
+dod_contracts,20,44,0,0,1,100.0,15,0,19.755,23.98,10.781,{}
+dod_releases,20,44,0,0,1,100.0,15,0,19.763,23.52,10.711,{}
+doe_energy_news,20,177,0,0,3,100.0,60,0,19.926,24.748,9.991,{}
+enterprise_apps_official_rss,20,198,4,0,5,98.02,75,0,20.028,32.178,11.156,"{""HTTP_LISTING_FAILED_RSS_FALLBACK"": 4}"
+etnews_rss,20,44,0,0,1,100.0,15,0,20.029,23.716,10.614,{}
+finnhub_company_news,30,290,0,0,8,100.0,149,0,29.7,35.563,13.31,{}
+globenewswire_search,20,1214,0,0,15,100.0,422,0,19.997,20.967,6.5,{}
+google_news_search_rss,20,395,0,0,9,100.0,134,0,19.625,25.698,12.489,{}
+huggingnews_rss,20,44,0,0,1,100.0,15,0,19.582,24.444,8.305,{}
+ibkr_news,20,445,0,0,5,100.0,149,0,20.013,25.412,6.895,{}
+investing_ticker_news,30,294,1,0,5,99.66,149,0,30.006,30.844,8.052,"{""site_queue_timeout"": 1}"
+investorshub_ticker_news,30,289,6,0,5,97.97,149,1,30.016,34.247,12.23,"{""site_queue_timeout"": 6}"
+ionq_nautilus_rss,20,44,0,0,1,100.0,15,0,19.968,24.619,10.992,{}
+ionq_quantum_actors_rss,20,131,0,0,3,100.0,41,4,19.704,24.444,11.859,{}
+iridium_press_releases,20,44,0,0,1,100.0,15,0,19.86,24.024,10.288,{}
+lakehouse_platform_official_rss,20,88,0,0,2,100.0,30,0,19.767,24.384,11.985,{}
+nasa_2026_releases,20,42,2,0,1,95.45,15,0,19.265,24.387,12.246,"{""RuntimeError"": 2}"
+national_quantum_initiative,20,44,0,0,1,100.0,15,0,19.541,23.925,10.753,{}
+nbis_official_actor_rss,20,84,1,0,2,98.82,30,0,19.723,26.137,12.799,"{""HTTP_RSS_BOTH_FAILED"": 1}"
+nist_news,20,44,0,0,1,100.0,15,0,19.915,24.997,8.286,{}
+nrc_event_notifications,20,0,44,0,1,0.0,0,15,,,9.0,"{""publisher_endpoint_backoff"": 44}"
+nrc_news_releases,20,44,0,0,1,100.0,15,0,19.813,24.474,8.907,{}
+nro_press_releases,20,43,0,0,1,100.0,15,0,19.762,24.423,8.328,{}
+nsf_news,20,44,0,0,1,100.0,14,1,19.636,24.481,11.163,{}
+optical_systems_official_rss,20,44,0,0,1,100.0,15,0,19.71,25.337,8.942,{}
+power_engineering_energy,20,263,0,0,5,100.0,90,0,19.846,25.673,15.806,{}
+power_magazine_energy,20,285,20,0,7,93.44,135,0,24.273,49.492,30.029,"{""HTTP_RSS_BOTH_FAILED"": 20}"
+quantum_computing_report,20,44,0,0,1,100.0,15,0,19.809,23.711,11.36,{}
+quantum_insider,20,125,0,0,3,100.0,45,0,20.28,26.124,19.456,{}
+quantum_zeitgeist,60,12,2,0,1,85.71,15,0,62.419,119.889,22.68,"{""HTTP_LISTING_FAILED_RSS_FALLBACK"": 2}"
+register_software_cloud_security,20,127,0,0,3,100.0,45,0,20.291,26.208,16.0,{}
+reuters_site_search,60,643,14,0,13,97.87,662,5,60.031,73.904,14.932,"{""search_query_failed"": 4, ""TimeoutError"": 1, ""identity_control_busy"": 8, ""site_queue_timeout"": 1}"
+sdxcentral_news,30,27,2,0,1,93.1,15,0,30.088,60.141,11.863,"{""publisher_endpoint_backoff"": 2}"
+sec_edgar,10,521,3,0,10,99.43,284,0,13.687,35.078,30.517,"{""TimeoutError"": 3}"
+shephard_uncrewed,20,40,4,0,1,90.91,15,0,19.806,44.843,12.842,"{""DEFENSE_ENDPOINT_FAILED"": 2, ""RuntimeError"": 2}"
+siliconangle_ai,20,44,0,0,1,100.0,15,0,19.914,23.98,11.822,{}
+siliconangle_software,20,130,0,0,3,100.0,44,0,19.967,25.99,15.78,{}
+spacecom_launches,20,44,0,0,1,100.0,15,0,19.471,23.941,9.771,{}
+spacenews_rss,60,11,4,0,0,73.33,12,3,60.169,122.594,8.755,"{""publisher_http_429"": 4}"
+ssc_newsroom,20,43,1,0,1,97.73,15,0,19.739,24.084,12.043,"{""RuntimeError"": 1}"
+technews_hardware,20,68,14,0,1,82.93,29,1,19.813,64.873,20.071,"{""HTTP_LISTING_FAILED_RSS_FALLBACK"": 14}"
+thefly_ticker_news,30,247,17,0,7,93.56,132,2,29.981,59.088,13.109,"{""TimeoutError"": 16, ""SSLError"": 1}"
+thelec_semiconductors_rss,20,44,0,0,1,100.0,15,0,19.574,23.408,12.006,{}
+tomshardware_rss,20,43,1,0,1,97.73,15,0,19.613,23.899,11.703,"{""TimeoutError"": 1}"
+trendforce_news,20,44,0,0,1,100.0,15,0,20.037,24.64,11.599,{}
+trendforce_press_releases,20,44,0,0,1,100.0,15,0,19.464,24.182,9.276,{}
+unmannedairspace_counteruas,20,86,2,0,2,97.73,30,0,19.84,25.495,12.855,"{""HTTP_RSS_BOTH_FAILED"": 2}"
+utility_dive,20,44,0,0,1,100.0,15,0,20.027,25.012,10.106,{}
+venturebeat_ai,20,43,0,0,1,100.0,15,0,19.566,23.793,9.438,{}
+venturebeat_software,20,132,0,0,3,100.0,45,0,19.739,25.086,10.01,{}
+wccftech_hardware,20,129,0,0,3,100.0,45,0,19.914,25.915,15.975,{}
+world_nuclear_news,20,43,0,0,1,100.0,15,0,19.603,23.723,8.229,{}
+yahoo_finance_news,30,883,5,0,12,99.44,842,10,30.005,30.87,6.7,"{""browser_coverage_pending"": 2, ""RuntimeError"": 2, ""RequestError"": 1}"

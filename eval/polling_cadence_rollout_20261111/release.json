@@ -1,0 +1,31 @@
+{
+  "commit": "03f44d4c550f09c60f71a23f3e9a7ef140b9b99d",
+  "started_at": "2026-11-10T19:28:45.612809+00:00",
+  "collector_before": {
+    "id": "55cf6f0fcaf8",
+    "started_at": "2026-11-10T19:04:10.031252532Z",
+    "state": "running",
+    "health": "healthy",
+    "commit": "9a38f508f372f9d021a1cc3dae48e610f7ce56ae",
+    "recheck": "false"
+  },
+  "returncode": 0,
+  "finished_at": "2026-11-10T19:29:58.580083+00:00",
+  "collector_after": {
+    "id": "876d168fb8bd",
+    "started_at": "2026-11-10T19:29:43.847152129Z",
+    "state": "running",
+    "health": "healthy",
+    "commit": "03f44d4c550f09c60f71a23f3e9a7ef140b9b99d",
+    "recheck": "false"
+  },
+  "protected_unchanged": {
+    "v2-site-access": true,
+    "v2-chrome-supervisor": true,
+    "v2-api": true,
+    "v2-message-bus": true,
+    "v2-content-enrichment": true
+  },
+  "private_log": "/var/lib/doxagent/releases/source-cadence-20261110T192845Z.log",
+  "source_hash_matches": true
+}
