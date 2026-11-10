@@ -33,7 +33,7 @@ def actual_file(role,path):
     with tarfile.open(fileobj=io.BytesIO(result.stdout)) as ar:return ar.extractfile(ar.getmembers()[0]).read()
 
 
-def stop_idle_worker(database,runtime_database,worker_id,assert_idle,*,stop=None):
+def stop_idle_worker(database,runtime_database,worker_id,assert_idle=None,*,stop=None):
     # Submission commits its queued Job before launching a model. Hold that
     # writer admission only through the old process stop, closing the idle-check
     # race without adding a runtime queue or changing business concurrency.
@@ -42,7 +42,7 @@ def stop_idle_worker(database,runtime_database,worker_id,assert_idle,*,stop=None
         db.execute('BEGIN IMMEDIATE')
         if db.execute("SELECT 1 FROM jobs WHERE status IN ('queued','running') LIMIT 1").fetchone():
             raise ValueError('Worker has accepted work; keep serving')
-        assert_idle(runtime_database)
+        if assert_idle is not None:assert_idle(runtime_database)
         if stop is None:
             stop=lambda identity:subprocess.run(['docker','stop','-t','15',identity],check=True,timeout=30)
         stop(worker_id)
@@ -149,14 +149,21 @@ def main():
                    'v2-o4','v2-cdecr-executor','v2-initialization','v2-scheduler']
             manifest['components']={r:manifest['components'][r] for r in order if r in manifest['components']}
             release.reconcile=lambda *_: {'deferred':'verify business and owner progress before cleanup'}
-            if 'codex-worker' in manifest['components']:
+            assert_idle=None
+            runtime_database='/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime/runtime.sqlite3'
+            if 'v2-scheduler' in manifest['components']:
                 import runpy
                 guard=audit/'w3-release-gate.py'
                 guard.write_bytes(git(commit,'scripts/ops/w3_latency_release_20261111.py'))
+                assert_idle=runpy.run_path(str(guard))['assert_scheduler_idle']
+                assert_idle(runtime_database)
+            if 'codex-worker' in manifest['components']:
+                # A serving Scheduler can consume durable results after this
+                # Worker returns. Only a Scheduler replacement must drain its
+                # result owners; Worker replacement drains/fences model Jobs.
                 stop_idle_worker(
                     '/var/lib/docker/volumes/doxagent-v2_v2-data/_data/workspaces/worker-jobs.sqlite3',
-                    '/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime/runtime.sqlite3',
-                    inspect('codex-worker')['Id'],runpy.run_path(str(guard))['assert_scheduler_idle'])
+                    runtime_database,inspect('codex-worker')['Id'],assert_idle)
             # Activate the new input representation only when every writer/reader is installed.
             gate=Path('/var/lib/docker/volumes/doxagent-v2_v2-data/_data/research/.d3-native-inputs-disabled')
             gate.touch(mode=0o600)
