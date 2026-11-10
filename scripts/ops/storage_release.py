@@ -16,7 +16,7 @@ import subprocess
 import tempfile
 import time
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path,PurePosixPath
 
 DEFAULT_ROOT = Path('/var/lib/doxagent/releases')
 REPOSITORIES = {'backend':'doxagent-v2','site':'doxagent-site-access',
@@ -163,8 +163,8 @@ def owner_status(containers):
         alias=base/'read/active.json'
         if alias.is_file():
             try:
-                target=Path(json.loads(alias.read_text())['path'])
-                read_path=base/target.relative_to('/data') if target.is_absolute() else alias.parent/target
+                target=PurePosixPath(json.loads(alias.read_text())['path'])
+                read_path=base.joinpath(*target.relative_to('/data').parts) if target.is_absolute() else alias.parent.joinpath(*target.parts)
                 if not read_path.resolve().is_relative_to((base/'read').resolve()):raise ValueError('read alias escaped its volume')
             except (ValueError,KeyError,OSError) as exc:result['read_alias']={'error':str(exc)};read_path=base/'read/.invalid-alias'
         for name,relative in [('read','read/v2.sqlite3'),('research','research/research.sqlite3'),('initialization','initialization/control.sqlite3'),('bus','bus/bus.sqlite3'),('runtime','runtime/runtime.sqlite3'),('acquisition','bus/acquisition.sqlite3'),('worker','workspaces/worker-jobs.sqlite3')]:
