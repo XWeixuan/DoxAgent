@@ -1,0 +1,490 @@
+{
+  "applied": false,
+  "sources": [
+    {
+      "source_id": "airspaceforces_space",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "ans_nuclear_newswire",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "army_news_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "army_news_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "aviationweek_rocketlab",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "aws_platform_marketplace_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "barrons_ticker_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "benzinga_news",
+      "target_seconds": 15,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "breakingdefense_space",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "canary_media",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "corporate_ir_press_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "darpa_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "data_center_frontier",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "defensescoop_drones",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "defensescoop_space",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "digitimes_tw_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "dod_contracts",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "dod_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "doe_energy_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "etnews_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "target_seconds": 30,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "globenewswire_search",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "google_news_search_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "ibkr_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "target_seconds": 30,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "target_seconds": 30,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "ionq_nautilus_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "ionq_quantum_actors_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "iridium_press_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "lakehouse_platform_official_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "nasa_2026_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "national_quantum_initiative",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "nbis_official_actor_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "nist_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "nrc_event_notifications",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "nrc_news_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "nro_press_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "nsf_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "optical_systems_official_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "quantum_insider",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "target_seconds": 30,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "sec_edgar",
+      "target_seconds": 10,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "shephard_uncrewed",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "siliconangle_ai",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "siliconangle_software",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "spacecom_launches",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "ssc_newsroom",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "technews_hardware",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "thefly_ticker_news",
+      "target_seconds": 30,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "thelec_semiconductors_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "trendforce_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "trendforce_press_releases",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "unmannedairspace_counteruas",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "utility_dive",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "venturebeat_ai",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "venturebeat_software",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "target_seconds": 20,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "target_seconds": 30,
+      "changed": false,
+      "changed_bindings": 0,
+      "enabled": true
+    }
+  ],
+  "removed": [],
+  "profiles": []
+}

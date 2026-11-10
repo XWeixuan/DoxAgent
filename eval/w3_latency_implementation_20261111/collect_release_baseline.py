@@ -12,7 +12,7 @@ common=['control_io.py','w3_timing.py','persistent_runtime_v2/w3_research_store.
 roles={
  'v2-scheduler':common+['persistent_runtime_v2/'+p+'.py' for p in
                        ['coordinator','journal','repository','service','w3','w3_execution','w3_threads','worker_receipts']],
- 'codex-worker':common+['codex_worker/'+p+'.py' for p in ['app','io_budget','sdk_runtime']]+['mcp/w3_research_server.py'],
+ 'codex-worker':common+['codex_worker/'+p+'.py' for p in ['app','io_budget','sdk_runtime','__main__']]+['mcp/w3_research_server.py'],
 }
 state=json.loads(Path('/var/lib/doxagent/releases/state.json').read_bytes())
 proof=dict(at=datetime.now(UTC).isoformat(),roles={})

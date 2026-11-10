@@ -19,6 +19,21 @@ def flush_timing():
     _diagnostics.join()
 
 
+def test_worker_entrypoint_emits_bounded_receipts_without_global_info():
+    import subprocess
+    import sys
+    code='''
+import logging
+from doxagent.codex_worker import __main__ as entry
+from doxagent.w3_timing import _publish_receipt
+entry.uvicorn.run=lambda *a,**kw: _publish_receipt({'entrypoint_probe':True})
+entry.main()
+assert logging.getLogger().level==logging.WARNING
+'''
+    result=subprocess.run([sys.executable,'-c',code],capture_output=True,text=True,check=True)
+    assert 'w3_boundary_timing {"entrypoint_probe":true}' in result.stderr
+
+
 def test_trace_crosses_async_and_thread_boundaries_without_content():
     @observed("sync")
     def child():

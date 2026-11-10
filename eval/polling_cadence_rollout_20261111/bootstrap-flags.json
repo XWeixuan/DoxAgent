@@ -1,0 +1,1 @@
+[{"role": "v2-api", "collection_plane_enabled": "true"}, {"role": "v2-message-bus", "collection_plane_enabled": "true"}, {"role": "v2-content-enrichment", "collection_plane_enabled": "true"}, {"role": "v2-message-collector", "collection_plane_enabled": "true"}]
