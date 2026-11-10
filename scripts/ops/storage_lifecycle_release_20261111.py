@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import sqlite3
 import subprocess
 import tarfile
 
@@ -30,6 +31,23 @@ def actual_file(role,path):
     result=subprocess.run(['docker','cp','doxagent-v2-'+role+'-1:/app/'+path,'-'],capture_output=True)
     if result.returncode:return None
     with tarfile.open(fileobj=io.BytesIO(result.stdout)) as ar:return ar.extractfile(ar.getmembers()[0]).read()
+
+
+def stop_idle_worker(database,runtime_database,worker_id,assert_idle,*,stop=None):
+    # Submission commits its queued Job before launching a model. Hold that
+    # writer admission only through the old process stop, closing the idle-check
+    # race without adding a runtime queue or changing business concurrency.
+    db=sqlite3.connect(database,timeout=.2,isolation_level=None)
+    try:
+        db.execute('BEGIN IMMEDIATE')
+        if db.execute("SELECT 1 FROM jobs WHERE status IN ('queued','running') LIMIT 1").fetchone():
+            raise ValueError('Worker has accepted work; keep serving')
+        assert_idle(runtime_database)
+        if stop is None:
+            stop=lambda identity:subprocess.run(['docker','stop','-t','15',identity],check=True,timeout=30)
+        stop(worker_id)
+    finally:
+        db.rollback();db.close()
 
 
 def load_release(audit,commit):
@@ -131,6 +149,14 @@ def main():
                    'v2-o4','v2-cdecr-executor','v2-initialization','v2-scheduler']
             manifest['components']={r:manifest['components'][r] for r in order if r in manifest['components']}
             release.reconcile=lambda *_: {'deferred':'verify business and owner progress before cleanup'}
+            if 'codex-worker' in manifest['components']:
+                import runpy
+                guard=audit/'w3-release-gate.py'
+                guard.write_bytes(git(commit,'scripts/ops/w3_latency_release_20261111.py'))
+                stop_idle_worker(
+                    '/var/lib/docker/volumes/doxagent-v2_v2-data/_data/workspaces/worker-jobs.sqlite3',
+                    '/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime/runtime.sqlite3',
+                    inspect('codex-worker')['Id'],runpy.run_path(str(guard))['assert_scheduler_idle'])
             # Activate the new input representation only when every writer/reader is installed.
             gate=Path('/var/lib/docker/volumes/doxagent-v2_v2-data/_data/research/.d3-native-inputs-disabled')
             gate.touch(mode=0o600)
