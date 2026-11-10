@@ -261,18 +261,13 @@ def reconcile(root, state):
     if state.get('format') != 'doxagent.component-releases.1' or not state.get('components'):
         raise ValueError('bootstrap the audited component rollback inventory before retirement')
     pressure=reclamation_pressure()
-    available=shutil.disk_usage('/').free
-    if available>=20*1024**3 and any(pressure.get(k,0)>=v for k,v in [('cpu',10),('io',10),('memory',2)]):
-        report=dict(at=time.time(),available_before=available,available_after=available,retired=[],errors=[],
-                    deferred='message pipeline resource reserve',pressure=pressure)
-        state['cleanup_pending']=True;state['last_reconcile']=report
-        atomic(root/'state.json',state);atomic(root/'last-reconcile.json',report)
-        return report
+    # The hourly host owner already runs at low CPU/IO priority. Sustained CPU
+    # pressure must not permanently suppress retirement or capacity receipts.
     images, containers = inspect_images(), inspect_containers()
     record_live_references(state,images,containers)
     record_repair_references(state,containers)
     before = shutil.disk_usage('/').free
-    report = dict(at=time.time(),available_before=before,retired=[],errors=[])
+    report = dict(at=time.time(),available_before=before,retired=[],errors=[],pressure=pressure)
     processes=run(['ps','-eo','args'])
     import re
     if any(re.match(r'^(?:\S*/)?docker\s+(?:build\s|buildx\s+build\s)',p.strip()) for p in processes.splitlines()):
