@@ -1,0 +1,267 @@
+{
+  "at": "2026-11-10T22:54:48.483626+00:00",
+  "long_running_roles_ok": true,
+  "one_shot_refreshes_ok": true,
+  "containers": {
+    "doxagent-v2-v2-scheduler-1": {
+      "image": "sha256:62d6be3311dfe4b63cc583a0d1a63bc854bdbea3c6ac8c0a4c63126230720b36",
+      "id": "1ea3a16b07cfa8f61bf4807ee85c62f74ab2245bd52abed3b0957ccd2136b2e8",
+      "running": true,
+      "health": null,
+      "started_at": "2026-11-10T22:46:51.695705607Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T22:46:03.560228157Z"
+    },
+    "doxagent-ionq-refresh-20261110": {
+      "image": "sha256:b60f21f6c7d391b720feb35e6e6fde9929f2481f51bf4b1a50ade706b354d8cc",
+      "id": "c53d91e51b48ea917aef5912bd62c4fca01b13085b4bf153564dfaa8de694978",
+      "running": false,
+      "health": null,
+      "started_at": "2026-11-10T22:46:52.057459014Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T22:46:58.60250164Z"
+    },
+    "doxagent-cohr-refresh-20261110": {
+      "image": "sha256:b60f21f6c7d391b720feb35e6e6fde9929f2481f51bf4b1a50ade706b354d8cc",
+      "id": "552b21b685021b4274dcf54b6e05c75acbfe37f0d7ead8ecd6c27f11307d83e8",
+      "running": false,
+      "health": null,
+      "started_at": "2026-11-10T22:46:52.290570247Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T22:46:59.029590703Z"
+    },
+    "doxagent-v2-v2-initialization-1": {
+      "image": "sha256:b60f21f6c7d391b720feb35e6e6fde9929f2481f51bf4b1a50ade706b354d8cc",
+      "id": "2524022e85a03aa53d45408f808669a9ae3b85aec160658d8df41715e27fd32e",
+      "running": true,
+      "health": null,
+      "started_at": "2026-11-10T22:46:52.54256689Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T22:46:22.072692303Z"
+    },
+    "doxagent-v2-v2-cdecr-executor-1": {
+      "image": "sha256:ff2e3ba22b3283050b579a4aa8083e46f1ba6812cdcecf623aeceb6d6407ae5b",
+      "id": "974550495dba7aab2abd6c2ac8b1054fd3013f756c42d347c093a68812a96bcf",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-11-10T22:46:52.893105518Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T22:46:22.341670666Z"
+    },
+    "doxagent-v2-v2-o4-1": {
+      "image": "sha256:9ac56280e2836dd48c90b5dd5e87dfcc991d04d3b87dd4cfa5b8f54059921f71",
+      "id": "ac9c81831594360e63fe45f62417525812a3ca02d40a2b561592583f558592b5",
+      "running": true,
+      "health": null,
+      "started_at": "2026-11-10T22:46:53.270098638Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T22:46:22.925519048Z"
+    },
+    "doxagent-v2-initialization-guardian-1": {
+      "image": "sha256:6c78ff86e51cb459102c576e4dff92c4c0bd13f65c1c9a5363578f2afec6874b",
+      "id": "204ce157d2d06c53d051fe4073d3d583af8ed0017e897a2f41ff0c2a3d062f10",
+      "running": true,
+      "health": null,
+      "started_at": "2026-11-10T22:46:53.890900121Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T22:46:23.088781458Z"
+    },
+    "doxagent-v2-codex-worker-1": {
+      "image": "sha256:64c3564fce85b3f24d1b44330b3aa5cceaa7a7a7ed919aec2ef2cdf7ffc98f56",
+      "id": "b4711e1019157c6459af6f48effdde4dcc7b1967375300a2867c8638fdbd884f",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-11-10T22:46:30.778750966Z",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z"
+    },
+    "doxagent-v2-v2-maintenance-1": {
+      "image": "sha256:2e99486027f800c7bc87215066fa8e92e778de045a2d544f733fdb2ac7ee8fb0",
+      "id": "611ac74d14b86b64aedf0014a19a484e9001e806c63950873875a86d8e834ab5",
+      "running": true,
+      "health": null,
+      "started_at": "2026-11-10T19:05:31.634320856Z",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z"
+    },
+    "doxagent-v2-v2-transport-maintenance-1": {
+      "image": "sha256:63d17c8889dc4ad09eb9e4b0609d74d1d5917b8f069f3bc6d8a206f1a812a77b",
+      "id": "180b02d7370c711993445a61e5110a361430f8fc063d048a46cea28d06b0bfe2",
+      "running": true,
+      "health": null,
+      "started_at": "2026-11-10T19:04:10.55069367Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T18:45:51.980735792Z"
+    },
+    "doxagent-v2-v2-projector-1": {
+      "image": "sha256:0775e96eb08f22c1262c8d3932b8a10fa8be747cc70a2a6b6a17162f2b345d51",
+      "id": "f148fe70d8fb0708d01de3e61819e19059f2aea2cc003793996ef671d0155f32",
+      "running": true,
+      "health": null,
+      "started_at": "2026-11-10T19:04:10.402854561Z",
+      "exit_code": 0,
+      "finished_at": "2026-11-10T18:45:52.257599344Z"
+    },
+    "doxagent-v2-v2-message-collector-1": {
+      "image": "sha256:aff392a3e876f3c219a8dfe29712aade44f793818eecbde40ccc78e2e4670e24",
+      "id": "22febbc663bd91225669b0ed78d2e9659126b2a4005d142d94011d54da65fa5f",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-11-10T19:53:43.198099812Z",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z"
+    },
+    "doxagent-v2-v2-site-access-1": {
+      "image": "sha256:d0dcf20065445a21a00e1fdd3c697ab80747cabfc4ddc7223adb766bdaf7eaf4",
+      "id": "5e206eb48b031ccd3965cc0ae7a298f31bf52cbb29879111f18bdf8aa85dea8b",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-11-10T18:42:15.802818641Z",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z"
+    }
+  },
+  "source_files": {
+    "src/doxagent/codex_worker/initialization_owners.py": {
+      "expected": "00f16e9bea0dd57d3322a285660cc336cc4a0be58347aa4dcaa7bbea3ed2d080",
+      "actual": "00f16e9bea0dd57d3322a285660cc336cc4a0be58347aa4dcaa7bbea3ed2d080",
+      "matched": true
+    },
+    "src/doxagent/codex_worker/snapshot_retention.py": {
+      "expected": "4995af4295a878aa93b736a0da78ee2fa3171ba44ce7ab78aece93f843f35e4b",
+      "actual": "4995af4295a878aa93b736a0da78ee2fa3171ba44ce7ab78aece93f843f35e4b",
+      "matched": true
+    },
+    "src/doxagent/codex_worker/session_retention.py": {
+      "expected": "5a29daaab9059d0cf90a26ee375f5095bbeb5eb0358a0162d1341c6789e25ade",
+      "actual": "5a29daaab9059d0cf90a26ee375f5095bbeb5eb0358a0162d1341c6789e25ade",
+      "matched": true
+    }
+  },
+  "read": {
+    "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read/serving-v4-20261018/v2.sqlite3",
+    "gc": {
+      "at": "2026-11-10T22:54:47.220327+00:00",
+      "deleted": {
+        "changes": 2000,
+        "commit_retention": 892,
+        "commits": 2000,
+        "content_search": 0,
+        "contributions_history": 0,
+        "cursors": 0,
+        "definitions": 0,
+        "metric_buckets_history": 2000,
+        "object_history": 1500,
+        "poll_current": 96,
+        "views": 0
+      },
+      "elapsed_seconds": 2.0844217720004963,
+      "errors": [
+        {
+          "error": "interrupted",
+          "stage": "poll_current"
+        }
+      ],
+      "next_stage": "poll_current",
+      "retention_floor": 13174062
+    }
+  },
+  "disk": "Filesystem        1B-blocks         Used   Available Use% Mounted on\n/dev/vda3      400937631744 341438099456 58519220224  86% /\n",
+  "release_timer": "active",
+  "host_code_sha256": "8db638ac724f6e4984bbb3b8cd75ad19534c813ad05f00e4231f27ba8d36c3ab",
+  "cancelled_during_priority": [],
+  "active_jobs": [
+    [
+      "running",
+      "persistent_runtime_w3",
+      7
+    ]
+  ],
+  "initialization_runs": {
+    "ops/cohr-refresh-20261110/control.sqlite3": [
+      [
+        "init-cohr-78b23afac3f9481cb71179d2c5eb70ce",
+        "RUNNING",
+        0
+      ]
+    ],
+    "ops/ionq-refresh-20261110/control.sqlite3": [
+      [
+        "init-ionq-6287ab2adc34410d930a38b352e55b3a",
+        "RUNNING",
+        0
+      ]
+    ]
+  },
+  "priority": {
+    "started_at": "2026-11-10T22:45:58.091864+00:00",
+    "finished_at": "2026-11-10T22:46:54.429704+00:00",
+    "released": true,
+    "worker_image": "sha256:64c3564fce85b3f24d1b44330b3aa5cceaa7a7a7ed919aec2ef2cdf7ffc98f56",
+    "initial_jobs": [],
+    "cancellation_results": []
+  },
+  "worker_owner": {
+    "at": "2026-11-10T22:51:36.313149+00:00",
+    "snapshots": {
+      "retired": [
+        "933ef2f5416e288310cd5012c5d0d505",
+        "9367ee1f36cc95d04cfbcd51424024da",
+        "947fbba69f15e61277ba5458f5f6c049",
+        "94c339b0b71ec988d4e9a1b7835f5f3a",
+        "954c9d834dd5a522ef9dd7f4a3a20ebe",
+        "95ef290aff7ca53a97642114ddee6ef4",
+        "9716ba35fd47d67f01997411ffbacb0f",
+        "97dbe19dba7506eb89cc1410806268d3",
+        "9831f5a4a3cf6a6a665d9ae305ab27a3",
+        "988f263127a12273059da483eda19c8e",
+        "989b66c5c65c00923d1b7bf397d70e8d",
+        "98d39387791c1fea7f43e5735b9baea5",
+        "99e58d6b59b220921b72532b8bd5e15e",
+        "9a5e7e0e396cab67d234c25216337546",
+        "9b14e6f08d2dd55602d0534527468136"
+      ],
+      "protected": 17,
+      "unknown": 0,
+      "errors": [],
+      "ledgers": [
+        "initialization/control.sqlite3",
+        "ops/be-refresh-20261025/control.sqlite3",
+        "ops/cohr-refresh-20261110/control.sqlite3",
+        "ops/intc-refresh-20261101/control.sqlite3",
+        "ops/ionq-refresh-20261110/control.sqlite3"
+      ],
+      "unused_contents": 11
+    },
+    "workspace_runs": 10,
+    "workspace_errors": []
+  },
+  "acquisition": {
+    "at": "2026-11-10T22:54:28.303255+00:00",
+    "unit_hours": 12,
+    "hours": [
+      "2026-11-02T08:00:00+00:00"
+    ],
+    "stages": {
+      "checkpoints": {
+        "deleted": 0,
+        "scanned": 16
+      },
+      "physical": {
+        "deleted": 512,
+        "scanned": 512
+      },
+      "schedules": {
+        "deleted": 0,
+        "scanned": 128
+      },
+      "small": {
+        "captures": 0,
+        "inputs": 0,
+        "unit_hours": 12
+      }
+    },
+    "errors": []
+  },
+  "root_available_gib": 54.5
+}
