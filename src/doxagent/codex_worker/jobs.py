@@ -1196,7 +1196,7 @@ class WorkerJobManager:
                         "execution_phase": "QUEUED" if recoverable else "SETTLED",
                         "wait_reason": "INFRASTRUCTURE_RECOVERY" if recoverable else None,
                         "infra_recovery_count": job.infra_recovery_count + int(recoverable),
-                        "next_retry_at": time.time() + 30 if recoverable else 0,
+                        "next_retry_at": max(job.next_retry_at, time.time() + 30) if recoverable else 0,
                         "error_code": None if recoverable else "WORKER_INFRA_RECOVERY_EXHAUSTED",
                         "error_message": "worker restarted before the Codex turn completed",
                         "updated_at": utc_now(),
