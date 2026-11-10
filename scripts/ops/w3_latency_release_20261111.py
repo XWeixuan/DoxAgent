@@ -132,6 +132,11 @@ def main():
                     os.environ[key] = value
             manifest['components'] = {r: manifest['components'][r] for r in ['codex-worker', 'v2-scheduler'] if r in manifest['components']}
             release.reconcile = lambda *_: dict(deferred='observe realtime business before image retirement')
+            # Match the established exact-overlay publication path. Compose's
+            # inherited 1200s stop grace otherwise blocks replacement while
+            # durable external Jobs continue independently of this Scheduler.
+            for role in manifest['components']:
+                subprocess.run(['docker', 'stop', '-t', '15', inspect(role)['Id']], check=True)
             release.deploy(ROOT, state, manifest)
             receipt = dict(commit=commit, roles=list(manifest['components']), at=datetime.now(UTC).isoformat())
             release.atomic(audit / 'release.json', receipt)

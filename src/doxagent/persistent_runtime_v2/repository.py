@@ -19,6 +19,7 @@ from typing import Any, Literal, Protocol, TypeVar
 from pydantic import BaseModel
 
 from doxagent.control_io import write_lock
+from doxagent.w3_timing import observed
 
 from .fencing import FencedConnection
 from .schema import (
@@ -943,6 +944,7 @@ class SQLitePersistentRuntimeV2Repository:
                 )
         return case
 
+    @observed('case.read')
     def get_case(self, case_id: str) -> RuntimeCase | None:
         return self._read_model(
             RuntimeCase,
@@ -1200,6 +1202,7 @@ class SQLitePersistentRuntimeV2Repository:
             if not changed:
                 raise LeaseLost("effect lease lost")
 
+    @observed('effect.save')
     @retry_sqlite_write
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect:
         encoded_payload = self.content.encode(effect.model_dump(mode="json"))
@@ -1263,6 +1266,24 @@ class SQLitePersistentRuntimeV2Repository:
                         "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
                         (effect.case_id, encode(value)),
                     )
+            if effect.status is RuntimeEffectStatus.COMPLETED and effect.effect_type in {
+                RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION
+            }:
+                from .w3_contracts import W3_CONTRACT, W3_LEGACY_CONTRACT
+                # Same completion rule as Service, in the Effect's existing
+                # transaction. Patch current scalar fields; never rewrite an
+                # expanded stale Case over a concurrent Operations result.
+                connection.execute(
+                    "UPDATE runtime_v2_cases SET status='COMPLETED',technical_status='OK',"
+                    "payload_json=json_set(payload_json,'$.status','COMPLETED','$.technical_status','OK',"
+                    "'$.completed_at',coalesce(json_extract(payload_json,'$.completed_at'),"
+                    "json_extract(payload_json,'$.decision_completed_at'))) "
+                    "WHERE case_id=? AND json_extract(payload_json,'$.w3_contract_version') IN (?,?) "
+                    "AND json_extract(payload_json,'$.decision_completed_at') IS NOT NULL "
+                    "AND (status!='COMPLETED' OR technical_status!='OK' "
+                    "OR json_extract(payload_json,'$.completed_at') IS NULL)",
+                    (effect.case_id, W3_CONTRACT, W3_LEGACY_CONTRACT),
+                )
         return effect
 
     def list_effects(self, case_id: str) -> list[RuntimeEffect]:

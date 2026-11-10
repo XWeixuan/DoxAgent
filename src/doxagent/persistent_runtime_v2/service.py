@@ -22,6 +22,7 @@ from pydantic import BaseModel, ValidationError
 from doxagent.event_library.contracts import CanonicalEvent
 from doxagent.event_library.provider import KnownEventIndexSnapshot
 from doxagent.semantic_clock import semantic_day
+from doxagent.w3_timing import observed
 from doxagent.v2_control.repository import ControlError, ControlRepository
 from doxagent.workflows.codex_document3.consumer_contracts import (
     PolicyDetailSnapshotV3,
@@ -2843,16 +2844,18 @@ class PersistentRuntimeV2Service:
             case.model_copy(update={"w1_extraction": extraction, "updated_at": utc_now()})
         )
 
+    @observed('case.refresh_completion')
     def _refresh_case_completion(self, case_id: str) -> None:
         case = self.repository.get_case(case_id)
         if case is None:
             return
-        effects = self.repository.list_effects(case_id)
         if is_two_phase_contract(case.w3_contract_version):
-            effects = [
-                e for e in effects if e.effect_type is not RuntimeSideEffect.W3_POST_DECISION
-            ]
             if case.decision_completed_at is not None:
+                if (case.status is RuntimeCaseStatus.COMPLETED
+                    and case.technical_status is RuntimeTechnicalStatus.OK
+                    and case.completed_at is not None):
+                    self._project_terminal(case)
+                    return
                 self.repository.save_case(
                     case.model_copy(
                         update=dict(
@@ -2864,6 +2867,9 @@ class PersistentRuntimeV2Service:
                 )
                 self._project_terminal(self.repository.get_case(case_id))
                 return
+        effects = self.repository.list_effects(case_id)
+        if is_two_phase_contract(case.w3_contract_version):
+            effects = [e for e in effects if e.effect_type is not RuntimeSideEffect.W3_POST_DECISION]
         if any(effect.status is RuntimeEffectStatus.FAILED for effect in effects):
             status = RuntimeCaseStatus.FAILED
             technical = RuntimeTechnicalStatus.FAILED
@@ -2931,6 +2937,7 @@ class PersistentRuntimeV2Service:
         self._project_terminal(saved)
         return saved
 
+    @observed('case.terminal_projection')
     def _project_terminal(self, case: RuntimeCase) -> None:
         if self._projection_outbox is None:
             return

@@ -180,3 +180,43 @@ async def test_only_w3_resume_excludes_unused_response_history(tmp_path,monkeypa
     assert sdk.thread_resume_id=='original'
     assert sdk.thread_resume_kwargs.get('include_turns') is (False if w3 else None)
     assert sdk.thread_resume_kwargs['model']==req.model
+
+
+def test_effect_completion_never_rewrites_a_concurrent_operations_result(tmp_path,monkeypatch):
+    service,journal,_,case,_=setup_case(tmp_path,hit=False,novelty='NEW')
+    try:
+        service.process_pending_effects()
+        stale=service.repository.get_case(case.case_id)
+        assert stale.status.value=='COMPLETED' and stale.completed_at==stale.decision_completed_at
+        # The Operations writer commits after the completion reader's snapshot.
+        with journal.transaction(expand=False) as db:
+            db.execute("UPDATE runtime_v2_cases SET payload_json=json_set(payload_json,"
+                       "'$.w3_operations_status','COMMITTED','$.w3_operations_result',json(?)) WHERE case_id=?",
+                       ('{"concurrent":"preserved"}',case.case_id))
+        monkeypatch.setattr(service.repository,'get_case',lambda cid:stale)
+        def unexpected(*args,**kwargs):raise AssertionError('redundant full Case rewrite')
+        monkeypatch.setattr(service.repository,'save_case',unexpected)
+        service._refresh_case_completion(case.case_id)
+        with journal.transaction(write=False,expand=False) as db:
+            assert tuple(db.execute("SELECT json_extract(payload_json,'$.w3_operations_status'),"
+                              "json_extract(payload_json,'$.w3_operations_result.concurrent') "
+                              "FROM runtime_v2_cases WHERE case_id=?",(case.case_id,)).fetchone())==('COMMITTED','preserved')
+    finally:service.close()
+
+
+def test_effect_and_scalar_case_completion_roll_back_together(tmp_path):
+    from doxagent.persistent_runtime_v2.schema import RuntimeEffectStatus
+    service,journal,_,case,_=setup_case(tmp_path,hit=False,novelty='NEW')
+    try:
+        effect=service.repository.claim_effects()[0]
+        with journal.transaction(expand=False) as db:
+            db.execute("UPDATE runtime_v2_cases SET payload_json=json_set(payload_json,"
+                       "'$.decision_completed_at',?,'$.w3_contract_version','persistent-runtime.w3.v5') WHERE case_id=?",
+                       (journal.clock().isoformat(),case.case_id))
+            db.execute("CREATE TRIGGER test_fail_case_completion BEFORE UPDATE ON runtime_v2_cases "
+                       "WHEN NEW.status='COMPLETED' BEGIN SELECT RAISE(ABORT,'completion rollback'); END")
+        with pytest.raises(sqlite3.IntegrityError,match='completion rollback'):
+            service.repository.save_effect(effect.model_copy(update={'status':RuntimeEffectStatus.COMPLETED}))
+        with journal.transaction(write=False,expand=False) as db:
+            assert db.execute('SELECT status FROM runtime_v2_effects WHERE effect_id=?',(effect.effect_id,)).fetchone()[0]=='RUNNING'
+    finally:service.close()

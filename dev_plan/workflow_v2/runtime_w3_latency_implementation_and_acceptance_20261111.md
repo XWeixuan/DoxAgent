@@ -40,3 +40,13 @@
 SDK区间内DoxAgent本地研究工具的处理墙钟按区间并集加回内部耗时；完整Case按真实Trade入口到Operations owner返回计算，不把阶段P95相加。真实Effect SQL返回后的收尾也计入；原60秒应用退避不排除。缺失边界、SDK尝试、日志截断或采集预算不足均标明，不能据此宣布5秒达标。
 
 生产存在其他会话已经正式发布但未同步main的存储生命周期代码；先合并已部署c6949151，再逐文件比对实际Worker/Scheduler。保留其维护协程及收益任务启动修复，按实际已接受镜像做精确文件覆盖，不重建其他角色、不覆盖未涉及的生产文件或环境配置。完整源码快照仅用于本地对比，不加入仓库；公开证据保留无密钥的镜像/源码指纹。
+
+## 首次生产反馈与追加精简
+
+03:43发布Scheduler后首个完成Trade `case_f350e9422c084dd29616e297d494be84`，内部6.223s：入口到Job3.814s、Job排队70ms、启动343ms、Worker完成到commit741ms、commit到owner结束1.134s。Future完成到续接派发仅0.01ms，不能把该例收尾归因于Future机制。该时点Worker尚未替换，本地MCP工具加回仍未覆盖；不作为最终验收或充分A/B证据。
+
+收尾代码存在可直接删除的重复工作：Effect已完成后，`_refresh_case_completion`扫描Effects、展开整份Case、再次全量写终态、再读一次供投影。两阶段已完成决策的终态规则本身不依赖其他Effect；将相同status/technical_status/completed_at小字段更新合入原Effect事务，随后refresh只做现有必要投影。不再用旧展开对象重写当前Case，因此也避免覆盖并发Operations结果。Effect和这些字段同事务回滚；原有COMPLETED语义、错误处理、投影触发与非两阶段路径保留。108项定向回归通过。
+
+另做两例只读探针验证投影的turn读取：仅7.6/4.9KB、解析约2.6/0.6ms，COUNT查询与原查询连接开销均约18–25ms。**没有证据认为这两例的模型回执展开是主要瓶颈，不为此增添缓存或专用状态。**
+
+本次Compose继承1200秒停止宽限，发布脚本按既有流程在Compose前停止所核验的不可变容器ID。03:48:56，另一组外部停止操作同时向Scheduler/Initialization/CDECR/O4/Guardian发SIGTERM，未变更正式镜像；来源尚未确认。03:50恢复相同正式Scheduler，记录这一受干扰窗口，不将它混作稳定性能验收。用户随后授权仅本次暂停非W3新派发、保留在途Job以完成Worker发布；实时Scheduler继续工作。
