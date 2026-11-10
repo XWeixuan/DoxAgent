@@ -1,4 +1,4 @@
-"""Publish the shared-writer follow-up onto the accepted Scheduler image."""
+"""Publish exact reviewed files onto an accepted role image via canonical release."""
 
 import argparse
 import copy
@@ -19,7 +19,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('commit')
 parser.add_argument('baseline', nargs='?', default='f8bf7654')
 parser.add_argument('paths', nargs='*')
-parser.add_argument('--role', choices=['v2-scheduler', 'codex-worker'], default='v2-scheduler')
+parser.add_argument('--role', choices=['v2-scheduler', 'codex-worker', 'v2-initialization',
+                                     'v2-cdecr-executor'], default='v2-scheduler')
 args = parser.parse_args()
 commit = args.commit
 role = args.role

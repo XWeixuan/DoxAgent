@@ -87,6 +87,8 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
                         "SELECT min(due_at) FROM runtime_tasks WHERE status='PENDING'"
                     ).fetchone()[0]
                 target = journal.path.with_suffix(".scheduler-health.json")
+                from doxagent.persistent_runtime_v2.maintenance_recovery import health
+
                 temporary = target.with_suffix(".tmp")
                 temporary.write_text(
                     json.dumps(
@@ -98,6 +100,7 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
                             admission_degraded_reason=getattr(
                                 self, "admission_degraded_reason", None
                             ),
+                            **health(journal),
                         )
                     ),
                     encoding="utf8",

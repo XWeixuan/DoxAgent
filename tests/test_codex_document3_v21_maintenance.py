@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlite3
 from types import SimpleNamespace
 
 import pytest
@@ -14,6 +15,85 @@ from tests.test_codex_document3_v21_orchestration import rig as v21_rig
 @pytest.fixture(name="rig")
 def _rig(tmp_path):
     return v21_rig.__wrapped__(tmp_path)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("legacy_degraded", [False, True])
+async def test_maintenance_storage_lock_preserves_request_and_resumes_same_attempt(
+    rig, monkeypatch, legacy_degraded
+):
+    initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="storage-base")
+    version = initial.handoff.policy_set_version
+    rig.worker.patch = {"base_policy_set_version": version, "upsert_policies": [],
+                        "retire_policy_ids": [], "summary": "unchanged"}
+    original_run = rig.worker.run
+    requests = []
+
+    async def worker(request):
+        requests.append(request)
+        if len(requests) <= 2:
+            raise sqlite3.OperationalError("database is locked")
+        return await original_run(request)
+
+    monkeypatch.setattr(rig.worker, "run", worker)
+    repair = rig.orchestrator._raise_maintenance_storage_failure
+    kwargs = dict(ticker="MU", base_policy_version=version, as_of=NOW,
+                  explicit_maintenance=True, run_id="storage-maintain")
+    if legacy_degraded:
+        monkeypatch.setattr(rig.orchestrator, "_raise_maintenance_storage_failure",
+                            lambda *args: None)
+        result = await rig.orchestrator.maintain(**kwargs)
+        assert result.status == "DEGRADED"
+        monkeypatch.setattr(rig.orchestrator, "_raise_maintenance_storage_failure", repair)
+    with pytest.raises(sqlite3.OperationalError, match="database is locked"):
+        await rig.orchestrator.maintain(**kwargs)
+    before = rig.state.run("storage-maintain")
+    record = rig.state.task("storage-maintain", "maintain:0")
+    assert record["status"] == "RUNNING" and record["attempt_count"] == 2
+    assert record["worker_error"] == "database is locked" and not record.get("job")
+    frozen_request = dict(record["request"])
+    result = await rig.orchestrator.maintain(**kwargs)
+    assert result.status not in {"FAILED", "DEGRADED"}
+    assert requests[-1].model_dump(mode="json") == frozen_request
+    assert requests[-1].idempotency_key == requests[-2].idempotency_key
+    assert rig.state.task("storage-maintain", "maintain:0")["attempt_count"] == 2
+    assert rig.state.run("storage-maintain")["prepared"] == before["prepared"]
+
+
+@pytest.mark.parametrize("extra", [{"job": {"status": "failed"}},
+                                   {"files": {"output/work/v21/maintenance_patch.json": "{}"}},
+                                   {"worker_error": "invalid maintenance patch"}])
+def test_storage_recovery_does_not_reopen_jobs_outputs_or_business_failures(rig, extra):
+    record = {"status": "FAILED", "worker_error": "database is locked", **extra}
+    # Guarded cases must return without touching state, even without a run row.
+    rig.orchestrator._raise_maintenance_storage_failure("not-created", record)
+    assert rig.state.run("not-created") is None
+
+
+def test_storage_rearm_can_resume_if_saving_task_hits_another_lock(rig, monkeypatch):
+    run_id = "locked-rearm"
+    record = {"status": "FAILED", "worker_error": "database is locked", "attempt_count": 2,
+              "request": {"idempotency_key": "same-request"}}
+    rig.state.start(run_id, {}, {"status": "DEGRADED",
+                                "missing": ["maintenance patch unavailable or wrong base"]})
+    rig.state.save_task(run_id, "maintain:0", record)
+    save = rig.state.save_task
+
+    def locked_save(*args):
+        raise sqlite3.OperationalError("database is locked")
+
+    monkeypatch.setattr(rig.state, "save_task", locked_save)
+    with pytest.raises(sqlite3.OperationalError):
+        rig.orchestrator._raise_maintenance_storage_failure(run_id, record)
+    assert rig.state.run(run_id)["status"] == "RUNNING"
+    monkeypatch.setattr(rig.state, "save_task", save)
+    with pytest.raises(sqlite3.OperationalError):
+        rig.orchestrator._raise_maintenance_storage_failure(
+            run_id, rig.state.task(run_id, "maintain:0")
+        )
+    repaired = rig.state.task(run_id, "maintain:0")
+    assert repaired["status"] == "RUNNING" and repaired["attempt_count"] == 2
+    assert repaired["request"] == record["request"]
 
 
 @pytest.mark.asyncio

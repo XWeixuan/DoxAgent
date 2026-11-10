@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+import sqlite3
 from collections import Counter, defaultdict
 from datetime import datetime
 from uuid import uuid4
@@ -1429,6 +1430,40 @@ class Document3OrchestratorV21:
             ),
         )
 
+    def _raise_maintenance_storage_failure(self, run_id, task):
+        # A pre-dispatch SQLite failure is not a malformed Policy patch. Keep
+        # the same request and attempt so the runtime's existing cooldown owns
+        # recovery; confirmed jobs and accepted outputs still need reconciliation.
+        error = task.get("worker_error") or task.get("error") or ""
+        if (
+            task.get("status") != "FAILED"
+            or task.get("job")
+            or task.get("files")
+            or error.lower().strip() not in {"database is locked", "database table is locked"}
+        ):
+            return
+        run = self.state.run(run_id)
+        if run.get("status") == "DEGRADED" and run.get("missing") != [
+            "maintenance patch unavailable or wrong base"
+        ]:
+            return
+        self.state.update(
+            run_id,
+            status="RUNNING",
+            phase="MAINTAIN",
+            missing=[],
+            maintenance_storage_recovery={
+                "error": error, "attempt_count": task.get("attempt_count", 0)
+            },
+        )
+        # Write the run first: if saving the task also hits SQLITE_BUSY, the
+        # next turn can revisit its still-failed record instead of short-circuiting
+        # a DEGRADED run whose task has already been marked RUNNING.
+        self.state.save_task(
+            run_id, "maintain:0", {**task, "status": "RUNNING", "io_phase": "WAIT_WORKER"}
+        )
+        raise sqlite3.OperationalError(error)
+
     async def maintain(
         self,
         *,
@@ -1590,6 +1625,9 @@ class Document3OrchestratorV21:
         if run.get("commit"):
             return await self._publish(run_id)
         if run.get("status") == "DEGRADED":
+            self._raise_maintenance_storage_failure(
+                run_id, self.state.task(run_id, "maintain:0")
+            )
             return RunResultV21(
                 run_id=run_id,
                 ticker=ticker,
@@ -1605,6 +1643,7 @@ class Document3OrchestratorV21:
             ["output/work/v21/maintenance_patch.json"],
             {"base_policy_set_version": base_policy_version},
         )
+        self._raise_maintenance_storage_failure(run_id, task)
         patch = await self._json(
             run_id, "output/work/v21/maintenance_patch.json", MaintenancePatchV3
         )
