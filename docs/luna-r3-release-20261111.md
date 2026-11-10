@@ -45,11 +45,12 @@ API、Scheduler均以各自当时实际运行镜像为基底，只应用本提�
 
 ## 自然流量
 
-截至UTC 2026-11-10T21:13:25.797716+00:00，切换后观测到R3回执0次，其中Luna 0次、成功0次。旧Case按原冻结配置继续，不因发布改写。
+截至UTC 2026-11-10T21:14:31.886591+00:00，切换后观测到R3回执2次，其中Luna 2次、成功2次。旧Case按原冻结配置继续，不因发布改写。
 
 |ticker|lane|Case|status|context_mode|input tokens|cached tokens|
 |---|---|---|---|---|---|---|
-
+|BE|W2|case_19f2795c6cd746a6bb94dad4cfac58ba|OK|REPLAY_PARENT|8565|1327|
+|BE|W1|case_19f2795c6cd746a6bb94dad4cfac58ba|OK|REPLAY_PARENT|3871|2865|
 
 该采样用于确认发布、上下文回放与可消费，不等同整体业务准确率或高峰稳定性保证。
 
