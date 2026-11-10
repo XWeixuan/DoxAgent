@@ -5,7 +5,6 @@ from __future__ import annotations
 import inspect
 import json
 import logging
-import sqlite3
 import time
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -18,11 +17,16 @@ from uuid import uuid4
 _current = ContextVar("w3_boundary_timing", default=None)
 _parent = ContextVar("w3_boundary_timing_parent", default=None)
 _log = logging.getLogger(__name__)
+_receipts = logging.getLogger(__name__ + '.receipts')
+# Enable only the bounded, content-free completion summaries. Docker's existing
+# log rotation owns retention; no new DB writes or unbounded diagnostic files.
+_receipts.setLevel(logging.INFO)
 
 
 class BoundaryTrace:
     def __init__(self, **identity):
         self.identity = identity
+        self.trace_id = uuid4().hex
         self.started_at = datetime.now(UTC).isoformat()
         self.started = time.perf_counter_ns()
         self.events = []
@@ -83,7 +87,7 @@ class BoundaryTrace:
                 total["count"] += 1
                 total["elapsed_ms"] = round(total["elapsed_ms"] + event["elapsed_ms"], 3)
                 total["errors"] += int(error is not None)
-                for key in ("bytes", "files"):
+                for key in ("bytes", "files", "queued_ms"):
                     if key in counts:
                         total[key] = total.get(key, 0) + counts[key]
                 high_volume = name.startswith("journal.") or name == "workspace.write_http"
@@ -102,6 +106,7 @@ class BoundaryTrace:
         with self.lock:
             return dict(
                 schema_version="w3-boundary-timing-v1",
+                trace_id=self.trace_id,
                 **self.identity,
                 started_at=self.started_at,
                 finished_at=datetime.now(UTC).isoformat(),
@@ -154,6 +159,48 @@ def provider_wait(reason, until):
 def snapshot_current():
     trace = _current.get()
     return trace.snapshot() if trace else None
+
+
+def current_identity():
+    trace = _current.get()
+    return dict(trace.identity) if trace else {}
+
+
+def mark(name, **counts):
+    at=datetime.now(UTC).isoformat()
+    trace=_current.get()
+    if trace is not None:
+        with trace.lock:
+            trace.identity.setdefault('milestones',{})[name]=dict(at=at,**counts)
+    with span(name, at=at, **counts):
+        pass
+
+
+def _publish_receipt(receipt):
+    _receipts.info('w3_boundary_timing %s',json.dumps(receipt,separators=(',',':')))
+
+
+def publish_trace(trace):
+    from doxagent.control_io import diagnostic_call
+    # Capture actual completion on the caller; file/log work cannot delay it.
+    receipt = trace.snapshot()
+    # Totals and milestones are complete even when detailed event samples stop.
+    receipt['events_truncated'] |= len(receipt['events'])>48
+    receipt['events']=receipt['events'][:48]
+    diagnostic_call(_publish_receipt, receipt)
+
+
+@contextmanager
+def segment_trace(segment, **identity):
+    inherited={k:v for k,v in current_identity().items()
+               if k not in {'milestones','segment_complete','effect_body_return'}}
+    trace = BoundaryTrace(**(inherited | identity | {'segment': segment}))
+    with trace.activate():
+        try:
+            yield trace
+        finally:
+            trace.identity['segment_complete'] = True
+            publish_trace(trace)
 
 
 def save_trace(trace, directory):
@@ -213,34 +260,13 @@ def effect_trace(effect, journal, **dispatch_timing):
         try:
             yield trace
         finally:
-            receipt = trace.snapshot()
-            try:
-                key = f"{effect.effect_id}:{effect.lease_token}"
-                if hasattr(journal, "path"):
-                    # Diagnostics must not inherit the runtime's 30s business lock wait.
-                    from doxagent.control_io import write_lock
-
-                    gate = write_lock(journal.path)
-                    if gate.acquire(blocking=False):
-                        try:
-                            db = sqlite3.connect(journal.path, timeout=0)
-                            try:
-                                with db:
-                                    db.execute(
-                                        "INSERT INTO runtime_values(namespace,key,payload) VALUES(?,?,?) "
-                                        "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
-                                        ("w3_boundary_timing", key, json.dumps(receipt)),
-                                    )
-                            finally:
-                                db.close()
-                        finally:
-                            gate.release()
-                    else:
-                        save_trace(trace, Path(journal.path).parent / "boundary-timing")
-                else:
+            trace.identity.update(segment='effect_owner',segment_complete=True)
+            if hasattr(journal, 'path'):
+                publish_trace(trace)
+            else:
+                try:
+                    key = f"{effect.effect_id}:{effect.lease_token}"
+                    receipt = trace.snapshot()
                     journal.set("w3_boundary_timing", key, receipt)
-            except Exception as exc:
-                _log.warning("W3 timing sink unavailable: %s", type(exc).__name__)
-                if hasattr(journal, "path"):
-                    save_trace(trace, Path(journal.path).parent / "boundary-timing")
-            _log.info("w3_boundary_timing %s", json.dumps(receipt, separators=(",", ":")))
+                except Exception as exc:
+                    _log.warning("W3 timing sink unavailable: %s", type(exc).__name__)

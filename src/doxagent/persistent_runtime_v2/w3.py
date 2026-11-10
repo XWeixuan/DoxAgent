@@ -1001,14 +1001,16 @@ class CodexW3AgentRunner:
             key=f"{case.case_id}:{record['record_id']}:{phase}",
         )
 
-    @observed("phase.materialize_and_model")
     async def _run_phase(self, **kwargs):
-        try:
-            return await self._run_phase_materialized(**kwargs)
-        except Exception as exc:
-            if not getattr(exc, "w3_step", None):
-                exc.w3_step = "MATERIALIZE"
-            raise
+        from doxagent.w3_timing import segment_trace
+        with segment_trace('phase_io', case_id=kwargs['case'].case_id,
+                           task_phase=kwargs['phase']):
+            try:
+                return await self._run_phase_materialized(**kwargs)
+            except Exception as exc:
+                if not getattr(exc, "w3_step", None):
+                    exc.w3_step = "MATERIALIZE"
+                raise
 
     def _observe_phase_job(self, case, phase, job):
         # Live UI progress is auxiliary; a busy business writer must never hold
@@ -1534,6 +1536,7 @@ class CodexW3AgentRunner:
         )
         return await self._validate_phase_job(case,phase,job,context,worker)
 
+    @observed('phase.validate')
     async def _validate_phase_job(self, case, phase, job, context, worker):
         from .w3_contracts import (OPERATIONS_PHASE, W3_LEGACY_CONTRACT,
                                   parse_w3_operations, parse_w3_trade_decision, is_unified_contract)

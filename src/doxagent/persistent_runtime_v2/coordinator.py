@@ -1010,6 +1010,9 @@ class RuntimeCoordinator:
                     if not self._effect_requested and count < 20:
                         self._effect_future = None
                         return
+                    # Further iterations already own this worker; their elapsed
+                    # runtime is not another wait in the executor queue.
+                    self._effect_enqueued_at = perf_counter()
         except Exception as exc:
             self.journal.gap("effects-pump", "", type(exc).__name__, str(exc)[:1000])
             with self._effect_lock:

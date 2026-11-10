@@ -125,15 +125,18 @@ class _Owner:
 
     def run(self):
         while True:
-            _, _, future, context, function, args, kwargs = self.queue.get()
+            _, _, future, context, function, args, kwargs, submitted = self.queue.get()
             try:
                 if future.set_running_or_notify_cancel():
                     try:
 
                         def owned_call():
+                            from doxagent.w3_timing import span
                             token = SHORT_WRITE.set(True)
                             try:
-                                return function(*args, **kwargs)
+                                with span("io.write", queued_ms=round((time.monotonic()-submitted)*1000,3),
+                                          operation=getattr(function,'__qualname__',type(function).__name__)):
+                                    return function(*args, **kwargs)
                             finally:
                                 SHORT_WRITE.reset(token)
 
@@ -161,7 +164,13 @@ async def settled(awaitable):
 
 
 async def read_io(function, *args, **kwargs):
-    return await settled(asyncio.to_thread(function, *args, **kwargs))
+    submitted = time.monotonic()
+    def call():
+        from doxagent.w3_timing import span
+        with span('io.read', queued_ms=round((time.monotonic()-submitted)*1000,3),
+                  operation=getattr(function,'__qualname__',type(function).__name__)):
+            return function(*args, **kwargs)
+    return await settled(asyncio.to_thread(call))
 
 
 async def write_io(path, function, *args, priority=1, retry=False, **kwargs):
@@ -183,6 +192,7 @@ async def write_io(path, function, *args, priority=1, retry=False, **kwargs):
                     function,
                     args,
                     kwargs,
+                    time.monotonic(),
                 )
             )
         except queue.Full as exc:
@@ -198,7 +208,9 @@ async def write_io(path, function, *args, priority=1, retry=False, **kwargs):
                 raise
             # Only explicitly rollback-safe SQL callbacks opt in. The physical
             # owner/slot is already released; never sleep inside that queue.
-            await asyncio.sleep(0.025)
+            from doxagent.w3_timing import span
+            with span('io.write_retry_delay'):
+                await asyncio.sleep(0.025)
 
 
 async def loop_watch(state, *, interval=1.0):
@@ -218,10 +230,11 @@ async def loop_watch(state, *, interval=1.0):
 _diagnostics = queue.Queue(maxsize=256)
 _diagnostic_thread = None
 _diagnostic_dropped = 0
+_diagnostic_failed = 0
 
 
-def diagnostic_warning(name, message, *args):
-    """Optional high-rate timing logs cannot block a business writer/loop."""
+def diagnostic_call(function, *args, **kwargs):
+    """Reuse the bounded diagnostic drain; never block or retry business work."""
     global _diagnostic_thread, _diagnostic_dropped
     import logging
 
@@ -229,24 +242,35 @@ def diagnostic_warning(name, message, *args):
         if _diagnostic_thread is None:
 
             def drain():
+                global _diagnostic_failed
                 while True:
-                    logger, text, values = _diagnostics.get()
+                    callback, values, options = _diagnostics.get()
                     try:
-                        logging.getLogger(logger).warning(text, *values)
+                        callback(*values, **options)
                     except Exception:
-                        pass
+                        _diagnostic_failed += 1
                     finally:
                         _diagnostics.task_done()
 
             _diagnostic_thread = threading.Thread(
                 target=drain, name="runtime-diagnostics", daemon=True
             )
-            _diagnostic_thread.start()
+            try:
+                _diagnostic_thread.start()
+            except RuntimeError:
+                _diagnostic_thread = None
+                _diagnostic_dropped += 1
+                return
     try:
-        _diagnostics.put_nowait((name, message, args))
+        _diagnostics.put_nowait((function, args, kwargs))
     except queue.Full:
         _diagnostic_dropped += 1
 
 
+def diagnostic_warning(name, message, *args):
+    import logging
+    diagnostic_call(logging.getLogger(name).warning, message, *args)
+
+
 def diagnostic_status():
-    return dict(queued=_diagnostics.qsize(), dropped=_diagnostic_dropped)
+    return dict(queued=_diagnostics.qsize(), dropped=_diagnostic_dropped, failed=_diagnostic_failed)

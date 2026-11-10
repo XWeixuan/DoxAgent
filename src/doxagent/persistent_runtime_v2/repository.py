@@ -1056,8 +1056,7 @@ class SQLitePersistentRuntimeV2Repository:
                         "coalesce((SELECT json_extract(c.payload_json,'$.runtime_mode') "
                         "FROM runtime_v2_cases c WHERE c.case_id=runtime_v2_effects.case_id),'REALTIME')!='CLOSED')")
             exclusions += ' AND ' + (realtime if lane == 'realtime_w3' else 'NOT ' + realtime)
-        with write_lock(self.path), self._lock, self._connect() as db:
-            db.execute("BEGIN IMMEDIATE")
+        def select_due(db):
             pending = db.execute(
                 "SELECT effect_id,available_at,rowid AS sequence FROM runtime_v2_effects "
                 "INDEXED BY idx_runtime_v2_effects_pending "
@@ -1078,6 +1077,14 @@ class SQLitePersistentRuntimeV2Repository:
                     limit,
                 ),
             ).fetchall()
+            return pending, expired
+        with self._connect() as probe:
+            pending, expired = select_due(probe)
+        if not pending and not expired:
+            return []
+        with write_lock(self.path), self._lock, self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            pending, expired = select_due(db)
             # The top N of each disjoint active set contains the global top N.
             # Never scan terminal history while holding the business writer.
             rows = sorted(
@@ -1278,77 +1285,77 @@ class SQLitePersistentRuntimeV2Repository:
         originating_node: Literal["W1_R3", "W3"] | None = None,
         already_published: bool = False,
     ) -> ProvisionalFactDetail:
-        key = ticker.upper()
-        day = trading_date.isoformat()
-        identity = _candidate_identity(source_message_id, candidate_index)
-        with self._lock, self._connect() as connection:
+        prepared = self.prepare_provisional(
+            ticker=ticker, trading_date=trading_date, source_message_id=source_message_id,
+            candidate_index=candidate_index, candidate=candidate,
+            published_max_event_numeric_id=published_max_event_numeric_id,
+            case_id=case_id, originating_node=originating_node,
+            already_published=already_published,
+        )
+        with write_lock(self.path), self._lock, self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
-            existing = connection.execute(
-                "SELECT payload_json FROM runtime_v2_candidates WHERE candidate_identity = ?",
-                (identity,),
-            ).fetchone()
-            if existing is not None:
-                connection.commit()
-                return ProvisionalFactDetail.model_validate_json(existing[0])
-            counter = connection.execute(
-                "SELECT next_numeric_id, snapshot_version "
-                "FROM runtime_v2_provisional_counters WHERE ticker=? AND trading_date=?",
-                (key, day),
-            ).fetchone()
-            if counter is None:
-                next_numeric = published_max_event_numeric_id + 1
-                snapshot_version = 1
-                connection.execute(
-                    "INSERT INTO runtime_v2_provisional_counters "
-                    "(ticker, trading_date, base_max_numeric_id, next_numeric_id, "
-                    "snapshot_version) "
-                    "VALUES (?, ?, ?, ?, ?)",
-                    (key, day, published_max_event_numeric_id, next_numeric + 1, snapshot_version),
-                )
-            else:
-                next_numeric = int(counter[0])
-                snapshot_version = int(counter[1]) + 1
-                connection.execute(
-                    "UPDATE runtime_v2_provisional_counters "
-                    "SET next_numeric_id=?, snapshot_version=? "
-                    "WHERE ticker=? AND trading_date=?",
-                    (next_numeric + 1, snapshot_version, key, day),
-                )
-            value = ProvisionalFactDetail(
-                provisional_event_id=f"E{next_numeric}",
-                case_id=case_id,
-                originating_node=originating_node,
-                ticker=key,
-                trading_date=trading_date,
-                source_message_id=source_message_id,
-                candidate_index=candidate_index,
-                candidate=candidate,
-                runtime_signature=candidate.signature,
-                snapshot_version=snapshot_version,
-            )
+            payload = self.allocate_provisional_in_transaction(connection, prepared)
+        # Native expansion and model validation never occupy the SQL writer.
+        return ProvisionalFactDetail.model_validate(self.content.decode(payload))
+
+    def prepare_provisional(
+        self, *, ticker, trading_date, source_message_id, candidate_index, candidate,
+        published_max_event_numeric_id, case_id=None, originating_node=None,
+        already_published=False,
+    ):
+        value = ProvisionalFactDetail(
+            provisional_event_id="E1", snapshot_version=1, ticker=ticker.upper(),
+            trading_date=trading_date, source_message_id=source_message_id,
+            candidate_index=candidate_index, candidate=candidate,
+            runtime_signature=candidate.signature, case_id=case_id,
+            originating_node=originating_node,
+        )
+        return dict(
+            maximum=published_max_event_numeric_id,
+            identity=_candidate_identity(source_message_id, candidate_index),
+            daily_status="PROCESSED" if already_published else "PENDING",
+            payload=json.loads(self.content.encode(value.model_dump(mode="json"))),
+        )
+
+    def allocate_provisional_in_transaction(self, connection, prepared):
+        """Caller owns the fenced transaction; only scalar metadata/SQL here."""
+        payload = dict(prepared['payload'])
+        key, day, identity = payload['ticker'], payload['trading_date'], prepared['identity']
+        existing = connection.execute(
+            "SELECT payload_json AS raw_candidate_json FROM runtime_v2_candidates WHERE candidate_identity=?",
+            (identity,),
+        ).fetchone()
+        if existing is not None:
+            return json.loads(existing[0])
+        counter = connection.execute(
+            "SELECT next_numeric_id,snapshot_version FROM runtime_v2_provisional_counters "
+            "WHERE ticker=? AND trading_date=?", (key, day),
+        ).fetchone()
+        if counter is None:
+            number, version = prepared['maximum'] + 1, 1
             connection.execute(
-                """
-                INSERT INTO runtime_v2_candidates
-                    (candidate_identity, provisional_event_id, ticker, trading_date,
-                     source_message_id, candidate_index, runtime_signature, daily_status,
-                     payload_json, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    identity,
-                    value.provisional_event_id,
-                    key,
-                    day,
-                    source_message_id,
-                    candidate_index,
-                    value.runtime_signature,
-                    "PROCESSED" if already_published else "PENDING",
-                    self.content.encode(value.model_dump(mode="json")),
-                    value.created_at.isoformat(),
-                ),
+                "INSERT INTO runtime_v2_provisional_counters "
+                "(ticker,trading_date,base_max_numeric_id,next_numeric_id,snapshot_version) VALUES(?,?,?,?,?)",
+                (key, day, prepared['maximum'], number + 1, version),
             )
-            connection.commit()
-            return value
+        else:
+            number, version = int(counter[0]), int(counter[1]) + 1
+            connection.execute(
+                "UPDATE runtime_v2_provisional_counters SET next_numeric_id=?,snapshot_version=? "
+                "WHERE ticker=? AND trading_date=?", (number + 1, version, key, day),
+            )
+        payload.update(provisional_event_id=f'E{number}', snapshot_version=version,
+                       created_at=utc_now().isoformat())
+        connection.execute(
+            "INSERT INTO runtime_v2_candidates "
+            "(candidate_identity,provisional_event_id,ticker,trading_date,source_message_id,"
+            "candidate_index,runtime_signature,daily_status,payload_json,created_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (identity, payload['provisional_event_id'], key, day, payload['source_message_id'],
+             payload['candidate_index'], payload['runtime_signature'], prepared['daily_status'],
+             json.dumps(payload,ensure_ascii=False,separators=(',',':'),sort_keys=True), payload['created_at']),
+        )
+        return payload
 
     @retry_sqlite_write
     def daily_known_index(self, ticker, day, candidate=None):
@@ -1462,7 +1469,11 @@ class SQLitePersistentRuntimeV2Repository:
     def save_w3_case(self, value: W3RouteCase) -> W3RouteCase:
         encoded_payload = self.content.encode(value.model_dump(mode="json"))
         with self._lock, self._connect() as connection:
-            connection.execute(
+            self.save_w3_case_in_transaction(connection, value, encoded_payload)
+        return value
+
+    def save_w3_case_in_transaction(self, connection, value, encoded_payload):
+        connection.execute(
                 """
                 INSERT INTO runtime_v2_w3_cases
                     (case_id,ticker,status,payload_json,created_at,updated_at)
@@ -1480,8 +1491,7 @@ class SQLitePersistentRuntimeV2Repository:
                     value.created_at.isoformat(),
                     value.updated_at.isoformat(),
                 ),
-            )
-        return value
+        )
 
     def get_w3_case(self, case_id: str) -> W3RouteCase | None:
         return self._read_model(
@@ -1778,6 +1788,16 @@ class SQLitePersistentRuntimeV2Repository:
                 ),
             )
         return value
+
+    def save_daily_record_in_transaction(self, db, table, value, prepared):
+        if table not in {'runtime_v2_badcases', 'runtime_v2_w3_coverage_gaps'}:
+            raise ValueError('unsupported W3 daily record table')
+        db.execute(
+            f"INSERT OR IGNORE INTO {table} "
+            "(case_id,ticker,trading_date,daily_status,payload_json,created_at) VALUES(?,?,?,?,?,?)",
+            (value.case_id,value.ticker,value.trading_date.isoformat(),value.daily_status.value,
+             prepared,_created_at(value).isoformat()),
+        )
 
     def _read_model(
         self,
