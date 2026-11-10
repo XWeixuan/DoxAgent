@@ -19,24 +19,24 @@ def test_five_second_gate_is_whole_case_not_individual_phases(tmp_path):
     cid='case_0123456789abcdef0123456789abcdef'
     with sqlite3.connect(runtime) as db:
         db.executescript('''CREATE TABLE runtime_v2_cases(case_id TEXT,created_at TEXT,payload_json TEXT);
-            CREATE TABLE runtime_v2_effects(effect_id TEXT,case_id TEXT,effect_type TEXT,status TEXT,payload_json TEXT);
-            CREATE TABLE runtime_v2_w3_stages(case_id TEXT,phase TEXT,status TEXT,worker_job_id TEXT);
+            CREATE TABLE runtime_v2_effects(effect_id TEXT,case_id TEXT,effect_type TEXT,status TEXT,payload_json TEXT,updated_at TEXT);
+            CREATE TABLE runtime_v2_w3_stages(case_id TEXT,phase TEXT,status TEXT,worker_job_id TEXT,committed_at TEXT);
             CREATE TABLE runtime_values(namespace TEXT,key TEXT,payload TEXT,PRIMARY KEY(namespace,key));''')
         db.execute('INSERT INTO runtime_v2_cases VALUES(?,?,?)',(cid,stamp(0),'{"runtime_mode":"REALTIME"}'))
         db.execute('INSERT INTO runtime_v2_cases VALUES(?,?,?)',('future',stamp(100),'{"runtime_mode":"REALTIME"}'))
         for phase,eid,start,end in [('trade_decision','trade',0,11),('post_decision_operations','ops',11,22)]:
-            db.execute('INSERT INTO runtime_v2_effects VALUES(?,?,?,?,?)',
+            db.execute('INSERT INTO runtime_v2_effects VALUES(?,?,?,?,?,?)',
                        (eid,cid,'route_to_w3' if eid=='trade' else 'w3_post_decision','COMPLETED',
-                        json.dumps({'created_at':stamp(start)})))
-            db.execute('INSERT INTO runtime_v2_w3_stages VALUES(?,?,?,?)',(cid,phase,'COMMITTED',eid))
+                        json.dumps({'created_at':stamp(start)}),stamp(end)))
+            db.execute('INSERT INTO runtime_v2_w3_stages VALUES(?,?,?,?,?)',(cid,phase,'COMMITTED',eid,stamp(end)))
             db.execute('INSERT INTO runtime_values VALUES(?,?,?)',('w3_boundary_timing',eid+':1',
-                       json.dumps({'started_at':stamp(start),'finished_at':stamp(end),
+                       json.dumps({'effect_id':eid,'started_at':stamp(start),'finished_at':stamp(end),
                                    'effect_available_at':stamp(start)})))
             if eid=='trade':
                 # A provider wait before this cohort begins must not replace
                 # the caller's upper time bound while iterating later Cases.
                 db.execute('INSERT INTO runtime_values VALUES(?,?,?)',('w3_boundary_timing',eid+':0',
-                           json.dumps({'started_at':stamp(start-1),'finished_at':stamp(start),
+                           json.dumps({'effect_id':eid,'started_at':stamp(start-1),'finished_at':stamp(start),
                                        'effect_available_at':stamp(start-1),
                                        'provider_wait':{'observed_at':stamp(start-1),'retry_at':stamp(start)}})))
     with sqlite3.connect(jobs) as db:
@@ -50,3 +50,8 @@ def test_five_second_gate_is_whole_case_not_individual_phases(tmp_path):
     assert result['measured_count']==1 and result['incomplete_count']==0
     assert result['non_sdk_ms']['p95']==6000
     assert not result['p95_within_5s']  # 3s + 3s must not pass as two separate gates.
+    with sqlite3.connect(runtime) as db:
+        db.execute("DELETE FROM runtime_values WHERE key='ops:1'")
+    incomplete=audit(runtime,jobs,since=stamp(-1),until=stamp(50))
+    assert incomplete['measured_count']==0
+    assert 'effect_terminal_trace:ops' in incomplete['cases'][0]['missing']

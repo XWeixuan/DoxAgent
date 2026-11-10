@@ -62,7 +62,7 @@ def audit(runtime,jobs,*,since,until=None,limit=300):
         if (instant(case['created_at'])<instant(since) or case['mode']=='CLOSED'
             or until and instant(case['created_at'])>instant(until)):continue
         cid=case['case_id']
-        effects=[dict(r) for r in db.execute("SELECT effect_id,effect_type,status,"
+        effects=[dict(r) for r in db.execute("SELECT effect_id,effect_type,status,updated_at,"
                  "json_extract(payload_json,'$.created_at') created_at "
                  "FROM runtime_v2_effects WHERE case_id=? AND effect_type IN "
                  "('route_to_w3','w3_post_decision')",(cid,))]
@@ -92,6 +92,15 @@ def audit(runtime,jobs,*,since,until=None,limit=300):
             result['missing'].append('phase_not_committed')
         if len(effects)!=2 or any(e['status']!='COMPLETED' for e in effects):
             result['missing'].append('effect_not_completed')
+        for effect in effects:
+            phase='trade_decision' if effect['effect_type']=='route_to_w3' else 'post_decision_operations'
+            committed=next((p.get('committed_at') for p in phases if p['phase']==phase),None)
+            terminal=max(instant(v) for v in [effect['updated_at'],committed] if v)
+            if not any(t.get('effect_id')==effect['effect_id'] and t.get('finished_at')
+                       and instant(t['finished_at'])>=terminal for t in traces):
+                # A trace of the initial Future yield is not the completed
+                # Effect. Final traces may be in the best-effort file sink.
+                result['missing'].append('effect_terminal_trace:'+effect['effect_id'])
         ends=[instant(t['finished_at']) for t in traces if t.get('finished_at')]
         if not ends:result['missing'].append('end_to_end_trace')
         sdk=[]
@@ -113,6 +122,9 @@ def audit(runtime,jobs,*,since,until=None,limit=300):
                 if a and b:sdk.append((instant(a),instant(b)))
                 else:result['missing'].append('sdk_timing:'+r['id'])
         if not found:result['missing'].append('worker_job')
+        for phase in phases:
+            if phase['worker_job_id'] and phase['worker_job_id'] not in found:
+                result['missing'].append('sdk_job_not_covered:'+phase['worker_job_id'])
         if not result['missing']:
             start=min(instant(e['created_at']) for e in effects)
             result.update(breakdown(start,max(ends),sdk,external),complete=True)

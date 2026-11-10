@@ -1,0 +1,373 @@
+{
+  "since": "2026-11-10T16:00:00+00:00",
+  "until": "2026-11-10T16:11:22.603254+00:00",
+  "window_truncated": false,
+  "case_count": 42,
+  "measured_count": 3,
+  "incomplete_count": 39,
+  "non_sdk_ms": {
+    "count": 3,
+    "p50": 11921.677827835083,
+    "p95": 20920.964241027832,
+    "maximum": 20920.964241027832
+  },
+  "p95_within_5s": false,
+  "acceptance_ready": false,
+  "cases": [
+    {
+      "case_id": "case_1a1c0d6c6cbc45dca1852edb6c84c71e",
+      "complete": true,
+      "missing": [],
+      "total_ms": 34894.675970077515,
+      "sdk_ms": 22972.99814224243,
+      "provider_wait_ms": 0.0,
+      "non_sdk_including_provider_ms": 11921.677827835083,
+      "non_sdk_ms": 11921.677827835083
+    },
+    {
+      "case_id": "case_ebcd566c76ba415db9e388dd81815a4e",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_08add3d287a946089451e9eb685855e7",
+        "effect_terminal_trace:effect_95cafbcfc8354044bc3d4e574f567e4d",
+        "end_to_end_trace",
+        "sdk_timing:cc09c51ac10b0053c16ef90bcc19de5e85dba2c7ca015ed89b156333fbf80b27"
+      ]
+    },
+    {
+      "case_id": "case_284cb30ca9f34a9f9f0d4bb47e28c233",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "worker_job"
+      ]
+    },
+    {
+      "case_id": "case_1bb7941076b44b13b3abd84f80b6fd3e",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_eff537594a2948cf9280cc78a43426e5"
+      ]
+    },
+    {
+      "case_id": "case_80de27da3b37413ba6d3d9dd80879b88",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_f854c449f89c4c9fa4fb14a57a5f0396",
+        "effect_terminal_trace:effect_9e057ac8dd6749d490de67c3bcd91672",
+        "end_to_end_trace",
+        "sdk_timing:30355c87d2d66ea0b472d99393c91beff272f6571341b000cb4705e0b7e58b3a"
+      ]
+    },
+    {
+      "case_id": "case_bffc9bf54fa540f6a10d9f78356d54af",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_1bf3384a92124198a3d307000604f2b7",
+        "effect_terminal_trace:effect_deac7fd4f9b842b7bbd133ebd0c8ecfa"
+      ]
+    },
+    {
+      "case_id": "case_0f2bddc17a9748d58daacd4e13fdb2a5",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_0c825e3b3abd4be69f08db7c9545472a",
+        "effect_terminal_trace:effect_e23b91aac309462c9254fa497acaab02",
+        "sdk_timing:89c896dd215a19fbf3a90e1fe27c160d2dfec4a9aa61e8d948ffe1becf1fe1f7"
+      ]
+    },
+    {
+      "case_id": "case_7c268532c8e14ee5bd107c4150bd05cd",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_44c471dfa25048c58ce91dfa5697b4a7"
+      ]
+    },
+    {
+      "case_id": "case_e72a8565c9bd4077a6d3c0ca9d2a35d2",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_addabf83b15249879af4e66b7595ceb6",
+        "effect_terminal_trace:effect_4d14893799da4ea9b9059bcdb1ce3e60",
+        "end_to_end_trace"
+      ]
+    },
+    {
+      "case_id": "case_cb48e7f175b44d54a3935ed2d68ba044",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_4d3105f135c14e6da6443d12874ea398",
+        "effect_terminal_trace:effect_dc1d3d3cf70c4efa8919bbd5f3985b6c"
+      ]
+    },
+    {
+      "case_id": "case_5463dfc58d5c4dd98d8316866b4a0bf6",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_e867269e5a2d4442b809cf2049c3aa54"
+      ]
+    },
+    {
+      "case_id": "case_8b5b7e69275849aaa754294bde13449c",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_044c698ddaf3404dbf035966c4e34ccf",
+        "effect_terminal_trace:effect_98e6f807e06946ada90a8695ffd4b7a0"
+      ]
+    },
+    {
+      "case_id": "case_110829fc37084f4cb2fdb47ddf10b06e",
+      "complete": true,
+      "missing": [],
+      "total_ms": 212554.5690059662,
+      "sdk_ms": 205051.775932312,
+      "provider_wait_ms": 0.0,
+      "non_sdk_including_provider_ms": 7502.793073654175,
+      "non_sdk_ms": 7502.793073654175
+    },
+    {
+      "case_id": "case_33704c33a4884822a0b4cf430f5f37de",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_66c9c9db8dc14325a4a5d56897b4145d",
+        "effect_terminal_trace:effect_9638f2d8a5ad405ba0eeb9b770b76081"
+      ]
+    },
+    {
+      "case_id": "case_922d8e9c293d4de6a87abdce54697402",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_4b997d83a18f40ee862f91e0b1f89f4f",
+        "effect_terminal_trace:effect_b6f31523d7414992a12a9edf672877e7"
+      ]
+    },
+    {
+      "case_id": "case_1837f137ad874c80a8f91d2b124863f4",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_d6a8f15c7e7542308d1032f6d72960c2"
+      ]
+    },
+    {
+      "case_id": "case_532f0b8bfeea4c51a0ccb65839f087e1",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_ff9a26dc6e554579bfd6517b70a19936"
+      ]
+    },
+    {
+      "case_id": "case_03c8e943b36e4880805e6c1aee9f6a00",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_d5367f2fc6094a8ab39a1d02398b889a",
+        "effect_terminal_trace:effect_d9913430f6a145eca62b4991aab8f103",
+        "sdk_timing:8fbf0cdbf4b931d1c51b156f15301ab62064a36c78e33835122e3dfae105bf2e"
+      ]
+    },
+    {
+      "case_id": "case_dfe7d351909d45d099e29e937c3d2afb",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_07d2603d2a2045bea57b36a3f75b712c",
+        "effect_terminal_trace:effect_0f5935577cd54203b0c2aab2518cd3ad",
+        "sdk_timing:f4be16541676bfdf38181602182bb9a5aaa171617338d6d3b14cce0f63dab54b"
+      ]
+    },
+    {
+      "case_id": "case_3930f66515f14707ade47aaaeaac6722",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_adbda8cbc0894df6b47877fd98436f42",
+        "effect_terminal_trace:effect_c00292e021aa488f829553d69261ea04"
+      ]
+    },
+    {
+      "case_id": "case_45cfa99305744a959f27c25911697be4",
+      "complete": false,
+      "missing": [
+        "phase_not_committed",
+        "effect_not_completed",
+        "effect_terminal_trace:effect_72904f6cb4d940c1a7ce44ae6ac6a9ae",
+        "effect_terminal_trace:effect_ab44f06b5cd046028dc914f5dcfb153d"
+      ]
+    },
+    {
+      "case_id": "case_cc063b0d98d54b59970e2e54b7e68bc1",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_54a47ee85ce542a5a252ed660079b935",
+        "effect_terminal_trace:effect_7c148a06929d43d1b44b5db2ac518004"
+      ]
+    },
+    {
+      "case_id": "case_dead787045704e0a8033d98fc92abe7f",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_ee42d49697484ad3b8c514e442e4f5fc"
+      ]
+    },
+    {
+      "case_id": "case_bbd00f03a8fb413da3078558f845157f",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_68252fdce843493a971b0547dcc75a17"
+      ]
+    },
+    {
+      "case_id": "case_09f08b926be043498df9fb722bd705e7",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_6e52f9b0715f456593df4e4ca9f1abbf",
+        "effect_terminal_trace:effect_9a3e1f9d9a524d05a872f298e1f6407f"
+      ]
+    },
+    {
+      "case_id": "case_805c5d1bfde44f14a007560263fc4c11",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_bf06d0a180d643709de9ab5b7726ba9b",
+        "effect_terminal_trace:effect_ee59b564f25e483785da9d19bd2afbe4"
+      ]
+    },
+    {
+      "case_id": "case_f1309773a6d24613a01859a0f5df95a8",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_25261397e37145c9b4871cae38504e4d",
+        "effect_terminal_trace:effect_e01ad9d886c14a15ae833e98e871449b"
+      ]
+    },
+    {
+      "case_id": "case_3abc7a209a0e4ab29ea5150cdaaf1f67",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_866e5cdd8936418cba7f774f8614cd07"
+      ]
+    },
+    {
+      "case_id": "case_f528600ee79f4f23a1489fd8f1cede0c",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_f8db106be2d44ae291e112526dd55824"
+      ]
+    },
+    {
+      "case_id": "case_baa4e0cc5b044145839fd602f2da31e5",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_3ef9f1916ab94ca9acb5fefb95061c60"
+      ]
+    },
+    {
+      "case_id": "case_7b3e098d049d4e268909f90d389f711b",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_1b1be251a45e45af9f1861917331cd64",
+        "effect_terminal_trace:effect_9f15dddb1b894121bbddfb7ffefd7a07"
+      ]
+    },
+    {
+      "case_id": "case_1f68857fe4fe42f591b63fdf75536570",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_11aea811b1b34df3ba144954ce594c61",
+        "effect_terminal_trace:effect_2310929b70e94e77822f8733b1f0b32d"
+      ]
+    },
+    {
+      "case_id": "case_d4987884dcf549b5a2b8a82c387de70c",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_3dd9c7330e4442d9b7841fe5a3e0bb1f"
+      ]
+    },
+    {
+      "case_id": "case_d860d5a160174288ab367a46db2780de",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_36f5775e6d1f495d9b2245d7f6b61cc2"
+      ]
+    },
+    {
+      "case_id": "case_7479b6532bb7418fb56850ec28938edc",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_561b808990204330b7b8a23f1458edf8"
+      ]
+    },
+    {
+      "case_id": "case_da3742b8bf8945d8ab7c84960f56575a",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_76876bd9025a4d6e8b6b077579c18eda",
+        "effect_terminal_trace:effect_9e3aa120926d446eaa4cbd28c403a341"
+      ]
+    },
+    {
+      "case_id": "case_fbc43d3c06a1459c868b78e0a094370b",
+      "complete": true,
+      "missing": [],
+      "total_ms": 304186.4161491394,
+      "sdk_ms": 223525.7749557495,
+      "provider_wait_ms": 59739.67695236206,
+      "non_sdk_including_provider_ms": 80660.64119338989,
+      "non_sdk_ms": 20920.964241027832
+    },
+    {
+      "case_id": "case_b3a98d29cd6f4dcaa217d33c8fa5326d",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_b9dac1bc032d4db0a29d634bfb2320f7"
+      ]
+    },
+    {
+      "case_id": "case_7107e2cbb94247c7a20265c92a41b06c",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_deb7e6e21eac43dc96ae5aa8668e4904"
+      ]
+    },
+    {
+      "case_id": "case_fa4d242be65b423a83ef55b99fcfc31c",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_0f8cb986525c47769169daf45fde7947",
+        "effect_terminal_trace:effect_f6e2141d37e34227b07d5836aa96f58f",
+        "end_to_end_trace"
+      ]
+    },
+    {
+      "case_id": "case_653fb6da575d49a5bb038f9318240e18",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_7c26b995ca9e4f599643935c117eceec"
+      ]
+    },
+    {
+      "case_id": "case_f9f6506a7d0643269d1237f05403ccd0",
+      "complete": false,
+      "missing": [
+        "effect_terminal_trace:effect_47269afa41f44af888913b1b6f621eea"
+      ]
+    }
+  ]
+}
