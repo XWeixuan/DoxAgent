@@ -197,14 +197,15 @@ def run_held(settings, run):
         re.match(r'^(runtime-maintain-[0-9a-f]{24})(?:-|$)',run),
         re.match(r'^(init-[a-z0-9.-]+-[0-9a-f]{32})(?:-|$)',run)] if m)]))
     placeholders=','.join('?' for _ in roots)
+    from .initialization_owners import control_paths
+    initialization_check=("SELECT 1 FROM initialization_runs WHERE id IN ("+placeholders+") AND "
+         "(json_extract(payload,'$.status') NOT IN ('SUCCEEDED','FAILED','CANCELLED') OR "
+         "json_extract(payload,'$.manual_resume_required')=1) LIMIT 1")
     checks = [
         (getattr(settings,'persistent_runtime_v2_sqlite_path',None),
          "SELECT 1 FROM runtime_tasks WHERE coalesce(json_extract(receipt,'$._gc_owner.run_id'),"
          "json_extract(receipt,'$.frame.run_id')) IN ("+placeholders+") AND status NOT IN ('SUCCEEDED','FAILED','CANCELLED') LIMIT 1"),
-        (getattr(settings,'ticker_initialization_control_path',None),
-         "SELECT 1 FROM initialization_runs WHERE id IN ("+placeholders+") AND "
-         "(json_extract(payload,'$.status') NOT IN ('SUCCEEDED','FAILED','CANCELLED') OR "
-         "json_extract(payload,'$.manual_resume_required')=1) LIMIT 1"),
+        *((p,initialization_check) for p in control_paths(settings)),
     ]
     for path, sql in checks:
         if not path or not Path(path).is_file():continue
@@ -220,14 +221,14 @@ def business_holds(settings,*,now=None):
     """Read small owner coordinates, never expand frozen Native Contexts."""
     now=now or datetime.now(UTC)
     holds=set()
+    from .initialization_owners import control_paths
     scopes=[
         (settings.codex_runtime_sqlite_path,
          "SELECT c.run_id FROM codex_runtime_records c WHERE c.record_type='checkpoints' AND c.updated_at>? "
          "AND NOT EXISTS(SELECT 1 FROM codex_runtime_records b WHERE b.record_type='bundles' AND b.run_id=c.run_id "
          "AND json_extract(b.payload_json,'$.status')='published')",((now-timedelta(days=14)).isoformat(),)),
-        (settings.ticker_initialization_control_path,
-         "SELECT id FROM initialization_runs WHERE json_extract(payload,'$.status') NOT IN ('SUCCEEDED','FAILED','CANCELLED') "
-         "OR json_extract(payload,'$.manual_resume_required')=1",()),
+        *((p,"SELECT id FROM initialization_runs WHERE json_extract(payload,'$.status') NOT IN ('SUCCEEDED','FAILED','CANCELLED') OR json_extract(payload,'$.manual_resume_required')=1",())
+          for p in control_paths(settings)),
         (settings.persistent_runtime_v2_sqlite_path,
          "SELECT coalesce(json_extract(receipt,'$._gc_owner.run_id'),json_extract(receipt,'$.frame.run_id')) "
          "FROM runtime_tasks WHERE status IN ('PENDING','RUNNING','HELD','RETRY','WAITING')",()),
