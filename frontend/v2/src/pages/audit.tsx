@@ -29,6 +29,7 @@ import { Module, Notice } from "@/components/state";
 import { Button } from "@/components/ui/button";
 import { CoverageNote, MetricNote } from "./overview/metrics";
 import { RevenueAudit } from "./revenue-audit";
+import "./audit-layout.css";
 const tokens = (v: Value<string>) =>
   valueText(
     v,
@@ -43,7 +44,7 @@ export default function Audit() {
   const [p, setP] = useSearchParams();
   const revenue = p.get("audit") === "REVENUE";
   return (
-    <>
+    <div className="audit-page">
       <div className="business-heading">
         <h1>收益 / 成本审计</h1>
         <Choices
@@ -61,12 +62,8 @@ export default function Audit() {
           }}
         />
       </div>
-      {revenue ? (
-        <RevenueAudit />
-      ) : (
-        <CostAudit ticker={ticker} />
-      )}
-    </>
+      {revenue ? <RevenueAudit /> : <CostAudit ticker={ticker} />}
+    </div>
   );
 }
 function CostAudit({ ticker }: { ticker: string }) {
@@ -249,7 +246,12 @@ function Report({
         )}
         {scope === "API" && (
           <>
-            <span>未计价 {t.unpriced_attempts}{t.unknown_model_price_attempts > 0 ? `（价格未配 ${t.unknown_model_price_attempts}）` : ""}</span>
+            <span>
+              未计价 {t.unpriced_attempts}
+              {t.unknown_model_price_attempts > 0
+                ? `（价格未配 ${t.unknown_model_price_attempts}）`
+                : ""}
+            </span>
             <span>
               已报费用 {t.reported_cost_attempts} / 估价{" "}
               {t.estimated_cost_attempts}
@@ -277,15 +279,6 @@ function Report({
               <ChartPie aria-hidden="true" />
               {scope === "API" ? "已知成本占比" : "Token 占比"}
             </h2>
-            <Choices
-              value={dimension}
-              items={[
-                ["NODE", "按节点"],
-                ["MODEL", "按模型"],
-              ]}
-              onChange={(v) => set("dimension", v)}
-              label="占比维度"
-            />
           </header>
           {d.breakdown.items.length ? (
             <div className="share-bars">
@@ -321,7 +314,18 @@ function Report({
         </section>
       </div>
       <section className="cost-nodes">
-        <h2>逐轮模型用量</h2>
+        <header className="audit-table-heading">
+          <h2>逐轮模型用量</h2>
+          <Choices
+            value={dimension}
+            items={[
+              ["NODE", "按节点"],
+              ["MODEL", "按模型"],
+            ]}
+            onChange={(v) => set("dimension", v)}
+            label="统计维度"
+          />
+        </header>
         {d.rows.length ? (
           <div className="domain-table-scroll">
             <table className="domain-table cost-table cost-report-table">

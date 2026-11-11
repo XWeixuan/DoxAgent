@@ -1,0 +1,2483 @@
+{
+  "sectors": [
+    {
+      "id": "L1-01",
+      "name": "AI、半导体与计算基础设施"
+    },
+    {
+      "id": "L1-02",
+      "name": "软件、云、网络安全与前沿计算"
+    },
+    {
+      "id": "L1-03",
+      "name": "电力、公用基础设施与能源转型"
+    },
+    {
+      "id": "L1-04",
+      "name": "传统能源与能源服务"
+    },
+    {
+      "id": "L1-05",
+      "name": "航空航天、国防与安全科技"
+    },
+    {
+      "id": "L1-06",
+      "name": "医药、生物科技与医疗创新"
+    },
+    {
+      "id": "L1-07",
+      "name": "汽车、智能交通与自主系统"
+    },
+    {
+      "id": "L1-08",
+      "name": "机器人、自动化与先进制造"
+    },
+    {
+      "id": "L1-09",
+      "name": "数字金融、Fintech 与 Crypto"
+    },
+    {
+      "id": "L1-10",
+      "name": "原材料、矿业与战略资源"
+    },
+    {
+      "id": "L1-11",
+      "name": "消费科技、互联网、媒体与娱乐"
+    },
+    {
+      "id": "L1-12",
+      "name": "交通、物流与供应链"
+    },
+    {
+      "id": "L1-13",
+      "name": "政策敏感型产业"
+    }
+  ],
+  "sources": {
+    "access_newswire_massive": {
+      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "entry_points": [
+        "https://www.accessnewswire.com/newsroom"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "airspaceforces_space": {
+      "description": "航空航天与国防专题新闻。",
+      "entry_points": [
+        "https://www.airandspaceforces.com/wp-json/wp/v2/posts?categories=8&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://www.airandspaceforces.com/category/space/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "ans_nuclear_newswire": {
+      "description": "美国核学会核能行业新闻。",
+      "entry_points": [
+        "https://www.ans.org/news/",
+        "https://www.ans.org/news/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "army_news_releases": {
+      "description": "美国陆军官方新闻稿。",
+      "entry_points": [
+        "https://www.army.mil/news/newsreleases"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "army_news_rss": {
+      "description": "美国陆军官方新闻RSS。",
+      "entry_points": [
+        "https://www.army.mil/rss/static/0.xml"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "aviationweek_rocketlab": {
+      "description": "Aviation Week的Rocket Lab专题。",
+      "entry_points": [
+        "https://aviationweek.com/term/rocket-lab"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "aviationweek_rss": {
+      "description": "航空航天与国防专题新闻。",
+      "entry_points": [
+        "https://aviationweek.com/taxonomy/term/186836",
+        "https://aviationweek.com/taxonomy/term/186841",
+        "https://aviationweek.com/taxonomy/term/186846",
+        "https://aviationweek.com/taxonomy/term/186851",
+        "https://aviationweek.com/taxonomy/term/456",
+        "https://aviationweek.com/awn/rss-feed-by-content-source"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "aws_platform_marketplace_rss": {
+      "description": "AWS平台与Marketplace官方产品动态。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01",
+        "L1-02"
+      ]
+    },
+    "barrons_ticker_news": {
+      "description": "个股新闻与其他道琼斯内容，排除IBD栏目。",
+      "entry_points": [
+        "https://www.barrons.com/market-data/stocks/{ticker_lower}",
+        "https://www.barrons.com/market-data/api/news?channel=Barrons&chartingSymbol=stock%2F%2F%2F{ticker_lower}&pageNumber=0&count=40"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "CHROME_CDP"
+        ]
+      },
+      "body": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "benzinga_news": {
+      "description": "按标的获取市场新闻、公司动态和交易催化消息。",
+      "entry_points": [
+        "https://api.benzinga.com/api/v2/news"
+      ],
+      "listing": {
+        "primary": [
+          "API"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "PUBLISHER_ROUTED"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "bloomberg_massive": {
+      "description": "Bloomberg Latest 实时新闻，共享 HTTP 列表入口，无 RSS 备用路径。",
+      "entry_points": [
+        "https://www.bloomberg.com/latest",
+        "https://www.bloomberg.com/lineup-next/api/stories?limit=25&pageNumber=1&locale=en&types=ARTICLE%2CFEATURE%2CINTERACTIVE%2CLETTER%2CEXPLAINERS"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "breakingdefense_space": {
+      "description": "航空航天与国防专题新闻。",
+      "entry_points": [
+        "https://breakingdefense.com/category/space/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "businesswire_massive": {
+      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "entry_points": [
+        "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJcFVJYWQ=="
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "calcalist_search": {
+      "description": "按关键词检索以色列商业与公司新闻。",
+      "entry_points": [
+        "https://www.calcalist.co.il/category/3735"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "canary_media": {
+      "description": "清洁能源、电网与能源转型新闻。",
+      "entry_points": [
+        "https://www.canarymedia.com/articles",
+        "https://www.canarymedia.com/rss.rss"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "corporate_ir_press_releases": {
+      "description": "公司官方IR与新闻稿入口，涵盖RSS和HTML端点。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "SOURCE_BODY",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "crn_cloud": {
+      "description": "历史独立栏目，现由crn_cloud_security_datacenter合并覆盖。",
+      "entry_points": [
+        "https://www.crn.com/news/cloud/rss.xml"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "crn_cloud_security_datacenter": {
+      "description": "CRN云、安全和数据中心渠道新闻。",
+      "entry_points": [
+        "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud",
+        "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security",
+        "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=data-center",
+        "https://www.crn.com/news/cloud/rss.xml",
+        "https://www.crn.com/news/security/rss.xml",
+        "https://www.crn.com/news/data-center/rss.xml"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "crn_data_center": {
+      "description": "历史独立栏目，现由crn_cloud_security_datacenter合并覆盖。",
+      "entry_points": [
+        "https://www.crn.com/news/data-center/rss.xml"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "crn_security": {
+      "description": "历史独立栏目，现由crn_cloud_security_datacenter合并覆盖。",
+      "entry_points": [
+        "https://www.crn.com/news/security/rss.xml"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "ctee_semiconductor": {
+      "description": "台湾工商时报半导体产业栏目。",
+      "entry_points": [
+        "https://www.ctee.com.tw/industry/semi"
+      ],
+      "listing": {
+        "primary": [
+          "PLAYWRIGHT"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "darpa_news": {
+      "description": "美国DARPA科研项目与技术资助动态。",
+      "entry_points": [
+        "https://www.darpa.mil/rss.xml"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05",
+        "L1-01",
+        "L1-02"
+      ]
+    },
+    "data_center_frontier": {
+      "description": "数据中心建设、供电与基础设施新闻。",
+      "entry_points": [
+        "https://scorpia.graphql.aspire-ebm.com",
+        "https://www.datacenterfrontier.com/__rss/website-scheduled-content.xml?input=%7B%22sectionAlias%22:%22home%22%7D"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01",
+        "L1-03"
+      ]
+    },
+    "dcd_energy_ticker": {
+      "description": "按能源公司入口跟踪数据中心供电动态。",
+      "entry_points": [
+        "https://www.datacenterdynamics.com/en/news/?company=constellation-energy",
+        "https://www.datacenterdynamics.com/en/news/?company=bloom-energy"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "dcd_infrastructure_rss": {
+      "description": "数据中心基础设施及能源供应新闻。",
+      "entry_points": [
+        "https://www.datacenterdynamics.com/en/rss/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01",
+        "L1-03"
+      ]
+    },
+    "defensescoop_drones": {
+      "description": "无人机与反无人机专题新闻。",
+      "entry_points": [
+        "https://defensescoop.com/tag/drones/",
+        "https://defensescoop.com/tag/counter-drone/",
+        "https://defensescoop.com/tag/drones/feed/",
+        "https://defensescoop.com/tag/counter-drone/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "defensescoop_space": {
+      "description": "航空航天与国防专题新闻。",
+      "entry_points": [
+        "https://defensescoop.com/news/space/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "digitimes_semiconductors": {
+      "description": "DIGITIMES英文半导体新闻列表。",
+      "entry_points": [
+        "https://www.digitimes.com/topic/semiconductors/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "CHROME_CDP"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "CHROME_CDP"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "digitimes_tw_rss": {
+      "description": "DIGITIMES台湾科技产业新闻RSS。",
+      "entry_points": [
+        "https://www.digitimes.com.tw/tech/rss/xml/xmlrss_10_40.xml"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "dod_contracts": {
+      "description": "美国国防部合同公告。",
+      "entry_points": [
+        "https://www.war.gov/News/Contracts/",
+        "https://www.war.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=400&Site=945&max=50"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "dod_releases": {
+      "description": "美国国防部官方新闻稿。",
+      "entry_points": [
+        "https://www.war.gov/News/Releases/",
+        "https://www.war.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=9&Site=945&max=50"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "doe_energy_news": {
+      "description": "美国能源部核能、电力与电网部署公开消息。",
+      "entry_points": [
+        "https://www.energy.gov/ne/listings/ne-press-releases",
+        "https://www.energy.gov/edf/listings/edf-news",
+        "https://www.energy.gov/oe/listings/grid-deployment-office-news",
+        "https://www.energy.gov/oe/listings/news-highlights"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "enterprise_apps_official_rss": {
+      "description": "企业应用厂商官方产品与业务发布。",
+      "entry_points": [
+        "https://news.sap.com/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://www.salesforce.com/news/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://newsroom.workday.com/press-releases",
+        "https://www.salesforce.com/news/wp-json/wp/v2/sf_linked_content?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://www.salesforce.com/news/wp-json/wp/v2/sf_press_release?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "etnews_rss": {
+      "description": "韩国电子与科技产业新闻。",
+      "entry_points": [
+        "https://www.etnews.com/news/section.html?id1=06",
+        "https://rss.etnews.com/06.xml"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "finnhub_company_news": {
+      "description": "按公司获取新闻条目，正文按原文站点补全。",
+      "entry_points": [
+        "https://finnhub.io/api/v1/company-news?symbol={ticker}"
+      ],
+      "listing": {
+        "primary": [
+          "API"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "PUBLISHER_ROUTED"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "globenewswire_massive": {
+      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "entry_points": [
+        "https://www.globenewswire.com/RssFeed"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "globenewswire_search": {
+      "description": "检索GlobeNewswire公司公告与新闻稿。",
+      "entry_points": [
+        "https://www.globenewswire.com/en/search/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "google_news_search_rss": {
+      "description": "按检索词聚合新闻，解析跳转后读取原文。",
+      "entry_points": [
+        "https://news.google.com/rss/search?q={ticker}"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "PUBLISHER_ROUTED"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "huggingnews_rss": {
+      "description": "HuggingNews的AI技术与产业动态。",
+      "entry_points": [
+        "https://huggingnews.com/__data.json",
+        "https://huggingnews.com/feed.xml"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01",
+        "L1-02"
+      ]
+    },
+    "ibkr_news": {
+      "description": "通过IBKR新闻供应商获取标题及授权新闻正文。",
+      "entry_points": [
+        "https://www.interactivebrokers.com/en/trading/ibkr-news.php"
+      ],
+      "listing": {
+        "primary": [
+          "API"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "API"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "investing_ticker_news": {
+      "description": "按个股页面采集Investing.com新闻。",
+      "entry_points": [
+        "https://www.investing.com/equities/"
+      ],
+      "listing": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "investorshub_ticker_news": {
+      "description": "按个股页面采集InvestorsHub新闻。",
+      "entry_points": [
+        "https://investorshub.advfn.com/stock-market/NASDAQ/{ticker}/news"
+      ],
+      "listing": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "ionq_nautilus_rss": {
+      "description": "Nautilus官方新闻稿。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "ionq_quantum_actors_rss": {
+      "description": "量子平台相关主体的官方披露。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "iridium_press_releases": {
+      "description": "Iridium公司官方新闻稿。",
+      "entry_points": [
+        "https://investor.iridium.com/press-releases"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "lakehouse_platform_official_rss": {
+      "description": "数据与Lakehouse平台官方发布。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "nasa_2026_releases": {
+      "description": "NASA年度官方新闻发布。",
+      "entry_points": [
+        "https://www.nasa.gov/wp-json/wp/v2/press-release?per_page=50&after=2026-01-01T00%3A00%3A00&before=2027-01-01T00%3A00%3A00&_fields=id,link,date_gmt,title,excerpt,content,modified_gmt"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "national_quantum_initiative": {
+      "description": "美国国家量子计划与相关政策和项目消息。",
+      "entry_points": [
+        "https://www.quantum.gov/news/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "nbis_official_actor_rss": {
+      "description": "NBIS相关投资与需求方的官方消息。",
+      "entry_points": [
+        "https://clickhouse.com/blog",
+        "https://about.fb.com/wp-json/wp/v2/posts?per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01",
+        "L1-02"
+      ]
+    },
+    "newswire_rss": {
+      "description": "通用新闻稿RSS入口；当前是否启用以实际配置为准。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "PUBLISHER_ROUTED"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "nist_news": {
+      "description": "NIST科研、技术标准与量子技术消息。",
+      "entry_points": [
+        "https://www.nist.gov/news-events/news/rss.xml"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02",
+        "L1-01",
+        "L1-08"
+      ]
+    },
+    "nrc_event_notifications": {
+      "description": "按持牌主体检索NRC事件通报。",
+      "entry_points": [
+        "https://www.nrc.gov/documents-reports/document-collections/events-reports-associated-with/event-notification-reports/en"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "nrc_news_releases": {
+      "description": "NRC核安全监管与新闻发布。",
+      "entry_points": [
+        "https://www.nrc.gov/about-nrc/news-releases/2026"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "nro_press_releases": {
+      "description": "美国NRO官方新闻与项目发布。",
+      "entry_points": [
+        "https://www.nro.gov/news-media-featured-stories/news-media-press-releases/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "nsf_news": {
+      "description": "NSF研究资助与科研进展，覆盖多个技术领域。",
+      "entry_points": [
+        "https://www.nsf.gov/news",
+        "https://www.nsf.gov/rss/rss_www_news.xml"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02",
+        "L1-01",
+        "L1-06",
+        "L1-08"
+      ]
+    },
+    "observability_vendors_official_rss": {
+      "description": "可观测性厂商官方发布。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "optical_systems_official_rss": {
+      "description": "光系统设备厂商官方发布。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "power_engineering_energy": {
+      "description": "发电运营、核能和能源业务新闻。",
+      "entry_points": [
+        "https://www.power-eng.com/nuclear/feed/",
+        "https://www.power-eng.com/operations-maintenance/feed/",
+        "https://www.power-eng.com/business/feed/",
+        "https://www.power-eng.com/onsite-power/feed/",
+        "https://www.power-eng.com/energy-storage/feed/",
+        "https://www.power-eng.com/renewables/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "power_magazine_energy": {
+      "description": "按能源公司覆盖核能、数据中心及分布式供电栏目。",
+      "entry_points": [
+        "https://www.powermag.com/category/nuclear/",
+        "https://www.powermag.com/category/data-centers/",
+        "https://www.powermag.com/category/legal-regulatory/",
+        "https://www.powermag.com/category/safety/",
+        "https://www.powermag.com/category/distributed-generation/",
+        "https://www.powermag.com/category/energy-storage-2/",
+        "https://www.powermag.com/category/hydrogen/",
+        "https://www.powermag.com/category/nuclear/feed/",
+        "https://www.powermag.com/category/data-centers/feed/",
+        "https://www.powermag.com/category/legal-regulatory/feed/",
+        "https://www.powermag.com/category/safety/feed/",
+        "https://www.powermag.com/category/distributed-generation/feed/",
+        "https://www.powermag.com/category/energy-storage-2/feed/",
+        "https://www.powermag.com/category/hydrogen/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "prnewswire_massive": {
+      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "entry_points": [
+        "https://www.prnewswire.com/rss/news-releases-list.rss"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "quantum_computing_report": {
+      "description": "量子计算商业、科研和产业进展。",
+      "entry_points": [
+        "https://quantumcomputingreport.com/news/",
+        "https://quantumcomputingreport.com/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "quantum_insider": {
+      "description": "量子产业商业、国家计划与资本市场栏目。",
+      "entry_points": [
+        "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=21&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=9291&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=9288&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://thequantuminsider.com/category/daily/business/feed/",
+        "https://thequantuminsider.com/category/daily/national/feed/",
+        "https://thequantuminsider.com/category/capital-markets/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "quantum_insider_business": {
+      "description": "历史独立栏目，现由quantum_insider合并覆盖。",
+      "entry_points": [
+        "https://thequantuminsider.com/category/daily/business/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "quantum_insider_capital_markets": {
+      "description": "历史独立栏目，现由quantum_insider合并覆盖。",
+      "entry_points": [
+        "https://thequantuminsider.com/category/capital-markets/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "quantum_insider_national": {
+      "description": "历史独立栏目，现由quantum_insider合并覆盖。",
+      "entry_points": [
+        "https://thequantuminsider.com/category/daily/national/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "quantum_zeitgeist": {
+      "description": "量子计算、技术及公司动态。",
+      "entry_points": [
+        "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
+        "https://quantumzeitgeist.com/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "register_cloud": {
+      "description": "历史独立栏目，现由register_software_cloud_security合并覆盖。",
+      "entry_points": [
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=(tag:off-prem%20OR%20tag:off_prem)"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "register_security": {
+      "description": "历史独立栏目，现由register_software_cloud_security合并覆盖。",
+      "entry_points": [
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:security"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "register_software": {
+      "description": "历史独立栏目，现由register_software_cloud_security合并覆盖。",
+      "entry_points": [
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:software"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "register_software_cloud_security": {
+      "description": "The Register软件、云及网络安全栏目。",
+      "entry_points": [
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&query=tag:software&fields=id,title,published,published_url,subtitle",
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&query=(tag:off-prem%20OR%20tag:off_prem)&fields=id,title,published,published_url,subtitle",
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&query=tag:security&fields=id,title,published,published_url,subtitle",
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:software",
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=(tag:off-prem%20OR%20tag:off_prem)",
+        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:security"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "reuters_site_search": {
+      "description": "按关键词检索路透站内新闻。",
+      "entry_points": [],
+      "listing": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "sdxcentral_news": {
+      "description": "云、网络及数据中心基础设施新闻。",
+      "entry_points": [
+        "https://www.sdxcentral.com/news/"
+      ],
+      "listing": {
+        "primary": [
+          "CHROME_CDP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "CHROME_CDP"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02",
+        "L1-01"
+      ]
+    },
+    "sec_edgar": {
+      "description": "监控重大SEC申报及附件，不采集10-K、10-Q及其修订。",
+      "entry_points": [
+        "https://data.sec.gov/submissions/"
+      ],
+      "listing": {
+        "primary": [
+          "API"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "shephard_uncrewed": {
+      "description": "航空航天与国防专题新闻。",
+      "entry_points": [
+        "https://www.shephardmedia.com/news/uv-online/feed/",
+        "https://www.shephardmedia.com/news/uv-online/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "siliconangle_ai": {
+      "description": "SiliconANGLE人工智能新闻。",
+      "entry_points": [
+        "https://siliconangle.com/wp-json/wp/v2/posts?categories=369&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://siliconangle.com/category/ai/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01",
+        "L1-02"
+      ]
+    },
+    "siliconangle_big_data": {
+      "description": "历史独立栏目，现由siliconangle_software合并覆盖。",
+      "entry_points": [
+        "https://siliconangle.com/category/big-data/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "siliconangle_cloud": {
+      "description": "历史独立栏目，现由siliconangle_software合并覆盖。",
+      "entry_points": [
+        "https://siliconangle.com/category/cloud/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "siliconangle_security": {
+      "description": "历史独立栏目，现由siliconangle_software合并覆盖。",
+      "entry_points": [
+        "https://siliconangle.com/category/security/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "siliconangle_software": {
+      "description": "SiliconANGLE大数据、云与安全栏目。",
+      "entry_points": [
+        "https://siliconangle.com/wp-json/wp/v2/posts?categories=1505426&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://siliconangle.com/wp-json/wp/v2/posts?categories=603&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://siliconangle.com/wp-json/wp/v2/posts?categories=1507578&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
+        "https://siliconangle.com/category/big-data/feed/",
+        "https://siliconangle.com/category/cloud/feed/",
+        "https://siliconangle.com/category/security/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "spacecom_launches": {
+      "description": "航空航天与国防专题新闻。",
+      "entry_points": [
+        "https://www.space.com/feeds/tag/launches-spacecraft"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "spacenews_rss": {
+      "description": "航空航天与国防专题新闻。",
+      "entry_points": [
+        "https://spacenews.com/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "ssc_newsroom": {
+      "description": "美国太空系统司令部新闻。",
+      "entry_points": [
+        "https://www.ssc.spaceforce.mil/Newsroom"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "stocktwits_messages": {
+      "description": "股票社区短消息，正文补全不适用。",
+      "entry_points": [
+        "https://stocktwits.com/symbol/{ticker}"
+      ],
+      "listing": {
+        "primary": [
+          "API"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "NOT_APPLICABLE"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "technews_ai": {
+      "description": "历史独立栏目，现由technews_hardware合并覆盖。",
+      "entry_points": [
+        "https://technews.tw/category/ai/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "technews_hardware": {
+      "description": "科技新报半导体与AI栏目，合并多个内部入口。",
+      "entry_points": [
+        "https://technews.tw/wp-json/wp/v2/posts?categories=93648&per_page=40&context=embed",
+        "https://technews.tw/wp-json/wp/v2/posts?categories=19819&per_page=40&context=embed",
+        "https://technews.tw/category/semiconductor/feed/",
+        "https://technews.tw/category/ai/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "technews_semiconductor": {
+      "description": "历史独立栏目，现由technews_hardware合并覆盖。",
+      "entry_points": [
+        "https://technews.tw/category/semiconductor/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "thefly_ticker_news": {
+      "description": "获取个股快讯及可用原生正文，受限预览不冒充全文。",
+      "entry_points": [
+        "https://tfb.thefly.com/news/latest"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "SOURCE_BODY"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "thelec_semiconductors_rss": {
+      "description": "韩国The Elec半导体产业消息。",
+      "entry_points": [
+        "https://www.thelec.kr/news/articleList.html",
+        "https://www.thelec.kr/rss/S1N2.xml"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "tmx_newsfile_massive": {
+      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "entry_points": [
+        "https://feeds.newsfilecorp.com/global/Last25Stories"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "tomshardware_rss": {
+      "description": "处理器、硬件与计算平台新闻。",
+      "entry_points": [
+        "https://www.tomshardware.com/feeds.xml"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "trendforce_news": {
+      "description": "集邦科技产业新闻与供应链动态。",
+      "entry_points": [
+        "https://www.trendforce.com/news/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "trendforce_press_releases": {
+      "description": "集邦研究新闻稿与半导体市场数据。",
+      "entry_points": [
+        "https://www.trendforce.com/presscenter/news"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "PLAYWRIGHT"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "unmannedairspace_counteruas": {
+      "description": "反无人机系统、政策与招标消息。",
+      "entry_points": [
+        "https://www.unmannedairspace.info/category/counter-uas-systems-and-policies/",
+        "https://www.unmannedairspace.info/category/counter-uas-systems-tenders/",
+        "https://www.unmannedairspace.info/category/counter-uas-systems-and-policies/feed/",
+        "https://www.unmannedairspace.info/category/counter-uas-systems-tenders/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
+    },
+    "utility_dive": {
+      "description": "公用事业、电网与电力行业新闻。",
+      "entry_points": [
+        "https://www.utilitydive.com/",
+        "https://www.utilitydive.com/feeds/news/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "venturebeat_ai": {
+      "description": "VentureBeat人工智能产业与应用新闻。",
+      "entry_points": [
+        "https://venturebeat.com/category/ai/feed"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01",
+        "L1-02"
+      ]
+    },
+    "venturebeat_data": {
+      "description": "历史独立栏目，现由venturebeat_software合并覆盖。",
+      "entry_points": [
+        "https://venturebeat.com/category/data/feed"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "venturebeat_orchestration": {
+      "description": "历史独立栏目，现由venturebeat_software合并覆盖。",
+      "entry_points": [
+        "https://venturebeat.com/category/orchestration/feed"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "venturebeat_security": {
+      "description": "历史独立栏目，现由venturebeat_software合并覆盖。",
+      "entry_points": [
+        "https://venturebeat.com/category/security/feed"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "venturebeat_software": {
+      "description": "VentureBeat编排、数据与安全栏目。",
+      "entry_points": [
+        "https://venturebeat.com/category/orchestration/feed",
+        "https://venturebeat.com/category/data/feed",
+        "https://venturebeat.com/category/security/feed"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-02"
+      ]
+    },
+    "wccftech_ai": {
+      "description": "历史独立栏目，现由wccftech_hardware合并覆盖。",
+      "entry_points": [
+        "https://wccftech.com/topic/ai/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "wccftech_hardware": {
+      "description": "AI、产业和硬件栏目，合并多个内部入口。",
+      "entry_points": [
+        "https://wccftech.com/topic/ai/",
+        "https://wccftech.com/topic/industry/",
+        "https://wccftech.com/department/hardware/",
+        "https://wccftech.com/topic/ai/feed/",
+        "https://wccftech.com/topic/industry/feed/",
+        "https://wccftech.com/department/hardware/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "wccftech_industry": {
+      "description": "历史独立栏目，现由wccftech_hardware合并覆盖。",
+      "entry_points": [
+        "https://wccftech.com/topic/industry/feed/"
+      ],
+      "listing": {
+        "primary": [
+          "RSS"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-01"
+      ]
+    },
+    "world_nuclear_news": {
+      "description": "核能项目、监管与产业新闻。",
+      "entry_points": [
+        "https://www.world-nuclear-news.org/",
+        "https://www.world-nuclear-news.org/rss"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-03"
+      ]
+    },
+    "x_official_posts": {
+      "description": "监控已配置官方账号的帖子，保留原生短帖内容。",
+      "entry_points": [
+        "https://api.x.com/2/tweets/search/stream"
+      ],
+      "listing": {
+        "primary": [
+          "API"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "NOT_APPLICABLE"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    },
+    "yahoo_finance_news": {
+      "description": "合并RSS与原生个股新闻入口，保留原始发布者归属。",
+      "entry_points": [
+        "https://finance.yahoo.com/quote/{ticker}/news/",
+        "https://finance.yahoo.com/rss/headline?s={ticker}"
+      ],
+      "listing": {
+        "primary": [
+          "RSS",
+          "HTTP"
+        ],
+        "fallback": [
+          "CHROME_CDP"
+        ]
+      },
+      "body": {
+        "primary": [
+          "PUBLISHER_ROUTED"
+        ],
+        "fallback": []
+      },
+      "applicability": "GLOBAL",
+      "sector_ids": []
+    }
+  }
+}

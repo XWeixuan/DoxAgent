@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-11T19:44:33.444558+00:00",
+  "cold_seconds": 0.8576945990207605,
+  "hot_seconds": 1.275637586019002,
+  "cold_timings": {
+    "select_article_facts_many": 0.18844587201601826,
+    "recent_rounds_many": 0.181615391978994,
+    "status_clock": 0.015398188988910988,
+    "source_status": 0.383798637194559
+  },
+  "hot_timings": {
+    "select_article_facts_many": 0.33424173601088114,
+    "recent_rounds_many": 0.30816645800950937,
+    "status_clock": 0.0001632479834370315,
+    "source_status": 0.4755359912815038
+  },
+  "hot_traced_seconds": 5.13190999199287,
+  "traced_peak_mb": 7.1768598556518555,
+  "data_bytes": 153179,
+  "source_count": 105,
+  "subscriptions": 285,
+  "production_writes": 0
+}

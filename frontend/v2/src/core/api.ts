@@ -5,6 +5,7 @@ import schema from "./wire-schema.json";
 
 export const API_PREFIX = "/api/doxagent/v2";
 export type Endpoints = {
+  SourceCatalog: S.WireSourceCatalog;
   RevenueSnapshot: S.WireRevenueSnapshot;
   RevenueEvaluation: S.WireRevenueEvaluation;
   RevenueReport: S.WireRevenueReport;

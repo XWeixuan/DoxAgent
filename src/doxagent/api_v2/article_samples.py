@@ -1,6 +1,7 @@
-"""Indexed article quota, shared by cards and dashboard. No history reconstruction."""
+"""Bounded article facts shared by ticker dashboards and the global directory."""
 
 import json
+from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
 
 INDEX_SQL = """CREATE TABLE IF NOT EXISTS article_sample_keys(
@@ -9,67 +10,92 @@ INDEX_SQL = """CREATE TABLE IF NOT EXISTS article_sample_keys(
 SOURCE_INDEX_SQL = """CREATE INDEX IF NOT EXISTS article_sample_source_time
  ON article_sample_keys(ticker,source_id,discovered_at DESC,id DESC)"""
 
+ARTICLE_FACTS_SQL = """SELECT q.value,d.parent,
+ json_extract(d.payload,'$.first_discovered_at'),
+ json_extract(b.payload,'$.eligible'),json_extract(b.payload,'$.outcome'),
+ json_extract(b.payload,'$.status'),(b.payload IS NULL OR b.payload='{}'),
+ json_extract(m.payload,'$.pipeline.discovered_at'),
+ json_extract(m.payload,'$.stream_published_at'),
+ json_extract(m.payload,'$.publication_time_verified'),
+ json_extract(m.payload,'$.publication_time_basis'),json_extract(m.payload,'$.source_published_at')
+ FROM json_each(?) q CROSS JOIN object_current d INDEXED BY current_identity
+ ON d.kind='native:live_deliveries' AND d.ticker=json_extract(q.value,'$[0]')
+ AND d.id IN (SELECT x.id FROM article_sample_keys x INDEXED BY article_sample_source_time
+ WHERE x.ticker=json_extract(q.value,'$[0]') AND x.source_id=json_extract(q.value,'$[1]')
+ ORDER BY x.discovered_at DESC,x.id DESC LIMIT 20)
+ LEFT JOIN object_current b INDEXED BY current_identity
+ ON b.kind='native:article_body_results' AND b.ticker='' AND b.id=d.parent
+ LEFT JOIN object_current m INDEXED BY current_identity
+ ON m.kind='message' AND m.ticker=d.ticker AND m.id=json_extract(d.payload,'$.standard_id')"""
 
-def select_articles(store, ticker, sources, now=None):
+
+def select_article_facts_many(store, pairs, now=None, *, db=None):
+    """At most 20 metadata rows per binding; never fill gaps with older successes."""
     now = now or datetime.now(UTC)
     cutoff = now - timedelta(hours=24)
-    with store.connect() as db:
-        rows = db.execute(
-            """SELECT s.value,d.parent,d.payload,b.payload,m.payload
- FROM json_each(?) s CROSS JOIN object_current d INDEXED BY current_identity ON d.kind='native:live_deliveries'
- AND d.ticker=? AND d.id IN (SELECT x.id FROM article_sample_keys x INDEXED BY article_sample_source_time
- WHERE x.ticker=? AND x.source_id=s.value
- ORDER BY x.discovered_at DESC,x.id DESC LIMIT 20)
- LEFT JOIN object_current b INDEXED BY current_identity ON b.kind='native:article_body_results' AND b.ticker=''
- AND b.id=d.parent
- LEFT JOIN object_current m INDEXED BY current_identity ON m.kind='message' AND m.ticker=d.ticker
- AND m.id=json_extract(d.payload,'$.standard_id')""",
-            (json.dumps(sources), ticker, ticker),
-        ).fetchall()
-    grouped = {sid: [] for sid in sources}
-    for sid, key, delivery, body, message in rows:
-        d = json.loads(delivery)
-        at = datetime.fromisoformat(d["first_discovered_at"])
-        grouped[sid].append(
-            (at, key, json.loads(body) if body else {}, json.loads(message) if message else {})
-        )
-    result = {}
-    for sid, candidates in grouped.items():
-        candidates.sort(key=lambda x: (x[0], x[1]), reverse=True)
-        fresh = [r for r in candidates if cutoff <= r[0] <= now]
-        chosen = fresh if len(fresh) >= 5 else candidates[:5]
-        latencies, capture = [], []
-        full = total = pending = 0
-        for _found, _, body, message in chosen:
-            if body.get("eligible", True):
-                total += 1
-                full += body.get("outcome") in {"FULL", "SHORT_FULL"}
-                pending += not body or body.get("status") == "PENDING"
-            published = message.get("stream_published_at")
-            anchor = (message.get("pipeline") or {}).get("discovered_at")
-            if not published or not anchor:
-                continue
+    grouped = {tuple(pair): [] for pair in pairs}
+    if not grouped:
+        return grouped
+    with nullcontext(db) if db is not None else store.connect() as connection:
+        rows = connection.execute(ARTICLE_FACTS_SQL, (json.dumps(list(grouped)),)).fetchall()
+    for (
+        pair,
+        key,
+        found,
+        eligible,
+        outcome,
+        status,
+        missing_body,
+        discovered,
+        published,
+        verified,
+        basis,
+        source_at,
+    ) in rows:
+        e2e = capture = None
+        if published and discovered:
             end = datetime.fromisoformat(published)
-            elapsed = (end - datetime.fromisoformat(anchor)).total_seconds()
-            if elapsed < 0:
-                continue
-            latencies.append(elapsed)
-            if (
-                message.get("publication_time_verified")
-                and message.get("publication_time_basis") == "EXACT"
-                and message.get("source_published_at")
-            ):
-                seconds = (
-                    end - datetime.fromisoformat(message["source_published_at"])
-                ).total_seconds()
-                if seconds >= 0:
-                    capture.append(seconds)
-        result[sid] = dict(
-            latencies=latencies,
-            capture=capture,
-            body_total=total,
-            body_full=full,
-            body_pending=pending,
-            article_samples=len(chosen),
+            elapsed = (end - datetime.fromisoformat(discovered)).total_seconds()
+            if elapsed >= 0:
+                e2e = elapsed
+                if verified and basis == "EXACT" and source_at:
+                    elapsed = (end - datetime.fromisoformat(source_at)).total_seconds()
+                    if elapsed >= 0:
+                        capture = elapsed
+        grouped[tuple(json.loads(pair))].append(
+            {
+                "article_key": key,
+                "found": datetime.fromisoformat(found),
+                "eligible": eligible != 0,
+                "full": outcome in {"FULL", "SHORT_FULL"},
+                "pending": bool(missing_body) or status == "PENDING",
+                "e2e": e2e,
+                "capture": capture,
+            }
         )
-    return result
+    for pair, candidates in grouped.items():
+        candidates.sort(key=lambda r: (r["found"], r["article_key"]), reverse=True)
+        fresh = [r for r in candidates if cutoff <= r["found"] <= now]
+        grouped[pair] = fresh if len(fresh) >= 5 else candidates[:5]
+    return grouped
+
+
+def reduce_articles(facts):
+    eligible = [r for r in facts if r["eligible"]]
+    return dict(
+        latencies=[r["e2e"] for r in facts if r["e2e"] is not None],
+        capture=[r["capture"] for r in facts if r["capture"] is not None],
+        body_total=len(eligible),
+        body_full=sum(r["full"] for r in eligible),
+        body_pending=sum(r["pending"] for r in eligible),
+        article_samples=len(facts),
+    )
+
+
+def select_articles(store, ticker, sources, now=None):
+    return {
+        sid: reduce_articles(facts)
+        for (_, sid), facts in select_article_facts_many(
+            store, [(ticker, sid) for sid in sources], now
+        ).items()
+    }

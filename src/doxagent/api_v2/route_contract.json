@@ -642,5 +642,12 @@
     "parameters": "`view_id,section?,ticker?,limit?,cursor?`",
     "response_schema": "AgentOperationsPage",
     "transport": "JSON"
+  },
+  {
+    "method": "GET",
+    "path": "/message-bus/source-catalog",
+    "parameters": "无",
+    "response_schema": "SourceCatalog",
+    "transport": "JSON"
   }
 ]

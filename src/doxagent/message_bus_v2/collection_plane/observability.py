@@ -39,13 +39,17 @@ def binding_states(tickers=None):
         rows = db.execute(
             "SELECT binding_id,unit,required,head_json FROM units WHERE " + where, params
         ).fetchall()
+    return states_from_heads(rows, store.get_meta("configuration", {}).get("at"))
+
+
+def states_from_heads(rows, observed):
+    """Pure logical-state reducer shared by ticker views and the directory."""
     grouped = {}
     for row in rows:
         if row['unit'].startswith('TAIL:') and not row['unit'].startswith('TAIL:IR:'):
             continue
         grouped.setdefault(row["binding_id"], []).append((row['required'],json.loads(row["head_json"])))
     result = {}
-    observed = store.get_meta("configuration", {}).get("at")
     for binding, heads in grouped.items():
         active = [s for required,s in heads if required == 1]
         disabled = max((s.get('disabled_at','') for _,s in heads),default='')

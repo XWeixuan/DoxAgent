@@ -656,6 +656,36 @@ export interface SourceStatus {
   next_target_at: Value<Instant>;
   countdown_state: "SCHEDULED" | "PAUSED" | "DISABLED" | "WINDOW_CLOSED" | "CLOSED_SLEEP" | "UNKNOWN";
 }
+export type SourceMethod = "RSS" | "API" | "HTTP" | "PLAYWRIGHT" | "CHROME_CDP" | "SOURCE_BODY" | "PUBLISHER_ROUTED" | "NOT_APPLICABLE";
+export interface SourceMethods { primary: SourceMethod[]; fallback: SourceMethod[] }
+export interface SourceClassification {
+  listing: SourceMethods; body: SourceMethods;
+  applicability: "GLOBAL" | "INDUSTRY"; sector_ids: string[];
+}
+export interface GlobalSourceMetrics {
+  last_success_at: Value<Instant>; published_today: Value<Count>;
+  mean_e2e_seconds: number | null; p95_e2e_seconds: number | null; e2e_samples: Count;
+  mean_capture_seconds: number | null; capture_samples: Count;
+  refresh_seconds: number | null; refresh_samples: Count;
+  body_ratio: number | null; body_total: Count; body_full: Count;
+  article_samples: Count; body_applicable: boolean;
+}
+export interface GlobalSourceCard {
+  source_id: Id; name: string; description: string;
+  enabled: boolean; delivery_mode: "production" | "test";
+  acquisition_mode: "by_ticker" | "by_search" | "by_distribution" | "massive_distribution";
+  classification: SourceClassification | null;
+  entry_points: { url: string; label: string; ticker: string | null }[];
+  subscriptions: { ticker: string; binding_id: Id; enabled: boolean }[];
+  state_counts: { running: Count; sleeping: Count; disabled: Count; abnormal: Count; unknown: Count };
+  errors: { ticker: string; code: string; message: string }[];
+  metrics: GlobalSourceMetrics;
+}
+export interface SourceCatalog {
+  snapshot_at: Instant; semantic_day: Day;
+  sectors: { id: string; name: string }[];
+  sources: GlobalSourceCard[];
+}
 export interface IrEndpointStatus {
   endpoint_id: string; name: string; url: string; method: string;
   status: "never_polled" | "succeeded" | "failed" | "deferred";

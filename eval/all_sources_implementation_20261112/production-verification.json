@@ -1,0 +1,151 @@
+{
+  "query_worker": {
+    "commit": "edf2159fab7a33349fdcfd5275fbcf27117c81d5",
+    "observations": [
+      {
+        "status": 200,
+        "seconds": 1.2732315739849582,
+        "bytes": 148735,
+        "request_id": "catalog-release-0"
+      },
+      {
+        "status": 200,
+        "seconds": 1.0592655499931425,
+        "bytes": 148735,
+        "request_id": "catalog-release-1"
+      }
+    ],
+    "sources": 105,
+    "subscriptions": 285,
+    "sectors": 13,
+    "bloomberg_listing": {
+      "primary": [
+        "HTTP"
+      ],
+      "fallback": []
+    },
+    "bloomberg_entry": {
+      "url": "https://www.bloomberg.com/latest",
+      "label": "www.bloomberg.com",
+      "ticker": null
+    },
+    "today_total": 802,
+    "source_with_e2e": 59,
+    "source_with_body": 67,
+    "business_writes": 0
+  },
+  "isolated_asgi": {
+    "commit": "edf2159fab7a33349fdcfd5275fbcf27117c81d5",
+    "observations": [
+      {
+        "status": 200,
+        "seconds": 4.674086104991147,
+        "bytes": 148822,
+        "request_id": "fc8beafd42124183ae134ff17a599116"
+      },
+      {
+        "status": 200,
+        "seconds": 0.9148679490026552,
+        "bytes": 148822,
+        "request_id": "dc505ebfb5a843c89355cd25df75fb3a"
+      }
+    ],
+    "sources": 105,
+    "subscriptions": 285,
+    "sectors": 13,
+    "bloomberg_listing": {
+      "primary": [
+        "HTTP"
+      ],
+      "fallback": []
+    },
+    "bloomberg_entry": {
+      "url": "https://www.bloomberg.com/latest",
+      "label": "www.bloomberg.com",
+      "ticker": null
+    },
+    "today_total": 802,
+    "source_with_e2e": 59,
+    "source_with_body": 67,
+    "anonymous_status": 401,
+    "ready": {
+      "ok": true,
+      "service": "v2-api",
+      "query_pools": [
+        {
+          "name": "read",
+          "target": 2,
+          "serving": 2,
+          "available": 2,
+          "waiting": 0,
+          "active": 0,
+          "states": {
+            "STARTING": 0,
+            "READY": 2,
+            "BUSY": 0,
+            "TERMINATING": 0,
+            "DEAD": 0
+          }
+        },
+        {
+          "name": "stream",
+          "target": 1,
+          "serving": 1,
+          "available": 1,
+          "waiting": 0,
+          "active": 0,
+          "states": {
+            "STARTING": 0,
+            "READY": 1,
+            "BUSY": 0,
+            "TERMINATING": 0,
+            "DEAD": 0
+          }
+        },
+        {
+          "name": "control",
+          "target": 1,
+          "serving": 1,
+          "available": 1,
+          "waiting": 0,
+          "active": 0,
+          "states": {
+            "STARTING": 0,
+            "READY": 1,
+            "BUSY": 0,
+            "TERMINATING": 0,
+            "DEAD": 0
+          }
+        }
+      ]
+    },
+    "business_writes": 0
+  },
+  "web": {
+    "source_catalog_assets": [
+      "/usr/share/nginx/html/assets/source-catalog-AYDApuxc.css",
+      "/usr/share/nginx/html/assets/source-catalog-CJeQv34e.js"
+    ],
+    "web_api_auth_config": 200,
+    "index_length": 800
+  },
+  "changed_containers": [
+    {
+      "service": "v2-web",
+      "id": "02d881f44bc3",
+      "image": "sha256:dda4519acb028278c19378a876879c12a80c755fcb3537d272216a6c34c805fa",
+      "health": "healthy",
+      "restarts": 0,
+      "commit": "edf2159fab7a33349fdcfd5275fbcf27117c81d5"
+    },
+    {
+      "service": "v2-api",
+      "id": "50fda4f02583",
+      "image": "sha256:6acc30925e0295a4e13c54fc99c2de5cc88c63b15cd7d29d04e6edb32819fda6",
+      "health": "healthy",
+      "restarts": 0,
+      "commit": "edf2159fab7a33349fdcfd5275fbcf27117c81d5"
+    }
+  ],
+  "unrelated_changed": []
+}
