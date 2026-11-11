@@ -1,4 +1,5 @@
 """Global wire endpoints on the shared Collector and live delivery pipeline."""
+from .publisher_http import network_timeout
 import asyncio
 import httpx
 import hashlib
@@ -159,7 +160,7 @@ class NewswireAdapter:
         started=time.monotonic()
         token=RESPONSE_LIMIT.set(16*1024*1024 if s.source_id=='businesswire_massive' else 4*1024*1024)
         try:
-            async with self.slots,context.request_permit(),asyncio.timeout(12):
+            async with self.slots,context.request_permit(),network_timeout(12):
                 async def send(proxy):
                     if proxy:
                         result=await self.curl.request((urlsplit(endpoint['url']).hostname,proxy),'GET',endpoint['url'],

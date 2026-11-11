@@ -19,6 +19,7 @@ from lxml import html as lxml_html  # type: ignore[import-untyped]
 from doxagent.site_strategy.client import SiteAccessError
 
 from .http_routes import HTTP_EGRESSES, approved_routes, transport_routes
+from .publisher_http import network_timeout
 from .schema import PollContext, PollResult, RawMessageInput, SharedPollContext
 
 _TAIPEI = ZoneInfo("Asia/Taipei")
@@ -651,6 +652,8 @@ def parse_shared_feed(
 
 
 class SharedFeedAdapter:
+    NETWORK_TIMEOUT_SECONDS = 12
+
     def __init__(self, client: httpx.AsyncClient, publisher: str, *, browser: Any = None) -> None:
         self.client = client
         self.publisher = publisher
@@ -681,16 +684,15 @@ class SharedFeedAdapter:
             raise ValueError("browser feed fallback is only approved for GlobeNewswire")
         route_used = routes[0] if routes else "legacy"
         async with context.request_permit():
-            deadline = time.monotonic() + (30 if browser_fallback else 12)
             # One retry for read-only connection loss; all attempts share a short
             # deadline so an RSS failure cannot occupy the shared collector for minutes.
-            async with asyncio.timeout_at(deadline):
+            async with network_timeout(30 if browser_fallback else self.NETWORK_TIMEOUT_SECONDS) as deadline:
                 selected_routes = approved_routes(routes) if routes else [("legacy", proxy)]
                 if len(selected_routes) == 1 and not browser_fallback:
                     selected_routes *= 2
 
                 async def send(route_proxy):
-                    remaining = deadline - time.monotonic()
+                    remaining = deadline.when() - asyncio.get_running_loop().time()
                     if remaining <= 0:
                         raise TimeoutError('publisher feed deadline')
                     timeout = httpx.Timeout(min(12, remaining), connect=min(5, remaining), pool=min(5, remaining))
@@ -724,7 +726,7 @@ class SharedFeedAdapter:
                     try:
                         status, _final, _headers, body = await self.browser.get(
                             source.entry_url,
-                            remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                            remaining_budget_ms=max(1, int((deadline.when() - asyncio.get_running_loop().time()) * 1000)),
                             operation_id=f"{context.run_id}:feed-browser",
                         )
                     except SiteAccessError as exc:

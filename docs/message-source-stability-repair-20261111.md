@@ -36,3 +36,15 @@ P1逐源判断以原排查表为索引：先在新版本自然流量中复核。
 第二层修改采用同一轻量`network_timeout`上下文：只在联合准入等待期间暂停这些局部**网络阶段**计时，授予后恢复剩余网络预算，重试仍共用同一网络预算。Collector原45/30秒业务总截止、请求8秒执行截止、站点并发和既定周期全部保留。没有把全部超时改成120秒或放大并发。确定性回归同时验证：排队不耗网络预算、真实联网仍受限、父业务截止仍可取消排队且容量归还。
 
 另外核实SiteAccess和BODY运行中都加载旧`held = blocked`准入算法，故将同一修复同步这两个实际消费者；先查维护会话仅CLOSED/RELEASED，无活动Viewer。Supervisor未重建。首版Collector窗口单独保留，后续以最终运行版本重新验收，不混算完整30分钟。
+
+## RSS／Token／限流分支收尾
+
+二版自然流量窗口（UTC15:54:46—15:58:30）出现2065成功/198失败，Army两入口、NBIS、NRC、TechNews、Quantum、Calcalist、Utility均有真实成功；TechNews8轮、Quantum3轮各自有两页独立传输证明。仍不能称全量验收通过：Tom’s11次仍全是准入阶段超时。
+
+继续复核发现`SharedFeedAdapter`、显式RSS route和试验Newswire尚保留旧绝对网络超时，已统一使用同一网络阶段时钟；保留两次尝试的总网络预算与父业务截止。Tom’s不换站点、不换路由、不降低周期。
+
+Calcalist受控新会话bootstrap200＋真实搜索200，不能再把当前失败归为永久访问拒绝。CSE缓存原来只按TTL失效，与既有Publisher client退休/重建脱节；增加仅对实际transport generation变化的失效和一次有界刷新，同一代正常复用、不增加逐轮bootstrap，明确新鲜同代403仍失败。
+
+Collector简化IR路径原来只抛出`IR_HTTP_429`，未将Retry-After持久化到race分支。现在复用现有checkpoint `retry_at`：只暂停被限流lane；健康HTTP保持原发现周期，不把RSS未请求／退避伪装成一次网络成功。
+
+收尾回归120 passed/1 skipped（现有平台分支），另72个共享race/队列/恢复回归通过。两个历史测试mock分别跟上现有PublisherHttpx接口及Scheduler构造器_wake不变量，未为测试改变生产Scheduler。最终发布与30分钟自然窗口另记，先前失败窗口保留。

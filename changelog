@@ -2897,3 +2897,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 消息源提频稳定性修复：复现并修复联合Semaphore反序竞争的预约活锁，按就绪FIFO一次取得全量许可，保留pacing/取消/缩容与原硬上限；IR PoolTimeout按host退休坏client；NRC兼容真实Part21报告主体并隔离坏事件；TechNews/Quantum首页先提交、补充页欠账重试；分离RSS回退证明，轻量阶段计时复用现有回执，维护与热解析线程池隔离。保持全部轮询间隔及Chrome/Profile，Reuters专属治理不变。详见docs/message-source-stability-repair-20261111.md。
 
 2026-11-11 消息源稳定性二层修复：首窗保留未通过结果；新客户端对照证实部分目标/route可达，定位外层12/15秒局部超时仍吞噬准入等待，导致8秒实际执行预算失效。局部网络计时仅在准入等待时暂停，保留Collector45/30秒总截止及原并发/轮询；Defense urllib也采用联合准入，不新增读写/探测守护。将共用算法同步到SiteAccess/BODY，保留Supervisor/Profile。
+
+2026-11-12 消息源稳定性RSS分支收尾：SharedFeed、显式RSS路由和试验Newswire统一网络阶段计时，保留原网络/业务截止；CSE缓存随实际transport generation退休失效，同代复用且新鲜403不无限刷新；Collector IR 429复用现有race lane checkpoint保存Retry-After，健康HTTP继续原周期。无新服务/数据库/抓包/高频写入，未回调轮询间隔。

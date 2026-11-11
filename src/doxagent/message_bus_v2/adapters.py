@@ -953,7 +953,8 @@ class NewswireRSSAdapter(_BaseAdapter):
                     self._route_clients[proxy] = client
                 return await client.get(url, headers=headers)
 
-        async with asyncio.timeout(25):
+        from .publisher_http import network_timeout
+        async with network_timeout(25):
             response, _ = await transport_routes(
                 send, approved_routes(routes), (TimeoutError, httpx.TransportError)
             )

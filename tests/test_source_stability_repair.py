@@ -173,3 +173,64 @@ async def test_network_deadline_excludes_queue_but_parent_still_bounds_operation
                 async with joint_permits(role):pytest.fail('unexpected admission')
     assert role._value==0
     role.release()
+
+@pytest.mark.asyncio
+async def test_calcalist_token_is_refreshed_when_own_transport_generation_changes():
+    import time
+    from doxagent.message_bus_v2.defense_sources import DefenseAdapter,ENDPOINTS,Capture
+    e=ENDPOINTS['calcalist_search'];old,new=object(),object()
+    bootstrap=Capture(200,e.urls[0],'{"cse_token":"new", "cselibVersion":"v1"}',{})
+    query=Capture(200,e.urls[0],'{"results":[]}',{})
+    http=SimpleNamespace(clients=SimpleNamespace(clients={(e.host,e.route):new}),
+                         fetch=AsyncMock(side_effect=[bootstrap,query,query]))
+    adapter=DefenseAdapter(http);adapter.cse=(time.monotonic()+300,{'cse_token':'old','cselibVersion':'v1'});adapter.cse_owner=old
+    assert (await adapter._search(e,'Ondas')).status==200
+    assert http.fetch.await_count==2 and adapter.cse_owner is new
+    await adapter._search(e,'Ondas')
+    assert http.fetch.await_count==3  # Stable generation reuses its token.
+
+@pytest.mark.asyncio
+async def test_shared_rss_local_network_budget_does_not_include_role_queue(monkeypatch):
+    from doxagent.message_bus_v2.industry_sources import SharedFeedAdapter
+    from doxagent.message_bus_v2.publisher_http import PublisherHttpx,PublisherClients
+    from tests.test_message_bus_industry_sources import NOW as feed_now
+    class Session:
+        broken=False
+        async def request(self,method,url,**kwargs):
+            await asyncio.sleep(.01)
+            return httpx.Response(200,request=httpx.Request(method,url),text='''<rss><channel><item>
+              <title>Company news</title><link>https://publisher.test/news/one</link>
+              <pubDate>2026-09-23T18:49:35Z</pubDate></item></channel></rss>''')
+        async def close(self):pass
+    @asynccontextmanager
+    async def permit():yield
+    ctx=SimpleNamespace(source=SimpleNamespace(entry_url='https://publisher.test/rss',content_language='en',default_parameters={}),
+                        request_permit=permit,requested_at=feed_now,window_start=None)
+    client=PublisherHttpx();client.clients=PublisherClients(factory=Session)
+    adapter=SharedFeedAdapter(client,'Publisher');adapter.NETWORK_TIMEOUT_SECONDS=.04
+    role=http_budget('collector');n=role._value
+    for _ in range(n):await role.acquire()
+    task=asyncio.create_task(adapter.poll_shared(ctx));await asyncio.sleep(.08)
+    assert not task.done()
+    for _ in range(n):role.release()
+    assert (await asyncio.wait_for(task,.3)).messages
+    await client.aclose();await adapter.close()
+
+@pytest.mark.asyncio
+async def test_ir_429_backoff_is_persisted_only_in_its_existing_lane():
+    from doxagent.message_bus_v2.collection_plane.worker import Collector,recovery_checkpoint
+    from doxagent.message_bus_v2.corporate_ir.http import Capture
+    @asynccontextmanager
+    async def lock(*args):yield
+    spec=next(s for s in initial_endpoints() if s.endpoint_id=='be.press')
+    http=SimpleNamespace(fetch=AsyncMock(return_value=Capture(429,spec.entry_url,'',{'retry-after':'120'},0)))
+    adapter=SimpleNamespace(http=http,endpoint_lock=lock)
+    binding=SimpleNamespace(binding_id='BE:corporate_ir')
+    r=await Collector.ir(None,adapter,spec,binding,{})
+    assert r.site_access_deferred and r.site_access_deferred_reason=='ir_http_429'
+    lane=recovery_checkpoint({},r.next_checkpoint)
+    assert lane['retry_at']
+    again=await Collector.ir(None,adapter,spec,binding,lane)
+    assert again.site_access_deferred_reason=='ir_provider_backoff' and http.fetch.await_count==1
+    # Existing race checkpoint merge keeps this debt under RSS, not its HTTP sibling.
+    assert not recovery_checkpoint({'http':{'baseline':True}},{'rss':lane})['http'].get('retry_at')

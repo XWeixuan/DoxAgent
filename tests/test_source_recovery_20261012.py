@@ -72,10 +72,11 @@ async def test_feed_fallback_is_only_for_transport_not_403(monkeypatch):
         async def __aexit__(self, *args):
             pass
 
-        async def get(self, url):
+        async def get(self, url, **kwargs):
             return httpx.Response(403, request=httpx.Request("GET", url))
 
-    monkeypatch.setattr(httpx, "AsyncClient", Client)
+    from doxagent.message_bus_v2 import publisher_http
+    monkeypatch.setattr(publisher_http, "PublisherHttpx", Client)
     source = SimpleNamespace(
         entry_url="https://example.com/rss",
         content_language="en",
@@ -131,6 +132,7 @@ async def test_bus_loop_retries_busy_but_not_ioerr(tmp_path):
         stop.set()
 
     scheduler = GlobalPollScheduler.__new__(GlobalPollScheduler)
+    scheduler._wake = asyncio.Event()
     scheduler.run_once = run_once
     await scheduler.run_forever(loop_sleep_seconds=0.01, stop=stop)
     assert len(calls) == 2

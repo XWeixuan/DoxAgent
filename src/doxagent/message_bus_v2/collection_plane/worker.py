@@ -780,6 +780,10 @@ class Collector:
         from ..corporate_ir.schema import IrEndpointState
         from ..corporate_ir.parsers import parse_listing
 
+        if checkpoint.get('retry_at') and datetime.fromisoformat(checkpoint['retry_at']) > utc_now():
+            return PollResult(site_access_deferred=True, site_access_deferred_reason='ir_provider_backoff',
+                              site_access_retry_not_before=datetime.fromisoformat(checkpoint['retry_at']),
+                              next_checkpoint=checkpoint, window_done=False)
         state = IrEndpointState.model_validate(
             checkpoint.get("ir_state")
             or {"binding_id": binding.binding_id, "endpoint_id": spec.endpoint_id}
@@ -822,6 +826,12 @@ class Collector:
                 headers["If-Modified-Since"] = state.last_modified
         async with adapter.endpoint_lock(binding.binding_id, spec.endpoint_id):
             capture = await adapter.http.fetch(spec, headers=headers)
+        if capture.status == 429:
+            from doxagent.content_enrichment.transport import retry_after
+            retry_at = utc_now() + timedelta(seconds=retry_after(capture.headers.get('retry-after')) or 60)
+            return PollResult(site_access_deferred=True, site_access_deferred_reason='ir_http_429',
+                              site_access_retry_not_before=retry_at, window_done=False,
+                              next_checkpoint={**checkpoint, 'retry_at': retry_at.isoformat()})
         if capture.status not in {200, 304}:
             raise ValueError("IR_HTTP_" + str(capture.status))
         if capture.status == 304 and not state.representation_hash:

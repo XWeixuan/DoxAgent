@@ -570,14 +570,21 @@ class DefenseAdapter:
     def __init__(self, http=None):
         self.http = http or DefenseHttp()
         self.cse = None
+        self.cse_owner = None
         self.cse_lock = asyncio.Lock()
 
     async def close(self):
         await self.http.close()
 
+    def _cse_transport_owner(self, endpoint):
+        clients = getattr(getattr(self.http, 'clients', None), 'clients', {})
+        return clients.get((endpoint.host, endpoint.route))
+
     async def _search(self, e, query, start=0):
         for attempt in range(2):
             async with self.cse_lock:
+                if self.cse_owner is not None and self._cse_transport_owner(e) is not self.cse_owner:
+                    self.cse = None  # Request-bound token cannot outlive its transport/cookies.
                 if self.cse is None or self.cse[0] < time.monotonic():
                     cx = "partner-pub-0047680307646695:9309925491"
                     r = await self.http.fetch(
@@ -592,7 +599,9 @@ class DefenseAdapter:
                             raise ValueError("calcalist_cse_bootstrap_contract_changed")
                         fields[name] = found[1]
                     self.cse = (time.monotonic() + 300, fields)
+                    self.cse_owner = self._cse_transport_owner(e)
                 token_expires_at, fields = self.cse
+                token_owner = self.cse_owner
             params = {
                 "rsz": "filtered_cse",
                 "num": "10",
@@ -619,8 +628,9 @@ class DefenseAdapter:
                 # forbidden response. Refresh that cached credential once on
                 # the same route; a fresh-token refusal remains a real error.
                 aged = token_expires_at - time.monotonic() <= 240
+                changed = token_owner is not None and self._cse_transport_owner(e) is not token_owner
                 if attempt == 0 and (_cse_token_invalid(capture.text) or
-                                     (capture.status == 403 and aged)):
+                                     (capture.status == 403 and (aged or changed))):
                     async with self.cse_lock:
                         if self.cse and self.cse[1] is fields:
                             self.cse = None

@@ -43,7 +43,7 @@ async def network_timeout(seconds):
     async with asyncio.timeout(seconds) as deadline:
         token = _NETWORK_TIMEOUTS.set((*_NETWORK_TIMEOUTS.get(), deadline))
         try:
-            yield
+            yield deadline
         finally:
             _NETWORK_TIMEOUTS.reset(token)
 
