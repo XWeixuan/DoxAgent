@@ -104,6 +104,7 @@ async def main() -> None:
                 {
                     "type": "started",
                     "sdk_deadline": deadline,
+                    "sdk_dispatched_at": getattr(handle, "sdk_dispatched_at", None),
                     "thread_id": handle.thread_id,
                     "turn_id": handle.turn_id,
                     "startup_timing": startup,

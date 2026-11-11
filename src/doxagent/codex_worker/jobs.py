@@ -922,6 +922,9 @@ class WorkerJobManager:
                 turn_id=getattr(handle, "turn_id", None),
                 resource_receipt={
                     "capsule_id": getattr(handle, "identity", None),
+                    "execution_timing": {
+                        "sdk_dispatched_at": getattr(handle, "sdk_dispatched_at", None),
+                    },
                     "pid": getattr(process, "pid", None),
                     "cold_start_ms": int((time.monotonic() - cold_start_started) * 1000),
                     "queue_wait_ms": max(
