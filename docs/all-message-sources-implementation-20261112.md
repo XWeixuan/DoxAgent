@@ -26,9 +26,15 @@
 - 后端定向 38 项通过：目录聚合、零值/缺失、共享正文去重、Ticker 样本加权、历史 FULL 无 status 的兼容、路由鉴权、无 view_id、严格参数、原消息总线配额及绑定/OpenAPI 回归。
 - 浏览器 10 项通过：目录 3、成本审计 2、收益审计 2、消息阅读稳定性 3。覆盖 1262/1559、分类组合、备用路径、跨行业、停用订阅、手动刷新失败保留、首屏失败与空列表区分、虚拟时间推进/焦点/重连不发请求、离开再进入重新取数。
 - 前端 schema 生成、TypeScript 与生产构建通过；新增 Python 文件 Ruff 通过，diff 无空白错误。新增 UI 组件使用已有 radix-ui，无新依赖。
-- 生产数据只读预发布探针：105 源、285 订阅；完整 cold 0.858s / hot 1.276s；tracemalloc 临时对象峰值约 7.18 MiB；JSON 约 153KB。开启 tracemalloc 的请求会变慢，其 5.13s 不当作普通请求耗时。探针无生产写入，数据为当时快照，非持续 SLA。
+- 生产数据只读预发布探针：105 源、285 订阅；业务聚合 cold 0.858s / hot 1.276s；tracemalloc 业务聚合临时对象峰值约 7.18 MiB；JSON 约 153KB。该计时/内存不包含完整 HTTP 响应处理；开启 tracemalloc 的聚合会变慢，其 5.13s 不当作普通请求耗时。探针无生产写入，数据为当时快照，非持续 SLA。
 - 浏览器使用固定 fixture 验证显示和交互；生产规模探针验证真实数据、合同和读取成本。两者不冒充已登录生产浏览器端到端验收。
 
 ## 发布记录
 
-发布与在线验证结果在实施后追加。
+1. 功能提交 `edf2159fab7a33349fdcfd5275fbcf27117c81d5` 已先推送 origin/main，再由主机既有 storage_release 发布工具定向构建 backend / web 镜像并仅替换 `v2-api`、`v2-web`。API、Web 均健康、零重启。对比发布前后的容器 ID，其余业务角色未替换，Bloomberg 采集器仍运行并行会话的 b246dc753。
+2. 新 API 生产镜像内，以原 QueryRunner 的认证后 Principal 边界验证真实数据库路由，两次 HTTP 200，分别 1.273s / 1.059s，响应约 149KB，未创建 view_id；105 源、285 订阅、13 行业。测试进程在结束时关闭，不留常驻资源。测试未访问外部模型或触发采集/业务写入。
+3. 另一次隔离 ASGI 冷启动路由检查为 4.674s / 0.915s，均 200；其冷启动成本不可与已预热查询进程混用。线上 `/readyz` 显示 read 2/2、stream 1/1、control 1/1 就绪、无排队；真实 TCP 匿名请求目录仍为 401。
+4. Web 容器已包含新的 source-catalog JS/CSS；实际 Nginx → API `/auth/config` 返回 200。Bloomberg 展示 HTTP 主方式、无 RSS fallback，首入口为 `https://www.bloomberg.com/latest`。
+5. 取样快照中 59 源有端到端样本、67 源有正文样本；其余卡片保留真实缺失/不适用状态，不补造样本或将源故障包装成健康。
+
+汇总机器证据：`eval/all_sources_implementation_20261112/production-verification.json`。本轮未使用登录后的生产浏览器验收；页面视觉/交互由本地浏览器固定数据验证，生产通过镜像、静态资源、真实数据路由及就绪检查验证。
