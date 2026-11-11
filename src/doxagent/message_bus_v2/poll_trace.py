@@ -16,9 +16,9 @@ TRANSPORT_PROGRESS = ContextVar("publisher_transport_progress", default=None)
 _HTTP_POOLS = WeakKeyDictionary()
 
 
-def validate_listing(events, request_ids=None, *, since=0):
+def validate_listing(events, request_ids=None, *, since=0, role='listing'):
     """Bind parser validation to an unambiguous transport, never a caller timestamp."""
-    candidates=[r for r in events[since:] if r.get('role','listing')=='listing'
+    candidates=[r for r in events[since:] if r.get('role','listing')==role
         and r.get('proof_basis')=='TRANSPORT_SEND' and r.get('response_received_at')
         and not r.get('error_type') and (r.get('status_code') is None
             or 200<=r['status_code']<300 or r['status_code']==304)]
@@ -98,7 +98,8 @@ def install(client):
             loop = asyncio.get_running_loop()
             slots, hosts = _HTTP_POOLS.setdefault(loop, (asyncio.Semaphore(16), {}))
             host = request.url.host
-            async with hosts.setdefault(host, asyncio.Semaphore(4)), slots:
+            from .publisher_http import joint_permits
+            async with joint_permits(hosts.setdefault(host, asyncio.Semaphore(4)), slots):
                 from .collection_override import check_request_allowed
 
                 check_request_allowed()

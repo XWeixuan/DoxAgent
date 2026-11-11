@@ -3,6 +3,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from contextlib import asynccontextmanager
 from urllib.parse import urlsplit
 
 import httpx
@@ -38,6 +39,9 @@ class PublicHttp:
         self.host_slots = {}
         self.browser = PublicBrowserPool()
         self.routed_http = None
+        self._active = {}
+        self._retired = set()
+        self._closing = set()
 
     def _client(self,host):
         if self.client is not None:return self.client
@@ -48,6 +52,42 @@ class PublicHttp:
                 limits=httpx.Limits(max_connections=2,max_keepalive_connections=2,keepalive_expiry=30),
                 event_hooks={'request':[httpx_request]})
         return self.clients[host]
+
+    @asynccontextmanager
+    async def _lease(self, host):
+        client = self._client(host)
+        self._active[client] = self._active.get(client, 0) + 1
+        try:
+            yield client
+        except httpx.PoolTimeout:
+            from ..publisher_http import http_timing
+            http_timing('ir_pool_timeout')
+            # Our host admission already bounds use to the pool's capacity.
+            # A pool acquisition timeout is evidence to retire this generation,
+            # unlike waiting for role capacity or a DNS/connect timeout.
+            if self.owns_client:
+                if self.clients.get(host) is client:
+                    self.clients.pop(host)
+                self._retired.add(client)
+            raise
+        finally:
+            self._active[client] -= 1
+            if not self._active[client]:
+                del self._active[client]
+                if client in self._retired:
+                    self._retired.remove(client)
+                    task = asyncio.create_task(self._close_client(client))
+                    self._closing.add(task)
+                    task.add_done_callback(self._closing.discard)
+
+    @staticmethod
+    async def _close_client(client):
+        try:
+            async with asyncio.timeout(8):
+                await client.aclose()
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception('IR retired host client close failed')
 
     async def _stdlib(self, url, headers):
         work = asyncio.create_task(asyncio.to_thread(self._stdlib_read, url, headers))
@@ -165,8 +205,8 @@ class PublicHttp:
                 if host not in spec.allowed_article_hosts:
                     raise ValueError("IR redirect host not approved")
                 slots = self.host_slots.setdefault(host, asyncio.Semaphore(2))
-                from ..publisher_http import http_budget
-                async with slots,http_budget('body' if url!=spec.entry_url else 'collector'):
+                from ..publisher_http import http_budget, joint_permits
+                async with joint_permits(slots,http_budget('body' if url!=spec.entry_url else 'collector')):
                     if host in spec.parser_parameters.get("urllib_hosts", []):
                         capture = await self._stdlib(url, headers or {})
                         if capture.status in {301, 302, 303, 307, 308}:
@@ -176,9 +216,11 @@ class PublicHttp:
                             continue
                         return capture
                     from ..schema import utc_now
-                    async with self._client(host).stream(
+                    async with self._lease(host) as client, client.stream(
                         "GET", url, headers={**HEADERS, **(headers or {})}
                     ) as response:
+                        from ..publisher_http import http_timing
+                        http_timing('ir_body')
                         if response.status_code in {301, 302, 303, 307, 308}:
                             from urllib.parse import urljoin
 
@@ -208,3 +250,5 @@ class PublicHttp:
             await self.routed_http.close()
         for client in self.clients.values():await client.aclose()
         self.clients.clear()
+        if self._closing:
+            await asyncio.gather(*self._closing)

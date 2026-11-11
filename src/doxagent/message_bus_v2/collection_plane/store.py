@@ -309,6 +309,8 @@ class AcquisitionStore:
                     "terminal_error_message": state.get("last_error_message") if reason else None,
                     "attempt_finished": True,
                 }
+                if not valid and state.get('http_timing'):
+                    target_proof['http_timing'] = state['http_timing']
                 if not target_proof["list_validated"] and prior_proof.get("list_validated"):
                     target_proof.update(
                         {

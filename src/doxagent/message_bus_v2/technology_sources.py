@@ -315,7 +315,8 @@ class TechnologyHttp:
                     raise ValueError("technology_redirect_host_not_approved")
                 if spec.transport == "urllib":
                     from .corporate_ir.http import PublicHttp
-                    async with self.stdlib_slots, http_budget("collector"):
+                    from .publisher_http import joint_permits
+                    async with joint_permits(self.stdlib_slots, http_budget("collector")):
                         result = await StorageLane._execute(PublicHttp._stdlib_read,
                             (url, {"User-Agent": "Mozilla/5.0", **(headers or {})},
                              HTTP_EGRESSES[spec.route]), {})

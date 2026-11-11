@@ -258,9 +258,11 @@ async def test_technews_archive_failure_is_visible_even_when_api_succeeds():
         Capture(503, "https://technews.tw/category/semiconductor/", "", {}),
     )
     result = await ListingAdapter(delegate, http).poll_shared(context("technews_hardware"))
-    assert result.failures[0].error_code == "HTTP_LISTING_FAILED_RSS_FALLBACK"
-    assert "technews_archive_http_503" in result.failures[0].error_message
-    delegate.poll_shared.assert_awaited_once()
+    assert result.messages and not result.failures
+    assert result.window_coverage == 'PARTIAL' and not result.window_done
+    state = result.next_checkpoint['listings'][RECIPES['technews_hardware'][0].url]
+    assert state['supplement_pending'] and 'public_listing_http_503' in state['supplement_error']
+    delegate.poll_shared.assert_not_awaited()
 
 
 class Http:
@@ -634,7 +636,9 @@ async def test_quantum_second_page_cache_is_also_validated():
     result = await ListingAdapter(delegate, Http(first, second)).poll_shared(
         context("quantum_zeitgeist")
     )
-    assert result.failures and "stale_cache_age" in result.failures[0].error_message
+    assert not result.failures and result.window_coverage == 'PARTIAL'
+    state = result.next_checkpoint['listings'][RECIPES['quantum_zeitgeist'][0].url]
+    assert state['supplement_pending'] and 'stale_cache_age' in state['supplement_error']
 
 
 async def test_cache_evidence_is_bound_to_physical_request_receipt():

@@ -51,8 +51,21 @@ def text(node):
 
 
 def field(grid, label):
-    nodes = grid.xpath(".//b[normalize-space(.)=$label]", label=label + ":")
-    return (nodes[0].tail or "").strip() if nodes else ""
+    wanted = label.casefold().rstrip(":")
+    for node in grid.xpath('.//b | .//strong | .//th | .//td'):
+        if text(node).casefold().rstrip(":").strip() != wanted:
+            continue
+        if node.tag in {'th', 'td'}:
+            sibling = node.getnext()
+            return text(sibling) if sibling is not None else ''
+        # Values may be plain tails or wrapped spans; stop at the next label/br.
+        parts = [node.tail or '']
+        for sibling in node.itersiblings():
+            if sibling.tag in {'b', 'strong', 'br'}:
+                break
+            parts.extend([text(sibling), sibling.tail or ''])
+        return ' '.join(' '.join(parts).split())
+    return ''
 
 
 def parse_events(spec, doc, now):
@@ -70,14 +83,18 @@ def parse_events(spec, doc, now):
         raise ValueError("nrc_report_date_missing")
     date = parse_date(report_date[1]).date()
     dated_url = NRC_EVENTS.removesuffix("/en") + "/" + date.strftime("%Y/%Y%m%den")
-    messages = []
+    messages, rejected = [], []
     for grid in blocks:
         if not re.fullmatch(r"en\d+", grid.get("id", "")):
             continue
         event_id = grid.get("id")[2:]
         licensee, facility = field(grid, "Licensee"), field(grid, "Facility")
-        if not licensee and not facility:
-            raise ValueError("nrc_event_licensee_or_facility_missing")
+        # Part 21 reports legitimately identify a reporting organization rather
+        # than a licensee. Do not invent a licensee or resolve it as a reactor.
+        reporting_org = field(grid, 'Rep Org') if 'Part 21' in text(grid) else ''
+        if not (licensee or facility or reporting_org):
+            rejected.append(event_id + ':issuer_missing')
+            continue
         siblings, event_body = [], None
         for node in grid.itersiblings():
             if re.fullmatch(r"en\d+", node.get("id", "")):
@@ -87,22 +104,26 @@ def parse_events(spec, doc, now):
                 event_body = node
                 break
         if event_body is None or not text(event_body):
-            raise ValueError("nrc_event_body_missing:" + event_id)
+            rejected.append(event_id + ':body_missing')
+            continue
         first_line = next((part.strip() for part in event_body.itertext() if part.strip()), "")
         native = html.tostring(grid, encoding="unicode") + "".join(
             html.tostring(node, encoding="unicode") for node in siblings
         )
         date_text, time_text = field(grid, "Notification Date"), field(grid, "Notification Time")
-        stamp = (
-            datetime.strptime(date_text + " " + time_text[:5], "%m/%d/%Y %H:%M")
-            .replace(tzinfo=ZoneInfo("America/New_York"))
-            .astimezone(UTC)
-        )
+        try:
+            stamp = (
+                datetime.strptime(date_text + " " + time_text[:5], "%m/%d/%Y %H:%M")
+                .replace(tzinfo=ZoneInfo("America/New_York")).astimezone(UTC)
+            )
+        except ValueError:
+            rejected.append(event_id + ':notification_time_invalid')
+            continue
         version = sha256_text(native)
         message = _message(
             source="NRC",
             url=dated_url + "?" + urlencode({"event": event_id}),
-            title=f"NRC EN {event_id} | {licensee or facility} | {first_line[:220]}",
+            title=f"NRC EN {event_id} | {licensee or facility or reporting_org} | {first_line[:220]}",
             summary=first_line,
             published_at=stamp,
             basis="EXACT",
@@ -112,6 +133,7 @@ def parse_events(spec, doc, now):
                 "event_id": event_id,
                 "licensee": licensee,
                 "facility": facility,
+                "reporting_org": reporting_org,
                 "event_html": native,
                 "content_hash": version,
                 "updated_at": field(grid, "Last Update Date"),
@@ -131,6 +153,12 @@ def parse_events(spec, doc, now):
             },
         )
         messages.append(message)
+    if rejected:
+        if not messages:
+            raise ValueError('nrc_events_rejected:' + ','.join(rejected[:8]))
+        # A bounded diagnostic travels with the existing result, no extra writes.
+        for message in messages:
+            message.metadata['nrc_rejected_events'] = rejected[:8]
     return messages
 
 
@@ -296,7 +324,19 @@ class EnergyAdapter(TechnologyAdapter):
             return cache
 
     async def poll_shared(self, context):
+        if context.source.source_id == 'nrc_event_notifications':
+            import copy
+            context = copy.copy(context)
+            context.checkpoint = copy.deepcopy(context.checkpoint)
+            for state in context.checkpoint.get('endpoints', {}).values():
+                if str(state.get('error', '')).startswith('ValueError:nrc_event_'):
+                    state['retry_at'] = None
         result = await super().poll_shared(context)
+        rejected = next((m.metadata.get('nrc_rejected_events') for m in result.messages
+                         if m.metadata.get('nrc_rejected_events')), None)
+        if rejected:
+            result.window_coverage = 'PARTIAL'
+            result.acquisition_metadata['nrc_rejected_events'] = rejected
         for failure in result.failures:
             failure.error_code = "ENERGY_ENDPOINT_FAILED"
         return result
@@ -330,7 +370,8 @@ class EnergyAdapter(TechnologyAdapter):
                 return " ".join(re.findall(r"\w+", value.casefold()))
 
             terms = [normalize(value) for value in aliases]
-            reactors = [m for m in result.messages if not m.raw_payload["licensee"]]
+            reactors = [m for m in result.messages if not m.raw_payload["licensee"]
+                        and m.raw_payload.get('facility')]
             cache = context.checkpoint.get("nrc_reactor_operators")
             if reactors:
                 cache = await self._operators(context, spec)
@@ -347,7 +388,8 @@ class EnergyAdapter(TechnologyAdapter):
                 message
                 for message in result.messages
                 if any(term in normalize(message.raw_payload["licensee"] or
-                                         message.raw_payload.get("reactor_operator", ""))
+                                         message.raw_payload.get("reactor_operator", "") or
+                                         message.raw_payload.get('reporting_org', ''))
                        for term in terms)
             ]
         return result

@@ -23,52 +23,92 @@ PROCESS_ROLE = "collector"
 RESPONSE_LIMIT = ContextVar("publisher_response_limit", default=4 * 1024 * 1024)
 
 
-@asynccontextmanager
-async def joint_permits(*slots, source=None):
-    """Reserve the current loop's capacities together, never hold one while waiting."""
-    slots = (*slots, source._semaphore) if source else slots
-    held = None
-    try:
-        while True:
-            if source:
-                delay = source._next_request_at-source._clock()
-                if delay>0:
-                    if held is not None:
-                        held.release()
-                        held = None
-                    await source._sleep(delay)
-                    continue
-            blocked = next((slot for slot in slots if slot is not held and slot.locked()), None)
-            if blocked is not None:
-                if held is not None:
-                    held.release()
-                    held = None
-                await blocked.acquire()
-                # Keep this reservation while checking the remaining capacities.
-                # Releasing it immediately hands it to another queued waiter and
-                # all waiters can circulate forever without entering the request.
-                held = blocked
+def http_timing(phase, elapsed=None):
+    """A few scalars in the existing cycle; never write from the transport."""
+    from .scheduler import POLL_TIMINGS
+    timings = POLL_TIMINGS.get()
+    if timings is not None:
+        timings['http_last_phase'] = phase
+        if elapsed is not None:
+            key = phase + '_ms'
+            timings[key] = timings.get(key, 0) + round(elapsed * 1000)
+
+
+class _JointAdmission:
+    """Loop-local FIFO among eligible requests; never reserve partial capacity."""
+
+    def __init__(self):
+        self.pending = []
+        self.timer = None
+
+    def drain(self):
+        if self.timer is not None:
+            self.timer.cancel()
+            self.timer = None
+        waiting, delay = [], .05
+        for ticket in self.pending:
+            slots, source, future = ticket[:3]
+            if future.cancelled():
+                continue
+            pacing = source._next_request_at - source._clock() if source else 0
+            if pacing > 0 or any(slot.locked() for slot in slots):
+                waiting.append(ticket)
+                if pacing > 0:
+                    delay = min(delay, max(.001, pacing))
                 continue
             for slot in slots:
-                if slot is not held:
-                    slot._value -= 1
-            held = None
-            break
-    finally:
-        if held is not None:
-            held.release()
-    try:
-        if source:
-            source._next_request_at=source._clock()+source.constraints.minimum_request_gap_seconds
-            if source._on_request:
-                source._on_request()
-        yield
-    finally:
+                slot._value -= 1
+            if source:
+                source._next_request_at = source._clock() + source.constraints.minimum_request_gap_seconds
+            ticket[3] = True
+            future.set_result(None)
+        self.pending = waiting
+        if waiting:
+            # Joint releases notify immediately. This single timer also notices
+            # releases by legacy Semaphore users; no per-waiter polling or I/O.
+            self.timer = asyncio.get_running_loop().call_later(delay, self.drain)
+
+    def release(self, ticket):
+        slots, source = ticket[:2]
+        ticket[3] = False
         for slot in slots:
             if source and slot is source._semaphore and source._shrink_debt:
-                source._shrink_debt-=1
+                source._shrink_debt -= 1
             else:
                 slot.release()
+        self.drain()
+
+
+_ADMISSIONS = WeakKeyDictionary()
+
+
+@asynccontextmanager
+async def joint_permits(*slots, source=None):
+    slots = tuple(dict.fromkeys((*slots, source._semaphore) if source else slots))
+    loop = asyncio.get_running_loop()
+    admission = _ADMISSIONS.setdefault(loop, _JointAdmission())
+    ticket = [slots, source, loop.create_future(), False]
+    waiting = time.monotonic()
+    http_timing('http_admission')
+    admission.pending.append(ticket)
+    admission.drain()
+    try:
+        await ticket[2]
+    except BaseException:
+        if ticket[3]:
+            admission.release(ticket)
+        else:
+            admission.drain()
+        raise
+    finally:
+        http_timing('http_admission', time.monotonic() - waiting)
+    try:
+        if source and source._on_request:
+            source._on_request()
+        http_timing('http_transport')
+        yield
+    finally:
+        admission.release(ticket)
 
 
 @asynccontextmanager
@@ -330,6 +370,8 @@ class PublisherClients:
                         self._transport_timeout(key, client, progress)
                     raise
                 finally:
+                    http_timing('http_transport', time.monotonic() - executing)
+                    http_timing(progress['phase'])
                     TRANSPORT_PROGRESS.reset(progress_token)
                     client.active -= 1
                     client.used_at = time.monotonic()

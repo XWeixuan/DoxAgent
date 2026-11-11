@@ -359,12 +359,18 @@ class Collector:
             await asyncio.sleep(1)
 
     async def _maintenance_loop(self):
-        while not self._stop:
-            await asyncio.sleep(30)
-            try:
-                await asyncio.to_thread(self.store.maintain)
-            except Exception:
-                log.exception("acquisition retirement deferred")
+        # Keep bounded housekeeping out of the pool serving parsers/commits.
+        from concurrent.futures import ThreadPoolExecutor
+        executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='acquisition-retirement')
+        try:
+            while not self._stop:
+                await asyncio.sleep(30)
+                try:
+                    await asyncio.get_running_loop().run_in_executor(executor, self.store.maintain)
+                except Exception:
+                    log.exception("acquisition retirement deferred")
+        finally:
+            executor.shutdown(wait=False, cancel_futures=True)
 
     async def _control_loop(self):
         published_revision = None
@@ -437,6 +443,9 @@ class Collector:
         from doxagent.site_strategy.client import ACCESS_RESULTS
 
         events = []
+        from ..scheduler import POLL_TIMINGS
+        http_timings = {}
+        timing_token = POLL_TIMINGS.set(http_timings)
         trace = REQUESTS.set(events)
         access = ACCESS_RESULTS.set([])
         gate = REQUEST_GATE.set(SnapshotGate(self, source, targets))
@@ -586,6 +595,12 @@ class Collector:
                     state["last_error_message"] = (
                         result.failures[0].error_message if result.failures else None
                     )
+                    state['window_coverage'] = result.window_coverage
+                    if result.acquisition_metadata.get('discovery_method') == 'rss_fallback':
+                        state['rss_fallback_available'] = any(
+                            e.get('role') == 'rss_fallback' and e.get('list_validated') for e in events)
+                    if source.source_id == 'nrc_event_notifications':
+                        state['parser_rejections'] = result.acquisition_metadata.get('nrc_rejected_events', [])
                     if "race" in result.acquisition_metadata:
                         state["race_observation"] = result.acquisition_metadata["race"]
                     if source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION:
@@ -645,6 +660,8 @@ class Collector:
             )
         finally:
             finished = utc_now()
+            if http_timings:
+                state['http_timing'] = dict(http_timings)
             # Timestamp-only work validates article metadata, not a fresh listing.
             # It is auxiliary (required=0) and cannot renew HEAD cadence evidence.
             valid = valid and (unit == 'TAIL:YAHOO_TIME' or any(
@@ -726,6 +743,7 @@ class Collector:
                 ACCESS_RESULTS.reset(access)
                 REQUEST_GATE.reset(gate)
                 DEMAND.reset(demand)
+                POLL_TIMINGS.reset(timing_token)
 
     @staticmethod
     def _continuations(value):

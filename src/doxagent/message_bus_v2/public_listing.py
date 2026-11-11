@@ -785,7 +785,8 @@ class ListingAdapter:
                 }
             },
             window_done=all(r.window_done for r in results),
-            window_coverage="PARTIAL" if any(r.failures for r in results) else "UNKNOWN",
+            window_coverage="PARTIAL" if any(r.failures or r.window_coverage == 'PARTIAL'
+                                             for r in results) else "UNKNOWN",
             acquisition_metadata={
                 "discovery_method": "rss_fallback"
                 if any(r.failures for r in results)
@@ -800,6 +801,52 @@ class ListingAdapter:
         )
 
     async def _one(self, context, recipe, *, shared, fallback=True):
+        if recipe.parser not in {'wordpress', 'technews_embed'}:
+            return await self._primary(context, recipe, shared=shared, fallback=fallback)
+        # These two recipes need a second page for full discovery coverage. A
+        # slow supplement must not discard a separately validated current head.
+        head = await self._primary(context, recipe, shared=shared, fallback=fallback)
+        if head.failures:
+            return head
+        primary = head.next_checkpoint['listings'][recipe.url]
+        primary['supplement_pending'] = True
+        primary['supplement_error'] = None
+        callback = getattr(context, 'on_page', None)
+        if callback is not None:
+            await callback(head.messages, checkpoint=head.next_checkpoint,
+                           validated_request_ids=head.acquisition_metadata['validated_request_ids'])
+        secondary_recipe = replace(recipe, url=recipe.url + '&offset=100') if recipe.parser == 'wordpress' else replace(
+            recipe, url=recipe.feed.removesuffix('feed/'), parser='technews', fresh_query=True)
+        tail_context = copy.copy(context)
+        tail_context.checkpoint = {'listings': {
+            **context.checkpoint.get('listings', {}), **head.next_checkpoint['listings']}}
+        if recipe.parser == 'wordpress':
+            previous_tail = tail_context.checkpoint['listings'].get(secondary_recipe.url, {})
+            tail_context.checkpoint['listings'][secondary_recipe.url] = {
+                **previous_tail, 'seen': {**previous_tail.get('seen', {}), **primary['seen']}}
+        tail = await self._primary(tail_context, secondary_recipe, shared=shared,
+                                   fallback=False)
+        metadata = dict(head.acquisition_metadata)
+        if tail.failures:
+            primary['supplement_error'] = tail.failures[0].error_message[:240]
+            metadata['supplement'] = {'pending': True, 'error': primary['supplement_error']}
+            # Head capability is healthy, but full coverage explicitly is not.
+            return head.model_copy(update={'window_done': False, 'window_coverage': 'PARTIAL',
+                                           'acquisition_metadata': metadata})
+        primary['supplement_pending'] = False
+        merged = {m.url: m for m in [*tail.messages, *head.messages]}
+        metadata['supplement'] = {'pending': False}
+        metadata['cache'] = [*metadata.get('cache', []), *tail.acquisition_metadata.get('cache', [])]
+        metadata['validated_request_ids'] = [
+            *metadata['validated_request_ids'], *tail.acquisition_metadata['validated_request_ids']]
+        return head.model_copy(update={
+            'messages': list(merged.values()),
+            'next_checkpoint': {'listings': {**head.next_checkpoint['listings'],
+                                            **tail.next_checkpoint['listings']}},
+            'window_done': True, 'acquisition_metadata': metadata,
+        })
+
+    async def _primary(self, context, recipe, *, shared, fallback=True):
         source = context.source
         host = urlsplit(recipe.url).hostname.removeprefix("www.")
         spec = TechnologySource(
@@ -877,26 +924,6 @@ class ListingAdapter:
                         ),
                     )
                     captures.append(capture)
-                    if recipe.parser == "wordpress" and capture.status == 200:
-                        # Retain the old 200-item RSS discovery window, without bodies.
-                        second = await self._fetch(url + "&offset=100", spec, headers=headers)
-                        if second.status != 200:
-                            raise ValueError("public_listing_page2_http_" + str(second.status))
-                        captures.append(second)
-                        combined = json.loads(capture.text)
-                        combined["posts"].extend(json.loads(second.text)["posts"])
-                        capture = replace(capture, text=json.dumps(combined))
-                    elif recipe.parser == "technews_embed" and capture.status == 200:
-                        # The parent taxonomy API omits some cards on the site's
-                        # category archive. Preserve that original coverage, too.
-                        archive_url = recipe.feed.removesuffix("feed/")
-                        archive_url += "?_dox_poll=" + str(
-                            fresh_query_bucket(context)
-                        )
-                        archive = await self._fetch(archive_url, spec, headers=headers)
-                        if archive.status != 200:
-                            raise ValueError("technews_archive_http_" + str(archive.status))
-                        captures.append(archive)
             caches = [{"url": c.url, **cache_evidence(c, recipe)} for c in captures]
             for event in (events or [])[offset:]:
                 method = "POST" if recipe.parser == "frontier_api" else recipe.method
@@ -916,15 +943,6 @@ class ListingAdapter:
                 messages = await asyncio.to_thread(
                     parse_listing, recipe, spec, capture.text, context.requested_at
                 )
-                if recipe.parser == "technews_embed":
-                    archive_recipe = replace(
-                        recipe, url=recipe.feed.removesuffix("feed/"), parser="technews"
-                    )
-                    archive_messages = await asyncio.to_thread(
-                        parse_listing, archive_recipe, spec, captures[-1].text, context.requested_at
-                    )
-                    # Prefer API seconds when both entries carry the same article.
-                    messages = list({m.url: m for m in [*archive_messages, *messages]}.values())
             else:
                 raise ValueError("public_listing_http_" + str(capture.status))
             seen = dict(previous.get("seen", {}))
@@ -947,10 +965,13 @@ class ListingAdapter:
                 if seen.get(message.url) != signature or getattr(context, "force_refresh", False):
                     changed.append(message)
                 seen[message.url] = signature
+            capture_keys = {sha256_text(("POST" if recipe.parser == "frontier_api" else recipe.method)
+                                       + ":" + c.url) for c in captures}
             parsed_ids = [
                 e["physical_request_id"]
                 for e in (events or [])[offset:]
                 if e.get("role", "listing") == "listing"
+                and e.get("request_key") in capture_keys
                 and e.get("response_received_at")
                 and e.get("status_code") in {200, 304}
                 and not e.get("error_type")
@@ -1004,6 +1025,7 @@ class ListingAdapter:
             try:
                 from .poll_trace import REQUEST_ROLE
 
+                fallback_offset = len(events) if events is not None else 0
                 role_token = REQUEST_ROLE.set("rss_fallback")
                 try:
                     result = await (
@@ -1013,6 +1035,10 @@ class ListingAdapter:
                     )
                 finally:
                     REQUEST_ROLE.reset(role_token)
+                fallback_ids = [e['physical_request_id'] for e in (events or [])[fallback_offset:]
+                                if e.get('role') == 'rss_fallback']
+                fallback_proofs = validate_listing(events or [], fallback_ids, since=fallback_offset,
+                                                   role='rss_fallback') if not result.failures and not result.site_access_deferred else []
                 for message in result.messages:
                     message.metadata.update(
                         discovery_method="rss_fallback", listing_error=failure.error_message
@@ -1028,6 +1054,8 @@ class ListingAdapter:
                             "method": "rss_fallback",
                             "listing_url": recipe.url,
                             "error": failure.error_message,
+                            "rss_available": bool(fallback_proofs),
+                            "fallback_validated_request_ids": [e['physical_request_id'] for e in fallback_proofs],
                         },
                     }
                 )
