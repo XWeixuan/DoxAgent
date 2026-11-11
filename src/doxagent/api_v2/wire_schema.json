@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "a50c030895eccc86bfc767320654b38c3c003e1b33457cde1ecac6e1bf6b2713",
+  "source_sha256": "008421963e36cd88c566153ddb156843195dafd73c6839697e829cfa2266ecb0",
   "$defs": {
     "Id": {
       "type": "string"
@@ -7793,6 +7793,18 @@
             "type": "string",
             "const": "LONG_W3_DECISION"
           }
+        },
+        "w3_model_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "non_model_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
         },
         "w3_decision": {
           "$ref": "#/$defs/Value%3C(%22LONG%22%7C%22SHORT%22%7C%22NO_TRADE%22)%3E"

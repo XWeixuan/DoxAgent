@@ -737,6 +737,7 @@ export interface RuntimeMetrics {
 export type FirstRoundTag = "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "SUSPECTED_DUPLICATE_HIT";
 export interface CaseSummary {
   runtime_tags?: ("LONG_W3_DECISION")[];
+  w3_model_seconds?: number | null; non_model_seconds?: number | null;
   w3_decision?: Value<"LONG" | "SHORT" | "NO_TRADE">;
   final_novelty_source?: "W1" | "W3_OPERATIONS" | null;
   final_policy_source?: "W2" | "LEGACY_W3" | null;

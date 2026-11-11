@@ -99,6 +99,8 @@ def project(store, ticker, summary, incoming):
     }
     summary = {
         **summary,
+        "w3_model_seconds": model_seconds,
+        "non_model_seconds": non_model,
         "runtime_tags": ["LONG_W3_DECISION"]
         if model_seconds is not None and model_seconds > 180
         else [],
