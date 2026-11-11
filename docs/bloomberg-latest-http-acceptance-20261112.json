@@ -1,0 +1,183 @@
+{
+  "source_id": "bloomberg_massive",
+  "as_of": "2026-11-11T20:33:59.251747+00:00",
+  "since": "2026-11-11T20:28:28+00:00",
+  "source_version": 3,
+  "delivery_mode": "test",
+  "targets": [
+    "INTC",
+    "MU",
+    "BE",
+    "COHR",
+    "NBIS",
+    "CEG",
+    "RKLB",
+    "SNOW",
+    "ONDS",
+    "IONQ"
+  ],
+  "components": {
+    "v2-site-access": {
+      "commit": "6c5cb8b878f1c02b924acbb5ac47b89d4f3cfc18",
+      "accepted_at": 1794418362.5561473,
+      "image": "sha256:b2c70058428aa7bab6db80588dcbd0843a78931fb8c8b0531f3941d6547b9277"
+    },
+    "v2-content-enrichment": {
+      "commit": "af5b47b48bd5e152cb214de7b20be787391e4e39",
+      "accepted_at": 1794417534.6801264,
+      "image": "sha256:1a8f07836a839a51f432bdaac1abd02edee231e9b70109db5bf1259883d36f6d"
+    },
+    "v2-message-bus": {
+      "commit": "b246dc7531b184e02e556cb419881770743de643",
+      "accepted_at": 1794425381.6123722,
+      "image": "sha256:197090670a8824c282f136377366e98d87e1674b4e45c6d25832ba481ad2870e"
+    },
+    "v2-chrome-supervisor": {
+      "commit": "05d6062222e1ee5c83233f07276a6a1d2fb582f4",
+      "accepted_at": 1794271292.7026975,
+      "image": "sha256:d55858c58d0d9c4e51ad7eef58b9116e063c3cce2faf6dc2ed3aacc26187a2dd"
+    },
+    "v2-message-collector": {
+      "commit": "686e0e780f78bf5e5753c2b4ddc76bfaafacd184",
+      "accepted_at": 1794428791.0500982,
+      "image": "sha256:831e83e5d2c92d18e3751e6cb8f8d8752c2667e6a6ef74dc15088d756f9c9896"
+    }
+  },
+  "containers": [
+    {
+      "name": "/doxagent-v2-v2-message-collector-1",
+      "status": "running",
+      "restarts": 0,
+      "image": "sha256:831e83e5d2c92d18e3751e6cb8f8d8752c2667e6a6ef74dc15088d756f9c9896"
+    },
+    {
+      "name": "/doxagent-v2-v2-message-bus-1",
+      "status": "running",
+      "restarts": 0,
+      "image": "sha256:197090670a8824c282f136377366e98d87e1674b4e45c6d25832ba481ad2870e"
+    }
+  ],
+  "tests": {
+    "passed": 89,
+    "skipped": 1,
+    "skip_reason": "optional historical Business Wire fixture absent"
+  },
+  "units": {
+    "TEST:WIRE:latest": {
+      "physical_rounds": 11,
+      "completed_rounds": 11,
+      "inflight_rounds": 0,
+      "statuses": {
+        "CAPTURED": 11
+      },
+      "seconds_mean": 1.475,
+      "seconds_max": 7.044,
+      "dispatch_interval_mean": 29.993,
+      "cache_age_max": 0.669,
+      "delta_messages": 2,
+      "errors": []
+    },
+    "TEST:WIRE:realtime": {
+      "physical_rounds": 34,
+      "completed_rounds": 34,
+      "inflight_rounds": 0,
+      "statuses": {
+        "CAPTURED": 32,
+        "FAILED": 2
+      },
+      "seconds_mean": 1.535,
+      "seconds_max": 8.229,
+      "dispatch_interval_mean": 9.9,
+      "cache_age_max": 59.0,
+      "delta_messages": 2,
+      "errors": [
+        "ValueError:bloomberg_realtime_stale_cache",
+        "ValueError:bloomberg_realtime_stale_cache"
+      ]
+    }
+  },
+  "isolation": {
+    "raw_messages": 0,
+    "standard_messages": 0,
+    "ticker_source_bindings": 0,
+    "model_decisions": 0
+  },
+  "control_hashes": {
+    "source_definitions": {
+      "count": 104,
+      "sha256": "53bd640945a0338871baa97357842d9de56ee59ab12794baba999e7abb08a2b4"
+    },
+    "ticker_source_bindings": {
+      "count": 317,
+      "sha256": "76f7ca6a6599924958bbb18aa60961fd2546f097ee74246101480e193896fad6"
+    },
+    "ticker_monitoring_term_revisions": {
+      "count": 40,
+      "sha256": "7a950c6f62c7fead84d1637f8d9ea12fe709b0acf2e0797b51db520fa3c51257"
+    },
+    "default_profiles": {
+      "count": 1,
+      "sha256": "a850ad92122549c041b73d29521fd4958ecf61d8d4587db8b0b5d44dc8dfc429"
+    }
+  },
+  "controls_unchanged": true,
+  "new_articles": [
+    {
+      "article_key": "test_ae62d22be99875c3d2396bbb327e2f3021826e4da8cb45da850e6ea1bf12ca7c",
+      "url": "https://www.bloomberg.com/news/articles/2026-11-11/iran-asks-un-to-condemn-20-million-us-bounty-for-nuclear-info",
+      "title": "Iran Asks UN to Condemn $20 Million US Bounty for Nuclear Info",
+      "first_seen_at": "2026-11-11T20:29:58.293381+00:00",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "last_error": "deadline_exceeded",
+      "published_at": "2026-11-11T20:23:27.066000Z",
+      "discovery_method": "bloomberg_latest_http",
+      "id_first_seen_at": null,
+      "publish_to_first_seen_seconds": 391.227
+    },
+    {
+      "article_key": "test_6097ef5e4c286ec43a335cfc8a68661ac6b992128021226970cfed4d9b23c4b6",
+      "url": "https://www.bloomberg.com/news/articles/2026-11-11/zelenskyy-says-political-shifts-open-window-for-russia-talks",
+      "title": "Zelenskyy Says Political Shifts Open Window for Russia Talks",
+      "first_seen_at": "2026-11-11T20:31:28.315677+00:00",
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "last_error": "deadline_exceeded",
+      "published_at": "2026-11-11T20:23:03.344000Z",
+      "discovery_method": "bloomberg_latest_http",
+      "id_first_seen_at": null,
+      "publish_to_first_seen_seconds": 504.972
+    }
+  ],
+  "captures": {
+    "ACCEPTED": 2
+  },
+  "timeliness_acceptance": "TARGET_UNMET_OBSERVED_MINUTE_SCALE_LATE_ARTICLES",
+  "unit_heads": {
+    "TEST:WIRE:latest": {
+      "status": "succeeded",
+      "last_error_code": null,
+      "last_error_message": null,
+      "last_success_at": "2026-11-11T20:33:58.691696+00:00",
+      "coverage_plan": {
+        "binding_version": 3,
+        "epoch": "2026-11-11T20:28:57.766506+00:00",
+        "group": null,
+        "interval": 30
+      }
+    },
+    "TEST:WIRE:realtime": {
+      "status": "succeeded",
+      "last_error_code": null,
+      "last_error_message": null,
+      "last_success_at": "2026-11-11T20:33:56.723676+00:00",
+      "coverage_plan": {
+        "binding_version": 3,
+        "epoch": "2026-11-11T20:28:46.270153+00:00",
+        "group": null,
+        "interval": 10
+      }
+    }
+  },
+  "published_after_observation_start": 0
+}
