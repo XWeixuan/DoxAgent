@@ -113,10 +113,12 @@ class ProjectionWorker:
                 try:
                     if hasattr(source,'acknowledge_exceptions'):
                         from .source_lifecycle import sync_business_facts
-                        sync_business_facts(source,self.store)
+                        facts_complete = sync_business_facts(source,self.store,budget=.25)
+                    else:
+                        facts_complete = True
                     signature = (checkpoint, tuple(sorted(repairs)), repair)
                     acknowledged = self._acknowledgements.get(source.source)
-                    if acknowledged is None or signature != acknowledged[0] or time.monotonic() - acknowledged[1] >= 60:
+                    if facts_complete is not False and (acknowledged is None or signature != acknowledged[0] or time.monotonic() - acknowledged[1] >= 60):
                         if hasattr(source,'acknowledge_exceptions'):
                             source.acknowledge_exceptions(consumer,checkpoint,repairs)
                         else:

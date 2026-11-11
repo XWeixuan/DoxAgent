@@ -16,7 +16,7 @@ ROOT=Path('/var/lib/doxagent/releases')
 REPO='/home/ubuntu/doxagent'
 CONTAINER='doxagent-v2-v2-projector-1'
 FILES=['src/doxagent/v2_read/'+n for n in
-       ('projector.py','cli.py','outbox.py','native_content.py','executions.py')]
+       ('projector.py','cli.py','outbox.py','native_content.py','executions.py','source_lifecycle.py')]
 
 def git(commit,path):
     return subprocess.check_output(['sudo','-u','ubuntu','git','-C',REPO,'show',commit+':'+path])
@@ -31,6 +31,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action',choices=['build','deploy'])
     parser.add_argument('--commit',required=True)
+    parser.add_argument('--baseline-commit')
     args=parser.parse_args()
     commit=subprocess.check_output(['sudo','-u','ubuntu','git','-C',REPO,'rev-parse',args.commit],text=True).strip()
     directory=ROOT/('projection-performance-'+commit[:12]);directory.mkdir(exist_ok=True)
@@ -40,9 +41,10 @@ def main():
         state=json.loads((ROOT/'state.json').read_bytes())
         info=json.loads(subprocess.check_output(['docker','inspect',CONTAINER]))[0]
         assert info['Image']==state['components']['v2-projector']['current']['image']
+        baseline_commit=args.baseline_commit or commit+'^'
         if args.action=='build':
             for path in FILES:
-                assert actual(path)==git(commit+'^',path), 'live source changed: '+path
+                assert actual(path)==git(baseline_commit,path), 'live source changed: '+path
             context=directory/'build';context.mkdir(exist_ok=True)
             hashes={}
             for path in FILES:
@@ -62,7 +64,7 @@ def main():
             config=json.loads((ROOT/'compose.current.json').read_bytes())
             candidate=copy.deepcopy(config['services']['v2-projector']);candidate['image']=image
             candidate['checks']=[['docker','exec',CONTAINER,'python','-c',check]]
-            manifest=dict(commit=commit,compose_command=state['compose_base_command'],components={'v2-projector':candidate},baseline=info['Image'],hashes=hashes)
+            manifest=dict(commit=commit,compose_command=state['compose_base_command'],components={'v2-projector':candidate},baseline=info['Image'],baseline_commit=baseline_commit,hashes=hashes)
             state.setdefault('owned_images',[]).append(image)
             state.setdefault('candidates',[]).append(dict(image=image,expires=time.time()+48*3600))
             release.atomic(ROOT/'state.json',state);release.atomic(directory/'manifest.private.json',manifest)
@@ -70,7 +72,7 @@ def main():
         else:
             manifest=json.loads((directory/'manifest.private.json').read_bytes())
             assert info['Image']==manifest['baseline'], 'another release changed the baseline'
-            for path in FILES:assert actual(path)==git(commit+'^',path), 'source changed after build'
+            for path in FILES:assert actual(path)==git(manifest['baseline_commit'],path), 'source changed after build'
             for name in ('state.json','compose.current.json'):
                 (directory/(name+'.before.private')).write_bytes((ROOT/name).read_bytes())
             release.reconcile=lambda *_: {'deferred':'normal host timer owns unrelated resource retirement'}

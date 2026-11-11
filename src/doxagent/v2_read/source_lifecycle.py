@@ -79,7 +79,7 @@ BUSINESS_FACT_KINDS=('policy_admission','policy_hit_set','policy_change','event_
 BUSINESS_FACT_METRICS=tuple(a+'_'+b for a in ('added','modified','retired') for b in ('events','facts'))+('new_fact_candidates',)
 
 
-def sync_business_facts(source, store):
+def sync_business_facts(source, store, *, budget=None):
     """Canonical small settlements/transition facts survive expiry of their CDC.
 
     This deliberately excludes native payloads, negative Policy observations,
@@ -92,41 +92,75 @@ def sync_business_facts(source, store):
         owner=db.execute('SELECT path FROM v2_serving_fact_owner WHERE id=1').fetchone()
         if not owner or owner[0]!=str(store.path):return
     from .repository import encode
+    from hashlib import sha256
+    prefix='serving:'+sha256(str(store.path).encode()).hexdigest()[:16]+':'
+    jobs=[('object',k) for k in BUSINESS_FACT_KINDS]+[('metric',k) for k in BUSINESS_FACT_METRICS]+[('field',k) for k in ('activation','activation_revision')]
+    with closing(source.connection()) as db:
+        cursors={r[0]:r[1] for r in db.execute('SELECT kind,cursor FROM v2_transport_gc_state WHERE kind LIKE ?', (prefix+'%',))}
+    # The previous owner ACK was committed only after its fact copy succeeded.
+    # Its indexed Read receipt is a conservative restart floor (coverage and
+    # other sources after that receipt are replayed), never the current head.
+    if not cursors and not getattr(source,'_fact_cursors',None):
+        consumer='read:'+sha256(str(store.path).encode()).hexdigest()[:24]
+        with closing(source.connection()) as db:
+            ack=db.execute('SELECT checkpoint FROM v2_source_consumers WHERE id=?',(consumer,)).fetchone()
+            existing=db.execute('SELECT 1 FROM v2_serving_business_facts LIMIT 1').fetchone()
+        if ack and existing:
+            candidates=[str(n) for n in range(max(0,ack[0]-1000),ack[0]+1)]
+            with store.connect() as read:
+                floor=read.execute("SELECT max(seq) FROM commits WHERE source='runtime' AND source_event IN (SELECT value FROM json_each(?))",(json.dumps(candidates),)).fetchone()[0]
+            if floor:
+                cursors.update({prefix+':'.join(j):floor for j in jobs})
+    cursors.update(getattr(source,'_fact_cursors',{}))
+    started=time.monotonic()
     with store.connect() as read:
         seq=store.highwater(read)
-        previous=getattr(source,'_business_fact_seq',None)
-        if seq==previous:return
+    for group,kind in sorted(jobs,key=lambda j:cursors.get(prefix+':'.join(j),0)):
+        if budget is not None and time.monotonic()-started>budget:break
+        key=prefix+group+':'+kind;previous=cursors.get(key,0)
+        if previous>=seq:continue
         records=[]
-        for row in read.execute("SELECT * FROM object_current WHERE kind IN (SELECT value FROM json_each(?)) AND valid_from>?",
-                                (json.dumps(BUSINESS_FACT_KINDS),previous or 0)):
-            row=dict(row)
-            value={k:row[k] for k in ('kind','ticker','id','parent','sort_key','day','source_id','route','search_text')}
-            value['data']=json.loads(row['payload']);records.append((row['kind'],row['ticker'],row['id'],encode(value)))
-        hits=[r[0] for r in read.execute("SELECT ticker||':'||id FROM object_current WHERE kind='policy_hit_set'")]
-        for row in read.execute("SELECT * FROM contributions_current WHERE metric IN (SELECT value FROM json_each(?)) AND valid_from>?",
-                                (json.dumps(BUSINESS_FACT_METRICS),previous or 0)):
-            value=dict(row);value.pop('valid_from');value.pop('valid_to')
-            value['dimensions']=json.loads(value['dimensions'])
-            identity=encode([value[k] for k in ('entity','day','dimensions')])
-            records.append(('metric:'+value['metric'],value['ticker'],identity,encode(value)))
-        for kind,ticker,identity,payload in read.execute("SELECT kind,ticker,id,payload FROM object_current WHERE kind IN ('activation','activation_revision') AND valid_from>?",(previous or 0,)):
-            value=json.loads(payload)
-            if 'activated_at' in value:
-                records.append(('field:'+kind,ticker,identity,encode({k:value[k] for k in ('activated_at','runtime_activation_id') if k in value})))
-    previous_hits = getattr(source, '_business_fact_hits', None)
-    hit_ids = frozenset(hits)
-    # Bus poll commits advance the global Read sequence too. They are not a
-    # reason to acquire Runtime's writer lock and repeat the same DELETE.
-    if not records and hit_ids == previous_hits:
+        with store.connect() as read:
+            table='contributions_current' if group=='metric' else 'object_current'
+            column='metric' if group=='metric' else 'kind'
+            # Index order and a revision boundary keep every batch complete,
+            # including multiple objects emitted by the same source event.
+            revisions=[r[0] for r in read.execute('SELECT DISTINCT valid_from FROM '+table+' WHERE '+column+'=? AND valid_from>? AND valid_from<=? ORDER BY valid_from LIMIT 16',(kind,previous,seq))]
+            boundary=revisions[-1] if len(revisions)==16 else seq
+            for row in read.execute('SELECT * FROM '+table+' WHERE '+column+'=? AND valid_from>? AND valid_from<=?',(kind,previous,boundary)):
+                row=dict(row)
+                if group=='object':
+                    value={k:row[k] for k in ('kind','ticker','id','parent','sort_key','day','source_id','route','search_text')}
+                    value['data']=json.loads(row['payload'])
+                    records.append((kind,row['ticker'],row['id'],encode(value)))
+                elif group=='metric':
+                    value=row;value.pop('valid_from');value.pop('valid_to');value['dimensions']=json.loads(value['dimensions'])
+                    identity=encode([value[k] for k in ('entity','day','dimensions')])
+                    records.append(('metric:'+kind,value['ticker'],identity,encode(value)))
+                else:
+                    value=json.loads(row['payload'])
+                    if 'activated_at' in value:
+                        records.append(('field:'+kind,row['ticker'],row['id'],encode({k:value[k] for k in ('activated_at','runtime_activation_id') if k in value})))
+        if records:
+            with closing(source.connection(write=True)) as db,db:
+                db.execute('BEGIN IMMEDIATE')
+                owner=db.execute('SELECT path FROM v2_serving_fact_owner WHERE id=1').fetchone()
+                if not owner or owner[0]!=str(store.path):return False
+                db.executemany('INSERT INTO v2_serving_business_facts VALUES(?,?,?,?) ON CONFLICT(kind,ticker,id) DO UPDATE SET payload=excluded.payload WHERE payload<>excluded.payload',records)
+                db.execute('INSERT INTO v2_transport_gc_state(kind,cursor) VALUES(?,?) ON CONFLICT(kind) DO UPDATE SET cursor=excluded.cursor',(key,boundary))
+        cursors[key]=boundary
+    source._fact_cursors=cursors
+    complete=all(cursors.get(prefix+':'.join(j),0)>=seq for j in jobs)
+    if complete:
+        with store.connect() as read:
+            hits=[r[0] for r in read.execute("SELECT ticker||':'||id FROM object_current WHERE kind='policy_hit_set'")]
+        hit_ids=frozenset(hits)
+        if hit_ids!=getattr(source,'_business_fact_hits',None):
+            with closing(source.connection(write=True)) as db,db:
+                db.execute("DELETE FROM v2_serving_business_facts WHERE kind='policy_hit_set' AND ticker||':'||id NOT IN (SELECT value FROM json_each(?))",(json.dumps(hits),))
+            source._business_fact_hits=hit_ids
         source._business_fact_seq=seq
-        return
-    with closing(source.connection(write=True)) as db, db:
-        db.execute('BEGIN IMMEDIATE');migrate(db)
-        db.executemany('INSERT INTO v2_serving_business_facts VALUES(?,?,?,?) ON CONFLICT(kind,ticker,id) DO UPDATE SET payload=excluded.payload WHERE payload<>excluded.payload',records)
-        if hit_ids != previous_hits:
-            db.execute("DELETE FROM v2_serving_business_facts WHERE kind='policy_hit_set' AND ticker||':'||id NOT IN (SELECT value FROM json_each(?))",(json.dumps(hits),))
-    source._business_fact_seq=seq
-    source._business_fact_hits=hit_ids
+    return complete
 
 
 def expire(source, *, now=None, limit=500):
