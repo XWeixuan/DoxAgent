@@ -1,0 +1,160 @@
+{
+  "primary_window": {
+    "start": "2026-11-11T23:13:10.238280+00:00",
+    "end": "2026-11-11T23:23:10.602793+00:00"
+  },
+  "second_window": {
+    "start": "2026-11-11T23:24:25.235659+00:00",
+    "last_record": "2026-11-11T23:34:26.776378+00:00"
+  },
+  "browser": {
+    "subscription": false,
+    "free_account_login": "WAITING_HUMAN_NOT_VERIFIED",
+    "initial_access": "normal_unlogged_persistent_Chrome_latest_200",
+    "sse_responses_200": 34,
+    "sse_failures": {
+      "net::ERR_HTTP2_PROTOCOL_ERROR": 32
+    },
+    "sse_header_to_failure_seconds_mean": 16.963,
+    "sse_header_to_failure_seconds_max": 30.717,
+    "page_dom_still_visible_after_stream_403": true,
+    "stream_recovery": "Repeated 403 at23:24:06-07 UTC then no further stream/poll requests observed through second window"
+  },
+  "timeliness_acceptance": "TARGET_UNMET",
+  "new_publication_samples": 1,
+  "arrivals": [
+    {
+      "id": "TOB8Q0T96OSI00",
+      "published_at": "2026-11-11T23:04:06.334Z",
+      "first_seen": {
+        "page_sse": "2026-11-11T23:15:01.834756+00:00",
+        "page_stories": "2026-11-11T23:15:03.180725+00:00",
+        "page_dom": "2026-11-11T23:15:03.770114+00:00",
+        "production_article_admission": "2026-11-11T23:15:31.595629+00:00",
+        "production_http_snapshot_id": "2026-11-11T23:15:29.583174+00:00"
+      },
+      "slug": "2026-11-11/latest-oil-market-news-and-analysis-for-nov-12",
+      "headline": "Oil Steadies After Slump as Iran War Talks Make Little Progress",
+      "url": "/news/articles/2026-11-11/latest-oil-market-news-and-analysis-for-nov-12",
+      "production_winner": "bloomberg_realtime_http",
+      "publish_to_first_seen_seconds": {
+        "page_sse": 655.501,
+        "page_stories": 656.847,
+        "page_dom": 657.436,
+        "production_article_admission": 685.262,
+        "production_http_snapshot_id": 683.249
+      },
+      "published_during_primary_observation": false,
+      "control_http_baseline_at": "2026-11-11T23:20:11.529758+00:00",
+      "control_http_note": "Initial control baseline; not the first appearance time for this route"
+    },
+    {
+      "id": "TNL0G0T96OSK00",
+      "published_at": "2026-11-11T23:15:00.000Z",
+      "first_seen": {
+        "page_sse": "2026-11-11T23:21:04.130550+00:00",
+        "page_stories": "2026-11-11T23:21:04.959761+00:00",
+        "control_http_full": "2026-11-11T23:22:09.102650+00:00",
+        "page_dom": "2026-11-11T23:21:05.798974+00:00",
+        "production_article_admission": "2026-11-11T23:21:17.847844+00:00",
+        "production_http_snapshot_id": "2026-11-11T23:21:16.604861+00:00"
+      },
+      "slug": "2026-11-11/midterm-elections-2026-democratic-wins-across-south-to-reshape-strategy",
+      "headline": "Democrats Won Back the South, Now Their Challenge Is to Keep It",
+      "url": "/news/articles/2026-11-11/midterm-elections-2026-democratic-wins-across-south-to-reshape-strategy",
+      "production_winner": "bloomberg_realtime_http",
+      "publish_to_first_seen_seconds": {
+        "page_sse": 364.131,
+        "page_stories": 364.96,
+        "control_http_full": 429.103,
+        "page_dom": 365.799,
+        "production_article_admission": 377.848,
+        "production_http_snapshot_id": 376.605
+      },
+      "published_during_primary_observation": true
+    },
+    {
+      "id": "TOC1OOT96OSG00",
+      "published_at": "2026-11-11T23:00:00.001Z",
+      "first_seen": {
+        "page_sse": "2026-11-11T23:22:05.409361+00:00",
+        "page_stories": "2026-11-11T23:22:06.221289+00:00",
+        "control_http_full": "2026-11-11T23:22:09.102650+00:00",
+        "page_dom": "2026-11-11T23:22:08.149698+00:00",
+        "production_article_admission": "2026-11-11T23:21:58.230679+00:00"
+      },
+      "slug": "2026-11-11/hosin-amicro-set-to-trade-in-hong-kong-as-ipos-gather-pace",
+      "headline": "Hosin, Amicro Set to Trade in Hong Kong as IPOs Gather Pace",
+      "url": "/news/articles/2026-11-11/hosin-amicro-set-to-trade-in-hong-kong-as-ipos-gather-pace",
+      "production_winner": "bloomberg_latest_http",
+      "publish_to_first_seen_seconds": {
+        "page_sse": 1325.408,
+        "page_stories": 1326.22,
+        "control_http_full": 1329.102,
+        "page_dom": 1328.149,
+        "production_article_admission": 1318.23
+      },
+      "published_during_primary_observation": false
+    }
+  ],
+  "http_control": {
+    "started_at": "2026-11-11T23:20:08.384533+00:00",
+    "responses": {
+      "200": 31
+    },
+    "comparison_only": true,
+    "poll_interval_seconds": 30
+  },
+  "production": {
+    "source_version": 3,
+    "delivery_mode": "test",
+    "isolation": {
+      "raw_messages": 0,
+      "standard_messages": 0,
+      "ticker_source_bindings": 0,
+      "model_decisions": 0
+    },
+    "control_hashes_unchanged_during_experiment": true
+  },
+  "network": {
+    "before": {
+      "logical_egress": "jp-standard-6",
+      "registry_observed_at": "2026-11-11 23:11:04.234853+00:00",
+      "current_ip_hash": "bbcdbc2fb9c7da2b",
+      "matches_registry": true
+    },
+    "after": {
+      "logical_egress": "jp-standard-6",
+      "registry_observed_at": "2026-11-11 23:11:04.234853+00:00",
+      "current_ip_hash": "bbcdbc2fb9c7da2b",
+      "matches_registry": true
+    }
+  },
+  "resources": {
+    "one_latest_tab_rss_sum_mib_includes_shared_pages": 1596.8,
+    "latest_and_login_tabs": {
+      "roots": 1,
+      "chrome_processes": 20,
+      "rss_mib_includes_shared_pages": 2436.5,
+      "pss_mib": null,
+      "pss_readable_processes": 0
+    },
+    "pss_unavailable": true
+  },
+  "implementation": {
+    "artifact": "scripts/ops/observe_bloomberg_latest_cdp.py",
+    "production_code_deployed": false,
+    "tests_passed": 40,
+    "final_parser_tests_passed": 5,
+    "no_rss_sitemap": true,
+    "no_fingerprint_spoofing_or_ip_rotation_added": true,
+    "main_source_configuration_changed": false
+  },
+  "remaining": [
+    "Manual free-account authentication comparison",
+    "403 causal single-variable controls",
+    "No-tap native SSE control",
+    "Enough newly published article samples",
+    "Stable browser to existing capture integration only after access and timeliness acceptance"
+  ]
+}
