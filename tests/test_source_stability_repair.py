@@ -149,3 +149,27 @@ async def test_joint_source_pacing_and_shrink_debt_are_preserved():
     source._shrink_debt=1;release.set()
     await asyncio.gather(first,second)
     assert role._value==2 and source._semaphore._value==1 and source._shrink_debt==0
+
+@pytest.mark.asyncio
+async def test_network_deadline_excludes_queue_but_parent_still_bounds_operation():
+    from doxagent.message_bus_v2.publisher_http import network_timeout
+    role=asyncio.Semaphore(0)
+    async def delayed_release():
+        await asyncio.sleep(.08);role.release()
+    releaser=asyncio.create_task(delayed_release())
+    async with network_timeout(.04):
+        async with joint_permits(role):await asyncio.sleep(.01)
+    await releaser
+    assert role._value==1
+    # Real network work still cannot exceed its own budget after admission.
+    with pytest.raises(TimeoutError):
+        async with network_timeout(.02):
+            async with joint_permits(role):await asyncio.sleep(.08)
+    assert role._value==1
+    await role.acquire()
+    with pytest.raises(TimeoutError):
+        async with asyncio.timeout(.04):
+            async with network_timeout(.02):
+                async with joint_permits(role):pytest.fail('unexpected admission')
+    assert role._value==0
+    role.release()

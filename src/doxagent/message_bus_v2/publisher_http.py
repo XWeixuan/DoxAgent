@@ -34,6 +34,20 @@ def http_timing(phase, elapsed=None):
             timings[key] = timings.get(key, 0) + round(elapsed * 1000)
 
 
+_NETWORK_TIMEOUTS = ContextVar('publisher_network_timeouts', default=())
+
+
+@asynccontextmanager
+async def network_timeout(seconds):
+    """Network-phase limit; the collector's total operation deadline still runs."""
+    async with asyncio.timeout(seconds) as deadline:
+        token = _NETWORK_TIMEOUTS.set((*_NETWORK_TIMEOUTS.get(), deadline))
+        try:
+            yield
+        finally:
+            _NETWORK_TIMEOUTS.reset(token)
+
+
 class _JointAdmission:
     """Loop-local FIFO among eligible requests; never reserve partial capacity."""
 
@@ -89,6 +103,12 @@ async def joint_permits(*slots, source=None):
     admission = _ADMISSIONS.setdefault(loop, _JointAdmission())
     ticket = [slots, source, loop.create_future(), False]
     waiting = time.monotonic()
+    paused = []
+    for deadline in _NETWORK_TIMEOUTS.get():
+        end = deadline.when()
+        if end is not None and not deadline.expired():
+            paused.append((deadline, max(0, end - loop.time())))
+            deadline.reschedule(None)
     http_timing('http_admission')
     admission.pending.append(ticket)
     admission.drain()
@@ -101,6 +121,9 @@ async def joint_permits(*slots, source=None):
             admission.drain()
         raise
     finally:
+        for deadline, remaining in paused:
+            if not deadline.expired():
+                deadline.reschedule(loop.time() + remaining)
         http_timing('http_admission', time.monotonic() - waiting)
     try:
         if source and source._on_request:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .publisher_http import network_timeout
 import json
 import re
 import time
@@ -268,7 +269,7 @@ class DefenseHttp:
             if urlsplit(url).scheme != "https" or host not in allowed:
                 raise ValueError("defense_redirect_host_not_approved")
             slots = self.host_slots.setdefault(host, asyncio.Semaphore(2))
-            async with asyncio.timeout(12):
+            async with network_timeout(12):
                 from .poll_trace import request_started
                 from .schema import utc_now
 
@@ -373,7 +374,8 @@ class DefenseHttp:
 
     @staticmethod
     async def _stdlib(host,budget,read,*args):
-        async with host,budget:return await asyncio.to_thread(read,*args)
+        from .publisher_http import joint_permits
+        async with joint_permits(host,budget):return await asyncio.to_thread(read,*args)
 
 
 def _plain(value):

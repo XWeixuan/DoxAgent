@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .publisher_http import network_timeout
 import copy
 import json
 import re
@@ -734,7 +735,7 @@ class ListingAdapter:
     async def _fetch(self, url, spec, **kwargs):
         # A dropped pooled connection can recover immediately on the same route.
         # Both attempts share one deadline; HTTP refusals never retry or rotate.
-        async with asyncio.timeout(PRIMARY_TIMEOUT_SECONDS):
+        async with network_timeout(PRIMARY_TIMEOUT_SECONDS):
             for attempt in range(2):
                 try:
                     return await self.http.fetch(url, spec, **kwargs)
@@ -885,7 +886,7 @@ class ListingAdapter:
                         if previous.get(v)
                     }
                 )
-            async with context.request_permit(), asyncio.timeout(PRIMARY_TIMEOUT_SECONDS):
+            async with context.request_permit(), network_timeout(PRIMARY_TIMEOUT_SECONDS):
                 url = recipe.url
                 if recipe.fresh_query:
                     url += (

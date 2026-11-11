@@ -1,4 +1,5 @@
 import asyncio
+from ..publisher_http import network_timeout
 import time
 import urllib.error
 import urllib.request
@@ -199,7 +200,7 @@ class PublicHttp:
                 return Capture(result.status,result.url,result.text,result.headers,len(result.text.encode()))
             finally:
                 HTTP_CONTEXT.reset(token)
-        async with asyncio.timeout(12):
+        async with network_timeout(12):
             for _ in range(5):
                 host = urlsplit(url).hostname
                 if host not in spec.allowed_article_hosts:

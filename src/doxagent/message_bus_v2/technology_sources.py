@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .publisher_http import network_timeout
 import time
 from dataclasses import dataclass, replace
 from datetime import timedelta
@@ -309,7 +310,7 @@ class TechnologyHttp:
         from .schema import utc_now
         from .storage_lane import StorageLane
 
-        async with asyncio.timeout(15):
+        async with network_timeout(15):
             for _ in range(4):
                 if not spec.accepts(url):
                     raise ValueError("technology_redirect_host_not_approved")
