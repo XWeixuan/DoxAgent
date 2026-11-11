@@ -583,6 +583,7 @@ export interface MessageSummary extends MessageKey {
   source_published_at: Instant; collected_at: Instant; normalized_at: Instant;
   stream_published_at: Instant; stream_item_id: Id; stream_offset: Count; member_index: Count;
   exact_duplicate_count: Value<Count>;
+  publication_time_verified?: boolean;
   pipeline?: { discovered_at: Instant; poll_due_at: Instant | null };
   case: CaseLink;
   body: ContentRef;
@@ -591,12 +592,14 @@ export interface MessageBaseline { messages: Page<MessageSummary>; stream_cursor
 export interface BusMetrics { published_revisions: Metric; body_completion_success_ratio: Metric; new_article_body?: ArticleBodyCohort }
 export interface BusRoundCoverage { expected: Count; succeeded: Count; ratio: number | null }
 export interface BusSourceMetrics {
+  mean_capture_seconds?: number | null; capture_samples?: Count; article_samples?: Count;
   coverage: BusRoundCoverage;
   mean_e2e_seconds: number | null; p95_e2e_seconds: number | null; e2e_samples: Count;
   refresh_seconds: number | null;
   body_total: Count; body_full: Count; body_ratio: number | null;
 }
 export interface BusDashboard {
+  mean_capture_seconds?: number | null; capture_samples?: Count;
   metrics: BusMetrics; sources: SourceStatus[];
   counts: { total: Count; running: Count; sleeping: Count; disabled: Count; abnormal: Count; unknown: Count };
   coverage: BusRoundCoverage;
@@ -726,12 +729,15 @@ export interface AvailableSourceDetail extends AvailableSource { defaults: Bindi
 export interface BindSourceRequest { source_id: Id; source_version: Count; configuration: BindingEditable }
 export interface MutationReceipt { binding_id: Id; binding_version: Count; removed: boolean; updated_at: Instant }
 export interface RuntimeMetrics {
+  related_cases?: Metric; long_w3_cases?: Metric; non_model_mean_seconds?: Metric;
   processed_cases: Metric; hot_path_mean_seconds: Metric; w3_mean_seconds: Metric;
   new_cases: Metric; old_cases: Metric; hit_cases: Metric; hit_case_ratio: Metric;
   w3_cases: Metric; new_fact_candidates: Metric; executed_cases: Metric;
 }
 export type FirstRoundTag = "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "SUSPECTED_DUPLICATE_HIT";
 export interface CaseSummary {
+  runtime_tags?: ("LONG_W3_DECISION")[];
+  w3_model_seconds?: number | null; non_model_seconds?: number | null;
   w3_decision?: Value<"LONG" | "SHORT" | "NO_TRADE">;
   final_novelty_source?: "W1" | "W3_OPERATIONS" | null;
   final_policy_source?: "W2" | "LEGACY_W3" | null;
@@ -773,6 +779,8 @@ export interface Timing {
   basis: "RECORDED" | "DERIVED_FROM_RECORDED_INTERVALS" | "UNAVAILABLE";
 }
 export interface ModelAttempt {
+  model_interval?: { start?: string | null; end?: string | null } | null;
+  model_completed_at?: number | null;
   sdk_seconds?: Value<number>;
   phase?: "w3_template" | "trade_decision" | "post_decision_operations" | null;
   context_mode?: "EXPLICIT" | "PREVIOUS_RESPONSE" | "REPLAY_PARENT";

@@ -2,7 +2,7 @@
 
 import json
 import os
-from dataclasses import fields
+from dataclasses import fields, replace
 from datetime import UTC, datetime
 
 from doxagent.codex_worker.result_receipt import commit
@@ -69,20 +69,30 @@ def complete(journal, client, request, identity):
             "Original provider request may still be running; do not redispatch",
             retryable=False,
         )
+    from . import model_clock
+    interval = {}
+    token = model_clock.current.set(interval)
     try:
         result = client.complete(request)
+        model_clock.stop()
+        result = replace(result, model_interval=dict(interval) if interval else None)
     except RuntimeResponsesError as exc:
+        model_clock.stop()
+        exc.usage["model_interval"] = dict(interval) if interval else None
         commit(
             path,
             {
                 **dispatch,
                 "status": "FAILED",
+                "provider_completed_at": datetime.now(UTC).isoformat(),
                 "error": dict(
                     code=exc.code, message=str(exc), retryable=exc.retryable, usage=exc.usage
                 ),
             },
         )
         raise
+    finally:
+        model_clock.current.reset(token)
     data = {f.name: getattr(result, f.name) for f in fields(result)}
     data["value"] = result.value.model_dump(mode="json")
     # Completion fact is not a business publish, so it intentionally bypasses

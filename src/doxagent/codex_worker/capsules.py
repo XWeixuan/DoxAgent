@@ -564,6 +564,7 @@ class CapsuleRuntime:
                         await self.receipt_callback(request, capsule.thread_id, capsule.turn_id)
                 if data["type"] == "started":
                     capsule.sdk_deadline = data.get("sdk_deadline")
+                    capsule.sdk_dispatched_at = data.get("sdk_dispatched_at")
                     capsule.startup_timing = data.get("startup_timing")
                     if capsule.startup_timing is not None:
                         capsule.startup_timing["boot_already_ready"] = boot_already_ready

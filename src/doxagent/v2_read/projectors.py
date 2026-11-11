@@ -165,7 +165,7 @@ class DomainProjectors:
         if table == "runtime_v2_cases":
             ticker = value["source"]["snapshot"]["ticker"]
         related_case = None
-        if table == "runtime_v2_turns":
+        if table in {"runtime_v2_turns", "runtime_v2_effects"}:
             with self.store.connect() as db:
                 found = db.execute(
                     "SELECT ticker FROM object_current WHERE kind='native:runtime_v2_cases' "
@@ -175,7 +175,7 @@ class DomainProjectors:
             if not found:
                 raise ValueError("turn Case must be indexed first")
             ticker=found[0]
-            related_case={'source':{'snapshot':{'ticker':ticker}}}
+            if table=='runtime_v2_turns': related_case={'source':{'snapshot':{'ticker':ticker}}}
         identity = next(
             (
                 value[key]
@@ -677,7 +677,7 @@ class DomainProjectors:
             r["id"]: (r["ticker"], r["data"]) for r in records if r["kind"] == "case" and r["data"]
         }
         for item in records:
-            if item["kind"] == "attempt" and item.get("parent") not in changed_cases:
+            if item["kind"] in {"attempt","native:runtime_v2_effects"} and item.get("parent") not in changed_cases:
                 summary = self.store.get("case", ticker, item["parent"])
                 if summary:
                     changed_cases[summary["case_id"]] = (ticker, summary)
@@ -685,6 +685,15 @@ class DomainProjectors:
             from .graph import project
 
             for case_ticker, summary in changed_cases.values():
+                from .decision_metrics import project as decision_project
+                summary, tag, timing_counts = decision_project(self.store, case_ticker, summary, records)
+                for item in records:
+                    if item["kind"]=="case" and item["id"]==summary["case_id"]: item["data"]=summary
+                if not any(item["kind"]=="case" and item["id"]==summary["case_id"] for item in records):
+                    previous=self.store.get("case",case_ticker,summary["case_id"])
+                    if previous != summary:
+                        records.append(dict(kind="case",ticker=case_ticker,id=summary["case_id"],sort=summary["received_at"],day=summary["semantic_day"],parent=summary["stream_item_id"],source_id=summary["source"]["source_id"],data=summary))
+                records.append(tag);metrics.extend(timing_counts)
                 members, counts = project(self.store, case_ticker, summary, records)
                 records.extend(members)
                 metrics.extend(counts)
@@ -912,7 +921,8 @@ class DomainProjectors:
             source=self.source_label(message),
             source_name=self.source_name(message),
             source_published_at=timestamp(message["published_at"]),
-            publication_time_basis=message.get('publication_time_basis', 'EXACT'),
+            publication_time_basis=message.get('publication_time_basis', 'UNKNOWN_FIRST_SEEN'),
+            publication_time_verified='publication_time_basis' in message,
             collected_at=timestamp(message["collected_at"]),
             normalized_at=timestamp(message["normalized_at"]),
             stream_published_at=timestamp(stream["published_at"]),

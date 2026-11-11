@@ -45,6 +45,8 @@ export default function CaseDetails({
       {(d) => (
         <div className="case-details">
           <h2>{valueText(d.summary.title)}</h2>
+          {(d.summary.runtime_tags ?? []).map(tag => <span className="domain-tag" key={tag}>长研判耗时</span>)}
+          {d.summary.w3_model_seconds != null && <span>交易研判 {d.summary.w3_model_seconds.toFixed(0)}s</span>}
           <div className="case-results">
             {(d.summary.first_round_tags ?? []).map((tag) => (
               <span className="domain-tag" key={tag}>

@@ -519,6 +519,7 @@ class RuntimeModelTurn(RuntimeV2Model):
     cache_write_input_tokens: int | None = Field(default=None, ge=0)
     provider_usage: JsonObject = Field(default_factory=dict)
     prefix_fingerprint: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    model_interval: JsonObject | None = None
     latency_ms: int = Field(ge=0)
     output: JsonObject | None = None
     raw_output: str | None = None

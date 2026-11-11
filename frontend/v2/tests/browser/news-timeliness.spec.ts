@@ -31,8 +31,8 @@ for (const width of [1262, 1559]) {
     await expect(page.getByText("已绑定 32")).toBeVisible();
     await expect(page.getByText("84.0%")).toBeVisible();
     await expect(page.getByText("85.0%")).toBeVisible();
-    await expect(page.locator(".business-metrics article")).toHaveCount(5);
-    await expect(page.locator(".source-status dl dt")).toHaveCount(6);
+    await expect(page.locator(".business-metrics article")).toHaveCount(6);
+    await expect(page.locator(".source-status dl dt")).toHaveCount(7);
     await expect(page.getByText(/旧口径/)).toHaveCount(0);
     await page.getByRole("button", { name: "展开更多消息" }).click();
     await expect(page.locator("[data-message-id]")).toHaveCount(40);

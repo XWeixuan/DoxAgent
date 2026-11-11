@@ -69,6 +69,10 @@ def settle_cases(store):
         if native:
             counts.extend(hot_path_contributions(store,native))
             counts.extend(w3_contributions(store,native))
+            from .decision_metrics import project as decision_project
+            summary, tag, timing_counts = decision_project(store,ticker,summary,[])
+            records.append(tag);counts.extend(timing_counts)
+            records.append(dict(kind="case",ticker=ticker,id=identity,data=summary,sort=summary["received_at"],day=summary["semantic_day"],parent=summary.get("stream_item_id"),source_id=summary.get("source",{}).get("source_id")))
         store.ingest('business-baseline','settle:'+identity,records,contributions=counts)
     return len(cases)
 

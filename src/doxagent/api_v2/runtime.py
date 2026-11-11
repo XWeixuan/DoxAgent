@@ -20,8 +20,10 @@ RUNTIME_METRICS = (
             "new_fact_candidates",
             "executed_cases",
             "policy_decided_cases",
-            "hot_path_seconds",
-            "hot_path_samples",
+            "hot_path_le600_seconds",
+            "related_cases", "long_w3_cases", "non_model_seconds", "non_model_samples",
+            "w3_model_le600_seconds", "w3_model_le600_samples",
+            "hot_path_le600_samples",
             "w3_seconds",
             "w3_samples",
         )
@@ -50,13 +52,14 @@ def runtime_metrics_data(store, ticker, view, service=None):
             "hit_cases",
             "w3_cases",
             "new_fact_candidates",
-            "executed_cases",
+            "executed_cases", "related_cases", "long_w3_cases",
         )
     }
     for name, numerator, denominator, unit in (
         ("hit_case_ratio", "hit_cases", "policy_decided_cases", "RATIO"),
-        ("hot_path_mean_seconds", "hot_path_seconds", "hot_path_samples", "SECONDS"),
-        ("w3_mean_seconds", "w3_seconds", "w3_samples", "SECONDS"),
+        ("hot_path_mean_seconds", "hot_path_le600_seconds", "hot_path_le600_samples", "SECONDS"),
+        ("w3_mean_seconds", "w3_model_le600_seconds", "w3_model_le600_samples", "SECONDS"),
+        ("non_model_mean_seconds", "non_model_seconds", "non_model_samples", "SECONDS"),
     ):
         values[name] = service.quotient(
             name,
@@ -115,7 +118,7 @@ def install(app: FastAPI) -> None:
             "POLICY_RELATED_EVENT",
             "SUSPECTED_DUPLICATE_HIT",
             "POLICY_HIT",
-            "POLICY_RECALLED",
+            "POLICY_RECALLED", "LONG_W3_DECISION",
             "FAILURE",
         }:
             raise ApiFailure("VALIDATION_FAILED", 422)

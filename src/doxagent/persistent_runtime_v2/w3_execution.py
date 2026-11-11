@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 
 from doxagent.codex_worker.schema import ThreadForkRequest
 from doxagent.w3_timing import observed
@@ -517,6 +517,8 @@ class W3Execution:
                 self._save_case_in_transaction(db, case, prepared_case)
                 self._enqueue_in_transaction(db, operations)
         self._write_result(commit)
+        from doxagent.w3_timing import identify
+        identify(decision_effective_at=datetime.now(UTC).isoformat())
         from doxagent.w3_timing import mark
         mark('phase.business_committed',task_phase=TRADE_PHASE)
         if not hasattr(self.service.repository, "path"):

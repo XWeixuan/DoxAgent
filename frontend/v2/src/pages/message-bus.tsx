@@ -201,6 +201,14 @@ function MessageStream({
       <div className="business-metrics bus-metrics" aria-label="消息统计">
         <article>
           <span>
+            <Clock3 aria-hidden="true" />
+            平均真实抓取延时
+          </span>
+          <strong>{seconds(data?.mean_capture_seconds)}</strong>
+          <small>{data?.capture_samples ?? 0} 条消息</small>
+        </article>
+        <article>
+          <span>
             <Plus aria-hidden="true" />
             周期新增
           </span>
@@ -247,7 +255,7 @@ function MessageStream({
             <Clock3 aria-hidden="true" />
             平均端到端耗时
           </span>
-          <strong title="新消息首次发现至首次正式发布，按所选周期汇总">
+          <strong title="首次发现至首次发布；近24h最多20篇，不足5篇取最近5篇">
             {seconds(data?.mean_e2e_seconds)}
           </strong>
           {data && <small>{data.e2e_samples} 条新消息</small>}
@@ -540,16 +548,18 @@ export function SourceCard({
           <dt>当天新增</dt>
           <dd>{today ? valueText(today) : "未记录"}</dd>
           <dt>平均端到端耗时</dt>
-          <dd title={`近20逻辑轮次 · ${s.recent?.e2e_samples ?? 0}条新消息`}>
+          <dd title={`文章取样 · ${s.recent?.e2e_samples ?? 0}条新消息`}>
             {seconds(s.recent?.mean_e2e_seconds)}
           </dd>
+          <dt>真实抓取延时</dt>
+          <dd>{seconds(s.recent?.mean_capture_seconds)}</dd>
           <dt>P95端到端耗时</dt>
           <dd>{seconds(s.recent?.p95_e2e_seconds)}</dd>
           <dt>实际刷新间隔</dt>
           <dd>{seconds(s.recent?.refresh_seconds)}</dd>
           <dt>正文补全成功率</dt>
           <dd
-            title={`近20轮发现文章 · 完整 ${s.recent?.body_full ?? 0} / ${s.recent?.body_total ?? 0}`}
+            title={`文章取样 · 完整 ${s.recent?.body_full ?? 0} / ${s.recent?.body_total ?? 0}`}
           >
             {ratio(s.recent?.body_ratio)}
           </dd>

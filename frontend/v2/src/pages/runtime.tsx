@@ -52,6 +52,7 @@ export const nodeNames: Record<NodeId, string> = {
 const resultNames = {
   ...nodeNames,
   BADCASE: "历史 Badcase",
+  LONG_W3_DECISION: "长研判耗时",
   SUSPECTED_DUPLICATE_HIT: "疑似重复命中",
 };
 export default function RuntimePage() {
@@ -388,12 +389,21 @@ function RuntimeBody({
                 secondary: m.old_cases,
               },
               {
-                label: "Policy 命中 / 比例",
+                label: "Policy 命中 / 相关（数量）",
                 metric: m.hit_cases,
-                secondary: m.hit_case_ratio,
+                secondary: m.related_cases,
               },
-              { label: "二轮研判", metric: m.w3_cases },
-              { label: "事件发现", metric: m.new_fact_candidates },
+              ...(m.long_w3_cases
+                ? [{ label: "长研判耗时", metric: m.long_w3_cases }]
+                : []),
+              ...(m.non_model_mean_seconds
+                ? [
+                    {
+                      label: "非模型调用延时 · s",
+                      metric: m.non_model_mean_seconds,
+                    },
+                  ]
+                : []),
               { label: "交易执行", metric: m.executed_cases },
             ]}
           />
@@ -503,6 +513,7 @@ function RuntimeBody({
                     "FIRST_ROUND_TRADE",
                     "POLICY_RELATED_EVENT",
                     "SUSPECTED_DUPLICATE_HIT",
+                    "LONG_W3_DECISION",
                     "TRADE_INTENT",
                     "TRADE_EXECUTION",
                     "TRADE_NOT_EXECUTED",
@@ -959,7 +970,7 @@ function CaseResults({ row: c }: { row: CaseSummary }) {
           {c.result_settled ? "结果未记录" : "尚未形成结果"}
         </span>
       )}
-      {(c.first_round_tags ?? []).map((tag) => (
+      {[...(c.first_round_tags ?? []), ...(c.runtime_tags ?? [])].map((tag) => (
         <span className="domain-tag" key={tag}>
           {resultNames[tag]}
         </span>

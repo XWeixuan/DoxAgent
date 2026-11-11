@@ -86,6 +86,8 @@ class OpenAIPlatformClient:
                 provider_usage={**usage,"service_tier":response.get("service_tier"),
                     "response_model":response.get("model"),"response_status":response.get("status"),
                     "request_id":request_id,"cache_ttl":body["prompt_cache_options"]["ttl"]})
+        from . import model_clock
+        model_clock.start()
         try:
             with self._client.stream("POST",ENDPOINT,headers={"Authorization":"Bearer "+self._api_key},
                     json=body,timeout=request.timeout_seconds or 300) as stream:
@@ -117,6 +119,7 @@ class OpenAIPlatformClient:
             raise RuntimeResponsesError("provider_request_failed","OpenAI transport failed",retryable=True,usage=receipt()) from exc
         except (ValueError,TypeError,KeyError) as exc:
             raise RuntimeResponsesError("provider_stream_failed","Invalid OpenAI stream",retryable=True,usage=receipt()) from exc
+        model_clock.stop()
         observed = receipt()
         if not response.get("id") or response.get("status")!="completed" or not observed["raw_output"].strip():
             raise RuntimeResponsesError("incomplete_structured_output","OpenAI response incomplete",retryable=True,usage=observed)
