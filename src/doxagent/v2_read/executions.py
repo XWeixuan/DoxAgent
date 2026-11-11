@@ -119,7 +119,7 @@ class ExecutionProjector:
     def find(self, table: str, identity: str) -> dict[str, Any]:
         with self.store.connect() as db:
             row = db.execute(
-                "SELECT payload FROM objects WHERE kind=? AND id=? AND valid_to IS NULL",
+                "SELECT payload FROM object_current WHERE kind=? AND id=? AND valid_to IS NULL",
                 ("native:" + table, identity),
             ).fetchone()
         if not row:

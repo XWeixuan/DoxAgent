@@ -442,7 +442,7 @@ class SourceOutbox:
         finally:
             db.close()
 
-    def event_reader(self, *, serving=False):
+    def event_reader(self, *, serving=False, projection=False):
         """Reuse connection/schema caches for a bounded batch, without BEGIN.
 
         Each SELECT finishes before the next event is mapped/committed; no
@@ -453,11 +453,11 @@ class SourceOutbox:
         @contextmanager
         def reader():
             with closing(self.connection()) as db:
-                yield lambda sequence: self.event(sequence, connection=db, serving=serving)
+                yield lambda sequence: self.event(sequence, connection=db, serving=serving, projection=projection)
 
         return reader()
 
-    def event(self, sequence: int, *, decode: bool = True, connection=None, pack_cache=None, serving=False) -> dict[str, Any] | None:
+    def event(self, sequence: int, *, decode: bool = True, connection=None, pack_cache=None, serving=False, projection=False) -> dict[str, Any] | None:
         def packet(value):
             if serving and value["table_name"] == "runtime_v2_effects":
                 return {**value, "row": {}, "serving_skipped": True}
@@ -481,6 +481,8 @@ class SourceOutbox:
                 # Neither task summaries nor the Serving native task contract
                 # consume execution inputs/receipts. Frozen owner inputs remain.
                 row = {**row, 'inputs': '{}', 'receipt': '{}'}
+            if projection and value['table_name'] == 'runtime_v2_cases' and isinstance(row.get('payload_json'), str):
+                return {**value, 'row': row, 'native_value': self.content.projection_case(row['payload_json'])}
             return {**value, 'row': self.content.source_row(row)}
         db = connection if connection is not None else self.connection()
         try:

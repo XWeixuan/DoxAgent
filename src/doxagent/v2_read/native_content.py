@@ -36,6 +36,8 @@ class NativeContent:
         self.files = ContentFiles(Path(database).resolve().parent / "native-files")
         self.cache_bytes = cache_bytes
         self._definitions = OrderedDict()
+        self._projection_frozen = OrderedDict()
+        self._projection_frozen_bytes = 0
 
     def encode(self, value, *, keep=()):
         def pack(item, root=False, path=""):
@@ -140,3 +142,30 @@ class NativeContent:
     def source_row(self, row):
         return {key: self.text(value) if isinstance(value, str) and MARKER in value
                 and key in {"payload_json", "payload", "inputs", "receipt", "data_json"} else value for key, value in row.items()}
+
+    def projection_case(self, raw):
+        """Serving-only thin immutable input cache; full evidence decoder is unchanged."""
+        value = json.loads(raw)
+        frozen = value.get('frozen_inputs', {})
+        key = frozen.get(MARKER) if isinstance(frozen, dict) else None
+        cached = self._projection_frozen.get(key) if key else None
+        if cached is None:
+            full = self.decode(frozen)
+            thin = {k:v for k,v in full.items() if k in {'w3_execution_state','policy_watch_followup'}}
+            thin['projection'] = {'policies':[
+                {'policy_id':p.get('policy_id'), 'activation_conditions':[
+                    {k:c.get(k) for k in ('condition_id','decision')}
+                    for c in p.get('activation_conditions', [])]}
+                for p in full.get('projection', {}).get('policies', [])]}
+            cached = json.dumps(thin, ensure_ascii=False, separators=(',', ':'))
+            size = len(cached.encode())
+            if key and size <= 1024*1024:
+                self._projection_frozen[key] = cached
+                self._projection_frozen_bytes += size
+                while len(self._projection_frozen)>64 or self._projection_frozen_bytes>16*1024*1024:
+                    _, old = self._projection_frozen.popitem(last=False)
+                    self._projection_frozen_bytes -= len(old.encode())
+        elif key:
+            self._projection_frozen.move_to_end(key)
+        value['frozen_inputs'] = json.loads(cached)
+        return self.decode(value)

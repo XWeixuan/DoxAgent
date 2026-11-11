@@ -133,7 +133,7 @@ def test_projector_does_not_sleep_between_productive_ticks(tmp_path, monkeypatch
     with pytest.raises(SystemExit):
         cli.main()
     assert sleeps == [1]
-    assert repairs == [{"limit": 100}]
+    assert repairs == []  # tick owns the single bounded repair schedule
 
 
 def test_projection_indexes_are_explicit_idempotent_and_cover_hot_predicates(tmp_path):
