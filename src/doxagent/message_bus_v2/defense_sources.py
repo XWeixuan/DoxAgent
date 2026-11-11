@@ -280,23 +280,9 @@ class DefenseHttp:
                     from .corporate_ir.http import PublicHttp
 
                     from .publisher_http import http_budget
-                    work = asyncio.create_task(
-                        self._stdlib(slots,http_budget('collector'),
-                            PublicHttp._stdlib_read,url,
-                            {"User-Agent": "Mozilla/5.0", **(headers or {})},HTTP_EGRESSES[endpoint.route])
-                    )
-                    try:
-                        result = await asyncio.shield(work)
-                    except asyncio.CancelledError:
-                        while not work.done():
-                            try:
-                                await asyncio.shield(work)
-                            except asyncio.CancelledError:
-                                continue
-                            except Exception:
-                                break
-                        await asyncio.gather(work, return_exceptions=True)
-                        raise
+                    result = await self._stdlib(slots,http_budget('collector'),
+                        PublicHttp._stdlib_read,url,
+                        {"User-Agent": "Mozilla/5.0", **(headers or {})},HTTP_EGRESSES[endpoint.route])
                     if event is not None:
                         event.update(
                             response_received_at=utc_now().isoformat(), status_code=result.status
@@ -375,7 +361,9 @@ class DefenseHttp:
     @staticmethod
     async def _stdlib(host,budget,read,*args):
         from .publisher_http import joint_permits
-        async with joint_permits(host,budget,source=HTTP_SOURCE.get()):return await asyncio.to_thread(read,*args)
+        from .storage_lane import StorageLane
+        async with joint_permits(host,budget,source=HTTP_SOURCE.get()):
+            return await StorageLane._execute(read,args,{})
 
 
 def _plain(value):

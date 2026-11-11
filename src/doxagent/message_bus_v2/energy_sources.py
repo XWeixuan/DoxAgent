@@ -250,7 +250,8 @@ class EnergyHttp:
                 events=[]
                 token=REQUESTS.set(events)
                 try:
-                    return await self._fetch(url,spec,headers=headers),events
+                    async with asyncio.timeout(40):
+                        return await self._fetch(url,spec,headers=headers),events
                 finally:
                     REQUESTS.reset(token)
             task = asyncio.create_task(capture())
@@ -259,7 +260,9 @@ class EnergyHttp:
             task.add_done_callback(lambda _: entry.update(completed=time.monotonic()))
         try:
             # One cancelled ticker must not cancel a physical request shared by its sibling.
-            result,events = await asyncio.shield(entry["task"])
+            from .publisher_http import network_wait
+            with network_wait():
+                result,events = await asyncio.shield(entry["task"])
         except Exception:
             self.feeds.pop(key, None)
             raise

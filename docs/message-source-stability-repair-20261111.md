@@ -64,3 +64,12 @@ R4完整前15分钟正式有效采集周期8121/8236（98.604%），但不能达
 
 最后修正：补充页使用最多12秒、且不越过本轮第40秒的墙钟预算，给既有45秒总截止保留返回空间；超时明确保留supplement_pending/error、PARTIAL及首页证据，不伪称补充完成，下轮继续。Google Search RSS原生HTTP由Source与global串联改联合准入。Newswire两工作槽从“先占再等Source/global”改为传输点一并取得，两个硬槽不变；只是复用ContextVar带入现有联合准入器，没有新增队列/进程或放大容量。保留已有HTTP响应、parser、时间戳和传输证明规则。
 补充兼容性回归还发现：旧Scheduler的PollState.last_stage_timings只接受整数，本轮phase字符串不能混入该公共字典。已把phase移到Collector独立的既有JSON状态，公共计时仅整数；20 ticker＋阻塞sibling/intake回归16项通过。不会扩张旧Bus schema或为日志重建Bus。
+## 自然窗口发现并复现的许可泄漏（R6）
+
+R5前4分17秒正式1751/1949（89.841%），试验35/54（64.815%）；不能因为试验改善就交付。POWER七个feed无发送、各45秒准入耗尽，与其他入口反复排队并存。没有据此盲目扩大总容量。
+
+进一步的确定性复现：父任务进入network_timeout后创建共享子任务；子任务在joint_permits等待，父任务先结束其timeout上下文；之后释放容量。164883cc2中子任务退出network_wait时抛出`Cannot change state of finished Timeout`，而许可仍为0；独立模拟等待边界异常也泄漏已获许可。两项旧版本均失败。这说明“只测HTTP body内取消后归还”覆盖不足；POWER的shield共享子任务是实际可触发的路径，不能单纯把现象归为容量不足。
+
+修复仍在原架构内：network_timeout记录所属Task，只允许本任务暂停/恢复本任务的网络时钟；joint_permits最外层finally覆盖从排队、授予到退出等待边界及执行的完整生命周期，任何边界异常都归还。POWER物理共享任务使用自身40秒业务截止，调用方等待shield时仅暂停自己的局部网络时钟，45秒总截止保持；没有新后台组件。SpaceNews的stdlib改为调用方先联合准入，然后复用既有StorageLane._execute的线程取消排空，不能把排队本身shield成不可取消的后台工作。Source/global硬容量、所有轮询配置不变。
+
+该缺陷也可能使早期窗口渐进退化，因此早期98.6%不算最终稳定证明；最终修复后重新定义自然验收窗口。新增回归同时覆盖父时钟退出后的共享子任务与获准后等待边界异常，避免未来再以“取消测试通过”漏掉同类泄漏。

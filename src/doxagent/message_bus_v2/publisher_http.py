@@ -45,7 +45,9 @@ _NETWORK_TIMEOUTS = ContextVar('publisher_network_timeouts', default=())
 async def network_timeout(seconds):
     """Network-phase limit; the collector's total operation deadline still runs."""
     async with asyncio.timeout(seconds) as deadline:
-        token = _NETWORK_TIMEOUTS.set((*_NETWORK_TIMEOUTS.get(), deadline))
+        owner = asyncio.current_task()
+        inherited = tuple(item for item in _NETWORK_TIMEOUTS.get() if item[1] is owner)
+        token = _NETWORK_TIMEOUTS.set((*inherited, (deadline, owner)))
         try:
             yield deadline
         finally:
@@ -57,7 +59,9 @@ def network_wait():
     """Only capacity/pacing waits pause local network timers, never business timers."""
     loop = asyncio.get_running_loop()
     paused = []
-    for deadline in _NETWORK_TIMEOUTS.get():
+    for deadline, owner in _NETWORK_TIMEOUTS.get():
+        if owner is not asyncio.current_task():
+            continue
         end = deadline.when()
         if end is not None and not deadline.expired():
             paused.append((deadline, max(0, end - loop.time())))
@@ -126,26 +130,27 @@ async def joint_permits(*slots, source=None):
     ticket = [slots, source, loop.create_future(), False]
     waiting = time.monotonic()
     http_timing('http_admission')
-    with network_wait():
-        admission.pending.append(ticket)
-        admission.drain()
-        try:
-            await ticket[2]
-        except BaseException:
-            if ticket[3]:
-                admission.release(ticket)
-            else:
-                admission.drain()
-            raise
-        finally:
-            http_timing('http_admission', time.monotonic() - waiting)
     try:
+        with network_wait():
+            admission.pending.append(ticket)
+            admission.drain()
+            try:
+                await ticket[2]
+            finally:
+                http_timing('http_admission', time.monotonic() - waiting)
         if source and source._on_request:
             source._on_request()
         http_timing('http_transport')
         yield
     finally:
-        admission.release(ticket)
+        # Includes errors exiting the wait boundary after grant, not just errors
+        # in the HTTP body. A timer/context error must never consume capacity.
+        if ticket[3]:
+            admission.release(ticket)
+        else:
+            ticket[2].cancel()
+            admission.drain()
+
 
 
 @asynccontextmanager

@@ -292,3 +292,35 @@ async def test_supplement_wall_queue_timeout_preserves_head_and_debt(monkeypatch
         assert ctx.on_page.await_count==1
         assert result.acquisition_metadata['endpoints'][0]['supplement']['error']=='supplement_admission_or_request_timeout'
     finally:REQUESTS.reset(token)
+
+
+@pytest.mark.asyncio
+async def test_shared_child_survives_callers_closed_network_timer_without_leaking():
+    from doxagent.message_bus_v2.publisher_http import network_timeout
+    role=asyncio.Semaphore(0)
+    async def shared():
+        async with joint_permits(role):return 'captured'
+    async with network_timeout(1):
+        task=asyncio.create_task(shared())
+        await asyncio.sleep(.01)
+    # Parent timer is EXITED, while its shared child is still waiting.
+    role.release()
+    try:
+        assert await asyncio.wait_for(task,.2)=='captured'
+    finally:
+        assert role._value==1
+
+
+@pytest.mark.asyncio
+async def test_granted_permits_return_even_if_wait_boundary_raises(monkeypatch):
+    from contextlib import contextmanager
+    import doxagent.message_bus_v2.publisher_http as module
+    @contextmanager
+    def failing_boundary():
+        yield
+        raise RuntimeError('timer owner ended')
+    monkeypatch.setattr(module,'network_wait',failing_boundary)
+    slot=asyncio.Semaphore(1)
+    with pytest.raises(RuntimeError,match='timer owner ended'):
+        async with joint_permits(slot):pytest.fail('request cannot start')
+    assert slot._value==1
