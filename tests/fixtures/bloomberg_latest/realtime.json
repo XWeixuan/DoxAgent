@@ -1,0 +1,37 @@
+[
+  {
+    "providerName": "STORIES_SESSION",
+    "topicsData": {
+      "LATEST_STORIES": {
+        "name": "LATEST_STORIES",
+        "data": [
+          {
+            "id": "TOCNC6T9NJLT00",
+            "slug": "2026-11-11/nikki-haley-rules-out-2028-run-after-gop-midterm-repudiation",
+            "publishedAt": "2026-11-11T19:29:06.220Z"
+          },
+          {
+            "id": "TOCOT6T9NJLU00",
+            "slug": "2026-11-11/former-nfl-coach-rex-ryan-surrenders-after-alleged-hit-and-run",
+            "publishedAt": "2026-11-11T19:20:31.281Z"
+          },
+          {
+            "id": "TOCIIRKJH6VE00",
+            "slug": "2026-11-11/canadian-heavy-crude-rebounds-amid-cheaper-tanker-costs",
+            "publishedAt": "2026-11-11T19:04:05.866Z"
+          },
+          {
+            "id": "TOCDCVT9NJLV00",
+            "slug": "2026-11-11/h-r-s-4-7-billion-breakup-faces-revolt-by-major-investors",
+            "publishedAt": "2026-11-11T19:04:00.754Z"
+          },
+          {
+            "id": "TOCQ4GR24U8M00",
+            "slug": "2026-11-11/big-oil-has-more-to-fear-from-truckers-than-evs",
+            "publishedAt": "2026-11-11T19:00:16.977Z"
+          }
+        ]
+      }
+    }
+  }
+]

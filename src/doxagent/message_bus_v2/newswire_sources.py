@@ -17,6 +17,7 @@ from .http_routes import HTTP_EGRESSES, transport_routes
 from .publisher_http import PublisherHttpx, PublisherClients, RESPONSE_LIMIT
 from .newswire_listing import RECIPES, RSS_ONLY_SOURCES, canonical_article_url, enabled as listing_enabled, poll_listing
 from .bloomberg_latest import ENTRY_URL as BLOOMBERG_LATEST_URL, STORIES_URL as BLOOMBERG_STORIES_URL
+from .bloomberg_realtime import POLL_URL as BLOOMBERG_REALTIME_URL
 
 TICKERS=['INTC','MU','BE','COHR','NBIS','CEG','RKLB','SNOW','ONDS','IONQ']
 CATALOG={
@@ -25,7 +26,7 @@ CATALOG={
  'globenewswire_massive':('GlobeNewswire',[('all','https://www.globenewswire.com/RssFeed'),('public','https://www.globenewswire.com/RssFeed/orgclass/1/feedTitle/GlobeNewswire%20-%20News%20about%20Public%20Companies')],['tr-standard-1','us-standard-5']),
  'access_newswire_massive':('ACCESS Newswire',[('http','https://www.accessnewswire.com/newsroom')],['us-standard-5']),
  'tmx_newsfile_massive':('TMX Newsfile',[('all','https://feeds.newsfilecorp.com/global/Last25Stories')],['direct']),
- 'bloomberg_massive':('Bloomberg',[('latest',BLOOMBERG_STORIES_URL.format(page=1))],['direct']),
+ 'bloomberg_massive':('Bloomberg',[('realtime',BLOOMBERG_REALTIME_URL),('latest',BLOOMBERG_STORIES_URL.format(page=1))],['direct']),
 }
 
 
@@ -42,7 +43,7 @@ def initial_sources():
     return [SourceDefinition(source_id=sid,display_name=name,kind=SourceKind.CRAWLER if sid=='bloomberg_massive' or sid in RECIPES and sid not in RSS_ONLY_SOURCES else SourceKind.API,
         adapter_ref='builtin:newswire_massive@1',acquisition_mode=AcquisitionMode.MASSIVE_DISTRIBUTION,
         delivery_mode='test',entry_url=BLOOMBERG_LATEST_URL if sid=='bloomberg_massive' else urls[0][1],content_language='en',scheduler_group='massive.'+sid,
-        scheduler_constraints=SchedulerConstraints(max_concurrency=1,minimum_request_gap_seconds=1),
+        scheduler_constraints=SchedulerConstraints(max_concurrency=2 if sid=='bloomberg_massive' else 1,minimum_request_gap_seconds=1),
         distribution_policy=DistributionPolicy(test_tickers=TICKERS,jev_enabled=False,require_complete_body=True),
         default_parameters={'endpoints':[{'endpoint_id':eid,'url':url,'format':'json' if sid=='bloomberg_massive' else 'html' if eid=='http' else 'rss'} for eid,url in urls],
                             'feed_http_routes':routes, **({'discovery_mode':'bloomberg_latest_http'} if sid=='bloomberg_massive' else {'discovery_mode':'rss' if sid in RSS_ONLY_SOURCES else 'http_listing'} if sid in RECIPES else {})},default_polling_config=PollingConfig(target_interval_seconds=30))
@@ -51,7 +52,8 @@ def initial_sources():
 
 def endpoint_units(source):
     if source.source_id=='bloomberg_massive':
-        return [('TEST:' if source.delivery_mode=='test' else '')+'WIRE:latest']
+        prefix='TEST:' if source.delivery_mode=='test' else ''
+        return [prefix+'WIRE:realtime',prefix+'WIRE:latest']
     if listing_enabled(source):
         prefix='TEST:' if source.delivery_mode=='test' else ''
         return [prefix+'WIRE:listing']+([prefix+'WIRE:all'] if source.source_id=='globenewswire_massive' else [])
@@ -133,6 +135,9 @@ class NewswireAdapter:
 
     async def poll_shared(self,context):
         if context.source.source_id=='bloomberg_massive':
+            if context.acquisition_unit.endswith('WIRE:realtime'):
+                from .bloomberg_realtime import poll_realtime
+                return await poll_realtime(self,context)
             from .bloomberg_latest import poll_latest
             return await poll_latest(self,context)
         if listing_enabled(context.source) and context.acquisition_unit.endswith('WIRE:listing'):
@@ -150,8 +155,11 @@ class NewswireAdapter:
     async def listing_request(self,context,url,recipe,headers):
         async with source_http_scope(context.request_permit, *self._admission_slots(context.source)):
             async def send(proxy):
-                response=await self.curl.request((urlsplit(url).hostname,proxy),'POST' if recipe['method']=='POST' else 'GET',url,
-                    proxy=proxy,headers=headers,allow_redirects=True,timeout=8)
+                key=(urlsplit(url).hostname,proxy)
+                if recipe.get('client_scope'):key=(*key,recipe['client_scope'])
+                response=await self.curl.request(key,'POST' if recipe['method']=='POST' else 'GET',url,
+                    proxy=proxy,headers=headers,allow_redirects=True,timeout=8,
+                    **({'discard_cookies':True} if recipe.get('discard_cookies') else {}))
                 return httpx.Response(response.status_code,content=response.content,
                     headers={k:v for k,v in response.headers.items() if k.lower() not in {'content-encoding','content-length'}},
                     request=httpx.Request(recipe['method'],url))

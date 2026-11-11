@@ -1,5 +1,7 @@
 # Bloomberg Latest HTTP 新闻发现：方案与实施（2026-11-12）
 
+> 最终选择：Artemis官方实时快照10秒HTTP轮询 + 全列表30秒独立补覆盖。下文前半保留首轮慢列表的根因取证；**不是以该慢列表通过高时效验收**。最终新增实时路径与验收见后半。Chrome正文按用户后续要求留待账号到位。
+
 ## 本轮范围
 
 用户在实施中明确改为先完成列表/新消息爬虫，提供订阅账号之后再开发、测试 Chrome 正文。本轮保留外部 `bloomberg_massive` 单一身份、10个测试Ticker、正则筛选和最终正式Bus隔离；不新增正式订阅，不更改正文质量门，不引入常驻Chrome、身份或第二套测试处理系统。**RSS和Sitemap全部退出新消息轮询，也不作兜底。** 历史记录及其解码测试保留。
@@ -64,3 +66,19 @@
 使用统一Site Access的Bloomberg专属Identity/Profile，先Managed Playwright再按实测需要评估External Chrome/CDP；固定既有出口、单BODY并发、按需启动、短闲置回收、每篇关闭页面。HTTP列表独立运行，不等待身份启动、登录、正文或Reader。
 
 需先修正现有`SharedContentExtractor`对全部`_massive`源强制公共HTTP的路由，将Bloomberg单独交给受治理的浏览器BODY链路。订阅登录后以实际文章核验可见正文、原始精确时间、完整性与订阅墙；继续保留音视频/Newsletter质量边界。届时再验证Artemis授权、前端实际首显时间与HTTP列表的剩余差距，决定是否值得接入现成HTTP polling；不预先承诺授权可用，不扩成第二采集服务。
+
+## 按时效约束继续排查后的最终实现
+
+用户强调不能接受只证明HTTP可用而继续忍受分钟级发布延迟。因此又完成以下对照，不停止在首轮方案：
+
+1. **Playwright与CDP均真实测试**：美国、日本固定出口分别测试有界面Playwright Chromium与Supervisor托管的普通Google Chrome/CDP。四次均为403机器人页、无有效列表，不拿启动浏览器当解决方案。所有自有临时浏览器/显示进程均关闭，CDP停止有回执；未修改既有登录Profile或正式Identity。
+2. **找到真正的前端实时协议**：官方`artemis-client/1.1/artemis.min.js`将`STORIES_SESSION/LATEST_STORIES`用于Latest增量。正常页面会话→`/artemis/sentry`可获得匿名短期授权；固定日本、荷兰出口实际取得200。该授权不需要本轮提供订阅，但存在403/412及过期401，不能假设永远可用。令牌只在内存，不进Source配置、checkpoint、日志或Git。
+3. **SSE和HTTP polling都实测**：`/artemis/oscillator/stream`确实返回200、`text/event-stream`、`no-store`、文章ID数据与ping。可是当前出口持续出现约10–20秒后的传输中断，尝试HTTP/1.1仍不能证明稳定；不把它作为生产依赖，也不新增流式服务。官方客户端本身亦支持`oscillator/poll/<topic checksum>`。
+4. **选择小型HTTP快照**：响应约0.8KB、五个最新ID/slug/publishedAt。两组约10分钟对照中，一组21轮为20次200+一次令牌过期401；另一组19次200+一次初始412+一次过期401。新实现对已确认的401在同轮刷新一次匿名授权；403/412保留失败，仍不轮换出口。该快照与原故事全列表是不同入口，不是RSS/Sitemap。
+5. **避免元数据阶段成为新瓶颈**：单ID查询曾持续403；官方客户端另有`/lineup-next/api/stories/<comma-separated IDs>?autofillData={"locale":"en"}`批量入口。实测两条ID一次返回两个`fulfilled`对象。最终采用固定直连、单独无Cookie公共HTTP池读此批量入口，授权会话仍固定日本出口；不是403后换IP。该组合三轮完整适配器试跑：5条/0条/0条增量，零失败，约9.369/0.397/0.320秒，首轮仅4次请求、稳态1次。原组合与新组合改变了多个因素，尚不单独断言是哪一个Cookie导致403。
+
+最终外部仍只有`bloomberg_massive`一个源；内部为`TEST:WIRE:realtime`（10秒、小快照、仅对新/待处理ID做一次批量元数据查询）和`TEST:WIRE:latest`（原全列表30秒，按需恢复翻页）。两个共享单元分别调度、检查点和失败状态，不等待对方。并发上限2，复用当前HTTP配额；没有新守护服务、消息队列或Chrome常驻。官方ID别名统一两路文章和正文owner，十个Ticker不重复下载。
+
+实时路径的有效快照解析后才记录真实传输证明。`id_first_seen_at`来自请求实际收完的时间，不能用排队/dispatch时间冒充发现；原发布时间精度仍为EXACT。批量返回的失败项留在既有checkpoint.pending，正常项通过已有on_page/capture事务先接纳；原检查点不丢失，不为单项失败重复补全已完整取得的旧正文。无论失败在授权、快照、缓存还是元数据，均明确`BLOOMBERG_REALTIME_FAILED`，不以慢列表成功掩盖。
+
+本轮只证明了更直接的官方发现路径和有界连续试跑，**不能把冷启动五条旧快照的发布时间差，当成新稿稳态延迟，也不能仅凭no-store/低Age宣称已经低于一分钟**。最终自然流量的新稿时间差、成功与失败轮数会在下方验收追加；若尚无足够样本，明确保留时效未验收的结论。

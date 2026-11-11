@@ -97,7 +97,7 @@ def test_accounts_versioned_normalized_and_readable_by_control(tmp_path):
     with pytest.raises(ValueError):type(config).model_validate({**config.model_dump(),'x_accounts':['https://x.com/other']})
 
 
-async def test_bloomberg_has_one_latest_shared_unit_and_x_has_no_poll_units(tmp_path):
+async def test_bloomberg_has_two_shared_http_units_and_x_has_no_poll_units(tmp_path):
     from doxagent.message_bus_v2.collection_plane.config import Configuration
     from doxagent.message_bus_v2.collection_plane.worker import Collector
     from doxagent.message_bus_v2.test_delivery import bindings
@@ -110,7 +110,7 @@ async def test_bloomberg_has_one_latest_shared_unit_and_x_has_no_poll_units(tmp_
     collector=Collector(SimpleNamespace(message_bus_v2_sqlite_path=str(tmp_path/'collection.db')),
         SimpleNamespace(),store=AcquisitionStore(tmp_path/'acq.db',initialize=True),config_loader=lambda *a,**kw:cfg)
     await collector.refresh()
-    assert len(collector.desired)==1
+    assert len(collector.desired)==2
     assert all(value[0].source_id=='bloomberg_massive' and len(value[1])==10 for value in collector.desired.values())
 
 

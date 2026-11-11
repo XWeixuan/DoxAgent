@@ -75,6 +75,8 @@ SOURCE_INTERVALS = {'airspaceforces_space': 20,
 IR_INTERVALS = {'be.press': 30, 'ceg.press': 20, 'cohr.corporate': 20, 'cohr.financial': 20, 'intc.press': 20, 'mu.ir': 30, 'mu.newsroom': 20, 'nbis.press': 20, 'onds.press': 20, 'rklb.ir': 20, 'rklb.updates': 20, 'snow.press': 20}
 
 def unit_interval(source, unit, base):
+    if source.source_id == 'bloomberg_massive' and unit.removeprefix('TEST:') == 'WIRE:realtime':
+        return min(10, base)
     # Legacy IR parsing copies the binding period over every endpoint spec.
     # Preserve the two explicitly rate-limited endpoint floors in actual scheduling.
     if source.source_id == "corporate_ir_press_releases" and unit.removeprefix("TAIL:") in {

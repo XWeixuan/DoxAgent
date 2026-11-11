@@ -164,7 +164,7 @@ async def test_legacy_source_config_still_cannot_poll_rss_after_upgrade():
     a=NewswireAdapter();a.poll_feed=AsyncMock(side_effect=AssertionError("legacy RSS"))
     a.listing_request=adapter_for(response(items()[:2])).listing_request
     old=source().model_copy(update={"default_parameters":{"endpoints":[{"endpoint_id":"news","format":"rss","url":"https://www.bloomberg.com/feeds/news.rss"}]}})
-    assert endpoint_units(old)==['TEST:WIRE:latest']
+    assert endpoint_units(old)==['TEST:WIRE:realtime','TEST:WIRE:latest']
     result=await a.poll_shared(context().model_copy(update={"source":old}))
     assert len(result.messages)==2 and not result.failures
     a.poll_feed.assert_not_called()
