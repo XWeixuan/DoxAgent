@@ -390,16 +390,16 @@ async def test_http_network_budget_starts_after_admission_and_still_bounds_execu
             return SimpleNamespace(status_code=200)
         async def close(self): pass
     clients=PublisherClients(factory=Session)
-    role=http_budget('collector')
-    for _ in range(5): await role.acquire()
+    role=http_budget('collector');capacity=role._value
+    for _ in range(capacity): await role.acquire()
     task=asyncio.create_task(clients.request('test','GET','https://fast.test',timeout=.05))
     await asyncio.sleep(.08)
     assert not task.done()
-    for _ in range(5):role.release()
+    for _ in range(capacity):role.release()
     assert (await asyncio.wait_for(task,.2)).status_code == 200
     with pytest.raises(TimeoutError):
         await clients.request('test','GET','https://slow.test',timeout=.05)
-    assert role._value == 5 and clients.clients['test'].slots._value == 2
+    assert role._value == capacity and clients.clients['test'].slots._value == 2
     await clients.close()
 
 

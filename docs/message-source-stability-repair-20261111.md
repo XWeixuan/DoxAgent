@@ -1,6 +1,6 @@
 # 消息源提频后稳定性修复：实现与验收（2026-11-11）
 
-依据 `dev_plan/workflow_v2/message_sources_post_cadence_stability_root_cause_repair_plan_20261111.md`。本轮不降低任何消息源/ticker/FEED的配置间隔，不调整硬并发上限，不重建Chrome/Profile，不修改Reuters专属代码、配置、出口或验证码现场。
+依据 `dev_plan/workflow_v2/message_sources_post_cadence_stability_root_cause_repair_plan_20261111.md`。本轮不降低任何消息源/ticker/FEED的配置间隔，保持Source/Identity硬上限及Collector＋Site HTTP总预算，不重建Chrome/Profile，不修改Reuters专属代码、配置、出口或验证码现场。
 
 ## 本轮确认与实现
 
@@ -21,7 +21,7 @@ P1逐源判断以原排查表为索引：先在新版本自然流量中复核。
 
 待发布及自然业务观察后追加精确SHA、容器、窗口与逐源结果。已有代码回归包含：相反锁序、跨host进度、取消后守恒、source pacing/缩容、IR坏池定点恢复、真实NRC Part 21/单事件隔离、首页先提交/第二页失败及次轮补齐、原有缓存与RSS失败状态契约。验收不能把重启后一次成功算长期稳定；至少30分钟自然业务窗口，之后仍需跨越原约18小时复发点的老化证据。
 
-生产受控取证仅NRC：宿主机直连1次403，现有已配置传输1次200；没有打开Chrome、重建Profile或触发验证码测试。后续验收复用自然请求，以有限窗口聚合为主，不反复读取全历史。
+首版发布前的受控取证为NRC：宿主机直连1次403，现有已配置传输1次200；没有打开Chrome、重建Profile或触发验证码测试。后续验收复用自然请求，以有限窗口聚合为主，不反复读取全历史。
 
 本地组合回归：280 passed（247.75秒），仅Windows curl_cffi现有Selector兼容提示；无失败。另已验证反序竞争旧实现失败、新实现通过；代码compileall与git diff --check通过。
 
@@ -73,3 +73,24 @@ R5前4分17秒正式1751/1949（89.841%），试验35/54（64.815%）；不能�
 修复仍在原架构内：network_timeout记录所属Task，只允许本任务暂停/恢复本任务的网络时钟；joint_permits最外层finally覆盖从排队、授予到退出等待边界及执行的完整生命周期，任何边界异常都归还。POWER物理共享任务使用自身40秒业务截止，调用方等待shield时仅暂停自己的局部网络时钟，45秒总截止保持；没有新后台组件。SpaceNews的stdlib改为调用方先联合准入，然后复用既有StorageLane._execute的线程取消排空，不能把排队本身shield成不可取消的后台工作。Source/global硬容量、所有轮询配置不变。
 
 该缺陷也可能使早期窗口渐进退化，因此早期98.6%不算最终稳定证明；最终修复后重新定义自然验收窗口。新增回归同时覆盖父时钟退出后的共享子任务与获准后等待边界异常，避免未来再以“取消测试通过”漏掉同类泄漏。
+
+归因澄清：上述“子任务继承已结束网络时钟”的缺陷是**本轮R2–R5引入网络阶段时钟后产生并在验收中发现的兼容回归**，不能倒推成提频前历史故障已存在的根因。原始版本已复现的准入预约活锁、IR坏池、NRC单事件击穿整页、补充页耦合是独立问题。失败窗口及回归证据均保留，R6修复该新增回归后才重新做最终验收。
+
+## 最终版本与验收口径
+
+最终运行代码 `af5b47b48bd5e152cb214de7b20be787391e4e39`：Collector、Site Access、Content Enrichment均通过标准storage_release显式组件发布；三者各16个相关文件哈希匹配。Supervisor仍为原容器`9bc69ac8eab0`（2026-11-10启动），Bus仍为`ec2e1ac09ae2`；未重建Supervisor/Profile、切出口或处理Reuters验证码。
+
+最终组合回归319 passed / 1 skipped，仅现有Windows curl_cffi selector提示。先前扩展测试中3个历史断言（旧Yahoo子周期及enrichment recheck领取数量）用旧publisher模块对照仍失败，未改生产语义迁就它们；证据`baseline-existing-tests.xml`。本轮新增字符串计时字段的兼容回归已修正并通过20 ticker＋阻塞sibling/intake回归，不能将其列为历史失败跳过。
+
+R6自然业务观察基线UTC2026-11-11T17:19:04.611636Z，至少至17:49:04.611636Z；不将R4/R5窗口混入最终30分钟。只读聚合完整时间窗，按physical_run_id去重；每个ticker×QUERY/FEED保留实际成功间隔P50/P95/max/边缘空窗，配置未改不能替代实际时效性证明。CAPTURED是有效采集周期，不等同新文章或物理网站请求；PARTIAL与两页完整覆盖分列。新增raw→standard→stream成员读取只按现有状态/时间索引；正文回执与唯一文章数分开。未到期/在途排除完成分母，旧未消费业务不能当新发现。
+
+
+## 基于实测的HTTP容量重分配（R7）
+
+R6已解决许可泄漏，首3分56秒正式2106/2115（99.574%）、试验70/76（92.105%），但实际成功间隔仍受15–25秒内部准入影响，TechNews/Quantum仅首页覆盖。有效率不能替代时效性验收。
+
+采用现有ACCESS_RESULT的阶段字段区分真实HTTP/BROWSER（未分类单列，不拿其当HTTP零耗时）。UTC17:19:04—17:25:12的368秒内，Site CRAWLER真实HTTP共503条、network_ms合计102778，即平均约0.279槽；单次最大2646ms，queue_wait_ms合计0。BODY与浏览器网络耗时未混入。证据site-capacity-evidence-r6.json，读取使用已有julianday时间索引；没有追加网站探测。
+
+P1容量调整据此只重分配**原有9个Collector/Site CRAWLER HTTP槽**：5＋4改为7＋2；Yahoo/Sweep/BODY预算与全部Source/Identity硬上限不动，整体HTTP槽数不增加。试验Newswire通过既有联合准入额外共用一个1槽约束，且仍必须取得Collector的7槽之一，不能把此约束当新增第8槽。这样正式流量至少保留6槽，试验各publisher仍按原30秒调度，是否完成仍以真实传输/解析证明为准。无新组件、新队列、新表或逐请求持久化。
+
+回归验证：两个试验请求竞争时只准入一个，同时六个正式请求能够执行；所有许可最终归还，Collector＋Site总容量仍9。Source原2槽仍保持2槽，仅增加试验类别的共享份额约束。相关运行角色仅Collector与Site Access更新，BODY的R6算法修复继续有效，不为未使用的CRAWLER常量重建BODY。

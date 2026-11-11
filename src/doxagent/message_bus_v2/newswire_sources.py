@@ -1,5 +1,5 @@
 """Global wire endpoints on the shared Collector and live delivery pipeline."""
-from .publisher_http import network_timeout, source_http_scope
+from .publisher_http import network_timeout, source_http_scope, http_budget
 import asyncio
 import httpx
 import hashlib
@@ -137,9 +137,12 @@ class NewswireAdapter:
             for row in result.messages:row.metadata['discovery_method']='rss_parallel'
         return result
 
-    async def listing_request(self,context,url,recipe,headers):
+    def _admission_slots(self,source):
         if self.slots is None:self.slots=asyncio.Semaphore(2)
-        async with source_http_scope(context.request_permit, self.slots):
+        return (self.slots,http_budget('collector_test')) if source.delivery_mode=='test' else (self.slots,)
+
+    async def listing_request(self,context,url,recipe,headers):
+        async with source_http_scope(context.request_permit, *self._admission_slots(context.source)):
             async def send(proxy):
                 response=await self.curl.request((urlsplit(url).hostname,proxy),'POST' if recipe['method']=='POST' else 'GET',url,
                     proxy=proxy,headers=headers,allow_redirects=True,timeout=8)
@@ -156,11 +159,10 @@ class NewswireAdapter:
         if not context.force_refresh:
             if cp.get('etag'):headers['If-None-Match']=cp['etag']
             if cp.get('modified'):headers['If-Modified-Since']=cp['modified']
-        if self.slots is None:self.slots=asyncio.Semaphore(2)
         started=time.monotonic()
         token=RESPONSE_LIMIT.set(16*1024*1024 if s.source_id=='businesswire_massive' else 4*1024*1024)
         try:
-            async with source_http_scope(context.request_permit, self.slots),network_timeout(12):
+            async with source_http_scope(context.request_permit, *self._admission_slots(s)),network_timeout(12):
                 async def send(proxy):
                     if proxy:
                         result=await self.curl.request((urlsplit(endpoint['url']).hostname,proxy),'GET',endpoint['url'],

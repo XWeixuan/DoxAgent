@@ -324,3 +324,38 @@ async def test_granted_permits_return_even_if_wait_boundary_raises(monkeypatch):
     with pytest.raises(RuntimeError,match='timer owner ended'):
         async with joint_permits(slot):pytest.fail('request cannot start')
     assert slot._value==1
+
+
+@pytest.mark.asyncio
+async def test_test_lane_cannot_occupy_production_reserve_and_total_is_unchanged():
+    from doxagent.message_bus_v2.publisher_http import PublisherClients,source_http_scope
+    entered=[];release=asyncio.Event()
+    class Session:
+        broken=False
+        async def request(self,method,url,**kwargs):
+            entered.append(url);await release.wait();return url
+        async def close(self):pass
+    client=PublisherClients(factory=Session)
+    test_budget=http_budget('collector_test')
+    source=SchedulerGroupLimiter(SchedulerConstraints(max_concurrency=2,minimum_request_gap_seconds=0))
+    async def request(name,test=False):
+        async with source_http_scope(source.permit,*((test_budget,) if test else ())):
+            return await client.request(name,'GET',name)
+    # Separate source constraints for production requests, as in production.
+    @asynccontextmanager
+    async def plain():yield
+    async def production(i):
+        async with source_http_scope(plain):return await client.request(str(i),'GET',str(i))
+    tasks=[asyncio.create_task(request('test1',True)),asyncio.create_task(request('test2',True))]
+    tasks += [asyncio.create_task(production(i)) for i in range(6)]
+    try:
+        async with asyncio.timeout(.5):
+            while len(entered)<7:await asyncio.sleep(.001)
+        assert len([x for x in entered if x.startswith('test')])==1
+        assert http_budget('collector')._value==0 and test_budget._value==0
+        assert http_budget('site_crawler')._value==2
+        release.set();await asyncio.gather(*tasks)
+        assert http_budget('collector')._value+http_budget('site_crawler')._value==9
+        assert test_budget._value==1 and source._semaphore._value==2
+    finally:
+        release.set();await asyncio.gather(*tasks,return_exceptions=True);await client.close()
