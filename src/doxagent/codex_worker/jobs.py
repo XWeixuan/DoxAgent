@@ -1017,6 +1017,14 @@ class WorkerJobManager:
 
             recovered = await read_io(completed_receipt)
             if recovered is not None:
+                current = await read_io(self.store.get, job_id)
+                await self._update(
+                    job_id,
+                    resource_receipt={
+                        **current.resource_receipt,
+                        "execution_timing": recovered.get("execution_timing", {}),
+                    },
+                )
                 await self._finish(
                     job_id,
                     status="succeeded",

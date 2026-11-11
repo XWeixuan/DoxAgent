@@ -16,13 +16,13 @@ def select_articles(store, ticker, sources, now=None):
     with store.connect() as db:
         rows = db.execute(
             """SELECT s.value,d.parent,d.payload,b.payload,m.payload
- FROM json_each(?) s CROSS JOIN object_current d ON d.kind='native:live_deliveries'
+ FROM json_each(?) s CROSS JOIN object_current d INDEXED BY current_identity ON d.kind='native:live_deliveries'
  AND d.ticker=? AND d.id IN (SELECT x.id FROM article_sample_keys x INDEXED BY article_sample_source_time
  WHERE x.ticker=? AND x.source_id=s.value
  ORDER BY x.discovered_at DESC,x.id DESC LIMIT 20)
- LEFT JOIN object_current b ON b.kind='native:article_body_results' AND b.ticker=''
+ LEFT JOIN object_current b INDEXED BY current_identity ON b.kind='native:article_body_results' AND b.ticker=''
  AND b.id=d.parent
- LEFT JOIN object_current m ON m.kind='message' AND m.ticker=d.ticker
+ LEFT JOIN object_current m INDEXED BY current_identity ON m.kind='message' AND m.ticker=d.ticker
  AND m.id=json_extract(d.payload,'$.standard_id')""",
             (json.dumps(sources), ticker, ticker),
         ).fetchall()

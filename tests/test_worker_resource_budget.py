@@ -87,6 +87,39 @@ async def settle():
 
 
 @pytest.mark.asyncio
+async def test_timeout_receipt_recovery_preserves_model_interval(tmp_path):
+    timing = {
+        "sdk_dispatched_at": "2026-11-12T00:00:00+00:00",
+        "sdk_completed_at": "2026-11-12T00:00:10+00:00",
+        "model_completed_at": 1794441610,
+        "sdk_completed_monotonic": 10,
+        "sdk_deadline_monotonic": 20,
+    }
+    req = request(901, research_lane=ResearchLane.PERSISTENT_RUNTIME)
+
+    class LateReceiptRuntime(Runtime):
+        async def run(self):
+            commit(receipt_path(tmp_path, req), {
+                "status": "completed", "thread_id": "thread", "turn_id": "turn",
+                "final_response": "{}", "execution_timing": timing,
+            })
+            raise TimeoutError
+
+    manager = WorkerJobManager(LateReceiptRuntime(), LocalWorkspaceStore(tmp_path))
+    try:
+        job = await manager.submit(req)
+        for _ in range(200):
+            result = manager.get(job.job_id)
+            if result.status == "succeeded":
+                break
+            await asyncio.sleep(0.01)
+        assert result.status == "succeeded"
+        assert result.resource_receipt["execution_timing"] == timing
+    finally:
+        await manager.close()
+
+
+@pytest.mark.asyncio
 async def test_new_message_reserve_defers_research_and_keeps_persistent_owner_admission(
     tmp_path, monkeypatch
 ):

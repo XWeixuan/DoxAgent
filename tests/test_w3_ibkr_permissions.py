@@ -43,6 +43,8 @@ async def test_w3_sdk_exposes_only_ibkr_data_tools_and_scopes_capability(
         model=model, effort="max" if model == "gpt-6-luna" else "medium",
     ), run_root)
     config = sdk.thread_start_kwargs["config"]
+    if phase == "post_decision_operations":
+        tier = "default"
     assert config["service_tier"] == tier
     assert config["features.fast_mode"] is (tier == "fast")
     assert sdk.thread_start_kwargs["model"] == model
