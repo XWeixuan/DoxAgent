@@ -657,15 +657,6 @@ class ReadStore:
                 retire_rows = base in folded_bases and not virtual and old_values
                 if previous == expected and not retire_rows:
                     continue
-                if kind == 'native:live_deliveries':
-                    if payload is None:
-                        db.execute('DELETE FROM article_sample_keys WHERE ticker=? AND id=?',(ticker,identity))
-                    elif payload.get('first_discovered_at'):
-                        found = datetime.fromisoformat(payload['first_discovered_at']).timestamp()
-                        db.execute("INSERT INTO article_sample_keys VALUES(?,?,?,?) ON CONFLICT(ticker,id) "
-                                   "DO UPDATE SET source_id=excluded.source_id,discovered_at=excluded.discovered_at "
-                                   "WHERE source_id!=excluded.source_id OR discovered_at!=excluded.discovered_at",
-                                   (ticker,identity,record['source_id'],found))
                 mutated = True
                 allocate()
                 for (day, dimensions), amount in previous.items():
