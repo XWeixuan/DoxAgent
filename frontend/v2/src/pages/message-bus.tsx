@@ -13,7 +13,12 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import type { Period, MessageSummary, SourceStatus, Response } from "@contract";
 import { useRuntime } from "@/core/runtime";
 import { usePageContext, tickerPath } from "@/core/page-query";
@@ -33,6 +38,7 @@ import { Module, Notice } from "@/components/state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BindingSettings from "./source-settings";
+import "./message-bus-navigation.css";
 const routes = [
   ["ALL", "全部路由"],
   ["ARCHIVE", "ARCHIVE"],
@@ -47,6 +53,7 @@ const seconds = (value: number | null | undefined) =>
 const ratio = (value: number | null | undefined) =>
   value == null ? "无样本" : (value * 100).toFixed(1) + "%";
 export default function MessageBus() {
+  const location = useLocation();
   const { ticker = "" } = useParams();
   const [p, setP] = useSearchParams();
   const config = p.get("mode") === "CONFIG";
@@ -74,20 +81,28 @@ export default function MessageBus() {
             }}
           />
         )}
-        <Choices
-          value={config ? "CONFIG" : "STREAM"}
-          onChange={(v) => {
-            const n = new URLSearchParams(p);
-            n.set("mode", v);
-            setP(n);
-          }}
-          items={[
-            ["STREAM", "消息流"],
-            ["CONFIG", "配置"],
-          ]}
-          label="消息总线模式"
-          icons={{ STREAM: MessagesSquare, CONFIG: Settings2 }}
-        />
+        <nav className="bus-mode-navigation" aria-label="消息总线视图">
+          <Choices
+            value={config ? "CONFIG" : "STREAM"}
+            onChange={(v) => {
+              const n = new URLSearchParams(p);
+              n.set("mode", v);
+              setP(n);
+            }}
+            items={[
+              ["STREAM", "消息流"],
+              ["CONFIG", "配置"],
+            ]}
+            label="消息总线模式"
+            icons={{ STREAM: MessagesSquare, CONFIG: Settings2 }}
+          />
+          <Link
+            to="/message-bus/sources"
+            state={{ from: location.pathname + location.search }}
+          >
+            全部消息源
+          </Link>
+        </nav>
       </PageTitle>
       {ctx.error && <Notice danger>{ctx.error.message}</Notice>}
       {config ? (

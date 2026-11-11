@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "008421963e36cd88c566153ddb156843195dafd73c6839697e829cfa2266ecb0",
+  "source_sha256": "cf15c8f2f3cceb0475a5a207f31801e746f6f4e25d150e05c86641e3ce890a9f",
   "$defs": {
     "Id": {
       "type": "string"
@@ -29978,6 +29978,355 @@
         "has_more",
         "snapshot_id",
         "limit"
+      ],
+      "additionalProperties": false
+    },
+    "SourceCatalog": {
+      "type": "object",
+      "properties": {
+        "snapshot_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "semantic_day": {
+          "$ref": "#/$defs/Day"
+        },
+        "sectors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GlobalSourceCard"
+          }
+        }
+      },
+      "required": [
+        "snapshot_at",
+        "semantic_day",
+        "sectors",
+        "sources"
+      ],
+      "additionalProperties": false
+    },
+    "GlobalSourceCard": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "delivery_mode": {
+          "type": "string",
+          "enum": [
+            "production",
+            "test"
+          ]
+        },
+        "acquisition_mode": {
+          "type": "string",
+          "enum": [
+            "by_ticker",
+            "by_search",
+            "by_distribution",
+            "massive_distribution"
+          ]
+        },
+        "classification": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceClassification"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "entry_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "ticker": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "url",
+              "label",
+              "ticker"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "subscriptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ticker": {
+                "type": "string"
+              },
+              "binding_id": {
+                "$ref": "#/$defs/Id"
+              },
+              "enabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ticker",
+              "binding_id",
+              "enabled"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "state_counts": {
+          "type": "object",
+          "properties": {
+            "running": {
+              "$ref": "#/$defs/Count"
+            },
+            "sleeping": {
+              "$ref": "#/$defs/Count"
+            },
+            "disabled": {
+              "$ref": "#/$defs/Count"
+            },
+            "abnormal": {
+              "$ref": "#/$defs/Count"
+            },
+            "unknown": {
+              "$ref": "#/$defs/Count"
+            }
+          },
+          "required": [
+            "running",
+            "sleeping",
+            "disabled",
+            "abnormal",
+            "unknown"
+          ],
+          "additionalProperties": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ticker": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ticker",
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "metrics": {
+          "$ref": "#/$defs/GlobalSourceMetrics"
+        }
+      },
+      "required": [
+        "source_id",
+        "name",
+        "description",
+        "enabled",
+        "delivery_mode",
+        "acquisition_mode",
+        "classification",
+        "entry_points",
+        "subscriptions",
+        "state_counts",
+        "errors",
+        "metrics"
+      ],
+      "additionalProperties": false
+    },
+    "SourceClassification": {
+      "type": "object",
+      "properties": {
+        "listing": {
+          "$ref": "#/$defs/SourceMethods"
+        },
+        "body": {
+          "$ref": "#/$defs/SourceMethods"
+        },
+        "applicability": {
+          "type": "string",
+          "enum": [
+            "GLOBAL",
+            "INDUSTRY"
+          ]
+        },
+        "sector_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "listing",
+        "body",
+        "applicability",
+        "sector_ids"
+      ],
+      "additionalProperties": false
+    },
+    "SourceMethods": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceMethod"
+          }
+        },
+        "fallback": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceMethod"
+          }
+        }
+      },
+      "required": [
+        "primary",
+        "fallback"
+      ],
+      "additionalProperties": false
+    },
+    "SourceMethod": {
+      "type": "string",
+      "enum": [
+        "RSS",
+        "API",
+        "HTTP",
+        "PLAYWRIGHT",
+        "CHROME_CDP",
+        "SOURCE_BODY",
+        "PUBLISHER_ROUTED",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "GlobalSourceMetrics": {
+      "type": "object",
+      "properties": {
+        "last_success_at": {
+          "$ref": "#/$defs/Value%3CInstant%3E"
+        },
+        "published_today": {
+          "$ref": "#/$defs/Value%3CCount%3E"
+        },
+        "mean_e2e_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "p95_e2e_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "e2e_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "mean_capture_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "capture_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "refresh_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "refresh_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "body_ratio": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "body_total": {
+          "$ref": "#/$defs/Count"
+        },
+        "body_full": {
+          "$ref": "#/$defs/Count"
+        },
+        "article_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "body_applicable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "last_success_at",
+        "published_today",
+        "mean_e2e_seconds",
+        "p95_e2e_seconds",
+        "e2e_samples",
+        "mean_capture_seconds",
+        "capture_samples",
+        "refresh_seconds",
+        "refresh_samples",
+        "body_ratio",
+        "body_total",
+        "body_full",
+        "article_samples",
+        "body_applicable"
       ],
       "additionalProperties": false
     }

@@ -96,6 +96,7 @@ if (existsSync(backendPath)) {
     "BusStatus",
     "OpenRouterBalance",
     "SourceStatus",
+    "SourceCatalog",
     "PollTimeliness",
     "PollCadence",
     "BusMetrics",

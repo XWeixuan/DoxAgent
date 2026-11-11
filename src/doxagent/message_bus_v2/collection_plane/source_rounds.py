@@ -3,6 +3,7 @@
 No writes or historical reconstruction: at most 21 logical slots per binding,
 using the existing unit heads and indexed acquisition receipts.
 """
+from contextlib import nullcontext
 import json
 import math
 from datetime import UTC, datetime
@@ -60,16 +61,17 @@ def evaluate_rounds(plans, receipts, *, interval, until, limit=20):
             'until_at': instant(end) if selected else None, 'samples': len(gaps)}
 
 
-def recent_rounds(store, ticker, bindings, now):
+def recent_rounds_many(store, bindings, now, *, units=None, db=None):
     """Batch heads, then bounded indexed seeks per real unit (never per-message)."""
     if store is None:
         return {}
     by_binding = {}
-    with store.connect() as db:
-        rows = db.execute("SELECT binding_id,unit,required,head_json,"
+    with nullcontext(db) if db is not None else store.connect() as db:
+        rows = units if units is not None else db.execute("SELECT binding_id,unit,required,head_json,"
             "json_extract(state,'$.target_due_at') epoch,"
             "json_extract(state,'$.schedule_interval_seconds') period "
-            "FROM units WHERE ticker=?", (ticker,)).fetchall()
+            "FROM units WHERE binding_id IN (SELECT value FROM json_each(?))",
+            (json.dumps([b['binding_id'] for b in bindings]),)).fetchall()
         for row in rows:
             by_binding.setdefault(row['binding_id'], []).append(dict(row))
         result = {}
@@ -112,3 +114,7 @@ def recent_rounds(store, ticker, bindings, now):
                                  'received':stamp(r[2])} for r in found)
             result[bid] = evaluate_rounds(plans,receipts,interval=source_period,until=until)
         return result
+
+
+def recent_rounds(store, ticker, bindings, now):
+    return recent_rounds_many(store, bindings, now)

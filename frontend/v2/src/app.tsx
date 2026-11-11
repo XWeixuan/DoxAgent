@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { TickerSwitcher } from "@/components/ticker-navigation";
+import { GlobalActions } from "@/components/global-actions";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, LogOut, ShieldCheck } from "lucide-react";
@@ -22,6 +23,7 @@ import { useIdentity, useRuntime } from "@/core/runtime";
 const TickerWorkspace = lazy(() => import("@/pages/ticker-workspace"));
 const Audit = lazy(() => import("@/pages/audit"));
 const Overview = lazy(() => import("@/pages/overview"));
+const SourceCatalog = lazy(() => import("@/pages/source-catalog"));
 export class ErrorBoundary extends Component<
   { children: ReactNode },
   { error: boolean }
@@ -130,7 +132,7 @@ function Workspace() {
         )}
 
         <div className="account-area">
-          <Link to="/audit/cost">成本审计</Link>
+          <GlobalActions />
           {!principal.data?.data.can_operate && (
             <span className="account-label">
               <ShieldCheck aria-hidden="true" />
@@ -177,6 +179,14 @@ function Workspace() {
           }
         >
           <Routes>
+            <Route
+              path="/message-bus/sources"
+              element={
+                <main id="main" className="ticker-workspace global-workspace">
+                  <SourceCatalog />
+                </main>
+              }
+            />
             <Route path="/overview" element={<Overview />} />
             <Route
               path="/audit/cost"

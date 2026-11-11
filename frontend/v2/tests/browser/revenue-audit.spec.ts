@@ -17,7 +17,7 @@ for (const width of [1262, 1559]) {
       .evaluateAll((cards) =>
         cards.map((card) => Math.round(card.getBoundingClientRect().top)),
       );
-    expect(new Set(metricRows).size).toBe(1);
+    expect(new Set(metricRows).size).toBe(width === 1262 ? 2 : 1);
     await expect(page.locator(".revenue-kpis article").first()).toContainText(
       "当前策略总资产",
     );

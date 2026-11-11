@@ -233,7 +233,7 @@ def create_app(
                         return existing
                 try:
                     request.state.query_submitted = True
-                    status, headers, content = await runner.run(job, timeout=limits.detail_seconds if "/body" in path or "/download" in path else limits.query_seconds)
+                    status, headers, content = await runner.run(job, timeout=limits.detail_seconds if "/body" in path or "/download" in path or path.endswith("/message-bus/source-catalog") else limits.query_seconds)
                 except ApiFailure as exc:
                     if deferred and exc.retryable and exc.status in {503, 504}:
                         return await app.state.deferred_queries.submit(job)
@@ -531,6 +531,8 @@ def create_app(
     from .bus import install as install_bus
 
     install_bus(app)
+    from .source_catalog import install as install_source_catalog
+    install_source_catalog(app)
     from .executions import install as install_executions
 
     install_executions(app)

@@ -1,0 +1,173 @@
+.audit-page {
+  padding-top: 24px;
+}
+.audit-page > .business-heading {
+  padding-bottom: 20px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.audit-page > .business-heading h1 {
+  font-size: 26px;
+  letter-spacing: -0.5px;
+  font-weight: 650;
+}
+.audit-page .audit-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.audit-page .audit-controls > .business-heading {
+  margin-left: auto;
+}
+.audit-page .audit-report-filters {
+  padding: 0 0 18px;
+  margin: 0;
+  border: 0;
+}
+.audit-page .audit-report-filters .business-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.audit-page .audit-report-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+.audit-page .audit-report-filters select {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  border-radius: 6px;
+  padding: 7px 30px 7px 10px;
+  min-height: 36px;
+  font-size: 14px;
+  max-width: 300px;
+}
+.audit-page .audit-metrics {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 0;
+  background: var(--card);
+  margin: 0 0 18px;
+}
+.audit-page .audit-metrics article {
+  padding: 0 18px;
+  min-width: 0;
+}
+.audit-page .audit-metrics strong {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.audit-page .audit-observation-counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  margin: 0 0 18px;
+}
+.audit-page .audit-charts,
+.audit-page .revenue-middle {
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.audit-page .chart-panel,
+.audit-page .cost-nodes,
+.audit-page .revenue-records {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  overflow: hidden;
+}
+.audit-page .chart-panel {
+  padding: 18px 20px;
+}
+.audit-page .chart-panel h2,
+.audit-page .audit-table-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.audit-page .cost-nodes {
+  margin-top: 20px;
+}
+.audit-table-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.audit-page .cost-table {
+  margin: 0;
+}
+.audit-page .cost-table :is(th, td) {
+  padding: 14px 16px;
+  text-align: right;
+  vertical-align: top;
+  font-size: 14px;
+}
+.audit-page .cost-table :is(th, td):first-child {
+  text-align: left;
+}
+.audit-page .cost-table .model-name {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--foreground);
+}
+.audit-page .cost-table small {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.audit-page .audit-pagination {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+}
+.audit-page .revenue-asof {
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.audit-page .revenue-controls {
+  gap: 16px;
+}
+.audit-page .revenue-kpis article:first-child {
+  padding-left: 18px;
+}
+.audit-page .revenue-records > header {
+  padding: 16px 20px;
+}
+.audit-page .revenue-table :is(th, td) {
+  font-size: 14px;
+}
+.audit-page .revenue-table th {
+  font-weight: 500;
+}
+@media (max-width: 1400px) {
+  .audit-page .audit-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 20px;
+  }
+  .audit-page .audit-metrics article:nth-child(3n) {
+    border-right: 0;
+  }
+  .audit-page .revenue-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .audit-page .revenue-kpis article:nth-child(3n) {
+    border-right: 1px solid var(--border);
+  }
+  .audit-page .revenue-kpis article:nth-child(4n),
+  .audit-page .revenue-kpis article:last-child {
+    border-right: 0;
+  }
+  .audit-page .audit-charts {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  }
+}
