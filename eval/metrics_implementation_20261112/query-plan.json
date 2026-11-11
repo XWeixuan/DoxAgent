@@ -1,0 +1,2 @@
+{"plan": [[8, 0, 0, "SCAN s VIRTUAL TABLE INDEX 1:"], [13, 0, 0, "SEARCH d USING INDEX current_identity (kind=? AND ticker=? AND id=?)"], [17, 0, 0, "CORRELATED LIST SUBQUERY 1"], [21, 17, 0, "SEARCH x USING COVERING INDEX article_sample_source_time (ticker=? AND source_id=?)"], [44, 0, 0, "SEARCH b USING INDEX current_identity (kind=? AND ticker=? AND id=?) LEFT-JOIN"], [54, 0, 0, "SEARCH m USING INDEX current_identity (kind=? AND ticker=? AND id=?) LEFT-JOIN"]]}
+

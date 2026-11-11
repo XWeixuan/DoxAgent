@@ -1,0 +1,2 @@
+{"source_case": "case_4a503841efae46f18d271349b1fcfd8a", "production_writes": 0, "model_calls": 0, "shadow_result": {"case_id": "case_4a503841efae46f18d271349b1fcfd8a", "semantic_day": "2026-11-11", "received_at": "2026-11-11T18:14:21.663994+00:00", "w3_model_seconds": 102.0, "non_model_seconds": 11.061050999999992, "runtime_tags": []}, "counts": {"related_cases": null, "related_cases_samples": 0, "w3_model_le600_seconds": 102.0, "w3_model_le600_samples": 1, "long_w3_cases": 0, "long_w3_cases_samples": 1, "non_model_seconds": 11.061050999999992, "non_model_samples": 1}}
+
