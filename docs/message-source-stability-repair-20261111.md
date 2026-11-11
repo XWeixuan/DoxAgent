@@ -94,3 +94,12 @@ R6已解决许可泄漏，首3分56秒正式2106/2115（99.574%）、试验70/76
 P1容量调整据此只重分配**原有9个Collector/Site CRAWLER HTTP槽**：5＋4改为7＋2；Yahoo/Sweep/BODY预算与全部Source/Identity硬上限不动，整体HTTP槽数不增加。试验Newswire通过既有联合准入额外共用一个1槽约束，且仍必须取得Collector的7槽之一，不能把此约束当新增第8槽。这样正式流量至少保留6槽，试验各publisher仍按原30秒调度，是否完成仍以真实传输/解析证明为准。无新组件、新队列、新表或逐请求持久化。
 
 回归验证：两个试验请求竞争时只准入一个，同时六个正式请求能够执行；所有许可最终归还，Collector＋Site总容量仍9。Source原2槽仍保持2槽，仅增加试验类别的共享份额约束。相关运行角色仅Collector与Site Access更新，BODY的R6算法修复继续有效，不为未使用的CRAWLER常量重建BODY。
+## 两个共享浏览器源的队列收尾（仅配置，R8）
+
+剩余浏览器失败未混成验证码：R7首约6分钟，Investing为111成功/5次site_queue_timeout；InvestorsHub为94成功/17次site_queue_timeout/3次真实http_504。读取当前Registry确认两站override都指向public-markets-nl，身份max_concurrency=2、min_interval_ms=500；两站crawler_queue_timeout_ms却均3000。没有增加身份硬容量、切换身份或Profile。
+
+经现有Site owner API，仅将Investing、InvestorsHub的crawler队列截止改为8000ms；修订17→18、15→16，回读核对其他字段完全不变。API回执UTC17:49:24。同步修正已有configure_news_latency脚本：这两站默认至少8秒、保留人工更高配置，避免下次提频脚本又改回3秒；不运行其全站apply、不触碰Reuters或其他Site/Identity参数。网络执行截止、45秒业务总截止、周期均不变。
+
+排查中一度依据rank函数误以为BODY老化未用；核对完整permit实现后确认已有“foreground BODY等待1秒且当前无BODY时补偿”分支，故**保留现有公平机制，没有另加第二套老化逻辑**。不能把未使用的rank字段单独当作已证实的业务饥饿根因。共享2槽容量仍是实际约束，8秒只解决人工设置的过短排队，不能消除真实站点504或承诺超出身份容量的吞吐。
+
+最终验收按最后配置生效后UTC2026-11-11T17:49:24Z起30分钟单列，不能用队列从3秒改到8秒就宣称恢复；仍核对实际成功间隔、失败阶段、正常消息交付和BODY回执。

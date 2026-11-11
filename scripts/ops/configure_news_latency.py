@@ -22,6 +22,14 @@ TARGETS = {
 }
 
 
+def crawler_queue_budget(site_id, current_ms):
+    # Shared two-slot browsers can legitimately take longer than three seconds.
+    # Keep existing larger operator settings; never resize an Identity here.
+    if site_id in {'investing', 'investorshub'}:
+        return max(8000, current_ms)
+    return 3000
+
+
 def read(path, query):
     with sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True) as db:
         db.row_factory = sqlite3.Row
@@ -142,7 +150,7 @@ def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacit
                 "max_concurrency": min(site_capacity,2) if old["site_id"] == "reuters" else site_capacity,
                 "min_interval_ms": min(old["access"]["min_interval_ms"], 1500 if old["site_id"] == "reuters" else 500),
                 "body_queue_timeout_ms": 3000,
-                "crawler_queue_timeout_ms": 3000,
+                "crawler_queue_timeout_ms": crawler_queue_budget(old["site_id"], old["access"]["crawler_queue_timeout_ms"]),
             },
         }
         if old["site_id"] == "yahoo_finance":
