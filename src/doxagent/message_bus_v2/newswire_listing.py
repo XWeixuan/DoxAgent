@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .publisher_http import network_timeout
 import copy
 import hashlib
 import json
@@ -200,7 +201,7 @@ async def poll_listing(adapter, context):
             # Already tested in both networks. Do not hammer a known challenge
             # every 30 seconds until the user chooses a browser/authorized path.
             raise ValueError(recipe["review"])
-        async with asyncio.timeout(12):
+        async with network_timeout(12):
             for page in range(1, recipe.get("max_pages", 4)+1):
                 url = recipe["url"].format(page=page)
                 headers = dict(recipe.get("headers", {}))
@@ -257,7 +258,7 @@ async def poll_listing(adapter, context):
             original_payload={"listing_url": recipe["url"], "cache": caches})
         token = REQUEST_ROLE.set("rss_fallback")
         try:
-            async with asyncio.timeout(12):
+            async with network_timeout(12):
                 for endpoint in endpoints:
                     fallback = context.model_copy(update={"acquisition_unit": "WIRE:"+endpoint["endpoint_id"], "checkpoint": {}})
                     try:

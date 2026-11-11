@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .publisher_http import network_timeout
 import copy
 import json
 import time
@@ -216,7 +217,7 @@ async def execute(context, runners):
         token = REQUESTS.set(events)
         started = time.monotonic()
         try:
-            async with asyncio.timeout(30 if name == "rss" else 15):
+            async with network_timeout(30 if name == "rss" else 15):
                 result = await runner(previous.get(name, {}))
             proven = (
                 validate_listing(events, result.acquisition_metadata.get("validated_request_ids"))

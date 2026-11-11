@@ -1,5 +1,5 @@
 """Global wire endpoints on the shared Collector and live delivery pipeline."""
-from .publisher_http import network_timeout
+from .publisher_http import network_timeout, source_http_scope, joint_permits
 import asyncio
 import httpx
 import hashlib
@@ -139,7 +139,7 @@ class NewswireAdapter:
 
     async def listing_request(self,context,url,recipe,headers):
         if self.slots is None:self.slots=asyncio.Semaphore(2)
-        async with self.slots,context.request_permit():
+        async with joint_permits(self.slots),source_http_scope(context.request_permit):
             async def send(proxy):
                 response=await self.curl.request((urlsplit(url).hostname,proxy),'POST' if recipe['method']=='POST' else 'GET',url,
                     proxy=proxy,headers=headers,allow_redirects=True,timeout=8)
@@ -160,7 +160,7 @@ class NewswireAdapter:
         started=time.monotonic()
         token=RESPONSE_LIMIT.set(16*1024*1024 if s.source_id=='businesswire_massive' else 4*1024*1024)
         try:
-            async with self.slots,context.request_permit(),network_timeout(12):
+            async with joint_permits(self.slots),source_http_scope(context.request_permit),network_timeout(12):
                 async def send(proxy):
                     if proxy:
                         result=await self.curl.request((urlsplit(endpoint['url']).hostname,proxy),'GET',endpoint['url'],

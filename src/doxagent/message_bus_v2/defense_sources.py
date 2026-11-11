@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from .publisher_http import network_timeout
+from .publisher_http import network_timeout, source_http_scope, HTTP_SOURCE
 import json
 import re
 import time
@@ -375,7 +375,7 @@ class DefenseHttp:
     @staticmethod
     async def _stdlib(host,budget,read,*args):
         from .publisher_http import joint_permits
-        async with joint_permits(host,budget):return await asyncio.to_thread(read,*args)
+        async with joint_permits(host,budget,source=HTTP_SOURCE.get()):return await asyncio.to_thread(read,*args)
 
 
 def _plain(value):
@@ -675,7 +675,7 @@ class DefenseAdapter:
                     or "oldest_basis" not in state
                     or context.requested_at >= datetime.fromisoformat(state["next_refresh_at"])
                 )
-                async with context.request_permit():
+                async with source_http_scope(context.request_permit):
                     if e.parser == "calcalist":
                         page = (
                             int(state.get("page", 10) or 10)

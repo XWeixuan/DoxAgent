@@ -48,3 +48,13 @@ Calcalist受控新会话bootstrap200＋真实搜索200，不能再把当前失�
 Collector简化IR路径原来只抛出`IR_HTTP_429`，未将Retry-After持久化到race分支。现在复用现有checkpoint `retry_at`：只暂停被限流lane；健康HTTP保持原发现周期，不把RSS未请求／退避伪装成一次网络成功。
 
 收尾回归120 passed/1 skipped（现有平台分支），另72个共享race/队列/恢复回归通过。两个历史测试mock分别跟上现有PublisherHttpx接口及Scheduler构造器_wake不变量，未为测试改变生产Scheduler。最终发布与30分钟自然窗口另记，先前失败窗口保留。
+
+## 联合准入贯通调用方（最终收尾）
+
+第三版5分钟正式源有效率94.911%，仍未达到稳定目标。失败集中于多feed race；已保存的状态显示Source等待约19–28秒、HTTP准入约21–32秒，实际成功传输可以仅245–1320毫秒。这不是“网络一定要30秒”的证据，而是外层先占Source许可再排全局队列、race15/30秒再提前取消造成的串联排队。
+
+最终修复不再逐站扩大deadline：HTTP调用方统一使用已有`source_http_scope`，Source/host/global在实际传输点联合授予；浏览器transport继续交由原SiteAccess管理。`network_wait`复用于实际Source等待与联合等待；race、Newswire listing也使用同一网络阶段时钟，父Collector45/30秒业务截止保持不变。Newswire已有两个工作槽保留，槽位等待同样不算网络执行。没有额外扩大硬并发或降低频率。
+
+这是“短网络截止→正常等待被取消→反复冷连接/重试→服务时间与排队增大→更多取消”的内部反馈链；坏pool、错误解析和单站真实拒绝是可并存的独立问题，不能把所有失败只归为一种。
+
+271 passed/1 skipped的组合回归覆盖本次贯通，包括真实Source许可在等待全局容量时未被提前占住、Source等待不耗局部网络预算、父截止仍有效。前一版376 passed/1 skipped结果保留在regression.xml，新一版r4-regression.xml独立保存，不以旧版回归冒充最终验证。

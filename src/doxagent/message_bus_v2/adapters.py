@@ -941,7 +941,8 @@ class NewswireRSSAdapter(_BaseAdapter):
         from .http_routes import approved_routes, transport_routes
 
         async def send(proxy):
-            async with context.request_permit():
+            from .publisher_http import source_http_scope
+            async with source_http_scope(context.request_permit):
                 if proxy is None:
                     return await self.client.get(url, headers=headers, timeout=10)
                 client = self._route_clients.get(proxy)

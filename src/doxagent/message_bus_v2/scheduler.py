@@ -103,21 +103,23 @@ class SchedulerGroupLimiter:
         waiting_at = self._clock()
         acquired = False
         try:
-            while True:
-                delay = max(0, self._next_request_at - self._clock())
-                if delay:
-                    await self._sleep(delay)
-                await self._semaphore.acquire()
-                acquired = True
-                async with self._spacing_lock:
-                    delay = self._next_request_at - self._clock()
-                    if delay <= 0:
-                        self._next_request_at = (
-                            self._clock() + self.constraints.minimum_request_gap_seconds
-                        )
-                        break
-                self._semaphore.release()
-                acquired = False
+            from .publisher_http import network_wait
+            with network_wait():
+                while True:
+                    delay = max(0, self._next_request_at - self._clock())
+                    if delay:
+                        await self._sleep(delay)
+                    await self._semaphore.acquire()
+                    acquired = True
+                    async with self._spacing_lock:
+                        delay = self._next_request_at - self._clock()
+                        if delay <= 0:
+                            self._next_request_at = (
+                                self._clock() + self.constraints.minimum_request_gap_seconds
+                            )
+                            break
+                    self._semaphore.release()
+                    acquired = False
             # Persistence must never hold the pacing lock. The scheduler callback
             # only updates an in-memory batch; a caller-supplied awaitable is tracked.
             check_request_allowed()

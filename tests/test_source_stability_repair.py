@@ -204,14 +204,15 @@ async def test_shared_rss_local_network_budget_does_not_include_role_queue(monke
         async def close(self):pass
     @asynccontextmanager
     async def permit():yield
+    limiter=SchedulerGroupLimiter(SchedulerConstraints(max_concurrency=1,minimum_request_gap_seconds=0))
     ctx=SimpleNamespace(source=SimpleNamespace(entry_url='https://publisher.test/rss',content_language='en',default_parameters={}),
-                        request_permit=permit,requested_at=feed_now,window_start=None)
+                        request_permit=limiter.permit,requested_at=feed_now,window_start=None)
     client=PublisherHttpx();client.clients=PublisherClients(factory=Session)
     adapter=SharedFeedAdapter(client,'Publisher');adapter.NETWORK_TIMEOUT_SECONDS=.04
     role=http_budget('collector');n=role._value
     for _ in range(n):await role.acquire()
     task=asyncio.create_task(adapter.poll_shared(ctx));await asyncio.sleep(.08)
-    assert not task.done()
+    assert not task.done() and limiter._semaphore._value==1
     for _ in range(n):role.release()
     assert (await asyncio.wait_for(task,.3)).messages
     await client.aclose();await adapter.close()
@@ -234,3 +235,18 @@ async def test_ir_429_backoff_is_persisted_only_in_its_existing_lane():
     assert again.site_access_deferred_reason=='ir_provider_backoff' and http.fetch.await_count==1
     # Existing race checkpoint merge keeps this debt under RSS, not its HTTP sibling.
     assert not recovery_checkpoint({'http':{'baseline':True}},{'rss':lane})['http'].get('retry_at')
+
+
+@pytest.mark.asyncio
+async def test_network_deadline_excludes_source_capacity_wait_too():
+    from doxagent.message_bus_v2.publisher_http import network_timeout
+    limiter=SchedulerGroupLimiter(SchedulerConstraints(max_concurrency=1,minimum_request_gap_seconds=0))
+    await limiter._semaphore.acquire()
+    async def work():
+        async with network_timeout(.04):
+            async with limiter.permit():await asyncio.sleep(.01)
+    task=asyncio.create_task(work());await asyncio.sleep(.08)
+    assert not task.done()
+    limiter._semaphore.release()
+    await asyncio.wait_for(task,.3)
+    assert limiter._semaphore._value==1

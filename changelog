@@ -2899,3 +2899,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-11 消息源稳定性二层修复：首窗保留未通过结果；新客户端对照证实部分目标/route可达，定位外层12/15秒局部超时仍吞噬准入等待，导致8秒实际执行预算失效。局部网络计时仅在准入等待时暂停，保留Collector45/30秒总截止及原并发/轮询；Defense urllib也采用联合准入，不新增读写/探测守护。将共用算法同步到SiteAccess/BODY，保留Supervisor/Profile。
 
 2026-11-12 消息源稳定性RSS分支收尾：SharedFeed、显式RSS路由和试验Newswire统一网络阶段计时，保留原网络/业务截止；CSE缓存随实际transport generation退休失效，同代复用且新鲜403不无限刷新；Collector IR 429复用现有race lane checkpoint保存Retry-After，健康HTTP继续原周期。无新服务/数据库/抓包/高频写入，未回调轮询间隔。
+
+2026-11-12 联合HTTP准入贯通：正式源第三版5分钟仅94.911%，按失败阶段继续修复多feed串联排队；HTTP调用方复用source_http_scope，在真实传输处原子取得Source/host/global，保留浏览器原治理；Source等待与race/Newswire网络时钟复用network_wait，45/30秒业务总截止、原硬预算及轮询周期不变。新增调用方集成和Source等待回归，271通过/1既有跳过。

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from .publisher_http import network_timeout
+from .publisher_http import network_timeout, source_http_scope, HTTP_SOURCE
 import time
 from dataclasses import dataclass, replace
 from datetime import timedelta
@@ -317,7 +317,7 @@ class TechnologyHttp:
                 if spec.transport == "urllib":
                     from .corporate_ir.http import PublicHttp
                     from .publisher_http import joint_permits
-                    async with joint_permits(self.stdlib_slots, http_budget("collector")):
+                    async with joint_permits(self.stdlib_slots, http_budget("collector"),source=HTTP_SOURCE.get()):
                         result = await StorageLane._execute(PublicHttp._stdlib_read,
                             (url, {"User-Agent": "Mozilla/5.0", **(headers or {})},
                              HTTP_EGRESSES[spec.route]), {})
@@ -496,7 +496,7 @@ class TechnologyAdapter:
                         )
                         if state.get(value)
                     }
-                async with context.request_permit():
+                async with (context.request_permit() if spec.transport == "browser" else source_http_scope(context.request_permit)):
                     capture = await self.http.fetch(url, spec, headers=headers)
                     if capture.status == 304 and not state.get("baseline"):
                         capture = await self.http.fetch(url, spec)

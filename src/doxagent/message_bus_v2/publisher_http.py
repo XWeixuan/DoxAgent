@@ -7,7 +7,7 @@ import logging
 import time
 from contextvars import ContextVar
 from dataclasses import dataclass
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from weakref import WeakKeyDictionary
 
 from curl_cffi import CurlOpt
@@ -46,6 +46,24 @@ async def network_timeout(seconds):
             yield deadline
         finally:
             _NETWORK_TIMEOUTS.reset(token)
+
+
+@contextmanager
+def network_wait():
+    """Only capacity/pacing waits pause local network timers, never business timers."""
+    loop = asyncio.get_running_loop()
+    paused = []
+    for deadline in _NETWORK_TIMEOUTS.get():
+        end = deadline.when()
+        if end is not None and not deadline.expired():
+            paused.append((deadline, max(0, end - loop.time())))
+            deadline.reschedule(None)
+    try:
+        yield
+    finally:
+        for deadline, remaining in paused:
+            if not deadline.expired():
+                deadline.reschedule(loop.time() + remaining)
 
 
 class _JointAdmission:
@@ -103,28 +121,20 @@ async def joint_permits(*slots, source=None):
     admission = _ADMISSIONS.setdefault(loop, _JointAdmission())
     ticket = [slots, source, loop.create_future(), False]
     waiting = time.monotonic()
-    paused = []
-    for deadline in _NETWORK_TIMEOUTS.get():
-        end = deadline.when()
-        if end is not None and not deadline.expired():
-            paused.append((deadline, max(0, end - loop.time())))
-            deadline.reschedule(None)
     http_timing('http_admission')
-    admission.pending.append(ticket)
-    admission.drain()
-    try:
-        await ticket[2]
-    except BaseException:
-        if ticket[3]:
-            admission.release(ticket)
-        else:
-            admission.drain()
-        raise
-    finally:
-        for deadline, remaining in paused:
-            if not deadline.expired():
-                deadline.reschedule(loop.time() + remaining)
-        http_timing('http_admission', time.monotonic() - waiting)
+    with network_wait():
+        admission.pending.append(ticket)
+        admission.drain()
+        try:
+            await ticket[2]
+        except BaseException:
+            if ticket[3]:
+                admission.release(ticket)
+            else:
+                admission.drain()
+            raise
+        finally:
+            http_timing('http_admission', time.monotonic() - waiting)
     try:
         if source and source._on_request:
             source._on_request()

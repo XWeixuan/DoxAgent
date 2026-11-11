@@ -19,7 +19,7 @@ from lxml import html as lxml_html  # type: ignore[import-untyped]
 from doxagent.site_strategy.client import SiteAccessError
 
 from .http_routes import HTTP_EGRESSES, approved_routes, transport_routes
-from .publisher_http import network_timeout
+from .publisher_http import network_timeout, source_http_scope
 from .schema import PollContext, PollResult, RawMessageInput, SharedPollContext
 
 _TAIPEI = ZoneInfo("Asia/Taipei")
@@ -683,7 +683,7 @@ class SharedFeedAdapter:
         ):
             raise ValueError("browser feed fallback is only approved for GlobeNewswire")
         route_used = routes[0] if routes else "legacy"
-        async with context.request_permit():
+        async with (context.request_permit() if browser_fallback else source_http_scope(context.request_permit)):
             # One retry for read-only connection loss; all attempts share a short
             # deadline so an RSS failure cannot occupy the shared collector for minutes.
             async with network_timeout(30 if browser_fallback else self.NETWORK_TIMEOUT_SECONDS) as deadline:

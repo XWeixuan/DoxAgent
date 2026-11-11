@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from .publisher_http import network_timeout
+from .publisher_http import network_timeout, source_http_scope
 import copy
 import json
 import re
@@ -886,7 +886,7 @@ class ListingAdapter:
                         if previous.get(v)
                     }
                 )
-            async with context.request_permit(), network_timeout(PRIMARY_TIMEOUT_SECONDS):
+            async with source_http_scope(context.request_permit), network_timeout(PRIMARY_TIMEOUT_SECONDS):
                 url = recipe.url
                 if recipe.fresh_query:
                     url += (
