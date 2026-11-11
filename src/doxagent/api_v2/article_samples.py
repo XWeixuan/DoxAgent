@@ -3,10 +3,11 @@
 import json
 from datetime import UTC, datetime, timedelta
 
-INDEX_SQL = """CREATE INDEX IF NOT EXISTS current_delivery_discovery ON object_current(
- ticker,source_id,json_extract(payload,'$.first_discovered_at') DESC,id DESC)
- WHERE kind='native:live_deliveries'
- AND json_extract(payload,'$.first_discovered_at') IS NOT NULL"""
+INDEX_SQL = """CREATE TABLE IF NOT EXISTS article_sample_keys(
+ ticker TEXT NOT NULL,id TEXT NOT NULL,source_id TEXT NOT NULL,discovered_at REAL NOT NULL,
+ PRIMARY KEY(ticker,id))"""
+SOURCE_INDEX_SQL = """CREATE INDEX IF NOT EXISTS article_sample_source_time
+ ON article_sample_keys(ticker,source_id,discovered_at DESC,id DESC)"""
 
 
 def select_articles(store, ticker, sources, now=None):
@@ -16,10 +17,9 @@ def select_articles(store, ticker, sources, now=None):
         rows = db.execute(
             """SELECT s.value,d.parent,d.payload,b.payload,m.payload
  FROM json_each(?) s CROSS JOIN object_current d ON d.kind='native:live_deliveries'
- AND d.ticker=? AND d.id IN (SELECT x.id FROM object_current x INDEXED BY current_delivery_discovery
- WHERE x.kind='native:live_deliveries' AND x.ticker=? AND x.source_id=s.value
- AND json_extract(x.payload,'$.first_discovered_at') IS NOT NULL
- ORDER BY json_extract(x.payload,'$.first_discovered_at') DESC,x.id DESC LIMIT 20)
+ AND d.ticker=? AND d.id IN (SELECT x.id FROM article_sample_keys x INDEXED BY article_sample_source_time
+ WHERE x.ticker=? AND x.source_id=s.value
+ ORDER BY x.discovered_at DESC,x.id DESC LIMIT 20)
  LEFT JOIN object_current b ON b.kind='native:article_body_results' AND b.ticker=''
  AND b.id=d.parent
  LEFT JOIN object_current m ON m.kind='message' AND m.ticker=d.ticker

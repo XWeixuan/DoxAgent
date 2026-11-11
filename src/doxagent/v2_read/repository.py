@@ -58,8 +58,9 @@ class ReadStore:
 
     def migrate_article_sample_index(self):
         """Explicit maintenance only; never called on API startup or GET."""
-        from doxagent.api_v2.article_samples import INDEX_SQL
-        with self.connect(write=True) as db: db.execute(INDEX_SQL)
+        from doxagent.api_v2.article_samples import INDEX_SQL, SOURCE_INDEX_SQL
+        with self.connect(write=True) as db:
+            db.execute(INDEX_SQL);db.execute(SOURCE_INDEX_SQL)
 
     def migrate_projection_indexes(self):
         """Explicit worker release migration, never DDL inside an HTTP read."""
@@ -341,8 +342,8 @@ class ReadStore:
                 db.execute("INSERT INTO read_meta VALUES('event_sort_v1','1')")
             db.execute("INSERT OR IGNORE INTO object_current SELECT * FROM objects WHERE valid_to IS NULL")
             if not existing:
-                from doxagent.api_v2.article_samples import INDEX_SQL
-                db.execute(INDEX_SQL)
+                from doxagent.api_v2.article_samples import INDEX_SQL, SOURCE_INDEX_SQL
+                db.execute(INDEX_SQL);db.execute(SOURCE_INDEX_SQL)
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('highwater',?)", (str(db.execute("SELECT coalesce(max(seq),0) FROM commits").fetchone()[0]),))
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('retained_floor','0')")
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('first_at',?)", (db.execute("SELECT coalesce(min(at),'') FROM commits").fetchone()[0],))
@@ -521,6 +522,15 @@ class ReadStore:
                     old is not None and previous == comparable and tuple(old)[1:] == metadata
                 ):
                     continue
+                if kind == 'native:live_deliveries':
+                    if payload is None:
+                        db.execute('DELETE FROM article_sample_keys WHERE ticker=? AND id=?',(ticker,identity))
+                    elif payload.get('first_discovered_at'):
+                        found = datetime.fromisoformat(payload['first_discovered_at']).timestamp()
+                        db.execute("INSERT INTO article_sample_keys VALUES(?,?,?,?) ON CONFLICT(ticker,id) "
+                                   "DO UPDATE SET source_id=excluded.source_id,discovered_at=excluded.discovered_at "
+                                   "WHERE source_id!=excluded.source_id OR discovered_at!=excluded.discovered_at",
+                                   (ticker,identity,record['source_id'],found))
                 mutated = True
                 allocate()
                 if kind == "graph_case":
@@ -647,6 +657,15 @@ class ReadStore:
                 retire_rows = base in folded_bases and not virtual and old_values
                 if previous == expected and not retire_rows:
                     continue
+                if kind == 'native:live_deliveries':
+                    if payload is None:
+                        db.execute('DELETE FROM article_sample_keys WHERE ticker=? AND id=?',(ticker,identity))
+                    elif payload.get('first_discovered_at'):
+                        found = datetime.fromisoformat(payload['first_discovered_at']).timestamp()
+                        db.execute("INSERT INTO article_sample_keys VALUES(?,?,?,?) ON CONFLICT(ticker,id) "
+                                   "DO UPDATE SET source_id=excluded.source_id,discovered_at=excluded.discovered_at "
+                                   "WHERE source_id!=excluded.source_id OR discovered_at!=excluded.discovered_at",
+                                   (ticker,identity,record['source_id'],found))
                 mutated = True
                 allocate()
                 for (day, dimensions), amount in previous.items():
