@@ -1381,6 +1381,8 @@ class CodexW3AgentRunner:
             provider=self._model_provider,
             override=self._execution_model_override,
         )
+        if phase == OPERATIONS_PHASE:
+            profile = execution_profile(case, phase=phase, provider=self._model_provider)
         if batch:
             if phase != "w3_template":
                 files[f"{case_root}/audit/w3_identity.json"] = json.dumps(

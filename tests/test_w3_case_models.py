@@ -94,7 +94,7 @@ def test_all_worker_phases_use_the_frozen_case_profile(tmp_path, kind, model, ef
                 payload={},
                 context=context,
             )
-        assert [(r.model, r.effort) for r in worker.requests] == [(model, effort)] * 3
+        assert [(r.model, r.effort) for r in worker.requests] == [(model, effort)] * 2 + [('gpt-6-luna', 'max')]
         # Later policy reassessment does not switch the second phase's model.
         case.w2_final = case.w2_final.model_copy(update={"policy_hit": kind != "HIT"})
         assert freeze_case_profile(case)["model"] == model
@@ -185,7 +185,18 @@ def test_v5_worker_parses_flat_direction_and_policy_free_operations(tmp_path):
                 assert result.decision == 'SHORT'
                 assert set(worker.requests[-1].output_schema['properties']) == {'decision','reason','prior_expectation','expectation_delta'}
             else:
+                assert worker.requests[-1].model == 'gpt-6-luna'
+                assert worker.requests[-1].effort == 'max'
                 assert not hasattr(result, 'policy')
                 assert 'policy' not in worker.requests[-1].output_schema['properties']
     finally:
         runner.close()
+import pytest
+@pytest.mark.parametrize('model', ['gpt-6.1-sol','gpt-6-luna'])
+def test_operations_profile_is_independent_of_trade(model):
+    case, _ = fixture_case()
+    case.frozen_inputs['w3_execution_profile'] = dict(model=model, effort='medium', provider=None)
+    original = dict(case.frozen_inputs['w3_execution_profile'])
+    assert execution_profile(case, phase='post_decision_operations') == dict(model='gpt-6-luna',effort='max',provider=None)
+    assert execution_profile(case, phase='trade_decision') == original
+    assert case.frozen_inputs['w3_execution_profile'] == original

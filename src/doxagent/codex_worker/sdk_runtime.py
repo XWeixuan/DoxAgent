@@ -444,8 +444,8 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
         if request.node == CodexPersistentRuntimeNode.W3:
-            # W3's Policy routes retain Sol/default; only Luna uses Fast.
-            luna_fast = execution_model == "gpt-6-luna"
+            # Operations is standard-tier even when resuming a Fast Trade thread.
+            luna_fast = execution_model == "gpt-6-luna" and request.task_phase != "post_decision_operations"
             sdk_config["service_tier"] = "fast" if luna_fast else "default"
             sdk_config["features.fast_mode"] = luna_fast
         if request.node in {

@@ -18,7 +18,10 @@ def freeze_case_profile(case, *, provider=None):
     return dict(saved)
 
 
-def execution_profile(case, *, model="gpt-6-luna", effort="max", provider=None, override=None):
+def execution_profile(case, *, model="gpt-6-luna", effort="max", provider=None, override=None, phase=None):
+    if phase == "post_decision_operations":
+        saved = case.frozen_inputs.get("w3_execution_profile") or {}
+        return dict(model="gpt-6-luna", effort="max", provider=saved.get("provider", provider))
     saved = case.frozen_inputs.get("w3_execution_profile")
     if saved is not None:
         return dict(saved)
