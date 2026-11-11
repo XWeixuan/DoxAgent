@@ -7739,6 +7739,15 @@
     "RuntimeMetrics": {
       "type": "object",
       "properties": {
+        "related_cases": {
+          "$ref": "#/$defs/Metric"
+        },
+        "long_w3_cases": {
+          "$ref": "#/$defs/Metric"
+        },
+        "non_model_mean_seconds": {
+          "$ref": "#/$defs/Metric"
+        },
         "processed_cases": {
           "$ref": "#/$defs/Metric"
         },
