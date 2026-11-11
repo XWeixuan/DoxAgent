@@ -438,6 +438,16 @@ class PublisherClients:
                     if client.retired and not client.active:
                         self._close_later(client)
 
+    def retire(self, key, expected):
+        """Retire an idle generation only; never overlap its active host leases."""
+        if self.injected is not None or expected is None or self.clients.get(key) is not expected or expected.active:
+            return False
+        self.clients.pop(key)
+        expected.retired = True
+        if not expected.active:
+            self._close_later(expected)
+        return True
+
     async def close_idle(self, seconds=180):
         for key, client in list(self.clients.items()):
             if not client.active and time.monotonic() - client.used_at > seconds:

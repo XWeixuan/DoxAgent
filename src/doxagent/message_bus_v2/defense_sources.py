@@ -559,6 +559,9 @@ class DefenseAdapter:
         self.http = http or DefenseHttp()
         self.cse = None
         self.cse_owner = None
+        self.cse_good_owner = None
+        self.cse_context_repair_after = 0.0
+        self.cse_context_resets = 0
         self.cse_lock = asyncio.Lock()
 
     async def close(self):
@@ -569,27 +572,35 @@ class DefenseAdapter:
         return clients.get((endpoint.host, endpoint.route))
 
     async def _search(self, e, query, start=0):
-        for attempt in range(2):
-            async with self.cse_lock:
-                if self.cse_owner is not None and self._cse_transport_owner(e) is not self.cse_owner:
-                    self.cse = None  # Request-bound token cannot outlive its transport/cookies.
-                if self.cse is None or self.cse[0] < time.monotonic():
-                    cx = "partner-pub-0047680307646695:9309925491"
-                    r = await self.http.fetch(
-                        "https://cse.google.com/cse.js?" + urlencode({"cx": cx}), e
-                    )
-                    if r.status != 200:
-                        raise RuntimeError(f"calcalist_cse_bootstrap_http_{r.status}")
-                    fields = {}
-                    for name in ("cse_token", "cselibVersion"):
-                        found = re.search(r'"' + name + r'"\s*:\s*"([^"\\]+)"', r.text)
-                        if not found:
-                            raise ValueError("calcalist_cse_bootstrap_contract_changed")
-                        fields[name] = found[1]
-                    self.cse = (time.monotonic() + 300, fields)
-                    self.cse_owner = self._cse_transport_owner(e)
-                token_expires_at, fields = self.cse
-                token_owner = self.cse_owner
+        # Negotiate and use a request-bound token on one coherent HTTP context.
+        # L1/Tail work retains its cadence; only this tiny CSE session is serial.
+        async with self.cse_lock:
+            return await self._search_serial(e, query, start)
+
+    async def _search_serial(self, e, query, start=0):
+        from .scheduler import POLL_TIMINGS
+        timing = POLL_TIMINGS.get()
+        if timing is not None:timing['cse_context_resets_total'] = self.cse_context_resets
+        for attempt in range(3):
+            if self.cse_owner is not None and self._cse_transport_owner(e) is not self.cse_owner:
+                self.cse = None  # Request-bound token cannot outlive its transport/cookies.
+            if self.cse is None or self.cse[0] < time.monotonic():
+                cx = "partner-pub-0047680307646695:9309925491"
+                r = await self.http.fetch(
+                    "https://cse.google.com/cse.js?" + urlencode({"cx": cx}), e
+                )
+                if r.status != 200:
+                    raise RuntimeError(f"calcalist_cse_bootstrap_http_{r.status}")
+                fields = {}
+                for name in ("cse_token", "cselibVersion"):
+                    found = re.search(r'"' + name + r'"\s*:\s*"([^"\\]+)"', r.text)
+                    if not found:
+                        raise ValueError("calcalist_cse_bootstrap_contract_changed")
+                    fields[name] = found[1]
+                self.cse = (time.monotonic() + 300, fields)
+                self.cse_owner = self._cse_transport_owner(e)
+            token_expires_at, fields = self.cse
+            token_owner = self.cse_owner
             params = {
                 "rsz": "filtered_cse",
                 "num": "10",
@@ -617,14 +628,29 @@ class DefenseAdapter:
                 # the same route; a fresh-token refusal remains a real error.
                 aged = token_expires_at - time.monotonic() <= 240
                 changed = token_owner is not None and self._cse_transport_owner(e) is not token_owner
+                known_good = token_owner is not None and self.cse_good_owner is token_owner
+                repair_due = known_good and time.monotonic() >= self.cse_context_repair_after
                 if attempt == 0 and (_cse_token_invalid(capture.text) or
-                                     (capture.status == 403 and (aged or changed))):
-                    async with self.cse_lock:
-                        if self.cse and self.cse[1] is fields:
-                            self.cse = None
+                                     (capture.status == 403 and (aged or changed or repair_due))):
+                    if self.cse and self.cse[1] is fields:
+                        self.cse = None
                     continue
+                # A previously successful context may retain stale request-bound
+                # state even after token refresh. One same-route generation repair
+                # is allowed after fresh-token refusal; a new-context denial fails.
+                if capture.status == 403 and attempt == 1 and repair_due:
+                    clients = getattr(self.http, 'clients', None)
+                    retire = getattr(clients, 'retire', None)
+                    if (retire and time.monotonic() >= self.cse_context_repair_after
+                        and retire((e.host, e.route), token_owner)):
+                        self.cse_context_repair_after = time.monotonic() + 300
+                        self.cse_context_resets += 1
+                        self.cse = None
+                        if timing is not None:timing['cse_context_resets_total'] = self.cse_context_resets
+                        continue
                 raise RuntimeError(f"calcalist_search_http_{capture.status}")
             capture.cse_token_refreshed = bool(attempt)
+            self.cse_good_owner = token_owner
             return capture
 
     async def poll(self, context: PollContext):

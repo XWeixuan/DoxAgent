@@ -271,10 +271,11 @@ async def test_host_wait_never_holds_global_slot_or_consumes_network_timer():
     client = DefenseHttp()
     client.clients=PublisherClients(factory=Session)
     e = ENDPOINTS["defensescoop_space"]
+    role_capacity = http_budget('collector')._value
     tasks = [asyncio.create_task(client.fetch(e.urls[0], e)) for _ in range(5)]
     try:
         await asyncio.wait_for(entered.wait(),1)
-        assert http_budget('collector')._value==3  # only the two actual sends hold capacity
+        assert http_budget('collector')._value==role_capacity-2  # only actual sends hold capacity
         assert active==2
     finally:
         release.set()

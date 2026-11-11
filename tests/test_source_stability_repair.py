@@ -359,3 +359,111 @@ async def test_test_lane_cannot_occupy_production_reserve_and_total_is_unchanged
         assert test_budget._value==1 and source._semaphore._value==2
     finally:
         release.set();await asyncio.gather(*tasks,return_exceptions=True);await client.close()
+
+
+@pytest.mark.asyncio
+async def test_digitimes_canonical_redirect_is_once_and_foreign_or_login_is_rejected():
+    from doxagent.message_bus_v2.industry_sources import IndustryListingAdapter
+    from tests.test_message_bus_industry_sources import NOW as industry_now
+    from doxagent.message_bus_v2.poll_trace import request_started
+    class Browser:
+        def __init__(self,location):self.location=location;self.calls=[]
+        async def get(self,url,**options):
+            self.calls.append((url,options))
+            status=302 if len(self.calls)==1 else 200
+            e=request_started('GET',url,admitted=True)
+            if e is not None:e.update(status_code=status,response_received_at=industry_now.isoformat())
+            return status,url,{'location':self.location},"""<div class="more-news"><div class="date">Oct 29, 21:00</div>
+            <a class="title" href="/news/a20261029VL201/chip-manufacturing.html">Chip announcement</a></div>"""
+    @asynccontextmanager
+    async def permit():yield
+    ctx=SimpleNamespace(run_id='redirect',requested_at=industry_now,window_start=None,request_permit=permit)
+    url='https://www.digitimes.com/topic/semiconductors/'
+    events=[];token=REQUESTS.set(events)
+    try:
+        browser=Browser('/topic/semiconductors')
+        result=await IndustryListingAdapter(browser,'digitimes')._get(ctx,url)
+        assert result.messages and result.acquisition_metadata['canonical_redirects']==1
+        assert result.acquisition_metadata['validated_request_ids']==[events[1]['physical_request_id']]
+        assert len(browser.calls)==2 and browser.calls[0][1]['operation_id']!=browser.calls[1][1]['operation_id']
+        for target in ['https://foreign.test/topic/semiconductors','/login','http://www.digitimes.com/topic/semiconductors']:
+            browser=Browser(target)
+            with pytest.raises(RuntimeError,match='publisher listing HTTP 302'):
+                await IndustryListingAdapter(browser,'digitimes')._get(ctx,url)
+            assert len(browser.calls)==1
+    finally:REQUESTS.reset(token)
+
+
+@pytest.mark.asyncio
+async def test_cse_fresh_token_refusal_repairs_only_previously_good_context_once():
+    from doxagent.message_bus_v2.defense_sources import DefenseAdapter,ENDPOINTS,Capture
+    e=ENDPOINTS['calcalist_search'];old,new=object(),object()
+    key=(e.host,e.route);owners={key:old};retired=[]
+    def retire(k,expected):
+        if owners.get(k) is not expected:return False
+        owners[k]=new;retired.append(expected);return True
+    boot=Capture(200,e.urls[0],'{"cse_token":"token", "cselibVersion":"version"}',{})
+    ok=Capture(200,e.urls[0],'{"results":[]}',{});bad=Capture(403,e.urls[0],'Forbidden',{})
+    http=SimpleNamespace(clients=SimpleNamespace(clients=owners,retire=retire),
+        fetch=AsyncMock(side_effect=[boot,ok,bad,boot,bad,boot,ok,bad]))
+    adapter=DefenseAdapter(http)
+    assert (await adapter._search(e,'Ondas')).status==200
+    assert (await adapter._search(e,'Ondas')).status==200
+    assert retired==[old] and adapter.cse_owner is new
+    with pytest.raises(RuntimeError,match='calcalist_search_http_403'):
+        await adapter._search(e,'Ondas')
+    assert retired==[old] and http.fetch.await_count==8  # Cooldown adds no new bootstrap.
+
+
+@pytest.mark.asyncio
+async def test_new_cse_context_refusal_does_not_churn_transports():
+    from doxagent.message_bus_v2.defense_sources import DefenseAdapter,ENDPOINTS,Capture
+    e=ENDPOINTS['calcalist_search'];owner=object();retire=AsyncMock()
+    boot=Capture(200,e.urls[0],'{"cse_token":"token", "cselibVersion":"version"}',{})
+    bad=Capture(403,e.urls[0],'Forbidden',{})
+    http=SimpleNamespace(clients=SimpleNamespace(clients={(e.host,e.route):owner},retire=retire),
+        fetch=AsyncMock(side_effect=[boot,bad]))
+    with pytest.raises(RuntimeError,match='calcalist_search_http_403'):
+        await DefenseAdapter(http)._search(e,'Ondas')
+    assert not retire.called and http.fetch.await_count==2
+
+
+@pytest.mark.asyncio
+async def test_explicit_context_retirement_waits_for_idle_and_is_owner_fenced():
+    from doxagent.message_bus_v2.publisher_http import PublisherClients
+    entered=asyncio.Event();release=asyncio.Event();made=[]
+    class Session:
+        broken=False;closed=False
+        def __init__(self):self.index=len(made);made.append(self)
+        async def request(self,*args,**kwargs):
+            if self.index==0:entered.set();await release.wait()
+            return 'ok'
+        async def close(self):self.closed=True
+    client=PublisherClients(factory=Session)
+    task=asyncio.create_task(client.request('old','GET','https://example.test/'))
+    await entered.wait();old=client.clients['old']
+    assert not client.retire('old',old) and not made[0].closed
+    await client.request('healthy','GET','https://healthy.test/')
+    release.set();await task
+    assert client.retire('old',old)
+    await client.request('old','GET','https://example.test/')
+    assert client.clients['old'] is not old and not client.retire('old',old)
+    await asyncio.sleep(0)
+    assert made[0].closed and not made[1].closed
+    await client.close()
+
+@pytest.mark.asyncio
+async def test_cse_negotiation_and_search_share_a_serial_context():
+    from doxagent.message_bus_v2.defense_sources import DefenseAdapter,ENDPOINTS,Capture
+    e=ENDPOINTS['calcalist_search'];active=0;peak=0;bootstraps=0
+    async def fetch(url,*args,**kwargs):
+        nonlocal active,peak,bootstraps
+        if '/cse.js' in url:
+            bootstraps+=1;await asyncio.sleep(.01)
+            return Capture(200,url,'{"cse_token":"token", "cselibVersion":"version"}',{})
+        active+=1;peak=max(peak,active)
+        try:await asyncio.sleep(.01);return Capture(200,url,'{"results":[]}',{})
+        finally:active-=1
+    adapter=DefenseAdapter(SimpleNamespace(fetch=fetch))
+    results=await asyncio.gather(*(adapter._search(e,q) for q in ['ONDS','A','B']))
+    assert all(r.status==200 for r in results) and peak==1 and bootstraps==1

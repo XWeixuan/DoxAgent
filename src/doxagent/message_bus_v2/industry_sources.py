@@ -466,24 +466,44 @@ class IndustryListingAdapter:
             raise RuntimeError("publisher listing requires Site Access browser")
         try:
             run_id = context.poll_run_id if isinstance(context, PollContext) else context.run_id
-            async with context.request_permit():
-                recipe_options = (
-                    {"recipe_ref": "builtin:barrons_ticker@1"} if self.variant == "barrons" else {}
-                )
-                if self.variant == "digitimes":
-                    from doxagent.site_strategy.schema import AccessMode
-                    recipe_options["mode"] = AccessMode.HTTP_PUBLIC
-                if self.variant == "barrons" and isinstance(context, PollContext):
-                    channel = {"HEAD":"Barrons", "OTHER_HEAD":"BarronsDowJonesNetwork"}.get(
-                        context.acquisition_unit)
-                    if channel:
-                        recipe_options["recipe_parameters"] = {"channel":channel}
-                status, final_url, _headers, html = await self.browser.get(
-                    url,
-                    operation_id=f"{run_id}:{self.variant}",
-                    remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
-                    **recipe_options,
-                )
+            from .poll_trace import REQUESTS
+            events = REQUESTS.get()
+            event_offset = len(events or [])
+            original_url = url
+            canonical_redirects = 0
+            for hop in range(2):
+                async with context.request_permit():
+                    recipe_options = (
+                        {"recipe_ref": "builtin:barrons_ticker@1"} if self.variant == "barrons" else {}
+                    )
+                    if self.variant == "digitimes":
+                        from doxagent.site_strategy.schema import AccessMode
+                        recipe_options["mode"] = AccessMode.HTTP_PUBLIC
+                    if self.variant == "barrons" and isinstance(context, PollContext):
+                        channel = {"HEAD":"Barrons", "OTHER_HEAD":"BarronsDowJonesNetwork"}.get(
+                            context.acquisition_unit)
+                        if channel:
+                            recipe_options["recipe_parameters"] = {"channel":channel}
+                    status, final_url, _headers, html = await self.browser.get(
+                        url,
+                        operation_id=f"{run_id}:{self.variant}" + (":canonical" if hop else ""),
+                        remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                        **recipe_options,
+                    )
+                if self.variant != 'digitimes' or status not in {301,302,303,307,308} or hop:
+                    break
+                target = urljoin(final_url, _headers.get('location') or _headers.get('Location') or '')
+                parsed, origin = urlparse(target), urlparse(original_url)
+                if (not (_headers.get('location') or _headers.get('Location'))
+                    or parsed.scheme != 'https' or parsed.hostname != origin.hostname
+                    or parsed.port not in (None,443) or parsed.username or parsed.password
+                    or parsed.path.rstrip('/') != origin.path.rstrip('/')):
+                    break
+                url = target
+                canonical_redirects += 1
+                from .scheduler import POLL_TIMINGS
+                timing = POLL_TIMINGS.get()
+                if timing is not None:timing['publisher_canonical_redirects'] = canonical_redirects
         except SiteAccessError as exc:
             if exc.site_access_deferred:
                 return PollResult(
@@ -494,7 +514,8 @@ class IndustryListingAdapter:
                 )
             raise
         if status != 200 or urlparse(final_url).hostname != urlparse(url).hostname:
-            raise RuntimeError(f"publisher listing HTTP {status} or redirect")
+            location = urlparse(urljoin(final_url, _headers.get("location") or _headers.get("Location") or ""))
+            raise RuntimeError(f"publisher listing HTTP {status} or redirect to {location.hostname}{location.path[:120]}")
         now = context.requested_at
         if self.variant == "barrons":
             assert isinstance(context, PollContext)
@@ -510,6 +531,10 @@ class IndustryListingAdapter:
             window_coverage="PARTIAL" if context.window_start else "COMPLETE",
             acquisition_metadata={
                 "listing_url": url,
+                "canonical_redirects": canonical_redirects,
+                **({"validated_request_ids": [e["physical_request_id"] for e in events[event_offset:]
+                    if e.get("status_code")==200 and e.get("role", "listing")=="listing"]}
+                   if canonical_redirects and events is not None else {}),
                 "listing_variant": (
                     "trendforce_press" if "/presscenter/news" in url else self.variant
                 ),
