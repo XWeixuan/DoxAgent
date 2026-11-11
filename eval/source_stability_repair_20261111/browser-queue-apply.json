@@ -1,0 +1,1 @@
+{"at": "2026-11-11T17:49:24.007711+00:00", "changes": [{"site_id": "investing", "old_revision": 17, "old_queue_ms": 3000, "queue_ms": 8000, "applied": true, "new_revision": 18}, {"site_id": "investorshub", "old_revision": 15, "old_queue_ms": 3000, "queue_ms": 8000, "applied": true, "new_revision": 16}], "only_queue_policy": true}

@@ -1,0 +1,132 @@
+{
+  "since": "2026-11-11T18:33:45.641277+00:00",
+  "until": "2026-11-11T19:04:09.953015+00:00",
+  "before_formal": {
+    "counts": {
+      "CAPTURED": 7980,
+      "FAILED": 1463,
+      "DISPATCHED": 1
+    },
+    "completed": 9443,
+    "success_pct": 84.507
+  },
+  "after_formal": {
+    "counts": {
+      "CAPTURED": 23471,
+      "FAILED": 88,
+      "DISPATCHED": 1
+    },
+    "completed": 23559,
+    "success_pct": 99.626
+  },
+  "before_test": {
+    "counts": {
+      "FAILED": 189,
+      "CAPTURED": 86
+    },
+    "completed": 275,
+    "success_pct": 31.273
+  },
+  "after_test": {
+    "counts": {
+      "CAPTURED": 789,
+      "FAILED": 1
+    },
+    "completed": 790,
+    "success_pct": 99.873
+  },
+  "blocked_scopes": [],
+  "current_bad_units": [
+    {
+      "source_id": "defensescoop_drones",
+      "ticker": "ONDS",
+      "unit": "FEED:3e7ad1dabf2ec5b4b61c9c0c",
+      "status": "failed",
+      "error": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+      "last_success_at": "2026-11-11T18:59:43.943038+00:00"
+    },
+    {
+      "source_id": "defensescoop_drones",
+      "ticker": "ONDS",
+      "unit": "FEED:27cdf1757342a7b11cdfb4c3",
+      "status": "failed",
+      "error": "HTTP_LISTING_FAILED_RSS_FALLBACK",
+      "last_success_at": "2026-11-11T18:59:52.119276+00:00"
+    }
+  ],
+  "interval_drift": [],
+  "supplement_proofs": {
+    "quantum_zeitgeist": {
+      "both_pages": 29,
+      "head_only": 1
+    },
+    "technews_hardware": {
+      "both_pages": 178,
+      "head_only": 1
+    }
+  },
+  "body": [
+    {
+      "final_site_id": "fool",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 31
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "PARTIAL",
+      "reason": "subscription_required",
+      "n": 10
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "SHORT_FULL",
+      "reason": null,
+      "n": 2
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "http_401",
+      "n": 7
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "render_required",
+      "n": 6
+    },
+    {
+      "final_site_id": "investing",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1
+    },
+    {
+      "final_site_id": "yahoo_finance",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 2
+    }
+  ],
+  "resources": {
+    "disk_free": 24391569408,
+    "psi": {
+      "cpu": "some avg10=37.94 avg60=35.72 avg300=37.85 total=57692739215\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n",
+      "io": "some avg10=1.98 avg60=2.84 avg300=3.18 total=11415155462\nfull avg10=0.62 avg60=0.91 avg300=0.93 total=4915200180\n",
+      "memory": "some avg10=0.00 avg60=0.06 avg300=0.05 total=1257180378\nfull avg10=0.00 avg60=0.04 avg300=0.04 total=971627063\n"
+    },
+    "meminfo": {
+      "MemAvailable": "14470160 kB",
+      "SwapFree": "896 kB"
+    },
+    "acquisition_bytes": 14301564928,
+    "wal_bytes": 4140632
+  }
+}
