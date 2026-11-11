@@ -1,0 +1,96 @@
+{
+  "start": "2026-11-11T22:29:09.080191+00:00",
+  "end": "2026-11-11T22:34:09.086256+00:00",
+  "samples": 11,
+  "probe_ms_max": 146.63582100183703,
+  "sources": {
+    "runtime": {
+      "start": {
+        "checkpoint": 4503877,
+        "head": 4503877,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "end": {
+        "checkpoint": 4503893,
+        "head": 4503893,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "arrival_per_s": 0.053332255132908735,
+      "coordinate_consumption_per_s": 0.053332255132908735,
+      "net_backlog_change": 0,
+      "max_oldest_hot_age_s": 0,
+      "sampled_mutation_delay_p50": 2.486962,
+      "sampled_mutation_delay_p95": 327.280886,
+      "sampled_mutation_delay_p99": 327.494251,
+      "sampled_mutation_n": 50
+    },
+    "bus": {
+      "start": {
+        "checkpoint": 11181232,
+        "head": 11181232,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "end": {
+        "checkpoint": 11181887,
+        "head": 11181887,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "arrival_per_s": 2.1832891945034514,
+      "coordinate_consumption_per_s": 2.1832891945034514,
+      "net_backlog_change": 0,
+      "max_oldest_hot_age_s": 0.820685,
+      "sampled_mutation_delay_p50": 1.174287,
+      "sampled_mutation_delay_p95": 4.348002,
+      "sampled_mutation_delay_p99": 4.348002,
+      "sampled_mutation_n": 15
+    },
+    "research": {
+      "start": {
+        "checkpoint": 48154,
+        "head": 48154,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "end": {
+        "checkpoint": 48154,
+        "head": 48154,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "arrival_per_s": 0.0,
+      "coordinate_consumption_per_s": 0.0,
+      "net_backlog_change": 0,
+      "max_oldest_hot_age_s": 0,
+      "sampled_mutation_delay_p50": null,
+      "sampled_mutation_delay_p95": null,
+      "sampled_mutation_delay_p99": null,
+      "sampled_mutation_n": 0
+    },
+    "initialization": {
+      "start": {
+        "checkpoint": 156812,
+        "head": 156812,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "end": {
+        "checkpoint": 156812,
+        "head": 156812,
+        "coordinate_distance": 0,
+        "next_hot": null
+      },
+      "arrival_per_s": 0.0,
+      "coordinate_consumption_per_s": 0.0,
+      "net_backlog_change": 0,
+      "max_oldest_hot_age_s": 0,
+      "sampled_mutation_delay_p50": null,
+      "sampled_mutation_delay_p95": null,
+      "sampled_mutation_delay_p99": null,
+      "sampled_mutation_n": 0
+    }
+  }
+}

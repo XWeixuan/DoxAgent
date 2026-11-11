@@ -1,0 +1,9 @@
+{
+  "core_regressions": "51 passed",
+  "expanded_regressions": "66 passed, 1 pre-existing initialization failure reproduced on unchanged baseline",
+  "additional_preexisting_failure": "PnL FIFO remaining_qty assertion before projector; reproduced on unchanged baseline",
+  "new_regressions": "6 cases including restart paging and prior ACK floor, passed in final focused collection",
+  "readonly_event_comparison": 400,
+  "case_reconciliation": 50,
+  "application_commit": "fbef70f7ce82ffbb31794159bf7d4cff66ae0dbe"
+}

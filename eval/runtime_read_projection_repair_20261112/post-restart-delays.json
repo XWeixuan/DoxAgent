@@ -1,0 +1,14 @@
+{
+  "runtime": {
+    "post_restart_unique_mutations": 29,
+    "p50": 1.210617,
+    "p95": 2.679304,
+    "p99": 2.802826
+  },
+  "bus": {
+    "post_restart_unique_mutations": 7,
+    "p50": 0.798969,
+    "p95": 1.850075,
+    "p99": 1.850075
+  }
+}

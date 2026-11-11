@@ -1,0 +1,52 @@
+{
+  "start": "2026-11-11T22:29:19.256464+00:00",
+  "end": "2026-11-11T22:34:19.307582+00:00",
+  "roles": {
+    "doxagent-v2-v2-projector-1": {
+      "cpu_cores_mean": 0.20122692560672278,
+      "cpu_cores_p95_15s": 0.29861649373865956,
+      "block_read_MiB_s": 0.017588148930009987,
+      "block_write_MiB_s": 0.050889766223100694,
+      "block_write_p95_15s_MiB_s": 0.05519634836622475,
+      "memory_current_max_MiB": 106.328125
+    },
+    "doxagent-v2-v2-maintenance-1": {
+      "cpu_cores_mean": 0.051144911914642495,
+      "cpu_cores_p95_15s": 0.06680211325471191,
+      "block_read_MiB_s": 1.171219702804107,
+      "block_write_MiB_s": 5.736639702338986,
+      "block_write_p95_15s_MiB_s": 8.085428315640824,
+      "memory_current_max_MiB": 719.66796875
+    },
+    "doxagent-v2-v2-scheduler-1": {
+      "cpu_cores_mean": 0.7818168169598356,
+      "cpu_cores_p95_15s": 0.856676160886702,
+      "block_read_MiB_s": 0.17592054514524424,
+      "block_write_MiB_s": 0.13471662851794475,
+      "block_write_p95_15s_MiB_s": 0.1611737513488811,
+      "memory_current_max_MiB": 1680.69921875
+    },
+    "doxagent-v2-v2-transport-maintenance-1": {
+      "cpu_cores_mean": 0.06207160341258919,
+      "cpu_cores_p95_15s": 0.07224040398303877,
+      "block_read_MiB_s": 0.6403986928320661,
+      "block_write_MiB_s": 0.004986129563429922,
+      "block_write_p95_15s_MiB_s": 0.014060493098951677,
+      "memory_current_max_MiB": 633.8828125
+    }
+  },
+  "host": {
+    "cpu_busy_mean_pct": 77.68295403945768,
+    "cpu_busy_p95_pct": 83.73387300784213,
+    "iowait_mean_pct": 1.7131529704202946,
+    "disk_util_mean_pct": 21.391369018996798,
+    "disk_util_p95_pct": 27.902684023567037,
+    "write_await_p95_ms": 1.5727938395957235,
+    "read_await_p95_ms": 0.9149462232661639,
+    "memavailable_min_MiB": 10665.08203125,
+    "swapin_MiB": 0.38671875,
+    "swapout_MiB": 0.0,
+    "cpu_psi_some_avg60_max": 31.42,
+    "io_psi_some_avg60_max": 6.2
+  }
+}

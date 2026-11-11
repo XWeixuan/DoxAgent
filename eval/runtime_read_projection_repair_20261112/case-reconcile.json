@@ -1,0 +1,1 @@
+{"at": "2026-11-11T22:31:37.942670+00:00", "checkpoint": 4503893, "checked_cases": 50, "mismatches": [], "gaps": [{"source": "runtime", "reason": "PROVENANCE_UNVERIFIED", "n": 66}, {"source": "runtime", "reason": "ValueError", "n": 17138}]}
