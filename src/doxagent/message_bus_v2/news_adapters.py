@@ -636,7 +636,8 @@ class GoogleNewsSearchRssAdapter:
         url = "https://news.google.com/rss/search?" + urlencode(
             {"q": query, "hl": region[0], "gl": region[1], "ceid": region[2]}
         )
-        async with context.request_permit():
+        from .publisher_http import source_http_scope
+        async with source_http_scope(context.request_permit):
             response = await self.client.get(
                 url, headers={"User-Agent": self.settings.monitoring_rss_user_agent}
             )

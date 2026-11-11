@@ -2901,3 +2901,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-12 消息源稳定性RSS分支收尾：SharedFeed、显式RSS路由和试验Newswire统一网络阶段计时，保留原网络/业务截止；CSE缓存随实际transport generation退休失效，同代复用且新鲜403不无限刷新；Collector IR 429复用现有race lane checkpoint保存Retry-After，健康HTTP继续原周期。无新服务/数据库/抓包/高频写入，未回调轮询间隔。
 
 2026-11-12 联合HTTP准入贯通：正式源第三版5分钟仅94.911%，按失败阶段继续修复多feed串联排队；HTTP调用方复用source_http_scope，在真实传输处原子取得Source/host/global，保留浏览器原治理；Source等待与race/Newswire网络时钟复用network_wait，45/30秒业务总截止、原硬预算及轮询周期不变。新增调用方集成和Source等待回归，271通过/1既有跳过。
+
+- 2026-11-12 [source-stability-r5] Bound supplemental-page wall-clock admission before the unchanged Collector deadline so a committed head returns PARTIAL with retained coverage debt; join Google RSS source admission and Newswire local/source/role permits atomically, preserving all configured polling periods and hard capacities. Added cancellation/permit and delayed-supplement regressions; no new persistent telemetry or browser identity changes.

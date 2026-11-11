@@ -250,3 +250,45 @@ async def test_network_deadline_excludes_source_capacity_wait_too():
     limiter._semaphore.release()
     await asyncio.wait_for(task,.3)
     assert limiter._semaphore._value==1
+
+@pytest.mark.asyncio
+async def test_local_adapter_capacity_is_joint_with_role_and_source():
+    from doxagent.message_bus_v2.publisher_http import PublisherClients,source_http_scope
+    class Session:
+        broken=False
+        async def request(self,*args,**kwargs):return 'response'
+        async def close(self):pass
+    client=PublisherClients(factory=Session)
+    role=http_budget('collector');capacity=role._value
+    for _ in range(capacity):await role.acquire()
+    source=SchedulerGroupLimiter(SchedulerConstraints(max_concurrency=1,minimum_request_gap_seconds=0))
+    local=asyncio.Semaphore(2)
+    async def request():
+        async with source_http_scope(source.permit,local):
+            return await client.request('example','GET','https://example.test/')
+    task=asyncio.create_task(request());await asyncio.sleep(.01)
+    assert local._value==2 and source._semaphore._value==1
+    for _ in range(capacity):role.release()
+    assert await asyncio.wait_for(task,.2)=='response'
+    assert local._value==2 and source._semaphore._value==1
+    await client.close()
+
+
+@pytest.mark.asyncio
+async def test_supplement_wall_queue_timeout_preserves_head_and_debt(monkeypatch):
+    import doxagent.message_bus_v2.public_listing as module
+    monkeypatch.setattr(module,'PRIMARY_TIMEOUT_SECONDS',.04)
+    first=capture('quantum_zeitgeist')
+    class SlowSupplement(Http):
+        async def fetch(self,*args,**kwargs):
+            if self.calls:await asyncio.sleep(.2)
+            return await super().fetch(*args,**kwargs)
+    adapter=ListingAdapter(SimpleNamespace(),SlowSupplement(first,first))
+    ctx=context('quantum_zeitgeist');ctx.on_page=AsyncMock();token=REQUESTS.set([])
+    try:
+        result=await asyncio.wait_for(adapter.poll_shared(ctx),.15)
+        assert result.messages and not result.failures and result.window_coverage=='PARTIAL'
+        assert result.next_checkpoint['listings'][RECIPES['quantum_zeitgeist'][0].url]['supplement_pending']
+        assert ctx.on_page.await_count==1
+        assert result.acquisition_metadata['endpoints'][0]['supplement']['error']=='supplement_admission_or_request_timeout'
+    finally:REQUESTS.reset(token)

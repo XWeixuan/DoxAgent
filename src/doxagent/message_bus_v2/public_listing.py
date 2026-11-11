@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import asyncio
 from .publisher_http import network_timeout, source_http_scope
 import copy
@@ -806,6 +807,7 @@ class ListingAdapter:
             return await self._primary(context, recipe, shared=shared, fallback=fallback)
         # These two recipes need a second page for full discovery coverage. A
         # slow supplement must not discard a separately validated current head.
+        started = time.monotonic()
         head = await self._primary(context, recipe, shared=shared, fallback=fallback)
         if head.failures:
             return head
@@ -825,8 +827,17 @@ class ListingAdapter:
             previous_tail = tail_context.checkpoint['listings'].get(secondary_recipe.url, {})
             tail_context.checkpoint['listings'][secondary_recipe.url] = {
                 **previous_tail, 'seen': {**previous_tail.get('seen', {}), **primary['seen']}}
-        tail = await self._primary(tail_context, secondary_recipe, shared=shared,
-                                   fallback=False)
+        try:
+            # Supplement admission is expendable; preserve time to return the
+            # already-committed head before the collector's 45s total deadline.
+            async with asyncio.timeout(min(PRIMARY_TIMEOUT_SECONDS, max(.001, 40 - (time.monotonic() - started)))):
+                tail = await self._primary(tail_context, secondary_recipe, shared=shared,
+                                           fallback=False)
+        except TimeoutError:
+            primary['supplement_error'] = 'supplement_admission_or_request_timeout'
+            return head.model_copy(update={'window_done': False, 'window_coverage': 'PARTIAL',
+                'acquisition_metadata': {**head.acquisition_metadata, 'supplement': {
+                    'pending': True, 'error': primary['supplement_error']}}})
         metadata = dict(head.acquisition_metadata)
         if tail.failures:
             primary['supplement_error'] = tail.failures[0].error_message[:240]

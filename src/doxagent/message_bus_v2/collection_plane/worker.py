@@ -446,6 +446,9 @@ class Collector:
         from ..scheduler import POLL_TIMINGS
         http_timings = {}
         timing_token = POLL_TIMINGS.set(http_timings)
+        from ..publisher_http import HTTP_PHASE
+        http_phase = {}
+        phase_token = HTTP_PHASE.set(http_phase)
         trace = REQUESTS.set(events)
         access = ACCESS_RESULTS.set([])
         gate = REQUEST_GATE.set(SnapshotGate(self, source, targets))
@@ -661,7 +664,7 @@ class Collector:
         finally:
             finished = utc_now()
             if http_timings:
-                state['http_timing'] = dict(http_timings)
+                state['http_timing'] = {**http_timings, **http_phase}
             # Timestamp-only work validates article metadata, not a fresh listing.
             # It is auxiliary (required=0) and cannot renew HEAD cadence evidence.
             valid = valid and (unit == 'TAIL:YAHOO_TIME' or any(
@@ -744,6 +747,7 @@ class Collector:
                 REQUEST_GATE.reset(gate)
                 DEMAND.reset(demand)
                 POLL_TIMINGS.reset(timing_token)
+                HTTP_PHASE.reset(phase_token)
 
     @staticmethod
     def _continuations(value):

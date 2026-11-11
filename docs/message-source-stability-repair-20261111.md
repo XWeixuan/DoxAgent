@@ -58,3 +58,9 @@ Collector简化IR路径原来只抛出`IR_HTTP_429`，未将Retry-After持久化
 这是“短网络截止→正常等待被取消→反复冷连接/重试→服务时间与排队增大→更多取消”的内部反馈链；坏pool、错误解析和单站真实拒绝是可并存的独立问题，不能把所有失败只归为一种。
 
 271 passed/1 skipped的组合回归覆盖本次贯通，包括真实Source许可在等待全局容量时未被提前占住、Source等待不耗局部网络预算、父截止仍有效。前一版376 passed/1 skipped结果保留在regression.xml，新一版r4-regression.xml独立保存，不以旧版回归冒充最终验证。
+## 补充页总截止与最后两个串联准入点
+
+R4完整前15分钟正式有效采集周期8121/8236（98.604%），但不能达到全量稳定验收：试验源仅15/183；TechNews/Quantum存在40秒以上准入，补充页还在等待时45秒父截止先取消整个返回，已经提交的首页仍被标整轮失败。R4窗口单独保留。
+
+最后修正：补充页使用最多12秒、且不越过本轮第40秒的墙钟预算，给既有45秒总截止保留返回空间；超时明确保留supplement_pending/error、PARTIAL及首页证据，不伪称补充完成，下轮继续。Google Search RSS原生HTTP由Source与global串联改联合准入。Newswire两工作槽从“先占再等Source/global”改为传输点一并取得，两个硬槽不变；只是复用ContextVar带入现有联合准入器，没有新增队列/进程或放大容量。保留已有HTTP响应、parser、时间戳和传输证明规则。
+补充兼容性回归还发现：旧Scheduler的PollState.last_stage_timings只接受整数，本轮phase字符串不能混入该公共字典。已把phase移到Collector独立的既有JSON状态，公共计时仅整数；20 ticker＋阻塞sibling/intake回归16项通过。不会扩张旧Bus schema或为日志重建Bus。

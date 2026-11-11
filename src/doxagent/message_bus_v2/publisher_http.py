@@ -19,6 +19,8 @@ _LEASE = ContextVar("publisher_curl_lease", default=None)
 _BUDGETS = WeakKeyDictionary()
 HTTP_CONTEXT = ContextVar("message_http_context", default=None)
 HTTP_SOURCE = ContextVar("message_http_source", default=None)
+HTTP_LOCAL_SLOTS = ContextVar("message_http_local_slots", default=())
+HTTP_PHASE = ContextVar("message_http_phase", default=None)
 PROCESS_ROLE = "collector"
 RESPONSE_LIMIT = ContextVar("publisher_response_limit", default=4 * 1024 * 1024)
 
@@ -28,7 +30,9 @@ def http_timing(phase, elapsed=None):
     from .scheduler import POLL_TIMINGS
     timings = POLL_TIMINGS.get()
     if timings is not None:
-        timings['http_last_phase'] = phase
+        current = HTTP_PHASE.get()
+        if current is not None:
+            current['http_last_phase'] = phase
         if elapsed is not None:
             key = phase + '_ms'
             timings[key] = timings.get(key, 0) + round(elapsed * 1000)
@@ -145,7 +149,17 @@ async def joint_permits(*slots, source=None):
 
 
 @asynccontextmanager
-async def source_http_scope(permit):
+async def source_http_scope(permit, *slots):
+    token_slots = HTTP_LOCAL_SLOTS.set((*HTTP_LOCAL_SLOTS.get(), *slots))
+    try:
+        async with _source_scope(permit):
+            yield
+    finally:
+        HTTP_LOCAL_SLOTS.reset(token_slots)
+
+
+@asynccontextmanager
+async def _source_scope(permit):
     limiter = getattr(permit, '__self__', None)
     if limiter is None or not hasattr(limiter, 'cost'):
         async with permit():
@@ -363,7 +377,7 @@ class PublisherClients:
                 )
             source = HTTP_SOURCE.get()
             waiting = time.monotonic()
-            async with joint_permits(client.slots, http_budget(role), source=source):
+            async with joint_permits(client.slots, http_budget(role), *HTTP_LOCAL_SLOTS.get(), source=source):
                 if client.retired:
                     continue
                 from .collection_override import check_request_allowed
