@@ -3,9 +3,9 @@ from datetime import timedelta
 from email.utils import format_datetime
 import httpx
 import pytest
-from doxagent.message_bus_v2.newswire_sources import initial_sources,parse_feed,NewswireAdapter
+from doxagent.message_bus_v2.newswire_sources import initial_sources,parse_feed
 from doxagent.message_bus_v2.x_official import OfficialStream,initial_source,parse_post,TAG
-from doxagent.message_bus_v2.schema import utc_now,UpdateActor,SharedPollContext
+from doxagent.message_bus_v2.schema import utc_now,UpdateActor
 from doxagent.message_bus_v2.live import LiveDeliveryWorker
 from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
 from doxagent.message_bus_v2.collection_plane.bridge import CaptureBridge
@@ -31,20 +31,12 @@ def test_sitemap_reads_every_unordered_entry_and_keeps_original_time():
 
 
 async def test_unsorted_rss_does_not_stop_at_old_article():
-    from contextlib import asynccontextmanager
+    # Historical material can still be decoded; no live Bloomberg RSS transport.
     source=next(s for s in initial_sources() if s.source_id=='bloomberg_massive')
     now=utc_now()
     feed='<rss><channel>'+''.join(f'<item><title>{slug}</title><link>https://www.bloomberg.com/news/articles/{slug}</link><pubDate>{format_datetime(date)}</pubDate></item>' for slug,date in [('company-first',now),('company-old',now-timedelta(days=1)),('hidden-new',now)])+'</channel></rss>'
-    class Client:
-        async def get(self,url,**kwargs):return httpx.Response(200,text=feed,request=httpx.Request('GET',url))
-    @asynccontextmanager
-    async def permit():yield
-    adapter=NewswireAdapter();adapter.clients={'direct':Client()}
-    context=SharedPollContext(run_id='r',source=source,acquisition_unit='TEST:WIRE:news',request_permit=permit)
-    first=await adapter.poll_shared(context)
-    assert len(first.messages)==3 and first.messages[-1].title=='hidden-new'
-    again=await adapter.poll_shared(context.model_copy(update={'checkpoint':first.next_checkpoint}))
-    assert not again.messages
+    rows=parse_feed(feed,source,{'url':'https://www.bloomberg.com/feeds/news.rss','format':'rss'},now)
+    assert len(rows)==3 and rows[-1].title=='hidden-new'
 
 
 async def test_official_post_capture_publish_without_body_worker_or_model(tmp_path):
@@ -105,7 +97,7 @@ def test_accounts_versioned_normalized_and_readable_by_control(tmp_path):
     with pytest.raises(ValueError):type(config).model_validate({**config.model_dump(),'x_accounts':['https://x.com/other']})
 
 
-async def test_bloomberg_has_seven_shared_units_and_x_has_no_poll_units(tmp_path):
+async def test_bloomberg_has_one_latest_shared_unit_and_x_has_no_poll_units(tmp_path):
     from doxagent.message_bus_v2.collection_plane.config import Configuration
     from doxagent.message_bus_v2.collection_plane.worker import Collector
     from doxagent.message_bus_v2.test_delivery import bindings
@@ -118,7 +110,7 @@ async def test_bloomberg_has_seven_shared_units_and_x_has_no_poll_units(tmp_path
     collector=Collector(SimpleNamespace(message_bus_v2_sqlite_path=str(tmp_path/'collection.db')),
         SimpleNamespace(),store=AcquisitionStore(tmp_path/'acq.db',initialize=True),config_loader=lambda *a,**kw:cfg)
     await collector.refresh()
-    assert len(collector.desired)==7
+    assert len(collector.desired)==1
     assert all(value[0].source_id=='bloomberg_massive' and len(value[1])==10 for value in collector.desired.values())
 
 

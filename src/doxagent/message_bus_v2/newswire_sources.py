@@ -16,6 +16,7 @@ from .industry_sources import parse_shared_feed
 from .http_routes import HTTP_EGRESSES, transport_routes
 from .publisher_http import PublisherHttpx, PublisherClients, RESPONSE_LIMIT
 from .newswire_listing import RECIPES, RSS_ONLY_SOURCES, canonical_article_url, enabled as listing_enabled, poll_listing
+from .bloomberg_latest import ENTRY_URL as BLOOMBERG_LATEST_URL, STORIES_URL as BLOOMBERG_STORIES_URL
 
 TICKERS=['INTC','MU','BE','COHR','NBIS','CEG','RKLB','SNOW','ONDS','IONQ']
 CATALOG={
@@ -24,7 +25,7 @@ CATALOG={
  'globenewswire_massive':('GlobeNewswire',[('all','https://www.globenewswire.com/RssFeed'),('public','https://www.globenewswire.com/RssFeed/orgclass/1/feedTitle/GlobeNewswire%20-%20News%20about%20Public%20Companies')],['tr-standard-1','us-standard-5']),
  'access_newswire_massive':('ACCESS Newswire',[('http','https://www.accessnewswire.com/newsroom')],['us-standard-5']),
  'tmx_newsfile_massive':('TMX Newsfile',[('all','https://feeds.newsfilecorp.com/global/Last25Stories')],['direct']),
- 'bloomberg_massive':('Bloomberg',[(name,'https://www.bloomberg.com/'+path) for name,path in [('news','feeds/news.rss'),('economics','feeds/economics/news.rss'),('industries','feeds/industries/news.rss'),('technology','feeds/technology/news.rss'),('business','feeds/business/news.rss'),('markets','feeds/markets/news.rss'),('sitemap','sitemaps/news/latest.xml')]],['direct']),
+ 'bloomberg_massive':('Bloomberg',[('latest',BLOOMBERG_STORIES_URL.format(page=1))],['direct']),
 }
 
 
@@ -38,17 +39,19 @@ def bloomberg_body_limitation(url):
 
 
 def initial_sources():
-    return [SourceDefinition(source_id=sid,display_name=name,kind=SourceKind.CRAWLER if sid in RECIPES and sid not in RSS_ONLY_SOURCES else SourceKind.API,
+    return [SourceDefinition(source_id=sid,display_name=name,kind=SourceKind.CRAWLER if sid=='bloomberg_massive' or sid in RECIPES and sid not in RSS_ONLY_SOURCES else SourceKind.API,
         adapter_ref='builtin:newswire_massive@1',acquisition_mode=AcquisitionMode.MASSIVE_DISTRIBUTION,
-        delivery_mode='test',entry_url=urls[0][1],content_language='en',scheduler_group='massive.'+sid,
-        scheduler_constraints=SchedulerConstraints(max_concurrency=2 if sid=="bloomberg_massive" else 1,minimum_request_gap_seconds=1),
+        delivery_mode='test',entry_url=BLOOMBERG_LATEST_URL if sid=='bloomberg_massive' else urls[0][1],content_language='en',scheduler_group='massive.'+sid,
+        scheduler_constraints=SchedulerConstraints(max_concurrency=1,minimum_request_gap_seconds=1),
         distribution_policy=DistributionPolicy(test_tickers=TICKERS,jev_enabled=False,require_complete_body=True),
-        default_parameters={'endpoints':[{'endpoint_id':eid,'url':url,'format':'html' if eid=='http' else 'sitemap' if eid=='sitemap' else 'rss'} for eid,url in urls],
-                            'feed_http_routes':routes, **({'discovery_mode':'rss' if sid in RSS_ONLY_SOURCES else 'http_listing'} if sid in RECIPES else {})},default_polling_config=PollingConfig(target_interval_seconds=30))
+        default_parameters={'endpoints':[{'endpoint_id':eid,'url':url,'format':'json' if sid=='bloomberg_massive' else 'html' if eid=='http' else 'rss'} for eid,url in urls],
+                            'feed_http_routes':routes, **({'discovery_mode':'bloomberg_latest_http'} if sid=='bloomberg_massive' else {'discovery_mode':'rss' if sid in RSS_ONLY_SOURCES else 'http_listing'} if sid in RECIPES else {})},default_polling_config=PollingConfig(target_interval_seconds=30))
         for sid,(name,urls,routes) in CATALOG.items()]
 
 
 def endpoint_units(source):
+    if source.source_id=='bloomberg_massive':
+        return [('TEST:' if source.delivery_mode=='test' else '')+'WIRE:latest']
     if listing_enabled(source):
         prefix='TEST:' if source.delivery_mode=='test' else ''
         return [prefix+'WIRE:listing']+([prefix+'WIRE:all'] if source.source_id=='globenewswire_massive' else [])
@@ -129,6 +132,9 @@ class NewswireAdapter:
         raise RuntimeError('massive distribution requires shared polling')
 
     async def poll_shared(self,context):
+        if context.source.source_id=='bloomberg_massive':
+            from .bloomberg_latest import poll_latest
+            return await poll_latest(self,context)
         if listing_enabled(context.source) and context.acquisition_unit.endswith('WIRE:listing'):
             return await poll_listing(self,context)
         result=await self.poll_feed(context)
@@ -153,6 +159,8 @@ class NewswireAdapter:
                 (TimeoutError,OSError,httpx.TransportError))
 
     async def poll_feed(self,context):
+        if context.source.source_id=='bloomberg_massive':
+            raise ValueError('Bloomberg Latest does not use RSS or sitemap fallback')
         s=context.source;cp=dict(context.checkpoint or {})
         endpoint=next(e for e in s.default_parameters['endpoints'] if context.acquisition_unit.endswith('WIRE:'+e['endpoint_id']))
         headers={}

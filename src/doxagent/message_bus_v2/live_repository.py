@@ -207,6 +207,10 @@ class LiveRepository:
                 and message.metadata.get('identity_evidence', {}).get('id_kind') == 'stable_article'
                 and re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', message.external_id or '')):
                 provider_alias = 'yahoo-uuid:' + message.external_id.lower()
+            if (source.source_id == 'bloomberg_massive'
+                and message.metadata.get('identity_evidence', {}).get('id_kind') == 'stable_article'
+                and re.fullmatch(r'[A-Z0-9]{14}', message.external_id or '')):
+                provider_alias = 'bloomberg-id:' + source.delivery_mode + ':' + message.external_id
             from .deduplication import article_url
 
             locator = article_url(
@@ -216,6 +220,8 @@ class LiveRepository:
             if source.source_id == 'businesswire_massive':
                 from .newswire_listing import businesswire_item_key
                 locator = businesswire_item_key(message.url) or locator
+            if source.source_id == 'bloomberg_massive' and provider_alias:
+                locator = provider_alias
             lane = message.metadata.get("discovery_lane") if source.default_parameters.get("discovery_mode") == "http_rss_race" else None
             origin = sha256_text(
                 canonical_json(
@@ -278,6 +284,11 @@ class LiveRepository:
                     )
                 )
             )
+            if source.source_id == 'bloomberg_massive' and provider_alias and prior and prior[1] is None:
+                # First native-id observation can reuse an old RSS URL owner, but
+                # must not swallow a headline update merely because the origin is new.
+                legacy_changed |= dedup.identity_title(message) != dedup.identity_title(
+                    message.model_copy(update={'title': prior[5]}))
             if lane in {"http", "rss"} and prior and prior[1] is None:
                 # Different list summaries/clocks are independent baselines,
                 # not repeated BODY updates. Keep the original RSS origin; a
@@ -383,12 +394,13 @@ class LiveRepository:
                 key = item["key"]
                 if item.get('provider_alias'):
                     # Two parallel captures may have prepared before either one
-                    # committed. Resolve the native UUID under the writer too.
+                    # committed. Resolve the publisher identity under the writer too.
                     alias = db.execute('SELECT article_key FROM live_origins WHERE origin_key=?',
                                        (item['provider_alias'],)).fetchone()
                     key = alias[0] if alias else key
-                    db.execute("INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','yahoo-uuid','',?,'[]')",
-                               (item['provider_alias'], key, item['first_seen']))
+                    alias_kind = 'bloomberg-id' if item['source_id'] == 'bloomberg_massive' else 'yahoo-uuid'
+                    db.execute("INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved',?,'',?,'[]')",
+                               (item['provider_alias'], key, alias_kind, item['first_seen']))
                 if item.get("legacy_body_key") and item["legacy_body_key"] != key:
                     db.execute(
                         "INSERT OR IGNORE INTO live_origins VALUES(?,?,'resolved','legacy','',?,'[]')",
