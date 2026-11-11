@@ -2931,3 +2931,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 
 2026-11-12 Runtime→Read performance: reuse bounded source readers for gap recovery; consolidate repair scheduling and count only attempted entries with bounded backoff. Coalesce verified Serving skips without crossing uncommitted business events. Decode Case inputs once into a bounded 16MiB thin immutable cache while preserving pinned policy direction and full audit decoding. Read execution dependencies from current heads. Add minute aggregate phase timings, crash/retry/cache regressions and canonical Projector-only overlay release. Production acceptance recorded separately.
+
+2026-11-12 Projector overlay build: tag the verified local baseline before Docker FROM so BuildKit does not interpret a sha256 image ID as a registry repository. No container change on failed build.

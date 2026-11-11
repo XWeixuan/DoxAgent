@@ -49,7 +49,9 @@ def main():
                 raw=git(commit,path);target=context/path;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
                 hashes[path]=hashlib.sha256(raw).hexdigest()
             check='import hashlib; expected='+repr(hashes)+'; assert all(hashlib.sha256(open("/app/"+p,"rb").read()).hexdigest()==h for p,h in expected.items())'
-            recipe=['FROM '+info['Image'],'USER root']
+            base='doxagent-v2:projection-base-'+info['Image'][7:19]
+            subprocess.run(['docker','tag',info['Image'],base],check=True)
+            recipe=['FROM '+base,'USER root']
             recipe += ['COPY --chmod=0644 '+p+' /app/'+p for p in FILES]
             recipe += ['RUN umask 022 && python -m compileall -q --invalidation-mode checked-hash /app/src/doxagent/v2_read',
                        'USER '+(info['Config'].get('User') or 'root'),'RUN python -c '+shlex.quote(check)]
