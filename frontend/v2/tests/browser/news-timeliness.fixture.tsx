@@ -198,7 +198,8 @@ async function fixtureRequest(name: string, path: string) {
           abnormal: 0,
           unknown: 0,
         },
-        mean_e2e_seconds: 4.2,
+        mean_capture_seconds: 90, capture_samples: 4,
+      mean_e2e_seconds: 4.2,
         e2e_samples: 20,
         coverage: { expected: 20, succeeded: 17, ratio: 0.85 },
         sources: [
@@ -224,7 +225,8 @@ async function fixtureRequest(name: string, path: string) {
             countdown_state: "CLOSED_SLEEP",
             recent: {
               coverage: { expected: 20, succeeded: 17, ratio: 0.85 },
-              mean_e2e_seconds: 4.2,
+              mean_capture_seconds: 90, capture_samples: 4,
+      mean_e2e_seconds: 4.2,
               p95_e2e_seconds: 9.5,
               e2e_samples: 20,
               refresh_seconds: 31.2,

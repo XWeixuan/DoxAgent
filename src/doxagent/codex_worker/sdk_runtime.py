@@ -141,6 +141,7 @@ class _SdkTurnHandle:
         result = await self._handle.run()
         self.sdk_completed_monotonic = time.monotonic()
         self.sdk_completed_at = datetime.now(UTC).isoformat()
+        self.model_completed_at = getattr(result, 'completed_at', None)
         error = getattr(result, "error", None)
         error_message = str(error) if error is not None else None
         status = getattr(result.status, "value", str(result.status))
@@ -242,6 +243,7 @@ class _SdkTurnHandle:
                     completed = payload.turn
                     self.sdk_completed_monotonic = time.monotonic()
                     self.sdk_completed_at = datetime.now(UTC).isoformat()
+                    self.model_completed_at = getattr(completed, 'completed_at', None)
                     self.sdk_completed_result = WorkerTurnResult(
                         self.thread_id,
                         completed.id,

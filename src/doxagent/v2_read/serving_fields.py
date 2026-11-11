@@ -46,6 +46,8 @@ def select(kind,identity,value):
         result['frozen_inputs']={k:v for k,v in value.get('frozen_inputs',{}).items()
                                  if k in {'policy_watch_followup','w3_execution_state'}}
         return result
+    if table=='runtime_v2_effects':
+        return {**{k:value.get(k) for k in ['case_id','effect_type']}, 'payload':{k:v for k,v in value.get('payload',{}).items() if k=='decision_effective_at'}}
     if table=='runtime_v2_turns':
         return {k:v for k,v in value.items() if k in {'turn_id','case_id','output'}}
     if table=='runtime_v2_w3_cases':
@@ -74,7 +76,7 @@ def select(kind,identity,value):
     if table=='standard_messages':
         return {k:v for k,v in value.items() if k in {
             'standard_message_id','revision','url','title','source_id','binding_id',
-            'published_at','collected_at','normalized_at','body_ref','metadata',
+            'published_at','publication_time_basis','collected_at','normalized_at','body_ref','metadata',
             'source_name','source','publisher_name','resolved_domain',
         }}
     if table=='stream_items':

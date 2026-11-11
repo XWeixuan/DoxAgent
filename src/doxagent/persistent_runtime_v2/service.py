@@ -1624,6 +1624,7 @@ class PersistentRuntimeV2Service:
                     latency_ms=round((perf_counter() - started) * 1000),
                     started_at=started_at,
                     finished_at=utc_now(),
+                    model_interval=error.usage.get("model_interval"),
                     error_code=error.code,
                     error_message=str(error),
                     input_tokens=result.input_tokens if result else error.usage.get("input_tokens"),
@@ -1759,6 +1760,7 @@ class PersistentRuntimeV2Service:
                 cache_write_input_tokens=result.cache_write_input_tokens,
                 provider_usage=result.provider_usage,
                 prefix_fingerprint=result.prefix_fingerprint,
+                model_interval=result.model_interval,
                 latency_ms=result.latency_ms,
                 started_at=started_at,
                 finished_at=finished_at,
@@ -2224,6 +2226,10 @@ class PersistentRuntimeV2Service:
                 "updated_at": utc_now(),
             }
         )
+        from doxagent.w3_timing import current_identity
+        effective = current_identity().get("decision_effective_at")
+        if effective and effect.effect_type == RuntimeSideEffect.ROUTE_TO_W3:
+            done.payload = {**done.payload, "decision_effective_at": effective}
         self.repository.save_effect(done)
         if effect.effect_type in {RuntimeSideEffect.ROUTE_TO_W3,RuntimeSideEffect.W3_POST_DECISION}:
             reader = getattr(self.repository,'completed_w3_projection_payload',None)

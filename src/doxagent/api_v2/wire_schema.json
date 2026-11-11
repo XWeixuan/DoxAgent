@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "63faf28994b0d471cfd390c27382a8ca9aec68e997a9147a44550ec3a8454dca",
+  "source_sha256": "a50c030895eccc86bfc767320654b38c3c003e1b33457cde1ecac6e1bf6b2713",
   "$defs": {
     "Id": {
       "type": "string"
@@ -6402,6 +6402,9 @@
         "exact_duplicate_count": {
           "$ref": "#/$defs/Value%3CCount%3E"
         },
+        "publication_time_verified": {
+          "type": "boolean"
+        },
         "pipeline": {
           "type": "object",
           "properties": {
@@ -7784,6 +7787,13 @@
     "CaseSummary": {
       "type": "object",
       "properties": {
+        "runtime_tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "const": "LONG_W3_DECISION"
+          }
+        },
         "w3_decision": {
           "$ref": "#/$defs/Value%3C(%22LONG%22%7C%22SHORT%22%7C%22NO_TRADE%22)%3E"
         },
@@ -8325,6 +8335,37 @@
     "ModelAttempt": {
       "type": "object",
       "properties": {
+        "model_interval": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "end": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_completed_at": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
         "sdk_seconds": {
           "$ref": "#/$defs/Value%3Cnumber%3E"
         },
@@ -28142,6 +28183,18 @@
     "BusSourceMetrics": {
       "type": "object",
       "properties": {
+        "mean_capture_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "capture_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "article_samples": {
+          "$ref": "#/$defs/Count"
+        },
         "coverage": {
           "$ref": "#/$defs/BusRoundCoverage"
         },
@@ -28217,6 +28270,15 @@
     "BusDashboard": {
       "type": "object",
       "properties": {
+        "mean_capture_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "capture_samples": {
+          "$ref": "#/$defs/Count"
+        },
         "metrics": {
           "$ref": "#/$defs/BusMetrics"
         },

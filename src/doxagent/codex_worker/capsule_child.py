@@ -125,6 +125,7 @@ async def main() -> None:
                 data["execution_timing"] = dict(
                     sdk_dispatched_at=getattr(handle, "sdk_dispatched_at", None),
                     sdk_completed_at=getattr(handle, "sdk_completed_at", None),
+                    model_completed_at=getattr(handle, 'model_completed_at', None),
                     sdk_completed_monotonic=handle.sdk_completed_monotonic,
                     sdk_deadline_monotonic=deadline,
                 )
@@ -137,6 +138,7 @@ async def main() -> None:
                 execution_timing=dict(
                     sdk_dispatched_at=getattr(handle, "sdk_dispatched_at", None),
                     sdk_completed_at=getattr(handle, "sdk_completed_at", None),
+                    model_completed_at=getattr(handle, 'model_completed_at', None),
                     sdk_deadline_monotonic=deadline,
                     sdk_completed_monotonic=getattr(handle, "sdk_completed_monotonic", None),
                     result_ready_monotonic=time.monotonic(),

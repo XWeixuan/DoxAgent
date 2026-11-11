@@ -28,9 +28,9 @@ def test_final_snapshot_graph_matches_incremental_turn_history(tmp_path,failed):
             store.ingest('test','timing',[],contributions=hot_path_contributions(store,native)+w3_contributions(store,native))
         with store.connect() as db:
             objects=list(db.execute("SELECT kind,id,payload FROM object_current WHERE kind IN ('graph_case','graph_member','graph_observation') ORDER BY kind,id"))
-            counts=list(db.execute("SELECT metric,ticker,entity,day,dimensions,value FROM contributions_current WHERE metric LIKE 'graph_%' OR metric IN ('hot_path_seconds','hot_path_samples','w3_seconds','w3_samples') ORDER BY metric,ticker,entity,day,dimensions"))
+            counts=list(db.execute("SELECT metric,ticker,entity,day,dimensions,value FROM contributions_current WHERE metric LIKE 'graph_%' OR metric IN ('hot_path_le600_seconds','hot_path_le600_samples','w3_seconds','w3_samples') ORDER BY metric,ticker,entity,day,dimensions"))
         outcomes.append(([tuple(r) for r in objects],[tuple(r) for r in counts]))
-        samples=[r[-1] for r in counts if r[0]=='hot_path_samples']
+        samples=[r[-1] for r in counts if r[0]=='hot_path_le600_samples']
         assert samples==([] if failed else ['1'])
     assert outcomes[0]==outcomes[1]
 
@@ -62,7 +62,7 @@ def test_runtime_snapshot_settles_timing_after_native_turn_import(tmp_path,monke
         assert store.get('native:runtime_v2_cases','MU',case.case_id)['runtime_mode']=='REALTIME'
         with store.connect() as db:
             assert db.execute("SELECT count(*) FROM object_current WHERE kind='attempt'").fetchone()[0]>0
-            sample=db.execute("SELECT value FROM contributions_current WHERE metric='hot_path_samples' AND entity=?",(case.case_id,)).fetchone()
+            sample=db.execute("SELECT value FROM contributions_current WHERE metric='hot_path_le600_samples' AND entity=?",(case.case_id,)).fetchone()
         assert sample[0]=='1'
     finally:runtime.close()
 

@@ -56,6 +56,11 @@ def migrate_case_evidence_indexes(db) -> None:
 class ReadStore:
     VERSION = 4
 
+    def migrate_article_sample_index(self):
+        """Explicit maintenance only; never called on API startup or GET."""
+        from doxagent.api_v2.article_samples import INDEX_SQL
+        with self.connect(write=True) as db: db.execute(INDEX_SQL)
+
     def migrate_projection_indexes(self):
         """Explicit worker release migration, never DDL inside an HTTP read."""
         with self.connect(write=True, timeout=30) as db:
@@ -335,6 +340,9 @@ class ReadStore:
                 db.execute("UPDATE object_current SET sort_key=occurrence_anchor(json_extract(payload,'$.occurred_at'),json_extract(payload,'$.occurrence_time_precision')) WHERE kind='event_catalog'")
                 db.execute("INSERT INTO read_meta VALUES('event_sort_v1','1')")
             db.execute("INSERT OR IGNORE INTO object_current SELECT * FROM objects WHERE valid_to IS NULL")
+            if not existing:
+                from doxagent.api_v2.article_samples import INDEX_SQL
+                db.execute(INDEX_SQL)
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('highwater',?)", (str(db.execute("SELECT coalesce(max(seq),0) FROM commits").fetchone()[0]),))
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('retained_floor','0')")
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('first_at',?)", (db.execute("SELECT coalesce(min(at),'') FROM commits").fetchone()[0],))
@@ -905,6 +913,9 @@ class ReadStore:
         if result in {"FIRST_ROUND_TRADE", "POLICY_RELATED_EVENT", "SUSPECTED_DUPLICATE_HIT"} and kind == "case":
             where.append("EXISTS (SELECT 1 FROM json_each(objects.payload,'$.first_round_tags') WHERE value=?)")
             params.append(result)
+        elif result == "LONG_W3_DECISION" and kind == "case":
+            where.append("objects.id IN (SELECT tagged.id FROM objects tagged WHERE tagged.kind='case_tag' AND tagged.ticker=? AND tagged.parent='LONG_W3_DECISION' AND tagged.valid_from<=? AND (tagged.valid_to IS NULL OR tagged.valid_to>?))")
+            params.extend([ticker,seq,seq])
         elif result == "POLICY_HIT" and kind == "case":
             where.append("json_extract(objects.payload,'$.final_policy_hit.value')=1")
         elif result == "POLICY_RECALLED" and kind == "case":

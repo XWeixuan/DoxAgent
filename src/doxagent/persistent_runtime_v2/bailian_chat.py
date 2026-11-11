@@ -76,6 +76,8 @@ def complete(client, request):
             "elapsed_ms": round((perf_counter() - started) * 1000),
         }
 
+    from . import model_clock
+    model_clock.start()
     try:
         stream = client.chat.completions.create(**body, timeout=request.timeout_seconds or 120)
         with stream:
@@ -97,6 +99,7 @@ def complete(client, request):
             retryable=error.retryable or getattr(exc, "status_code", None) is None,
             usage=receipt(),
         ) from exc
+    model_clock.stop()
     text = "".join(parts)
     known = receipt()
     if not finished or not response_id:

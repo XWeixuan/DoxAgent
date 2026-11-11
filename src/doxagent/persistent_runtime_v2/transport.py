@@ -77,6 +77,7 @@ class RuntimeResponsesResult(Generic[T]):
     validation_warnings: tuple[str, ...] = ()
     cache_write_input_tokens: int | None = None
     provider_usage: dict[str, Any] = field(default_factory=dict)
+    model_interval: dict | None = None
 
 
 class RuntimeResponsesClient(Protocol):
@@ -207,8 +208,11 @@ class BailianRuntimeResponsesClient:
             kwargs["previous_response_id"] = request.previous_response_id
         if self.session_cache:
             kwargs["extra_headers"] = {"x-dashscope-session-cache": "enable"}
+        from . import model_clock
+        model_clock.start()
         try:
             response = self._client.responses.create(**kwargs)
+            model_clock.stop()
         except Exception as exc:
             raise _safe_transport_error(exc) from exc
 

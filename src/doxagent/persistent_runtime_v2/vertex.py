@@ -125,6 +125,8 @@ class VertexClaudeClient:
                 "response_id": response_id or None,
             }
 
+        from . import model_clock
+        model_clock.start()
         try:
             headers = (
                 {"x-goog-api-key": self.api_key}
@@ -213,6 +215,7 @@ class VertexClaudeClient:
                 usage=observed,
             )
         text = "".join(content)
+        model_clock.stop()
         try:
             value = request.output_model.model_validate_json(text)
         except ValueError as exc:

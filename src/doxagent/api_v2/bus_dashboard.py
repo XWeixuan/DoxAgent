@@ -131,28 +131,37 @@ def dashboard_data(store,ticker,view,args,*,include_sources=True,source_after=No
         cards=sorted((s for s in cards if s['source']['binding_id']>source_after),
                      key=lambda s:s['source']['binding_id'])[:source_limit+1]
     card_ids={s['source']['binding_id'] for s in cards}
-    business=recent_business(store,ticker,{bid:r for bid,r in rounds.items() if bid in card_ids})
+    from .article_samples import select_articles
+    business=select_articles(store,ticker,[s['source']['source_id'] for s in sources],now)
     today=source_counts_today(store,ticker,seq,view['wire']['clock']['semantic_day']) if cards else None
     for s in cards:
         sid=s['source']['source_id'];r=rounds.get(s['source']['binding_id'],{})
         samples=business.get(sid,{'latencies':[],'articles':{}})
-        times=sorted(samples['latencies']);articles=samples['articles']
-        full=sum(v[0] in {'FULL','SHORT_FULL'} for v in articles.values())
+        times=sorted(samples['latencies']);capture=samples['capture']
+        full=samples['body_full'];total=samples['body_total']
         s['published_today']=today.get(sid,available(0)) if today is not None else missing()
         s['recent']={'coverage':{k:r.get(k,0 if k!='ratio' else None) for k in ['expected','succeeded','ratio']},
             'mean_e2e_seconds':sum(times)/len(times) if times else None,
             'p95_e2e_seconds':times[math.ceil(.95*len(times))-1] if times else None,'e2e_samples':len(times),
-            'refresh_seconds':r.get('refresh_seconds'),'body_total':len(articles),'body_full':full,
-            'body_ratio':full/len(articles) if articles else None}
+            'refresh_seconds':r.get('refresh_seconds'),'body_total':total,'body_full':full,
+            'body_ratio':full/total if total else None,
+            'mean_capture_seconds':sum(capture)/len(capture) if capture else None,
+            'capture_samples':len(capture),'article_samples':samples['article_samples']}
     if not include_metrics:
         return {'sources':cards}
     selected=[s['source']['source_id'] for s in sources if
               (not args.get('source_id') or s['source']['source_id']==args['source_id']) and
               (not args.get('source_kind') or s['source']['kind']==args['source_kind'])]
     selected_ids=selected if args.get('source_id') or args.get('source_kind') else None
-    body=current_body(store,ticker,view,selected_ids)
+    selected_samples=[v for sid,v in business.items() if sid in selected]
+    total=sum(v['body_total'] for v in selected_samples);full=sum(v['body_full'] for v in selected_samples)
+    pending=sum(v['body_pending'] for v in selected_samples)
+    body=dict(total=total,full=full,pending=pending,failed=total-full-pending,ratio=full/total if total else None,
+              network_attempts=None,network_succeeded=None,cache_reuses=None,basis='FIRST_OBSERVED_ARTICLE',legacy_excluded=True)
     data=metrics(store,ticker,view,{k:args[k] for k in ['source_id','source_kind'] if args.get(k)},body=body)
-    mean,count=mean_period(store,ticker,view,selected_ids)
+    eligible=[business[s['source']['source_id']] for s in sources if s['source']['source_id'] in selected and s['poll_status']!='failed']
+    times=[t for v in eligible for t in v['latencies']];capture=[t for v in eligible for t in v['capture']]
+    count=len(times);mean=sum(times)/count if count else None
     # Eligibility is the current source state: exclude its whole window, including
     # earlier successes. Keep card diagnostics and the logical-round ledger intact.
     chosen=[{k:rounds.get(s['source']['binding_id'],{}).get(k,0) for k in ['expected','succeeded']}
@@ -161,4 +170,5 @@ def dashboard_data(store,ticker,view,args,*,include_sources=True,source_after=No
             and not (s['current_error'] or {}).get('code','').startswith('SOURCE_DEFERRED:')]
     expected=sum(c['expected'] for c in chosen);success=sum(c['succeeded'] for c in chosen)
     return {'metrics':data,'sources':cards,'counts':counts,'mean_e2e_seconds':mean,'e2e_samples':count,
-            'coverage':{'expected':expected,'succeeded':success,'ratio':success/expected if expected else None}}
+            'coverage':{'expected':expected,'succeeded':success,'ratio':success/expected if expected else None},
+            'mean_capture_seconds':sum(capture)/len(capture) if capture else None,'capture_samples':len(capture)}

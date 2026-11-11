@@ -57,8 +57,8 @@ def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
             "value": amount,
         }
         for metric, amount in (
-            ("hot_path_seconds", value),
-            ("hot_path_samples", "1" if value is not None else "0"),
+            ("hot_path_le600_seconds", value if value is not None and float(value)<=600 else None),
+            ("hot_path_le600_samples", "1" if value is not None and float(value)<=600 else "0"),
         )
     ]
 
@@ -90,6 +90,7 @@ def turn_records(turn: dict[str, Any], case: dict[str, Any]) -> tuple[list[dict]
         "context_mode": turn.get("context_mode", "EXPLICIT"),
         "status": "SUCCEEDED" if turn["status"] == "OK" else "FAILED",
         "timing": timing(turn.get("started_at"), turn.get("finished_at")),
+        "model_interval": turn.get("model_interval"),
         "error": ApiFailure(turn["error_code"]).payload(turn["turn_id"])["error"]
         if turn.get("error_code")
         else None,
@@ -196,6 +197,8 @@ def worker_records(value: dict) -> tuple[list[dict], list[dict]]:
             "node_id": "W3",
             "round": "AGENT",
             "phase": value.get("task_phase"),
+            "model_interval": {"start": (job.get("resource_receipt",{}).get("execution_timing") or {}).get("sdk_dispatched_at"), "end": (job.get("resource_receipt",{}).get("execution_timing") or {}).get("sdk_completed_at")},
+            "model_completed_at": (job.get("resource_receipt",{}).get("execution_timing") or {}).get("model_completed_at"),
             "ordinal": value["ordinal"],
             "attempt_number": value["ordinal"],
             "status": {
