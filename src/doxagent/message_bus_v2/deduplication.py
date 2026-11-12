@@ -72,6 +72,12 @@ def identity_title(message):
 def article_url(url: str, kind: str = "unknown") -> str | None:
     p = urlsplit(url)
     host = (p.hostname or '').lower().removeprefix('www.')
+    if host == 'ir.ondas.com' and kind != 'generic':
+        identity = re.match(r'^/(?:news|press-releases)/detail/(\d+)(?:/|$)', p.path)
+        if identity:
+            # EQS exposes different/truncated slugs in RSS and HTML. The
+            # publisher's numeric detail ID is the article identity in both.
+            return 'https://ir.ondas.com/news/detail/' + identity[1]
     if (host == 'finnhub.io' and p.path.rstrip('/') == '/api/news') or kind == "generic" or p.path.rstrip("/") in {
         "",
         "/search",

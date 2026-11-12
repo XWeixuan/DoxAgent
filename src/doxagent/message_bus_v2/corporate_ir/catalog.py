@@ -1,6 +1,7 @@
 from ..schema import PollingConfig, SchedulerConstraints, SourceDefinition, SourceKind
 from . import ADAPTER_REF, SOURCE_ID
 from .schema import IrEndpointSpec
+from .snowflake import LISTING_URL as SNOW_LISTING_URL, HOST as SNOW_API_HOST
 
 
 def initial_endpoints():
@@ -99,10 +100,10 @@ def initial_endpoints():
             "snow.press",
             "SNOW",
             "Snowflake press releases",
-            "https://www.snowflake.com/en/news/press-releases/",
-            "html",
-            "snowflake",
-            ["www.snowflake.com", "investors.snowflake.com"],
+            SNOW_LISTING_URL,
+            "json",
+            "snowflake_json",
+            ["www.snowflake.com", "investors.snowflake.com", SNOW_API_HOST],
         ),
         (
             "onds.press",
@@ -112,6 +113,15 @@ def initial_endpoints():
             "rss",
             "rss",
             ["ir.ondas.com"],
+        ),
+        (
+            "ionq.press",
+            "IONQ",
+            "IonQ press releases",
+            "https://www.ionq.com/news?251779c9_page=1",
+            "html",
+            "ionq",
+            ["www.ionq.com", "ionq.com"],
         ),
     ]
     specs = [
@@ -138,7 +148,7 @@ def initial_endpoints():
         "be.press": ["investor.bloomenergy.com"],
         "rklb.updates": ["rocketlabcorp.com"],
     }
-    return [
+    specs = [
         s.model_copy(
             update={
                 "parser_parameters": {"urllib_hosts": stdlib_hosts[s.endpoint_id]},
@@ -149,6 +159,12 @@ def initial_endpoints():
         else s
         for s in specs
     ]
+    specs = [s.model_copy(update={'revision': 3}) if s.endpoint_id == 'snow.press' else s for s in specs]
+    return [s.model_copy(update={
+        'parser_parameters': {**s.parser_parameters, 'http_rss_race': True},
+        'revision': max(3, s.revision),
+    }) if s.endpoint_id in {'intc.press', 'mu.ir', 'be.press', 'rklb.ir', 'onds.press'} else s
+        for s in specs]
 
 
 def initial_source():

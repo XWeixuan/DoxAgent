@@ -3006,3 +3006,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 每8轮优先处理一个最旧本地分发待办，避免短轮次预算使保留名额失效；Massive阴性分类不预查发布历史，正例仍走原去重。完整正文、正则、接纳窗口及轮询频率保持。
 
 - Massive Newswire补充：Registry正文参数显式接受并校验wait_selector，完整站点bootstrap/共享路径回归73项通过；新增真实站点配置必须经owner校验测试。
+
+2026-11-13 Corporate IR upgrade: add IONQ official Webflow press-release HTTP listing and scoped article extraction; preserve day-only publication precision and existing ticker polling overrides. Replace Snowflake's challenged HTML with its official frontend public AEM list/article models. Enable Ondas HTTP/RSS parallel discovery with publisher numeric-ID aliases preserving existing article owners and full bodies; retain all four already-parallel IR feeds. Add idempotent production configuration upgrade and focused list/body/alias/cadence regressions (124 passed).

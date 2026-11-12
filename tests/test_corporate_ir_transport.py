@@ -74,6 +74,7 @@ def test_owner_recipe_upgrade_is_narrow_and_idempotent(tmp_path):
     bus.update_source(SOURCE_ID, {"default_parameters": {"endpoints": old}}, actor=UpdateActor.USER)
     result = configure(bus)
     assert set(result["catalog_recipe_upgrades"]) == {
+        "intc.press", "rklb.ir", "onds.press",
         "mu.ir",
         "mu.newsroom",
         "be.press",

@@ -62,6 +62,25 @@ def parse_listing(spec: IrEndpointSpec, raw: str, url=None):
                     item.findtext("guid"),
                 )
             )
+    elif spec.parser_ref == "snowflake_json":
+        from urllib.parse import parse_qs, urlencode, urlunsplit
+
+        payload = json.loads(raw)
+        if not isinstance(payload.get('hits'), list) or not payload['hits']:
+            raise IrContractError('Snowflake list model missing hits')
+        for card in payload['hits']:
+            title = ' '.join(card['title']['lines'])
+            link = card['button']['buttonLink']['url']
+            if not link.startswith('/en/news/press-releases/'):
+                raise IrContractError('Snowflake list article path mismatch')
+            rows.append((title, 'https://www.snowflake.com' + link,
+                         card['publicationDate'], False, '', '', None))
+        parsed = urlsplit(url)
+        query = parse_qs(parsed.query)
+        offset = int(query.get('offset', ['0'])[0]) + len(payload['hits'])
+        if offset < payload['totalMatches']:
+            query['offset'] = [str(offset)]
+            next_url = urlunsplit(parsed._replace(query=urlencode(query, doseq=True)))
     elif spec.parser_ref == "ceg":
         payload = json.loads(raw)
         if not isinstance(payload.get("pagelist"), list) or "details" not in payload:
@@ -89,6 +108,24 @@ def parse_listing(spec: IrEndpointSpec, raw: str, url=None):
                 dates = card.xpath('.//*[contains(@class,"cmp-teaser__description")]')
                 if links and names and dates:
                     rows.append((text(names[0]), links[0], text(dates[0]), False, "", "", None))
+        elif spec.parser_ref == "ionq":
+            # The page has a second independent CMS list for outside coverage.
+            # Only the company's own release cards belong to this IR endpoint.
+            for card in doc.xpath('//*[contains(concat(" ",normalize-space(@class)," ")," w-dyn-item ")]'):
+                source = card.xpath('.//*[contains(concat(" ",normalize-space(@class)," ")," publications-source ")]')
+                if not source or text(source[0]) != "IonQ Press Release":
+                    continue
+                links = card.xpath('.//a[starts-with(@href,"/news/")]')
+                names = card.xpath('.//h3[@item="title"]')
+                dates = card.xpath('.//*[@item="date"]')
+                if links and names and dates:
+                    rows.append((text(names[0]), links[0].get("href"), text(dates[0]), False, "", "", None))
+                    collection = next((n for n in card.iterancestors()
+                                       if "w-dyn-list" in n.get("class", "").split()), None)
+                    if collection is not None:
+                        following = collection.xpath('.//a[contains(@class,"w-pagination-next")]/@href')
+                        if following:
+                            next_url = urljoin(url, following[0])
         elif spec.parser_ref == "coherent":
             for card in doc.xpath('//article[contains(@class,"node--type-nir-news")]'):
                 links = card.xpath('.//a[contains(@href,"/news-releases/news-release-details/")]')
