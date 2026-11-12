@@ -83,6 +83,31 @@ async def test_raw_input_with_published_candidate_has_source_context(pipeline):
     assert match is not None and checked
 
 
+async def test_massive_known_publication_still_checks_terms_revision(pipeline):
+    from doxagent.message_bus_v2.schema import AcquisitionMode
+    from doxagent.message_bus_v2.monitoring_terms import MonitoringTermsService, TickerMonitoringTerms
+    from tests.test_massive_distribution import terms
+    repo,bus,_=pipeline
+    revision=terms(repo)
+    capture(pipeline,'finnhub_company_news',input_message(903,'https://publisher.test/revision-check',body=BODY))
+    await drain(pipeline)
+    source=repo.get_source('finnhub_company_news').model_copy(update={'acquisition_mode':AcquisitionMode.MASSIVE_DISTRIBUTION})
+    repo.save_source(source)
+    live=bus.live_queue.repository
+    row=live.deliveries('PUBLISHED')[0]
+    worker=LiveDeliveryWorker(bus)
+    message,_,binding,_=worker._prepare(row)
+    prepared=live.prepare_publication(bus,row,source,binding,message)
+    assert prepared['known'] and prepared['massive_regex']
+    svc=MonitoringTermsService(repo)
+    _,current=svc.get('MU')
+    updated=current.model_dump(mode='json')
+    updated.update(expected_revision=revision,definition={'relevant':'Updated memory market','irrelevant':'Other topics'})
+    svc.apply(TickerMonitoringTerms.model_validate(updated),actor='test')
+    with pytest.raises(RuntimeError,match='live_publication_terms_changed'):
+        live.publish(prepared)
+
+
 async def test_api_permalink_and_language_share_body_before_publication(pipeline):
     url = 'https://www.benzinga.com/markets/options/26/10/62752031/company-story'
     capture(pipeline, 'benzinga_news', input_message(1, url))

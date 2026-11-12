@@ -1446,8 +1446,10 @@ class LiveRepository:
         raw_json = self.bus._json(raw)
         standard_json = self.bus._json(standard)
         refs = set(native_hashes(raw_json)) | set(native_hashes(standard_json))
+        from .massive_relevance import uses_massive_rules
         return dict(
             row=row,
+            massive_regex=uses_massive_rules(source),
             raw=raw,
             standard=standard,
             raw_json=raw_json,
@@ -1496,7 +1498,7 @@ class LiveRepository:
             terms = db.execute(
                 "SELECT current_revision FROM ticker_monitoring_terms WHERE ticker=?", (ticker,)
             ).fetchone()
-            if not prepared.get("known") and terms and terms[0] != row["terms_revision"]:
+            if (not prepared.get("known") or prepared.get("massive_regex")) and terms and terms[0] != row["terms_revision"]:
                 raise RuntimeError("live_publication_terms_changed")
             if prepared.get("rejected"):
                 db.execute(

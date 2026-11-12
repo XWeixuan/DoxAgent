@@ -95,6 +95,12 @@ def test_static_catalog_covers_registered_sources_and_valid_taxonomy():
         "primary": ["HTTP"],
         "fallback": [],
     }
+    assert catalog["sources"]["globenewswire_massive"]["listing"] == {
+        "primary": ["HTTP", "RSS"], "fallback": [],
+    }
+    for sid in ('businesswire_massive','prnewswire_massive','globenewswire_massive',
+                'access_newswire_massive','tmx_newsfile_massive'):
+        assert '测试' not in catalog['sources'][sid]['description']
 
 
 def test_weighted_delivery_statistics_do_not_duplicate_shared_body_or_zero_poll_gap():

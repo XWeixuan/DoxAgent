@@ -21,6 +21,7 @@ from .jev import JevClient
 from .monitoring_terms import MonitoringTermsService, TickerMonitoringTerms
 from .relevance import regex_relevant
 from .schema import (
+    AcquisitionMode,
     RawMessageInput,
     SourceDefinition,
     utc_now,
@@ -190,7 +191,6 @@ class DistributionWorker:
                 continue
             definitions[row["ticker"]] = found[1]
             from .massive_relevance import massive_configured, massive_relevant
-            from .schema import AcquisitionMode
             from .massive_relevance import uses_massive_rules
             massive = uses_massive_rules(source)
             if massive:
@@ -294,7 +294,10 @@ class DistributionWorker:
         scores: dict[str, float] = {}
         attempts: dict[str, int] = {}
         errors: dict[str, str] = {}
-        cached = await self._read(self.repository.cached_decisions, eligible_rows)
+        massive = source.acquisition_mode is AcquisitionMode.MASSIVE_DISTRIBUTION
+        if massive:
+            jev_enabled = False
+        cached = {} if massive else await self._read(self.repository.cached_decisions, eligible_rows)
         for ticker, value in cached.items():
             scores[ticker] = 1.0 if value["regex_result"] else value["jev_result"]
             attempts[ticker] = value["jev_attempts"]

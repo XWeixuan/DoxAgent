@@ -538,7 +538,7 @@ class LiveDeliveryWorker:
         if (
             row.get("decision_digest") == row["body_digest"]
             and decision_terms == revision
-            and (row.get("regex_result") or (row.get("jev_result") or 0) >= 0.5)
+            and (row.get("regex_result") or (not massive and (row.get("jev_result") or 0) >= 0.5))
             and (
                 not model_expired or row.get('regex_result') or
                 (row.get('due_at') and datetime.fromisoformat(row['due_at']) < model_deadline)
@@ -571,6 +571,10 @@ class LiveDeliveryWorker:
             prepared = [r for r in prepared if not r[0].get('_prepare_error')]
             eligible = []
             for row, msg, source, binding, found in prepared:
+                if source and source.acquisition_mode is AcquisitionMode.MASSIVE_DISTRIBUTION:
+                    # Recovered L2_DUE rows must also obey the regex-only boundary.
+                    await self.process(row, (msg, source, binding, found))
+                    continue
                 deadline = decision_model_deadline(row, source) if source else None
                 if deadline is not None and utc_now() >= deadline:
                     # Still honor regex matches and an already accepted timely
