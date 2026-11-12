@@ -24,7 +24,7 @@ from .schema import AcquisitionFailure, PollResult, RawMessageInput, sha256_text
 RECIPES = {
     "prnewswire_massive": {
         "url": "https://www.prnewswire.com/news-releases/news-releases-list/?page={page}&pagesize=100",
-        "method": "POST", "routes": ["direct"], "size": 100,
+        "method": "GET", "routes": ["direct"], "size": 100,
     },
     "globenewswire_massive": {
         "url": "https://www.globenewswire.com/en/Search/load/more?page={page}&pageSize=50",

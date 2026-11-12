@@ -53,13 +53,16 @@ class SiteAccessTransport:
         publisher_url: str | None = None,
     ) -> Observation:
         started = time.monotonic()
+        from .publishers import public_article_request
+        method, request_url = public_article_request(url) if phase == 'direct' else ('GET', url)
         result = await self.client.execute(
             AccessRequest(
                 operation_id=f"body:{phase}:{_key(url)}",
                 purpose=SitePurpose.BODY,
                 work_class=WORK_CLASS.get(),
                 work_age_seconds=WORK_AGE.get(),
-                url=url,
+                url=request_url,
+                method=method,
                 parameters={"publisher_url":publisher_url} if publisher_url else {},
                 mode=AccessMode.HTTP_PUBLIC,
                 remaining_budget_ms=max(1, int(remaining(180) * 1000)),

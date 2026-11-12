@@ -76,6 +76,9 @@ def body_nodes(root: Any, url: str) -> list[Any]:
         # Paragraph-only scopes exclude recommendation cards and copyright teasers.
         return paragraphs
     selectors = {
+        "businesswire.com": '//*[@id="bw-release-story"]',
+        "prnewswire.com": '//section[contains(concat(" ",normalize-space(@class)," ")," release-body ")]',
+        "newsfilecorp.com": '//article[@id="release"]',
         "marketwatch.com": '//*[@id="js-article__body"]|//*[contains(@class,"article__body")]',
         "fool.com": '//*[@id="article-body"]|//*[@data-testid="article-body"]',
         "stocktwits.com": '//*[@data-testid="article-body"]',
@@ -144,6 +147,20 @@ def apply_document(
     node_text: Any,
 ) -> Any | None:
     publisher, path = publisher_host(url), urlsplit(url).path
+    if publisher in {'businesswire.com', 'prnewswire.com', 'newsfilecorp.com'}:
+        nodes = body_nodes(root, url)
+        if nodes:
+            node = nodes[0]
+            if publisher == 'prnewswire.com':
+                # Mobile "Continue reading" scrolls to text already present in
+                # this release. It neither reveals nor downloads missing text.
+                for link in node.xpath('.//a[@href="#continue-jump"]'):
+                    if node.xpath('.//*[@id="continue-jump"]'):
+                        link.drop_tree()
+            text = node_text(node)
+            if text:
+                info.candidates = [candidate_type(text, 'wire_article_body', True, info.headline, 40)]
+                return node
     if publisher == "barchart.com":
         nodes = root.xpath(
             '//*[contains(concat(" ",normalize-space(@class)," ")," article-content ")]'

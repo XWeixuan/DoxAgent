@@ -471,7 +471,10 @@ class LiveDeliveryWorker:
         if source:
             source=source.model_copy(update={"delivery_mode":row.get("delivery_mode","production")})
         binding = resolve_binding(self.bus.repository, row["binding_id"])
-        if binding and not row.get("raw_id") and row.get("delivery_mode") != "test":
+        if (binding and not row.get("raw_id") and row.get("delivery_mode") != "test"
+                and not (source and source.acquisition_mode is AcquisitionMode.MASSIVE_DISTRIBUTION)):
+            # Massive must classify even an existing publication. Negative and
+            # no-body rows need no historical lookup; positive publish still dedups.
             fingerprint = message.metadata.get('v2_body_completion', {}).get('body_fingerprint')
             known, checked = self.bus.repository.publication_match(binding, message, fingerprint=fingerprint)
             row['_publication_lookup'] = (known, checked)
@@ -678,15 +681,18 @@ class LiveDeliveryWorker:
         self.delivery_round += 1
         foreground = [r for r in rows if r["foreground"]]
         background = [r for r in rows if not r["foreground"]]
-        if foreground and not background and self.delivery_round % 8 == 0:
-            background = await self.bus.storage.read(
+        fair = []
+        if rows and self.delivery_round % 8 == 0:
+            fair = await self.bus.storage.read(
                 self.repository.deliveries, old_only=True, limit=1
             )
-            selected = {(r["article_key"], r["ticker"]) for r in foreground}
-            background = [r for r in background if (r["article_key"], r["ticker"]) not in selected]
         # A loop filled with old local fanout must not hold a newly arrived
         # article behind 32 full preparations. Keep one old item progressing.
-        rows = foreground + background[:1]
+        # Put the reserved oldest item BEFORE the bounded batch: at its tail
+        # the 0.25s deadline can prevent it from ever executing under steady load.
+        selected = {(r['article_key'],r['ticker'],r['binding_id']) for r in fair}
+        rows = fair + [r for r in foreground + background[:1]
+                       if (r['article_key'],r['ticker'],r['binding_id']) not in selected]
         processed = 0
         from itertools import groupby
         for _, article_rows in groupby(rows,key=lambda r:r['article_key']):

@@ -86,7 +86,7 @@ async def test_second_poll_unchanged_listing_does_not_repeat_body_inputs():
     second = await poll_listing(adapter, context(checkpoint=first.next_checkpoint))
     assert not second.messages and not second.failures
     adapter.poll_feed.assert_not_called()
-    assert adapter.listing_request.call_args.args[2]["method"] == "POST"
+    assert adapter.listing_request.call_args.args[2]["method"] == "GET"
 
 
 async def test_304_requires_prior_validated_baseline_and_preserves_seen():

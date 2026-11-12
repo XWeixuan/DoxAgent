@@ -2999,3 +2999,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-13 Bloomberg subscription acceptance: production source v6 has ten enabled real bindings and unchanged HTTP endpoints; existing nine Massive rule maps and all ordinary terms preserved, IONQ initialized with four existing English groups. Actual authenticated frontend shows subscription 10/running 10, HTTP listing and Chrome/CDP BODY, with four initial formal publications; test-to-formal promotion count remains zero. Catalog 10 tests and Ruff passed; API-only release a83fee09d verified.
 
 2026-11-13 Reuters latency follow-up: raise the legacy cold Backup budget to the existing Main tier (2 concurrent / 1500ms) through Registry CAS revision 3; preserve Chrome/Profile and 60s targets. Fix retry timing aggregation: add durations only, retain absolute timestamps/status labels and independently numbered transports with bounded identity mapping. Natural paid result was applied but independent search still returned 401; do not report APPLIED as business recovery. 62 focused regressions passed. See docs/reuters-solver-and-latency-repair-20261113.md.
+
+## 2026-11-13 Massive Newswire 可靠性修复
+- Business Wire正文复用原站只读POST，PR Newswire列表由失效POST改为GET；按实际文章区域抽取，排除PRN已存在正文的手机端跳转导航。
+- Massive正式正文遵循显式Registry策略；新增BW/PRN/Newsfile站点策略，Newsfile复用Managed浏览器等待AWS自动验证后的真实正文，并保留初始202与最终200证据。
+- 每8轮优先处理一个最旧本地分发待办，避免短轮次预算使保留名额失效；Massive阴性分类不预查发布历史，正例仍走原去重。完整正文、正则、接纳窗口及轮询频率保持。

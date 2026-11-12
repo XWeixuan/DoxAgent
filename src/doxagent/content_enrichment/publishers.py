@@ -8,6 +8,15 @@ from html import escape
 from urllib.parse import urlencode, urlparse
 
 
+def public_article_request(url: str) -> tuple[str, str]:
+    """Business Wire serves its public release document through read-only POST."""
+    parsed = urlparse(url)
+    if (parsed.hostname in {"www.businesswire.com", "businesswire.com"}
+            and re.match(r"^/news/home/\d+/[a-zA-Z-]+(?:/|$)", parsed.path)):
+        return "POST", parsed._replace(path=parsed.path.rstrip('/'), fragment='').geturl()
+    return "GET", url
+
+
 def seeking_alpha_original_title(scripts: list[str], url: str) -> str | None:
     """A localized page retains the exact article's original title in public SSR metadata."""
     expected = re.match(r"/article/(\d+)-", urlparse(url).path)

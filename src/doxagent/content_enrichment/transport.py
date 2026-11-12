@@ -246,6 +246,8 @@ class PublicTransport:
         return Observation(current, "", status, "redirect_hop_limit")
 
     async def _get(self, url: str, phase: str) -> tuple[Any, str]:
+        from .publishers import public_article_request
+        method, url = public_article_request(url) if phase == 'direct' else ('GET', url)
         if self.cooldowns.get(urlparse(url).hostname or "", 0) > time.monotonic():
             raise ValueError("domain_cooldown")
         kwargs = {
@@ -264,7 +266,7 @@ class PublicTransport:
             kwargs["proxy"] = PUBLIC_PROXY.get()
         stream = getattr(self.session, "stream", None)
         if stream is not None:
-            async with stream("GET", url, **kwargs) as response:
+            async with stream(method, url, **kwargs) as response:
                 chunks, size = [], 0
                 async for chunk in response.aiter_content():
                     size += len(chunk)
@@ -274,7 +276,7 @@ class PublicTransport:
                 raw = b"".join(chunks)
                 text = raw.decode(response.encoding or "utf-8", errors="replace")
                 return response, text
-        response = await self.session.get(url, **kwargs)
+        response = await getattr(self.session, method.lower())(url, **kwargs)
         text = str(response.text or "")
         if len(text.encode()) > self.max_bytes:
             raise ValueError("response_too_large")

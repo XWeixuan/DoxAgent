@@ -483,6 +483,26 @@ def seed_specs() -> list[SiteStrategySpec]:
             },
             default_content_language="en",
         ),
+        _site(
+            "businesswire", ["businesswire.com", "www.businesswire.com"], "builtin:generic@1",
+            egresses=("server-direct",), access_order=["http_public"],
+            body_parameters={"body_xpath": ['//*[@id="bw-release-story"]'], "http_public_timeout_seconds": 8},
+            default_content_language="en",
+        ),
+        _site(
+            "prnewswire", ["prnewswire.com", "www.prnewswire.com"], "builtin:generic@1",
+            egresses=("server-direct",), access_order=["http_public", "browser"],
+            body_parameters={"http_public_timeout_seconds": 8, "browser_timeout_seconds": 10,
+                             "wait_selector": "section.release-body p"},
+            default_content_language="en",
+        ),
+        _site(
+            "newsfile", ["newsfilecorp.com", "www.newsfilecorp.com"], "builtin:generic@1",
+            egresses=("nl-standard-2",), access_order=["browser"],
+            body_parameters={"body_xpath": ['//article[@id="release"]'],
+                             "browser_timeout_seconds": 15, "wait_selector": "article#release p"},
+            default_content_language="en",
+        ),
     ]
     return specs
 

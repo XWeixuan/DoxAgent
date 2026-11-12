@@ -1950,6 +1950,16 @@ class SiteAccessRuntime:
                     await page.locator(wait_selector).first.wait_for(
                         state="visible", timeout=min(request.remaining_budget_ms, 10_000)
                     )
+                if (resolved.site_id == 'newsfile' and status == 202
+                        and observed_response is not None
+                        and observed_response.status == 200
+                        and observed_response.url == page.url):
+                    # AWS automatic verification navigates to a real 200 document.
+                    # Keep the initial 202 in request timings, report the observed
+                    # final response instead of carrying bootstrap headers forward.
+                    response = observed_response
+                    status = response.status
+                    headers = await response.all_headers()
                 html = native_document[0] if native_document else await page.content()
                 if (
                     resolved.site_id == "barrons"
