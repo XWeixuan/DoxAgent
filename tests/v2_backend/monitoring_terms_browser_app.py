@@ -38,9 +38,12 @@ value = {
     "l2": {lang: {"groups": [{"id": "memory-" + lang, "any": [{"literal": word}]}]}
            for lang, word in {"en": "Micron", "ko": "마이크론", "zh-Hant": "美光"}.items()},
     "definition": {"relevant": "Micron business", "irrelevant": "Unrelated products"},
+    "massive_l2": {"en": {"groups": [{"id": "massive-memory", "any": [{"literal": "HBM"}]}]}},
 }
 terms.put_terms("MU", value, "fixture", "seed-terms", terms.get_terms("MU")["control_etag"])
 service.configure_binding(ticker="MU", source_id="google_news_search_rss", source_parameters={"search_terms": ["legacy"]}, actor="user")
+service.update_source('prnewswire_massive', {'delivery_mode':'production'}, actor='user', reason='disposable browser fixture')
+service.configure_binding(ticker='MU', source_id='prnewswire_massive', actor='user')
 
 store = ReadStore(root / "read.db")
 store.migrate()
