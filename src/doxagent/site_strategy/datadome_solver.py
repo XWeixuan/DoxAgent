@@ -765,12 +765,23 @@ class DataDomeSolver:
             self.save(job)
             return None
         # An uncertain/cleared DOM may get ONE independent business request.
-        if report and report.challenge != "BLOCKED" and not job.get("confirmation_probe_reserved"):
+        if (not job.get("confirmation_probe_reserved") and
+                ((report and report.challenge != "BLOCKED") or age >= 15)):
             job["confirmation_probe_reserved"] = True
+            job["confirmation_probe_reason"] = "independent_after_apply"
             self.save(job)
             return 0
         next_point = next((point for point in (5, 15, 30, 60, 120) if point > age), 120)
         return max(1, next_point - age)
+
+    def confirmation_probe_due(self, recovery):
+        jobs = self.jobs(recovery.recovery_id)
+        job = jobs[-1] if jobs else {}
+        return bool(job.get("status") == "APPLIED"
+            and job.get("verification_state") in {"PENDING", "ORIGINAL_CLEARED"}
+            and job.get("confirmation_probe_reserved") and not job.get("business_probe_id")
+            and job.get("applied_at")
+            and (utc_now() - datetime.fromisoformat(job["applied_at"])).total_seconds() < 120)
 
     def bind_confirmation_probe(self, recovery, probe_id):
         jobs = self.jobs(recovery.recovery_id)

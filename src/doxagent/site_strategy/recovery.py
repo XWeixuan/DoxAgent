@@ -792,6 +792,8 @@ class BrowserRecoveryCoordinator:
                                 recovery, "solver_original_unreadable", delay=confirmation_delay
                             )
                             return
+                    if self.datadome_solver.confirmation_probe_due(recovery):
+                        recovery = recovery.model_copy(update={"next_probe_at": utc_now()})
                     open_writer = any(
                         s.identity_id == identity_id and s.state == "OPEN"
                         for s in (await registry_io(self.store.list_sessions))

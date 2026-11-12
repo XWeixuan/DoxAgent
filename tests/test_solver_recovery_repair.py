@@ -174,6 +174,18 @@ def test_applied_confirmation_has_finite_window_and_one_probe_reservation(solver
     assert solver.jobs(recovery.recovery_id)[0]["verification_state"] == "STILL_BLOCKED"
 
 
+def test_applied_blocked_document_allows_one_independent_confirmation(solver_setup):
+    solver, recovery, *_ = solver_setup
+    job = solver.new_job(recovery, {}, "binding")
+    job.update(status="APPLIED", applied_at=(utc_now() - timedelta(seconds=16)).isoformat())
+    solver.save(job)
+    assert solver.confirmation_delay(recovery, VerificationReport(challenge="BLOCKED")) == 0
+    assert solver.confirmation_probe_due(recovery)
+    solver.bind_confirmation_probe(recovery, "one-proof")
+    assert not solver.confirmation_probe_due(recovery)
+    assert solver.confirmation_delay(recovery, VerificationReport(challenge="BLOCKED")) > 0
+
+
 @pytest.mark.asyncio
 async def test_identity_paid_limit_spans_incidents(solver_setup):
     solver, recovery, scope, identity, egress, _ = solver_setup
