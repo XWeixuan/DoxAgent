@@ -1113,6 +1113,7 @@ def _verification_document(html, url, status, headers, resolved, request, *, rec
     # body extraction in the final body validator, once per accepted capture.
     info = inspection or inspect_html(html, url, "", generic_extraction=resolved.site_id not in {
         "barrons", "investing", "investorshub",
+        "businesswire", "prnewswire", "newsfile",
     })
     legacy_blocked = info.access_reason == "challenge_required"
     sample = assess(html, status=status, headers=headers, policy=resolved.challenge, blocked=legacy_blocked)

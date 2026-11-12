@@ -3008,3 +3008,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Massive Newswire补充：Registry正文参数显式接受并校验wait_selector，完整站点bootstrap/共享路径回归73项通过；新增真实站点配置必须经owner校验测试。
 
 - Massive Newswire生产入口补充：SharedContentExtractor将BW/PRN/Newsfile的body_v2.2送入显式Site Access策略；GNW/ACCESS仍保留原有效轻量HTTP路径。补充总入口回归；HTTP分页中途失败/RSS兜底不再漏掉正常路径的30分钟过滤。最终相关组合68通过、1可选fixture跳过。
+
+- Newswire收尾优化：BW/PRN/Newsfile访问判定仅检查DOM与访问证据，不在短生命周期Managed worker内重复启动通用正文抽取；最终正文校验不变。安全验证/维护/入口回归68通过。
