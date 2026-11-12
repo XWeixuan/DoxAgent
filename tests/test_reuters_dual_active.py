@@ -204,7 +204,7 @@ async def test_source_combines_existing_page_slots_and_restores_single_member_en
     body = await service._execute_uncached(request.model_copy(update={'purpose': SitePurpose.BODY}))
     assert 'routing_balanced' not in body.stage_timings
     monkeypatch.setattr(service.failover, 'candidate_status', lambda _, identity, purpose: {
-        'selectable': identity == scope.primary_identity_id, 'eligible': False})
+        'selectable': identity == scope.primary_identity_id, 'eligible': False, 'skip_reasons': []})
     await service._execute_uncached(request)
     assert envelopes == [(3, 1000), (3, 1000), (2, 1500)]
     assert resolved.access.max_concurrency == 2 and resolved.access.min_interval_ms == 1500

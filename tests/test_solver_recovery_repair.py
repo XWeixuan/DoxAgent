@@ -575,9 +575,9 @@ def test_reuters_original_document_proves_only_matching_unblocked_query(setup, k
 
 
 @pytest.mark.parametrize(
-    "text", ["Search results for Ondas 0 results", "No search results match the term “Ondas”"]
+    "text,ready", [("Search results for Ondas 0 results", False), ("No search results match the term “Ondas”", True)]
 )
-def test_reuters_legitimate_zero_results_are_business_proof(setup, text):
+def test_reuters_legitimate_zero_results_are_business_proof(setup, text, ready):
     from doxagent.site_strategy.recovery import recovery_context, verify_capture
     from doxagent.site_strategy.runtime import RuntimeResponse
 
@@ -600,7 +600,8 @@ def test_reuters_legitimate_zero_results_are_business_proof(setup, text):
         provenance=SimpleNamespace(instance_id="chrome"),
     )
     report = verify_capture(service, scope, recovery_context(request), capture, observed=True)
-    assert report.challenge == "CLEARED" and report.crawler == "READY"
+    assert (report.crawler == "READY") is ready
+    assert (report.challenge == "CLEARED") is ready
 
 
 @pytest.mark.asyncio
@@ -608,12 +609,14 @@ async def test_reuters_live_recipe_accepts_same_zero_result_contract():
     from doxagent.message_bus_v2.reuters_sources import capture_reuters_search
 
     async def wait(expression, **kwargs):
-        assert "No search results match the term" in expression
+        assert "no search results match the term" in expression.casefold()
 
     page = SimpleNamespace(
+        url="https://www.reuters.com/site-search/?query=Ondas&offset=0",
         goto=AsyncMock(return_value=SimpleNamespace(status=200)),
+        locator=lambda _: SimpleNamespace(first=SimpleNamespace(wait_for=AsyncMock())),
         wait_for_function=wait,
-        evaluate=AsyncMock(return_value=[]),
+        evaluate=AsyncMock(side_effect=[{"query":"Ondas","offset":0}, {"query":"Ondas","offset":0}, []]),
     )
     assert await capture_reuters_search(page, "Ondas", 0) == []
 

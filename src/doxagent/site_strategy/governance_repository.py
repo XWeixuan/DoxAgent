@@ -1553,6 +1553,30 @@ class GovernanceRepository:
             )
             return self._write_recovery(connection, value)
 
+    def reconcile_resolved_profile(self, profile_id):
+        """Release only a proven ended Challenge reservation, never a live login."""
+        from .schema import ProfileOperationalState
+        with self.repository.transaction() as connection:
+            profile = self.repository.get_profile(profile_id)
+            if not profile or not profile.maintenance_session_id:
+                return False
+            task = self.get_challenge(profile.maintenance_session_id)
+            if not task or task.state != "RESOLVED":
+                return False
+            identity = self.repository.get_identity(task.identity_id)
+            recovery = self.get_recovery(task.identity_id)
+            if (not identity or identity.profile_id != profile_id or not recovery
+                    or recovery.phase != "RESOLVED"
+                    or any(s.identity_id == identity.identity_id and s.state == "OPEN"
+                           for s in self.list_sessions())):
+                return False
+            value = profile.model_copy(update={"operational_state": ProfileOperationalState.AVAILABLE,
+                "maintenance_session_id": None, "challenge_url": None, "challenge_target_id": None,
+                "operational_revision": profile.operational_revision + 1, "updated_at": utc_now()})
+            connection.execute("update browser_profiles set data_json=?,updated_at=? where profile_id=?",
+                (value.model_dump_json(), utc_now().isoformat(), profile_id))
+            return True
+
     def finish_recovery(self, claimed, report, *, context, resolved_by):
         """A lease cannot clear another incident, identity or configuration."""
         from .recovery import context_key
@@ -1651,7 +1675,10 @@ class GovernanceRepository:
                     for s in self.list_sessions()
                     if s.identity_id == identity.identity_id and s.kind == "CHALLENGE"
                 }
-                if profile.maintenance_session_id in {current.challenge_task_id, *sessions}:
+                old_task = self.get_challenge(profile.maintenance_session_id or "")
+                old_resolved = bool(old_task and old_task.identity_id == identity.identity_id
+                                    and old_task.state == "RESOLVED")
+                if old_resolved or profile.maintenance_session_id in {current.challenge_task_id, *sessions}:
                     profile = profile.model_copy(
                         update={
                             "operational_state": ProfileOperationalState.AVAILABLE,
