@@ -1684,7 +1684,7 @@ class MessageBusV2Repository:
             if (access_scope(raw, raw.source_id) != access_scope(message, binding.source_id)
                     or (language and old_language and language != old_language)):
                 continue
-            comparable = message.model_copy(update={"identity_key": identity_key_for(binding.source_id, message)})
+            comparable = message.model_copy(update={"identity_key": identity_key_for(binding.source_id, message), "source_id": binding.source_id})
             if not dedup.context_conflict(raw, comparable, content_match=content_match):
                 return (stored if ibkr_story else raw), checked
         return None, checked

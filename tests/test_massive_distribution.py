@@ -15,6 +15,7 @@ def terms(repo):
     return MonitoringTermsService(repo).apply(TickerMonitoringTerms.model_validate(dict(ticker='MU',expected_revision=0,
         l1_concepts=[dict(concept_id='micron',expressions={'en':'Micron'})],
         l2={'en':{'groups':[{'id':'company','any':[{'literal':'Micron'}]}]}},
+        massive_l2={'en':{'groups':[{'id':'company','any':[{'literal':'Micron'}]}]}},
         definition={'relevant':'Micron','irrelevant':'Other topics'})),actor='test')
 
 
@@ -23,7 +24,7 @@ async def test_same_url_isolated_final_sink_without_real_subscription(tmp_path,t
     repo,bus,production,binding=_setup(tmp_path)
     revision=terms(repo)
     source=next(s for s in initial_sources() if s.source_id=='prnewswire_massive')
-    source=source.model_copy(update={'distribution_policy':source.distribution_policy.model_copy(update={'test_tickers':['MU']})})
+    source=source.model_copy(update={'default_parameters':{**source.default_parameters, 'massive_regex_enabled':True}, 'distribution_policy':source.distribution_policy.model_copy(update={'test_tickers':['MU']})})
     repo.save_source(source)
     assert repo.get_binding('MU:'+source.source_id) is None
     bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
@@ -190,3 +191,73 @@ async def test_exact_complete_body_duplicate_across_test_urls_is_not_republished
             assert db.execute("SELECT count(*) FROM live_deliveries WHERE state='TEST_DUPLICATE'").fetchone()[0]==1
             assert db.execute('SELECT count(*) FROM raw_messages').fetchone()[0]==0
     finally:await hub.close()
+
+
+def test_massive_rules_never_fall_back_to_ordinary():
+    from doxagent.message_bus_v2.relevance import regex_relevant
+    from doxagent.message_bus_v2.massive_relevance import massive_relevant, massive_configured
+    from doxagent.message_bus_v2.schema import RawMessageInput
+    t=TickerMonitoringTerms.model_validate(dict(ticker='MU', expected_revision=0,
+        l1_concepts=[dict(concept_id='company',expressions={'en':'Micron'})],
+        l2={'en':{'groups':[{'id':'broad','any':[{'literal':'AI'}]}]}},
+        massive_l2={'en':{'groups':[{'id':'memory','any':[{'literal':'HBM'}]}]}},
+        definition={'relevant':'memory','irrelevant':'other'}))
+    m=RawMessageInput(title='AI software update',url='https://example.com/a',raw_payload={})
+    assert regex_relevant(t,'en',m)
+    assert not massive_relevant(t,'en',m)
+    assert massive_relevant(t,'fr',m.model_copy(update={'title':'HBM production'}))
+    t=t.model_copy(update={'massive_l2':{}})
+    assert not massive_configured(t,'en')
+    assert not massive_relevant(t,'en',m)
+
+
+@pytest.mark.parametrize('recovered_model_row', [False, True])
+async def test_massive_recovery_and_model_cache_cannot_bypass_regex(tmp_path, recovered_model_row):
+    repo,bus,_,_=_setup(tmp_path)
+    terms(repo)
+    svc=MonitoringTermsService(repo)
+    revision,current=svc.get('MU')
+    updated=current.model_dump(mode='json')
+    updated.update(expected_revision=revision,massive_l2={'en':{'groups':[{'id':'narrow','any':[{'literal':'NeverMatchingCompanyXYZ'}]}]}})
+    revision=svc.apply(TickerMonitoringTerms.model_validate(updated),actor='test')
+    source=next(s for s in initial_sources() if s.source_id=='prnewswire_massive')
+    source=source.model_copy(update={'default_parameters':{**source.default_parameters,'massive_regex_enabled':True},
+        'distribution_policy':source.distribution_policy.model_copy(update={'test_tickers':['MU'],'jev_enabled':True})})
+    repo.save_source(source)
+    bus.live_queue=LiveQueue(bus)
+    live=bus.live_queue.repository
+    binding=bindings(source)[0]
+    rows=live.prepare_input(source,[(binding.binding_id,'MU',revision)],[_message(991)],observed_at=utc_now().isoformat(),unit='WIRE:all')
+    live.accept(rows)
+    hub=ContentEnrichmentHub(repo,bus,extractor=_GovernedExtractor())
+    try:
+        await hub.run_once()
+        row=live.deliveries()[0]
+        worker=LiveDeliveryWorker(bus)
+        async def forbidden(*a,**kw):raise AssertionError('Massive invoked Decision Model')
+        worker.classifier._jev=forbidden
+        if recovered_model_row:
+            await worker.classify([row])
+        else:
+            row.update(decision_digest=row['body_digest'],jev_result=0.99,regex_result=False)
+            await worker.process(row)
+        with repo._connect() as db:
+            assert db.execute("SELECT state FROM live_deliveries WHERE article_key=?",(rows[0]['key'],)).fetchone()[0]=='IRRELEVANT'
+            assert db.execute('SELECT count(*) FROM test_publications').fetchone()[0]==0
+    finally:await hub.close()
+
+
+async def test_legacy_massive_continuation_ignores_model_cache(tmp_path):
+    from doxagent.message_bus_v2.distribution import DistributionWorker
+    from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+    repo,bus,_,_=_setup(tmp_path)
+    worker=DistributionWorker(DistributionRepository(repo),bus,MonitoringTermsService(repo))
+    async def forbidden(*a,**kw):raise AssertionError('Massive consulted model/cache')
+    worker._read=forbidden
+    worker._jev=forbidden
+    calls=[]
+    async def delivered(*args,**kwargs):calls.append(kwargs)
+    worker._deliver=delivered
+    await worker._finish_article_decisions(_message(992),initial_sources()[0],
+        [{'ticker':'MU'}],{'MU':object()},{'MU':False},True)
+    assert calls==[dict(regex_hit=False,jev_result=None,jev_attempts=0,error_code=None)]

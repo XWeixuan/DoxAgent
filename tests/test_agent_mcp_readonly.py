@@ -248,7 +248,7 @@ async def test_real_api_overview_and_search_reuse_bounded_queries(backend):
         )
         assert next_page["data"]["items"][0]["overview"]["state"]["ticker"] == "SNOW"
         assert not next_page["data"]["has_more"]
-        sources = await reads.call("doxagent_get_overview", {"section": "sources", "ticker": "MU"})
+        sources = await reads.call("doxagent_get_overview", {"section": "sources"})
         assert sources["data"]["items"] == []
         search = await reads.call(
             "doxagent_search_cases", {"ticker": "MU", "period": "ALL", "q": "News"}
@@ -257,7 +257,7 @@ async def test_real_api_overview_and_search_reuse_bounded_queries(backend):
         assert "final_policy_hit" not in search["data"]["items"][0]
         assert "body" not in search["data"]["items"][0]
         with store.connect() as db:
-            assert db.execute("SELECT COUNT(*) FROM views").fetchone()[0] == 3
+            assert db.execute("SELECT COUNT(*) FROM views").fetchone()[0] == 2
     finally:
         await api.close()
 

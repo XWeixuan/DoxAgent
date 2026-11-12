@@ -45,6 +45,9 @@ def case_row(value):
         "w3_decision",
         "w3_operations_status",
         "result_settled",
+        "runtime_tags",
+        "w3_model_seconds",
+        "non_model_seconds",
     )
     out["source"] = pick(value.get("source"), "source_id", "name")
     out["results"] = [
@@ -96,7 +99,8 @@ def bus_kpis(value):
             "published_revisions": metric(value["metrics"]["published_revisions"]),
             "new_article_body": pick(body, "ratio", "full", "total", "pending"),
         },
-        **pick(value, "counts", "mean_e2e_seconds", "e2e_samples", "coverage"),
+        **pick(value, "counts", "mean_e2e_seconds", "e2e_samples", "coverage",
+               "mean_capture_seconds", "capture_samples"),
     }
 
 
@@ -128,11 +132,43 @@ def source_row(value):
     return out
 
 
+def catalog_row(value):
+    out = pick(value, "source_id", "name", "short_name", "description", "enabled",
+               "delivery_mode", "acquisition_mode", "configured_intervals_seconds")
+    out["poll_counts"] = pick(value.get("poll_counts"), "succeeded", "partial", "failed", "unknown")
+    out["state_counts"] = pick(value.get("state_counts"), "running", "sleeping", "disabled",
+                               "abnormal", "unknown")
+    raw = value.get("classification")
+    out["classification"] = None if raw is None else {
+        **pick(raw, "applicability", "sector_ids"),
+        **{k: pick(raw.get(k), "primary", "fallback") for k in ("listing", "body")},
+    }
+    for name, fields in (("entry_points", ("url", "label", "ticker")),
+                         ("subscriptions", ("ticker", "binding_id", "enabled")),
+                         ("errors", ("ticker", "code", "message"))):
+        out[name] = [pick(row, *fields) for row in value.get(name, [])]
+    out["metrics"] = pick(value.get("metrics"), "last_success_at", "published_today",
+                          "mean_e2e_seconds", "p95_e2e_seconds", "e2e_samples",
+                          "mean_capture_seconds", "capture_samples", "refresh_seconds",
+                          "refresh_samples", "body_total", "body_full", "body_ratio",
+                          "body_applicable", "article_samples")
+    return out
+
+
+def projection_clock(rows):
+    return [pick(r, "source", "head", "checkpoint", "checked_at", "error", "historical_gaps",
+                 "source_event_at", "oldest_pending_at") for r in rows]
+
+
 def operations_row(value):
     return {
         "overview": ticker_row(value["overview"]),
         "period": value["period"],
-        "runtime": resource(value["runtime"], metrics),
+        "runtime": resource(value["runtime"], lambda v: metrics(pick(
+            v, "processed_cases", "hot_path_mean_seconds", "w3_mean_seconds",
+            "new_cases", "old_cases", "hit_cases", "related_cases", "long_w3_cases",
+            "non_model_mean_seconds", "executed_cases",
+        ))),
         "bus": {**resource(value["bus"], bus_kpis), "meta": {"read_at": value["bus_read_at"]}},
     }
 
@@ -379,7 +415,8 @@ def detail(value, part):
         return {part: resource(value[part], lambda r: judgment(r, part))}
     if part == "watch_pin":
         return watch_pin(value)
-    out = {"summary": pick(value["summary"], "title", "first_round_tags", "source_name")}
+    out = {"summary": pick(value["summary"], "title", "first_round_tags", "source_name",
+                           "runtime_tags", "w3_model_seconds")}
     out["summary"]["source"] = pick(value["summary"]["source"], "name", "kind")
     out["lifecycle_timing"] = pick(
         value.get("lifecycle_timing"),

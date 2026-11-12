@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "68d31fbd1f94ca4458e381189cc54e341f24fc1240a395c5f1ca4d92b6caa700",
+  "source_sha256": "69d97926a7c79e049109fa1bfc73db754ba72ff6e0ea209c4fb77c4561993586",
   "$defs": {
     "Id": {
       "type": "string"
@@ -7253,6 +7253,12 @@
     "MonitoringTermsValue": {
       "type": "object",
       "properties": {
+        "massive_l2": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/MonitoringL2Language"
+          }
+        },
         "x_accounts": {
           "type": "array",
           "items": {
@@ -7295,18 +7301,6 @@
       ],
       "additionalProperties": false
     },
-    "MonitoringTermsRequest": {
-      "type": "object",
-      "properties": {
-        "configuration": {
-          "$ref": "#/$defs/MonitoringTermsValue"
-        }
-      },
-      "required": [
-        "configuration"
-      ],
-      "additionalProperties": false
-    },
     "MonitoringTermsConsumer": {
       "type": "object",
       "properties": {
@@ -7320,23 +7314,17 @@
           "type": "string"
         },
         "acquisition_mode": {
-          "anyOf": [
-            {
-              "const": "by_search"
-            },
-            {
-              "const": "by_distribution"
-            }
+          "type": "string",
+          "enum": [
+            "by_search",
+            "by_distribution",
+            "massive_distribution"
           ]
         },
         "content_language": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "source_enabled": {
@@ -7346,39 +7334,28 @@
           "type": "boolean"
         },
         "search_policy_mode": {
-          "anyOf": [
-            {
-              "const": "or"
-            },
-            {
-              "const": "separate"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "or",
+            "separate",
+            null
           ]
         },
         "jev_source_enabled": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "boolean",
+            "null"
           ]
         },
         "terms_mode": {
-          "anyOf": [
-            {
-              "const": "UNIFIED"
-            },
-            {
-              "const": "LEGACY"
-            },
-            {
-              "const": "UNCONFIGURED"
-            }
+          "type": "string",
+          "enum": [
+            "UNIFIED",
+            "LEGACY",
+            "UNCONFIGURED"
           ]
         },
         "queries": {
@@ -7408,13 +7385,9 @@
           }
         },
         "preview_issue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         }
       },
@@ -7437,6 +7410,34 @@
     "MonitoringTermsConfig": {
       "type": "object",
       "properties": {
+        "massive_required_languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "massive_language_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "language": {
+                "type": "string"
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "language",
+              "source_ids"
+            ],
+            "additionalProperties": false
+          }
+        },
         "ticker": {
           "type": "string"
         },
@@ -7447,13 +7448,9 @@
           "type": "string"
         },
         "updated_at": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "configuration": {
@@ -30524,6 +30521,18 @@
           }
         }
       ]
+    },
+    "MonitoringTermsRequest": {
+      "type": "object",
+      "properties": {
+        "configuration": {
+          "$ref": "#/$defs/MonitoringTermsValue"
+        }
+      },
+      "required": [
+        "configuration"
+      ],
+      "additionalProperties": false
     }
   }
 }

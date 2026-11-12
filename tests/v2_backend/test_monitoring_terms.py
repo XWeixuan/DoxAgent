@@ -23,6 +23,33 @@ from doxagent.v2_read.repository import ReadStore
 from tests.test_message_bus_monitoring_terms import _terms
 
 
+def test_massive_consumer_contract_and_legacy_write_preserve_scope(tmp_path):
+    from doxagent.api_v2.dto import validate
+    repo = MessageBusV2Repository(tmp_path / 'bus.db')
+    bus = MessageBusV2Service(repo)
+    bus.bootstrap()
+    source = repo.get_source('prnewswire_massive')
+    repo.save_source(source.model_copy(update={'delivery_mode': 'production', 'enabled': True}))
+    config = _terms().model_dump(mode='json', exclude={'ticker', 'expected_revision'})
+    config['massive_l2'] = {'en': {'groups': [{'id': 'memory', 'any': [{'literal': 'HBM'}]}]}}
+    control = MonitoringTermsControl(repo.path)
+    first = control.put_terms('MU', config, 'tester', 'first-massive', control.get_terms('MU')['control_etag'])
+    from doxagent.message_bus_v2.schema import UpdateActor
+    bus.configure_binding(ticker='MU', source_id=source.source_id, actor=UpdateActor.SYSTEM)
+    snapshot = control.get_terms('MU')
+    validate('MonitoringTermsConfig', snapshot)
+    assert snapshot['massive_required_languages'] == ['en']
+    assert snapshot['required_languages'] == []
+    assert any(c['acquisition_mode']=='massive_distribution' for c in snapshot['consumers'])
+    old_client = copy.deepcopy(config)
+    old_client.pop('massive_l2')
+    old_client['definition']['relevant'] = 'Memory market updated'
+    assert control.validate_config('MU', old_client)['valid']
+    saved = control.put_terms('MU', old_client, 'tester', 'old-client', snapshot['control_etag'])
+    assert saved['configuration']['massive_l2'] == first['configuration']['massive_l2']
+    assert saved['configuration']['l2'] == old_client['l2']
+
+
 def test_languages_follow_active_ticker_bindings_without_losing_saved_terms(
     tmp_path, monkeypatch, capsys
 ):

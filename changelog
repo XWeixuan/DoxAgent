@@ -2958,6 +2958,16 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 # 2026-11-13 Source catalog refinement
 - Reorganize cards around identity/health, source purpose, dual acquisition paths, subscriptions, metrics and classification anchors; isolate conditional errors and move unused/test sources into separate final sections. Correct Calcalist/AWS sectors and expand all retained source descriptions.
 - Retire twenty explicit obsolete source IDs through the existing configuration/audit owner without flushing pending messages; remove current registry/bindings/poll heads/profile references, cancel active work and block deleted-source BODY rechecks while preserving business history. No new statistics queries, tables or background tasks.
+
+2026-11-13 Massive独立正则上线：新增massive_l2与专用入口，复用原生匹配和现有Live/兼容分发；普通词库保持隔离，Massive生产禁止模型兜底，缺配置失败关闭。扩展统一监测词双scope编辑、动态语言与CAS保留字段；更新GlobeNewswire并行HTTP/RSS目录。九套规则900条回放一致、INTC词边界勘误无样本判定变化；前端8项浏览器检查通过。生产启用/业务验收另见eval/massive_rollout_20261113回执，不以配置部署冒充正文验收。
+2026-11-13 Massive正式采集验收修正：补齐API消费者schema的massive_distribution枚举；RawMessageInput参与已发布消息去重时注入绑定来源上下文，避免别名判定AttributeError。新增回归通过，既有跨源/IBKR去重49项通过。
+2026-11-13 Massive恢复边界复核：Live的L2_DUE恢复与旧批处理续跑均强制regex-only，拒绝旧JEV缓存放行；已有发布的Massive文章提交前同样校验词库revision。补充独立scope旧客户端保留、消费者schema、目录主备与恢复回归。BW/TMX现有HTTP及受管浏览器探测未获得正文，保留NO_PUBLIC_BODY。
 - Production acceptance: 9b055706e API/Web/Bus/BODY running; actual registry/API 85 sources and 275 subscriptions, zero retired bindings/profile references/active units, 42 source revisions preserved. QueryRunner reads 200 in 4.39s/0.91s, eight public assets checked, 94 related backend regressions and six browser tests passed; full 85-source layouts verified at both desktop widths. Cached dependencies reused; root free space recovered to 18.45GiB after governed release cleanup.
 
 2026-11-13 Bloomberg subscriber BODY: route Bloomberg massive test jobs through the existing Site Access identity instead of public Newswire overrides; add visible paid-article DOM capture, canonical/entitlement completeness checks and accurate FULL/SHORT_FULL classification. Preserve HTTP/Artemis discovery, test-only delivery, ordinary persistent Chrome and fixed egress. Add focused parser/routing/hydration regressions and record authorized sample evidence; no cookie export or challenge bypass.
+2026-11-13 统一监测词草稿恢复：在首次配置读取完成前不清空sessionStorage，修复刷新丢失普通/Massive草稿。补充刷新恢复、412冲突、无效JSON与放弃修改浏览器回归，11项通过；仅补发Web。
+2026-11-13 Massive发布回执补充：按现有release.lock协调窄发布，私有部署目录/快照统一0700/0600；生产只读回执增加非测试、完整正文、纯正则和实际列表主备检查。
+
+2026-11-13 MCP指标与全局目录适配：沿用当前文章采样/Runtime后端口径，补真实抓取延时、长W3标记筛选及当前顶部KPI；sources改复用全部消息源目录并内存分页，内部只读凭证仅扩展该GET。发现并修复投影时钟opt-in请求头未透传query worker，保留旧客户端兼容与历史缺口语义。57项MCP/微信/目录/Bus回归及Ruff通过，生产验收另记。见docs/agent-mcp-metrics-source-catalog-adaptation-20261113.md。
+
+2026-11-13 MCP现状适配生产验收：76fd43173仅发布API/MCP，真实概览10 ticker、全局目录85源320订阅五页、BE长W3筛选及192秒详情一致通过；四源采样追平，17204历史gap与STALE保留，非模型时间仍NOT_RECORDED。修复canonical base缺原微信secret覆盖导致stdio启动失败，恢复挂载后五工具可用；并行Web变更单列，不重发Projector/交易。57项回归与详细证据见docs/agent-mcp-metrics-source-catalog-adaptation-20261113.md。

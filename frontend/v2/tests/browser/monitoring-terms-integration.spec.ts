@@ -12,3 +12,19 @@ test("monitoring terms UI applies to native Bus database and reads it back", asy
   await page.reload();
   await expect(page.getByRole("textbox", { name: "概念 1 en" })).toHaveValue("Micron HBM supply");
 });
+
+test('massive editor saves through native API while preserving ordinary rules', async ({page}) => {
+  test.skip(!process.env.DOXAGENT_TERMS_BACKEND, 'Start the disposable native-Bus backend fixture first');
+  await page.goto('http://127.0.0.1:5174/tests/browser/monitoring-terms.html?real=1');
+  const massive=page.locator('#monitoring-massive_l2');
+  await massive.locator('summary').click();
+  await massive.getByRole('textbox',{name:'至少命中一项 条件 1'}).fill('HBM native API');
+  await page.getByRole('button',{name:'应用更新'}).click();
+  await expect(page.getByText('版本 3',{exact:true})).toBeVisible();
+  await page.reload();
+  await massive.locator('summary').click();
+  await expect(massive.getByRole('textbox',{name:'至少命中一项 条件 1'})).toHaveValue('HBM native API');
+  const ordinary=page.locator('#monitoring-l2');
+  await ordinary.locator('summary').click();
+  await expect(ordinary.getByRole('textbox',{name:'至少命中一项 条件 1'})).toHaveValue('Micron');
+});

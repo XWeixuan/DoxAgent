@@ -736,6 +736,7 @@ export interface MonitoringL2Term {
 export interface MonitoringL2Group { id: string; any: MonitoringL2Term[]; all: MonitoringL2Term[]; none: MonitoringL2Term[] }
 export interface MonitoringL2Language { groups: MonitoringL2Group[] }
 export interface MonitoringTermsValue {
+  massive_l2?: Record<string, MonitoringL2Language>;
   x_accounts?: string[];
   l1_concepts: MonitoringL1Concept[];
   l2: Record<string, MonitoringL2Language>;
@@ -752,6 +753,8 @@ export interface MonitoringTermsConsumer {
   preview_issue: string | null;
 }
 export interface MonitoringTermsConfig {
+  massive_required_languages?: string[];
+  massive_language_requirements?: { language: string; source_ids: string[] }[];
   ticker: string; revision: number; control_etag: string; updated_at: string | null;
   configuration: MonitoringTermsValue | null;
   required_languages: string[];

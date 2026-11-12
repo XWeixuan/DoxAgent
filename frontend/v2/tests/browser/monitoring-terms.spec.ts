@@ -13,7 +13,7 @@ for (const width of [1262, 1559]) {
     await expect(languages).toHaveValue("he");
     await expect(languages.getByRole("option")).toHaveText(["he"]);
     await page.getByRole("textbox", { name: "概念 1 he" }).fill("אונדס");
-    await page.getByRole("button", { name: "新增规则组" }).click();
+    await page.locator("#monitoring-l2").getByRole("button", { name: "新增规则组" }).click();
     await page.locator(".terms-rule-group").last().locator("summary").click();
     await page.getByRole("textbox", { name: "至少命中一项 条件 1" }).fill("אונדס");
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
@@ -51,17 +51,71 @@ for (const width of [1262, 1559]) {
     await page.getByRole("textbox", { name: "概念 1 en" }).fill("Micron HBM");
     await page.getByText("memory ·").click();
     await page.getByRole("textbox", { name: "至少命中一项 条件 1" }).fill("HBM");
-    await page.getByRole("button", { name: "原始 JSON" }).click();
+    await page.locator("#monitoring-l2").getByRole("button", { name: "原始 JSON" }).click();
     const json = page.getByRole("textbox", { name: "分发规则 JSON" });
     await expect(json).toContainText("HBM");
     const validRules = await json.inputValue();
     await json.fill("{ invalid");
     await expect(page.getByRole("button", { name: "应用更新" })).toBeDisabled();
     await json.fill(validRules);
-    await page.getByRole("button", { name: "规则视图" }).click();
+    await page.locator("#monitoring-l2").getByRole("button", { name: "规则视图" }).click();
     await page.getByRole("textbox", { name: "相关条件", exact: true }).fill("HBM supply relevance");
     await page.getByRole("button", { name: "应用更新" }).click();
     await expect(page.locator("#saved-revision")).toHaveText("2");
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
   });
 }
+
+for (const width of [1262,1559]) test(`massive independent save ${width}`, async ({page}) => {
+ await page.setViewportSize({width,height:1000});
+ await page.goto("http://127.0.0.1:5174/tests/browser/monitoring-terms.html");
+ const massive=page.locator("#monitoring-massive_l2");
+ await massive.getByRole("button",{name:"新增规则组"}).click();
+ await massive.locator("summary").click();
+ await massive.getByRole("textbox",{name:"至少命中一项 条件 1"}).fill("HBM only massive");
+ await page.getByRole("button",{name:"应用更新"}).click();
+ await expect(page.locator("#saved-revision")).toHaveText("2");
+ const c=JSON.parse(await page.locator("#saved-config").textContent() ?? "{}");
+ expect(c.l2.en.groups[0].any[0].literal).toBe("Micron");
+ expect(c.massive_l2.en.groups[0].any[0].literal).toBe("HBM only massive");
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+ await page.screenshot({path:`test-results/massive-${width}.png`,fullPage:true});
+});
+
+test('massive JSON errors block save and discard resets both editors', async ({page}) => {
+ await page.goto('http://127.0.0.1:5174/tests/browser/monitoring-terms.html');
+ const massive=page.locator('#monitoring-massive_l2');
+ await page.getByRole('textbox',{name:'概念 1 en',exact:true}).fill('unsaved draft');
+ await massive.getByRole('button',{name:'原始 JSON'}).click();
+ await massive.getByRole('textbox').fill('{ invalid');
+ await expect(page.getByRole('button',{name:'应用更新'})).toBeDisabled();
+ await page.getByRole('button',{name:'放弃修改'}).click();
+ await expect(massive.getByRole('button',{name:'原始 JSON'})).toBeVisible();
+ await page.getByRole('textbox',{name:'概念 1 en',exact:true}).fill('new valid draft');
+ await expect(page.getByRole('button',{name:'应用更新'})).toBeEnabled();
+});
+
+test('massive draft survives refresh with ordinary rules intact', async ({page}) => {
+ await page.goto('http://127.0.0.1:5174/tests/browser/monitoring-terms.html');
+ const massive=page.locator('#monitoring-massive_l2');
+ await massive.getByRole('button',{name:'新增规则组'}).click();
+ await massive.locator('summary').click();
+ await massive.getByRole('textbox',{name:'至少命中一项 条件 1'}).fill('persistent HBM draft');
+ await page.reload();
+ await massive.locator('summary').click();
+ await expect(massive.getByRole('textbox',{name:'至少命中一项 条件 1'})).toHaveValue('persistent HBM draft');
+ await page.locator('#monitoring-l2').locator('summary').first().click();
+ await expect(page.locator('#monitoring-l2').getByRole('textbox',{name:'至少命中一项 条件 1'})).toHaveValue('Micron');
+});
+
+test('massive conflict preserves draft until latest revision is chosen', async ({page}) => {
+ await page.goto('http://127.0.0.1:5174/tests/browser/monitoring-terms.html');
+ const massive=page.locator('#monitoring-massive_l2');
+ await massive.getByRole('button',{name:'新增规则组'}).click();
+ await page.evaluate(()=>window.dispatchEvent(new Event('fixture:conflict')));
+ await page.getByRole('button',{name:'应用更新'}).click();
+ await expect(page.getByText('词表已被其他会话更新。请读取最新版本并检查差异后重新应用。')).toBeVisible();
+ await expect(massive.locator('summary')).toHaveCount(1);
+ await page.getByRole('button',{name:'读取最新版本'}).click();
+ await expect(massive.locator('summary')).toContainText('remote');
+});

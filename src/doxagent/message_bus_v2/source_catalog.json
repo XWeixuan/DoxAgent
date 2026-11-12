@@ -55,7 +55,7 @@
   ],
   "sources": {
     "access_newswire_massive": {
-      "description": "ACCESS Newswire 是企业新闻稿发布平台；采集 Newsroom 的最新公告，供全量消息分发测试。",
+      "description": "ACCESS Newswire 是企业新闻稿发布平台；采集 Newsroom 的最新公告，供全量消息分发。",
       "entry_points": [
         "https://www.accessnewswire.com/newsroom"
       ],
@@ -327,7 +327,7 @@
       ]
     },
     "businesswire_massive": {
-      "description": "Business Wire 是企业公告与新闻稿发布平台；监测公开新闻列表，供共享全量分发测试。",
+      "description": "Business Wire 是企业公告与新闻稿发布平台；监测公开新闻列表，供共享全量分发。",
       "entry_points": [
         "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJcFVJYWQ=="
       ],
@@ -812,17 +812,16 @@
       "sector_ids": []
     },
     "globenewswire_massive": {
-      "description": "GlobeNewswire 是企业新闻稿发布平台；监测综合与上市公司公告入口，供共享全量分发测试。",
+      "description": "GlobeNewswire 是企业新闻稿发布平台；监测综合与上市公司公告入口，供共享全量分发。",
       "entry_points": [
         "https://www.globenewswire.com/RssFeed"
       ],
       "listing": {
         "primary": [
-          "HTTP"
-        ],
-        "fallback": [
+          "HTTP",
           "RSS"
-        ]
+        ],
+        "fallback": []
       },
       "body": {
         "primary": [
@@ -1337,7 +1336,7 @@
       ]
     },
     "prnewswire_massive": {
-      "description": "PR Newswire 是企业新闻稿发布平台；监测综合与商业新闻入口，供共享全量分发测试。",
+      "description": "PR Newswire 是企业新闻稿发布平台；监测综合与商业新闻入口，供共享全量分发。",
       "entry_points": [
         "https://www.prnewswire.com/rss/news-releases-list.rss"
       ],
@@ -1774,7 +1773,7 @@
       ]
     },
     "tmx_newsfile_massive": {
-      "description": "TMX Newsfile 是企业新闻与公告发布渠道；采集最新新闻稿订阅，供共享全量分发测试。",
+      "description": "TMX Newsfile 是企业新闻与公告发布渠道；采集最新新闻稿订阅，供共享全量分发。",
       "entry_points": [
         "https://feeds.newsfilecorp.com/global/Last25Stories"
       ],

@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient } from "@tanstack/react-query";
 import type { MonitoringTermsConfig } from "@contract";
 import { RuntimeProvider, type Runtime } from "../../src/core/runtime";
-import { ApiClient } from "../../src/core/api";
+import { ApiClient, ApiFailure } from "../../src/core/api";
 import MonitoringTermsSettings from "../../src/pages/monitoring-terms-settings";
 import "../../src/styles.css";
 import "../../src/business.css";
@@ -22,11 +22,13 @@ let current: MonitoringTermsConfig = {
 const runtime = {
   scope: "fixture",
   query: new QueryClient(),
-  api: { request: async (name: string, _path: string, options?: { method?: string; body?: { configuration: MonitoringTermsConfig["configuration"] } }) => {
+  api: { request: async (name: string, _path: string, options?: { method?: string; etag?: string; body?: { configuration: MonitoringTermsConfig["configuration"] } }) => {
     if (name === "MonitoringTerms" || name === "MonitoringTermsWrite") {
       if (options?.method === "PUT") {
+        if (options.etag !== current.control_etag) throw new ApiFailure('PRECONDITION_FAILED', 'stale terms', 412);
         current = { ...current, revision: current.revision + 1, control_etag: '"monitoring-terms:MU:2"', configuration: options.body!.configuration };
         document.getElementById("saved-revision")!.textContent = String(current.revision);
+        document.getElementById("saved-config")!.textContent = JSON.stringify(current.configuration);
       }
       return { data: name === "MonitoringTerms" ? { state: "AVAILABLE", data: current, reason: null, coverage: { state: "COMPLETE", reasons: [], known_count: null, excluded_count: null, observed_through: null } } : current };
     }
@@ -41,6 +43,11 @@ if (new URLSearchParams(location.search).has("real")) {
     (input, init) => fetch("http://127.0.0.1:8099" + String(input), init),
   );
 } else {
+  window.addEventListener('fixture:conflict', () => {
+    current = { ...current, revision: 2, control_etag: '"monitoring-terms:MU:2"', configuration: {
+      ...current.configuration!, massive_l2: { en: { groups: [{ id: 'remote', any: [], all: [], none: [] }] } },
+    } };
+  });
   // Simulates the metadata refetch triggered by a binding save, without a new terms revision.
   window.addEventListener("fixture:languages", (event) => {
     const languages = (event as CustomEvent<string[]>).detail;
@@ -49,4 +56,4 @@ if (new URLSearchParams(location.search).has("real")) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(<RuntimeProvider runtime={runtime}><main style={{ maxWidth: 1200, margin: "24px auto", padding: "0 16px" }}><MonitoringTermsSettings ticker="MU" /><output id="saved-revision">1</output></main></RuntimeProvider>);
+createRoot(document.getElementById("root")!).render(<RuntimeProvider runtime={runtime}><main style={{ maxWidth: 1200, margin: "24px auto", padding: "0 16px" }}><MonitoringTermsSettings ticker="MU" /><output id="saved-revision">1</output><output id="saved-config" hidden /></main></RuntimeProvider>);

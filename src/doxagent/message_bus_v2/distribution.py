@@ -21,6 +21,7 @@ from .jev import JevClient
 from .monitoring_terms import MonitoringTermsService, TickerMonitoringTerms
 from .relevance import regex_relevant
 from .schema import (
+    AcquisitionMode,
     RawMessageInput,
     SourceDefinition,
     utc_now,
@@ -189,12 +190,21 @@ class DistributionWorker:
                 )
                 continue
             definitions[row["ticker"]] = found[1]
-            relevant[row["ticker"]] = regex_relevant(found[1], language, message)
+            from .massive_relevance import massive_configured, massive_relevant
+            from .massive_relevance import uses_massive_rules
+            massive = uses_massive_rules(source)
+            if massive:
+                language = message.metadata.get("language") or source.content_language or "en"
+                if not massive_configured(found[1], language):
+                    definitions.pop(row["ticker"], None)
+                    await self.bus.storage.call(self.repository.finish_delivery, row["delivery_id"], row["claim_token"], "CONFIG_INCOMPLETE", {"reason": "MASSIVE_TERMS_MISSING"})
+                    continue
+            relevant[row["ticker"]] = massive_relevant(found[1], language, message) if massive else regex_relevant(found[1], language, message)
 
         # Only undecided tickers need the business classifier. L1 comparisons
         # are optional offline evaluation, not recurring production work.
         jev_enabled = bool(
-            definitions and source.distribution_policy and source.distribution_policy.jev_enabled
+            source.acquisition_mode is not AcquisitionMode.MASSIVE_DISTRIBUTION and definitions and source.distribution_policy and source.distribution_policy.jev_enabled
         )
         for row in eligible_rows:
             if relevant.get(row["ticker"]):
@@ -284,7 +294,10 @@ class DistributionWorker:
         scores: dict[str, float] = {}
         attempts: dict[str, int] = {}
         errors: dict[str, str] = {}
-        cached = await self._read(self.repository.cached_decisions, eligible_rows)
+        massive = source.acquisition_mode is AcquisitionMode.MASSIVE_DISTRIBUTION
+        if massive:
+            jev_enabled = False
+        cached = {} if massive else await self._read(self.repository.cached_decisions, eligible_rows)
         for ticker, value in cached.items():
             scores[ticker] = 1.0 if value["regex_result"] else value["jev_result"]
             attempts[ticker] = value["jev_attempts"]
