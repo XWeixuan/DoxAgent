@@ -1,0 +1,216 @@
+{
+  "date": "2026-11-13 Asia/Shanghai",
+  "body_canaries": {
+    "barrons-normal-canaries.json": [
+      {
+        "url": "https://www.barrons.com/articles/intel-stock-insider-ceo-buy-1e10df5f",
+        "seconds": 2.954,
+        "succeeded": true,
+        "outcome": "FULL",
+        "reason": null,
+        "chars": 2606,
+        "method": "browser_barrons_article_paragraphs",
+        "attempts": [
+          {
+            "phase": "browser",
+            "reason": null,
+            "latency_ms": 2888
+          }
+        ]
+      },
+      {
+        "url": "https://www.barrons.com/articles/etfs-beating-sp500-without-nvidia-stock-97ea9f52",
+        "seconds": 3.01,
+        "succeeded": true,
+        "outcome": "FULL",
+        "reason": null,
+        "chars": 3641,
+        "method": "browser_barrons_article_paragraphs",
+        "attempts": [
+          {
+            "phase": "browser",
+            "reason": null,
+            "latency_ms": 2987
+          }
+        ]
+      },
+      {
+        "url": "https://www.barrons.com/articles/micron-memory-chip-stocks-nvidia-shakeup-adf6b711",
+        "seconds": 3.618,
+        "succeeded": true,
+        "outcome": "FULL",
+        "reason": null,
+        "chars": 1855,
+        "method": "browser_barrons_article_paragraphs",
+        "attempts": [
+          {
+            "phase": "browser",
+            "reason": null,
+            "latency_ms": 3600
+          }
+        ]
+      }
+    ],
+    "investing-steady-canary.json": [
+      {
+        "url": "https://uk.investing.com/news/stock-market-news/coreweave-vs-nebius-valuation-balance-sheet-and-catalysts-compared-93CH-4978721",
+        "seconds": 5.725,
+        "succeeded": true,
+        "outcome": "FULL",
+        "reason": null,
+        "chars": 4383,
+        "method": "browser_article_dom",
+        "attempts": [
+          {
+            "phase": "browser",
+            "reason": null,
+            "latency_ms": 5481
+          }
+        ]
+      }
+    ],
+    "investorshub-final-canaries.json": [
+      {
+        "url": "https://investorshub.advfn.com/stock-market/NASDAQ/micron-technology-MU/stock-news/99695989/micron-announces-participation-in-investor-events",
+        "seconds": 8.022,
+        "succeeded": true,
+        "outcome": "FULL",
+        "reason": null,
+        "chars": 1602,
+        "method": "browser_trafilatura",
+        "attempts": [
+          {
+            "phase": "browser",
+            "reason": null,
+            "latency_ms": 7751
+          }
+        ]
+      },
+      {
+        "url": "https://investorshub.advfn.com/stock-market/NASDAQ/intel-INTC/stock-news/99695694/intel-radixark-collaborate-to-advance-open-ai-inf",
+        "seconds": 4.825,
+        "succeeded": true,
+        "outcome": "FULL",
+        "reason": null,
+        "chars": 3502,
+        "method": "browser_trafilatura",
+        "attempts": [
+          {
+            "phase": "browser",
+            "reason": null,
+            "latency_ms": 4706
+          }
+        ]
+      }
+    ]
+  },
+  "source_code": {
+    "v2-site-access/site_strategy/runtime.py": {
+      "actual_sha256": "1bcf92add97baf5d0c85f197b9d2b689e6c3206d2ad147d8ad1adcb11d88bb97",
+      "expected_sha256": "1bcf92add97baf5d0c85f197b9d2b689e6c3206d2ad147d8ad1adcb11d88bb97",
+      "matches": true
+    },
+    "v2-site-access/site_strategy/barrons_document.py": {
+      "actual_sha256": "6a8a60f61b2fdf632e2397a79a44bab98eaedf4f7d4836f013904581eb3f59e1",
+      "expected_sha256": "6a8a60f61b2fdf632e2397a79a44bab98eaedf4f7d4836f013904581eb3f59e1",
+      "matches": true
+    },
+    "v2-content-enrichment/content_enrichment/pipeline.py": {
+      "actual_sha256": "55a99694714e6dd19db43b85050ff166e6e4f9db695a0d391bb912f4f94e2c29",
+      "expected_sha256": "55a99694714e6dd19db43b85050ff166e6e4f9db695a0d391bb912f4f94e2c29",
+      "matches": true
+    },
+    "v2-content-enrichment/content_enrichment/quality.py": {
+      "actual_sha256": "5e2752b51e178cab8509214f63af64a692ccc845a385ec03f2105ca65a5559bb",
+      "expected_sha256": "5e2752b51e178cab8509214f63af64a692ccc845a385ec03f2105ca65a5559bb",
+      "matches": true
+    },
+    "v2-content-enrichment/content_enrichment/publisher_documents.py": {
+      "actual_sha256": "761611b1152720cc00f4698d972688ed9e291312ac301fae1ba6f108ac91cb96",
+      "expected_sha256": "761611b1152720cc00f4698d972688ed9e291312ac301fae1ba6f108ac91cb96",
+      "matches": true
+    },
+    "v2-message-collector/message_bus_v2/industry_sources.py": {
+      "actual_sha256": "bf9bd93a382308b0b29e04dcad755d74d82452bacdf53cc6de81b979c72e991d",
+      "expected_sha256": "bf9bd93a382308b0b29e04dcad755d74d82452bacdf53cc6de81b979c72e991d",
+      "matches": true
+    }
+  },
+  "limits": [
+    "BODY canaries do not publish messages or measure discovery-to-consumption",
+    "No new Barrons/Investing natural article cohort in acceptance window",
+    "Source-owned publication/index delay is not eliminated by this repair"
+  ],
+  "steady_window": {
+    "since": "2026-11-12T21:40:46+00:00",
+    "at": "2026-11-12T21:41:58.806964+00:00",
+    "sources": {
+      "barrons_ticker_news": {
+        "logical_cycles": {
+          "CAPTURED:None": 71,
+          "DISPATCHED:None": 2
+        },
+        "natural_articles": [],
+        "intervals": [
+          20
+        ]
+      },
+      "investing_ticker_news": {
+        "logical_cycles": {
+          "CAPTURED:None": 24
+        },
+        "natural_articles": [],
+        "intervals": [
+          30
+        ]
+      },
+      "investorshub_ticker_news": {
+        "logical_cycles": {
+          "CAPTURED:None": 23,
+          "DISPATCHED:None": 1
+        },
+        "natural_articles": [],
+        "intervals": [
+          30
+        ]
+      }
+    }
+  },
+  "supervisor_unchanged": true,
+  "recheck_env": {
+    "v2-site-access": [
+      "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+    ],
+    "v2-content-enrichment": [
+      "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+    ],
+    "v2-message-collector": [
+      "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+    ],
+    "v2-chrome-supervisor": [
+      "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+    ]
+  },
+  "barrons_auth": {
+    "site_id": "barrons",
+    "identity_id": "dowjones-main",
+    "data_json": {
+      "auth_state": "VALID",
+      "checked_at": null,
+      "reason": null,
+      "body_state": null
+    },
+    "updated_at": "2026-11-12T21:14:39.555762+00:00"
+  },
+  "investorshub_recovery": [
+    {
+      "identity_id": "investorshub-backup",
+      "phase": "RESOLVED"
+    },
+    {
+      "identity_id": "investorshub-main",
+      "phase": "RESOLVED"
+    }
+  ],
+  "outstanding_investorshub_tasks": []
+}
