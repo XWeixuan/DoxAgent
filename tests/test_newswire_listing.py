@@ -123,6 +123,19 @@ async def test_http_failure_retains_rss_messages_but_never_renews_listing_health
     assert all(r.metadata["discovery_method"] == "rss_fallback" for r in result.messages)
 
 
+async def test_partial_http_failure_does_not_admit_cards_older_than_normal_window(monkeypatch):
+    recipe={**RECIPES['prnewswire_massive'],'size':3}
+    monkeypatch.setitem(RECIPES,'prnewswire_massive',recipe)
+    text=fixture('prnewswire').replace('13:55 ET','12:15 ET',1)
+    adapter=SimpleNamespace(listing_request=AsyncMock(side_effect=[
+        (response(text),'direct'),(response(status=500),'direct')]),
+        poll_feed=AsyncMock(return_value=PollResult()))
+    result=await poll_listing(adapter,context())
+    assert result.failures and not result.window_done
+    assert len(result.messages)==2
+    assert all(row.published_at>=NOW-timedelta(minutes=30) for row in result.messages)
+
+
 async def test_access_does_not_invent_blog_rss_as_fallback():
     adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(status=403), "us-standard-5")), poll_feed=AsyncMock())
     result = await poll_listing(adapter, context("access_newswire_massive"))

@@ -277,7 +277,9 @@ async def poll_listing(adapter, context):
             rows.setdefault(row.url, row)
         for row in rows.values():
             row.metadata.update(discovery_method="rss_fallback" if row in rss_results else "http_listing_partial", listing_error=failure.error_message)
-        return PollResult(messages=list(rows.values()), failures=[failure], window_done=False,
+        # A partial HTTP page may include older cards. Failure/RSS fallback
+        # must obey the same admission boundary as the successful listing path.
+        return PollResult(messages=[row for row in rows.values() if row.published_at >= cutoff], failures=[failure], window_done=False,
                           acquisition_metadata={"method": "rss_fallback" if endpoints else "http_listing_failed",
                               "cache": caches, "rss_items": len(rss_results), "error": failure.error_message,
                               "validated_request_ids": []})

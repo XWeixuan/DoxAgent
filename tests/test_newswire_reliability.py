@@ -121,6 +121,27 @@ async def test_explicit_newsfile_registry_policy_survives_massive_defaults():
     fetch.assert_not_called()
 
 
+@pytest.mark.parametrize('source,managed',[
+    ('businesswire_massive',True),('prnewswire_massive',True),('tmx_newsfile_massive',True),
+    ('globenewswire_massive',False),('access_newswire_massive',False),
+])
+async def test_shared_extractor_entry_honors_restored_policies_and_preserves_working_routes(source,managed):
+    import asyncio
+    from doxagent.content_enrichment.extractor import SharedContentExtractor
+    from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
+    extractor=SharedContentExtractor.__new__(SharedContentExtractor)
+    extractor.start=AsyncMock();extractor._semaphore=asyncio.Semaphore(1)
+    extractor._session=object();extractor._pipeline_enabled=True;extractor._disabled_hosts=set()
+    local,owner=object(),object()
+    extractor._pipeline=SimpleNamespace(extract=AsyncMock(return_value=local))
+    extractor._managed_pipeline=SimpleNamespace(extract=AsyncMock(return_value=owner))
+    record=MediaEnrichmentRecord('one','one',source,'MU',TITLE,None,'https://publisher.example/release')
+    result=await extractor.extract_version(record,'body_v2.2')
+    assert result is (owner if managed else local)
+    assert extractor._managed_pipeline.extract.await_count==int(managed)
+    assert extractor._pipeline.extract.await_count==int(not managed)
+
+
 @pytest.mark.parametrize('already_selected',[False,True])
 async def test_oldest_delivery_executes_before_short_round_budget(tmp_path,already_selected):
     from doxagent.message_bus_v2.live import LiveDeliveryWorker,LiveQueue
