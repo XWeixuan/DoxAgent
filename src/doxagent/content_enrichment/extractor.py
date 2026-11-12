@@ -150,7 +150,8 @@ class SharedContentExtractor:
             assert self._session is not None
             from urllib.parse import urlparse
 
-            if record.source_id and record.source_id.endswith("_massive") and self._pipeline is not None:
+            if (record.source_id and record.source_id.endswith("_massive")
+                    and record.source_id != "bloomberg_massive" and self._pipeline is not None):
                 # These public wire sources use the same body/quality pipeline,
                 # without borrowing browser identities from existing subscriptions.
                 from .transport import PUBLIC_PROXY
@@ -161,6 +162,12 @@ class SharedContentExtractor:
                     return await self._pipeline.extract(record)
                 finally:
                     PUBLIC_PROXY.reset(token)
+            if record.source_id == "bloomberg_massive":
+                if (self._pipeline_enabled and self._managed_pipeline is not None
+                        and urlparse(record.fetch_url or "").hostname not in self._disabled_hosts):
+                    return await self._managed_pipeline.extract(record)
+                return MediaExtractionResult(record=record, reason="site_access_unavailable",
+                    diagnostics={"outcome": "UNAVAILABLE", "access_path": "publisher_identity_browser"})
             if (
                 version == "body_v2.2"
                 and self._pipeline_enabled

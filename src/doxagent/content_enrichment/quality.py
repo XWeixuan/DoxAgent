@@ -103,6 +103,7 @@ class Candidate:
     structured: bool = False
     headline: str = ""
     scope_priority: int = 0
+    complete: bool = False
 
     def summary(self) -> dict[str, Any]:
         return {
@@ -315,6 +316,14 @@ def inspect_html(
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         return result
     path = urlparse(url).path.lower()
+    if publisher_host(url) == "bloomberg.com":
+        if (not has_article_body and re.search(r"are you a robot", title, re.I)
+                and root.xpath('//*[@id="px-captcha" or @id="px-captcha-wrapper"]')):
+            result.page_kind, result.access_reason = "challenge", "challenge_required"
+            result.interactive_challenge = True
+            return result
+        from .bloomberg import inspect_document
+        return inspect_document(root, url, result, candidate_type=Candidate, node_text=_node_text)
     if (
         (urlparse(url).hostname or '').lower() == 'investorshub.advfn.com'
         and path.rstrip('/').endswith('/news')
@@ -674,7 +683,7 @@ def choose_candidate(
             and len(body) >= 120
             and re.search(r'[.!?。！？]["\u201d\u2019)]?$', body)
         ):
-            if not info.expansion_required and not info.subscription_article:
+            if not info.expansion_required and (not info.subscription_article or candidate.complete):
                 accepted.append(candidate)
     if accepted:
         # Prefer an explicit body over recall-oriented generic extraction; never the whole page.

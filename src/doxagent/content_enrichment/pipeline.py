@@ -168,7 +168,8 @@ class ArticlePipeline:
                 if not access_order:
                     reason = 'non_article_target'
                     break
-            if record.source_id and record.source_id.endswith("_massive"):
+            if (record.source_id and record.source_id.endswith("_massive")
+                    and record.source_id != "bloomberg_massive"):
                 access_order = ["reader", "http_public"] if record.source_id == "tmx_newsfile_massive" else ["http_public", "reader"]
             # Count executable routes, not unavailable adapters, against the two-route budget.
             access_order=[s for s in dict.fromkeys(access_order)
@@ -200,6 +201,12 @@ class ArticlePipeline:
                     "reader": READER_STAGE_SECONDS.get(publisher_host(url), 8) if record.source_id == 'google_news_search_rss' else 8,
                     "zyte": 20, "zyte_http": 10, "google_browser": 10,
                 }[stage]))
+                if (strategy_ref == "builtin:barrons@1" and access_order == ["browser"]
+                        and stage == "browser" and "browser_timeout_seconds" not in strategy_parameters):
+                    # One authenticated route has no second route to reserve eight
+                    # seconds for. Let normal Chrome startup/hydration complete
+                    # within the existing article deadline instead of restarting it.
+                    cap = 15
                 auth = {}
                 if google and stage == 'reader' and publisher_host(url) == 'futunn.com':
                     cap = 14

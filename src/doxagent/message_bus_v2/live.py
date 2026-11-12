@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from doxagent.content_enrichment.schema import EnrichmentJob
+from doxagent.content_enrichment.bloomberg import verified_subscription_result
 from .body_results import ArticleBodyResults
 from .live_repository import LiveRepository
 from .monitoring_terms import MonitoringTermsService
@@ -229,6 +230,7 @@ class LiveQueue:
                 candidate
                 and candidate.get("content")
                 and candidate.get("outcome") in {"FULL", "SHORT_FULL"}
+                and (source.source_id != 'bloomberg_massive' or verified_subscription_result(candidate))
                 and not (
                     candidate.get("language")
                     and message.metadata.get("language")
@@ -280,7 +282,7 @@ class LiveQueue:
             ).fetchone()
         if row:
             body = RawMessageInput.model_validate(self.repository.load(row["result_ref"]))
-            return {
+            candidate = {
                 "content": body.body,
                 "outcome": row["outcome"],
                 "diagnostics": body.metadata.get("media_enrichment", {}),
@@ -289,9 +291,13 @@ class LiveQueue:
                 "acquired_at": row["acquired_at"],
                 "execution_id": row["last_result_id"],
             }
-        return ArticleBodyResults(self.bus.repository).resolved_reuse(
-            final, source_id, url, new_discovery=True
-        )
+        else:
+            candidate = ArticleBodyResults(self.bus.repository).resolved_reuse(
+                final, source_id, url, new_discovery=True
+            )
+        if source_id == 'bloomberg_massive' and not verified_subscription_result(candidate):
+            return None
+        return candidate
 
     async def finish(self, job, message, outcome=None):
         prepared = await self.bus.storage.prepare(

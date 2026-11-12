@@ -1,0 +1,247 @@
+{
+  "source_id": "bloomberg_massive",
+  "acceptance": "TARGET_UNMET",
+  "reason": "No proven publication-to-discovery advantage; repeat challenge after manual recovery means unattended refresh stability is not accepted",
+  "initial_failure": [
+    {
+      "kind": "stopped",
+      "at": "2026-11-12T17:20:02.726319+00:00",
+      "reason": "site_restriction_no_automatic_retry",
+      "cycle": "0:cache_on"
+    }
+  ],
+  "manual_recovery": {
+    "user_confirmed": true,
+    "same_identity": "bloomberg-latest-lab-1",
+    "same_egress": "jp-standard-6",
+    "no_login_or_subscription_used": true,
+    "manual_navigation_payload_not_captured": true
+  },
+  "paired_window": {
+    "start": "2026-11-12T17:25:46.110973+00:00",
+    "end": "2026-11-12T17:30:54.186983+00:00",
+    "mode_counts": {
+      "cache_on": {
+        "valid_refreshes": 6,
+        "refreshes": 6,
+        "fresh_list_items": [
+          25
+        ],
+        "missing_dom_urls": 0,
+        "xhr_responses": 18,
+        "xhr_local_cache_hits": 17,
+        "xhr_age_seconds": [
+          71,
+          71,
+          71,
+          62,
+          62,
+          62,
+          62,
+          62,
+          62,
+          57,
+          57,
+          57,
+          57,
+          57,
+          57,
+          57,
+          57,
+          57
+        ],
+        "no_cache_request_header_observed": false,
+        "service_worker_observed": false
+      },
+      "cache_off": {
+        "valid_refreshes": 6,
+        "refreshes": 6,
+        "fresh_list_items": [
+          25
+        ],
+        "missing_dom_urls": 0,
+        "xhr_responses": 18,
+        "xhr_local_cache_hits": 0,
+        "xhr_age_seconds": [
+          5,
+          6,
+          6,
+          61,
+          62,
+          62,
+          124,
+          0,
+          0,
+          56,
+          56,
+          57,
+          121,
+          121,
+          121,
+          57,
+          57,
+          57
+        ],
+        "no_cache_request_header_observed": true,
+        "service_worker_observed": false
+      }
+    },
+    "all_dom_sets_identical": true
+  },
+  "fresh_article_samples": [
+    {
+      "id": "TOEE1BT9NJLW00",
+      "title": "Democrats Plan Early Action on Tariffs, Health Insurance Costs",
+      "url": "https://www.bloomberg.com/news/articles/2026-11-12/democrats-plan-early-action-on-tariffs-health-insurance-costs",
+      "official_published_at": "2026-11-12T17:24:24.290Z",
+      "http_control_first_seen": "2026-11-12T17:32:50.590728+00:00",
+      "http_control_delay_seconds": 506.301,
+      "production_first_acceptance": "2026-11-12T17:32:31.380475+00:00",
+      "production_delay_seconds": 487.09,
+      "last_missing_from_cache_off_age0": {
+        "at": "2026-11-12T17:27:54.420381+00:00",
+        "cache_age": 0,
+        "local_cache": false,
+        "cycle": "2:cache_off"
+      },
+      "later_cache_off_confirmation_at": "2026-11-12T17:35:44.075812+00:00",
+      "chrome_refresh_first_discovery_delay": "NOT_MEASURED_CONTINUOUSLY_ACROSS_17:30-17:35_GAP"
+    },
+    {
+      "id": "TODY4FKJH6V800",
+      "title": "EU to Hit Russia With More Banking and Energy Sanctions",
+      "url": "https://www.bloomberg.com/news/articles/2026-11-12/eu-to-hit-russia-with-more-banking-and-energy-sanctions",
+      "official_published_at": "2026-11-12T17:21:58.025Z",
+      "http_control_first_seen": "2026-11-12T17:32:50.590728+00:00",
+      "http_control_delay_seconds": 652.566,
+      "production_first_acceptance": "2026-11-12T17:32:31.380475+00:00",
+      "production_delay_seconds": 633.355,
+      "last_missing_from_cache_off_age0": {
+        "at": "2026-11-12T17:27:54.420381+00:00",
+        "cache_age": 0,
+        "local_cache": false,
+        "cycle": "2:cache_off"
+      },
+      "later_cache_off_confirmation_at": "2026-11-12T17:35:44.075812+00:00",
+      "chrome_refresh_first_discovery_delay": "NOT_MEASURED_CONTINUOUSLY_ACROSS_17:30-17:35_GAP"
+    }
+  ],
+  "pagination": [
+    {
+      "at": "2026-11-12T17:35:45.654063+00:00",
+      "before": 25,
+      "after": 50,
+      "unique_urls": 50
+    }
+  ],
+  "http_control": {
+    "start": "2026-11-12T17:17:50.121090+00:00",
+    "last_response": null,
+    "status_counts": {
+      "200": 31
+    }
+  },
+  "public_article_metadata_checks": [
+    {
+      "title": "Democrats Set Early Votes to Roll Back Trump Tariffs, Restore Health Subsidies - Bloomberg",
+      "canonical": "https://www.bloomberg.com/news/articles/2026-11-12/democrats-plan-early-action-on-tariffs-health-insurance-costs",
+      "publishedMeta": [
+        {
+          "name": "parsely-pub-date",
+          "value": "2026-11-12T17:24:24.290Z"
+        },
+        {
+          "name": "iso-8601-publish-date",
+          "value": "2026-11-12T17:24:24.290Z"
+        }
+      ],
+      "newsArticle": [
+        {
+          "datePublished": "2026-11-12T17:24:24.290Z",
+          "dateModified": "2026-11-12T17:24:24.291Z",
+          "url": "https://www.bloomberg.com/news/articles/2026-11-12/democrats-plan-early-action-on-tariffs-health-insurance-costs"
+        }
+      ],
+      "challenge": false,
+      "at": "2026-11-12T17:36:24.982616+00:00",
+      "url": "https://www.bloomberg.com/news/articles/2026-11-12/democrats-plan-early-action-on-tariffs-health-insurance-costs",
+      "status": 200,
+      "body_extraction_not_performed": true
+    },
+    {
+      "title": "Russia Faces Expanded EU Sanctions on Banks, Energy, Oil Tankers - Bloomberg",
+      "canonical": "https://www.bloomberg.com/news/articles/2026-11-12/eu-to-hit-russia-with-more-banking-and-energy-sanctions",
+      "publishedMeta": [
+        {
+          "name": "parsely-pub-date",
+          "value": "2026-11-12T17:21:58.025Z"
+        },
+        {
+          "name": "iso-8601-publish-date",
+          "value": "2026-11-12T17:21:58.025Z"
+        }
+      ],
+      "newsArticle": [
+        {
+          "datePublished": "2026-11-12T17:21:58.025Z",
+          "dateModified": "2026-11-12T17:21:58.025Z",
+          "url": "https://www.bloomberg.com/news/articles/2026-11-12/eu-to-hit-russia-with-more-banking-and-energy-sanctions"
+        }
+      ],
+      "challenge": false,
+      "at": "2026-11-12T17:36:27.625289+00:00",
+      "url": "https://www.bloomberg.com/news/articles/2026-11-12/eu-to-hit-russia-with-more-banking-and-energy-sanctions",
+      "status": 200,
+      "body_extraction_not_performed": true
+    }
+  ],
+  "production_isolation": {
+    "raw_messages": 0,
+    "standard_messages": 0,
+    "ticker_source_bindings": 0,
+    "model_decisions": 0
+  },
+  "production_source_version": 3,
+  "production_discovery_changed": false,
+  "diagnostic_tests_passed": 45,
+  "cache_flags_restored": true,
+  "no_sse_optimization_rss_or_sitemap": true,
+  "short_extension": {
+    "start": "2026-11-12T17:40:37.037491+00:00",
+    "end": "2026-11-12T17:41:46.353929+00:00",
+    "valid_refreshes": 2,
+    "failed_refreshes": 1,
+    "stop": [
+      {
+        "kind": "stopped",
+        "at": "2026-11-12T17:41:46.346015+00:00",
+        "reason": "site_restriction_no_automatic_retry",
+        "cycle": "1:cache_off"
+      }
+    ],
+    "cache_restored": true
+  },
+  "cleanup": [
+    {
+      "operation": "CLOSE_LOGIN",
+      "state": "DONE",
+      "stage": "DONE",
+      "error": null
+    },
+    {
+      "identity_id": "bloomberg-latest-lab-1",
+      "stopped": true
+    },
+    {
+      "identity_running": false,
+      "profile_preserved": true,
+      "source_routing_head_enabled": false
+    }
+  ],
+  "http_extension": {
+    "start": "2026-11-12T17:40:46.843748+00:00",
+    "last_at": "2026-11-12T17:45:47.310272+00:00",
+    "responses": 11,
+    "purpose": "bounded synchronous reference; no new SSE investigation"
+  }
+}

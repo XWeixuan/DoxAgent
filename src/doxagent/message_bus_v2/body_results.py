@@ -41,6 +41,7 @@ def access_scope(message, source_id):
             "finnhub.io",
             "news.google.com",
             "barrons.com",
+            "bloomberg.com",
             "wsj.com",
             "reuters.com",
             "digitimes.com",
