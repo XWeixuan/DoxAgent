@@ -1,9 +1,9 @@
-import sqlite3,json,statistics,collections
+import sqlite3,json,statistics,collections,argparse
 from datetime import datetime,timezone,timedelta
 from pathlib import Path
 p=Path('/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/acquisition.sqlite3');d=sqlite3.connect(p.as_uri()+'?mode=ro',uri=True);d.row_factory=sqlite3.Row
-now=datetime.now(timezone.utc);out={'at':now.isoformat()};cut='2026-11-12T22:07:44Z';vals=collections.defaultdict(list);counts=collections.Counter();gaps=collections.defaultdict(list)
-for r in d.execute("select ticker,unit,status,reason,dispatch_at,finished_at from cycles where source_id='reuters_site_search' and dispatch_at>=? and status not in ('SCHEDULE','DISPATCHED') order by dispatch_at",((now-timedelta(hours=24)).isoformat()[:19],)):
+parser=argparse.ArgumentParser();parser.add_argument('--since');args=parser.parse_args();now=datetime.now(timezone.utc);out={'at':now.isoformat()};cut=args.since or '2026-11-12T22:07:44Z';vals=collections.defaultdict(list);counts=collections.Counter();gaps=collections.defaultdict(list)
+for r in d.execute("select ticker,unit,status,reason,dispatch_at,finished_at from cycles where source_id='reuters_site_search' and dispatch_at>=? and status not in ('SCHEDULE','DISPATCHED') order by dispatch_at",((args.since or (now-timedelta(hours=24)).isoformat())[:19],)):
  if not r['finished_at']:continue
  a=datetime.fromisoformat(r['dispatch_at'].replace('Z','+00:00'));b=datetime.fromisoformat(r['finished_at'].replace('Z','+00:00'));part='after' if a>=datetime.fromisoformat(cut.replace('Z','+00:00')) else 'before';kind=r['unit'].split(':')[0]
  counts[part,kind,r['status'],r['reason']]+=1;vals[part,kind,r['status']].append((b-a).total_seconds())
