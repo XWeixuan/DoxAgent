@@ -1,4 +1,4 @@
-"""Projector-only overlay using the existing canonical release/rollback owner."""
+"""Scoped projection overlays using the existing canonical release/rollback owner."""
 import argparse
 import copy
 import hashlib
@@ -78,8 +78,20 @@ def main():
                     archive.extractall(context/'web')
                 sums=''.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+str(p.relative_to(context/'web'))+'\n' for p in sorted((context/'web').rglob('*')) if p.is_file())
                 (context/'web.sha256').write_text(sums)
-                recipe+=['COPY web/ /usr/share/nginx/html/','COPY web.sha256 /tmp/projection-web.sha256','RUN cd /usr/share/nginx/html && sha256sum -c /tmp/projection-web.sha256']
-                check_command=['docker','exec',CONTAINER,'sh','-c','cd /usr/share/nginx/html && sha256sum -c /tmp/projection-web.sha256']
+                # extractall inherits the private release umask (077). Nginx
+                # workers must still traverse directories and read public assets.
+                recipe+=['COPY web/ /usr/share/nginx/html/',
+                         'RUN find /usr/share/nginx/html -type d -exec chmod 755 {} + && find /usr/share/nginx/html -type f -exec chmod 644 {} +',
+                         'COPY web.sha256 /tmp/projection-web.sha256','RUN cd /usr/share/nginx/html && sha256sum -c /tmp/projection-web.sha256']
+                web_check = '''set -eu
+cd /usr/share/nginx/html
+sha256sum -c /tmp/projection-web.sha256
+html=$(wget -q -T 2 -O - http://127.0.0.1/index.html)
+assets=$(printf '%s' "$html" | grep -oE '(src|href)="/assets/[^"]+"' | cut -d '"' -f 2)
+test -n "$assets"
+for asset in $assets; do wget -q -T 2 --spider "http://127.0.0.1$asset"; done
+'''
+                check_command=['docker','exec',CONTAINER,'sh','-c',web_check]
             else:
                 recipe += ['RUN umask 022 && python -m compileall -q --invalidation-mode checked-hash '+(' /app/src/doxagent/api_v2' if args.role=='v2-api' else '/app/src/doxagent/v2_read'),
                        'USER '+(info['Config'].get('User') or 'root'),'RUN python -c '+shlex.quote(check)]
