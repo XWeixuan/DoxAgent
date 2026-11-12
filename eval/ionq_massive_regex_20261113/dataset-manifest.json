@@ -1,0 +1,133 @@
+{
+  "created_at": "2026-11-12T23:06:12.196614+00:00",
+  "seed": 2026111309,
+  "target": [
+    50,
+    50
+  ],
+  "baseline_terms_revision": 4,
+  "pool": {
+    "raw": 136,
+    "families": 117,
+    "validation_eligible": 92,
+    "title_hint": {
+      "false": 61,
+      "true": 56
+    },
+    "sources": {
+      "globenewswire_massive": 62,
+      "access_newswire_massive": 6,
+      "prnewswire_massive": 40,
+      "tmx_newsfile_massive": 8,
+      "businesswire_massive": 1
+    },
+    "near_merges": [
+      [
+        "test_a37c39b54c58ee4d0ffef64a663d9bb628c1d1336d636dfe32a65876e98a33ed",
+        "test_bfb8e6090fcd267a8cb502dc572f3c5a9e52a650c5c1d336bf0d5f585ff78ab9",
+        0.9559
+      ],
+      [
+        "test_963150c9a5d2c66ea5f640f3b0ded360293e344e1c0b2497d00064920bcb5aa6",
+        "test_2d40ecc87454200589ec4839e3c4f1193255f13c68c90b3b0fac6edd8aaa1cc3",
+        0.9683
+      ],
+      [
+        "test_2054f6a9dc6bb4acb7b1bac1335fecfcde2920e28f4f0f38081064acdf1839bd",
+        "test_bfb8e6090fcd267a8cb502dc572f3c5a9e52a650c5c1d336bf0d5f585ff78ab9",
+        0.9559
+      ],
+      [
+        "test_573775c1522d95f8934fece883c75b50730a7f39734fd77805d93a96b1736ffb",
+        "test_57bc31ac8d08977bdbbffb9450803b86e6904c983925b948da926d402b57891f",
+        0.9536
+      ],
+      [
+        "test_4c33ecd9d68a188b35d5a79ee6cc0fa358e1b5143e952534d42a195e58845e98",
+        "test_ec72a64c266426bfd0fd9cee508a656257958026d1c296213f2cf923dad9fd06",
+        0.9305
+      ],
+      [
+        "test_634d415ab38d4c1d87a80f1694596c1626fd52a2bfec0502850806dbf7029d9f",
+        "test_57bc31ac8d08977bdbbffb9450803b86e6904c983925b948da926d402b57891f",
+        0.9832
+      ],
+      [
+        "test_0e69119cc044b69fac44c531a4d8c1ef75604eb0af3465887f18625d3c661c5f",
+        "test_ec72a64c266426bfd0fd9cee508a656257958026d1c296213f2cf923dad9fd06",
+        0.9484
+      ],
+      [
+        "b675a2dd2affb0cc46339bdc82b0265f088247bee0536d34c91b131b67d74ac5",
+        "test_ec72a64c266426bfd0fd9cee508a656257958026d1c296213f2cf923dad9fd06",
+        0.8747
+      ]
+    ],
+    "original_lexical_families": 117,
+    "provider_aware_families": 116
+  },
+  "counts": {
+    "development": 50,
+    "validation": 50
+  },
+  "family_overlap": 0,
+  "validation_prior_nine_ticker_exposure": 0,
+  "development_prior_exposure": 22,
+  "source_counts": {
+    "development": {
+      "globenewswire_massive": 29,
+      "prnewswire_massive": 14,
+      "access_newswire_massive": 3,
+      "businesswire_massive": 1,
+      "tmx_newsfile_massive": 3
+    },
+    "validation": {
+      "tmx_newsfile_massive": 4,
+      "access_newswire_massive": 2,
+      "globenewswire_massive": 25,
+      "prnewswire_massive": 19
+    }
+  },
+  "title_hint_counts": {
+    "development": {
+      "False": 30,
+      "True": 20
+    },
+    "validation": {
+      "False": 30,
+      "True": 20
+    }
+  },
+  "outputs": {
+    "development": "00373bd02670d269e277253c32172c82ca6424e5716f80d8bc59b1b72b47294f",
+    "validation": "ab0acf081a4f11844ad0509d65532b6bb2cb9b6c06348e8fd48b6269a579484b"
+  },
+  "limitations": [
+    "Only baseline-recalled complete bodies; recall is retention within that pool, not market-wide recall.",
+    "Title strata are sampling hints, not GOLD; do not force a label percentage.",
+    "Six sources were searched but no complete Bloomberg article matched the frozen IONQ baseline.",
+    "Final GOLD related shares exceed the aspirational 30-50%; no label-based resampling was performed.",
+    "Different releases about the same economic event can span splits; this is not independent event-level validation.",
+    "One objectively duplicated provider announcement was replaced without using labels, after candidate freeze; initial evidence and scores are preserved."
+  ],
+  "version": 2,
+  "identity_repair": "dataset-identity-repair.json",
+  "validation_previously_exposed": true,
+  "provider_identity_overlap": [],
+  "normalized_body_overlap": 0,
+  "all_alias_identity_overlap": 0,
+  "gold_counts": {
+    "development": {
+      "RELATED": 39,
+      "IRRELEVANT": 11
+    },
+    "validation": {
+      "RELATED": 37,
+      "IRRELEVANT": 13
+    }
+  },
+  "gold_sha256": {
+    "development": "fb4ba20c1ffff20e3830833e6a0c50f7b3d4eeb2cb2c06ea9b2fc1ad53273acc",
+    "validation": "18f0022bb60e3189c58472aec7b10e582b1952e1cb33ffe327ee3115e229dcab"
+  }
+}

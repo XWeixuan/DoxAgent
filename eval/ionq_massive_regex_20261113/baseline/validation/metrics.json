@@ -1,0 +1,16 @@
+{
+  "TP": 37,
+  "FP": 13,
+  "FN": 0,
+  "TN": 0,
+  "errors": 0,
+  "insufficient": 0,
+  "total": 50,
+  "precision": 0.74,
+  "recall": 1.0,
+  "complete": true,
+  "passed": false,
+  "track": "regex",
+  "ticker": "IONQ",
+  "candidate_sha256": "1b9cfc31891538d65e2b399358b5ae2060caff63f26ece390923594803100adb"
+}

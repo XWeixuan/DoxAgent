@@ -1,0 +1,50 @@
+{"pair_id":"IONQF404d94c71fac7afe-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"IQM公布量子计算机订单、交付及超导纠错平台合同和经营业绩，属于量子计算竞争企业经营。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF6b9be9ce5cefe067-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"诉讼对象D-Wave开发交付量子计算系统、软件和服务，通告涉及该量子企业的财务表现及管理层事项。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFe749f71ed0bb98b8-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"矿山尾矿试验报告仅列举铷可用于原子钟及新兴量子技术，未建立该项目与量子产品或业务的具体联系。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF6eae90e550ccb009-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"公司介绍称其设计制造用于量子计算的射频和微波信号处理组件与系统，构成明确产品经营事实。","mixed_topics":false,"confidence":"MEDIUM"}
+{"pair_id":"IONQFd0c9ac90195b77e4-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"下一代计算报告具体讨论量子系统部署障碍、纠错及云量子服务，也覆盖后量子密码市场驱动。","mixed_topics":true,"confidence":"HIGH"}
+{"pair_id":"IONQFd7209930a83bb2fe-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"QCi财报披露量子通信产品收入、Dirac量子优化商业合作与量子技术发展。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF8733934414b468e8-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"SEALSQ详述投资量子处理器企业、量子网络光子技术和后量子安全产品的战略。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFfd532df7b001b327-IONQ","ticker":"IONQ","label":"RELATED","category":"DIRECT","reason":"投资人回顾其主导的Elisity投资，并明确提及IonQ收购该公司的交易。","mixed_topics":true,"confidence":"HIGH"}
+{"pair_id":"IONQF87a4b83c73648281-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"IBM发布并部署Quantum System Two量子计算机及Nighthawk芯片，属于竞争量子计算平台。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFaef87a7f4ae0e734-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"虽主体为Open RAN获奖，独立公司介绍明确其制造用于量子计算的射频和微波信号处理组件及系统。","mixed_topics":true,"confidence":"MEDIUM"}
+{"pair_id":"IONQF3d089fb352f114fb-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"无人机血液运输合作与量子无具体联系，公司仅泛称投资量子计算研发，未描述具体量子产品或项目。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFb6822bfe0db49076-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"合作将采用ML-KEM和ML-DSA的后量子数据保护产品引入公共部门采购渠道。","mixed_topics":true,"confidence":"HIGH"}
+{"pair_id":"IONQF266afa3d6ca2bf07-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"科技投资会议仅将量子计算列为众多覆盖领域之一，公布议程没有可识别量子项目、主体或具体活动。","mixed_topics":true,"confidence":"MEDIUM"}
+{"pair_id":"IONQF5b1d312dbcfcfe0e-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"活动讨论AI云攻击与网络隔离，公司简介仅笼统称安全平台量子安全，没有具体后量子技术或产品事实。","mixed_topics":false,"confidence":"MEDIUM"}
+{"pair_id":"IONQF5350fc7cbb14ed9e-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"SEALSQ将在正式投资者会议介绍后量子安全平台部署及量子技术投资，并参加量子专题讨论。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFc0efb0f293fc53e3-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"股东投票涉及量子安全密码与熵技术企业QeM收购网络安全公司，并说明其技术整合计划。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFd970596eb6d3fe80-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"新商业推出的区块链明确宣称其基础设施抗后量子攻击，属于具体产品的量子安全属性。","mixed_topics":false,"confidence":"MEDIUM"}
+{"pair_id":"IONQF093b9b4d4f597ed2-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"调查关于零售诈骗邮件及传统认证，结尾仅泛称为量子安全未来做准备，没有具体量子安全产品事实。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFb8924ba4dda72bc9-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"证券诉讼针对量子计算企业D-Wave并涉及其财务业绩及管理层变动。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFbc5f8b882192e808-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"合同涉及道路无人机测绘，公司仅笼统列举量子计算研发投资，无具体量子业务事实。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF1306a5894c94f31d-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"Keeper凭证管理产品用于车队，并说明其采用Kyber抗量子加密保护数据。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF71267c09cd6a1fe0-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"新推出的托管网络服务在支持的Cisco路由器上提供后量子密码能力。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFa8af83c50e7fdee8-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"ePacketron新版本提供X25519与ML-KEM混合的后量子TLS密钥交换。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF07894265dbace584-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"Quantinuum与RIKEN升级离子阱量子计算机并扩大混合计算及容错研发合作。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFa8d52575b951830f-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"IBM与微软推出企业AI代理平台，IBM简介仅将量子计算笼统列为创新领域，没有量子产品事实。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFf0f8d23c54eea291-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"Wecan正将SEALSQ后量子安全技术整合进金融合规平台，母公司亦开发后量子半导体。","mixed_topics":true,"confidence":"HIGH"}
+{"pair_id":"IONQF8138d84355b6db30-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"IBM与科罗拉多机构合作扩大Qiskit量子工具使用并支持量子人才培养。","mixed_topics":true,"confidence":"HIGH"}
+{"pair_id":"IONQFa9cf8eb8cf995560-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"网络安全领袖奖将量子计算列为一般变革背景，未识别量子业务、项目或具体活动。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF487bcf3a78d37116-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"诉讼针对量子计算企业D-Wave的财务展望、收入披露和高管离职。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFc892d1edb893ba90-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"量子计算企业Quantinuum管理层将参加投资者会议，正文描述已商业部署离子阱量子系统。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFd71e231706adc07a-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"地质数据库加入氦测量数据，仅引用氦用于量子计算等行业的背景，项目未建立具体量子供应或产品联系。","mixed_topics":true,"confidence":"HIGH"}
+{"pair_id":"IONQFd536eccd09f96e15-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"太阳能施工测绘使用无人机及AI，公司简介仅泛列量子计算研发，无具体量子业务事实。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF535f2afb1f030a36-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"Zcash基金及生态资助通告仅笼统提及量子计算未来挑战，没有具体后量子方案。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF14ad7ab5afba7fa0-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"矿产资源评估仅把原子钟和量子技术列为铯铷一般用途，未建立具体量子产品或供应联系。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFad72f46d31a8b04f-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"公司介绍明确其设计制造用于量子计算的射频微波信号处理组件及系统。","mixed_topics":false,"confidence":"MEDIUM"}
+{"pair_id":"IONQF175939dbf6059aa7-IONQ","ticker":"IONQ","label":"RELATED","category":"DIRECT","reason":"IonQ与Carahsoft达成公共部门分销合作，覆盖其量子计算、网络、传感和安全产品。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFb8e9ce18e5df0120-IONQ","ticker":"IONQ","label":"IRRELEVANT","category":"INDUSTRY_BACKGROUND","reason":"制药公司财报仅在风险声明中笼统提及可能利用量子计算技术效率，没有具体量子业务或合作。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF680b85ccf411bfbd-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"节目计划演示PureCipher的Zero-Exposure AI产品在量子安全加密数据上进行实时推理。","mixed_topics":true,"confidence":"MEDIUM"}
+{"pair_id":"IONQF2c83002840a7dfe9-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"量子计算企业Quantinuum管理层参加投资者会议，且正文明确其已商业部署离子阱量子系统。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFe5d80328283cb5f5-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"Quantinuum财报披露量子云合同、容错量子硬件路线图及量子软件发展。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF07a3bd826cd6d53a-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"公司介绍明确KeeperPAM平台采用抗量子加密，属于可识别安全产品事实。","mixed_topics":false,"confidence":"MEDIUM"}
+{"pair_id":"IONQF489420b999d95884-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"量子委员会报告提出量子计算研发、制造与后量子密码迁移等具体政策优先事项。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF01ac18853f3f845a-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"Quantinuum披露量子云合同、容错硬件和量子软件路线图及财务业绩。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF6333d44be4107eb9-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"IBM Z Day正式活动将量子安全密码纳入其现代化与安全议程主题。","mixed_topics":true,"confidence":"MEDIUM"}
+{"pair_id":"IONQF46e1e129d07c7713-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"光子量子计算企业Xanadu财报披露硬件路线图、纠错控制软件及研发合作。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFf2b7b3c94238192a-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"D-Wave诉讼涉及量子计算机系统销售、安装时间及收入确认。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFfb89a514fce6c93f-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"D-Wave证券诉讼涉及量子计算服务合同、收购与该企业财务披露。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQFa0997ca369ab11e8-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"Qarakal将在量子会议讲解模块化容错量子计算架构及连接量子模块的总线。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF25d32070b8508808-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"Classiq将在会议展示连接高性能计算与量子硬件的量子软件平台。","mixed_topics":false,"confidence":"HIGH"}
+{"pair_id":"IONQF67a0bd29f8266660-IONQ","ticker":"IONQ","label":"RELATED","category":"INDIRECT","reason":"公司持有的Quantum Transportation拥有量子纠错专利在铁路技术中的独家分许可，是独立业务权益事实。","mixed_topics":true,"confidence":"MEDIUM"}

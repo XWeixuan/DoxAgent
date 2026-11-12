@@ -24,6 +24,7 @@ from doxagent.message_bus_v2.distribution import DistributionWorker
 from doxagent.message_bus_v2.jev import JevClient
 from doxagent.message_bus_v2.monitoring_terms import TickerMonitoringTerms, validate_terms
 from doxagent.message_bus_v2.relevance import _match, _normalize, regex_relevant
+from doxagent.message_bus_v2.massive_relevance import massive_relevant
 from doxagent.message_bus_v2.schema import RawMessageInput, canonical_json
 
 ROOT = Path.cwd() if __file__ == "<stdin>" else Path(__file__).resolve().parents[1]
@@ -179,10 +180,10 @@ def message_for(row, context):
     return message, sorted(languages)
 
 
-def regex_trace(terms, languages, message):
+def regex_trace(terms, languages, message, scope="l2"):
     hits = []
     for language in dict.fromkeys([*languages, "en"]):
-        rules = terms.l2.get(language)
+        rules = getattr(terms, scope).get(language)
         for group in rules.groups if rules else []:
             if group.any and not any(_match(t, message) for t in group.any):
                 continue
@@ -268,6 +269,9 @@ def history_for(path, selected):
 
 
 async def evaluate(args, client=None):
+    scope = getattr(args, "rule_scope", "l2")
+    if scope == "massive_l2" and args.track != "regex":
+        raise ValueError("Massive Distribution is regex-only")
     if getattr(args, "env_file", None):
         from dotenv import load_dotenv
 
@@ -289,7 +293,7 @@ async def evaluate(args, client=None):
         "engine_sha256": {
             n: sha(ROOT / f"src/doxagent/message_bus_v2/{n}.py")
             for n in (
-                ("relevance", "monitoring_terms")
+                (("relevance", "monitoring_terms", "massive_relevance") if scope == "massive_l2" else ("relevance", "monitoring_terms"))
                 if args.track == "regex"
                 else ("jev", "distribution", "monitoring_terms")
             )
@@ -299,8 +303,10 @@ async def evaluate(args, client=None):
         if args.track == "decision"
         else None,
         "threshold": 0.5,
-        "source_context": "reconstructed_from_frozen_source_ids",
+        "source_context": "frozen_publisher_language" if scope == "massive_l2" else "reconstructed_from_frozen_source_ids",
     }
+    if scope == "massive_l2":
+        metadata["rule_scope"] = scope
     if (output / "metadata.json").exists() and read(output / "metadata.json") != metadata:
         raise ValueError(
             "output contains another candidate/dataset/context/engine; use a new output folder"
@@ -334,12 +340,16 @@ async def evaluate(args, client=None):
             }
             try:
                 message, languages = message_for(row, context)
+                if scope == "massive_l2":
+                    if not row.get("language"):
+                        raise ValueError("SOURCE_LANGUAGE_UNKNOWN: Massive input requires frozen language")
+                    languages = [row["language"]]
                 result["languages"] = languages
                 if args.track == "regex":
                     result["prediction"] = any(
-                        regex_relevant(terms, lang, message) for lang in languages
+                        (massive_relevant if scope == "massive_l2" else regex_relevant)(terms, lang, message) for lang in languages
                     )
-                    result["matches"] = regex_trace(terms, languages, message)
+                    result["matches"] = regex_trace(terms, languages, message, scope)
                 else:
                     # Actual production segmentation, limits, retry and score aggregation;
                     # no regex prerequisite and no bus/repository/delivery side effects.
@@ -565,6 +575,7 @@ def main():
     for k in ("dataset", "terms", "context", "ticker", "output"):
         p.add_argument(f"--{k}", required=True)
     p.add_argument("--track", choices=["regex", "decision"], required=True)
+    p.add_argument("--rule-scope", choices=["l2", "massive_l2"], default="l2")
     p.add_argument("--history")
     p.add_argument("--concurrency", type=int, choices=range(1, 9), default=4)
     p.add_argument("--env-file", help="optional dotenv file; existing environment wins")

@@ -3008,3 +3008,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Massive Newswire补充：Registry正文参数显式接受并校验wait_selector，完整站点bootstrap/共享路径回归73项通过；新增真实站点配置必须经owner校验测试。
 
 - Massive Newswire生产入口补充：SharedContentExtractor将BW/PRN/Newsfile的body_v2.2送入显式Site Access策略；GNW/ACCESS仍保留原有效轻量HTTP路径。补充总入口回归；HTTP分页中途失败/RSS兜底不再漏掉正常路径的30分钟过滤。最终相关组合68通过、1可选fixture跳过。
+2026-11-13 IONQ Massive调试：为既有离线回放脚本增加--rule-scope massive_l2，复用专用生产入口与冻结语言，隔离普通L2和模型调用；添加scope/语言/缓存身份回归。数据、逐轮记录与生产绑定回执见本轮报告。
+
+2026-11-13 IONQ Massive交付：50/50由指定Terra high逐案标注，1常规候选加1额外修正，调试P/R=97.5%/100%、验证=100%/100%；保留跨语言公告身份修复及已暴露验证限制。生产专用massive_l2第5版生效并补齐五Newswire绑定，原Bloomberg绑定保留；普通词库及其他九ticker未变。

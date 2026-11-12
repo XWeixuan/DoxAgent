@@ -1,0 +1,15 @@
+*.b64
+*.zip
+*.stderr
+raw-pool.json
+deduplicated-pool.jsonl
+prior-identities.json
+context.json
+*-gold*.jsonl
+sets/
+annotation/*.jsonl
+!annotation/labels-*.jsonl
+**/details.jsonl
+**/badcases.jsonl
+**/predictions.jsonl
+**/historical_badcases.jsonl

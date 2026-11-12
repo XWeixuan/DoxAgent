@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-12T23:17:17.338460+00:00",
+  "regular_attempts": [
+    "attempt-01"
+  ],
+  "best_development": "attempt-01",
+  "stop_reason": "development precision and recall both > 80%",
+  "candidate_sha256": "f95d7f47692b62a3e9fe0adbdcda6d5a9ec7d5f3edc3d1e25e6d3382784b621b",
+  "validation_not_scored": true,
+  "validation_labels_sha256": "762e150c17b7ce1ab9aafad2706aeff52f4d7f00e7815ab237ecd61340079626"
+}

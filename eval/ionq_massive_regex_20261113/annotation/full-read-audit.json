@@ -1,0 +1,30 @@
+{
+  "pair_id": "IONQF14ad7ab5afba7fa0-IONQ",
+  "total_body_characters": 127986,
+  "interval_convention": "零起点、左闭右开，按 Python Unicode 字符计数",
+  "covered_character_intervals": [
+    [
+      0,
+      30000
+    ],
+    [
+      30000,
+      60000
+    ],
+    [
+      60000,
+      90000
+    ],
+    [
+      90000,
+      120000
+    ],
+    [
+      120000,
+      127986
+    ]
+  ],
+  "coverage": "此前独立分页读取了全部区间；包含资源量表格、JORC 技术附录及免责声明。最初批量输出发生截断，随后对本篇重新逐页读取完整正文。",
+  "business_link_review": "正文主体是铯、铷、锂和钽矿产资源估算；铯与铷的原子钟、精密导航及量子技术用途属于一般应用列举。未见该矿产项目与具体量子产品、客户或供应安排的直接联系。",
+  "gold_modified": false
+}

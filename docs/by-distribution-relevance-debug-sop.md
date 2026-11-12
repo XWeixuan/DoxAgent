@@ -53,7 +53,9 @@ Get-Content -Raw $tool | ssh doxagent-sg 'sudo docker exec -i doxagent-v2-v2-mes
 & $py $tool candidate --context "$work/context.json" --ticker MU --output "$run/decision/attempt-01/candidate.json"
 ```
 
-正则只改 `l2`，模型只改 `definition.relevant/irrelevant`；保留其他字段。语言按实际绑定，不照搬旧作者资料的固定三语要求。
+普通 By Distribution 正则只改 `l2`，模型只改 `definition.relevant/irrelevant`；保留其他字段。语言按实际绑定，不照搬旧作者资料的固定三语要求。
+
+Massive Distribution 已有独立词库时，候选只改 `massive_l2`，正则回放增加 `--rule-scope massive_l2`，使用专用生产入口和样本冻结的 `language`；省略参数仍使用普通 `l2`。Massive 不调 Decision Model。样本数量按该次任务确认（例如50/50），其余冻结、最多5轮、一次额外修正及成对择优纪律不变。
 
 ## 3. 常规调试：只使用 development
 

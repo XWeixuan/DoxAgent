@@ -1,0 +1,170 @@
+{
+  "ticker": "IONQ",
+  "expected_revision": 3,
+  "x_accounts": [
+    "ionq_inc"
+  ],
+  "l1_concepts": [
+    {
+      "concept_id": "ionq",
+      "expressions": {
+        "en": "IonQ"
+      }
+    },
+    {
+      "concept_id": "quantum-computing",
+      "expressions": {
+        "en": "quantum computing"
+      }
+    }
+  ],
+  "l2": {
+    "en": {
+      "groups": [
+        {
+          "id": "ionq",
+          "any": [
+            {
+              "literal": null,
+              "regex": "\\b(?:IonQ|Oxford Ionics|Qubitekk|ID Quantique|Vector Atomic)\\b",
+              "field": "all",
+              "case_sensitive": false,
+              "whole_word": false
+            }
+          ],
+          "all": [],
+          "none": []
+        },
+        {
+          "id": "quantum_computing",
+          "any": [
+            {
+              "literal": null,
+              "regex": "\\b(?:qubits?|QPUs?|quantum[\\s‐‑–-]+(?:comput\\w*|process\\w*|circuits?|gates?|algorithms?|simulat\\w*|control|error correction|error mitigation))\\b",
+              "field": "all",
+              "case_sensitive": false,
+              "whole_word": false
+            }
+          ],
+          "all": [],
+          "none": []
+        },
+        {
+          "id": "quantum_network_security",
+          "any": [
+            {
+              "literal": null,
+              "regex": "\\b(?:quantum[\\s‐‑–-]+(?:networks?|networking|communications?|internet|channels?|key distribution|cryptograph\\w*|secur\\w*|safe|resistant)|post[\\s‐‑–-]+quantum|QKD|PQC)\\b",
+              "field": "all",
+              "case_sensitive": false,
+              "whole_word": false
+            }
+          ],
+          "all": [],
+          "none": []
+        },
+        {
+          "id": "quantum_sensing",
+          "any": [
+            {
+              "literal": null,
+              "regex": "\\b(?:quantum[\\s‐‑–-]+(?:sensors?|sensing|metrolog\\w*|tim\\w*|navigation)|(?:atomic|optical|nuclear) clocks?)\\b",
+              "field": "all",
+              "case_sensitive": false,
+              "whole_word": false
+            }
+          ],
+          "all": [],
+          "none": []
+        }
+      ]
+    }
+  },
+  "massive_l2": {
+    "en": {
+      "groups": [
+        {
+          "id": "company_subject",
+          "any": [
+            {
+              "literal": null,
+              "regex": "\\b(?:IonQ|Oxford Ionics|Qubitekk|ID Quantique|Vector Atomic)\\b",
+              "field": "title",
+              "case_sensitive": false,
+              "whole_word": false
+            },
+            {
+              "literal": null,
+              "regex": "\\b(?:IonQ|Oxford Ionics|Qubitekk|ID Quantique|Vector Atomic)\\b",
+              "field": "summary",
+              "case_sensitive": false,
+              "whole_word": false
+            }
+          ],
+          "all": [],
+          "none": []
+        },
+        {
+          "id": "quantum_subject",
+          "any": [
+            {
+              "literal": null,
+              "regex": "\\b(?:qubits?|QPUs?|quantum[\\s‐‑–-]+(?:comput\\w*|process\\w*|circuits?|gates?|algorithms?|simulat\\w*|control|error correction|error mitigation))\\b|\\b(?:quantum[\\s‐‑–-]+(?:networks?|networking|communications?|internet|channels?|key distribution|cryptograph\\w*|secur\\w*|safe|resistant)|post[\\s‐‑–-]+quantum|QKD|PQC)\\b|\\b(?:quantum[\\s‐‑–-]+(?:sensors?|sensing|metrolog\\w*|tim\\w*|navigation)|(?:atomic|optical|nuclear) clocks?)\\b",
+              "field": "title",
+              "case_sensitive": false,
+              "whole_word": false
+            },
+            {
+              "literal": null,
+              "regex": "\\b(?:qubits?|QPUs?|quantum[\\s‐‑–-]+(?:comput\\w*|process\\w*|circuits?|gates?|algorithms?|simulat\\w*|control|error correction|error mitigation))\\b|\\b(?:quantum[\\s‐‑–-]+(?:networks?|networking|communications?|internet|channels?|key distribution|cryptograph\\w*|secur\\w*|safe|resistant)|post[\\s‐‑–-]+quantum|QKD|PQC)\\b|\\b(?:quantum[\\s‐‑–-]+(?:sensors?|sensing|metrolog\\w*|tim\\w*|navigation)|(?:atomic|optical|nuclear) clocks?)\\b",
+              "field": "summary",
+              "case_sensitive": false,
+              "whole_word": false
+            }
+          ],
+          "all": [],
+          "none": []
+        },
+        {
+          "id": "specific_quantum_body",
+          "any": [
+            {
+              "literal": null,
+              "regex": "\\b(?:qubits?|QPUs?|QKD|PQC|post[\\s‐‑–-]+quantum)\\b",
+              "field": "body",
+              "case_sensitive": false,
+              "whole_word": false
+            },
+            {
+              "literal": null,
+              "regex": "\\bquantum[\\s‐‑–-]+(?:computers?|processors?|circuits?|gates?|algorithms?|optimization|error[\\s‐‑–-]+(?:correction|mitigation)|key distribution|cryptograph\\w*|sensors?|sensing|metrolog\\w*|navigation)\\b",
+              "field": "body",
+              "case_sensitive": false,
+              "whole_word": false
+            },
+            {
+              "literal": null,
+              "regex": "\\b(?:atomic|optical|nuclear) clocks?\\b",
+              "field": "body",
+              "case_sensitive": false,
+              "whole_word": false
+            },
+            {
+              "literal": null,
+              "regex": "\\bquantum[\\s‐‑–-]+(?:safe|resistant)[\\s‐‑–-]+(?:encrypt\\w*|cryptograph\\w*|keys?|hardware)\\b",
+              "field": "body",
+              "case_sensitive": false,
+              "whole_word": false
+            }
+          ],
+          "all": [],
+          "none": []
+        }
+      ]
+    }
+  },
+  "definition": {
+    "relevant": "量子产业初筛：只要新闻涉及量子计算、量子网络通信、量子传感与精密时钟、量子安全或后量子密码任一领域的技术研究、产品、企业经营、投资采购、政策或正式活动，即可相关。IonQ是一家覆盖这些领域的平台企业；竞争技术与近邻市场同样相关，不要求文章点名IonQ，不要求已商用或显著影响。以正文事实为准，召回优先。",
+    "irrelevant": "文章完全没有上述量子业务领域的事实。普通AI软件、传统网络安全、纺织建筑材料以及没有明确量子计算/网络/传感用途的纯物理或数学研究不相关。只有量子一词、来源名、导航宣传语或遥远联想也不相关。"
+  }
+}

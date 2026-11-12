@@ -1,0 +1,19 @@
+{
+  "ticker": "IONQ",
+  "scope": "massive_l2 only",
+  "new_bindings": [
+    "businesswire_massive",
+    "prnewswire_massive",
+    "globenewswire_massive",
+    "access_newswire_massive",
+    "tmx_newsfile_massive"
+  ],
+  "preserve_existing": [
+    "bloomberg_massive"
+  ],
+  "source_mode_changes": false,
+  "source_parameters_changes": false,
+  "other_nine_terms_changes": false,
+  "ordinary_terms_changes": false,
+  "new_rule_groups": 5
+}

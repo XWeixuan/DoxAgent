@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-12T23:35:30.395120+00:00",
+  "cause": "Same GlobeNewswire announcement ID across language variants was missed by URL/title/lexical grouping.",
+  "provider_id": "gnw:3396017",
+  "removed_pair": "IONQF404d94c71fac7afe-IONQ",
+  "replacement_pair": "IONQF902d011b6e5435cd-IONQ",
+  "selection": "Among previously unselected, unexposed families excluding every active provider identity: prioritize same title hint, then same source, then smallest fixed seed SHA-256. No same-hint candidate remained; no GOLD was used.",
+  "rules_remain_frozen": true,
+  "no_more_candidates": true,
+  "validation_previously_exposed": true,
+  "replacement_input_sha256": "c5f220c617b9117b088da3473342d686fc1b141b3f9a5d94733950c5c1bce1ba"
+}

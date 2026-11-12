@@ -1,0 +1,17 @@
+{
+  "tests": {
+    "passed": 26,
+    "skipped": 1,
+    "command": "pytest tests/test_distribution_relevance_debug.py tests/test_massive_distribution.py -q"
+  },
+  "ruff": "E9,F63,F7,F82 passed",
+  "active_gold_pairs": 100,
+  "total_blind_annotations": 101,
+  "candidate_count": 2,
+  "regular_candidates": 1,
+  "extra_candidates": 1,
+  "final_best": "attempt-02-overfit",
+  "candidate_and_dataset_hashes_verified": true,
+  "no_more_tuning_after_extra_freeze": true,
+  "identity_repair_preserved_original_results": true
+}

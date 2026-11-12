@@ -1,0 +1,10 @@
+{
+  "commit": "0e789d7a4",
+  "files": {
+    "src\\doxagent\\message_bus_v2\\massive_relevance.py": "37a074cc10f243cc46fe552a79a3a745a3b42b394429b66f043efa397c73d3ff",
+    "src\\doxagent\\message_bus_v2\\relevance.py": "387fd220ac43fac91c6e9149fc67b450b36a9da267c3af0f6cd189209b34a913",
+    "src\\doxagent\\message_bus_v2\\monitoring_terms.py": "b3380c090c388674b03833626cdde2768ec291e169223ea861caefa32ae44aea",
+    "scripts\\distribution_relevance_debug.py": "1c6f9594a4dfda3608df35a2a5c36593585c414cae68e7a73e51f122fcde0eae"
+  },
+  "dataset_manifest_sha256": "91fd7f1bca25b0d7c40e1ffce87c494bbe6a6ca49ddd1f1c85abccc39784d32d"
+}
