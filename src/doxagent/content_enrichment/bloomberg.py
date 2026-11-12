@@ -50,12 +50,14 @@ def inspect_document(root, url, info, *, candidate_type, node_text):
                        '[string-length(@data-story-id)=14]'
                        '//*[contains(concat(" ",normalize-space(@class)," ")," body-content ")]')
     if len(nodes) != 1:
-        info.access_reason = 'subscription_required' if info.subscription_article else 'render_required'
+        info.access_reason = 'render_required'
         return info
     body = nodes[0]
     article = body.xpath('ancestor::article')[0]
     if article.get('data-dox-bloomberg-complete') != 'true':
-        info.access_reason = 'subscription_required'
+        info.access_reason = ('subscription_required'
+                              if article.get('data-dox-bloomberg-access-reason') == 'subscription_required'
+                              else 'render_required')
         return info
     text = node_text(body)
     if not text or len(text) < 120:

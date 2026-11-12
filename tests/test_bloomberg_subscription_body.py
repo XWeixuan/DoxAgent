@@ -90,8 +90,17 @@ def test_short_paid_story_requires_visible_complete_evidence():
     assert choose_candidate(inspect_html(document(complete=False, body='<p>' + PARAGRAPH + '</p>'), URL, TITLE), TITLE)[0] is None
 
 
-def test_challenge_precedes_article_quality():
-    html = '<title>Verify you are human</title><div id="px-captcha"></div>'
+def test_unknown_template_does_not_invalidate_paid_entitlement():
+    html = document().replace('data-dox-bloomberg-snapshot="visible-v1"', '')
+    assert inspect_html(html, URL, TITLE).access_reason == 'render_required'
+    gated = document(complete=False).replace('data-dox-bloomberg-access-reason="render_required"',
+                                          'data-dox-bloomberg-access-reason="subscription_required"')
+    assert inspect_html(gated, URL, TITLE).access_reason == 'subscription_required'
+
+
+@pytest.mark.parametrize('title', ['Verify you are human', 'Bloomberg - Are you a robot?'])
+def test_challenge_precedes_article_quality(title):
+    html = '<title>' + title + '</title><div id="px-captcha"></div>'
     assert choose_candidate(inspect_html(html, URL, TITLE), TITLE)[2] == 'challenge_required'
 
 

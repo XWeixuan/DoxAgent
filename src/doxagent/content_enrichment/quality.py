@@ -317,6 +317,11 @@ def inspect_html(
         return result
     path = urlparse(url).path.lower()
     if publisher_host(url) == "bloomberg.com":
+        if (not has_article_body and re.search(r"are you a robot", title, re.I)
+                and root.xpath('//*[@id="px-captcha" or @id="px-captcha-wrapper"]')):
+            result.page_kind, result.access_reason = "challenge", "challenge_required"
+            result.interactive_challenge = True
+            return result
         from .bloomberg import inspect_document
         return inspect_document(root, url, result, candidate_type=Candidate, node_text=_node_text)
     if (
