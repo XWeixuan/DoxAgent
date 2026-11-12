@@ -3,13 +3,16 @@ import copy
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 import time
 
 ROOT = Path('/var/lib/doxagent/releases')
+os.umask(0o077)
 directory = Path(sys.argv[1]).resolve()
+directory.chmod(0o700)
 spec = importlib.util.spec_from_file_location('release', directory/'storage_release.py')
 owner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(owner)
@@ -19,6 +22,8 @@ with owner.lock(ROOT):
     state = json.loads((ROOT/'state.json').read_bytes())
     (directory/'state.before.private.json').write_bytes((ROOT/'state.json').read_bytes())
     (directory/'compose.before.private.json').write_bytes((ROOT/'compose.current.json').read_bytes())
+    for name in ('state.before.private.json', 'compose.before.private.json'):
+        (directory/name).chmod(0o600)
     compose = json.loads((ROOT/'compose.current.json').read_bytes())
     components = {}
     for role in (sys.argv[2:] or ['v2-api', 'v2-message-collector', 'v2-message-bus', 'v2-web']):

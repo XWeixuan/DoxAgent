@@ -1,5 +1,6 @@
 """Read-only compact acceptance evidence; run inside the Bus container."""
 import json
+import sqlite3
 from pathlib import Path
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.monitoring_terms import MonitoringTermsService
@@ -33,5 +34,11 @@ out['sanity'] = {
     'publications_without_full_body': sum(r['state']=='PUBLISHED' and r['outcome']!='FULL' for r in rows),
     'publications_without_regex_hit': sum(r['state']=='PUBLISHED' and r['regex_result']!=1 for r in rows),
 }
+with sqlite3.connect('file:/data/bus/acquisition.sqlite3?mode=ro', uri=True, timeout=5) as db:
+    out['listing_units'] = []
+    for sid,unit,head in db.execute("SELECT DISTINCT source_id,unit,head_json FROM units WHERE source_id IN (SELECT value FROM json_each(?)) AND unit NOT LIKE 'TEST:%'", (json.dumps(ids),)):
+        value = json.loads(head)
+        out['listing_units'].append({'source_id':sid,'unit':unit,'status':value.get('status'),
+            **{k:value.get(k) for k in ('last_capture_at','last_success_at','last_attempt_at','last_error_code')}})
 assert not any(out['sanity'].values()), out['sanity']
 print(json.dumps(out, ensure_ascii=False))

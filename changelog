@@ -2959,3 +2959,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-13 Massive恢复边界复核：Live的L2_DUE恢复与旧批处理续跑均强制regex-only，拒绝旧JEV缓存放行；已有发布的Massive文章提交前同样校验词库revision。补充独立scope旧客户端保留、消费者schema、目录主备与恢复回归。BW/TMX现有HTTP及受管浏览器探测未获得正文，保留NO_PUBLIC_BODY。
 - Production acceptance: 9b055706e API/Web/Bus/BODY running; actual registry/API 85 sources and 275 subscriptions, zero retired bindings/profile references/active units, 42 source revisions preserved. QueryRunner reads 200 in 4.39s/0.91s, eight public assets checked, 94 related backend regressions and six browser tests passed; full 85-source layouts verified at both desktop widths. Cached dependencies reused; root free space recovered to 18.45GiB after governed release cleanup.
 2026-11-13 统一监测词草稿恢复：在首次配置读取完成前不清空sessionStorage，修复刷新丢失普通/Massive草稿。补充刷新恢复、412冲突、无效JSON与放弃修改浏览器回归，11项通过；仅补发Web。
+2026-11-13 Massive发布回执补充：按现有release.lock协调窄发布，私有部署目录/快照统一0700/0600；生产只读回执增加非测试、完整正文、纯正则和实际列表主备检查。
