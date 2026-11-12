@@ -683,6 +683,9 @@ export interface GlobalSourceMetrics {
 }
 export interface GlobalSourceCard {
   source_id: Id; name: string; description: string;
+  short_name?: string | null;
+  configured_intervals_seconds: number[];
+  poll_counts: { succeeded: Count; partial: Count; failed: Count; unknown: Count };
   enabled: boolean; delivery_mode: "production" | "test";
   acquisition_mode: "by_ticker" | "by_search" | "by_distribution" | "massive_distribution";
   classification: SourceClassification | null;

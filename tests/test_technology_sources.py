@@ -492,7 +492,8 @@ def test_migration_keeps_endpoint_state_legacy_history_and_idempotence(tmp_path)
                     actor=UpdateActor.SYSTEM,
                 )
         else:
-            bus.register_source(source)
+            # Seed a pre-retirement database, not a newly allowed registration.
+            repo.save_source(source)
         if old.source_id not in {
             "siliconangle_big_data",
             "siliconangle_cloud",
@@ -569,7 +570,7 @@ async def test_article_published_before_merge_is_not_republished_after_merge(tmp
     bus.start_ticker("SNOW")
     MonitoringTermsService(repo).apply(_terms().model_copy(update={"ticker": "SNOW"}), actor="test")
     old_source = source_definition("siliconangle_cloud")
-    bus.register_source(old_source)
+    repo.save_source(old_source)  # Existing historical source before retirement.
     old_binding = bus.configure_binding(
         ticker="SNOW", source_id=old_source.source_id, actor=UpdateActor.SYSTEM
     )

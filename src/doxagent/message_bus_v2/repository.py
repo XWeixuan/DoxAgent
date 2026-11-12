@@ -1389,6 +1389,11 @@ class MessageBusV2Repository:
             connection.execute("delete from buffer_entries where source_id=?", (normalized,))
             connection.execute("delete from poll_states where source_id=?", (normalized,))
             connection.execute(
+                "delete from poll_unit_states where binding_id in "
+                "(select binding_id from ticker_source_bindings where source_id=?)",
+                (normalized,),
+            )
+            connection.execute(
                 "delete from ticker_source_bindings where source_id=?", (normalized,)
             )
             connection.execute("delete from source_definitions where source_id=?", (normalized,))

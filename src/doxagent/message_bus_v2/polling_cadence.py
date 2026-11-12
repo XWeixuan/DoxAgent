@@ -1,6 +1,11 @@
 """Approved first-round collection cadence, 2026-11-11; no admission/identity changes."""
 
-RETIRED_SOURCES = frozenset({"tikhub_x_search", "tikhub_x_user_posts", "globenewswire_semiconductors_rss"})
+from .retired_sources import REPLACEMENTS
+
+RETIRED_SOURCES = frozenset({
+    "tikhub_x_search", "tikhub_x_user_posts", "globenewswire_semiconductors_rss",
+    *REPLACEMENTS,
+})
 
 SOURCE_INTERVALS = {'airspaceforces_space': 20,
  'ans_nuclear_newswire': 20,
@@ -27,7 +32,6 @@ SOURCE_INTERVALS = {'airspaceforces_space': 20,
  'enterprise_apps_official_rss': 20,
  'etnews_rss': 20,
  'finnhub_company_news': 30,
- 'globenewswire_search': 20,
  'google_news_search_rss': 20,
  'huggingnews_rss': 20,
  'ibkr_news': 20,

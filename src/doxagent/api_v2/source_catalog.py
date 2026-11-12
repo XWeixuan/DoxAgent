@@ -230,8 +230,15 @@ def catalog_data(store, calendar, now=None, *, journal=None):
             for b in subscribed
         ]
         counts = dict(running=0, sleeping=0, disabled=0, abnormal=0, unknown=0)
+        poll_counts = dict(succeeded=0, partial=0, failed=0, unknown=0)
+        intervals = set()
         for status in statuses:
             counts[state_bucket(status)] += 1
+        for binding, status in zip(subscribed, statuses, strict=True):
+            if binding["enabled"] and binding["polling"]["enabled"] and source["enabled"]:
+                intervals.add(binding["polling"]["target_interval_seconds"])
+                key = status["poll_status"]
+                poll_counts[key if key in poll_counts else "unknown"] += 1
         metadata = static["sources"].get(sid, {})
         classification = (
             {k: metadata[k] for k in ["listing", "body", "applicability", "sector_ids"]}
@@ -239,11 +246,16 @@ def catalog_data(store, calendar, now=None, *, journal=None):
             else None
         )
         source_facts = [r for b in subscribed for r in facts[(b["ticker"], sid)]]
+        default_interval = source.get("default_polling_config", {}).get("target_interval_seconds")
         result.append(
             {
                 "source_id": sid,
                 "name": source["display_name"],
                 "description": metadata.get("description", ""),
+                "short_name": metadata.get("short_name"),
+                "poll_counts": poll_counts,
+                "configured_intervals_seconds": sorted(intervals)
+                or ([default_interval] if default_interval is not None else []),
                 "enabled": source["enabled"],
                 "delivery_mode": source.get("delivery_mode", "production"),
                 "acquisition_mode": source.get("acquisition_mode", "by_ticker"),

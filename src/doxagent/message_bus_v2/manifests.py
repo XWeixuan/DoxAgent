@@ -67,7 +67,7 @@ def _source(
         distribution_policy=distribution_policy,
         parameter_schema={
             "type": "object",
-            "properties": {**(properties or {}), **({"http_listing_verified": {"type":"boolean"}} if source_id in {"globenewswire_search","investorshub_ticker_news","investing_ticker_news"} else {})},
+            "properties": {**(properties or {}), **({"http_listing_verified": {"type":"boolean"}} if source_id in {"investorshub_ticker_news","investing_ticker_news"} else {})},
             "required": required or [],
             "additionalProperties": False,
         },
@@ -76,10 +76,10 @@ def _source(
         scheduler_constraints=SchedulerConstraints(
             minimum_request_gap_seconds=0 if source_id.endswith("_rss") or source_id in {
                 "yahoo_finance_news", "investorshub_ticker_news", "investing_ticker_news",
-                "barrons_ticker_news", "globenewswire_search",
+                "barrons_ticker_news",
             } else minimum_request_gap_seconds,
-            max_concurrency=8 if source_id in {"yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news","globenewswire_search"} else 4 if source_id.endswith("_rss") else 2 if source_id=='finnhub_company_news' else 1,
-            capacity_mode="adaptive" if source_id.endswith("_rss") or source_id in {"finnhub_company_news","yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news","globenewswire_search"} else "fixed",
+            max_concurrency=8 if source_id in {"yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news"} else 4 if source_id.endswith("_rss") else 2 if source_id=='finnhub_company_news' else 1,
+            capacity_mode="adaptive" if source_id.endswith("_rss") or source_id in {"finnhub_company_news","yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news"} else "fixed",
         ),
         default_polling_config=default_polling or PollingConfig(),
         content_enrichment_mode=content_enrichment_mode,
@@ -346,20 +346,6 @@ def initial_sources() -> list[SourceDefinition]:
             minimum_request_gap_seconds=3,
         ),
         _source(
-            "globenewswire_search",
-            "GlobeNewswire Search",
-            kind=SourceKind.CRAWLER,
-            acquisition_mode=AcquisitionMode.BY_SEARCH,
-            content_language="en",
-            site_id="globenewswire",
-            entry_url="https://www.globenewswire.com/en/search/",
-            adapter_ref="site:auto",
-            search_policy=SearchPolicy(mode="separate"),
-            properties={"max_pages": {"type": "integer", "minimum": 1, "maximum": 10}},
-            default_parameters={"max_pages": 3,"http_listing_verified":True},
-            minimum_request_gap_seconds=0,
-        ),
-        _source(
             "investing_ticker_news",
             "Investing.com ticker news",
             kind=SourceKind.CRAWLER,
@@ -452,7 +438,6 @@ def initial_default_profile() -> DefaultMonitoringProfile:
                 )
                 for source_id in [
                     "investorshub_ticker_news",
-                    "globenewswire_search",
                     "investing_ticker_news",
                 ]
             ],
@@ -465,7 +450,7 @@ def initial_default_profile() -> DefaultMonitoringProfile:
         updated_by=UpdateActor.SYSTEM,
         updated_reason=(
             "initial profile: Benzinga, Finnhub, Yahoo, IBKR, Reuters, Barron's, "
-            "InvestorsHub, GlobeNewswire Search, Investing.com and SEC EDGAR; "
+            "InvestorsHub, Investing.com and SEC EDGAR; "
             "shared calendar owns "
             "continuous-session "
             "polling and the 02:00 ET closed-day sweep"

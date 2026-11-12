@@ -73,7 +73,12 @@ def seed(tmp_path):
 def test_static_catalog_covers_registered_sources_and_valid_taxonomy():
     catalog = classification_catalog()
     assert len(catalog["sectors"]) == 13
-    assert len(catalog["sources"]) >= 105
+    assert len(catalog["sources"]) >= 85
+    from doxagent.message_bus_v2.retired_sources import REPLACEMENTS
+
+    assert not set(REPLACEMENTS) & catalog["sources"].keys()
+    assert catalog["sources"]["calcalist_search"]["sector_ids"] == ["L1-05"]
+    assert catalog["sources"]["aws_platform_marketplace_rss"]["sector_ids"] == ["L1-02"]
     assert {s.source_id for s in initial_sources()} <= catalog["sources"].keys()
     sectors = {s["id"] for s in catalog["sectors"]}
     for source in catalog["sources"].values():
@@ -189,6 +194,11 @@ def test_unknown_and_disabled_unbound_sources_are_not_hidden(tmp_path, monkeypat
     assert sources["stocktwits_messages"]["subscriptions"] == []
     assert sources["barrons_ticker_news"]["state_counts"]["disabled"] == 1
     assert len(sources["barrons_ticker_news"]["subscriptions"]) == 2
+    assert sources["barrons_ticker_news"]["poll_counts"] == dict(
+        succeeded=0, partial=0, failed=0, unknown=1
+    )
+    assert sources["barrons_ticker_news"]["configured_intervals_seconds"] == [60]
+    assert sources["brand_new_source"]["configured_intervals_seconds"] == []
     m = sources["barrons_ticker_news"]["metrics"]
     assert m["published_today"] == available(0)
     assert m["body_ratio"] is None and m["mean_e2e_seconds"] is None

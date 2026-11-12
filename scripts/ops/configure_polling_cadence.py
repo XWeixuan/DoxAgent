@@ -16,7 +16,8 @@ def configure(service, *, apply=False):
                 bindings = repo.list_bindings(source_id=sid)
                 item = {"source_id": sid, "tickers": sorted({b.ticker for b in bindings}), "bindings": len(bindings)}
                 if apply:
-                    deleted = service.hard_delete_source(sid, actor=UpdateActor.USER, reason=REASON)
+                    deleted = service.hard_delete_source(sid, actor=UpdateActor.USER, reason=REASON,
+                                                         flush_pending=False)
                     item["deleted_bindings"] = deleted.deleted_binding_count
                 report["removed"].append(item)
         for sid, period in sorted(SOURCE_INTERVALS.items()):

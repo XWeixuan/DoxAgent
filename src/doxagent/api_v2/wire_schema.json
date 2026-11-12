@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "a0ca03e1e5024594e9abb16d13605bf0aa214550ae0762fad6d2c394d3ba2653",
+  "source_sha256": "68d31fbd1f94ca4458e381189cc54e341f24fc1240a395c5f1ca4d92b6caa700",
   "$defs": {
     "Id": {
       "type": "string"
@@ -30038,6 +30038,42 @@
         "description": {
           "type": "string"
         },
+        "short_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "configured_intervals_seconds": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "poll_counts": {
+          "type": "object",
+          "properties": {
+            "succeeded": {
+              "$ref": "#/$defs/Count"
+            },
+            "partial": {
+              "$ref": "#/$defs/Count"
+            },
+            "failed": {
+              "$ref": "#/$defs/Count"
+            },
+            "unknown": {
+              "$ref": "#/$defs/Count"
+            }
+          },
+          "required": [
+            "succeeded",
+            "partial",
+            "failed",
+            "unknown"
+          ],
+          "additionalProperties": false
+        },
         "enabled": {
           "type": "boolean"
         },
@@ -30175,6 +30211,8 @@
         "source_id",
         "name",
         "description",
+        "configured_intervals_seconds",
+        "poll_counts",
         "enabled",
         "delivery_mode",
         "acquisition_mode",

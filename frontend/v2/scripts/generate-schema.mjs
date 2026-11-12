@@ -98,6 +98,7 @@ if (existsSync(backendPath)) {
     "OpenRouterBalance",
     "SourceStatus",
     "SourceCatalog",
+    "GlobalSourceCard",
     "PollTimeliness",
     "PollCadence",
     "BusMetrics",

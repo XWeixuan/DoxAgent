@@ -7,6 +7,17 @@ import {
   ExternalLink,
   RefreshCw,
   SlidersHorizontal,
+  CheckCircle2,
+  CircleAlert,
+  CircleDashed,
+  ListFilter,
+  FileText,
+  Network,
+  Globe2,
+  Layers3,
+  Timer,
+  Users,
+  ArrowDown,
 } from "lucide-react";
 import type {
   GlobalSourceCard,
@@ -23,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Field,
   FieldGroup,
@@ -280,17 +292,24 @@ export function CatalogView({
       { id: "GLOBAL", name: "全局通用消息源" },
       ...data.sectors,
       { id: "UNKNOWN", name: "未标注消息源" },
+      { id: "UNUSED", name: "已停用或未使用" },
+      { id: "TEST", name: "测试消息源" },
     ]
       .map((sector) => ({
         ...sector,
         sources: visible.filter((s) => {
           const c = s.classification;
-          const group = !c
-            ? "UNKNOWN"
-            : c.applicability === "GLOBAL"
-              ? "GLOBAL"
-              : (c.sector_ids.find((id) => selected.includes(id)) ??
-                c.sector_ids[0]);
+          const group =
+            s.delivery_mode === "test"
+              ? "TEST"
+              : !s.enabled || !s.subscriptions.some((b) => b.enabled)
+                ? "UNUSED"
+                : !c
+                  ? "UNKNOWN"
+                  : c.applicability === "GLOBAL"
+                    ? "GLOBAL"
+                    : (c.sector_ids.find((id) => selected.includes(id)) ??
+                      c.sector_ids[0]);
           return group === sector.id;
         }),
       }))
@@ -453,11 +472,21 @@ function MethodTags({
   methods: SourceMethods | undefined;
 }) {
   return (
-    <div className="catalog-methods">
-      <span>{label}</span>
+    <section className="catalog-methods" aria-label={label}>
+      <h4>
+        {label === "列表抓取" ? (
+          <ListFilter aria-hidden="true" />
+        ) : (
+          <FileText aria-hidden="true" />
+        )}
+        {label}
+      </h4>
       {methods ? (
         <>
-          <div>
+          <div
+            className="catalog-primary-methods"
+            title={methods.primary.length > 1 ? "并行主路径" : "主路径"}
+          >
             {methods.primary.map((m) => (
               <Badge variant="outline" key={m}>
                 {methodNames[m]}
@@ -465,15 +494,16 @@ function MethodTags({
             ))}
           </div>
           {methods.fallback.length > 0 && (
-            <small>
-              备用 {methods.fallback.map((m) => methodNames[m]).join(" / ")}
+            <small className="catalog-fallback-methods">
+              <ArrowDown aria-hidden="true" />
+              备用 {methods.fallback.map((m) => methodNames[m]).join(" → ")}
             </small>
           )}
         </>
       ) : (
         <small>未标注</small>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -488,20 +518,46 @@ function DirectoryCard({
   const c = s.classification,
     m = s.metrics,
     counts = s.state_counts;
+  const pc = s.poll_counts;
+  const outcome =
+    !pc || !(pc.succeeded + pc.partial + pc.failed)
+      ? "暂无记录"
+      : pc.partial || (pc.succeeded && (pc.failed || pc.unknown))
+        ? "部分成功"
+        : pc.succeeded
+          ? "成功"
+          : "失败";
   const state = !s.enabled
     ? "已停用"
     : !s.subscriptions.length
       ? "未订阅"
-      : [
-          ["运行", counts.running],
-          ["休眠", counts.sleeping],
-          ["异常", counts.abnormal],
-          ["禁用", counts.disabled],
-          ["未知", counts.unknown],
-        ]
-          .filter(([, n]) => Number(n) > 0)
-          .map(([name, n]) => `${name} ${n}`)
-          .join(" · ");
+      : outcome;
+  const stateSummary = [
+    ["运行", counts.running],
+    ["休眠", counts.sleeping],
+    ["异常", counts.abnormal],
+    ["禁用", counts.disabled],
+    ["未知", counts.unknown],
+  ]
+    .filter(([, n]) => Number(n) > 0)
+    .map(([name, n]) => `${name}${n}`)
+    .join(" ");
+  const intervals = s.configured_intervals_seconds;
+  const intervalText =
+    intervals.length > 1
+      ? `${intervals[0]}–${intervals.at(-1)}s`
+      : intervals.length
+        ? `${intervals[0]}s`
+        : "—";
+  const StatusIcon =
+    state === "成功"
+      ? CheckCircle2
+      : state === "失败" || state === "部分成功"
+        ? CircleAlert
+        : CircleDashed;
+  const industryNames =
+    c?.sector_ids.map((id) => sectors.find((v) => v.id === id)?.name ?? id) ??
+    [];
   const metrics = [
     [
       "最近成功",
@@ -565,17 +621,26 @@ function DirectoryCard({
     >
       <CardHeader>
         <div className="catalog-card-heading">
-          <CardTitle>
-            <h3 id={`source-${s.source_id}`}>{s.name}</h3>
+          <CardTitle title={s.name}>
+            <h3 id={`source-${s.source_id}`}>{s.short_name || s.name}</h3>
           </CardTitle>
-          {s.delivery_mode === "test" && (
-            <Badge variant="secondary">测试</Badge>
-          )}
+          <div
+            className="catalog-health"
+            data-outcome={state}
+            title="最近轮询结果；休眠时保留最后结果，下方汇总各订阅当前状态"
+          >
+            <strong>
+              <StatusIcon aria-hidden="true" />
+              {state}
+            </strong>
+            <span title={`配置目标间隔：${intervals.join(" / ")} 秒`}>
+              <Timer aria-hidden="true" />
+              目标 {intervalText}
+            </span>
+            {stateSummary && <small title={stateSummary}>{stateSummary}</small>}
+          </div>
         </div>
-        <div className="catalog-status">
-          <span className={counts.abnormal ? "tone-danger" : ""}>{state}</span>
-        </div>
-        <CardDescription>{s.description}</CardDescription>
+        <CardDescription title={s.description}>{s.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="catalog-entries">
@@ -607,23 +672,14 @@ function DirectoryCard({
           )}
         </div>
         <div className="catalog-attributes">
-          <MethodTags label="列表" methods={c?.listing} />
-          <MethodTags label="正文" methods={c?.body} />
-        </div>
-        <div className="catalog-tags">
-          <Badge variant="secondary">{modeName(s.acquisition_mode)}</Badge>
-          {c?.applicability === "GLOBAL" ? (
-            <Badge variant="outline">全局通用</Badge>
-          ) : (
-            c?.sector_ids.map((id) => (
-              <Badge variant="outline" key={id}>
-                {sectors.find((sector) => sector.id === id)?.name ?? id}
-              </Badge>
-            ))
-          )}
+          <MethodTags label="列表抓取" methods={c?.listing} />
+          <MethodTags label="正文补全" methods={c?.body} />
         </div>
         <div className="catalog-subscriptions">
-          <span>订阅</span>
+          <h4>
+            <Users aria-hidden="true" />
+            Ticker 订阅 <span>{s.subscriptions.length}</span>
+          </h4>
           {!s.subscriptions.length ? (
             <small>未订阅</small>
           ) : (
@@ -660,21 +716,6 @@ function DirectoryCard({
             </div>
           )}
         </div>
-        {s.errors.length > 0 && (
-          <details className="catalog-errors">
-            <summary>
-              {s.errors[0].ticker} · {s.errors[0].message}
-              {s.errors.length > 1 && `（${s.errors.length}项）`}
-            </summary>
-            <ul>
-              {s.errors.map((e) => (
-                <li key={`${e.ticker}-${e.code}`}>
-                  {e.ticker} · {e.message} <small>{e.code}</small>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
       </CardContent>
       <CardFooter>
         <dl className="catalog-metrics">
@@ -685,6 +726,49 @@ function DirectoryCard({
             </div>
           ))}
         </dl>
+        <div className="catalog-classification">
+          <div>
+            <Network aria-hidden="true" />
+            <span>
+              <small>分发方式</small>
+              <strong>{modeName(s.acquisition_mode)}</strong>
+            </span>
+          </div>
+          <div title={industryNames.join(" / ") || "全局通用"}>
+            {c?.applicability === "GLOBAL" ? (
+              <Globe2 aria-hidden="true" />
+            ) : (
+              <Layers3 aria-hidden="true" />
+            )}
+            <span>
+              <small>适用范围</small>
+              <strong>
+                {c?.applicability === "GLOBAL"
+                  ? "GLOBAL · 全局通用"
+                  : industryNames.join(" / ") || "未标注"}
+              </strong>
+            </span>
+          </div>
+        </div>
+        {s.errors.length > 0 && (
+          <Alert variant="destructive" className="catalog-errors">
+            <CircleAlert aria-hidden="true" />
+            <AlertTitle>采集异常 · {s.errors.length} 项</AlertTitle>
+            <AlertDescription>
+              <details>
+                <summary>查看异常详情</summary>
+                <ul>
+                  {s.errors.map((e) => (
+                    <li key={`${e.ticker}-${e.code}`}>
+                      <b>{e.ticker}</b> · {e.message}
+                      <code>{e.code}</code>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </AlertDescription>
+          </Alert>
+        )}
       </CardFooter>
     </Card>
   );

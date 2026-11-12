@@ -50,10 +50,20 @@ const sources = [
 ].map(([source_id, name], i): GlobalSourceCard => ({
   source_id,
   name,
+  short_name: i === 0 ? "Barron’s" : undefined,
+  configured_intervals_seconds: i === 2 ? [20, 30] : [20],
+  poll_counts:
+    i === 1
+      ? { succeeded: 0, partial: 0, failed: 10, unknown: 0 }
+      : i === 2
+        ? { succeeded: 5, partial: 0, failed: 5, unknown: 0 }
+        : { succeeded: 10, partial: 0, failed: 0, unknown: 0 },
   description:
     i === 0
-      ? "个股新闻与其他道琼斯内容，排除IBD栏目。"
-      : "覆盖公司动态、产业事件和公开披露的相关消息。",
+      ? "Barron’s 是道琼斯旗下财经媒体；采集个股新闻页及相关道琼斯文章，排除 IBD 栏目。"
+      : i === 1
+        ? "Reuters（路透社）是全球新闻通讯社；按公司及主题检索词监测站内财经、产业和企业报道。"
+        : "科技与产业消息源；监测已配置的公司动态、行业新闻与公开披露入口。",
   enabled: i !== 5,
   delivery_mode: i === 4 ? "test" : "production",
   acquisition_mode:
@@ -151,7 +161,10 @@ runtime.api.request = async (name, path) => {
       "catalog-fixture-error",
     );
   control.serial++;
-  return { data: resource(data), meta: {} } as never;
+  return {
+    data: resource((window as any).catalogPreview ?? data),
+    meta: {},
+  } as never;
 };
 createRoot(document.getElementById("root")!).render(
   <RuntimeProvider runtime={runtime}>
