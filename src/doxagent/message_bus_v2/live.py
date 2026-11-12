@@ -166,7 +166,8 @@ class LiveQueue:
             ).fetchone()
         binding = resolve_binding(self.bus.repository, first[0]) if first else None
         budget = (
-            180 if source.adapter_ref in {"builtin:sec_edgar@1", "builtin:defense_public@1"} else 20
+            180 if source.adapter_ref in {"builtin:sec_edgar@1", "builtin:defense_public@1"}
+            else 35 if source.source_id == "bloomberg_massive" else 20
         )
         started = datetime.fromisoformat(row["first_fetch_at"])
         attempts = json.loads(row["attempts_json"])
