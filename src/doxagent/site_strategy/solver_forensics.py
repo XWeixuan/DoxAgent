@@ -31,6 +31,12 @@ def header_cookies(headers, incident):
             for name, value in [item.split("=", 1)] if name.strip() in NAMES][:8]
 
 
+def request_headers(headers):
+    allowed = {"user-agent", "accept-language", "accept", "sec-fetch-site",
+               "sec-fetch-mode", "sec-fetch-dest", "sec-ch-ua", "sec-ch-ua-platform"}
+    return {k.lower(): safe_text(v, 160) for k, v in headers.items() if k.lower() in allowed}
+
+
 def set_cookie_summary(headers, incident):
     raw = next((str(v) for k, v in headers.items() if k.lower() == "set-cookie"), "")
     result = []
@@ -107,18 +113,24 @@ class WireEvidence:
             if key not in self.requests and (not self.interested(request.get("url", "")) or len(self.requests) >= 6):
                 return
             row = self.requests.setdefault(key, {"url": safe_url(request["url"]), "redirects": []})
-            row.update(request_at=p.get("wallTime"), request_cookies=header_cookies(request.get("headers", {}), self.incident))
+            row.update(request_at=p.get("wallTime"), resource_type=p.get("type"),
+                method=request.get("method"), request_headers=request_headers(request.get("headers", {})),
+                request_cookies=header_cookies(request.get("headers", {}), self.incident))
             if key in self.extras:
-                row.update(self.extras.pop(key))
+                extra = self.extras.pop(key)
+                extra["request_headers"] = {**row["request_headers"], **extra["request_headers"]}
+                row.update(extra)
             if p.get("redirectResponse") and len(row["redirects"]) < 4:
                 r = p["redirectResponse"]
                 row["redirects"].append(response_summary(r.get("url", ""), r.get("status"), r.get("headers", {})))
         elif method == "Network.requestWillBeSentExtraInfo":
             extra = {"request_cookies": header_cookies(p.get("headers", {}), self.incident),
+                     "request_headers": request_headers(p.get("headers", {})),
                      "associated_datadome": [dict(cookie_summary([c["cookie"]], self.incident)[0],
                         blocked_reasons=c.get("blockedReasons", [])) for c in p.get("associatedCookies", [])
                         if c.get("cookie", {}).get("name") == "datadome"][:4]}
             if key in self.requests:
+                extra["request_headers"] = {**self.requests[key].get("request_headers", {}), **extra["request_headers"]}
                 self.requests[key].update(extra)
             elif extra["associated_datadome"] and len(self.extras) < 8:
                 self.extras[key] = extra

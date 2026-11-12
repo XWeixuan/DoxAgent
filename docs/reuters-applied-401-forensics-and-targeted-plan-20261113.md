@@ -43,7 +43,7 @@
 
 ## 3. 主备、Cookie及代理对照
 
-- 两者均正式Chrome153.0.8010.52、External CDP、en-US、Europe/Berlin、1440×1000、相同recipe和原生页面搜索方式。Chrome元数据UA与navigator UA各自一致，未见该处UA分裂。比较是相同业务入口/原生搜索API的自然请求，不冒充同时间同关键词受控A/B实验。
+- 两者均正式Chrome153.0.8010.52、External CDP、en-US、Europe/Berlin、1440×1000、相同recipe和原生页面搜索方式。Chrome元数据UA与navigator UA各自一致，未见该处UA分裂。比较是相同业务入口/原生搜索API的自然请求，不冒充同时间同关键词受控A/B实验。Main恢复使用新页导航，Backup常态主要是warm anchor表单/XHR，不能据此声称所有请求执行细节相同；不过历史APPLIED原页自己的XHR也被拒，因此新页探测方式不是全部问题的唯一解释。已给下次自然应用增加实际请求类型和白名单头取证，不主动制造对照流量。
 - Profile、Chrome进程和Cookie彼此独立；Main session_revision=9，Backup=0，出口分别205.198.126.113/.114。现有数据无法把两者差异唯一归因为IP或Profile信誉，因为二者共同变化。
 - 当前两者都只有一个 `.reuters.com` `/` DataDome Cookie、Secure=true、HttpOnly=false、无分区；ddSession localStorage均不存在，未见sessionByHeader配置。可排除当前重复Cookie/强制HttpOnly/旧ddSession覆盖的明显证据，但不能排除应用瞬间曾发生覆盖。
 - Main/Backup都有ArcP；Cookie存在和Registry VALID不能证明账号服务端仍接受认证。当前拒绝先发生在DataDome边缘，不能靠重登录直接归因/修复。
@@ -57,7 +57,7 @@
 
 1. `NativeChallenge.apply` 仅在一次真实付费结果应用时，记录同Identity/Profile/Chrome/context/target绑定、Provider Cookie属性及事件内HMAC指纹、应用前/写后/观察后Cookie元数据。Cookie和账户值不落日志/账本。
 2. 订阅既有reload的原生Network事件，5秒观察窗口，包含错误响应body读取的后置取证最多8秒；准备取证最多2秒。最多6条相关导航/搜索响应、4跳重定向、131072字节Network总缓冲和65536字节单资源缓冲；只读错误响应，健康文章/搜索正文不采集。不发额外请求，不开interception，不截图、不完整抓包。
-3. 记录真实发送的Cookie指纹和blockedReasons、响应DataDome/认证/缓存头、Set-Cookie指纹及被阻止数量、TLS/来源、错误正文结构和标记/hash。可以区分“写入但没发送”“发送后被替换”“HTML200/API401”“真实业务成功后再被阻断”。原Provider验证服务器的接受回执不伪造为本地可见。
+3. 记录实际请求类型与UA/语言/Sec-Fetch等白名单头、真实发送的Cookie指纹和blockedReasons、响应DataDome/认证/缓存头、Set-Cookie指纹及被阻止数量、TLS/来源、错误正文结构和标记/hash。可以区分“写入但没发送”“发送后被替换”“HTML200/API401”“真实业务成功后再被阻断”。原Provider验证服务器的接受回执不伪造为本地可见。
 4. 仅给后续既有DOCUMENT/CRAWLER/BODY诊断附加一次响应证据及provenance；相同状态不因新的query、正文hash或HTTP细节反复写。Rendered DOM明确标注为RENDERED_DOCUMENT，不与原始WIRE响应混用。普通401、登录弹窗和未知DOM不能单独归为DataDome。
 5. Provider既有ready结果附带createTime/endTime/solveCount三项数值回执；不把这些当站点接受证明。
 6. Squid原有受限日志行增加目的域名和实际父代理IP/端口，沿用现有轮转，不记录路径、query、Authorization/Cookie，也不扩大目标白名单。用下一次自然任务查清403究竟拦截了什么。
@@ -82,3 +82,12 @@
 - [getTaskResult字段含义，ip是任务提交请求的IP](https://2captcha.com/api-docs/get-task-result)
 - [DataDome Cookie/localStorage及属性说明](https://docs.datadome.co/docs/cookie-session-storage)
 - [Squid按域名记录而非完整URL的logformat字段](https://www.squid-cache.org/Doc/config/logformat/)
+
+
+## 发布与取证能力验收
+
+组合回归97项通过；后续属性/异常路径/状态去重专项7项通过（与组合有重叠，不相加）。覆盖：未见真实响应证据不能把401归因DataDome、同一Cookie写入/发送/被响应替换的关联、原Cookie/认证头/验证码query不落盘、同状态不因body变化反复写、重定向和事件数有界，以及取证失败不重复应用Cookie、不阻止原reload。
+
+初次最小取证发布bb8ec6501于UTC23:19:56完成，15模块摘要一致，Supervisor未重建；此前另一维护于23:08:59更新过Site Access，不混为本轮发布或浏览器重建。Squid -k reconfigure因前台PID=1拒绝执行，首次配置已回退；离线语法校验后改发官方HUP完成热加载，所有其他ACL/代理配置逐字未变、未重启代理。
+
+network-passive.json的response为头部快照，真正读取的原始错误正文摘要在wire_body；最终实现把无正文的header-only记录明确标为NONE。该一次性监听已退出，没有留下后台守候器。新application_evidence尚无自然APPLIED样本，不以离线通过或旧事件补写冒充真实成功分支。

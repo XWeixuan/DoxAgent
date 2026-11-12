@@ -1,0 +1,33 @@
+{
+  "commit": "bb8ec6501de07e570cd0234d85d002bcf83960f4",
+  "started_at": "2026-11-12T23:18:48.044171+00:00",
+  "finished_at": "2026-11-12T23:19:56.793621+00:00",
+  "returncode": 0,
+  "supervisor_unchanged": true,
+  "site": {
+    "id": "3730cd2894604547db5762720891a129af315e80fd6e04e99e0bcd3d255435e0",
+    "image": "sha256:d327b19951f846394a0e48375ac5bcd0b21c12550c5f09dcaf55ce76010ee1b6",
+    "started_at": "2026-11-12T23:19:25.546303786Z",
+    "health": "healthy"
+  },
+  "private_log": "/var/lib/doxagent/releases/reuters-applied-forensics-20261112T231838Z.log",
+  "backup": "/var/lib/doxagent/releases/backups/reuters-applied-forensics-20261112T231838Z.sqlite3",
+  "hashes": {
+    "site_strategy/datadome_solver.py": "eac834d7dd27a128c981c7bafa3576bc7c7b037ce1c7b063e5ee03a185225c87",
+    "site_strategy/datadome_browser.py": "3670e53c4adc2f59c0f303ab32c6ef1ec952ef56b26ad6c43fb2dbc4d30b8267",
+    "site_strategy/solver_forensics.py": "3ae585a397fdb060a5885c66f330e11b5644a6a7891acd0843d70f814d95022d",
+    "site_strategy/external_runtime.py": "56800b7a57d1ddb1663fe045e44840895fea7ad709e08d90e221f1ee50f2c468",
+    "site_strategy/governance_repository.py": "8c6df478b9a24ea6c3d1247f9ddc920ea3bec3bc0abca1bc2875c8f11b9f7702",
+    "site_strategy/human_verification.py": "5744150bd317b9a4db6ce1183a355a235552119bff5e8cc533094df5e87d37d5",
+    "site_strategy/recovery.py": "db1fde3934871cfaecca5cb5531c9ae40d4a28110ffbc9ba9093c7d1f416e76a",
+    "site_strategy/service.py": "35ac0d530ad87c566705b272b54c3ed6ddec4eb0650f07005c7fb8321cf2372b",
+    "site_strategy/worker_runtime.py": "79c303c10de0576de5477daaf5bfc55500899606ee320f8c4926cd52535e1edc",
+    "site_strategy/targets.py": "5cba4e3f684b651658082f08156326cd5e95408b18fc127169eeabba85671870",
+    "site_strategy/runtime.py": "1f840e05c5be559278dc5b8946b34e8c0bc38f8760737b1f55b82e88aa497160",
+    "message_bus_v2/reuters_sources.py": "1be746a479395ba436dd3ed341324a10646a8531371234c2a1ddbb695af3c62b",
+    "site_strategy/budget.py": "8be8779f4888515fa20f44eafd66b44ea41017f7d488381654d729a67e8ff961",
+    "site_strategy/failover.py": "295ed32b0f9a07cb9caef760ce01e56dd7ea07708d3a584d5b3940059073aca9",
+    "site_strategy/governance_models.py": "ce70759cd502d3f53a093256f37234423ccf94d5036ce06f553b61091c088b79"
+  },
+  "hashes_match": true
+}

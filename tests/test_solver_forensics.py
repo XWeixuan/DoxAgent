@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from doxagent.site_strategy.datadome_browser import NativeChallenge
-from doxagent.site_strategy.solver_forensics import WireEvidence, response_summary
+from doxagent.site_strategy.solver_forensics import WireEvidence, response_summary, request_headers
 
 
 def test_only_wire_or_header_evidence_attributes_401_and_secrets_never_persist():
@@ -20,6 +20,8 @@ def test_only_wire_or_header_evidence_attributes_401_and_secrets_never_persist()
     assert "PRIVATE" not in json.dumps(wire)
     assert response_summary(document["url"], 401, {})["layer"] == "UNCONFIRMED"
     assert response_summary(document["url"], 401, {"WWW-Authenticate": "Bearer realm=private"})["layer"] == "AUTHENTICATION"
+    assert request_headers({"User-Agent": "Chrome/153", "Authorization": "PRIVATE",
+        "Cookie": "PRIVATE", "Sec-Fetch-Mode": "cors"}) == {"user-agent": "Chrome/153", "sec-fetch-mode": "cors"}
 
 
 @pytest.mark.asyncio
