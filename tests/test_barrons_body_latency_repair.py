@@ -14,6 +14,35 @@ from tests.test_content_enrichment_pipeline import BODY, TITLE, article
 from tests.test_site_maintenance_recovery import operation, setup
 
 
+@pytest.mark.parametrize('style,complete',[('',True),('display:none',False),('height:5px;overflow:hidden',False)])
+async def test_visible_paid_crawler_dom_is_full_but_hidden_or_clipped_is_not(style,complete):
+    import json
+    from pathlib import Path
+    from playwright.async_api import async_playwright
+    from doxagent.site_strategy.barrons_document import READ,snapshot
+    from doxagent.content_enrichment.quality import inspect_html,choose_candidate
+    url='https://www.barrons.com/articles/example'
+    html=('<script type="application/ld+json">'+json.dumps({'@type':'NewsArticle',
+        'isAccessibleForFree':False})+'</script><link rel="canonical" href="'+url+'">'
+        '<article id="example"><h1>'+TITLE+'</h1><div class="crawler"><div class="paywall" style="'+style+'">'
+        +''.join('<p data-type="paragraph">'+p+'</p>' for p in BODY.split('\n\n'))
+        +'</div></div></article>')
+    async with async_playwright() as pw:
+        if not Path(pw.chromium.executable_path).exists():pytest.skip('local Chromium unavailable')
+        browser=await pw.chromium.launch()
+        try:
+            page=await browser.new_page()
+            await page.route(url,lambda route:route.fulfill(status=200,content_type='text/html',body=html))
+            await page.goto(url)
+            value=await page.evaluate(READ)
+            assert value['complete'] is complete
+            result=choose_candidate(inspect_html(snapshot(value),url,TITLE),TITLE)
+            assert (result[1]=='FULL') is complete
+            if complete:assert result[0].text==BODY
+            else:assert result[2]=='subscription_required'
+        finally:await browser.close()
+
+
 async def test_http_refresh_preserves_barrons_feed_contract_without_duplicate_fetch(monkeypatch):
     import json
     from urllib.parse import parse_qs,urlsplit
