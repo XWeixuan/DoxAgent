@@ -31,7 +31,7 @@ _READ = r"""() => {
  if(!body) return null;
  const ps=[...body.querySelectorAll('p')];
  const paid=ps.filter(p=>p.classList.contains('paywall'));
- const wall=[...article.querySelectorAll('[class*="fence"], [class*="paywall"]')]
+ const wall=[...document.querySelectorAll('[class*="fence"], [class*="paywall"]')]
    .some(e=>e.tagName!=='P' && visible(e) && e.querySelector('a,button')
      && /subscribe to|sign in to|already a subscriber|unlock this/i.test(e.innerText));
  const schemas=[...document.querySelectorAll('script[type="application/ld+json"]')]
@@ -55,7 +55,8 @@ _READ = r"""() => {
    headline:article.querySelector('h1')?.innerText || document.querySelector('h1')?.innerText || '',
    schema:{'@type':'NewsArticle',isAccessibleForFree:free,datePublished:schema.datePublished,dateModified:schema.dateModified},
    body:clone.outerHTML, text:body.innerText, paragraphs:ps.length, paidParagraphs:paid.length,
-   visibleParagraphs:ps.filter(visible).length, complete};
+   visibleParagraphs:ps.filter(visible).length, complete,
+   accessReason:wall || paid.some(p=>!visible(p)) ? 'subscription_required' : 'render_required'};
 }"""
 
 
@@ -68,7 +69,8 @@ def snapshot(data):
         '<script type="application/ld+json">' + schema + '</script></head><body>'
         '<article data-story-id="' + esc(data['storyId']) + '" '
         'data-dox-bloomberg-snapshot="visible-v1" data-dox-bloomberg-complete="'
-        + str(data['complete']).lower() + '"><h1>' + esc(data['headline']) + '</h1>'
+        + str(data['complete']).lower() + '" data-dox-bloomberg-access-reason="'
+        + esc(data.get('accessReason', 'render_required')) + '"><h1>' + esc(data['headline']) + '</h1>'
         + data['body'] + '</article></body></html>'
     )
 

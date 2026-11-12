@@ -1,0 +1,15 @@
+release-input/
+*-fix/
+*.tar.gz
+*.stdout
+*.stderr
+*.log
+*_probe.py
+*_verify.py
+positive_review.py
+positive-review.jsonl
+negative_review.py
+negative-inputs.jsonl
+positive_full_review.py
+positive-full-inputs.jsonl
+cohort_followup.py

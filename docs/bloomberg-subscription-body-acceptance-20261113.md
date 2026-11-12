@@ -17,6 +17,7 @@
 - 在当前已授权页面内读取 `article[data-story-id] .body-content`。检查段落实际可见性、祖先隐藏/裁剪、付费段落与真实访问墙。只复制可见正文，不解锁、不取消隐藏、不读取账户状态或导出 Cookie。
 - 形成最小文章快照，携带 canonical、标题、精确 datePublished/dateModified、story ID 与可见完整性标识；保留段落、链接、表格、列表，排除整页导航和推荐内容。
 - 原始 HTML、隐藏订阅段落、预览、canonical 不符、付费墙或不支持模板不能成为 FULL。已验证完整的短付费文章允许 SHORT_FULL。
+- 正文复用沿用已有 publisher entitlement scope，将 Bloomberg 从 public 改为 `scope:publisher:bloomberg.com`，避免以前公共链路取得的预览/未验证 FULL 被当作订阅全文复用。不批量重抓历史，不以历史标签冒充新版本验收。
 - Challenge 沿用现有证据和人工维护流程；不增加无效公共 HTTP/Reader 回退、验证绕过或反复重试。不新增服务、常驻页面或浏览器身份。
 
 ## 真实订阅观察

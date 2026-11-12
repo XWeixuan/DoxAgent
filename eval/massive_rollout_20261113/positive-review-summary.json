@@ -1,0 +1,38 @@
+[
+  {
+    "ticker": "INTC",
+    "raw_message_id": "raw_live_7a082b8f5b1eb4e4272ed9aff1d20194",
+    "standard_message_id": "std_live_7a082b8f5b1eb4e4272ed9aff1d20194",
+    "title": "Positron AI Named to the Inaugural 2026 AI 100 List of Top Private AI Companies",
+    "revision": 6,
+    "production": "RELATED",
+    "basis": "完整正文人工复核",
+    "review": "RELATED",
+    "hit_group": "processor_technology_fact",
+    "reason": "正文有具体定制芯片、量产计划、多TB内存系统及降低HBM/先进封装依赖的架构信息。"
+  },
+  {
+    "ticker": "MU",
+    "raw_message_id": "raw_live_3fb53baeb94bcd618a76d4af96fc190c",
+    "standard_message_id": "std_live_3fb53baeb94bcd618a76d4af96fc190c",
+    "title": "Positron AI Named to the Inaugural 2026 AI 100 List of Top Private AI Companies",
+    "revision": 8,
+    "production": "RELATED",
+    "basis": "完整正文人工复核",
+    "review": "RELATED",
+    "hit_group": "memory_business_fact",
+    "reason": "正文有具体定制芯片、量产计划、多TB内存系统及降低HBM/先进封装依赖的架构信息。"
+  },
+  {
+    "ticker": "INTC",
+    "raw_message_id": "raw_live_ded33893d442b83b5819307af4d416b6",
+    "standard_message_id": "std_live_ded33893d442b83b5819307af4d416b6",
+    "title": "Regal Intel Receives Two Seed Grants to Test Rare Disease Surveillance Guidelines Against Real Patient Outcomes",
+    "revision": 6,
+    "production": "RELATED",
+    "basis": "完整正文人工复核",
+    "review": "IRRELEVANT",
+    "hit_group": "intel_subject",
+    "reason": "Regal Intel是非营利医学研究组织。文章讨论罕见病研究及临床记录分析；没有Intel公司、CPU、半导体或具体算力产品事实。独立词边界正确仍未解决同名实体歧义。"
+  }
+]
