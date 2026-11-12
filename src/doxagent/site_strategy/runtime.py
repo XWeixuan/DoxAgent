@@ -1730,6 +1730,7 @@ class SiteAccessRuntime:
                         "commit"
                         if resolved.site_id in {"investorshub", "investing", "reuters", "barrons"}
                         or request.recipe_ref == "builtin:barrons_ticker@1"
+                        or resolved.body.ref == "builtin:bloomberg@1"
                         else "domcontentloaded"
                     ),
                     timeout=min(request.remaining_budget_ms, 20_000),
@@ -1801,6 +1802,17 @@ class SiteAccessRuntime:
                             0, request.url, {}, redirect_url=native_document[1],
                             reason="cross_site_navigation", provenance=lease.provenance,
                         )
+                if request.purpose is SitePurpose.BODY and resolved.body.ref == "builtin:bloomberg@1":
+                    from .bloomberg_document import capture_document
+
+                    native_document = await capture_document(
+                        page, timeout=max(.001, min(15, deadline-time.monotonic()-2))
+                    )
+                    if (observed_response is not None
+                            and 200 <= observed_response.status < 300
+                            and observed_response.url == native_document[1]):
+                        response = observed_response
+                        status = response.status
                 headers = await response.all_headers() if response is not None else {}
                 if resolved.site_id == "reuters" and status == 200:
                     await page.wait_for_function(
@@ -2763,6 +2775,11 @@ class SiteAccessRuntime:
         deadline = time.monotonic() + 3
         while True:
             try:
+                if (urlsplit(maintained.page.url).hostname in {"bloomberg.com", "www.bloomberg.com"}
+                        and urlsplit(maintained.page.url).path.startswith(("/news/articles/", "/news/features/", "/opinion/articles/"))):
+                    from .bloomberg_document import capture_document
+
+                    return (await capture_document(maintained.page, timeout=2.5))[0]
                 return await maintained.page.content()
             except Exception as exc:
                 message = str(exc).lower()

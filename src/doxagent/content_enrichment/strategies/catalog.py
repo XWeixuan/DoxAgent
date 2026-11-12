@@ -5,6 +5,7 @@ from __future__ import annotations
 from urllib.parse import urlparse
 
 HOST_REFS = {
+    "bloomberg.com": "builtin:bloomberg@1",
     "finance.yahoo.com": "builtin:yahoo@1",
     "reuters.com": "builtin:reuters@1",
     "barrons.com": "builtin:barrons@1",
