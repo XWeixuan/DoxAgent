@@ -3020,3 +3020,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 - ACCESS追加真实比较后收敛缓存治理：POST401、随机参数400，no-cache仍可能返回grace。保留既有120秒硬上限；60秒TTL外的可用页面单列freshness_degraded，避免人为扩大采集失败。已有cycle同时记录最早/最新可见时间及交集，33项列表回归通过。
 
+2026-11-13 Corporate IR production acceptance: source v5 / 13 endpoints / ten enabled bindings, IONQ20s and all previous cadences preserved. Thirteen endpoint heads healthy during bounded observation; real IONQ/SNOW/ONDS article samples FULL. API type definitions synchronized. Preserve BE/MU RSS-side 429/backoff and IONQ CDN caching/absence of a new-release latency sample as explicit limitations. See docs/corporate-ir-ionq-onds-snow-repair-20261113.md.
