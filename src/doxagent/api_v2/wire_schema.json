@@ -7314,23 +7314,17 @@
           "type": "string"
         },
         "acquisition_mode": {
-          "anyOf": [
-            {
-              "const": "by_search"
-            },
-            {
-              "const": "by_distribution"
-            }
+          "type": "string",
+          "enum": [
+            "by_search",
+            "by_distribution",
+            "massive_distribution"
           ]
         },
         "content_language": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "source_enabled": {
@@ -7340,39 +7334,28 @@
           "type": "boolean"
         },
         "search_policy_mode": {
-          "anyOf": [
-            {
-              "const": "or"
-            },
-            {
-              "const": "separate"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "or",
+            "separate",
+            null
           ]
         },
         "jev_source_enabled": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "boolean",
+            "null"
           ]
         },
         "terms_mode": {
-          "anyOf": [
-            {
-              "const": "UNIFIED"
-            },
-            {
-              "const": "LEGACY"
-            },
-            {
-              "const": "UNCONFIGURED"
-            }
+          "type": "string",
+          "enum": [
+            "UNIFIED",
+            "LEGACY",
+            "UNCONFIGURED"
           ]
         },
         "queries": {
@@ -7402,13 +7385,9 @@
           }
         },
         "preview_issue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         }
       },

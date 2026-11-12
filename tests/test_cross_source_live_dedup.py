@@ -70,6 +70,19 @@ def publications(pipeline):
         return [tuple(r) for r in db.execute('SELECT raw_message_id,standard_message_id FROM standard_messages')]
 
 
+async def test_raw_input_with_published_candidate_has_source_context(pipeline):
+    first = input_message(901, 'https://publisher.test/article/source-context', body=BODY)
+    capture(pipeline, 'finnhub_company_news', first)
+    await drain(pipeline)
+    repo, bus, _ = pipeline
+    binding = bus.configure_binding(ticker='MU', source_id='benzinga_news',
+        source_parameters={'search_terms': ['Micron']}, actor=UpdateActor.SYSTEM)
+    incoming = input_message(902, first.url, body=BODY)
+    assert not hasattr(incoming, 'source_id')
+    match, checked = repo.publication_match(binding, incoming)
+    assert match is not None and checked
+
+
 async def test_api_permalink_and_language_share_body_before_publication(pipeline):
     url = 'https://www.benzinga.com/markets/options/26/10/62752031/company-story'
     capture(pipeline, 'benzinga_news', input_message(1, url))

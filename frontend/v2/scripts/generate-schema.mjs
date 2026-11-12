@@ -93,6 +93,7 @@ if (existsSync(backendPath)) {
     "CostReportRow",
     "CostSummary",
     "MonitoringTermsValue",
+    "MonitoringTermsConsumer",
     "MonitoringTermsConfig",
     "MonitoringTermsValidation",
     "MonitoringTermsRequest",

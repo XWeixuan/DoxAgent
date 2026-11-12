@@ -21,12 +21,14 @@ with owner.lock(ROOT):
     (directory/'compose.before.private.json').write_bytes((ROOT/'compose.current.json').read_bytes())
     compose = json.loads((ROOT/'compose.current.json').read_bytes())
     components = {}
-    for role in ['v2-api', 'v2-message-collector', 'v2-message-bus', 'v2-web']:
+    for role in (sys.argv[2:] or ['v2-api', 'v2-message-collector', 'v2-message-bus', 'v2-web']):
         container = 'doxagent-v2-'+role+'-1'
         info = json.loads(owner.run(['docker','inspect',container]))[0]
         context = directory/role
         context.mkdir(exist_ok=True)
-        recipe = [f'FROM {info["Image"]}', 'USER root']
+        base = "doxagent-v2:massive-base-"+role+"-"+info["Image"][7:19]
+        subprocess.run(["docker","tag",info["Image"],base],check=True)
+        recipe = [f"FROM {base}", "USER root"]
         if role == 'v2-web':
             recipe += ['COPY web/ /usr/share/nginx/html/', 'RUN find /usr/share/nginx/html -type d -exec chmod 755 {} + && find /usr/share/nginx/html -type f -exec chmod 644 {} +']
             import shutil
