@@ -229,7 +229,11 @@ async def test_runtime_recipe_checks_document_denial_before_native_feed(
                 else article
             )
         ),
-        evaluate=AsyncMock(return_value=feeds()),
+        evaluate=AsyncMock(return_value=feeds() if purpose == "CRAWLER" else {
+            "id": "micron-chip-report-123", "headline": "Micron memory production results",
+            "canonical": url, "free": True, "complete": True,
+            "paragraphs": ["Micron reported memory demand and semiconductor capacity growth. " * 12] * 5,
+        }),
     )
     page.goto.return_value = page
     provenance = SimpleNamespace(instance_id="same-native-chrome", generation=1)
@@ -274,7 +278,7 @@ async def test_runtime_recipe_checks_document_denial_before_native_feed(
             from doxagent.site_strategy.verification import validate_capture
 
             assert validate_capture(result, service.resolve(url)).body in {"FULL", "SHORT_FULL"}
-            page.evaluate.assert_not_awaited()
+            assert page.evaluate.await_count == 2  # Stable visible BODY, not a news-feed request.
         assert page.goto.call_args.kwargs["wait_until"] == "commit"
         retained.assert_not_awaited()
         page.evaluate.reset_mock()

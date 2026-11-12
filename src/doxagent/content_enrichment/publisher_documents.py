@@ -200,8 +200,6 @@ def apply_document(
             # Only the browser-produced visible snapshot can certify this path.
             # Raw HTML retaining the publisher's `crawler` class stays conservative.
             info.access_reason = None if rendered[0].get('data-dox-barrons-complete') == 'true' else 'subscription_required'
-            if info.access_reason is None:
-                info.subscription_article = False
         body = root.xpath('//article[@id]//*[@data-type="paragraph"]')
         live = root.xpath(
             '//article[@id]//*[@data-type="paragraph"]'
@@ -215,7 +213,8 @@ def apply_document(
         if body:
             text = "\n\n".join(node_text(p) for p in (live or body))
             info.candidates = [
-                candidate_type(text, "barrons_article_paragraphs", True, info.headline, 35)
+                candidate_type(text, "barrons_article_paragraphs", True, info.headline, 35,
+                               **({"complete": True} if rendered and info.access_reason is None else {}))
             ]
     if publisher == "investors.com":
         if "/ibd-videos/" in path:

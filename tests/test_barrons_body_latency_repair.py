@@ -38,7 +38,13 @@ async def test_visible_paid_crawler_dom_is_full_but_hidden_or_clipped_is_not(sty
             assert value['complete'] is complete
             result=choose_candidate(inspect_html(snapshot(value),url,TITLE),TITLE)
             assert (result[1]=='FULL') is complete
-            if complete:assert result[0].text==BODY
+            if complete:
+                assert result[0].text==BODY
+                from doxagent.site_strategy.verification import validate_capture
+                capture=SimpleNamespace(body=snapshot(value),final_url=url,status_code=200,assessment=None)
+                resolved=SimpleNamespace(body=SimpleNamespace(ref='builtin:barrons@1',parameters={}),
+                                         auth=SimpleNamespace(requirement='required'))
+                assert validate_capture(capture,resolved,expected_title=TITLE).authentication=='VALID'
             else:assert result[2]=='subscription_required'
         finally:await browser.close()
 
