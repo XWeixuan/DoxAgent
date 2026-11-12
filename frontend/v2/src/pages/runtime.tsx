@@ -63,7 +63,11 @@ export default function RuntimePage() {
   const c = usePageContext(ticker, "RUNTIME", period);
   return (
     <>
-      <PageTitle title={`${ticker} 运行状态`} refresh={c.refetch}>
+      <PageTitle
+        title={`${ticker} 运行状态`}
+        refresh={c.refetch}
+        readContext={c.data}
+      >
         <PeriodPicker
           value={period}
           options={c.data?.data.period_options}

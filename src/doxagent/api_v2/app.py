@@ -388,6 +388,10 @@ def create_app(
             args.get("period"),
             args.get("refresh", "OPEN"),
         )
+        # Existing clients validate closed schemas. Opt in so already-open
+        # older frontends retain their wire contract during rolling release.
+        if request.headers.get('x-doxagent-projection-clock') != '1':
+            value.pop('projection', None)
         return response(request, "ReadContext", value, view_id=value["view_id"])
 
     @app.get(PREFIX + "/tickers/{ticker}")

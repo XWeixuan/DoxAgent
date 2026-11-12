@@ -69,7 +69,11 @@ export default function Events() {
   );
   return (
     <>
-      <PageTitle title={`${ticker} 事件库`} refresh={context.refetch}>
+      <PageTitle
+        title={`${ticker} 事件库`}
+        refresh={context.refetch}
+        readContext={context.data}
+      >
         <PeriodPicker
           value={period}
           options={context.data?.data.period_options}

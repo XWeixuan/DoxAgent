@@ -98,11 +98,19 @@ class ProjectionWorker:
                 # still receive a turn and each event retains its own commit.
                 count += self._events(source, events, load_event, budget=5 if len(events) == limit else 1)
             checkpoint = self.store.position(source.source)
+            clock = {}
+            if hasattr(source, 'projection_clock'):
+                try:
+                    clock = source.projection_clock(checkpoint, head)
+                except (sqlite3.OperationalError, OSError):
+                    pass  # Health remains unknown; telemetry cannot skip a receipt.
             with self.store.connect(write=True) as db:
                 db.execute(
                     "INSERT OR REPLACE INTO source_health VALUES(?,?,?,?,?)",
                     (source.source, head, checkpoint, instant(datetime.now(UTC)), None),
                 )
+                db.execute("INSERT INTO read_meta VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                           ('projection_clock:'+source.source,json.dumps({'checkpoint':checkpoint,'head':head,**clock})))
                 gap = db.execute(
                     "SELECT 1 FROM gaps WHERE source=? LIMIT 1", (source.source,)
                 ).fetchone()

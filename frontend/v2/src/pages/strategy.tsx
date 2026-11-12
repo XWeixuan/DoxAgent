@@ -65,7 +65,11 @@ export default function Strategy() {
   );
   return (
     <>
-      <PageTitle title={`${ticker} 交易策略`} refresh={context.refetch}>
+      <PageTitle
+        title={`${ticker} 交易策略`}
+        refresh={context.refetch}
+        readContext={context.data}
+      >
         <PeriodPicker
           value={period}
           options={context.data?.data.period_options}

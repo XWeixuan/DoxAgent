@@ -124,7 +124,7 @@ function CostAudit({ ticker }: { ticker: string }) {
           options={c.data?.data.period_options}
           onChange={(v) => set("period", v)}
         />
-        <PageTitle title="" refresh={c.refetch} />
+        <PageTitle title="" refresh={c.refetch} readContext={c.data} />
       </div>
       {c.error && <Notice danger>{c.error.message}</Notice>}
       <Module query={report} label="成本审计">

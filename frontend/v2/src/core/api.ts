@@ -1,6 +1,6 @@
 import Ajv from "ajv";
 import type * as S from "./schema-source";
-import type { Meta } from "@contract";
+import type { Meta, SourceProjection } from "@contract";
 import schema from "./wire-schema.json";
 
 export const API_PREFIX = "/api/doxagent/v2";
@@ -240,6 +240,7 @@ export class ApiClient {
     if (options.signal?.aborted) controller.abort();
     this.controllers.add(controller);
     const headers = new Headers({ Accept: "application/json" });
+    if (name === "ReadContext") headers.set("X-Doxagent-Projection-Clock", "1");
     if (options.body !== undefined)
       headers.set("Content-Type", "application/json");
     if (options.key) headers.set("Idempotency-Key", options.key);
@@ -421,3 +422,30 @@ export const staleMessage = (meta?: Meta) =>
   meta?.refresh_error
     ? meta.refresh_error.message?.trim() || "刷新失败，显示已保存的内容。"
     : null;
+
+export const projectionLabels: Record<SourceProjection["source"], string> = {
+  research: "研究发布",
+  initialization: "初始化与激活",
+  bus: "消息",
+  runtime: "运行数据",
+};
+export function projectionWarning(rows: SourceProjection[], asOf: string) {
+  const now = Date.parse(asOf);
+  return rows
+    .flatMap((row) => {
+      const label = projectionLabels[row.source];
+      if (row.error) return [`${label}同步状态异常`];
+      if (now - Date.parse(row.checked_at) > 30_000)
+        return [`${label}同步状态尚未及时核验`];
+      if (row.checkpoint < row.head) {
+        if (!row.oldest_pending_at) return [`${label}待同步，延迟尚未确认`];
+        const seconds = Math.max(
+          0,
+          Math.floor((now - Date.parse(row.oldest_pending_at)) / 1000),
+        );
+        if (seconds > 30) return [`${label}最早待同步事件已等待 ${seconds} 秒`];
+      }
+      return [];
+    })
+    .join("；");
+}

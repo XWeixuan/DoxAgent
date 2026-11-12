@@ -159,6 +159,8 @@ class Views:
                 },
                 "coverage": coverage(),
             }
+            from .projection_health import snapshot as projection_snapshot
+            value['projection'] = projection_snapshot(db, page)
             snapshot = {
                 "seq": seq,
                 "wire": value,

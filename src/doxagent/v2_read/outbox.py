@@ -442,6 +442,17 @@ class SourceOutbox:
         finally:
             db.close()
 
+    def projection_clock(self, checkpoint, head):
+        """Header-only clocks; a missing retained header is unknown, never fresh."""
+        from contextlib import closing
+        from datetime import datetime
+        from .repository import instant
+        with closing(self.connection()) as db:
+            projected = db.execute('SELECT recorded_at FROM v2_source_outbox WHERE seq=?',(checkpoint,)).fetchone()
+            pending = db.execute('SELECT recorded_at FROM v2_source_outbox WHERE seq>? AND seq<=? ORDER BY seq LIMIT 1',(checkpoint,head)).fetchone()
+        return {'source_event_at':instant(datetime.fromisoformat(projected[0])) if projected else None,
+                'oldest_pending_at':instant(datetime.fromisoformat(pending[0])) if pending else None}
+
     def event_reader(self, *, serving=False, projection=False):
         """Reuse connection/schema caches for a bounded batch, without BEGIN.
 

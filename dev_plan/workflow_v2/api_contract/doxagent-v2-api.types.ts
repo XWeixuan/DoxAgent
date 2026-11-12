@@ -139,6 +139,7 @@ export interface Activation {
   monitoring_configuration_id: Id;
 }
 export interface ReadContext {
+  projection?: SourceProjection[];
   view_id: Id;
   expires_at: Instant;
   page: PageKind;
@@ -148,6 +149,16 @@ export interface ReadContext {
   period: PeriodContext | null;
   activation: Resource<Activation>;
   coverage: Coverage;
+}
+export interface SourceProjection {
+  source: "research" | "initialization" | "bus" | "runtime";
+  head: Count;
+  checkpoint: Count;
+  checked_at: Instant;
+  source_event_at: Instant | null;
+  oldest_pending_at: Instant | null;
+  historical_gaps: Count;
+  error: string | null;
 }
 export interface AuthConfig {
   provider: "supabase";

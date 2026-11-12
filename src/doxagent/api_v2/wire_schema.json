@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "cf15c8f2f3cceb0475a5a207f31801e746f6f4e25d150e05c86641e3ce890a9f",
+  "source_sha256": "a0ca03e1e5024594e9abb16d13605bf0aa214550ae0762fad6d2c394d3ba2653",
   "$defs": {
     "Id": {
       "type": "string"
@@ -1194,6 +1194,12 @@
     "ReadContext": {
       "type": "object",
       "properties": {
+        "projection": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceProjection"
+          }
+        },
         "view_id": {
           "$ref": "#/$defs/Id"
         },
@@ -1204,13 +1210,9 @@
           "$ref": "#/$defs/PageKind"
         },
         "ticker": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "clock": {
@@ -1233,7 +1235,7 @@
           ]
         },
         "activation": {
-          "$ref": "#/$defs/Resource__87127ff468d4"
+          "$ref": "#/$defs/Resource%3CActivation%3E"
         },
         "coverage": {
           "$ref": "#/$defs/Coverage"
@@ -30329,6 +30331,161 @@
         "body_applicable"
       ],
       "additionalProperties": false
+    },
+    "SourceProjection": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "research",
+            "initialization",
+            "bus",
+            "runtime"
+          ]
+        },
+        "head": {
+          "$ref": "#/$defs/Count"
+        },
+        "checkpoint": {
+          "$ref": "#/$defs/Count"
+        },
+        "checked_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "source_event_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "oldest_pending_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "historical_gaps": {
+          "$ref": "#/$defs/Count"
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source",
+        "head",
+        "checkpoint",
+        "checked_at",
+        "source_event_at",
+        "oldest_pending_at",
+        "historical_gaps",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Resource<Activation>": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "EMPTY",
+            "PARTIAL",
+            "NOT_PRODUCED",
+            "UNAVAILABLE",
+            "FORBIDDEN",
+            "ERROR"
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Activation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "state",
+        "data",
+        "reason",
+        "coverage"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "AVAILABLE",
+                  "EMPTY",
+                  "PARTIAL"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "NOT_PRODUCED",
+                  "UNAVAILABLE",
+                  "FORBIDDEN",
+                  "ERROR"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

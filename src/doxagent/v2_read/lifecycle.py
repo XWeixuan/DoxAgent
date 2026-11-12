@@ -117,18 +117,19 @@ def activate(store, ticker, active, at):
                 "kind": "policy_catalog",
                 "ticker": ticker,
                 "id": key,
-                "data": validate("PolicySummary", summary),
+                "data": summary if summary == previous else validate("PolicySummary", summary),
             }
         )
         before_summary = previous or replaced
+        same_revision = bool(current and before_summary and before_summary['policy_revision_id'] == current['summary']['policy_revision_id'])
         before_detail = (
             store.get("policy_detail", ticker, before_summary["policy_revision_id"])
-            if before_summary
+            if before_summary and not same_revision
             else None
         )
         before = before_detail["policy"] if before_detail else None
         after = current["policy"] if current else None
-        paths = changed_paths(before, after)
+        paths = [] if same_revision else changed_paths(before, after)
         change_type = (
             "ADD"
             if previous is None
