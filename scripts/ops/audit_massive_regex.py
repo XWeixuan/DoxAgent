@@ -25,4 +25,13 @@ for ticker in ['INTC','MU','BE','COHR','NBIS','CEG','RKLB','SNOW','ONDS']:
     out['terms'][ticker] = {'revision': revision, 'languages': sorted(terms.massive_l2)}
 out['ionq_bindings'] = sum(b.ticker=='IONQ' and b.source_id in ids for b in bindings)
 out['bloomberg_mode'] = repo.get_source('bloomberg_massive').delivery_mode
+with repo._connect() as db:
+    rows = db.execute("SELECT d.state,d.regex_result,d.jev_result,a.delivery_mode,a.outcome FROM live_deliveries d JOIN live_articles a USING(article_key) WHERE d.source_id IN (SELECT value FROM json_each(?)) AND d.created_at>=?", (json.dumps(ids),start)).fetchall()
+out['sanity'] = {
+    'model_scored_deliveries': sum(r['jev_result'] is not None for r in rows),
+    'formal_publications_from_test': sum(r['state']=='PUBLISHED' and r['delivery_mode']!='production' for r in rows),
+    'publications_without_full_body': sum(r['state']=='PUBLISHED' and r['outcome']!='FULL' for r in rows),
+    'publications_without_regex_hit': sum(r['state']=='PUBLISHED' and r['regex_result']!=1 for r in rows),
+}
+assert not any(out['sanity'].values()), out['sanity']
 print(json.dumps(out, ensure_ascii=False))
