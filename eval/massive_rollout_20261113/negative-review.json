@@ -1,0 +1,68 @@
+[
+  {
+    "source": "prnewswire_massive",
+    "ticker": "CEG",
+    "title": "The Slowest Contracts Spend over 40% of their Time Waiting On Signers, ContractSafe Data Shows",
+    "article_ref": "{\"$doxagent_content_v1\":\"2e8f6f33611bedaaf62bac777c5f80f78e55006255c9e89f33f758bb8d045e43\",\"bytes\":9550}",
+    "production": "IRRELEVANT",
+    "review": "IRRELEVANT",
+    "basis": "完整正文逐条阅读",
+    "reason": "合同签署效率和CLM软件经营信息，与CEG发电/电力市场无原文业务联系。",
+    "boundary_watch": false
+  },
+  {
+    "source": "prnewswire_massive",
+    "ticker": "CEG",
+    "title": "SDI Presence CEO Hardik Bhatt Named Chicago Titan 100 Honoree for Second Consecutive Year",
+    "article_ref": "{\"$doxagent_content_v1\":\"b67c5b7c582591d70f06eaa84374f72c04f4d2a0623b91d4d0b8c4bde871c450\",\"bytes\":9337}",
+    "production": "IRRELEVANT",
+    "review": "IRRELEVANT",
+    "basis": "完整正文逐条阅读",
+    "reason": "IT服务商CEO荣誉与软件服务介绍；utilities仅出现在客户行业背景中，没有电力供需、发电或采购事实。",
+    "boundary_watch": false
+  },
+  {
+    "source": "prnewswire_massive",
+    "ticker": "CEG",
+    "title": "Eligible Attains X12 Certification Across All Four Rule Sets",
+    "article_ref": "{\"$doxagent_content_v1\":\"a7a1fb62a3aab3b79113d418f21a28ed009e82ed0911882ae3b01f09e4744d78\",\"bytes\":8240}",
+    "production": "IRRELEVANT",
+    "review": "IRRELEVANT",
+    "basis": "完整正文逐条阅读",
+    "reason": "医疗保险交易数据交换认证，与电力产品或市场无业务联系。",
+    "boundary_watch": false
+  },
+  {
+    "source": "globenewswire_massive",
+    "ticker": "NBIS",
+    "title": "ENDAVA (NYSE: DAVA) Replaces CEO and CFO, Confirms Financial Statements Are Unreliable, Contracts Lack Economic Substance, Financial Restatements Pending – HBSS",
+    "article_ref": "{\"$doxagent_content_v1\":\"204a8cc1e5a20e8edd28bd44b85206b2a0b1c88eca8ca1d74300384966434da9\",\"bytes\":11946}",
+    "production": "IRRELEVANT",
+    "review": "IRRELEVANT",
+    "basis": "完整正文逐条阅读",
+    "reason": "软件工程企业的会计处理和管理层变更，正文没有AI云算力服务、算力供给或硬件部署事实。",
+    "boundary_watch": false
+  },
+  {
+    "source": "globenewswire_massive",
+    "ticker": "NBIS",
+    "title": "FLNC INVESTOR ALERT: Fluence Energy Investors with Substantial Losses Have Opportunity to Lead the Fluence Class Action Lawsuit – Hagens Berman",
+    "article_ref": "{\"$doxagent_content_v1\":\"bc5e4ddfad011163e6089c0cd6e05aae934cd75bf10f2c398fb4ff435412f041\",\"bytes\":11515}",
+    "production": "IRRELEVANT",
+    "review": "IRRELEVANT",
+    "basis": "完整正文逐条阅读",
+    "reason": "主体为电池储能企业生产延误及诉讼；data centers为需求背景，没有具体AI云设施或计算资源变动。保留为业务近邻边界观察项，未据此追加调词。",
+    "boundary_watch": true
+  },
+  {
+    "source": "prnewswire_massive",
+    "ticker": "CEG",
+    "title": "New Jersey American Water Opens 2027 Volunteer Fire and EMS Grant Program",
+    "article_ref": "{\"$doxagent_content_v1\":\"e8257c15a6e61630bcc9f7a120c09dd8d795a75d3ee76c574985f56ad14b4f1b\",\"bytes\":9562}",
+    "production": "IRRELEVANT",
+    "review": "IRRELEVANT",
+    "basis": "完整正文逐条阅读",
+    "reason": "自来水企业资助消防/急救组织，与电力市场无业务联系；同属公用事业不足以放行。",
+    "boundary_watch": false
+  }
+]

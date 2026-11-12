@@ -1,0 +1,38 @@
+{
+  "INTC": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "MU": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "BE": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "COHR": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "NBIS": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "CEG": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "RKLB": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "SNOW": {
+    "compared": 100,
+    "erratum_differences": []
+  },
+  "ONDS": {
+    "compared": 100,
+    "erratum_differences": []
+  }
+}

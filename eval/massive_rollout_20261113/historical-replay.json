@@ -1,0 +1,119 @@
+{
+  "INTC": {
+    "normalized_sha256": "83af8f7dcce19a18eb2d66abb5603b8ce23968123af8619fdb360fa72b33d374",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "MU": {
+    "normalized_sha256": "cfeb3b793182631d6ee0fa1e5d95af2106f7daf72b7eb1aeafa89c6392a586f1",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "BE": {
+    "normalized_sha256": "1e8c7f748844e9cce361c4385b0e458dc7686733bf9b2053cfbad7f79ec31eb5",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "COHR": {
+    "normalized_sha256": "595f4de352d82936493922f960f0a3c283b67b81569886fdfa3c48301f574a73",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "NBIS": {
+    "normalized_sha256": "1448ba1916002072a13d00de779301c0e47754bbdad1217d8a367b93a9b41b38",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "CEG": {
+    "normalized_sha256": "72ce1a4b4ce9b2c8953eacb24678434e1630215663bb2f6054b9069b4bd69a43",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "RKLB": {
+    "normalized_sha256": "2c9b1738588eb2bfc7cd51a5674f5d2db8fc4f81026e328b8d468cfd9a7d0532",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "SNOW": {
+    "normalized_sha256": "a2f57d1da4ecd21ed861f6c74d77f99a8a5078f03c9eb43d3715a15b422cd532",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  },
+  "ONDS": {
+    "normalized_sha256": "ed80c44ee79c4b6b9056921632c4d7259e87b56a944178dbbdcfa5dad6d7b9d6",
+    "splits": {
+      "development": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      },
+      "validation": {
+        "compared": 50,
+        "differences_from_frozen_predictions": []
+      }
+    }
+  }
+}
