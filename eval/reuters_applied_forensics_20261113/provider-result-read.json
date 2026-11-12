@@ -1,0 +1,12 @@
+{
+  "method": "getTaskResult",
+  "task_id": 84403569365,
+  "http_status": 200,
+  "errorId": 16,
+  "errorCode": "ERROR_NO_SUCH_CAPCHA_ID",
+  "status": null,
+  "cost": null,
+  "createTime": null,
+  "endTime": null,
+  "solveCount": null
+}

@@ -1,0 +1,947 @@
+{
+  "date": "2026-11-13 Asia/Shanghai",
+  "business_window": {
+    "since": "2026-11-12T22:59:32+00:00",
+    "until": "2026-11-12T23:23:54.137318+00:00",
+    "at": "2026-11-12T23:23:54.137839+00:00",
+    "sources": {
+      "businesswire_massive": {
+        "articles": {
+          "FULL": 9
+        },
+        "delivery_states": {
+          "IRRELEVANT": 81
+        },
+        "physical_units": {
+          "WIRE:listing": {
+            "CAPTURED:None": 47,
+            "FAILED:CANCELLED": 1
+          }
+        },
+        "discovery_seconds": {
+          "n": 9,
+          "mean": 51.61,
+          "p50": 61.55663,
+          "p95": 61.651277,
+          "max": 61.651277
+        },
+        "body_to_decision_seconds": {
+          "n": 81,
+          "mean": 5.463,
+          "p50": 3.925445,
+          "p95": 14.510514,
+          "max": 21.347586
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": null,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJcFVJYWQ==",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "direct"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "prnewswire_massive": {
+        "articles": {
+          "FULL": 3
+        },
+        "delivery_states": {
+          "IRRELEVANT": 27
+        },
+        "physical_units": {
+          "WIRE:listing": {
+            "CAPTURED:None": 48
+          }
+        },
+        "discovery_seconds": {
+          "n": 3,
+          "mean": 36.151,
+          "p50": 26.909904,
+          "p95": 54.634202,
+          "max": 54.634202
+        },
+        "body_to_decision_seconds": {
+          "n": 27,
+          "mean": 5.434,
+          "p50": 4.862631,
+          "p95": 10.944167,
+          "max": 10.963131
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": 58,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://www.prnewswire.com/rss/news-releases-list.rss",
+                "format": "rss"
+              },
+              {
+                "endpoint_id": "business",
+                "url": "https://www.prnewswire.com/rss/general-business-latest-news/general-business-latest-news-list.rss",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "direct"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "globenewswire_massive": {
+        "articles": {
+          "FULL": 2
+        },
+        "delivery_states": {
+          "IRRELEVANT": 18
+        },
+        "physical_units": {
+          "WIRE:listing": {
+            "CAPTURED:None": 49
+          },
+          "WIRE:all": {
+            "CAPTURED:None": 49
+          }
+        },
+        "discovery_seconds": {
+          "n": 2,
+          "mean": 151.606,
+          "p50": 159.064701,
+          "p95": 159.064701,
+          "max": 159.064701
+        },
+        "body_to_decision_seconds": {
+          "n": 18,
+          "mean": 8.97,
+          "p50": 10.984015,
+          "p95": 14.72128,
+          "max": 14.72128
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": null,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://www.globenewswire.com/RssFeed",
+                "format": "rss"
+              },
+              {
+                "endpoint_id": "public",
+                "url": "https://www.globenewswire.com/RssFeed/orgclass/1/feedTitle/GlobeNewswire%20-%20News%20about%20Public%20Companies",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "tr-standard-1",
+              "us-standard-5"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "access_newswire_massive": {
+        "articles": {
+          "FULL": 1
+        },
+        "delivery_states": {
+          "IRRELEVANT": 9
+        },
+        "physical_units": {
+          "WIRE:listing": {
+            "CAPTURED:None": 46,
+            "FAILED:HTTP_LISTING_FAILED": 3
+          }
+        },
+        "discovery_seconds": {
+          "n": 1,
+          "mean": 82.629,
+          "p50": 82.628911,
+          "p95": 82.628911,
+          "max": 82.628911
+        },
+        "body_to_decision_seconds": {
+          "n": 9,
+          "mean": 3.417,
+          "p50": 3.691539,
+          "p95": 5.340461,
+          "max": 5.340461
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 2,
+        "max_cache_age_seconds": 85,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "http",
+                "url": "https://www.accessnewswire.com/newsroom",
+                "format": "html"
+              }
+            ],
+            "feed_http_routes": [
+              "us-standard-5"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "tmx_newsfile_massive": {
+        "articles": {
+          "FULL": 9
+        },
+        "delivery_states": {
+          "IRRELEVANT": 81
+        },
+        "physical_units": {
+          "WIRE:all": {
+            "CAPTURED:None": 48,
+            "FAILED:publisher_response_timeout": 1
+          }
+        },
+        "discovery_seconds": {
+          "n": 9,
+          "mean": 35.898,
+          "p50": 48.422597,
+          "p95": 48.422597,
+          "max": 48.422597
+        },
+        "body_to_decision_seconds": {
+          "n": 81,
+          "mean": 8.195,
+          "p50": 4.739912,
+          "p95": 22.307511,
+          "max": 23.628645
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": null,
+        "config": {
+          "version": 6,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://feeds.newsfilecorp.com/global/Last25Stories",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "direct"
+            ],
+            "discovery_mode": "rss",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      }
+    }
+  },
+  "final_steady_window": {
+    "since": "2026-11-12T23:21:28+00:00",
+    "until": "2026-11-12T23:23:55.571776+00:00",
+    "at": "2026-11-12T23:23:55.572135+00:00",
+    "sources": {
+      "businesswire_massive": {
+        "articles": {
+          "FULL": 1
+        },
+        "delivery_states": {
+          "IRRELEVANT": 9
+        },
+        "physical_units": {
+          "WIRE:listing": {
+            "CAPTURED:None": 5
+          }
+        },
+        "discovery_seconds": {
+          "n": 1,
+          "mean": 31.747,
+          "p50": 31.74706,
+          "p95": 31.74706,
+          "max": 31.74706
+        },
+        "body_to_decision_seconds": {
+          "n": 9,
+          "mean": 2.986,
+          "p50": 3.129247,
+          "p95": 4.608692,
+          "max": 4.608692
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": null,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJcFVJYWQ==",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "direct"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "prnewswire_massive": {
+        "articles": {},
+        "delivery_states": {},
+        "physical_units": {
+          "WIRE:listing": {
+            "CAPTURED:None": 5
+          }
+        },
+        "discovery_seconds": {
+          "n": 0,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "max": null
+        },
+        "body_to_decision_seconds": {
+          "n": 0,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "max": null
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": 57,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://www.prnewswire.com/rss/news-releases-list.rss",
+                "format": "rss"
+              },
+              {
+                "endpoint_id": "business",
+                "url": "https://www.prnewswire.com/rss/general-business-latest-news/general-business-latest-news-list.rss",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "direct"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "globenewswire_massive": {
+        "articles": {},
+        "delivery_states": {},
+        "physical_units": {
+          "WIRE:all": {
+            "CAPTURED:None": 5
+          },
+          "WIRE:listing": {
+            "CAPTURED:None": 5
+          }
+        },
+        "discovery_seconds": {
+          "n": 0,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "max": null
+        },
+        "body_to_decision_seconds": {
+          "n": 0,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "max": null
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": null,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://www.globenewswire.com/RssFeed",
+                "format": "rss"
+              },
+              {
+                "endpoint_id": "public",
+                "url": "https://www.globenewswire.com/RssFeed/orgclass/1/feedTitle/GlobeNewswire%20-%20News%20about%20Public%20Companies",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "tr-standard-1",
+              "us-standard-5"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "access_newswire_massive": {
+        "articles": {},
+        "delivery_states": {},
+        "physical_units": {
+          "WIRE:listing": {
+            "CAPTURED:None": 5
+          }
+        },
+        "discovery_seconds": {
+          "n": 0,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "max": null
+        },
+        "body_to_decision_seconds": {
+          "n": 0,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "max": null
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 2,
+        "max_cache_age_seconds": 65,
+        "config": {
+          "version": 5,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "http",
+                "url": "https://www.accessnewswire.com/newsroom",
+                "format": "html"
+              }
+            ],
+            "feed_http_routes": [
+              "us-standard-5"
+            ],
+            "discovery_mode": "http_listing",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      },
+      "tmx_newsfile_massive": {
+        "articles": {
+          "FULL": 1
+        },
+        "delivery_states": {
+          "IRRELEVANT": 9
+        },
+        "physical_units": {
+          "WIRE:all": {
+            "CAPTURED:None": 5
+          }
+        },
+        "discovery_seconds": {
+          "n": 1,
+          "mean": 12.404,
+          "p50": 12.403629,
+          "p95": 12.403629,
+          "max": 12.403629
+        },
+        "body_to_decision_seconds": {
+          "n": 9,
+          "mean": 3.143,
+          "p50": 3.117912,
+          "p95": 5.04207,
+          "max": 5.04207
+        },
+        "overflow_risks": 0,
+        "freshness_degraded_polls": 0,
+        "max_cache_age_seconds": null,
+        "config": {
+          "version": 6,
+          "enabled": true,
+          "delivery_mode": "production",
+          "default_parameters": {
+            "endpoints": [
+              {
+                "endpoint_id": "all",
+                "url": "https://feeds.newsfilecorp.com/global/Last25Stories",
+                "format": "rss"
+              }
+            ],
+            "feed_http_routes": [
+              "direct"
+            ],
+            "discovery_mode": "rss",
+            "massive_regex_enabled": true
+          },
+          "jev_enabled": false,
+          "require_complete_body": true,
+          "bindings": [
+            "INTC",
+            "MU",
+            "BE",
+            "COHR",
+            "NBIS",
+            "CEG",
+            "RKLB",
+            "SNOW",
+            "ONDS"
+          ]
+        }
+      }
+    }
+  },
+  "canaries": [
+    {
+      "source": "businesswire_massive",
+      "url": "https://www.businesswire.com/news/home/20261112795782/en/Helen-of-Troy-Issues-Statement/",
+      "seconds": 2.51,
+      "succeeded": true,
+      "outcome": "FULL",
+      "reason": null,
+      "chars": 14382,
+      "method": "wire_article_body",
+      "provenance": [
+        {
+          "phase": "direct",
+          "site_id": "businesswire",
+          "runtime_kind": null,
+          "identity_id": null
+        }
+      ]
+    },
+    {
+      "source": "businesswire_massive",
+      "url": "https://www.businesswire.com/news/home/20261112238564/en/CKX-Lands-Investor-Alert-Kahn-Swick-Foti-LLC-Investigates-CKX-Lands-Inc.---CKX/",
+      "seconds": 0.852,
+      "succeeded": true,
+      "outcome": "FULL",
+      "reason": null,
+      "chars": 1343,
+      "method": "wire_article_body",
+      "provenance": [
+        {
+          "phase": "direct",
+          "site_id": "businesswire",
+          "runtime_kind": null,
+          "identity_id": null
+        }
+      ]
+    },
+    {
+      "source": "prnewswire_massive",
+      "url": "https://www.prnewswire.com/news-releases/edun-brings-live-rosin-to-the-holiday-kitchen-with-limited-edition-organic-evoo-launch-302938320.html",
+      "seconds": 0.343,
+      "succeeded": true,
+      "outcome": "FULL",
+      "reason": null,
+      "chars": 6331,
+      "method": "wire_article_body",
+      "provenance": [
+        {
+          "phase": "direct",
+          "site_id": "prnewswire",
+          "runtime_kind": null,
+          "identity_id": null
+        }
+      ]
+    },
+    {
+      "source": "prnewswire_massive",
+      "url": "https://www.prnewswire.com/news-releases/willamette-valley-vineyards-posts-results-for-q3-2026-302938457.html",
+      "seconds": 0.246,
+      "succeeded": true,
+      "outcome": "FULL",
+      "reason": null,
+      "chars": 5869,
+      "method": "wire_article_body",
+      "provenance": [
+        {
+          "phase": "direct",
+          "site_id": "prnewswire",
+          "runtime_kind": null,
+          "identity_id": null
+        }
+      ]
+    },
+    {
+      "source": "tmx_newsfile_massive",
+      "url": "https://www.newsfilecorp.com/release/323833/Mayfair-Gold-Reports-Q3-2026-Operating-and-Financial-Results",
+      "seconds": 11.725,
+      "succeeded": true,
+      "outcome": "FULL",
+      "reason": null,
+      "chars": 6536,
+      "method": "browser_wire_article_body",
+      "provenance": [
+        {
+          "phase": "browser",
+          "site_id": "newsfile",
+          "runtime_kind": "managed_playwright",
+          "identity_id": "newsfile-1"
+        }
+      ]
+    },
+    {
+      "source": "tmx_newsfile_massive",
+      "url": "https://www.newsfilecorp.com/release/323827/The-LGL-Group-Inc.-Reports-Third-Quarter-2026-Results",
+      "seconds": 8.787,
+      "succeeded": true,
+      "outcome": "FULL",
+      "reason": null,
+      "chars": 18273,
+      "method": "browser_wire_article_body",
+      "provenance": [
+        {
+          "phase": "browser",
+          "site_id": "newsfile",
+          "runtime_kind": "managed_playwright",
+          "identity_id": "newsfile-1"
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "v2-site-access/site_strategy/runtime.py": {
+      "sha256": "1f840e05c5be559278dc5b8946b34e8c0bc38f8760737b1f55b82e88aa497160",
+      "matches_main": true
+    },
+    "v2-site-access/site_strategy/seeds.py": {
+      "sha256": "daf0828cb216c40e985179eed6ce4edd5fc4d92c93792e32c10c2e82dd7847d6",
+      "matches_main": true
+    },
+    "v2-site-access/content_enrichment/strategies/catalog.py": {
+      "sha256": "0d3308570972990a2100b8049ab5754f880fdda825868e0061ba04bc23a949d6",
+      "matches_main": true
+    },
+    "v2-content-enrichment/content_enrichment/extractor.py": {
+      "sha256": "880a2696affee683ed86f1a19d4370f8fe683a8c40410e9b90d25a70db12cf7d",
+      "matches_main": true
+    },
+    "v2-content-enrichment/content_enrichment/managed.py": {
+      "sha256": "0dc8948c525e0eef7b095adc919144c33392f4f611f2c435c5da602333784bb6",
+      "matches_main": true
+    },
+    "v2-content-enrichment/content_enrichment/pipeline.py": {
+      "sha256": "202bb5a52f2210258460f59d3207490613746b41d5cb6c2754ee1407ba2cbdd6",
+      "matches_main": true
+    },
+    "v2-content-enrichment/content_enrichment/publisher_documents.py": {
+      "sha256": "6783d1a47e7121a455129a098de29225ca8b8e735ba154592f340daf1b68c18e",
+      "matches_main": true
+    },
+    "v2-content-enrichment/content_enrichment/publishers.py": {
+      "sha256": "64690d6877ba166f06a60dd00815ff4a77f91c19d18032ab9368a10760aefa20",
+      "matches_main": true
+    },
+    "v2-content-enrichment/content_enrichment/transport.py": {
+      "sha256": "47de1129def6ce14ec85e0f655724b3982f59b42b24c278fad8bd73533b61204",
+      "matches_main": true
+    },
+    "v2-message-collector/message_bus_v2/newswire_listing.py": {
+      "sha256": "c351c17ba0efed1ceb4a668f73f00ebd960de9209fe3b7e3d62ae4aaffd4a036",
+      "matches_main": true
+    },
+    "v2-message-bus/message_bus_v2/live.py": {
+      "sha256": "d6539cf0ac02a8d9af2a69d6d1fd4c309d971a2ebe11cc772570e1c8b13e1752",
+      "matches_main": true
+    }
+  },
+  "releases": [
+    {
+      "commit": "85737e5325f2e21c3bb3a90bf91a386cb07e3ae8",
+      "started_at": "2026-11-12T22:51:30.484326+00:00",
+      "components": [
+        "v2-site-access",
+        "v2-message-collector",
+        "v2-content-enrichment",
+        "v2-message-bus"
+      ],
+      "supervisor_before": "9bc69ac8eab097e5eb8bb7f0f1500074484ec5d47d19d9a41a6f5046d1a07c92",
+      "finished_at": "2026-11-12T22:54:04.250692+00:00",
+      "exit_code": 0
+    },
+    {
+      "commit": "0e789d7a40aa1ab6f2d1119b5d04662361b09766",
+      "started_at": "2026-11-12T22:57:54.832016+00:00",
+      "components": [
+        "v2-message-collector",
+        "v2-content-enrichment"
+      ],
+      "supervisor_before": "9bc69ac8eab097e5eb8bb7f0f1500074484ec5d47d19d9a41a6f5046d1a07c92",
+      "finished_at": "2026-11-12T22:59:31.096476+00:00",
+      "exit_code": 0
+    },
+    {
+      "commit": "3298c63d20996f2d9e3ac1ca621ce11b09507088",
+      "started_at": "2026-11-12T23:08:17.468956+00:00",
+      "components": [
+        "v2-site-access"
+      ],
+      "supervisor_before": "9bc69ac8eab097e5eb8bb7f0f1500074484ec5d47d19d9a41a6f5046d1a07c92",
+      "finished_at": "2026-11-12T23:09:34.741804+00:00",
+      "exit_code": 0
+    },
+    {
+      "commit": "c329fa79b21cd59a6e968d28b54aa1f01bf82dba",
+      "started_at": "2026-11-12T23:12:35.557033+00:00",
+      "components": [
+        "v2-message-collector"
+      ],
+      "supervisor_before": "9bc69ac8eab097e5eb8bb7f0f1500074484ec5d47d19d9a41a6f5046d1a07c92",
+      "finished_at": "2026-11-12T23:14:02.117012+00:00",
+      "exit_code": 0
+    },
+    {
+      "commit": "1a9dafa43888a201d4aa155f2858fe741cf3d3dd",
+      "started_at": "2026-11-12T23:20:00.847222+00:00",
+      "components": [
+        "v2-message-collector"
+      ],
+      "supervisor_before": "9bc69ac8eab097e5eb8bb7f0f1500074484ec5d47d19d9a41a6f5046d1a07c92",
+      "finished_at": "2026-11-12T23:21:27.641531+00:00",
+      "exit_code": 0
+    }
+  ],
+  "runtime": {
+    "at": "2026-11-12T23:23:56.449206+00:00",
+    "containers": {
+      "v2-site-access": {
+        "id": "3730cd2894604547db5762720891a129af315e80fd6e04e99e0bcd3d255435e0",
+        "started_at": "2026-11-12T23:19:25.546303786Z",
+        "state": "running",
+        "health": "healthy",
+        "recheck_env": [
+          "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+        ],
+        "hashes": {
+          "site_strategy/runtime.py": "1f840e05c5be559278dc5b8946b34e8c0bc38f8760737b1f55b82e88aa497160",
+          "site_strategy/seeds.py": "daf0828cb216c40e985179eed6ce4edd5fc4d92c93792e32c10c2e82dd7847d6",
+          "content_enrichment/strategies/catalog.py": "0d3308570972990a2100b8049ab5754f880fdda825868e0061ba04bc23a949d6"
+        }
+      },
+      "v2-content-enrichment": {
+        "id": "1485c793f6c57a973775faae35abd9d0d122a82f362145ed602d1ecaa79b2cd4",
+        "started_at": "2026-11-12T22:59:05.705724243Z",
+        "state": "running",
+        "health": null,
+        "recheck_env": [
+          "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+        ],
+        "hashes": {
+          "content_enrichment/extractor.py": "880a2696affee683ed86f1a19d4370f8fe683a8c40410e9b90d25a70db12cf7d",
+          "content_enrichment/managed.py": "0dc8948c525e0eef7b095adc919144c33392f4f611f2c435c5da602333784bb6",
+          "content_enrichment/pipeline.py": "202bb5a52f2210258460f59d3207490613746b41d5cb6c2754ee1407ba2cbdd6",
+          "content_enrichment/publisher_documents.py": "6783d1a47e7121a455129a098de29225ca8b8e735ba154592f340daf1b68c18e",
+          "content_enrichment/publishers.py": "64690d6877ba166f06a60dd00815ff4a77f91c19d18032ab9368a10760aefa20",
+          "content_enrichment/transport.py": "47de1129def6ce14ec85e0f655724b3982f59b42b24c278fad8bd73533b61204"
+        }
+      },
+      "v2-message-collector": {
+        "id": "21bf799b6169aa5aab496d247c48be985d67bff8a5d4c89dcd6a70217b379204",
+        "started_at": "2026-11-12T23:20:59.049894684Z",
+        "state": "running",
+        "health": "healthy",
+        "recheck_env": [
+          "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+        ],
+        "hashes": {
+          "message_bus_v2/newswire_listing.py": "c351c17ba0efed1ceb4a668f73f00ebd960de9209fe3b7e3d62ae4aaffd4a036"
+        }
+      },
+      "v2-message-bus": {
+        "id": "d00b1429261375300979660679cda2d00b27c0a4dc4eeb55425b59a6e2766dfa",
+        "started_at": "2026-11-12T22:53:37.46338016Z",
+        "state": "running",
+        "health": null,
+        "recheck_env": [
+          "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+        ],
+        "hashes": {
+          "message_bus_v2/live.py": "d6539cf0ac02a8d9af2a69d6d1fd4c309d971a2ebe11cc772570e1c8b13e1752"
+        }
+      },
+      "v2-chrome-supervisor": {
+        "id": "9bc69ac8eab097e5eb8bb7f0f1500074484ec5d47d19d9a41a6f5046d1a07c92",
+        "started_at": "2026-11-10T00:41:26.925298547Z",
+        "state": "running",
+        "health": "healthy",
+        "recheck_env": [
+          "DOXAGENT_CONTENT_ENRICHMENT_RECHECK_ENABLED=false"
+        ],
+        "hashes": {}
+      }
+    },
+    "root_free_gib": 13.97,
+    "mem_available_kib": 17853408
+  },
+  "limits": [
+    "Natural acceptance has no positive regex/publication example",
+    "Only about 24 minutes of natural BODY data; final all-role window is shorter",
+    "ACCESS grace cache persists and is separately diagnosed",
+    "Historical BW/GNW late-appearance mechanism not fully distinguished without original listing snapshots",
+    "Historical failures are retained; recheck stays disabled"
+  ]
+}

@@ -3,13 +3,14 @@
 import argparse
 import json
 import sqlite3
+from collections import Counter
 from pathlib import Path
 
 from doxagent.message_bus_v2.corporate_ir import SOURCE_ID
 from doxagent.message_bus_v2.corporate_ir.catalog import initial_endpoints, initial_source
 from doxagent.message_bus_v2.schema import UpdateActor, binding_id_for
 
-TICKERS = ("INTC", "MU", "BE", "COHR", "NBIS", "CEG", "RKLB", "SNOW", "ONDS")
+TICKERS = ("INTC", "MU", "BE", "COHR", "NBIS", "CEG", "RKLB", "SNOW", "ONDS", "IONQ")
 
 
 def planned_parameters(source):
@@ -22,15 +23,20 @@ def planned_parameters(source):
         seed = seeds.get(value["endpoint_id"])
         if (
             seed
-            and seed.revision == 2
-            and value.get("revision", 1) == 1
+            and seed.parser_parameters
+            and seed.revision > value.get("revision", 1)
             and not value.get("parser_parameters")
             and value["entry_url"] == seed.entry_url
             and value["owner_ticker"] == seed.owner_ticker
         ):
-            value = {**value, "parser_parameters": seed.parser_parameters, "revision": 2}
+            value = {**value, "parser_parameters": seed.parser_parameters, "revision": seed.revision}
             upgrades.append(seed.endpoint_id)
         catalog.append(value)
+    present = {s['endpoint_id'] for s in catalog}
+    for key, seed in seeds.items():
+        if key not in present:
+            catalog.append(seed.model_dump(mode='json'))
+            upgrades.append(key)
     return {**source.default_parameters, "endpoints": catalog}, upgrades
 
 
@@ -38,8 +44,11 @@ def preview(source, bindings, ticker_states):
     parameters, upgrades = planned_parameters(source)
     catalog = parameters["endpoints"]
     if not all(t in ticker_states for t in TICKERS):
-        raise ValueError("all nine tickers must already be registered")
+        raise ValueError("all corporate IR tickers must already be registered")
     indexed = {b.binding_id: b for b in bindings}
+    intervals = Counter(b.polling.target_interval_seconds for b in bindings
+                        if b.source_id == SOURCE_ID and b.enabled)
+    default_interval = intervals.most_common(1)[0][0] if intervals else 30
     changes = []
     overlaps = []
     expected = {s.endpoint_id for s in initial_endpoints()}
@@ -60,13 +69,12 @@ def preview(source, bindings, ticker_states):
                 "binding_id": binding_id_for(ticker, SOURCE_ID),
                 "expected_version": current.version if current else None,
                 "endpoint_ids": ids,
+                "interval_seconds": current.polling.target_interval_seconds if current else default_interval,
                 "action": "create"
                 if not current
                 else "unchanged"
                 if current.enabled
                 and current.polling.enabled
-                and current.polling.target_interval_seconds == 30
-                and not current.polling.active_windows
                 and current.source_parameters.get("endpoint_ids") == ids
                 else "update",
             }
@@ -133,8 +141,6 @@ def configure(service):
                         "polling": {
                             **current.polling.model_dump(mode="json"),
                             "enabled": True,
-                            "target_interval_seconds": 30,
-                            "active_windows": [],
                         },
                     },
                     actor=UpdateActor.USER,
@@ -145,6 +151,7 @@ def configure(service):
                     ticker=item["ticker"],
                     source_id=SOURCE_ID,
                     source_parameters=parameters,
+                    polling={"target_interval_seconds": item['interval_seconds']},
                     actor=UpdateActor.USER,
                     reason="Requested corporate IR",
                 )

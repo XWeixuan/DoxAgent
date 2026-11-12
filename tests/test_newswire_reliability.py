@@ -101,6 +101,28 @@ def test_wire_article_region_excludes_recommendations(host,tag):
     assert outcome=='FULL' and candidate.text==BODY
 
 
+@pytest.mark.parametrize('site,host',[
+    ('businesswire','businesswire.com'),('prnewswire','prnewswire.com'),('newsfile','newsfilecorp.com'),
+])
+def test_wire_access_assessment_does_not_repeat_cold_generic_extraction(site,host,tmp_path,monkeypatch):
+    from doxagent.site_strategy.repository import SiteStrategyRepository
+    from doxagent.site_strategy.service import SiteStrategyService
+    from doxagent.site_strategy.seeds import bootstrap_seed
+    from doxagent.site_strategy.runtime import _verification_document
+    from doxagent.site_strategy.schema import AccessRequest
+    repo=SiteStrategyRepository(tmp_path/'site.sqlite3');service=SiteStrategyService(repo,profile_root=tmp_path/'profiles')
+    try:
+        bootstrap_seed(repo,service);url='https://www.'+host+'/release/123'
+        resolved=service.resolve(url)
+        assert resolved.site_id==site
+        monkeypatch.setattr('doxagent.content_enrichment.quality._default_extractor',
+                            lambda: (_ for _ in ()).throw(AssertionError('generic body extraction in access assessment')))
+        request=AccessRequest(operation_id='test',url=url,purpose='BODY',mode='BROWSER')
+        assert not _verification_document('<h1>'+TITLE+'</h1><article><p>'+BODY+'</p></article>',url,200,{},resolved,request)
+        assert _verification_document('<title>Verify you are human</title>',url,403,{},resolved,request)
+    finally:repo.close()
+
+
 async def test_explicit_newsfile_registry_policy_survives_massive_defaults():
     from doxagent.content_enrichment.pipeline import ArticlePipeline
     from doxagent.content_enrichment.transport import Observation

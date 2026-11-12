@@ -461,6 +461,9 @@ def test_proxy_config_denies_open_relay_and_never_direct():
     assert "never_direct allow all" in config and "ssl_bump" not in config
     assert "http_access deny !allowed" in config and "http_access deny !solver_src" in config
     assert "proxy_auth dd-user" in config and "http_access deny all" in config
+    logformat = next(line for line in config.splitlines() if line.startswith("logformat "))
+    assert "%>rd" in logformat and "%<a:%<p" in logformat
+    assert "%ru" not in logformat and "%credentials" not in logformat
 
 
 @pytest.mark.asyncio

@@ -44,8 +44,9 @@ def squid_config(bindings, listeners, subnet):
         "http_access deny private_dst",
         "http_access deny too_many",
     ]
-    # log only identity, result and bytes; no full URL, request headers or credentials.
-    lines.insert(6, "logformat captcha %ts.%03tu %>a %Ss/%03>Hs %<st %rm %un")
+    # Domain/parent only: diagnose rejected dependencies without URL paths,
+    # queries, request headers or credentials. Existing log rotation still applies.
+    lines.insert(6, "logformat captcha %ts.%03tu %>a %Ss/%03>Hs %<st %rm %un %>rd %<a:%<p")
     for n, (identity_id, binding) in enumerate(sorted(bindings.items())):
         user = binding["proxyLogin"]
         host, port = listeners[binding["egress_id"]]

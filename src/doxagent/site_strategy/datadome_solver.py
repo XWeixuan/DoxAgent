@@ -13,19 +13,19 @@ from .datadome_browser import NativeChallenge
 from .schema import digest_json, new_id, utc_now
 
 
-def record_solver_diagnostic(repository, identity_id, stage, summary, *, recovery_id=None):
+def record_solver_diagnostic(repository, identity_id, stage, summary, *, recovery_id=None, capture=None):
     try:
         return _record_solver_diagnostic(repository, identity_id, stage, summary,
-                                         recovery_id=recovery_id)
+                                         recovery_id=recovery_id, capture=capture)
     except (sqlite3.Error, ValueError):
         return None  # Optional evidence cannot fail an otherwise valid business operation.
 
 
-def _record_solver_diagnostic(repository, identity_id, stage, summary, *, recovery_id=None):
+def _record_solver_diagnostic(repository, identity_id, stage, summary, *, recovery_id=None, capture=None):
     """Bounded, passive evidence from existing observations and business requests.
 
-    Only state transitions write. No document, URL, headers or credentials enter
-    the job, and a failed diagnostic never changes business admission.
+    Only state transitions write. Evidence contains query-free paths and selected
+    safe headers, never raw documents/credentials; it never changes admission.
     """
     if stage not in {"DOCUMENT", "CRAWLER", "BODY"}:
         raise ValueError("unsupported diagnostic stage")
@@ -43,7 +43,11 @@ def _record_solver_diagnostic(repository, identity_id, stage, summary, *, recove
     # A new article/query is not itself a state change. Keep the evidence which
     # established the transition, rather than rewriting on every healthy poll.
     def state(value):
-        return {k: v for k, v in value.items() if k not in {"query_key", "proof_id", "at"}}
+        return {k: v for k, v in value.items() if k not in {"query_key", "proof_id", "at", "http_evidence"}}
+
+    def already_recorded(previous):
+        return previous is not None and state(previous) == state(clean) and (
+            capture is None or "http_evidence" in previous)
 
     with repository._lock:
         row = repository._connection.execute(
@@ -56,9 +60,16 @@ def _record_solver_diagnostic(repository, identity_id, stage, summary, *, recove
     if job.get("status") != "APPLIED":
         return
     previous = job.get("diagnostics", {}).get(stage)
-    if previous is not None and state(previous) == state(clean):
+    if already_recorded(previous):
         return
     observation = {**clean, "at": utc_now().isoformat()}
+    if capture is not None:
+        from .solver_forensics import response_summary
+        observation["http_evidence"] = response_summary(capture.final_url, capture.status_code,
+            capture.headers, capture.body, wire_body=False)
+        provenance = getattr(capture, "provenance", None)
+        observation["http_evidence"]["provenance"] = {key: getattr(provenance, key, None)
+            for key in ("identity_id", "profile_id", "instance_id")}
     with repository.transaction() as db:
         # Re-read under the owner transaction: never overwrite concurrent proof,
         # provider cost, or terminal fields with an older copy of the job.
@@ -70,7 +81,7 @@ def _record_solver_diagnostic(repository, identity_id, stage, summary, *, recove
         if job.get("status") != "APPLIED":
             return
         previous = job.get("diagnostics", {}).get(stage)
-        if previous is not None and state(previous) == state(clean):
+        if already_recorded(previous):
             return
         job["diagnostics"] = {**job.get("diagnostics", {}), stage: observation}
         job["diagnostic_timeline"] = [*job.get("diagnostic_timeline", []),
@@ -542,6 +553,8 @@ class DataDomeSolver:
                     cost=data.get("cost", active.get("cost")),
                     verification_state="PENDING",
                 )
+                active["provider_receipt"] = {key: data[key] for key in ("createTime", "endTime", "solveCount")
+                    if isinstance(data.get(key), int) and not isinstance(data[key], bool)}
                 self.save(active)  # Persist the cost BEFORE any browser/ownership work.
             if not binding or recovery.page_status == "LOST":
                 if data:
@@ -601,10 +614,13 @@ class DataDomeSolver:
                         return False
                     active.update(status="APPLYING", verification_reason="application_in_progress")
                     self.save(active)  # Crash here is uncertain, never an invitation to set again.
-                    await browser.apply(data.get("solution", {}).get("cookie"), scene["website"])
+                    application = await browser.apply(data.get("solution", {}).get("cookie"), scene["website"])
+                    application = application if isinstance(application, dict) else {}
+                    if application:
+                        active["application_evidence"] = application
                     active.update(
                         status="APPLIED",
-                        applied_at=utc_now().isoformat(),
+                        applied_at=(application or {}).get("cookie_written_at") or utc_now().isoformat(),
                         verification_state="PENDING",
                     )
                     active["cookie_scope_verified"] = True

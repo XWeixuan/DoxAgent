@@ -1,0 +1,18 @@
+{
+  "combined_regression": {
+    "passed": 97,
+    "log": "final-regression.log"
+  },
+  "final_targeted": {
+    "passed": 7,
+    "overlaps_combined": true,
+    "log": "final-targeted.log"
+  },
+  "new_paid_tasks": 0,
+  "deployed_source": "73baf869d2609c4eaed3c0854348a0bc1b736c47",
+  "site_access_healthy": true,
+  "source_hashes_match": 15,
+  "supervisor_unchanged": true,
+  "original_main_target_preserved": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+  "next_natural_application_wire_chain": "NOT_YET_OBSERVED"
+}

@@ -13,7 +13,7 @@ class IrEndpointSpec(BusModel):
     display_name: str
     entry_url: str
     method: Literal["rss", "json", "html", "browser"]
-    parser_ref: Literal["rss", "micron", "coherent", "nebius", "ceg", "rocketlab", "snowflake"]
+    parser_ref: Literal["rss", "micron", "coherent", "nebius", "ceg", "rocketlab", "snowflake", "ionq", "snowflake_json"]
     parser_parameters: dict = Field(default_factory=dict)
     allowed_article_hosts: list[str]
     fallback_urls: list[str] = Field(default_factory=list)

@@ -209,11 +209,28 @@ class NativeChallenge:
                 async with asyncio.timeout(5):
                     while True:
                         value = json.loads(await ws.recv())
+                        observer = getattr(call, "observer", None)
+                        if value.get("method") and observer:
+                            try:
+                                observer(value)
+                            except (ValueError, KeyError, TypeError):
+                                pass
                         if value.get("id") == counter:
                             if value.get("error"):
                                 raise RuntimeError("solver_cdp_failed")
                             return value["result"]
 
+            async def observe_for(seconds):
+                try:
+                    async with asyncio.timeout(seconds):
+                        while True:
+                            value = json.loads(await ws.recv())
+                            if value.get("method") and getattr(call, "observer", None):
+                                call.observer(value)
+                except TimeoutError:
+                    pass
+
+            call.observe_for = observe_for
             yield call
 
     async def inspect(self):
@@ -394,6 +411,32 @@ class NativeChallenge:
             if urlsplit(root.get("documentURL", "")).hostname != urlsplit(website).hostname:
                 raise RuntimeError("solver_document_changed")
             params = solution_cookie(cookie, website)
+            observation, trace = {}, None
+            # Paid application only: one bounded passive window, no interception,
+            # extra navigation, provider request or recurring screenshot.
+            if hasattr(call, "observe_for") and self.recovery.site_id == "reuters":
+                from .solver_forensics import WireEvidence, cookie_summary, fingerprint
+                observation = {"schema_version": 1, "observation_seconds": 5,
+                    "identity_id": self.identity.identity_id,
+                    "profile_id": self.identity.profile_id,
+                    "instance_id": self.target.browser_instance_id, "target_id": self.target.target_id,
+                    "solution_fingerprint": fingerprint(params["value"], self.recovery.recovery_id)}
+                returned = SimpleCookie()
+                returned.load(cookie)
+                observation["provider_attributes"] = {key: str(returned["datadome"][key])
+                    for key in ("domain", "path", "secure", "httponly", "samesite")}
+                try:
+                    trace = WireEvidence(self.recovery.recovery_id)
+                    call.observer = trace.event
+                    async with asyncio.timeout(2):
+                        await call("Network.enable", {"maxTotalBufferSize": 131072, "maxResourceBufferSize": 65536})
+                        info = await call("Target.getTargetInfo", {"targetId": self.target.target_id})
+                        observation["browser_context_id"] = info.get("targetInfo", {}).get("browserContextId")
+                        before = await call("Network.getCookies", {"urls": [website]})
+                    observation["cookies_before"] = cookie_summary(before.get("cookies", []), self.recovery.recovery_id)
+                except (RuntimeError, TimeoutError, ValueError, KeyError, TypeError):
+                    trace, call.observer = None, None
+                    observation["read_state"] = "BEFORE_UNAVAILABLE"
             result = await call("Network.setCookie", params)
             if result.get("success") is False:
                 raise RuntimeError("solver_cookie_rejected")
@@ -405,4 +448,26 @@ class NativeChallenge:
                 for c in visible.get("cookies", [])
             ):
                 raise RuntimeError("solver_cookie_not_visible_to_publisher")
+            if trace:
+                from .schema import utc_now
+                observation["cookie_written_at"] = utc_now().isoformat()
+                observation["cookies_after_write"] = cookie_summary(visible.get("cookies", []), self.recovery.recovery_id)
             await call("Page.reload", {"ignoreCache": False})
+            if trace:
+                try:
+                    # This observes the already-issued reload, never waits for
+                    # success or changes the existing recovery/confirmation policy.
+                    async with asyncio.timeout(8):
+                        await call.observe_for(5)
+                        await trace.bodies(call)
+                        after = await call("Network.getCookies", {"urls": [website]})
+                        observation["cookies_after_observation"] = cookie_summary(after.get("cookies", []), self.recovery.recovery_id)
+                    observation["read_state"] = "BOUNDED_WINDOW_COMPLETE"
+                except (RuntimeError, TimeoutError, ValueError, KeyError, TypeError):
+                    observation["read_state"] = "PARTIAL"
+                observation["requests"] = trace.result()
+                call.observer = None
+                if len(json.dumps(observation)) > 24576:
+                    observation["requests"] = observation["requests"][:2]
+                    observation["truncated"] = True
+            return observation

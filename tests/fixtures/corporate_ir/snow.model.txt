@@ -1,0 +1,1 @@
+{"hits":[{"title":{"lines":["Snowflake announces new data platform"]},"button":{"buttonLink":{"url":"/en/news/press-releases/new-data-platform/"}},"publicationDate":"NOV 03, 2026"},{"title":{"lines":["Snowflake announces customer agreement"]},"button":{"buttonLink":{"url":"/en/news/press-releases/customer-agreement/"}},"publicationDate":"NOV 02, 2026"}],"totalMatches":24}

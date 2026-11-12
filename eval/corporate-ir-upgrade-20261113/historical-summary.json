@@ -1,0 +1,82 @@
+[
+  {
+    "ticker": "ONDS",
+    "counts": [
+      {
+        "status": "CAPTURED",
+        "reason": null,
+        "n": 13535
+      },
+      {
+        "status": "FAILED",
+        "reason": "CANCELLED",
+        "n": 7
+      },
+      {
+        "status": "FAILED",
+        "reason": "COLLECTION_SOURCE_CONFIGURATION_CHANGED",
+        "n": 1
+      },
+      {
+        "status": "FAILED",
+        "reason": "ConnectError",
+        "n": 3
+      },
+      {
+        "status": "FAILED",
+        "reason": "ConnectTimeout",
+        "n": 493
+      },
+      {
+        "status": "FAILED",
+        "reason": "TimeoutError",
+        "n": 240
+      },
+      {
+        "status": "SCHEDULE",
+        "reason": "ENABLED",
+        "n": 3
+      }
+    ]
+  },
+  {
+    "ticker": "SNOW",
+    "counts": [
+      {
+        "status": "ABANDONED_GENERATION",
+        "reason": "PREVIOUS_COLLECTOR_EXIT",
+        "n": 2
+      },
+      {
+        "status": "CAPTURED",
+        "reason": null,
+        "n": 13403
+      },
+      {
+        "status": "FAILED",
+        "reason": "CANCELLED",
+        "n": 4
+      },
+      {
+        "status": "FAILED",
+        "reason": "ConnectTimeout",
+        "n": 70
+      },
+      {
+        "status": "FAILED",
+        "reason": "TimeoutError",
+        "n": 227
+      },
+      {
+        "status": "FAILED",
+        "reason": "ValueError",
+        "n": 571
+      },
+      {
+        "status": "SCHEDULE",
+        "reason": "ENABLED",
+        "n": 3
+      }
+    ]
+  }
+]
