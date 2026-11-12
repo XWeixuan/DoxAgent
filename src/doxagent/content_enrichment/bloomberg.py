@@ -8,6 +8,13 @@ from urllib.parse import urlsplit
 from .publisher_documents import same_article
 
 
+def verified_subscription_result(result):
+    """Legacy public FULL labels are not proof of a visible subscriber body."""
+    return any(candidate.get('method') == 'bloomberg_visible_dom'
+               and candidate.get('structured') is True
+               for candidate in (result or {}).get('diagnostics', {}).get('candidate_summary', []))
+
+
 def inspect_document(root, url, info, *, candidate_type, node_text):
     path = urlsplit(url).path
     if path.startswith('/account/'):
@@ -30,7 +37,8 @@ def inspect_document(root, url, info, *, candidate_type, node_text):
         except (ValueError, TypeError):
             continue
         if isinstance(article, dict) and article.get('@type') == 'NewsArticle':
-            info.subscription_article = article.get('isAccessibleForFree') not in {True, 'true', 'True'}
+            free = article.get('isAccessibleForFree')
+            info.subscription_article = not (free is True or free in ('true', 'True'))
             stamp = article.get('datePublished')
             try:
                 date = datetime.fromisoformat(stamp.replace('Z', '+00:00'))
