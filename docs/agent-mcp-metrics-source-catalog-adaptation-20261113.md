@@ -22,4 +22,21 @@
 
 57 项 MCP/微信/全局目录/Bus 回归通过，Ruff 通过。新回归覆盖目录单次读取多页不漏行、停用/测试置后、隐藏字段剔除、空时间保留、长研判筛选、ReadContext 兼容 opt-in，以及真实父 API 的 worker job 请求头传递。原目录权限测试更新为允许精确 GET；写入及其他研究边界回归继续通过。
 
-生产部署与当前新鲜度核验将在下文记录；历史修复回执中的性能、历史 gap 数量和 85/275 目录快照不作为今天的验收值。
+## 生产验收
+
+应用提交 `76fd43173`，仅覆盖生产 API 的 app/agent_read_auth 两个文件及 MCP 的 client/projection/schemas/service 四个文件；保留当前镜像中的其他修复与所有凭证。API 镜像 `3f57b5f95f18`，MCP 镜像 `8f149bb8b53c`。使用原 canonical release 锁、Compose、健康检查及回退；没有重发 Projector、迁移数据库、清 gap、重建索引或触发交易/模型/微信消息。
+
+**发布中发现并修正的配置漏项：** 原 canonical Compose base 命令没有微信 secret 覆盖文件，但 MCP 环境仍引用该文件。重建后的 Tunnel ready，真实 stdio 初始化却因 token 文件缺失失败。恢复原 `/var/lib/doxagent/agent-mcp/wechat-20261111/compose.wechat.json` 到 canonical base 并重建 MCP 后，五工具初始化及实际读取通过。没有删除或替换凭证；保留该过程，不把最初 ready 记成首次业务验收通过。API/MCP最终均 healthy、restart_count=0。窗口内 Web 被并行任务更新，已记录其容器变更；本任务 manifest 仅发布 API/MCP，不宣称所有其他容器 ID 未变。
+
+2026-11-13 北京时间约 **04:35–04:36** 的生产 stdio 验收：
+
+- summary 一次返回全部10个 ticker，约2.1秒、序列化样本约75KB；新 Runtime KPI 和真实抓取延时字段均存在。首次冷查询曾按截止时间返回7个 ticker及续页，不承诺每次一页覆盖全部。
+- 全局目录 **85 个源、320 条订阅**。5页（20/20/20/20/5）无重复/漏行；首请求约1.1秒，续页来自同次内存快照。85/320是本次快照，不写入实现常量。Calcalist 为 L1-05，AWS Platform Marketplace 为 L1-02；来源身份、生产/测试标识、分类和退役结果完全沿用 API，不推断 Massive 是其他源的正式替代。
+- `LONG_W3_DECISION` 正向命中 BE 的真实 Case；列表及详情均展示同一个标记和 **192秒 W3 模型耗时**。非模型耗时保持 null。与正常 Case 读取、五工具发现一起验证通过，没有读取全量 Case。
+- 当前十 ticker 的 `non_model_mean_seconds` 均是 `NOT_RECORDED`，这属于既有后端可靠锚点覆盖边界；MCP没有填0或用总耗时猜补。新增字段存在不代表历史记录均有可靠锚点。
+- summary 的四源 `checkpoint=head`，核验 error 均为空，最老待同步时间为 null；Runtime/Bus 最近已同步事件为近秒级事实，研究/初始化事件时间较早但源坐标同样追平。**只证明采样时追平已观察源头，不构成持续吞吐或源未产出证明。**
+- Runtime 历史缺口仍为 **17,204**，其他源为0，aggregate freshness保持 **STALE**。当前消费延迟与历史完整性分开返回，不据追平删除历史缺口或改成FRESH。
+
+证据目录：`artifacts/audits/agent_mcp_metrics_20261113/`，包含实际调用/字段/新鲜度、正向Case标记、部署与容器核验、57项测试收据。服务器私密回退快照位于 `/var/lib/doxagent/agent-mcp/metrics-20261113/`，不提交 state.before/compose.before 等私密配置。
+
+完成后刷新 ChatGPT 的 DoxAgent 插件工具列表，以获得 LONG_W3_DECISION 枚举和新的 sources 调用约束。本轮从实际部署 stdio 验证，不冒充已替 Dots 刷新或执行巡检。

@@ -2956,3 +2956,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Production acceptance: 9b055706e API/Web/Bus/BODY running; actual registry/API 85 sources and 275 subscriptions, zero retired bindings/profile references/active units, 42 source revisions preserved. QueryRunner reads 200 in 4.39s/0.91s, eight public assets checked, 94 related backend regressions and six browser tests passed; full 85-source layouts verified at both desktop widths. Cached dependencies reused; root free space recovered to 18.45GiB after governed release cleanup.
 
 2026-11-13 MCP指标与全局目录适配：沿用当前文章采样/Runtime后端口径，补真实抓取延时、长W3标记筛选及当前顶部KPI；sources改复用全部消息源目录并内存分页，内部只读凭证仅扩展该GET。发现并修复投影时钟opt-in请求头未透传query worker，保留旧客户端兼容与历史缺口语义。57项MCP/微信/目录/Bus回归及Ruff通过，生产验收另记。见docs/agent-mcp-metrics-source-catalog-adaptation-20261113.md。
+
+2026-11-13 MCP现状适配生产验收：76fd43173仅发布API/MCP，真实概览10 ticker、全局目录85源320订阅五页、BE长W3筛选及192秒详情一致通过；四源采样追平，17204历史gap与STALE保留，非模型时间仍NOT_RECORDED。修复canonical base缺原微信secret覆盖导致stdio启动失败，恢复挂载后五工具可用；并行Web变更单列，不重发Projector/交易。57项回归与详细证据见docs/agent-mcp-metrics-source-catalog-adaptation-20261113.md。

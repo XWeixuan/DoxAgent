@@ -1,0 +1,23 @@
+{
+  "roles": {
+    "v2-api": {
+      "image": "sha256:3f57b5f95f183414aa4a4473bb68403f3aaa850e9288cd7fcfd4a7fc336cd665",
+      "health": "healthy",
+      "restarts": 0
+    },
+    "v2-agent-mcp-tunnel": {
+      "image": "sha256:8f149bb8b53c195eb12767ce02a122a07849aaa7c013344c487104f397324a0f",
+      "health": "healthy",
+      "restarts": 0
+    }
+  },
+  "other_changed": [
+    "/doxagent-v2-v2-web-1"
+  ],
+  "mcp_mounts": [
+    "/home/mcp",
+    "/run/secrets/agent_read_token",
+    "/run/secrets/agent_tunnel_key",
+    "/run/secrets/agent_pushplus_token"
+  ]
+}
