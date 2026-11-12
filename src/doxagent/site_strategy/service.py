@@ -131,6 +131,8 @@ class ProfileUseCoordinator:
                 if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
             }
             for profile in (await registry_io(self.repository.list_profiles)):
+                if await registry_io(store.reconcile_resolved_profile, profile.profile_id):
+                    profile = await registry_io(self.repository.get_profile, profile.profile_id)
                 session = session_profiles.get(profile.profile_id)
                 if session:
                     (await registry_io(self.repository.save_profile,
@@ -305,6 +307,10 @@ class ProfileUseCoordinator:
     async def release_recovered(self, identity):
         async with self._condition:
             self._challenge_profiles.discard(identity.profile_id)
+            profile = await registry_io(self.repository.get_profile, identity.profile_id)
+            if (profile and profile.operational_state is ProfileOperationalState.AVAILABLE
+                    and self._maintenance_profile == identity.profile_id):
+                self._maintenance_profile = None
             self._condition.notify_all()
 
     @asynccontextmanager
@@ -967,6 +973,16 @@ class SiteStrategyService:
 
             driver_before = external.diagnostics() if maintenance_enabled() and external else None
             try:
+                from .governance_repository import GovernanceRepository
+                store = GovernanceRepository(self.repository)
+                for profile in await registry_io(self.repository.list_profiles):
+                    if profile.maintenance_session_id and await registry_io(
+                            store.reconcile_resolved_profile, profile.profile_id):
+                        task = await registry_io(store.get_challenge, profile.maintenance_session_id)
+                        identity = await registry_io(self.repository.get_identity,
+                            task.identity_id if task else profile.challenge_identity_id or "")
+                        if identity:
+                            await self.profile_use.release_recovered(identity)
                 await self.runtime.browser_runtimes.close_idle()
                 # Real browser demand creates the runtime; periodic maintenance
                 # must not cold-start otherwise unused source identities.
