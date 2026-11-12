@@ -20,6 +20,7 @@ GLOBAL = {
     "/overview/openrouter-balance",
     "/overview/metrics",
     "/overview/operations",
+    "/message-bus/source-catalog",
     "/audit/cost/report",
 }
 TICKER_READ = re.compile(

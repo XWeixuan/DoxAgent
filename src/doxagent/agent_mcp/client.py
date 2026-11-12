@@ -79,7 +79,7 @@ class ApiClient:
     def __init__(self, base_url, token, *, transport=None):
         self.client = httpx.AsyncClient(
             base_url=base_url.rstrip("/") + "/api/doxagent/v2/",
-            headers={"Authorization": "Bearer " + token},
+            headers={"Authorization": "Bearer " + token, "X-DoxAgent-Projection-Clock": "1"},
             timeout=httpx.Timeout(12, connect=3),
             follow_redirects=False,
             transport=transport,

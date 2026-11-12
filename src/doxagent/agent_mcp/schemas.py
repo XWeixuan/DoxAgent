@@ -19,6 +19,7 @@ Result = Literal[
     "TRADE_EXECUTION",
     "TRADE_NOT_EXECUTED",
     "FAILURE",
+    "LONG_W3_DECISION",
 ]
 
 
@@ -39,8 +40,10 @@ class OverviewInput(ReadInput):
 
     @model_validator(mode="after")
     def scope_fields(self):
-        if self.section in {"sources", "policy"} and not self.ticker:
-            raise ValueError("ticker is required for sources/policy")
+        if self.section == "policy" and not self.ticker:
+            raise ValueError("ticker is required for policy")
+        if self.section == "sources" and (self.ticker or self.period or self.view_id):
+            raise ValueError("sources is the global live catalog, without ticker/period/view_id")
         if self.section == "summary" and (self.ticker or self.period == "ALL"):
             raise ValueError("summary uses all tickers and bounded Overview periods")
         if self.section in {"cost", "policy"} and self.cursor:
@@ -105,7 +108,8 @@ TOOLS = {
     "doxagent_get_overview": (
         OverviewInput,
         "Read existing operational KPIs across DoxAgent. Start with section=summary; "
-        "sources/cost/policy are bounded, on-demand KPI sections. "
+        "sources reads the global All Sources catalog, without ticker/period/view_id; "
+        "continue with the same limit and cursor. cost/policy are on-demand KPI sections. "
         "No Case records or message bodies.",
     ),
     "doxagent_list_cases": (

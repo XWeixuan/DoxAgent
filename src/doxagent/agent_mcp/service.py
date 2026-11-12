@@ -71,7 +71,11 @@ class AgentReads:
                 async with self.capacity:
                     self.waiting -= 1
                     admitted = True
-                    return await self._dispatch(name, args)
+                    result = await self._dispatch(name, args)
+                    view = result.get("meta", {}).get("view_id")
+                    if view in self.contexts and "projection" in self.contexts[view]:
+                        result["meta"]["projection"] = self.contexts[view]["projection"]
+                    return result
         except TimeoutError as exc:
             raise ReadError(
                 "QUERY_TIMEOUT", "Read deadline reached; retry a bounded query.", retryable=True
@@ -117,6 +121,7 @@ class AgentReads:
             )
             ctx = data(wire)
         self.contexts[ctx["view_id"]] = p.pick(ctx, "view_id", "page", "ticker", "period")
+        self.contexts[ctx["view_id"]]["projection"] = p.projection_clock(ctx.get("projection", []))
         while len(self.contexts) > 64:
             self.contexts.popitem(last=False)
         return self.contexts[ctx["view_id"]]
@@ -170,6 +175,33 @@ class AgentReads:
 
     async def _overview(self, args, name):
         section = args["section"]
+        if section == "sources":
+            wire = await self.api.get("message-bus/source-catalog")
+            catalog = data(wire)
+            sectors = [p.pick(s, "id", "name") for s in catalog["sectors"]]
+            groups = ["GLOBAL", *[s["id"] for s in sectors], "UNKNOWN", "UNUSED", "TEST"]
+
+            def order(row):
+                c = row.get("classification")
+                group = (
+                    "TEST" if row["delivery_mode"] == "test" else
+                    "UNUSED" if not row["enabled"] or not any(
+                        s["enabled"] for s in row["subscriptions"]) else
+                    "UNKNOWN" if not c else "GLOBAL" if c["applicability"] == "GLOBAL" else
+                    next(iter(c["sector_ids"]), "UNKNOWN")
+                )
+                return (groups.index(group) if group in groups else groups.index("UNKNOWN"),
+                        row["name"], row["source_id"])
+
+            snapshot = "catalog." + str(int(time.time()) + 900)
+            return self._page({
+                "items": [p.catalog_row(r) for r in sorted(catalog["sources"], key=order)],
+                "params": {"limit": args["limit"]}, "more": False, "view": snapshot,
+                "period": None, "snapshot_id": catalog["snapshot_at"], "meta": metadata(wire),
+                "extra": {"section": section, "snapshot_at": catalog["snapshot_at"],
+                          "semantic_day": catalog["semantic_day"], "sectors": sectors},
+                "fingerprint": fingerprint(name, args),
+            })
         page = {
             "summary": "OVERVIEW",
             "sources": "MESSAGE_BUS",
@@ -230,7 +262,7 @@ class AgentReads:
                 },
                 "meta": metadata(wire),
             }
-        extra = {"section": section}
+        extra = {"section": section, "projection": ctx.get("projection", [])}
         if section == "summary":
             extra["status"] = await self._optional(
                 "overview/status",
@@ -298,8 +330,11 @@ class AgentReads:
             },
             "meta": state["meta"],
         }
+        context = self.contexts.get(state["view"], {})
+        if "projection" in context:
+            result["meta"] = {**result["meta"], "projection": context["projection"]}
         remaining = list(state["items"])
-        while remaining:
+        while remaining and len(result["data"]["items"]) < state["params"]["limit"]:
             result["data"]["items"].append(remaining[0])
             if len(encoded(result)) > MAX_RESULT_BYTES - 1024:
                 result["data"]["items"].pop()
@@ -393,6 +428,8 @@ class AgentReads:
             self._bind_nested(projected["messages"], "messages", case, view, ctx, name, wire)
         projected = self._defer(projected, case, view)
         result = {"data": {**case, "part": part, **projected}, "meta": metadata(wire)}
+        if "projection" in ctx:
+            result["meta"]["projection"] = ctx["projection"]
         if len(encoded(result)) > MAX_RESULT_BYTES:
             handle = self.state.put(
                 "content",
