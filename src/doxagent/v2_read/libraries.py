@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from doxagent.api_v2.dto import validate
-from doxagent.event_library.contracts import CanonicalFact
+from doxagent.event_library.contracts import CanonicalFact, CanonicalObjectStatus
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.event_library.repository import EventLibraryError, EventLibraryRepository
 
@@ -28,6 +28,8 @@ class LibraryIndexer:
         if index is None or index.published_at is None:
             raise ValueError("PINNED_ARTIFACT_MISSING")
         db = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=2)
+        db.row_factory = sqlite3.Row
+        native._require_native_version(db, ticker, version)
         records = []
         try:
 
@@ -68,7 +70,7 @@ class LibraryIndexer:
             for (event_number,) in event_numbers:
                 event_records = []
                 try:
-                    event = native.get_event(ticker, f"E{event_number}", version)
+                    event = native._event_from_connection(db, ticker, event_number, version)
                     if event is None:
                         raise EventLibraryError(f"Event E{event_number} is missing")
                     value = event.model_dump(mode="json")
@@ -134,7 +136,10 @@ class LibraryIndexer:
                         fact.pop("entities", None)
                         # Old published rows omit nullable occurrence fields; expose explicit nulls.
                         fact = CanonicalFact.model_validate(fact).model_dump(mode="json")
-                        state = native.fact_status(ticker, fact["fact_id"], version)
+                        state_row = db.execute(
+                            'SELECT status,redirect_to_fact_no FROM canonical_fact_states WHERE ticker=? AND fact_no=? AND library_version<=? ORDER BY library_version DESC LIMIT 1',
+                            (ticker, fact_number, version)).fetchone()
+                        state = (CanonicalObjectStatus(state_row[0]), state_row[1]) if state_row else None
                         fact_key = birth("canonical_facts", int(fact["fact_id"][1:]))
                         fact_revision = hashlib.sha256(
                             encode([fact_key, fact]).encode()
@@ -200,3 +205,72 @@ class LibraryIndexer:
             return reference, records
         finally:
             db.close()
+
+    def _identities(self, ticker, version):
+        path=self.root/'US'/ticker/'event_library.sqlite3'
+        with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:
+            row=db.execute('SELECT published_at FROM library_versions WHERE ticker=? AND version=?',(ticker,version)).fetchone()
+            if not row or not row[0]:raise ValueError('PINNED_ARTIFACT_MISSING')
+            ids={(c,k):v for c,k,v in db.execute("SELECT collection,native_key,identity FROM v2_native_identities WHERE collection IN ('library_versions','canonical_events','canonical_facts')")}
+        return ids
+
+    def ensure(self, store, ticker, version):
+        ids=self._identities(ticker,version)
+        snapshot=ids.get(('library_versions',encode([ticker,version])))
+        if snapshot is None:raise ValueError('BIRTH_IDENTITY_NOT_INDEXED')
+        ref=store.get('library',ticker,snapshot)
+        proof={'root':str(self.root),'version':version,'snapshot':snapshot,'contract':1}
+        marker=materialization(ticker,'library:'+snapshot,proof)
+        prior=store.get('projection_materialization',ticker,marker['id'])
+        if ref and ref.get('library_version')==version and prior==proof:return ref,[]
+        if ref and ref.get('library_version')==version:
+            path=self.root/'US'/ticker/'event_library.sqlite3'
+            with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:
+                events=[n for n, in db.execute('SELECT event_no FROM canonical_events WHERE ticker=? AND created_version<=?',(ticker,version))]
+                pairs=list(db.execute('SELECT DISTINCT event_no,fact_no FROM event_fact_memberships WHERE ticker=? AND valid_from_version<=?',(ticker,version)))
+            expected=[]
+            for n in events:
+                parent=snapshot+':E'+str(n)
+                expected.extend([('event',ticker,parent),('event_detail',ticker,parent)])
+            for event,fact in pairs:
+                key=ids.get(('canonical_facts',encode([ticker,fact])))
+                if key is None:raise ValueError('BIRTH_IDENTITY_NOT_INDEXED')
+                expected.append(('fact',ticker,snapshot+':E'+str(event)+':'+key))
+            if present(store,expected):return ref,[marker]
+        ref,records=self.index(ticker,version)
+        return ref,[*records,marker]
+
+    def reference(self, store, ticker, captured):
+        version=captured['version']
+        if not version:return None,[],{},{}
+        ref,records=self.ensure(store,ticker,version)
+        ids=self._identities(ticker,version)
+        events={e['event_id'] for e in captured['events']}
+        facts={f['fact_id'] for e in captured['events'] for f in e['facts']}
+        path=self.root/'US'/ticker/'event_library.sqlite3'
+        with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:
+            visible_events={n for n, in db.execute('SELECT event_no FROM canonical_events WHERE ticker=? AND created_version<=?',(ticker,version))}
+            visible_facts={n for n, in db.execute('SELECT fact_no FROM canonical_facts WHERE ticker=? AND created_version<=?',(ticker,version))}
+        by_id={};fact_keys={}
+        for name in events:
+            key=ids.get(('canonical_events',encode([ticker,int(name[1:])])))
+            if key is None or int(name[1:]) not in visible_events:raise ValueError('BIRTH_IDENTITY_NOT_INDEXED')
+            by_id[name]={'event_key':key}
+        for name in facts:
+            key=ids.get(('canonical_facts',encode([ticker,int(name[1:])])))
+            if key is None or int(name[1:]) not in visible_facts:raise ValueError('BIRTH_IDENTITY_NOT_INDEXED')
+            fact_keys[name]=key
+        return ref,records,by_id,fact_keys
+
+
+def materialization(ticker, identity, proof):
+    identity=hashlib.sha256(encode([identity,proof]).encode()).hexdigest()
+    return dict(kind='projection_materialization',ticker=ticker,id=identity,data=proof)
+
+
+def present(store, requests):
+    requests=list(dict.fromkeys(requests))
+    if not requests:return True
+    with store.connect() as db:
+        n=db.execute("SELECT count(*) FROM json_each(?) q JOIN object_current c INDEXED BY current_identity ON c.kind=json_extract(q.value,'$[0]') AND c.ticker=json_extract(q.value,'$[1]') AND c.id=json_extract(q.value,'$[2]')",(encode(requests),)).fetchone()[0]
+    return n==len(requests)

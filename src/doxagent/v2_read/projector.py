@@ -26,6 +26,8 @@ class ProjectionWorker:
         self._acknowledgements = {}
         self._next_repair = 0.0
         self.timings = {}
+        self.store.projection_timings = self.timings
+        self._slow_window = (0.0, 0)
 
     def tick(self, *, limit: int = 100) -> int:
         session = self.store.projection_session() if hasattr(self.store, "projection_session") else nullcontext()
@@ -177,6 +179,17 @@ class ProjectionWorker:
                     at=event["recorded_at"],
                 )
                 self.timings["ingest_seconds"] = self.timings.get("ingest_seconds", 0) + time.perf_counter() - stage
+                dimensions=self.timings.setdefault('sources',{})
+                totals=dimensions.setdefault(source.source,{'events':0,'records':0,'seconds':0})
+                elapsed=time.perf_counter()-load_started
+                totals['events']+=1;totals['records']+=len(records);totals['seconds']+=elapsed
+                if elapsed>1:
+                    window,n=self._slow_window
+                    if time.monotonic()-window>=60:window,n=time.monotonic(),0
+                    if n<5:
+                        print(json.dumps({'projection_slow':{'source':source.source,'table':event.get('table_name'),'namespace':event.get('row',{}).get('namespace'),'seq':coordinate,'records':len(records),'seconds':elapsed}}),flush=True)
+                        n+=1
+                    self._slow_window=(window,n)
                 skipped = None
             except sqlite3.IntegrityError as exc:
                 if str(exc) != 'ARTIFACT_RECLAIM_IN_PROGRESS':
@@ -276,5 +289,6 @@ def native(event: dict[str, Any]) -> dict[str, Any]:
         if name in row and isinstance(row[name], str):
             value = json.loads(row[name])
             if isinstance(value, dict):
+                if row.get('namespace')=='reference_deliveries':event['native_value']=value
                 return value
     return row

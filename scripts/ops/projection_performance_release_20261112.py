@@ -16,7 +16,7 @@ ROOT=Path('/var/lib/doxagent/releases')
 REPO='/home/ubuntu/doxagent'
 CONTAINER='doxagent-v2-v2-projector-1'
 FILES=['src/doxagent/v2_read/'+n for n in
-       ('projector.py','cli.py','outbox.py','native_content.py','executions.py','source_lifecycle.py')]
+       ('projector.py','repository.py','libraries.py','reference.py','formal.py','artifacts.py','lifecycle.py','projectors.py')]
 
 def git(commit,path):
     return subprocess.check_output(['sudo','-u','ubuntu','git','-C',REPO,'show',commit+':'+path])

@@ -4,7 +4,7 @@ from hashlib import sha256
 
 from doxagent.api_v2.dto import validate
 
-from .libraries import LibraryIndexer
+from .libraries import LibraryIndexer, materialization, present
 from .lifecycle import changed_paths
 from .repository import encode
 
@@ -26,21 +26,20 @@ def project(store, value):
     for side in ("before", "after"):
         captured = value[side]
         snapshot_ids[side] = sha256(encode([ticker, captured]).encode()).hexdigest()
-        ref, indexed = (
-            LibraryIndexer(value.get(side + "_root", value["root"])).index(
-                ticker, captured["version"]
-            )
-            if captured["version"]
-            else (None, [])
-        )
+        ref,indexed,by_id,facts = LibraryIndexer(value.get(side + '_root',value['root'])).reference(store,ticker,captured)
         refs[side] = ref
         records.extend(indexed)
-        by_id = {r["data"]["event_id"]: r["data"] for r in indexed if r["kind"] == "event"}
-        facts = {
-            r["data"]["fact"]["fact_id"]: r["data"]["fact_key"]
-            for r in indexed
-            if r["kind"] == "fact"
-        }
+        proof={'root':str(LibraryIndexer(value.get(side + '_root',value['root'])).root), 'snapshot':snapshot_ids[side], 'library':ref, 'contract':1}
+        marker=materialization(ticker,'reference:'+snapshot_ids[side],proof)
+        ready=store.get('projection_materialization',ticker,marker['id'])==proof
+        if not ready:
+            expected=[]
+            for ev in captured['events']:
+                parent=snapshot_ids[side]+':'+ev['event_id']
+                expected.append(('reference_event',ticker,parent))
+                expected.extend(('fact',ticker,parent+':'+facts[f['fact_id']]) for f in ev['facts'])
+            ready=present(store,expected)
+        records.append(marker)
         events[side] = {}
         for event in captured["events"]:
             key = by_id[event["event_id"]]["event_key"]
@@ -54,10 +53,10 @@ def project(store, value):
                 "event_revision_id": revision,
                 "event": {k: v for k, v in event.items() if k != "facts"},
             }
-            records.append(
+            if not ready: records.append(
                 {"kind": "reference_event", "ticker": ticker, "id": parent, "data": detail}
             )
-            for ordinal, fact in enumerate(event["facts"]):
+            for ordinal, fact in enumerate(event["facts"] if not ready else []):
                 fact_key = facts[fact["fact_id"]]
                 records.append(
                     {

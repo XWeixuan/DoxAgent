@@ -84,6 +84,31 @@ class ArtifactIndexer:
             return self.expectations(bundle, lineage)
         raise ValueError("unsupported page research lane")
 
+    def ensure(self, run_id, ticker, *, lineage):
+        if not lineage:raise ValueError('PROVENANCE_UNVERIFIED')
+        bundle=self.source.record('bundles',run_id,run_id)
+        if bundle['ticker']!=ticker or bundle['status']!='published':raise ValueError('PINNED_ARTIFACT_MISSING')
+        from .libraries import materialization
+        ref=self.store.get('document_ref',ticker,run_id)
+        marker=materialization(ticker,'document:'+run_id,{'root':str(self.source.path),'reference':ref,'contract':1}) if ref else None
+        key='document_artifact_id' if bundle['research_lane']=='global_research' else 'document2_artifact_id'
+        artifact_id=bundle['handoff'][key]
+        artifact=self.source.record('artifacts',artifact_id,run_id)
+        verified=ref and ref['artifact_id']==artifact_id and ref['content_sha256']==artifact['sha256'] and artifact['published']
+        if verified and marker and self.store.get('projection_materialization',ticker,marker['id'])==marker['data']:
+            kind='research' if bundle['research_lane']=='global_research' else 'expectations_index'
+            summary=self.store.get(kind,ticker,run_id)
+            if summary is not None:
+                run_kind='research_run' if kind=='research' else 'expectations_run'
+                return [dict(kind='document_ref',ticker=ticker,id=run_id,data=ref),
+                        dict(kind='artifact_lineage',ticker=ticker,id=run_id,data={'lineage':lineage}),
+                        dict(kind=kind,ticker=ticker,id=run_id,data=summary),
+                        dict(kind=run_kind,ticker=ticker,id=run_id,data=self.run(bundle),sort=timestamp(bundle['published_at']))]
+        records=self.index(run_id,ticker,lineage=lineage)
+        ref=next(r['data'] for r in records if r['kind']=='document_ref')
+        records.append(materialization(ticker,'document:'+run_id,{'root':str(self.source.path),'reference':ref,'contract':1}))
+        return records
+
     @staticmethod
     def run(bundle: dict[str, Any]) -> dict[str, Any]:
         return {

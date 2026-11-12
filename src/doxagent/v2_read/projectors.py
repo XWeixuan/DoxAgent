@@ -439,24 +439,27 @@ class DomainProjectors:
             from .lifecycle import direction_evidence, direction_summary, rows
 
             evidence = direction_evidence(self.store, ticker)
-            for key, summary in rows(self.store, "policy_catalog", ticker).items():
+            for key, summary in rows(self.store, "policy_catalog", ticker, identity_prefix=value["policy_id"]).items():
                 if summary["policy_id"] == value["policy_id"] and "directions" in summary:
                     summary = direction_summary(self.store, ticker, summary, pending_state=value, evidence=evidence)
                     records.append(dict(kind="policy_catalog", ticker=ticker, id=key, data=summary))
         elif table == "runtime_values" and row["namespace"] == "policy_authorization_head":
             from .lifecycle import direction_evidence, direction_summary, rows
 
-            evidence = direction_evidence(self.store, ticker)
-            for key, summary in rows(self.store, "policy_catalog", ticker).items():
-                if "directions" in summary:
-                    records.append(
-                        dict(
-                            kind="policy_catalog",
-                            ticker=ticker,
-                            id=key,
-                            data=direction_summary(self.store, ticker, summary, admitted=True, evidence=evidence),
-                        )
-                    )
+            # Native entity watermarks fence stale repairs before deriving new
+            # policy state; skipped same-presence heads do not touch catalogs.
+            with self.store.connect() as db:
+                last=db.execute("SELECT position FROM entity_watermarks WHERE source=? AND kind='native:runtime_values' AND ticker=? AND id=?",(event.get('source','runtime'),ticker,'policy_authorization_head:'+ticker)).fetchone()
+            present=event['operation']!='DELETE'
+            proof=self.store.get('projection_materialization',ticker,'policy-head')
+            if (not last or last[0]<event['seq']) and (proof is None or proof.get('present')!=present):
+                evidence=direction_evidence(self.store,ticker)
+                evidence=(evidence[0],present,evidence[2])
+                for key, summary in rows(self.store, 'policy_catalog', ticker).items():
+                    if 'directions' in summary:
+                        records.append(dict(kind='policy_catalog',ticker=ticker,id=key,
+                                            data=direction_summary(self.store,ticker,summary,admitted=present,evidence=evidence)))
+                records.append(dict(kind='projection_materialization',ticker=ticker,id='policy-head',data={'present':present}))
         elif table == "v2_ticker_control":
             wire = state_wire(value)
             records.append({"kind": "ticker", "ticker": ticker, "id": ticker, "data": wire})
