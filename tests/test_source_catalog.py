@@ -95,6 +95,10 @@ def test_static_catalog_covers_registered_sources_and_valid_taxonomy():
         "primary": ["HTTP"],
         "fallback": [],
     }
+    assert catalog['sources']['bloomberg_massive']['body'] == {
+        'primary': ['CHROME_CDP'], 'fallback': [],
+    }
+    assert '测试' not in catalog['sources']['bloomberg_massive']['description']
     assert catalog["sources"]["globenewswire_massive"]["listing"] == {
         "primary": ["HTTP", "RSS"], "fallback": [],
     }

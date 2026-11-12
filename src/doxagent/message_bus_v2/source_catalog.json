@@ -284,10 +284,11 @@
       "sector_ids": []
     },
     "bloomberg_massive": {
-      "description": "Bloomberg 是全球财经新闻机构；采集 Latest 的最新新闻列表，供共享全量分发测试。",
+      "description": "Bloomberg 是全球财经新闻机构；通过 Latest 新闻列表与 Artemis HTTP 快照并行发现全球财经及企业新闻，使用持久化订阅 Chrome 读取完整正文，再由 Massive 专用正则分发至订阅 Ticker。",
       "entry_points": [
         "https://www.bloomberg.com/latest",
-        "https://www.bloomberg.com/lineup-next/api/stories?limit=25&pageNumber=1&locale=en&types=ARTICLE%2CFEATURE%2CINTERACTIVE%2CLETTER%2CEXPLAINERS"
+        "https://www.bloomberg.com/lineup-next/api/stories?limit=25&pageNumber=1&locale=en&types=ARTICLE%2CFEATURE%2CINTERACTIVE%2CLETTER%2CEXPLAINERS",
+        "https://www.bloomberg.com/artemis/oscillator/poll/2354663256724132"
       ],
       "listing": {
         "primary": [
@@ -297,7 +298,7 @@
       },
       "body": {
         "primary": [
-          "HTTP"
+          "CHROME_CDP"
         ],
         "fallback": []
       },
