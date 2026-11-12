@@ -77,4 +77,4 @@ Business Wire与TMX的有界探测：既有HTTP路径分别超时/401与202空�
 
 后续改Massive词库只改massive_l2并使用专用入口回放，不改普通L2。若发现串用、误升测试历史、重复发布或正文门槛问题，先停受影响Massive源/绑定；词库回滚使用当前revision合并旧massive_l2，保留并发变更的其他字段。代码回滚需保留新字段读取兼容。state/compose.before只供追溯，不能整份覆盖当前部署；期间已有并行API发布，回退应以当前compose为底只改目标角色。已发生正式投递保留审计，不倒退offset或批量删除。
 
-本功能已合入并推送origin/main（首次集成8ce986b3b）；交付时又合并保留并行Bloomberg正文改动（08949ceb8），补跑Massive/Bloomberg共同正文路径回归30通过、1可选fixture跳过。实现；不依赖临时镜像独自留存代码。远端当前角色使用窄overlay镜像，后续常规构建应以已更新的main为源码；不从旧远端checkout直接重建覆盖本功能。原DoxAgent工作区的未提交内容未改动。
+本功能已合入并推送origin/main（首次集成8ce986b3b）；交付时又合并保留并行Bloomberg正文改动（08949ceb8），补跑Massive/Bloomberg共同正文路径回归30通过、1可选fixture跳过。本功能不依赖临时镜像独自留存代码。远端当前角色使用窄overlay镜像，后续常规构建应以已更新的main为源码；不从旧远端checkout直接重建覆盖本功能。原DoxAgent工作区的未提交内容未改动。
