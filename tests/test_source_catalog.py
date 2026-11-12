@@ -284,8 +284,8 @@ def test_read_only_http_without_view_and_strict_parameters(tmp_path, monkeypatch
     ) as client:
         url = PREFIX + "/message-bus/source-catalog"
         assert client.get(url).status_code == 401
-        # The existing internal MCP credential retains its explicit route scope.
-        assert client.get(url, headers={"Authorization": "Bearer offline"}).status_code == 403
+        # The internal credential now permits only this catalog GET, never writes.
+        assert client.get(url, headers={"Authorization": "Bearer offline"}).status_code == 200
         auth.read_only = False
         response = client.get(url, headers={"Authorization": "Bearer offline"})
         assert response.status_code == 200, response.text

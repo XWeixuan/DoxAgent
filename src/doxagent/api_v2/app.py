@@ -224,7 +224,7 @@ def create_app(
                     "request_id": request.state.request_id, "route": route,
                     "gateway_status": await app.state.gateway_monitor.status() if path.endswith("/overview/gateway-status") else None,
                     "body": request._body if request.method != "GET" else None,
-                    "headers": {k: v for k, v in request.headers.items() if k in {"if-none-match", "if-match", "idempotency-key", "accept", "content-type"}},
+                    "headers": {k: v for k, v in request.headers.items() if k in {"if-none-match", "if-match", "idempotency-key", "accept", "content-type", "x-doxagent-projection-clock"}},
                 }
                 deferred = request.method == "GET" and bool(request.query_params.get("q")) and path.endswith("/metrics")
                 if deferred:
