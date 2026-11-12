@@ -1109,7 +1109,11 @@ def _verification_document(html, url, status, headers, resolved, request, *, rec
     from .challenge_detection import assess
     from .verification import validate_capture, validate_crawler_capture
 
-    info = inspection or inspect_html(html, url, "", generic_extraction=resolved.site_id != "barrons")
+    # Access classification needs DOM/access evidence. Keep expensive generic
+    # body extraction in the final body validator, once per accepted capture.
+    info = inspection or inspect_html(html, url, "", generic_extraction=resolved.site_id not in {
+        "barrons", "investing", "investorshub",
+    })
     legacy_blocked = info.access_reason == "challenge_required"
     sample = assess(html, status=status, headers=headers, policy=resolved.challenge, blocked=legacy_blocked)
     if sample.kind == "NONE":

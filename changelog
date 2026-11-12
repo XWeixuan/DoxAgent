@@ -2984,3 +2984,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-13 Investing latency/correctness: trace slow country-edition articles to Google handoff separately from native ticker lists; fresh-query comparison is DYNAMIC/no-store with identical stories. Scope expansion detection to the real article and stop treating links to other Investing country-edition stories as this story's original. Preserve real external originals and paywalls, no polling-frequency or publication-time changes.
 2026-11-13 Bloomberg subscriber BODY acceptance: four designated subscription articles and five distinct natural background articles yielded visible FULL; four new FULL test publications stayed isolated, with zero formal raw/standard messages or ticker bindings. Final deployed BODY build eb010079c loads the 35s budget and completed its bounded smoke in 9.463s. Preserve one release-window connection failure, legacy PARTIAL history and unpassed cross-day stability/80% statistical acceptance. Sanitized receipts and report archived.
+
+## 2026-11-13 InvestorsHub 正文预算与访问判定开销
+- InvestorsHub 默认浏览器正文阶段设为12秒，生产Registry revision17同步应用；总预算20秒不变，避免8秒截断实际可成功的备用Chrome请求。
+- Investing/InvestorsHub安全验证判定不再重复运行通用正文抽取；保留DOM/验证分类与最终正文质量校验。两篇真实正文FULL，5.29–5.61秒；59项正文/验证回归、21项ticker列表测试和32项维护回归通过。

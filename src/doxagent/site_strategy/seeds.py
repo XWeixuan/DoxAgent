@@ -431,6 +431,7 @@ def seed_specs() -> list[SiteStrategySpec]:
             verification_kind="public_access",
             access_order=["browser"],
             body_parameters={
+                "browser_timeout_seconds": 12,
                 "body_xpath": [
                     '//*[@id="news-content"]',
                     '//*[@id="articleBody"]',
