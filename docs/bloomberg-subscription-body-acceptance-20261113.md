@@ -19,6 +19,7 @@
 - 原始 HTML、隐藏订阅段落、预览、canonical 不符、付费墙或不支持模板不能成为 FULL。已验证完整的短付费文章允许 SHORT_FULL。
 - 正文复用沿用已有 publisher entitlement scope，将 Bloomberg 从 public 改为 `scope:publisher:bloomberg.com`，避免以前公共链路取得的预览/未验证 FULL 被当作订阅全文复用。不批量重抓历史，不以历史标签冒充新版本验收。
 - Challenge 沿用现有证据和人工维护流程；不增加无效公共 HTTP/Reader 回退、验证绕过或反复重试。不新增服务、常驻页面或浏览器身份。
+- 实测服务重启后首篇完整访问需要 23.885 秒，超过普通文章的 20 秒总预算。因此仅 Bloomberg 采用 35 秒总预算、30 秒 browser 阶段预算；并发仍为 1，不修改其他源预算或列表调度。这避免冷启动时已获得全文却被外层提前取消。
 
 ## 真实订阅观察
 

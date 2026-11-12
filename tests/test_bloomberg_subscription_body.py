@@ -48,6 +48,11 @@ def test_live_resolved_cache_checks_visible_body_proof(tmp_path, verified):
     queue.repository.accept(rows)
     stored = queue.repository.get(rows[0]['key'])
     message = RawMessageInput.model_validate(queue.repository.load(stored['input_ref']))
+    with repo.transaction() as db:
+        db.execute("UPDATE live_articles SET first_fetch_at=? WHERE article_key=?",
+                   (utc_now().isoformat(), rows[0]['key']))
+    job = queue._job(rows[0]['key'], stored['input_revision'], 'budget-test')
+    assert job.fetch_budget_seconds == 35
     meta = {'outcome': 'FULL', 'candidate_summary': [
         {'method': 'bloomberg_visible_dom' if verified else 'article_dom', 'structured': True}]}
     result = message.model_copy(update={'body': PARAGRAPH*8, 'metadata': {**message.metadata, 'media_enrichment': meta}})
