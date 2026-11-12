@@ -498,8 +498,6 @@ class SourceOutbox:
 
     def event(self, sequence: int, *, decode: bool = True, connection=None, pack_cache=None, serving=False, projection=False) -> dict[str, Any] | None:
         def packet(value):
-            if serving and value["table_name"] == "runtime_v2_effects":
-                return {**value, "row": {}, "serving_skipped": True}
             if not decode:
                 return dict(value)
             row = json.loads(value['payload'])
@@ -509,6 +507,11 @@ class SourceOutbox:
             for column in ('payload', 'payload_json', 'inputs', 'receipt', 'data_json'):
                 if isinstance(row.get(column), (dict, list)):
                     row[column] = json.dumps(row[column], ensure_ascii=False, separators=(',', ':'))
+            if serving and value['table_name'] == 'runtime_v2_effects':
+                thin = self.content.projection_effect(row['payload_json'])
+                if not thin['payload']:
+                    return {**value, 'row': {}, 'serving_skipped': True}
+                return {**value, 'row': row, 'native_value': thin}
             if serving and value['table_name'] == 'runtime_values':
                 from .serving_fields import VALUE_NAMES
                 used = VALUE_NAMES | {'policy_direction_usage', 'worker_invocations',
@@ -525,12 +528,6 @@ class SourceOutbox:
             return {**value, 'row': self.content.source_row(row)}
         db = connection if connection is not None else self.connection()
         try:
-            if serving and self.source == "runtime":
-                header = db.execute("SELECT * FROM v2_source_outbox WHERE seq=?", (sequence,)).fetchone()
-                if header and header["table_name"] == "runtime_v2_effects":
-                    # No Serving consumer uses effect payloads. Source receipts
-                    # and Worker/W3 inputs remain untouched and fully readable.
-                    return {**dict(header), "row": {}, "serving_skipped": True}
             from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
             if decode and self.source=='bus' and enabled():
                 header=db.execute('SELECT * FROM v2_source_outbox WHERE seq=?',(sequence,)).fetchone()
