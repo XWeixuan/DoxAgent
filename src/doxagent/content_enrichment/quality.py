@@ -477,6 +477,11 @@ def inspect_html(
         if EXPAND.fullmatch(label) or re.search(
             r"read (?:the )?(?:original|full) article|view original", label, re.I
         ):
+            if (publisher_host(url) == publisher_host(href) == "investing.com"
+                    and urlparse(href).path.rstrip("/") != urlparse(url).path.rstrip("/")):
+                # Country editions link to other stories with "Read more".
+                # A brand-local reference is not the original of this article.
+                continue
             if urlparse(href).hostname != urlparse(url).hostname:
                 result.publisher_links.append(href)
             elif urlparse(href).path == urlparse(url).path:

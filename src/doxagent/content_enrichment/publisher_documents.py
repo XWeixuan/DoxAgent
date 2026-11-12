@@ -216,6 +216,12 @@ def apply_document(
                 candidate_type(text, "barrons_article_paragraphs", True, info.headline, 35,
                                **({"complete": True} if rendered and info.access_reason is None else {}))
             ]
+    if publisher == "investing.com":
+        article = root.xpath('//*[@id="article"]|//*[@data-test="article-content"]')
+        if article:
+            # Expansion evidence belongs to the news body. The surrounding page
+            # has unrelated recommendation and account-promotion controls.
+            return article[0]
     if publisher == "investors.com":
         if "/ibd-videos/" in path:
             nodes = root.xpath(
