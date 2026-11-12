@@ -169,3 +169,18 @@ class NativeContent:
             self._projection_frozen.move_to_end(key)
         value['frozen_inputs'] = json.loads(cached)
         return self.decode(value)
+
+    def projection_effect(self, raw):
+        """Read the effective clock without hydrating execution inputs/results."""
+        value = json.loads(raw)
+        if value.get('effect_type') != 'route_to_w3' or value.get('status') != 'COMPLETED':
+            return {'payload': {}}
+        payload = value.get('payload') or {}
+        if MARKER in payload:
+            packed = self.files.read_all(payload[MARKER])
+            if len(packed) != payload['bytes']:
+                raise ContentUnavailable()
+            payload = json.loads(packed)
+        return {**{k: value.get(k) for k in ('effect_id', 'case_id', 'effect_type')},
+                'payload': {'decision_effective_at': payload['decision_effective_at']}
+                if payload.get('decision_effective_at') else {}}

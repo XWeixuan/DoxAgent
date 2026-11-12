@@ -434,6 +434,8 @@ class RuntimeRecallOpenRouterClient:
                 provider_usage={**usage, "response_provider": observed_provider},
             )
 
+        from . import model_clock
+        model_clock.start()
         try:
             with self._client.stream(
                 "POST",
@@ -509,6 +511,9 @@ class RuntimeRecallOpenRouterClient:
                 retryable=True,
                 usage=receipt(),
             ) from exc
+
+        finally:
+            model_clock.stop()
 
         raw = "".join(content)
         if not response_id or not raw.strip() or finish_reason != "stop":

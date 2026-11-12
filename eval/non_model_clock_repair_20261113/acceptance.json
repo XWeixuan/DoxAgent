@@ -1,0 +1,57 @@
+{
+  "roles": {
+    "v2-scheduler": {
+      "id": "7a7eb5d0fe6a",
+      "started": "2026-11-12T21:59:30.337641923Z",
+      "restarts": 0,
+      "commit": "addfc7da36e35d6f0e9905a86e9c6b792de0cca9"
+    },
+    "v2-projector": {
+      "id": "7ff81bdf1c26",
+      "started": "2026-11-12T21:59:45.175996973Z",
+      "restarts": 0,
+      "commit": "addfc7da36e35d6f0e9905a86e9c6b792de0cca9"
+    }
+  },
+  "new_haiku_successful_calls": 11,
+  "new_haiku_complete_clocks": 11,
+  "metric": {
+    "metric_id": "non_model_mean_seconds",
+    "unit": "SECONDS",
+    "current": {
+      "state": "AVAILABLE",
+      "value": "23.464991999999995",
+      "reason": null
+    },
+    "previous": {
+      "state": "NOT_RECORDED",
+      "value": null,
+      "reason": "NOT_RECORDED"
+    },
+    "change_pct": {
+      "state": "NOT_APPLICABLE",
+      "value": null,
+      "reason": "WINDOW_INCOMPLETE"
+    },
+    "current_coverage": {
+      "state": "UNKNOWN",
+      "reasons": [
+        "NOT_RECORDED"
+      ],
+      "known_count": null,
+      "excluded_count": null,
+      "observed_through": null
+    },
+    "previous_coverage": null,
+    "provisional": false
+  },
+  "verified_cases": [
+    {
+      "case_id": "case_668683b58fd543f9beef674242a6de2f",
+      "non_model_seconds": 23.464991999999995,
+      "effective_clocks": [
+        "2026-11-12T22:01:07.701338+00:00"
+      ]
+    }
+  ]
+}
