@@ -1,0 +1,109 @@
+{
+  "at": "2026-11-12T22:07:59.893357+00:00",
+  "source_id": "bloomberg_massive",
+  "before_mode": "test",
+  "tickers": [
+    "INTC",
+    "MU",
+    "BE",
+    "COHR",
+    "NBIS",
+    "CEG",
+    "RKLB",
+    "SNOW",
+    "ONDS",
+    "IONQ"
+  ],
+  "initialize_ionq_massive": true,
+  "source_version": 6,
+  "delivery_mode": "production",
+  "enabled": true,
+  "jev_enabled": false,
+  "require_complete_body": true,
+  "bindings": [
+    {
+      "ticker": "BE",
+      "binding_id": "BE:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "CEG",
+      "binding_id": "CEG:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "COHR",
+      "binding_id": "COHR:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "INTC",
+      "binding_id": "INTC:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "IONQ",
+      "binding_id": "IONQ:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "MU",
+      "binding_id": "MU:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "NBIS",
+      "binding_id": "NBIS:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "ONDS",
+      "binding_id": "ONDS:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "RKLB",
+      "binding_id": "RKLB:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    },
+    {
+      "ticker": "SNOW",
+      "binding_id": "SNOW:bloomberg_massive",
+      "enabled": true,
+      "source_version": 6
+    }
+  ],
+  "terms_revisions": {
+    "INTC": 6,
+    "MU": 8,
+    "BE": 5,
+    "COHR": 4,
+    "NBIS": 4,
+    "CEG": 4,
+    "RKLB": 5,
+    "SNOW": 4,
+    "ONDS": 6,
+    "IONQ": 4
+  },
+  "rules_sha256": {
+    "INTC": "8717788c0a76c1c7fbca924cf116eaeaa01bcfa61c46f26312750b73a41845b9",
+    "MU": "cf7a2ae14c1c28be0b901bf1573beb5f3b198136ecc5f14f3c0454066b1a29b1",
+    "BE": "ece304ffeaf67d2135cf230dfecbd17bd5d910da9db70ce082cbbd3d2322cb55",
+    "COHR": "6a9bec7aadef7fb2ad0f02a6bd7db8fba24b9399f4c7320725f0660cfd208b73",
+    "NBIS": "3373f07bc1bcffbbc12a356f152477b2b51059adff2019579aa929df1cd1bb20",
+    "CEG": "26baf18b4c0ba59ffb5b61b695e6197d5d169ee1791564937b01ea366ad1552f",
+    "RKLB": "03704fec6402bdc114e68a4090d8343b271db42339a251d9635e723e40c31fc1",
+    "SNOW": "77c3f22b30c91266f7a1ca169d8341b8826c450bb9445d9a4996eda1e04a87e9",
+    "ONDS": "2f9a5475a6820428c92d85440cc9edf945508324813ce5434701194bd7b9ed4e",
+    "IONQ": "18b021f174e9a7bf763292bdf767321acaa4d9a1a6d5bac1cb0c7002d097ff9b"
+  }
+}
