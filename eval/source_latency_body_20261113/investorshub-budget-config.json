@@ -1,3 +1,1 @@
 {"site": "investorshub", "old_revision": 16, "new_revision": 17, "before_browser_seconds": 8, "after_browser_seconds": 12, "access_order": ["browser", "http_public", "reader"]}
-
-
