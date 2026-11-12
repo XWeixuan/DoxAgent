@@ -28,7 +28,7 @@
 
 这证明“文档可以访问而业务API不可访问”的即时分层失败；尚不能证明整个Challenge曾完全解除再复发，因为API从未取得成功证明。
 
-2Captcha官方DataDome任务返回的是Cookie，客户端写Cookie并使用原会话继续访问就是现有契约，不存在已证实的“漏发一个本地验证POST”。Provider内部是否收到验证端点的接受回执不在现有API结果字段中。一次只读 `getTaskResult` 尝试获取该旧task的历史结果，返回 `ERROR_NO_SUCH_CAPCHA_ID`；不把它改记为当时任务失败，也未重新购买或重新应用Cookie。原Cookie无法事后恢复，需前瞻指纹。
+2Captcha官方DataDome任务返回的是Cookie，客户端写Cookie并使用原会话继续访问就是现有契约，不存在已证实的“漏发一个本地验证POST”。Provider内部是否收到验证端点的接受回执不在现有API结果字段中。一次只读 `getTaskResult` 尝试获取该旧task的历史结果，返回 `ERROR_NO_SUCH_CAPCHA_ID`；不把它改记为当时任务失败，也未重新购买或重新应用Cookie。这只能证明本次查询取不到结果，未证明是过期、保留策略还是其他查询归属问题；原Cookie无法事后恢复，需前瞻指纹。
 
 ## 2. 当前401的确切归属
 
@@ -48,7 +48,7 @@
 - 当前两者都只有一个 `.reuters.com` `/` DataDome Cookie、Secure=true、HttpOnly=false、无分区；ddSession localStorage均不存在，未见sessionByHeader配置。可排除当前重复Cookie/强制HttpOnly/旧ddSession覆盖的明显证据，但不能排除应用瞬间曾发生覆盖。
 - Main/Backup都有ArcP；Cookie存在和Registry VALID不能证明账号服务端仍接受认证。当前拒绝先发生在DataDome边缘，不能靠重登录直接归因/修复。
 - 私有配置静态核对：2Captcha认证账号绑定的Squid父代理与对应Chrome所用Clash listener一致；Main18083，Backup18080。Squid无TLS bump、never_direct开启。Chrome看到的remote_ip=172.18.0.3是本地代理端，不是公网出口；同出口依据是已有Registry观测加实际父代理绑定，而非该remote_ip。
-- 历史付费窗口中，Provider来源确有多个认证成功的CONNECT/200隧道和约MB级流量，因此不是完全没有走本机代理。同时还有多条CONNECT/403，旧日志没有目标域名，不能区分被拒的是广告、验证码必要依赖还是其他目标，不能忽略，也不能认定它已造成求解失败。
+- 历史付费窗口中，Provider来源确有多个认证成功的CONNECT/200隧道和约MB级流量，因此不是完全没有走本机代理；CONNECT/200仅证明隧道建立，不是验证码验证端点的HTTP接受回执。同时还有多条CONNECT/403，旧日志没有目标域名，不能区分被拒的是广告、验证码必要依赖还是其他目标，不能忽略，也不能认定它已造成求解失败。
 - 2Captcha getTaskResult的ip按官方定义是提交任务请求的IP，不是验证码求解出口，不能用它冒充同出口证明。
 
 ## 4. 本轮落实的最小取证修补
@@ -91,3 +91,15 @@
 初次最小取证发布bb8ec6501于UTC23:19:56完成，15模块摘要一致，Supervisor未重建；此前另一维护于23:08:59更新过Site Access，不混为本轮发布或浏览器重建。Squid -k reconfigure因前台PID=1拒绝执行，首次配置已回退；离线语法校验后改发官方HUP完成热加载，所有其他ACL/代理配置逐字未变、未重启代理。
 
 network-passive.json的response为头部快照，真正读取的原始错误正文摘要在wire_body；最终实现把无正文的header-only记录明确标为NONE。该一次性监听已退出，没有留下后台守候器。新application_evidence尚无自然APPLIED样本，不以离线通过或旧事件补写冒充真实成功分支。
+
+
+## 最终收尾
+
+最终取证源码73baf869d于UTC23:24:40发布，仅更新Site Access，15模块哈希匹配、服务healthy。23:26只读复核Main/Backup的Chrome实例和PID均未变，Main原target 1E4A70F5FA8B5D641C3B5E2ADF756662仍在，原页的reload Navigation Timing仍为200；无OPEN人工会话被关闭。代理容器启动时刻仍为11月9日、RestartCount=0，HUP只更新日志字段，没有重启、换路由或扩大ACL。
+
+发布后账本仍为77个留存付费task，最后一笔仍是22:09创建的84403569365，本轮取证期间新增付费task=0。一次旧结果getTaskResult只读查询没有调用createTask，没有将返回的查询错误写回生产任务。当前Main仍BACKOFF/待人工，Backup仍可用；不能把取证发布本身视为Challenge已经解决。
+
+另一个需要保留的机制性风险：Profile内标签页共享Cookie。已观察到自然后台探测的401响应要求设置新的DataDome Cookie，而旧Challenge iframe仍保留22:09加载时的上下文；程序的Profile排他锁不能阻止存活网页自身JavaScript写Cookie。它可能影响后续RETRY/人工验证，但不能单凭当前iframe cid不同就判定其失效，更不能据此解释首次1.27秒API401。下一自然事件的写后→实际发送→响应替换指纹可以验证该竞争是否真实导致了这笔失败，再决定是否只修某个旧页/任务所有权；本轮不关闭原页或停掉全部自动恢复。
+
+
+最终自然恢复取证钩子也已实际触发：23:19:54原页DOCUMENT明确记为status=0/RENDERED_DOCUMENT/HTTP归属未确认；23:25:24新的CRAWLER回执保存了401、CloudFront、x-datadome=protected、DataDome bootstrap特征及Main Chrome实例provenance，没有用DOM观察伪造200，也没有把新响应头回填成22:10的历史头。原有diagnostic_timeline保留旧观察并追加新观察。同状态去重由回归覆盖。下一次新付费应用的application_evidence完整wire/cookie链尚未自然触发，继续列为未覆盖分支，不主动购买来补覆盖。
