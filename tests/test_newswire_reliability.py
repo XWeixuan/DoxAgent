@@ -11,6 +11,20 @@ from doxagent.site_strategy.schema import AccessResult
 from tests.test_content_enrichment_pipeline import TITLE, BODY, PARAGRAPHS
 
 
+def test_new_publisher_policies_bootstrap_and_resolve_through_owner(tmp_path):
+    from doxagent.site_strategy.repository import SiteStrategyRepository
+    from doxagent.site_strategy.service import SiteStrategyService
+    from doxagent.site_strategy.seeds import bootstrap_seed
+    repo=SiteStrategyRepository(tmp_path/'site.sqlite3')
+    service=SiteStrategyService(repo,profile_root=tmp_path/'profiles')
+    try:
+        bootstrap_seed(repo,service)
+        assert service.resolve('https://www.newsfilecorp.com/release/123/test').body.parameters['wait_selector']=='article#release p'
+        assert service.resolve('https://www.prnewswire.com/news-releases/test.html').body.access_order==['http_public','browser']
+        assert service.resolve('https://www.businesswire.com/news/home/123/en/').site_id=='businesswire'
+    finally:repo.close()
+
+
 @pytest.mark.parametrize('url,method', [
     ('https://www.businesswire.com/news/home/20261112795782/en/A-release/', 'POST'),
     ('https://businesswire.com/news/home/123/en/', 'POST'),

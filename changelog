@@ -3004,3 +3004,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Business Wire正文复用原站只读POST，PR Newswire列表由失效POST改为GET；按实际文章区域抽取，排除PRN已存在正文的手机端跳转导航。
 - Massive正式正文遵循显式Registry策略；新增BW/PRN/Newsfile站点策略，Newsfile复用Managed浏览器等待AWS自动验证后的真实正文，并保留初始202与最终200证据。
 - 每8轮优先处理一个最旧本地分发待办，避免短轮次预算使保留名额失效；Massive阴性分类不预查发布历史，正例仍走原去重。完整正文、正则、接纳窗口及轮询频率保持。
+
+- Massive Newswire补充：Registry正文参数显式接受并校验wait_selector，完整站点bootstrap/共享路径回归73项通过；新增真实站点配置必须经owner校验测试。

@@ -29,10 +29,14 @@ def validate_body_strategy(ref: str, parameters: dict[str, object]) -> None:
     if ref not in BODY_STRATEGY_REFS:
         raise ValueError(f"unknown body strategy ref: {ref}")
     budgets = {stage+"_timeout_seconds" for stage in ("http_public","browser","browser_fetch","reader")}
-    unknown = set(parameters) - {"body_xpath", "remove_xpath"} - budgets
+    unknown = set(parameters) - {"body_xpath", "remove_xpath", "wait_selector"} - budgets
     if unknown:
         raise ValueError(f"unsupported body strategy parameters: {sorted(unknown)}")
     for key, value in parameters.items():
+        if key == 'wait_selector':
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError('wait_selector must be a non-empty selector string')
+            continue
         if key in budgets:
             if isinstance(value,bool) or not isinstance(value,(int,float)) or not 0 < value <= 180:
                 raise ValueError(f"{key} must be between 0 and 180 seconds")
