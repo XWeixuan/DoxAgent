@@ -152,6 +152,13 @@ class SharedContentExtractor:
 
             if (record.source_id and record.source_id.endswith("_massive")
                     and record.source_id != "bloomberg_massive" and self._pipeline is not None):
+                if (record.source_id in {'businesswire_massive','prnewswire_massive','tmx_newsfile_massive'}
+                        and version == 'body_v2.2' and self._pipeline_enabled
+                        and self._managed_pipeline is not None
+                        and urlparse(record.fetch_url or '').hostname not in self._disabled_hosts):
+                    # These restored publisher policies own their HTTP/browser
+                    # cascade. Other working wires retain their public routes.
+                    return await self._managed_pipeline.extract(record)
                 # These public wire sources use the same body/quality pipeline,
                 # without borrowing browser identities from existing subscriptions.
                 from .transport import PUBLIC_PROXY

@@ -79,6 +79,21 @@ def test_stale_cache_is_failure(headers):
     assert cache_evidence(response(headers=headers), "https://wire.test", "GET").get("error")
 
 
+def test_access_current_date_does_not_hide_grace_cached_payload():
+    headers={'Age':'73','X-Cache':'hit graced cached','Cache-Control':'public, max-age=60, stale-while-revalidate=300'}
+    evidence=cache_evidence(response(headers=headers),'https://www.accessnewswire.com/newsroom?page=1','GET')
+    assert evidence['freshness_warning']=='publisher_stale_grace' and 'error' not in evidence
+    headers['Age']='121'
+    assert cache_evidence(response(headers=headers),'https://www.accessnewswire.com/newsroom?page=1','GET').get('error')
+
+
+async def test_access_revalidation_headers_survive_saved_baseline():
+    adapter=SimpleNamespace(listing_request=AsyncMock(return_value=(response(fixture('access')),'us-standard-5')),poll_feed=AsyncMock())
+    result=await poll_listing(adapter,context('access_newswire_massive',checkpoint={'head':{'baseline':True,'etag':'saved'}}))
+    assert not result.failures
+    assert adapter.listing_request.call_args.args[-1]=={'Cache-Control':'no-cache','Pragma':'no-cache','If-None-Match':'saved'}
+
+
 async def test_second_poll_unchanged_listing_does_not_repeat_body_inputs():
     adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(fixture("prnewswire")), "direct")), poll_feed=AsyncMock())
     first = await poll_listing(adapter, context())
@@ -121,6 +136,19 @@ async def test_http_failure_retains_rss_messages_but_never_renews_listing_health
     assert result.next_checkpoint == {} and result.acquisition_metadata["validated_request_ids"] == []
     assert roles == ["rss_fallback", "rss_fallback"]
     assert all(r.metadata["discovery_method"] == "rss_fallback" for r in result.messages)
+
+
+async def test_partial_http_failure_does_not_admit_cards_older_than_normal_window(monkeypatch):
+    recipe={**RECIPES['prnewswire_massive'],'size':3}
+    monkeypatch.setitem(RECIPES,'prnewswire_massive',recipe)
+    text=fixture('prnewswire').replace('13:55 ET','12:15 ET',1)
+    adapter=SimpleNamespace(listing_request=AsyncMock(side_effect=[
+        (response(text),'direct'),(response(status=500),'direct')]),
+        poll_feed=AsyncMock(return_value=PollResult()))
+    result=await poll_listing(adapter,context())
+    assert result.failures and not result.window_done
+    assert len(result.messages)==2
+    assert all(row.published_at>=NOW-timedelta(minutes=30) for row in result.messages)
 
 
 async def test_access_does_not_invent_blog_rss_as_fallback():

@@ -157,18 +157,21 @@ async def test_terminal_job_has_no_browser_input_no_inspection_and_no_purchase(s
     assert solver.coordinator.store.get_recovery(recovery.identity_id).phase != "RESOLVED"
 
 
-def test_diagnostics_are_bounded_redacted_and_skip_identical_business_results(solver_setup):
+@pytest.mark.parametrize("with_capture", [False, True])
+def test_diagnostics_are_bounded_redacted_and_skip_identical_business_results(solver_setup, with_capture):
     solver, recovery, _, identity, _, _ = solver_setup
     repo = solver.coordinator.service.repository
     job = solver.new_job(recovery, {}, "route")
     job.update(status="APPLIED", task_id=123, verification_state="STILL_BLOCKED")
     solver.save(job)
     for i in range(20):
+        capture = SimpleNamespace(final_url="https://www.reuters.com/site-search/?secret=x",
+            status_code=200, headers={"Authorization": "SECRET"}, body="SECRET_" + str(i), provenance=None)
         record_solver_diagnostic(repo, identity.identity_id, "CRAWLER", {
             "outcome": "SUCCESS", "http_status": 200, "query_key": str(i),
             "url": "https://private.test/?secret=x", "cookie": "SECRET",
             "reason": "https://private.test/",
-        })
+        }, capture=capture if with_capture else None)
     saved = solver.jobs(recovery.recovery_id)[0]
     assert len(saved["diagnostic_timeline"]) == 1
     assert "SECRET" not in json.dumps(saved) and "private.test" not in json.dumps(saved)

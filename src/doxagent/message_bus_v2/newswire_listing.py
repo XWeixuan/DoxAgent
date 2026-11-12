@@ -33,6 +33,7 @@ RECIPES = {
     "access_newswire_massive": {
         "url": "https://www.accessnewswire.com/newsroom?page={page}",
         "method": "GET", "routes": ["us-standard-5"], "size": 20,
+        "headers": {"Cache-Control": "no-cache", "Pragma": "no-cache"},
     },
     "businesswire_massive": {
         "url": "https://www.businesswire.com/newsroom?page={page}",
@@ -177,6 +178,15 @@ def cache_evidence(response, url, method):
     evidence.update(url=url, method=method, status=response.status_code)
     try:
         evidence["validation"] = check_cache(SimpleNamespace(headers=response.headers), SimpleNamespace(max_age_seconds=120))
+        if urlsplit(url).hostname == 'www.accessnewswire.com':
+            ttl=re.search(r'(?:^|,)\s*max-age=(\d+)',response.headers.get('cache-control',''),re.I)
+            age=response.headers.get('age','')
+            if ('graced' in response.headers.get('x-cache','').lower()
+                    or (ttl and age.isdigit() and int(age)>int(ttl[1]))):
+                # A usable publisher page may be served from stale-while-revalidate.
+                # Expose timeliness degradation separately from HTTP/parser failure;
+                # preserve the existing hard 120s stale limit and available cards.
+                evidence['freshness_warning']='publisher_stale_grace'
     except ValueError as exc:
         evidence["error"] = str(exc)
     return evidence
@@ -206,8 +216,8 @@ async def poll_listing(adapter, context):
                 url = recipe["url"].format(page=page)
                 headers = dict(recipe.get("headers", {}))
                 if page == 1 and recipe["method"] == "GET" and head.get("baseline") and not context.force_refresh:
-                    headers = {name: head[key] for name, key in
-                               [("If-None-Match", "etag"), ("If-Modified-Since", "modified")] if head.get(key)}
+                    headers.update({name: head[key] for name, key in
+                               [("If-None-Match", "etag"), ("If-Modified-Since", "modified")] if head.get(key)})
                 response, route = await adapter.listing_request(context, url, recipe, headers)
                 caches.append(cache_evidence(response, url, recipe["method"]))
                 if caches[-1].get("error"):
@@ -247,7 +257,12 @@ async def poll_listing(adapter, context):
                           window_done=True, window_coverage="PARTIAL", acquisition_metadata={
                               "method": "http_listing", "request_seconds": round(time.monotonic()-started, 3),
                               "pages": len(caches), "feed_items": len(rows), "delta_items": len(delta),
-                              "route": route, "cache": caches, "validated_request_ids": [e["physical_request_id"] for e in proven]})
+                              "route": route, "cache": caches,
+                              "freshness_degraded": any(c.get('freshness_warning') for c in caches),
+                              "newest_visible_at": max((r.published_at for r in rows.values()),default=None).isoformat() if rows else None,
+                              "oldest_visible_at": min((r.published_at for r in rows.values()),default=None).isoformat() if rows else None,
+                              "seen_overlap": len(set(old)&set(rows)),
+                              "validated_request_ids": [e["physical_request_id"] for e in proven]})
     except CollectionStopped:
         raise
     except Exception as exc:
@@ -277,7 +292,9 @@ async def poll_listing(adapter, context):
             rows.setdefault(row.url, row)
         for row in rows.values():
             row.metadata.update(discovery_method="rss_fallback" if row in rss_results else "http_listing_partial", listing_error=failure.error_message)
-        return PollResult(messages=list(rows.values()), failures=[failure], window_done=False,
+        # A partial HTTP page may include older cards. Failure/RSS fallback
+        # must obey the same admission boundary as the successful listing path.
+        return PollResult(messages=[row for row in rows.values() if row.published_at >= cutoff], failures=[failure], window_done=False,
                           acquisition_metadata={"method": "rss_fallback" if endpoints else "http_listing_failed",
                               "cache": caches, "rss_items": len(rss_results), "error": failure.error_message,
                               "validated_request_ids": []})

@@ -1,0 +1,603 @@
+{
+  "at": "2026-11-12T23:26:16.791427+00:00",
+  "identities": [
+    {
+      "identity": {
+        "identity_id": "digitimes-de-1",
+        "revision": 4,
+        "profile_id": "digitimes-de-1",
+        "runtime_kind": "external_chrome",
+        "browser_release": "google-chrome-153.0.8010.52",
+        "environment": {
+          "locale": "en-US",
+          "revision": 1,
+          "timezone_id": "Europe/Berlin",
+          "window_height": 1000,
+          "window_width": 1440
+        },
+        "access": {
+          "max_concurrency": 2,
+          "min_interval_ms": 1500
+        }
+      },
+      "profile": {
+        "operational_state": "AVAILABLE",
+        "maintenance_session_id": null,
+        "auth_state": "VALID"
+      },
+      "egress": {
+        "egress_id": "de-standard-1",
+        "generation": 3,
+        "observed_ip": "205.198.126.113",
+        "observed_at": "2026-11-12T23:03:00.557359Z",
+        "status": "READY",
+        "transport": null,
+        "node_ref": "\ud83c\udde9\ud83c\uddea \u5fb7\u56fd\u6807\u51c6 IEPL \u4e13\u7ebf 1"
+      },
+      "runtime": {
+        "instance_id": "ddae8dc2d59848db80c779ce7a6c6310",
+        "session_revision": 9,
+        "operational_state": "AVAILABLE"
+      },
+      "recovery": {
+        "recovery_id": "recovery_4519eaad023a490bb5549f123a64c88b",
+        "phase": "BACKOFF",
+        "opened_at": "2026-11-12T22:07:48.715192Z",
+        "resolved_at": null,
+        "original_instance_id": "ddae8dc2d59848db80c779ce7a6c6310",
+        "original_target_id": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+        "last_error": "provider_result_still_blocked_manual_review"
+      },
+      "supervisor": {
+        "instance_id": "ddae8dc2d59848db80c779ce7a6c6310",
+        "generation": 1,
+        "pid": 1191,
+        "running": true
+      },
+      "open_sessions": 0,
+      "cookies": [
+        {
+          "name": "ArcId.USER_PROFILE",
+          "domain": "www.reuters.com",
+          "path": "/",
+          "secure": false,
+          "httpOnly": false,
+          "sameSite": null,
+          "session": false,
+          "sourceScheme": "Secure",
+          "sourcePort": 443,
+          "partitionKey": null,
+          "ttl_seconds": 34028319
+        },
+        {
+          "name": "ArcP",
+          "domain": "www.reuters.com",
+          "path": "/",
+          "secure": false,
+          "httpOnly": false,
+          "sameSite": null,
+          "session": false,
+          "sourceScheme": "Secure",
+          "sourcePort": 443,
+          "partitionKey": null,
+          "ttl_seconds": 34555447
+        },
+        {
+          "name": "datadome",
+          "domain": ".reuters.com",
+          "path": "/",
+          "secure": true,
+          "httpOnly": false,
+          "sameSite": "Lax",
+          "session": false,
+          "sourceScheme": "Secure",
+          "sourcePort": 443,
+          "partitionKey": null,
+          "ttl_seconds": 31535938
+        }
+      ],
+      "datadome_cookie_count": 1,
+      "browser": {
+        "Browser": "Chrome/153.0.8010.52",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+        "Protocol-Version": "1.3"
+      },
+      "pages": [
+        {
+          "target_id": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+          "url": "https://www.reuters.com/site-search/",
+          "original": true,
+          "classification": {
+            "provider": "DATADOME",
+            "interaction": "UNKNOWN",
+            "confidence": "HIGH",
+            "signals": [
+              "active_datadome_frame"
+            ],
+            "title": "Search Results X Facebook Instagram Youtube Linkedin WhatsApp",
+            "visible_excerpt": "Search Results Skip to main content Exclusive news, data and analytics for financial market professi",
+            "iframe_urls": [
+              "https://geo.captcha-delivery.com/captcha/"
+            ],
+            "script_urls": [
+              "https://dd.reuters.com/tags.js"
+            ],
+            "http_status": 0,
+            "headers": {}
+          },
+          "html_bytes": 396113,
+          "session_by_header_marker": false,
+          "dd_script_marker": false,
+          "frames": [
+            {
+              "frame_id": "C536A71195F12DC7E5C883AF264C8437",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "44FB94F7804C6B814B1FCB1AEC9F0D14",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "188EBBBA9450564A713C1CE493DF8E7F",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "C917D64CA4F4295D5ECE05C2AFE9123A",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "5C9DE218FC9AB117673492495BBC89FF",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            }
+          ],
+          "ddSession": {
+            "present": false,
+            "matches_cookie": null
+          },
+          "navigation": {
+            "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+            "nav": [
+              {
+                "responseStatus": 200,
+                "redirectCount": 0,
+                "type": "reload"
+              }
+            ]
+          }
+        }
+      ],
+      "other_cookie_count": 67
+    },
+    {
+      "identity": {
+        "identity_id": "reuters-backup",
+        "revision": 3,
+        "profile_id": "reuters-backup",
+        "runtime_kind": "external_chrome",
+        "browser_release": "google-chrome-153.0.8010.52",
+        "environment": {
+          "locale": "en-US",
+          "revision": 1,
+          "timezone_id": "Europe/Berlin",
+          "window_height": 1000,
+          "window_width": 1440
+        },
+        "access": {
+          "max_concurrency": 2,
+          "min_interval_ms": 1500
+        }
+      },
+      "profile": {
+        "operational_state": "AVAILABLE",
+        "maintenance_session_id": null,
+        "auth_state": "VALID"
+      },
+      "egress": {
+        "egress_id": "jp-standard-6",
+        "generation": 7,
+        "observed_ip": "205.198.126.114",
+        "observed_at": "2026-11-12T23:03:01.793437Z",
+        "status": "READY",
+        "transport": null,
+        "node_ref": "\ud83c\udde9\ud83c\uddea \u5fb7\u56fd\u6807\u51c6 IEPL \u4e13\u7ebf 2"
+      },
+      "runtime": {
+        "instance_id": "d8d7784be940492394d39cad786a6406",
+        "session_revision": 0,
+        "operational_state": "AVAILABLE"
+      },
+      "recovery": {
+        "recovery_id": "recovery_a0fdba1e630d49d78c033913b4a39366",
+        "phase": "RESOLVED",
+        "opened_at": "2026-11-12T15:24:19.119520Z",
+        "resolved_at": "2026-11-12T17:09:42.699354Z",
+        "original_instance_id": "d8d7784be940492394d39cad786a6406",
+        "original_target_id": "FC58CC2634FCCE01436DFB53AAB4F3BC",
+        "last_error": null
+      },
+      "supervisor": {
+        "instance_id": "d8d7784be940492394d39cad786a6406",
+        "generation": 1,
+        "pid": 652742,
+        "running": true
+      },
+      "open_sessions": 0,
+      "cookies": [
+        {
+          "name": "ArcP",
+          "domain": "www.reuters.com",
+          "path": "/",
+          "secure": false,
+          "httpOnly": false,
+          "sameSite": null,
+          "session": false,
+          "sourceScheme": "Secure",
+          "sourcePort": 443,
+          "partitionKey": null,
+          "ttl_seconds": 34538056
+        },
+        {
+          "name": "datadome",
+          "domain": ".reuters.com",
+          "path": "/",
+          "secure": true,
+          "httpOnly": false,
+          "sameSite": "Lax",
+          "session": false,
+          "sourceScheme": "Secure",
+          "sourcePort": 443,
+          "partitionKey": null,
+          "ttl_seconds": 31535992
+        }
+      ],
+      "datadome_cookie_count": 1,
+      "browser": {
+        "Browser": "Chrome/153.0.8010.52",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+        "Protocol-Version": "1.3"
+      },
+      "pages": [
+        {
+          "target_id": "C7081BD3012CF0C9C94C96720169ECD2",
+          "url": "https://www.reuters.com/site-search/",
+          "original": false,
+          "classification": {
+            "provider": "UNKNOWN",
+            "interaction": "UNKNOWN",
+            "confidence": "UNKNOWN",
+            "signals": [],
+            "title": "Search Results X Facebook Instagram Youtube Linkedin WhatsApp",
+            "visible_excerpt": "Search Results Skip to main content Exclusive news, data and analytics for financial market professi",
+            "iframe_urls": [],
+            "script_urls": [
+              "https://dd.reuters.com/tags.js"
+            ],
+            "http_status": 0,
+            "headers": {}
+          },
+          "html_bytes": 459662,
+          "session_by_header_marker": false,
+          "dd_script_marker": false,
+          "frames": [
+            {
+              "frame_id": "2851A3F71635AD77AA1029D8E44F2593",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "FDB69602908D43A7E6DF021710CA9A55",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "7300016B6929BD51ED4ADB8C7A695B2A",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "1C3B0A0B719A0D88AB84C2D13BAF767D",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "B5CE40613A5BDF343592D30DFC25FBB7",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            }
+          ],
+          "ddSession": {
+            "present": false,
+            "matches_cookie": null
+          },
+          "navigation": {
+            "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+            "nav": [
+              {
+                "responseStatus": 200,
+                "redirectCount": 0,
+                "type": "navigate"
+              }
+            ]
+          }
+        },
+        {
+          "target_id": "11E03C82CAC99DC6BFA369105615C6A1",
+          "url": "https://www.reuters.com/site-search/",
+          "original": false,
+          "classification": {
+            "provider": "UNKNOWN",
+            "interaction": "UNKNOWN",
+            "confidence": "UNKNOWN",
+            "signals": [],
+            "title": "Search Results X Facebook Instagram Youtube Linkedin WhatsApp",
+            "visible_excerpt": "Search Results Skip to main content Exclusive news, data and analytics for financial market professi",
+            "iframe_urls": [],
+            "script_urls": [
+              "https://dd.reuters.com/tags.js"
+            ],
+            "http_status": 0,
+            "headers": {}
+          },
+          "html_bytes": 409299,
+          "session_by_header_marker": false,
+          "dd_script_marker": false,
+          "frames": [
+            {
+              "frame_id": "374EB334906E929C302A6F025533F077",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "A9C0DE32696E7E6BB1EA60486104EA01",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            },
+            {
+              "frame_id": "1DA192A80DFB0FC3C40763F952E754C0",
+              "url": "",
+              "t": null,
+              "cid_matches_cookie": null
+            }
+          ],
+          "ddSession": {
+            "present": false,
+            "matches_cookie": null
+          },
+          "navigation": {
+            "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+            "nav": [
+              {
+                "responseStatus": 200,
+                "redirectCount": 0,
+                "type": "navigate"
+              }
+            ]
+          }
+        }
+      ],
+      "other_cookie_count": 58
+    }
+  ],
+  "job": {
+    "job_id": "dd_32c207cb1d1c47f78c96bcacf0e1885c",
+    "identity_id": "digitimes-de-1",
+    "recovery_id": "recovery_4519eaad023a490bb5549f123a64c88b",
+    "allocation_id": "allocation_c991d45a4c424095ae04bcc6ce8a2668",
+    "scene": "8f00ef5e74b7492b2339fc386d8d6f56f94fd505f9c28a948c48be94309922ef",
+    "binding": "3348f9d5ca932f37a4fa38cb0909f275782b09bf12c8aeb355aba96cf294bad9",
+    "task_id": 84403569365,
+    "status": "APPLIED",
+    "created_at": "2026-11-12T22:09:26.002905+00:00",
+    "submitted_at": "2026-11-12T22:09:26.005782+00:00",
+    "provider_ready_at": "2026-11-12T22:09:56.050181+00:00",
+    "applied_at": "2026-11-12T22:09:56.607852+00:00",
+    "verification_state": "STILL_BLOCKED",
+    "verification_reason": "confirmation_window_expired",
+    "cookie_scope_verified": true,
+    "confirmation_probe_reserved": true,
+    "business_probe_id": "recovery_4519eaad023a490bb5549f123a64c88b:9:2",
+    "diagnostic_timeline": [
+      {
+        "stage": "DOCUMENT",
+        "challenge": "BLOCKED",
+        "authentication": "UNKNOWN",
+        "outcome": "NOT_TESTED",
+        "reason": "challenge_required",
+        "page_kind": null,
+        "evidence": "RETAINED_DOCUMENT",
+        "at": "2026-11-12T22:10:06.774887+00:00"
+      },
+      {
+        "stage": "CRAWLER",
+        "challenge": "BLOCKED",
+        "authentication": "UNKNOWN",
+        "outcome": "NOT_TESTED",
+        "reason": "challenge_required",
+        "http_status": 401,
+        "body_quality": "NOT_TESTED",
+        "evidence": "RECOVERY_PROBE",
+        "at": "2026-11-12T22:10:26.817376+00:00"
+      },
+      {
+        "stage": "DOCUMENT",
+        "challenge": "BLOCKED",
+        "authentication": "UNKNOWN",
+        "outcome": "NOT_TESTED",
+        "reason": "challenge_required",
+        "page_kind": null,
+        "evidence": "RETAINED_DOCUMENT",
+        "at": "2026-11-12T23:19:54.861915+00:00",
+        "http_evidence": {
+          "url": "https://www.reuters.com/site-search/",
+          "status": 0,
+          "headers": {},
+          "layer": "UNCONFIRMED",
+          "body_source": "RENDERED_DOCUMENT",
+          "body_signals": {
+            "datadome_url": true,
+            "datadome_bootstrap": false,
+            "auth_message": false
+          },
+          "body_bytes": 396158,
+          "body_sha256": "8d711a2636e222038f42b4c091b4e2e8af308c7c9a3845f0a25a200b4f9f49b4",
+          "provenance": {
+            "identity_id": "digitimes-de-1",
+            "profile_id": null,
+            "instance_id": "ddae8dc2d59848db80c779ce7a6c6310"
+          }
+        }
+      },
+      {
+        "stage": "CRAWLER",
+        "challenge": "BLOCKED",
+        "authentication": "UNKNOWN",
+        "outcome": "NOT_TESTED",
+        "reason": "challenge_required",
+        "http_status": 401,
+        "body_quality": "NOT_TESTED",
+        "evidence": "RECOVERY_PROBE",
+        "at": "2026-11-12T23:25:24.196803+00:00",
+        "http_evidence": {
+          "url": "https://www.reuters.com/site-search/",
+          "status": 401,
+          "headers": {
+            "content-type": "text/html;charset=utf-8",
+            "server": "CloudFront",
+            "x-datadome": "protected"
+          },
+          "layer": "DATADOME",
+          "body_source": "RENDERED_DOCUMENT",
+          "body_signals": {
+            "datadome_url": true,
+            "datadome_bootstrap": true,
+            "auth_message": false
+          },
+          "body_bytes": 1533,
+          "body_sha256": "782d255399e6bddcdddcfdd97c6a9953e212f25d02e30c0c872f1773ddb7299d",
+          "provenance": {
+            "identity_id": "digitimes-de-1",
+            "profile_id": null,
+            "instance_id": "ddae8dc2d59848db80c779ce7a6c6310"
+          }
+        }
+      }
+    ]
+  },
+  "job_fields": [
+    "admission",
+    "allocation_id",
+    "applied_at",
+    "binding",
+    "business_probe_id",
+    "confirmation_probe_reason",
+    "confirmation_probe_reserved",
+    "cookie_scope_verified",
+    "cost",
+    "created_at",
+    "diagnostic_timeline",
+    "diagnostics",
+    "identity_id",
+    "job_id",
+    "provider_cost",
+    "provider_ready_at",
+    "recovery_id",
+    "scene",
+    "status",
+    "submitted_at",
+    "task_id",
+    "updated_at",
+    "verification_reason",
+    "verification_state"
+  ],
+  "job_target": {
+    "identity_id": "digitimes-de-1",
+    "browser_instance_id": "ddae8dc2d59848db80c779ce7a6c6310",
+    "target_id": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+    "profile_id": null,
+    "state": "LIVE",
+    "owner_kind": "CHALLENGE",
+    "owner_ref": "challenge_117b26c238574ae8bc972c678b258115"
+  },
+  "evidence": {
+    "evidence_id": "1999e49c03bf8b35e1d2e24804c6370e",
+    "scope_id": "source:reuters_site_search",
+    "site_id": "reuters",
+    "identity_id": "digitimes-de-1",
+    "browser_instance_id": "ddae8dc2d59848db80c779ce7a6c6310",
+    "target_id": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+    "operation_id": "scene:recovery_4519eaad023a490bb5549f123a64c88b",
+    "url": "https://www.reuters.com/site-search/",
+    "first_seen": 1794521273.3683653,
+    "updated_at": 1794521355.3890476,
+    "state": "CONFIRMED",
+    "frames": {
+      "latest_actionable": {
+        "captured_at": 1794521355.3890507,
+        "sample_id": "sample_531beb5a92474a00b17ddce4e118b201",
+        "assessment_at": "2026-11-12T22:09:13.137623+00:00",
+        "screenshot_at": 1794521355.389052,
+        "frame_sequence": 1,
+        "classification": {
+          "provider": "DATADOME",
+          "interaction": "UNKNOWN",
+          "confidence": "HIGH",
+          "signals": [
+            "active_datadome_frame"
+          ],
+          "title": "reuters.com",
+          "visible_excerpt": "reuters.com",
+          "iframe_urls": [
+            "https://geo.captcha-delivery.com/captcha/"
+          ],
+          "script_urls": [
+            "https://ct.captcha-delivery.com/c.js"
+          ],
+          "http_status": 0,
+          "headers": {},
+          "assessment": {
+            "provider": "DATADOME",
+            "kind": "INTERACTIVE",
+            "interaction": "SLIDER",
+            "confidence": "HIGH",
+            "provider_confidence": "HIGH",
+            "signals": [
+              "active_datadome_frame",
+              "datadome_slider_frame"
+            ],
+            "observed_at": "2026-11-12T22:09:13.137623+00:00",
+            "sample_id": "sample_531beb5a92474a00b17ddce4e118b201",
+            "source": "document",
+            "handling_mode": "HUMAN",
+            "policy_reason": "datadome_slider_frame"
+          },
+          "sample_id": "sample_531beb5a92474a00b17ddce4e118b201",
+          "assessment_at": "2026-11-12T22:09:13.137623+00:00",
+          "scene_signature": "98913dfaf11ac3c020f11d07a8bd6fa7f30440cc9ab6eb7f6ce52ba8926dc426",
+          "frame_read_state": "READABLE",
+          "image_quality": "READABLE"
+        },
+        "screenshot_status": "CAPTURED",
+        "image_quality": "READABLE",
+        "scene_signature": "98913dfaf11ac3c020f11d07a8bd6fa7f30440cc9ab6eb7f6ce52ba8926dc426",
+        "frame_read_state": "READABLE"
+      }
+    }
+  }
+}

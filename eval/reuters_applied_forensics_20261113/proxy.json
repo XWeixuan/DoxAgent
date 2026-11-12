@@ -1,0 +1,291 @@
+{
+  "at": "2026-11-12T23:03:31.117088+00:00",
+  "tls_bump_configured": false,
+  "never_direct": true,
+  "bindings": [
+    {
+      "identity": "digitimes-de-1",
+      "egress_id": "de-standard-1",
+      "binding_matches_identity": true,
+      "squid_parent_matches_chrome_listener": true,
+      "listener_port": 18083,
+      "observed_exit": "205.198.126.113",
+      "egress_generation": 3
+    },
+    {
+      "identity": "reuters-backup",
+      "egress_id": "jp-standard-6",
+      "binding_matches_identity": true,
+      "squid_parent_matches_chrome_listener": true,
+      "listener_port": 18080,
+      "observed_exit": "205.198.126.114",
+      "egress_generation": 7
+    }
+  ],
+  "proxy_log_window": [
+    {
+      "at": "2026-11-12T22:09:26.001000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "3576",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": false
+    },
+    {
+      "at": "2026-11-12T22:09:28.998000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3430",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:29.542000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3442",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:31.305000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3462",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:34.172000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3452",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:34.595000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3462",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:35.103000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "39",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:38.537000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3452",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:39.095000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "39",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:41.257000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3452",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:43.786000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3462",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:44.025000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3450",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:44.032000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3472",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:44.037000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3452",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:44.076000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3458",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:44.170000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3472",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:44.992000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3436",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:46.037000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3458",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:46.077000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3458",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:46.386000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3472",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:46.675000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3486",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:46.878000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3486",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:47.116000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3486",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:47.356000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3452",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:47.960000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3486",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:48.137000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "1352156",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:48.137000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "9907",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:48.137000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "236096",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:48.138000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "20934",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:48.138000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "7190",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:48.140000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "10831",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:48.162000+00:00",
+      "status": "TCP_TUNNEL/200",
+      "bytes": "57883",
+      "method": "CONNECT",
+      "identity": "digitimes-de-1",
+      "provider_source": true
+    },
+    {
+      "at": "2026-11-12T22:09:52.210000+00:00",
+      "status": "TCP_DENIED/403",
+      "bytes": "3432",
+      "method": "CONNECT",
+      "identity": "UNKNOWN",
+      "provider_source": true
+    }
+  ]
+}

@@ -3007,4 +3007,16 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 - Massive Newswire补充：Registry正文参数显式接受并校验wait_selector，完整站点bootstrap/共享路径回归73项通过；新增真实站点配置必须经owner校验测试。
 
+
 2026-11-13 Corporate IR upgrade: add IONQ official Webflow press-release HTTP listing and scoped article extraction; preserve day-only publication precision and existing ticker polling overrides. Replace Snowflake's challenged HTML with its official frontend public AEM list/article models. Enable Ondas HTTP/RSS parallel discovery with publisher numeric-ID aliases preserving existing article owners and full bodies; retain all four already-parallel IR feeds. Add idempotent production configuration upgrade and focused list/body/alias/cadence regressions (124 passed).
+
+- Massive Newswire生产入口补充：SharedContentExtractor将BW/PRN/Newsfile的body_v2.2送入显式Site Access策略；GNW/ACCESS仍保留原有效轻量HTTP路径。补充总入口回归；HTTP分页中途失败/RSS兜底不再漏掉正常路径的30分钟过滤。最终相关组合68通过、1可选fixture跳过。
+
+- Newswire收尾优化：BW/PRN/Newsfile访问判定仅检查DOM与访问证据，不在短生命周期Managed worker内重复启动通用正文抽取；最终正文校验不变。安全验证/维护/入口回归68通过。
+
+- ACCESS列表缓存修复：请求no-cache重新验证，已保存ETag基线不再覆盖固定请求头；Age超过原站60秒TTL的宽限缓存不标记为新鲜成功。真实对照排除无效随机参数（400），47项相关回归通过、1可选fixture跳过。
+
+2026-11-13 Reuters APPLIED/401 forensic audit: retained browser timings prove reload HTML200 then native search API401/DataDome iframe; passive natural Main probe captured CloudFront/DataDome headers and raw-body summary with sent cookies, while Backup natural API200. Add one bounded paid-apply wire/cookie fingerprint capsule, state-deduplicated capture provenance and domain/parent-only Squid logs; no extra createTask, website request, Profile/IP mutation or recovery policy change. Existing-task result read was unavailable, not a new task failure. 97 combined regressions and 7 final targeted checks passed (overlapping). See docs/reuters-applied-401-forensics-and-targeted-plan-20261113.md.
+
+- ACCESS追加真实比较后收敛缓存治理：POST401、随机参数400，no-cache仍可能返回grace。保留既有120秒硬上限；60秒TTL外的可用页面单列freshness_degraded，避免人为扩大采集失败。已有cycle同时记录最早/最新可见时间及交集，33项列表回归通过。
+

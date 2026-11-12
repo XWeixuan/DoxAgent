@@ -1,0 +1,484 @@
+{
+  "at": "2026-11-12T22:51:51.521603+00:00",
+  "documents": [
+    {
+      "identity": "digitimes-de-1",
+      "target_id": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+      "performance": {
+        "timeOrigin": 1794521396596.6,
+        "navigation": [
+          {
+            "start": 0,
+            "duration": 1864.800000011921,
+            "status": 200,
+            "redirects": 0,
+            "url": "https://www.reuters.com/site-search/",
+            "observed_at": "2026-11-12T22:09:56.596600+00:00",
+            "t": null
+          }
+        ],
+        "resources": [
+          {
+            "start": 505,
+            "duration": 438.30000001192093,
+            "status": 200,
+            "initiator": "script",
+            "url": "https://www.reuters.com/arc/subs/p.min.js",
+            "observed_at": "2026-11-12T22:09:57.101600+00:00",
+            "t": null
+          },
+          {
+            "start": 1267.800000011921,
+            "duration": 318.19999998807907,
+            "status": 401,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:09:57.864400+00:00",
+            "t": null
+          },
+          {
+            "start": 1871,
+            "duration": 3796.2000000178814,
+            "status": 0,
+            "initiator": "iframe",
+            "url": "https://geo.captcha-delivery.com/captcha/",
+            "observed_at": "2026-11-12T22:09:58.467600+00:00",
+            "t": "fe"
+          }
+        ]
+      },
+      "assessment": {
+        "provider": "DATADOME",
+        "kind": "INTERACTIVE",
+        "interaction": "SLIDER",
+        "confidence": "HIGH",
+        "provider_confidence": "HIGH",
+        "signals": [
+          "active_datadome_frame",
+          "datadome_slider_frame"
+        ],
+        "observed_at": "2026-11-12T22:51:51.402736+00:00",
+        "sample_id": "sample_4ea947584ba54431b102a17e73de4f20",
+        "source": "document",
+        "handling_mode": "HUMAN",
+        "policy_reason": "datadome_slider_frame"
+      },
+      "frames": [
+        {
+          "frame_id": "170F9460E6173E019E032C87B36D57FE",
+          "url": "https://geo.captcha-delivery.com/captcha/",
+          "t": "fe",
+          "visible": true,
+          "loaded": true,
+          "state": "RETRY",
+          "cid_matches_current_cookie": false,
+          "performance": {
+            "timeOrigin": 1794521398471.3,
+            "navigation": [
+              {
+                "start": 0,
+                "duration": 3787.2999999821186,
+                "status": 200,
+                "redirects": 0,
+                "url": "https://geo.captcha-delivery.com/captcha/",
+                "observed_at": "2026-11-12T22:09:58.471300+00:00",
+                "t": "fe"
+              }
+            ],
+            "resources": [
+              {
+                "start": 953.5,
+                "duration": 358.7999999821186,
+                "status": 0,
+                "initiator": "script",
+                "url": "https://ct.captcha-delivery.com/captcha.1.37.0.202611120.js",
+                "observed_at": "2026-11-12T22:09:59.424800+00:00",
+                "t": null
+              },
+              {
+                "start": 955.1999999880791,
+                "duration": 12,
+                "status": 0,
+                "initiator": "link",
+                "url": "https://static.captcha-delivery.com/captcha/assets/tpl/6dc485c0c428c35b53577b146dc6f9179f55ef9ad41b327a2a179998839364bf/index.css",
+                "observed_at": "2026-11-12T22:09:59.426500+00:00",
+                "t": null
+              },
+              {
+                "start": 956.5999999940395,
+                "duration": 16.099999994039536,
+                "status": 0,
+                "initiator": "link",
+                "url": "https://static.captcha-delivery.com/common/fonts/roboto/font-face.css",
+                "observed_at": "2026-11-12T22:09:59.427900+00:00",
+                "t": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "identity": "reuters-backup",
+      "target_id": "F4A89EC1AA65F1D682FCD2E29182576E",
+      "performance": {
+        "timeOrigin": 1794523797961.3,
+        "navigation": [
+          {
+            "start": 0,
+            "duration": 2030.4000000059605,
+            "status": 200,
+            "redirects": 0,
+            "url": "https://www.reuters.com/site-search/",
+            "observed_at": "2026-11-12T22:49:57.961300+00:00",
+            "t": null
+          }
+        ],
+        "resources": [
+          {
+            "start": 68117.5,
+            "duration": 25.799999982118607,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:06.078800+00:00",
+            "t": null
+          },
+          {
+            "start": 69579.5,
+            "duration": 17.799999982118607,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:07.540800+00:00",
+            "t": null
+          },
+          {
+            "start": 69987.59999999404,
+            "duration": 21.69999998807907,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:07.948900+00:00",
+            "t": null
+          },
+          {
+            "start": 71357.59999999404,
+            "duration": 19.5,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:09.318900+00:00",
+            "t": null
+          },
+          {
+            "start": 72658.19999998808,
+            "duration": 12.700000017881393,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:10.619500+00:00",
+            "t": null
+          },
+          {
+            "start": 73011.09999999404,
+            "duration": 22.5,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:10.972400+00:00",
+            "t": null
+          },
+          {
+            "start": 74293,
+            "duration": 20.799999982118607,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:12.254300+00:00",
+            "t": null
+          },
+          {
+            "start": 75623.69999998808,
+            "duration": 24.599999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:13.585000+00:00",
+            "t": null
+          },
+          {
+            "start": 77119.09999999404,
+            "duration": 12.900000005960464,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:15.080400+00:00",
+            "t": null
+          },
+          {
+            "start": 77497.90000000596,
+            "duration": 8.299999982118607,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:15.459200+00:00",
+            "t": null
+          },
+          {
+            "start": 78732,
+            "duration": 47,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:16.693300+00:00",
+            "t": null
+          },
+          {
+            "start": 80144.29999998212,
+            "duration": 18.5,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:18.105600+00:00",
+            "t": null
+          },
+          {
+            "start": 81625.79999998212,
+            "duration": 11.300000011920929,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:19.587100+00:00",
+            "t": null
+          },
+          {
+            "start": 81866.5,
+            "duration": 15.599999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:19.827800+00:00",
+            "t": null
+          },
+          {
+            "start": 83134.59999999404,
+            "duration": 8.599999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:21.095900+00:00",
+            "t": null
+          },
+          {
+            "start": 84638.09999999404,
+            "duration": 16.30000001192093,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:22.599400+00:00",
+            "t": null
+          },
+          {
+            "start": 86141.19999998808,
+            "duration": 15,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:24.102500+00:00",
+            "t": null
+          },
+          {
+            "start": 86539.19999998808,
+            "duration": 19.599999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:24.500500+00:00",
+            "t": null
+          },
+          {
+            "start": 87655.69999998808,
+            "duration": 22.80000001192093,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:25.617000+00:00",
+            "t": null
+          },
+          {
+            "start": 89232.5,
+            "duration": 15.599999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:27.193800+00:00",
+            "t": null
+          },
+          {
+            "start": 90736.59999999404,
+            "duration": 19.30000001192093,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:28.697900+00:00",
+            "t": null
+          },
+          {
+            "start": 91101.59999999404,
+            "duration": 13.300000011920929,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:29.062900+00:00",
+            "t": null
+          },
+          {
+            "start": 92861.19999998808,
+            "duration": 16.5,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:30.822500+00:00",
+            "t": null
+          },
+          {
+            "start": 93850.79999998212,
+            "duration": 7.700000017881393,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:31.812100+00:00",
+            "t": null
+          },
+          {
+            "start": 95464.69999998808,
+            "duration": 38.70000001788139,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:33.426000+00:00",
+            "t": null
+          },
+          {
+            "start": 95927.29999998212,
+            "duration": 8.400000005960464,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:33.888600+00:00",
+            "t": null
+          },
+          {
+            "start": 96855.19999998808,
+            "duration": 28.099999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:34.816500+00:00",
+            "t": null
+          },
+          {
+            "start": 98484.29999998212,
+            "duration": 30.5,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:36.445600+00:00",
+            "t": null
+          },
+          {
+            "start": 99920.29999998212,
+            "duration": 14.100000023841858,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:37.881600+00:00",
+            "t": null
+          },
+          {
+            "start": 100337.19999998808,
+            "duration": 44.599999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:38.298500+00:00",
+            "t": null
+          },
+          {
+            "start": 101887,
+            "duration": 12.5,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:39.848300+00:00",
+            "t": null
+          },
+          {
+            "start": 103048.90000000596,
+            "duration": 1624.2999999821186,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:41.010200+00:00",
+            "t": null
+          },
+          {
+            "start": 106181.09999999404,
+            "duration": 31.80000001192093,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:44.142400+00:00",
+            "t": null
+          },
+          {
+            "start": 107695.09999999404,
+            "duration": 43.30000001192093,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:45.656400+00:00",
+            "t": null
+          },
+          {
+            "start": 108270.59999999404,
+            "duration": 14.800000011920929,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:46.231900+00:00",
+            "t": null
+          },
+          {
+            "start": 109261.5,
+            "duration": 1212,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:47.222800+00:00",
+            "t": null
+          },
+          {
+            "start": 111435.5,
+            "duration": 60.69999998807907,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:49.396800+00:00",
+            "t": null
+          },
+          {
+            "start": 112639.5,
+            "duration": 8.599999994039536,
+            "status": 200,
+            "initiator": "fetch",
+            "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+            "observed_at": "2026-11-12T22:51:50.600800+00:00",
+            "t": null
+          }
+        ]
+      }
+    }
+  ]
+}

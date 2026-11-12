@@ -101,6 +101,28 @@ def test_wire_article_region_excludes_recommendations(host,tag):
     assert outcome=='FULL' and candidate.text==BODY
 
 
+@pytest.mark.parametrize('site,host',[
+    ('businesswire','businesswire.com'),('prnewswire','prnewswire.com'),('newsfile','newsfilecorp.com'),
+])
+def test_wire_access_assessment_does_not_repeat_cold_generic_extraction(site,host,tmp_path,monkeypatch):
+    from doxagent.site_strategy.repository import SiteStrategyRepository
+    from doxagent.site_strategy.service import SiteStrategyService
+    from doxagent.site_strategy.seeds import bootstrap_seed
+    from doxagent.site_strategy.runtime import _verification_document
+    from doxagent.site_strategy.schema import AccessRequest
+    repo=SiteStrategyRepository(tmp_path/'site.sqlite3');service=SiteStrategyService(repo,profile_root=tmp_path/'profiles')
+    try:
+        bootstrap_seed(repo,service);url='https://www.'+host+'/release/123'
+        resolved=service.resolve(url)
+        assert resolved.site_id==site
+        monkeypatch.setattr('doxagent.content_enrichment.quality._default_extractor',
+                            lambda: (_ for _ in ()).throw(AssertionError('generic body extraction in access assessment')))
+        request=AccessRequest(operation_id='test',url=url,purpose='BODY',mode='BROWSER')
+        assert not _verification_document('<h1>'+TITLE+'</h1><article><p>'+BODY+'</p></article>',url,200,{},resolved,request)
+        assert _verification_document('<title>Verify you are human</title>',url,403,{},resolved,request)
+    finally:repo.close()
+
+
 async def test_explicit_newsfile_registry_policy_survives_massive_defaults():
     from doxagent.content_enrichment.pipeline import ArticlePipeline
     from doxagent.content_enrichment.transport import Observation
@@ -119,6 +141,27 @@ async def test_explicit_newsfile_registry_policy_survives_massive_defaults():
     assert result.succeeded and result.content==BODY
     assert browser.read.call_args.kwargs['parameters']['wait_selector']=='article#release p'
     fetch.assert_not_called()
+
+
+@pytest.mark.parametrize('source,managed',[
+    ('businesswire_massive',True),('prnewswire_massive',True),('tmx_newsfile_massive',True),
+    ('globenewswire_massive',False),('access_newswire_massive',False),
+])
+async def test_shared_extractor_entry_honors_restored_policies_and_preserves_working_routes(source,managed):
+    import asyncio
+    from doxagent.content_enrichment.extractor import SharedContentExtractor
+    from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
+    extractor=SharedContentExtractor.__new__(SharedContentExtractor)
+    extractor.start=AsyncMock();extractor._semaphore=asyncio.Semaphore(1)
+    extractor._session=object();extractor._pipeline_enabled=True;extractor._disabled_hosts=set()
+    local,owner=object(),object()
+    extractor._pipeline=SimpleNamespace(extract=AsyncMock(return_value=local))
+    extractor._managed_pipeline=SimpleNamespace(extract=AsyncMock(return_value=owner))
+    record=MediaEnrichmentRecord('one','one',source,'MU',TITLE,None,'https://publisher.example/release')
+    result=await extractor.extract_version(record,'body_v2.2')
+    assert result is (owner if managed else local)
+    assert extractor._managed_pipeline.extract.await_count==int(managed)
+    assert extractor._pipeline.extract.await_count==int(not managed)
 
 
 @pytest.mark.parametrize('already_selected',[False,True])
