@@ -1951,13 +1951,16 @@ class SiteStrategyService:
                 from .governance_models import dual_active_crawler
 
                 balanced = dual_active_crawler(scope, request.purpose)
-                candidates = [
-                    c
-                    for c in candidates
-                    if (await registry_io(self.failover.candidate_status,
-                        scope, c.identity_id or c.combination_id, request.purpose
-                    ))["selectable"]
-                ]
+                selected = []
+                for candidate in candidates:
+                    status = await registry_io(self.failover.candidate_status,
+                        scope, candidate.identity_id or candidate.combination_id, request.purpose)
+                    if status["selectable"]:
+                        selected.append(candidate)
+                    else:
+                        skips.append({"combination_id": candidate.combination_id,
+                                      "skip_reasons": status["skip_reasons"]})
+                candidates = selected
                 if balanced and preferred_identity:
                     candidates.sort(key=lambda c: (c.identity_id or c.combination_id) != preferred_identity)
         if not candidates:

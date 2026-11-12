@@ -397,7 +397,7 @@ class IndustryListingAdapter:
             + channel
             + "&chartingSymbol=stock%2F%2F%2F"
             + quote(context.ticker.lower(), safe="")
-            + "&pageNumber=0&count=40"
+            + "&pageNumber=0&count=40&_=" + str(time.time_ns())
         )
         async with context.request_permit():
             response = await self._public_get(
