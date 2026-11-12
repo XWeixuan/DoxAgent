@@ -1,0 +1,242 @@
+[
+  {
+    "path": "/assets/audit-DtRb2Ock.css",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "text/css"
+  },
+  {
+    "path": "/assets/audit-seniVPeO.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/auth-runtime-CQoOg3v1.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/business-metrics-BLa9kjlT.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/calendar-days-DvIhmtwG.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/chevron-right-C2XnXx_u.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/event-rail-CJrtHdrZ.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/events-Bz121_8P.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/expectations-BHLDwuaA.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/external-link-3vfE8REt.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/format-DuSM4N3A.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/git-pull-request-arrow-CQSwXH32.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/index-B_JAgl4S.css",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "text/css"
+  },
+  {
+    "path": "/assets/index-DKqWHADn.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/index-DsxWJWkZ.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/layers-DX4gJk7o.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/live-query-FRlt5pKN.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/load-more-CYBDLJuq.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/message-bus-CXmX1IkC.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/message-bus-DQQsQ9iw.css",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "text/css"
+  },
+  {
+    "path": "/assets/metrics-C2dfYZVn.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/page-kit-SmzSm8Sc.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/query-runtime-Btojn1CB.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/react-runtime-BDIxgnof.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/research-B_8KKbAy.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/runtime-BCNIcfWN.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/scan-line-Bp7W68F-.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/source-catalog-AYDApuxc.css",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "text/css"
+  },
+  {
+    "path": "/assets/source-catalog-C5yF68n1.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/strategy-BjZg5MN8.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/table-Dxp87Rw_.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/ticker-workspace-CZG8jNn2.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/assets/wire-validation-CUxxoACA.js",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/javascript"
+  },
+  {
+    "path": "/favicon.svg",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "image/svg+xml"
+  },
+  {
+    "path": "/fonts/README.md",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/octet-stream"
+  },
+  {
+    "path": "/fonts/Sansation-Light.ttf",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "application/octet-stream"
+  },
+  {
+    "path": "/fonts/Sansation-OFL.txt",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "text/plain"
+  },
+  {
+    "path": "/fonts/Satoshi-FFL.txt",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "text/plain"
+  },
+  {
+    "path": "/fonts/Satoshi-Variable.woff2",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "font/woff2"
+  },
+  {
+    "path": "/index.html",
+    "status": 200,
+    "sha256_matches": true,
+    "content_type": "text/html"
+  }
+]

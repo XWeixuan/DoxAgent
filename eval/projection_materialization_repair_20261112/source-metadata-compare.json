@@ -1,0 +1,1 @@
+[{"reuse": false, "seconds": 0.6115856380201876, "cpu_seconds": 0.46564748799999994, "connections": 72, "iterations": 24}, {"reuse": true, "seconds": 0.052741428022272885, "cpu_seconds": 0.030201653999999967, "connections": 4, "iterations": 24}]

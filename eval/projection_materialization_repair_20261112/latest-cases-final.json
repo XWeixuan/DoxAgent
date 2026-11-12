@@ -1,0 +1,1 @@
+{"at": "2026-11-12T13:50:57.142799+00:00", "checkpoint": 4546090, "head": 4546090, "read_seq": 13275211, "comparison": "source prefix through checkpoint vs pinned Read sequence", "checked_cases": 50, "mismatches": [], "gaps": [{"source": "runtime", "reason": "PROVENANCE_UNVERIFIED", "n": 66}, {"source": "runtime", "reason": "ValueError", "n": 17138}]}
