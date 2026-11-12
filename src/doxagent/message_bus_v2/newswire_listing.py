@@ -33,6 +33,7 @@ RECIPES = {
     "access_newswire_massive": {
         "url": "https://www.accessnewswire.com/newsroom?page={page}",
         "method": "GET", "routes": ["us-standard-5"], "size": 20,
+        "headers": {"Cache-Control": "no-cache", "Pragma": "no-cache"},
     },
     "businesswire_massive": {
         "url": "https://www.businesswire.com/newsroom?page={page}",
@@ -176,7 +177,10 @@ def cache_evidence(response, url, method):
                 ("age", "cache-control", "etag", "last-modified", "date", "warning", "x-cache")}
     evidence.update(url=url, method=method, status=response.status_code)
     try:
-        evidence["validation"] = check_cache(SimpleNamespace(headers=response.headers), SimpleNamespace(max_age_seconds=120))
+        # ACCESS can serve a 60s entry through a 300s grace window while its
+        # HTTP Date is current. Do not count an aged/graced payload as fresh.
+        max_age = 60 if urlsplit(url).hostname == 'www.accessnewswire.com' else 120
+        evidence["validation"] = check_cache(SimpleNamespace(headers=response.headers), SimpleNamespace(max_age_seconds=max_age))
     except ValueError as exc:
         evidence["error"] = str(exc)
     return evidence
@@ -206,8 +210,8 @@ async def poll_listing(adapter, context):
                 url = recipe["url"].format(page=page)
                 headers = dict(recipe.get("headers", {}))
                 if page == 1 and recipe["method"] == "GET" and head.get("baseline") and not context.force_refresh:
-                    headers = {name: head[key] for name, key in
-                               [("If-None-Match", "etag"), ("If-Modified-Since", "modified")] if head.get(key)}
+                    headers.update({name: head[key] for name, key in
+                               [("If-None-Match", "etag"), ("If-Modified-Since", "modified")] if head.get(key)})
                 response, route = await adapter.listing_request(context, url, recipe, headers)
                 caches.append(cache_evidence(response, url, recipe["method"]))
                 if caches[-1].get("error"):

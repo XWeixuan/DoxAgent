@@ -79,6 +79,18 @@ def test_stale_cache_is_failure(headers):
     assert cache_evidence(response(headers=headers), "https://wire.test", "GET").get("error")
 
 
+def test_access_current_date_does_not_hide_grace_cached_payload():
+    headers={'Age':'73','X-Cache':'hit graced cached','Cache-Control':'public, max-age=60, stale-while-revalidate=300'}
+    assert cache_evidence(response(headers=headers),'https://www.accessnewswire.com/newsroom?page=1','GET').get('error')
+
+
+async def test_access_revalidation_headers_survive_saved_baseline():
+    adapter=SimpleNamespace(listing_request=AsyncMock(return_value=(response(fixture('access')),'us-standard-5')),poll_feed=AsyncMock())
+    result=await poll_listing(adapter,context('access_newswire_massive',checkpoint={'head':{'baseline':True,'etag':'saved'}}))
+    assert not result.failures
+    assert adapter.listing_request.call_args.args[-1]=={'Cache-Control':'no-cache','Pragma':'no-cache','If-None-Match':'saved'}
+
+
 async def test_second_poll_unchanged_listing_does_not_repeat_body_inputs():
     adapter = SimpleNamespace(listing_request=AsyncMock(return_value=(response(fixture("prnewswire")), "direct")), poll_feed=AsyncMock())
     first = await poll_listing(adapter, context())

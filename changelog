@@ -3010,3 +3010,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Massive Newswire生产入口补充：SharedContentExtractor将BW/PRN/Newsfile的body_v2.2送入显式Site Access策略；GNW/ACCESS仍保留原有效轻量HTTP路径。补充总入口回归；HTTP分页中途失败/RSS兜底不再漏掉正常路径的30分钟过滤。最终相关组合68通过、1可选fixture跳过。
 
 - Newswire收尾优化：BW/PRN/Newsfile访问判定仅检查DOM与访问证据，不在短生命周期Managed worker内重复启动通用正文抽取；最终正文校验不变。安全验证/维护/入口回归68通过。
+
+- ACCESS列表缓存修复：请求no-cache重新验证，已保存ETag基线不再覆盖固定请求头；Age超过原站60秒TTL的宽限缓存不标记为新鲜成功。真实对照排除无效随机参数（400），47项相关回归通过、1可选fixture跳过。
