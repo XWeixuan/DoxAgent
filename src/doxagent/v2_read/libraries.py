@@ -272,5 +272,5 @@ def present(store, requests):
     requests=list(dict.fromkeys(requests))
     if not requests:return True
     with store.connect() as db:
-        n=db.execute("SELECT count(*) FROM json_each(?) q JOIN object_current c INDEXED BY current_identity ON c.kind=json_extract(q.value,'$[0]') AND c.ticker=json_extract(q.value,'$[1]') AND c.id=json_extract(q.value,'$[2]')",(encode(requests),)).fetchone()[0]
+        n=db.execute("SELECT count(*) FROM json_each(?) q CROSS JOIN object_current c INDEXED BY current_identity ON c.kind=json_extract(q.value,'$[0]') AND c.ticker=json_extract(q.value,'$[1]') AND c.id=json_extract(q.value,'$[2]')",(encode(requests),)).fetchone()[0]
     return n==len(requests)

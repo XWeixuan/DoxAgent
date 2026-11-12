@@ -62,7 +62,7 @@ def activate(store, ticker, active, at):
         keys=set(incoming)
         keys.update(d['summary']['policy_id']+':'+d['summary'].get('policy_activation_revision',d['summary']['policy_revision_id']) for d in previous_details.values())
         with store.connect() as db:
-            catalog={r[0]:json.loads(r[1]) for r in db.execute("SELECT c.id,c.payload FROM json_each(?) q JOIN object_current c INDEXED BY current_identity ON c.kind='policy_catalog' AND c.ticker=? AND c.id=q.value",(encode(sorted(keys)),ticker))}
+            catalog={r[0]:json.loads(r[1]) for r in db.execute("SELECT c.id,c.payload FROM json_each(?) q CROSS JOIN object_current c INDEXED BY current_identity ON c.kind='policy_catalog' AND c.ticker=? AND c.id=q.value",(encode(sorted(keys)),ticker))}
     else:
         catalog = rows(store, "policy_catalog", ticker)
     evidence = direction_evidence(store, ticker) if any(

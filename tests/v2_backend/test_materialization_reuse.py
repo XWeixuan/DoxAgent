@@ -76,3 +76,12 @@ def test_policy_head_dedup_and_late_delete_fenced_by_native_watermark(tmp_path,m
     monkeypatch.setattr(lifecycle,'rows',original)
     rows,_=mapper(event(12,'DELETE'))
     assert any(r['kind']=='policy_catalog' for r in rows)
+
+
+def test_affected_catalog_lookup_uses_full_identity_probe(tmp_path):
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    # SQLite otherwise reverses this join and scans the whole ticker catalog
+    # once for every affected key, despite INDEXED BY current_identity.
+    with store.connect() as db:
+        plans=db.execute("EXPLAIN QUERY PLAN SELECT c.id,c.payload FROM json_each(?) q CROSS JOIN object_current c INDEXED BY current_identity ON c.kind='policy_catalog' AND c.ticker=? AND c.id=q.value",('["P:ar"]','MU')).fetchall()
+    assert any('kind=? AND ticker=? AND id=?' in row[3] for row in plans)

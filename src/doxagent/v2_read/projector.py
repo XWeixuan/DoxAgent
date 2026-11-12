@@ -161,6 +161,7 @@ class ProjectionWorker:
                     raise ValueError("SOURCE_RECEIPT_MISSING")
                 event = {**loaded,"source":source.source}
                 if event.get("serving_skipped"):
+                    self.timings['verified_skips'] = self.timings.get('verified_skips', 0) + 1
                     skipped = event
                     count += 1
                     if time.monotonic() - started >= budget:
@@ -168,7 +169,8 @@ class ProjectionWorker:
                     continue
                 stage = time.perf_counter()
                 records, contributions = self.mapper(event)
-                self.timings["map_seconds"] = self.timings.get("map_seconds", 0) + time.perf_counter() - stage
+                map_seconds = time.perf_counter() - stage
+                self.timings["map_seconds"] = self.timings.get("map_seconds", 0) + map_seconds
                 stage = time.perf_counter()
                 self.store.ingest(
                     source.source,
@@ -178,16 +180,25 @@ class ProjectionWorker:
                     position=event["seq"],
                     at=event["recorded_at"],
                 )
-                self.timings["ingest_seconds"] = self.timings.get("ingest_seconds", 0) + time.perf_counter() - stage
+                ingest_seconds = time.perf_counter() - stage
+                self.timings["ingest_seconds"] = self.timings.get("ingest_seconds", 0) + ingest_seconds
                 dimensions=self.timings.setdefault('sources',{})
                 totals=dimensions.setdefault(source.source,{'events':0,'records':0,'seconds':0})
                 elapsed=time.perf_counter()-load_started
                 totals['events']+=1;totals['records']+=len(records);totals['seconds']+=elapsed
+                workloads=self.timings.setdefault('workloads',{})
+                workload=':'.join((source.source,event.get('table_name',''),event.get('row',{}).get('namespace','')))
+                totals=workloads.setdefault(workload,{'events':0,'records':0,'map_seconds':0,'ingest_seconds':0,'max_seconds':0,'latency_buckets':[0]*7})
+                totals['events']+=1;totals['records']+=len(records)
+                totals['map_seconds']+=map_seconds;totals['ingest_seconds']+=ingest_seconds
+                totals['max_seconds']=max(totals['max_seconds'],elapsed)
+                bucket=next((i for i,bound in enumerate((.05,.1,.25,.5,1,5)) if elapsed<=bound),6)
+                totals['latency_buckets'][bucket]+=1
                 if elapsed>1:
                     window,n=self._slow_window
                     if time.monotonic()-window>=60:window,n=time.monotonic(),0
                     if n<5:
-                        print(json.dumps({'projection_slow':{'source':source.source,'table':event.get('table_name'),'namespace':event.get('row',{}).get('namespace'),'seq':coordinate,'records':len(records),'seconds':elapsed}}),flush=True)
+                        print(json.dumps({'projection_slow':{'source':source.source,'table':event.get('table_name'),'namespace':event.get('row',{}).get('namespace'),'seq':coordinate,'records':len(records),'seconds':elapsed,'map_seconds':map_seconds,'ingest_seconds':ingest_seconds}}),flush=True)
                         n+=1
                     self._slow_window=(window,n)
                 skipped = None
