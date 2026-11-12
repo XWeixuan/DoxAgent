@@ -85,3 +85,29 @@ def test_affected_catalog_lookup_uses_full_identity_probe(tmp_path):
     with store.connect() as db:
         plans=db.execute("EXPLAIN QUERY PLAN SELECT c.id,c.payload FROM json_each(?) q CROSS JOIN object_current c INDEXED BY current_identity ON c.kind='policy_catalog' AND c.ticker=? AND c.id=q.value",('["P:ar"]','MU')).fetchall()
     assert any('kind=? AND ticker=? AND id=?' in row[3] for row in plans)
+
+
+def test_legacy_reference_presence_does_not_certify_another_branch_birth(tmp_path):
+    _,store,value=seeded(tmp_path)
+    value['after']['events'][0]['facts']=[]
+    records=[r for r in project(store,value) if r['kind']!='projection_materialization']
+    for r in records:
+        if r['kind']=='reference_event':r['data']['event_key']='another-branch-birth'
+    store.ingest('legacy','branch',records)
+    repaired=project(store,value)
+    events=[r for r in repaired if r['kind']=='reference_event']
+    assert events and all(r['data']['event_key']!='another-branch-birth' for r in events)
+
+
+def test_unverified_legacy_library_rebuilds_lineage_proof(tmp_path,monkeypatch):
+    root,store,_=seeded(tmp_path)
+    _,records=LibraryIndexer(root).index('MU',1)
+    store.ingest('legacy','library',records)
+    import sqlite3
+    with sqlite3.connect(root/'US/MU/event_library.sqlite3') as db:
+        db.execute("UPDATE v2_native_identities SET provenance='INFERRED' WHERE collection='library_versions'")
+    indexer=LibraryIndexer(root);original=indexer.index;calls=[]
+    def index(*args):calls.append(1);return original(*args)
+    monkeypatch.setattr(indexer,'index',index)
+    _,records=indexer.ensure(store,'MU',1)
+    assert calls and any(r['kind']=='lineage_gap' for r in records)

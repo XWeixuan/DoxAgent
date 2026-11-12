@@ -29,7 +29,7 @@ def project(store, value):
         ref,indexed,by_id,facts = LibraryIndexer(value.get(side + '_root',value['root'])).reference(store,ticker,captured)
         refs[side] = ref
         records.extend(indexed)
-        proof={'root':str(LibraryIndexer(value.get(side + '_root',value['root'])).root), 'snapshot':snapshot_ids[side], 'library':ref, 'contract':1}
+        proof={'root':str(LibraryIndexer(value.get(side + '_root',value['root'])).root), 'snapshot':snapshot_ids[side], 'library':ref, 'contract':2}
         marker=materialization(ticker,'reference:'+snapshot_ids[side],proof)
         ready=store.get('projection_materialization',ticker,marker['id'])==proof
         if not ready:
@@ -39,6 +39,13 @@ def project(store, value):
                 expected.append(('reference_event',ticker,parent))
                 expected.extend(('fact',ticker,parent+':'+facts[f['fact_id']]) for f in ev['facts'])
             ready=present(store,expected)
+            if ready and captured['events']:
+                # Captured hashes omit root; a branch may reuse an E-number
+                # with another birth identity, including events with no facts.
+                expected_refs=[(snapshot_ids[side]+':'+ev['event_id'],by_id[ev['event_id']]['event_key'],ref['library_snapshot_id']) for ev in captured['events']]
+                with store.connect() as db:
+                    matches=db.execute("SELECT count(*) FROM json_each(?) q CROSS JOIN object_current c INDEXED BY current_identity ON c.kind='reference_event' AND c.ticker=? AND c.id=json_extract(q.value,'$[0]') WHERE json_extract(c.payload,'$.event_key')=json_extract(q.value,'$[1]') AND json_extract(c.payload,'$.library.library_snapshot_id')=json_extract(q.value,'$[2]')",(encode(expected_refs),ticker)).fetchone()[0]
+                ready=matches==len(expected_refs)
         records.append(marker)
         events[side] = {}
         for event in captured["events"]:

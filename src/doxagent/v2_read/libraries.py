@@ -29,9 +29,9 @@ class LibraryIndexer:
             raise ValueError("PINNED_ARTIFACT_MISSING")
         db = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=2)
         db.row_factory = sqlite3.Row
-        native._require_native_version(db, ticker, version)
         records = []
         try:
+            native._require_native_version(db, ticker, version)
 
             def birth(collection: str, number: int) -> str:
                 row = db.execute(
@@ -211,19 +211,20 @@ class LibraryIndexer:
         with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:
             row=db.execute('SELECT published_at FROM library_versions WHERE ticker=? AND version=?',(ticker,version)).fetchone()
             if not row or not row[0]:raise ValueError('PINNED_ARTIFACT_MISSING')
-            ids={(c,k):v for c,k,v in db.execute("SELECT collection,native_key,identity FROM v2_native_identities WHERE collection IN ('library_versions','canonical_events','canonical_facts')")}
-        return ids
+            rows=list(db.execute("SELECT collection,native_key,identity,provenance FROM v2_native_identities WHERE collection IN ('library_versions','canonical_events','canonical_facts')"))
+            ids={(c,k):v for c,k,v,_ in rows}
+        return ids, all(p=='RECORDED' for _,_,_,p in rows)
 
     def ensure(self, store, ticker, version):
-        ids=self._identities(ticker,version)
+        ids,verified=self._identities(ticker,version)
         snapshot=ids.get(('library_versions',encode([ticker,version])))
         if snapshot is None:raise ValueError('BIRTH_IDENTITY_NOT_INDEXED')
         ref=store.get('library',ticker,snapshot)
-        proof={'root':str(self.root),'version':version,'snapshot':snapshot,'contract':1}
+        proof={'root':str(self.root),'version':version,'snapshot':snapshot,'contract':2}
         marker=materialization(ticker,'library:'+snapshot,proof)
         prior=store.get('projection_materialization',ticker,marker['id'])
         if ref and ref.get('library_version')==version and prior==proof:return ref,[]
-        if ref and ref.get('library_version')==version:
+        if verified and ref and ref.get('library_version')==version:
             path=self.root/'US'/ticker/'event_library.sqlite3'
             with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:
                 events=[n for n, in db.execute('SELECT event_no FROM canonical_events WHERE ticker=? AND created_version<=?',(ticker,version))]
@@ -244,7 +245,7 @@ class LibraryIndexer:
         version=captured['version']
         if not version:return None,[],{},{}
         ref,records=self.ensure(store,ticker,version)
-        ids=self._identities(ticker,version)
+        ids,_=self._identities(ticker,version)
         events={e['event_id'] for e in captured['events']}
         facts={f['fact_id'] for e in captured['events'] for f in e['facts']}
         path=self.root/'US'/ticker/'event_library.sqlite3'
