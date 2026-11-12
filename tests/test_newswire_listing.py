@@ -81,6 +81,9 @@ def test_stale_cache_is_failure(headers):
 
 def test_access_current_date_does_not_hide_grace_cached_payload():
     headers={'Age':'73','X-Cache':'hit graced cached','Cache-Control':'public, max-age=60, stale-while-revalidate=300'}
+    evidence=cache_evidence(response(headers=headers),'https://www.accessnewswire.com/newsroom?page=1','GET')
+    assert evidence['freshness_warning']=='publisher_stale_grace' and 'error' not in evidence
+    headers['Age']='121'
     assert cache_evidence(response(headers=headers),'https://www.accessnewswire.com/newsroom?page=1','GET').get('error')
 
 
