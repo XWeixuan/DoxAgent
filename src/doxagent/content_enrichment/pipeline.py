@@ -201,6 +201,12 @@ class ArticlePipeline:
                     "reader": READER_STAGE_SECONDS.get(publisher_host(url), 8) if record.source_id == 'google_news_search_rss' else 8,
                     "zyte": 20, "zyte_http": 10, "google_browser": 10,
                 }[stage]))
+                if (strategy_ref == "builtin:barrons@1" and access_order == ["browser"]
+                        and stage == "browser" and "browser_timeout_seconds" not in strategy_parameters):
+                    # One authenticated route has no second route to reserve eight
+                    # seconds for. Let normal Chrome startup/hydration complete
+                    # within the existing article deadline instead of restarting it.
+                    cap = 15
                 auth = {}
                 if google and stage == 'reader' and publisher_host(url) == 'futunn.com':
                     cap = 14

@@ -2972,3 +2972,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-13 MCP现状适配生产验收：76fd43173仅发布API/MCP，真实概览10 ticker、全局目录85源320订阅五页、BE长W3筛选及192秒详情一致通过；四源采样追平，17204历史gap与STALE保留，非模型时间仍NOT_RECORDED。修复canonical base缺原微信secret覆盖导致stdio启动失败，恢复挂载后五工具可用；并行Web变更单列，不重发Projector/交易。57项回归与详细证据见docs/agent-mcp-metrics-source-catalog-adaptation-20261113.md。
 2026-11-13 Bloomberg BODY cache follow-up: use the existing publisher entitlement scope for Bloomberg, preventing legacy public/previews from being reused as authorized subscription FULL. No historical bulk re-fetch or extra cache subsystem; add public-vs-subscriber compatibility regression.
+
+2026-11-13 Barrons body/latency repair: preserve scope-filter candidate reasons, allow the sole authenticated Barrons browser route up to15 seconds within the existing article deadline, refresh its HTTP JSON cache key without duplicate requests, and allow Close Login to release an exact-target-confirmed lost ordinary login reservation. Preserve Challenge pages, auth proof, Profile/Cookie, polling cadence and recheck=false. Add focused regression tests and per-stage production audit.

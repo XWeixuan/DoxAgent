@@ -572,6 +572,12 @@ class MaintenanceController:
                 session.kind != "LOGIN" and (task is None or task.state != "RESOLVED")
             ):
                 raise ValueError("Close Login cannot discard a Challenge page")
+            if session.kind == "LOGIN" and not await self._login_session_reusable(session):
+                # Controller handles may be gone while the compatibility Profile
+                # reservation remains. Native exact-target absence, not a failed
+                # CDP request, is the evidence that this login can be finished.
+                await self._finish_lost_login(session)
+                return {"session_closed": True, "original_page_lost": True}
             await self.service.runtime.close_login(session.control_token)
             identity = self.service.repository.get_identity(session.identity_id)
             await self.service.profile_use.end_maintenance(
