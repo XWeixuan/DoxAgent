@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-12T22:20:17.028658+00:00",
+  "before_revision": 2,
+  "before": {
+    "max_concurrency": 1,
+    "min_interval_ms": 3000
+  },
+  "after": {
+    "max_concurrency": 2,
+    "min_interval_ms": 1500
+  },
+  "applied": true,
+  "instance_before": "d8d7784be940492394d39cad786a6406",
+  "after_revision": 3
+}

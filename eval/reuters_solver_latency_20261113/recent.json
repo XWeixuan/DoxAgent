@@ -1,0 +1,281 @@
+{
+  "browser_recoveries": [
+    {
+      "identity_id": "reuters-backup",
+      "recovery_id": "recovery_a0fdba1e630d49d78c033913b4a39366",
+      "task_id": null,
+      "job_id": null,
+      "phase": "RESOLVED",
+      "status": null,
+      "state": null,
+      "created_at": null,
+      "updated_at": "2026-11-12T17:09:42.699354Z",
+      "opened_at": "2026-11-12T15:24:19.119520Z",
+      "next_probe_at": "2026-11-12T17:14:21.744871Z",
+      "last_error": null,
+      "reason": null,
+      "assessment": {
+        "provider": "DATADOME",
+        "kind": "INTERACTIVE",
+        "interaction": "SLIDER",
+        "confidence": "HIGH",
+        "provider_confidence": "HIGH",
+        "signals": [
+          "active_datadome_frame",
+          "datadome_slider_frame"
+        ],
+        "observed_at": "2026-11-12T17:09:31.477247+00:00",
+        "sample_id": "sample_b6ae3606178b497db13033dce4e39c8d",
+        "source": "document",
+        "handling_mode": "HUMAN",
+        "policy_reason": "datadome_slider_frame"
+      },
+      "attempt_count": 10,
+      "resolved_at": "2026-11-12T17:09:42.699354Z",
+      "resolved_by": "manual_verification",
+      "applied_at": null,
+      "verification_state": null,
+      "verification_reason": null,
+      "solver_verification": null,
+      "diagnostics": null,
+      "diagnostic_timeline": null,
+      "document_recovery": {},
+      "scene_preparation": {
+        "retry_action_id": "retry_4d66d953aa124f55b03d4018507e4ce6",
+        "scene_signature": "8793bd6ed259efb79998ed61ec01d23a9d51db918b938db06d46e4b5bba0a56e",
+        "instance_id": "d8d7784be940492394d39cad786a6406",
+        "target_id": "FC58CC2634FCCE01436DFB53AAB4F3BC",
+        "attempt_no": 1,
+        "started_at": "2026-11-12T15:25:27.334082+00:00",
+        "status": "CLICKED",
+        "preflight_failures": 0,
+        "preparation_version": 2
+      }
+    },
+    {
+      "identity_id": "digitimes-de-1",
+      "recovery_id": "recovery_4519eaad023a490bb5549f123a64c88b",
+      "task_id": null,
+      "job_id": null,
+      "phase": "BACKOFF",
+      "status": null,
+      "state": null,
+      "created_at": null,
+      "updated_at": "2026-11-12T22:11:59.211111Z",
+      "opened_at": "2026-11-12T22:07:48.715192Z",
+      "next_probe_at": "2026-11-12T22:20:26.833921Z",
+      "last_error": "provider_result_still_blocked_manual_review",
+      "reason": null,
+      "assessment": {
+        "provider": "DATADOME",
+        "kind": "INTERACTIVE",
+        "interaction": "SLIDER",
+        "confidence": "HIGH",
+        "provider_confidence": "HIGH",
+        "signals": [
+          "active_datadome_frame",
+          "datadome_slider_frame"
+        ],
+        "observed_at": "2026-11-12T22:11:59.125901+00:00",
+        "sample_id": "sample_075de6c00a4e4bd1ad38d08cd3078baf",
+        "source": "document",
+        "handling_mode": "HUMAN",
+        "policy_reason": "datadome_slider_frame"
+      },
+      "attempt_count": 2,
+      "resolved_at": null,
+      "resolved_by": null,
+      "applied_at": null,
+      "verification_state": null,
+      "verification_reason": null,
+      "solver_verification": null,
+      "diagnostics": null,
+      "diagnostic_timeline": null,
+      "document_recovery": {},
+      "scene_preparation": {
+        "retry_action_id": "retry_bb11be56ba1049a9a0713d1840b1bbb4",
+        "scene_signature": "8f47725093cd35c738a7bfd9951b8f00eb5cd976c9a34809399f004f85563f25",
+        "instance_id": "ddae8dc2d59848db80c779ce7a6c6310",
+        "target_id": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+        "attempt_no": 1,
+        "started_at": "2026-11-12T22:09:15.430515+00:00",
+        "status": "CLICKED",
+        "preflight_failures": 0,
+        "preparation_version": 2
+      }
+    }
+  ],
+  "datadome_solver_jobs": [
+    {
+      "identity_id": "reuters-backup",
+      "recovery_id": "recovery_a0fdba1e630d49d78c033913b4a39366",
+      "task_id": 84400545890,
+      "job_id": "dd_9afaee2c8b244a4785a8a9017ea93805",
+      "phase": null,
+      "status": "APPLIED",
+      "state": null,
+      "created_at": "2026-11-12T15:25:36.942039+00:00",
+      "updated_at": "2026-11-12T22:12:46.794024+00:00",
+      "opened_at": null,
+      "next_probe_at": null,
+      "last_error": null,
+      "reason": null,
+      "assessment": null,
+      "attempt_count": null,
+      "resolved_at": null,
+      "resolved_by": null,
+      "applied_at": "2026-11-12T15:27:46.386102+00:00",
+      "verification_state": "STILL_BLOCKED",
+      "verification_reason": "confirmation_window_expired",
+      "solver_verification": "INDETERMINATE",
+      "diagnostics": {
+        "DOCUMENT": {
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "page_kind": null,
+          "evidence": "RETAINED_DOCUMENT",
+          "at": "2026-11-12T15:27:53.580532+00:00"
+        },
+        "CRAWLER": {
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "0bb16a25f67da847557eb0f6edfbafb6adb350382e4db5a4ff3d1a5204c46861",
+          "proof_id": "4cd6393f2de7920a1355c8ba428c1ef08ff046bbf9fb9d02c14b039273fa9300",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-12T17:09:47.180326+00:00"
+        },
+        "BODY": {
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": "FULL",
+          "query_key": "221733ba36840953d9f42366315dc22ae547051f4d9ba5099e8384b02c1b0023",
+          "proof_id": "4b594728b73f94e4c29bc02f3b109aaa3f109ee3095a721307f1a97862b4b4d2",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-12T17:16:49.936903+00:00"
+        }
+      },
+      "diagnostic_timeline": [
+        {
+          "stage": "DOCUMENT",
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "page_kind": null,
+          "evidence": "RETAINED_DOCUMENT",
+          "at": "2026-11-12T15:27:53.580532+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "http_status": 401,
+          "body_quality": "NOT_TESTED",
+          "evidence": "RECOVERY_PROBE",
+          "at": "2026-11-12T15:30:02.227857+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": null,
+          "query_key": "0bb16a25f67da847557eb0f6edfbafb6adb350382e4db5a4ff3d1a5204c46861",
+          "proof_id": "4cd6393f2de7920a1355c8ba428c1ef08ff046bbf9fb9d02c14b039273fa9300",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-12T17:09:47.180326+00:00"
+        },
+        {
+          "stage": "BODY",
+          "outcome": "SUCCESS",
+          "reason": "ok",
+          "http_status": 200,
+          "body_quality": "FULL",
+          "query_key": "221733ba36840953d9f42366315dc22ae547051f4d9ba5099e8384b02c1b0023",
+          "proof_id": "4b594728b73f94e4c29bc02f3b109aaa3f109ee3095a721307f1a97862b4b4d2",
+          "evidence": "NATURAL_TRANSPORT",
+          "at": "2026-11-12T17:16:49.936903+00:00"
+        }
+      ],
+      "document_recovery": null,
+      "scene_preparation": null
+    },
+    {
+      "identity_id": "digitimes-de-1",
+      "recovery_id": "recovery_4519eaad023a490bb5549f123a64c88b",
+      "task_id": 84403569365,
+      "job_id": "dd_32c207cb1d1c47f78c96bcacf0e1885c",
+      "phase": null,
+      "status": "APPLIED",
+      "state": null,
+      "created_at": "2026-11-12T22:09:26.002905+00:00",
+      "updated_at": "2026-11-12T22:11:59.179002+00:00",
+      "opened_at": null,
+      "next_probe_at": null,
+      "last_error": null,
+      "reason": null,
+      "assessment": null,
+      "attempt_count": null,
+      "resolved_at": null,
+      "resolved_by": null,
+      "applied_at": "2026-11-12T22:09:56.607852+00:00",
+      "verification_state": "STILL_BLOCKED",
+      "verification_reason": "confirmation_window_expired",
+      "solver_verification": null,
+      "diagnostics": {
+        "DOCUMENT": {
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "page_kind": null,
+          "evidence": "RETAINED_DOCUMENT",
+          "at": "2026-11-12T22:10:06.774887+00:00"
+        },
+        "CRAWLER": {
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "http_status": 401,
+          "body_quality": "NOT_TESTED",
+          "evidence": "RECOVERY_PROBE",
+          "at": "2026-11-12T22:10:26.817376+00:00"
+        }
+      },
+      "diagnostic_timeline": [
+        {
+          "stage": "DOCUMENT",
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "page_kind": null,
+          "evidence": "RETAINED_DOCUMENT",
+          "at": "2026-11-12T22:10:06.774887+00:00"
+        },
+        {
+          "stage": "CRAWLER",
+          "challenge": "BLOCKED",
+          "authentication": "UNKNOWN",
+          "outcome": "NOT_TESTED",
+          "reason": "challenge_required",
+          "http_status": 401,
+          "body_quality": "NOT_TESTED",
+          "evidence": "RECOVERY_PROBE",
+          "at": "2026-11-12T22:10:26.817376+00:00"
+        }
+      ],
+      "document_recovery": null,
+      "scene_preparation": null
+    }
+  ],
+  "challenge_tasks": []
+}

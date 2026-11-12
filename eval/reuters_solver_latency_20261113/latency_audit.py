@@ -1,7 +1,8 @@
-import json,sqlite3,collections,statistics
+import json,sqlite3,collections,statistics,argparse
 from pathlib import Path
 from datetime import datetime,timezone,timedelta
-now=datetime.now(timezone.utc);since=(now-timedelta(hours=24)).isoformat()
+parser=argparse.ArgumentParser();parser.add_argument('--since');args=parser.parse_args()
+now=datetime.now(timezone.utc);since=args.since or (now-timedelta(hours=24)).isoformat()
 d=sqlite3.connect('file:/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/registry/site_strategy.sqlite3?mode=ro',uri=True);d.row_factory=sqlite3.Row
 vals=collections.defaultdict(list);counts=collections.Counter();slow=[]
 for r in d.execute("select occurred_at,operation_id,payload_json from access_events where site_id='reuters' and julianday(occurred_at)>=julianday(?) and category='ACCESS_RESULT'",(since,)):

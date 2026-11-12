@@ -63,6 +63,29 @@ from .storage import storage_failure
 logger = logging.getLogger(__name__)
 
 
+def merge_attempt_timings(attempts):
+    """Sum durations, preserve labels, and retain each physical request separately."""
+    merged = {}
+    next_request = 0
+    for attempt_index, attempt in enumerate(attempts):
+        indices = {}
+        for key, value in attempt.stage_timings.items():
+            request = re.fullmatch(r"request_(\d+)_(.+)", key)
+            if request:
+                local, suffix = request.groups()
+                if local not in indices:
+                    indices[local] = next_request
+                    if len(attempts) > 1:
+                        merged[f"request_{next_request}_attempt_index"] = attempt_index
+                    next_request += 1
+                merged[f"request_{indices[local]}_{suffix}"] = value
+            elif key.endswith("_epoch_ms") or not key.endswith("_ms"):
+                merged[key] = value
+            else:
+                merged[key] = merged.get(key, 0) + value
+    return merged
+
+
 class ProfileUnavailableError(RuntimeError):
     pass
 
@@ -1712,6 +1735,8 @@ class SiteStrategyService:
                             "network_ms": result.network_ms,
                             "queue_wait_ms": result.queue_wait_ms,
                             "stage_timings": result.stage_timings,
+                            **({"attempt_identity_ids": [a.identity_id for a in result.attempts]}
+                               if len(result.attempts) > 1 else {}),
                             "work_class": request.work_class,
                         },
                     )
@@ -4147,7 +4172,7 @@ class SiteStrategyService:
             attempts=attempts,
             queue_wait_ms=sum(item.queue_wait_ms for item in attempts),
             network_ms=sum(item.network_ms for item in attempts),
-            stage_timings={key: sum(a.stage_timings.get(key, 0) for a in attempts) for key in {k for a in attempts for k in a.stage_timings}},
+            stage_timings=merge_attempt_timings(attempts),
         )
 
 
