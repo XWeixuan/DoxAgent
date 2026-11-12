@@ -32,7 +32,10 @@ class ProjectionWorker:
     def tick(self, *, limit: int = 100) -> int:
         session = self.store.projection_session() if hasattr(self.store, "projection_session") else nullcontext()
         started, cpu = time.monotonic(), time.process_time()
-        with session:
+        with session, ExitStack() as readers:
+            for source in self.sources:
+                if isinstance(source, SourceOutbox):
+                    readers.enter_context(source.projection_session())
             count = self._tick(limit=limit)
         self.timings['tick_seconds'] = self.timings.get('tick_seconds', 0) + time.monotonic() - started
         self.timings['cpu_seconds'] = self.timings.get('cpu_seconds', 0) + time.process_time() - cpu

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
-from contextlib import closing
+from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -94,18 +94,46 @@ def quoted(identifier: str) -> str:
     return '"' + identifier + '"'
 
 
+class _ProjectionReadConnection(sqlite3.Connection):
+    def close(self):
+        # Tick owner closes the borrowed connection after all source readers exit.
+        pass
+
+
 class SourceOutbox:
     def __init__(self, path: str | Path, source: str) -> None:
         self.path, self.source = Path(path).resolve(), source
         from .native_content import NativeContent
 
         self.content = NativeContent(self.path)
+        self._projection_reads = False
+        self._projection_db = None
+
+    @contextmanager
+    def projection_session(self):
+        if self._projection_reads:
+            raise RuntimeError('nested source projection session')
+        self._projection_reads = True
+        try:
+            yield
+        finally:
+            db, self._projection_db = self._projection_db, None
+            self._projection_reads = False
+            if db is not None:
+                sqlite3.Connection.close(db)
 
     def connection(self, *, write: bool = False) -> sqlite3.Connection:
+        reuse = not write and self._projection_reads
+        if reuse and self._projection_db is not None:
+            return self._projection_db
         db = sqlite3.connect(
-            self.path.as_uri() + ("?mode=rw" if write else "?mode=ro"), uri=True, timeout=2
+            self.path.as_uri() + ("?mode=rw" if write else "?mode=ro"), uri=True, timeout=2,
+            factory=_ProjectionReadConnection if reuse else sqlite3.Connection,
         )
         db.row_factory = sqlite3.Row
+        if reuse:
+            db.execute('PRAGMA cache_size=-1024')
+            self._projection_db = db
         return db
 
     def migrate(self, tables: tuple[str, ...] | None = None, *, dry_run: bool = False) -> list[str]:
