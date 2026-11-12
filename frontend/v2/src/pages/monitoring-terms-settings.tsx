@@ -56,6 +56,8 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saved]);
   useEffect(() => {
+    // Wait for the initial read before touching a draft left by a page refresh.
+    if (!baseline || !draft) return;
     if (dirty && baseline && draft) sessionStorage.setItem(draftKey, JSON.stringify({ baseline, draft }));
     else sessionStorage.removeItem(draftKey);
   }, [dirty, baseline, draft, draftKey]);
