@@ -1949,26 +1949,13 @@ class SiteAccessRuntime:
                 html = native_document[0] if native_document else await page.content()
                 if (
                     resolved.site_id == "barrons"
-                    and request.purpose.value == "BODY"
+                    and request.purpose in {SitePurpose.BODY, SitePurpose.PROBE}
+                    and "/articles/" in urlsplit(request.url).path
                     and status == 200
                     and not initial_challenge
                 ):
-                    from doxagent.content_enrichment.quality import choose_candidate
-
-                    content_deadline = min(deadline, time.monotonic() + 12)
-                    info = inspect_html(html, page.url, "", strategy_ref=resolved.body.ref,
-                        strategy_parameters=resolved.body.parameters, generic_extraction=False)
-                    candidate, quality, _ = choose_candidate(info, "")
-                    if not info.access_reason and not (candidate and quality in {"FULL", "SHORT_FULL"}):
-                        try:
-                            await page.wait_for_function("""() => {
-                                const node=document.querySelector('[data-testid="ArticleBody"], [itemprop="articleBody"], article');
-                                return node && node.innerText.trim().length > 500;
-                            }""", polling=250, timeout=max(1,int((content_deadline-time.monotonic())*1000)))
-                        except Exception as exc:
-                            if "timeout" not in type(exc).__name__.lower():
-                                raise
-                        html = await page.content()
+                    from .barrons_document import capture_document
+                    html = await capture_document(page, timeout=max(.001,min(12,deadline-time.monotonic())))
                 if len(html.encode("utf-8")) > request.max_response_bytes:
                     return RuntimeResponse(
                         0,

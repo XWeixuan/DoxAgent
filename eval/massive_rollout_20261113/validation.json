@@ -1,0 +1,56 @@
+{
+  "backend": {
+    "command": "pytest tests/test_massive_distribution.py tests/v2_backend/test_monitoring_terms.py tests/test_cross_source_live_dedup.py tests/test_ibkr_channel_dedup.py -q --maxfail=1",
+    "passed": 72,
+    "skipped": 1,
+    "skip_reason": "optional historical 4078-row fixture is not copied to isolated worktree"
+  },
+  "other_backend": {
+    "command": "pytest tests/test_massive_distribution.py tests/test_message_bus_monitoring_terms.py tests/v2_backend/test_monitoring_terms.py tests/v2_backend/test_bindings.py tests/test_source_catalog.py -q --maxfail=1",
+    "passed": 31,
+    "skipped": 1,
+    "note": "earlier overlap run; do not add to final 72"
+  },
+  "catalog_final_assertions": {
+    "passed": 10,
+    "command": "pytest tests/test_source_catalog.py -q",
+    "note": "after retaining concurrent Agent MCP main changes"
+  },
+  "frontend_build": "passed",
+  "frontend_unit": {
+    "command": "pnpm exec vitest run tests/monitoring-terms.test.ts",
+    "passed": 1
+  },
+  "browser": {
+    "command": "pnpm exec playwright test tests/browser/monitoring-terms.spec.ts",
+    "passed": 11,
+    "widths": [
+      1262,
+      1559
+    ],
+    "coverage": [
+      "independent scopes",
+      "languages",
+      "invalid JSON",
+      "discard",
+      "refresh draft restoration",
+      "CAS412"
+    ]
+  },
+  "historical_replay": {
+    "pairs": 900,
+    "differences": 0
+  },
+  "native_browser_api": {
+    "command": "DOXAGENT_TERMS_BACKEND=1 pnpm exec playwright test tests/browser/monitoring-terms-integration.spec.ts",
+    "passed": 2,
+    "scope": "disposable native Bus database, real HTTP API"
+  },
+  "post_concurrent_merge": {
+    "commit": "08949ceb8",
+    "command": "pytest tests/test_massive_distribution.py tests/test_bloomberg_subscription_body.py -q --maxfail=1",
+    "passed": 30,
+    "skipped": 1,
+    "note": "after preserving parallel Bloomberg BODY changes; not added to earlier overlapping totals"
+  }
+}

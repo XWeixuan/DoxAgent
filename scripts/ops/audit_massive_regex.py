@@ -15,7 +15,10 @@ for sid in ids:
     s = repo.get_source(sid)
     d = out['sources'][sid] = {'enabled': s.enabled, 'mode': s.delivery_mode,
         'jev': s.distribution_policy.jev_enabled,
+        'require_complete_body': s.distribution_policy.require_complete_body,
         'bindings': sorted(b.ticker for b in bindings if b.source_id == sid and b.enabled)}
+    assert s.delivery_mode=='production' and s.enabled and not d['jev'] and d['require_complete_body']
+    assert not s.distribution_policy.test_tickers
     with repo._connect() as db:
         d['articles'] = [tuple(r) for r in db.execute("SELECT outcome,count(*) FROM live_articles WHERE source_id=? AND first_seen_at>=? AND substr(article_key,1,5)!='test_' GROUP BY outcome", (sid, start))]
         d['deliveries'] = [tuple(r) for r in db.execute("SELECT state,regex_result,count(*) FROM live_deliveries WHERE source_id=? AND created_at>=? GROUP BY state,regex_result", (sid, start))]

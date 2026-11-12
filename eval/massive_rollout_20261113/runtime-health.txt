@@ -1,0 +1,6 @@
+doxagent-v2-v2-message-collector-1 844336497401 Up 2 minutes (healthy)
+doxagent-v2-v2-web-1 d549b29391e9 Up 28 minutes (healthy)
+doxagent-v2-v2-api-1 3f57b5f95f18 Up 30 minutes (healthy)
+doxagent-v2-v2-message-bus-1 b069c98549af Up 41 minutes
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda3       374G  350G   23G  94% /

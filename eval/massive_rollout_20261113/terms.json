@@ -1,0 +1,1225 @@
+{
+  "INTC": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "processor_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:INTC|Xeon|AMD|EPYC|Ryzen|CPUs?|ASIC|industrial edge computing|semiconductor metrology|semiconductor assembly|FOUP|Lam Research|ASML|silicon wafers|data center accelerators)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "intel_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bIntel\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:FinTech Intel|market intel|sports intel)\\b"
+              }
+            ]
+          },
+          {
+            "id": "processor_technology_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:Xeon|Ryzen|Snapdragon|Thunderbolt [45]|CoWoS|silicon[ -]spin quantum|Blackwell[ -]class processors|x86 HPC)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "intel_manufacturing_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:partnership with Intel|Intel\\b[^.\\n]{0,75}(?:semiconductor|wafer|fab expansion)|capacity expansion[^.\\n]{0,70}Intel)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "logic_packaging_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:advanced (?:chip )?packaging|logic (?:base dies|foundr\\w*))\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:logic|chiplet|wafer|AI processor)\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:IGBT|power device|power module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "edge_compute_deployment",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:Raspberry Pi|AI processors?)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "title",
+                "regex": "\\b(?:integrat\\w*|computing|deploy\\w*)\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "facility_construction_policy",
+            "any": [
+              {
+                "field": "body",
+                "regex": "(?:\\b(?:freeze|moratorium|ban|restrictions?)\\b[^.\\n]{0,80}\\bdata[ -]?cent(?:er|re)s?\\b|\\bdata[ -]?cent(?:er|re)s?\\b[^.\\n]{0,80}\\b(?:freeze|moratorium|ban|restrictions?)\\b)"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "facility_market",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata cent(?:er|re) (?:market|facility management|and AI infrastructure market)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_subject_event",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b|\\bAI factor(?:y|ies)|AI datacenter\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "title",
+                "regex": "\\b(?:acqui\\w*|construct\\w*|develop\\w*|complet\\w*|plans?|planned|financ\\w*|fund\\w*|expan\\w*|opens?|opened|campus|sites?|deploy\\w*)\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_capacity_progress",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:commission\\w*|energiz\\w*|contracted|operational|campus|construct\\w*|deploy\\w*|planning|planned|build\\w*)\\b[^.\\n]{0,90}\\d[\\d,.]*\\s*(?:MW(?:dc)?|GW(?:dc)?|megawatts?|gigawatts?)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_opening",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:opens?|opened|opening|built|builds?|building|commissioned|commissioning|under construction)\\b[^.\\n]{0,90}\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "compute_buildout",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:purchas\\w*|acquir\\w*|deploy\\w*|order\\w*|lease\\w*)\\b[^.\\n]{0,85}\\b(?:NVIDIA|Blackwell|Rubin|[BGH][123]\\d{2}|rack-scale systems?|GPU clusters?)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_finance_capacity",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bfinancing\\b[^.\\n]{0,100}\\bAI compute capacity\\b|\\b(?:\\d[\\d,.]*\\s*(?:MW|GW) (?:of )?(?:AI )?compute capacity|[\\d,]{3,}(?: [\\w-]+){0,3} GPU(?:s| servers))\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\INTC\\regex\\attempt-02-overfit\\candidate.json",
+    "original_sha256": "0c05ce0b406ca61373da68baff2b7c2a874c95636c9c95788f7eba51749d86cd"
+  },
+  "MU": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "memory_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Micron|Crucial|DRAM|HBM\\w*|NAND|SSD|memory-centric|in-memory comput\\w*|FOUP)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "memory_business_fact",
+            "any": [
+              {
+                "field": "all",
+                "regex": "\\b(?:HBM\\d*\\w*|NAND|SanDisk|SSD|solid-state drives|high-bandwidth memory)\\b[^.\\n]{0,100}\\b(?:demand|revenue|growth|supply|packaging|inspection|retire\\w*|refresh\\w*|recover\\w*)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "memory_resource_risk",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:hardware and memory|memory and hardware)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "memory_materials_demand",
+            "any": [
+              {
+                "field": "all",
+                "regex": "\\b(?:demand|sales|growth)\\b[^.\\n]{0,120}\\b(?:sputtering targets|memory applications|memory and AI-related applications)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "ai_server_market",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bAI servers? market\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "facility_market",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata cent(?:er|re) (?:market|facility management|and AI infrastructure market)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_subject_event",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b|\\bAI factor(?:y|ies)|AI datacenter\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "title",
+                "regex": "\\b(?:acqui\\w*|construct\\w*|develop\\w*|complet\\w*|plans?|planned|financ\\w*|fund\\w*|expan\\w*|opens?|opened|campus|sites?|deploy\\w*)\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_capacity_progress",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:commission\\w*|energiz\\w*|contracted|operational|campus|construct\\w*|deploy\\w*|planning|planned|build\\w*)\\b[^.\\n]{0,90}\\d[\\d,.]*\\s*(?:MW(?:dc)?|GW(?:dc)?|megawatts?|gigawatts?)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_opening",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:opens?|opened|opening|built|builds?|building|commissioned|commissioning|under construction)\\b[^.\\n]{0,90}\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "compute_buildout",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:purchas\\w*|acquir\\w*|deploy\\w*|order\\w*|lease\\w*)\\b[^.\\n]{0,85}\\b(?:NVIDIA|Blackwell|Rubin|[BGH][123]\\d{2}|rack-scale systems?|GPU clusters?)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_finance_capacity",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bfinancing\\b[^.\\n]{0,100}\\bAI compute capacity\\b|\\b(?:\\d[\\d,.]*\\s*(?:MW|GW) (?:of )?(?:AI )?compute capacity|[\\d,]{3,}(?: [\\w-]+){0,3} GPU(?:s| servers))\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "memory_economics",
+            "any": [
+              {
+                "field": "all",
+                "regex": "\\b(?:memory (?:products|components|costs|prices|supply|demand)|external memory)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:short supply|up in price|higher memory costs|memory costs|without external memory|memory footprint)\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "memory_bandwidth_requirement",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bhigh[ -]bandwidth memory\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "packaging_process_equipment",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:advanced packaging|memory manufacturing)\\b[^.\\n]{0,100}\\b(?:inspection|process control|revenue)\\b|\\b(?:inspection|process control)\\b[^.\\n]{0,100}\\b(?:advanced packaging|memory manufacturing)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "cloud_capacity_economics",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:private|public) cloud revenue\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:capital expend\\w*|AI infrastructure)\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "compute_project_inventory",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b[\\d,]+(?: U\\.S\\.)? data[ -]?cent(?:er|re)s? projects (?:tracked|in development)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\MU\\regex\\attempt-03-overfit\\candidate.json",
+    "original_sha256": "fbe34dbae1869c2a66dd72f5b6349d678ebb7d2101f64e4ff5ab17723888351b"
+  },
+  "BE": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "stationary_supplier_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Bloom Energy|FuelCell Energy|FCEL|NANO Nuclear)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "power_market_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:distributed energy|DERMS|grid (?:balancing|edge)|battery storage|energy storage system|renewable power|nuclear (?:power market|power plant equipment|decommissioning|fusion)|power applications|SMR|Shoals|ARRAY Technologies|NatGas To Power|flywheel|power generation assets|PJM)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:hydrogen bus|transit bus|yachts?|portable power|camping|marine propulsion|nuclear diamond batteries|spent (?:nuclear )?fuel|uranium enrichment)\\b"
+              }
+            ]
+          },
+          {
+            "id": "stationary_supply_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:(?:onsite|on-site|on site|distributed|behind-the-meter|baseload|temporary) (?:power|generation)|fuel[ -]?cells?|electrolys\\w*|electrolyz\\w*)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:hydrogen bus|transit bus|yachts?|portable power|camping|marine propulsion|nuclear diamond batteries|spent (?:nuclear )?fuel|uranium enrichment)\\b"
+              }
+            ]
+          },
+          {
+            "id": "generation_project_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:construct\\w*|acquir\\w*|permit\\w*|operat\\w*)\\b[^.\\n]{0,80}\\b(?:power plants?|power stations?|solar farms?)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:hydrogen bus|transit bus|yachts?|portable power|camping|marine propulsion|nuclear diamond batteries|spent (?:nuclear )?fuel|uranium enrichment)\\b"
+              }
+            ]
+          },
+          {
+            "id": "grid_commitment_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:grid resilience|transmission projects?|transmission and distribution)\\b[^.\\n]{0,80}\\b(?:billion|million|invest\\w*|fund\\w*)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "large_load_outlook",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b electricity consumption|\\b(?:power supplies available|behind-the-meter generation|on-site generation)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "facility_market",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata cent(?:er|re) (?:market|facility management|and AI infrastructure market)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_subject_event",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b|\\bAI factor(?:y|ies)|AI datacenter\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "title",
+                "regex": "\\b(?:acqui\\w*|construct\\w*|develop\\w*|complet\\w*|plans?|planned|financ\\w*|fund\\w*|expan\\w*|opens?|opened|campus|sites?|deploy\\w*)\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_capacity_progress",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:commission\\w*|energiz\\w*|contracted|operational|campus|construct\\w*|deploy\\w*|planning|planned|build\\w*)\\b[^.\\n]{0,90}\\d[\\d,.]*\\s*(?:MW(?:dc)?|GW(?:dc)?|megawatts?|gigawatts?)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_opening",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:opens?|opened|opening|built|builds?|building|commissioned|commissioning|under construction)\\b[^.\\n]{0,90}\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "compute_buildout",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:purchas\\w*|acquir\\w*|deploy\\w*|order\\w*|lease\\w*)\\b[^.\\n]{0,85}\\b(?:NVIDIA|Blackwell|Rubin|[BGH][123]\\d{2}|rack-scale systems?|GPU clusters?)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_finance_capacity",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bfinancing\\b[^.\\n]{0,100}\\bAI compute capacity\\b|\\b(?:\\d[\\d,.]*\\s*(?:MW|GW) (?:of )?(?:AI )?compute capacity|[\\d,]{3,}(?: [\\w-]+){0,3} GPU(?:s| servers))\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\BE\\regex\\attempt-02-overfit\\candidate.json",
+    "original_sha256": "a8a8489fd8f9d2a6f77c6e22be2ac090156c9a5aaa6dfb14806ca27309fc3063"
+  },
+  "COHR": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "optical_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Coherent(?: Corp\\w*)?|MACOM|photonic\\w*|optical (?:fiber|fibre|cable|interconnect)|data center interconnect|industrial lasers?|silicon carbide substrate)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "Coherent Market Insights"
+              }
+            ]
+          },
+          {
+            "id": "optical_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:silicon photonics|photonic (?:quantum|integrated|comput\\w*)|CPO (?:optical|modules?)|optical (?:transceivers?|interconnects?|connectivity)|wavelength services|speciali[sz]ed lasers?)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_facilities_market",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata cent(?:er|re) (?:market|facility management|and AI infrastructure market)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "capacity_project",
+            "any": [
+              {
+                "field": "all",
+                "regex": "(?:\\bdata[ -]cent(?:er|re)s?\\b[^.\\n]{0,180}\\b(?:\\d[\\d,.]*[ -]?(?:MW|GW|megawatts?|gigawatts?|petaflops?)|gigawatt-scale)\\b|\\b(?:\\d[\\d,.]*[ -]?(?:MW|GW|megawatts?|gigawatts?|petaflops?)|gigawatt-scale)\\b[^.\\n]{0,180}\\bdata[ -]cent(?:er|re)s?\\b)"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_deployment",
+            "any": [
+              {
+                "field": "all",
+                "regex": "\\b(?:purchas\\w*|acquir\\w*|deploy\\w*|order\\w*|expand\\w*|lease\\w*|contract\\w*)\\b[^.\\n]{0,100}\\b(?:[BH][123]\\d{2}|GPU (?:clusters?|systems?|capacity)|AI (?:compute|supercomput\\w*))\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_scale_fact",
+            "any": [
+              {
+                "field": "all",
+                "regex": "\\b(?:\\d[\\d,.]*[ -]?(?:MW|GW|megawatts?|gigawatts?|petaflops?)|gigawatt-scale)\\b (?:of )?(?:AI )?compute capacity|\\b[\\d,]{3,}(?: [\\w-]+){0,3} GPUs?\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "facility_opening",
+            "any": [
+              {
+                "field": "all",
+                "regex": "\\b(?:opens?|opened|opening|construct\\w*|commission\\w*)\\b[^.\\n]{0,100}\\bdata[ -]cent(?:er|re)s?\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "optical_component_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:(?:fiber|fibre) connectivity|specialist lasers|photonics/lasers)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\COHR\\regex\\attempt-02\\candidate.json",
+    "original_sha256": "e9405d9e67d5f3a3439a76a3e480898f195b586c2c59f91f48f445ef0b1daec2"
+  },
+  "NBIS": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "cloud_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Nebius|NBIS|CoreWeave|HIVE|Hut 8|Bitdeer|Runpod|Rackspace|Together AI|SUSE)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "cloud_supply_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:GPU (?:cloud|deployment)|petaflop|AI GridWorks|hyperscale computing infrastructure|data cent(?:er|re) joint venture)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "cloud_refresh",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bhyperscal\\w*\\b[^.\\n]{0,100}\\b(?:GPU|refresh|replac\\w*)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_cloud_market",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:accelerated computing|Cerebras Systems)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_integration_results",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bsystems integration revenue\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:AI|high-performance computing) infrastructure\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "cooling_capacity_dependency",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bdata center operators expand capacity\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "title",
+                "regex": "\\b(?:dry cooler|cooling)\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "facility_stack_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:AI datacenter|GPU cloud|KV cache|Ethernet switch)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "cloud_hardware_dependency",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:high-density inference infrastructure|interconnection studies|validate full-scale[^.\\n]{0,35}racks)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:AI|data cent(?:er|re))\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "facility_market",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata cent(?:er|re) (?:market|facility management|and AI infrastructure market)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_subject_event",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b|\\bAI factor(?:y|ies)|AI datacenter\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "title",
+                "regex": "\\b(?:acqui\\w*|construct\\w*|develop\\w*|complet\\w*|plans?|planned|financ\\w*|fund\\w*|expan\\w*|opens?|opened|campus|sites?|deploy\\w*)\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_capacity_progress",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:commission\\w*|energiz\\w*|contracted|operational|campus|construct\\w*|deploy\\w*|planning|planned|build\\w*)\\b[^.\\n]{0,90}\\d[\\d,.]*\\s*(?:MW(?:dc)?|GW(?:dc)?|megawatts?|gigawatts?)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "facility_opening",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:opens?|opened|opening|built|builds?|building|commissioned|commissioning|under construction)\\b[^.\\n]{0,90}\\bdata[ -]?cent(?:er|re)s?\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:SCADA|router|power IC|power challenge|switchgear|transformer|copper|access control|cable|connectors?|primer|power device|SiC module)\\b"
+              }
+            ]
+          },
+          {
+            "id": "compute_buildout",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:purchas\\w*|acquir\\w*|deploy\\w*|order\\w*|lease\\w*)\\b[^.\\n]{0,85}\\b(?:NVIDIA|Blackwell|Rubin|[BGH][123]\\d{2}|rack-scale systems?|GPU clusters?)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "compute_finance_capacity",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\bfinancing\\b[^.\\n]{0,100}\\bAI compute capacity\\b|\\b(?:\\d[\\d,.]*\\s*(?:MW|GW) (?:of )?(?:AI )?compute capacity|[\\d,]{3,}(?: [\\w-]+){0,3} GPU(?:s| servers))\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\NBIS\\regex\\attempt-03-overfit\\candidate.json",
+    "original_sha256": "9af0886415f253e0c24bbfb42380e52da887924e5a0255ac4a76ecd4ef4d3e3b"
+  },
+  "CEG": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "company",
+            "any": [
+              {
+                "regex": "\\b(?:Constellation Energy|Calpine)\\b",
+                "field": "title"
+              },
+              {
+                "regex": "\\b(?:Constellation Energy|Calpine)\\b",
+                "field": "summary"
+              }
+            ]
+          },
+          {
+            "id": "nuclear_market",
+            "any": [
+              {
+                "regex": "\\b(?:nuclear (?:power|energy|reactors?|engineering|fuel|waste|fusion|decommissioning|grade|phase)|spent (?:nuclear )?fuel|uranium|SMRs?)\\b",
+                "field": "title"
+              },
+              {
+                "regex": "\\b(?:nuclear (?:power|energy|reactors?|engineering|fuel|waste|fusion|decommissioning|grade|phase)|spent (?:nuclear )?fuel|uranium|SMRs?)\\b",
+                "field": "summary"
+              }
+            ]
+          },
+          {
+            "id": "electricity_market",
+            "any": [
+              {
+                "regex": "\\b(?:power generation|power quality|renewable power|energy storage|battery storage|electric(?:ity)? grid|grid (?:modernization|balancing)|HVDC|net-zero energy buildings)\\b",
+                "field": "title"
+              },
+              {
+                "regex": "\\b(?:power generation|power quality|renewable power|energy storage|battery storage|electric(?:ity)? grid|grid (?:modernization|balancing)|HVDC|net-zero energy buildings)\\b",
+                "field": "summary"
+              }
+            ]
+          },
+          {
+            "id": "operating_market_fact",
+            "any": [
+              {
+                "regex": "\\b(?:electricity prices?|power prices?|solar PV projects?|utility-scale (?:solar|energy storage)|battery energy storage systems?)\\b",
+                "field": "body"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_round2_20261112\\CEG\\regex\\attempt-01\\candidate.json",
+    "original_sha256": "2869eec3ad05b9fe09a7c24073c84425aae7201e3bc8dbcc04f91d07ae253d88"
+  },
+  "RKLB": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "space_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Rocket Lab|RKLB|Firefly Aerospace|AST SpaceMobile|ASTS|Viasat|Gilat|Globalstar|GHGSat|space (?:militarization|logistics|technology)|satellite intelligence|satellite-based|Telespazio|Rivada|Maritime Launch|NASA)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "space_contract_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:satellite constellations?|satellites? (?:launch\\w*|manufactur\\w*)|space (?:data layer|force)|(?:launched|launching) into orbit|Zhuque-3)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "space_product_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:lunar economy|space-based solar power|satellite manufacturing|Starlink|SpaceX|Space42|ICEYE|space solutions)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "orbital_service_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:hardware in orbit|data center satellites|satellite (?:network|systems?))\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:inspect|repair|manufactur\\w*|launch\\w*|test\\w*|demand|growth|growing)\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "space_component_market",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:space and satellite systems|defense rocket systems)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:growth|growing|demand|revenue)\\b"
+              }
+            ],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\RKLB\\regex\\attempt-02-overfit\\candidate.json",
+    "original_sha256": "caa6e47a9a334bb14a2931caf975e09d7bb9d48b966fdec355ac2c607afcffd9"
+  },
+  "SNOW": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "data_platform_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Snowflake|SNOW|Databricks|MongoDB|Teradata|Percona|Denodo|CData|Qlik|Talend|data integration|data warehouse|data lakehouse|enterprise database)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "platform_integration",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:Snowflake|Databricks)\\b[^.\\n]{0,100}\\b(?:platforms?|integrat\\w*|Cortex|partner\\w*|deploy\\w*)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "enterprise_data_architecture",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:unified data layer|data silos|fragmented data|master data|data interoperability|cross-system data)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "data_platform_extension",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Redis|IIoT data platform|industrial data platform|product information management|data readiness)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "platform_deployment_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:enterprise data and AI platforms|context lives across|meter data management)\\b"
+              }
+            ],
+            "all": [
+              {
+                "field": "body",
+                "regex": "\\b(?:Snowflake|Databricks|Oracle)\\b"
+              }
+            ],
+            "none": []
+          },
+          {
+            "id": "real_time_data_integration",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:real-time|centralized|cross-system|governed)\\b[^.\\n]{0,45}\\bdata integration\\b|\\bproduct information management \\(PIM\\)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\SNOW\\regex\\attempt-02-overfit\\candidate.json",
+    "original_sha256": "ed6a01f648fa749e397bdd8f6cddcffae0194f13fe1f67ec4e1576bd1f97c8fa"
+  },
+  "ONDS": {
+    "massive_l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "unmanned_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:Ondas|ONDS|Airobotics|American Robotics|Sentrycs|Optimus|DJI|Matrice|ZenaTech|ParaZero|ScoutDI|SPARC AI|drone\\w*|UAV|UAS|unmanned aerial|counter-UAS|counter-drone|defence robotics)\\b"
+              }
+            ],
+            "all": [],
+            "none": [
+              {
+                "field": "title",
+                "regex": "\\b(?:helicopter tours|maritime systems|water drone)\\b"
+              }
+            ]
+          },
+          {
+            "id": "private_industrial_network",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:FullMAX|IEEE 802\\.16t|railway private network|railroad wireless network|private LTE|private 5G)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "counter_unmanned_systems",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:counter[ -]?(?:drone|UAS|UAV)|Dedrone|drone as first responder)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "ground_unmanned_subject",
+            "any": [
+              {
+                "field": "title",
+                "regex": "\\b(?:unmanned ground vehicles|loitering munitions|robot(?:ic)?[^.\\n]{0,25}(?:delivery|logistics)|autonomous mobile robot|private wireless|Anterix)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "unmanned_technical_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:quadrotors?|quadcopters?|pilotless[^.\\n]{0,45}aircraft|uncrewed aircraft|drone swarm)\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          },
+          {
+            "id": "unmanned_business_fact",
+            "any": [
+              {
+                "field": "body",
+                "regex": "\\b(?:drone|UAV)\\w*\\b[^.\\n]{0,85}\\b(?:manufacturing capacity|selected|funding|procurement|DARPA|test\\w*|flight|program)\\b|\\b(?:qualified|selected|funded|developed|tested)\\b[^.\\n]{0,85}\\b(?:drone|UAV)\\w*\\b"
+              }
+            ],
+            "all": [],
+            "none": []
+          }
+        ]
+      }
+    },
+    "original_path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\massive_distribution_regex_tuning_20261112\\ONDS\\regex\\attempt-02-overfit\\candidate.json",
+    "original_sha256": "a15dbecb0847a54790a83d0acbfdccccfb53fea6be49e785dc9f9f6d4d4f1f6d"
+  }
+}
