@@ -195,7 +195,7 @@ def configuration(source, binding, *, terms_present: bool = False):
                 "acquisition_mode": source.acquisition_mode.value,
                 "terms_mode": (
                     "UNIFIED" if terms_present and (source.source_id=="x_official_posts" or source.acquisition_mode in {
-                        AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION
+                        AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION, AcquisitionMode.MASSIVE_DISTRIBUTION
                     }) else "LEGACY" if source.acquisition_mode is AcquisitionMode.BY_SEARCH
                     else "UNCONFIGURED"
                 ),

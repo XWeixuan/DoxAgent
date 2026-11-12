@@ -23,7 +23,7 @@ from .schema import (
 
 
 def language_requirements(
-    sources: Iterable[SourceDefinition], bindings: Iterable[TickerSourceBinding]
+    sources: Iterable[SourceDefinition], bindings: Iterable[TickerSourceBinding], *, massive: bool = False
 ) -> dict[str, list[str]]:
     """Languages consumed by the supplied active subscriptions, regardless of adapter."""
     subscribed = {
@@ -35,7 +35,7 @@ def language_requirements(
         if (
             source.source_id in subscribed and source.enabled and source.content_language
             and source.acquisition_mode
-            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION, AcquisitionMode.MASSIVE_DISTRIBUTION}
+            in ({AcquisitionMode.MASSIVE_DISTRIBUTION} if massive else {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION})
         ):
             requirements.setdefault(source.content_language, []).append(source.source_id)
     return {language: sorted(ids) for language, ids in sorted(requirements.items())}
@@ -98,6 +98,7 @@ class TickerMonitoringTerms(BusModel):
     x_accounts: list[str] = Field(default_factory=list, max_length=20)
     l1_concepts: list[L1Concept] = Field(min_length=1, max_length=3)
     l2: dict[str, L2Language]
+    massive_l2: dict[str, L2Language] = Field(default_factory=dict)
     definition: RelevanceDefinition
 
     @field_validator('x_accounts')
@@ -136,10 +137,15 @@ def validate_terms(terms: TickerMonitoringTerms, languages: set[str]) -> None:
     terms.validate_languages(languages)
     if not terms.definition.relevant.strip() or not terms.definition.irrelevant.strip():
         raise ValueError("/definition: relevant and irrelevant must not be blank")
-    for language, rules in terms.l2.items():
+    for scope in ("l2", "massive_l2"):
+        validate_rule_map(getattr(terms, scope), scope)
+
+
+def validate_rule_map(rule_map, scope="l2"):
+    for language, rules in rule_map.items():
         ids: set[str] = set()
         for index, group in enumerate(rules.groups):
-            path = f"/l2/{language}/groups/{index}"
+            path = f"/{scope}/{language}/groups/{index}"
             if not group.id.strip() or group.id in ids:
                 raise ValueError(f"{path}/id: group id must be nonempty and unique")
             ids.add(group.id)
@@ -175,6 +181,9 @@ class MonitoringTermsService:
         if len(payload.encode("utf-8")) > 65536:
             raise ValueError("monitoring terms exceed 64 KiB")
         validate_terms(terms, self.required_languages(terms.ticker))
+        for language in language_requirements(self.repository.list_sources(), self.repository.list_bindings(ticker=terms.ticker), massive=True):
+            if language not in terms.massive_l2 or not terms.massive_l2[language].groups:
+                raise ValueError(f"/massive_l2/{language}: MASSIVE_TERMS_MISSING")
         created_at = utc_now().isoformat()
         with self.repository.transaction() as db:
             row = db.execute(

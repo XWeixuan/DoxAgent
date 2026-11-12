@@ -2953,3 +2953,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 # 2026-11-13 Source catalog refinement
 - Reorganize cards around identity/health, source purpose, dual acquisition paths, subscriptions, metrics and classification anchors; isolate conditional errors and move unused/test sources into separate final sections. Correct Calcalist/AWS sectors and expand all retained source descriptions.
 - Retire twenty explicit obsolete source IDs through the existing configuration/audit owner without flushing pending messages; remove current registry/bindings/poll heads/profile references, cancel active work and block deleted-source BODY rechecks while preserving business history. No new statistics queries, tables or background tasks.
+
+2026-11-13 Massive独立正则上线：新增massive_l2与专用入口，复用原生匹配和现有Live/兼容分发；普通词库保持隔离，Massive生产禁止模型兜底，缺配置失败关闭。扩展统一监测词双scope编辑、动态语言与CAS保留字段；更新GlobeNewswire并行HTTP/RSS目录。九套规则900条回放一致、INTC词边界勘误无样本判定变化；前端8项浏览器检查通过。生产启用/业务验收另见eval/massive_rollout_20261113回执，不以配置部署冒充正文验收。

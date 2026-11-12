@@ -515,7 +515,14 @@ class LiveDeliveryWorker:
             source.source_id == "google_news_search_rss"
             and binding.source_parameters.get("require_relevance") is True
         )
-        if row.get("raw_id") or not relevance_required:
+        from .massive_relevance import uses_massive_rules
+        massive = uses_massive_rules(source)
+        language = ((message.metadata.get("language") if massive or source.delivery_mode == "test" else None) or source.content_language or "en")
+        from .massive_relevance import massive_configured, massive_relevant
+        if massive and not massive_configured(found[1] if found else None, language):
+            await self.bus.storage.call(self.repository.decision, row, "CONFIG_INCOMPLETE", error="MASSIVE_TERMS_MISSING")
+            return
+        if (row.get("raw_id") and not massive) or not relevance_required:
             await self.publish(row, source, binding, message)
             return
         if found is None:
@@ -524,6 +531,8 @@ class LiveDeliveryWorker:
             )
             return
         revision, definition = found
+        if massive:
+            message = message.model_copy(update={"metadata": {**message.metadata, "relevance_filter": "massive_regex", "relevance_terms_revision": revision}})
         model_deadline = decision_model_deadline(row, source)
         model_expired = model_deadline is not None and utc_now() >= model_deadline
         if (
@@ -537,7 +546,7 @@ class LiveDeliveryWorker:
         ):
             await self.publish(row, source, binding, message)
             return
-        if regex_relevant(definition, (message.metadata.get("language") if source.delivery_mode == "test" else None) or source.content_language or "en", message):
+        if (massive_relevant(definition, language, message) if massive else regex_relevant(definition, language, message)):
             await self.bus.storage.call(self.repository.decision, row, "PENDING", regex=True)
             await self.publish(row, source, binding, message)
         elif model_expired:

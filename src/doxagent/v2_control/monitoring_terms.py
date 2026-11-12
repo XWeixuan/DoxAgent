@@ -71,7 +71,7 @@ class MonitoringTermsControl(Bindings):
             configuration_override
             if configuration_override is not None
             else (
-                {key: saved[key] for key in ("l1_concepts", "l2", "definition", "x_accounts") if key in saved} if saved else None
+                {key: saved[key] for key in ("l1_concepts", "l2", "definition", "x_accounts", "massive_l2") if key in saved} if saved else None
             )
         )
         preview_revision = revision + 1 if configuration_override is not None else revision
@@ -89,6 +89,7 @@ class MonitoringTermsControl(Bindings):
             if not source or source.acquisition_mode not in {
                 AcquisitionMode.BY_SEARCH,
                 AcquisitionMode.BY_DISTRIBUTION,
+                AcquisitionMode.MASSIVE_DISTRIBUTION,
             }:
                 continue
             previews = []
@@ -125,7 +126,10 @@ class MonitoringTermsControl(Bindings):
                     "preview_issue": problem,
                 }
             )
+        massive_requirements = language_requirements(source_map.values(), bindings, massive=True)
         return {
+            "massive_required_languages": sorted(massive_requirements),
+            "massive_language_requirements": [{"language": k, "source_ids": v} for k,v in sorted(massive_requirements.items())],
             "ticker": ticker,
             "revision": revision,
             "control_etag": etag(ticker, revision),
@@ -145,12 +149,18 @@ class MonitoringTermsControl(Bindings):
 
     def validate_config(self, ticker: str, configuration):
         with self.connect() as db:
+            saved = self._snapshot(db, ticker)
+            configuration = dict(configuration)
+            configuration.setdefault("massive_l2", (saved["configuration"] or {}).get("massive_l2", {}))
             snapshot = self._snapshot(db, ticker, configuration)
         try:
             terms = TickerMonitoringTerms.model_validate(
                 {"ticker": ticker, "expected_revision": snapshot["revision"], **configuration}
             )
             validate_terms(terms, set(snapshot["required_languages"]))
+            for lang in snapshot["massive_required_languages"]:
+                if lang not in terms.massive_l2 or not terms.massive_l2[lang].groups:
+                    raise ValueError(f"/massive_l2/{lang}: MASSIVE_TERMS_MISSING")
             found = []
         except (ValidationError, ValueError, TypeError) as exc:
             found = issues(exc)
@@ -185,6 +195,8 @@ class MonitoringTermsControl(Bindings):
                     raise ApiFailure("IDEMPOTENCY_CONFLICT", 409)
                 return json.loads(prior[1])
             snapshot = self._snapshot(db, ticker)
+            configuration = dict(configuration)
+            configuration.setdefault("massive_l2", (snapshot["configuration"] or {}).get("massive_l2", {}))
             if expected != snapshot["control_etag"]:
                 raise ApiFailure("REVISION_CONFLICT", 412)
             try:

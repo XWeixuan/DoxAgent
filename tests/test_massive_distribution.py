@@ -15,6 +15,7 @@ def terms(repo):
     return MonitoringTermsService(repo).apply(TickerMonitoringTerms.model_validate(dict(ticker='MU',expected_revision=0,
         l1_concepts=[dict(concept_id='micron',expressions={'en':'Micron'})],
         l2={'en':{'groups':[{'id':'company','any':[{'literal':'Micron'}]}]}},
+        massive_l2={'en':{'groups':[{'id':'company','any':[{'literal':'Micron'}]}]}},
         definition={'relevant':'Micron','irrelevant':'Other topics'})),actor='test')
 
 
@@ -23,7 +24,7 @@ async def test_same_url_isolated_final_sink_without_real_subscription(tmp_path,t
     repo,bus,production,binding=_setup(tmp_path)
     revision=terms(repo)
     source=next(s for s in initial_sources() if s.source_id=='prnewswire_massive')
-    source=source.model_copy(update={'distribution_policy':source.distribution_policy.model_copy(update={'test_tickers':['MU']})})
+    source=source.model_copy(update={'default_parameters':{**source.default_parameters, 'massive_regex_enabled':True}, 'distribution_policy':source.distribution_policy.model_copy(update={'test_tickers':['MU']})})
     repo.save_source(source)
     assert repo.get_binding('MU:'+source.source_id) is None
     bus.live_queue=LiveQueue(bus);live=bus.live_queue.repository
@@ -190,3 +191,21 @@ async def test_exact_complete_body_duplicate_across_test_urls_is_not_republished
             assert db.execute("SELECT count(*) FROM live_deliveries WHERE state='TEST_DUPLICATE'").fetchone()[0]==1
             assert db.execute('SELECT count(*) FROM raw_messages').fetchone()[0]==0
     finally:await hub.close()
+
+
+def test_massive_rules_never_fall_back_to_ordinary():
+    from doxagent.message_bus_v2.relevance import regex_relevant
+    from doxagent.message_bus_v2.massive_relevance import massive_relevant, massive_configured
+    from doxagent.message_bus_v2.schema import RawMessageInput
+    t=TickerMonitoringTerms.model_validate(dict(ticker='MU', expected_revision=0,
+        l1_concepts=[dict(concept_id='company',expressions={'en':'Micron'})],
+        l2={'en':{'groups':[{'id':'broad','any':[{'literal':'AI'}]}]}},
+        massive_l2={'en':{'groups':[{'id':'memory','any':[{'literal':'HBM'}]}]}},
+        definition={'relevant':'memory','irrelevant':'other'}))
+    m=RawMessageInput(title='AI software update',url='https://example.com/a',raw_payload={})
+    assert regex_relevant(t,'en',m)
+    assert not massive_relevant(t,'en',m)
+    assert massive_relevant(t,'fr',m.model_copy(update={'title':'HBM production'}))
+    t=t.model_copy(update={'massive_l2':{}})
+    assert not massive_configured(t,'en')
+    assert not massive_relevant(t,'en',m)

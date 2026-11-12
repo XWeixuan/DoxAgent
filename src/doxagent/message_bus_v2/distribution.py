@@ -189,12 +189,22 @@ class DistributionWorker:
                 )
                 continue
             definitions[row["ticker"]] = found[1]
-            relevant[row["ticker"]] = regex_relevant(found[1], language, message)
+            from .massive_relevance import massive_configured, massive_relevant
+            from .schema import AcquisitionMode
+            from .massive_relevance import uses_massive_rules
+            massive = uses_massive_rules(source)
+            if massive:
+                language = message.metadata.get("language") or source.content_language or "en"
+                if not massive_configured(found[1], language):
+                    definitions.pop(row["ticker"], None)
+                    await self.bus.storage.call(self.repository.finish_delivery, row["delivery_id"], row["claim_token"], "CONFIG_INCOMPLETE", {"reason": "MASSIVE_TERMS_MISSING"})
+                    continue
+            relevant[row["ticker"]] = massive_relevant(found[1], language, message) if massive else regex_relevant(found[1], language, message)
 
         # Only undecided tickers need the business classifier. L1 comparisons
         # are optional offline evaluation, not recurring production work.
         jev_enabled = bool(
-            definitions and source.distribution_policy and source.distribution_policy.jev_enabled
+            source.acquisition_mode is not AcquisitionMode.MASSIVE_DISTRIBUTION and definitions and source.distribution_policy and source.distribution_policy.jev_enabled
         )
         for row in eligible_rows:
             if relevant.get(row["ticker"]):

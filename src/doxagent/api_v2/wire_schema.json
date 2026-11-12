@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "68d31fbd1f94ca4458e381189cc54e341f24fc1240a395c5f1ca4d92b6caa700",
+  "source_sha256": "69d97926a7c79e049109fa1bfc73db754ba72ff6e0ea209c4fb77c4561993586",
   "$defs": {
     "Id": {
       "type": "string"
@@ -7253,6 +7253,12 @@
     "MonitoringTermsValue": {
       "type": "object",
       "properties": {
+        "massive_l2": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/MonitoringL2Language"
+          }
+        },
         "x_accounts": {
           "type": "array",
           "items": {
@@ -7292,18 +7298,6 @@
         "l1_concepts",
         "l2",
         "definition"
-      ],
-      "additionalProperties": false
-    },
-    "MonitoringTermsRequest": {
-      "type": "object",
-      "properties": {
-        "configuration": {
-          "$ref": "#/$defs/MonitoringTermsValue"
-        }
-      },
-      "required": [
-        "configuration"
       ],
       "additionalProperties": false
     },
@@ -7437,6 +7431,34 @@
     "MonitoringTermsConfig": {
       "type": "object",
       "properties": {
+        "massive_required_languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "massive_language_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "language": {
+                "type": "string"
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "language",
+              "source_ids"
+            ],
+            "additionalProperties": false
+          }
+        },
         "ticker": {
           "type": "string"
         },
@@ -7447,13 +7469,9 @@
           "type": "string"
         },
         "updated_at": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "configuration": {
@@ -30524,6 +30542,18 @@
           }
         }
       ]
+    },
+    "MonitoringTermsRequest": {
+      "type": "object",
+      "properties": {
+        "configuration": {
+          "$ref": "#/$defs/MonitoringTermsValue"
+        }
+      },
+      "required": [
+        "configuration"
+      ],
+      "additionalProperties": false
     }
   }
 }

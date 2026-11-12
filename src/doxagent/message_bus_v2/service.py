@@ -661,6 +661,12 @@ class MessageBusV2Service:
         binding_id = binding_id_for(ticker, source.source_id)
         if source.delivery_mode == "test":
             raise ValueError("test source targets are configured on the source, not ticker subscriptions")
+        if source.acquisition_mode is AcquisitionMode.MASSIVE_DISTRIBUTION and enabled:
+            from .monitoring_terms import MonitoringTermsService
+            from .massive_relevance import massive_configured
+            found = MonitoringTermsService(self.repository).get(ticker)
+            if not massive_configured(found[1] if found else None, source.content_language or "en"):
+                raise ValueError("MASSIVE_TERMS_MISSING")
         current = self.repository.get_binding(binding_id, include_tombstoned=True)
         if (
             current is None

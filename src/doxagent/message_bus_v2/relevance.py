@@ -39,8 +39,12 @@ def _match(term: L2Term, message: RawMessageInput) -> bool:
 
 
 def regex_relevant(terms: TickerMonitoringTerms, language: str, message: RawMessageInput) -> bool:
+    return match_rules(terms.l2, language, message)
+
+
+def match_rules(rule_map, language: str, message: RawMessageInput) -> bool:
     for current in dict.fromkeys((language, "en")):
-        rules = terms.l2.get(current)
+        rules = rule_map.get(current)
         if rules is None:
             continue
         for group in rules.groups:

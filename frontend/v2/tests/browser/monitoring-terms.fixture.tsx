@@ -27,6 +27,7 @@ const runtime = {
       if (options?.method === "PUT") {
         current = { ...current, revision: current.revision + 1, control_etag: '"monitoring-terms:MU:2"', configuration: options.body!.configuration };
         document.getElementById("saved-revision")!.textContent = String(current.revision);
+        document.getElementById("saved-config")!.textContent = JSON.stringify(current.configuration);
       }
       return { data: name === "MonitoringTerms" ? { state: "AVAILABLE", data: current, reason: null, coverage: { state: "COMPLETE", reasons: [], known_count: null, excluded_count: null, observed_through: null } } : current };
     }
@@ -49,4 +50,4 @@ if (new URLSearchParams(location.search).has("real")) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(<RuntimeProvider runtime={runtime}><main style={{ maxWidth: 1200, margin: "24px auto", padding: "0 16px" }}><MonitoringTermsSettings ticker="MU" /><output id="saved-revision">1</output></main></RuntimeProvider>);
+createRoot(document.getElementById("root")!).render(<RuntimeProvider runtime={runtime}><main style={{ maxWidth: 1200, margin: "24px auto", padding: "0 16px" }}><MonitoringTermsSettings ticker="MU" /><output id="saved-revision">1</output><output id="saved-config" hidden /></main></RuntimeProvider>);
