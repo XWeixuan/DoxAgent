@@ -1,0 +1,159 @@
+{
+  "samples": 1945,
+  "categories": {
+    "other_protocol": 714,
+    "ingest": 233,
+    "source_metadata": 350,
+    "idle_sleep": 616,
+    "map": 32
+  },
+  "frames": [
+    [
+      "<module> (doxagent/v2_read/cli.py:324)",
+      1939
+    ],
+    [
+      "main (doxagent/v2_read/cli.py:301)",
+      1323
+    ],
+    [
+      "ProjectionWorker.tick (doxagent/v2_read/projector.py:36)",
+      1316
+    ],
+    [
+      "main (doxagent/v2_read/cli.py:320)",
+      616
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:99)",
+      262
+    ],
+    [
+      "ProjectionWorker._events (doxagent/v2_read/projector.py:183)",
+      199
+    ],
+    [
+      "ReadStore.connect (doxagent/v2_read/repository.py:170)",
+      168
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:121)",
+      149
+    ],
+    [
+      "ProjectionWorker._tick.<locals>.<listcomp> (doxagent/v2_read/projector.py:121)",
+      148
+    ],
+    [
+      "SourceOutbox.capture (doxagent/v2_read/outbox.py:433)",
+      139
+    ],
+    [
+      "ReadStore.ingest (doxagent/v2_read/repository.py:461)",
+      120
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:126)",
+      118
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:133)",
+      103
+    ],
+    [
+      "SourceOutbox.acknowledge_exceptions (doxagent/v2_read/outbox.py:575)",
+      103
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:104)",
+      94
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:52)",
+      91
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:60)",
+      86
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:59)",
+      86
+    ]
+  ],
+  "leaf": [
+    [
+      "main (doxagent/v2_read/cli.py:320)",
+      616
+    ],
+    [
+      "ReadStore.connect (doxagent/v2_read/repository.py:170)",
+      168
+    ],
+    [
+      "SourceOutbox.capture (doxagent/v2_read/outbox.py:433)",
+      138
+    ],
+    [
+      "ProjectionWorker._tick.<locals>.<listcomp> (doxagent/v2_read/projector.py:121)",
+      99
+    ],
+    [
+      "ReadStore.connect (doxagent/v2_read/repository.py:177)",
+      83
+    ],
+    [
+      "SourceOutbox.projection_clock (doxagent/v2_read/outbox.py:451)",
+      76
+    ],
+    [
+      "SourceOutbox.head (doxagent/v2_read/outbox.py:424)",
+      70
+    ],
+    [
+      "check_replay (doxagent/v2_read/source_lifecycle.py:24)",
+      64
+    ],
+    [
+      "closing.__exit__ (contextlib.py:360)",
+      40
+    ],
+    [
+      "ProjectionWorker._tick (doxagent/v2_read/projector.py:120)",
+      38
+    ],
+    [
+      "migrate (doxagent/v2_read/source_lifecycle.py:20)",
+      36
+    ],
+    [
+      "ReadStore.close_current (doxagent/v2_read/repository.py:129)",
+      35
+    ],
+    [
+      "sync_business_facts (doxagent/v2_read/source_lifecycle.py:99)",
+      35
+    ],
+    [
+      "sync_business_facts (doxagent/v2_read/source_lifecycle.py:91)",
+      31
+    ],
+    [
+      "acknowledge.<locals>.<setcomp> (doxagent/v2_read/source_lifecycle.py:34)",
+      27
+    ],
+    [
+      "SourceOutbox.capture (doxagent/v2_read/outbox.py:443)",
+      26
+    ],
+    [
+      "NativeContent.row (doxagent/v2_read/native_content.py:132)",
+      22
+    ],
+    [
+      "SourceOutbox.connection (doxagent/v2_read/outbox.py:105)",
+      20
+    ]
+  ],
+  "measurement": "40 seconds at 49Hz, nonblocking, includes idle; wall samples are not CPU percentages"
+}

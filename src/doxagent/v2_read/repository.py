@@ -165,9 +165,19 @@ class ReadStore:
             codec.definition_connection = db
             db.row_factory = codec.row
         try:
+            import time
+            measured = time.perf_counter()
             db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
+            acquired = time.perf_counter()
+            sink = getattr(self, 'projection_timings', None) if write else None
+            if sink is not None:
+                sink['writer_wait_seconds'] = sink.get('writer_wait_seconds', 0) + acquired - measured
             yield db
+            commit_started = time.perf_counter()
             db.commit()
+            if sink is not None:
+                sink['commit_seconds'] = sink.get('commit_seconds', 0) + time.perf_counter() - commit_started
+                sink['writer_hold_seconds'] = sink.get('writer_hold_seconds', 0) + time.perf_counter() - acquired
         except BaseException:
             db.rollback()
             raise

@@ -76,7 +76,11 @@ export default function Expectations() {
   };
   return (
     <>
-      <PageTitle title={`${ticker} 预期研究`} refresh={context.refetch}>
+      <PageTitle
+        title={`${ticker} 预期研究`}
+        refresh={context.refetch}
+        readContext={context.data}
+      >
         {summary.data?.data.data?.document && (
           <DownloadButton
             key={summary.data.data.data.run.run_id}

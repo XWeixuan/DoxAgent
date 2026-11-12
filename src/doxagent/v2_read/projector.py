@@ -26,11 +26,16 @@ class ProjectionWorker:
         self._acknowledgements = {}
         self._next_repair = 0.0
         self.timings = {}
+        self.store.projection_timings = self.timings
+        self._slow_window = (0.0, 0)
 
     def tick(self, *, limit: int = 100) -> int:
         session = self.store.projection_session() if hasattr(self.store, "projection_session") else nullcontext()
         started, cpu = time.monotonic(), time.process_time()
-        with session:
+        with session, ExitStack() as readers:
+            for source in self.sources:
+                if isinstance(source, SourceOutbox):
+                    readers.enter_context(source.projection_session())
             count = self._tick(limit=limit)
         self.timings['tick_seconds'] = self.timings.get('tick_seconds', 0) + time.monotonic() - started
         self.timings['cpu_seconds'] = self.timings.get('cpu_seconds', 0) + time.process_time() - cpu
@@ -96,11 +101,19 @@ class ProjectionWorker:
                 # still receive a turn and each event retains its own commit.
                 count += self._events(source, events, load_event, budget=5 if len(events) == limit else 1)
             checkpoint = self.store.position(source.source)
+            clock = {}
+            if hasattr(source, 'projection_clock'):
+                try:
+                    clock = source.projection_clock(checkpoint, head)
+                except (sqlite3.OperationalError, OSError):
+                    pass  # Health remains unknown; telemetry cannot skip a receipt.
             with self.store.connect(write=True) as db:
                 db.execute(
                     "INSERT OR REPLACE INTO source_health VALUES(?,?,?,?,?)",
                     (source.source, head, checkpoint, instant(datetime.now(UTC)), None),
                 )
+                db.execute("INSERT INTO read_meta VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                           ('projection_clock:'+source.source,json.dumps({'checkpoint':checkpoint,'head':head,**clock})))
                 gap = db.execute(
                     "SELECT 1 FROM gaps WHERE source=? LIMIT 1", (source.source,)
                 ).fetchone()
@@ -159,6 +172,7 @@ class ProjectionWorker:
                     raise ValueError("SOURCE_RECEIPT_MISSING")
                 event = {**loaded,"source":source.source}
                 if event.get("serving_skipped"):
+                    self.timings['verified_skips'] = self.timings.get('verified_skips', 0) + 1
                     skipped = event
                     count += 1
                     if time.monotonic() - started >= budget:
@@ -166,7 +180,8 @@ class ProjectionWorker:
                     continue
                 stage = time.perf_counter()
                 records, contributions = self.mapper(event)
-                self.timings["map_seconds"] = self.timings.get("map_seconds", 0) + time.perf_counter() - stage
+                map_seconds = time.perf_counter() - stage
+                self.timings["map_seconds"] = self.timings.get("map_seconds", 0) + map_seconds
                 stage = time.perf_counter()
                 self.store.ingest(
                     source.source,
@@ -176,7 +191,27 @@ class ProjectionWorker:
                     position=event["seq"],
                     at=event["recorded_at"],
                 )
-                self.timings["ingest_seconds"] = self.timings.get("ingest_seconds", 0) + time.perf_counter() - stage
+                ingest_seconds = time.perf_counter() - stage
+                self.timings["ingest_seconds"] = self.timings.get("ingest_seconds", 0) + ingest_seconds
+                dimensions=self.timings.setdefault('sources',{})
+                totals=dimensions.setdefault(source.source,{'events':0,'records':0,'seconds':0})
+                elapsed=time.perf_counter()-load_started
+                totals['events']+=1;totals['records']+=len(records);totals['seconds']+=elapsed
+                workloads=self.timings.setdefault('workloads',{})
+                workload=':'.join((source.source,event.get('table_name',''),event.get('row',{}).get('namespace','')))
+                totals=workloads.setdefault(workload,{'events':0,'records':0,'map_seconds':0,'ingest_seconds':0,'max_seconds':0,'latency_buckets':[0]*7})
+                totals['events']+=1;totals['records']+=len(records)
+                totals['map_seconds']+=map_seconds;totals['ingest_seconds']+=ingest_seconds
+                totals['max_seconds']=max(totals['max_seconds'],elapsed)
+                bucket=next((i for i,bound in enumerate((.05,.1,.25,.5,1,5)) if elapsed<=bound),6)
+                totals['latency_buckets'][bucket]+=1
+                if elapsed>1:
+                    window,n=self._slow_window
+                    if time.monotonic()-window>=60:window,n=time.monotonic(),0
+                    if n<5:
+                        print(json.dumps({'projection_slow':{'source':source.source,'table':event.get('table_name'),'namespace':event.get('row',{}).get('namespace'),'seq':coordinate,'records':len(records),'seconds':elapsed,'map_seconds':map_seconds,'ingest_seconds':ingest_seconds}}),flush=True)
+                        n+=1
+                    self._slow_window=(window,n)
                 skipped = None
             except sqlite3.IntegrityError as exc:
                 if str(exc) != 'ARTIFACT_RECLAIM_IN_PROGRESS':
@@ -276,5 +311,6 @@ def native(event: dict[str, Any]) -> dict[str, Any]:
         if name in row and isinstance(row[name], str):
             value = json.loads(row[name])
             if isinstance(value, dict):
+                if row.get('namespace')=='reference_deliveries':event['native_value']=value
                 return value
     return row

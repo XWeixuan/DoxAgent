@@ -1,0 +1,29 @@
+{
+  "application_commit": "90647e2f2e47265fb78dda3eb5103446af2682cc",
+  "backend": {
+    "passed": 106,
+    "warnings": 1,
+    "seconds": 31.34,
+    "scope": "16 focused v2_backend modules: materialization, source/Read clocks, Reference, formal activation, Policy, W3, execution, Bus, contention and API"
+  },
+  "frontend": {
+    "vitest_files": 16,
+    "vitest_passed": 70,
+    "browser_passed": 1,
+    "typecheck": "passed",
+    "production_build": "passed",
+    "build_warning": "existing bundle-size advisory",
+    "public_http_resources_verified": 40,
+    "public_http_hashes_matched": 40
+  },
+  "known_prior_baseline_failures_excluded": [
+    "test_pnl FIFO source lot remaining_qty assertion fails before projection on unchanged baseline",
+    "legacy initialization progress failure fixture patches ContentFiles.read while baseline uses read_all"
+  ],
+  "backend_protocol_additional": {
+    "passed": 16,
+    "seconds": 4.19,
+    "scope": "snapshot graph equivalence, Read maintenance, poll capture retention, ordering, backup retention"
+  },
+  "backend_total_passed": 122
+}

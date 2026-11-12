@@ -1,0 +1,10 @@
+{
+  "check": "existing authenticated DoxAgent summary read",
+  "is_error": false,
+  "observed_at": "2026-11-12T13:21:39.726810Z",
+  "status_state": "AVAILABLE",
+  "metrics_state": "AVAILABLE",
+  "refresh_error": null,
+  "aggregate_freshness": "STALE",
+  "read_generation": "75a54e2449a84065a0aee86dac09e353"
+}

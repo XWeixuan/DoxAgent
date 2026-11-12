@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 
+import { ProjectionStatus } from "@/components/page-kit";
 import { Module, Notice } from "@/components/state";
 import { decimal, formatInstant, valueText } from "@/core/format";
 import { filtersSupported, periods, useOverview } from "./data";
@@ -170,6 +171,7 @@ export default function Overview() {
           </Button>
         </div>
       </div>
+      <ProjectionStatus readContext={model.context.data} />
       {(error || model.context.error) && (
         <Notice danger>
           {error || model.context.error?.message}

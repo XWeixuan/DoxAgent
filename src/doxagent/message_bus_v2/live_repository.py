@@ -1027,6 +1027,7 @@ class LiveRepository:
             rows = db.execute(
                 "SELECT article_key,last_error FROM live_articles WHERE state='READY' "
                 "AND next_check_at<=? AND (first_seen_at>=? OR last_error IN ('site_recovery_pending','domain_cooldown')) "
+                "AND EXISTS(SELECT 1 FROM source_definitions s WHERE s.source_id=live_articles.source_id) "
                 + recheck_filter + "ORDER BY next_check_at LIMIT ?",
                 (stamp, cutoff, limit),
             ).fetchall()

@@ -64,6 +64,7 @@ export default function MessageBus() {
   return (
     <>
       <PageTitle
+        readContext={ctx.data}
         title={`${ticker} 消息总线`}
         refresh={async () => {
           await ctx.refetch();

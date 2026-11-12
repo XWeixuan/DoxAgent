@@ -145,7 +145,7 @@ class FormalProjectors(DomainProjectors):
                     raise ValueError("formal research source is not configured")
                 ref = node["result"]["artifacts"][role]
                 records.extend(
-                    self.artifacts.index(ref["run_id"], ticker, lineage=run["initialization_id"])
+                    self.artifacts.ensure(ref["run_id"], ticker, lineage=run["initialization_id"])
                 )
         for record in list(records):
             if record["kind"] == "activation" and record["data"]:
@@ -213,15 +213,17 @@ class FormalProjectors(DomainProjectors):
         identity = revision["revision_id"]
         records = []
         documents = {}
+        document_records = {}
         for role in ("document1", "document2"):
             run_id = refs[role]["run_id"]
-            indexed = self.artifacts.index(run_id, ticker, lineage=identity)
+            indexed = self.artifacts.ensure(run_id, ticker, lineage=identity)
+            document_records[run_id] = indexed
             documents[role] = next(r["data"] for r in indexed if r["kind"] == "document_ref")
             records.extend(indexed)
         root = refs["event_library"].get("root") or self.event_root
         if not root:
             raise ValueError("formal event source is not configured")
-        library, indexed = LibraryIndexer(root).index(ticker, refs["event_library"]["version"])
+        library, indexed = LibraryIndexer(root).ensure(self.store, ticker, refs["event_library"]["version"])
         records.extend(indexed)
         run_id = self._policy_run_id(revision)
         bundle = self.artifacts.source.record("bundles", run_id, run_id)
@@ -239,7 +241,9 @@ class FormalProjectors(DomainProjectors):
         source_document = None
         if policies.document2_ref:
             source_run = policies.document2_ref.run_id
-            source_records = self.artifacts.index(source_run, ticker, lineage=identity)
+            source_records = document_records.get(source_run)
+            if source_records is None:
+                source_records = self.artifacts.ensure(source_run, ticker, lineage=identity)
             source_document = next(r["data"] for r in source_records if r["kind"] == "document_ref")
             if source_document["artifact_id"] != policies.document2_ref.artifact_id or (
                 source_document["content_sha256"] != policies.document2_ref.sha256
@@ -250,11 +254,6 @@ class FormalProjectors(DomainProjectors):
                 for r in source_records
                 if r["id"] not in {x["id"] for x in records if x["kind"] == r["kind"]}
             )
-        shells = {
-            r["data"]["shell_id"]
-            for r in records
-            if r["kind"] == "shell" and r.get("parent") == documents["document2"]["run_id"]
-        }
         from .policy_origins import memberships, published_origins
 
         origins = published_origins(self.artifacts.source, bundle, self.store, source_document)
@@ -262,6 +261,12 @@ class FormalProjectors(DomainProjectors):
             r["data"] for r in records
             if r["kind"] == "shell" and r.get("parent") == documents["document2"]["run_id"]
         ]
+        if not shell_views:
+            # Reused documents omit immutable page records, but policy membership
+            # still needs the pinned document's shell summaries.
+            from .lifecycle import rows
+            shell_views = list(rows(self.store, "shell", ticker, documents["document2"]["run_id"]).values())
+        shells = {shell["shell_id"] for shell in shell_views}
         for policy in policies.policies:
             modern = policies.schema_version == "document3.v3"
             ar = None if modern else policy_activation_revision(policy)

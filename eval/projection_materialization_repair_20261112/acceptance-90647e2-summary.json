@@ -1,0 +1,1135 @@
+{
+  "start": "2026-11-12T13:17:34.115929+00:00",
+  "end": "2026-11-12T13:47:34.124718+00:00",
+  "seconds": 1800.0087890625,
+  "samples": 61,
+  "sources": {
+    "research": {
+      "checkpoint_start": 53697,
+      "checkpoint_end": 54048,
+      "head_start": 53697,
+      "head_end": 54048,
+      "distance_start": 0,
+      "distance_end": 0,
+      "coordinate_lambda": 0.19499904785621164,
+      "coordinate_mu": 0.19499904785621164,
+      "pending_age_p95": 0.002583026885986328,
+      "pending_age_max": 5.947681903839111
+    },
+    "initialization": {
+      "checkpoint_start": 157650,
+      "checkpoint_end": 157700,
+      "head_start": 157650,
+      "head_end": 157700,
+      "distance_start": 0,
+      "distance_end": 0,
+      "coordinate_lambda": 0.027777642144759494,
+      "coordinate_mu": 0.027777642144759494,
+      "pending_age_p95": 9.975219011306763,
+      "pending_age_max": 16.868902921676636
+    },
+    "bus": {
+      "checkpoint_start": 11238679,
+      "checkpoint_end": 11246478,
+      "head_start": 11238680,
+      "head_end": 11246480,
+      "distance_start": 1,
+      "distance_end": 2,
+      "coordinate_lambda": 4.333312174582481,
+      "coordinate_mu": 4.332756621739586,
+      "pending_age_p95": 3.6784379482269287,
+      "pending_age_max": 7.549219131469727
+    },
+    "runtime": {
+      "checkpoint_start": 4542869,
+      "checkpoint_end": 4545744,
+      "head_start": 4542870,
+      "head_end": 4545744,
+      "distance_start": 1,
+      "distance_end": 0,
+      "coordinate_lambda": 1.5966588704807756,
+      "coordinate_mu": 1.597214423323671,
+      "pending_age_p95": 11.211244821548462,
+      "pending_age_max": 16.265902996063232
+    }
+  },
+  "gaps_start": [
+    {
+      "source": "runtime",
+      "reason": "PROVENANCE_UNVERIFIED",
+      "n": 66
+    },
+    {
+      "source": "runtime",
+      "reason": "ValueError",
+      "n": 17138
+    }
+  ],
+  "gaps_end": [
+    {
+      "source": "runtime",
+      "reason": "PROVENANCE_UNVERIFIED",
+      "n": 66
+    },
+    {
+      "source": "runtime",
+      "reason": "ValueError",
+      "n": 17138
+    }
+  ],
+  "catchup": {
+    "research": "2026-11-12T13:17:34.115929+00:00",
+    "initialization": "2026-11-12T13:17:34.115929+00:00",
+    "bus": "2026-11-12T13:18:34.116133+00:00",
+    "runtime": "2026-11-12T13:18:34.116133+00:00"
+  },
+  "steady_pending_age": {
+    "research": {
+      "samples": 60,
+      "p95": 0.002583026885986328,
+      "max": 5.947681903839111
+    },
+    "initialization": {
+      "samples": 60,
+      "p95": 9.975219011306763,
+      "max": 16.868902921676636
+    },
+    "bus": {
+      "samples": 60,
+      "p95": 3.6784379482269287,
+      "max": 7.549219131469727
+    },
+    "runtime": {
+      "samples": 60,
+      "p95": 11.211244821548462,
+      "max": 16.265902996063232
+    }
+  },
+  "resources": {
+    "doxagent-v2-v2-projector-1": {
+      "cpu_cores_mean": 0.24907585469660945,
+      "cpu_cores_max_interval": 0.4315883916240102,
+      "write_mib_s_mean": 4.1169616089707475,
+      "rss_mib_max": 107.16015625
+    },
+    "doxagent-v2-v2-maintenance-1": {
+      "cpu_cores_mean": 0.03502939239716826,
+      "cpu_cores_max_interval": 0.06446292069433512,
+      "write_mib_s_mean": 2.4880218209670706,
+      "rss_mib_max": 43.26953125
+    }
+  },
+  "host": {
+    "cpu_busy_mean": 86.90715965070875,
+    "cpu_psi_some_avg60_mean": 44.14892561983471,
+    "io_psi_some_avg60_mean": 4.765454545454546
+  },
+  "performance": {
+    "reports": 29,
+    "mapped": 9683,
+    "verified_skips": 1288,
+    "workloads": {
+      "initialization:activation_revisions:": {
+        "events": 26,
+        "records": 9208,
+        "map_seconds": 21.275334958016174,
+        "ingest_seconds": 61.15897393305204,
+        "max_seconds": 5.814891781978076,
+        "latency_buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          23,
+          3
+        ]
+      },
+      "bus:live_deliveries:": {
+        "events": 6184,
+        "records": 286,
+        "map_seconds": 0.20229302067309618,
+        "ingest_seconds": 8.215923082374502,
+        "max_seconds": 0.43922939701587893,
+        "latency_buckets": [
+          6167,
+          6,
+          10,
+          1,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_v2_cases:": {
+        "events": 318,
+        "records": 4005,
+        "map_seconds": 8.026286909880582,
+        "ingest_seconds": 15.318750499631278,
+        "max_seconds": 0.9259331740031485,
+        "latency_buckets": [
+          62,
+          133,
+          115,
+          7,
+          1,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_values:policy_authorization_applied": {
+        "events": 26,
+        "records": 26,
+        "map_seconds": 0.1318425039644353,
+        "ingest_seconds": 0.23693711898522452,
+        "max_seconds": 0.03669863098184578,
+        "latency_buckets": [
+          26,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_values:policy_authorization_head": {
+        "events": 26,
+        "records": 26,
+        "map_seconds": 0.015763269911985844,
+        "ingest_seconds": 0.1315915199520532,
+        "max_seconds": 0.010954715020488948,
+        "latency_buckets": [
+          26,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_tasks:": {
+        "events": 265,
+        "records": 265,
+        "map_seconds": 0.03874143704888411,
+        "ingest_seconds": 1.7483328449598048,
+        "max_seconds": 0.1886877900105901,
+        "latency_buckets": [
+          262,
+          2,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:v2_ticker_control:": {
+        "events": 25,
+        "records": 12309,
+        "map_seconds": 49.5125522169983,
+        "ingest_seconds": 82.3467691289552,
+        "max_seconds": 11.681456407008227,
+        "latency_buckets": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          10,
+          14
+        ]
+      },
+      "initialization:ticker_active_revision:": {
+        "events": 26,
+        "records": 1136,
+        "map_seconds": 3.322076542972354,
+        "ingest_seconds": 8.626162935048342,
+        "max_seconds": 9.022075058019254,
+        "latency_buckets": [
+          24,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "runtime:v2_analysis_admission:": {
+        "events": 141,
+        "records": 282,
+        "map_seconds": 0.0304429886455182,
+        "ingest_seconds": 1.2090372788661625,
+        "max_seconds": 0.028724564996082336,
+        "latency_buckets": [
+          141,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_v2_turns:": {
+        "events": 262,
+        "records": 2750,
+        "map_seconds": 0.9091646850574762,
+        "ingest_seconds": 31.123961259203497,
+        "max_seconds": 0.8073109230026603,
+        "latency_buckets": [
+          8,
+          120,
+          120,
+          11,
+          3,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_v2_archives:": {
+        "events": 39,
+        "records": 472,
+        "map_seconds": 0.16055851985584013,
+        "ingest_seconds": 1.4893809230416082,
+        "max_seconds": 0.24456498000654392,
+        "latency_buckets": [
+          34,
+          3,
+          2,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_values:worker_invocations": {
+        "events": 171,
+        "records": 2052,
+        "map_seconds": 0.6806761361949611,
+        "ingest_seconds": 8.49785376698128,
+        "max_seconds": 0.21607582797878422,
+        "latency_buckets": [
+          101,
+          47,
+          23,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_v2_w3_cases:": {
+        "events": 109,
+        "records": 109,
+        "map_seconds": 0.06588135365745984,
+        "ingest_seconds": 1.5562820089107845,
+        "max_seconds": 0.8439160330162849,
+        "latency_buckets": [
+          107,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_values:w3_operations_input": {
+        "events": 36,
+        "records": 36,
+        "map_seconds": 0.012727956025628373,
+        "ingest_seconds": 0.38908866595011204,
+        "max_seconds": 0.025838558009127155,
+        "latency_buckets": [
+          36,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_values:w3_global_input": {
+        "events": 36,
+        "records": 36,
+        "map_seconds": 0.014959338936023414,
+        "ingest_seconds": 0.39712231114390306,
+        "max_seconds": 0.04722460400080308,
+        "latency_buckets": [
+          36,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_values:reference_deliveries": {
+        "events": 51,
+        "records": 1502,
+        "map_seconds": 18.643602810945595,
+        "ingest_seconds": 15.931983986869454,
+        "max_seconds": 1.4605610390135553,
+        "latency_buckets": [
+          0,
+          0,
+          1,
+          11,
+          32,
+          7,
+          0
+        ]
+      },
+      "runtime:runtime_v2_candidates:": {
+        "events": 94,
+        "records": 1418,
+        "map_seconds": 0.6731005492038094,
+        "ingest_seconds": 4.927982331922976,
+        "max_seconds": 0.2305743420147337,
+        "latency_buckets": [
+          47,
+          32,
+          15,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "bus:live_articles:": {
+        "events": 615,
+        "records": 474,
+        "map_seconds": 0.046552181884180754,
+        "ingest_seconds": 2.446920841379324,
+        "max_seconds": 0.21519016998354346,
+        "latency_buckets": [
+          611,
+          2,
+          2,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "bus:live_origins:": {
+        "events": 618,
+        "records": 421,
+        "map_seconds": 0.022151500976178795,
+        "ingest_seconds": 1.3639766210399102,
+        "max_seconds": 0.04505851201247424,
+        "latency_buckets": [
+          618,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "bus:standard_messages:": {
+        "events": 85,
+        "records": 185,
+        "map_seconds": 1.062428471079329,
+        "ingest_seconds": 1.7879713240254205,
+        "max_seconds": 0.07581757701700553,
+        "latency_buckets": [
+          78,
+          7,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "bus:stream_items:": {
+        "events": 70,
+        "records": 70,
+        "map_seconds": 0.007317017996683717,
+        "ingest_seconds": 0.6574743389792275,
+        "max_seconds": 0.07052312599262223,
+        "latency_buckets": [
+          68,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "bus:stream_members:": {
+        "events": 70,
+        "records": 140,
+        "map_seconds": 0.8092499270278495,
+        "ingest_seconds": 1.5755762358894572,
+        "max_seconds": 0.17562222699052654,
+        "latency_buckets": [
+          61,
+          7,
+          2,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_values:w3_operations_applied": {
+        "events": 37,
+        "records": 37,
+        "map_seconds": 0.0052408508490771055,
+        "ingest_seconds": 0.3449566640483681,
+        "max_seconds": 0.02884066101978533,
+        "latency_buckets": [
+          37,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "research:codex_runtime_records:": {
+        "events": 350,
+        "records": 350,
+        "map_seconds": 0.45590559317497537,
+        "ingest_seconds": 0.8146927050838713,
+        "max_seconds": 0.11135861399816349,
+        "latency_buckets": [
+          344,
+          4,
+          2,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "runtime:runtime_v2_badcases:": {
+        "events": 1,
+        "records": 14,
+        "map_seconds": 0.00315050600329414,
+        "ingest_seconds": 0.02801957298652269,
+        "max_seconds": 0.03130358998896554,
+        "latency_buckets": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "bus:audit_log:": {
+        "events": 2,
+        "records": 2,
+        "map_seconds": 0.0015578999882563949,
+        "ingest_seconds": 0.0022046710073482245,
+        "max_seconds": 0.003146839007968083,
+        "latency_buckets": [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "slow_events": [
+      {
+        "at": "2026-11-12T13:17:02.205627093Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157649,
+        "records": 530,
+        "seconds": 2.0604553390003275,
+        "map_seconds": 1.4577136549924035,
+        "ingest_seconds": 0.6025726750085596
+      },
+      {
+        "at": "2026-11-12T13:17:14.381530491Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4542786,
+        "records": 801,
+        "seconds": 11.681456407008227,
+        "map_seconds": 4.923418847989524,
+        "ingest_seconds": 6.757930425985251
+      },
+      {
+        "at": "2026-11-12T13:17:19.089201561Z",
+        "source": "runtime",
+        "table": "runtime_values",
+        "namespace": "reference_deliveries",
+        "seq": 4542839,
+        "records": 65,
+        "seconds": 1.4605610390135553,
+        "map_seconds": 0.9717016229988076,
+        "ingest_seconds": 0.460083003010368
+      },
+      {
+        "at": "2026-11-12T13:18:00.087682602Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157651,
+        "records": 350,
+        "seconds": 3.6841559339954983,
+        "map_seconds": 0.8176548290066421,
+        "ingest_seconds": 2.8663447410217486
+      },
+      {
+        "at": "2026-11-12T13:18:06.819659483Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4542914,
+        "records": 528,
+        "seconds": 6.451149458996952,
+        "map_seconds": 2.1669221259944607,
+        "ingest_seconds": 4.284008438989986
+      },
+      {
+        "at": "2026-11-12T13:21:32.981465243Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157653,
+        "records": 350,
+        "seconds": 3.7421169150038622,
+        "map_seconds": 0.8335089850006625,
+        "ingest_seconds": 2.9084859189752024
+      },
+      {
+        "at": "2026-11-12T13:21:39.072475006Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4543364,
+        "records": 528,
+        "seconds": 5.307494962995406,
+        "map_seconds": 1.9740698829991743,
+        "ingest_seconds": 3.3333674290042836
+      },
+      {
+        "at": "2026-11-12T13:21:41.330754102Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157655,
+        "records": 202,
+        "seconds": 1.688809727987973,
+        "map_seconds": 0.44597847800469026,
+        "ingest_seconds": 1.242736291984329
+      },
+      {
+        "at": "2026-11-12T13:21:46.158547183Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4543372,
+        "records": 243,
+        "seconds": 4.190633620979497,
+        "map_seconds": 2.1144061079830863,
+        "ingest_seconds": 2.076112156995805
+      },
+      {
+        "at": "2026-11-12T13:22:00.327598256Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157657,
+        "records": 530,
+        "seconds": 5.814891781978076,
+        "map_seconds": 1.3216776860062964,
+        "ingest_seconds": 4.4930773680098355
+      },
+      {
+        "at": "2026-11-12T13:25:50.943575370Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157659,
+        "records": 202,
+        "seconds": 1.34284975900664,
+        "map_seconds": 0.3302043819858227,
+        "ingest_seconds": 1.0123391700035427
+      },
+      {
+        "at": "2026-11-12T13:25:52.957843622Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4543810,
+        "records": 243,
+        "seconds": 1.660171015013475,
+        "map_seconds": 0.6975775739992969,
+        "ingest_seconds": 0.9625035510107409
+      },
+      {
+        "at": "2026-11-12T13:26:05.109880667Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157661,
+        "records": 350,
+        "seconds": 3.6189019579906017,
+        "map_seconds": 0.9453683010069653,
+        "ingest_seconds": 2.673378814011812
+      },
+      {
+        "at": "2026-11-12T13:26:10.817559792Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4543827,
+        "records": 528,
+        "seconds": 5.10853423102526,
+        "map_seconds": 2.1517219099914655,
+        "ingest_seconds": 2.956723575014621
+      },
+      {
+        "at": "2026-11-12T13:26:41.148692639Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157663,
+        "records": 530,
+        "seconds": 4.889849647996016,
+        "map_seconds": 1.1648911929805763,
+        "ingest_seconds": 3.724823189986637
+      },
+      {
+        "at": "2026-11-12T13:28:15.811785206Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157665,
+        "records": 202,
+        "seconds": 1.2108175680041313,
+        "map_seconds": 0.3549037140037399,
+        "ingest_seconds": 0.8557902080065105
+      },
+      {
+        "at": "2026-11-12T13:28:18.274533254Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544101,
+        "records": 243,
+        "seconds": 1.420572377013741,
+        "map_seconds": 0.5809101659979206,
+        "ingest_seconds": 0.839573092001956
+      },
+      {
+        "at": "2026-11-12T13:29:18.201002872Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157667,
+        "records": 350,
+        "seconds": 2.9525957239966374,
+        "map_seconds": 0.8772238839883357,
+        "ingest_seconds": 2.0752292910183314
+      },
+      {
+        "at": "2026-11-12T13:29:23.373225819Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544167,
+        "records": 528,
+        "seconds": 4.390373058005935,
+        "map_seconds": 1.4400678779929876,
+        "ingest_seconds": 2.9502327439840883
+      },
+      {
+        "at": "2026-11-12T13:29:48.638795086Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157669,
+        "records": 530,
+        "seconds": 4.504531537008006,
+        "map_seconds": 1.1342758039827459,
+        "ingest_seconds": 3.3701073820120655
+      },
+      {
+        "at": "2026-11-12T13:29:55.198955731Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544218,
+        "records": 801,
+        "seconds": 5.820389285014244,
+        "map_seconds": 2.16594340102165,
+        "ingest_seconds": 3.6543521150015295
+      },
+      {
+        "at": "2026-11-12T13:30:55.539492514Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157671,
+        "records": 202,
+        "seconds": 1.402381777006667,
+        "map_seconds": 0.31584978898172267,
+        "ingest_seconds": 1.0864346729940735
+      },
+      {
+        "at": "2026-11-12T13:30:58.281833064Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544312,
+        "records": 243,
+        "seconds": 2.3457598280219827,
+        "map_seconds": 0.7288398539822083,
+        "ingest_seconds": 1.6168248750036582
+      },
+      {
+        "at": "2026-11-12T13:32:50.129405392Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157673,
+        "records": 350,
+        "seconds": 3.7528682590054814,
+        "map_seconds": 1.0097220379975624,
+        "ingest_seconds": 2.743029310979182
+      },
+      {
+        "at": "2026-11-12T13:32:55.684356329Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544457,
+        "records": 528,
+        "seconds": 5.032200184999965,
+        "map_seconds": 1.7618765770166647,
+        "ingest_seconds": 3.2701620829757303
+      },
+      {
+        "at": "2026-11-12T13:33:01.384099676Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157675,
+        "records": 530,
+        "seconds": 5.175595628010342,
+        "map_seconds": 1.0940805179998279,
+        "ingest_seconds": 4.081455559004098
+      },
+      {
+        "at": "2026-11-12T13:33:10.381395183Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544467,
+        "records": 801,
+        "seconds": 7.866366556001594,
+        "map_seconds": 2.455387135007186,
+        "ingest_seconds": 5.4108215039887
+      },
+      {
+        "at": "2026-11-12T13:33:19.021559994Z",
+        "source": "runtime",
+        "table": "runtime_values",
+        "namespace": "reference_deliveries",
+        "seq": 4544546,
+        "records": 65,
+        "seconds": 1.2279456509859301,
+        "map_seconds": 0.8114592859928962,
+        "ingest_seconds": 0.38477210598648526
+      },
+      {
+        "at": "2026-11-12T13:35:52.096009399Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157679,
+        "records": 350,
+        "seconds": 3.2031199510092847,
+        "map_seconds": 0.7402464099868666,
+        "ingest_seconds": 2.4627348500071093
+      },
+      {
+        "at": "2026-11-12T13:35:58.508876188Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544882,
+        "records": 528,
+        "seconds": 5.749740394006949,
+        "map_seconds": 1.6953630940115545,
+        "ingest_seconds": 4.054296568006976
+      },
+      {
+        "at": "2026-11-12T13:36:37.151188120Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157681,
+        "records": 202,
+        "seconds": 1.3334673960052896,
+        "map_seconds": 0.3823534740076866,
+        "ingest_seconds": 0.9509739589993842
+      },
+      {
+        "at": "2026-11-12T13:36:39.531842176Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544906,
+        "records": 243,
+        "seconds": 1.8736235570104327,
+        "map_seconds": 0.6662665019975975,
+        "ingest_seconds": 1.2072703420126345
+      },
+      {
+        "at": "2026-11-12T13:37:00.750081105Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157683,
+        "records": 530,
+        "seconds": 4.750201740011107,
+        "map_seconds": 1.1205723980092444,
+        "ingest_seconds": 3.629498024005443
+      },
+      {
+        "at": "2026-11-12T13:37:12.355145891Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4544922,
+        "records": 801,
+        "seconds": 10.441893516981509,
+        "map_seconds": 4.428601221006829,
+        "ingest_seconds": 6.013155086984625
+      },
+      {
+        "at": "2026-11-12T13:39:26.132980396Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157685,
+        "records": 350,
+        "seconds": 3.2507692099898122,
+        "map_seconds": 0.8179373150051106,
+        "ingest_seconds": 2.4326926830108277
+      },
+      {
+        "at": "2026-11-12T13:39:32.802320596Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4545113,
+        "records": 528,
+        "seconds": 5.986347594007384,
+        "map_seconds": 1.9656536760157906,
+        "ingest_seconds": 4.020580042997608
+      },
+      {
+        "at": "2026-11-12T13:39:35.561105189Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157687,
+        "records": 202,
+        "seconds": 1.9743748170149047,
+        "map_seconds": 0.5921491729968693,
+        "ingest_seconds": 1.3821312460058834
+      },
+      {
+        "at": "2026-11-12T13:39:39.201710563Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4545121,
+        "records": 243,
+        "seconds": 3.0476349410018884,
+        "map_seconds": 1.3226478570140898,
+        "ingest_seconds": 1.7248623990162741
+      },
+      {
+        "at": "2026-11-12T13:40:46.656426398Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157689,
+        "records": 530,
+        "seconds": 4.344430755998474,
+        "map_seconds": 1.2089112230169121,
+        "ingest_seconds": 3.135371092008427
+      },
+      {
+        "at": "2026-11-12T13:40:56.632146555Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4545256,
+        "records": 801,
+        "seconds": 9.279923976020655,
+        "map_seconds": 3.0845748119754717,
+        "ingest_seconds": 6.195231299992884
+      },
+      {
+        "at": "2026-11-12T13:41:01.176404783Z",
+        "source": "runtime",
+        "table": "runtime_values",
+        "namespace": "reference_deliveries",
+        "seq": 4545272,
+        "records": 65,
+        "seconds": 1.1148473720240872,
+        "map_seconds": 0.6949837089923676,
+        "ingest_seconds": 0.39709257800132036
+      },
+      {
+        "at": "2026-11-12T13:42:09.379533468Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157691,
+        "records": 202,
+        "seconds": 1.8087858330109157,
+        "map_seconds": 0.4629942729952745,
+        "ingest_seconds": 1.3456572869908996
+      },
+      {
+        "at": "2026-11-12T13:42:13.147938752Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4545385,
+        "records": 243,
+        "seconds": 3.0370058260159567,
+        "map_seconds": 1.0745263080170844,
+        "ingest_seconds": 1.962371653993614
+      },
+      {
+        "at": "2026-11-12T13:42:51.019025879Z",
+        "source": "runtime",
+        "table": "runtime_values",
+        "namespace": "reference_deliveries",
+        "seq": 4545440,
+        "records": 4,
+        "seconds": 1.0469536920136306,
+        "map_seconds": 0.47033284400822595,
+        "ingest_seconds": 0.5252206769946497
+      },
+      {
+        "at": "2026-11-12T13:42:56.835521534Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157693,
+        "records": 350,
+        "seconds": 5.420589619985549,
+        "map_seconds": 1.4709357660030946,
+        "ingest_seconds": 3.9494695460016374
+      },
+      {
+        "at": "2026-11-12T13:43:07.778538829Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4545444,
+        "records": 528,
+        "seconds": 8.63009050299297,
+        "map_seconds": 3.98461892499472,
+        "ingest_seconds": 4.645365007017972
+      },
+      {
+        "at": "2026-11-12T13:44:57.436466966Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157695,
+        "records": 530,
+        "seconds": 4.311564346979139,
+        "map_seconds": 0.880369178019464,
+        "ingest_seconds": 3.4310930960054975
+      },
+      {
+        "at": "2026-11-12T13:44:58.943185123Z",
+        "source": "runtime",
+        "table": "runtime_values",
+        "namespace": "reference_deliveries",
+        "seq": 4545604,
+        "records": 4,
+        "seconds": 1.0429307669983245,
+        "map_seconds": 0.2890948719868902,
+        "ingest_seconds": 0.7238843250088394
+      },
+      {
+        "at": "2026-11-12T13:45:08.385615174Z",
+        "source": "initialization",
+        "table": "ticker_active_revision",
+        "namespace": null,
+        "seq": 157696,
+        "records": 799,
+        "seconds": 9.022075058019254,
+        "map_seconds": 2.373092418012675,
+        "ingest_seconds": 6.648854839993874
+      },
+      {
+        "at": "2026-11-12T13:45:12.092442862Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157697,
+        "records": 202,
+        "seconds": 1.547947170009138,
+        "map_seconds": 0.3389196360076312,
+        "ingest_seconds": 1.2088787730026525
+      },
+      {
+        "at": "2026-11-12T13:45:15.388342010Z",
+        "source": "initialization",
+        "table": "ticker_active_revision",
+        "namespace": null,
+        "seq": 157698,
+        "records": 241,
+        "seconds": 2.7917023570043966,
+        "map_seconds": 0.9273495520174038,
+        "ingest_seconds": 1.8601052279991563
+      },
+      {
+        "at": "2026-11-12T13:46:18.345491113Z",
+        "source": "initialization",
+        "table": "activation_revisions",
+        "namespace": null,
+        "seq": 157699,
+        "records": 350,
+        "seconds": 2.6254300950095057,
+        "map_seconds": 0.5975036220042966,
+        "ingest_seconds": 2.0277929510048125
+      },
+      {
+        "at": "2026-11-12T13:46:23.911055517Z",
+        "source": "runtime",
+        "table": "v2_ticker_control",
+        "namespace": null,
+        "seq": 4545704,
+        "records": 528,
+        "seconds": 4.9615896600007545,
+        "map_seconds": 1.6400212850130629,
+        "ingest_seconds": 3.321451101975981
+      }
+    ]
+  }
+}

@@ -8,14 +8,21 @@ import {
   X,
   History as HistoryIcon,
 } from "lucide-react";
-import type { ContentRef, ContentChunk, RunSummary, Json } from "@contract";
+import type {
+  ContentRef,
+  ContentChunk,
+  RunSummary,
+  Json,
+  Response,
+  ReadContext,
+} from "@contract";
 import { Button } from "./ui/button";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Notice, Module } from "./state";
 import { useRead, tickerPath, id } from "@/core/page-query";
 import { useRuntime } from "@/core/runtime";
 import { saveArtifact, appendContent } from "@/core/content";
-import { queryString } from "@/core/api";
+import { queryString, projectionWarning, projectionLabels } from "@/core/api";
 export function DetailPanel({
   label,
   className,
@@ -55,10 +62,12 @@ export function PageTitle({
   title,
   refresh,
   children,
+  readContext,
 }: {
   title: string;
   refresh: () => Promise<unknown>;
   children?: ReactNode;
+  readContext?: Response<ReadContext>;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -85,6 +94,60 @@ export function PageTitle({
         </div>
       </div>
       {error && <Notice danger>{error}</Notice>}
+      <ProjectionStatus readContext={readContext} />
+    </>
+  );
+}
+export function ProjectionStatus({
+  readContext,
+}: {
+  readContext?: Response<ReadContext>;
+}) {
+  const projection = readContext?.data.projection;
+  const warning =
+    projection && readContext
+      ? projectionWarning(projection, readContext.meta.as_of)
+      : "";
+  return (
+    <>
+      {warning && (
+        <Notice>
+          {warning}。刷新成功表示已取得当前快照，待同步数据仍会稍后出现。
+        </Notice>
+      )}
+      {!!projection?.length && (
+        <details>
+          <summary>数据同步状态</summary>
+          <p>
+            当前页面快照：{formatInstant(readContext!.meta.as_of)}
+            。以下为各数据源的同步核验结果。
+          </p>
+          {projection.map((row) => (
+            <p key={row.source}>
+              {projectionLabels[row.source]}：
+              {row.error
+                ? "核验异常"
+                : row.checkpoint >= row.head
+                  ? "已追平已观察源头"
+                  : "正在同步"}
+              ； 核验时间 {formatInstant(row.checked_at)}；最近已同步源事件{" "}
+              {row.source_event_at
+                ? formatInstant(row.source_event_at)
+                : "时间未记录"}
+              ； 消费坐标 {row.checkpoint}/{row.head}
+              {row.oldest_pending_at && (
+                <>；最早待同步事件 {formatInstant(row.oldest_pending_at)}</>
+              )}
+              {row.historical_gaps > 0 && (
+                <>
+                  ；另有 {row.historical_gaps}{" "}
+                  个历史缺口待核验，与当前消费延迟分别计算
+                </>
+              )}
+            </p>
+          ))}
+        </details>
+      )}
     </>
   );
 }

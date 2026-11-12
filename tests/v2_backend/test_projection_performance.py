@@ -108,3 +108,30 @@ def test_fact_restart_floor_is_prior_ack_receipt_not_head(tmp_path):
         ids=[r[0] for r in db.execute("SELECT id FROM v2_serving_business_facts WHERE id<>'existing'")]
     assert set(ids)=={str(n) for n in range(21,37)}
     assert sync_business_facts(source,store) is True
+
+
+def test_source_tick_reuses_metadata_connection_without_pinning_source_snapshot(tmp_path):
+    from tests.v2_backend.test_source_lifecycle import fixture_source
+    import sqlite3
+    source=fixture_source(tmp_path)
+    with source.projection_session():
+        first=source.connection();head=source.head()
+        first.close()  # Borrowed helpers may close; the tick still owns it.
+        assert source.connection() is first
+        assert not first.in_transaction
+        with source.connection(write=True) as writer:
+            writer.execute("UPDATE poll_states SET status='running' WHERE binding_id='0'")
+        assert source.head()>head  # No stale read snapshot spans the source write.
+        assert not first.in_transaction
+    with pytest.raises(sqlite3.ProgrammingError):first.execute('SELECT 1')
+    with source.projection_session():assert source.connection() is not first
+
+
+def test_missing_source_connection_is_opened_inside_existing_error_boundary(tmp_path):
+    from doxagent.v2_read.outbox import SourceOutbox
+    source=SourceOutbox(tmp_path/'missing.db','runtime')
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    worker=ProjectionWorker(store,[source],lambda event:([],[]))
+    assert worker.tick()==0
+    with store.connect() as db:
+        assert db.execute("SELECT error FROM source_health WHERE source='runtime'").fetchone()[0]=='SOURCE_UNAVAILABLE'

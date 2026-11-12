@@ -62,7 +62,11 @@ export default function Research() {
   };
   return (
     <>
-      <PageTitle title={`${ticker} 基础投研`} refresh={context.refetch}>
+      <PageTitle
+        title={`${ticker} 基础投研`}
+        refresh={context.refetch}
+        readContext={context.data}
+      >
         <Button variant="outline" onClick={() => setHistory(!history)}>
           <HistoryIcon />
           历史文档

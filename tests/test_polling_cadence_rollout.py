@@ -42,7 +42,7 @@ def test_owner_apply_is_idempotent_and_preserves_disabled_subscription(tmp_path)
     binding = service.configure_binding(ticker='MU', source_id=source.source_id, actor=UpdateActor.USER)
     service.update_binding(binding.binding_id, {'enabled': False, 'polling': {**binding.polling.model_dump(mode='json'), 'target_interval_seconds': 60}}, actor=UpdateActor.USER)
     legacy = _source('globenewswire_semiconductors_rss', 'Legacy')
-    service.register_source(legacy)
+    repo.save_source(legacy)  # Seed the existing pre-retirement registry.
     service.configure_binding(ticker='MU', source_id=legacy.source_id, actor=UpdateActor.USER)
     report = configure(service, apply=True)
     updated = repo.get_binding(binding.binding_id)

@@ -11,7 +11,7 @@ from doxagent.semantic_clock import semantic_day
 from .repository import encode
 
 
-def rows(store, kind, ticker, parent=None):
+def rows(store, kind, ticker, parent=None, *, identity_prefix=None):
     # Worker-side enumeration of one immutable version, never an HTTP history scan.
     with store.connect() as db:
         sql = "SELECT id,payload FROM object_current WHERE kind=? AND ticker=? AND valid_to IS NULL"
@@ -19,6 +19,9 @@ def rows(store, kind, ticker, parent=None):
         if parent is not None:
             sql += " AND parent=?"
             args.append(parent)
+        if identity_prefix is not None:
+            sql += ' AND id>=? AND id<?'
+            args.extend([identity_prefix+':',identity_prefix+';'])
         import json
 
         return {row[0]: json.loads(row[1]) for row in db.execute(sql, args)}
@@ -54,7 +57,14 @@ def activate(store, ticker, active, at):
         + d["summary"].get("policy_activation_revision", d["summary"]["policy_revision_id"]): d
         for d in details.values()
     }
-    catalog = rows(store, "policy_catalog", ticker)
+    if prior and prior.get('policy_set',{}).get('artifact_id'):
+        previous_details=rows(store,'policy_detail',ticker,prior['policy_set']['artifact_id'])
+        keys=set(incoming)
+        keys.update(d['summary']['policy_id']+':'+d['summary'].get('policy_activation_revision',d['summary']['policy_revision_id']) for d in previous_details.values())
+        with store.connect() as db:
+            catalog={r[0]:json.loads(r[1]) for r in db.execute("SELECT c.id,c.payload FROM json_each(?) q CROSS JOIN object_current c INDEXED BY current_identity ON c.kind='policy_catalog' AND c.ticker=? AND c.id=q.value",(encode(sorted(keys)),ticker))}
+    else:
+        catalog = rows(store, "policy_catalog", ticker)
     evidence = direction_evidence(store, ticker) if any(
         "directions" in p for p in [*catalog.values(), *(d["summary"] for d in incoming.values())]
     ) else None
@@ -107,18 +117,19 @@ def activate(store, ticker, active, at):
                 "kind": "policy_catalog",
                 "ticker": ticker,
                 "id": key,
-                "data": validate("PolicySummary", summary),
+                "data": summary if summary == previous else validate("PolicySummary", summary),
             }
         )
         before_summary = previous or replaced
+        same_revision = bool(current and before_summary and before_summary['policy_revision_id'] == current['summary']['policy_revision_id'])
         before_detail = (
             store.get("policy_detail", ticker, before_summary["policy_revision_id"])
-            if before_summary
+            if before_summary and not same_revision
             else None
         )
         before = before_detail["policy"] if before_detail else None
         after = current["policy"] if current else None
-        paths = changed_paths(before, after)
+        paths = [] if same_revision else changed_paths(before, after)
         change_type = (
             "ADD"
             if previous is None

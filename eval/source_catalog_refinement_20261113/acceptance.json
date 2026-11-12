@@ -1,0 +1,229 @@
+{
+  "commit": "9b055706ede6010347e205c54a24e64074de2c64",
+  "serving": {
+    "readings": [
+      {
+        "status": 200,
+        "seconds": 4.391058576002251,
+        "bytes": 146062
+      },
+      {
+        "status": 200,
+        "seconds": 0.9111093060055282,
+        "bytes": 146064
+      }
+    ],
+    "native_sources": 85,
+    "subscriptions": 275,
+    "stale_bindings": 0,
+    "stale_profiles": [],
+    "active_old_units": 0,
+    "historical_source_revisions": 42
+  },
+  "retirement": {
+    "applied": true,
+    "removed": [
+      {
+        "source_id": "crn_cloud",
+        "successor": "crn_cloud_security_datacenter",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "crn_data_center",
+        "successor": "crn_cloud_security_datacenter",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "crn_security",
+        "successor": "crn_cloud_security_datacenter",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "quantum_insider_business",
+        "successor": "quantum_insider",
+        "was_enabled": false,
+        "bindings": 0
+      },
+      {
+        "source_id": "quantum_insider_capital_markets",
+        "successor": "quantum_insider",
+        "was_enabled": false,
+        "bindings": 0
+      },
+      {
+        "source_id": "quantum_insider_national",
+        "successor": "quantum_insider",
+        "was_enabled": false,
+        "bindings": 0
+      },
+      {
+        "source_id": "register_cloud",
+        "successor": "register_software_cloud_security",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "register_security",
+        "successor": "register_software_cloud_security",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "register_software",
+        "successor": "register_software_cloud_security",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "siliconangle_big_data",
+        "successor": "siliconangle_software",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "siliconangle_cloud",
+        "successor": "siliconangle_software",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "siliconangle_security",
+        "successor": "siliconangle_software",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "technews_ai",
+        "successor": "technews_hardware",
+        "was_enabled": false,
+        "bindings": 5
+      },
+      {
+        "source_id": "technews_semiconductor",
+        "successor": "technews_hardware",
+        "was_enabled": false,
+        "bindings": 5
+      },
+      {
+        "source_id": "venturebeat_data",
+        "successor": "venturebeat_software",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "venturebeat_orchestration",
+        "successor": "venturebeat_software",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "venturebeat_security",
+        "successor": "venturebeat_software",
+        "was_enabled": false,
+        "bindings": 1
+      },
+      {
+        "source_id": "wccftech_ai",
+        "successor": "wccftech_hardware",
+        "was_enabled": false,
+        "bindings": 5
+      },
+      {
+        "source_id": "wccftech_industry",
+        "successor": "wccftech_hardware",
+        "was_enabled": false,
+        "bindings": 5
+      },
+      {
+        "source_id": "globenewswire_search",
+        "successor": null,
+        "was_enabled": true,
+        "bindings": 10
+      }
+    ],
+    "cancelled_articles": 0,
+    "cancelled_deliveries": 0
+  },
+  "deleted_binding_rows": 42,
+  "changed_roles": [
+    {
+      "service": "v2-content-enrichment",
+      "id": "a2345da25a56",
+      "image": "sha256:c49c3b6915a0d1bbb0e51cb452b342bab2d90aa107cb9bfe9ab137a867e786ee",
+      "health": null,
+      "restarts": 0,
+      "commit": "9b055706ede6010347e205c54a24e64074de2c64"
+    },
+    {
+      "service": "v2-message-bus",
+      "id": "191c78778017",
+      "image": "sha256:c49c3b6915a0d1bbb0e51cb452b342bab2d90aa107cb9bfe9ab137a867e786ee",
+      "health": null,
+      "restarts": 0,
+      "commit": "9b055706ede6010347e205c54a24e64074de2c64"
+    },
+    {
+      "service": "v2-web",
+      "id": "25f31b762c49",
+      "image": "sha256:693e92ef2b645c85e5e83daa26a30c42987f4776767342d4ad20806032136304",
+      "health": "healthy",
+      "restarts": 0,
+      "commit": "9b055706ede6010347e205c54a24e64074de2c64"
+    },
+    {
+      "service": "v2-api",
+      "id": "89143f5d5ebf",
+      "image": "sha256:c49c3b6915a0d1bbb0e51cb452b342bab2d90aa107cb9bfe9ab137a867e786ee",
+      "health": "healthy",
+      "restarts": 0,
+      "commit": "9b055706ede6010347e205c54a24e64074de2c64"
+    }
+  ],
+  "public_assets_ok": [
+    "/assets/index-q17cXh64.js",
+    "/assets/react-runtime-BDIxgnof.js",
+    "/assets/query-runtime-Btojn1CB.js",
+    "/assets/wire-validation-CUxxoACA.js",
+    "/assets/auth-runtime-CQoOg3v1.js",
+    "/assets/index-B_JAgl4S.css",
+    "/assets/source-catalog-CjtUMZas.css",
+    "/assets/source-catalog-BrRvWVzY.js"
+  ],
+  "free_gib_before": 17.079322814941406,
+  "free_gib_after": 18.45296859741211,
+  "browser": [
+    {
+      "width": 1262,
+      "count": 85,
+      "scroll": 1262,
+      "groups": [
+        "全局通用消息源13",
+        "AI、半导体与计算基础设施17",
+        "软件、云、网络安全与前沿计算16",
+        "电力、公用基础设施与能源转型10",
+        "航空航天、国防与安全科技20",
+        "已停用或未使用3",
+        "测试消息源6"
+      ],
+      "errors": []
+    },
+    {
+      "width": 1559,
+      "count": 85,
+      "scroll": 1559,
+      "groups": [
+        "全局通用消息源13",
+        "AI、半导体与计算基础设施17",
+        "软件、云、网络安全与前沿计算16",
+        "电力、公用基础设施与能源转型10",
+        "航空航天、国防与安全科技20",
+        "已停用或未使用3",
+        "测试消息源6"
+      ],
+      "errors": []
+    }
+  ]
+}

@@ -346,6 +346,10 @@ class MessageBusV2Service:
     # -- source registry -------------------------------------------------------------
 
     def register_source(self, source: SourceDefinition) -> SourceDefinition:
+        from .polling_cadence import RETIRED_SOURCES
+
+        if source.source_id in RETIRED_SOURCES:
+            raise ValueError(f"source retired: {source.source_id}")
         if self.repository.get_source(source.source_id) is not None:
             raise ValueError(f"source already exists: {source.source_id}")
         self._validate_source_adapter(source)
@@ -490,15 +494,17 @@ class MessageBusV2Service:
         )
 
     def hard_delete_source(
-        self, source_id: str, *, actor: UpdateActor, reason: str | None = None
+        self, source_id: str, *, actor: UpdateActor, reason: str | None = None,
+        flush_pending: bool = True,
     ) -> HardDeleteResult:
         source = self.require_source(source_id)
-        self.retry_pending_raw(limit=10_000, source_id=source.source_id)
         flushed: list[str] = []
-        for binding in self.repository.list_bindings(source_id=source.source_id):
-            flushed.extend(
-                item.stream_item_id for item in self.flush_binding(binding.binding_id, force=True)
-            )
+        if flush_pending:
+            self.retry_pending_raw(limit=10_000, source_id=source.source_id)
+            for binding in self.repository.list_bindings(source_id=source.source_id):
+                flushed.extend(
+                    item.stream_item_id for item in self.flush_binding(binding.binding_id, force=True)
+                )
         count = self.repository.delete_source_control_plane(
             source.source_id,
             actor=actor,

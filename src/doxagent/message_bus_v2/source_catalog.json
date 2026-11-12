@@ -55,7 +55,7 @@
   ],
   "sources": {
     "access_newswire_massive": {
-      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "description": "ACCESS Newswire 是企业新闻稿发布平台；采集 Newsroom 的最新公告，供全量消息分发测试。",
       "entry_points": [
         "https://www.accessnewswire.com/newsroom"
       ],
@@ -75,8 +75,9 @@
       "sector_ids": []
     },
     "airspaceforces_space": {
-      "description": "航空航天与国防专题新闻。",
+      "description": "Air & Space Forces 是空军与太空军专业媒体；监测 Space 栏目的军用航天、卫星与采购动态。",
       "entry_points": [
+        "https://www.airandspaceforces.com/category/space/",
         "https://www.airandspaceforces.com/wp-json/wp/v2/posts?categories=8&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
         "https://www.airandspaceforces.com/category/space/feed/"
       ],
@@ -99,7 +100,7 @@
       ]
     },
     "ans_nuclear_newswire": {
-      "description": "美国核学会核能行业新闻。",
+      "description": "美国核学会的 Nuclear Newswire 聚焦核能行业；采集核电运营、项目建设与技术政策新闻。",
       "entry_points": [
         "https://www.ans.org/news/",
         "https://www.ans.org/news/feed/"
@@ -123,7 +124,7 @@
       ]
     },
     "army_news_releases": {
-      "description": "美国陆军官方新闻稿。",
+      "description": "美国陆军官方发布渠道；采集 News Releases 页面中的装备、采购、部署与项目公告。",
       "entry_points": [
         "https://www.army.mil/news/newsreleases"
       ],
@@ -145,7 +146,7 @@
       ]
     },
     "army_news_rss": {
-      "description": "美国陆军官方新闻RSS。",
+      "description": "美国陆军官方新闻订阅；采集综合新闻 RSS，补充正式新闻稿以外的装备与部队动态。",
       "entry_points": [
         "https://www.army.mil/rss/static/0.xml"
       ],
@@ -167,7 +168,7 @@
       ]
     },
     "aviationweek_rocketlab": {
-      "description": "Aviation Week的Rocket Lab专题。",
+      "description": "Aviation Week 是航空航天专业媒体；监测 Rocket Lab 专题中的发射业务、订单与公司新闻。",
       "entry_points": [
         "https://aviationweek.com/term/rocket-lab"
       ],
@@ -189,7 +190,7 @@
       ]
     },
     "aviationweek_rss": {
-      "description": "航空航天与国防专题新闻。",
+      "description": "Aviation Week 覆盖航空航天产业；采集已配置的航天栏目，跟踪发射、卫星及产业项目。",
       "entry_points": [
         "https://aviationweek.com/taxonomy/term/186836",
         "https://aviationweek.com/taxonomy/term/186841",
@@ -218,7 +219,7 @@
       ]
     },
     "aws_platform_marketplace_rss": {
-      "description": "AWS平台与Marketplace官方产品动态。",
+      "description": "AWS 的官方产品与平台消息源；监测已配置的云平台和 Marketplace 发布，覆盖软件上架及服务更新。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -234,12 +235,12 @@
       },
       "applicability": "INDUSTRY",
       "sector_ids": [
-        "L1-01",
         "L1-02"
-      ]
+      ],
+      "short_name": "AWS / Platform & Marketplace"
     },
     "barrons_ticker_news": {
-      "description": "个股新闻与其他道琼斯内容，排除IBD栏目。",
+      "description": "Barron’s 是道琼斯旗下财经媒体；采集个股新闻页及相关道琼斯文章，排除 IBD 栏目。",
       "entry_points": [
         "https://www.barrons.com/market-data/stocks/{ticker_lower}",
         "https://www.barrons.com/market-data/api/news?channel=Barrons&chartingSymbol=stock%2F%2F%2F{ticker_lower}&pageNumber=0&count=40"
@@ -259,10 +260,11 @@
         "fallback": []
       },
       "applicability": "GLOBAL",
-      "sector_ids": []
+      "sector_ids": [],
+      "short_name": "Barron’s"
     },
     "benzinga_news": {
-      "description": "按标的获取市场新闻、公司动态和交易催化消息。",
+      "description": "Benzinga 提供金融市场快讯；通过新闻 API 按标的获取公司动态、市场事件与交易催化消息。",
       "entry_points": [
         "https://api.benzinga.com/api/v2/news"
       ],
@@ -282,7 +284,7 @@
       "sector_ids": []
     },
     "bloomberg_massive": {
-      "description": "Bloomberg Latest 实时新闻，共享 HTTP 列表入口，无 RSS 备用路径。",
+      "description": "Bloomberg 是全球财经新闻机构；采集 Latest 的最新新闻列表，供共享全量分发测试。",
       "entry_points": [
         "https://www.bloomberg.com/latest",
         "https://www.bloomberg.com/lineup-next/api/stories?limit=25&pageNumber=1&locale=en&types=ARTICLE%2CFEATURE%2CINTERACTIVE%2CLETTER%2CEXPLAINERS"
@@ -303,7 +305,7 @@
       "sector_ids": []
     },
     "breakingdefense_space": {
-      "description": "航空航天与国防专题新闻。",
+      "description": "Breaking Defense 是国防产业媒体；采集 Space 栏目的军用航天、卫星及采购新闻。",
       "entry_points": [
         "https://breakingdefense.com/category/space/feed/"
       ],
@@ -325,7 +327,7 @@
       ]
     },
     "businesswire_massive": {
-      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "description": "Business Wire 是企业公告与新闻稿发布平台；监测公开新闻列表，供共享全量分发测试。",
       "entry_points": [
         "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJcFVJYWQ=="
       ],
@@ -347,7 +349,7 @@
       "sector_ids": []
     },
     "calcalist_search": {
-      "description": "按关键词检索以色列商业与公司新闻。",
+      "description": "Calcalist 是以色列财经媒体；从配置的检索与栏目入口跟踪国防军工相关公司和产业新闻。",
       "entry_points": [
         "https://www.calcalist.co.il/category/3735"
       ],
@@ -363,11 +365,13 @@
         ],
         "fallback": []
       },
-      "applicability": "GLOBAL",
-      "sector_ids": []
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-05"
+      ]
     },
     "canary_media": {
-      "description": "清洁能源、电网与能源转型新闻。",
+      "description": "Canary Media 关注清洁能源转型；采集文章列表中的电网、储能、发电及能源基础设施新闻。",
       "entry_points": [
         "https://www.canarymedia.com/articles",
         "https://www.canarymedia.com/rss.rss"
@@ -392,7 +396,7 @@
       ]
     },
     "corporate_ir_press_releases": {
-      "description": "公司官方IR与新闻稿入口，涵盖RSS和HTML端点。",
+      "description": "各上市公司的官方投资者关系与新闻稿入口；按 Ticker 监测已绑定的公告页面及 RSS，获取一手公司披露。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -409,32 +413,11 @@
         "fallback": []
       },
       "applicability": "GLOBAL",
-      "sector_ids": []
-    },
-    "crn_cloud": {
-      "description": "历史独立栏目，现由crn_cloud_security_datacenter合并覆盖。",
-      "entry_points": [
-        "https://www.crn.com/news/cloud/rss.xml"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
+      "sector_ids": [],
+      "short_name": "公司 IR / 新闻稿"
     },
     "crn_cloud_security_datacenter": {
-      "description": "CRN云、安全和数据中心渠道新闻。",
+      "description": "CRN 面向企业 IT 与渠道行业；合并监测 Cloud、Security 和 Data Center 栏目中的厂商及产品动态。",
       "entry_points": [
         "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=cloud",
         "https://www.crn.com/query-index.json?offset=0&limit=50&sheet=security",
@@ -460,54 +443,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
-    },
-    "crn_data_center": {
-      "description": "历史独立栏目，现由crn_cloud_security_datacenter合并覆盖。",
-      "entry_points": [
-        "https://www.crn.com/news/data-center/rss.xml"
       ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "crn_security": {
-      "description": "历史独立栏目，现由crn_cloud_security_datacenter合并覆盖。",
-      "entry_points": [
-        "https://www.crn.com/news/security/rss.xml"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
+      "short_name": "CRN"
     },
     "ctee_semiconductor": {
-      "description": "台湾工商时报半导体产业栏目。",
+      "description": "工商时报是台湾财经媒体；采集半导体产业页，跟踪芯片制造、设备与供应链新闻。",
       "entry_points": [
         "https://www.ctee.com.tw/industry/semi"
       ],
@@ -531,7 +471,7 @@
       ]
     },
     "darpa_news": {
-      "description": "美国DARPA科研项目与技术资助动态。",
+      "description": "DARPA 是美国国防高级研究计划局；监测官方新闻中的研发计划、技术试验与项目资助公告。",
       "entry_points": [
         "https://www.darpa.mil/rss.xml"
       ],
@@ -555,8 +495,9 @@
       ]
     },
     "data_center_frontier": {
-      "description": "数据中心建设、供电与基础设施新闻。",
+      "description": "Data Center Frontier 是数据中心专业媒体；采集建设、算力设施、供电与运营相关报道。",
       "entry_points": [
+        "https://www.datacenterfrontier.com/",
         "https://scorpia.graphql.aspire-ebm.com",
         "https://www.datacenterfrontier.com/__rss/website-scheduled-content.xml?input=%7B%22sectionAlias%22:%22home%22%7D"
       ],
@@ -581,7 +522,7 @@
       ]
     },
     "dcd_energy_ticker": {
-      "description": "按能源公司入口跟踪数据中心供电动态。",
+      "description": "Data Center Dynamics 聚焦数据中心产业；按已配置的能源公司新闻页监测供电合作、核能与项目动态。",
       "entry_points": [
         "https://www.datacenterdynamics.com/en/news/?company=constellation-energy",
         "https://www.datacenterdynamics.com/en/news/?company=bloom-energy"
@@ -604,7 +545,7 @@
       ]
     },
     "dcd_infrastructure_rss": {
-      "description": "数据中心基础设施及能源供应新闻。",
+      "description": "Data Center Dynamics 是数据中心行业媒体；采集新闻 RSS，跟踪基础设施、建设与能源供应。",
       "entry_points": [
         "https://www.datacenterdynamics.com/en/rss/"
       ],
@@ -627,7 +568,7 @@
       ]
     },
     "defensescoop_drones": {
-      "description": "无人机与反无人机专题新闻。",
+      "description": "DefenseScoop 报道国防科技；监测 Drones 标签页中的无人机、反无人机和军事采购新闻。",
       "entry_points": [
         "https://defensescoop.com/tag/drones/",
         "https://defensescoop.com/tag/counter-drone/",
@@ -654,7 +595,7 @@
       ]
     },
     "defensescoop_space": {
-      "description": "航空航天与国防专题新闻。",
+      "description": "DefenseScoop 报道国防科技；采集 Space 栏目的军用航天、卫星及太空系统动态。",
       "entry_points": [
         "https://defensescoop.com/news/space/feed/"
       ],
@@ -676,7 +617,7 @@
       ]
     },
     "digitimes_semiconductors": {
-      "description": "DIGITIMES英文半导体新闻列表。",
+      "description": "DIGITIMES 是科技产业与供应链媒体；监测英文 Semiconductors 专题的芯片和半导体供应链报道。",
       "entry_points": [
         "https://www.digitimes.com/topic/semiconductors/"
       ],
@@ -702,7 +643,7 @@
       ]
     },
     "digitimes_tw_rss": {
-      "description": "DIGITIMES台湾科技产业新闻RSS。",
+      "description": "DIGITIMES 台湾站关注科技制造与供应链；采集已配置中文 RSS 中的产业新闻。",
       "entry_points": [
         "https://www.digitimes.com.tw/tech/rss/xml/xmlrss_10_40.xml"
       ],
@@ -726,7 +667,7 @@
       ]
     },
     "dod_contracts": {
-      "description": "美国国防部合同公告。",
+      "description": "美国国防部门的官方合同公告；采集 Contracts 页面，跟踪承包商、合同金额与交付范围。",
       "entry_points": [
         "https://www.war.gov/News/Contracts/",
         "https://www.war.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=400&Site=945&max=50"
@@ -749,7 +690,7 @@
       ]
     },
     "dod_releases": {
-      "description": "美国国防部官方新闻稿。",
+      "description": "美国国防部门的官方新闻发布；采集 Releases 页面中的政策、采购与项目公告。",
       "entry_points": [
         "https://www.war.gov/News/Releases/",
         "https://www.war.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=9&Site=945&max=50"
@@ -772,7 +713,7 @@
       ]
     },
     "doe_energy_news": {
-      "description": "美国能源部核能、电力与电网部署公开消息。",
+      "description": "美国能源部的官方能源信息；监测已配置的核能、电力与电网新闻入口，跟踪项目资助和部署公告。",
       "entry_points": [
         "https://www.energy.gov/ne/listings/ne-press-releases",
         "https://www.energy.gov/edf/listings/edf-news",
@@ -797,7 +738,7 @@
       ]
     },
     "enterprise_apps_official_rss": {
-      "description": "企业应用厂商官方产品与业务发布。",
+      "description": "企业应用厂商的官方发布合集；采集配置中的产品、业务与合作公告，覆盖企业软件需求及竞争变化。",
       "entry_points": [
         "https://news.sap.com/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
         "https://www.salesforce.com/news/wp-json/wp/v2/posts?per_page=50&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
@@ -820,10 +761,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
+      ],
+      "short_name": "企业应用 / 官方发布"
     },
     "etnews_rss": {
-      "description": "韩国电子与科技产业新闻。",
+      "description": "ETNews 是韩国电子与科技产业媒体；监测已配置产业栏目中的半导体、电子制造与供应链消息。",
       "entry_points": [
         "https://www.etnews.com/news/section.html?id1=06",
         "https://rss.etnews.com/06.xml"
@@ -850,7 +792,7 @@
       ]
     },
     "finnhub_company_news": {
-      "description": "按公司获取新闻条目，正文按原文站点补全。",
+      "description": "Finnhub 是金融数据服务商；调用 Company News API 获取个股相关新闻，正文再向原始媒体补全。",
       "entry_points": [
         "https://finnhub.io/api/v1/company-news?symbol={ticker}"
       ],
@@ -870,7 +812,7 @@
       "sector_ids": []
     },
     "globenewswire_massive": {
-      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "description": "GlobeNewswire 是企业新闻稿发布平台；监测综合与上市公司公告入口，供共享全量分发测试。",
       "entry_points": [
         "https://www.globenewswire.com/RssFeed"
       ],
@@ -891,32 +833,8 @@
       "applicability": "GLOBAL",
       "sector_ids": []
     },
-    "globenewswire_search": {
-      "description": "检索GlobeNewswire公司公告与新闻稿。",
-      "entry_points": [
-        "https://www.globenewswire.com/en/search/"
-      ],
-      "listing": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": [
-          "PLAYWRIGHT"
-        ]
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": [
-          "PLAYWRIGHT"
-        ]
-      },
-      "applicability": "GLOBAL",
-      "sector_ids": []
-    },
     "google_news_search_rss": {
-      "description": "按检索词聚合新闻，解析跳转后读取原文。",
+      "description": "Google News 汇集多家媒体报道；按已配置的公司检索词获取新闻 RSS，并解析跳转至原文。",
       "entry_points": [
         "https://news.google.com/rss/search?q={ticker}"
       ],
@@ -936,7 +854,7 @@
       "sector_ids": []
     },
     "huggingnews_rss": {
-      "description": "HuggingNews的AI技术与产业动态。",
+      "description": "HuggingNews 汇集 AI 技术与产业消息；采集其新闻列表，跟踪模型、算力与 AI 应用动态。",
       "entry_points": [
         "https://huggingnews.com/__data.json",
         "https://huggingnews.com/feed.xml"
@@ -964,7 +882,7 @@
       ]
     },
     "ibkr_news": {
-      "description": "通过IBKR新闻供应商获取标题及授权新闻正文。",
+      "description": "盈透证券的授权新闻渠道；通过 IBKR 新闻接口按标的读取供应商标题与可用全文。",
       "entry_points": [
         "https://www.interactivebrokers.com/en/trading/ibkr-news.php"
       ],
@@ -984,7 +902,7 @@
       "sector_ids": []
     },
     "investing_ticker_news": {
-      "description": "按个股页面采集Investing.com新闻。",
+      "description": "Investing.com 是金融市场资讯平台；监测绑定个股的新闻页，获取公司事件与市场相关报道。",
       "entry_points": [
         "https://www.investing.com/equities/"
       ],
@@ -1004,7 +922,7 @@
       "sector_ids": []
     },
     "investorshub_ticker_news": {
-      "description": "按个股页面采集InvestorsHub新闻。",
+      "description": "InvestorsHub 是股票资讯与投资者社区；采集已配置个股新闻页中的公司快讯和公告。",
       "entry_points": [
         "https://investorshub.advfn.com/stock-market/NASDAQ/{ticker}/news"
       ],
@@ -1024,7 +942,7 @@
       "sector_ids": []
     },
     "ionq_nautilus_rss": {
-      "description": "Nautilus官方新闻稿。",
+      "description": "Nautilus 的官方消息渠道；采集已配置的新闻稿入口，跟踪公司项目、合作与业务进展。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -1044,7 +962,7 @@
       ]
     },
     "ionq_quantum_actors_rss": {
-      "description": "量子平台相关主体的官方披露。",
+      "description": "量子计算相关机构与厂商的官方消息合集；监测已配置主体的发布，跟踪平台合作与生态进展。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -1061,10 +979,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
+      ],
+      "short_name": "量子生态 / 官方发布"
     },
     "iridium_press_releases": {
-      "description": "Iridium公司官方新闻稿。",
+      "description": "Iridium 是卫星通信服务商；监测其投资者关系新闻稿页中的业务、合作与财务公告。",
       "entry_points": [
         "https://investor.iridium.com/press-releases"
       ],
@@ -1086,7 +1005,7 @@
       ]
     },
     "lakehouse_platform_official_rss": {
-      "description": "数据与Lakehouse平台官方发布。",
+      "description": "数据与 Lakehouse 平台厂商的官方发布合集；监测已配置产品更新、合作与商业进展。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -1103,10 +1022,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
+      ],
+      "short_name": "Lakehouse / 官方发布"
     },
     "nasa_2026_releases": {
-      "description": "NASA年度官方新闻发布。",
+      "description": "NASA 是美国国家航空航天局；采集 2026 年官方新闻稿，跟踪任务、发射与合作项目。",
       "entry_points": [
         "https://www.nasa.gov/wp-json/wp/v2/press-release?per_page=50&after=2026-01-01T00%3A00%3A00&before=2027-01-01T00%3A00%3A00&_fields=id,link,date_gmt,title,excerpt,content,modified_gmt"
       ],
@@ -1128,7 +1048,7 @@
       ]
     },
     "national_quantum_initiative": {
-      "description": "美国国家量子计划与相关政策和项目消息。",
+      "description": "美国国家量子计划的官方信息门户；采集 News 页面中的政策、科研计划与资助消息。",
       "entry_points": [
         "https://www.quantum.gov/news/"
       ],
@@ -1150,7 +1070,7 @@
       ]
     },
     "nbis_official_actor_rss": {
-      "description": "NBIS相关投资与需求方的官方消息。",
+      "description": "NBIS 相关投资方与需求方的官方消息合集；监测已配置主体的产品、算力需求及合作公告。",
       "entry_points": [
         "https://clickhouse.com/blog",
         "https://about.fb.com/wp-json/wp/v2/posts?per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt"
@@ -1172,10 +1092,11 @@
       "sector_ids": [
         "L1-01",
         "L1-02"
-      ]
+      ],
+      "short_name": "NBIS 生态 / 官方发布"
     },
     "newswire_rss": {
-      "description": "通用新闻稿RSS入口；当前是否启用以实际配置为准。",
+      "description": "通用企业新闻稿 RSS 接入源；按已配置订阅地址读取公告，当前启用和订阅状态单独展示。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -1193,7 +1114,7 @@
       "sector_ids": []
     },
     "nist_news": {
-      "description": "NIST科研、技术标准与量子技术消息。",
+      "description": "NIST 是美国国家标准与技术研究院；采集官方新闻，关注量子、计算、制造与技术标准进展。",
       "entry_points": [
         "https://www.nist.gov/news-events/news/rss.xml"
       ],
@@ -1217,7 +1138,7 @@
       ]
     },
     "nrc_event_notifications": {
-      "description": "按持牌主体检索NRC事件通报。",
+      "description": "NRC 是美国核能监管委员会；按已配置持牌主体读取 Event Notifications，跟踪核设施事件通报。",
       "entry_points": [
         "https://www.nrc.gov/documents-reports/document-collections/events-reports-associated-with/event-notification-reports/en"
       ],
@@ -1239,7 +1160,7 @@
       ]
     },
     "nrc_news_releases": {
-      "description": "NRC核安全监管与新闻发布。",
+      "description": "美国核能监管委员会的官方新闻渠道；监测当年 News Releases 中的许可、安全与监管公告。",
       "entry_points": [
         "https://www.nrc.gov/about-nrc/news-releases/2026"
       ],
@@ -1261,7 +1182,7 @@
       ]
     },
     "nro_press_releases": {
-      "description": "美国NRO官方新闻与项目发布。",
+      "description": "NRO 是美国国家侦察局；监测官方新闻稿，跟踪侦察卫星、发射与相关航天项目。",
       "entry_points": [
         "https://www.nro.gov/news-media-featured-stories/news-media-press-releases/"
       ],
@@ -1283,7 +1204,7 @@
       ]
     },
     "nsf_news": {
-      "description": "NSF研究资助与科研进展，覆盖多个技术领域。",
+      "description": "NSF 是美国国家科学基金会；采集官方新闻，跟踪计算、量子、生物与制造领域的科研资助和进展。",
       "entry_points": [
         "https://www.nsf.gov/news",
         "https://www.nsf.gov/rss/rss_www_news.xml"
@@ -1311,7 +1232,7 @@
       ]
     },
     "observability_vendors_official_rss": {
-      "description": "可观测性厂商官方发布。",
+      "description": "可观测性软件厂商的官方消息合集；监测配置中的产品能力、客户合作与业务发布。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -1328,10 +1249,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
+      ],
+      "short_name": "可观测性 / 官方发布"
     },
     "optical_systems_official_rss": {
-      "description": "光系统设备厂商官方发布。",
+      "description": "光系统与光通信设备厂商的官方发布合集；监测配置中的产品、产能与合作公告。",
       "entry_points": [],
       "listing": {
         "primary": [
@@ -1348,10 +1270,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-01"
-      ]
+      ],
+      "short_name": "光系统 / 官方发布"
     },
     "power_engineering_energy": {
-      "description": "发电运营、核能和能源业务新闻。",
+      "description": "Power Engineering 是电力工程行业媒体；监测核电等配置栏目，跟踪电站建设、运营与发电技术。",
       "entry_points": [
         "https://www.power-eng.com/nuclear/feed/",
         "https://www.power-eng.com/operations-maintenance/feed/",
@@ -1378,7 +1301,7 @@
       ]
     },
     "power_magazine_energy": {
-      "description": "按能源公司覆盖核能、数据中心及分布式供电栏目。",
+      "description": "POWER 是发电与能源行业媒体；采集核能等配置栏目，并跟踪已绑定能源公司的相关报道。",
       "entry_points": [
         "https://www.powermag.com/category/nuclear/",
         "https://www.powermag.com/category/data-centers/",
@@ -1414,7 +1337,7 @@
       ]
     },
     "prnewswire_massive": {
-      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "description": "PR Newswire 是企业新闻稿发布平台；监测综合与商业新闻入口，供共享全量分发测试。",
       "entry_points": [
         "https://www.prnewswire.com/rss/news-releases-list.rss"
       ],
@@ -1436,7 +1359,7 @@
       "sector_ids": []
     },
     "quantum_computing_report": {
-      "description": "量子计算商业、科研和产业进展。",
+      "description": "Quantum Computing Report 是量子计算行业资讯站；采集新闻列表中的公司、科研及商业化动态。",
       "entry_points": [
         "https://quantumcomputingreport.com/news/",
         "https://quantumcomputingreport.com/feed/"
@@ -1461,8 +1384,9 @@
       ]
     },
     "quantum_insider": {
-      "description": "量子产业商业、国家计划与资本市场栏目。",
+      "description": "The Quantum Insider 是量子产业媒体；合并监测 Business、National 与 Capital Markets 栏目。",
       "entry_points": [
+        "https://thequantuminsider.com/category/daily/business/",
         "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=21&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
         "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=9291&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
         "https://thequantuminsider.com/wp-json/wp/v2/posts?categories=9288&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
@@ -1486,76 +1410,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
-    },
-    "quantum_insider_business": {
-      "description": "历史独立栏目，现由quantum_insider合并覆盖。",
-      "entry_points": [
-        "https://thequantuminsider.com/category/daily/business/feed/"
       ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "quantum_insider_capital_markets": {
-      "description": "历史独立栏目，现由quantum_insider合并覆盖。",
-      "entry_points": [
-        "https://thequantuminsider.com/category/capital-markets/feed/"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "quantum_insider_national": {
-      "description": "历史独立栏目，现由quantum_insider合并覆盖。",
-      "entry_points": [
-        "https://thequantuminsider.com/category/daily/national/feed/"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
+      "short_name": "The Quantum Insider"
     },
     "quantum_zeitgeist": {
-      "description": "量子计算、技术及公司动态。",
+      "description": "Quantum Zeitgeist 关注量子计算产业；采集新闻列表中的技术、公司与商业应用报道。",
       "entry_points": [
         "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
         "https://quantumzeitgeist.com/feed/"
@@ -1579,74 +1438,8 @@
         "L1-02"
       ]
     },
-    "register_cloud": {
-      "description": "历史独立栏目，现由register_software_cloud_security合并覆盖。",
-      "entry_points": [
-        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=(tag:off-prem%20OR%20tag:off_prem)"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "register_security": {
-      "description": "历史独立栏目，现由register_software_cloud_security合并覆盖。",
-      "entry_points": [
-        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:security"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "register_software": {
-      "description": "历史独立栏目，现由register_software_cloud_security合并覆盖。",
-      "entry_points": [
-        "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:software"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
     "register_software_cloud_security": {
-      "description": "The Register软件、云及网络安全栏目。",
+      "description": "The Register 是企业科技媒体；合并监测 Software、Cloud 与 Security 专题的产品和产业新闻。",
       "entry_points": [
         "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&query=tag:software&fields=id,title,published,published_url,subtitle",
         "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&limit=30&query=(tag:off-prem%20OR%20tag:off_prem)&fields=id,title,published,published_url,subtitle",
@@ -1671,11 +1464,14 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
+      ],
+      "short_name": "The Register"
     },
     "reuters_site_search": {
-      "description": "按关键词检索路透站内新闻。",
-      "entry_points": [],
+      "description": "Reuters（路透社）是全球新闻通讯社；按公司及主题检索词监测站内财经、产业和企业报道。",
+      "entry_points": [
+        "https://www.reuters.com/site-search/?query={query}"
+      ],
       "listing": {
         "primary": [
           "CHROME_CDP"
@@ -1689,10 +1485,11 @@
         "fallback": []
       },
       "applicability": "GLOBAL",
-      "sector_ids": []
+      "sector_ids": [],
+      "short_name": "Reuters / Search"
     },
     "sdxcentral_news": {
-      "description": "云、网络及数据中心基础设施新闻。",
+      "description": "SDxCentral 是企业 IT 与网络基础设施媒体；监测 News 页面中的云、网络、安全及数据中心报道。",
       "entry_points": [
         "https://www.sdxcentral.com/news/"
       ],
@@ -1717,7 +1514,7 @@
       ]
     },
     "sec_edgar": {
-      "description": "监控重大SEC申报及附件，不采集10-K、10-Q及其修订。",
+      "description": "SEC EDGAR 是美国证券监管申报系统；按公司监测重大申报和附件，排除 10-K、10-Q 及其修订。",
       "entry_points": [
         "https://data.sec.gov/submissions/"
       ],
@@ -1737,7 +1534,7 @@
       "sector_ids": []
     },
     "shephard_uncrewed": {
-      "description": "航空航天与国防专题新闻。",
+      "description": "Shephard 是国防装备专业媒体；监测无人系统栏目中的平台、订单与技术动态。",
       "entry_points": [
         "https://www.shephardmedia.com/news/uv-online/feed/",
         "https://www.shephardmedia.com/news/uv-online/"
@@ -1760,8 +1557,9 @@
       ]
     },
     "siliconangle_ai": {
-      "description": "SiliconANGLE人工智能新闻。",
+      "description": "SiliconANGLE 是企业科技媒体；监测 AI 栏目中的模型、算力、产品与商业应用新闻。",
       "entry_points": [
+        "https://siliconangle.com/category/ai/",
         "https://siliconangle.com/wp-json/wp/v2/posts?categories=369&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
         "https://siliconangle.com/category/ai/feed/"
       ],
@@ -1784,75 +1582,10 @@
         "L1-02"
       ]
     },
-    "siliconangle_big_data": {
-      "description": "历史独立栏目，现由siliconangle_software合并覆盖。",
-      "entry_points": [
-        "https://siliconangle.com/category/big-data/feed/"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "siliconangle_cloud": {
-      "description": "历史独立栏目，现由siliconangle_software合并覆盖。",
-      "entry_points": [
-        "https://siliconangle.com/category/cloud/feed/"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "siliconangle_security": {
-      "description": "历史独立栏目，现由siliconangle_software合并覆盖。",
-      "entry_points": [
-        "https://siliconangle.com/category/security/feed/"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
     "siliconangle_software": {
-      "description": "SiliconANGLE大数据、云与安全栏目。",
+      "description": "SiliconANGLE 是企业科技媒体；合并监测 Big Data、Cloud 与 Security 栏目。",
       "entry_points": [
+        "https://siliconangle.com/category/cloud/",
         "https://siliconangle.com/wp-json/wp/v2/posts?categories=1505426&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
         "https://siliconangle.com/wp-json/wp/v2/posts?categories=603&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
         "https://siliconangle.com/wp-json/wp/v2/posts?categories=1507578&per_page=30&_fields=id,link,title,date_gmt,modified_gmt,excerpt",
@@ -1876,10 +1609,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
+      ],
+      "short_name": "SiliconANGLE / 软件"
     },
     "spacecom_launches": {
-      "description": "航空航天与国防专题新闻。",
+      "description": "Space.com 是航天与空间科学媒体；采集 Launches & Spacecraft 专题中的发射与航天器消息。",
       "entry_points": [
         "https://www.space.com/feeds/tag/launches-spacecraft"
       ],
@@ -1901,7 +1635,7 @@
       ]
     },
     "spacenews_rss": {
-      "description": "航空航天与国防专题新闻。",
+      "description": "SpaceNews 是航天产业媒体；采集新闻 RSS，跟踪商业航天、卫星、发射与行业政策。",
       "entry_points": [
         "https://spacenews.com/feed/"
       ],
@@ -1923,7 +1657,7 @@
       ]
     },
     "ssc_newsroom": {
-      "description": "美国太空系统司令部新闻。",
+      "description": "SSC 是美国太空军太空系统司令部；监测 Newsroom 中的卫星、发射采购与项目公告。",
       "entry_points": [
         "https://www.ssc.spaceforce.mil/Newsroom"
       ],
@@ -1945,7 +1679,7 @@
       ]
     },
     "stocktwits_messages": {
-      "description": "股票社区短消息，正文补全不适用。",
+      "description": "Stocktwits 是股票投资者社区；按配置标的获取原生短消息，正文补全不适用。",
       "entry_points": [
         "https://stocktwits.com/symbol/{ticker}"
       ],
@@ -1964,30 +1698,8 @@
       "applicability": "GLOBAL",
       "sector_ids": []
     },
-    "technews_ai": {
-      "description": "历史独立栏目，现由technews_hardware合并覆盖。",
-      "entry_points": [
-        "https://technews.tw/category/ai/feed/"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-01"
-      ]
-    },
     "technews_hardware": {
-      "description": "科技新报半导体与AI栏目，合并多个内部入口。",
+      "description": "科技新报是台湾科技产业媒体；合并监测半导体与 AI 栏目，跟踪芯片、硬件和供应链动态。",
       "entry_points": [
         "https://technews.tw/wp-json/wp/v2/posts?categories=93648&per_page=40&context=embed",
         "https://technews.tw/wp-json/wp/v2/posts?categories=19819&per_page=40&context=embed",
@@ -2011,32 +1723,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-01"
-      ]
-    },
-    "technews_semiconductor": {
-      "description": "历史独立栏目，现由technews_hardware合并覆盖。",
-      "entry_points": [
-        "https://technews.tw/category/semiconductor/feed/"
       ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-01"
-      ]
+      "short_name": "科技新报 / 科技产业"
     },
     "thefly_ticker_news": {
-      "description": "获取个股快讯及可用原生正文，受限预览不冒充全文。",
+      "description": "The Fly 提供金融市场与个股快讯；采集最新消息中的绑定标的报道，受限预览不当作完整正文。",
       "entry_points": [
         "https://tfb.thefly.com/news/latest"
       ],
@@ -2056,7 +1747,7 @@
       "sector_ids": []
     },
     "thelec_semiconductors_rss": {
-      "description": "韩国The Elec半导体产业消息。",
+      "description": "The Elec 是韩国电子产业媒体；采集新闻列表中的半导体、显示与供应链消息。",
       "entry_points": [
         "https://www.thelec.kr/news/articleList.html",
         "https://www.thelec.kr/rss/S1N2.xml"
@@ -2083,7 +1774,7 @@
       ]
     },
     "tmx_newsfile_massive": {
-      "description": "共享全量入口的大规模分发；当前为测试模式。",
+      "description": "TMX Newsfile 是企业新闻与公告发布渠道；采集最新新闻稿订阅，供共享全量分发测试。",
       "entry_points": [
         "https://feeds.newsfilecorp.com/global/Last25Stories"
       ],
@@ -2103,7 +1794,7 @@
       "sector_ids": []
     },
     "tomshardware_rss": {
-      "description": "处理器、硬件与计算平台新闻。",
+      "description": "Tom’s Hardware 是计算机硬件媒体；采集 RSS 中的处理器、芯片、设备及计算平台新闻。",
       "entry_points": [
         "https://www.tomshardware.com/feeds.xml"
       ],
@@ -2127,7 +1818,7 @@
       ]
     },
     "trendforce_news": {
-      "description": "集邦科技产业新闻与供应链动态。",
+      "description": "TrendForce（集邦科技）提供科技产业研究与资讯；采集 News 页中的半导体及供应链新闻。",
       "entry_points": [
         "https://www.trendforce.com/news/"
       ],
@@ -2151,7 +1842,7 @@
       ]
     },
     "trendforce_press_releases": {
-      "description": "集邦研究新闻稿与半导体市场数据。",
+      "description": "TrendForce（集邦科技）的研究发布渠道；采集 Press Center 新闻，跟踪市场预测、价格与供需研究。",
       "entry_points": [
         "https://www.trendforce.com/presscenter/news"
       ],
@@ -2175,7 +1866,7 @@
       ]
     },
     "unmannedairspace_counteruas": {
-      "description": "反无人机系统、政策与招标消息。",
+      "description": "Unmanned Airspace 关注无人机与空域管理；采集 Counter-UAS 栏目的反无人机系统、政策及招标消息。",
       "entry_points": [
         "https://www.unmannedairspace.info/category/counter-uas-systems-and-policies/",
         "https://www.unmannedairspace.info/category/counter-uas-systems-tenders/",
@@ -2201,7 +1892,7 @@
       ]
     },
     "utility_dive": {
-      "description": "公用事业、电网与电力行业新闻。",
+      "description": "Utility Dive 是公用事业行业媒体；采集电网、供电、发电与能源监管相关报道。",
       "entry_points": [
         "https://www.utilitydive.com/",
         "https://www.utilitydive.com/feeds/news/"
@@ -2226,7 +1917,7 @@
       ]
     },
     "venturebeat_ai": {
-      "description": "VentureBeat人工智能产业与应用新闻。",
+      "description": "VentureBeat 是科技与企业 AI 媒体；监测 AI 栏目的模型、产品、应用与商业化新闻。",
       "entry_points": [
         "https://venturebeat.com/category/ai/feed"
       ],
@@ -2248,74 +1939,8 @@
         "L1-02"
       ]
     },
-    "venturebeat_data": {
-      "description": "历史独立栏目，现由venturebeat_software合并覆盖。",
-      "entry_points": [
-        "https://venturebeat.com/category/data/feed"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "venturebeat_orchestration": {
-      "description": "历史独立栏目，现由venturebeat_software合并覆盖。",
-      "entry_points": [
-        "https://venturebeat.com/category/orchestration/feed"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
-    "venturebeat_security": {
-      "description": "历史独立栏目，现由venturebeat_software合并覆盖。",
-      "entry_points": [
-        "https://venturebeat.com/category/security/feed"
-      ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ]
-    },
     "venturebeat_software": {
-      "description": "VentureBeat编排、数据与安全栏目。",
+      "description": "VentureBeat 是科技产业媒体；合并监测 Orchestration、Data 与 Security 栏目中的企业软件动态。",
       "entry_points": [
         "https://venturebeat.com/category/orchestration/feed",
         "https://venturebeat.com/category/data/feed",
@@ -2336,32 +1961,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-02"
-      ]
-    },
-    "wccftech_ai": {
-      "description": "历史独立栏目，现由wccftech_hardware合并覆盖。",
-      "entry_points": [
-        "https://wccftech.com/topic/ai/feed/"
       ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-01"
-      ]
+      "short_name": "VentureBeat / 软件"
     },
     "wccftech_hardware": {
-      "description": "AI、产业和硬件栏目，合并多个内部入口。",
+      "description": "Wccftech 是硬件与科技媒体；合并监测 AI、Industry 和 Hardware 栏目，跟踪芯片及计算产业。",
       "entry_points": [
         "https://wccftech.com/topic/ai/",
         "https://wccftech.com/topic/industry/",
@@ -2386,32 +1990,11 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-01"
-      ]
-    },
-    "wccftech_industry": {
-      "description": "历史独立栏目，现由wccftech_hardware合并覆盖。",
-      "entry_points": [
-        "https://wccftech.com/topic/industry/feed/"
       ],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-01"
-      ]
+      "short_name": "Wccftech / 硬件与产业"
     },
     "world_nuclear_news": {
-      "description": "核能项目、监管与产业新闻。",
+      "description": "World Nuclear News 是核能行业资讯站；采集新闻列表中的核电项目、监管与产业动态。",
       "entry_points": [
         "https://www.world-nuclear-news.org/",
         "https://www.world-nuclear-news.org/rss"
@@ -2436,7 +2019,7 @@
       ]
     },
     "x_official_posts": {
-      "description": "监控已配置官方账号的帖子，保留原生短帖内容。",
+      "description": "X 平台上的已配置官方账号消息；按绑定主体获取原生帖子，监测即时发布与项目进展。",
       "entry_points": [
         "https://api.x.com/2/tweets/search/stream"
       ],
@@ -2456,7 +2039,7 @@
       "sector_ids": []
     },
     "yahoo_finance_news": {
-      "description": "合并RSS与原生个股新闻入口，保留原始发布者归属。",
+      "description": "Yahoo Finance 是财经资讯聚合平台；合并个股新闻页和 RSS，正文沿用原始发布者的采集策略。",
       "entry_points": [
         "https://finance.yahoo.com/quote/{ticker}/news/",
         "https://finance.yahoo.com/rss/headline?s={ticker}"

@@ -4,7 +4,7 @@ from hashlib import sha256
 
 from doxagent.api_v2.dto import validate
 
-from .libraries import LibraryIndexer
+from .libraries import LibraryIndexer, materialization, present
 from .lifecycle import changed_paths
 from .repository import encode
 
@@ -23,24 +23,40 @@ def project(store, value):
         }
     records, refs, snapshot_ids, events = [evidence], {}, {}, {}
     records.append({"kind": "reference_day_chain", "ticker": ticker, "id": day, "data": value})
+    digest = sha256(encode([ticker, identity, day, value['prepared_at'],
+                           str(LibraryIndexer(value.get('before_root',value['root'])).root),
+                           str(LibraryIndexer(value.get('after_root',value['root'])).root),
+                           value['before'], value['after']]).encode()).hexdigest()
+    completion_id = 'reference-delta:' + identity
+    completion = store.get('projection_materialization', ticker, completion_id)
+    if completion and completion.get('input_digest') == digest and completion.get('contract') == 1:
+        data = store.get('reference_delta', ticker, identity)
+        if data == completion['delta']:
+            return [*records, day_record(ticker, day, value['status'], data, completion['has_changes'])]
     for side in ("before", "after"):
         captured = value[side]
         snapshot_ids[side] = sha256(encode([ticker, captured]).encode()).hexdigest()
-        ref, indexed = (
-            LibraryIndexer(value.get(side + "_root", value["root"])).index(
-                ticker, captured["version"]
-            )
-            if captured["version"]
-            else (None, [])
-        )
+        ref,indexed,by_id,facts = LibraryIndexer(value.get(side + '_root',value['root'])).reference(store,ticker,captured)
         refs[side] = ref
         records.extend(indexed)
-        by_id = {r["data"]["event_id"]: r["data"] for r in indexed if r["kind"] == "event"}
-        facts = {
-            r["data"]["fact"]["fact_id"]: r["data"]["fact_key"]
-            for r in indexed
-            if r["kind"] == "fact"
-        }
+        proof={'root':str(LibraryIndexer(value.get(side + '_root',value['root'])).root), 'snapshot':snapshot_ids[side], 'library':ref, 'contract':2}
+        marker=materialization(ticker,'reference:'+snapshot_ids[side],proof)
+        ready=store.get('projection_materialization',ticker,marker['id'])==proof
+        if not ready:
+            expected=[]
+            for ev in captured['events']:
+                parent=snapshot_ids[side]+':'+ev['event_id']
+                expected.append(('reference_event',ticker,parent))
+                expected.extend(('fact',ticker,parent+':'+facts[f['fact_id']]) for f in ev['facts'])
+            ready=present(store,expected)
+            if ready and captured['events']:
+                # Captured hashes omit root; a branch may reuse an E-number
+                # with another birth identity, including events with no facts.
+                expected_refs=[(snapshot_ids[side]+':'+ev['event_id'],by_id[ev['event_id']]['event_key'],ref['library_snapshot_id']) for ev in captured['events']]
+                with store.connect() as db:
+                    matches=db.execute("SELECT count(*) FROM json_each(?) q CROSS JOIN object_current c INDEXED BY current_identity ON c.kind='reference_event' AND c.ticker=? AND c.id=json_extract(q.value,'$[0]') WHERE json_extract(c.payload,'$.event_key')=json_extract(q.value,'$[1]') AND json_extract(c.payload,'$.library.library_snapshot_id')=json_extract(q.value,'$[2]')",(encode(expected_refs),ticker)).fetchone()[0]
+                ready=matches==len(expected_refs)
+        records.append(marker)
         events[side] = {}
         for event in captured["events"]:
             key = by_id[event["event_id"]]["event_key"]
@@ -54,10 +70,10 @@ def project(store, value):
                 "event_revision_id": revision,
                 "event": {k: v for k, v in event.items() if k != "facts"},
             }
-            records.append(
+            if not ready: records.append(
                 {"kind": "reference_event", "ticker": ticker, "id": parent, "data": detail}
             )
-            for ordinal, fact in enumerate(event["facts"]):
+            for ordinal, fact in enumerate(event["facts"] if not ready else []):
                 fact_key = facts[fact["fact_id"]]
                 records.append(
                     {
@@ -147,12 +163,19 @@ def project(store, value):
         "after_reference_snapshot_id": snapshot_ids["after"],
     }
     records.append({"kind": "reference_delta", "ticker": ticker, "id": identity, "data": data})
+    records.append(dict(kind='projection_materialization',ticker=ticker,id=completion_id,
+                        data={'contract':1,'input_digest':digest,'delta':data,'has_changes':bool(changes)}))
+    records.append(day_record(ticker, day, value['status'], data, bool(changes)))
+    return records
+
+
+def day_record(ticker, day, status, data, has_changes):
     state = (
         "PENDING"
-        if value["status"] == "PREPARED"
+        if status == "PREPARED"
         else "FAILED"
-        if value["status"] == "FAILED"
-        else ("AVAILABLE" if changes else "NO_CHANGE")
+        if status == "FAILED"
+        else ("AVAILABLE" if has_changes else "NO_CHANGE")
     )
     day_data = {
         k: data[k]
@@ -166,8 +189,7 @@ def project(store, value):
         )
     }
     day_data.update(state=state, reason="SOURCE_GAP" if state == "FAILED" else None)
-    records.append(
-        {
+    return {
             "kind": "delta_day",
             "ticker": ticker,
             "id": day,
@@ -175,5 +197,3 @@ def project(store, value):
             "day": day,
             "data": validate("DeltaDay", day_data),
         }
-    )
-    return records

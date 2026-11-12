@@ -81,6 +81,7 @@ if (existsSync(backendPath)) {
     walk(definitions[name]);
   };
   for (const name of [
+    "ReadContext",
     "AgentOperationsPage", "OperationsOverviewPage", "OperationsOverview",
     "RevenueSnapshot", "RevenueEvaluation", "RevenueReport", "RevenueDetail", "RevenueRecord", "RevenueLeg", "RevenueHypothesis", "RevenueOrder",
     "TradingConfiguration",
@@ -97,6 +98,7 @@ if (existsSync(backendPath)) {
     "OpenRouterBalance",
     "SourceStatus",
     "SourceCatalog",
+    "GlobalSourceCard",
     "PollTimeliness",
     "PollCadence",
     "BusMetrics",

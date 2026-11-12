@@ -275,6 +275,27 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
         }
     )
     store.ingest("initialization", "activation-a", records)
+    revision = {
+        "revision_id": "activation-a", "ticker": "MU",
+        "artifacts": {
+            "document1": {"run_id": "d1-mu"}, "document2": {"run_id": "d2-mu"},
+            "document3": {"run_id": "d3-mu", "version": 1},
+            "event_library": {"version": 1},
+            "monitoring_configuration": {"initialization_id": "initialization-a"},
+        },
+    }
+    from doxagent.v2_read.artifacts import ArtifactIndexer
+    with monkeypatch.context() as warm_patch:
+        warm_patch.setattr(ArtifactIndexer, "index", lambda *a, **k: pytest.fail("reparsed published document"))
+        reused = mapper.activation(revision)
+    warm = {(r["kind"], r["ticker"], r["id"]): r for r in reused}
+    for record in records:
+        key = record["kind"], record["ticker"], record["id"]
+        if key in warm:
+            assert warm[key] == record
+        else:
+            assert store.get(*key) == record["data"]
+    assert not any(r["kind"] in {"unit", "shell", "event", "fact"} for r in reused)
     active = store.get("activation_revision", "MU", "activation-a")
     assert active["maintenance"]["status"] == "INITIALIZED"
     assert active["document2"]["content_sha256"] == d2.sha256
