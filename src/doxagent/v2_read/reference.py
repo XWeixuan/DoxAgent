@@ -23,6 +23,16 @@ def project(store, value):
         }
     records, refs, snapshot_ids, events = [evidence], {}, {}, {}
     records.append({"kind": "reference_day_chain", "ticker": ticker, "id": day, "data": value})
+    digest = sha256(encode([ticker, identity, day, value['prepared_at'],
+                           str(LibraryIndexer(value.get('before_root',value['root'])).root),
+                           str(LibraryIndexer(value.get('after_root',value['root'])).root),
+                           value['before'], value['after']]).encode()).hexdigest()
+    completion_id = 'reference-delta:' + identity
+    completion = store.get('projection_materialization', ticker, completion_id)
+    if completion and completion.get('input_digest') == digest and completion.get('contract') == 1:
+        data = store.get('reference_delta', ticker, identity)
+        if data == completion['delta']:
+            return [*records, day_record(ticker, day, value['status'], data, completion['has_changes'])]
     for side in ("before", "after"):
         captured = value[side]
         snapshot_ids[side] = sha256(encode([ticker, captured]).encode()).hexdigest()
@@ -153,12 +163,19 @@ def project(store, value):
         "after_reference_snapshot_id": snapshot_ids["after"],
     }
     records.append({"kind": "reference_delta", "ticker": ticker, "id": identity, "data": data})
+    records.append(dict(kind='projection_materialization',ticker=ticker,id=completion_id,
+                        data={'contract':1,'input_digest':digest,'delta':data,'has_changes':bool(changes)}))
+    records.append(day_record(ticker, day, value['status'], data, bool(changes)))
+    return records
+
+
+def day_record(ticker, day, status, data, has_changes):
     state = (
         "PENDING"
-        if value["status"] == "PREPARED"
+        if status == "PREPARED"
         else "FAILED"
-        if value["status"] == "FAILED"
-        else ("AVAILABLE" if changes else "NO_CHANGE")
+        if status == "FAILED"
+        else ("AVAILABLE" if has_changes else "NO_CHANGE")
     )
     day_data = {
         k: data[k]
@@ -172,8 +189,7 @@ def project(store, value):
         )
     }
     day_data.update(state=state, reason="SOURCE_GAP" if state == "FAILED" else None)
-    records.append(
-        {
+    return {
             "kind": "delta_day",
             "ticker": ticker,
             "id": day,
@@ -181,5 +197,3 @@ def project(store, value):
             "day": day,
             "data": validate("DeltaDay", day_data),
         }
-    )
-    return records

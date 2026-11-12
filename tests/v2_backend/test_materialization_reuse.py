@@ -35,7 +35,9 @@ def test_reference_state_only_reuses_atomic_members_and_keeps_day_delta(tmp_path
     with store.connect() as db:assert db.execute("SELECT count(*) FROM object_current WHERE kind='projection_materialization'").fetchone()[0]==0
     store.ingest('runtime','1',records,position=1)
     monkeypatch.setattr(LibraryIndexer,'index',lambda *a:pytest.fail('reindexed committed immutable library'))
-    settled=project(store,{**value,'status':'SUCCEEDED'})
+    with monkeypatch.context() as state_only:
+        state_only.setattr(LibraryIndexer,'reference',lambda *a:pytest.fail('state-only update resolved full captured members'))
+        settled=project(store,{**value,'status':'SUCCEEDED'})
     assert not any(r['kind'] in {'event','event_detail','fact','reference_event'} for r in settled)
     store.ingest('runtime','2',settled,position=2)
     day=store.get('delta_day','MU',value['semantic_day'])
