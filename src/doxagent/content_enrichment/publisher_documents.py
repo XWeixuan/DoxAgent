@@ -195,6 +195,13 @@ def apply_document(
                 # not evidence that this complete document is merely a summary.
                 return node
     if publisher == "barrons.com" and "/articles/" in path:
+        rendered = root.xpath('//article[@data-dox-barrons-visible="v1"]')
+        if rendered:
+            # Only the browser-produced visible snapshot can certify this path.
+            # Raw HTML retaining the publisher's `crawler` class stays conservative.
+            info.access_reason = None if rendered[0].get('data-dox-barrons-complete') == 'true' else 'subscription_required'
+            if info.access_reason is None:
+                info.subscription_article = False
         body = root.xpath('//article[@id]//*[@data-type="paragraph"]')
         live = root.xpath(
             '//article[@id]//*[@data-type="paragraph"]'
