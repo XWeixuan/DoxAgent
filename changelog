@@ -3012,3 +3012,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Newswire收尾优化：BW/PRN/Newsfile访问判定仅检查DOM与访问证据，不在短生命周期Managed worker内重复启动通用正文抽取；最终正文校验不变。安全验证/维护/入口回归68通过。
 
 - ACCESS列表缓存修复：请求no-cache重新验证，已保存ETag基线不再覆盖固定请求头；Age超过原站60秒TTL的宽限缓存不标记为新鲜成功。真实对照排除无效随机参数（400），47项相关回归通过、1可选fixture跳过。
+
+2026-11-13 Reuters APPLIED/401 forensic audit: retained browser timings prove reload HTML200 then native search API401/DataDome iframe; passive natural Main probe captured CloudFront/DataDome headers and raw-body summary with sent cookies, while Backup natural API200. Add one bounded paid-apply wire/cookie fingerprint capsule, state-deduplicated capture provenance and domain/parent-only Squid logs; no extra createTask, website request, Profile/IP mutation or recovery policy change. Existing-task result read was unavailable, not a new task failure. 97 combined regressions and 7 final targeted checks passed (overlapping). See docs/reuters-applied-401-forensics-and-targeted-plan-20261113.md.

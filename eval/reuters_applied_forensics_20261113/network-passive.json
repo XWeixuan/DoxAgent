@@ -1,0 +1,226 @@
+{
+  "started_at": "2026-11-12T22:58:32.869871+00:00",
+  "ended_at": "2026-11-12T23:03:51.403993+00:00",
+  "traffic": [
+    {
+      "identity": "digitimes-de-1",
+      "instance": "ddae8dc2d59848db80c779ce7a6c6310",
+      "finished_at": "2026-11-12T23:03:51.398892+00:00",
+      "targets": [
+        {
+          "target": "8CBA7C97DF800B90DDD3C26EF6ED4456",
+          "requests": []
+        },
+        {
+          "target": "1E4A70F5FA8B5D641C3B5E2ADF756662",
+          "requests": []
+        },
+        {
+          "target": "FBEF64758E44F3C6CA1F6212C6AE0F10",
+          "requests": [
+            {
+              "url": "https://www.reuters.com/site-search/",
+              "redirects": [],
+              "request_at": 1794524629.532069,
+              "request_cookies": [
+                {
+                  "name": "ArcId.USER_PROFILE",
+                  "fingerprint": "75d52c3042c575ba4bd225ae"
+                },
+                {
+                  "name": "ArcP",
+                  "fingerprint": "a2acb8ed7d46faeb60bfe45e"
+                },
+                {
+                  "name": "datadome",
+                  "fingerprint": "c9ce42d96917b081e733f910"
+                }
+              ],
+              "associated_datadome": [
+                {
+                  "name": "datadome",
+                  "domain": ".reuters.com",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "partitioned": false,
+                  "fingerprint": "c9ce42d96917b081e733f910",
+                  "blocked_reasons": []
+                }
+              ],
+              "response_extra": {
+                "status": 401,
+                "set_cookies": [
+                  {
+                    "name": "datadome",
+                    "domain": ".reuters.com",
+                    "path": "/",
+                    "fingerprint": "3795221950579d75effd957d",
+                    "http_only": false
+                  }
+                ],
+                "blocked_set_cookie_count": 0
+              },
+              "response": {
+                "url": "https://www.reuters.com/site-search/",
+                "status": 401,
+                "headers": {
+                  "content-type": "text/html;charset=utf-8",
+                  "server": "CloudFront",
+                  "via": "1.1 32c1b1f3aed1f2411468b70713ad6556.cloudfront.net (CloudFront)",
+                  "x-cache": "LambdaGeneratedResponse from cloudfront",
+                  "cache-control": "max-age=0, private, no-cache, no-store, must-revalidate",
+                  "x-datadome": "protected",
+                  "x-dd-b": "PRESENT"
+                },
+                "layer": "DATADOME",
+                "body_source": "RENDERED_DOCUMENT",
+                "body_signals": {
+                  "datadome_url": false,
+                  "datadome_bootstrap": false,
+                  "auth_message": false
+                }
+              },
+              "transport": {
+                "protocol": "h2",
+                "remote_ip": "172.18.0.3",
+                "tls_issuer": "Sectigo Public Server Authentication CA OV R40",
+                "from_cache": false,
+                "from_service_worker": false
+              },
+              "finished": true,
+              "wire_body": {
+                "url": "https://www.reuters.com/site-search/",
+                "status": 401,
+                "headers": {
+                  "content-type": "text/html;charset=utf-8",
+                  "server": "CloudFront",
+                  "via": "1.1 32c1b1f3aed1f2411468b70713ad6556.cloudfront.net (CloudFront)",
+                  "x-cache": "LambdaGeneratedResponse from cloudfront",
+                  "cache-control": "max-age=0, private, no-cache, no-store, must-revalidate",
+                  "x-datadome": "protected",
+                  "x-dd-b": "PRESENT"
+                },
+                "layer": "DATADOME",
+                "body_source": "WIRE",
+                "body_signals": {
+                  "datadome_url": true,
+                  "datadome_bootstrap": true,
+                  "auth_message": false
+                },
+                "body_bytes": 771,
+                "body_sha256": "559e108195cf3426203f1e7d6b71c6e58ecbc08a9028703848cd6dc5ee8b1df7"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identity": "reuters-backup",
+      "instance": "d8d7784be940492394d39cad786a6406",
+      "finished_at": "2026-11-12T22:58:35.196323+00:00",
+      "targets": [
+        {
+          "target": "C4D50363CCB81074E477DFD8AA90E55C",
+          "requests": []
+        },
+        {
+          "target": "9ECDD924FF7E06147EF8A8181311DE78",
+          "requests": [
+            {
+              "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+              "redirects": [],
+              "request_at": 1794524313.680772,
+              "request_cookies": [
+                {
+                  "name": "ArcP",
+                  "fingerprint": "e2bb9c491d494f034242057a"
+                },
+                {
+                  "name": "datadome",
+                  "fingerprint": "72fa88ae0d53652cafcef228"
+                }
+              ],
+              "associated_datadome": [
+                {
+                  "name": "datadome",
+                  "domain": ".reuters.com",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "partitioned": false,
+                  "fingerprint": "72fa88ae0d53652cafcef228",
+                  "blocked_reasons": []
+                }
+              ],
+              "response_extra": {
+                "status": 200,
+                "set_cookies": [],
+                "blocked_set_cookie_count": 0
+              },
+              "response": {
+                "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+                "status": 200,
+                "headers": {
+                  "content-type": "application/json; charset=utf-8",
+                  "server": "openresty",
+                  "via": "1.1 d818b372f81cbe23bb149df5877c444a.cloudfront.net (CloudFront)",
+                  "x-cache": "Miss from cloudfront",
+                  "cache-control": "max-age=299"
+                },
+                "layer": "UNCONFIRMED",
+                "body_source": "RENDERED_DOCUMENT",
+                "body_signals": {
+                  "datadome_url": false,
+                  "datadome_bootstrap": false,
+                  "auth_message": false
+                }
+              },
+              "transport": {
+                "protocol": "h2",
+                "remote_ip": "172.18.0.3",
+                "tls_issuer": "Sectigo Public Server Authentication CA OV R40",
+                "from_cache": false,
+                "from_service_worker": false
+              },
+              "finished": true
+            }
+          ]
+        },
+        {
+          "target": "451789AE5B717FB96CFBE8DF3DC4461C",
+          "requests": [
+            {
+              "url": "https://www.reuters.com/site-search/",
+              "redirects": [],
+              "request_at": 1794524315.076262,
+              "request_cookies": [
+                {
+                  "name": "ArcP",
+                  "fingerprint": "e2bb9c491d494f034242057a"
+                },
+                {
+                  "name": "datadome",
+                  "fingerprint": "72fa88ae0d53652cafcef228"
+                }
+              ],
+              "associated_datadome": [
+                {
+                  "name": "datadome",
+                  "domain": ".reuters.com",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "partitioned": false,
+                  "fingerprint": "72fa88ae0d53652cafcef228",
+                  "blocked_reasons": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
