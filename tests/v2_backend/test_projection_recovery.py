@@ -97,3 +97,28 @@ def test_repair_old_parent_does_not_overwrite_newer_state(tmp_path):
     assert worker.repair()==1
     assert store.position('runtime')==5
     assert store.get('fixture','','x')=={'value':'new'}
+
+
+def test_source_full_does_not_create_source_gap(tmp_path):
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    def capture():raise full()
+    source=SimpleNamespace(source='runtime',capture=capture)
+    worker=ProjectionWorker(store,[source],lambda e:([],[]))
+    with pytest.raises(sqlite3.OperationalError):worker.tick()
+    with store.connect() as db:assert db.execute('SELECT count(*) FROM gaps').fetchone()[0]==0
+
+
+def test_ack_full_retries_without_rematerializing_committed_event(tmp_path):
+    store=ReadStore(tmp_path/'read.db');store.migrate();acks=[];mapped=[]
+    def acknowledge(*args):
+        acks.append(args)
+        if len(acks)==1:raise full()
+    source=SimpleNamespace(source='runtime',capture=lambda:None,head=lambda:1,
+        read=lambda position,limit: [{'seq':1,'recorded_at':None}] if position<1 else [],
+        acknowledge=acknowledge)
+    def mapper(e):mapped.append(e['seq']);return [],[]
+    worker=ProjectionWorker(store,[source],mapper)
+    with pytest.raises(sqlite3.OperationalError):worker.tick()
+    assert store.position('runtime')==1
+    worker.tick()
+    assert mapped==[1] and len(acks)==2

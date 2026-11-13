@@ -1,0 +1,115 @@
+{
+  "samples": 39,
+  "seconds": 1143.049179,
+  "start": "2026-11-13T16:10:28.209816+00:00",
+  "end": "2026-11-13T16:29:31.258995+00:00",
+  "latencies": {
+    "runtime": {
+      "n": 2913,
+      "p95": 13.523000478744507,
+      "p99": 20.205000042915344,
+      "max": 22.66300320625305
+    },
+    "bus": {
+      "n": 2213,
+      "p95": 2.7459919452667236,
+      "p99": 3.7880301475524902,
+      "max": 5.579008162021637
+    },
+    "initialization": {
+      "n": 2,
+      "p95": 9.074020385742188,
+      "p99": 9.074020385742188,
+      "max": 9.074020385742188
+    },
+    "research": {
+      "n": 0,
+      "p95": null,
+      "p99": null,
+      "max": null
+    }
+  },
+  "sources": {
+    "runtime": {
+      "max_distance": 143,
+      "max_pending_seconds": 19.230154,
+      "final": {
+        "head": 4631342,
+        "cp": 4631342,
+        "next": null,
+        "ack": [
+          [
+            4631342
+          ]
+        ]
+      }
+    },
+    "bus": {
+      "max_distance": 29,
+      "max_pending_seconds": 1.675553,
+      "final": {
+        "head": 11418296,
+        "cp": 11418296,
+        "next": null,
+        "ack": [
+          [
+            11418296
+          ]
+        ]
+      }
+    },
+    "initialization": {
+      "max_distance": 2,
+      "max_pending_seconds": 0,
+      "final": {
+        "head": 158760,
+        "cp": 158760,
+        "next": null,
+        "ack": [
+          [
+            158760
+          ]
+        ]
+      }
+    },
+    "research": {
+      "max_distance": 0,
+      "max_pending_seconds": 0,
+      "final": {
+        "head": 61487,
+        "cp": 61487,
+        "next": null,
+        "ack": [
+          [
+            61487
+          ]
+        ]
+      }
+    }
+  },
+  "states": [
+    "running"
+  ],
+  "restarts_max": 0,
+  "oom": false,
+  "free_final": 10438336512,
+  "gaps_final": [
+    [
+      "runtime",
+      "PROVENANCE_UNVERIFIED",
+      66
+    ],
+    [
+      "runtime",
+      "ValueError",
+      17140
+    ]
+  ],
+  "pressure_full_avg60_max": {
+    "cpu": 0.0,
+    "io": 6.66,
+    "memory": 3.07
+  },
+  "resource_note": "Docker main PID was supervisor; process-only CPU/RSS/IO excluded. Final docker stats: CPU17.40%, RSS83.98MiB; no comparable resource baseline.",
+  "stop_reason": "User requested stop after recovery and catch-up; planned 30min window ended at 19min03sec."
+}
