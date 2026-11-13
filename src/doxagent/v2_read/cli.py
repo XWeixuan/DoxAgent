@@ -294,24 +294,31 @@ def main() -> None:
         from doxagent.trade_execution.worker import WriterLock
 
         with WriterLock(Path(str(store.path) + ".projector")):
+            from .recovery import retryable_storage, retry_delay
+            failures = 0
             next_report = time.monotonic() + 60
             while True:
                 processed = 0
                 try:
                     processed = worker.tick(limit=args.limit)
+                    failures = 0
                     if time.monotonic() >= next_report:
                         print(json.dumps({"projection_performance": worker.timings}), flush=True)
                         worker.timings.clear()
                         next_report = time.monotonic() + 60
-                except sqlite3.OperationalError as exc:
-                    if args.once or (getattr(exc, "sqlite_errorcode", 0) & 255) not in (
-                        sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED
-                    ):
+                except (sqlite3.OperationalError, OSError) as exc:
+                    if args.once or not retryable_storage(exc):
                         raise
-                    # Transactions and checkpoints already fence committed work;
-                    # retry the next bounded tick without restarting the process.
+                    # The tick has unwound all transactions/readers. Keep the sole
+                    # writer lease while waiting; do not write health into a full DB.
                     import logging
-                    logging.getLogger(__name__).warning("projection tick deferred: SQLite contention")
+                    delay = retry_delay(failures)
+                    failures += 1
+                    logging.getLogger(__name__).warning(
+                        "projection storage deferred: code=%s errno=%s retry_in=%ss",
+                        getattr(exc, "sqlite_errorcode", None), getattr(exc, "errno", None), delay)
+                    time.sleep(delay)
+                    continue
                 if args.once:
                     return
                 # Productive ticks are already bounded per source. Do not add

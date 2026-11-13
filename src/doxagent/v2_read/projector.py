@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
+from .recovery import retryable_storage
 from .outbox import SourceOutbox
 from .repository import ReadStore, instant
 
@@ -62,6 +63,8 @@ class ProjectionWorker:
                 head = source.head()
                 events = source.coordinates(position, limit) if hasattr(source,"coordinates") else source.read(position, limit)
             except (sqlite3.OperationalError, OSError, ValueError) as exc:
+                if retryable_storage(exc) or (isinstance(exc, sqlite3.OperationalError) and (getattr(exc, "sqlite_errorcode", 0) & 255) in (sqlite3.SQLITE_CORRUPT, sqlite3.SQLITE_NOTADB, sqlite3.SQLITE_IOERR)):
+                    raise
                 reason = str(exc) if str(exc) in {'SOURCE_EPOCH_MISMATCH','SOURCE_SNAPSHOT_REQUIRED'} else 'SOURCE_UNAVAILABLE'
                 with self.store.connect(write=True) as db:
                     db.execute(
@@ -219,7 +222,9 @@ class ProjectionWorker:
                 # The business owner/receipt still owns the bytes. Retry this
                 # coordinate and rematerialize after local GC finishes; never BODY.
                 break
-            except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError) as exc:
+            except (OSError, sqlite3.OperationalError):
+                raise  # Infrastructure failure is never a successfully skipped receipt.
+            except (ValueError, KeyError, TypeError) as exc:
                 self.store.ingest(
                     source.source,
                     str(event["seq"]),
@@ -259,7 +264,7 @@ class ProjectionWorker:
         with self.store.connect() as db:
             gaps = db.execute(
                 "SELECT source,event,attempts FROM gaps WHERE next_attempt_at<=? "
-                "ORDER BY attempts,source,CAST(event AS INTEGER) DESC LIMIT ?",
+                "ORDER BY attempts,source,CAST(event AS INTEGER) ASC LIMIT ?",
                 (instant(now), limit),
             ).fetchall()
         repaired = 0
@@ -275,9 +280,6 @@ class ProjectionWorker:
                     continue
                 # Only attempted items accrue attempts; preserve every gap/pin.
                 delay = min(21600, 2 ** min(gap[2] + 1, 15))
-                with self.store.connect(write=True) as db:
-                    db.execute("UPDATE gaps SET attempts=attempts+1,next_attempt_at=? WHERE source=? AND event=?",
-                               (instant(now + timedelta(seconds=delay)),gap[0],gap[1]))
                 try:
                     if gap[0] not in readers:
                         reader = (source.event_reader(serving=True, projection=True) if isinstance(source, SourceOutbox)
@@ -286,7 +288,7 @@ class ProjectionWorker:
                         readers[gap[0]] = stack.enter_context(reader)
                     event = readers[gap[0]](int(gap[1]))
                     if event is None:
-                        continue
+                        raise ValueError("SOURCE_RECEIPT_MISSING")
                     event["source"] = source.source
                     records, contributions = self.mapper(event)
                     self.store.ingest(source.source, gap[1] + ":repair:1", records,
@@ -296,8 +298,12 @@ class ProjectionWorker:
                 except sqlite3.IntegrityError as exc:
                     if str(exc) != 'ARTIFACT_RECLAIM_IN_PROGRESS':
                         raise
-                except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError):
-                    continue
+                except (OSError, sqlite3.OperationalError):
+                    raise
+                except (ValueError, KeyError, TypeError):
+                    with self.store.connect(write=True) as db:
+                        db.execute("UPDATE gaps SET attempts=attempts+1,next_attempt_at=? WHERE source=? AND event=?",
+                                   (instant(now + timedelta(seconds=delay)),gap[0],gap[1]))
         self.timings["repair_seconds"] = self.timings.get("repair_seconds", 0) + time.monotonic() - started
         self.timings["repaired"] = self.timings.get("repaired", 0) + repaired
         return repaired

@@ -37,11 +37,15 @@ def main():
     parser.add_argument('action',choices=['build','deploy'])
     parser.add_argument('--commit',required=True)
     parser.add_argument('--baseline-commit')
+    parser.add_argument('--recovery',action='store_true',help='Overlay only interruption recovery files')
     parser.add_argument('--role',choices=['v2-projector','v2-api','v2-web'],default='v2-projector')
     parser.add_argument('--web-archive',type=Path)
     parser.add_argument('--baseline-image')
     args=parser.parse_args()
     CONTAINER='doxagent-v2-'+args.role+'-1'
+    if args.recovery:
+        assert args.role=='v2-projector'
+        FILES=['src/doxagent/v2_read/'+n for n in ('cli.py','projector.py','recovery.py')]
     if args.role=='v2-api':
         FILES=['src/doxagent/api_v2/'+n for n in ('app.py','views.py','projection_health.py','wire_schema.json')]
     if args.role=='v2-web':FILES=[]
