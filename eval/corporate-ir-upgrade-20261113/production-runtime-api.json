@@ -1,0 +1,1 @@
+{"build": "77ae9cfc237af52ef5ff0d86df1ffa0776db5eba", "source_version": 5, "endpoint_count": 13, "ionq_binding": true, "parsers": {"snow.press": "snowflake_json", "onds.press": "rss", "ionq.press": "ionq"}}

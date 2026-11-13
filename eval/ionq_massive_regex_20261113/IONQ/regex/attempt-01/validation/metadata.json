@@ -1,0 +1,17 @@
+{
+  "track": "regex",
+  "ticker": "IONQ",
+  "dataset_sha256": "18f0022bb60e3189c58472aec7b10e582b1952e1cb33ffe327ee3115e229dcab",
+  "context_sha256": "ae5f6189e8c988cb3c1c8e96202f9663151af463d9f0953a16c40061d1c8de87",
+  "candidate_sha256": "96f35e12e16c358e2f8ed0c0a238ac7611496bb21f284bd0b853fdeccf0aa45f",
+  "engine_sha256": {
+    "relevance": "387fd220ac43fac91c6e9149fc67b450b36a9da267c3af0f6cd189209b34a913",
+    "monitoring_terms": "b3380c090c388674b03833626cdde2768ec291e169223ea861caefa32ae44aea",
+    "massive_relevance": "37a074cc10f243cc46fe552a79a3a745a3b42b394429b66f043efa397c73d3ff"
+  },
+  "model": null,
+  "decision_url": null,
+  "threshold": 0.5,
+  "source_context": "frozen_publisher_language",
+  "rule_scope": "massive_l2"
+}

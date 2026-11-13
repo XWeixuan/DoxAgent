@@ -23,7 +23,7 @@ from tests.fixtures.message_bus_v2 import _bus
 @pytest.mark.parametrize("spec", initial_endpoints(), ids=lambda s: s.endpoint_id)
 def test_actual_listing_contracts(spec):
     raw = (
-        Path(__file__).parent / "fixtures" / "corporate_ir" / (spec.endpoint_id + ".txt")
+        Path(__file__).parent / "fixtures" / "corporate_ir" / ("snow.model.txt" if spec.parser_ref == 'snowflake_json' else spec.endpoint_id + ".txt")
     ).read_text(encoding="utf-8")
     rows, _ = parse_listing(spec, raw)
     assert len(rows) == 2
@@ -54,6 +54,7 @@ def configured(tmp_path, ticker="COHR"):
         ticker=ticker,
         source_id=SOURCE_ID,
         source_parameters={"endpoint_ids": ids},
+        polling={"target_interval_seconds": 30},
         actor=UpdateActor.USER,
     )
     source = repo.get_source(SOURCE_ID)
@@ -244,12 +245,12 @@ def test_owner_configuration_is_idempotent_and_preserves_other_rss(tmp_path):
     )
     first = configure(bus)
     second = configure(bus)
-    assert first["configured_endpoint_count"] == 12
+    assert first["configured_endpoint_count"] == 13
     assert all(s["action"] == "unchanged" for s in second["bindings"])
     assert repo.get_binding(legacy.binding_id).source_parameters["rss_urls"] == [
         "https://other.example/feed"
     ]
-    assert len(repo.list_bindings(source_id=SOURCE_ID)) == 9
+    assert len(repo.list_bindings(source_id=SOURCE_ID)) == 10
 
 
 @pytest.mark.asyncio

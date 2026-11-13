@@ -1,5 +1,15 @@
 [
   {
+    "source": "onds.press",
+    "index": 0,
+    "file": "onds.press.html",
+    "first_url": "https://ir.ondas.com/press-releases/detail/341/short-supply-slug",
+    "first_title": "Ondas announces a defense supply agreement",
+    "first_time": "2026-11-12T13:00:00+00:00",
+    "basis": "EXACT",
+    "full_count": 1
+  },
+  {
     "source": "unmannedairspace_counteruas",
     "index": 0,
     "file": "unmannedairspace_counteruas-0.html",

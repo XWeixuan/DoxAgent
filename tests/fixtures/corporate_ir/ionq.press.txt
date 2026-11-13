@@ -1,0 +1,11 @@
+<div class="w-dyn-list"><div role="listitem" class="resources-item w-dyn-item">
+<a href="/news/ionq-quantum-contract"><h3 item="title">IonQ announces quantum supply contract</h3>
+<div class="publications-date">November 10, 2026</div><div item="date" class="publications-date hide">2026-11-10</div>
+<div class="publications-source">IonQ Press Release</div></a></div>
+<div class="resources-item w-dyn-item"><a href="/news/ionq-revenue-update"><h3 item="title">IonQ raises annual revenue guidance</h3>
+<div item="date">2026-11-09</div><div class="publications-source">IonQ Press Release</div></a></div>
+<a class="w-pagination-next" href="?251779c9_page=2">Next</a></div>
+<div class="w-dyn-list"><div class="resources-item w-dyn-item">
+<a href="https://publisher.example/ionq"><h3 item="title">Outside coverage</h3><div item="date">2026-11-12</div>
+<div class="publications-source">Other publication</div></a></div>
+<a class="w-pagination-next" href="?f46c3a28_page=2">Next</a></div>

@@ -1,0 +1,173 @@
+{
+  "at": "2026-11-12T23:43:02.581412+00:00",
+  "activation_at": "2026-11-12T23:28:26.623404+00:00",
+  "terms_revision": 5,
+  "schema_valid": true,
+  "consumer_count": 6,
+  "massive_required_languages": [
+    "en"
+  ],
+  "massive_l2_sha256": "3f6405748ca482d86640ce2213d904dea639a0c3062dc66ecd31514589c2db23",
+  "consumers": [
+    {
+      "source_id": "access_newswire_massive",
+      "enabled": true
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "enabled": true
+    },
+    {
+      "source_id": "businesswire_massive",
+      "enabled": true
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "enabled": true
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "enabled": true
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "enabled": true
+    }
+  ],
+  "engine_sha256": {
+    "massive_relevance": "25acfec22af6cb93153d89117a7e3473c46c3569ad23fffe7e4facb01c8684f5",
+    "relevance": "a61911475a308b3444173f69f8f31abbf59dadde21b3491326bc4666db06d49e",
+    "monitoring_terms": "d4c1962041bd39847f0e7e76dd47776a697773901c6e52f630509bfa8392d142"
+  },
+  "new_deliveries": [
+    {
+      "source_id": "access_newswire_massive",
+      "state": "IRRELEVANT",
+      "regex_result": 0,
+      "jev_result": null,
+      "n": 1
+    },
+    {
+      "source_id": "businesswire_massive",
+      "state": "IRRELEVANT",
+      "regex_result": 0,
+      "jev_result": null,
+      "n": 12
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "state": "IRRELEVANT",
+      "regex_result": 0,
+      "jev_result": null,
+      "n": 4
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "IRRELEVANT",
+      "regex_result": 0,
+      "jev_result": null,
+      "n": 7
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "state": "PUBLISHED",
+      "regex_result": 1,
+      "jev_result": null,
+      "n": 1
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "state": "IRRELEVANT",
+      "regex_result": 0,
+      "jev_result": null,
+      "n": 9
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "state": "NO_PUBLIC_BODY",
+      "regex_result": null,
+      "jev_result": null,
+      "n": 2
+    }
+  ],
+  "publications": [
+    {
+      "source_id": "prnewswire_massive",
+      "standard_id": "std_live_7463ae14b7347ef4433951a8a801a380",
+      "title": "QBTS INVESTOR DEADLINE: D-Wave Quantum Inc. Investors with Substantial Losses May Seek to Lead Class Action Lawsuit Before December 15, 2026 Deadline",
+      "url": "https://www.prnewswire.com/news-releases/qbts-investor-deadline-d-wave-quantum-inc-investors-with-substantial-losses-may-seek-to-lead-class-action-lawsuit-before-december-15-2026-deadline-302937634.html",
+      "published_at": "2026-11-12T23:00:00Z",
+      "collected_at": "2026-11-12T23:00:26.909904Z",
+      "relevance_filter": "massive_regex",
+      "relevance_revision": 5,
+      "inbox_status": "SUCCEEDED",
+      "also_in_frozen_dataset": true
+    }
+  ],
+  "listing_units": [
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "WIRE:realtime",
+      "last_capture_at": "2026-11-12T23:02:09.498000+00:00",
+      "last_attempt_at": "2026-11-12T23:42:58.915949+00:00",
+      "status": "failed",
+      "last_error_code": "BLOOMBERG_REALTIME_FAILED"
+    },
+    {
+      "source_id": "bloomberg_massive",
+      "unit": "WIRE:latest",
+      "last_capture_at": "2026-11-12T23:01:51.050824+00:00",
+      "last_attempt_at": "2026-11-12T23:42:50.416477+00:00",
+      "status": "failed",
+      "last_error_code": "BLOOMBERG_LATEST_FAILED"
+    },
+    {
+      "source_id": "access_newswire_massive",
+      "unit": "WIRE:listing",
+      "last_capture_at": "2026-11-12T23:42:45.072207+00:00",
+      "last_attempt_at": "2026-11-12T23:42:44.507840+00:00",
+      "status": "succeeded",
+      "last_error_code": null
+    },
+    {
+      "source_id": "businesswire_massive",
+      "unit": "WIRE:listing",
+      "last_capture_at": "2026-11-12T23:42:41.367935+00:00",
+      "last_attempt_at": "2026-11-12T23:42:39.337556+00:00",
+      "status": "succeeded",
+      "last_error_code": null
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "unit": "WIRE:listing",
+      "last_capture_at": "2026-11-12T23:42:45.752615+00:00",
+      "last_attempt_at": "2026-11-12T23:42:45.689293+00:00",
+      "status": "succeeded",
+      "last_error_code": null
+    },
+    {
+      "source_id": "globenewswire_massive",
+      "unit": "WIRE:all",
+      "last_capture_at": "2026-11-12T23:43:00.900177+00:00",
+      "last_attempt_at": "2026-11-12T23:43:00.638064+00:00",
+      "status": "succeeded",
+      "last_error_code": null
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "unit": "WIRE:listing",
+      "last_capture_at": "2026-11-12T23:42:32.793070+00:00",
+      "last_attempt_at": "2026-11-12T23:42:32.717759+00:00",
+      "status": "succeeded",
+      "last_error_code": null
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "unit": "WIRE:all",
+      "last_capture_at": "2026-11-12T23:42:34.149178+00:00",
+      "last_attempt_at": "2026-11-12T23:42:33.901464+00:00",
+      "status": "succeeded",
+      "last_error_code": null
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "model": "gpt-6.1-terra",
+  "reasoning_effort": "high",
+  "agents": {
+    "ionq_massive_dev_gold_1": 25,
+    "ionq_massive_dev_gold_2": 25,
+    "ionq_massive_val_gold": 50
+  },
+  "labels": {
+    "labels-development-1.jsonl": "2e26362add3c34e25032ac84ab512eea40b370efe8ce7a26a8ed9daae856deb5",
+    "labels-development-2.jsonl": "ae1849aff3fa090816168aebb3a17164a04aa293f4540af213900a3fd986d14b",
+    "labels-validation-identity-replacement.jsonl": "226e8e34a3455303b9d5a5e3345b04cadf32e0e9a586a334ecf04f8178c3996a",
+    "labels-validation.jsonl": "762e150c17b7ce1ab9aafad2706aeff52f4d7f00e7815ab237ecd61340079626"
+  },
+  "full_read_audit": "annotation/full-read-audit.json",
+  "gold_unchanged_after_scoring": true,
+  "additional_blind_identity_replacement": 1,
+  "total_annotation_rows": 101,
+  "active_gold_pairs": 100,
+  "identity_repair": "dataset-identity-repair.json"
+}

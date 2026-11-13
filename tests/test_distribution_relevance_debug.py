@@ -115,6 +115,28 @@ async def test_real_regex_replay_traces_and_candidate_identity(tmp_path):
     )
 
 
+@pytest.mark.asyncio
+async def test_massive_scope_uses_dedicated_rules_and_frozen_language(tmp_path):
+    args=args_for(tmp_path)
+    value=config()
+    value['massive_l2']={'fr':{'groups':[{'id':'dedicated','any':[{'literal':'server','whole_word':True}]}]}}
+    lab.write(args.terms,value)
+    cases=lab.rows(args.dataset)
+    for row in cases:row['language']='fr'
+    lab.write_rows(args.dataset,cases)
+    args.rule_scope='massive_l2'
+    result=await lab.evaluate(args)
+    assert result['precision']==result['recall']==1
+    hits=lab.rows(args.output/'details.jsonl')[1]['replay']['matches']
+    assert hits[0]['group']=='dedicated' and hits[0]['language']=='fr'
+    with pytest.raises(ValueError,match='another candidate'):
+        args.rule_scope='l2'
+        await lab.evaluate(args)
+    args.rule_scope='massive_l2';args.track='decision'
+    with pytest.raises(ValueError,match='regex-only'):
+        await lab.evaluate(args)
+
+
 def test_languages_follow_bindings_and_english_fallback(tmp_path):
     ctx = context()
     ctx["sources"]["s"]["content_language"] = "he"

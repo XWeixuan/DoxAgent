@@ -16,6 +16,12 @@ from .schema import IrEndpointSpec
 
 
 def inspect_article(raw, url, title):
+    if urlsplit(url).hostname in {"www.ionq.com", "ionq.com"}:
+        doc = html.fromstring(raw)
+        scopes = doc.xpath('//*[contains(concat(" ",normalize-space(@class)," ")," body-rich-text ")]')
+        heads = doc.xpath('//h1')
+        if len(scopes) == 1 and heads:
+            raw = "<article>" + html.tostring(heads[0], encoding="unicode") + html.tostring(scopes[0], encoding="unicode") + "</article>"
     if urlsplit(url).hostname == "www.constellationenergy.com":
         doc = html.fromstring(raw)
         scopes = doc.xpath(
@@ -113,13 +119,22 @@ class IrBodyReader:
                     },
                 )
         async with self.slots:
-            capture = await self.http.fetch(spec, url=record.url)
+            fetch_url = record.url
+            if spec.parser_ref == 'snowflake_json':
+                from .snowflake import model_url
+                fetch_url = model_url(record.url)
+            capture = await self.http.fetch(spec, url=fetch_url)
         if capture.status != 200:
             return MediaExtractionResult(
                 record=record, reason=f"ir_http_{capture.status}", http_status=capture.status
             )
+        document, article_url = capture.body, capture.url
+        if spec.parser_ref == 'snowflake_json':
+            from .snowflake import article_html
+            document = article_html(json.loads(capture.body), record.url)
+            article_url = record.url
         candidate, quality, reason = await asyncio.to_thread(
-            inspect_article, capture.body, capture.url, job.message.title
+            inspect_article, document, article_url, job.message.title
         )
         diagnostics = {
             "outcome": quality,
@@ -128,15 +143,17 @@ class IrBodyReader:
                 exact_publication, capture.body, spec
             ),
         }
+        if spec.parser_ref == 'snowflake_json':
+            diagnostics.update(body_source='ir_public_aem_model', body_source_url=fetch_url)
         if candidate:
             diagnostics["candidate_summary"] = [candidate.summary()]
         return MediaExtractionResult(
             record=record,
             content=candidate.text if candidate else None,
-            final_url=capture.url,
+            final_url=article_url,
             http_status=capture.status,
             reason=None if candidate else reason,
-            extraction_method="ir_public_http",
+            extraction_method="ir_public_aem_model" if spec.parser_ref == 'snowflake_json' else "ir_public_http",
             diagnostics=diagnostics,
         )
 

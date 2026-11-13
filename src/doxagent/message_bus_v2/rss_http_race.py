@@ -135,6 +135,11 @@ RECIPES = {
 
 # Endpoint recipes remain inside the existing corporate IR source identity.
 IR_RECIPES = {
+    "onds.press": Listing(
+        "https://ir.ondas.com/rss",
+        "https://ir.ondas.com/press-releases",
+        "race_ir_eqs",
+    ),
     "intc.press": Listing(
         "https://www.intc.com/news-events/press-releases/rss",
         "https://www.intc.com/news-events/press-releases",
@@ -563,6 +568,17 @@ def parse_listing(recipe, spec, raw, now):
                 if links and dates:
                     stamp = parse(dates[0]).replace(tzinfo=ZoneInfo("America/New_York"))
                     rows.append((links[0].get("href"), text(links[0]), stamp.isoformat()))
+    elif recipe.parser == "race_ir_eqs":
+        from zoneinfo import ZoneInfo
+
+        for node in doc.xpath('//div[contains(concat(" ",normalize-space(@class)," ")," media-body ")]'):
+            links = node.xpath('.//h2/a[contains(@href,"/press-releases/detail/")]')
+            dates = node.xpath('.//time/@datetime')
+            if links and dates:
+                stamp = datetime.fromisoformat(dates[0])
+                if stamp.tzinfo is None:
+                    stamp = stamp.replace(tzinfo=ZoneInfo('America/New_York'))
+                rows.append((links[0].get('href'), text(links[0]), stamp.isoformat()))
     elif recipe.parser == "race_ir_nir":
         from .corporate_ir.parsers import parse_listing as parse_ir
         from .corporate_ir.schema import IrEndpointSpec
