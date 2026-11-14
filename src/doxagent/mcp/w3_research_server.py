@@ -19,14 +19,16 @@ from starlette.responses import JSONResponse
 from doxagent.persistent_runtime_v2.w3_research_store import atomic, compact
 
 
-def service_token(secret):
-    return hmac.new(secret.encode(), b"w3-research-http-v2", hashlib.sha256).hexdigest()
+def service_token(secret, scope="legacy"):
+    return hmac.new(secret.encode(), (b"w3-research-http-v2" if scope == "legacy" else b"w3-research-d1-d2-v1"), hashlib.sha256).hexdigest()
 
 
 class ResearchMcp:
     def __init__(self, store, secret, market=None):
         self.store, self.market = store, market
         self.token = service_token(secret)
+        self.scoped_token = service_token(secret, "d1-d2.v1")
+        self.research_scope = ContextVar("w3_research_scope", default=None)
         self.ready = {}
         self.calls = 0
         self.capsule = ContextVar("w3_mcp_capsule", default="")
@@ -42,7 +44,7 @@ class ResearchMcp:
             ),
             "search": (
                 "Find named objects or text in all permitted frozen research, "
-                "including other Policies/Shells.",
+                "D1 and D2 business objects.",
                 {"query": {"type": "string"}, "kind": {"type": "string"}},
             ),
             "read": (
@@ -147,7 +149,7 @@ class ResearchMcp:
                 else:
                     from doxagent.control_io import read_io
 
-                    result = await read_io(self.store.call, params.name, args)
+                    result = await read_io(self.store.call, params.name, args, self.research_scope.get()) if self.research_scope.get() else await read_io(self.store.call, params.name, args)
                 self.calls += 1
                 return types.CallToolResult(
                     content=[types.TextContent(type="text", text=compact(result))]
@@ -168,14 +170,17 @@ class ResearchMcp:
     async def __call__(self, scope, receive, send):
         headers = dict(scope.get("headers", []))
         expected = ("Bearer " + self.token).encode()
-        if not hmac.compare_digest(headers.get(b"authorization", b""), expected):
+        scoped = hmac.compare_digest(headers.get(b"authorization", b""), ('Bearer ' + self.scoped_token).encode())
+        if not scoped and not hmac.compare_digest(headers.get(b"authorization", b""), expected):
             await JSONResponse({"error": "invalid research MCP credential"}, status_code=401)(
                 scope, receive, send
             )
             return
         capsule = headers.get(b"x-w3-capsule", b"").decode()
         token = self.capsule.set(capsule)
+        scope_token = self.research_scope.set('d1-d2.v1' if scoped else None)
         try:
             await self.manager.handle_request(scope, receive, send)
         finally:
             self.capsule.reset(token)
+            self.research_scope.reset(scope_token)

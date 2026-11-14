@@ -1,9 +1,11 @@
 """Read-only business outcome semantics shared by runtime and read projections."""
 
-from .w3_contracts import is_unified_contract
+from .w3_contracts import is_unified_contract, is_pin_watch_contract
 
 
 def effective_novelty(case):
+    if is_pin_watch_contract(case.get("w3_contract_version")):
+        return case.get("w1_final") or case.get("w1_result"), "W1"
     operations = case.get("w3_operations_result") or {}
     if operations.get("novelty") and (
         case.get("w3_operations_status") == "COMMITTED"

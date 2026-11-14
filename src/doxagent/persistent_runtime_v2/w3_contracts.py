@@ -18,16 +18,23 @@ from .schema import (
 
 W3_LEGACY_CONTRACT = "persistent-runtime.w3.v4"
 W3_CONTRACT = "persistent-runtime.w3.v5"
+W3_V6_CONTRACT = "persistent-runtime.w3.v6"
+
+
+def is_pin_watch_contract(version):
+    return version == W3_V6_CONTRACT
+
+
 TRADE_PHASE = "trade_decision"
 OPERATIONS_PHASE = "post_decision_operations"
 
 
 def is_two_phase_contract(version):
-    return version in {W3_LEGACY_CONTRACT, W3_CONTRACT}
+    return version in {W3_LEGACY_CONTRACT, W3_CONTRACT, W3_V6_CONTRACT}
 
 
 def is_unified_contract(version):
-    return version == W3_CONTRACT
+    return version in {W3_CONTRACT, W3_V6_CONTRACT}
 
 
 class W3ExpertDecision(RuntimeV2Model):
@@ -116,7 +123,14 @@ class W3OperationsResultV5(RuntimeV2Model):
         return self
 
 
+class W3OperationsResultV6(RuntimeV2Model):
+    pin_actions: list[MessagePinAction]
+    watch_actions: list[PolicyWatchAction]
+
+
 def contract_models(version):
+    if is_pin_watch_contract(version):
+        return W3DirectionDecision, W3OperationsResultV6
     if is_unified_contract(version):
         return W3DirectionDecision, W3OperationsResultV5
     if version == W3_LEGACY_CONTRACT:
@@ -143,6 +157,10 @@ def parse_w3_operations(value: str | dict, *, version=W3_LEGACY_CONTRACT):
         key not in payload for key in ("watch_actions", "pin_actions")
     ):
         raise ValueError("v5 requires watch_actions and pin_actions, including empty lists")
+    if is_pin_watch_contract(version) and set(payload) != {"pin_actions", "watch_actions"}:
+        raise ValueError("v6 operations requires exactly pin_actions and watch_actions")
+    if is_pin_watch_contract(version) and any(not isinstance(payload[k], list) for k in ('pin_actions','watch_actions')):
+        raise ValueError('v6 action fields must be arrays')
     issues = []
     for key, model in (("watch_actions", PolicyWatchAction), ("pin_actions", MessagePinAction)):
         accepted = []

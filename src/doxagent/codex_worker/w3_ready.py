@@ -70,7 +70,7 @@ class W3ReadySlots:
             )
 
     async def configure(self, config):
-        key = sha(compact([config["parent_thread_id"], config["profile"], ENTRY]))
+        key = sha(compact([config["parent_thread_id"], config["profile"], config.get("w3_entry_version",ENTRY)]))
         if not config.get("active_public", True) and key in self.configs:
             return key
         for old, previous in list(self.configs.items()):
@@ -221,7 +221,7 @@ class W3ReadySlots:
                 "ticker": "GLOBAL",
                 "data_mcp_enabled": "false",
                 "research_assets_mcp_enabled": "true",
-                "w3_entry_version": ENTRY,
+                "w3_entry_version": config.get("w3_entry_version",ENTRY),
                 "web_search_mode": config.get("web_search_mode", "live"),
             }
             request = W3PrepareRequest(
@@ -235,7 +235,7 @@ class W3ReadySlots:
                 reference_pack_id="",
                 case_overlay_sha=sha(compact(config["instructions"])),
                 profile=profile,
-                capability_contract_version=ENTRY,
+                capability_contract_version=profile["w3_entry_version"],
                 cutoff_at=datetime.now(UTC),
             )
 
@@ -304,7 +304,7 @@ class W3ReadySlots:
                             read_only=True,
                             data_mcp_enabled=False,
                             research_assets_mcp_enabled=True,
-                            w3_entry_version=ENTRY,
+                            w3_entry_version=profile["w3_entry_version"],
                             web_search_mode=profile["web_search_mode"],
                         ),
                         self.workspaces.ensure_run(run_id),
@@ -480,7 +480,7 @@ class W3ReadySlots:
 
                 self.tasks[identity] = asyncio.create_task(resume_build())
             elif not self.closed:
-                key = sha(compact([config["parent_thread_id"], config["profile"], ENTRY]))
+                key = sha(compact([config["parent_thread_id"], config["profile"], config.get("w3_entry_version",ENTRY)]))
                 self._schedule_fill(key)
 
     async def retire(self, *, dry_run=False):

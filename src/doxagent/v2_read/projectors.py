@@ -720,7 +720,7 @@ class DomainProjectors:
             effective_policy,
             historical_archive,
         )
-        from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
+        from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract, is_pin_watch_contract
 
         source, ticker = value["source"], value["source"]["snapshot"]["ticker"]
         w1, w2 = value.get("w1_final"), value.get("w2_final")
@@ -830,7 +830,7 @@ class DomainProjectors:
         elif (value.get("w2_final") or {}).get("reason") == "no_policy_candidate_recalled":
             # Historical routing marker is not a recorded recall explanation.
             reasons.pop("w2", None)
-        if is_unified_contract(value.get("w3_contract_version")):
+        if is_unified_contract(value.get("w3_contract_version")) and not is_pin_watch_contract(value.get("w3_contract_version")):
             reasons["w3_policy"] = reasons.get("w2")
         for name in ("novelty", "policy", "expert_trade"):
             result = (value.get("w3_operations_result") or value.get("w3_result") or {}).get(name)

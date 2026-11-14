@@ -261,7 +261,7 @@ def test_failed_operations_do_not_fail_or_repeat_committed_trade(tmp_path):
         service.close()
 
 
-def test_busy_policy_thread_forks_and_idle_policy_thread_resumes(tmp_path):
+def test_new_cases_fork_even_when_previous_policy_thread_is_idle(tmp_path):
     service, _, agent, _ = runtime(tmp_path)
     try:
         enqueue(service, "one")
@@ -278,10 +278,10 @@ def test_busy_policy_thread_forks_and_idle_policy_thread_resumes(tmp_path):
         for effect in service.repository.claim_effects(limit=10):
             if effect.case_id == "three":
                 service._process_claimed_effect(effect)
-        assert agent.forks == 2
+        assert agent.forks == 3
         assert (
             next(t for cid, p, t, _ in agent.calls if cid == "three" and p == TRADE_PHASE)
-            == "child-1"
+            == "child-3"
         )
     finally:
         service.close()

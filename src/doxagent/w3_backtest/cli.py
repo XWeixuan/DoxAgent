@@ -149,6 +149,8 @@ def execute_run(
         or (dataset / "prompt_source" if curated else "prompts/persistent_runtime_v2/w3")
     ).resolve()
     prompt_files = ["AGENTS.md", "skills/skill.md"]
+    if (prompts / 'contract.json').exists() and json.loads((prompts/'contract.json').read_text(encoding='utf8')).get('w3_contract_version') == 'persistent-runtime.w3.v6':
+        prompt_files.append('operations.md')
     if curated:
         prompt_files.append("backtest.md")
         if (prompts / "provenance.json").exists():

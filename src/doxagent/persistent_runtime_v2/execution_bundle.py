@@ -46,7 +46,7 @@ class ExecutionBundles:
             )
         if w3_contract_version is not None:
             from .schema import strict_json_schema
-            from .w3_contracts import contract_models
+            from .w3_contracts import contract_models, is_pin_watch_contract
 
             trade_model, operations_model = contract_models(w3_contract_version)
             trade_schema = strict_json_schema(trade_model.model_json_schema())
@@ -54,12 +54,18 @@ class ExecutionBundles:
             if value["orchestration_revision"] != 3:
                 raise ValueError("Two-phase W3 requires the native Policy orchestration revision 3")
             required = ("w3/AGENTS.md", "w3/skills/skill.md")
+            v6 = is_pin_watch_contract(w3_contract_version)
+            if v6:
+                required += ("w3/operations.md",)
+                if "W3_OPERATIONS_PLACEHOLDER" in value["assets"].get("w3/operations.md", ""):
+                    raise ValueError("Replace operations placeholder before publishing v6")
             if any(not value["assets"].get(key, "").strip() for key in required):
                 raise ValueError("Two-phase W3 requires AGENTS.md and the single skills/skill.md")
             value.setdefault("contracts", {}).update(
                 w3_contract_version=w3_contract_version,
-                w3_asset_layout="agents-skill.v1",
-                w3_entry_version="w3-entry-v5",
+                w3_asset_layout="agents-skill-operations.v1" if v6 else "agents-skill.v1",
+                w3_entry_version="w3-entry-v6" if v6 else "w3-entry-v5",
+                w3_research_scope="d1-d2.v1" if v6 else "legacy",
                 w3_citation_scope_version="loaded-events.v1",
                 w3_trade_schema=trade_schema,
                 w3_trade_schema_hash=digest(trade_schema),

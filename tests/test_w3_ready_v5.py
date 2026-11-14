@@ -308,6 +308,8 @@ async def test_v5_attempt_and_cutoff_changes_keep_prepared_sdk_and_mcp(tmp_path)
             ),
             tmp_path,
         )
-        assert calls == ["fork", "turn", "turn"]
+        # Operations disables Fast, so the same physical thread must resume with
+        # its phase configuration instead of retaining Trade's resident config.
+        assert calls == ["fork", "turn", "resume", "turn"]
     finally:
         await runtime.close()

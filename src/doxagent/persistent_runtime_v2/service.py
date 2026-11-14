@@ -41,7 +41,7 @@ from doxagent.workflows.codex_document3.schema import (
 
 from . import policy_consumption
 from .execution_bundle import ExecutionBundles
-from .journal import LeaseLost, RuntimeJournal, RuntimeStopping, digest, is_sqlite_contention
+from .journal import LeaseLost, RuntimeJournal, RuntimeStopping, digest, encode, is_sqlite_contention
 from .prompts import RuntimeV2PromptSet
 from .providers import RuntimeInputSnapshot, RuntimeKnownEventProvider, RuntimePolicyProvider
 from .repository import PersistentRuntimeV2Repository
@@ -94,7 +94,7 @@ from .transport import (
 )
 from .w2_alignment import W2_CONTRACT, assessment, validate_alignment
 from .w3 import W3Agent, W3Error, defer_phase_waits
-from .w3_contracts import is_two_phase_contract, is_unified_contract
+from .w3_contracts import is_two_phase_contract, is_unified_contract, is_pin_watch_contract
 
 if TYPE_CHECKING:
     from .projection import RuntimeV2ProjectionOutbox
@@ -604,8 +604,8 @@ class PersistentRuntimeV2Service:
                     k: v
                     for k, v in w3_bundle["assets"].items()
                     if (
-                        k in {"w3/AGENTS.md", "w3/skills/skill.md"}
-                        if w3_bundle["contracts"].get("w3_asset_layout") == "agents-skill.v1"
+                        k in {"w3/AGENTS.md", "w3/skills/skill.md", "w3/operations.md"}
+                        if w3_bundle["contracts"].get("w3_asset_layout") in {"agents-skill.v1", "agents-skill-operations.v1"}
                         else k.startswith("w3/")
                     )
                 }
@@ -1782,6 +1782,8 @@ class PersistentRuntimeV2Service:
             payload: dict[str, Any] = {}
             if effect_type is RuntimeSideEffect.EMIT_DELTA:
                 payload["previous_response_id"] = w1_response_id
+                if is_pin_watch_contract(case.w3_contract_version) and case.route.primary_route.value == 'W3':
+                    payload['auxiliary_to_w3'] = True
             effects.append(
                 RuntimeEffect(
                     case_id=case.case_id,
@@ -1900,7 +1902,7 @@ class PersistentRuntimeV2Service:
                 with self._w3_threads_lock:
                     active = tuple(self._active_effect_ids)
                     if lane == 'background':
-                        capacity = min(capacity, 8-len(self._background_effect_ids))
+                        capacity = min(capacity, 7-len(self._background_effect_ids))
                 if capacity < 1:
                     break
                 claim_at, claim_started = utc_now(), perf_counter()
@@ -2217,7 +2219,8 @@ class PersistentRuntimeV2Service:
                 )
             if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
                 self._record_w3_failure(effect.case_id, exc, retryable=retryable)
-            self._refresh_case_completion(effect.case_id)
+            if not effect.payload.get('auxiliary_to_w3'):
+                self._refresh_case_completion(effect.case_id)
             return 0
         done = effect.model_copy(
             update={
@@ -2242,7 +2245,8 @@ class PersistentRuntimeV2Service:
                             self._projection_outbox.enqueue_terminal(payload)
                             self._effect_executor.submit(self._projection_outbox.flush,limit=20)
                         return 1
-        self._refresh_case_completion(effect.case_id)
+        if not effect.payload.get('auxiliary_to_w3'):
+            self._refresh_case_completion(effect.case_id)
         return 1
 
     def _execute_effect(self, effect: RuntimeEffect) -> None:
@@ -2857,9 +2861,19 @@ class PersistentRuntimeV2Service:
                 candidate=candidate,
                 published_max_event_numeric_id=maximum,
             )
-        self.repository.save_case(
-            case.model_copy(update={"w1_extraction": extraction, "updated_at": utc_now()})
-        )
+        if hasattr(self.repository, 'content') and self.journal:
+            # R3 is concurrent with both W3 commits: never overwrite a newer Case
+            # with the snapshot loaded before the model request.
+            prepared = json.loads(self.repository.content.encode({'w1_extraction':extraction.model_dump(mode='json')}))
+            stamp = utc_now().isoformat()
+            with self.journal.transaction() as db:
+                from .fencing import assert_write_lease
+                assert_write_lease(db)
+                db.execute("UPDATE runtime_v2_cases SET payload_json=json_set(payload_json,'$.w1_extraction',json(?),'$.updated_at',?),updated_at=? WHERE case_id=?",
+                    (encode(prepared['w1_extraction']),stamp,stamp,case.case_id))
+        else:
+            current = self.repository.get_case(case.case_id)
+            self.repository.save_case(current.model_copy(update={'w1_extraction':extraction,'updated_at':utc_now()}))
 
     @observed('case.refresh_completion')
     def _refresh_case_completion(self, case_id: str) -> None:
@@ -2885,6 +2899,8 @@ class PersistentRuntimeV2Service:
                 self._project_terminal(self.repository.get_case(case_id))
                 return
         effects = self.repository.list_effects(case_id)
+        if is_pin_watch_contract(case.w3_contract_version) and case.route and case.route.primary_route.value == "W3":
+            effects = [e for e in effects if e.effect_type is not RuntimeSideEffect.EMIT_DELTA]
         if is_two_phase_contract(case.w3_contract_version):
             effects = [e for e in effects if e.effect_type is not RuntimeSideEffect.W3_POST_DECISION]
         if any(effect.status is RuntimeEffectStatus.FAILED for effect in effects):

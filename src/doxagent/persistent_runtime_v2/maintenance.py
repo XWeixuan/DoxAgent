@@ -353,9 +353,8 @@ class RuntimeMaintenance:
                     o2={"version": version, "root": str(candidate_root)},
                 )
             published = task["receipt"]["o2"]
-            from .w3_context import sync_event_links
 
-            sync_event_links(self.journal, task["ticker"], published["root"], published["version"])
+            # Case threads no longer follow Event associations.
             compiler = EventLibraryViewCompiler(repository)
             from .reference_capture import actual_delta
 

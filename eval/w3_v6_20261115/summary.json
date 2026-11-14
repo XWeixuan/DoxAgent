@@ -1,0 +1,21 @@
+{
+  "base_revision": "4f3c74cc4",
+  "regression": {"passed": 253, "excluded_preexisting_failure": 1, "artifact": "regression.xml"},
+  "final_targeted": {"passed": 28, "overlaps_regression": true, "artifact": "additional.xml"},
+  "v6_test_count": 20,
+  "preexisting_failure": {
+    "test": "tests/test_w3_backtest_runner.py::test_replay_uses_production_two_stages_with_isolated_evidence",
+    "baseline_reproduced": true,
+    "baseline_revision": "4f3c74cc4",
+    "expected": "READY",
+    "actual": "RUNTIME_DELAY_EXCEEDED",
+    "validation_relaxed": false
+  },
+  "static_checks": ["ruff F821", "new-module ruff F and I", "git diff --check"],
+  "provider_calls": 0,
+  "production_deployment": false,
+  "active_prompt_contract_changed": false,
+  "v6_activation": "requires aligned AGENTS, Skill and non-placeholder operations asset",
+  "production_p95_acceptance": "not measured in this development task",
+  "fill_query_plan": "fill-query-plan.json"
+}

@@ -829,6 +829,9 @@ class SQLitePersistentRuntimeV2Repository:
 
     @retry_sqlite_write
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
+        # v6 R3 commits its immutable extraction independently of W3. Completion
+        # and recovery may save an older snapshot; preserve already stored facts
+        # in SQL rather than read/merge a second time outside the transaction.
         payload = self.content.encode(case.model_dump(mode="json"))
         with self._lock, self._connect() as connection:
             existing = connection.execute(
@@ -848,7 +851,12 @@ class SQLitePersistentRuntimeV2Repository:
                 ON CONFLICT(case_id) DO UPDATE SET
                     status=excluded.status,
                     technical_status=excluded.technical_status,
-                    payload_json=excluded.payload_json,
+                    payload_json=CASE
+                        WHEN json_extract(excluded.payload_json,'$.w3_contract_version')='persistent-runtime.w3.v6'
+                        AND json_extract(runtime_v2_cases.payload_json,'$.w1_extraction') IS NOT NULL
+                        THEN json_set(excluded.payload_json,'$.w1_extraction',
+                            json_extract(runtime_v2_cases.payload_json,'$.w1_extraction'))
+                        ELSE excluded.payload_json END,
                     updated_at=excluded.updated_at
                 """,
                 (
@@ -890,7 +898,12 @@ class SQLitePersistentRuntimeV2Repository:
                 ON CONFLICT(case_id) DO UPDATE SET
                     status=excluded.status,
                     technical_status=excluded.technical_status,
-                    payload_json=excluded.payload_json,
+                    payload_json=CASE
+                        WHEN json_extract(excluded.payload_json,'$.w3_contract_version')='persistent-runtime.w3.v6'
+                        AND json_extract(runtime_v2_cases.payload_json,'$.w1_extraction') IS NOT NULL
+                        THEN json_set(excluded.payload_json,'$.w1_extraction',
+                            json_extract(runtime_v2_cases.payload_json,'$.w1_extraction'))
+                        ELSE excluded.payload_json END,
                     updated_at=excluded.updated_at
                 """,
                 (

@@ -201,13 +201,13 @@ class _LocalWorker:
                 reference_pack_id="",
                 case_overlay_sha=digest(config["instructions"]),
                 cutoff_at=datetime.now(UTC),
-                capability_contract_version=ENTRY,
+                capability_contract_version=config.get("w3_entry_version",ENTRY),
                 profile={
                     **request["profile"],
                     "ticker": "REPLAY",
                     "data_mcp_enabled": "false",
                     "research_assets_mcp_enabled": "true",
-                    "w3_entry_version": ENTRY,
+                    "w3_entry_version": config.get("w3_entry_version",ENTRY),
                     "web_search_mode": "disabled",
                 },
             )
@@ -541,6 +541,11 @@ class ReplayRunner:
             "w3/" + p: (self.prompt_root / p).read_text(encoding="utf-8")
             for p in ("AGENTS.md", "skills/skill.md")
         }
+        from doxagent.persistent_runtime_v2.w3_contracts import is_pin_watch_contract
+        if is_pin_watch_contract(replay_contract):
+            assets['w3/operations.md'] = (self.prompt_root/'operations.md').read_text(encoding='utf8')
+            if 'W3_OPERATIONS_PLACEHOLDER' in assets['w3/operations.md']:
+                raise ValueError('Replace operations placeholder before v6 replay')
         if marker.exists():
             assets["w3/contract.json"] = marker.read_text(encoding="utf-8")
         evidence = {
@@ -603,10 +608,11 @@ class ReplayRunner:
         repository = SQLitePersistentRuntimeV2Repository(journal.path)
         case.frozen_inputs.update(
             w3_assets=assets,
-            # Replay uses file-delivered evidence even for the current direction schema.
-            # Do not opt into production's research MCP/market preparation entry.
+            # Legacy replay keeps file delivery; v6 uses the isolated local
+            # research store with frozen evidence and disabled live capabilities.
             w3_contracts=dict(
                 w3_contract_version=replay_contract,
+                **({'w3_entry_version':'w3-entry-v6'} if is_pin_watch_contract(replay_contract) else {}),
                 w3_trade_schema=contract_models(replay_contract)[0].model_json_schema(),
                 w3_operations_schema=contract_models(replay_contract)[1].model_json_schema(),
             ),
@@ -618,6 +624,8 @@ class ReplayRunner:
                 policy_execution_view=view,
                 recent_trade_intents=historical.get("recent_trade_intents", []),
                 history_matches=historical.get("history_matches", []),
+                **({k: historical.get(k, []) for k in ('recent_trade','recent_trade_matches','recent_trade_members')}
+                   if is_pin_watch_contract(replay_contract) else {}),
             ),
         )
         if "watch" in historical.get("global_state", {}):
@@ -744,7 +752,8 @@ class ReplayRunner:
 
         labels = case_labels(
             case,
-            history_matches=historical.get("history_matches", []),
+            history_matches=journal.get('w3_recent_filled_snapshot',case.case_id,{}).get('matches',[])
+            if is_pin_watch_contract(replay_contract) else historical.get("history_matches", []),
             watch_followup=bool(case.frozen_inputs.get("policy_watch_followup")),
         )
         result = dict(

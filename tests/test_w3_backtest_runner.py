@@ -278,7 +278,7 @@ def test_prior_intent_keeps_prior_judgement_but_omits_current_fill_state():
 
 
 @pytest.mark.parametrize("model,effort", [("gpt-6.1-sol", "medium"), ("gpt-6-luna", "max")])
-def test_replay_model_override_covers_both_phases_and_is_frozen(
+def test_replay_trade_override_is_frozen_and_operations_stays_luna(
     tmp_path, monkeypatch, model, effort
 ):
     dataset, runner, worker, _ = fixture(tmp_path, monkeypatch, contract=W3_CONTRACT)
@@ -286,7 +286,7 @@ def test_replay_model_override_covers_both_phases_and_is_frozen(
     result = runner.run_case(dataset, "C1", tmp_path / "run")
     assert result["status"] == "SUCCEEDED", result["error"]
     assert result["model"] == runner.model_profile
-    assert all(r.model == model and r.effort == effort for r in worker.requests)
+    assert all((r.model,r.effort) == (('gpt-6-luna','max') if r.task_phase=='post_decision_operations' else (model,effort)) for r in worker.requests)
     runner.model_profile = dict(model="gpt-6-sol", effort="high", provider=None)
     with pytest.raises(ValueError, match="create a new run"):
         runner.run_case(dataset, "C1", tmp_path / "run")

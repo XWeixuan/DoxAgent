@@ -55,6 +55,8 @@ from .schema import (
     strict_json_schema,
 )
 from .w3_models import execution_profile
+from .w3_contracts import is_pin_watch_contract
+from .w3_v6 import ENTRY as V6_ENTRY, SCOPE
 from .w3_research_store import ENTRY, compact
 
 defer_phase_waits = ContextVar("runtime_defer_w3_phase_waits", default=False)
@@ -72,7 +74,7 @@ def research_pin_key(case):
             p.event_library_root,
             p.event_library_version,
             p.policy_set_version,
-            ENTRY,
+            case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version", ENTRY),
         ]
     )
 
@@ -512,20 +514,16 @@ class CodexW3AgentRunner:
     def entry_enabled(self, case):
         return case.frozen_inputs.get("w3_contracts", {}).get(
             "w3_entry_version"
-        ) == ENTRY and hasattr(self._worker, "bind_w3_context")
+        ) in {ENTRY, V6_ENTRY} and hasattr(self._worker, "bind_w3_context")
 
     def _install_context(self, case, context):
         async def install():
             components = await self._worker.prepare_w3_research(
                 case.ticker,
-                dict(
-                    d1=context.document1,
-                    d2=context.original_document2
-                    or compact(context.document2.model_dump(mode="json")),
-                    policy=context.original_policy_set
-                    or compact(context.policy_set.model_dump(mode="json")),
-                    reference=context.reference_view,
-                ),
+                dict(d1=context.document1, d2=context.original_document2 or compact(context.document2.model_dump(mode="json")))
+                if is_pin_watch_contract(case.w3_contract_version) else dict(
+                    d1=context.document1, d2=context.original_document2 or compact(context.document2.model_dump(mode="json")),
+                    policy=context.original_policy_set or compact(context.policy_set.model_dump(mode="json")), reference=context.reference_view),
             )
             saved = dict(
                 components=components,
@@ -570,6 +568,7 @@ class CodexW3AgentRunner:
         return dict(
             parent_thread_id=template["thread_id"],
             active_public=active_public,
+            w3_entry_version=case.frozen_inputs.get('w3_contracts',{}).get('w3_entry_version',ENTRY),
             profile=profile,
             web_search_mode=self.environment.web_search_mode,
             instructions={
@@ -1058,6 +1057,8 @@ class CodexW3AgentRunner:
 
         assets = case.frozen_inputs["w3_assets"]
         new_entry = self.entry_enabled(case)
+        if is_pin_watch_contract(case.w3_contract_version) and not new_entry:
+            raise W3Error('w3_v6_worker_required', 'v6 requires the scoped research entry')
         run_id = record["workspace"]
         attempt_id = case.case_id[-24:] + "-" + phase
         case_root = f"attempts/{attempt_id}"
@@ -1145,7 +1146,7 @@ class CodexW3AgentRunner:
                 "w3_operations_schema" if phase == OPERATIONS_PHASE else "w3_trade_schema", schema
             )
             template = assets["w3/task.md"] if not single_skill else ""
-        if phase == OPERATIONS_PHASE and context is not None:
+        if phase == OPERATIONS_PHASE and context is not None and not is_pin_watch_contract(case.w3_contract_version):
             payload = dict(payload)
             payload["allowed_reference_event_ids"] = sorted(
                 context.reference_event_ids
@@ -1157,6 +1158,13 @@ class CodexW3AgentRunner:
                 "news IDs or URLs. OLD requires actual fact coverage by one of these Events. "
                 "Previously seen articles and insufficient body are not Event coverage."
             )
+        if is_pin_watch_contract(case.w3_contract_version) and phase != 'w3_template':
+            from .w3_v6 import trade_input, operations_input
+            if phase == OPERATIONS_PHASE:
+                payload = operations_input(case, payload)
+            else:
+                recent = self._journal.get('w3_recent_filled_snapshot', case.case_id, {}).get('items', [])
+                payload = trade_input(case, payload, recent)
         task = dict(phase=phase, input=payload)
         if new_entry:
             task.update(
@@ -1188,7 +1196,7 @@ class CodexW3AgentRunner:
                             w3_contract_version=case.w3_contract_version,
                             phase=phase,
                             ticker=case.ticker,
-                            inline_policy_ids=[p["policy_id"] for p in payload.get("policies", [])],
+                            inline_policy_ids=[p["policy_id"] for p in payload.get("policies", []) if "policy_id" in p],
                             mode=self.environment.mode,
                             cutoff_at=payload.get("cutoff_at")
                             or case.source.message_bus_event_time.isoformat(),
@@ -1222,6 +1230,16 @@ class CodexW3AgentRunner:
                             ),
                             deadline_at=case.frozen_inputs.get("w3_deadline_at"),
                         )
+                        if is_pin_watch_contract(case.w3_contract_version):
+                            manifest['research_scope'] = SCOPE
+                            manifest['components'] = {k:v for k,v in manifest['components'].items() if k in {'d1','d2'}}
+                            manifest['input_projection_issues'] = [
+                                dict(field='policies.cutoff', policy_title=p['title'],
+                                     reason='no_frozen_policy_provenance')
+                                for p in payload.get('policies', []) if p.get('cutoff') is None
+                            ]
+                            for key in ('state','history','events','policy_usage','inline_policy_ids'):
+                                manifest.pop(key, None)
                         if not manifest["deadline_at"]:
                             from datetime import UTC, timedelta
 
@@ -1303,6 +1321,9 @@ class CodexW3AgentRunner:
                         json.dumps(replay["policy_execution_view"], ensure_ascii=False, indent=2),
                     )
                     task["policy_execution_view"] = view_path
+        if is_pin_watch_contract(case.w3_contract_version) and phase != 'w3_template':
+            task = {k:task[k] for k in ('phase','input','context_ref','output_fields', *(['evidence'] if self.environment.mode == 'OFFLINE_REPLAY' else [])) if k in task}
+            task['instruction'] = 'Use optional D1/D2 research, Web or other permitted tools only when relevant. Continue relevant incomplete pages using next_cursor.'
         paths = dict(
             task_path=f"{case_root}/task.json",
             output_schema=f"{case_root}/output_schema.json",
@@ -1374,6 +1395,8 @@ class CodexW3AgentRunner:
                 if phase == "w3_template"
                 else ""
             ) + json.dumps(task, ensure_ascii=False)
+            if phase == OPERATIONS_PHASE and is_pin_watch_contract(case.w3_contract_version):
+                prompt = assets['w3/operations.md'] + '\n\n' + prompt
         profile = execution_profile(
             case,
             model=self._model,
@@ -1523,7 +1546,7 @@ class CodexW3AgentRunner:
                     if phase == "w3_template" or new_entry
                     else self.environment.data_mcp_enabled,
                     research_assets_mcp_enabled=new_entry and phase != "w3_template",
-                    w3_entry_version=ENTRY if new_entry else None,
+                    w3_entry_version=case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version") if new_entry else None,
                     allow_subagents=False,
                     max_subagents=0,
                     timeout_seconds=self._timeout_seconds,
@@ -1570,7 +1593,7 @@ class CodexW3AgentRunner:
                 result = parse_w3_trade_decision(
                     job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT
                 )
-            if context is not None and phase != "w3_template":
+            if context is not None and phase != "w3_template" and not is_pin_watch_contract(case.w3_contract_version):
                 known = {
                     p.policy_id: {c.condition_id for c in p.activation_conditions}
                     for p in context.policy_set.policies

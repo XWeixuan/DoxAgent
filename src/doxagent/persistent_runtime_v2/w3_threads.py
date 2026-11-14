@@ -1,4 +1,4 @@
-"""Durable W3 phase records and Case-owned, association-routed threads."""
+"""Durable W3 phase records, public templates and Case-owned threads."""
 
 from __future__ import annotations
 
@@ -168,64 +168,21 @@ class W3ThreadRegistry:
             if not changed:
                 raise ValueError("template initialization lease was lost")
 
-    def acquire(self, *, ticker, case_id, compatibility, policy_ids, event_keys, accepted_at=None):
-        now = self.journal.clock()
-        received = accepted_at or now
-        with self.journal.transaction() as db:
-            assert_write_lease(db)
-            owned = db.execute(
-                "SELECT * FROM runtime_v2_w3_threads WHERE owner_case_id=? AND kind='CASE' "
-                "AND status='ACTIVE'",
-                (case_id,),
-            ).fetchone()
-            if owned:
-                return dict(owned)
-            selected = None
-            for kind, subjects in (("POLICY", policy_ids), ("EVENT", event_keys)):
-                for subject in subjects:
-                    rows = db.execute(
-                        "SELECT t.* FROM runtime_v2_w3_threads t "
-                        "JOIN runtime_v2_w3_thread_links l ON l.record_id=t.record_id "
-                        "WHERE t.ticker=? AND t.kind='CASE' AND t.status='ACTIVE' "
-                        "AND t.compatibility_key=? AND t.expires_at>? "
-                        "AND l.link_kind=? AND l.subject_key=? "
-                        "ORDER BY t.last_received_at DESC,t.thread_id",
-                        (ticker, compatibility, now.isoformat(), kind, subject),
-                    ).fetchall()
-                    if rows:
-                        selected = next((r for r in rows if r["owner_case_id"] is None), None)
-                        # The highest matching association wins even when every thread is busy.
-                        if selected is None:
-                            return None
-                        break
-                if selected is not None:
-                    break
-            if selected is None:
-                return None
-            db.execute(
-                "UPDATE runtime_v2_w3_threads SET owner_case_id=?,lease_token=lease_token+1,"
-                "lease_until=?,last_received_at=?,expires_at=? WHERE record_id=?",
-                (
-                    case_id,
-                    (now + timedelta(minutes=20)).isoformat(),
-                    received.isoformat(),
-                    (received + timedelta(hours=48)).isoformat(),
-                    selected["record_id"],
-                ),
-            )
-            return dict(
-                db.execute(
-                    "SELECT * FROM runtime_v2_w3_threads WHERE record_id=?",
-                    (selected["record_id"],),
-                ).fetchone()
-            )
-
     def create_case(self, *, ticker, case_id, compatibility, parent_id, accepted_at=None):
         now = self.journal.clock()
         received = accepted_at or now
         record_id = uuid4().hex
         with self.journal.transaction() as db:
             assert_write_lease(db)
+            stage = db.execute("SELECT input_refs FROM runtime_v2_w3_stages WHERE case_id=? AND phase='trade_decision'", (case_id,)).fetchone()
+            if stage is None:
+                raise ValueError('Trade stage must exist before binding a Case thread')
+            refs = json.loads(stage[0]) if stage and stage[0] else {}
+            if refs.get('record_id'):
+                bound = db.execute('SELECT * FROM runtime_v2_w3_threads WHERE record_id=?', (refs['record_id'],)).fetchone()
+                if bound is None or bound['owner_case_id'] not in {None, case_id}:
+                    raise ValueError('original Case thread identity is unavailable')
+                return dict(bound)
             db.execute(
                 "INSERT INTO runtime_v2_w3_threads(record_id,ticker,kind,compatibility_key,"
                 "parent_id,workspace,status,last_received_at,expires_at,owner_case_id,"
@@ -242,6 +199,8 @@ class W3ThreadRegistry:
                     (now + timedelta(minutes=20)).isoformat(),
                 ),
             )
+            refs.update(record_id=record_id, operation_key='w3-fork:' + record_id)
+            db.execute("UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase='trade_decision'", (encode(refs),case_id))
             return dict(
                 db.execute(
                     "SELECT * FROM runtime_v2_w3_threads WHERE record_id=?", (record_id,)
@@ -254,24 +213,6 @@ class W3ThreadRegistry:
             db.execute(
                 "UPDATE runtime_v2_w3_threads SET thread_id=? WHERE record_id=?",
                 (thread_id, record_id),
-            )
-
-    def link(self, record, kind, subjects, case_id):
-        subjects = tuple(subjects)
-        if not subjects:
-            return
-        with self.journal.transaction(write=False) as db:
-            existing = {r[0] for r in db.execute(
-                'SELECT subject_key FROM runtime_v2_w3_thread_links WHERE record_id=? AND link_kind=?',
-                (record['record_id'], kind))}
-        subjects = tuple(key for key in subjects if key not in existing)
-        if not subjects:
-            return
-        with self.journal.transaction() as db:
-            assert_write_lease(db)
-            db.executemany(
-                "INSERT OR IGNORE INTO runtime_v2_w3_thread_links VALUES(?,?,?,?,?)",
-                [(record["record_id"], record["ticker"], kind, key, case_id) for key in subjects],
             )
 
     def release(self, case_id):

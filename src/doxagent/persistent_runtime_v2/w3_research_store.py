@@ -439,6 +439,12 @@ class W3ResearchStore:
         return row["manifest_sha"], manifest
 
     def objects(self, manifest, *, kinds=None, raw_ids=None, metadata=False):
+        if manifest.get('research_scope') == 'd1-d2.v1':
+            manifest = {**manifest, 'components':{k:v for k,v in manifest.get('components',{}).items() if k in {'d1','d2'}}}
+            for key in ('state','history','events','policy_usage','snapshot_catalog'):
+                manifest.pop(key, None)
+            if manifest.get('mode') != 'OFFLINE_REPLAY':
+                manifest.pop('evidence',None)
         result = []
         component_kinds = {
             "d1": {"d1_section", "source"},
@@ -563,7 +569,7 @@ class W3ResearchStore:
             raise ValueError("response budget cannot fit page envelope")
         return envelope(lo)
 
-    def call(self, name, arguments):
+    def call(self, name, arguments, caller_scope=None):
         kinds = (
             {o["kind"] for o in arguments.get("objects", [])}
             if name == "read"
@@ -587,8 +593,13 @@ class W3ResearchStore:
         context_sha, manifest = self.context(
             arguments["context_ref"], snapshot_keys=() if name == "catalog" else keys
         )
+        if caller_scope == 'd1-d2.v1':
+            manifest = {**manifest, 'research_scope': caller_scope}
         # Old frozen manifests retain full discovery through the original path.
-        if name == "catalog" and "snapshot_catalog" not in manifest:
+        if name == 'catalog' and manifest.get('mode') == 'OFFLINE_REPLAY' and (caller_scope == 'd1-d2.v1' or manifest.get('research_scope') == 'd1-d2.v1'):
+            _, full = self.context(arguments['context_ref'], snapshot_keys=('evidence',))
+            manifest['evidence'] = full.get('evidence',{})
+        if name == "catalog" and "snapshot_catalog" not in manifest and not caller_scope and manifest.get('research_scope') != 'd1-d2.v1':
             context_sha, manifest = self.context(arguments["context_ref"])
         raw_ids = {o["id"] for o in arguments.get("objects", []) if o["kind"] == "raw_document"}
         objects = self.objects(manifest, kinds=kinds, raw_ids=raw_ids, metadata=name == "catalog")

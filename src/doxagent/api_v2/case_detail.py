@@ -16,7 +16,7 @@ from doxagent.persistent_runtime_v2.router import alignment_flags
 from doxagent.persistent_runtime_v2.schema import (
     normalize_w2_result,
 )
-from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
+from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract, is_pin_watch_contract
 
 from .case_evidence import CaseEvidence
 from .dto import available, coverage, missing
@@ -663,7 +663,9 @@ def install(app: FastAPI) -> None:
                 attempts=page("attempt", "W3"),
                 reasoning={
                     **{
-                        k: resource(reasons.get("w3_" + k))
+                        k: resource(None, "NOT_APPLICABLE")
+                        if is_pin_watch_contract(case.get("w3_contract_version")) and k in {"novelty", "policy"}
+                        else resource(reasons.get("w3_" + k))
                         for k in ("novelty", "policy", "expert_trade")
                     },
                     "trade": resource(reasons.get("w3_trade") or reasons.get("w3_expert_trade")),

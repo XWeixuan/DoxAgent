@@ -80,7 +80,7 @@ rt=ro(ROOT/'runtime/runtime.sqlite3')
 a=load(rt.execute("select payload from runtime_values "
  "where namespace='execution' and key='active'").fetchone()[0])
 b=load(rt.execute('select payload from runtime_snapshots where id=?',(a,)).fetchone()[0])
-assets={k:b['assets'][k] for k in ['w3/AGENTS.md','w3/skills/skill.md']}
+assets={k:b['assets'][k] for k in ['w3/AGENTS.md','w3/skills/skill.md','w3/operations.md'] if k in b['assets']}
 emit('prompts',bundle_id=a,assets=assets,contracts=b['contracts'])
 """,
         host,
@@ -103,7 +103,7 @@ emit('prompts',bundle_id=a,assets=assets,contracts=b['contracts'])
             bundle_id=value["bundle_id"],
             hashes={
                 n: hashlib.sha256((destination / n).read_bytes()).hexdigest()
-                for n in ("AGENTS.md", "skills/skill.md", "contract.json", "backtest.md")
+                for n in ("AGENTS.md", "skills/skill.md", "contract.json", "backtest.md", "operations.md") if (destination/n).exists()
             },
         ),
     )

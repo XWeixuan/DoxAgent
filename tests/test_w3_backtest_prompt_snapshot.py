@@ -61,6 +61,9 @@ def test_curated_time_awareness_identity_and_resume(tmp_path, monkeypatch, enabl
         path = prompts / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("fixture", encoding="utf-8")
+    (prompts / 'contract.json').write_text(
+        json.dumps(dict(w3_contract_version='persistent-runtime.w3.v5')), encoding='utf8'
+    )
     source = tmp_path / "dataset"
     source.mkdir()
     (source / "manifest.json").write_text('{"schema_version":"w3-backtest.dataset.v2"}')

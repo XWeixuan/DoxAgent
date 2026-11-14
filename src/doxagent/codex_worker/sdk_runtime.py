@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import hmac
 import json
 import os
 import sqlite3
@@ -673,7 +674,7 @@ class OpenAICodexRuntime:
                 {
                     "mcp_servers.w3_research.url": self._settings.w3_research_mcp_url,
                     "mcp_servers.w3_research.http_headers.Authorization": "Bearer "
-                    + self._w3_mcp_token,
+                    + (hmac.new(self._capability_secret.encode(), b'w3-research-d1-d2-v1', hashlib.sha256).hexdigest() if request.w3_entry_version == 'w3-entry-v6' else self._w3_mcp_token),
                     "mcp_servers.w3_research.http_headers.X-W3-Capsule": os.environ.get(
                         "DOXAGENT_CAPSULE_ID", "local"
                     ),

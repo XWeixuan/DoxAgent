@@ -13,7 +13,7 @@ from .journal import encode
 from .message_pin import active_states, message_content, pin_snapshot
 from .policy_watch import watch_snapshot
 from .w2_alignment import related_ids
-from .w3_contracts import is_unified_contract
+from .w3_contracts import is_unified_contract, is_pin_watch_contract
 
 
 def policy_associations(w2):
@@ -55,7 +55,7 @@ def resolve_event_subjects(journal, case, keys):
     version = case.version_pin.event_library_version
     reader = PublishedEventLibraryReader(root)
     lineage = journal.get("w3_library_lineage", root, root)
-    resolved, aliases, additions = [], [], []
+    resolved, additions = [], []
     for key in dict.fromkeys(keys):
         value = json.loads(key)
         if journal.get("w3_library_lineage", value[0], value[0]) != lineage:
@@ -75,71 +75,11 @@ def resolve_event_subjects(journal, case, keys):
             )
             canonical = encode([lineage, "event", target]) if target else key
             additions.append((cache_key, encode(canonical)))
-        if canonical != key:
-            aliases.append((canonical, case.ticker, key, journal.clock().isoformat()))
         resolved.append(canonical)
-    if aliases:
-        with journal.transaction(write=False) as db:
-            aliases = [
-                row
-                for row in aliases
-                if db.execute(
-                    "SELECT 1 FROM runtime_v2_w3_thread_links l JOIN runtime_v2_w3_threads t "
-                    "ON t.record_id=l.record_id WHERE l.ticker=? AND l.subject_key=? "
-                    "AND l.link_kind='EVENT' AND t.status='ACTIVE' AND t.expires_at>? "
-                    "AND NOT EXISTS(SELECT 1 FROM runtime_v2_w3_thread_links c "
-                    "WHERE c.record_id=l.record_id AND c.link_kind='EVENT' "
-                    "AND c.subject_key=?) LIMIT 1",
-                    (row[1], row[2], row[3], row[0]),
-                ).fetchone()
-            ]
-    if additions or aliases:
+    if additions:
         with journal.transaction() as db:
-            db.executemany(
-                "INSERT OR IGNORE INTO runtime_values(namespace,key,payload) "
-                "VALUES('w3_subject_resolution',?,?)",
-                additions,
-            )
-            db.executemany(
-                "INSERT OR IGNORE INTO runtime_v2_w3_thread_links "
-                "SELECT l.record_id,l.ticker,l.link_kind,?,l.source_case_id "
-                "FROM runtime_v2_w3_thread_links l JOIN runtime_v2_w3_threads t "
-                "ON t.record_id=l.record_id WHERE l.ticker=? AND l.link_kind='EVENT' "
-                "AND l.subject_key=? AND t.kind='CASE' AND t.status='ACTIVE' "
-                "AND t.expires_at>?",
-                aliases,
-            )
+            db.executemany("INSERT OR IGNORE INTO runtime_values(namespace,key,payload) VALUES('w3_subject_resolution',?,?)", additions)
     return list(dict.fromkeys(resolved))
-
-
-def sync_event_links(journal, ticker, root, version):
-    from types import SimpleNamespace
-
-    lineage = journal.get("w3_library_lineage", root, root)
-    watermark = encode([lineage, ticker, version, "mapping-v1"])
-    if journal.get("w3_mapping_watermark", watermark):
-        return
-    with journal.transaction(write=False) as db:
-        if not db.execute(
-            "SELECT 1 FROM sqlite_master WHERE name='runtime_v2_w3_thread_links'"
-        ).fetchone():
-            return
-        subjects = [
-            r[0]
-            for r in db.execute(
-                "SELECT DISTINCT l.subject_key FROM runtime_v2_w3_thread_links l "
-                "JOIN runtime_v2_w3_threads t ON t.record_id=l.record_id "
-                "WHERE l.ticker=? AND l.link_kind='EVENT' AND t.kind='CASE' "
-                "AND t.status='ACTIVE' AND t.expires_at>?",
-                (ticker, journal.clock().isoformat()),
-            )
-        ]
-    case = SimpleNamespace(
-        ticker=ticker,
-        version_pin=SimpleNamespace(event_library_root=root, event_library_version=version),
-    )
-    resolve_event_subjects(journal, case, subjects)
-    journal.set("w3_mapping_watermark", watermark, True)
 
 
 def actual_policy_hits(value):
@@ -258,6 +198,7 @@ def freeze_history(journal, case, accepted_at):
                     rows.append(
                         dict(
                             identity=row[0],
+                            case_id=row[1],
                             namespace=namespace,
                             initiated_at=row[2],
                             execution=_execution_snapshot(
@@ -445,7 +386,7 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
     w1.pop("fact_attributions", None)
     w1["events"] = events
     wanted = set(policy_associations(case.w2_final))
-    new_entry = case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version") == "w3-entry-v5"
+    new_entry = case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version") in {"w3-entry-v5", "w3-entry-v6"}
     if new_entry:
         wanted.update(p["policy_id"] for p in case.frozen_inputs.get("policy_watch_followup", []))
         wanted.update(
@@ -484,7 +425,8 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
     payload = dict(
         ticker=case.ticker,
         cutoff_at=case.source.message_bus_event_time.isoformat(),
-        trading_context=trading_context(case, journal),
+        **({} if is_pin_watch_contract(case.w3_contract_version)
+           else dict(trading_context=trading_context(case, journal))),
         ibkr_history=dict(
             # Separate read-only API clients for concurrently evaluated cases.
             client_id=100_000_000

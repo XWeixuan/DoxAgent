@@ -213,6 +213,7 @@ class DecisionReplayRunner:
             )
             self.journal.set("w3_context_v2", case.case_id + ":trade_decision", binding)
             case.frozen_inputs["w3_replay"] = dict(evidence_files=evidence, cutoff_at=raw["as_of"])
+            self.registry.begin_stage(case.case_id, "trade_decision")
             record = self.registry.create_case(
                 ticker=case.ticker,
                 case_id=case.case_id,

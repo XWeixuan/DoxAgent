@@ -1,0 +1,97 @@
+{
+  "scope": "offline schema fixture, not production performance acceptance",
+  "query": "WITH scopes AS (SELECT DISTINCT a.account, json_extract(a.payload,'$.contract.con_id') AS con_id FROM te_jobs j JOIN te_attempts a ON a.job_id=j.id WHERE j.ticker=? AND j.leg='ENTRY'), scoped_fills AS MATERIALIZED (SELECT f.account,f.family,f.correction,f.payload,f.attempt_id FROM scopes s JOIN te_fills f ON f.account=s.account AND f.con_id=s.con_id ), families AS (SELECT DISTINCT f.account,f.family FROM scoped_fills f WHERE julianday(json_extract(f.payload,'$.time'))>=julianday(?) AND julianday(json_extract(f.payload,'$.time'))<julianday(?)) SELECT f.account,f.family,f.correction,f.payload,f.attempt_id, j.leg,e.ticker,e.payload AS execution FROM scoped_fills f JOIN families c ON f.account=c.account AND f.family=c.family LEFT JOIN te_attempts a ON a.id=f.attempt_id LEFT JOIN te_jobs j ON j.id=a.job_id LEFT JOIN te_executions e ON e.id=j.execution_id",
+  "steps": [
+    [
+      3,
+      0,
+      0,
+      "MATERIALIZE scoped_fills"
+    ],
+    [
+      6,
+      3,
+      0,
+      "MATERIALIZE scopes"
+    ],
+    [
+      12,
+      6,
+      216,
+      "SCAN a"
+    ],
+    [
+      14,
+      6,
+      46,
+      "SEARCH j USING INDEX sqlite_autoindex_te_jobs_1 (id=?)"
+    ],
+    [
+      34,
+      6,
+      0,
+      "USE TEMP B-TREE FOR DISTINCT"
+    ],
+    [
+      41,
+      3,
+      184,
+      "SCAN s"
+    ],
+    [
+      43,
+      3,
+      61,
+      "SEARCH f USING INDEX te_fills_scope (account=? AND con_id=?)"
+    ],
+    [
+      65,
+      0,
+      0,
+      "MATERIALIZE families"
+    ],
+    [
+      70,
+      65,
+      216,
+      "SCAN f"
+    ],
+    [
+      95,
+      65,
+      0,
+      "USE TEMP B-TREE FOR DISTINCT"
+    ],
+    [
+      105,
+      0,
+      184,
+      "SCAN c"
+    ],
+    [
+      121,
+      0,
+      53,
+      "SEARCH f USING AUTOMATIC COVERING INDEX (account=? AND family=?)"
+    ],
+    [
+      128,
+      0,
+      46,
+      "SEARCH a USING INDEX sqlite_autoindex_te_attempts_1 (id=?) LEFT-JOIN"
+    ],
+    [
+      136,
+      0,
+      46,
+      "SEARCH j USING INDEX sqlite_autoindex_te_jobs_1 (id=?) LEFT-JOIN"
+    ],
+    [
+      144,
+      0,
+      47,
+      "SEARCH e USING INDEX sqlite_autoindex_te_executions_1 (id=?) LEFT-JOIN"
+    ]
+  ],
+  "new_indexes": []
+}

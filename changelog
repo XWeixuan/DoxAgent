@@ -3026,3 +3026,10 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-13 Corporate IR production acceptance: source v5 / 13 endpoints / ten enabled bindings, IONQ20s and all previous cadences preserved. Thirteen endpoint heads healthy during bounded observation; real IONQ/SNOW/ONDS article samples FULL. API type definitions synchronized. Preserve BE/MU RSS-side 429/backoff and IONQ CDN caching/absence of a new-release latency sample as explicit limitations. See docs/corporate-ir-ionq-onds-snow-repair-20261113.md.
 
 2026-11-14: Fix Runtime→Read interruption recovery: FULL/ENOSPC bounded retry without business gaps; infrastructure failures retain event coordinates; repair storage failures preserve attempt budget and retry parents first. Add opt-in host ENOSPC startup recovery guard with maintenance pause/cooldown and scoped release overlay.
+
+2026-11-15 W3 v6 Case isolation and operations refactor
+- Remove cross-Case Policy/Event thread reuse and link accumulation; bind each Case record/stage atomically, retain original Job/thread recovery and fixed 48h lifecycle.
+- Add versioned three-asset Bundle and operations-only instruction injection, strict PIN/WATCH operations output, upstream W1/W2 verdict authority and deterministic Trade terminal/daily records; retain v4/v5 decoding.
+- Project lean v6 inputs, freeze shared 48h actual ENTRY-fill history/tag evidence, constrain scoped research to D1/D2, and adapt full-input offline replay.
+- Run NEW fact capture through parallel W1R3 without delaying W3; isolate auxiliary failures, prevent Case/result/fact overwrites and reserve one existing background worker for short control tasks.
+- Keep active contract v5 and reject placeholder operations assets for v6 activation. See dev_plan/workflow_v2/w3_v6_implementation_20261115.md.

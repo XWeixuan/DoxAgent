@@ -93,7 +93,7 @@ def test_successful_no_output_is_archived_once_with_final_novelty(tmp_path):
                     "SELECT count(*) FROM runtime_v2_w3_thread_links WHERE source_case_id=? AND link_kind='EVENT'",
                     (case.case_id,),
                 ).fetchone()[0]
-                >= 1
+                == 0
             )
         service._v4_execution().operations(service.repository.get_case(case.case_id))
         assert len(archive_rows(journal)) == 1
