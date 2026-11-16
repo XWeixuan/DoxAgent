@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-16T15:07:08.334031+00:00",
+  "result": {
+    "restored_primary": "digitimes-de-1",
+    "backup_unchanged": "reuters-backup",
+    "retained_trial": "reuters-backup2",
+    "apply": true
+  },
+  "processes": {
+    "digitimes-de-1": {
+      "instance_id": "1ed4fec4a6f94e5bb8eaee4e9b1892a1",
+      "pid": 2157239,
+      "running": true
+    },
+    "reuters-backup": {
+      "instance_id": "4bfb0568a3ef4e67bdda6ccb1feb9ef2",
+      "pid": 2094960,
+      "running": true
+    },
+    "reuters-backup2": {
+      "instance_id": "d4f35e681b2041968dbfb84a586a6284",
+      "pid": 2368046,
+      "running": true
+    }
+  },
+  "revision": 5
+}

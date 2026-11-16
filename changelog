@@ -3168,3 +3168,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-16 SEC EDGAR：确认共享 rate.json 为空导致全部 ticker 本地永久解析失败；限速状态改为独立锁内原子写入，损坏状态一次共享60秒冷却后恢复，保持两条2rps和现有业务筛选。补充中断写入、跨实例恢复回归。
 
 2026-11-16 消息发布延迟：Investing 样本确认历史故障与BODY后本地积压并存；修复生产去重候选查询误选ticker历史范围扫描，固定既有别名/版本主键和指纹索引访问，保留去重及发布业务语义，增加万条历史成本回归。
+
+2026-11-16 Reuters APPLIED专项：18笔真实Provider Cookie写入/首次业务发送链确认17次DataDome API拒绝；新增无登录Profile生产对照亦复发，未宣称稳定恢复。新增事务性Reuters身份晋升/回退运维工具，试验失败后恢复原主备并保留两套原页/人工任务，Backup不重建；记录代理依赖与新出口不可用证据及7项迁移/回退回归，详见docs/reuters-applied-cookie-acceptance-repair-20261116.md。

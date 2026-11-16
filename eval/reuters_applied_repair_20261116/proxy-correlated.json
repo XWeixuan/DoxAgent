@@ -1,0 +1,1758 @@
+[
+  {
+    "task_id": 84404766844,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 6
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84406495239,
+    "identity": "reuters-backup",
+    "verification_state": "BUSINESS_VERIFIED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84406513633,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84407088831,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84408147406,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84408650351,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84410217563,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 4
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84410768879,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84412470753,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 4
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84412960949,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84414245650,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 4
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84414735833,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84415748327,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      }
+    ]
+  },
+  {
+    "task_id": 84423957375,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "46.4.64.139",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 5
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84431782029,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "46.4.64.139",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 6
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 6
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 8
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 11
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 5
+      }
+    ]
+  },
+  {
+    "task_id": 84431791634,
+    "identity": "reuters-backup",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "46.4.64.139",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 6
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 6
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "content-autofill.googleapis.com",
+        "parent": "-:-",
+        "n": 8
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "tru.am",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 2
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 11
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "dd.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 2
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18080",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18080",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "task_id": 84433538786,
+    "identity": "digitimes-de-1",
+    "verification_state": "STILL_BLOCKED",
+    "denied_attribution": "TIME_WINDOW_ONLY_AUTH_NOT_REACHED",
+    "domains": [
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "a.pub.network",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "accounts.google.com",
+        "parent": "-:-",
+        "n": 3
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "cdn.cookielaw.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "geolocation.onetrust.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "ip-api.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "worldtimeapi.org",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.google.com",
+        "parent": "-:-",
+        "n": 4
+      },
+      {
+        "status": "TCP_DENIED/403",
+        "domain": "www.googletagmanager.com",
+        "parent": "-:-",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "api.ipify.org",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "ct.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 3
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "geo.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "static.captcha-delivery.com",
+        "parent": "172.18.0.3:18083",
+        "n": 4
+      },
+      {
+        "status": "TCP_TUNNEL/200",
+        "domain": "www.reuters.com",
+        "parent": "172.18.0.3:18083",
+        "n": 1
+      }
+    ]
+  }
+]

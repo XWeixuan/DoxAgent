@@ -1,0 +1,660 @@
+{
+  "since": "2026-11-16T14:43:53Z",
+  "until": "2026-11-16T14:54:43.931822+00:00",
+  "physical_access": [
+    {
+      "key": [
+        "ACCESS_RESULT",
+        null,
+        "CRAWLER",
+        "BUDGET_DEFERRED",
+        "scope_activation_in_progress"
+      ],
+      "n": 18
+    },
+    {
+      "key": [
+        "ACCESS_RESULT",
+        "reuters-backup",
+        "CRAWLER",
+        "SUCCESS",
+        "ok"
+      ],
+      "n": 290
+    },
+    {
+      "key": [
+        "ACCESS_RESULT",
+        null,
+        "BODY",
+        "BUDGET_DEFERRED",
+        "scope_activation_in_progress"
+      ],
+      "n": 3
+    },
+    {
+      "key": [
+        "ACCESS_RESULT",
+        null,
+        "CRAWLER",
+        "BUDGET_DEFERRED",
+        "site_queue_timeout"
+      ],
+      "n": 4
+    },
+    {
+      "key": [
+        "ACCESS_RESULT",
+        "reuters-backup2",
+        "CRAWLER",
+        "SUCCESS",
+        "ok"
+      ],
+      "n": 181
+    },
+    {
+      "key": [
+        "ACCESS_RESULT",
+        "reuters-backup",
+        "BODY",
+        "SUCCESS",
+        "ok"
+      ],
+      "n": 1
+    },
+    {
+      "key": [
+        "ACCESS_RESULT",
+        null,
+        "BODY",
+        "BUDGET_DEFERRED",
+        "site_queue_timeout"
+      ],
+      "n": 1
+    },
+    {
+      "key": [
+        "ACCESS_RESULT",
+        "reuters-backup2",
+        "BODY",
+        "SUCCESS",
+        "ok"
+      ],
+      "n": 1
+    }
+  ],
+  "formal_body_outcomes": [
+    {
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1,
+      "first_at": "2026-11-16T14:44:20.348512+00:00",
+      "last_at": "2026-11-16T14:44:20.348512+00:00"
+    }
+  ],
+  "paid_jobs_in_window": 0,
+  "active_query_heads": {
+    "n": 26,
+    "succeeded": 26,
+    "tickers": [
+      "BE",
+      "CEG",
+      "COHR",
+      "INTC",
+      "IONQ",
+      "MU",
+      "NBIS",
+      "ONDS",
+      "RKLB",
+      "SNOW"
+    ]
+  },
+  "unit_windows": {
+    "before": {
+      "since": "2026-11-16T14:33:53Z",
+      "until": "2026-11-16T14:43:53Z",
+      "unit_cycles_deduped_per_unit": {
+        "CAPTURED:None": 384,
+        "FAILED:site_queue_timeout": 66,
+        "SCHEDULE:DISABLED": 71,
+        "SCHEDULE:ENABLED": 72,
+        "FAILED:scope_activation_in_progress": 1
+      },
+      "by_ticker": {
+        "BE": {
+          "CAPTURED:None": 58,
+          "FAILED:site_queue_timeout": 1,
+          "SCHEDULE:ENABLED": 18,
+          "SCHEDULE:DISABLED": 17
+        },
+        "CEG": {
+          "CAPTURED:None": 34,
+          "SCHEDULE:ENABLED": 10,
+          "SCHEDULE:DISABLED": 9,
+          "FAILED:site_queue_timeout": 6
+        },
+        "COHR": {
+          "CAPTURED:None": 37,
+          "SCHEDULE:DISABLED": 5,
+          "SCHEDULE:ENABLED": 5,
+          "FAILED:site_queue_timeout": 3
+        },
+        "INTC": {
+          "CAPTURED:None": 40,
+          "FAILED:site_queue_timeout": 3,
+          "SCHEDULE:DISABLED": 5,
+          "SCHEDULE:ENABLED": 4
+        },
+        "MU": {
+          "CAPTURED:None": 42,
+          "FAILED:site_queue_timeout": 17,
+          "SCHEDULE:DISABLED": 5,
+          "SCHEDULE:ENABLED": 5
+        },
+        "NBIS": {
+          "CAPTURED:None": 59,
+          "FAILED:site_queue_timeout": 1,
+          "SCHEDULE:DISABLED": 18,
+          "SCHEDULE:ENABLED": 18
+        },
+        "ONDS": {
+          "CAPTURED:None": 38,
+          "FAILED:site_queue_timeout": 2,
+          "SCHEDULE:DISABLED": 7,
+          "SCHEDULE:ENABLED": 6
+        },
+        "RKLB": {
+          "CAPTURED:None": 35,
+          "FAILED:site_queue_timeout": 15
+        },
+        "SNOW": {
+          "CAPTURED:None": 10,
+          "FAILED:site_queue_timeout": 10
+        },
+        "IONQ": {
+          "CAPTURED:None": 31,
+          "FAILED:scope_activation_in_progress": 1,
+          "FAILED:site_queue_timeout": 8,
+          "SCHEDULE:ENABLED": 6,
+          "SCHEDULE:DISABLED": 5
+        }
+      },
+      "interval_seconds": {
+        "n": 339,
+        "median": 60.009946,
+        "mean": 65.47786200589971,
+        "max": 480.109359
+      }
+    },
+    "steady": {
+      "since": "2026-11-16T14:44:15Z",
+      "until": "2026-11-16T14:54:42.369103+00:00",
+      "unit_cycles_deduped_per_unit": {
+        "CAPTURED:None": 457,
+        "FAILED:scope_activation_in_progress": 7,
+        "SCHEDULE:DISABLED": 141,
+        "SCHEDULE:ENABLED": 137,
+        "DISPATCHED:None": 3
+      },
+      "by_ticker": {
+        "BE": {
+          "CAPTURED:None": 63,
+          "SCHEDULE:DISABLED": 27,
+          "SCHEDULE:ENABLED": 26,
+          "FAILED:scope_activation_in_progress": 1
+        },
+        "CEG": {
+          "CAPTURED:None": 43,
+          "SCHEDULE:DISABLED": 20,
+          "SCHEDULE:ENABLED": 18
+        },
+        "COHR": {
+          "CAPTURED:None": 42,
+          "SCHEDULE:DISABLED": 10,
+          "SCHEDULE:ENABLED": 10,
+          "DISPATCHED:None": 1
+        },
+        "INTC": {
+          "CAPTURED:None": 38,
+          "FAILED:scope_activation_in_progress": 3,
+          "SCHEDULE:DISABLED": 1,
+          "SCHEDULE:ENABLED": 1,
+          "DISPATCHED:None": 1
+        },
+        "MU": {
+          "CAPTURED:None": 61,
+          "SCHEDULE:DISABLED": 19,
+          "SCHEDULE:ENABLED": 18,
+          "FAILED:scope_activation_in_progress": 1
+        },
+        "NBIS": {
+          "CAPTURED:None": 59,
+          "SCHEDULE:DISABLED": 21,
+          "SCHEDULE:ENABLED": 21,
+          "FAILED:scope_activation_in_progress": 1
+        },
+        "ONDS": {
+          "CAPTURED:None": 40,
+          "SCHEDULE:ENABLED": 10,
+          "SCHEDULE:DISABLED": 10
+        },
+        "RKLB": {
+          "CAPTURED:None": 53,
+          "SCHEDULE:DISABLED": 15,
+          "SCHEDULE:ENABLED": 14
+        },
+        "SNOW": {
+          "CAPTURED:None": 20,
+          "SCHEDULE:DISABLED": 1,
+          "SCHEDULE:ENABLED": 1
+        },
+        "IONQ": {
+          "CAPTURED:None": 38,
+          "FAILED:scope_activation_in_progress": 1,
+          "SCHEDULE:DISABLED": 17,
+          "SCHEDULE:ENABLED": 18,
+          "DISPATCHED:None": 1
+        }
+      },
+      "interval_seconds": {
+        "n": 412,
+        "median": 60.00034,
+        "mean": 61.02310933737864,
+        "max": 120.154101
+      }
+    }
+  },
+  "canary_body_new_primary": {
+    "disposition": "SUCCESS",
+    "reason_code": "ok",
+    "status_code": 200,
+    "identity_id": "reuters-backup2",
+    "runtime_instance_id": "d4f35e681b2041968dbfb84a586a6284",
+    "queue_wait_ms": 1488,
+    "network_ms": 3426,
+    "served_from_shared_capture": null,
+    "attempts": [
+      {
+        "combination_id": "reuters-backup2",
+        "generation": 1151,
+        "transport": "BROWSER",
+        "status_code": 200,
+        "failure_category": null,
+        "reason_code": "ok",
+        "queue_wait_ms": 1488,
+        "network_ms": 3426,
+        "exit_ip": "205.198.126.113",
+        "identity_id": "reuters-backup2",
+        "runtime_kind": "external_chrome",
+        "runtime_instance_id": "d4f35e681b2041968dbfb84a586a6284",
+        "runtime_generation": 1,
+        "observed_at": "2026-11-16T14:54:32.873897Z"
+      }
+    ],
+    "at": "2026-11-16T14:54:33.322732+00:00",
+    "query": null,
+    "rows": 0,
+    "sample_articles": [],
+    "content": {
+      "outcome": "FULL",
+      "reason": "complete_article",
+      "page_kind": "article",
+      "candidate_chars": 4221
+    }
+  },
+  "chrome_processes_preserved": true,
+  "initial_activation": {
+    "operation_id": "maintenance_op_398c57ab49f04df2bcab29a4a689b23e",
+    "state": "DONE",
+    "stage": "DONE",
+    "error": null,
+    "result": {
+      "ready": true,
+      "identity_id": "reuters-backup2",
+      "canary": "CRAWLER",
+      "warm": true
+    }
+  },
+  "capacity_activation": {
+    "operation_id": "maintenance_op_27b9ba4c93c544cdbfc039b54df9b5c6",
+    "state": "DONE",
+    "stage": "DONE",
+    "error": null,
+    "result": {
+      "ready": true,
+      "identity_id": "reuters-backup2",
+      "canary": "CRAWLER",
+      "warm": true
+    }
+  },
+  "resources": {
+    "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/vda3       374G  324G   49G  87% /\n",
+    "memory": "               total        used        free      shared  buff/cache   available\nMem:           31706       21884        2190         817        8894        9822\nSwap:           2047        2047           0\n",
+    "load": " 22:54:48 up 6 days, 18:12,  3 users,  load average: 18.92, 17.54, 17.94\n",
+    "cpu_psi": "some avg10=61.22 avg60=43.26 avg300=44.16 total=140553884334\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n",
+    "memory_psi": "some avg10=1.44 avg60=0.26 avg300=0.10 total=2008180318\nfull avg10=1.26 avg60=0.22 avg300=0.06 total=1525645942\n",
+    "evidence_bytes": 268548167,
+    "registry_wal_bytes": 15379992,
+    "bus_wal_bytes": 123632
+  },
+  "final_capacity_window": {
+    "since": "2026-11-16T14:52:58Z",
+    "until": "2026-11-16T15:00:46.922414+00:00",
+    "event_counts": [
+      {
+        "key": [
+          "ACCESS_RESULT",
+          "reuters-backup",
+          "CRAWLER",
+          "SUCCESS",
+          "ok"
+        ],
+        "n": 200
+      },
+      {
+        "key": [
+          "ACCESS_RESULT",
+          "reuters-backup2",
+          "CRAWLER",
+          "SUCCESS",
+          "ok"
+        ],
+        "n": 101
+      },
+      {
+        "key": [
+          "ACCESS_RESULT",
+          "reuters-backup2",
+          "BODY",
+          "SUCCESS",
+          "ok"
+        ],
+        "n": 1
+      },
+      {
+        "key": [
+          "ACCESS_RESULT",
+          null,
+          "CRAWLER",
+          "BUDGET_DEFERRED",
+          "site_queue_timeout"
+        ],
+        "n": 31
+      },
+      {
+        "key": [
+          "ACCESS_RESULT",
+          null,
+          "CRAWLER",
+          "BUDGET_DEFERRED",
+          "access_budget_exhausted"
+        ],
+        "n": 2
+      },
+      {
+        "key": [
+          "CAPABILITY_RELAPSE",
+          "reuters-backup2",
+          null,
+          null,
+          null
+        ],
+        "n": 1
+      },
+      {
+        "key": [
+          "RECOVERY_STARTED",
+          "reuters-backup2",
+          null,
+          null,
+          null
+        ],
+        "n": 1
+      },
+      {
+        "key": [
+          "COMBINATION_RISK_FAILURE",
+          "reuters-backup2",
+          null,
+          null,
+          "verification_document_retained"
+        ],
+        "n": 1
+      },
+      {
+        "key": [
+          "DATADOME_RETRY_CLICKED",
+          "reuters-backup2",
+          null,
+          null,
+          null
+        ],
+        "n": 1
+      },
+      {
+        "key": [
+          "DATADOME_SOLVER_SUBMITTED",
+          "reuters-backup2",
+          null,
+          null,
+          null
+        ],
+        "n": 1
+      },
+      {
+        "key": [
+          "DATADOME_SOLVER_APPLIED",
+          "reuters-backup2",
+          null,
+          null,
+          null
+        ],
+        "n": 1
+      }
+    ],
+    "body": [],
+    "jobs": [
+      {
+        "job_id": "dd_a51c221035cb4497980cc1d3e58e99db",
+        "recovery_id": "recovery_f6105b78f28844f1940e106d4e18fa47",
+        "identity_id": "reuters-backup2",
+        "created_at": "2026-11-16T14:59:57.690400+00:00",
+        "updated_at": "2026-11-16T15:00:34.839676+00:00",
+        "status": "APPLIED",
+        "task_id": 84434823900,
+        "submitted_at": "2026-11-16T14:59:57.694253+00:00",
+        "provider_ready_at": "2026-11-16T15:00:28.258636+00:00",
+        "applied_at": "2026-11-16T15:00:29.791429+00:00",
+        "provider_cost": "0.00145",
+        "cost": "0.00145",
+        "verification_state": "PENDING",
+        "verification_reason": "application_in_progress"
+      }
+    ],
+    "probe_closure": {
+      "started": 0,
+      "finished": 0,
+      "unfinished": []
+    },
+    "resources": {
+      "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/vda3       374G  324G   49G  87% /\n",
+      "memory": "               total        used        free      shared  buff/cache   available\nMem:           31706       22430        2345         664        8042        9276\nSwap:           2047        2047           0\n",
+      "load": " 23:00:51 up 6 days, 18:18,  3 users,  load average: 24.96, 26.22, 21.88\n",
+      "cpu_psi": "some avg10=48.08 avg60=60.94 avg300=61.64 total=140807389982\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n",
+      "memory_psi": "some avg10=0.90 avg60=0.17 avg300=0.13 total=2009384769\nfull avg10=0.72 avg60=0.14 avg300=0.08 total=1526459797\n",
+      "evidence_bytes": 268329519,
+      "registry_wal_bytes": 15379992,
+      "bus_wal_bytes": 2018832
+    }
+  },
+  "native_processes_at": "2026-11-16T14:56:52.734255+00:00",
+  "native_processes": [
+    {
+      "identity": "digitimes-de-1",
+      "instance_id": "1ed4fec4a6f94e5bb8eaee4e9b1892a1",
+      "generation": 1,
+      "pid": 2157239,
+      "running": true,
+      "original_present": true
+    },
+    {
+      "identity": "reuters-backup",
+      "instance_id": "4bfb0568a3ef4e67bdda6ccb1feb9ef2",
+      "generation": 1,
+      "pid": 2094960,
+      "running": true,
+      "original_present": false
+    },
+    {
+      "identity": "reuters-backup2",
+      "instance_id": "d4f35e681b2041968dbfb84a586a6284",
+      "generation": 1,
+      "pid": 2368046,
+      "running": true,
+      "original_present": false
+    }
+  ],
+  "final_state": {
+    "at": "2026-11-16T15:11:50.403656+00:00",
+    "recoveries": [
+      {
+        "identity_id": "digitimes-de-1",
+        "scope_id": "source:reuters_site_search",
+        "phase": "BACKOFF",
+        "automation_active": true,
+        "original_target_id": "FC776D0A11F6C7CBBB881D5ED88A6EB2",
+        "original_instance_id": "1ed4fec4a6f94e5bb8eaee4e9b1892a1",
+        "last_error": "provider_result_still_blocked_manual_review"
+      },
+      {
+        "identity_id": "reuters-backup",
+        "scope_id": "source:reuters_site_search",
+        "phase": "RESOLVED",
+        "automation_active": true,
+        "original_target_id": "9346A3C84D4E68B2E6F1F70184394F9A",
+        "original_instance_id": "4bfb0568a3ef4e67bdda6ccb1feb9ef2",
+        "last_error": null
+      },
+      {
+        "identity_id": "reuters-backup2",
+        "scope_id": "publisher:reuters-backup2",
+        "phase": "BACKOFF",
+        "automation_active": false,
+        "original_target_id": "37196FA6BBBC8FCF64694191D39CB0FD",
+        "original_instance_id": "d4f35e681b2041968dbfb84a586a6284",
+        "last_error": "provider_result_still_blocked_manual_review"
+      }
+    ],
+    "scope": {
+      "scope_id": "source:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "owner_site_id": "reuters",
+      "revision": 5,
+      "enabled": true,
+      "primary_identity_id": "digitimes-de-1",
+      "fallback_identity_id": "reuters-backup",
+      "verification_plan": {
+        "network_redundancy": "IP_DISTINCT_SAME_REGION",
+        "fallback_state": "UNVERIFIED",
+        "contract": "body_v2.2/listing_v1",
+        "default_publisher": true,
+        "crawler": {
+          "url": "https://www.reuters.com/site-search/?query=Micron",
+          "recipe_ref": "builtin:reuters_search@1",
+          "recipe_parameters": {
+            "query": "Micron"
+          }
+        },
+        "crawler_routing": "dual_active",
+        "_routing_capability_revision": 2,
+        "identity_trial_rollback": {
+          "restored_primary": "digitimes-de-1",
+          "backup_unchanged": "reuters-backup",
+          "retained_trial": "reuters-backup2",
+          "apply": true,
+          "at": "2026-11-16T15:07:08.215571+00:00"
+        }
+      }
+    },
+    "after_rollback_events": [
+      {
+        "identity": null,
+        "purpose": "CRAWLER",
+        "result": "BUDGET_DEFERRED",
+        "reason": "site_queue_timeout",
+        "n": 46,
+        "last_at": "2026-11-16T15:11:23.623713+00:00"
+      },
+      {
+        "identity": "reuters-backup",
+        "purpose": "CRAWLER",
+        "result": "SUCCESS",
+        "reason": "ok",
+        "n": 173,
+        "last_at": "2026-11-16T15:11:48.224565+00:00"
+      }
+    ],
+    "jobs_total_since_baseline": 18
+  },
+  "rollback": {
+    "at": "2026-11-16T15:07:08.334031+00:00",
+    "result": {
+      "restored_primary": "digitimes-de-1",
+      "backup_unchanged": "reuters-backup",
+      "retained_trial": "reuters-backup2",
+      "apply": true
+    },
+    "processes": {
+      "digitimes-de-1": {
+        "instance_id": "1ed4fec4a6f94e5bb8eaee4e9b1892a1",
+        "pid": 2157239,
+        "running": true
+      },
+      "reuters-backup": {
+        "instance_id": "4bfb0568a3ef4e67bdda6ccb1feb9ef2",
+        "pid": 2094960,
+        "running": true
+      },
+      "reuters-backup2": {
+        "instance_id": "d4f35e681b2041968dbfb84a586a6284",
+        "pid": 2368046,
+        "running": true
+      }
+    },
+    "revision": 5
+  },
+  "provider_fields": {
+    "task_id": 84434823900,
+    "response_fields": [
+      "errorId",
+      "status",
+      "solution",
+      "cost",
+      "ip",
+      "createTime",
+      "endTime",
+      "solveCount"
+    ],
+    "solution_fields": [
+      "cookie"
+    ],
+    "receipt": {
+      "status": "ready",
+      "cost": "0.00145",
+      "createTime": 1794841197,
+      "endTime": 1794841221,
+      "solveCount": 1
+    },
+    "extra_user_agent": null,
+    "cookie_matches_actual_applied": true
+  },
+  "new_natural_task_final": {
+    "task_id": 84434823900,
+    "status": "APPLIED",
+    "applied_at": "2026-11-16T15:00:29.791429+00:00",
+    "verification_state": "STILL_BLOCKED",
+    "verification_reason": "confirmation_window_expired",
+    "cost": "0.00145"
+  },
+  "acceptance_passed": false
+}

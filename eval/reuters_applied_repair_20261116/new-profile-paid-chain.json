@@ -1,0 +1,305 @@
+{
+  "job_id": "dd_a51c221035cb4497980cc1d3e58e99db",
+  "identity_id": "reuters-backup2",
+  "recovery_id": "recovery_f6105b78f28844f1940e106d4e18fa47",
+  "task_id": 84434823900,
+  "status": "APPLIED",
+  "created_at": "2026-11-16T14:59:57.690400+00:00",
+  "submitted_at": "2026-11-16T14:59:57.694253+00:00",
+  "provider_ready_at": "2026-11-16T15:00:28.258636+00:00",
+  "applied_at": "2026-11-16T15:00:29.791429+00:00",
+  "verification_state": "STILL_BLOCKED",
+  "verification_reason": "confirmation_window_expired",
+  "solver_verification": null,
+  "cost": "0.00145",
+  "provider_receipt": {
+    "createTime": 1794841197,
+    "endTime": 1794841221,
+    "solveCount": 1
+  },
+  "application_evidence": {
+    "schema_version": 1,
+    "observation_seconds": 5,
+    "identity_id": "reuters-backup2",
+    "profile_id": "reuters-backup2",
+    "instance_id": "d4f35e681b2041968dbfb84a586a6284",
+    "target_id": "37196FA6BBBC8FCF64694191D39CB0FD",
+    "solution_fingerprint": "4b2d568cc96ae3c67e5255cb",
+    "provider_attributes": {
+      "domain": ".reuters.com",
+      "path": "",
+      "secure": "",
+      "httponly": "",
+      "samesite": ""
+    },
+    "browser_context_id": "679DC453545088594F533A930026A003",
+    "cookies_before": [
+      {
+        "name": "datadome",
+        "domain": ".reuters.com",
+        "path": "/",
+        "secure": true,
+        "http_only": false,
+        "partitioned": false,
+        "fingerprint": "77f0410bbce44159f28396aa"
+      }
+    ],
+    "cookie_written_at": "2026-11-16T15:00:29.791429+00:00",
+    "cookies_after_write": [
+      {
+        "name": "datadome",
+        "domain": ".reuters.com",
+        "path": "/",
+        "secure": true,
+        "http_only": false,
+        "partitioned": false,
+        "fingerprint": "4b2d568cc96ae3c67e5255cb"
+      }
+    ],
+    "cookies_after_observation": [
+      {
+        "name": "datadome",
+        "domain": ".reuters.com",
+        "path": "/",
+        "secure": true,
+        "http_only": false,
+        "partitioned": false,
+        "fingerprint": "77f1dc11eaee174175befb2d"
+      }
+    ],
+    "read_state": "BOUNDED_WINDOW_COMPLETE",
+    "requests": [
+      {
+        "url": "https://www.reuters.com/site-search/",
+        "redirects": [],
+        "request_at": 1794841229.845713,
+        "resource_type": "Document",
+        "method": "GET",
+        "request_headers": {
+          "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "sec-ch-ua-platform": "\"Linux\"",
+          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-fetch-dest": "document",
+          "sec-fetch-mode": "navigate",
+          "sec-fetch-site": "same-origin"
+        },
+        "request_cookies": [
+          {
+            "name": "datadome",
+            "fingerprint": "4b2d568cc96ae3c67e5255cb"
+          }
+        ],
+        "associated_datadome": [
+          {
+            "name": "datadome",
+            "domain": ".reuters.com",
+            "path": "/",
+            "secure": true,
+            "http_only": false,
+            "partitioned": false,
+            "fingerprint": "4b2d568cc96ae3c67e5255cb",
+            "blocked_reasons": []
+          }
+        ],
+        "response_extra": {
+          "status": 200,
+          "set_cookies": [],
+          "blocked_set_cookie_count": 0
+        },
+        "response": {
+          "url": "https://www.reuters.com/site-search/",
+          "status": 200,
+          "headers": {
+            "content-type": "text/html; charset=utf-8",
+            "server": "openresty",
+            "via": "1.1 32803d0ba3af70cddd7db80d2fd00608.cloudfront.net (CloudFront)",
+            "x-cache": "Miss from cloudfront",
+            "cache-control": "private, max-age=60"
+          },
+          "layer": "UNCONFIRMED",
+          "body_source": "NONE",
+          "body_signals": {
+            "datadome_url": false,
+            "datadome_bootstrap": false,
+            "auth_message": false
+          }
+        },
+        "transport": {
+          "protocol": "h2",
+          "remote_ip": "172.18.0.3",
+          "tls_issuer": "Sectigo Public Server Authentication CA OV R40",
+          "from_cache": false,
+          "from_service_worker": false
+        },
+        "finished": true
+      },
+      {
+        "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+        "redirects": [],
+        "request_at": 1794841231.254962,
+        "resource_type": "Fetch",
+        "method": "GET",
+        "request_headers": {
+          "sec-ch-ua-platform": "\"Linux\"",
+          "sec-ch-ua": "\"Google Chrome\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+          "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin"
+        },
+        "request_cookies": [
+          {
+            "name": "datadome",
+            "fingerprint": "4b2d568cc96ae3c67e5255cb"
+          }
+        ],
+        "associated_datadome": [
+          {
+            "name": "datadome",
+            "domain": ".reuters.com",
+            "path": "/",
+            "secure": true,
+            "http_only": false,
+            "partitioned": false,
+            "fingerprint": "4b2d568cc96ae3c67e5255cb",
+            "blocked_reasons": []
+          }
+        ],
+        "response_extra": {
+          "status": 401,
+          "set_cookies": [
+            {
+              "name": "datadome",
+              "domain": ".reuters.com",
+              "path": "/",
+              "fingerprint": "51b4dae3507180dc2dcd2853",
+              "http_only": false
+            }
+          ],
+          "blocked_set_cookie_count": 0
+        },
+        "response": {
+          "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+          "status": 401,
+          "headers": {
+            "content-type": "text/html;charset=utf-8",
+            "server": "CloudFront",
+            "via": "1.1 32803d0ba3af70cddd7db80d2fd00608.cloudfront.net (CloudFront)",
+            "x-cache": "LambdaGeneratedResponse from cloudfront",
+            "cache-control": "max-age=0, private, no-cache, no-store, must-revalidate",
+            "x-datadome": "protected",
+            "x-dd-b": "PRESENT"
+          },
+          "layer": "DATADOME",
+          "body_source": "NONE",
+          "body_signals": {
+            "datadome_url": false,
+            "datadome_bootstrap": false,
+            "auth_message": false
+          }
+        },
+        "transport": {
+          "protocol": "h2",
+          "remote_ip": "172.18.0.3",
+          "tls_issuer": "Sectigo Public Server Authentication CA OV R40",
+          "from_cache": false,
+          "from_service_worker": false
+        },
+        "finished": true,
+        "wire_body": {
+          "url": "https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2",
+          "status": 401,
+          "headers": {
+            "content-type": "text/html;charset=utf-8",
+            "server": "CloudFront",
+            "via": "1.1 32803d0ba3af70cddd7db80d2fd00608.cloudfront.net (CloudFront)",
+            "x-cache": "LambdaGeneratedResponse from cloudfront",
+            "cache-control": "max-age=0, private, no-cache, no-store, must-revalidate",
+            "x-datadome": "protected",
+            "x-dd-b": "PRESENT"
+          },
+          "layer": "DATADOME",
+          "body_source": "WIRE",
+          "body_signals": {
+            "datadome_url": true,
+            "datadome_bootstrap": true,
+            "auth_message": false
+          },
+          "body_bytes": 771,
+          "body_sha256": "d6ce0942499210f4698cfa77301201525fcd08a57a76f2d1d5eac4549fb4738e"
+        }
+      }
+    ]
+  },
+  "diagnostic_timeline": [
+    {
+      "stage": "DOCUMENT",
+      "challenge": "BLOCKED",
+      "authentication": "UNKNOWN",
+      "outcome": "NOT_TESTED",
+      "reason": "challenge_required",
+      "page_kind": null,
+      "evidence": "RETAINED_DOCUMENT",
+      "at": "2026-11-16T15:00:43.598741+00:00",
+      "http_evidence": {
+        "url": "https://www.reuters.com/site-search/",
+        "status": 0,
+        "headers": {},
+        "layer": "UNCONFIRMED",
+        "body_source": "RENDERED_DOCUMENT",
+        "body_signals": {
+          "datadome_url": true,
+          "datadome_bootstrap": false,
+          "auth_message": false
+        },
+        "body_bytes": 395718,
+        "body_sha256": "e02d64635cbd33b3c23e20e82db50591ae83df21022ca360f689e4ff34fb9d23",
+        "provenance": {
+          "identity_id": "reuters-backup2",
+          "profile_id": null,
+          "instance_id": "d4f35e681b2041968dbfb84a586a6284"
+        }
+      }
+    },
+    {
+      "stage": "CRAWLER",
+      "challenge": "BLOCKED",
+      "authentication": "UNKNOWN",
+      "outcome": "NOT_TESTED",
+      "reason": "challenge_required",
+      "http_status": 401,
+      "body_quality": "NOT_TESTED",
+      "evidence": "RECOVERY_PROBE",
+      "at": "2026-11-16T15:00:58.126864+00:00",
+      "http_evidence": {
+        "url": "https://www.reuters.com/site-search/",
+        "status": 401,
+        "headers": {
+          "content-type": "text/html;charset=utf-8",
+          "server": "CloudFront",
+          "x-datadome": "protected"
+        },
+        "layer": "DATADOME",
+        "body_source": "RENDERED_DOCUMENT",
+        "body_signals": {
+          "datadome_url": true,
+          "datadome_bootstrap": true,
+          "auth_message": false
+        },
+        "body_bytes": 1510,
+        "body_sha256": "a49e4a481f77c97a5c81bef41032fde6f6f3c0f4c743482870d428ed0480f757",
+        "provenance": {
+          "identity_id": "reuters-backup2",
+          "profile_id": null,
+          "instance_id": "d4f35e681b2041968dbfb84a586a6284"
+        }
+      }
+    }
+  ],
+  "reason": null,
+  "business_recovery": null
+}
