@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "本轮未加载任何已知 Event 或 Fact，当前消息报道 FERC 命令 PJM 推迟并修改其 backstop 采购方案、要求数据中心承担相关成本、并将流程暂停五个月，属于尚未被覆盖的具体监管行动进展。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "两条Candidate均不命中。pol_9b7af3b3194022fbee4f要求\"最终生效的市场规则\"促成具名项目的firm MW合同及服务日/需求日，但消息明确是FERC将PJM backstop提案推迟5个月并要求修订，属于规则尚未生效、进程被中断，且无任何具名项目、firm MW、服务日或需求日。pol_358b18ca588879801d4d要求两个以上重大Bloom项目因permit/interconnection/financing/installation/acceptance同步延误并影响reported shipments或revenue timing，消息仅涉及FERC对PJM区域采购的成本分摊程序性指令，未提及任何Bloom具体项目的执行里程碑延误或财务口径影响。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T12:30:11.852735Z"
+  }
+}

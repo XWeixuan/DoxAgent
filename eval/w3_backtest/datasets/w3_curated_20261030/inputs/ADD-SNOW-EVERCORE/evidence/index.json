@@ -45,6 +45,96 @@
       "publisher": "Snowflake",
       "published_at": "2025-10-30",
       "role": "prior product capability"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Snowflake FY2027 Q2 earnings release: operating metrics",
+      "url": "https://www.sec.gov/Archives/edgar/data/1640147/000164014726000033/fy2027q2earnings.htm",
+      "publisher": "Snowflake / SEC",
+      "published_at": "2026-09-02",
+      "role": "财务与消费基线"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Snowflake fiscal 2026 annual report: consumption and competition",
+      "url": "https://www.sec.gov/Archives/edgar/data/1640147/000164014726000023/snowflake2026ars.pdf",
+      "publisher": "Snowflake / SEC",
+      "published_at": "2026-05-18",
+      "role": "收入模式与竞争"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Stifel raises Snowflake target after Q2 results",
+      "url": "https://www.investing.com/news/analyst-ratings/stifel-raises-snowflake-stock-price-target-to-450-on-ai-growth-93CH-4887629",
+      "publisher": "Investing.com",
+      "published_at": "2026-09-03T07:40:00-04:00",
+      "role": "分析师先前观点"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Evercore raises Snowflake target to $430 from $360",
+      "url": "https://www.tipranks.com/news/the-fly/snowflake-price-target-raised-to-430-from-360-at-evercore-isi-thefly-news",
+      "publisher": "The Fly / TipRanks",
+      "published_at": "2026-09-03",
+      "role": "Evercore先前论据"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "SNOW Q2 Earnings Call Highlights AI Flywheel, Higher Outlook",
+      "url": "https://www.zacks.com/stock/news/2984416/snow-q2-earnings-call-highlights-ai-flywheel-higher-outlook",
+      "publisher": "Zacks",
+      "published_at": "2026-09-03",
+      "role": "财报电话会与先前增长"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "Snowflake raises FY2027 forecast after AI demand",
+      "url": "https://www.investing.com/news/stock-market-news/snowflake-lifts-annual-product-revenue-forecast-on-demand-for-cloud-data-platform-4886702",
+      "publisher": "Reuters",
+      "published_at": "2026-09-02",
+      "role": "业绩与市场原预期"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Guggenheim reiterates Neutral on Snowflake",
+      "url": "https://ca.investing.com/news/stock-market-news/guggenheim-reiterates-neutral-rating-on-snowflake-stock-93CH-4827316",
+      "publisher": "Investing.com",
+      "published_at": "2026-09-03",
+      "role": "其他分析师反向评价"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "RBC raises Snowflake target on AI growth",
+      "url": "https://www.investing.com/news/analyst-ratings/rbc-capital-raises-snowflake-stock-price-target-on-ai-growth-93CH-4888102",
+      "publisher": "Investing.com",
+      "published_at": "2026-09-03",
+      "role": "其他分析师先前增长路径"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Mizuho identifies Snowflake as top software pick",
+      "url": "https://ng.investing.com/news/stock-market-news/mizuho-names-top-software-largecap-stock-93CH-2686365",
+      "publisher": "Investing.com",
+      "published_at": "2026-09-04",
+      "role": "分析师对预期差看法"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "Snowflake FY2027 Q1 earnings call",
+      "url": "https://s26.q4cdn.com/463892824/files/doc_financials/2027/q1/CORRECTED-TRANSCRIPT_-Snowflake-Inc-SNOW-US-Q1-2027-Earnings-Call-27-May-2026-5_00-PM-ET.pdf",
+      "publisher": "Snowflake",
+      "published_at": "2026-05-27",
+      "role": "管理层既有增长和渠道"
     }
   ],
   "market": {

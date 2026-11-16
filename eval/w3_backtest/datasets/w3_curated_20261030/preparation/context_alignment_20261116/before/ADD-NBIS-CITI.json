@@ -1,0 +1,158 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E28",
+        "fact_ids": [
+          "F107"
+        ]
+      }
+    ],
+    "reason": "当前消息核心事实为 Nebius 与 Citi 达成 35 亿美元 senior secured facility（364天期限，Term SOFR+2.75%）。已知的 E28/F107 记录的是约 7.75 亿美元的 senior-secured facility，金额、安排方和交易结构均不同，属于独立的融资事件。该 35 亿美元 Citi facility 未被任何已知事实覆盖。",
+    "reference_ids": [
+      "E28"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": true,
+    "reason": "pol_fe749e2c76294654bc54e687966d9268：Citi作为具名担保代理提供35亿美元GPU/数据中心设施贷款，属于match_scope中贷款人/承销人对GPU项目融资资格与资金用途的公开披露；但364天短期限、一般企业用途并列、未列明抵押池扩展或具体提款先决条件，且COO将400亿美元投资级合同另行列为未来资产支持融资来源，未确认C1",
+    "related_policy_ids": [
+      "pol_fe749e2c76294654bc54e687966d9268",
+      "pol_7782abaab5a64491803b9d2d975b1b66"
+    ]
+  },
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "当前公开的直接对照仅有7月约7.75亿美元工具：已投运GPU、投资级客户合同现金流、SOFR+2.50个百分点、2030年10月到期，客户现金流与贷款覆盖对应部署资本开支100%以上。公司预期把该框架用于其他投资级长约，未证明未投运或弱信用合同可同等融资。H1历史投资后差额36.262亿美元，不可代替截至截止日现金；Q2新单capex预付覆盖率约50%—60%也只适用于该类新单。当前未披露同一项目的完整可动用现金/未付账单滚动。",
+            "trigger_boundary": "用同项目可提款本金减旧债置换、费用、强制现金留置/偿债及不能支付相关账单的现金部分，识别重要建设阶段得到的真实资金增量。新保证、抵押/优先权是风险与经济请求权，不经触发时间、回收与权利比较不能按面额再从本金机械扣除。新承保类别或关键提款障碍解除可以小于7.75亿美元而有意义；已投运/投资级项目也可能因重大可执行约束解除形成新信息，普通已预期复制则不自动上修。披露应足以定位净可用额、付款时间和主要融资代价，不能把所有合同细目列为同一公告必须齐报的包。无需等全额提款/投运/IRR；新增实质追索若抵销主要融资改善，应按同笔交换处理，不把可用贷款当免费资本。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "451522e79e7be7fc1c41cc916c7a416948405f2e69952fb9e15783f3a5b26bd0",
+          "criterion": "Nebius、具名借款人或贷款方落实具约束力的项目融资/借款基数，资金在明确客观条件下可于重要GPU/设施阶段账单前提款；相对最近公开的融资资格/可用资金路径，本次实质扩大可融资资产/合同范围，或解决原先限制重要建设阶段的关键额度/提款障碍。可包括未投运资产、较短/较弱信用合同或其他可辨认的新适格路径，不把它们作为唯一白名单；普通预期中的同条件复制、毛额更大或贷款方仍可任意重新决定出资不足。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "7月工具证明已部署GPU和投资级客户服务现金流可以抵押，管理层预期以该框架复制；D2判断为按合同/资产信用分层而非所有AI云一律停贷。对于未曾获准或从未被公开描述为可融资的假想资产，现有资料没有建立其原有额度；5000亿美元平台目标及供应商可能提供的残值支持也没有NBIS分配。",
+            "trigger_boundary": "比较变更前后同一具名资产/合同池的可提款本金及必须自留资本；当新规则使该池下一项原本可按已批准或已公开预期条件融资的主要设备/施工批次，扣除客户预付与其他不可撤销融资后仍出现新增母公司资金缺口，或必须延后/缩小该批次时即足够。规则本身可先于已签额度削减成为边界；对未分配平台资金落空、纯利差上升但本金仍可用、公司自愿放慢建设、一般贷款人风险评论或同业被拒贷不命中。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "dc003efcec41bb8d121ee5e8efcaefd6c1ba928cda32ef8a79b929a70aebdb72",
+          "criterion": "贷款方/安排人、Nebius或具名项目借款人公开一项已生效的新承保、借款基数或抵押折扣规则，并指出它适用于某个已识别的NBIS资产/合同池；与此前书面额度、已批准借款基数或公开描述的适格标准相比，该规则取消一类资产资格、降低可贷比例或增加必留金额，令原可融资的一项具体扩建批次不能按原标准获得贷款。无需等已签融资被正式取消或提款已被砍。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配Nebius、具名项目载体、贷款人、承销人及资本平台对GPU/数据中心项目融资资格和可提款额度的公开披露：抵押资产是否已投运、客户合同信用及剩余期限、预付款/合同现金流配套、借款基数、抵押折扣、准备金、现金清扫、提款先决条件、母公司追索和资金用途。值得召回的情景包括首次用未投运GPU或非投资级/较短客户合同获得项目融资、贷款方将新一类抵押纳入借款基数，或贷款方改变适格/折扣规则而削弱已识别的NBIS建设融资池。已完成的同条件复制、一般行业风险偏好评论、未分配的供应商平台目标、同业借款以及融资金额本身均不自动命中。",
+      "policy_id": "pol_fe749e2c76294654bc54e687966d9268",
+      "ref": [
+        "context/document3/v21/shared/document2.json#/shells/2/units/0",
+        "context/document3/v21/shared/d1/c5.md#L59-L70",
+        "context/document3/v21/research_context/main_results.json",
+        "output/work/v21/research/S0003/0031/policies/gpu_project_financing.json",
+        "output/work/v21/research/S0003/0033/policies/cash_bridge_timing.json",
+        "https://nebius.com/newsroom/nebius-raises-775-million-in-first-secured-debt-financing-to-accelerate-global-buildout"
+      ],
+      "title": "AI云项目融资的适格范围与可用净额",
+      "transmission": "截至2026-10-17，Nebius已在2026-07-17完成首笔约7.75亿美元高级担保融资：担保物是已部署GPU及一份投资级客户服务期现金流，期限至2030-10-31、定价SOFR+2.50个百分点，与客户现金流合计覆盖相关GPU部署资本开支100%以上。公司当时明确预期在超过400亿美元的其他投资级客户承诺上继续以类似条件融资，所以同一已投运/投资级资产池上的普通复制不自动构成上修；NVIDIA资本平台的超过5000亿美元是第三方动员目标，不是NBIS分配。D2记载H1 FY2026固定及无形资产现金购置81.303亿美元，持续经营CFO 45.041亿美元（其中递延收入现金流贡献43.950亿美元），历史差额-36.262亿美元；这不是截止日现金或未来净融资需求。FY2026资本开支指引200亿—250亿美元、Q2新单预付款约覆盖相关capex的50%—60%，说明同一建设批次还存在客户预付和集团桥接资本。新渠道的价值来自可融资抵押/合同范围扩大和可用于项目的净提款，而非贷款毛额；旧债置换、手续费、必留储备、现金清扫、托管及用途限制可能降低按期可用现金；母公司追索与优先权则改变股东风险，应按时间、触发及回收条件另行比较而不机械扣面额。利差上升本身不表示渠道关闭，低票息也不能抵销不可提款或抵押池收窄。"
+    },
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截止日已完成结构包括2030年34.5亿美元、票息0.50%的新可转债，2034年23亿美元、票息4.50%的新可转债，另有2030年到期的7.75亿美元资产担保融资；8月以约1,580万股交换8亿美元2029/2031旧债。旧债现金/转换条件、新债利息、本金递增和担保优先级均不能只取单个票息比较。截止日可用现金未滚动，2026—2027建设资金压力仍不能由6月余额推出。",
+            "trigger_boundary": "对同一被置换本金比较原到期日前及重要建设资金窗口内的本金、利息、费用、留存与实际支付；展期较2034早仍可有效，只要实质缓解近期到期墙，完整但极小分期也不因完整充分。债务权利实质减少、最早付款不恶化且未换成更大股份/优先请求权，也可独立改善；支付现金须计入失去的可用资金。7.75亿美元只是历史量级，2030/2034是现有结构，不是所有交易硬边界。高票息不自动负向，较长期总利息未必下降，本入口只按实际改善的流动性/请求权判断，不宣称全周期成本或IRR改善。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "06d9f86da1b6ca7286e4bbc5a4cdaac1d3f6ca3c5d9e85af60c2344fac50cd6c",
+          "criterion": "Nebius落实有约束力的再融资、债务交换/回购或修约，实际取消一项有实质规模的既有债务请求权，或将其本金/强制付款移出已识别的重要近期资金压力窗口；新旧对价、付款日程、利息/递增、股份转换及抵押/保证可比较，显示该窗口的现金缓冲或债务权利负担实质改善，未被新增现金消耗或优先/股份权利主导抵销。不强制到2034年以后、7.75亿美元或一整分期。",
+          "decision": "LONG",
+          "trigger_layer": "INNER"
+        },
+        {
+          "calibration": {
+            "reference_state": "6月30日现金及8月24日融资不是2026-10-17现金余额；FY2026 capex指引为200亿—250亿美元、H1现金购置81.303亿美元，H1 CFO减购置为-36.262亿美元，客户预付款覆盖率也仅为特定新单的50%—60%。这些数值说明资本竞争存在，但不能据此推定公司已经缺现金或假定所有偿债损害建设。",
+            "trigger_boundary": "正式安排已经使重要建设付款在所需时间缺少可用资金时，就可在真实欠款/交付延期前修订资金风险。看同笔交易减少的本金/利息与被移走的即时资金：若现金偿债解除债务且重要建设付款仍有可用来源，不自动下修；若已识别的重要近端付款缺口仍成立，灭债不抹去这一时点约束。无需全部集团现金、项目IRR或之后容量实际违约，也不要求排尽所有理论融资。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "391513318df086732d3ee78e778367aef6e3300af75e751ead8eb16022322357",
+          "criterion": "Nebius签署已生效的现金偿债/赎回或执行付款安排，可核验资料表明该现金原供具名已签重要容量阶段的主要工程/设备付款；新安排已在相应付款窗口形成实质未覆盖资金缺口，且没有已确定、及时可用的替代资金。可以在付款到期或容量实际延误前判断；须同时计入被消灭的债务/利息，不因用现金还债本身判SHORT。",
+          "decision": "SHORT",
+          "trigger_layer": "INNER"
+        },
+        {
+          "calibration": {
+            "reference_state": "现有融资同时包括GPU/合同现金流担保贷款、无担保可转债及旧债换股；同额置换可取消旧担保、改变利息和到期风险，不能只看净募资符号。截止日现金及抵押清单未完整滚动，因此逐笔比较实际旧新权利，而不是推全公司稀释/流动性。",
+            "trigger_boundary": "新旧债同一经济交换中，若新抵押/保证、现金限制或股份权利实质超出已取消旧权利，而没有可比的资金、付款延后或控制改善补偿，才可作净负向。零净现金可能只是有利同额再融资，不能一概下修；新钱为正也不能遮盖更大的资产控制/股权让渡。担保面额、或有责任与当期现金分开，按已知触发/回收及时间比较，无需完整公司估值/全部股数。主要净交换无法比较时留不确定，不用净零加抵押标签补结论。"
+          },
+          "condition_id": "C3",
+          "condition_revision": "0a3e7ecd05a67fc708ecd6839854e216be95cea32a5a3a886e1af3ff13923e82",
+          "criterion": "Nebius融资/再融资的正式条款新增核心资产/合同现金流优先权、保证、现金清扫/储备或股份/赎回权；与同笔旧债及旧权利实际取消、利息/到期/控制改善和净可用资金合并比较后，普通股承担的实质现金/优先请求权或资源控制负担明显恶化。净新现金为零不天然SHORT，正净募资也不自动豁免重大新增代价。",
+          "decision": "SHORT",
+          "trigger_layer": "INNER"
+        }
+      ],
+      "match_scope": "匹配Nebius债券、资产担保贷款、可转债、同额再融资、现金赎回/回购、交换和修约，以及对这些交易新增的抵押、母公司保证、现金清扫、准备金、股份/认股权证、转换与赎回条款。代表情景包括一笔近期到期本金被展期到更远到期年、现金回购占用即将用于具名已签容量建设的资金、或新贷款取得核心GPU/合同现金流优先权而大部分毛融资被托管/偿债留存。利率高低、同业融资、尚无NBIS分配的资本平台目标及单纯宣布发行意向均不自动触发。",
+      "policy_id": "pol_7782abaab5a64491803b9d2d975b1b66",
+      "ref": [
+        "context/document3/v21/shared/document2.json#/shells/2/units/0",
+        "context/document3/v21/shared/d1/c5.md#L59-L70",
+        "context/document3/v21/research_context/main_results.json",
+        "output/work/v21/research/S0003/0032/policy_capital_terms.json",
+        "output/work/v21/research/S0003/0033/policies/cash_bridge_timing.json",
+        "https://www.sec.gov/Archives/edgar/data/1513845/000110465926100347/tm2623863d1_ex99-1.htm",
+        "https://nebius.com/newsroom/nebius-raises-775-million-in-first-secured-debt-financing-to-accelerate-global-buildout"
+      ],
+      "title": "债务再融资、现金偿付与普通股优先权的交换",
+      "transmission": "债务交易同时改变可动用现金、近期到期墙、利息现金支出和普通股在资产/现金流中的优先顺位；看票息或融资总额单项都会误读。当前已知的债务结构包括7月7.75亿美元GPU/合同现金流担保融资（SOFR+2.50个百分点、2030-10-31到期）及8月24日发行的2030年34.5亿美元0.50%和2034年23亿美元4.50%可转债；同期另有8亿美元2029/2031旧债以约1,580万股交换。新券发行同时带入现金和未来票息/本金或转换权，换债同时消除一部分本金请求权并交付股份。H1资本购置超过CFO 36.262亿美元只作历史规模参照；6月末现金与8月毛融资额不能相加成截止日余额。比较债务交易时应读取原债与新债本金、票息、到期日/本金递增、转换/回购权、抵押/担保、现金支付、费用、储备及新到账资金，按时间表计算净现金与优先请求权；更高名义利息不自动为SHORT，若它把一笔实质性本金移出扩建期且新旧现金与优先/股权请求权比较仍有实质改善，近期流动性风险可下降。反过来，现金还债会同步减少可用现金，只有其资金来源和已签建设义务不受损时才可能净改善；新资金带来的新增优先权或受限资金可能使毛融资几乎不可用。"
+    }
+  ],
+  "w1_events": [
+    {
+      "canonical_summary": "Nebius entered its first senior-secured debt facility for approximately $775 million, backed by GPUs and contracted cash flows.",
+      "derived_from_event_ids": [],
+      "event_id": "E28",
+      "event_type": "FINANCING",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F107",
+          "fact_occurred_at": "2026-07-10",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Nebius entered its first senior-secured debt facility for approximately $775 million, backed by GPUs and contracted cash flows.",
+          "subject_time": null
+        }
+      ],
+      "known_event_summary": "2026-07-10 — Nebius entered its first approximately $775 million senior-secured facility, backed by GPUs and contracted cash flows.",
+      "occurred_at": "2026-07-10",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E11",
+        "E12"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Nebius enters its first $775 million senior-secured debt facility"
+    }
+  ],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": false,
+    "related_has_new_fact": true
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-17T11:05:48.453869Z"
+  }
+}

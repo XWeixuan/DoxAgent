@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息的核心事实是 Intel 同意收购以色列量子计算初创公司 Classiq Technologies，且未披露交易价格。已加载的 Known Facts 与 Provisional Facts 均为空，没有任何既有事实覆盖这一收购进展，因此属于 NEW。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": false,
+    "reason": "pol_79a96d0aaa3d42de93e56a9e243ff424 不命中：消息仅称 Intel 同意收购 Classiq，未披露价格、现金/股票对价、新增股份、承担债务/费用或预期现金回收，未达到任一 Activation Condition；也不满足 match_scope 对正式交易材料披露对价与回收的要求。",
+    "related_policy_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-10T23:02:12.877682Z"
+  }
+}

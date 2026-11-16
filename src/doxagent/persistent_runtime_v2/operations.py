@@ -15,6 +15,9 @@ from .journal import RuntimeJournal, digest
 
 
 def add_commands(sub: Any) -> None:
+    mode = sub.add_parser('w3-trade-mode')
+    mode.add_argument('action', choices=['show','set'])
+    mode.add_argument('--mode', choices=['single','dual_consensus'])
     for name in ("status", "list-gaps", "reconcile", "resume", "pause"):
         command = sub.add_parser(name)
         command.add_argument("--ticker", required=True)
@@ -106,6 +109,12 @@ def run_command(args: argparse.Namespace, settings: DoxAgentSettings) -> Any:
     if args.command == "migrate":
         return migrate(path, dry_run=args.dry_run, backup=args.backup)
     journal = RuntimeJournal(path)
+    if args.command == 'w3-trade-mode':
+        if args.action == 'set':
+            if not args.mode:
+                raise ValueError('--mode required')
+            journal.set('w3_trade_config','mode',args.mode)
+        return dict(mode=journal.get('w3_trade_config','mode','single'), applies_to='new W3 Effects only')
     ticker = getattr(args, "ticker", "").upper()
     if args.command in {"pause", "resume"}:
         journal.set("pause", ticker, args.scope if args.command == "pause" else None)
@@ -125,9 +134,18 @@ def run_command(args: argparse.Namespace, settings: DoxAgentSettings) -> Any:
 
         repository = SQLitePersistentRuntimeV2Repository(path)
         case = repository.get_case(args.case)
+        stages = []
+        with journal.transaction(write=False) as db:
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_v2_w3_stages'").fetchone():
+                for row in db.execute('SELECT * FROM runtime_v2_w3_stages WHERE case_id=?',(args.case,)):
+                    item = dict(row)
+                    for key in ('result_json','input_refs'):
+                        item[key] = json.loads(item[key]) if item[key] else None
+                    stages.append(item)
         return (
             {
                 "case": case.model_dump(mode="json"),
+                "w3_stages": stages,
                 "effects": [
                     value.model_dump(mode="json") for value in repository.list_effects(args.case)
                 ],

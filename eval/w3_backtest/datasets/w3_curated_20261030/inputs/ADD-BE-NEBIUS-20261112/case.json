@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-BE-NEBIUS-20261112",
+  "ticker": "BE",
+  "original_case_id": "case_084bf71f990c45bcb9553241d0103a7c",
+  "research_key": "d6dfe43a0bc43a4dae35",
+  "as_of": "2026-11-12T13:53:34.204000Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Nebius Shares Drop 15% as Infrastructure Delays Hit Revenue Outlook",
+    "body": "← Back to live feed · 1 stories across 1 day\nThursday, Nov 12, 2026\n1 story1 Nebius Shares Drop 15% as Infrastructure Delays Hit Revenue Outlook\n AI Nov 12, 7:43 AM EST 26/13 \n Nebius Shares Drop 15% as Infrastructure Delays Hit Revenue Outlook\nThe AI cloud provider's shares fell approximately 15% in premarket trading after Nebius narrowed its 2026 revenue forecast to the lower end of its previous $3 billion to $3.4 billion range. The company said permitting and power issues at facilities operated by third-party partner DataOne forced the delay of computing capacity for Microsoft, pushing some associated revenue into the first half of 2027. As a result of the infrastructure setbacks, Nebius also raised its 2026 capital expenditure guidance to $27 billion, up from its prior range of $20 billion to $25 billion.\nThe outlook revision followed a third-quarter revenue of $980.8 million, exceeding the $908 million projected by analysts, with adjusted EBITDA of $465.8 million. Nebius forecasts capital spending of $40 billion to $45 billion in 2027 to support a revenue target of $12 billion to $13 billion. To fund the buildout, the company expects prepayments and financing from investment-grade customers, including Meta and Microsoft, to cover 75% to 85% of its 2027 expenditures. The company ended September with $7.4 billion in cash.",
+    "url": "https://huggingnews.com/earnings/nebius-shares-drop-15percent-as-infrastructure-delays-hit-revenue-outloo-4ab7d147",
+    "publisher": "huggingnews_rss",
+    "published_at": "2026-11-12T13:53:34.204000Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "已知事实仅包括 Vineland 项目可能延迟的第三方估计及 Nebius 当时预计改用 Bloom 不会实质影响进度；当前消息报告计算容量已因许可和电力问题延迟、相关收入推至 2027 年上半年，并下调 2026 年收入展望、提高资本开支指引，均为未覆盖的新进展。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "Nebius称DataOne设施的许可与供电问题导致供Microsoft使用的计算容量延期，属于数据中心部署与生产容量调整范围；未称延期由已实现效率或负载迁移导致，也未披露高效专用系统带来的地面容量扩展。"
+  }
+}

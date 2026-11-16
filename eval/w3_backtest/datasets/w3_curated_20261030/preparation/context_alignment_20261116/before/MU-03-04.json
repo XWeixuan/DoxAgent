@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息核心事实是 Netlist 与 Micron 已签署专利许可及和解协议（相互撤回所有未决诉讼、Micron 获 5 年期许可、每季度 3000 万美元共 6 亿美元）。已知事实仅覆盖 ITC 诉讼提起、排除令请求、4.45 亿美元损害赔偿、专利无效裁决及上诉进行中，无任何事实表明双方已达成和解或许可协议。这是一个全新的状态变化。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "该消息为Netlist与Micron之间的专利许可与诉讼和解公告（Micron每季度支付3000万美元，5年期共6亿美元，涉及服务器DIMM和HBM相关专利授权）。消息核心事实是IP许可与法律和解安排，未涉及Micron的收入组合、ASP、bit shipments、HBM市场份额变化、客户合同交付、产能爬坡、良率、库存、现金流结构、竞争供应商供货地位或平台规格替代等任何Policy criterion所关注的运营或财务状态变化。不存在与任何criterion构成具体、实质性触发关系的事实。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

@@ -380,11 +380,23 @@ def trading_context(case, journal=None):
 
 
 @observed("case.payload")
+def base_trade_input(source, w1, w2, *, events=None, cutoff_at=None):
+    """Pure business input shared by live execution and frozen replay adapters."""
+    assessment = dict(w1)
+    for key in ("reference_ids", "fact_attributions"):
+        assessment.pop(key, None)
+    if events is not None:
+        assessment["events"] = events
+    return dict(
+        ticker=source.snapshot.ticker,
+        cutoff_at=cutoff_at or source.message_bus_event_time.isoformat(),
+        message=message_content(source),
+        w1=assessment,
+        w2=dict(w2),
+    )
+
+
 def build_case_payload(case, context, *, events, history, labels, state, journal=None):
-    w1 = case.w1_final.model_dump(mode="json")
-    w1.pop("reference_ids", None)
-    w1.pop("fact_attributions", None)
-    w1["events"] = events
     wanted = set(policy_associations(case.w2_final))
     new_entry = case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version") in {"w3-entry-v5", "w3-entry-v6"}
     if new_entry:
@@ -423,8 +435,8 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
             )
         )
     payload = dict(
-        ticker=case.ticker,
-        cutoff_at=case.source.message_bus_event_time.isoformat(),
+        **base_trade_input(case.source, case.w1_final.model_dump(mode="json"),
+                           case.w2_final.model_dump(mode="json"), events=events),
         **({} if is_pin_watch_contract(case.w3_contract_version)
            else dict(trading_context=trading_context(case, journal))),
         ibkr_history=dict(
@@ -437,9 +449,6 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
             ),
         ),
         **labels,
-        message=message_content(case.source),
-        w1=w1,
-        w2=case.w2_final.model_dump(mode="json"),
         policies=policies,
         **({} if is_unified_contract(case.w3_contract_version) else dict(policy_usage=usage)),
         watch=state["watch"],

@@ -1,0 +1,104 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E176",
+        "fact_ids": [
+          "F846"
+        ]
+      },
+      {
+        "event_id": "E21",
+        "fact_ids": [
+          "F292",
+          "F293"
+        ]
+      }
+    ],
+    "reason": "现有事实均为 Netlist 对 Micron 发起/推进 ITC 诉讼及维持 $445M 赔偿判决，没有任何事实描述双方达成专利许可与和解协议、$600M（$30M/季度）付款安排或全部诉讼互免。当前消息的核心事实——正式签署 license & settlement agreement 及具体财务条款——完全未被覆盖。",
+    "reference_ids": [
+      "E176",
+      "E21"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "该消息为Netlist与Micron之间的专利许可及和解协议公告，涉及5年期$600M许可费（自FY26 Q4起每季度$30M）。核心事实为法律和解与IP许可安排，未涉及任何Policy criterion所关注的产品组合变化、ASP/份额变动、竞争供货地位转移、产能/良率瓶颈、客户合同履约、项目进度、库存/现金流或盈利质量等具体触发条件。$600M许可费虽为新增成本，但不属于研发、预资格、折旧、爬坡、质量或重组等criterion明确列出的费用类别，也无法与任何触发路径建立直接实质对应。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "Netlist filed a new U.S. International Trade Commission action against Micron involving HBM patents used for AI computing.",
+      "derived_from_event_ids": [],
+      "event_id": "E176",
+      "event_type": "LITIGATION_MILESTONE",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F846",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Netlist filed a new U.S. International Trade Commission action against Micron involving HBM patents used for AI computing.",
+          "subject_time": "September 29, 2026 ITC filing"
+        }
+      ],
+      "known_event_summary": "2026-09-29 Netlist litigation milestone: Netlist filed a new ITC action against Micron involving HBM patents and AI computing.",
+      "occurred_at": "2026-09-29",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E21",
+        "E22",
+        "E23"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Netlist filed a new ITC action against Micron over HBM patents"
+    },
+    {
+      "canonical_summary": "Netlist filed an International Trade Commission patent-infringement action naming Micron and sought exclusion and cease-and-desist remedies.",
+      "derived_from_event_ids": [],
+      "event_id": "E21",
+      "event_type": "LITIGATION_MILESTONE",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F292",
+          "fact_occurred_at": "2026-09-01",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Netlist filed an International Trade Commission patent action involving Micron.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F293",
+          "fact_occurred_at": "2026-09-01",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Netlist is seeking exclusion and cease-and-desist orders against Micron and others.",
+          "subject_time": null
+        }
+      ],
+      "known_event_summary": "September 1-2, 2026 Netlist litigation milestone: Netlist filed or reported an ITC patent action involving Micron and sought exclusion and cease-and-desist orders.",
+      "occurred_at": "2026-09-01..2026-09-02",
+      "occurrence_time_precision": "INTERVAL",
+      "related_event_ids": [
+        "E22",
+        "E23"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Netlist filed and pursued an ITC patent action involving Micron"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

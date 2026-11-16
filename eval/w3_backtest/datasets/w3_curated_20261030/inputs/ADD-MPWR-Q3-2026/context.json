@@ -1,0 +1,386 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前没有加载任何 Canonical 或 provisional Facts，消息中的 Q3 2026 收入、利润率、每股收益、Q4 2026 业绩指引及新增 5 亿美元股份回购授权均未被已知事实覆盖，构成新的核心进展。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": false,
+    "reason": "MPS财报仅披露高电压产品组合扩展及面向800V数据中心架构的GaN方案开始送样，并称其补充现有SiC设计；未出现具名数据中心运营商或供电OEM就中压AC至800/1500VDC主转换作出的有约束生产选择/部署承诺，也未提及Coherent厚外延的生产级设计资格。仅800V架构及器件送样不足以落入该Policy的主转换范围。",
+    "related_policy_ids": []
+  },
+  "policy_title_rows": [
+    {
+      "policy_id": "pol_87748acd0bd944768b589270f87726d9",
+      "title": "汽车与工业机器人VCSEL主动深度感测量产导入"
+    },
+    {
+      "policy_id": "pol_584b4cf15d464696a817fcadecaaf6cd",
+      "title": "可穿戴健康感测功能与Coherent器件资格"
+    },
+    {
+      "policy_id": "pol_fade9d481aab458c9fecc7da13750d56",
+      "title": "代理服务的付费持续使用与单位经济性"
+    },
+    {
+      "policy_id": "pol_2af305326c944b5d97e9f086b9f850a3",
+      "title": "CPO/NPO系统可维护性与现场故障影响"
+    },
+    {
+      "policy_id": "pol_300dd44f82b241748da53d33a8c24c3a",
+      "title": "合格光源供给向ELS与集成组件客户批次的传导"
+    },
+    {
+      "policy_id": "pol_495749a3d61b42d4ac180c517b1bad3a",
+      "title": "DCI商业线路资格与Coherent相干产品供货位置"
+    },
+    {
+      "policy_id": "pol_03640765377548d0a2740d5f78314539",
+      "title": "DCI独立模块与开放线采购相对系统打包的商业层级"
+    },
+    {
+      "policy_id": "pol_6a52b99858a44c03b30badfc5cd23b77",
+      "title": "AXT来源InP衬底的跨境许可与Coherent可用供给路径"
+    },
+    {
+      "policy_id": "pol_b431902e0f3941109388b5f411d053fe",
+      "title": "高功率CW激光器的应用级资格、分档与可靠性"
+    },
+    {
+      "policy_id": "pol_38514569ad36489c9ff29147b921a6d4",
+      "title": "硅光光源的材料路线与InP集成制造参与"
+    },
+    {
+      "policy_id": "pol_082d2c1d1aff484596502b6d65156c90",
+      "title": "200mm功率SiC资格与生产供给分配"
+    },
+    {
+      "policy_id": "pol_53ab0737b5bd4f3eb344c8cc8d37f6a0",
+      "title": "SiC客户平台排期与Coherent晶圆采购承诺"
+    },
+    {
+      "policy_id": "pol_a1777f0f4aea45b2a82e72d98ec409c6",
+      "title": "Apple消费VCSEL合同价格与多年采购保护的变化"
+    },
+    {
+      "policy_id": "pol_0231cd912d6f4f9897638ee442bd2c1e",
+      "title": "外部研究修订COHR光学价值捕获、增长期限与普通股回报"
+    },
+    {
+      "policy_id": "pol_af04588d17624af1960e37ccc7f1ca1d",
+      "title": "生产推理架构与高速光网络工作负荷强度"
+    },
+    {
+      "policy_id": "pol_08e226afabce453b88b538dc56c963cc",
+      "title": "生产分离式推理与共享状态的光学fabric容量决策"
+    },
+    {
+      "policy_id": "pol_6c398fa961d645f9abf338fc8160f586",
+      "title": "模型路由与通信优化改变重复大规模训练的光互连需求"
+    },
+    {
+      "policy_id": "pol_5f81c96e41fe427995683426f810e107",
+      "title": "Coherent OCS平台采用与相对竞争位置"
+    },
+    {
+      "policy_id": "pol_ac3ca71ac98d4d729897e345f6a27493",
+      "title": "光模块来源合规与高速数据中心采购资格"
+    },
+    {
+      "policy_id": "pol_ef9fecd1925f41859adca15498f07b66",
+      "title": "代理推理的信任治理与执行位置"
+    },
+    {
+      "policy_id": "pol_01280fe7e884448db41039aecbb2e19c",
+      "title": "外部光纤连接资源与AI集群光互连上线节奏"
+    },
+    {
+      "policy_id": "pol_52049bc4a6754e0890c5ed49dad4ed2c",
+      "title": "MicroLED并行有源线缆的产品化、激光替代与Coherent新供货层"
+    },
+    {
+      "policy_id": "pol_cb5f10b5668445a099a67ebc92463920",
+      "title": "高速模块量产合同的同规格净价重置与商业分量"
+    },
+    {
+      "policy_id": "pol_16f170a94d4b42a482a760b671ae432d",
+      "title": "高密度可插拔主路径与DSP/集成光学的模块内容迁移"
+    },
+    {
+      "policy_id": "pol_fbb73363abb54616bdaa398432ef8147",
+      "title": "电力与项目融资重排数据中心光互连采购的时间、地点和承担方"
+    },
+    {
+      "policy_id": "pol_86d359060e1646078788d45080454a93",
+      "title": "已合格高速模块的受限交付窗口与同资格商业获配"
+    },
+    {
+      "policy_id": "pol_a6428aec0a3a45beb163a020cecb1465",
+      "title": "CPO/NPO平台用途、供给爬坡与系统代际排期"
+    },
+    {
+      "policy_id": "pol_10aacd9f06ec48d1bec16ddcfdd91871",
+      "title": "既有DCI光纤余量、主动增容与相干设备内容"
+    },
+    {
+      "policy_id": "pol_a1ac5aa7334144ec80e091c2d002c2f0",
+      "title": "多址AI服务部署形态与跨站相干链路"
+    },
+    {
+      "policy_id": "pol_28ed320f580a4ddbbfc1db327e90a980",
+      "title": "高密度可插拔平台定型与Coherent高速模块供货位置"
+    },
+    {
+      "policy_id": "pol_ea8b2b9b0372479aa74f0eb994c8e138",
+      "title": "高速模块订单覆盖缩短与真实采购撤回"
+    },
+    {
+      "policy_id": "pol_6cc16f0383424fb391eb0de08879ed83",
+      "title": "现有800G/1.6T可插拔模块的成品资格、交付能力与客户分配"
+    },
+    {
+      "policy_id": "pol_548877f59fd34620bb33e8a5450b8ea0",
+      "title": "多平面拓扑与主动铜互连对高速模块端点内容的改变"
+    },
+    {
+      "policy_id": "pol_4b5cee583157401a83ae2590dd957a70",
+      "title": "OCS拓扑选择与高速模块端点内容的改变"
+    },
+    {
+      "policy_id": "pol_c6359628e93740479e806cb7356e27a3",
+      "title": "工业光源量产交易的净价、制造成本与集成履约经济"
+    },
+    {
+      "policy_id": "pol_2980e27656ea4a68b7d75ce1001bf18c",
+      "title": "Coherent合格InP衬底的单位采购价与到岸成本"
+    },
+    {
+      "policy_id": "pol_2ab6c8d4ec09423a9c84529acb144683",
+      "title": "传统通信成熟产品族的同规格价格、成本与返修经济"
+    },
+    {
+      "policy_id": "pol_3034a96685404b4eab2f71c59e2d5f18",
+      "title": "Coherent合格InP激光器的内外供排程变化"
+    },
+    {
+      "policy_id": "pol_bbe4238561684d06aa08ab4634b8cf8d",
+      "title": "关键客户多年度采购保护与价格让利的经济边界"
+    },
+    {
+      "policy_id": "pol_1233b99982a84e718b7eb9bbfb3377b9",
+      "title": "定制AI平台的光学选料权与Coherent供货位置"
+    },
+    {
+      "policy_id": "pol_bddbd7894dd34c2ebba10ef811f8b232",
+      "title": "PhotonLink平台的光学BOM层级与单位内容分配"
+    },
+    {
+      "policy_id": "pol_818929883e4b4be6b6247706ddeb4a37",
+      "title": "先进逻辑与存储晶圆前端设备池及分期投资"
+    },
+    {
+      "policy_id": "pol_69063facbf4e4ae5a972d4a4a54f5fb0",
+      "title": "玻璃先进封装生产路线与Coherent可参与工艺内容"
+    },
+    {
+      "policy_id": "pol_6205675989dc45b1b19f90c233d21d77",
+      "title": "工业激光安装基础、OLED退火换源与服务合同"
+    },
+    {
+      "policy_id": "pol_3b67aeaa7be14993ac9ed53f48d3ef26",
+      "title": "高价值 MicroLED 显示的量产路线与激光设备内容"
+    },
+    {
+      "policy_id": "pol_e6b271b1acd54f24a4f2483d2376bc86",
+      "title": "IT OLED需求扩围与LTPS退火设备配置"
+    },
+    {
+      "policy_id": "pol_d61e1b1b726b44c99a4485415c728a2b",
+      "title": "运营商融合升级与传统光传输预算"
+    },
+    {
+      "policy_id": "pol_2ad68936dd9e473dbed619f7a51eec38",
+      "title": "传统通信平台的Coherent器件资格与来源分配"
+    },
+    {
+      "policy_id": "pol_e53127393f804c87997066e77f503ca0",
+      "title": "六英寸InP有效良品产出与制造节拍"
+    },
+    {
+      "policy_id": "pol_fa96c4232f63426b937986700a9cae6d",
+      "title": "电池量产设计中的激光加工内容与线体设备强度"
+    },
+    {
+      "policy_id": "pol_5e4f1c1c6430457f892887fa03961eda",
+      "title": "高速InP EML、差分调制器与探测器的生产资格和外供范围"
+    },
+    {
+      "policy_id": "pol_10e73e8d5d714503b330153d4585bf99",
+      "title": "800VDC主输入架构的SiC采用范围与Coherent厚外延资格"
+    },
+    {
+      "policy_id": "pol_e7d37d15645d480184545b0fc4065fc4",
+      "title": "AI/HPC高热流封装中的热扩散材料与界面选择"
+    },
+    {
+      "policy_id": "pol_42cba151364f4bc7a50680c7679e6093",
+      "title": "Thermadite冷板在高热流AI平台中的采用与供货层级"
+    },
+    {
+      "policy_id": "pol_08cf652c082c45e1a02cf6a14c4827df",
+      "title": "Coherent Thermal Solutions商业供货准备与产品族时点"
+    },
+    {
+      "policy_id": "pol_1990a891d9594457bc6c726ba2a6cc93",
+      "title": "直接驱动聚变工程门与可重复光子系统采购"
+    },
+    {
+      "policy_id": "pol_a12d2697ae254fbe9c7425734b38ad75",
+      "title": "HTS带材扩产与PLD设备经济性"
+    },
+    {
+      "policy_id": "pol_44a8490a704e44c788d5e21d81cc583f",
+      "title": "既有工业设备利用率与新机采购弹性"
+    },
+    {
+      "policy_id": "pol_260f8185e87b440fa8e3ff2ebc1b3b0b",
+      "title": "工业激光与机床订单的应用恢复广度"
+    },
+    {
+      "policy_id": "pol_3e2dec70a9734bf1bba67661379650ff",
+      "title": "工业设备区域准入、买方资格与投资迁移"
+    },
+    {
+      "policy_id": "pol_3889bb1b89514165855496c9dbf77596",
+      "title": "融资与远程运营型激光设备采购入口"
+    },
+    {
+      "policy_id": "pol_f3317888404e4231abf41c25279f7b62",
+      "title": "按件付费及远程运营激光资产的采购传导"
+    },
+    {
+      "policy_id": "pol_123cd10091ce46259c2ec1c0ecf83cbd",
+      "title": "生命科学仪器工作流程与多波长光源机会"
+    },
+    {
+      "policy_id": "pol_40bd2db974d34e2a8514b6b82b42de48",
+      "title": "量子设备产品化中的 Coherent 光源与量子材料供货位置"
+    },
+    {
+      "policy_id": "pol_78304677e1824c4cbc7158346cb604ba",
+      "title": "薄膜与叠层太阳能划线路线的商业采用及 Coherent 光源资格"
+    },
+    {
+      "policy_id": "pol_01ed59708ef842fd8cdcb8cadf68b9cf",
+      "title": "光学架构迁移中的工具复用与新旧资本并行"
+    },
+    {
+      "policy_id": "pol_7ae638355e8441a48aef899c2d26e01a",
+      "title": "扩建分期、排程偏离与投入资本回收窗口"
+    },
+    {
+      "policy_id": "pol_bdb1ae73b232496c9f097d10e9239619",
+      "title": "AXT 6英寸InP保供安排的预付本金与安全库存现金底线"
+    },
+    {
+      "policy_id": "pol_4cd80ba41709483890825eaff94bb44d",
+      "title": "保供与寄售合同中的现金垫资分担"
+    },
+    {
+      "policy_id": "pol_d707ea8fb2424a3890979ad7c36696e7",
+      "title": "应收款银行承接如何改变Coherent资金可用性与风险归属"
+    },
+    {
+      "policy_id": "pol_55f0ee34ba1e4c0e9cfc82932ac1e57d",
+      "title": "工业关键合格供给中断、恢复与无锗EOM采用"
+    },
+    {
+      "policy_id": "pol_32330b18c59c477684a97de9399ae480",
+      "title": "业务组合交易的持续现金回报"
+    },
+    {
+      "policy_id": "pol_e7336cf36f804a16bc8618535effc3df",
+      "title": "基地整合和生产迁移的净现金回收"
+    },
+    {
+      "policy_id": "pol_1019ca3bfd9b41a3bd10f88e9a8bd754",
+      "title": "AMIC项目资格与现金回收"
+    },
+    {
+      "policy_id": "pol_e0645e6193284336a7004a388039b562",
+      "title": "Sherman公共直接资助的净额与兑付条件"
+    },
+    {
+      "policy_id": "pol_060e0898ca4849c286fec75d3d8b938e",
+      "title": "高级债务期限、定价与可提款条件变化"
+    },
+    {
+      "policy_id": "pol_a0d398301b944d979c7180168153d74c",
+      "title": "境外信贷额度与跨法人资金调度"
+    },
+    {
+      "policy_id": "pol_99ba94e239704905a7a8777d751bd25e",
+      "title": "医疗器件精密工艺采用与Coherent保留光源资格"
+    },
+    {
+      "policy_id": "pol_c511ba1a365b458f84656a03631201d4",
+      "title": "董事会激励授予、条款修改与现金结算对普通股权益的净变化"
+    },
+    {
+      "policy_id": "pol_8c61f92512084241b37a62102d088688",
+      "title": "新增项目资本的净可用额、证券代价与普通股权利"
+    },
+    {
+      "policy_id": "pol_8f48b6ba8e124369aaa3903614637a62",
+      "title": "SiC共资、收益优先与资金调拨对Coherent母公司资本负担的净影响"
+    },
+    {
+      "policy_id": "pol_8f8e8786f11f4d4f9212a005716d0b6b",
+      "title": "高速光互连生产验收与代际转换的在制本金回收"
+    },
+    {
+      "policy_id": "pol_fbecbb80729c4a81ba47f636179ede9b",
+      "title": "Coherent历史Huawei销售问询的结案、现金责任与出口权限"
+    },
+    {
+      "policy_id": "pol_3e89f6628f4b467d961f8918f9dd3e74",
+      "title": "消费终端3D感测与Coherent VCSEL供货位置"
+    },
+    {
+      "policy_id": "pol_40c0fb8b68dd48cb83f1008369dab7ef",
+      "title": "TSMC COUPE共同生产接入与Coherent项目供货"
+    },
+    {
+      "policy_id": "pol_10f05ae85621429fbb3ef76aa184df9a",
+      "title": "空芯光纤扩展与跨站相干线路的地理机会"
+    },
+    {
+      "policy_id": "pol_a591755640444004a6c8894715f12102",
+      "title": "Coherent 6英寸InP多厂区投产与生产连续性"
+    },
+    {
+      "policy_id": "pol_8d730e55b5bc402bacf336f6bb1bd741",
+      "title": "Coherent兼容六英寸InP衬底的资格、增量供给与分配"
+    },
+    {
+      "policy_id": "pol_f05c69c7c4ca44f49dc5e15a5d09307d",
+      "title": "同一数据中心光源用途的合格激光来源与客户获配"
+    },
+    {
+      "policy_id": "pol_3afd8964e15b4a33a8701e828c4dc886",
+      "title": "半导体设备平台的Coherent光学与工程材料资格"
+    }
+  ],
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-16T22:02:56.508969Z"
+  }
+}

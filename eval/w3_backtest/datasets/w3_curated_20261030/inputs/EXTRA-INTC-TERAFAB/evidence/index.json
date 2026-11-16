@@ -72,6 +72,69 @@
       "publisher": "Motley Fool",
       "published_at": "2026-10-05",
       "role": "同期替代方案"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Tesla Q1 2026 Earnings Call Transcript",
+      "url": "https://www.roic.ai/quote/TSLA/transcripts/2026-year/1-quarter",
+      "publisher": "Tesla",
+      "published_at": "2026-04-22",
+      "role": "原先合作分工及工艺"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "SpaceX response to SEC comments on registration statement",
+      "url": "https://www.sec.gov/Archives/edgar/data/1181412/000162827926000584/filename1.htm",
+      "publisher": "SpaceX / SEC",
+      "published_at": "2026-05-07",
+      "role": "协议阶段与最终合同"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "TSMC Q1 2026 earnings call",
+      "url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-04/3cef85204275f94fd111485cfdf4adb3c0263c45/TSMC%201Q26%20Transcript.pdf",
+      "publisher": "TSMC",
+      "published_at": "2026-04-16",
+      "role": "工艺竞争与美国供给"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Intel stock slides as TSMC explores Terafab tie-up",
+      "url": "https://ca.investing.com/news/stock-market-news/intel-stock-slides-as-tsmc-explores-terafab-tieup-analyst-flags-share-losses-4865410",
+      "publisher": "Investing.com",
+      "published_at": "2026-10-05",
+      "role": "TSMC 商谈此前公开状态"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "Intel and Fortinet Collaborate to Advance Cybersecurity Innovation",
+      "url": "https://www.intel.com/content/www/us/en/newsroom/news/manufacturing/intel-and-fortinet-collaborate-to-advance-cybersecurity-innovation-and-strengthen-global-supply-chain-resilience.html",
+      "publisher": "Intel / Fortinet",
+      "published_at": "2026-07-21",
+      "role": "其他外部客户示例"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Intel Q2 2026 prepared remarks: 14A",
+      "url": "https://docs.publicnow.com/viewDoc?filename=22151%5CEXT%5C7979C76792A6B0019F162CCE94FCB6BF9AD60752_CA2FA132CEAE739B136BF4E8BE94B38D5B639F0C.PDF",
+      "publisher": "Intel",
+      "published_at": "2026-07-23",
+      "role": "工艺研发与时间线"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "Intel Q2 2026 Form 10-Q: Intel Foundry",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "publisher": "Intel / SEC",
+      "published_at": "2026-07-24",
+      "role": "业务基数及内部抵销"
     }
   ],
   "market": {

@@ -1,0 +1,44 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "E844（provisional）已覆盖Arcuri重申$1,625目标价和Buy评级这一基本事实，但消息包含多项尚未被覆盖的核心新事实：Arcuri具体预测FY2026 Q4营收$52.4B、EPS $32.50（高于公司E1/F4的~$50B和F17的$30-$32指引）；Dec 9限制解除后$20B/季起步、FY2027末升至$50B/季的回购情景；以及若存储价格下跌80%、H2 2028周期见顶后Micron盈利仍高于当前水平的下行韧性论证。这些具体分析师预测和情景构成消息的主要新闻进展，未被任何现有Fact覆盖。",
+    "reference_ids": [
+      "E844"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "本条消息为UBS分析师Arcuri在Micron FY26 Q4财报发布前（9月30日）的看多观点与盈利预测，核心事实包括：股价回顾、目标价重申、供应链/需求缺口继续扩大的市场判断、预测营收$52.4B及EPS $32.50（高于公司指引）、Chips Act回购限制12月9日到期、以及即使AI周期结束价格下跌80%仍可获利的长期情景假设。消息中不存在与任何Policy criterion直接对应的具体运营或财务观察：无实际财报结果、无高价值组合份额或ASP变化的具体数据、无竞争供应商HBM份额变动、无产品资格/交付/合同事件、无库存或现金流细节、无扩产或项目状态更新。所有关键数据均为分析师前瞻预测而非已发生事实，且预测方向（收入超预期、价格上涨）与多数Policy的触发条件相反。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "UBS",
+          "Arcuri",
+          "Micron Technology",
+          "MU"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "UBS分析师Arcuri在2026年9月23日的研究报告中重申Micron Technology（MU）1625美元目标价和Buy评级。",
+        "subject_time": "分析师价格目标与评级展望；来源未说明目标期限"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E844",
+      "semantic_day": "2026-09-24"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

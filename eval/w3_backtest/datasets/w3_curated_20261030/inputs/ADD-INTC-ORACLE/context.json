@@ -1,0 +1,784 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息核心是 Intel 与 Oracle 宣布计划开展多年协作，在 OCI 扩展 Xeon 计算，并计划推出基于 Diamond Rapids 的 OCI X14 产品；已加载 Facts 未覆盖该协作或相关新计划与产品发布。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": true,
+    "reason": "pol_874c477303424c75af863431852b049f：Oracle公开计划多年扩大OCI上的Xeon计算、协调处理器容量规划，并以Xeon继续承载企业应用与Agentic AI推理，属于云商服务器CPU架构选择、客户保留Xeon的范围；但未披露任何具名生产负载新选Xeon或从Xeon迁出，也无Arm实例转GA，故不HIT。pol_6877b658a5f0426f95c0d68d91b8529d与pol_95602af907514ee7a8f6ce1603bdcdfc：消息仅为未来OCI X14（Diamond Rapids）与AMX推理能力的前瞻计划，及现有OCI Xeon服务的既有描述，没有实际小模型推理的CPU/加速器配置或迁移，也没有真实可采购或已认证的Diamond Rapids系统、无既定日期计划的变更，均不在范围。",
+    "related_policy_ids": [
+      "pol_874c477303424c75af863431852b049f"
+    ]
+  },
+  "policy_title_rows": [
+    {
+      "policy_id": "pol_5d151b0e173d4ea8b84405487654e7f4",
+      "title": "核心IP权利状态与Intel处理器进入OEM整机销售的边界"
+    },
+    {
+      "policy_id": "pol_fe4c830d735a4beeb1df218bb9879c8a",
+      "title": "Intel卖方对CPU持续期、制造价值与每股回报的公开修订"
+    },
+    {
+      "policy_id": "pol_fe64fe779c2644e390d12f806afa1f31",
+      "title": "客户端处理器可靠性、固件处置与OEM信任"
+    },
+    {
+      "policy_id": "pol_a5a29169a25947ceb23a85f0acec24b9",
+      "title": "客户端芯粒制造与封装路线的成本暴露"
+    },
+    {
+      "policy_id": "pol_1fdad4654a9a4a40a4e77b87c2ef05ce",
+      "title": "Intel客户端型号的实际供给与交期"
+    },
+    {
+      "policy_id": "pol_4e9df211a5f847a9982dfaa44e0e0dad",
+      "title": "客户端OEM标准平台与处理器资格选择"
+    },
+    {
+      "policy_id": "pol_1e437c85a822463d9b7cb822f95bbcc6",
+      "title": "PC渠道库存消化与Intel客户端再补货"
+    },
+    {
+      "policy_id": "pol_0c1152556189435080d06f8be5d697d4",
+      "title": "PC整机配套成本与Intel客户端配置分配"
+    },
+    {
+      "policy_id": "pol_ab92c25e29844c19946a25f3be25f2d2",
+      "title": "企业标准机型、管理资格与x86双供采购"
+    },
+    {
+      "policy_id": "pol_2192809478504f62a669a32002cb03d9",
+      "title": "Linux Arm开发机的原生驱动、发行版认证与设备可用性"
+    },
+    {
+      "policy_id": "pol_0bf402baec8b4cf780257392908c4996",
+      "title": "教育标准采购中的低价Mac与Intel Windows价值机型替代"
+    },
+    {
+      "policy_id": "pol_05b472102e1e45d3a71a0619c338a0e6",
+      "title": "独立云端智能体执行与员工PC本地资源需求"
+    },
+    {
+      "policy_id": "pol_0386d8f2179b41d3a16d079b3e9d5a50",
+      "title": "Cloud PC迁移对员工端点数量与本地计算含量的影响"
+    },
+    {
+      "policy_id": "pol_bd7caff3d3d54964a1ad63d2fde4b571",
+      "title": "本地智能体工作负载与Intel客户端配置门槛"
+    },
+    {
+      "policy_id": "pol_c6f7a1696cad49da8c9a07471ec61a10",
+      "title": "集成图形与共享内存客户端设计的价值归属"
+    },
+    {
+      "policy_id": "pol_19e006500c684233bb39b895006cf0e7",
+      "title": "Intel与NVIDIA RTX芯粒客户端SoC的产品落地"
+    },
+    {
+      "policy_id": "pol_be3eb1d33e8d4eeabf2f8c3765456bee",
+      "title": "Core非PC边缘与机器人参考平台复制及生产采用"
+    },
+    {
+      "policy_id": "pol_6648f893ffbf4eb0b93d0dc0aee054dd",
+      "title": "Xeon交付配额、长期锁量与客户提货兑现"
+    },
+    {
+      "policy_id": "pol_cf3c1f44c0c94bd49da6e1d087c7d688",
+      "title": "SAP迁移窗口与Xeon高内存平台采用"
+    },
+    {
+      "policy_id": "pol_6fe3ecc86b934fe0aadd3644375ec10c",
+      "title": "AI系统主机CPU设计席位与Xeon执行附着"
+    },
+    {
+      "policy_id": "pol_874c477303424c75af863431852b049f",
+      "title": "云与企业生产负载的CPU架构选择和Xeon分配"
+    },
+    {
+      "policy_id": "pol_39c4f5cd3d22485eb5f8acce3200d98b",
+      "title": "托管代理执行时长、并发与沙箱资源弹性"
+    },
+    {
+      "policy_id": "pol_860fabbd7eb4464986c18b2686b30eee",
+      "title": "Intel数据中心非CPU产品路线与客户支持承诺"
+    },
+    {
+      "policy_id": "pol_b5cd3e38f4404fad957ce3dde0f097db",
+      "title": "Crescent Island可比系统成本与客户平台选择"
+    },
+    {
+      "policy_id": "pol_408eae804cdd4498aa0c269159744f66",
+      "title": "Crescent Island客户资格、系统可采购性与交付节奏"
+    },
+    {
+      "policy_id": "pol_9e9ef5f53f0648fcbbcab23b4021fa38",
+      "title": "Gaudi 3持续付费生产利用与工作负载替代"
+    },
+    {
+      "policy_id": "pol_22b0efd28dce4068b5b9a3712230c7be",
+      "title": "分阶段推理中的Intel加速器席位与缓存配置"
+    },
+    {
+      "policy_id": "pol_125a26bdfa0a4799b362f35678bb6942",
+      "title": "用途特定ASIC项目的Intel设计权、直接经济权益与项目存续"
+    },
+    {
+      "policy_id": "pol_6de28c2db02449c1973e758730463e57",
+      "title": "Intel数据中心网络产品的系统资格与配置价值"
+    },
+    {
+      "policy_id": "pol_6642173a355c4e84b77e31d76688db4a",
+      "title": "High-NA生产层扩展与光罩流程的经济可用性"
+    },
+    {
+      "policy_id": "pol_cece5821b48b4d38b666945b2569e63d",
+      "title": "制造设施连续性、关键投入与恢复资格"
+    },
+    {
+      "policy_id": "pol_93bb5ac16b6346229193564a0fc37c56",
+      "title": "配套组件匹配与后段测试决定完整产品交付"
+    },
+    {
+      "policy_id": "pol_8312565acdb94fdb81c3240032d0737b",
+      "title": "先进节点Foundry合同的NRE、报价、容量与资本风险分配"
+    },
+    {
+      "policy_id": "pol_04a6b3ba61fe42878b786fffc99dc708",
+      "title": "Intel自有产品外购tile的代工容量与供货保障"
+    },
+    {
+      "policy_id": "pol_b6a6aacf512f45e8999ae7cb51b98e42",
+      "title": "UMC 12nm亚利桑那制造路线的客户导入"
+    },
+    {
+      "policy_id": "pol_9af17d2c4d24432c8e84461f65d32f45",
+      "title": "可信制造资格与敏感产品的量产采购"
+    },
+    {
+      "policy_id": "pol_0dec5ae86e024ceeb66f6f2449790fe7",
+      "title": "Foundry治理、客户IP隔离与供货连续性"
+    },
+    {
+      "policy_id": "pol_72b5958ba40445d8afe95eed77e79659",
+      "title": "跨厂芯粒可采购性与中立封装入口"
+    },
+    {
+      "policy_id": "pol_93574cbd1a844a14a3ebcb8fb5461e53",
+      "title": "玻璃芯工艺工程资格与客户平台选择"
+    },
+    {
+      "policy_id": "pol_476488da227f45fba7ef641eb7bfd7fd",
+      "title": "美国地域资格下的封装服务路线与客户选择"
+    },
+    {
+      "policy_id": "pol_9512ffefe0f247f3a94b668404d1e37b",
+      "title": "共享试制访问与Intel兼容设计入口"
+    },
+    {
+      "policy_id": "pol_53c3a346d9ea45119ae98bdf0f6d2f0b",
+      "title": "共享原型项目的Intel商业制造交接与路线分流"
+    },
+    {
+      "policy_id": "pol_7ea34625698f4b5892c22cf113e7ac92",
+      "title": "近处理器GaN电源芯粒的客户导入与Intel价值路径"
+    },
+    {
+      "policy_id": "pol_c42266aaec294afb87bfb99a07c4a223",
+      "title": "高端IC封装基板的报价与材料成本传导"
+    },
+    {
+      "policy_id": "pol_7ee89cc81cbd494db1090ce1c888dd47",
+      "title": "第48D条制造抵免的资格本金与兑现时间"
+    },
+    {
+      "policy_id": "pol_bdf960d5597b41c985bbc5dc8f7cf4b5",
+      "title": "Secure Enclave拨款、托管股与付款条件的增量价值"
+    },
+    {
+      "policy_id": "pol_a6b42e4a0d1d43b6825c729e16bb57af",
+      "title": "未来普通股发行的即时权益转移与资金用途"
+    },
+    {
+      "policy_id": "pol_9e702844e3a54cfcb0e4de2e8bbc79f7",
+      "title": "客户端处理器净报价与OEM采购优惠"
+    },
+    {
+      "policy_id": "pol_628d445079044bff8eecca90eac99f58",
+      "title": "客户端SKU组合、产品生命周期与旧品处置"
+    },
+    {
+      "policy_id": "pol_99a5298547a94be184b387f91b2199fb",
+      "title": "认证翻新与维修延寿对 Intel 客户端新机更新批次的影响"
+    },
+    {
+      "policy_id": "pol_1b059fdfb9a247cd88360de29514504f",
+      "title": "按席位设备融资对客户端新机采购与更新批次的影响"
+    },
+    {
+      "policy_id": "pol_cc1582efeb694d16ae497e9eb075c477",
+      "title": "Googlebook核心用途、管理准入与跨生态购买来源"
+    },
+    {
+      "policy_id": "pol_583680b3044446328cc2e440854f9ca1",
+      "title": "低价Mac主流零售渠道与预算PC购买来源"
+    },
+    {
+      "policy_id": "pol_2e6568a7f228400682fb93e3c156c366",
+      "title": "Windows Arm任务资格与主流OEM默认配置"
+    },
+    {
+      "policy_id": "pol_11db788749e143cc87e7b92c8de8a955",
+      "title": "Windows 支持、企业安全与管理迁移对客户端更新批次的影响"
+    },
+    {
+      "policy_id": "pol_e47eae4e0a3b47ebbc31946110691d95",
+      "title": "Gaudi推理运行时的模型兼容与持续支持"
+    },
+    {
+      "policy_id": "pol_0391400da36c412ba75db1dcec63ff2f",
+      "title": "集成图形任务准入、系统设计与支持回退的比较"
+    },
+    {
+      "policy_id": "pol_1d615f48c4c64bf3a3f5e3a2093244b5",
+      "title": "本地专业AI软件任务资格与跨应用权限治理"
+    },
+    {
+      "policy_id": "pol_9eeaba5d27454c4185654fceb3d6726c",
+      "title": "服务器CPU同配置净价、折扣与配置价值捕获"
+    },
+    {
+      "policy_id": "pol_9584f3dad50d437e891a6f383a5dac60",
+      "title": "虚拟化续约与许可迁移下的Xeon服务器平台分配"
+    },
+    {
+      "policy_id": "pol_60dd8ce1bef342dc9b867451e92d05f0",
+      "title": "Xeon生产配置标准与每系统CPU价值迁移"
+    },
+    {
+      "policy_id": "pol_95602af907514ee7a8f6ce1603bdcdfc",
+      "title": "Xeon代际系统资格与有效工作负载经济性"
+    },
+    {
+      "policy_id": "pol_b98070a653534b009ee2692405314ce4",
+      "title": "ZAM研发工作包的Intel净成本承担与对价"
+    },
+    {
+      "policy_id": "pol_353c9229b32b459594d7169209db5ffd",
+      "title": "ZAM商业许可中的Intel可执行知识产权收益权"
+    },
+    {
+      "policy_id": "pol_66a3394796fe4a448a9bd51ac8583c6c",
+      "title": "ZAM逻辑host-die的Intel Foundry生产选择"
+    },
+    {
+      "policy_id": "pol_3c9f25f92ae44d07aa10f7e9a9f08e46",
+      "title": "中国本国产品采购评审规则重配Intel整机的相对价格优势"
+    },
+    {
+      "policy_id": "pol_ca263063421f4ac6b270c704012d3448",
+      "title": "成像雷达产品采用、量产承诺与组件经济"
+    },
+    {
+      "policy_id": "pol_ded9e9174f02425286d5ee8c2c27dc6c",
+      "title": "INTC指数资格、流通股数与被动目标配置"
+    },
+    {
+      "policy_id": "pol_ba8d3ec0162c4537992a668a122564c7",
+      "title": "汽车软件生命周期支持、更新权与费用捕获"
+    },
+    {
+      "policy_id": "pol_85201b8df0a349e8a3ad010631f60332",
+      "title": "战略持仓、退出供给与合作承诺变化"
+    },
+    {
+      "policy_id": "pol_62932609ee3d4952b3cec9fc5ce0c158",
+      "title": "美国Section 232 CPU进口税负与可替代供给的成本差异"
+    },
+    {
+      "policy_id": "pol_ac4412cf3cd24386a37b5527d374531e",
+      "title": "IMS外部光罩写入设备的产品换代与客户采用"
+    },
+    {
+      "policy_id": "pol_e3e5e693e7d148ab930623c13ff7bd20",
+      "title": "IMS量产设备安装基数的服务与升级经济性"
+    },
+    {
+      "policy_id": "pol_5b9fdd204a9d425f8484d9b7203dea59",
+      "title": "行动代理的商业分发与生产工作创建"
+    },
+    {
+      "policy_id": "pol_7c80c50d218f467cb9f61fdd0d6a8b63",
+      "title": "代理工作在公共云与本地私有数据中心之间的执行位置"
+    },
+    {
+      "policy_id": "pol_93a37b146ff94b4cb8fde16e11b352d9",
+      "title": "Xeon生产代理的高权限操作边界与治理"
+    },
+    {
+      "policy_id": "pol_c70e574ffe66474aaeb4fed134c7f2e9",
+      "title": "数据中心计算项目的客户承诺、融资与供电阶段"
+    },
+    {
+      "policy_id": "pol_b42354373d264d77916a976c7f8ab915",
+      "title": "Gaudi 3托管云与企业部署入口的可得性"
+    },
+    {
+      "policy_id": "pol_ba85f922fa414e2fad94051d8cd0a53c",
+      "title": "先进逻辑High-NA采用、工艺适配与可购竞争窗口"
+    },
+    {
+      "policy_id": "pol_7b64976e455a420895d8ef7c8e2d6d78",
+      "title": "具名Foundry项目的报价、NRE与质量交付责任"
+    },
+    {
+      "policy_id": "pol_14f721578cec4e2881daa2e5806543e5",
+      "title": "Ohio闲置厂区再利用的成本回收与逻辑空间选择权"
+    },
+    {
+      "policy_id": "pol_9cd053a4e2a54e8fa5615c0dfa3f2cb0",
+      "title": "已接入Intel制造路线的具名项目生产范围与期限"
+    },
+    {
+      "policy_id": "pol_a405a426b3ea4b9d8eebaa1588a955d8",
+      "title": "云与模型平台外购加速器池及自研/整机绑定"
+    },
+    {
+      "policy_id": "pol_6f379f9ff3d44cc4b37b3db2bcb840e0",
+      "title": "Intel自有计算产品Tile的内部与外部晶圆配置"
+    },
+    {
+      "policy_id": "pol_966326cb84f949a78cdc96ba16cfe6e0",
+      "title": "Intel TDX安全状态与Xeon机密计算资格"
+    },
+    {
+      "policy_id": "pol_e11e70256fb2404bb99c8ec540b5051f",
+      "title": "美国地域要求下的全链封装供给与本土稀缺性"
+    },
+    {
+      "policy_id": "pol_5d6f60fbb6d949bf8fc48b61f30ecded",
+      "title": "14A设计使能、关键IP硅验证与定版窗口"
+    },
+    {
+      "policy_id": "pol_e2c580c2f04843deb41b93c48e48af98",
+      "title": "常规DDR/LPDDR配额与报价在HBM资源竞争中的重排"
+    },
+    {
+      "policy_id": "pol_7aab8b6603f74928bf25f0c6632c1071",
+      "title": "企业SSD新增供给的开放程度、交付重排与成品报价"
+    },
+    {
+      "policy_id": "pol_29d9bde7f62344428d06ad26ffe67893",
+      "title": "制造现场技能供给与工艺知识复制能力"
+    },
+    {
+      "policy_id": "pol_826fde951a204646879edaef91b05d47",
+      "title": "PC OEM主流SSD配置与库存补库节奏"
+    },
+    {
+      "policy_id": "pol_6877b658a5f0426f95c0d68d91b8529d",
+      "title": "Xeon直接模型推理与加速器分配"
+    },
+    {
+      "policy_id": "pol_6e410e0b005f4951bc7cf6dc1aab0026",
+      "title": "第三方先进封装单位服务费与合格交付"
+    },
+    {
+      "policy_id": "pol_84f248d111084d4bbf50bbe5f61b7cc0",
+      "title": "第三方先进封装项目获取与可交付服务经济性"
+    },
+    {
+      "policy_id": "pol_f494ec716df04a5ebcbd98144d7c5850",
+      "title": "用途特定芯片从系统设计到Intel制造项目"
+    },
+    {
+      "policy_id": "pol_05510bed511b494ab430d9cf58ab96a9",
+      "title": "Tower新墨西哥特色工艺走廊的恢复与退出净责任"
+    },
+    {
+      "policy_id": "pol_a07995490fe84f9aaf7722a5b668693e",
+      "title": "Altera旧代FPGA生命周期下的Intel晶圆供货与现金尾部"
+    },
+    {
+      "policy_id": "pol_5bd7085f236e445aa9438b7b44b0c062",
+      "title": "外部客户对先进制程设计的选择、保留或撤回"
+    },
+    {
+      "policy_id": "pol_83c63bf00c62469f96771177e30f1986",
+      "title": "竞争代工厂可购容量、兼容升级与客户替代供给"
+    },
+    {
+      "policy_id": "pol_c01030a4e77840f5b5d38b558abeb7eb",
+      "title": "Altera既有供货窗口的付费扩量与采购责任覆盖"
+    },
+    {
+      "policy_id": "pol_4c743d22244f4715808a521081bde064",
+      "title": "高端有机封装基板的材料资格与可用面积"
+    },
+    {
+      "policy_id": "pol_ad167a8ef144447d8b6839f9a7c12ede",
+      "title": "高端封装架构对共享有机基板面积与工序的竞争"
+    },
+    {
+      "policy_id": "pol_cfbe254786df4aadb96d246dcbf9453d",
+      "title": "Tower新墨西哥走廊的客户付费阶段与退出责任"
+    },
+    {
+      "policy_id": "pol_46e95b52e819423b97bad75434459d0c",
+      "title": "CPO系统中的封装、光源与维修服务分工"
+    },
+    {
+      "policy_id": "pol_140b7aa2ff43451ea5d941480f2d568f",
+      "title": "系统架构路线与封装集成价值分配"
+    },
+    {
+      "policy_id": "pol_321b4a2461184d7e9c06e6ff99e3da32",
+      "title": "玻璃芯合格供给与Intel整包可交付性"
+    },
+    {
+      "policy_id": "pol_591d842dd2fe457d9b8b7aa53298dadd",
+      "title": "制造阶段、资本来源与投用等待的现金回收"
+    },
+    {
+      "policy_id": "pol_f678aafc5f7749209510023aec70177b",
+      "title": "Intel工程自动化的任务回报与研发资源配置"
+    },
+    {
+      "policy_id": "pol_2a3098eca7d147269b2efada7235dee0",
+      "title": "Intel客户共同开发的费用承担与设计权利"
+    },
+    {
+      "policy_id": "pol_22c4536a307c4e7f87d359f495c7e1f3",
+      "title": "Intel经常费用与核心研发资源回报"
+    },
+    {
+      "policy_id": "pol_edcaf30cbaa9444d85117bc528f04c0c",
+      "title": "制造合资的真实出资、未来权益与履约/退出责任"
+    },
+    {
+      "policy_id": "pol_e3f8cfb88f6549ac8f4fffd0dd6937dc",
+      "title": "客户端平台内存责任、供给保障与产品价值"
+    },
+    {
+      "policy_id": "pol_dbdff6fc665446a3bb38e173a7fe11dc",
+      "title": "普通供应商发票账期与持续营运资金"
+    },
+    {
+      "policy_id": "pol_1b5214b6e1d846a7b8ee22e79a726b62",
+      "title": "CPU客户IP赔偿范围、许可抗辩与现金责任"
+    },
+    {
+      "policy_id": "pol_1782dd780fa24eb0ae324081c31329dd",
+      "title": "长协预收与供应预付的现金支持和回收"
+    },
+    {
+      "policy_id": "pol_86e761efeddc41fab2dc1c3e347d9ce3",
+      "title": "EC竞争罚款的上诉义务与执行现金时点"
+    },
+    {
+      "policy_id": "pol_cc63b71ae01c410bb82b30f30560babb",
+      "title": "已生产库存的可售性与现金回收"
+    },
+    {
+      "policy_id": "pol_79a96d0aaa3d42de93e56a9e243ff424",
+      "title": "企业收购的现金机会成本、股票分母与多年度回收"
+    },
+    {
+      "policy_id": "pol_40d0b0c52f7c4b7ea265a3ca7ff33a5b",
+      "title": "既筹资金偿债的净利差、储备收益与要约成本"
+    },
+    {
+      "policy_id": "pol_451d8c7a311b405bbbd317e687c1827f",
+      "title": "Foundry控制移转触发的政府认股权成本"
+    },
+    {
+      "policy_id": "pol_b45217f7de684b4fbdb010e834931585",
+      "title": "非股权制造项目激励的净承诺与现金时差"
+    },
+    {
+      "policy_id": "pol_7c44b714d1b6452fa8b8c4708feae498",
+      "title": "客户发票账期改变与自然应收回笼"
+    },
+    {
+      "policy_id": "pol_faed562ab28b4df5b45933becb1d534e",
+      "title": "SambaNova股权资本、实际权利与当前价值实现"
+    },
+    {
+      "policy_id": "pol_7750842a2a1c48e09c396924494ef349",
+      "title": "VLSI专利责任的裁判、许可与现金结算"
+    },
+    {
+      "policy_id": "pol_61185fb943bb4898b608ca6cf72cbc9c",
+      "title": "Mobileye汽车平台项目与区域车型范围"
+    },
+    {
+      "policy_id": "pol_77d0dbc9de934a7f92b7abae18a4edd4",
+      "title": "DMS评级要求、OEM配置目标与汽车产品机会"
+    },
+    {
+      "policy_id": "pol_ee8282e54c784be4b836395f410c5b3a",
+      "title": "Mobileye近端EyeQ提货、客户库存与交付窗口"
+    },
+    {
+      "policy_id": "pol_b23679c8e9df4124aa345e375c0a2a3f",
+      "title": "已选Mobileye汽车项目的生产验证与目标窗口"
+    },
+    {
+      "policy_id": "pol_5562a77ceb6445339087198d2e8a71b6",
+      "title": "Mobileye汽车ADAS功能组合与高内容单位经济"
+    },
+    {
+      "policy_id": "pol_6de8ce722f95438682594cab589cefde",
+      "title": "Mobileye汽车系统净价、成本转嫁与持续服务责任"
+    },
+    {
+      "policy_id": "pol_1736cf695fda4deab3207687b6acf164",
+      "title": "AI算力交易中Intel自身信用追索与支持权益"
+    },
+    {
+      "policy_id": "pol_c24d061c93334273b172d10354e43774",
+      "title": "Altera公开定价与Intel出售及保留权益的价值发现"
+    },
+    {
+      "policy_id": "pol_d039e9318074428ca767ac8ff354ba17",
+      "title": "新增及滚续债务的对冲后现金利息成本"
+    },
+    {
+      "policy_id": "pol_f06e99f1b1864ec987b9b398b476018f",
+      "title": "Intel债务到期覆盖、信用评级与银行备用融资"
+    },
+    {
+      "policy_id": "pol_3bee3a555fa94700837c9fb99baba416",
+      "title": "Mobileye持股净交易价格与保留权利"
+    },
+    {
+      "policy_id": "pol_00a9aef1d75046f6a7ab0295f806838a",
+      "title": "Mobileye既有入选车型的车辆池、地域产量与配置覆盖"
+    },
+    {
+      "policy_id": "pol_c561a4b6291c4511b22b782a16eef945",
+      "title": "汽车级关键器件供给与资格决定EyeQ/ECU可交付性"
+    },
+    {
+      "policy_id": "pol_560dc245a088477e82d55ef7d7f26ef6",
+      "title": "Mobileye Drive具名运营服务权、ODD与持续责任成本"
+    },
+    {
+      "policy_id": "pol_0bc2c94720e546889fc9f2436df6900a",
+      "title": "Mobileye Drive车队的冬季运行验证、服务窗口与全年能力"
+    },
+    {
+      "policy_id": "pol_91c06691fa974ec0ac9b7ab45c683988",
+      "title": "Mobileye以色列研发激励资格、合格投入与净费用减负"
+    },
+    {
+      "policy_id": "pol_b51ce990737f4638b8b799848dd2f308",
+      "title": "Mobileye自营Robotaxi的资本承担、获客渠道与服务价值捕获"
+    },
+    {
+      "policy_id": "pol_e52b613f43234c1a9e14dc5c78ce2d1f",
+      "title": "OEM驾驶栈主导角色与Mobileye付费系统责任重分配"
+    },
+    {
+      "policy_id": "pol_965ebe28b2484fdf8df3adf1b8f1d21e",
+      "title": "中国政府PC与通用服务器CPU安全测评资格变化"
+    },
+    {
+      "policy_id": "pol_d108520724c54ef1a6ddc3ef9970d2ad",
+      "title": "美国对华CPU出口许可改变可服务客户范围"
+    },
+    {
+      "policy_id": "pol_f4a77a1733084b5baf052eefdc15cbe5",
+      "title": "AI算力融资资格、系统选择与Xeon部署阶段"
+    },
+    {
+      "policy_id": "pol_4eca05430362443e9283a7cd81c85223",
+      "title": "Intel共同x86 ISA软件默认路径与平台差异化"
+    },
+    {
+      "policy_id": "pol_6bc09a32b30f4b31ba2a01088e43745e",
+      "title": "Googlebook主力机型的Intel与Qualcomm配置选择"
+    },
+    {
+      "policy_id": "pol_7def96a808b44567ae4129402cf6ef59",
+      "title": "客户端配套供给、整机可负担性与PC数量机会"
+    },
+    {
+      "policy_id": "pol_ef31b95482d84bf98ba0d276fb29a35f",
+      "title": "云端代理服务费与客户端设备更新预算的直接挤出"
+    },
+    {
+      "policy_id": "pol_d8e00c06a1ae4d588c6954730fa1266f",
+      "title": "平台外购加速器采购权的开放与绑定"
+    },
+    {
+      "policy_id": "pol_5b7b2baa3bec4edc8199687f914256fb",
+      "title": "受控AI系统资格与Intel数据中心计算的可争取范围"
+    },
+    {
+      "policy_id": "pol_e93381e284b84f2f87792846d7dfaf41",
+      "title": "18A家族新设计的制造适配与资格迁移"
+    },
+    {
+      "policy_id": "pol_df70f3defbe04b98bc7c81765dd662fc",
+      "title": "Costa Rica组装测试转移与重复运营退出"
+    },
+    {
+      "policy_id": "pol_3cfce2e4149247d98a7429be4201ce25",
+      "title": "合格制造供给、资本扩容与资产退出"
+    },
+    {
+      "policy_id": "pol_ccfda5ce057d461eb918c110a233f7f0",
+      "title": "Ohio计划DDR/LPDDR路径的前置Intel供货权"
+    },
+    {
+      "policy_id": "pol_a35abfc29fe94afabbba477e3833e6a5",
+      "title": "Foundry客户保护控制的准入与失效"
+    },
+    {
+      "policy_id": "pol_231102a5c6cd4e7b96bdd4025794914b",
+      "title": "Intel兼容组件的供货分配与采购弹性"
+    },
+    {
+      "policy_id": "pol_959cc489790c4f1ba8f88ff724efb173",
+      "title": "中国来源内存进入Intel兼容系统的合格供应集合"
+    },
+    {
+      "policy_id": "pol_fd8a1173de544200a9c90d9fa7ed3636",
+      "title": "Intel兼容组件的交付资格中断与恢复"
+    },
+    {
+      "policy_id": "pol_36c0e6a31d1e475e84a7e1216250b444",
+      "title": "内存产线转换与新厂合格供给的形成时间"
+    },
+    {
+      "policy_id": "pol_68205d21f6b849e1b43acb99a2a5117e",
+      "title": "Xeon高带宽与高密度内存配置的模块资格和系统供给同步"
+    },
+    {
+      "policy_id": "pol_ee1c1ccd2a4849219b7664f749011da8",
+      "title": "Intel兼容存量系统的DDR4/LPDDR4供给寿命与退出"
+    },
+    {
+      "policy_id": "pol_af5cacd14b7148628ce052f72f12be5b",
+      "title": "CXL共享内存池商业化与Intel服务器配套"
+    },
+    {
+      "policy_id": "pol_6d4192ca262b4844baf4a16eb0416a8e",
+      "title": "企业Intel服务器的认证再部署、翻新与刷新回流"
+    },
+    {
+      "policy_id": "pol_4c4feba0492749aaa260dfc936bd10d9",
+      "title": "Mobileye汽车工程支持能力与跨车型验证资源"
+    },
+    {
+      "policy_id": "pol_6d640c43314747cd974e7f08d9cc2fcc",
+      "title": "Mentee Physical AI能力向Mobileye汽车栈的实际复用"
+    },
+    {
+      "policy_id": "pol_2c80eefd494d459ea4880aeff0c9c396",
+      "title": "开放驾驶模型与工具对Mobileye开发壁垒的双向重估"
+    },
+    {
+      "policy_id": "pol_ba4fcddaa5a34646967edcccc26f5537",
+      "title": "REM道路数据权利、功能可用范围与商业收费的增量价值"
+    },
+    {
+      "policy_id": "pol_9b698d15ebf14398adf38e0cd71e3164",
+      "title": "Drive合作车队的融资、平台分配与车辆采购"
+    },
+    {
+      "policy_id": "pol_6af9cc636a124ea9ac79452a648493ef",
+      "title": "公共交通服务合同与运营预算转化为Drive车队需求"
+    },
+    {
+      "policy_id": "pol_8351e695c96d4bbba7cb84a0453ddffe",
+      "title": "Mobileye研发激励在现金与税负抵用间的兑现时点"
+    },
+    {
+      "policy_id": "pol_a157c30a0af74d6ead0041ac4d332619",
+      "title": "高阶辅助驾驶在役使用、用户信任与风险分担"
+    },
+    {
+      "policy_id": "pol_7e266d0764b6426fa18d6d01c4e043d0",
+      "title": "跨车型辅助驾驶更新与共享云服务的可用性"
+    }
+  ],
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "当前基线是服务器需求与Xeon入口继续存在、工作负载架构分配并未量化；Intel Q2服务器量同比+9%，服务器ASP+48%主要为高端组合，不能把这些公司数据读成CPU份额。AWS X8i已经一般可用，AWS Graviton5 M9g/M9gd和R9g/R9gd及Google Axion C4A也已一般可用；多架构部署可降低切换门槛，但没有公开的同负载迁移率、架构核数或成本比较。 2026-10-12 OCP的新竞争供给也需区分产品、系统和CPU分配：NVIDIA称Vera CPU独立机架已进入生产出货，定位agentic工具调用、编排与沙箱执行；TrendForce于2026-10-13 04:00 UTC报道AMD Helios系统已于9月开始生产出货并在OpenAI、Meta、Microsoft、Oracle及Anthropic等处安装首批系统，但未披露数量或该项报道所需的具体CPU配置；AMD的Helion开放机架计划于2026-11由生态伙伴提供，EPYC Verano仍是2027路线图。上述是竞争系统供给/路线图信号，不证明某具名Xeon生产负载发生架构迁移或Intel订单/份额损失。\n\n2026-10-19，Modal称计划在AI-agent工作负载使用NVIDIA Vera，同时保留Intel与AMD处理器、按任务选型；其初步评估称Vera在相关负载吞吐约为现有Intel/AMD处理器的两倍，但未公开型号、测试配置或功耗，且未确认生产部署（E552）。这是一个具名客户的计划/初步评估，不是具名生产工作负载的CPU定配或既有Xeon生产迁移。",
+            "trigger_boundary": "一个具名、已进入生产的负载被明确分配给Xeon，已把Xeon从可选平台变成该负载的实际承载者，足以修订Intel在这个客户/服务的工作负载捕获，不需再等客户披露CPU台数、全市场份额、重复季度订单或Intel收入。没有指明生产服务和选定CPU的实例发布、测试、双镜像工具或潜在兼容性不足以跨界。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "55b1a858aa96c3b7d0518a3b7718339466b688d0135d24e723f840c0d19ff2b6",
+          "criterion": "云商或企业公开确认一项具名数据库、执行服务或其他服务器工作负载已在生产环境选择Intel Xeon作为其标准CPU；该消息可以是新生产服务首次选用Xeon，也可以是此前运行在Arm或AMD EPYC上的同一生产负载改为Xeon。公布的服务/工作负载与架构选择须明确，不能只是可供租用的实例、测试、基准或计划。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前Intel服务器业务与x86软件存量仍有真实基盘，AWS X8i提供Xeon 6云入口；Graviton5 M9g/M9gd、R9g/R9gd和Google Axion C4A已是商业可用的Arm替代，且不同云实例并非同一负载、CPU价格或采购份额。Cobalt 200仍是预览。没有公开的Xeon客户总体留存率或按架构的核数分配。 2026-10-12 OCP的新竞争供给也需区分产品、系统和CPU分配：NVIDIA称Vera CPU独立机架已进入生产出货，定位agentic工具调用、编排与沙箱执行；TrendForce于2026-10-13 04:00 UTC报道AMD Helios系统已于9月开始生产出货并在OpenAI、Meta、Microsoft、Oracle及Anthropic等处安装首批系统，但未披露数量或该项报道所需的具体CPU配置；AMD的Helion开放机架计划于2026-11由生态伙伴提供，EPYC Verano仍是2027路线图。上述是竞争系统供给/路线图信号，不证明某具名Xeon生产负载发生架构迁移或Intel订单/份额损失。\n\n2026-10-19，Modal称计划在AI-agent工作负载使用NVIDIA Vera，同时保留Intel与AMD处理器、按任务选型；其初步评估称Vera在相关负载吞吐约为现有Intel/AMD处理器的两倍，但未公开型号、测试配置或功耗，且未确认生产部署（E552）。这是一个具名客户的计划/初步评估，不是具名生产工作负载的CPU定配或既有Xeon生产迁移。",
+            "trigger_boundary": "已识别的Xeon生产负载实际将主要架构改为竞争CPU，意味着该项既有Intel工作量已被重新分配；一项完整的客户生产服务迁移足以改变该客户的Intel捕获，不必等待全市场份额、Intel出货或利润确认。仅增加Arm测试池、提供双架构镜像、宣布新Arm实例但未迁移既有Xeon负载，不满足本条件。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "396bf3cd7a30a630737c0a807e031ddd438ae241810a8cfe6a54ae167810f416",
+          "criterion": "云商或企业公开确认一项此前具名、由Intel Xeon承载的数据库、执行服务或其他服务器生产工作负载，其标准/主要生产CPU架构已改为Arm或AMD EPYC，并披露该替代平台正在承载生产服务，而非仅供测试或作为备用回退。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "截止日已有Graviton5 M9g/M9gd及R9g/R9gd、Axion C4A等Arm生产实例；Microsoft于2026-06宣布Cobalt 200进入early-access preview，不能与已GA产品混为一谈。实例供给的部署地域、产品类别及实际可订购状态决定能否服务一般客户；目前没有按云商/架构的同口径CPU容量或迁移率。 NVIDIA Vera CPU rack的生产出货与AMD Helios/Helion系统消息不是云商公开可下单的一般可用Arm CPU VM实例；它们是系统/机架供给或路线图事实，不等同本Condition所要求的云实例GA，也不说明Xeon已在任何既有生产负载中被替代。",
+            "trigger_boundary": "一家主要云商把一款此前仅预览的、面向一般数据中心工作负载的新一代Arm CPU实例转为客户可下单的GA服务，已经从试用可行性跨入可供生产负载分配的正式替代容量；这本身扩大了企业可选择的Arm供给，无须该公告同时披露Intel客户流失或云实例绝对容量。路线图、继续预览或只有芯片/虚拟机规格而不可下单不够。"
+          },
+          "condition_id": "C3",
+          "condition_revision": "8200e78b104bea667d2329815229bab0d754f01d1ad0939e32820f9bd10386a2",
+          "criterion": "AWS、Azure、Google Cloud或同类主要公有云服务商，将此前仅处预览/早期访问的Arm数据中心CPU实例系列推进为客户可下单的一般可用生产服务，并提供可承载一般用途、内存密集或执行类工作负载的实际VM系列；例如Azure Cobalt 200由early-access preview转为GA。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "覆盖云服务商与企业公开的服务器CPU架构选择、具名数据库/执行服务的迁移及生产部署、默认多架构生产配置，以及云商新增或扩展可供客户部署的Arm服务器实例。关注AWS Xeon X8i与Graviton5、Google Axion，以及仍处预览状态的Azure Cobalt 200等与Xeon服务器负载直接竞争的服务；也包括客户因兼容、性能、容量或总拥有成本而将工作负载保留在、迁回或迁离Xeon的消息。研发评估、基准测试、多架构镜像构建本身、仅公布CPU路线图、云实例降价、客户端设备架构、服务器总需求、GPU机架数，以及AMD含GPU的分部金额，不单独代表Intel CPU采购分配变化。",
+      "policy_id": "pol_874c477303424c75af863431852b049f",
+      "ref": [
+        "output/work/v21/discovery/S0002.jsonl#L4",
+        "context/document3/v21/d2/shell-0002.json",
+        "context/document3/v21/shared/d1/c3.md",
+        "context/document3/v21/shared/d1/c4e_formal_scan.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "https://aws.amazon.com/blogs/aws/amazon-ec2-r9g-and-r9gd-instances-powered-by-aws-graviton5-processors-are-now-generally-available/",
+        "https://azure.microsoft.com/en-us/blog/new-azure-cobalt-200-vms-deliver-50-performance-improvement-fully-optimized-for-modern-agentic-ai-workloads/",
+        "https://cloud.google.com/blog/products/compute/try-c4a-the-first-google-axion-processor",
+        "https://aws.amazon.com/blogs/compute/mixing-aws-graviton-with-x86-cpus-to-optimize-cost-and-resilience-using-amazon-eks/",
+        "context/document3/v21/shared/event_library.md",
+        "https://blogs.nvidia.com/blog/ocp-global-summit-vera-rubin-scale-ai-factories/",
+        "https://www.sdxcentral.com/news/nvidia-gears-up-to-smash-cpu-hegemony-as-vera-starts-shipping/",
+        "https://www.trendforce.com/news/2026/10/13/ocp-in-focus-lisa-su-calls-2026-year-of-inference-as-amd-lifts-2030-cpu-tam-forecast-to-200b/",
+        "context/document3/v21/shared/event_library.md#E552"
+      ],
+      "title": "云与企业生产负载的CPU架构选择和Xeon分配",
+      "transmission": "截至2026-10-10，Intel报告Q2服务器销量同比增长9%、服务器ASP同比增长48%且增幅主要来自高端组合；DCAI同时含CPU和非CPU业务，未披露CPU独立收入或Intel/AMD/Arm同口径份额。当前实际选择不是抽象的x86对Arm：AWS的Xeon 6 X8i与Graviton5 M9g/M9gd、Graviton5 R9g/R9gd，及Google Axion C4A均已有一般可用服务；Azure Cobalt 200仍处early-access preview。多架构容器镜像、原生依赖验证、分阶段流量及x86回退说明迁移能逐步执行，但不代表客户已普遍迁移。具名工作负载被部署到哪种CPU会改变Intel可服务的生产负载，而迁移成本、SLA、许可、每核有效吞吐、功耗及运维决定客户总拥有成本；云实例的租用价含服务、网络和运维，不是CPU芯片净价。AMD数据中心分部含EPYC与Instinct，不能据合并收入倒推CPU替代量。竞争实例扩容改变可选供给，只有生产选型或可下单的实际容量状态才改变可争取范围；存量x86兼容性可延长Xeon使用，但不是所有新负载必选Xeon。截至2026-10-13 06:00 UTC，竞争系统供给已增加公开线索：NVIDIA Vera独立CPU机架进入出货，AMD Helios开始生产交付并有首批系统安装报道，AMD Helion机架与EPYC Verano仍为未来计划。Vera被定位于agentic工作流执行，Helios/Helion则属于不同AI系统阶段；这些不自动证明CPU为瓶颈、Intel Xeon被转单或配置价值改变。对本Policy，实际CPU架构须由具名生产负载/标准配置或一般可采购服务确认；系统规模、GPU/加速器出货和管理层市场预测不能代替该选择事实。"
+    }
+  ],
+  "w1_events": [],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": false,
+    "related_has_new_fact": true
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-10T23:02:12.877682Z"
+  }
+}

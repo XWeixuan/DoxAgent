@@ -1,0 +1,25 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息核心事实包括：Beignet债券价格跌至91美分/收益率7.55%/利差230bps；Meta CDS突破7月峰值接近100bps、多数Big Tech CDS创纪录；Oracle发布force majeure通知称New Mexico数据中心供电可能延迟一年；美联储开始加息。已加载E26/E29/E16的事实分别涉及变压器交付周期、$6.4B融资包、Oracle/Nebius商业部署及1.2 GW容量，均未覆盖上述AI债务市场压力指标、CDS异常或force majeure通知等新事实。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息为Reuters评论专栏，聚焦AI信用风险（Beignet债券利差、CDS）。Oracle提及为附带一笔：\"force majeure\"通知援引\"potential delays in securing power\"，属条件性表述（\"could now be delayed by up to a year\"），未确认permit/interconnection/fuel gate实际失败、未公布新commissioning日期或scope/cancel，不满足pol_9795c5的trigger boundary。无任何项目公布验收窗口后移或撤回，不满足pol_af4c18c9。Project Jupiter仅作为Blue Owl背书的背景提及，无互联协议、firm MW或强制削减信息，不满足pol_c76a98。三个Candidate均NO HIT。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T12:30:11.852735Z"
+  }
+}

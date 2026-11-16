@@ -121,6 +121,8 @@ def execute_run(
     model=None,
     effort=None,
     time_awareness_enabled=False,
+    service_tier=None,
+    trade_mode="single",
 ) -> dict:
     from .dataset import input_fingerprint, load_cases, read_json, write_json
     from .report import render_report
@@ -128,7 +130,7 @@ def execute_run(
 
     if effort is not None and model is None:
         raise ValueError("--effort requires --model")
-    model_profile = dict(model=model, effort=effort or "medium") if model else None
+    model_profile = dict(model=model, effort=effort) if model else None
     if not 1 <= concurrency <= 16:
         raise ValueError("concurrency must be between 1 and 16")
     cases = load_cases(dataset)
@@ -137,6 +139,11 @@ def execute_run(
         raise ValueError(f"unknown case keys: {sorted(set(keys) - available)}")
     selected = [c for c in cases if not keys or c["case_key"] in keys]
     curated = read_json(dataset / "manifest.json").get("schema_version") == "w3-backtest.dataset.v2"
+    if not curated:
+        raise ValueError(
+            "new replay runs require a v2 dataset and v6 prompt pack; "
+            "historical reports remain readable"
+        )
     if time_awareness_enabled and not curated:
         raise ValueError("--time-awareness requires a curated decision-only dataset")
     runtime_identity = None
@@ -146,11 +153,12 @@ def execute_run(
         runtime_identity = time_awareness_runtime()
     prompts = Path(
         prompt_root
-        or (dataset / "prompt_source" if curated else "prompts/persistent_runtime_v2/w3")
+        or (dataset / read_json(dataset / "manifest.json").get("prompt_root", "prompt_source"))
     ).resolve()
+    contract = read_json(prompts / "contract.json").get("w3_contract_version")
+    if contract != "persistent-runtime.w3.v6":
+        raise ValueError("only v6 Trade-only prompt packs are supported")
     prompt_files = ["AGENTS.md", "skills/skill.md"]
-    if (prompts / 'contract.json').exists() and json.loads((prompts/'contract.json').read_text(encoding='utf8')).get('w3_contract_version') == 'persistent-runtime.w3.v6':
-        prompt_files.append('operations.md')
     if curated:
         prompt_files.append("backtest.md")
         if (prompts / "provenance.json").exists():
@@ -158,6 +166,17 @@ def execute_run(
     if (prompts / "contract.json").exists():
         # The schema marker is part of the frozen prompt pack, not a new capability.
         prompt_files.append("contract.json")
+    if service_tier not in {None, "default", "fast"}:
+        raise ValueError("unsupported service tier")
+    if service_tier == "fast":
+        from .context import execution_profile, read_context
+
+        if any(
+            execution_profile(c, read_context(dataset, c["case_key"]), model, effort)["model"]
+            != "gpt-6-luna"
+            for c in selected
+        ):
+            raise ValueError("Fast requires every selected Case to use gpt-6-luna; specify --model")
     prompt_hashes = {
         name: hashlib.sha256((prompts / name).read_bytes()).hexdigest() for name in prompt_files
     }
@@ -176,6 +195,7 @@ def execute_run(
         for file in sorted(folder.glob("*.py")):
             if folder == Path(__file__).parent and file.name not in {
                 "runner.py",
+                "context.py",
                 "decision_runner.py",
                 "legacy.py",
             }:
@@ -191,6 +211,8 @@ def execute_run(
         code_fingerprint=code_hash.hexdigest(),
         case_keys=[c["case_key"] for c in selected],
         model_profile=model_profile,
+        service_tier=service_tier,
+        trade_mode=trade_mode,
         time_awareness_enabled=time_awareness_enabled,
         **(dict(time_awareness_runtime=runtime_identity) if runtime_identity else {}),
     )
@@ -198,7 +220,7 @@ def execute_run(
     if marker.exists():
         previous = read_json(marker)
         if any(
-            previous.get(k, False if k == "time_awareness_enabled" else None) != v
+            previous.get(k, False if k == "time_awareness_enabled" else "single" if k == "trade_mode" else None) != v
             for k, v in identity.items()
         ):
             raise ValueError("Dataset inputs, prompts or code changed; use a new --run-id")
@@ -207,6 +229,11 @@ def execute_run(
             marker,
             dict(
                 **identity,
+                gold_sha256_at_start=(
+                    hashlib.sha256((dataset / "gold.jsonl").read_bytes()).hexdigest()
+                    if (dataset / "gold.jsonl").exists()
+                    else None
+                ),
                 run_id=root.name,
                 started_at=datetime.now(UTC).isoformat(),
                 git_revision=revision,
@@ -228,6 +255,8 @@ def execute_run(
                 ),
             ),
         )
+    if (dataset / "gold.jsonl").exists() and not (root / "gold_snapshot.jsonl").exists():
+        (root / "gold_snapshot.jsonl").write_bytes((dataset / "gold.jsonl").read_bytes())
     frozen_prompts = root / "prompt_snapshot"
     for name, expected in prompt_hashes.items():
         content = (prompts / name).read_bytes()
@@ -251,6 +280,8 @@ def execute_run(
             effort=effort,
             timeout_seconds=timeout_seconds,
             time_awareness_enabled=time_awareness_enabled,
+            service_tier=service_tier,
+            trade_mode=trade_mode,
         )
         run_case = shared.run_case
     try:
@@ -265,6 +296,7 @@ def execute_run(
                     timeout_seconds=timeout_seconds,
                     model=model,
                     effort=effort,
+                    trade_mode=trade_mode,
                 ): c
                 for c in selected
                 if not (
@@ -323,6 +355,7 @@ def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description="Isolated local historical W3 replay")
     commands = root.add_subparsers(dest="command", required=True)
     for name in (
+        "prepare-context",
         "prepare-curated",
         "prepare-cases",
         "prepare-nasa",
@@ -334,10 +367,12 @@ def parser() -> argparse.ArgumentParser:
         command = commands.add_parser(name)
         command.add_argument(
             "--dataset",
-            default="w3_curated_20261030" if name == "prepare-curated" else "w3_history_20261014",
+            default="w3_history_20261014"
+            if name in {"prepare-cases", "prepare-nasa"}
+            else "w3_curated_20261030",
         )
         command.add_argument("--case", action="append", dest="case_keys")
-        if name in {"prepare-curated", "prepare-cases", "prepare-prices"}:
+        if name in {"prepare-context", "prepare-curated", "prepare-cases", "prepare-prices"}:
             command.add_argument("--ssh-host", default="doxagent-sg")
         if name == "prepare-curated":
             command.add_argument("--catalog")
@@ -350,7 +385,9 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--timeout-seconds", type=int, default=1800)
             command.add_argument("--time-awareness", action="store_true")
             command.add_argument("--model")
-            command.add_argument("--effort", choices=("low", "medium", "high", "max"))
+            command.add_argument("--service-tier", choices=("default", "fast"))
+            command.add_argument("--trade-mode", choices=("single","dual_consensus"), default="single")
+            command.add_argument("--effort", choices=("low", "medium", "high", "xhigh", "max"))
     for name in ("resume", "report"):
         command = commands.add_parser(name)
         command.add_argument("--run-id", required=True)
@@ -363,7 +400,11 @@ def parser() -> argparse.ArgumentParser:
 def main(argv=None):
     args = parser().parse_args(argv)
     dataset = dataset_path(args.dataset) if hasattr(args, "dataset") else None
-    if args.command == "prepare-curated":
+    if args.command == "prepare-context":
+        from .enrich import enrich_contexts
+
+        result = enrich_contexts(dataset, host=args.ssh_host, case_keys=args.case_keys)
+    elif args.command == "prepare-curated":
         from .curated import prepare_curated
 
         result = prepare_curated(
@@ -429,7 +470,9 @@ def main(argv=None):
             timeout_seconds=args.timeout_seconds,
             model=args.model,
             effort=args.effort,
+            trade_mode=args.trade_mode,
             time_awareness_enabled=args.time_awareness,
+            service_tier=args.service_tier,
         )
     elif args.command == "resume":
         root = run_path(args.run_id)
@@ -443,7 +486,9 @@ def main(argv=None):
             timeout_seconds=manifest["timeout_seconds"],
             model=(manifest.get("model_profile") or {}).get("model"),
             effort=(manifest.get("model_profile") or {}).get("effort"),
+            trade_mode=manifest.get("trade_mode","single"),
             time_awareness_enabled=manifest.get("time_awareness_enabled", False),
+            service_tier=manifest.get("service_tier"),
         )
     elif args.command == "report":
         from .report import render_report

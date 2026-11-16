@@ -1,0 +1,101 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E10",
+        "fact_ids": [
+          "F22",
+          "F23"
+        ]
+      }
+    ],
+    "reason": "当前消息核心事实为：2026年9月30日签署20次全新Electron发射合同，累计Synspective任务达47次，发射窗口2028–2031年，backlog突破100。已加载事实仅覆盖6月17次合同(F23)、16次至2030年的预订(F22)及backlog\"超过90\"(F18)，均未涉及本次20次新签约、47次总量及>100 backlog，构成未覆盖的新核心进展。",
+    "reference_ids": [
+      "E10"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [
+      "pol_6db9f073b136875b7be9"
+    ],
+    "reason": "消息明确陈述Rocket Lab已与Synspective签署20次全新Electron任务的正式合同（\"the largest commercial launch contract for Electron in Rocket Lab's history\"），且具备明确发射窗口：每年2028至2031年、太阳同步轨道、从Launch Complex 1发射20颗StriX SAR卫星。Synspective为重要客户（最早期Electron客户、累计47次任务为所有客户最多），该批次为全新此前未锁定任务，合同具有约束力，非Neutron任务也非框架合同，完整满足C2全部要素。",
+    "policy_hit": true,
+    "policy_related": false,
+    "hit_condition_ids": [
+      {
+        "condition_ids": [
+          "C2"
+        ],
+        "policy_id": "pol_6db9f073b136875b7be9"
+      }
+    ]
+  },
+  "policies": [
+    {
+      "policy_id": "pol_6db9f073b136875b7be9",
+      "title": "任务批次由潜在需求转为正式授权",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "Launch Services任务级授权与已行权options显著增加"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。",
+          "calibration": {
+            "reference_state": "Launch Services backlog为9.402亿美元且manifest超过90项；截至cutoff另有客户已签署五项Neutron专属任务、排期延续至2029年，但该批次的逐项发射窗口及更广泛任务锁定度仍未完全确认。",
+            "trigger_boundary": "已知五项Neutron任务及仅给出多年期限的预订不触发；须确认其之外的重要客户多任务批次，同时具备有约束力的授权或合同和明确发射窗口；新增框架合同不触发。"
+          }
+        }
+      ]
+    }
+  ],
+  "w1_events": [
+    {
+      "canonical_summary": "Rocket Lab and Synspective reported 16 additional dedicated Electron missions booked through 2030, following a June contract described as covering 17 launches.",
+      "derived_from_event_ids": [],
+      "event_id": "E10",
+      "event_type": "MATERIAL_CONTRACT",
+      "facts": [
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F22",
+          "fact_occurred_at": "2026-09-02",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab had 16 additional dedicated Electron missions booked for Synspective through 2030.",
+          "subject_time": "2030"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F23",
+          "fact_occurred_at": "2026-09-03",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Synspective signed a contract for 17 additional Electron launches with Rocket Lab in June 2026.",
+          "subject_time": "2026-06"
+        }
+      ],
+      "known_event_summary": "From June through September 2026, Rocket Lab reported additional Synspective Electron bookings through 2030.",
+      "occurred_at": "2026-06-01..2026-09-04",
+      "occurrence_time_precision": "INTERVAL",
+      "related_event_ids": [
+        "E36"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Rocket Lab secures additional Synspective Electron bookings"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-14T10:16:29Z"
+  }
+}

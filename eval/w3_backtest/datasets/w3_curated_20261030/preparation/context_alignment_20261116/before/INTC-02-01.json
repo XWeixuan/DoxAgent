@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "本轮无已加载的 Event 或 Fact。当前消息核心事实为：Signal65 发布了新的后续研究，测试的是标准 18 核 Snapdragon X2 Elite（X2E-88-100）而非此前 Extreme 版本，聚焦 14 英寸高端笔电品类，结论为 Qualcomm 的 CPU/AI/电池/生产力优势不再仅限于 Extreme 旗舰 SKU。这是新的独立研究发布和新的事实发现，未被任何已知事实覆盖。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为Signal65（高通委托）发布的独立性能基准测试报道，对比Qualcomm Snapdragon X2 Elite、Intel Core Ultra X7 358H与AMD Ryzen AI 7 445在14英寸笔记本中的CPU、AI、图形及续航表现。消息陈述的核心事实是产品性能排名和价格对比，未涉及任何具体客户的采购订单变化、OEM补单/取消、量产延期、供给约束变化、Intel财报数据或可识别的商业决策。各Policy的criterion均要求具体业务行动或状态变化（如订单取消、生产批次调整、收入报告、设计导入等），基准测试结果本身不构成任何trigger path的直接事实对应，无法明确指向任何Policy的命中可能。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

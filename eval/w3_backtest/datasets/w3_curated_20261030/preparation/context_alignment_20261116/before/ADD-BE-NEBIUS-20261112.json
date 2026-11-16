@@ -1,0 +1,231 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E270",
+        "fact_ids": [
+          "F640"
+        ]
+      },
+      {
+        "event_id": "E208",
+        "fact_ids": [
+          "F453"
+        ]
+      }
+    ],
+    "reason": "已知事实仅包括 Vineland 项目可能延迟的第三方估计及 Nebius 当时预计改用 Bloom 不会实质影响进度；当前消息报告计算容量已因许可和电力问题延迟、相关收入推至 2027 年上半年，并下调 2026 年收入展望、提高资本开支指引，均为未覆盖的新进展。",
+    "reference_ids": [
+      "E270",
+      "E208"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": true,
+    "reason": "Nebius称DataOne设施的许可与供电问题导致供Microsoft使用的计算容量延期，属于数据中心部署与生产容量调整范围；未称延期由已实现效率或负载迁移导致，也未披露高效专用系统带来的地面容量扩展。",
+    "related_policy_ids": [
+      "pol_ce1f033b71ee48939b40fa95afe60f97"
+    ]
+  },
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-08-12，Nebius在Q2电话会上称，Vineland的300MW AI数据中心决定改用Bloom燃料电池供电，管理层预计部署较快且不会对项目时间表产生重大影响；DataOne当时仍在申请修订场址平面图的最终批准。Nebius同时把公司层面年末签约电力目标提高到5GW，预计大部分容量在随后2—3.5年上线。这是未来签约电力与具体项目安排，不是现时已运行的计算容量；300MW场址规模不能与此前披露的328MW首项目或Bloom设备采购量另行相加。该项目进展本身未说明高效专用系统进入生产，也未证明超出已公布路径的计算资源扩张。\n\n截至2026-10-24，Microsoft称Maia 200已承载生产负载；Maia 300公布的2027多GW部署计划及相对GPU的40% tokens/MW优势、Maia 200的tokens/watt主张已属公开基线。同期Oracle 1.2GW首批已签约部署，2.8GW仅为框架上限；Nebius约328MW及AEP/Google约702MW仍是计划。已知效率或项目公告不能表明净负载、站点余量或BE获得份额。\n\n截至2026-10-30，Anthropic S-1/报道称约$637B计算合同额包含预期和已签交易、并非全部有约束力；Reuters按硬承诺估计算力容量约为2027年末4GW、2028年末接近7GW。10月30日披露的约$417B未来付款义务及额外$125—150B预期容量支出均属未来/预期金额，并非全部已实现或当期增量支出。这是计算容量计划基线，不是Bloom订单或高效系统投入生产证据。Sparxity（原SpiNNcloud）宣布向Jülich超级计算中心部署JUBIS稀疏计算集群；报道称系统尚待上线，10倍稀疏求解、18倍事件型ML能耗和20倍求解时间改善均为公司设计目标/主张，不是生产实测。L&T旗下Vyoma.AI于10月28日在Chennai开工建设新的52MW数据中心，但未披露高效专用系统商业生产、供电方案或Bloom关联。上述均进入背景，不越过C1的系统效率+现实生产容量边界。\n\n2026-10-30，Data Center Dynamics报道Lightmatter前首席ASIC工程师Clifford Chao加入OpenAI担任silicon lead，并称OpenAI的700W Jalapeño专用推理芯片预计于2026年末有限量部署、2027年更广泛部署。该信息更新了已知研发与计划部署路径，但没有说明芯片已进入商业生产或对应新增/扩大的持续计算容量；规格、机架配置和预期时间表不等同实际扩容或Bloom供电需求。\n\n2026-10-30，Google官方更新将Project Suncatcher从已发射、待测试推进到原型在轨主机与TPU托盘已供电并完成早期机器学习测试，Gemma 4已返回首个在轨TPU响应。Google仍将轨道热压力与辐射验证列为后续工作，双星互联是2027年下一里程碑。该进展提高了“TPU原型已能在轨执行早期任务”的事实确定性，但不证明商业生产、规模化持续算力、地面集中设施扩容或地面容量计划改变；不由单次原型成功外推规模与可靠性。\n\n2026-10-31，HuggingNews报道SpaceX Memphis Colossus 2的Macroharder与Minihard两座集群各有约22万颗Nvidia GB300 GPU并已用于AI训练，配置800Gbps网络。报道另称Gun Range计划于11月下旬开始训练运营、Spam计划于12月投运；Spam约20万GPU用于推理，所需光纤布线不到训练集群的一半。报道将四个已识别集群的GB300合计约数描述为86万，并转述Musk的2026年底约120万Blackwell GPU目标；把现有运营状态与未来计划分开，目标数不视为已部署。现有两集群的投运时点相对先前公开路径未交代，报道未给电力负载/供电方式、能效比较或BE服务关联；光纤需求较低不等同电耗较低。该信息更新已披露的地面生产计算现状，但不足以单独证明相对既有公开路径的新增扩建或改变BE可服务的持续现场负载。\n\n2026-10-31，Tom's Hardware周报称Nvidia Vera CPU已一般可用，独立实例也可在Oracle多吉瓦OCI超级集群上运行，并提及其基准测试。该报道说明新CPU可用性，但未显示超出既有Oracle多吉瓦路线的实际新增生产计算资源，也未给出系统能效或持续现场负载增量。\n\n2026-10-31，Tom's Hardware周报转述Anthropic S-1信息，称GPU/TPU合同约8000亿美元、多数计算容量用于研发而非客户服务，并认为收入相对计算支出有利。该二手周报没有解释其约8000亿美元口径与10月30日约6370亿美元报道的差异，也未说明合同中已绑定/预期部分、实物容量、地点或部署计划分别如何构成。研发计算仍是计算负载；这组信息是对用途构成与报道口径的新增描述，不足以证明新容量承诺、净现场负载变化或此前扩建路径改变。\n\n2026-10-27 Oracle/NVIDIA宣布Vera Rubin NVL72和Vera CPU在OCI一般可用；Oracle称首批15万颗CPU将在各区域提供，早期客户包括OpenAI，OpenAI称正把Vera用于agent sandbox生产；OCI超级集群扩至多GW仍是计划。公开信息未说明这些CPU/系统相对已知Blackwell及OCI容量路径的增量，亦未把其工作负载对应到新的/扩大的场址持续电力容量，因此不据一般可用、CPU数量或“multi-GW”笼统表述推定已发生超出原路径的地面扩容。Oracle/Google计划2027年在OCI提供TPU并多年爬坡至GW级，未披露首期容量、具名客户分配或现场阶段，尚非已投产的增量部署。10月27日Meta融资计划由950亿美元调至975亿美元（包括未来600亿美元ATM），AMD另宣布拟向此次股权发行投资10亿美元，尚未交割；首批Helios机架仍在Meta测试，且属于先前公布的至多6GW合作，未显示新增于该路径的已运行计算容量。\n\n2026-11-04，Tom's Hardware转述AMD称，Anthropic、Meta、Microsoft、OpenAI及Oracle Cloud Infrastructure已在首批Helios系统上运行工作负载。相较先前Meta机架仍处测试阶段的公开状态，这使首批系统进入客户工作负载的事实成为新基线；报道未给出各客户容量、场址、持续负载、相对既有计划的净新增地面MW或额外数据中心阶段，也未披露因效率或负载迁移而缩减的原地面容量计划。故这是生产使用状态更新，不单独证明Bloom可服务的现场负载扩张或减少。\n\n2026-11-07，SemiAnalysis的内蒙古现场报道称，Envision Galaxy 首期120MW于2026年8月交付，园区规划最高800MW IT容量，四期为两家未具名互联网公司建设。报道描述自有风场/专线与储能、无中央冷机的冷却设计，并称5MW机房采用10kV AC经SST直转800V DC至机架。该实际一期与较大园区规划是新的地面算力背景，但没有披露更高效专用计算系统相对既定路线的增量、全园区实际负荷或Bloom供电范围。Envision 11月2日官方公告另称Galaxy计划容量为3GW且全建后超过80%电力拟来自直接可再生能源连接；公开材料没有说明这一3GW与SemiAnalysis所述800MW IT容量的可比口径，不相加或当作Bloom容量。\n\n2026-11-10，CoreWeave Q3披露称现有活跃电力超过1.7GW，目标2026年末达到1.85GW，并报告截至9月30日约1,325亿美元收入积压；这些是已运行规模、管理层目标和财务积压的不同口径，未披露相对先前计划的净新增地面容量或Bloom供电配置，也未归因于更高效专用系统。CoreWeave改用客户合同支持的延迟提款融资同样不是Bloom订单或具名供电窗口。\n\n2026-11-10，Anthropic修订S-1将Microsoft计算承诺由449亿美元更新至至少472亿美元、最高492亿美元，但未指向对应新增场址、功率或交付窗口；因Lambda未及时取得设施租约，约349亿美元协议可由任一方终止，但截至披露双方未发终止通知，Anthropic称当前无意终止，该协议属于更广泛的413亿美元承诺。Anthropic另报Q3经营亏损5.67亿美元，主要归因于短期计算安排。金额增加、终止权、当季亏损与物理容量/部署计划须分开比较；以上均未证明相对已公开路径的高效系统生产扩张或效率/迁移驱动的地面扩容下修。",
+            "trigger_boundary": "足够的正向新事实是：相对已公开路线出现实际商业生产计算资源扩展，且其地点/安排显示地面集中式设施的持续电力负载或供电容量确有新增。地面新设施/集群、已批准生产阶段的实际扩大或更多持续工作负载进入已扩大的地面生产设施均可；不要求公布Bloom订单、精确新旧MW或排除全部余量。纯轨道/卫星计算或其他不需要地面现场供电的容量增长，即使进入运行，也不单独证明BE的现场负载机会；只有公开证据连到地面负载增量才纳入LONG。效率提高但只在原已通电设备增加tokens、同量换模型或改变任务标签，不能仅凭更多工作量认定现场电力机会扩大。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "0650618916f4b02a4a0d103b48fa42b5f607e16ee70dfd4219c197df3539d7a9",
+          "criterion": "大型云/AI运营商公开报告更高效专用系统进入商业生产，并用于相对已公开路径新增的生产计算部署，且公开信息显示增量对应地面集中式生产设施的持续电力负载/容量扩展：新建或启用额外地面数据中心/计算集群、扩大已批准的地面生产容量阶段，或将新的持续工作负载纳入扩大的地面集中式生产设施。公开的场址/集群部署、生产资源范围或容量安排须显示实际地面资源扩展，而非只在同一批已通电设备上提高tokens、替换模型或增加任务类别。轨道/卫星、端侧或其他不形成地面集中式现场电力负载的算力扩展本身不支持BE的LONG；若其同时伴随独立可见的地面负载扩建，才按该地面增量判断。此前无可比公开路线的新系统，也须有成规模商业生产资源和地面持续负载的实质证据，不以首次产品发布、发射或孤立演示替代。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Maia的每瓦/每MW性能主张和多GW路线在截止日并存，D1/D2均提示单位效率、任务量、可用余量与地点共同决定新增电力，效率提升可能被更大任务量反弹抵消。Apple端侧与Private Cloud Compute、IBM Sovereign Core等已公开执行地点选项，但这些方案本身没有证明生产工作负载迁出或数据中心扩建被替代；Google已披露的1GW需求响应仅涉及部分负载。没有客户级可用余量或任务到MW换算。\n\n2026-08-12，Nebius将年末签约电力目标提高到5GW，并称大部分容量预计未来2—3.5年上线；Vineland的300MW数据中心决定改用Bloom燃料电池，管理层当时预计无重大项目进度影响，场址修订审批仍待完成。这些是计划与电源路线状态，不是已实现效率或负载迁移使新增集中式算力减少的证据。\n\n截至2026-10-30，公开材料没有显示Anthropic、Sparxity或其他运营商因已实现效率提升/负载迁移而缩减或推迟原先的集中式容量计划：Anthropic披露的是未来付款义务和扩张容量估算；JUBIS尚未上线且其节能倍数为公司主张；L&T的52MW新建项目已开工而非撤销。不能把预期合同金额当已兑现容量或把设计性能主张当已实现效率。\n\n2026-10-30，Data Center Dynamics关于OpenAI的报道补充了Jalapeño专用推理芯片的规格和预期部署计划（2026年末有限量、2027年更广泛）。报道没有称生产验证的系统效率或实际地点迁移使既有通电容量足以承接原计划工作，也没有称OpenAI因此缩减、推迟或取消集中式算力扩建；计划上线与芯片功耗/机架配置不是已实现效率、净用电变化或容量计划下修。\n\n2026-10-30，Google称Project Suncatcher原型已完成TPU启动和早期机器学习测试，并返回Gemma 4在轨响应；其热/辐射可靠性测试仍在后续，双星互联是2027年计划里程碑。这是早期在轨技术验证，不是已规模化迁移生产负载，也未显示Google据此推迟、缩减或取消任何已公布的地面集中式算力扩建。\n\n2026-10-31，Tom's Hardware周报称Cadence公布面向EDA流程的Maestro微调LLM套件，计划于2026Q4向部分客户早期开放，并转述其相对通用模型最多30%质量提升、5倍token效率的公司主张。该产品/模型结果不是运营商生产级电力节省、实际工作负载迁移或据此推迟/削减地面集中算力计划的证据。\n\n截至2026-10-27，未见运营商因已实现效率提升或地点迁移而宣布缩减/推迟原有地面容量。Oracle/NVIDIA的Vera一般可用、OpenAI导入Vera CPU生产、Meta的Helios测试及融资更新，以及Oracle/Google计划在OCI引入TPU，都是新产品/资源或扩展路径的推进，不是供电容量撤回。Oracle称Vera可提升agent CPU处理并减少GPU等待，但没有公开说明已供电容量因此足够，或据此取消/削减任何地面扩建阶段；TPU媒体采购报道亦无规模/站点，不能作为地面负载迁出证据。\n\n2026-11-04，Tom's Hardware转述AMD称，Anthropic、Meta、Microsoft、OpenAI及Oracle Cloud Infrastructure已在首批Helios系统上运行工作负载。相较先前Meta机架仍处测试阶段的公开状态，这使首批系统进入客户工作负载的事实成为新基线；报道未给出各客户容量、场址、持续负载、相对既有计划的净新增地面MW或额外数据中心阶段，也未披露因效率或负载迁移而缩减的原地面容量计划。故这是生产使用状态更新，不单独证明Bloom可服务的现场负载扩张或减少。\n\n2026-11-07，SemiAnalysis报告Envision Galaxy首期120MW已交付、剩余园区仍在建设，规划最高800MW IT容量，并采用风电/储能、无中央冷机及5MW 800VDC SST机房。该披露描述新增建设和供能/冷却架构，不称其因效率或工作负载迁移而缩减、推迟或取消既有地面算力计划；800MW为IT规划而非Bloom供电量。官方公告的3GW“规划容量”与此口径未对齐。\n\n2026-11-10，CoreWeave Q3披露称现有活跃电力超过1.7GW，目标2026年末达到1.85GW，并报告截至9月30日约1,325亿美元收入积压；这些是已运行规模、管理层目标和财务积压的不同口径，未披露相对先前计划的净新增地面容量或Bloom供电配置，也未归因于更高效专用系统。CoreWeave改用客户合同支持的延迟提款融资同样不是Bloom订单或具名供电窗口。\n\n2026-11-10，Anthropic修订S-1将Microsoft计算承诺由449亿美元更新至至少472亿美元、最高492亿美元，但未指向对应新增场址、功率或交付窗口；因Lambda未及时取得设施租约，约349亿美元协议可由任一方终止，但截至披露双方未发终止通知，Anthropic称当前无意终止，该协议属于更广泛的413亿美元承诺。Anthropic另报Q3经营亏损5.67亿美元，主要归因于短期计算安排。金额增加、终止权、当季亏损与物理容量/部署计划须分开比较；以上均未证明相对已公开路径的高效系统生产扩张或效率/迁移驱动的地面扩容下修。",
+            "trigger_boundary": "足够的负向新事实是运营商把已实现的效率提升或真实生产负载迁移直接用于改变原有地面集中式计算扩张计划，公开表示既有已供电容量或已投入商业运行的替代执行地点（轨道计算亦同）可以承接此前预计增长，并因此推迟、减量或撤销新增地面计算容量。此类计划变化无需点名Bloom项目、燃料电池选型或精确旧新MW；仅展示benchmark、实验性轨道运行、发布边缘/私有功能、将同一总量在地点间改配但未降低地面新增容量安排，或没有披露余量，均不越界。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "96b27f8abc495d123b36323927f503ca9cb988a0dae5c150b5ed7d865f550921",
+          "criterion": "大型AI/云运营商公开说明，已在生产验证的系统级效率提升或实际负载迁移使其当前已通电容量足以承接原本预期的AI工作负载，并据此实质推迟、缩减或取消原先公开规划的地面集中式计算容量新增；或其将有规模的生产推理从新增地面集中式容量移至端侧/私有/既有供电环境或其他明确的商业执行地点（包括轨道计算），并明确新建地面算力需求因此下降。仅公布轨道原型运行、双星计划或研究演示，没有生产级负载转移和地面扩建调整，不满足本条件。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "覆盖云和AI基础设施运营商、计算平台及大型工作负载所有者对专用推理/训练系统、模型效率、生产计算容量、数据中心部署和负载地点的公开调整。包括每单位能效/吞吐变化与后续生产扩张、中心云与端侧/企业私有/主权/区域云之间的真实运行迁移、已通电容量复用及据此修改的集中式算力计划。Apple端侧/Private Cloud Compute、IBM Sovereign Core、Google负载响应和Microsoft Maia等是已知技术/地点路线或部分需求响应，不等同新总需求或净电力减少。单个芯片benchmark、理论tokens/MW、软件/主权功能GA、管理调度、没有生产采用的设计方案，或未改变部署/容量决策的任务地点移动，均只属相关消息。 轨道/卫星算力及其研发测试、计划与实际部署也属于相关的执行地点路线；原型/演示可以相关，但是否构成方向性变化仍以Conditions对商业生产、地面负载扩展或地面计划下修的判断为准。",
+      "policy_id": "pol_ce1f033b71ee48939b40fa95afe60f97",
+      "ref": [
+        "output/work/v21/research/OPEN_RESEARCH/0001/policy_ai_site_power_topology.json",
+        "output/work/v21/research/OPEN_RESEARCH/0001/policy_persistent_agent_services.json",
+        "context/document3/v21/research_context/main_results.json",
+        "context/document3/v21/research_context/review.json",
+        "context/document3/v21/shared/d1/c1.md",
+        "context/document3/v21/shared/d1/c3.md",
+        "context/document3/v21/shared/d1/c5.md",
+        "context/document3/v21/shared/d1/c4f_future_nodes.json",
+        "context/document3/v21/shared/d1/products_manifest.json",
+        "context/document3/v21/shared/document2.json#/shells/0/units/0",
+        "context/document3/v21/shared/document2.json#/shells/0/units/1",
+        "context/document3/v21/shared/document2.json#/shells/2/units/1",
+        "output/work/v21/discovery/S0001.jsonl#L4",
+        "output/work/v21/discovery/S0002.jsonl#L15",
+        "https://blogs.microsoft.com/blog/2026/10/12/microsoft-to-expand-azure-maia-system-to-multi-gigawatt-deployments/",
+        "https://azure.microsoft.com/en-us/blog/deep-dive-into-azure-maia-300-architecture/",
+        "https://machinelearning.apple.com/research/introducing-third-generation-apple-foundation-models",
+        "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+        "https://newsroom.ibm.com/2026-05-05-think-2026-ibm-makes-digital-sovereignty-operational-with-general-availability-of-ibm-sovereign-core",
+        "context/document3/v21/shared/event_library.md#E195",
+        "https://www.fool.com/investing/2026/10/30/anthropic-just-committed-up-to-567-billion-to-comp/",
+        "https://www.datacenterdynamics.com/en/news/spinncloud-rebrands-to-sparxity-announces-cluster-deployment-at-j%C3%BClich-center-in-germany/",
+        "https://www.datacenterdynamics.com/en/news/indias-lt-breaks-ground-on-second-chennai-data-center/",
+        "context/document3/v21/shared/event_library.md#E208",
+        "https://www.datacenterdynamics.com/en/news/lightmatters-lead-asic-engineer-clifford-chao-joins-openai-as-silicon-lead/",
+        "https://blog.google/innovation-and-ai/models-and-research/google-research/project-suncatcher-satellite-response/",
+        "https://blog.google/innovation-and-ai/models-and-research/google-research/google-project-suncatcher-facts/",
+        "context/document3/v21/shared/maintenance_feed.json#/w3_coverage_gaps/0",
+        "https://huggingnews.com/ai/elon-musk-details-hardware-layout-for-spacexs-12m-gpu-supercomputer-11f0d230",
+        "https://www.tomshardware.com/tech-industry/this-week-in-toms-hardware-premium-october-31-2026-vera-cpus-available-on-oracle-clusters-building-an-agentic-cpu-benchmark-and-a-primer-to-llms",
+        "context/document3/v21/shared/event_library.md#E216",
+        "context/document3/v21/shared/event_library.md#E217",
+        "context/document3/v21/shared/event_library.md#E218",
+        "context/document3/v21/shared/event_library.md#E219",
+        "context/document3/v21/shared/event_library.md#E220",
+        "https://ir.amd.com/news-events/press-releases/detail/1302/amd-and-meta-advance-strategic-partnership-to-power-metas-superintelligence-infrastructure",
+        "https://www.oracle.com/ca-en/news/announcement/ai-world-nvidia-and-oracle-expand-nvidia-vera-rubin-to-multi-gigawatt-scale-2026-10-27/",
+        "https://blogs.oracle.com/cloud-infrastructure/nvidia-vera-cpus-oci",
+        "https://www.oracle.com/news/announcement/ai-world-oracle-brings-google-tpus-to-oracle-cloud-infrastructure-2026-10-27/",
+        "context/document3/v21/shared/maintenance_feed.json#/w3_coverage_gaps/32",
+        "context/document3/v21/shared/maintenance_feed.json#/w3_coverage_gaps/8",
+        "https://newsletter.semianalysis.com/p/we-visited-chinas-stargate-in-inner",
+        "https://www.prnewswire.com/news-releases/envision-achieves-worlds-first-commercial-deployment-of-integrated-800v-dc-sst-based-power-system-in-large-scale-ai-data-center-302926109.html",
+        "context/document3/v21/shared/event_library.md#E317",
+        "context/document3/v21/shared/event_library.md#E320"
+      ],
+      "title": "AI计算效率与执行地点对新增现场负载的影响",
+      "transmission": "BE的可服务机会取决于数据中心/其他大型用户是否需要新的、持续且集中在特定地点的现场电力，不是每个AI任务耗电多少。提高tokens/MW或tokens/watt会压低单位任务电力，但可降低服务成本、扩大推理任务和模型规模；同一效率也可能让工作在已有供电余量中完成。把任务从端侧/企业自有环境移往共享云，可集中负载；把任务迁至端侧、私有区或既有已通电设施，则可能改变地点、利用率和新建节奏。方向需看公开的生产容量/负载安排，而不能由芯片基准或“主权/边缘”产品上市单独推断。截止日微软已称Maia 200用于生产，并公布Maia 300将从2027年进入多GW部署，且给出每MW/每瓦性能主张；这是效率与算力部署并行的基线而非未来首次信号。现有Oracle首批1.2GW已签并部署、Nebius约328MW计划、AEP/Google约702MW计划等显示大型现场计算项目规模，但均不提供客户余量或BE份额；Q3资本投入与现金转换也表明新扩建持续性有经营分量。更高效系统伴随新增生产计算资源和实际部署范围扩张，可支撑更多持续负载；相同已通电设备中的效率反弹或任务增加本身不证明新增现场电力需求；若运营商公开表示效率或地点重配已使原定新增计算容量不再需要，则反向修订后续现场负载机会。两种条件均不要求公开Bloom订单、燃料电池项目名称或新旧MW净值。 2026-08-12 Nebius还称Vineland的300MW AI数据中心决定改用Bloom燃料电池，管理层预计不会重大影响项目进度，并将年末签约电力目标提高到5GW，大部分容量预计随后2—3.5年上线。该签约电力目标是未来规划而非已运行计算容量或Bloom新增订单；300MW场址不得与328MW首项目重复相加。此信息更新扩建预期背景，不改变以系统效率进入生产并伴随实际计算资源扩展为LONG、或以效率/迁移导致容量计划缩减为SHORT的边界。 2026-10-30报道的OpenAI silicon lead任命及Jalapeño预期部署（2026年末有限量、2027年更广泛）构成已知芯片发展路径；在有后续生产和部署信息时，应与该计划及已公开算力路径比较，不能把人才加入、芯片规格或按计划上线本身当成新增持续现场负载，也不能当成效率导致扩建收缩。 2026-10-30 Google报告Project Suncatcher原型已完成主机与TPU托盘供电、早期机器学习测试并产生Gemma 4在轨响应；后续热压力/辐射验证及2027双星互联仍是研发步骤。该消息把在轨运行从待验证计划推进到初步实际验证，但没有披露规模化商业负载，也没有显示Google下修地面集中算力计划；在轨算力本身不形成Bloom可服务的地面现场电力需求。未来若有商业轨道负载替代地面计划，应以实际迁移及地面容量变化判断SHORT；轨道以外仍须出现有证据的地面持续负载扩建才支持LONG。\n\n截至2026-10-27，平台侧信息进一步区分融资/产品可用与实际资源扩展：Meta将AI股权融资计划从950亿美元调整至975亿美元（其中未来600亿美元ATM）；AMD宣布拟向Meta此次股权发行投资10亿美元，尚未交割，首批Helios机架已在Meta安装并测试，仍属此前至多6GW合作的执行进展。Oracle/NVIDIA宣布Vera Rubin NVL72与Vera CPU在OCI一般可用，首批15万颗Vera CPU将跨Oracle区域提供，OpenAI称正在把早期Vera用于agent sandbox生产；双方计划把OCI超级集群扩至多GW。Oracle/Google计划2027年起在OCI提供TPU并按客户需求多年爬坡，Oracle描述其目标为GW级但未披露首期客户/站点规模。上述内容更新了已知的平台与部署路径，但融资、平台上线、测试和远期计划均不自动等同于相对既有路径新增的地面用电容量；厂商性能主张也不是场地净用电测量。"
+    }
+  ],
+  "w1_events": [
+    {
+      "canonical_summary": "Aterio’s report said the Nebius DataOne project in Vineland faced permitting delays after changing from generators to Bloom fuel cells and estimated that roughly 140 MW of planned capacity could shift to 2027. The schedule impact remained a third-party estimate, and approval timing was unresolved.",
+      "derived_from_event_ids": [],
+      "event_id": "E270",
+      "event_type": "PRODUCT_MILESTONE",
+      "facts": [
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F640",
+          "fact_occurred_at": "2026-11-04",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Aterio estimated that the approximately 140-MW Nebius DataOne New Jersey project could be delayed until 2027; this was a third-party schedule estimate, not an operator-confirmed change.",
+          "subject_time": "2027"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F641",
+          "fact_occurred_at": "2026-11-04",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Aterio reported that the original generator permit at Vineland was impeded and that the later switch to fuel cells also encountered approval delays.",
+          "subject_time": "Current project permitting"
+        }
+      ],
+      "known_event_summary": "On 2026-11-04, Aterio reported permitting delays at Nebius’s Vineland DataOne project after its switch to Bloom fuel cells and estimated that about 140 MW could be delayed to 2027; the schedule estimate was not confirmed by the project parties.",
+      "occurred_at": "2026-11-04",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E161",
+        "E174",
+        "E208"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Aterio reported permit delays and a possible 2027 schedule shift at Nebius’s Vineland project"
+    },
+    {
+      "canonical_summary": "At its August 12 Q2 call, Nebius said changing the 300-MW Vineland AI data center to Bloom fuel-cell power materially improved the project and was expected to deploy quickly without material schedule impact, while DataOne sought final site-plan approval. Nebius also said it planned to raise its company-wide contracted-power target to 5 GW by year-end 2026, expecting most capacity to come online over the next two to three and a half years.",
+      "derived_from_event_ids": [],
+      "event_id": "E208",
+      "event_type": "CAPACITY_OR_CAPEX",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F450",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Nebius Chief Communications Officer Tom Blackwell said switching the power source for the 300-MW Vineland AI data center to Bloom fuel cells materially enhanced the project, including from the community perspective.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F451",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Nebius management described Bloom fuel cells as a quiet, reliable on-site power source with very low emissions.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "fact_id": "F452",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Nebius Chief Product and Infrastructure Officer Andrey Korolenko said Bloom fuel-cell deployment should be very fast.",
+          "subject_time": "NEAR_TERM"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "fact_id": "F453",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Nebius expected the decision to switch Vineland to Bloom fuel cells would have no material effect on the project schedule.",
+          "subject_time": "FUTURE"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F454",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Nebius said DataOne was seeking final approval for a revised site plan after changing the previously approved layout to reflect the decision to use Bloom for project power.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "PLAN",
+          "fact_id": "F455",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Nebius said it planned to raise its contracted-power target to 5 GW by year-end 2026 and expected most of that capacity to come online over the following two to three and a half years.",
+          "subject_time": "2026 year-end; most capacity expected online over the following 2–3.5 years"
+        }
+      ],
+      "known_event_summary": "On 2026-08-12, Nebius said switching its 300-MW Vineland site to Bloom fuel-cell power materially improved the project, was quiet/reliable/low-emissions, and should deploy quickly without a material schedule impact; DataOne was seeking final site-plan approval. Nebius also planned 5 GW of contracted power by year-end 2026, with most capacity expected online over the following 2–3.5 years.",
+      "occurred_at": "2026-08-12",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E52",
+        "E174",
+        "E161",
+        "E16",
+        "E173"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Nebius described the Bloom-powered Vineland transition and a 5-GW contracted-power plan"
+    }
+  ],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": false,
+    "related_has_new_fact": true
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-24T22:45:53.038078Z"
+  }
+}

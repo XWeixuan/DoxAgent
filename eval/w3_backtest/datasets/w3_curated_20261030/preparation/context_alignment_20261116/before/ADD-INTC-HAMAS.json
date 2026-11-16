@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "Known Facts 和 Provisional Facts 均为空，当前消息的核心事实（以色列向美国提供哈马斯无意解除武装、正筹备新一轮战争的情报）没有任何已加载事实覆盖，属于新信息。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "matched_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": false,
+    "reason": "消息内容为以色列与哈马斯的地缘政治报道，未涉及Intel产品、制造、客户、专利、供给、财务或指数等任何Policy match_scope所描述的具体事实，无候选召回。"
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-10T23:02:12.877682Z"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息包含多个尚未被已知事实覆盖的核心进展：1）Oracle已移除BorderPlex（项目关键合作方），这在所有已知provisional facts中均未提及；2）Oracle 2056 bonds首次收益率达8%、CDS创纪录、$18B建设债低于90美分等信用压力指标为全新事实；3）具体以2028年开幕为条件推迟付款的机制细节超出已有force majeure通知的语义范围。已知事实仅覆盖了force majeure通知本身、燃气管线延误及项目背景。",
+    "reference_ids": [
+      "E115"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "三个Candidate均未命中。消息核心事实是Oracle对Blue Owl Capital发出'intent to defer payments'（附条件：若设施错过2028开业），并移除BorderPlex；Oracle明确声明设施'remains on schedule'。对pol_9795c572511e9fcc514e：6个月管道延迟被提及，但未公布Bloom项目新commissioning date、scope cut或cancel，不满足trigger boundary。对pol_c6f78f9f2be8ff1d1ee8：2.45GW Bloom容量未被取消或削减，'defer payments'≠'取消项目/削减承诺容量'，且为附条件意图而非已执行动作。对pol_b88a58def59b82c29eb5：criterion要求对Energy Server deployment本身的defer/cancel/downsize/renegotiate，而消息所述为Oracle与Blue Owl之间的付款条款调整（附条件），非对2.45GW Bloom部署的实际推迟或重谈；且trigger boundary要求'subsequent filings reflect the change in backlog, shipment, or revenue expectations'，消息中无此要素。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Oracle",
+          "Project Jupiter",
+          "New Mexico"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Oracle已向Project Jupiter（新墨西哥州数据中心园区）开发商发出force majeure（不可抗力）通知。",
+        "subject_time": null
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E115",
+      "semantic_day": "2026-09-24"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T12:30:11.852735Z"
+  }
+}

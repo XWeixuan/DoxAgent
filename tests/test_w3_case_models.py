@@ -48,8 +48,8 @@ class ModelWorker:
 @pytest.mark.parametrize(
     "kind,model,effort",
     [
-        ("HIT", "gpt-6.1-sol", "medium"),
-        ("RELATED", "gpt-6.1-sol", "medium"),
+        ("HIT", "gpt-6-luna", "max"),
+        ("RELATED", "gpt-6-luna", "max"),
         ("OPEN", "gpt-6-luna", "max"),
     ],
 )
@@ -102,7 +102,7 @@ def test_all_worker_phases_use_the_frozen_case_profile(tmp_path, kind, model, ef
         runner.close()
 
 
-def test_related_case_has_its_own_fork_with_the_same_sol_profile_as_hit(tmp_path):
+def test_related_case_has_its_own_fork_with_the_same_luna_profile_as_hit(tmp_path):
     service, _, agent, _ = runtime(tmp_path)
     original = agent.run_phase
     forks = []
@@ -140,16 +140,16 @@ def test_related_case_has_its_own_fork_with_the_same_sol_profile_as_hit(tmp_path
         service._enqueue_route_effects(related, "")
         service.process_pending_effects()
         assert [(f.model, f.model_provider) for f in forks] == [
-            ("gpt-6.1-sol", None),
-            ("gpt-6.1-sol", None),
+            ("gpt-6-luna", None),
+            ("gpt-6-luna", None),
         ]
         assert (
             service.repository.get_case("hit").frozen_inputs["w3_execution_profile"]["effort"]
-            == "medium"
+            == "max"
         )
         assert (
             service.repository.get_case("related").frozen_inputs["w3_execution_profile"]["effort"]
-            == "medium"
+            == "max"
         )
     finally:
         service.close()

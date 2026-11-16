@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "TSMC-Terafab洽谈及Intel盘前跌超4%已由E304（F1245/F1258）和provisional E1302覆盖。但Susquehanna分析师报告Intel Q3笔记本CPU型号份额降至68.1%（环比-3.9pp）、AMD升至29.3%、Qualcomm达2.2%、Panther Lake占1.8% SKU、桌面端份额降至约76%等具体量化份额数据，在E55及其他已加载Fact中完全无记录，构成独立于TSMC-Terafab叙事的新型分析师评估核心进展。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息陈述的是Musk确认TSMC与Terafab之间处于'仅仅是讨论'阶段，Culpium报道TSMC在'探索方式'协助运营，均无Intel退出/被排除的正式确认，也无绑定制造安排。Intel 14A仍被描述为'sole named process technology'。这恰好属于两条Policy trigger_boundary中明确排除的'已知的TSMC讨论、非排他探索、没有绑定生产安排的合作消息'。两条Candidate均NO HIT。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

@@ -54,6 +54,60 @@
       "publisher": "TrendForce",
       "published_at": "2026-09-07",
       "role": "市场供需与对照"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Micron: A look at memory ahead of Q4 earnings",
+      "url": "https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/09/micron-a-look-at-memory-ahead-of-q4-earning",
+      "publisher": "S&P Global Market Intelligence",
+      "published_at": "2026-09-22",
+      "role": "事件前可比预期"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Long-Term Agreements Cap Price Increases; Server DRAM Contract Prices Expected to Rise 13-18% QoQ in 3Q26",
+      "url": "https://www.trendforce.com/presscenter/news/20260709-13140.html",
+      "publisher": "TrendForce",
+      "published_at": "2026-07-09",
+      "role": "合同机制与行业供需"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Micron Meets Less Than Half of Data Center Demand",
+      "url": "https://www.trendforce.com/news/2026/08/12/news-micron-can-meet-less-than-half-of-data-center-demand-as-customers-rush-to-secure-memory-at-very-high-prices/",
+      "publisher": "TrendForce",
+      "published_at": "2026-08-12",
+      "role": "公司此前需求和合同定价"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "UBS Reiterates Buy on Micron, $1,625 Price Target",
+      "url": "https://price-target.com/2026/08/10/173202/",
+      "publisher": "UBS via Price Target",
+      "published_at": "2026-08-10",
+      "role": "同机构此前研究与估计"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "Micron Technology Reiterated at Buy by UBS as Investor Positioning Skews Cautious",
+      "url": "https://www.streetinsider.com/dr/news.php?id=26940618",
+      "publisher": "StreetInsider",
+      "published_at": "2026-08-18",
+      "role": "同机构先前观点与投资者争论"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "UBS raises Micron stock price target to $1,625 on memory demand outlook",
+      "url": "https://www.investing.com/news/analyst-ratings/ubs-raises-micron-stock-price-target-to-1625-on-memory-demand-outlook-93CH-4709009",
+      "publisher": "Investing.com",
+      "published_at": "2026-05-26",
+      "role": "UBS 更早的目标与长期协议判断"
     }
   ],
   "market": {

@@ -1,0 +1,367 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息的核心事实是 Oracle 与 Snowflake 宣布 Snowflake AI Data Cloud 将作为 OCI 原生第一方服务提供，并涉及统一定价、计费及 Oracle Universal Credits 消费等安排；本轮已知事实为空，尚无任何 Fact 覆盖这些核心事实。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": true,
+    "reason": "pol_f818654e103b4a2f87fb330401c0eb13：Oracle宣布Snowflake作为OCI原生第一方服务并允许客户用Oracle Universal Credits购买，属于云商Marketplace/承诺抵扣与结算准入范围；但原文均为“will be available/will allow”，未确认该资格已生效，故不写入C1命中，仅列RELATED。pol_9d8c96e157284bb7a6c9f7dba7faa38d：该安排体现平台套装与已承诺云预算可用性，但无具体买方新项目定标或预算批准，未命中其条件，仅RELATED。pol_1e50c258ad2f4405b487a0d7900ad610：消息未涉及Snowflake自身云/模型采购合同、净价或最低承诺，排除。",
+    "related_policy_ids": [
+      "pol_f818654e103b4a2f87fb330401c0eb13",
+      "pol_9d8c96e157284bb7a6c9f7dba7faa38d"
+    ]
+  },
+  "policy_title_rows": [
+    {
+      "policy_id": "pol_c40a91c8136e427b8b3abb0b87dc2559",
+      "title": "公共部门云与服务授权范围"
+    },
+    {
+      "policy_id": "pol_f83208d870ba4ef6adeb7918926881f4",
+      "title": "源应用业务数据开放与 Snowflake 查询入口"
+    },
+    {
+      "policy_id": "pol_9d8c96e157284bb7a6c9f7dba7faa38d",
+      "title": "平台整包与迁移支持重定向新增数据与AI项目"
+    },
+    {
+      "policy_id": "pol_ccdb54e9577a4278afb3aaf7b50ea010",
+      "title": "Observe Agent Observability 的生产资格与在线评估产品范围"
+    },
+    {
+      "policy_id": "pol_d6047226f18e4b34b739d41950d6fb81",
+      "title": "美国联邦政府Snowflake生产采购承诺"
+    },
+    {
+      "policy_id": "pol_6a6093d47b18430d8646271f78fc27b0",
+      "title": "指数成分与权重变化引发的 SNOW 净被动持仓流量"
+    },
+    {
+      "policy_id": "pol_e35e9a98c79d43ffa2a230a61fa7b53e",
+      "title": "卖方新论据与预期模型对 SNOW 的公开重估"
+    },
+    {
+      "policy_id": "pol_ecaefd8816194acc97e2c20431bdda81",
+      "title": "Snowflake AI工作流的独立生产采用与付费验证"
+    },
+    {
+      "policy_id": "pol_3acdd6654822494d82fea02a841f36d1",
+      "title": "董事选举问责规则与股东留任权"
+    },
+    {
+      "policy_id": "pol_2e7d0b7608424504a6b9d51e543ca2f9",
+      "title": "高管绩效奖励中的多年度现金与经营约束"
+    },
+    {
+      "policy_id": "pol_d49969096e6b4a9faae9a7de82ed3efc",
+      "title": "管理层GAAP盈利时点框架"
+    },
+    {
+      "policy_id": "pol_e8fca08288d941c69e33067322dcfb83",
+      "title": "核心容量承诺与真实数据工作负载的匹配"
+    },
+    {
+      "policy_id": "pol_d9d4603a358a4cbfba498a9a0b283777",
+      "title": "客户核心数据工作从迁移计划转为持续生产"
+    },
+    {
+      "policy_id": "pol_02d0772226674cca842dcb3316efd0d6",
+      "title": "核心生产计算的 Adaptive 调度效率与付费强度"
+    },
+    {
+      "policy_id": "pol_eeb1726b62b947368aeafd07d6e29e40",
+      "title": "核心平台 Platform Credit 有效单价与替代套餐经济性"
+    },
+    {
+      "policy_id": "pol_078a82b122b542fcbb5b3c03df27a838",
+      "title": "企业 Agent 默认入口与 Snowflake 服务层获配"
+    },
+    {
+      "policy_id": "pol_3880d8e5a18547eb99d75a3a16139509",
+      "title": "跨工具语义复用与 Snowflake 核心查询"
+    },
+    {
+      "policy_id": "pol_cb2e8371d8e44010a5c346674cfa6134",
+      "title": "企业 agent 周期生产任务与外部业务动作授权"
+    },
+    {
+      "policy_id": "pol_f9ced95e1d7a4a58b63edaad48a68d4c",
+      "title": "AI 专属收费、模型效率与成功任务经济"
+    },
+    {
+      "policy_id": "pol_1400f5dd4b694f5aa283b07af5a5ed0c",
+      "title": "应用内嵌分析与 Snowflake 商业执行分配"
+    },
+    {
+      "policy_id": "pol_b0a6510b103e443787c0a3a7c1d468e9",
+      "title": "金融内容授权与 AI 工作流分销"
+    },
+    {
+      "policy_id": "pol_75467e96d7a048ed861a55304ad6da21",
+      "title": "本地或嵌入式工作集的重复分析执行位置"
+    },
+    {
+      "policy_id": "pol_4f9e0e6fcf3a40ca82e1e10b86488aa2",
+      "title": "开放数据治理可携带性与查询执行分配"
+    },
+    {
+      "policy_id": "pol_f818654e103b4a2f87fb330401c0eb13",
+      "title": "云Marketplace准入、联合销售与获客成本分担"
+    },
+    {
+      "policy_id": "pol_6687a0599e9a4a9a9ee88f1016ab0fd7",
+      "title": "Cortex模型生产能力与许可路由"
+    },
+    {
+      "policy_id": "pol_e9e075d209f047dda49542032d5903f3",
+      "title": "私有源数据可达性与生产连接路径资格"
+    },
+    {
+      "policy_id": "pol_ea815e032710499fb12e9d18f03ede01",
+      "title": "GCP Iowa区域容量与新Snowflake工作负载准入"
+    },
+    {
+      "policy_id": "pol_720891335f1841238f9a7b1ecbc0532b",
+      "title": "区域核心执行连续性与跨区恢复资格"
+    },
+    {
+      "policy_id": "pol_8cca0f656de742a282c30db2997ffba0",
+      "title": "身份、集成与最小权限变化对Snowflake数据访问的影响"
+    },
+    {
+      "policy_id": "pol_04a1c0c262df47528c28b4708dcb6b64",
+      "title": "Postgres镜像的业务价值、可达范围与回写边界"
+    },
+    {
+      "policy_id": "pol_0fe093c250d54785bdcb98b9285d5767",
+      "title": "Snowflake Postgres 的生产采用与服务边界"
+    },
+    {
+      "policy_id": "pol_40f62b33513844de85ff762c9efc4103",
+      "title": "长程 agent 的事务状态与运行时持久层分配"
+    },
+    {
+      "policy_id": "pol_b128c2b7f544423f92b007988569c241",
+      "title": "AI应用构建器的事务后端分发与生产晋级"
+    },
+    {
+      "policy_id": "pol_ba6b74b129f241f5b974795cb1c53635",
+      "title": "Marketplace 共享数据与应用的 Snowflake 侧执行"
+    },
+    {
+      "policy_id": "pol_52bfd9f08cd145eb938e6172ee5d9fe8",
+      "title": "生产 Agent 责任边界与持续质量监控预算"
+    },
+    {
+      "policy_id": "pol_96692944b52a4c6485519cf20b0cc91d",
+      "title": "Observe on Iceberg 的生产资格与部署范围"
+    },
+    {
+      "policy_id": "pol_59eaa3b3b324493b8e9a29601e362910",
+      "title": "开放遥测湖中的工作流与后端获配"
+    },
+    {
+      "policy_id": "pol_47e511c64c2c4233bf9710a0f7788f6d",
+      "title": "Observe关键事故工作流与客户预算获配"
+    },
+    {
+      "policy_id": "pol_df7aff9981e54989bb35df6f071145be",
+      "title": "Observe遥测计价权益与同负载竞争位置"
+    },
+    {
+      "policy_id": "pol_95d7dd3d9c064e918cf57ca219427556",
+      "title": "运维与编码 Agent 的生产故障上下文路由"
+    },
+    {
+      "policy_id": "pol_95f981d0d1354b4ea0cc0a879cb63cdd",
+      "title": "软件生产发布中的遥测核验与Observe参与"
+    },
+    {
+      "policy_id": "pol_b272a794740c425496370b64f7f6e609",
+      "title": "客户采样、路由与高保真保留改变 Observe 遥测获配"
+    },
+    {
+      "policy_id": "pol_bd48263ec36b4574bc7c73727ca1b0d8",
+      "title": "Agent轨迹内容治理与可诊断范围"
+    },
+    {
+      "policy_id": "pol_d606f46d14f14e92be653d04f4ea2c88",
+      "title": "遥测业务上下文的跨部门使用与分析获配"
+    },
+    {
+      "policy_id": "pol_1e50c258ad2f4405b487a0d7900ad610",
+      "title": "云与模型采购价格、最低承诺及合资格抵扣"
+    },
+    {
+      "policy_id": "pol_81d327206042403fb54ebc4bfd2e9392",
+      "title": "跨区域推理资格、共享资源与本地池化的净经济"
+    },
+    {
+      "policy_id": "pol_d07450aec4d14eb8b81ff7815fb87cba",
+      "title": "供应商预付款的不可回收现金与资金前置"
+    },
+    {
+      "policy_id": "pol_1033555d9247468dbee0a1a1ab1ec41b",
+      "title": "Observe、Natoma与Snowflake Postgres的整合资源、产品机会与持续成本"
+    },
+    {
+      "policy_id": "pol_258cc8a64b314cd2adfe97489a5852ae",
+      "title": "Snowflake内部自动化、岗位配置与关键技术人才报酬的持续成本"
+    },
+    {
+      "policy_id": "pol_e6d16cb632254fc691972d71d10b8cc8",
+      "title": "Snowflake容量合同付款时点、续约与现金转换"
+    },
+    {
+      "policy_id": "pol_ea6db839ed824849be0646a3a7cbb25b",
+      "title": "AWS Marketplace融资资格、卖方汇款与Snowflake现金责任"
+    },
+    {
+      "policy_id": "pol_7f46fb69429d460796ce0357d86b609b",
+      "title": "可转债本金、转换权与现金/股份结算选择"
+    },
+    {
+      "policy_id": "pol_5b61e1eeab284edfa080f782b4789b2b",
+      "title": "普通股回购、员工股权交付与净每股权益"
+    },
+    {
+      "policy_id": "pol_4871fe1d4b8d4111a0d489c48d089dba",
+      "title": "云端一次性迁出费条款与 Snowflake 核心项目获配"
+    },
+    {
+      "policy_id": "pol_b19debe754b84796bf70b7d9a1a6f678",
+      "title": "企业AI上下文与质量评估对任务准入范围的改变"
+    }
+  ],
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "当前工作基线是混合平台、逐项目分配：Snowflake有增长和扩展基础，Fabric、Databricks也有实际商业产品；没有可比的客群级总成本、项目金额或平台市场份额。云/模型承诺及人员技能属于不同买方资产，是否可用于某一Snowflake或竞争产品取决于具体方案条款。现有AWS-Snowflake合作已包含联合迁移/客户成功/Marketplace投入，但公告未分配双方出资份额；其中五年60亿美元是Snowflake自己的AWS资源采购，不是客户云承诺。此为已知基线而非新增事件。",
+            "trigger_boundary": "足够边界是一项已获批且面向重复生产用途的企业项目有明确采购/平台归属，并且客户实际将可用承诺、整套采购或迁移支持列作这一选择的组成理由。该预算和项目决策本身已把一个业务线/应用的后续工作负载指向Snowflake，故不必等到第一次账单或季度消费，也不要求披露完全可比的TCO金额。仅有更低挂牌价、产品包、云额度、一次性补贴、供应商声称可节约、未获预算的路线图或小范围PoC仍不足；这些尚未证明买方将有分量的重复项目分配给Snowflake。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "42349047ae10654f0b83db6be156a84a824b7a713acfe7219c11072315e74408",
+          "criterion": "企业采购方或其具名授权实施/采购伙伴公开确认：一项有清楚业务部门、应用或客户数据产品范围、已获生产预算/项目批准的新增数据/分析/AI项目，在首次生产平台分配前，正式选择Snowflake；该方明确说明可用的既有云/模型承诺、跨产品采购套餐、员工技能复用或一次性迁移/实施支持，对这一整项方案的成本与交付选择起了实质作用。该工作属于新增或扩展的重复性业务项目，不是当前合同同额续期、原平台直销改走Marketplace或已上线任务单纯改账单渠道。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前基线并非Snowflake赢得所有下一批业务；集成套件、客户已有云承诺和人员经验会为替代平台提供现实竞争入口，现有数据、治理、技能与验收风险又支持项目级混合部署。竞争平台自报规模不可比，Snowflake没有公开纯核心工作负载份额，不能仅凭Fabric/Databricks增长推断SNOW项目被夺走。",
+            "trigger_boundary": "足够边界是客户已为一个企业生产项目作出可辨识的采购/运营分配，并表明套餐、承诺资格或迁移支持是实际决定因素；该新项目的SNOW机会被排除，已经下调该边际项目的取得路径，即使公司继续保留Snowflake总体合同/旧部门也成立。无需等待替代平台上线或Snowflake报告收入下降。单纯扩张对手客户总数、一般性合作、没有生产预算的PoC、Snowflake全平台合同仍在、或在没有项目归属变化时改用Marketplace结算均未越界。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "69658fdd296a2c2ac2f9c3e1ef992506b27e84c7ab48a43283a0d634137c07bd",
+          "criterion": "企业采购方或其具名授权实施/采购伙伴公开确认：一项有清楚业务部门、应用或客户数据产品范围、已获生产预算/项目批准的新增数据/分析/AI项目，在首次生产平台分配前，正式交给Microsoft Fabric/Foundry、Databricks或其他云原生替代平台；客户明确把可用的云/模型承诺、跨产品采购套餐、现有团队技能复用或一次性迁移/实施支持列作该竞争方案获选的实质原因，并说明这一项目不再分配给Snowflake。客户仍可保留Snowflake处理原有核心系统或其他部门。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配企业采购者、平台供应商及实施伙伴对新增数据工程、分析或AI业务项目的套装采购、预算及平台标准化决策，包括Microsoft Fabric/Foundry、Databricks/SAP Business Data Cloud、Snowflake与云/模型合作方之间的项目范围、已承诺云/模型预算可用性、迁移credits、联合部署支持、现有技能复用与实施资源。来源可为客户/采购方、已授权转售商、云或模型商以及实施方公布的定标、预算批准或生产项目范围。例如，新部门或业务应用的生产项目因已提交的成本/技能比较而被交给Snowflake或竞争套件；SAP等把数据与AI能力放入同一业务平台的公告也可匹配，但不单独触发。Snowflake与AWS的已知联合迁移投资和Snowflake自身云采购、竞争者客户/运行率总量、普通平台合作头衔、一次性演示与试用、既有合同续约/期限、整体平台取消、Snowflake Platform Credit有效价及已运行工作负载转移分别不是本观察条件。",
+      "policy_id": "pol_9d8c96e157284bb7a6c9f7dba7faa38d",
+      "ref": [
+        "output/work/v21/discovery/S0001.jsonl#L13",
+        "context/document3/v21/d2/shell-0001.json#/units/2",
+        "context/document3/v21/shared/d1/c3.md",
+        "context/document3/v21/shared/d1/c4e_formal_scan.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "https://www.snowflake.com/en/news/press-releases/snowflake-expands-aws-collaboration-with-6b-commitment-to-accelerate-enterprise-agentic-ai-adoption/",
+        "https://www.snowflake.com/en/news/press-releases/snowflake-and-anthropic-accelerate-enterprise-ai-adoption-driven-by-rising-demand-for-governed-ai/",
+        "https://news.sap.com/2026/05/sap-bdc-accelerate-autonomous-enterprise/",
+        "https://news.sap.com/2025/04/sap-business-data-cloud-picks-up-steam-customer-partner-updates/"
+      ],
+      "title": "平台整包与迁移支持重定向新增数据与AI项目",
+      "transmission": "企业数据/AI平台选择的边际对象是下一项新增或扩展的业务项目，不是现有Snowflake合同是否整体取消。FY2027 Q2 Snowflake平台产品收入为14.91861亿美元、NRR为126%，而同口径纯核心消费、客群级工作负载份额和项目金额均未披露；Microsoft Fabric与Databricks已有真实商业采用，但公司自报的付费客户数与运行率定义不同，不能据其总量推导Snowflake失单。客户为一项新工作负载比较的不只是产品牌价：同一需求下的有效预算还受可抵扣的既有云/模型承诺、跨套件采购、员工既有技能、迁移与数据验收、实施伙伴容量及延迟风险影响。已有承诺只有在具体产品/交易符合资格时才降低新增现金门槛，而且仍有替代用途或未用承诺损失；不能把它记作免费的云资源。永久折扣会重设持续运行的单位成本，一次性credits、迁移补助或免服务费只降低启动/转换成本，不等于长期单位成本同比下降。\n\n因此，一项具备已批准生产预算的新部门、应用或业务线数据/AI项目，在方案明确把现存团队/云栈复用或第三方承担的迁移支持当作购买理由后，可能先改变该项目的未来Snowflake消费归属，再经历实施和确认；不必要求原平台或Snowflake全合同被撤销。对手获选也只证明这项定义明确的新项目的分配变化，不把Snowflake的既有数据、计算与其他部门一并视为流失。相反，单个开发试用、通用平台套装、模型能力展示或没有买方预算/项目范围的报价，并未改变实际的企业项目归属。客户、伙伴和供应商披露的已批准选择比平台间挂牌价格更接近真实有效总成本；无需新闻披露完整分项账单，也不在资料不足时伪算跨厂商价格优势。"
+    },
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-18，AWS合作已含Marketplace、联合迁移与客户成功；AWS Marketplace支持合资格交易抵扣客户承诺且private offer自动续约已上线，但既有资格是否适用于每一个Snowflake产品/offer必须按该offer判断。Microsoft官方规则要求Azure-benefit-eligible offer并经Azure portal采购，不能从泛Marketplace标志推断某一Snowflake offer具资格。Snowflake的AWS Marketplace销售和客户AWS暴露已有真实规模，但不披露该销售中原直销转入、续约及净新增使用占比。",
+            "trigger_boundary": "新增有效资格将Snowflake服务与一个原不可用于该服务的实质企业承诺预算池连接，已改变对应买方的采购可达性，可在项目或消费出现前改善可获配概率。须有Snowflake offer/授权卖方特定适用性、实际新增的买方预算范围和生效安排，不能由一般市场标识推定。具名已批准项目是可选的范围/采用证据，不是普遍规则的共同前提。旧直销续期改道、自动续约延长同一合同或累计GMV上升不证明新预算或新工作，预算可用也不等实际消费。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "f3b26b113f2b002483e0d2c29b06cc83691d4cc0b67b95ad561cf9e4290fbc1f",
+          "criterion": "云/模型商或Marketplace实施新的有约束采购/private-offer规则，明确适用于Snowflake特定数据/AI服务或授权卖方，使一个此前不合资格、具有实质企业采购范围的客户承诺预算池现在可用于购买该服务。正式规则须能识别新增预算/买方类别、offer及生效资格；足以普遍改变该类买方项目可达性时不要求已有具名项目采用。客户/渠道批准新生产项目使用该预算可作为直接证据，普通直销续约改结算、旧资格宣传或泛Marketplace规则不符合。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Snowflake有主要云托管、直销与Marketplace多条销售路线，但AWS是多数客户运行的云、2025 AWS Marketplace销售超过20亿美元；因此相关规则变化可能作用于实质渠道入口，同时不代表所有Snowflake客户或当前消费会受同幅影响。Marketplace的普通续约、直接销售和新项目采购是不同交易，删除一种渠道若仍能无摩擦直销并未自动失去项目。",
+            "trigger_boundary": "足够边界是有代表性的合资格买方不能再用既有承诺/渠道批准一个新增生产项目，并因此在方案中剔除Snowflake或改选原生平台；或一项生效的规则对具规模的相关买方群体全面封闭Snowflake资格且无可行替代采购路线。此时Snowflake的可触达项目/预算入口已经缩小，不必等其全平台合同被取消或报表确认损失。单独的云商优先推销自家产品、一个转售伙伴名单变化但客户仍可用原条件采购、或由直销改回Marketplace不越界。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "9acf36962f39ff8e7142f28e35b94569781876a6c0ade9bbbf3d5468c0d958c0",
+          "criterion": "云/模型商、Marketplace或主要授权转售渠道正式缩窄/撤销Snowflake特定产品或其具名授权卖方的private-offer、承诺抵扣或联合销售资格；该变更使一个可辨识、此前可走该路径的企业新数据/AI项目无法继续使用相应采购预算，且客户/渠道确认该项目被改分给云商原生服务或其他渠道平台，或该新资格规则覆盖一批主要相关买方而没有等效的新项目购买路径。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Snowflake AWS合作已公布联合迁移/客户成功/Marketplace投资但没有公开双方出资份额；AWS WMP的官方计划说明AWS可向合资格ISV迁移提供推广credits，Databricks的引述支持这一类联合投入可加快迁移，但不证明Snowflake取得该计划资金。AWS CPPO的结构则是ISV授权折扣、转售伙伴加价并可提供自己的实施服务。Snowflake FY2027 Q2销售营销费用为6.116亿美元，交易相关佣金/引介费用同比增量约5470万美元；专业服务毛利约负38%。没有同一客户项目的净CAC或partner take-rate序列，不能假定公司现有份额为零。",
+            "trigger_boundary": "明确且非轻微的项目成本从Snowflake账单/人员责任转给外部付款或履约方，已改善该类新增项目的费用回收，不需集团CAC或收入。固定credit、定义清楚的全部/比例费用、渠道费减免或伙伴接管实质测试/迁移任务都可说明份额；已知Snowflake补贴、折扣、报销与其他对价必须计入，若抵回同项负担则不成立。不要求公告证明不存在任何未披露私有安排，也不把未知份额设零；公开付款角色或被承担任务无法识别时，不能由合作口号推断转移。"
+          },
+          "condition_id": "C3",
+          "condition_revision": "16e8bbd9e1deddc14fcb34e7a8f9f3fb3587e35d04b93a38c79c4db4b18f16bb",
+          "criterion": "可重复用于新Snowflake企业项目的合作/转售条款或具名合同，明确由云商、模型商或实施伙伴直接支付、提供credits或承担一项实质迁移、集成验收、客户成功、Marketplace/引介费或佣金责任，原本需由Snowflake承担的相应持续项目成本因而转出。公开资料须可辨认出资/折让方、金额/比例或定义服务份额及真正交付者，并按已披露折扣、返点、报销、回购/偿付等对价判断，不能仅凭伙伴标识或joint investment。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Snowflake销售费用基线包含按销售/消费支付的佣金、第三方引介费和Marketplace交易费用，其中新客/扩展的部分佣金与引介费会资本化后摊销；专业服务在FY2027 Q2有约2073万美元毛损，服务投入的经济回收主要经由客户后续平台价值实现。现有AWS公告未提供分成表，不能从增长中的公司销售费用或市场总额中推断单个渠道CAC已经上升。",
+            "trigger_boundary": "同类新增项目中原由合作方承担的实质部分转给Snowflake，或其有效渠道/实施份额上升，可先降低获客投入回收。比较已披露出资、责任和对价，已知新增伙伴贡献或费用返还须扣除，但不要求穷尽所有潜在私有抵销。实际付款角色/份额不明则不能记未知为零或推净负担。无需集团CAC、客户最终不上线或财报确认；集团费用与Marketplace总量、通用伙伴涨价不替代Snowflake特定条款。"
+          },
+          "condition_id": "C4",
+          "condition_revision": "8db6fcb41a9983bf04d57f902f1a87dc75cb1a35b992f8cc9593e3ba64fedfef",
+          "criterion": "正在适用于新增Snowflake企业项目的标准合作/私有报价条款，相对同一项目类别及履约范围，明确把实质迁移credits、专业服务、Marketplace费或佣金/折扣责任新增转给Snowflake，或提高其承担份额。按公开付款方、金额/比例/定义服务及已知伙伴出资、履约、返点/报销比较，新增负担未被同计划已披露对价抵回；不是只见集团销售费用或渠道量增加。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配AWS、Azure及其他云/模型商对Snowflake新客户和扩展项目的Marketplace listing、private-offer资格、承诺抵扣、授权转售资格、联合销售/卖方优先级，以及云商、实施商、Snowflake对合资格迁移中的credits、专业服务、Marketplace交易费、佣金和引介费的支付与分工变化。相关公开消息可来自云/模型平台规则、Snowflake或实施伙伴合作公告、客户项目新闻、reseller private offer说明或公司披露的费用类别。AWS Marketplace自动续约的普通续期、Snowflake客户旧容量合同的期限/续约、Snowflake自身向AWS采购、累计渠道销售、泛化的伙伴头衔和未明确付款角色的joint investment都可召回但不单独触发；Microsoft offer只在明确证明为Azure-benefit-eligible时才纳入承诺抵扣判断。触发围绕买方新项目是否能走该渠道，以及该渠道每个新项目成本由谁承担，而非报告渠道GMV代替消费。",
+      "policy_id": "pol_f818654e103b4a2f87fb330401c0eb13",
+      "ref": [
+        "output/work/v21/discovery/S0001.jsonl#L16",
+        "output/work/v21/discovery/S0003.jsonl#L5",
+        "context/document3/v21/d2/shell-0001.json#/units/3",
+        "context/document3/v21/shared/document2.json#/shells/2/units/0",
+        "context/document3/v21/shared/d1/c3.md",
+        "context/document3/v21/shared/d1/c4e_formal_scan.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "https://www.snowflake.com/en/news/press-releases/snowflake-expands-aws-collaboration-with-6b-commitment-to-accelerate-enterprise-agentic-ai-adoption/",
+        "https://www.snowflake.com/en/news/press-releases/snowflake-and-anthropic-accelerate-enterprise-ai-adoption-driven-by-rising-demand-for-governed-ai/",
+        "https://aws.amazon.com/blogs/awsmarketplace/private-offer-auto-renewals-scale-predictable-revenue-with-aws-marketplace/",
+        "https://aws.amazon.com/partners/programs/isv-workload-migration/",
+        "https://aws.amazon.com/blogs/awsmarketplace/how-to-create-consulting-partner-private-offers/",
+        "https://learn.microsoft.com/en-us/marketplace/azure-consumption-commitment-benefit",
+        "https://www.sec.gov/Archives/edgar/data/1640147/000164014726000037/snow-20260731.htm",
+        "https://www.deloitte.com/us/en/alliances/snowflake.html",
+        "https://www.deloitte.com/us/en/alliances/databricks-alliance.html"
+      ],
+      "title": "云Marketplace准入、联合销售与获客成本分担",
+      "transmission": "云Marketplace不仅是账单入口，也决定哪些客户既有承诺能用于购买Snowflake，哪些卖方/转售方能发private offer、获联合销售优先权以及实际由谁交付迁移。AWS说明只有合资格的Marketplace交易可冲抵买方AWS承诺；Azure MACC也要求具体offer本身合资格并按规定经Azure portal结账，不能把任意Marketplace交易说成自动抵扣。AWS于2026-09已上线private-offer自动续约，允许双方一次约定延续价格/期限并可选择退出；它降低续约操作摩擦、也使原本直销的既有续约可以改走Marketplace，但不是新的工作负载，也不自动形成净新增消费。Snowflake 2026-05公告称多数客户在AWS、AWS Marketplace累计销售超过70亿美元，且2025日历年Marketplace销售超过20亿美元；这是有实际分销规模的渠道背景，不是Snowflake本期新增使用或订单。Snowflake自身五年60亿美元AWS采购承诺由Snowflake付款并购买AWS资源，必须与客户的AWS承诺区分。\n\n采购和获客经济由不同角色分担：AWS Marketplace的ISV Workload Migration Program提供AWS Promotional Credits去抵合资格SaaS迁移成本，AWS另提供技术/联合营销支持；官方材料称Databricks使用该共同投入加快大型迁移，但不能据此推定Snowflake已加入该具体计划。AWS Consulting Partner Private Offer允许ISV给授权转售商一次性或经常性折扣，转售商再加价并可把自己的专业服务/支持放进私有报价；客户支付的打包offer、ISV放弃的净售价和实施工作是三件不同的事。Snowflake与AWS已宣布联合迁移和客户成功投入，但该公告没有标明双方出资比例、谁支付具名项目费用或实施职责。Deloitte同时公开Snowflake和Databricks联盟身份，其伙伴名号不表示排他分配。\n\nSnowflake Q2 FY2027披露销售与营销费用6.116亿美元、同比增加约22%；销售佣金/引介费和递延佣金摊销的同比增量约5470万美元，Marketplace交易费用亦在该费用类中。专业服务收入约5490万美元、成本约7566万美元，毛损约2073万美元、毛利率约负38%；Snowflake说明其专业服务重点是帮助客户实现平台价值而非单独追求服务利润。这些说明销售抽佣、Marketplace费用和亏损实施支持会影响同等项目的销售回收/费用杠杆；它们不是单客CAC或新增营收桥，佣金有资本化/摊销时点差异。故判断要看具体项目/可重复方案的出资方、交易折扣/佣金承担份额、哪些测试/集成/迁移任务由谁交付、Snowflake是否补贴或偿付；不要求公司公布集团净CAC。若Marketplace只把原直销交易搬到渠道、未产生新客户/工作负载或成本份额变化，不能当新增消费或获客效率改善。"
+    }
+  ],
+  "w1_events": [],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": false,
+    "related_has_new_fact": true
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-18T15:54:52.251090Z"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "mode_default": "single",
+  "production_configuration_changed": false,
+  "production_released": false,
+  "paid_model_calls": 0,
+  "new_test_count": 19,
+  "core_final_passed": 100,
+  "special_sdk_final_passed": 44,
+  "earlier_regression_passed": 152,
+  "earlier_extended_passed": 121,
+  "test_groups_overlap": true,
+  "preexisting_test_excluded": "test_replay_uses_production_two_stages_with_isolated_evidence: previously reproduced RUNTIME_DELAY_EXCEEDED versus READY on unmodified baseline",
+  "production_capacity_cost_and_p95": "not yet measured",
+  "commit_status": "local changes retained without mixing concurrent development into a commit"
+}

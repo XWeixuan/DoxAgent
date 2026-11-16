@@ -44,7 +44,7 @@ def select(kind,identity,value):
         result={k:v for k,v in value.items() if k in CASE_FIELDS}
         result['source']={'snapshot':{'ticker':value.get('source',{}).get('snapshot',{}).get('ticker')}}
         result['frozen_inputs']={k:v for k,v in value.get('frozen_inputs',{}).items()
-                                 if k in {'policy_watch_followup','w3_execution_state'}}
+                                 if k in {'policy_watch_followup','w3_execution_state','w3_consensus'}}
         return result
     if table=='runtime_v2_effects':
         return {**{k:value.get(k) for k in ['case_id','effect_type']}, 'payload':{k:v for k,v in value.get('payload',{}).items() if k=='decision_effective_at'}}

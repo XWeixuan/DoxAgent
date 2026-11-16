@@ -1,0 +1,99 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E255",
+        "fact_ids": [
+          "F1100",
+          "F1101",
+          "F1102"
+        ]
+      }
+    ],
+    "reason": "当前消息核心事实包含E255尚未覆盖的新内容：1）毛利率86.25%及EPS指引$38.15(±$1.00)为全新财务指标，F1101仅覆盖$615亿营收指引；2）\"已卖出明年大部分产能、客户将支付高于2026年价格\"针对全部RAM/存储，而F1100仅涉及HBM芯片供应协议；3）\"2027和2028年行业紧张程度将超过2026\"及\"看不到供需回归平衡的时间线\"的恶化方向性表述，超出F1102\"供应持续受限\"的程度描述。",
+    "reference_ids": [
+      "E255"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息核心事实为Micron在FY2026财报电话会上对2027-2028年RAM/NAND/DRAM行业供需紧平衡的前瞻预测及HBM优先级说明，属于存储器供应商层面的行业展望。消息中不存在Intel自身确认的产品出货受限、订单延期或成本冲击，也不涉及具体Intel客户/伙伴的行动或Intel季报数据。各Policy的criterion均要求Intel或具名客户/伙伴对特定触发条件作出确认或描述具体事件（如Intel确认内存价格恶化是Q3出货缺口原因、后端伙伴确认封装starts被配给等），本消息的事实形态和归属主体与任何criterion的触发路径不构成直接、实质对应，无合理命中可能。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "Micron reported sharply higher fiscal Q4 and full-year revenue, strategic customer commitments and HBM supply agreements, and guided to strong fiscal Q1 revenue and constrained 2027–2028 memory supply.",
+      "derived_from_event_ids": [],
+      "event_id": "E255",
+      "event_type": "EARNINGS_RELEASE",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F1097",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "美光FY2026第四季度营收为542亿美元，环比增长31%、同比增长379%。",
+          "subject_time": "美光FY2026第四季度"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F1098",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "美光FY2026全年营收为1332亿美元，同比增长256%。",
+          "subject_time": "美光FY2026全年"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F1099",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "美光已签署26项战略客户协议，预计覆盖截至2030年的超过35%收入，客户财务承诺增至320亿美元且大部分为现金预付款。",
+          "subject_time": "2026年至2030年战略客户协议周期"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F1100",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "美光表示已达成涵盖2027年大部分HBM芯片供应的协议，相关价格高于上年同期。",
+          "subject_time": "2027年HBM供应"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "fact_id": "F1101",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "美光预计FY2027第一季度营收为615亿美元，上下浮动15亿美元，高于分析师平均预期的570.2亿美元。",
+          "subject_time": "美光FY2027第一季度"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1102",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "美光预计2027年和2028年DRAM及NAND行业位出货量增长约20%，同时供应持续受限，HBM出货量增长在2028年继续超过传统DRAM。",
+          "subject_time": "2027年至2028年内存供需周期"
+        }
+      ],
+      "known_event_summary": "On 2026-09-30, Micron reported fiscal Q4 2026 results, strategic contracts, HBM commitments and a strong fiscal Q1 2027 outlook.",
+      "occurred_at": "2026-09-30",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [],
+      "status": "ACTIVE",
+      "supersedes_event_id": "E15",
+      "title": "Micron reported fiscal Q4 2026 results and raised its memory outlook"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

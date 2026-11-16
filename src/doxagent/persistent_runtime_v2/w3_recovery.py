@@ -19,6 +19,9 @@ def inspect_recovery(service, case_id, record_id, operation):
     registry = W3ThreadRegistry(journal)
     case = service.repository.get_case(case_id)
     stage = registry.stage(case_id, TRADE_PHASE)
+    if case and case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus':
+        stage = next((s for key in ('trade_decision:A','trade_decision:B')
+                      if (s := registry.stage(case_id,key)) and (s.get('input_refs') or {}).get('record_id') == record_id), None)
     with journal.transaction(write=False) as db:
         row = db.execute(
             "SELECT * FROM runtime_v2_w3_threads WHERE record_id=?", (record_id,)
@@ -125,7 +128,7 @@ def apply_recovery(service, entry, operation, *, notify=True):
         db.execute(
             "UPDATE runtime_v2_w3_stages SET thread_id=?,input_refs=?,status='PENDING',error=NULL "
             "WHERE case_id=? AND phase=? AND result_json IS NULL",
-            (entry["child"], encode(refs), case.case_id, TRADE_PHASE),
+            (entry["child"], encode(refs), case.case_id, current['before']['stage']['phase']),
         )
         service._v4_execution()._save_case_in_transaction(db, case)
         db.execute(

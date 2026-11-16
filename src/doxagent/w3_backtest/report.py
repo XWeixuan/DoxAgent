@@ -131,6 +131,9 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
         if unlabelled_decisions
         else None,
     )
+    if any("input_coverage" in r for r in rows):
+        keys = set().union(*(r.get("input_coverage", {}).keys() for r in rows))
+        summary["input_coverage"] = {k:sum(bool(r.get("input_coverage", {}).get(k)) for r in rows) for k in sorted(keys)}
     if excluded:
         summary["excluded_cases"] = excluded
     if manifest.get("technical_retries"):
@@ -212,6 +215,7 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
             f"Case 类型与信息标签：{row.get('labels', {})}",
             "",
             f"证据状态：{row.get('evidence_summary', {})}",
+            f"输入覆盖：{row.get('input_coverage', {})}；可见输入摘要：{row.get('visible_input_sha')}",
             "",
             f"原评估：{row['gold'].get('assessment_text') or '未标注'}",
             "",
@@ -266,7 +270,11 @@ def compare_runs(before: Path, after: Path) -> dict:
             a.get("gold", {}).get(field) == b.get("gold", {}).get(field)
             for field in ("expected_action", "expected_direction")
         )
-        comparable = ma.get("dataset_fingerprint") == mb.get("dataset_fingerprint") and gold_equal
+        if a.get("business_input_fingerprint") and b.get("business_input_fingerprint"):
+            same_data = a["business_input_fingerprint"] == b["business_input_fingerprint"]
+        else:
+            same_data = ma.get("dataset_fingerprint") == mb.get("dataset_fingerprint")
+        comparable = same_data and gold_equal
         category = (
             "NOT_COMPARABLE"
             if not comparable

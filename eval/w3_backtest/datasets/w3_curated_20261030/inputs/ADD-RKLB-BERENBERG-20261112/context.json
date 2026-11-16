@@ -1,0 +1,785 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "E193记录了Q3后的其他分析师观点，但未覆盖Berenberg将目标价由83美元上调至85美元并维持Buy评级，也未覆盖本次关于Neutron已售入2030年代、2028年调整后EBITDA上调8%等核心更新。",
+    "reference_ids": [
+      "E193"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [
+      {
+        "condition_ids": [
+          "C1"
+        ],
+        "policy_id": "pol_34cc5ee5c377486b9699f26a5796d4fe"
+      }
+    ],
+    "policy_hit": true,
+    "policy_ids": [
+      "pol_34cc5ee5c377486b9699f26a5796d4fe"
+    ],
+    "policy_related": false,
+    "reason": "Berenberg分析师维持Buy并将目标价上调至85美元，同时基于发射需求、定价及Space Systems展望等公司特定依据，上调2028年备考调整后EBITDA预期8%，满足C1。",
+    "related_policy_ids": []
+  },
+  "policy_title_rows": [
+    {
+      "policy_id": "pol_9e558560114f4412accde22027500be8",
+      "title": "Flatellite整包范围、Neutron运输与运营交付"
+    },
+    {
+      "policy_id": "pol_16673a91124b408a84feb6f36ff31887",
+      "title": "在轨寿命与客户补网资金如何改变 Electron 承诺任务"
+    },
+    {
+      "policy_id": "pol_29e12917215d4820b93c9a9463e60d63",
+      "title": "轨道安全冗余与分批部署如何改变 Neutron 任务数和有效适配"
+    },
+    {
+      "policy_id": "pol_7a27503f34154ccca7534964a91d83f1",
+      "title": "在轨损失的环境归因与共用设计责任如何改变 Rocket Lab 平台风险"
+    },
+    {
+      "policy_id": "pol_5007e725e9e1420dbcf800a3eec0a1b9",
+      "title": "电源、推进与在轨安全余量如何转成 Rocket Lab 组件订单"
+    },
+    {
+      "policy_id": "pol_952cd80d533c4c5c98dba990f561890c",
+      "title": "快速响应任务的单次采购与 Rocket Lab 任务分配"
+    },
+    {
+      "policy_id": "pol_5a13225302414625a39c1e630d8bb5ca",
+      "title": "持续待命与在轨储备的有偿准备状态"
+    },
+    {
+      "policy_id": "pol_406849b6b1104206a2a77dfa0ae52e45",
+      "title": "托管与实时光中继的付费需求如何转成空间段增减"
+    },
+    {
+      "policy_id": "pol_dce36b56ada3451d9402ce6c25a60ac1",
+      "title": "Neutron 对轨道算力部署的批次适配"
+    },
+    {
+      "policy_id": "pol_8dd3e58467114c7d85da4b3b346df73e",
+      "title": "轨道算力的付费采用与高功率部署"
+    },
+    {
+      "policy_id": "pol_408efe3a509d436894b5e576c6e4bddd",
+      "title": "Rocket Lab 在轨算力平台与组件的供应位置"
+    },
+    {
+      "policy_id": "pol_330f552e0ca24225ae4fb0dfce0bc905",
+      "title": "Iridium NTN Direct 的付费商业采用与渠道扩张"
+    },
+    {
+      "policy_id": "pol_cbb1ecf009cf4ae3b9c403903f6513f7",
+      "title": "Iridium 容量优先级、星座健康与更新资金周期"
+    },
+    {
+      "policy_id": "pol_2d8db7312b0d4985a981300eac2f0570",
+      "title": "交易后成熟现金的非网络配置与集团资金余量"
+    },
+    {
+      "policy_id": "pol_4e44ff029991497cba8f4cfadb0482d9",
+      "title": "Globalstar设备卫星服务范围与网络资金承诺"
+    },
+    {
+      "policy_id": "pol_9854f7927ff34c3498b23b24fa730069",
+      "title": "Globalstar补充与第三代星座的平台供应角色"
+    },
+    {
+      "policy_id": "pol_28b43728c07b4bba854eb285337fc594",
+      "title": "Globalstar补充星座17个平台的运行验收、返工与结算"
+    },
+    {
+      "policy_id": "pol_c7aad42cce9c4af29615e03c65b9a82a",
+      "title": "多批次航天器制造的接口验证与合格交付节拍"
+    },
+    {
+      "policy_id": "pol_098eab22649f42c0bc2a67e1fee26499",
+      "title": "卫星批量合同的工程范围与成本风险分担"
+    },
+    {
+      "policy_id": "pol_22c6d513247b45fbb68cccc771c61b58",
+      "title": "卫星制造合同付款节点与项目占款时点"
+    },
+    {
+      "policy_id": "pol_b7cddfb4b18548879167627385c7eaa2",
+      "title": "ESCAPADE双航天器的深空机动与火星轨道运行能力"
+    },
+    {
+      "policy_id": "pol_7cabcf5c481c47ca8f473fb20e7daf91",
+      "title": "Lightning-GEO高轨资格、客户验收与跨任务复用"
+    },
+    {
+      "policy_id": "pol_df90f00934a14f05afd840d84280b51e",
+      "title": "低温液氧储存转移与轨道推进剂库成熟度"
+    },
+    {
+      "policy_id": "pol_a033730cebd34114af92b8632c8e93d6",
+      "title": "机器人臂与专用机构从示范走向多任务采用"
+    },
+    {
+      "policy_id": "pol_697421694f7e47ba91cf62dc046e15e3",
+      "title": "卫星在轨服务采购与整体换新的业主选择"
+    },
+    {
+      "policy_id": "pol_f630ac3286064d6eba35546c78122126",
+      "title": "Mynaric光终端合格供给、批次验收与外部客户分配"
+    },
+    {
+      "policy_id": "pol_f353ba0f80a04fb4b0b16b1cbc09cbea",
+      "title": "光通信终端标准版本、互操作资格与代际采用"
+    },
+    {
+      "policy_id": "pol_9ede3c0656044b359062e7f77f243639",
+      "title": "欧洲光终端采购资格与本地制造工作份额"
+    },
+    {
+      "policy_id": "pol_69e96866770246ecad3d1b2ea2f0ba98",
+      "title": "HydRON终端交付、在轨验证与服务示范"
+    },
+    {
+      "policy_id": "pol_81b7537041d745b3b76433b11acaab19",
+      "title": "成熟航天组件的外部采购位置、定价与工程分担"
+    },
+    {
+      "policy_id": "pol_48b14f64d13640f3bf31b2649dcf20be",
+      "title": "StarLite保护光学的外部配置、威胁要求与主承包捕获"
+    },
+    {
+      "policy_id": "pol_9ea741ccefdd4510a44071a774f322c5",
+      "title": "Gauss电推进在卫星机动、寿命维持与离轨配置中的采用"
+    },
+    {
+      "policy_id": "pol_a86f7ccf574a4cbbb28c86ddc3734e1d",
+      "title": "IMM Apex无锗太阳电池的客户采用与价值捕获"
+    },
+    {
+      "policy_id": "pol_fd9dc7809fa64f44a9a49aa986a874f3",
+      "title": "Space Data Network交换系统与Photon多厂商示范"
+    },
+    {
+      "policy_id": "pol_3a73e769b8ee4311aaea1ed90a621208",
+      "title": "商业低轨空间站建设中的Rocket Lab组件供货位置"
+    },
+    {
+      "policy_id": "pol_590730274b654f6b8cf29cc707235c13",
+      "title": "Electron专属任务的新增、流失与客户替代"
+    },
+    {
+      "policy_id": "pol_70d382c2b8624d51bad6a0096febe0a2",
+      "title": "Electron专属发射合同的收款时点"
+    },
+    {
+      "policy_id": "pol_fda99e3596054cfeb8fc4992c173e3d4",
+      "title": "既有Electron客户资金与载荷就绪对发射排期的影响"
+    },
+    {
+      "policy_id": "pol_b42987762a7a46e29d0acbf2cd0dec41",
+      "title": "SAR终端采购与多年数据服务承诺"
+    },
+    {
+      "policy_id": "pol_fca7ae3f549b484c8b9d4eb2cbf4b3fb",
+      "title": "SAR共享容量与新增专用卫星的部署强度"
+    },
+    {
+      "policy_id": "pol_4cb8eb9c704b49a79fc3ad1ea9f7911d",
+      "title": "Electron适配任务的端到端运输路线分配"
+    },
+    {
+      "policy_id": "pol_951b79da694341688ffe783c48d451c7",
+      "title": "Electron任务履约、恢复与客户风险承担"
+    },
+    {
+      "policy_id": "pol_bbdf3ecc9d4742e99ebb57f518a046ef",
+      "title": "HASTE研制测试管线与可付费任务采购"
+    },
+    {
+      "policy_id": "pol_8e23b0cc4c954f8491de882144dc46dd",
+      "title": "HASTE任务范围、验收与合同成本风险"
+    },
+    {
+      "policy_id": "pol_9365bd2c4f074c12bf78de893ba3a27e",
+      "title": "高超音速验证方法与实体飞行试验组合"
+    },
+    {
+      "policy_id": "pol_9028431cc66f4880865537d53e19e540",
+      "title": "GHOST部署地点就绪、campaign兑现与付费移动需求"
+    },
+    {
+      "policy_id": "pol_4efe1f39c31e47ca8d14ec77aefdf721",
+      "title": "跨型号制造节拍、质量放行与共享资源"
+    },
+    {
+      "policy_id": "pol_ab54c831740046ca8cde61f0bb35365a",
+      "title": "关键外购火箭输入、可替代资格与供给成本"
+    },
+    {
+      "policy_id": "pol_b6df6d83a6c3486cbbf48d1e14e6f494",
+      "title": "可用发射场地权与公共范围排期资源"
+    },
+    {
+      "policy_id": "pol_3577c95bdaa44dcfaffe6f7f5cfe9fe0",
+      "title": "跨境与任务级许可决定的合法可服务集合"
+    },
+    {
+      "policy_id": "pol_0ae9b330f38549419ba27efb632ac461",
+      "title": "Neutron关键系统资格与整箭地面集成路径"
+    },
+    {
+      "policy_id": "pol_686e6482e009438abd65ec3fd4db5cdb",
+      "title": "Neutron专属投入、战略开发合作与现金约束"
+    },
+    {
+      "policy_id": "pol_20e9976a3a91488f90043db71d64f408",
+      "title": "Neutron首飞结果与飞行异常恢复"
+    },
+    {
+      "policy_id": "pol_3f34d237b8cf4718b82c7d786c706006",
+      "title": "Neutron客户任务接受与重复商业交付"
+    },
+    {
+      "policy_id": "pol_7fb6666bcb82416f9d151f58d2b390a2",
+      "title": "Neutron一级回收、翻修复飞与单位现金回报"
+    },
+    {
+      "policy_id": "pol_17aba69dffbb4844a1fffb7d3f409242",
+      "title": "Neutron商业客户批次签约与留存"
+    },
+    {
+      "policy_id": "pol_bf49d2d20fa3401caa024ba8d1ac3105",
+      "title": "Neutron客户现金承担、取消权与固定价重谈"
+    },
+    {
+      "policy_id": "pol_285845c90969445c8d939cf7ec33eed7",
+      "title": "Neutron市场可用第三方窗口与竞争运力"
+    },
+    {
+      "policy_id": "pol_9badfda07eb14d25bf94bb5e414e13f3",
+      "title": "大型星座部署配置与中型任务数量"
+    },
+    {
+      "policy_id": "pol_291a39ffaa334b43b2e8b67ce9e2ff8c",
+      "title": "Neutron再入货运验证与高时效物流任务采用"
+    },
+    {
+      "policy_id": "pol_3eaef49824364b10a8ee68e32ad50d75",
+      "title": "NASA火星通信网络授标异议的重开与结束"
+    },
+    {
+      "policy_id": "pol_280599a6a5934c628eec1e24c42b75dd",
+      "title": "NASA独立火星通信任务由架构研究转入新增采购"
+    },
+    {
+      "policy_id": "pol_d394cc5858f741abb5596d06a7634cc3",
+      "title": "国防数据运输采用商业网络服务的付费路径"
+    },
+    {
+      "policy_id": "pol_6b3a97645120456a84fe6f9c73f53487",
+      "title": "国防卫星任务的整包或分段采购如何决定Rocket Lab责任深度"
+    },
+    {
+      "policy_id": "pol_4f6a30aa22864e4aaac557adb5135b8a",
+      "title": "RSLP可选试验发射任务的实际呼叫"
+    },
+    {
+      "policy_id": "pol_b104b61bb0df434898e0f25646abf4fc",
+      "title": "天基拦截器从集成演示进入实际防御架构的路径"
+    },
+    {
+      "policy_id": "pol_034055ca72f14cec9734a07e8a80a8c2",
+      "title": "SDA导弹感知与数据运输卫星的后续批次分配"
+    },
+    {
+      "policy_id": "pol_f216afe45488452bbf17aa6ce5067116",
+      "title": "导弹感知与数据运输层的任务范围和轨道配置"
+    },
+    {
+      "policy_id": "pol_85ef8982dd234f4ab5b0b39586c1f14c",
+      "title": "NITE-STAR 多奖方 IDIQ 转为 Rocket Lab 具名任务单"
+    },
+    {
+      "policy_id": "pol_25cbf5e5322d46fab8898720813f5483",
+      "title": "NSSL Phase 3 Lane 1 的 Neutron 任务竞标资格"
+    },
+    {
+      "policy_id": "pol_36ea33d0052f4b1a85357e02428f57d0",
+      "title": "NSSL Phase 3 Lane 1 发射服务的具体任务分配"
+    },
+    {
+      "policy_id": "pol_3c18975020db49aa997fb16816f65b31",
+      "title": "政府合同基础任务与追加选项的实际资金承诺"
+    },
+    {
+      "policy_id": "pol_91570f68a2774b8d9dfb43b4b7a3f654",
+      "title": "国防卫星采购从年度拨款转为可执行的多年资金"
+    },
+    {
+      "policy_id": "pol_5f3416d50dab402f854bbe3047bfe08d",
+      "title": "SDA导弹预警与跟踪卫星的成熟度门槛及供应商分配"
+    },
+    {
+      "policy_id": "pol_3e6f1cadc4364c178252d1c04b61ea98",
+      "title": "SDA导弹预警与跟踪批次的作战反馈及采购节奏"
+    },
+    {
+      "policy_id": "pol_1a32673d76f7470b89c0f989aef5eea0",
+      "title": "SBI竞争性演示与里程碑筛选对Rocket Lab的选择权"
+    },
+    {
+      "policy_id": "pol_a6de4da9888840cab6eb5093252449ad",
+      "title": "国防航天采购的材料来源追溯与合格来源接受"
+    },
+    {
+      "policy_id": "pol_0d25d072c18340208d56868698f4bc83",
+      "title": "国防卫星同用途竞标池的供给成熟与整合"
+    },
+    {
+      "policy_id": "pol_541fe7bc3d264950b6eeeb3e9c8f8ac5",
+      "title": "盟国航天架构与跨境产业采购入口"
+    },
+    {
+      "policy_id": "pol_91c19e3704274e0bbda6a1ab5e4e8d10",
+      "title": "国防商业数据使用权与可竞争航天能力采购"
+    },
+    {
+      "policy_id": "pol_2dddd8ef6b004a969b246238cd10c568",
+      "title": "NASA科学新任务组合与小型运输、Photon平台采购入口"
+    },
+    {
+      "policy_id": "pol_acdfea07ed9a4c719eeb2fe6b3eaf30a",
+      "title": "EMSS固定价空口续约与新增服务收费边界"
+    },
+    {
+      "policy_id": "pol_173e4dad27c740d7b9a2be974b1b53d4",
+      "title": "工业设备配置与运营采用驱动的Iridium IoT付费连接"
+    },
+    {
+      "policy_id": "pol_96cb1caf7cf44a04b81aef19d9b2d7b9",
+      "title": "NTN Direct移动运营商渠道的付费连接扩容与撤回"
+    },
+    {
+      "policy_id": "pol_cccb41861c2a4a46bf35ee23a5ba575e",
+      "title": "多网络聚合与转售渠道的Iridium客户入口和价值分配"
+    },
+    {
+      "policy_id": "pol_fd729b68751f4e3998e0cbc30f869280",
+      "title": "商用语音与IoT存量服务的经常性资费和留存"
+    },
+    {
+      "policy_id": "pol_05d5968f6e3249a1968674901c839623",
+      "title": "消费终端卫星消息内含化与专业独立订阅选择"
+    },
+    {
+      "policy_id": "pol_ae0c2c03c04149f3921def537ea334ff",
+      "title": "远程运营船岸控制与状态链的独立卫星连接"
+    },
+    {
+      "policy_id": "pol_07644a4cb2864a359be5479c57cf8a37",
+      "title": "船队安全终端配置与付费伴随服务价值"
+    },
+    {
+      "policy_id": "pol_8825ff301dad47f4aae6b88d038cbbf1",
+      "title": "独立PNT设计导入与替代源的付费价值分配"
+    },
+    {
+      "policy_id": "pol_35c0d22ef6c44481b82b61cf9beff6b3",
+      "title": "政府网关与混合网络工程支持责任配置"
+    },
+    {
+      "policy_id": "pol_25063d5d91c441628c6a41f1e15c465c",
+      "title": "Aireon外部空管合同与航空数据产品分销范围"
+    },
+    {
+      "policy_id": "pol_b742e00268b548528032381356cc2396",
+      "title": "空间VHF服务采购、监管准入与资本承担"
+    },
+    {
+      "policy_id": "pol_2263cbe2680a4b55bf7cbfc9ea4e4251",
+      "title": "卫星服务共同依赖、恢复能力与韧性采购"
+    },
+    {
+      "policy_id": "pol_292f456cf72443ce9ef7c999b946cb52",
+      "title": "终端模块供给资格与成本可达性限制新增服务安装"
+    },
+    {
+      "policy_id": "pol_89874698a3c34ab69d8f84fd8f0772e7",
+      "title": "Certus航空驾驶舱安全通信从机型准入到付费机队采用"
+    },
+    {
+      "policy_id": "pol_e6de693a7152490b8014306369b102e5",
+      "title": "Iridium保留贷款的Rocket Lab担保与追索范围"
+    },
+    {
+      "policy_id": "pol_82d6f0e35a5f4a449e2b45b93ef93c7c",
+      "title": "跨平台研发组合与工程资源复用的费用及机会成本"
+    },
+    {
+      "policy_id": "pol_dff2bf51451b493ab2e4a02010f99510",
+      "title": "已收购业务与区域组织的持续费用及整合执行"
+    },
+    {
+      "policy_id": "pol_36a839d3d8e4466c829a706e6c1755b8",
+      "title": "模型化工程与数字测试流程对研发工时和验证负担的改变"
+    },
+    {
+      "policy_id": "pol_9d7730a3e64d47cab7849553ac9b8c2e",
+      "title": "工程人才获取与留任成本对有效开发能力的影响"
+    },
+    {
+      "policy_id": "pol_6f06c5eb1c3f4c96867ff016c1c07a23",
+      "title": "客户批次验收与供应商结算周期"
+    },
+    {
+      "policy_id": "pol_43e63d0dfa5041a99007aa224c45695e",
+      "title": "商业客户项目资金来源与供应商垫资责任"
+    },
+    {
+      "policy_id": "pol_e1cc4772b36b47b79362abb2f98860df",
+      "title": "政府合同进度融资与主承包付款流转"
+    },
+    {
+      "policy_id": "pol_8b691bf3328e40ae881845774328378b",
+      "title": "供应锁料与跨项目库存复用改变集团现金底座"
+    },
+    {
+      "policy_id": "pol_c582bceb3ae94c5ebc342ba983c97964",
+      "title": "Iridium自身国家合法服务范围"
+    },
+    {
+      "policy_id": "pol_f61acf84f98946118da8e104a2e442f4",
+      "title": "重合移动用途竞争网络的国家合法资格"
+    },
+    {
+      "policy_id": "pol_d19919eb69ac442589968961f60ef2fb",
+      "title": "纳税人实际研发方法选择的现金税权"
+    },
+    {
+      "policy_id": "pol_7e1006486c184b3f9add9ebb60475469",
+      "title": "交易公司层面纳税组与可用税盾"
+    },
+    {
+      "policy_id": "pol_f9928afb90984286bfddd05da8f17c6a",
+      "title": "一般正式研发规则的实际现金税影响"
+    },
+    {
+      "policy_id": "pol_760fbab266f94a7a883018d1ddb2a13e",
+      "title": "收购整合中的卫星服务合同与运营责任"
+    },
+    {
+      "policy_id": "pol_5f42ff5c6c3946b18c62830dbdcaed09",
+      "title": "Iridium控制许可与核心取得范围"
+    },
+    {
+      "policy_id": "pol_4b3f46d086e34ddbb3f0260409a07f11",
+      "title": "Iridium非FCC必要清关的独立解除"
+    },
+    {
+      "policy_id": "pol_ab94c5e54d144a7692be42f855b0ddc7",
+      "title": "Iridium实际取得经营范围的交割窗口"
+    },
+    {
+      "policy_id": "pol_c50ccc9755d9400bb6ce6995bac5ca3b",
+      "title": "Iridium交割与等待期现金用途对可用成长资金的占用"
+    },
+    {
+      "policy_id": "pol_bb84df6031a84f16a463b230bbe628ac",
+      "title": "其他公司级融资的固定优先责任"
+    },
+    {
+      "policy_id": "pol_e74481d4624a46dc871185b75496cfb5",
+      "title": "新增普通股和转换融资的残余权利代价"
+    },
+    {
+      "policy_id": "pol_569adb42d3374ba8aa31fceff384d364",
+      "title": "Iridium保留定期贷款的利率保护与净融资成本"
+    },
+    {
+      "policy_id": "pol_11e74837b8a54566a4e00849bcf02315",
+      "title": "项目共同出资的真实风险承担与保留权益"
+    },
+    {
+      "policy_id": "pol_0a901ce8be854de88ec746ccd2147a1d",
+      "title": "具名设施同用途的净固定责任"
+    },
+    {
+      "policy_id": "pol_f5bbe49e8ddd4e8f915529b2ee2f68fa",
+      "title": "具名设施付款峰值的独立时间价值"
+    },
+    {
+      "policy_id": "pol_04078cfb0cb64f20b4ca506b85d826c3",
+      "title": "承诺设施用途或可用窗口丧失且固定责任持续"
+    },
+    {
+      "policy_id": "pol_44311f4a72fe4cf4921eeea46e232883",
+      "title": "地区具名项目实际资本与可用窗口"
+    },
+    {
+      "policy_id": "pol_a5157d180a574b26aec4781d0fe00db5",
+      "title": "地区制造资金的正式可申请资格"
+    },
+    {
+      "policy_id": "pol_4bb82e30d8e149568477f71391333098",
+      "title": "同产品地区竞争产线获得真实融资"
+    },
+    {
+      "policy_id": "pol_e471e9d810064d34a16b5573c0859efc",
+      "title": "Iridium收购对价条款与机械换股结果"
+    },
+    {
+      "policy_id": "pol_076f96fcaecc43beb617dc39b4d79e91",
+      "title": "关键执行领导的授权接续与能力连续性"
+    },
+    {
+      "policy_id": "pol_c2e41775c9d34e13976852ebed7168e9",
+      "title": "Iridium贷款契约下的集团现金调度权限"
+    },
+    {
+      "policy_id": "pol_73b9000457354dc4891bfc62357c20b2",
+      "title": "重要持有人实际持股与公开转让的供求变化"
+    },
+    {
+      "policy_id": "pol_55a92b7861ea4b499719d41bfde1562c",
+      "title": "工程技术信息安全事件与承包授权恢复"
+    },
+    {
+      "policy_id": "pol_76a6265119934d3a97d21e4d9ed23a19",
+      "title": "自有工程系统的关键功能中断与工作恢复"
+    },
+    {
+      "policy_id": "pol_0491c9181ed6407b961d619afa8a79c5",
+      "title": "履约外部工程接口的关键功能中断与恢复"
+    },
+    {
+      "policy_id": "pol_2f35e145efc941c7863b62c34452424e",
+      "title": "具体国防采购和分包的数据系统资格与协作路径"
+    },
+    {
+      "policy_id": "pol_bb3acf092c91452d8bc53da7aba20f71",
+      "title": "正式CMMC通用规则的可参与采购与协作范围"
+    },
+    {
+      "policy_id": "pol_1d3e675750b3424184c7d97354c6dad4",
+      "title": "董事会独立监督与战略权利配置"
+    },
+    {
+      "policy_id": "pol_d4e637fea1f149598f3de8793697fa7e",
+      "title": "Nasdaq-100 成分、目标权重与计入股数变化"
+    },
+    {
+      "policy_id": "pol_34cc5ee5c377486b9699f26a5796d4fe",
+      "title": "卖方对Rocket Lab经营前景与风险的独立新判断"
+    },
+    {
+      "policy_id": "pol_237a6b911cc543fbba7f3a0ad2bb5546",
+      "title": "同业比较框架与Rocket Lab相对估值的独立变化"
+    },
+    {
+      "policy_id": "pol_0b250cdc5f6e43feb4aa65661d4712c3",
+      "title": "外部整星示范从单机交付转向重复生产采购"
+    }
+  ],
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-11-10，Rocket Lab 已发布FY2026 Q3结果与Q4指引（E188、E189）：收入2.67834亿美元、同比增长73%，超过公司此前2.50亿–2.65亿美元指引；季度末backlog约35.7亿美元、环比增长52%，新增近10亿美元发射合同，Neutron签约任务达到16项、多个Q3任务按7000万美元新基础价售出，下一可订窗口在2030年代。另一方面，Q3 GAAP净亏损约7968万美元、摊薄每股亏损0.12美元，调整后EBITDA亏损约1805万美元、自由现金流为负2392万美元；Q4收入指引为2.70亿–2.90亿美元、调整后EBITDA仍指引亏损1400万–2000万美元。单季经营现金流转正主要来自可变的卫星项目里程碑回款，不代表持续现金转正。Neutron首飞现为2027年（首飞所需步骤的2027Q1目标来自E114，E188未将其改写）；公司仍承受研发、资格与商业化时点风险。E190的1.5亿美元OSC贷款是首飞后制造升级/回收周转的附条件偿还型承诺，尚未财务交割，不应计作已到账补助或当前资格资金。\n既有具名卖方基线仍包括Raymond James于2026-09-11首次覆盖并给出Outperform/80美元目标价，摘要将其理由联系到Neutron、Iridium/Mynaric机会及执行/整合/利润率风险，并称其预测2027/28年正EBITDA/FCF；原研报和完整模型未取得。Stifel文章正文标注2026-08-17，显示其维持Buy并估计Rocket Lab可能获得Viasat Swarm-1 award的可观份额（潜在高八位数美元机会）；这不是获奖份额、公司指引或新于该正文日期的11月观点。KeyBanc于2026-06-15升级至Overweight/135美元；E116记录其后因Neutron延期下修FY2027收入估计和目标价至100美元、仍维持Overweight。E116还记录Clear Street、Citizens和Goldman Sachs因Neutron延期调整目标/模型但维持各自评级，Cantor与Roth维持积极立场。\n2026-11-10的Q3后分析师响应已纳入当前基线（E193）：Cantor将目标价122→111美元但维持Overweight，并以紧张的运力供给、Rocket Lab竞争位置/积压订单/发射记录为正面理由，称当前价位是Neutron商业化与Iridium交易前的有利买入机会；这项明确正面观点不因目标价下调而消失。Clear Street将105→110美元、维持Buy，并以记录backlog带来的多年业务可见度为由。KeyBanc重申Overweight/100美元并称已在业绩后修订估计（数值/期间未披露），同时提到运力紧张、定价与backlog。Barclays维持Overweight、目标价降至82美元并指出订单和提价；BTIG维持Neutral并以约24倍2027共识销售额对约10.5倍同业估值及待Neutron进展说明审慎立场。以上均为个别卖方判断，不构成一致预期、公司预测或已实现经营结果。",
+            "trigger_boundary": "一次公开、可归属到具名分析师/机构、方向明确的新独立观点即可跨界：新覆盖不需要该机构不存在的旧模型作比较；首次明确的Buy/Outperform等积极推荐或既有明确升级本身足以记录一个新卖方意见，即使摘要没有可量化的年度现金模型。非评级式的概率/时点/风险判断，或只有目标价变化的报告，则须提供足够公开理由把新结论连到RKLB业务/风险，而非只随现价机械调整。无需完整盈利桥、第二家跟随或公司经营兑现。2026-08-17 Stifel维持Buy并估计Rocket Lab可能取得Viasat Swarm-1 award可观份额、对应高八位数美元机会，现为已知的单一分析师历史估计；仅重复或在11月7日等feed日期重新索引/转载该内容，不构成新的观点。相对RJ、Stifel及其他具体已知基线的新估计/风险更新仍需有明确业务理由。若同篇对经营路径与peer估值方法给出相反变化，只在其总体推荐/估值结论或明确主导的新判断仍偏正面时命中；净方向不清时不由下游拼模型，C1不成立。 2026-11-10 E193中的Cantor、Clear Street、KeyBanc等业绩后观点现已是当前基线；同一意见的再次转载、同日财报汇编或只重列已知评级/目标价，不构成新的观点。Cantor下调目标价但明示有利买入判断，Clear Street的上调亦有backlog依据，应以报告明确表达的整体新判断定向，不从目标价单项机械推断。后续若同一机构对经营概率、时点、风险或价值作出相对该基线的真实新判断，仍可满足C1，无需等待实际兑现。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "defdf570619e736b0d89e79fd0d499e3910497cf0008426e31239c3d6fa00b1b",
+          "criterion": "具名卖方机构首次公开给出明确偏正面的Rocket Lab推荐/独立基准，或明确上调其自身既有推荐，或在研报/有出处摘要中提出一项新的有利公司特定概率、时点或价值判断；首次推荐或明确评级上调本身可承载新的独立观点，单纯目标价变化则须能识别新的业务/风险依据，而非只随现价机械调整。",
+          "decision": "LONG",
+          "trigger_layer": "OUTER"
+        },
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-16，公司Neutron首飞基线已由E114更新为2027年，原2026年窗口撤销，替换件使用改良工艺，执行首飞所需步骤目标为2027Q1。E116记录KeyBanc因少一次可产生收入的2027年Neutron发射而下调FY2027收入估计及目标价135→100美元（维持Overweight）；Clear Street将129→105美元（维持Buy）；Citizens将130→90美元（维持Market Outperform），称影响FY2027–FY2028发射货币化；Goldman将75→67美元（维持Neutral），模型采用2027Q2首飞并预计近端费用/现金消耗增加；Cantor维持Overweight/122美元、Roth维持Buy/110美元。2026-10-29 Simply Wall St报告自身估值约105.05→102.15美元并小调营收增速/净利率，但期间不明、不是具名分析师共识，主要沿用已知延期与费用风险。\n2026-11-09 Q3实际披露（E188、E189）现进入基线：收入和订单/backlog强劲，Neutron共16项已签任务，若干新任务按7000万美元基础价；但GAAP亏损/EPS弱于分析师估计，调整后EBITDA与自由现金流仍为负，Q4仍指引亏损，Neutron首飞仍不早于2027年。增长、定价及已签合同不等于利润/现金已兑现；Neutron时间风险仍与财报实际相邻但不可重复计为新信息。\n2026-11-10 E193中的负向基线是Piper Sandler将目标价83→58美元、维持Neutral，称季度稳健但Neutron时点是近期关键指标，尽管发射需求仍强。BTIG维持Neutral，列出约24倍FY2027共识销售估值对比同业约10.5倍，并称待Neutron进一步进展；这不是新评级下调。Roth下调目标价30美元、Craig-Hallum下调20美元，但已提供报告未披露其目标价前后值/评级/理由，不能据此推定负向经营预测。Cantor下调目标价至111美元仍维持Overweight并给出有利买入判断；Barclays降至82美元仍维持Overweight且强调订单/价格，均不能只按目标价方向判为新的负向观点。上述是具名个别报告事实，不是共识。",
+            "trigger_boundary": "一次公开、可归属到具名分析师/机构、方向明确的新不利观点即可跨界：新覆盖首次给出明确偏负的建议，或既有机构明确降级，本身是新的卖方意见，不要求完整年度现金模型；也可由公开的新判断显示推迟重要现金/商业化时点或降低关键路径实现概率。E114已披露的2027年首飞预期及Q1步骤目标，E116已披露的KeyBanc收入/目标价下调、Clear Street目标价下调、Citizens关于FY2027–FY2028货币化的下调及Goldman对2027Q2首飞/更高费用和现金消耗的模型，以及Cantor/Roth的维持立场，均是当前已知基线；对这些内容的复述、旧稿再刊、评级保持或基于历史事实的机械估值重算不触发。2026-10-29 Simply Wall St的估值及增长/利润率模型值也进入基线，但预测期间不明，不能作为共识或公司经营事实；仅重复该更新不构成新的观点。相对这些具体基线的新估计/风险更新仍须有明确业务理由；单纯无新依据的目标价变化或仅因股价移动而改目标价不足。无需公司丢单、实际财务下修或其他分析师跟随。若报告中的一项假设变差但整体结论因其他变化转为更有利，不机械认定SHORT；如经营和peer估值子项方向冲突且报告未表达主导/净结论，则本Condition也不命中。 E193中的Piper Neutron时点论据及83→58美元目标价已是当前C2基线；其后同一切价行动的新闻重述（包括仅重列相同目标价和同一已知理由）不触发。单独的Roth/Craig-Hallum目标价降幅，以及Cantor/Barclays保持积极评级下的目标价下调，也不足以证明新负向总体判断。若日后出现相对此基线的明确新降级、首次负面覆盖，或有出处且连接公司特定经营/风险的实质新下修，仍可触发；不要求其他分析师跟随或等实际经营恶化。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "5a75bd86250434ce76f458b8d01da80bd6379ff0cfa17cf7ad211064c8a12428",
+          "criterion": "具名卖方机构首次公开给出明确偏负面的Rocket Lab推荐/独立基准，或明确下调其自身既有推荐，或在研报/有出处摘要中提出一项新的不利公司特定概率、时点或价值判断；首次推荐或明确评级下调本身可承载新的独立观点，单纯目标价变化则须能识别新的业务/风险依据，而非只随现价机械调整。",
+          "decision": "SHORT",
+          "trigger_layer": "OUTER"
+        }
+      ],
+      "match_scope": "匹配有明确出处、机构与分析师身份的Rocket Lab卖方研究、首次覆盖/独立基准、评级或核心假设更新；例如对Neutron资格与商业化时点、卫星及发射业务的兑现概率、待交割Iridium服务现金/风险，或这些公司特定路径所支撑的投资意见作出新判断。报道摘要可帮助召回，无需取得付费原研报；公司分析师名单只说明谁在跟踪，不是公司预测。通常评级复述、旧报告再刊、只有目标价对现价作机械调整的标题、股价升跌、财报/合同本身，以及仅发生同业倍数换算而未形成新的公司经营观点，不单独命中。",
+      "policy_id": "pol_34cc5ee5c377486b9699f26a5796d4fe",
+      "ref": [
+        "output/work/v21/research/OPEN_RESEARCH/0056/policy_01.json",
+        "context/document3/v21/shared/d1/c1.md",
+        "context/document3/v21/shared/d1/c3.md",
+        "context/document3/v21/shared/d1/c5.md",
+        "context/document3/v21/shared/d1/c4f_future_nodes.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md#股东、监管者与贷款人怎样共同使收购能够完成",
+        "https://investors.rocketlabcorp.com/stock/analyst-coverage",
+        "https://www.tipranks.com/news/the-fly/rocket-lab-initiated-with-an-outperform-at-raymond-james-thefly-news",
+        "context/document3/v21/shared/event_library.md#E114",
+        "context/document3/v21/shared/event_library.md#E116",
+        "context/document3/v21/shared/delta.json#/reference_view_delta",
+        "https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-90-from-130-at-citizens-thefly-news",
+        "https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-67-from-75-at-goldman-sachs-thefly-news",
+        "context/document3/v21/shared/maintenance_feed.json#case_4f08ced778ad4a538aea665e9140c139",
+        "context/document3/v21/shared/maintenance_feed.json#case_7307fb641f414ebd9b658de8bfceb96e",
+        "https://stocktwits.com/news-articles/markets/equity/rklb-fly-stocks-soar-premarket-this-analyst-says-space-sector-is-entering-busiest-era-since-first-moon-landing/cZKfLctR7dM",
+        "https://www.investing.com/news/stock-market-news/these-2-space-stocks-were-upgraded-at-keybanc-today-4741604?ampMode=1",
+        "context/document3/v21/shared/maintenance_feed.json#case_7d10269cd3f541f59b94d1624a5e95f1",
+        "https://stocktwits.com/news-articles/markets/equity/rklb-stock-jumps-as-stifel-calls-viasat-deal-another-success/cZYGXNSRJ1C",
+        "context/document3/v21/shared/event_library.md#E188",
+        "context/document3/v21/shared/event_library.md#E189",
+        "context/document3/v21/shared/event_library.md#E190",
+        "context/document3/v21/shared/event_library.md#E193",
+        "context/document3/v21/shared/maintenance_feed.json#case_2804d8e0654f4374b11374af98f4d9b2",
+        "context/document3/v21/shared/maintenance_feed.json#case_7e5e05a933054ab9bd7e8f351e50eefc",
+        "context/document3/v21/shared/maintenance_feed.json#case_bd27c2f97d8f4b6582beff0aa2136c98",
+        "context/document3/v21/shared/maintenance_feed.json#case_c3dc1837fb0b4b4db38f69524f22301d",
+        "context/document3/v21/shared/maintenance_feed.json#case_4f2db48b62664dd0bcfa7e6ed9f60173",
+        "context/document3/v21/shared/maintenance_feed.json#case_839f75a075af40bcbe17460fabac4c2d",
+        "context/document3/v21/shared/maintenance_feed.json#case_bcbe125ce8a3439e83575e6f9b53be6c"
+      ],
+      "title": "卖方对Rocket Lab经营前景与风险的独立新判断",
+      "transmission": "截至2026-11-09，Rocket Lab FY2026 Q3收入为2.67834亿美元、同比增长73%，超过公司此前Q3收入指引；季度末backlog约35.7亿美元、环比增长52%，新增近10亿美元发射合同。公司同时报告Q3 GAAP净亏损约7968万美元、摊薄每股亏损0.12美元、调整后EBITDA亏损约1805万美元、自由现金流为负2392万美元；季度经营现金流虽为正约720万美元，主要受可变的卫星项目里程碑收款推动，前九个月经营现金流仍为负。FY2026 Q4收入指引为2.70亿–2.90亿美元、调整后EBITDA仍预计亏损1400万–2000万美元。这些实际结果和管理层指引方向并不单一，不能相互抵销为单一的盈利结论。\n\nE189披露Q3新增八项Neutron任务、金额超过5.15亿美元，签约backlog为16项，多个任务采用7000万美元基础价，下一可订窗口进入2030年代；Neutron仍预计不早于2027年首飞，资格/制造与现金兑现风险未消失。E190另载OSC对首飞后制造升级、回收运输和缩短周转提供1.5亿美元附条件贷款承诺，财务交割仍待尽调和其他条件，属偿还型贷款，非补助或已到账现金。Iridium交易已由完成的ATM发行提供资金且股东/贷款人已批准部分条件，但交割仍待监管批准。\n\n卖方研究将这些已公开经营路径转成各自的概率、时点和价值判断，是独立于经营消息本身的观察入口。Raymond James 2026-09-11首次覆盖的Outperform观点、正文标注2026-08-17的Stifel维持Buy及Swarm-1高八位数美元潜在份额估计、E116的延期后估计/目标价调整，以及E193的Q3后分析师群组观点均是个别模型或建议，不是公司指引、一致预期或已实现损失/收入。当前卖方一致预期、完整预测模型及同日企业价值/净债务/摊薄分母仍未充分取得；不由下游拼凑价格影响或共识。只有可归属到具名卖方的新独立方向性判断，或与公司特定业务/风险相连的实质新概率、时点或价值更新，才进入相应Condition。"
+    }
+  ],
+  "w1_events": [
+    {
+      "canonical_summary": "In the first day after Rocket Lab’s FY2026 Q3 report, analysts issued a bounded set of rating, target-price and outlook updates, with target moves in both directions and repeated focus on launch capacity and Neutron timing.",
+      "derived_from_event_ids": [],
+      "event_id": "E193",
+      "event_type": "ANALYST_RESPONSE_EPISODE",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F547",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Cantor Fitzgerald lowered its Rocket Lab price target from $122 to $111 while maintaining an Overweight rating after the FY2026 Q3 results.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F548",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Cantor analyst Andres Sheppard reported that SpaceX was no longer accepting commercial Falcon 9 launch bookings beyond 2028; this was the analyst’s reported view, not a direct SpaceX announcement.",
+          "subject_time": "Commercial bookings after 2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F549",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Sheppard said constrained orbital launch supply, Rocket Lab’s position as a leading Western launch provider, its flight record, and limited alternatives could support further price increases.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F550",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Sheppard described Rocket Lab’s backlog growth, launch record, rocket lineup, customer growth, and dedicated launch facilities as competitive strengths and characterized the shares as a favorable buying opportunity ahead of Neutron commercialization and the Iridium closing.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F551",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "BTIG maintained a Neutral rating, citing Rocket Lab at about 24 times 2027 consensus sales versus about 10.5 times for market-cap-weighted peers; it said growth supported a premium but remained cautious pending further Neutron progress.",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F552",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Barclays maintained Overweight while reducing its Rocket Lab price target by $3 to $82; it highlighted record orders and higher launch prices despite the Neutron delay.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F553",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Piper Sandler cut its Rocket Lab price target from $83 to $58 while maintaining Neutral, describing the quarter as steady but making Neutron timing the key near-term metric despite continued launch demand.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F554",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Roth Capital cut its Rocket Lab price target by $30; the available report did not state either target level or a rating change.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F555",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Craig-Hallum cut its Rocket Lab price target by $20; the available summary did not state either target level, a rating, or the reason.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F556",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Clear Street raised its Rocket Lab price target from $105 to $110, maintained Buy, and said the record backlog provided multi-year business visibility.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F557",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "KeyBanc reiterated Overweight for Rocket Lab with a $100 price target.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F558",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "KeyBanc said it revised estimates after the quarter without disclosing the values or forecast period, and cited tight launch capacity as supporting demand, pricing and Electron/Neutron backlog growth while Space Systems expanded.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F559",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi analyst John Godyn said tight launch capacity was pushing launch prices higher.",
+          "subject_time": null
+        }
+      ],
+      "known_event_summary": "On 2026-11-10 after Rocket Lab’s FY2026 Q3 results, Cantor cut its target from $122 to $111 (Overweight), Piper from $83 to $58 (Neutral), and Barclays reduced its target by $3 to $82 (Overweight); Clear Street raised $105 to $110 (Buy), KeyBanc reiterated $100 (Overweight), BTIG remained Neutral, while Roth and Craig-Hallum reported target cuts of $30 and $20 without target levels.",
+      "occurred_at": "2026-11-10",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E188",
+        "E114"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Analysts update Rocket Lab ratings and outlook after FY2026 Q3 results"
+    }
+  ],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": true,
+    "related_has_new_fact": false
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-12T08:45:17.165493Z"
+  }
+}

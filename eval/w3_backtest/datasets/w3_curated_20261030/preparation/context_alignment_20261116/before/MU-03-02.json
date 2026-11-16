@@ -1,0 +1,546 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E115",
+        "fact_ids": [
+          "F554"
+        ]
+      }
+    ],
+    "reason": "BofA分析师Vivek Arya将CY26-30 AI数据中心系统可寻址市场规模上调至2.2万亿美元（年增40%，此前为1.8万亿/33%），并将Micron列为AI芯片股首选之一。该$2.2T TAM及Arya的行业级AI capex超额预测为新增核心事实，现有Event中无覆盖。Micron 12月9日起回购日期已被F554覆盖，不构成新信息。",
+    "reference_ids": [
+      "E115"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为BofA分析师Vivek Arya的年度前瞻预测，核心事实包括上调CY26-30 AI数据中心TAM至2.2万亿美元、确认AI支出因芯片供给有限将持续旺盛、将Micron列为推荐标的并提及12月9日启动回购。消息不涉及Micron任何CMBU/CDBU/HBM收入份额、bit shipments、ASP、毛利率、合同价格、扩产项目进度、战略客户交付、产品资格或汽车平台的实际数据或公司/客户正式披露。与AI需求强势仅为主题性背景关联，未提供与任何criterion触发路径存在具体事实对应关系的observation。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "Micron's analyst response episode extended through September 29 as JPMorgan, Wedbush and other analysts refreshed targets, earnings expectations, SCA coverage, memory-price views, HBM supply assumptions and FY2027 outlooks ahead of the FY2026 fourth-quarter release.",
+      "derived_from_event_ids": [],
+      "event_id": "E115",
+      "event_type": "ANALYST_RESPONSE_EPISODE",
+      "facts": [
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F532",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi analyst Atif Malik warned that memory-chip prices could peak earlier than expected in the current memory-price cycle.",
+          "subject_time": "Near-term memory-price cycle"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F533",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wolfe Research estimated that Micron could generate sufficient free cash flow in calendar 2026 and 2027 to repurchase shares equivalent to approximately 25% of its market capitalization.",
+          "subject_time": "Calendar 2026-2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F534",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wolfe Research rated Micron Outperform in its memory-sector research note.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F535",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS forecast that Micron should remain resilient under a scenario in which open-market memory prices fall approximately 80% at the end of the cycle beginning in the second half of 2028.",
+          "subject_time": "End-of-cycle scenario beginning in the second half of calendar 2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F536",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS forecast that Micron's trough annualized EPS would remain higher than the annualized EPS level implied by its next-quarter guidance.",
+          "subject_time": "End-of-cycle trough compared with next-quarter guidance"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F537",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wells Fargo analyst Aaron Rakers lowered the Micron Technology price target from $1,525 to $1,400 and maintained an Overweight rating.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F538",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi analyst Atif Malik raised the Micron Technology price target from $1,150 to $1,300 and maintained a Buy rating.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F544",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Zacks Investment Research identified Micron and NVIDIA as important contributors to technology-sector earnings growth in 2026 Q3 and estimated that excluding Micron, NVIDIA and Alphabet would reduce sector earnings growth from 41.9% to 20.5%.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F545",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wall Street analysts estimated Micron's FY2026 Q4 revenue at approximately $50.9 billion, up about 350% year over year.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F546",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wall Street analysts estimated Micron's FY2026 Q4 EPS at approximately $31.49, up about 939% year over year.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F547",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wall Street analysts projected Micron's FY2027 Q1 revenue at approximately $56.6 billion, up about 315% year over year.",
+          "subject_time": "FY2027-Q1"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F548",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wall Street analysts projected Micron's FY2027 Q1 EPS at approximately $35.07, up about 634% year over year.",
+          "subject_time": "FY2027-Q1"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F551",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS analyst Timothy Arcuri forecast that Micron's open-market memory prices would begin declining in the second half of calendar 2028.",
+          "subject_time": "Second half of calendar 2028"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F552",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS analyst Timothy Arcuri reiterated a $1,625 Micron price target and Buy rating.",
+          "subject_time": "Analyst price target and rating outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F553",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS analyst Timothy Arcuri forecast Micron FY2026 Q4 revenue of approximately $52.4 billion and EPS of approximately $32.50, above company guidance.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F554",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS analyst Timothy Arcuri forecast that Micron could begin repurchasing approximately $20 billion of shares per quarter after December 9, 2026, increasing toward approximately $50 billion per quarter by the end of fiscal 2027, conditional on restrictions expiring and cash generation supporting the plan.",
+          "subject_time": "December 2026 through fiscal 2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F555",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS analyst Timothy Arcuri wrote that his latest checks indicated Micron's memory supply-demand gap was continuing to widen.",
+          "subject_time": "Current memory supply-demand outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F556",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "UBS analyst Timothy Arcuri forecast that Micron's profits would remain above current levels even after memory prices begin declining, supported by share buybacks and strategic pricing agreements.",
+          "subject_time": "Memory-price downturn beginning in the second half of calendar 2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F557",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi analyst Atif Malik forecast Micron FY2026 Q4 revenue of approximately $51 billion and EPS of approximately $31.45.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F558",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi analyst Atif Malik forecast Micron FY2027 Q1 revenue of approximately $57 billion and EPS of approximately $35.25.",
+          "subject_time": "FY2027-Q1"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F559",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi analyst Atif Malik forecast Micron's consolidated DRAM average selling price would rise 20% sequentially in FY2026 Q4 and another 13% sequentially in following quarters.",
+          "subject_time": "FY2026-Q4 and following quarters"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F560",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi analyst Atif Malik expected DRAM and NAND to remain undersupplied, with price growth slowing over the next four quarters and peaking around Q2 2027.",
+          "subject_time": "Current memory-price cycle through approximately Q2 2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F561",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Citi forecast Micron FY2027 capital expenditure of approximately $50 billion, including more than $20 billion of equipment spending.",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F601",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "BofA Securities said Micron's forthcoming gross-margin guidance could shape the stock's next move.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F602",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "BofA Securities said Micron's forthcoming capital-spending guidance could shape the stock's next move.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F603",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Susquehanna expects Micron's November-quarter outlook to satisfy investors.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F604",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Susquehanna believes the full benefit of an Nvidia product ramp may be realized after Micron's November quarter rather than immediately.",
+          "subject_time": "FUTURE"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F605",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "BofA analyst Vivek Arya forecasts that Micron could maintain gross margins in the mid-80% range for fiscal 2027 if AI capital spending remains durable, supporting annual EPS estimates of approximately $150 to $200.",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F606",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Vivek Arya forecasts Micron fiscal 2027 capital spending of approximately $40 billion to $50 billion.",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F607",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rosenblatt Securities expects Micron's average DRAM and NAND selling prices to rise approximately 10% sequentially in the November quarter.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F608",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rosenblatt analyst Kevin Cassidy maintained a Buy rating and a $1,500 price objective for Micron Technology.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F609",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wolfe Research analyst Chris Caso maintained a Buy rating and a $1,500 price objective for Micron Technology.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F610",
+          "fact_occurred_at": "2026-09-25",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Kevin Cassidy forecast that Micron's strategic client agreements could represent approximately 40% of manufacturing bits within the next three to five years.",
+          "subject_time": "LONG_TERM"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F636",
+          "fact_occurred_at": "2026-09-26",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Analyst consensus forecast Micron FY2027 revenue would grow 90% to approximately $247.5 billion.",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F637",
+          "fact_occurred_at": "2026-09-26",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Analyst consensus forecast Micron FY2027 EPS would grow 116% to approximately $158.93.",
+          "subject_time": "FY2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F681",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "An unnamed five-star analyst projected approximately 80% upside for Micron shares, arguing that AI memory demand could challenge an older Wall Street assumption.",
+          "subject_time": "Forward Micron valuation outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F682",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Micron was described as posting earnings-per-share growth above 1,000% in 2026.",
+          "subject_time": "Micron 2026 earnings outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F683",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Analysts expected Micron revenue to rise nearly fivefold for the upcoming reporting period.",
+          "subject_time": "FY26 Q4 earnings outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F684",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Analysts expressed skepticism about Micron's ability to meet memory demand ahead of its FY26 Q4 earnings report.",
+          "subject_time": "FY26 Q4 earnings outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F685",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Morgan Stanley maintained an Overweight rating on Micron and a $1,200 price target, while expecting post-earnings estimate increases to be smaller than those seen after prior quarters.",
+          "subject_time": "FY26 Q4 earnings and subsequent estimate revisions"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F686",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "A survey of 57 analysts placed Micron Technology's 12-month median price target at $1,600.",
+          "subject_time": "12-month horizon"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F687",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "The article's author modeled an end-2026 Micron share price of approximately $2,490 using projected trailing-twelve-month EPS of $103.76 and a 24x earnings multiple.",
+          "subject_time": "End of 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F688",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Baird raised its Micron price target from $1,280 to $1,520 and maintained an Outperform rating.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F689",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wedbush analyst Matthew Bryson reiterated an Outperform rating on Micron and raised the price target from $190 to $230.",
+          "subject_time": "Wedbush valuation view reported on September 28, 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F690",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wedbush expected Micron to report strong fiscal fourth-quarter earnings amid favorable memory-pricing trends.",
+          "subject_time": "Micron fiscal fourth quarter 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F691",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "The article highlighted an analyst scenario implying approximately 90% upside for Micron shares and cited a $775 analyst price target.",
+          "subject_time": "Post-earnings valuation outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F692",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Baird analyst Tristan Gerra forecast that agentic AI workloads would continue increasing server CPU demand into 2027.",
+          "subject_time": "2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F693",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Baird expected industrywide DRAM supply growth to slow in 2027 relative to 2026, potentially keeping the memory market tight and supporting pricing.",
+          "subject_time": "2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F694",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Baird expected Micron to benefit from higher high-bandwidth-memory margins in 2027.",
+          "subject_time": "Micron fiscal 2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F695",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "D.A. Davidson analyst Gil Luria reiterated a $2,000 price target for Micron and maintained a strongly bullish view on the shares.",
+          "subject_time": "Analyst valuation outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F696",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Analysts expected Micron's FY26 fourth-quarter revenue to be approximately $51.14 billion, with earnings per share rising more than tenfold year over year.",
+          "subject_time": "Micron FY26 Q4, reported September 30, 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F787",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "JPMorgan analyst Harlan Sur expects Micron to exceed Wall Street expectations of approximately $51.4 billion FY26 Q4 revenue, 86.2% gross margin, and $31.73 EPS.",
+          "subject_time": "Micron FY26 Q4 earnings report expected September 30, 2026"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F788",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Harlan Sur estimates Micron's Strategic Customer Agreements may cover more than 35% of forward bit production and that contracted volumes may already exceed 50%.",
+          "subject_time": "Micron forward production and SCA coverage"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F789",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Harlan Sur interprets Micron's moderating price increases as a strategic decision to preserve customer relationships and cement long-term SCA commitments rather than evidence of weakening demand.",
+          "subject_time": "Micron FY26 Q4 pricing outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F790",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Harlan Sur expects Micron management to raise its November-quarter outlook, citing stronger customer requirements, tighter memory availability expected during 2027, and continued HBM4 ramp progress.",
+          "subject_time": "Micron November-quarter outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F791",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Harlan Sur expects HBM supply to remain insufficient through 2028.",
+          "subject_time": "HBM supply through calendar 2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F792",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "JPMorgan described Micron's setup as constructive, saying tight DRAM and NAND markets and resilient pricing could provide upside to revenue, gross margin, and earnings.",
+          "subject_time": "Near-term FY26 Q4 earnings outlook"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F793",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Creative Strategies CEO and principal analyst Ben Bajarin appeared on a Yahoo Finance video to discuss the metrics and trends he would watch ahead of Micron's FY26 Q4 earnings report.",
+          "subject_time": "Micron FY26 Q4 earnings report scheduled for September 30, 2026"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F794",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wedbush reiterated an Outperform rating and a $1,400 price target for Micron.",
+          "subject_time": "September 28, 2026 analyst note"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F795",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Wedbush said memory pricing should be significantly better than Micron's guidance and raised its estimates just above the high end of prior guidance.",
+          "subject_time": "FY26 Q4 earnings outlook"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F796",
+          "fact_occurred_at": "2026-09-28",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "J.P. Morgan rated Micron Overweight with a $1,540 price target and expected another beat-and-raise on continued pricing momentum.",
+          "subject_time": "FY26 Q4 earnings outlook"
+        }
+      ],
+      "known_event_summary": "2026-09-23..2026-09-29 Micron analyst response episode: analysts updated ratings, targets, earnings and pricing forecasts ahead of the September 30 release, including JPMorgan and Wedbush views on Q4 revenue, margins, SCA coverage, HBM supply and another beat-and-raise.",
+      "occurred_at": "2026-09-23..2026-09-28",
+      "occurrence_time_precision": "INTERVAL",
+      "related_event_ids": [
+        "E2",
+        "E4",
+        "E42",
+        "E94",
+        "E101",
+        "E103",
+        "E65",
+        "E116"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": "E16",
+      "title": "Multiple analysts and Wall Street consensus updated Micron forecasts and ratings amid the memory-price cycle"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

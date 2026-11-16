@@ -1,0 +1,154 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "消息的核心新增事实为：Nebius 为法国北部里尔附近的数据中心募资 2.5 亿欧元（约 2.793 亿美元），且募资结构未披露；同时给出将 Béthune 旧普利司通厂址改造为 8 亿欧元、目标 240MW 数据中心的投资细节，首期 60MW 将于 12 月投运。这些均未被已加载事实覆盖。已覆盖部分仅为：Grimme 以预先安排交易计划买入 770 股（约 12.27 万美元），对应 E273；Musk 称债务市场对缺乏 AI 数据中心以外收入的公司几乎关闭，且 SpaceX 不会收购 neocloud 公司，对应 E63、E99；Volozh 称部分资本来源暂时枯竭但资金足以交付扩产，对应 E65、E66。",
+    "reference_ids": [
+      "E273"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": true,
+    "reason": "pol_fe749e2c76294654bc54e687966d9268：消息称Nebius为法国里尔附近的数据中心筹资2.5亿欧元（约2.793亿美元），属于数据中心项目融资与资金安排范围；但明确说融资结构不清，未披露抵押、借款基数、提款条件、资产或合同适格范围及净可用额，因此不满足C1；Volozh关于资产支持融资暂时枯竭的说法属一般融资环境表述，未指出具名NBIS资产池或新的承保、折扣规则，因此不满足C2。pol_351a03ffc69e45ddaf14f78487992854：消息披露法国Béthune园区规划240MW、首期60MW将于12月开放，属于新园区容量阶段及开放排程范围；但无既有目标可比以证明提前或推迟，也非已完成集成并取得常态生产资格，故各条件未命中。",
+    "related_policy_ids": [
+      "pol_fe749e2c76294654bc54e687966d9268",
+      "pol_351a03ffc69e45ddaf14f78487992854"
+    ]
+  },
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-17，Lappeenranta 310MW园区首期70MW变电站目标为2027年春；Caverion合同和项目页说明2026年7月实施、2027年春调试。Mäntsälä新建70MW数据中心及70MW配套站目标为2027年秋。公司年末connected目标为800–1,000MW；5GW contracted不是建成或可服务容量。",
+            "trigger_boundary": "Lappeenranta首期70MW目标2027年春、新Mäntsälä70MW目标2027年秋，是来源实际给出的精度，不自行补日期。可信更新若使重要供电部分实质较早可用，或落实原先仍未定的关键并网安排而改变主要交付概率，可以在原宽窗口内有信息。跨到另一年/半年/季节是比较线索，不是完整提前时长或充分分量证明；相邻窗口一两天不自动重要。应定位同一阶段、关键约束和有效送电时间的真实改变，不要求编出精确旧日程或把额定MW换算成active IT/收入。只有原目标照常推进而无关键增量，不自动LONG。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "69ba68d3240baf0cae3572490d0adc27314a0dd92e82df8a9a9b1a761cd0ed12",
+          "criterion": "Nebius、施工/供电方或具名场址伙伴，以有依据的正式安排或进度更新，确认一项已公布、对扩容有分量的变电站/并网阶段实质提前，或此前未解决的主要接电关键路径已被可执行安排解除，使该阶段按公开时点可用的概率实质提高。可覆盖70MW电站中的有分量可用部分，不要求整个法律/建设阶段全部完成；普通开工、目标重述、按计划机械验收或季节标签边缘变化不满足。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Lappeenranta首期70MW变电站原目标2027年春；Mäntsälä新70MW楼配套70MW变电站原目标2027年秋。对应公司connected目标为2026年末800–1,000MW，随后逐步active于2027年上半年；已知排期未给具名客户验收日期或IT负荷。",
+            "trigger_boundary": "按原春/秋等真实精度比较重要供电阶段的新旧路径。推迟到2027年秋或2028年可能表明显著后移，但必须有同阶段实际时间/供应约束变化，不因窗口不重叠就假定延满一季。原窗口内已识别主要关键路径失败、重要供电部分不能按所需阶段使用，也可先降低兑现概率，无需等原窗口全部过去、客户验收或财报。普通日程微调不足，不把一站变化外推所有容量。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "97dd17134396f2f2f591ecbd95167e9d110fa6636615200b52f2435128477ab6",
+          "criterion": "可信项目方正式将一项有分量的既定变电站/并网阶段实质延后、取消或缩减，或确认重要未解决约束已使原可用路径显著转弱。应能定位受影响阶段、有效供电时点或原公开关键路径；不以仅跨年/跨季标签、一般施工波动或小范围成本更新作为充分事实。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "截至2026-08-12，公司维持2026年末800–1,000MW connected并把其active窗口放在2027年上半年；Meta第二协议相关容量计划从2027年初上线。connected与active是不同阶段。芬兰新站目标分别指向2027年春/秋，不能从70MW电站额定值推算客户可用容量。",
+            "trigger_boundary": "800—1000MW年末connected随后2027年H1逐步active、Meta早2027是宽基线，不能当每一客户精确验收日。重要生产阶段相对其自身路径的实质提前，或可信生产资格验证解决了此前影响该阶段的主要集成/可用性不确定性，可在原H1/早2027窗口内改变判断；普通按窗首次开放未必有此增量。只需有业务分量的可用服务部分，不需全网目标、精确IT MW或客户订单齐套；不得从70MW变电站容量推出客户服务量。"
+          },
+          "condition_id": "C3",
+          "condition_revision": "cf7b9f158de71eeed1d13c82481f0e13bd2d6e5fcdec78e03a6de1572312b3e9",
+          "criterion": "Nebius或具名客户确认，一个与已公布扩容或主要客户部署有关的有分量容量阶段，已完成集成并取得可供常态生产使用的资格；其实际可用时点实质提前，或这项结果解除此前尚未解决的重要生产约束、显著提高相关服务路径兑现概率。不能把接电、样机/单机上线或按原安排的普通首次开放本身当充分，也不要求全批/全网同时上线。",
+          "decision": "LONG",
+          "trigger_layer": "INNER"
+        },
+        {
+          "calibration": {
+            "reference_state": "已知全公司目标是2026年末800–1,000MW connected，随后在2027年上半年逐步active；Meta首批相关容量为早2027；5GW签约不是active基数。现有公开材料没有逐站IT量、内部阶段排程或客户验收清单。",
+            "trigger_boundary": "重要阶段移出原公开服务窗口可以说明后移，但半年/季度边界不是经济分量或固定时长。原窗口内关键可用条件失败且已实质影响重要服务时段/范围，也可降低active兑现概率；应以具体阶段和来源实际日程精度比较，不能用季节交界一两天或公司H1口径补任一客户旧日期。无需收入/索赔、全站验收或净GPU清单。同一供电改期与由它直接导致的服务后移仅算同一事实，不再创造第二份容量损失。"
+          },
+          "condition_id": "C4",
+          "condition_revision": "28606638623e976490950e316f4293280e21527cb7769fb74d69f12395f6781a",
+          "criterion": "Nebius、具名客户或可信设施方确认，已公开关联至扩容/主要客户交付的一项重要生产容量阶段，因机电、冷却、网络/编排或系统集成问题实质推迟可用时点、缩减服务范围或显著削弱已识别交付路径。受影响可为有分量的服务部分，不限完整母阶段；仅接电状态、单台返工或无法定位阶段/用途的泛化说法不满足。",
+          "decision": "SHORT",
+          "trigger_layer": "INNER"
+        }
+      ],
+      "match_scope": "匹配Nebius、Caverion等施工方、供电方、设施伙伴或具名客户关于新园区变电站、电网连接、数据中心完整阶段建造，以及从connected到生产可用的排程、送电、集成、验收、改期或取消。代表情景包括Lappeenranta首期70MW变电站和310MW园区，以及Mäntsälä新70MW楼及其独立70MW配套变电站；不能把后者与既有75MW楼混为一批。也匹配800–1,000MW年末connected容量的具名阶段转active及客户可用时点更新。一般园区上限、土地/电力合同、开工、设备到场、单次测试、5GW contracted或未说明项目/容量的新闻只是背景；电热控制、Bloom发电、GPU上游获配和产品资格由各自观察范围处理。",
+      "policy_id": "pol_351a03ffc69e45ddaf14f78487992854",
+      "ref": [
+        "output/work/v21/research/S0002/0021/policy_site_capacity_ramp.json",
+        "context/document3/v21/shared/document2.json#/shells/1/units/0",
+        "output/work/v21/discovery/S0002.jsonl#L1",
+        "https://www.caverion.com/newsroom/releases/2026/caverion-to-deliver-eur-15-million-substation-for-nebius-data-center-in-finland-creating-jobs-for-more-than-80-professionals/",
+        "https://www.caverion.com/newsroom/releases/2026/caverion-finland-strengthens-its-position-in-the-data-centre-market-and-will-deliver-a-15-million-substation-for-ai-cloud-company-nebius/",
+        "https://nebius.com/newsroom/nebius-to-construct-310-mw-ai-factory-in-finland",
+        "https://www.sec.gov/Archives/edgar/data/1513845/000110465926094568/tm2622968d1_ex99-2.htm"
+      ],
+      "title": "新园区接电与有效服务容量爬坡的关键路径",
+      "transmission": "Nebius扩容不是把签约电力直接计为云容量：2026年末5GW contracted是场址/电力管线，800–1,000MW connected仍需IT安装、网络、冷却、编排和客户上线；管理层把转为active放在2027年上半年，并计划自2027年起每年部署超过1GW。Caverion公布的Lappeenranta首期是70MW变电站，服务的园区规划总容量310MW，目标2027年春；Mäntsälä则是既有75MW场址旁新建70MW楼，另配独立70MW变电站，目标2027年秋。单个70MW电力节点相当于800–1,000MW connected目标的约7%–9%同口径接入量，但不是IT负荷或客户可用MW。重要电力阶段有效可用时点或关键约束的可信变化可先改变近期接电概率；已接电仍不等生产可用，客户服务阶段也可独立改变active时点。常规开工、按期完成、个别设备测试或仅跨过季节标签边界一天，不足以重估整段爬坡。"
+    },
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-23 06:00 UTC，直接的资产/合同担保对照仍是7月约7.75亿美元工具：已投运GPU、投资级客户合同现金流、SOFR+2.50个百分点、2030年10月到期，客户现金流与贷款覆盖对应部署资本开支100%以上。10月17日签署并于10月22日披露的Citi 35亿美元、364天高级担保桥接term loan用于GPU基础设施扩建及一般公司用途，另有最低流动性契约和对几乎全部借款人资产（包括母公司持有的美/荷借款人股权）的担保；公开资料未列明按项目或具体资产/合同计算的借款基数、提款日程/先决条件、实际提款额或净可用项目资金。故Citi额度是新增集团融资路径，不是已证实的资产/合同抵押池适格扩张。公司表示可能继续基于逾400亿美元长期投资级合同承诺探索资产支持融资，此意向不等于已获批准额度。H1历史投资后差额36.262亿美元不可代替截止日现金，Q2新单capex预付覆盖率约50%—60%也只适用于该类新单。",
+            "trigger_boundary": "用同一具名资产/合同池可在重要阶段账单前提款的本金，减旧债置换、费用、强制现金留置/偿债及不能支付相关账单的部分，识别真实融资资格/可用额增量。新承保类别或关键提款障碍解除可以小于7.75亿美元而有意义；普通已预期复制不自动上修。签署一般集团用途的Citi桥接额度可作为当前资金背景，但不能仅凭总额推断某新资产/客户合同可融资、某项目借款基数扩大或资金已到该项目；只有公开信息能够定位目标抵押/合同类别与其及时可提款增量时，才触发本C1。不得重复把其集团级净资金效果与本Policy的资产资格效果算作同一项。披露应足以定位可用额、付款时间和主要融资代价，但无须同一公告一次齐报所有合同细节；新担保、抵押/优先权是风险与经济请求权，不经触发时间、回收与权利比较不能按面额再从本金机械扣除。无需等全额提款/投运/IRR；新增实质追索若抵销主要融资改善，应按同笔交换处理，不把可用贷款当免费资本。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "684b21d4c7b91011616f0ac3678cdb27ea72efb84c2fd9fffa6cedf3312a5c89",
+          "criterion": "Nebius、具名借款人或贷款方落实具约束力的项目融资/借款基数，资金在明确客观条件下可于重要GPU/设施阶段账单前提款；相对最近公开的融资资格/可用资金路径，本次实质扩大可融资资产/合同范围，或解决原先限制重要建设阶段的关键额度/提款障碍。可包括未投运资产、较短/较弱信用合同或其他可辨认的新适格路径，不把它们作为唯一白名单；普通预期中的同条件复制、毛额更大或贷款方仍可任意重新决定出资不足。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "7月工具证明已部署GPU和投资级客户服务现金流可以抵押，管理层预期以该框架复制；D2判断为按合同/资产信用分层而非所有AI云一律停贷。对于未曾获准或从未被公开描述为可融资的假想资产，现有资料没有建立其原有额度；5000亿美元平台目标及供应商可能提供的残值支持也没有NBIS分配。",
+            "trigger_boundary": "比较变更前后同一具名资产/合同池的可提款本金及必须自留资本；当新规则使该池下一项原本可按已批准或已公开预期条件融资的主要设备/施工批次，扣除客户预付与其他不可撤销融资后仍出现新增母公司资金缺口，或必须延后/缩小该批次时即足够。规则本身可先于已签额度削减成为边界；对未分配平台资金落空、纯利差上升但本金仍可用、公司自愿放慢建设、一般贷款人风险评论或同业被拒贷不命中。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "dc003efcec41bb8d121ee5e8efcaefd6c1ba928cda32ef8a79b929a70aebdb72",
+          "criterion": "贷款方/安排人、Nebius或具名项目借款人公开一项已生效的新承保、借款基数或抵押折扣规则，并指出它适用于某个已识别的NBIS资产/合同池；与此前书面额度、已批准借款基数或公开描述的适格标准相比，该规则取消一类资产资格、降低可贷比例或增加必留金额，令原可融资的一项具体扩建批次不能按原标准获得贷款。无需等已签融资被正式取消或提款已被砍。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配Nebius、具名项目载体、贷款人、承销人及资本平台对GPU/数据中心项目融资资格和可提款额度的公开披露：抵押资产是否已投运、客户合同信用及剩余期限、预付款/合同现金流配套、借款基数、抵押折扣、准备金、现金清扫、提款先决条件、母公司追索和资金用途。值得召回的情景包括首次用未投运GPU或非投资级/较短客户合同获得项目融资、贷款方将新一类抵押纳入借款基数，或贷款方改变适格/折扣规则而削弱已识别的NBIS建设融资池。已完成的同条件复制、一般行业风险偏好评论、未分配的供应商平台目标、同业借款以及融资金额本身均不自动命中。",
+      "policy_id": "pol_fe749e2c76294654bc54e687966d9268",
+      "ref": [
+        "context/document3/v21/shared/document2.json#/shells/2/units/0",
+        "context/document3/v21/shared/d1/c5.md#L59-L70",
+        "context/document3/v21/research_context/main_results.json",
+        "output/work/v21/research/S0003/0031/policies/gpu_project_financing.json",
+        "output/work/v21/research/S0003/0033/policies/cash_bridge_timing.json",
+        "https://nebius.com/newsroom/nebius-raises-775-million-in-first-secured-debt-financing-to-accelerate-global-buildout",
+        "context/document3/v21/shared/maintenance_feed.json#/trade_records/0/source/snapshot/body",
+        "context/document3/v21/shared/maintenance_feed.json#/w3_coverage_gaps/25/source/snapshot/body",
+        "https://www.businesswire.com/news/home/20261022371869/en/"
+      ],
+      "title": "AI云项目融资的适格范围与可用净额",
+      "transmission": "截至2026-10-17，Nebius已在2026-07-17完成首笔约7.75亿美元高级担保融资：担保物是已部署GPU及一份投资级客户服务期现金流，期限至2030-10-31、定价SOFR+2.50个百分点，与客户现金流合计覆盖相关GPU部署资本开支100%以上。公司当时明确预期在超过400亿美元的其他投资级客户承诺上继续以类似条件融资，所以同一已投运/投资级资产池上的普通复制不自动构成上修；NVIDIA资本平台的超过5000亿美元是第三方动员目标，不是NBIS分配。\n2026-10-17签署、10-22公开的Citi 35亿美元桥接融资协议，是另一个集团层面的新增资金来源：senior secured term loan，用于GPU基础设施扩建及一般公司用途；364天到期（2027-10-16），Term SOFR+2.75个百分点并每90天上调0.25个百分点、最高3.50%，另有最低流动性契约，且以借款人几乎全部资产（含母公司所持子公司股权）作担保，受排除资产及允许留置权约束。公告没有披露实际提款、项目分配、单项资产借款基数或具体抵押/提款条件；因此它不是已披露的新增资产/合同适格类别，也不能把35亿美元面额当作已收到的项目现金。公司提到基于逾400亿美元长期投资级客户承诺的资产支持融资，仍是另一个未来路径，不是已完成的Citi资产基础。\nD2记载H1 FY2026固定及无形资产现金购置81.303亿美元，持续经营CFO 45.041亿美元（其中递延收入现金流贡献43.950亿美元），历史差额-36.262亿美元；这不是截止日现金或未来净融资需求。FY2026资本开支指引200亿—250亿美元、Q2新单预付款约覆盖相关capex的50%—60%，说明同一建设批次还存在客户预付和集团桥接资本。对本Policy而言，新渠道的价值仍来自可融资抵押/合同范围扩大和可用于项目的净提款，而非贷款毛额；旧债置换、手续费、必留储备、现金清扫、托管及用途限制可能降低按期可用现金；母公司追索与优先权则改变股东风险，应按时间、触发及回收条件另行比较而不机械扣面额。利差上升本身不表示渠道关闭，低票息也不能抵销不可提款或抵押池收窄。"
+    }
+  ],
+  "w1_events": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Arne Grimme",
+          "Nebius Group N.V."
+        ],
+        "occurrence_date": "2026-10-26",
+        "proposition": "Nebius director Arne Grimme purchased 770 Class A shares at an average price of $159.01 between October 22 and 26, 2026, under a Rule 10b5-1 plan adopted June 15, bringing his direct holdings to 7,398 shares.",
+        "subject_time": "2026-10-22..2026-10-26"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E273",
+      "semantic_day": "2026-10-26"
+    }
+  ],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": false,
+    "related_has_new_fact": true
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-17T11:05:48.453869Z"
+  }
+}

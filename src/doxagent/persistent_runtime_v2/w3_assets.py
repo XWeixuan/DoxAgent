@@ -43,3 +43,10 @@ def research_assets(context, journal):
         while len(_cache) > 16:
             _cache.popitem(last=False)
         return result
+
+
+def operations_asset(assets):
+    """New bundles use skills/; previously frozen Cases retain their old asset."""
+    if "w3/skills/operations.md" in assets:
+        return assets["w3/skills/operations.md"]
+    return assets["w3/operations.md"]

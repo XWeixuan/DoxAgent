@@ -1,0 +1,77 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E214",
+        "fact_ids": [
+          "F960"
+        ]
+      }
+    ],
+    "reason": "当前消息的核心事实是《金融时报》报道OpenAI年化经常性收入比此前信号低200亿美元（收入下修/未达预期），以及由此引发的Nasdaq下跌1.4%等特定市场反应。E214中F960仅报道OpenAI年化收入接近700亿美元（收入水平），未涵盖\"比此前信号低200亿\"这一收入修正/缺口命题。",
+    "reference_ids": [
+      "E214"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为FT报道OpenAI年化经常性收入低于此前信号约200亿美元后引发的股市下跌（Nasdaq -1.4%、S&P -0.7%），属于市场情绪反应与财务数据差异报道。消息未确认任何针对Intel Xeon、IPU、ASIC、客户端CPU或Foundry的生产采购取消、部署延期、订单削减、续约终止、良率问题或供给变化等具体事实。OpenAI收入数字与Intel订单/部署之间不存在消息中已陈述的直接触发关系，不足以构成任何Policy criterion的具体observation。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "OpenAI reported a private-financing and revenue update.",
+      "derived_from_event_ids": [],
+      "event_id": "E214",
+      "event_type": "FINANCING",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F958",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Sam Altman ruled out an OpenAI public listing in 2026, citing AI-safety concerns.",
+          "subject_time": "2026 public-listing plan"
+        },
+        {
+          "assertion_state": "RUMOR",
+          "fact_id": "F959",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "OpenAI is reportedly seeking at least $30 billion in private capital at a pre-money valuation of approximately $1.4 trillion.",
+          "subject_time": "Proposed 2026 private financing round"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F960",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "OpenAI's annualized revenue is reported to be near $70 billion, more than 70% above the start of the current quarter.",
+          "subject_time": "Current annualized revenue"
+        }
+      ],
+      "known_event_summary": "On 2026-09-29, OpenAI reported a private-financing and revenue update.",
+      "occurred_at": "2026-09-29",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E98",
+        "E161"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "OpenAI reported a private-financing and revenue update"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

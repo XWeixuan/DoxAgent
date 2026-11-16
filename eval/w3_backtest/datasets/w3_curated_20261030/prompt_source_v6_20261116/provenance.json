@@ -1,0 +1,14 @@
+{
+  "source": "local_worktree_trade_only",
+  "source_marker": {
+    "w3_contract_version": "persistent-runtime.w3.v5"
+  },
+  "execution_contract": "persistent-runtime.w3.v6",
+  "note": "User requested v6 only. This is an explicit offline Trade pack, not a production bundle activation.",
+  "hashes": {
+    "AGENTS.md": "bcd97f5a5fe4522264a72a2e0fbd51f6c93805c72d940b4dcf36d2b67f613cee",
+    "skills/skill.md": "a6192049f104ecc9503ce62261f14609b6fdfe092c6406a9053313af8f396197",
+    "backtest.md": "89494f8a5e36cfd4b6a052ad14c2d91755c1ae59e11063cf964faf1db54fbe2d",
+    "contract.json": "66188d54ea1faf5c9de1df4c4477449c8cffd0e49f89a90a4413540f3bc180ac"
+  }
+}

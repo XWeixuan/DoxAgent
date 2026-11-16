@@ -17,6 +17,7 @@ from tests.test_codex_runtime_v2 import _AsyncSdkClient
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("tier_override", [None, "default"])
 @pytest.mark.parametrize(
     "phase", [None, "w3_template", "trade_decision", "post_decision_operations"]
 )
@@ -25,13 +26,13 @@ from tests.test_codex_runtime_v2 import _AsyncSdkClient
     [("gpt-6-luna", "fast"), ("gpt-6.1-sol", "default"), ("gpt-6-sol", "default")],
 )
 async def test_w3_sdk_exposes_only_ibkr_data_tools_and_scopes_capability(
-    tmp_path, monkeypatch, phase, model, tier
+    tmp_path, monkeypatch, phase, model, tier, tier_override
 ):
     sdk = _AsyncSdkClient()
     monkeypatch.setattr("doxagent.codex_worker.sdk_runtime.AsyncCodex", lambda *a, **k: sdk)
     settings = DoxAgentSettings(ibkr_tws_enabled=True)
     runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True,
-                                settings=settings)
+                                settings=settings, w3_service_tier=tier_override)
     run_root = tmp_path / "w3-run"
     run_root.mkdir()
     await runtime.start(WorkerRunRequest(
@@ -45,6 +46,8 @@ async def test_w3_sdk_exposes_only_ibkr_data_tools_and_scopes_capability(
     config = sdk.thread_start_kwargs["config"]
     if phase == "post_decision_operations":
         tier = "default"
+    if tier_override is not None and phase != "post_decision_operations":
+        tier = tier_override
     assert config["service_tier"] == tier
     assert config["features.fast_mode"] is (tier == "fast")
     assert sdk.thread_start_kwargs["model"] == model

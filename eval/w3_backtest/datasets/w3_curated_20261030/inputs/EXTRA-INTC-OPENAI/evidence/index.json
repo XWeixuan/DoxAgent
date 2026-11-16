@@ -72,6 +72,78 @@
       "publisher": "Intel / SEC",
       "published_at": "2026-07-23",
       "role": "Intel业务规模"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Intel and Google Deepen Collaboration to Advance AI Infrastructure",
+      "url": "https://www.intel.com/content/www/us/en/newsroom/news/artificial-intelligence/intel-google-deepen-collaboration-to-advance-ai-infrastructure.html",
+      "publisher": "Intel",
+      "published_at": "2026-04-09",
+      "role": "云客户需求与计算路径"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "Stargate advances with 4.5 GW partnership with Oracle",
+      "url": "https://openai.com/index/stargate-advances-with-partnership-with-oracle/",
+      "publisher": "OpenAI",
+      "published_at": "2025-07-22",
+      "role": "此前算力承诺与阶段"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "AMD and OpenAI announce strategic partnership to deploy 6 gigawatts of AMD GPUs",
+      "url": "https://openai.com/index/openai-amd-strategic-partnership/",
+      "publisher": "OpenAI / AMD",
+      "published_at": "2025-10-06",
+      "role": "加速器供应替代"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "The next phase of the Microsoft OpenAI partnership",
+      "url": "https://openai.com/index/next-phase-of-microsoft-partnership/",
+      "publisher": "OpenAI",
+      "published_at": "2026-04-27",
+      "role": "OpenAI 云采购关系"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "OpenAI expects compute spend of around $600 billion through 2030, source says",
+      "url": "https://www.investing.com/news/stock-market-news/openai-sees-compute-spend-of-around-600-billion-by-2030-cnbc-reports-4517341",
+      "publisher": "Reuters",
+      "published_at": "2026-02-20",
+      "role": "此前计算支出预期"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Saturate your Tensor Cores: Intel at NVIDIA GTC 2026",
+      "url": "https://community.intel.com/t5/Blogs/Tech-Innovation/Artificial-Intelligence-AI/Saturate-your-Tensor-Cores-Intel-at-NVIDIA-GTC-2026/post/1742832",
+      "publisher": "Intel",
+      "published_at": "2026-04-01",
+      "role": "CPU 与 AI 服务器系统"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "Intel Q2 2026 quarterly report: server and foundry",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "publisher": "Intel / SEC",
+      "published_at": "2026-07-24",
+      "role": "实际服务器规模与供给"
+    },
+    {
+      "id": "sources/S16.md",
+      "path": "sources/S16.md",
+      "title": "OpenAI and Broadcom unveil LLM-optimized inference chip",
+      "url": "https://investors.broadcom.com/node/64506/pdf",
+      "publisher": "OpenAI / Broadcom",
+      "published_at": "2026-06-24",
+      "role": "自研加速器及供应结构"
     }
   ],
   "market": {

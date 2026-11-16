@@ -151,7 +151,7 @@ class NativeContent:
         cached = self._projection_frozen.get(key) if key else None
         if cached is None:
             full = self.decode(frozen)
-            thin = {k:v for k,v in full.items() if k in {'w3_execution_state','policy_watch_followup'}}
+            thin = {k:v for k,v in full.items() if k in {'w3_execution_state','policy_watch_followup','w3_consensus'}}
             thin['projection'] = {'policies':[
                 {'policy_id':p.get('policy_id'), 'activation_conditions':[
                     {k:c.get(k) for k in ('condition_id','decision')}

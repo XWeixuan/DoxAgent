@@ -72,6 +72,87 @@
       "publisher": "STACK Infrastructure",
       "published_at": "2025-09-26",
       "role": "项目开发与参与方"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "New Mexico Supreme Court orders in Jupiter permit and water cases",
+      "url": "https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf",
+      "publisher": "New Mexico Supreme Court",
+      "published_at": "2026-09-17",
+      "role": "许可诉讼当前状态"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "Oracle statement on Jupiter construction permitting",
+      "url": "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/",
+      "publisher": "Oracle",
+      "published_at": "2026-09-14",
+      "role": "建设与许可回应"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "Oracle pipeline rerouted after rejection",
+      "url": "https://www.energyconnects.com/news/gas-lng/2026/august/oracle-data-center-s-pipeline-plan-is-rerouted-after-rejections/",
+      "publisher": "Bloomberg / Energy Connects",
+      "published_at": "2026-08-18",
+      "role": "管线路由替代与工期"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Land commissioner again rejects pipeline request",
+      "url": "https://kvia.com/news/top-stories/2026/07/15/new-mexico-land-commissioner-again-rejects-pipeline-request-for-project-jupiter/",
+      "publisher": "KVIA",
+      "published_at": "2026-07-15",
+      "role": "管线路权及双方观点"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "New Mexico Supreme Court temporarily halts permit proceedings",
+      "url": "https://sourcenm.com/2026/08/24/nm-supreme-court-temporarily-halt-project-jupiter-air-quality-permit-hearing/",
+      "publisher": "Source New Mexico",
+      "published_at": "2026-08-24",
+      "role": "许可进程历史"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Bloomberg: gas pipeline to Oracle project delayed",
+      "url": "https://www.energyconnects.com/news/gas-lng/2026/august/gas-pipeline-for-proposed-oracle-data-center-delayed-to-2027/",
+      "publisher": "Bloomberg / Energy Connects",
+      "published_at": "2026-08-14",
+      "role": "燃气供应与原回应"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "Bloom 2025 annual report: customers and financing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm",
+      "publisher": "Bloom Energy / SEC",
+      "published_at": "2026-02",
+      "role": "销售与融资渠道"
+    },
+    {
+      "id": "sources/S16.md",
+      "path": "sources/S16.md",
+      "title": "Bloom and Equinix onsite power agreement",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2025/Bloom-Energy-Expands-Data-Center-Power-Agreement-with-Equinix-Surpassing-100MW/default.aspx",
+      "publisher": "Bloom Energy / Equinix",
+      "published_at": "2025-02-20",
+      "role": "其他客户业务规模"
+    },
+    {
+      "id": "sources/S17.md",
+      "path": "sources/S17.md",
+      "title": "Data center concerns and Oracle local response",
+      "url": "https://apnews.com/article/a419be82fb6b32a8fc048ac7ffbd1de3",
+      "publisher": "Associated Press",
+      "published_at": "2026-08-26T04:01:58Z",
+      "role": "社区反对与项目回应"
     }
   ],
   "market": {

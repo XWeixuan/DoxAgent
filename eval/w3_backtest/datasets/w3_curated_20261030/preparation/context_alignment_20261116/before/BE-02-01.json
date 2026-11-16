@@ -1,0 +1,43 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "现有E122已记录Oracle因供电延误发出force majeure通知，但当前消息新增核心事实：项目具体延迟一年（'The program is being delayed by a year'），且该通知引发AI基础设施融资市场连锁反应（SB Energy推迟IPO、贷款方收紧审查）。这些具体延迟量级及市场外溢影响未被现有provisional事件覆盖。",
+    "reference_ids": [
+      "E122"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "三个Candidate均未命中。pol_af4c18c9797e6d5a513f：trigger_boundary要求消息同时提供原验收窗口与新窗口的具体日期，消息仅称'delayed by a year'且未给出任何具名验收/交接日期，亦无正式撤回原日期动作（Blue Owl明确否认承诺变化），不满足'同时提供原验收窗口、新窗口或撤回状态'的硬性要求。pol_9795c572511e9fcc514e：criterion要求'暂停field work或无法energize，并公布新commissioning date、scope cut或cancel'，消息仅涉及power securing delay导致整体完工延后一年，未声明field work暂停、未公布新commissioning date、无scope cut或cancel，且Blue Owl正面确认项目承诺不变。pol_b88a58def59b82c29eb5：criterion及trigger_boundary均限定于Energy Server deployment的取消/延期/缩容/重谈并影响Bloom backlog或revenue，消息内容为Oracle/Blue Owl/OpenAI数据中心项目延期，与该Policy的业务主体和对象完全无关。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Oracle",
+          "Project Jupiter",
+          "New Mexico"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Oracle于2026年9月24日就新墨西哥Project Jupiter AI数据中心项目宣布force majeure，以保护自己免受潜在供电延误导致的成本上升影响。",
+        "subject_time": "2026年9月24日"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E122",
+      "semantic_day": "2026-09-24"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T12:30:11.852735Z"
+  }
+}

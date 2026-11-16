@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息包含三个未被加载事实覆盖的核心进展：(1) TrendForce将2027年HBM混合ASP涨幅上调至121% YoY，并给出HBM4e在2H27逐步爬坡的定价逻辑；(2) GPU/ASIC厂商因供应和成本约束将8-Hi而非12-Hi确立为2027年优先评估配置（E97仅涉及Rubin单品的4-Hi方案，非行业性8-Hi转向）；(3) 8-Hi因base-die成本分摊于更少DRAM层，预计较12-Hi存在10–20%每Gb溢价。上述均为新量化/新方向性事实。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息描述的是GPU和ASIC厂商\"正在考虑\"(considering)将HBM从12-Hi降至8-Hi，以及TrendForce预计8-Hi将在2027年\"被优先评估\"(priority for evaluation)和\"渗透率预计上升\"(expected to increase)。这些均为计划、预测和评估阶段的前瞻性表述，未达到C2所要求的\"正式量产或持续部署证据确认单颗容量低于36GB 12-high并在至少一个后续出货窗口持续存在\"的触发边界。C1方面，消息未涉及HBM被替代内存取代的任何事实。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "w1_assessment": {
+    "confidence": "low",
+    "fact_attributions": [
+      {
+        "event_id": "E581",
+        "fact_ids": [
+          "F1874"
+        ]
+      },
+      {
+        "event_id": "E582",
+        "fact_ids": [
+          "F1875"
+        ]
+      }
+    ],
+    "reason": "现有 F1874/F1875 已记录投行对英特尔的评级/目标价更新，可覆盖标题所称“收到投行分析师评级更新”的泛化事实；但标题未给机构、评级、目标价或日期，无法确认它指其中一笔（OLD）还是另一笔尚未记录的新更新（NEW）。",
+    "reference_ids": [
+      "E581",
+      "E582"
+    ],
+    "result": "OLD"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "matched_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": false,
+    "reason": "标题仅称Intel收到投行分析师评级更新，正文为空，未披露评级内容、发布机构或CPU需求持续期、制造经济性、Foundry价值或估值等具体事实，不能确认落入任一match_scope。"
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "TD Cowen lowered its Intel price target from $115 to $95 and maintained a Hold rating.",
+      "derived_from_event_ids": [],
+      "event_id": "E581",
+      "event_type": "ANALYST_ACTION",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F1874",
+          "fact_occurred_at": "2026-10-21",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "TD Cowen lowered its Intel price target from $115 to $95 and maintained a Hold rating.",
+          "subject_time": null
+        }
+      ],
+      "known_event_summary": "On 2026-10-21, TD Cowen cut Intel’s target price from $115 to $95 and kept its Hold rating.",
+      "occurred_at": "2026-10-21",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E493",
+        "E55"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "TD Cowen cut Intel’s price target while maintaining Hold"
+    },
+    {
+      "canonical_summary": "Susquehanna lowered its Intel price target from $115 to $105 and maintained a Neutral rating.",
+      "derived_from_event_ids": [],
+      "event_id": "E582",
+      "event_type": "ANALYST_ACTION",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F1875",
+          "fact_occurred_at": "2026-10-21",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Susquehanna analyst Christopher Rolland maintained Neutral and lowered the Intel target price from $115 to $105.",
+          "subject_time": null
+        }
+      ],
+      "known_event_summary": "On 2026-10-21, Susquehanna cut Intel’s target price from $115 to $105 and kept its Neutral rating.",
+      "occurred_at": "2026-10-21",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E493",
+        "E55"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Susquehanna cut Intel’s price target while maintaining Neutral"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-10T23:02:12.877682Z"
+  }
+}

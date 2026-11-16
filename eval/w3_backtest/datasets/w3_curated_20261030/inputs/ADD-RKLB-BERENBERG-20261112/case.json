@@ -1,0 +1,26 @@
+{
+  "schema_version": "w3-backtest.case.v2",
+  "case_key": "ADD-RKLB-BERENBERG-20261112",
+  "ticker": "RKLB",
+  "original_case_id": "case_1b18423c38084f97931c3fe052d3dfd2",
+  "research_key": "9e1429d8ce676a349b6e",
+  "as_of": "2026-11-12T07:38:18Z",
+  "time_basis": "MESSAGE_PUBLICATION",
+  "message": {
+    "title": "Rocket Lab USA (RKLB) PT Raised to $85 at Berenberg - StreetInsider",
+    "body": "Berenberg analyst Michael Filatov raised the price target on Rocket Lab USA (NASDAQ: RKLB) to $85.00 (from $83.00) while maintaining a Buy rating.\n\nThe analyst comments: “Q3 strengthened our core thesis that launch is the space industry’s bottleneck and that Rocket Lab is the best-placed listed company to benefit. Launch orders are running at c7x last year’s pace and, in our view, demand and pricing remain underappreciated. We believe there is further pricing upside across vehicles/missions, with Neutron already sold into the 2030s at a 27% higher base price. Excluding the c$45m a quarter Rocket Lab spends on Neutron R&D, the existing business already earns a c10% adjusted EBITDA margin, and we expect significant operating leverage following first flight. We also expect Space Systems to reaccelerate into 2027 after a Q4 timing dip, and believe there is visibility that supports our above consensus 2027 Space Systems revenue estimate. We leave 2027E broadly unchanged and raise our 2028E pro-forma adjusted EBITDA by 8%. With shares at 15x our pro-forma 2028E revenue (first full year post-Iridium acquisition), we reiterate our Buy rating and raise our price target to $85 (from $83).”",
+    "url": "https://www.streetinsider.com/Analyst+Comments/Rocket+Lab+USA+%28RKLB%29+PT+Raised+to+%2485+at+Berenberg/27328523.html",
+    "publisher": "google_news_search_rss",
+    "published_at": "2026-11-12T07:38:18Z",
+    "publication_time_basis": "EXACT"
+  },
+  "w1": {
+    "confidence": "normal",
+    "reason": "E193记录了Q3后的其他分析师观点，但未覆盖Berenberg将目标价由83美元上调至85美元并维持Buy评级，也未覆盖本次关于Neutron已售入2030年代、2028年调整后EBITDA上调8%等核心更新。",
+    "result": "NEW"
+  },
+  "w2": {
+    "confidence": "normal",
+    "reason": "Berenberg分析师维持Buy并将目标价上调至85美元，同时基于发射需求、定价及Space Systems展望等公司特定依据，上调2028年备考调整后EBITDA预期8%，满足C1。"
+  }
+}

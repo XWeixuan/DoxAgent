@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前未加载任何 Canonical 或 provisional facts，消息中亚马逊 Q3 收入与广告收入不及预期、AI 资本开支激增、股价下跌及 AWS 增长等核心事实均未被现有现实覆盖。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "matched_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": false,
+    "reason": "消息陈述的是亚马逊Q3收入、广告收入未达预期、AI资本开支及AWS增长等财务事实，未出现落入任一match_scope的具体光学、数据中心网络采购、供应商定点或代理服务付费变化的事实；泛AI资本开支和云增长不足以召回。"
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-16T22:02:56.508969Z"
+  }
+}

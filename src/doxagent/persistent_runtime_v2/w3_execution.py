@@ -110,7 +110,7 @@ class W3Execution:
         if not new_public or not self.journal.get("w3_research_v2", research_pin_key(asset_case)):
             self.agent.prepare_public_assets(asset_case)
         initializing = False
-        for model, effort in (("gpt-6-luna", "max"), ("gpt-6.1-sol", "medium")):
+        for model, effort in (("gpt-6-luna", "max"),):
             profile = dict(
                 model=model, effort=effort, provider=getattr(self.agent, "_model_provider", None)
             )
@@ -244,9 +244,9 @@ class W3Execution:
         return template
 
     @observed("case.thread_prepare")
-    def _thread(self, case, context, research, event_keys=None):
-        owned = self.registry.owned(case.case_id)
-        stage = self.registry.stage(case.case_id, TRADE_PHASE)
+    def _thread(self, case, context, research, event_keys=None, stage_key=TRADE_PHASE):
+        owned = self.registry.bound(case.case_id, stage_key)
+        stage = self.registry.stage(case.case_id, stage_key)
         record_id = (stage.get("input_refs") or {}).get("record_id")
         if owned is None and record_id:
             with self.journal.transaction() as db:
@@ -264,7 +264,7 @@ class W3Execution:
                 owned = dict(row)
                 owned["owner_case_id"] = case.case_id
         accepted_at = datetime.fromisoformat(
-            self.registry.stage(case.case_id, TRADE_PHASE)["accepted_at"]
+            self.registry.stage(case.case_id, stage_key)["accepted_at"]
         )
         profile = execution_profile(
             case,
@@ -316,15 +316,15 @@ class W3Execution:
                 case_id=case.case_id,
                 compatibility=compatibility,
                 parent_id=template["thread_id"],
-                accepted_at=accepted_at,
+                accepted_at=accepted_at, stage_key=stage_key,
             )
-        refs = self.registry.stage(case.case_id, TRADE_PHASE).get("input_refs") or {}
+        refs = self.registry.stage(case.case_id, stage_key).get("input_refs") or {}
         wanted = dict(refs, record_id=owned["record_id"], operation_key="w3-fork:" + owned["record_id"])
         if refs != wanted:
             with self.journal.transaction() as db:
                 db.execute(
                     "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
-                    (encode(wanted), case.case_id, TRADE_PHASE),
+                    (encode(wanted), case.case_id, stage_key),
                 )
         if not owned["thread_id"] and not getattr(self.agent, "supports_prepare", False):
             child = self.agent.fork_thread(
@@ -340,6 +340,7 @@ class W3Execution:
             self.registry.set_thread(owned["record_id"], owned["thread_id"])
         if new_entry and not owned["thread_id"] and not getattr(self.agent, "late_ready_claim", False):
             self.agent.claim_ready(case, owned, profile)
+        owned["stage_key"] = stage_key
         return owned
 
     @observed("case.trade")
@@ -354,7 +355,7 @@ class W3Execution:
                 from .w3_v6 import freeze_recent_trade
                 freeze_recent_trade(self.journal, self.service.repository, case)
             record = self.registry.owned(case.case_id)
-            recovered = self._recover_result(case, TRADE_PHASE, record)
+            recovered = None if case.frozen_inputs.get("w3_trade_mode") == "dual_consensus" else self._recover_result(case, TRADE_PHASE, record)
             if recovered is not None:
                 return self._commit_trade(case,record,recovered)
             if hasattr(self.agent, "begin_trade_timing"):
@@ -412,6 +413,8 @@ class W3Execution:
             if research:
                 payload["research_path"] = "context/research/" + research[0]
                 self.journal.set("w3_case_research", case.case_id, payload["research_path"])
+            if case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus':
+                return self._trade_pair(case, payload, context, research, event_keys)
             record = self._thread(case, context, research, event_keys)
             try:
                 decision, job = self.agent.run_phase(
@@ -429,11 +432,152 @@ class W3Execution:
             self._write_result(lambda: self.registry.save_result(
                 case.case_id, TRADE_PHASE, decision, thread_id=record["thread_id"], worker_job_id=job.job_id))
         else:
+            if case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus':
+                return self._commit_pair(case)
             decision = contract_models(case.w3_contract_version)[0].model_validate(
                 stage["result_json"]
             )
-            record = self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
+            record = self.registry.bound(case.case_id) or self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
         return self._commit_trade(case, record, decision)
+
+    def _trade_pair(self, case, payload, context, research, event_keys):
+        records = {}
+        for label in ("A", "B"):
+            key = TRADE_PHASE + ":" + label
+            stage = self.registry.begin_stage(case.case_id, key)
+            if stage["result_json"] is None:
+                records[label] = self._thread(case, context, research, event_keys, stage_key=key)
+        if not records:
+            return self._commit_pair(case)
+
+        def save(label, result, job):
+            key = TRADE_PHASE + ":" + label
+            self.registry.save_result(
+                case.case_id, key, result, thread_id=job.thread_id, worker_job_id=job.job_id
+            )
+            stage = self.registry.stage(case.case_id, key)
+            refs = dict(stage.get("input_refs") or {})
+            refs.update(
+                duration_ms=(job.finished_at - job.started_at).total_seconds() * 1000
+                if job.finished_at and job.started_at
+                else None,
+                raw_output=job.final_response,
+                job_id=job.job_id,
+                started_at=job.started_at.isoformat() if job.started_at else None,
+                finished_at=job.finished_at.isoformat() if job.finished_at else None,
+            )
+            telemetry = getattr(job, "telemetry", None)
+            refs["telemetry"] = telemetry.model_dump(mode="json") if telemetry else None
+            workspace = records[label]["workspace"]
+            identity = f"runtime-worker:{case.case_id}:{workspace}:persistent_runtime_w3:trade_decision:{case.case_id}"
+            request = self.journal.get("worker_requests", identity) or {}
+            refs["request"] = {
+                k: request.get(k)
+                for k in (
+                    "model",
+                    "effort",
+                    "model_provider",
+                    "task_phase",
+                    "w3_entry_version",
+                    "web_search_mode",
+                )
+            }
+            refs["input_sha"] = digest([request.get("prompt"), request.get("output_schema")])
+            refs["workspace"] = workspace
+            with self.journal.transaction() as db:
+                assert_write_lease(db)
+                db.execute(
+                    "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                    (encode(refs), case.case_id, key),
+                )
+                db.execute(
+                    "INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
+                    (job.job_id, encode({"case_id": case.case_id})),
+                )
+            self.service._effect_executor.submit(self._ack, job.job_id)
+
+        try:
+            self.agent.run_trade_pair(
+                case=case,
+                records=records,
+                payload=payload,
+                context=context,
+                research=research,
+                save=save,
+            )
+        except W3Error as exc:
+            reader = getattr(exc, "phase_result", None)
+            if reader:
+                from functools import partial
+
+                exc.effect_continuation = partial(self._resume_pair, case.case_id, reader)
+            raise
+        return self._commit_pair(case)
+
+    def _resume_pair(self, case_id, reader):
+        reader()
+        return self._commit_pair(self.service.repository.get_case(case_id))
+
+    def _commit_pair(self, case):
+        from .w3_consensus import aggregate
+        from .w3_contracts import W3DirectionDecision
+
+        main = self.registry.stage(case.case_id, TRADE_PHASE)
+        if main["status"] == "COMMITTED":
+            self._restore_trade(case, main)
+            return
+        branches = {}
+        for label in ("A", "B"):
+            stage = self.registry.stage(case.case_id, TRADE_PHASE + ":" + label)
+            if not stage or stage["result_json"] is None:
+                raise W3Error("CONSENSUS_INCOMPLETE", "Two valid Trade results are required")
+            branches[label] = dict(
+                result=stage["result_json"],
+                duration_ms=(stage.get("input_refs") or {}).get("duration_ms"),
+            )
+        result, summary = aggregate(branches)
+        selected = self.registry.stage(case.case_id, TRADE_PHASE + ":" + summary["selected_branch"])
+        record = self.registry.bound(case.case_id, TRADE_PHASE + ":" + summary["selected_branch"])
+        summary.update(
+            record_id=record["record_id"],
+            operation_key="w3-fork:" + record["record_id"],
+            branches={k: dict(stage_key=TRADE_PHASE + ":" + k) for k in branches},
+        )
+        case.frozen_inputs["w3_consensus"] = dict(
+            summary,
+            branches={
+                k: dict(
+                    v,
+                    worker_job_id=self.registry.stage(case.case_id, TRADE_PHASE + ":" + k)[
+                        "worker_job_id"
+                    ],
+                    thread_id=self.registry.stage(case.case_id, TRADE_PHASE + ":" + k)["thread_id"],
+                )
+                for k, v in branches.items()
+            },
+        )
+        # Publish the representative binding and result together, before the
+        # existing single business transaction. A crash resumes this exact vote.
+        with self.journal.transaction() as db:
+            assert_write_lease(db)
+            old = db.execute(
+                "SELECT result_json FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?",
+                (case.case_id, TRADE_PHASE),
+            ).fetchone()
+            if old[0] is not None and json.loads(old[0]) != result:
+                raise ValueError("saved consensus is immutable")
+            db.execute(
+                "UPDATE runtime_v2_w3_stages SET input_refs=?,result_json=?,thread_id=?,worker_job_id=?,status='RESULT_SAVED' WHERE case_id=? AND phase=? AND status!='COMMITTED'",
+                (
+                    encode(summary),
+                    encode(result),
+                    record["thread_id"],
+                    selected["worker_job_id"] if summary["result_source"] == "MODEL_BRANCH" else None,
+                    case.case_id,
+                    TRADE_PHASE,
+                ),
+            )
+        return self._commit_trade(case, record, W3DirectionDecision.model_validate(result))
 
     def _resume_result(self, case_id, phase, record_id, reader):
         from doxagent.w3_timing import mark
@@ -505,6 +649,9 @@ class W3Execution:
                     else:
                         getattr(self.service.repository, {'runtime_v2_archives':'save_archive','runtime_v2_badcases':'save_badcase','runtime_v2_w3_coverage_gaps':'save_w3_coverage_gap'}[table])(value)
                 self.registry.commit_stage(db, case.case_id, TRADE_PHASE, outcome)
+                if case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus':
+                    db.execute('UPDATE runtime_v2_w3_threads SET owner_case_id=NULL,lease_until=NULL WHERE owner_case_id=? AND record_id!=?',
+                               (case.case_id,record['record_id']))
                 self._restore_trade(
                     case,
                     dict(
@@ -684,7 +831,7 @@ class W3Execution:
             self._sync_route_case(case, {"thread_id": stage["thread_id"]})
             self.registry.release(case.case_id)
             return
-        record = self.registry.owned(case.case_id)
+        record = self.registry.bound(case.case_id) or self.registry.owned(case.case_id)
         if not record or record["thread_id"] != trade_stage["thread_id"]:
             raise W3Error("w3_case_thread_missing", "Cannot replace the Case thread for operations")
         if stage["result_json"] is None:
@@ -1049,9 +1196,12 @@ class W3Execution:
         if hasattr(self.service.repository, "content"):
             # These are the only large result fields changed by the two commits.
             # Frozen research/source/W1/W2 already have durable Native references.
-            return json.loads(self.service.repository.content.encode(case.model_dump(
+            prepared = json.loads(self.service.repository.content.encode(case.model_dump(
                 mode="json", include={"w3_trade_decision", "w3_operations_result"}
             )))
+            if case.frozen_inputs.get('w3_consensus'):
+                prepared['frozen_inputs.w3_consensus'] = case.frozen_inputs['w3_consensus']
+            return prepared
         return None
 
     def _save_case_in_transaction(self, db, case, prepared=None):

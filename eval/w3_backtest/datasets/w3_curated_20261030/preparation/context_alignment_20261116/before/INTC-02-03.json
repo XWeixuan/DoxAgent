@@ -1,0 +1,113 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E28",
+        "fact_ids": [
+          "F200"
+        ]
+      }
+    ],
+    "reason": "消息包含多项未被已加载 Event 覆盖的核心事实：Tom's Hardware 报道 Intel 将于 2027 年 3 月实施 10% 涨价（E28 覆盖的是 2026 秋季/10 月时点）；AMD 预计跟随 Intel 涨价；Intel Q2 实际营收 161 亿美元、非 GAAP EPS 0.42 美元（无对应 Event）；AMD 与台积电合作扩产及 Lisa Su 季度扩容表态；Mercury Research 报告 AMD 服务器 CPU 份额升至 34.5%。这些构成新的核心现实进展。",
+    "reference_ids": [
+      "E28"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为一篇关于Intel服务器CPU市场地位的综合分析文章，核心事实包括：Intel CEO确认仅能满足50%的CPU需求（供给约束仍严峻）、Q2 DCAI同比增长59%、计划2027年3月实施10%提价、AMD在x86服务器CPU市场份额上升至34.5%。这些均为宏观市场评论和历史财务数据，未包含任何单一具体客户从验证推进为有约束力采购、供给约束实质缓解确认、特定订单因封装/基板延期、或提价后客户明确取消/削减等与任何Policy criterion存在直接触发关系的事件级观察。消息实际陈述的供给状态（仍严重短缺）与多数相关Policy的触发前提（供给缓解后评估）方向相反，可明确排除。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "Reports on September 8–9 described Intel plans or expectations for roughly 10% PC-processor price increases later in 2026, including October, with gross-margin improvement cited as a rationale; the exact status remained a mix of plan, expectation, and rumor.",
+      "derived_from_event_ids": [],
+      "event_id": "E28",
+      "event_type": "GUIDANCE_UPDATE",
+      "facts": [
+        {
+          "assertion_state": "PLAN",
+          "fact_id": "F200",
+          "fact_occurred_at": "2026-09-08",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel planned a roughly 10% increase in PC-processor prices during the fall.",
+          "subject_time": "fall 2026"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "fact_id": "F201",
+          "fact_occurred_at": "2026-09-08",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel was expected to raise CPU prices by 10% later in 2026 to improve gross margin.",
+          "subject_time": "later 2026"
+        },
+        {
+          "assertion_state": "RUMOR",
+          "fact_id": "F202",
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel was reportedly considering raising PC CPU prices by 10% in October.",
+          "subject_time": "2026-10"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "fact_id": "F203",
+          "fact_occurred_at": "2026-09-08",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel was considering raising PC processor prices by about 10% in October.",
+          "subject_time": "2026-10"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F204",
+          "fact_occurred_at": "2026-09-08",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel implemented a PC CPU price hike.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "RUMOR",
+          "fact_id": "F205",
+          "fact_occurred_at": "2026-09-08",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "A supply-chain report said Intel would raise PC-processor prices by roughly 10% in early October.",
+          "subject_time": "2026-10"
+        },
+        {
+          "assertion_state": "PLAN",
+          "fact_id": "F206",
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel planned a roughly 10% PC-processor price increase in October.",
+          "subject_time": "2026-10"
+        },
+        {
+          "assertion_state": "RUMOR",
+          "fact_id": "F207",
+          "fact_occurred_at": "2026-09-18",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel reportedly increased the prices of its enterprise CPUs by 10%.",
+          "subject_time": null
+        }
+      ],
+      "known_event_summary": "Between 2026-09-08 and 2026-09-18, Intel planned a roughly 10% PC-processor price increase for fall 2026.",
+      "occurred_at": "2026-09-08..2026-09-18",
+      "occurrence_time_precision": "INTERVAL",
+      "related_event_ids": [],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Intel planned a roughly 10% PC-processor price increase for fall 2026"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

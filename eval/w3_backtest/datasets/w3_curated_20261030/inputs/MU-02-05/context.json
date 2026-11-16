@@ -1,0 +1,65 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息包含多个尚未被覆盖的核心事实：Sur估计SCA覆盖超35%前瞻位生产、合约量已超50%（现有基线为F478的20% DRAM/33% NAND及F541的40%收入覆盖）；Sur对价格增速放缓的独特解读（战略选择保全SCA而非需求疲软）；HBM供应不足持续至2028；管理层计划返还100%超额现金。E231/E251仅覆盖JPMorgan构造性评价、Overweight评级和beat-and-raise预期，上述具体估计和解读均为新增进展。",
+    "reference_ids": [
+      "E231",
+      "E251"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为JPMorgan分析师在Micron FY26 Q4财报发布前的前瞻评论，核心内容为预期beat-and-raise、SCA覆盖率的分析师估算（>35%/50%）、HBM4爬坡进展、2027–2028供给紧张预期及CHIPS Act两周年后的股东回报计划。所有陈述均为分析师预期或前瞻性判断，不包含任何已发生的公司正式披露、具体产品资格确认、实际ASP/bit shipment数据、合同价格带变动、项目延迟/交割结果、客户正式公告或连续季度财务事实。各Policy的criterion所需的触发事实（如连续两季度指标变化、正式合同附注、具体客户/AI平台资格确认、命名项目首片/良率/交付里程碑、GAAP利润桥数据等）在当前消息中均未出现，且消息整体方向（价格\"moderating\"被明确解释为战略选择而非需求走弱、HBM供给仍不足、预期上调）与各Policy触发条件所需的状态变化方向相反或不适用。因此无具体observation值得进入完整Policy判定。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "JPMorgan",
+          "Micron Technology",
+          "MU",
+          "DRAM",
+          "NAND"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "JPMorgan described Micron's setup as constructive, saying tight DRAM and NAND markets and resilient pricing could provide upside to revenue, gross margin, and earnings.",
+        "subject_time": "Near-term FY26 Q4 earnings outlook"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E231",
+      "semantic_day": "2026-09-29"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "J.P. Morgan",
+          "Micron Technology",
+          "MU",
+          "DRAM",
+          "NAND"
+        ],
+        "occurrence_date": "2026-09-28",
+        "proposition": "J.P. Morgan rated Micron Overweight with a $1,540 price target and expected another beat-and-raise on continued pricing momentum.",
+        "subject_time": "FY26 Q4 earnings outlook"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E251",
+      "semantic_day": "2026-09-29"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

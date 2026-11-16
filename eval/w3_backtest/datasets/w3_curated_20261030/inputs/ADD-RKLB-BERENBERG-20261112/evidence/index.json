@@ -1,0 +1,108 @@
+{
+  "as_of": "2026-11-12T07:38:18Z",
+  "sources": [
+    {
+      "id": "sources/S01.md",
+      "path": "sources/S01.md",
+      "title": "Berenberg raises Rocket Lab target",
+      "url": "https://www.streetinsider.com/Analyst+Comments/Rocket+Lab+USA+%28RKLB%29+PT+Raised+to+%2485+at+Berenberg/27328523.html",
+      "publisher": "StreetInsider",
+      "published_at": "2026-11-12T02:37:00-05:00",
+      "role": "analyst_report"
+    },
+    {
+      "id": "sources/S02.md",
+      "path": "sources/S02.md",
+      "title": "Rocket Lab Q3 2026 results",
+      "url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-announces-third-quarter-2026-financial-results-posts",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-11-09T16:05:00-05:00",
+      "role": "results"
+    },
+    {
+      "id": "sources/S03.md",
+      "path": "sources/S03.md",
+      "title": "Rocket Lab Synspective 20 launch contract",
+      "url": "https://rocketlabcorp.com/updates/rocket-lab-secures-largest-ever-electron-commercial-deal-20-launch-contract-for-synspective/",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-09-30",
+      "role": "contract"
+    },
+    {
+      "id": "sources/S04.md",
+      "path": "sources/S04.md",
+      "title": "Neutron debut pushed to 2027",
+      "url": "https://www.space.com/space-exploration/launches-spacecraft/rocket-lab-pushes-1st-launch-of-next-gen-neutron-rocket-to-2027",
+      "publisher": "Space.com",
+      "published_at": "2026-10-16",
+      "role": "development"
+    },
+    {
+      "id": "sources/S05.md",
+      "path": "sources/S05.md",
+      "title": "Berenberg initiates coverage",
+      "url": "https://www.tipranks.com/news/rklb-vs-asts-why-berenberg-sees-more-upside-in-one-space-stock",
+      "publisher": "TipRanks",
+      "published_at": "2026-09-02",
+      "role": "analyst_prior"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Morgan Stanley and peers before Q3",
+      "url": "https://www.tipranks.com/news/rocket-lab-stock-rklb-forecast-heres-what-analysts-expect-from-q3-earnings",
+      "publisher": "TipRanks",
+      "published_at": "2026-11-06",
+      "role": "analyst_prior"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Rocket Lab Neutron contracts",
+      "url": "https://rocketlabcorp.gcs-web.com/node/13501/pdf",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-11-09",
+      "role": "contracts"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "AST SpaceMobile Blacklift launch plans",
+      "url": "https://www.space.com/space-exploration/launches-spacecraft/ast-spacemobile-announces-new-blacklift-rocket-targets-2028-launch-debut",
+      "publisher": "Space.com",
+      "published_at": "2026-11-06",
+      "role": "competitor"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Rocket Lab HASTE Space Force contract",
+      "url": "https://investors.rocketlabcorp.com/static-files/3dde8e68-7ce6-4685-8c0b-17afc94dbb86",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-08-10",
+      "role": "government_contract"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "Rocket Lab Q3 earnings call",
+      "url": "https://stockanalysis.com/stocks/rklb/transcripts/729286-q3-2026/",
+      "publisher": "Stock Analysis",
+      "published_at": "2026-11-09",
+      "role": "earnings_call"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "Rocket Lab USA (RKLB) PT Raised to $85 at Berenberg - StreetInsider",
+      "url": "https://www.streetinsider.com/Analyst+Comments/Rocket+Lab+USA+%28RKLB%29+PT+Raised+to+%2485+at+Berenberg/27328523.html",
+      "publisher": "google_news_search_rss",
+      "published_at": "2026-11-12T07:38:18Z",
+      "role": "supplied_message"
+    }
+  ],
+  "market": {
+    "access": "w3_research.market_view",
+    "observed_at": "2026-11-12T07:38:18Z"
+  }
+}

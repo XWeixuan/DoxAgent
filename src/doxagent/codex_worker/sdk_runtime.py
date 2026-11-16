@@ -289,7 +289,11 @@ class OpenAICodexRuntime:
         reasoning_summary: str | None = None,
         preserve_requested_model: bool = False,
         sandbox_override: Sandbox | None = None,
+        w3_service_tier: str | None = None,
     ) -> None:
+        if w3_service_tier not in {None, "default", "fast"}:
+            raise ValueError("unsupported W3 service tier")
+        self._w3_service_tier = w3_service_tier
         self._settings = settings or DoxAgentSettings()
         self._time_control = W3TimeControl(
             configured_codex(config, self._settings),
@@ -447,6 +451,10 @@ class OpenAICodexRuntime:
         if request.node == CodexPersistentRuntimeNode.W3:
             # Operations is standard-tier even when resuming a Fast Trade thread.
             luna_fast = execution_model == "gpt-6-luna" and request.task_phase != "post_decision_operations"
+            if self._w3_service_tier is not None and request.task_phase != "post_decision_operations":
+                luna_fast = self._w3_service_tier == "fast"
+            if luna_fast and execution_model != "gpt-6-luna":
+                raise ValueError("W3 Fast replay requires gpt-6-luna")
             sdk_config["service_tier"] = "fast" if luna_fast else "default"
             sdk_config["features.fast_mode"] = luna_fast
         if request.node in {

@@ -1,0 +1,84 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E80",
+        "fact_ids": []
+      }
+    ],
+    "reason": "E80 only records a PLANNED state that Googlebook laptops 'will use Intel or Qualcomm processors.' The current message is Intel's own ACTUAL announcement that Core Ultra Series 3 (18A process) specifically powers new Googlebook laptops, with confirmed partners Acer, ASUS, Lenovo. The transition from planned/generic processor attribution to Intel's confirmed, specific product launch is a new core fact not covered by existing facts.",
+    "reference_ids": [
+      "E77",
+      "E79",
+      "E80"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为Intel Core Ultra Series 3在Googlebook新形态上的产品发布/上市公告，涉及Acer、ASUS、Lenovo三家OEM将搭载18A工艺的Core Ultra Series 3笔记本推向市场。该消息未包含任何政策criterion所要求的具体触发事实：无确认的终端销售数据及据此产生的补单（pol_849bf577d74f6b102e74），无供给约束缓解或单位出货数据（pol_00aedd21578697ff89d7），无库存、延期、取消或削减信息，也非边缘AI/机器人客户量产设计承诺。消息仅为产品市场导入公告，与任何Policy的触发条件不存在具体、实质性的事实对应关系。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Alphabet",
+          "Googlebook"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Alphabet opened pre-orders for Googlebook laptops on 2026-09-21.",
+        "subject_time": "Googlebook launch and pre-order period"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E77",
+      "semantic_day": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Googlebook",
+          "Acer",
+          "Asus",
+          "Dell",
+          "HP",
+          "Lenovo"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Googlebook laptops are planned to be offered by Acer, Asus, Dell, HP, and Lenovo.",
+        "subject_time": "Googlebook initial availability"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E79",
+      "semantic_day": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Googlebook",
+          "Intel",
+          "Qualcomm"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "The planned Googlebook laptops will use Intel or Qualcomm processors.",
+        "subject_time": "Googlebook initial availability"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E80",
+      "semantic_day": "2026-09-22"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

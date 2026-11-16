@@ -31,36 +31,59 @@ def titles(policies):
     return result
 
 
-def policy_projection(case, payload):
-    rows = payload.get("policies", [])
-    names = titles(case.frozen_inputs.get("projection", {}).get("policies") or rows)
+def project_policy_input(w2, rows, *, naming_rows=None, strict=True):
+    """Render the same visible rules; only replay can admit missing historical data."""
+    if not strict:
+        rows = [
+            p
+            for p in rows
+            if {"policy_id", "title", "activation_conditions"} <= p.keys()
+            and all(
+                {"condition_id", "criterion", "calibration"} <= c.keys()
+                and "reference_state" in c["calibration"]
+                for c in p["activation_conditions"]
+            )
+        ]
+    if strict and any("transmission" not in p for p in rows):
+        raise ValueError("Policy transmission missing from frozen details")
+    names = titles(naming_rows or rows)
     by_id = {p["policy_id"]: p for p in rows}
-    w2 = case.w2_final
-    groups = {g.policy_id: set(g.condition_ids) for g in w2.hit_condition_ids}
-    if w2.policy_hit and (not groups or set(groups) != set(w2.policy_ids)):
+    groups = w2.get("hit_condition_ids", [])
+    if (
+        strict
+        and w2.get("policy_hit")
+        and (not groups or {g["policy_id"] for g in groups} != set(w2.get("policy_ids", [])))
+    ):
         raise ValueError("HIT identities missing from frozen assessment")
-    hit = []
-    for group in w2.hit_condition_ids:
-        if group.policy_id not in by_id:
-            raise ValueError("HIT Policy missing from frozen details")
-        known = {c["condition_id"] for c in by_id[group.policy_id]["activation_conditions"]}
-        if not group.condition_ids or not set(group.condition_ids) <= known:
-            raise ValueError("HIT Condition missing from frozen details")
-        hit.append(
-            dict(policy_title=names[group.policy_id], condition_ids=list(group.condition_ids))
-        )
-    from .w2_alignment import related_ids
-
-    related = []
-    for pid in related_ids(w2):
+    hit, related = [], []
+    unresolved = False
+    for group in groups:
+        pid = group["policy_id"]
+        known = {c["condition_id"] for c in by_id.get(pid, {}).get("activation_conditions", [])}
+        valid = pid in by_id and group["condition_ids"] and set(group["condition_ids"]) <= known
+        if not valid:
+            if strict:
+                raise ValueError("HIT Policy or Condition missing from frozen details")
+            unresolved = True
+            continue
+        hit.append(dict(policy_title=names[pid], condition_ids=group["condition_ids"]))
+    # Older stored assessments used policy_ids for RELATED; retain that identity convention.
+    ids = w2.get(
+        "related_policy_ids",
+        list(dict.fromkeys(g["policy_id"] for g in w2.get("matched_condition_ids", []))),
+    )
+    for pid in ids:
         if pid not in by_id:
-            raise ValueError("RELATED Policy missing from frozen details")
+            if strict:
+                raise ValueError("RELATED Policy missing from frozen details")
+            unresolved = True
+            continue
         related.append(dict(policy_title=names[pid], condition_ids=None))
     policies = [
         dict(
             title=names[p["policy_id"]],
             cutoff=p.get("cutoff"),
-            transmission=p["transmission"],
+            **({"transmission": p["transmission"]} if "transmission" in p else {}),
             activation_conditions=[
                 dict(
                     condition_id=c["condition_id"],
@@ -72,12 +95,29 @@ def policy_projection(case, payload):
         )
         for p in rows
     ]
-    return dict(
-        policy_hit=w2.policy_hit,
-        policy_related=w2.policy_related,
-        confidence=w2.confidence.value,
-        policy_matches=dict(hit=hit, related=related),
-    ), policies
+    result = {k: w2[k] for k in ("policy_hit", "policy_related", "confidence") if k in w2}
+    if strict or (
+        not unresolved
+        and {"policy_hit", "policy_related"} <= w2.keys()
+        and not (w2.get("policy_hit") and not groups)
+        and not (w2.get("policy_related") and not ids)
+    ):
+        result["policy_matches"] = dict(hit=hit, related=related)
+    elif hit or related:
+        result["policy_matches"] = {
+            **({"hit": hit} if hit else {}),
+            **({"related": related} if related else {}),
+        }
+    return result, policies
+
+
+def policy_projection(case, payload):
+    rows = payload.get("policies", [])
+    return project_policy_input(
+        case.w2_final.model_dump(mode="json"),
+        rows,
+        naming_rows=case.frozen_inputs.get("projection", {}).get("policies"),
+    )
 
 
 def trade_input(case, payload, recent_trade):
@@ -86,9 +126,46 @@ def trade_input(case, payload, recent_trade):
         for k in ("ticker", "cutoff_at", "message", "w1", "additional_tags", "pins", "alignment")
         if k in payload
     }
-    result["w2"], result["policies"] = policy_projection(case, payload)
+    partial = case.frozen_inputs.get("w3_replay", {}).get("partial_input", False)
+    if partial:
+        w2, policies = project_policy_input(
+            payload.get("w2", {}),
+            payload.get("policies", []),
+            naming_rows=case.frozen_inputs.get("w3_replay", {}).get("policy_title_rows"),
+            strict=False,
+        )
+        if w2:
+            result["w2"] = w2
+        if "policies" in payload:
+            result["policies"] = policies
+    else:
+        result["w2"], result["policies"] = policy_projection(case, payload)
     result["contexts"] = [c for c in payload.get("contexts", []) if c["name"] in {"D1", "D2"}]
-    result["recent_trade"] = recent_trade
+    if not partial or "recent_trade" in payload:
+        result["recent_trade"] = (
+            payload.get("recent_trade", recent_trade) if partial else recent_trade
+        )
+    return result
+
+
+def scoped_manifest(manifest):
+    """Apply the v6 research boundary identically before either kind of binding."""
+    result = {
+        **manifest,
+        "research_scope": SCOPE,
+        "components": {
+            k: v for k, v in manifest.get("components", {}).items() if k in {"d1", "d2"}
+        },
+    }
+    for key in (
+        "state",
+        "history",
+        "events",
+        "policy_usage",
+        "inline_policy_ids",
+        "snapshot_catalog",
+    ):
+        result.pop(key, None)
     return result
 
 
@@ -228,7 +305,8 @@ def freeze_recent_trade(journal, repository, case):
     payload = encode(saved)
     with journal.transaction(operation="w3.filled_history.freeze") as db:
         db.execute(
-            "INSERT OR IGNORE INTO runtime_values(namespace,key,payload) VALUES('w3_recent_filled_snapshot',?,?)",
+            "INSERT OR IGNORE INTO runtime_values(namespace,key,payload) "
+            "VALUES('w3_recent_filled_snapshot',?,?)",
             (case.case_id, payload),
         )
     # Another recovery attempt may already have frozen this identity.

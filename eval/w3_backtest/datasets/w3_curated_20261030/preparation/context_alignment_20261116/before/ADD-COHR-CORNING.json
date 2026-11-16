@@ -1,0 +1,41 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "已加载事实覆盖了Corning第三季度营收和EPS数据本身，但未覆盖“盈利超出预期”以及财报后股价基本持平的市场反应；这些构成新的核心事实。",
+    "reference_ids": [
+      "E84"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "matched_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": false,
+    "reason": "消息仅称光网络公司第三季度财报好于预期且股价变化不大，没有披露具体的产品、客户、供货、合同、资本或监管事实，未落入任一 match_scope。"
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Corning"
+        ],
+        "occurrence_date": "2026-10-27",
+        "proposition": "Corning reported Q3 2026 core EPS of $0.91, versus $0.67 a year earlier.",
+        "subject_time": "Q3 2026"
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E84",
+      "semantic_day": "2026-10-27"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-16T22:02:56.508969Z"
+  }
+}

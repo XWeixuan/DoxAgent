@@ -1,0 +1,610 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E120",
+        "fact_ids": [
+          "F383"
+        ]
+      }
+    ],
+    "reason": "已知事实仅覆盖租约截止日错过且双方仍在协商收尾条件（F382、F383）。消息新增的核心进展是Fermi与TensorWave的数据中心租约及服务协议已正式终止，AMD信用支持协议也随之终止，这改变了F383的当前状态。另有超大规模客户600MW电力合作、2亿美元预付款、1500万美元早期施工协议等新增事实，已知事实未覆盖。",
+    "reference_ids": [
+      "E120"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "low",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": true,
+    "reason": "pol_3b783744cf50486e90fbad2d60462d58：消息明确TensorWave于2026年8月签署的至多650MW AI数据中心租约及关联AMD信用支持已终止，属租户退出与信用支持撤回的match_scope事实。但Fermi称超大规模客户已就Project Matador的600MW电力及约2亿美元预付、1500万美元早期施工协议作出承诺，是否构成同一窗口的替代承接仍存在真实歧义，且未见已签租约或IT容量服务窗口，故不计HIT，以低置信保留RELATED。pol_e36ace2c8b6b4854823c92eecdc814ea：Project Matador 600MW可交付电力分期于明年开始投运，属具名AI园区电力投运排程披露，落在match_scope内；但未见许可、电力或冷却导致的阶段延期或缩量，TensorWave终止原因也不属于C2列出的许可、接电或冷却事由，故不HIT，RELATED。",
+    "related_policy_ids": [
+      "pol_e36ace2c8b6b4854823c92eecdc814ea",
+      "pol_3b783744cf50486e90fbad2d60462d58"
+    ]
+  },
+  "policy_title_rows": [
+    {
+      "policy_id": "pol_e36ace2c8b6b4854823c92eecdc814ea",
+      "title": "AI园区可运营状态与部署排程对内部光模块采购窗口的影响"
+    },
+    {
+      "policy_id": "pol_c85e3fcdeeb8414aba95f33f13cc77e2",
+      "title": "合格六英寸InP衬底获配与跨境到货"
+    },
+    {
+      "policy_id": "pol_505e1ea8cffe4d608521516c21ac7e34",
+      "title": "Inertia Thunderwall束线工程执行与高功率二极管供应角色"
+    },
+    {
+      "policy_id": "pol_a94ad8b80d1c4015b0208289c02e03a3",
+      "title": "PCB钻孔CO₂激光调制器的设计导入与锗供给选择"
+    },
+    {
+      "policy_id": "pol_9e51141390744e72be831fa2e2ce043f",
+      "title": "射频功放架构与半绝缘SiC材料采用"
+    },
+    {
+      "policy_id": "pol_063a709cc50a40788f2db68413697c94",
+      "title": "物理量子熵源从开发套件进入安全设备产品"
+    },
+    {
+      "policy_id": "pol_e67b4ea2fd5745d1974946d88e485bd2",
+      "title": "企业代理工作流的付费使用与经济性"
+    },
+    {
+      "policy_id": "pol_81dab75d8e744c2da7c9e95afd084b2d",
+      "title": "企业代理的信任控制与主权部署"
+    },
+    {
+      "policy_id": "pol_68f8bf30aad64660b47bb04871c50e5c",
+      "title": "自研ASIC与开放Ethernet scale-out平台的模块端点与Coherent准入"
+    },
+    {
+      "policy_id": "pol_8d37032b99ea4169ba6d197e7001c11c",
+      "title": "Scale-up计算域、域内通信与光接口决定PhotonLink设计机会"
+    },
+    {
+      "policy_id": "pol_780a871c80da405795c0e0644fbac05c",
+      "title": "短距光互连材料路线与系统采购份额"
+    },
+    {
+      "policy_id": "pol_9959b70bfb774e5299483169bb54eb0e",
+      "title": "可插拔模块代际混合与主机资格窗口"
+    },
+    {
+      "policy_id": "pol_b399daf0f0334afc8031cb6ff336b813",
+      "title": "PhotonLink系统产品层级与每系统内容捕获"
+    },
+    {
+      "policy_id": "pol_4182ec5d54b64b7190fe665f45382519",
+      "title": "AI集群专用光纤与精密连接件的Coherent设计导入"
+    },
+    {
+      "policy_id": "pol_222269cb14244e03ba7c04fea50ea16e",
+      "title": "推理服务的任务放置与状态复用改变scale-out网络含量"
+    },
+    {
+      "policy_id": "pol_58564b63a3e44bbdae79a9e8ca35ca8f",
+      "title": "集群布线约束与光连接部署节奏"
+    },
+    {
+      "policy_id": "pol_cf95bbf2f3574f87b62ea91ff1b78ac0",
+      "title": "光子器件外部制造流程与集成分工"
+    },
+    {
+      "policy_id": "pol_ce2ed87393464e4c98781f6cc963216c",
+      "title": "光连接产品的合格供给释放与客户交付窗口"
+    },
+    {
+      "policy_id": "pol_327ba470221447a5ac346ac25b16dec6",
+      "title": "光学产品贸易准入与地域供给经济性"
+    },
+    {
+      "policy_id": "pol_a52ac4eb0de145d0baba1d408ee0aa6f",
+      "title": "AXT/Tongmei外部InP资金与Coherent专用预付款回收"
+    },
+    {
+      "policy_id": "pol_7cc644b7f59b4edea0a46eb535c6e143",
+      "title": "Coherent批次验收与寄售条款的现金转换"
+    },
+    {
+      "policy_id": "pol_2a20bcf36c6746f9926d2417ad4834b2",
+      "title": "Coherent已交付光学产品应收的直接信用损失"
+    },
+    {
+      "policy_id": "pol_b40a4a7672864c4199df67b67b6c509c",
+      "title": "Coherent直接客户预付款与未交付批次现金桥"
+    },
+    {
+      "policy_id": "pol_4a9cf88c21b649eea2547ef439ddcffd",
+      "title": "PhotonLink长期协议的客户成本共担与资金时点"
+    },
+    {
+      "policy_id": "pol_2f0dfc14869241f9b2a3fccaa4aa56f6",
+      "title": "Coherent已确认应收的承诺购买与提前付款桥"
+    },
+    {
+      "policy_id": "pol_1425d1271327455294374b77562a07d1",
+      "title": "DCI合同采购范围、释放权与同规格净价"
+    },
+    {
+      "policy_id": "pol_d52d3df1a29f4254801a0ac862728308",
+      "title": "既有DCI网络的重复部署与建设节奏"
+    },
+    {
+      "policy_id": "pol_7e820efd9dd54fc589a87325ced38f43",
+      "title": "既有 DCI 配置中的供应商获配与位置变化"
+    },
+    {
+      "policy_id": "pol_13105e8958ec427ab9d96b4cbbf82b68",
+      "title": "POLS开放线路采购、供应资格与系统责任边界"
+    },
+    {
+      "policy_id": "pol_d7787699ef9b4d94babf92b7ce23e061",
+      "title": "跨站相干端点代际与实际路由适配"
+    },
+    {
+      "policy_id": "pol_c4e925d8788447c09d7c6ce40ff63eeb",
+      "title": "多轨资源池化采用与Coherent系统、组件位置"
+    },
+    {
+      "policy_id": "pol_1c2cf77a416149f89a5238debf40d85a",
+      "title": "已预留光连接产能的订单释放与客户去保险"
+    },
+    {
+      "policy_id": "pol_5e340c45329b4fb5a2c0cdc4eb2f5006",
+      "title": "工业激光、精密光学与工程材料的直接客户商业条款"
+    },
+    {
+      "policy_id": "pol_a2d69dc2a85d4fb29fa4e1c7fccbb7b3",
+      "title": "工业材料加工激光的生产位置与竞争边界"
+    },
+    {
+      "policy_id": "pol_a879b2a3646e4aba961416c2624898e3",
+      "title": "高速可插拔光模块的同规格净价、服务范围与合同风险"
+    },
+    {
+      "policy_id": "pol_521a2dbfcb1b4eedb7862d48949bcf2f",
+      "title": "合格InP同规格重复供给的净到厂成本与来源重配"
+    },
+    {
+      "policy_id": "pol_161dc9d88c354a3abe1bce525c84fcdc",
+      "title": "外置激光模块的实际平台服务责任与生命周期风险分配"
+    },
+    {
+      "policy_id": "pol_17794de544a64cd0aa7361e572666738",
+      "title": "客户续约价格与交付范围决定可留存的单位销售贡献"
+    },
+    {
+      "policy_id": "pol_e65af148c3ce49219e0b63e267682299",
+      "title": "半导体前道设备需求与工艺工具采购"
+    },
+    {
+      "policy_id": "pol_85eb70b1ed1447988215f5a910164ad5",
+      "title": "业务出售与项目合资重配扩张资本及持续现金贡献"
+    },
+    {
+      "policy_id": "pol_4cfc86e7c61c4cc68491994cb305588c",
+      "title": "制造基地整合与产品退出重置存续制造成本"
+    },
+    {
+      "policy_id": "pol_75c219a5e1df444ab2dec91e5b4dfe22",
+      "title": "Coherent战略及大额持有人股份转让与二级市场供给"
+    },
+    {
+      "policy_id": "pol_11360cbf25484fe5948eb36f44649b56",
+      "title": "Coherent主流基准的指数股数与自由流通调整"
+    },
+    {
+      "policy_id": "pol_f4fc9bbf23a2425cbff1d9e9c0405675",
+      "title": "跨站互联路由、纤对与土建资源的可用性"
+    },
+    {
+      "policy_id": "pol_50b075a0ab404fa1af603f34c4af9bc2",
+      "title": "跨站业务连续性与地理分离的保护路由"
+    },
+    {
+      "policy_id": "pol_0758394a0c164b8c8ff1e420cc05ed20",
+      "title": "六英寸InP跨基地兑现与良品成本吸收"
+    },
+    {
+      "policy_id": "pol_2af0493bbf0e4ada8adb3d6ad9475020",
+      "title": "外置激光模块的生产资格、筛选周转与平台范围"
+    },
+    {
+      "policy_id": "pol_a7f54acc3ed942689507230e29fb11a4",
+      "title": "传统运营商骨干设备更新与预算分配"
+    },
+    {
+      "policy_id": "pol_4c3a1bbc173d4762892f4b9c7a87a7ed",
+      "title": "传统光传输OEM的库存与采购循环"
+    },
+    {
+      "policy_id": "pol_5a25425a5cb54100bcb11e64ea4f524c",
+      "title": "功率SiC客户采用、衬底采购与150/200mm转换"
+    },
+    {
+      "policy_id": "pol_86e8d5f3baa14e909499f5d3a1fb8375",
+      "title": "跨代制造资产的资本承担、复用与残值责任"
+    },
+    {
+      "policy_id": "pol_d7e3bd1a157142db8670c60893fcdba7",
+      "title": "扩建项目付款时点与可用产能兑现"
+    },
+    {
+      "policy_id": "pol_c9904a9a1d7e455da7de40508a938c2c",
+      "title": "SiC用途限制、母公司资金权限与新增责任"
+    },
+    {
+      "policy_id": "pol_73b87dfa3ce3429abc63f81264a5ac9e",
+      "title": "SiC伙伴扩建资金、预付款与承诺稳定性"
+    },
+    {
+      "policy_id": "pol_3d7a5ed91f7f4be999ff16324528d5e2",
+      "title": "可插拔光连接的完整模块与器件采购层级"
+    },
+    {
+      "policy_id": "pol_cf9e1aab17b84a53abb43bcb0ec02845",
+      "title": "供电受限园区的OCS价值与实际系统采用"
+    },
+    {
+      "policy_id": "pol_0ddb8edee53e446ba83ed95d6dca4aa2",
+      "title": "CPO运营验收、维护经济性与重复部署"
+    },
+    {
+      "policy_id": "pol_318dc9f31a734ecd8bd89747a094dea8",
+      "title": "OCS可售配置、客户批次供货与现场产品取舍"
+    },
+    {
+      "policy_id": "pol_7f09165c142c4f508395741512b134f6",
+      "title": "跨站AI通信效率与传输容量规划"
+    },
+    {
+      "policy_id": "pol_7ed2c5605a494165a702cc7bd3c87842",
+      "title": "跨云企业数据连接的商业可用范围与持续负荷"
+    },
+    {
+      "policy_id": "pol_6e9dc45f1519408985451c483cf1d760",
+      "title": "电力约束下的跨站AI工作负荷部署"
+    },
+    {
+      "policy_id": "pol_d22898c040a74ab2bf9083924d615330",
+      "title": "IT OLED ELA工具、存量服务与采购时序"
+    },
+    {
+      "policy_id": "pol_85bc6bfaf4c94242b720aae57b4deccf",
+      "title": "Coherent再融资、借款可用性与币种付款匹配"
+    },
+    {
+      "policy_id": "pol_4aec99b84c3a43499ad73407c4436f51",
+      "title": "弹性GPU资源池的OCS运营回报与商用范围"
+    },
+    {
+      "policy_id": "pol_01afba6c5683495f89c66d4ed7e59efa",
+      "title": "统一控制生态与第三方OCS采购池"
+    },
+    {
+      "policy_id": "pol_0ec290b6053040d7ab20212c485e5b91",
+      "title": "高参数流式平台的光源设计位置与生产资格"
+    },
+    {
+      "policy_id": "pol_f998963562234ce69bf8d11c8dbd53e3",
+      "title": "生命科学高参数仪器采购与共享工作流预算"
+    },
+    {
+      "policy_id": "pol_7f35a940047147fd94f85adf5cf0d1f9",
+      "title": "既有员工RSU结算在公司现金与净普通股间的交换"
+    },
+    {
+      "policy_id": "pol_db8688e23423408bbdaf8eb29e23aa9f",
+      "title": "权益资本的净资源、普通股对价与优先权交换"
+    },
+    {
+      "policy_id": "pol_458553a73a96404590a72ca0b1e1dbc4",
+      "title": "所得税现金负担与结算时点改变可留作扩产的资金"
+    },
+    {
+      "policy_id": "pol_e51c32f94d614179ad8817793a638a9c",
+      "title": "AI热管理产品的整机资格、可重复采用与Coherent供货角色"
+    },
+    {
+      "policy_id": "pol_d0ad653c657946789a65022d3e678518",
+      "title": "高导热材料的外置层级、同功能竞争与封装内替代"
+    },
+    {
+      "policy_id": "pol_f81051e624484ab1857ed1b6c26a8603",
+      "title": "AI/HPC热管理需求与机房可部署平台组合"
+    },
+    {
+      "policy_id": "pol_28606c06e7134be794f8c96cbb8633ac",
+      "title": "客户付费开发与可复用核心IP权利的独立经济增量"
+    },
+    {
+      "policy_id": "pol_f6f4c32bfb98433bbc0400e25777aead",
+      "title": "合格消费机型的实际生产量与光源采购相位"
+    },
+    {
+      "policy_id": "pol_3ae5148166ea4074b259e81e77d2951a",
+      "title": "消费设备的主动感测任务与目标单机光学内容"
+    },
+    {
+      "policy_id": "pol_2f0f652e4a594904bba4c6bcf9135eb9",
+      "title": "消费光源的型号资格、实际来源分配与商业条款"
+    },
+    {
+      "policy_id": "pol_f72698ab1a0f42ab88f912793039bc23",
+      "title": "含氟工艺投入、替代资格与成熟制造成本曲线"
+    },
+    {
+      "policy_id": "pol_5368fdf225574733918c76dbdc4682f5",
+      "title": "空间眼镜精确光学交互采用与隐私可用边界"
+    },
+    {
+      "policy_id": "pol_07ac0af687164e948333eab02ca4a70d",
+      "title": "AI服务器高密度PCB扩产与激光钻孔工具需求"
+    },
+    {
+      "policy_id": "pol_9a90070bd83f4587a785fb3f10522f5b",
+      "title": "认证翻新、再部署与集中备件改变光模块新造替换需求"
+    },
+    {
+      "policy_id": "pol_7718bc988ad54aeb982c6c2cd4f19e25",
+      "title": "评级机构对Coherent扩产融资承受力的重新判断"
+    },
+    {
+      "policy_id": "pol_e4f446b638dd495c86ae65fb46a573e7",
+      "title": "非财报研究重估PhotonLink的可捕获增长、现金回报与估值框架"
+    },
+    {
+      "policy_id": "pol_822fb49ac6aa4b108e5665217f8fe0ed",
+      "title": "Coherent制造与共设计数字安全冲击"
+    },
+    {
+      "policy_id": "pol_3b783744cf50486e90fbad2d60462d58",
+      "title": "AI算力资本可用性、已签容量与建设交付窗口"
+    },
+    {
+      "policy_id": "pol_6b6a06c22a694af996fa2d3dc08f1af2",
+      "title": "高速可插拔模块的生产分配与现场质量"
+    },
+    {
+      "policy_id": "pol_7971b490c9ad40b79adf38f123db3405",
+      "title": "推理工作负载稳定性与OCS的生产网络选择"
+    },
+    {
+      "policy_id": "pol_b8f847c3c7c54c43b6aa1c8b3a3da9db",
+      "title": "集群光交换层级变化与独立OCS机箱角色"
+    },
+    {
+      "policy_id": "pol_4da53ae459bb43c89e61b3dce10e980f",
+      "title": "跨架光学进入scale-up生产设计的独立平台机会"
+    },
+    {
+      "policy_id": "pol_f768214161d341c78aac1b73b97ed9f3",
+      "title": "空芯光纤工程扩展与线路设备强度"
+    },
+    {
+      "policy_id": "pol_92ee15cc13d940409cfdb28cc691fbb1",
+      "title": "量子系统光学控制的产品资格与源架构变更"
+    },
+    {
+      "policy_id": "pol_f699cbdde31943069b6a14c14b9761ad",
+      "title": "空间眼镜/头显光学器件的实际生产资格与已建立供应角色"
+    },
+    {
+      "policy_id": "pol_14cf27c3b28d48c69f80e46ac78ecc76",
+      "title": "金属增材合格零件与生产经济性"
+    },
+    {
+      "policy_id": "pol_b8bda284e67b49b4918d1b38f18b749e",
+      "title": "Coherent工业产品关键投入的供应可用性"
+    },
+    {
+      "policy_id": "pol_aaf015355c524177bedada1fd09ccd0a",
+      "title": "工业焊接工艺迁移与合格生产范围"
+    },
+    {
+      "policy_id": "pol_89ef51bdd3644202add75c198469e063",
+      "title": "Sherman InP扩建公共支持与合格投资抵免"
+    }
+  ],
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-11-10，模块基线是未来数季收入增长、1.6T爬坡且800G仍有增量，目标订单覆盖已延至2028；当前并非普遍停建。Texas州长当选人提出暂停新许可但尚未实施，已获许可项目可继续；州级30%—40%暴露估计是预测而非取消量。Meta仅表示寻找海外选址并更看好扩建现有园区，未给出外国地点或排期。相反，DTE报告2.4GW数据中心负荷已锁定，Oracle/Related/OpenAI的1.4GW场址在建且按计划推进，Google另有2.7GW资源合同、Buren园区预计2028年末全面运行；这些现有安排已构成执行基线，合同或原计划按期实现不属新增上修。 E183中CoreWeave称所需电力几乎均已可用或已获许可并在建，並预计2027年交付不受德州监管变化影响；这没有点名受阻后新获电的园区阶段，也没有显示相对其最近公开窗口提前。 2026-11-11的Fervo更新显示Cape Station首个33MW机组已于9月30日商业运行，第二机组已并网测试、第三机组机械完工；Google签约的396MW来自第4至第11机组，首电预期在2028年中、全约容量目标在2028年底，额外约600MW仍为可选扩展，且Google尚未定案拟议Utah数据中心的地点/范围。前述发电和购电状态不是一个已披露的AI IT阶段已有可交付电力或排程提前。另一则11月11日披露微软签署了由Chevron运营的2.67GW燃气电厂20年供电协议以服务微软数据中心，但没有给出供电起始时间、具名IT容量阶段或部署排程；签约不等于当前可用电力或新增Coherent光学采购窗口。",
+            "trigger_boundary": "跨越边界须有具名AI计算阶段从受阻/仅规划转为有可交付电力和冷却的现场部署，而且相对最近公开排程实际提前，或现有已运营园区出现一项此前未计入的新增AI阶段。一个多楼栋或同类园区级阶段即可改变数季的设备释放窗口；毋须披露Coherent订单或换算模块数量，但仅解除政策风险、签能源合同、确认电力管线或按原期施工不足以单独上修。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "db68ff41ded4e43eed60ef3569a5f19ed9d1c3adf56d4168077eb587706f7498",
+          "criterion": "运营商或可信的项目/公用事业披露确认：一个此前受许可、电网或冷却约束而延后的具名AI园区阶段，已获得最终许可及可交付电力/冷却，或其自备电力与冷却设施已实际投用，并将该AI计算阶段的现场调试/投运排程较最近公开计划提前；也包括已运行、已获许可园区因新增可用电力/冷却而新增一项明确的AI计算阶段。新址搜索、备用发电采购、能源合同和一般建设进度不等同可投用阶段。",
+          "decision": "LONG",
+          "trigger_layer": "OUTER"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前预期是有许可、有电且可冷却的项目继续推进，边际新建和接电受约束的项目可能延期或改址；DTE已有的2.4GW锁定负荷和1.4GW在建项目与Google至2028年末的园区计划说明新建设与现有承诺并存。E152的三个Justified楼栋已有EPC与2027年末至2028年二季度服务就绪排程，但融资交割和交付尚未完成；E143报告的约50亿美元支出低于计划与neocloud交付延迟有关，不是等额光学取消。 CoreWeave在E183相反表示2027年交付没有重大风险，且所需电力几乎均已可用或已许可/在建；该总括表述不替代具名项目排程，但也没有发生新的已公布阶段延期、取消或缩量。 11月11日新增的项目背景包括：Starbase就444英亩地块的燃气电厂/超级计算设施发布公听会通知，潜在投资最高240亿美元、听证安排于12月9日，但未披露可识别IT容量阶段及服务窗口；Project Camellia（规划3.2GW、五期）遭居民就审批过程提起RICO民事诉讼，诉状指控尚非司法认定，未见禁令、许可撤销或实际施工/投运时序改变。两者是新增许可/法律风险背景，不是已取消、减配或错窗的计算阶段。",
+            "trigger_boundary": "只把具名、已有公开AI计算阶段的现场投运/可用时间或规模由原计划实际推迟或移除视为下修；一项园区级阶段进入更晚的服务窗口已足以改变采购与库存释放时间，不要求等待全州停建、多个客户取消或Coherent财报确认。州级暴露GW、政治承诺、一般融资担忧、按原计划施工，或没有说明AI计算排程变化的电力事件均不足；同站原计划转至另一许可/通电场址且时间与规模未恶化也不构成SHORT。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "06f862b375c453542c70fde34030727f9aebc63bad2ff9408fcf1b18728298f7",
+          "criterion": "主管机关或电力/冷却提供方实际作出的终局决定，或园区运营商对具名AI场址的更新，确认一个此前公布的计算阶段因许可被拒/停办、接电或可用电力延期、冷却不足而取消、缩量，或将现场可用/投运日期移至其最近公开窗口之后。客户换址或拆分只有在公布的接收园区排期更迟或该阶段规模实际缩减时进入本条件；仅有拟议暂停、风险评估或尚无排期的迁移探索不足。",
+          "decision": "SHORT",
+          "trigger_layer": "OUTER"
+        }
+      ],
+      "match_scope": "匹配云运营商、园区业主、公用事业或地方主管机关对具名AI数据中心项目的实际许可、电网互联、可交付电力、自备电/燃料设施、冷却配套、现有园区改造、迁址或分拆及其分期投运排程的披露。例如，受阻批次被移到已许可且有可用电力的存量/海外园区，或电力/冷却实际就绪后一个已延期的AI计算阶段重新排入现场调试；反向也包括最终许可/接电受阻使公布的计算阶段延期或缩量。政治表态、州级风险GW估计、未签约负荷管线、购电/电力资源合同或融资安排本身不代表AI算力已可部署；跨站线路和客户信用融资不在本范围。",
+      "policy_id": "pol_e36ace2c8b6b4854823c92eecdc814ea",
+      "ref": [
+        "context/document3/v21/d2/shell-0001.json#/units/0",
+        "output/work/v21/discovery/S0001.jsonl#L12",
+        "context/document3/v21/shared/event_library.md#E143",
+        "context/document3/v21/shared/event_library.md#E152",
+        "context/document3/v21/shared/event_library.md#E155",
+        "context/document3/v21/shared/event_library.md#E162",
+        "context/document3/v21/shared/event_library.md#E163",
+        "context/document3/v21/shared/event_library.md#E166",
+        "context/document3/v21/shared/d1/c4e_network_build.md::AI集群为什么改变连接架构，以及改变何时才能转成采购",
+        "context/document3/v21/shared/event_library.md#E183",
+        "context/document3/v21/shared/event_library.md#E192",
+        "context/document3/v21/shared/event_library.md#E193",
+        "https://www.datacenterfrontier.com/energy/article/55418235/googles-utah-deal-puts-geothermal-power-on-the-data-center-map",
+        "https://huggingnews.com/business/microsoft-taps-chevrons-267gw-gas-plant-to-power-ai-data-centers-b7d958ac",
+        "https://www.tomshardware.com/tech-industry/data-centers/elon-musk-wants-to-build-a-new-gas-powered-data-center-in-starbase-texas-usd24-billion-site-goes-up-for-approval-in-december-but-could-face-headwinds-from-new-governor",
+        "https://www.tomshardware.com/tech-industry/data-centers/georgia-politicians-openai-slapped-with-racketeering-lawsuit-over-3-2-gigawatt-ai-data-centers-plaintiffs-allege-multiple-violations-were-part-of-a-coordinated-scheme-to-get-project-camellia-approved"
+      ],
+      "title": "AI园区可运营状态与部署排程对内部光模块采购窗口的影响",
+      "transmission": "许可、电网接入、自备电、冷却和已获批园区空间决定AI机架何时能进入安装与运行；对已经建模的项目，真正改变这些条件会把模块采购窗口前移、后移或移到另一园区。FY2027 Q1数据中心业务收入同比增长85%、环比增长17%，但该范围包含OCS等业务；800G和1.6T均在增长，模块订单覆盖延至2028，不能把上述公司口径换成单园区模块量。AI容量通常须先采购网络设备再投用，故项目排程改变会影响订单释放和库存时点；园区升级、分拆与换址还会改变机架密度、内部距离和铜/光边界。高密度改造可增加连接密度而缩短铜可覆盖距离；分散的小型园区可能保留更多独立端点但减少单域高端口光链路。没有固定模块/GW系数，不能把园区容量按比例折成模块订单，也不能用跨站DCI或独立OCS业务补足内部模块变化。"
+    },
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-11-10，Coherent FY27 Q1 DC&C收入19.517亿美元（约占总收入82%），数据中心收入同比增长85%，但未公开把AI项目融资与其具体光学订单/客户逐项对应。公开容量参照均属项目/运营者计划而非一致预期：TeraWulf在Justified与Anthropic签约约401MW critical IT，分三栋交付，初始容量预计2027年下半年、全部容量2028年上半年；2026-11-04公布Google信用支持和Fluor EPC，TeraWulf称支持增强其争取项目融资的能力，而Q3 10-Q说明Google backstop对相应租约义务按最后数据厅启动等条件生效，未据此披露新债务交割/前置现金。IREN FY27 Q1把约0.3GW IT、超过40亿美元ARR项目称为fully funded，口径含现金、未提款的已承诺GPU融资和未收到的合同预付款，且资金仍受合同条件、托管释放和可用期约束；公司当时预计ARR在2027年1月、可能延至2月开始运营。该季FY27余下150亿美元资本开支中90亿美元为现金与已承诺融资/预付款，另60亿美元是仍受市场条件影响的目标来源。微软FY27 Q1资本开支452亿美元，部分第三方容量交付延误，Azure同比增长48%、需求仍超过供给，已披露推迟容量转至下半年。当前判断采用这些最新公开项目计划为比较锚，不声称掌握市场一致预期。401MW、0.3GW及100MW新址是不同项目的量级参照，不构成普遍最低门槛；总电力MW也不能替代IT负载。 CoreWeave于2026-11-10报告Q3积压1325亿美元、活跃电力逾1.7GW及已签约逾4.6GW，FY2026资本开支指引370—390亿美元；管理层称几乎所有所需电力已可用或已许可并在建，预计2027年交付无重大风险。未来三个月约90亿美元客户预付款仍是计划，延迟提款贷款也只拟在未来数周推出，融资尚未因该计划变成可用资金。该信息未指向新的具名项目阶段或融资条件已解除。",
+            "trigger_boundary": "足够的正向新事实是：对一项并非小型试点、且在同一运营者公布的AI容量/交付计划中有分量的具体阶段，融资从拟议/附条件变成可用，或信用支持实际生效并解除公开的融资门槛；可比对象是该阶段与运营者自己已公布的容量和服务窗口，不能拿融资总额、合同总值或GPU数量机械替代。一个已交割、资金可用的阶段级融资可以在现金实际支付前满足边界；如果未提款额度仍有实质条件，只有首次提款/条件满足后才跨界。新增容量或原有受风险容量按期可落地的概率改变即可，不要求公开Coherent订单、目标净采购、专用库存或公司收入预测。IREN的已披露0.3GW/40亿美元ARR资金安排不再是未来首次融资事件；下一次常规提款或按计划投用不触发，只有公开解除一个尚未满足的融资条件或为超出已资助项目的新重要阶段提供可用资金才算新增。TeraWulf的2026-11-04信用支持公告本身亦已进入基线；未来该担保只有在其按合同生效并实际开放特定阶段融资/资金可用时才算新事实，不要求等到最终订单或交付。任何金额需先落到阶段和可用算力上；不使用0.3GW或401MW作固定下限。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "aeae077bca31cf6ba43f6e7b9acb44e95248a42197f235c34d22c5c943d44d99",
+          "criterion": "项目业主/借款SPV、贷款人或信用支持方披露某一有公开施工/服务窗口、用于AI算力的商业项目阶段，其原有资金或信用条件现被实质解除：项目级融资完成交割且该阶段资金已可依法用于建设/算力交付，或实质提款先决条件已满足/首笔实质提款使该阶段进入可执行交付，或对具体租约/贷款有约束力的担保已生效并被公开确认为满足融资条件或释放该阶段资金。该阶段仍有绑定的AI算力/租赁承诺，且该融资可用状态超出当前公开的资金可得性或容量计划，实质提高一项运营者重要AI容量阶段按原窗口落地或新增阶段的概率。可用资金可以用于数据中心建设或GPU/算力部署；不要求Coherent或其直客具名。仅签署未生效的信用支持、贷款意向/未交割承诺、附有实质未满足提款条件的额度、未收到且仍有条件的预付款、或事先已明确可用且已吸收在当前计划内的常规提款不满足。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前基线是按项目成熟度分化而非所有计划同质：TeraWulf/Anthropic的401MW critical IT分三栋，租约、EPC及2027下半年至2028上半年交付窗口已公开；IREN披露约0.3GW IT的合同算力计划，但只把FY27尚余资金中的90亿美元列为现金/已承诺融资与预付款、60亿美元仍是受市场条件影响的目标资金，不能将未达成资金目标直接当作已取消容量。TeraWulf另有1GW电力容量规划，但需区分已签约AI IT容量和仍待监管/客户进展的电力开发。微软Q1第三方容量交付延期时，Azure仍增长48%、需求超过供给，证明单凭资金或季度支出变化无法判定容量退出。 CoreWeave Q3现金消耗75亿美元、总债务469亿美元、未来一年到期债务106亿美元及非受限现金41亿美元，强化了扩张的融资压力；但其积压、上调后的资本开支和2027交付判断同时仍支持已承诺建设，且本轮没有具名容量阶段取消、缩量或租约退出。其拟议融资未交割不等同于建设资金失效。 Anthropic另有两项合同状态应作为当前比较面：11月10日招股文件披露Lambda未按期取得场址租约，使约349亿美元算力协议可由任一方终止；截至招股文件既无终止通知，Anthropic称当前无意终止。11月11日Anthropic又表示计划让SpaceX算力协议于2027年年中到期，并可能在2027年1月、3月部分取消。它们降低特定供应合同的期限/客户确定性，但没有披露对应AI IT容量阶段、容量规模、物理建设窗口已被移除或已实际取消；不能以合同总值替代阶段损失，也不能由客户/租用安排改变推定Coherent订单流失。",
+            "trigger_boundary": "跨界点是公开的、已纳入当前AI算力部署的阶段/容量从其运营者近端计划中被移除或大幅缩小，而非一纸再融资、租户更名或尚待交割的融资消息。以各运营者公开IT负载和阶段计划比较：TeraWulf 401MW三栋、IREN约300MW IT项目说明可观察量级，但不要求损失一栋楼、130MW、0.3GW或全园区，也不把这些数值作为下限；若较小阶段是运营者近期已公布AI计划的重要部分，也可成立。替代判断只看同一阶段/同一服务窗口是否已有相当容量承接；无需搜索或否定所有未来地点。原租户退出但项目由新租户按同等范围继续、融资换手但建设不减，尚不足；公开只剩较小或明显更晚的接替阶段时，仅未被替代的容量/原窗口内缺口进入方向判断。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "0eb96a3ff5b6a2314c7b0df4854a483a315c311b5e81593a8f6646823c3d9b79",
+          "criterion": "借款方/项目业主、AI算力承租方或运营者公开确认：一个此前已签约或明确纳入建设/投用计划、具有可识别AI IT容量的阶段，因融资/信用支持撤回、主要承租或算力客户退出、或建设资金/执行条件失效，已从近期AI部署计划中取消或实质减配；同一公开服务窗口内没有已承诺、规模相当的替代租户或融资安排继续承接该阶段。未要求证明该地点永久关闭，也不要求证明所有别处均无替代项目；若项目仅换开发商、租户或资金来源，且原容量仍按原窗口继续，则不命中。此条件不要求目标公司供应关系。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Coherent公开发展节点包括PhotonLink 2027年3月季度收入目标超过1亿美元、2027年末单季目标超过2.5亿美元，以及新五年约200亿美元协议拟于2028年初起量；均属管理层目标/合同层次，不是已实现收入或已知ASIC采购数量。微软近期第三方容量延误显示，在原系统/光学设计仍适用时，单纯移期可以保留需求；Coherent直接供应资格与每个AI建设项目之间没有公开的普遍映射。",
+            "trigger_boundary": "对已公开的目标供货项目，若该期投用跨过原ASIC/光网络代际采购窗口，并由公开的重设计、重招标或认证变化表明原Coherent合格供应位置不再承接，采购机会的跨代损失即可支持负向边界；无需等待Coherent正式报告订单取消、目标收入修订或量化份额。仍沿原代际设计和合格供应商交付，仅在原采购/服务期内延期，不命中。"
+          },
+          "condition_id": "C3",
+          "condition_revision": "3852cd331c86c426d10ed498310d438476cc0d5d38a3b77d6860ccf8c93b8141",
+          "criterion": "对于已公开与Coherent光学产品或直接采购客户相连的具名算力/网络部署，正式时序被推过原ASIC/光网络代际的采购窗口，且披露的系统设计、供应商认证或光学采购被重开/转至后续代际，原Coherent合格供应位置不再承接该期，而非仅将同一设计的交付向后平移。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Coherent是NVIDIA Spectrum-X/Quantum-X Photonics的外置激光模块供应方，并有非独家多年采购/产能安排，但未公开披露相应客户项目的单位量或采购份额。Prometheus退出规划园区而原土地业主继续推进的既有项目材料说明，场地或买方变化不等同于容量取消；使用NVIDIA系统的云平台也不能据此推为Coherent直客。",
+            "trigger_boundary": "当原本与Coherent有公开供应/资格联系的同一光学采购期，其合同采购权/系统配置被正式划给竞争来源或Coherent被移出合格名单时，目标可捕获份额即有直接下修；仅租户、担保方、项目SPV或付款责任主体改名，若设备采购权和供应资格未变，不命中。"
+          },
+          "condition_id": "C4",
+          "condition_revision": "bc33c351df4bd84cdafccfe575cd7f9683372e2e500c45cd7b3ee4a12cf0370f",
+          "criterion": "有既存Coherent产品/合格供应关系的直接光学采购方，将一项已识别的建设期或系统采购权正式转给新的买方/租户并明确把该期光学配置或订单分配给其他供应商，或移除Coherent资格；园区本身可以继续建设。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "微软FY27 Q1资本开支452亿美元，部分原定第三方容量交付延期，相关容量转至下半年；Azure同比增长48%且需求超过供给，因此该季推迟不等于长期需求损失。IREN超过40亿美元ARR/约0.3GW IT项目原先指向2026年末，FY27 Q1已将目标运营期调整为2027年1月、可能延至2月底，原因包括客户设计变更和供应商时序；这个调整已是当前基线，不可重复作为未来首发利空。TeraWulf/Anthropic 401MW三栋项目当前公布的初始交付窗口为2027年下半年、全部容量为2028年上半年；范围内的分期属现行计划。 CoreWeave于E183称几乎全部数据中心所需电力已可用或已许可/在建，并预计德州监管变化不影响2027交付；这是运营者总括判断而非逐项目排程更新，未报告任何阶段被推过当前服务窗口。E190的贷款仍属计划，未披露已因此产生设备交付延期。",
+            "trigger_boundary": "只要新披露表明运营者重要、此前绑定的AI算力阶段超出其最新公开服务/投用窗口，导致有分量的算力在原商业部署周期无法上线，即有足够的负向时点意义；同代内有经济意义的推迟也可成立，不必等永久取消或跨代重选。比较必须用同一阶段最新公开的计划日期/范围，而不是任意要求两季延期：尚在TeraWulf原2027下半年/2028上半年区间内的分期，微软原定容量在同一财年下半年恢复，以及IREN既已披露的2027年1—2月调整都不构成新触发。若后续新公告把同一重要阶段移出其当前最新窗口，且没有已明确的同窗等量替代，就可命中，即使后续仍有更晚的可交付机会。"
+          },
+          "condition_id": "C5",
+          "condition_revision": "144dd39b0930da42fc7570a625b86b852c9cc0e639d536a25eb7067867a81daa",
+          "criterion": "AI数据中心业主、算力运营者/租户或EPC公开修订一个已有绑定客户或已纳入投资计划的重要AI计算阶段的首次服务/可用日期，确认因融资、租约、工程或关键设备交付约束，该阶段有分量的IT容量将不能在最新公布的客户服务或计算部署窗口内上线；不要求项目永久取消、Coherent具名供货、光学重设计或跨ASIC代际。仅在原已公布交付区间内正常分期、单季资本开支波动、仍于同一窗口内上线的小范围调整，或已公布的同窗等量替代容量，不命中。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前已有正向容量基线包含TeraWulf/Anthropic约401MW critical IT长期租约及Fluor EPC，且Google按特定条件提供租约信用支持；因此该项目不是空置园区等待新租户。IREN称约0.3GW IT/超过40亿美元ARR项目已签约，另有市场条件下的未来扩展资金；其约5GW secured power和35GW development pipeline包含未进入AI服务的不同阶段。TeraWulf的Muskie扩展至1GW的是受监管条件影响的电力容量并处于客户洽谈，不等于已经签约1GW AI计算。以上显示租约、承租人、IT负载、可用电力和管线规模必须分开比较。 Anthropic于2026-11-10的S-1/A披露对Microsoft至少472亿美元的最低支出承诺至2033年，及向长期云算力支出承诺转变；披露未给出因此新建/新租的具名AI IT容量、完整阶段或起始服务窗口，不能把合同额当作一个新增物理容量阶段。",
+            "trigger_boundary": "足够的新事实是一个尚未承诺或此前已因租户撤出而有风险的、运营者计划中有分量的AI算力阶段，签下可执行的长期租约/云算力服务或同等容量承诺，并给出实际IT负载或完整商业阶段及服务时间，使该容量从管线/空置/取消风险转成有客户的可交付AI业务。对接盘项目，比较接手前后同一阶段的公开容量和起始窗口；若新租户以可执行合同接回大部分同代容量，即使场址或SPV变化也可恢复部署概率；如果合同只填补小试点或原有客户本就已覆盖同一容量，则不足。无需证明融资额、Coherent供货或所有替代地点均不存在，也不将单独电力接入/土地/意向客户视为AI租约。"
+          },
+          "condition_id": "C6",
+          "condition_revision": "6c6c40a3f0181f1ff26b90cf7ec54bd4ec78ee5c5767ada9f34d36031102e885",
+          "criterion": "具备已公布电力/施工路径的AI数据中心项目，因绑定AI云算力服务合同、长期租约或同等可执行客户承诺，从此前开放/失去主要承租方的阶段变为有确定的AI计算使用容量与起始窗口；新租户接盘须对同一站点/阶段形成真实的商业算力承诺，而不是意向、洽谈或仅承接园区产权。若原有项目容量和客户合同已按当前计划确定，单纯更换开发商/承租实体不构成新的正向事实。该客户承诺本身可支持需求实现概率上修，不要求目标光学订单或同一时点追加融资。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "覆盖可识别的AI计算/云算力项目及其物理容量阶段，相关建设方、项目SPV、贷款人、信用支持方、EPC、云/算力运营商和承租客户公开披露的项目融资交割、提款条件满足、担保生效、预付款或融资可用性、长期租约/算力服务合同、租户接盘或退出、资金撤回、项目减配/取消与投用窗口变化。相关消息需指向AI算力IT容量、明确的AI工作负载或已签算力服务，而非仅有电力接入、泛化数据中心管线或大额资本承诺。可留意TeraWulf式有长期租约和EPC、但Google信用支持按交付条件生效且不等同现金融资的项目，IREN式运营者披露fully funded但区分现金/已承诺提款/待收预付款/仍待市场筹资的项目，以及微软式第三方设施交付延期与算力需求仍强并存的情况。外部容量条件不要求已知Coherent供货关系；若报道明确涉及Coherent直接供应/资格位置，则其采购与跨代变化另由C3/C4处理。仅融资金额、未生效担保、功率容量、意向租户、正常按计划提款或当季资本开支摆动不自动构成方向触发。",
+      "policy_id": "pol_3b783744cf50486e90fbad2d60462d58",
+      "ref": [
+        "output/work/v21/discovery/S0001.jsonl#L11",
+        "context/document3/v21/shared/document2.json#/shells/0/units/0",
+        "context/document3/v21/shared/document2.json#/shells/4/units/0",
+        "context/document3/v21/shared/d1/c1.md",
+        "context/document3/v21/shared/d1/c3.md",
+        "context/document3/v21/shared/d1/c4e_formal_scan.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "context/document3/v21/shared/d1/c4f_future_nodes.json",
+        "context/document3/v21/shared/d1/c5.md",
+        "context/document3/v21/shared/d1/products_manifest.json",
+        "context/document3/v21/shared/event_library.md#E143",
+        "context/document3/v21/shared/event_library.md#E152",
+        "context/document3/v21/shared/event_library.md#E89",
+        "context/document3/v21/shared/event_library.md#E97",
+        "https://www.microsoft.com/en-us/Investor/events/fy-2027/earnings-fy-2027-q1",
+        "https://investors.terawulf.com/news-events/press-releases/detail/148/terawulf-secures-google-credit-backstop-for-project-financing-in-support-of-19-billion-anthropic-lease-executes-definitive-fluor-epc-agreement",
+        "https://www.sec.gov/Archives/edgar/data/1083301/000162828026071671/wulf-20260930.htm",
+        "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm",
+        "https://irisenergy.gcs-web.com/news-releases/news-release-details/iren-reports-q1-fy27-results",
+        "https://www.sec.gov/Archives/edgar/data/1878848/000114036126023427/ef20075181_8k.htm",
+        "https://iren.gcs-web.com/static-files/8b5ff1cc-4a7c-444d-a3bf-bf5a621cf4b7",
+        "context/document3/v21/shared/event_library.md#E183",
+        "context/document3/v21/shared/event_library.md#E190",
+        "context/document3/v21/shared/event_library.md#E191",
+        "https://huggingnews.com/ai/anthropic-spent-more-than-10b-to-develop-opus-55-ai-model-3cd52c5c"
+      ],
+      "title": "AI算力资本可用性、已签容量与建设交付窗口",
+      "transmission": "AI数据中心扩建只有在转化为可运行的算力与网络，才会形成高速光连接机会；项目融资、租约、信用支持和EPC主要改变这项容量能否按期启动、规模是否保留，不是Coherent收入、订单或自身现金流。Coherent FY27 Q1 DC&C收入19.517亿美元，约占公司收入82%，数据中心收入同比增长85%；这说明数据中心光连接是重要商业通道，但没有公开的园区级Coherent供货份额、GPU/IT MW到光器件数量换算或客户项目净采购分配。故项目容量与排程可作为较外侧的需求/实现概率观察，而不是预测Coherent订单。可比较的现实单位是带AI算力用途的IT负载、已签服务容量、明确的阶段性交付窗口；园区总电力、融资标题金额、租约总值、ARR目标与已部署算力不可互换。IREN披露的约0.3GW IT、超过40亿美元ARR项目被称为fully funded，但该口径含未提款的已承诺GPU融资及尚未收到的合同预付款，且提款仍有条件；同时其FY27尚有60亿美元目标资金来源受市场条件约束。TeraWulf/Anthropic已有约401MW critical IT租约、三栋建设和Fluor EPC，Google支持的则是特定租约义务及未来融资信用，支持协议签署并非项目融资到账，且保障按约定交付阶段生效。微软FY27 Q1 452亿美元资本开支受第三方容量交付延期影响，但Azure增长48%、需求超过供给，后续交付移至下半年；这说明在原公开投用范围内的季度挪移不能当作需求消失。对外部AI容量的正负更新，要看资本是否真实可用于一项有分量的已签/可执行算力阶段，以及容量何时可以服务；项目融资额不能按比例映射为Coherent营收。大平台与阶段规模须相对该运营者自己公开的AI容量计划判断，不设通用0.3GW、单栋楼或融资金额门槛。目标已有的直接供货、认证和采购权重组仍由C3/C4单独承接，不要求每个外部项目披露Coherent订单，也不把租户或融资人更名当供应商变化。 新增的CoreWeave FY2026 Q3披露为这类外部容量提供了当前案例：收入积压1325亿美元、活跃电力逾1.7GW/已签约逾4.6GW、FY2026营收指引130—133亿美元及资本开支370—390亿美元；公司称至2027年合格需求约为可用供给10倍、几乎全部数据中心所需电力已可用或已获许可并在建，并认为2027年交付无重大风险。另一方面，季度现金消耗75亿美元、总债务469亿美元、未来一年到期106亿美元而非受限现金41亿美元，融资仍关键；其拟议延迟提款贷款（为相关资本开支提供逾90%资金、预期收益率7.0—7.5%）尚未推出/交割，未来三个月90亿美元客户预付款也属预期而非已收。Anthropic在E191披露对Microsoft至少472亿美元的云支出承诺至2033年，但该金额本身没有给出新的AI IT容量或分阶段服务窗口。以上仅是供给者/客户的基础设施与资金背景，不能直接换算Coherent订单或收入。"
+    }
+  ],
+  "w1_events": [
+    {
+      "canonical_summary": "The 222 MW Fermi–TensorWave lease missed its October 31 closing deadline, but neither party terminated it and outstanding conditions remained under discussion.",
+      "derived_from_event_ids": [],
+      "event_id": "E120",
+      "event_type": "MATERIAL_CONTRACT",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F382",
+          "fact_occurred_at": "2026-10-31",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Fermi and TensorWave did not close their 222 MW data-center lease by its October 31, 2026 deadline.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F383",
+          "fact_occurred_at": "2026-11-03",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Neither party exercised its lease termination right, and Fermi said the parties continued working through remaining closing conditions.",
+          "subject_time": "CURRENT"
+        }
+      ],
+      "known_event_summary": "On 2026-10-31, Fermi and TensorWave failed to close their 222 MW data-center lease by deadline; as reported on November 3, neither had exercised termination and they continued working on conditions.",
+      "occurred_at": "2026-10-31",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Fermi and TensorWave miss lease closing deadline but continue conditions"
+    }
+  ],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": false,
+    "related_has_new_fact": true
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-11-10T03:56:32.803172Z"
+  }
+}

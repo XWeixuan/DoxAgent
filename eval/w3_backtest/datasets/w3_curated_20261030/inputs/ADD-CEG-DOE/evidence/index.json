@@ -34,7 +34,7 @@
       "title": "Energy Department loans $1B to help finance the restart of nuclear reactor on Three Mile Island",
       "url": "https://apnews.com/article/b36d8ce1b68891e18d165063f57e4c5b",
       "publisher": "Associated Press",
-      "published_at": "2025-11-25",
+      "published_at": "2025-11-18T23:46:08Z",
       "role": "financing precedent"
     },
     {
@@ -72,6 +72,87 @@
       "publisher": "US Department of Energy",
       "published_at": "2026-10-05",
       "role": "prior industry comparison"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "DOE launches UPRISE for existing nuclear fleet",
+      "url": "https://www.energy.gov/ne/articles/nations-nuclear-reactor-fleet-rise",
+      "publisher": "US Department of Energy",
+      "published_at": "2026-03-12",
+      "role": "融资政策先验"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "Constellation and Amazon Calvert Cliffs agreement",
+      "url": "https://www.constellationenergy.com/news/2026/09/constellation-and-amazon-announce-20-year-power-purchase-agreement-at-calvert-cliffs.html",
+      "publisher": "Constellation / Amazon",
+      "published_at": "2026-09-30",
+      "role": "已有项目采购和投资"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "Google on its Constellation uprate agreement",
+      "url": "https://blog.google/company-news/why-were-backing-americas-existing-nuclear-plants/",
+      "publisher": "Google",
+      "published_at": "2026-10-06",
+      "role": "客户回应与承购作用"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Google and Constellation nuclear uprates technical details",
+      "url": "https://www.powermag.com/google-deal-backs-890-mw-of-constellation-nuclear-uprates-at-11-pjm-reactors/",
+      "publisher": "POWER",
+      "published_at": "2026-10-07",
+      "role": "执行与监管路径"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "Constellation and Walmart Dresden PPA",
+      "url": "https://investors.constellationenergy.com/node/10101/pdf",
+      "publisher": "Constellation / Walmart",
+      "published_at": "2026-06-23",
+      "role": "既有非科技承购"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Constellation and Meta Clinton agreement",
+      "url": "https://investors.constellationenergy.com/news-releases/news-release-details/constellation-meta-sign-20-year-deal-clean-reliable-nuclear",
+      "publisher": "Constellation / Meta",
+      "published_at": "2025-06-03",
+      "role": "既有机组及增量"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "Constellation second-quarter 2026 financial results",
+      "url": "https://content-archive.fast-edgar.com/20260806/ACZZI22CZ22232Z2222V22ZSM5DKZV2IAD82/ceg-20260806991.htm",
+      "publisher": "Constellation",
+      "published_at": "2026-08-06",
+      "role": "公司盈利及指引"
+    },
+    {
+      "id": "sources/S16.md",
+      "path": "sources/S16.md",
+      "title": "NRC backgrounder on nuclear power uprates",
+      "url": "https://www.nrc.gov/regulations-legislation/fact-sheets-brochures/backgrounder-on-power-uprates-for-nuclear-plants",
+      "publisher": "Nuclear Regulatory Commission",
+      "published_at": "2022-01",
+      "role": "许可和工程约束"
+    },
+    {
+      "id": "sources/S17.md",
+      "path": "sources/S17.md",
+      "title": "DOE financing prior nuclear project and industry debate",
+      "url": "https://www.axios.com/2026/06/24/trumps-nuclear-loans-energy-doe",
+      "publisher": "Axios",
+      "published_at": "2026-06-24",
+      "role": "融资政策与供给链"
     }
   ],
   "market": {

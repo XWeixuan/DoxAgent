@@ -1,0 +1,10 @@
+{
+  "ready": [
+    "ADD-COHR-FERMI-20261113",
+    "ADD-BE-NEBIUS-20261112",
+    "ADD-RKLB-BERENBERG-20261112",
+    "ADD-RKLB-MS-20261111"
+  ],
+  "errors": [],
+  "clock_unresolved": []
+}

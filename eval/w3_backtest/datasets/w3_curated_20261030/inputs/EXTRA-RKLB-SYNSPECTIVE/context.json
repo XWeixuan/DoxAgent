@@ -1,0 +1,483 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E10",
+        "fact_ids": [
+          "F22",
+          "F23"
+        ]
+      }
+    ],
+    "reason": "当前消息核心事实为：2026年9月30日签署20次全新Electron发射合同，累计Synspective任务达47次，发射窗口2028–2031年，backlog突破100。已加载事实仅覆盖6月17次合同(F23)、16次至2030年的预订(F22)及backlog\"超过90\"(F18)，均未涉及本次20次新签约、47次总量及>100 backlog，构成未覆盖的新核心进展。",
+    "reference_ids": [
+      "E10"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [
+      "pol_6db9f073b136875b7be9"
+    ],
+    "reason": "消息明确陈述Rocket Lab已与Synspective签署20次全新Electron任务的正式合同（\"the largest commercial launch contract for Electron in Rocket Lab's history\"），且具备明确发射窗口：每年2028至2031年、太阳同步轨道、从Launch Complex 1发射20颗StriX SAR卫星。Synspective为重要客户（最早期Electron客户、累计47次任务为所有客户最多），该批次为全新此前未锁定任务，合同具有约束力，非Neutron任务也非框架合同，完整满足C2全部要素。",
+    "policy_hit": true,
+    "policy_related": false,
+    "hit_condition_ids": [
+      {
+        "condition_ids": [
+          "C2"
+        ],
+        "policy_id": "pol_6db9f073b136875b7be9"
+      }
+    ]
+  },
+  "policy_title_rows": [
+    {
+      "policy_id": "pol_7e1d611efd993fb053ba",
+      "title": "Iridium交易在交割前终止"
+    },
+    {
+      "policy_id": "pol_02f0143e06b3f9b081d6",
+      "title": "最终交割资金需求超过当前上沿"
+    },
+    {
+      "policy_id": "pol_8ed74d2639f5e718ec4f",
+      "title": "交易对价转向更高现金或短债"
+    },
+    {
+      "policy_id": "pol_c451d2cc9b8b9764a22c",
+      "title": "Iridium重谈价格或接受替代方案"
+    },
+    {
+      "policy_id": "pol_9b2510287b29e2d1914b",
+      "title": "交易融资条件显著恶化"
+    },
+    {
+      "policy_id": "pol_cf8683cef9c85fbadabc",
+      "title": "提前交割前置现金占用"
+    },
+    {
+      "policy_id": "pol_3dd271d1688f969ba370",
+      "title": "整合切换损害网络与客户留存"
+    },
+    {
+      "policy_id": "pol_9883c3943258c6fd9e47",
+      "title": "监管条件限制网络联合运营"
+    },
+    {
+      "policy_id": "pol_d3189b212721059f6cfa",
+      "title": "Iridium舰队更新协同订单旁落"
+    },
+    {
+      "policy_id": "pol_4611cf2fec38482afa83",
+      "title": "首个联合订单未形成重复采购"
+    },
+    {
+      "policy_id": "pol_5e754dbe6468f13114f9",
+      "title": "Iridium客户拒绝组合服务并流失"
+    },
+    {
+      "policy_id": "pol_5a1a7060302f9d045ade",
+      "title": "接口或网络安全故障迫使整合重构"
+    },
+    {
+      "policy_id": "pol_25fa4440ee2f95469bf2",
+      "title": "Iridium网络遭遇非计划替换事件"
+    },
+    {
+      "policy_id": "pol_51602242ae702c4a4b1d",
+      "title": "联合网络方案赢得新增客户合同"
+    },
+    {
+      "policy_id": "pol_5aed3b10ed453b01a004",
+      "title": "最终债务结构形成超预期利息与到期压力"
+    },
+    {
+      "policy_id": "pol_52bd422b89159f05d665",
+      "title": "购买价摊销与整合费用恶化GAAP每股结果"
+    },
+    {
+      "policy_id": "pol_9c2e28680f7c00a7c29d",
+      "title": "再融资压力迫使再稀释或资产处置"
+    },
+    {
+      "policy_id": "pol_607eeeacba00b71b9d5b",
+      "title": "Iridium现金流被维护与受限用途锁定"
+    },
+    {
+      "policy_id": "pol_e3b356736f1241051361",
+      "title": "资本配置优先扩张并推迟去杠杆"
+    },
+    {
+      "policy_id": "pol_7616b4ee642e15b8d32d",
+      "title": "未披露或有负债增加交易后资本需求"
+    },
+    {
+      "policy_id": "pol_6db9f073b136875b7be9",
+      "title": "任务批次由潜在需求转为正式授权"
+    },
+    {
+      "policy_id": "pol_3f3d90d4056b17646b5e",
+      "title": "重要客户终止导致manifest收缩"
+    },
+    {
+      "policy_id": "pol_04d56b34c690b1313848",
+      "title": "授权与外部接口延误发射窗口"
+    },
+    {
+      "policy_id": "pol_de8300c67bf6f995c01f",
+      "title": "车辆或场地供给拖累已授权manifest"
+    },
+    {
+      "policy_id": "pol_b75de5aa0dcad5e2b82d",
+      "title": "政府采购重排削弱任务授权"
+    },
+    {
+      "policy_id": "pol_4b012c0a3b95c402de27",
+      "title": "客户把Rocket Lab任务转给替代发射路径"
+    },
+    {
+      "policy_id": "pol_9792f4a4d0f388374643",
+      "title": "飞行异常触发机队运营中断"
+    },
+    {
+      "policy_id": "pol_d956d69b10e1287bf700",
+      "title": "HASTE后续任务获得正式验收"
+    },
+    {
+      "policy_id": "pol_6093ebca6053ffde90a8",
+      "title": "HASTE测试失败阻断后续批次"
+    },
+    {
+      "policy_id": "pol_8e64ed4fed4090985fc9",
+      "title": "新发射走廊形成真实可用容量"
+    },
+    {
+      "policy_id": "pol_b81af29bace770509b7e",
+      "title": "外部事件造成多任务窗口停摆"
+    },
+    {
+      "policy_id": "pol_5fbaf3a2a744a10b6c0d",
+      "title": "GHOST/Kodiak完成首次运营发射"
+    },
+    {
+      "policy_id": "pol_eee35dd13fba93bf24b9",
+      "title": "GHOST/Kodiak首发窗口后移"
+    },
+    {
+      "policy_id": "pol_bc1deb510ba7f66da7b4",
+      "title": "GHOST首次运营任务失败"
+    },
+    {
+      "policy_id": "pol_a62085b928b576651a6e",
+      "title": "RSLP任务正式分配至GHOST/Kodiak"
+    },
+    {
+      "policy_id": "pol_80a2bf0a6dcb54d40d45",
+      "title": "RSLP需求退出GHOST/Kodiak"
+    },
+    {
+      "policy_id": "pol_e15cfcd0dae26407002f",
+      "title": "Kodiak地点条件压低有效容量"
+    },
+    {
+      "policy_id": "pol_760973333cf7b8821151",
+      "title": "GHOST快速响应需求超过合格供给"
+    },
+    {
+      "policy_id": "pol_8d06dfc2f17ff446be19",
+      "title": "发射任务异常造成履约成本冲击"
+    },
+    {
+      "policy_id": "pol_5593c6b3158429199d87",
+      "title": "竞争容量压低Electron新签价格"
+    },
+    {
+      "policy_id": "pol_0e348f41a425bb4559c5",
+      "title": "合同责任上升但可收经济恶化"
+    },
+    {
+      "policy_id": "pol_f1867745e4997b38b0f5",
+      "title": "已完成任务现金回收滞后"
+    },
+    {
+      "policy_id": "pol_8345c9b083883b7043e2",
+      "title": "发射异常形成客户赔付义务"
+    },
+    {
+      "policy_id": "pol_81b4fe3dbd2dba00f9f6",
+      "title": "Neutron当前首飞路径被关键门槛后移"
+    },
+    {
+      "policy_id": "pol_114a7e82bfa85d7c3b6a",
+      "title": "Neutron首飞关键技术验证失败"
+    },
+    {
+      "policy_id": "pol_a50029e1c7f80d162a34",
+      "title": "Neutron在当前窗口完成强首飞验证"
+    },
+    {
+      "policy_id": "pol_219a5c2a7c61fe4cd6ff",
+      "title": "首个Neutron客户载荷验收失败"
+    },
+    {
+      "policy_id": "pol_461fb57ef5c2c689f450",
+      "title": "首个Neutron商业任务在轨交付失败"
+    },
+    {
+      "policy_id": "pol_4bfbd70dbbc0c2891a6a",
+      "title": "Neutron重复制造未能兑现客户窗口"
+    },
+    {
+      "policy_id": "pol_66baa0944fe39eb26b78",
+      "title": "后续Neutron飞行异常触发机队停飞"
+    },
+    {
+      "policy_id": "pol_ca64b70d4c0525df3197",
+      "title": "Neutron复用翻修路径失效"
+    },
+    {
+      "policy_id": "pol_3bd362a0dad4f9bce8c5",
+      "title": "竞争替代削弱Neutron目标任务或定价"
+    },
+    {
+      "policy_id": "pol_55fe78e13e122d18d2fe",
+      "title": "首个客户验收后续单撤回"
+    },
+    {
+      "policy_id": "pol_c2f56605c7eb9770b85f",
+      "title": "首飞后认证或保险门槛阻断商业任务"
+    },
+    {
+      "policy_id": "pol_0fee70a50bff9c7405be",
+      "title": "重大固定价合同损失冲击合并毛利"
+    },
+    {
+      "policy_id": "pol_e8eb39d8bc843db74ce5",
+      "title": "重大backlog合同释放后移或失效"
+    },
+    {
+      "policy_id": "pol_59b4e92aac8d93554ba1",
+      "title": "可比后续任务份额转给竞争者或客户内制"
+    },
+    {
+      "policy_id": "pol_66273448741a7253b532",
+      "title": "组合级政府预算重排削弱需求"
+    },
+    {
+      "policy_id": "pol_abfb3b667130265c3e49",
+      "title": "HASTE确认时点造成任务数与毛利背离"
+    },
+    {
+      "policy_id": "pol_392420506930e1913ba4",
+      "title": "关键供应或质量事件冲击毛利"
+    },
+    {
+      "policy_id": "pol_15a3b2b9f159de37ee24",
+      "title": "后续采购降价或风险条款恶化"
+    },
+    {
+      "policy_id": "pol_aac54a8e5b53bf511a48",
+      "title": "合同会计错误重述历史毛利"
+    },
+    {
+      "policy_id": "pol_583b853692d7b67ba250",
+      "title": "新增监管要求推高项目单位成本"
+    },
+    {
+      "policy_id": "pol_a163109a4dbcb4580cb7",
+      "title": "重大合同取消引发退款与资产减值"
+    },
+    {
+      "policy_id": "pol_94c25c69b0a35ce18021",
+      "title": "增长投入上调而现金回收未改善"
+    },
+    {
+      "policy_id": "pol_cccd69ee150fa533b52a",
+      "title": "ATM受阻迫使高成本融资或削减扩张"
+    },
+    {
+      "policy_id": "pol_e5b1ac12eb9172b812dd",
+      "title": "现金改善由投资收缩换取"
+    },
+    {
+      "policy_id": "pol_acd1e9e7c6c5e66a0288",
+      "title": "预收款驱动现金改善但质量未提升"
+    },
+    {
+      "policy_id": "pol_6df780146cf34613c23b",
+      "title": "重大项目交付窗口后移"
+    },
+    {
+      "policy_id": "pol_5a71ab2f696676d0794e",
+      "title": "Space Systems回款推动经营现金转正"
+    },
+    {
+      "policy_id": "pol_62771c207ad7fce271a9",
+      "title": "收购组件整合出现运营断裂"
+    },
+    {
+      "policy_id": "pol_f18d4fc16daa95621a1e",
+      "title": "重大客户履约索赔落地"
+    },
+    {
+      "policy_id": "pol_38b1a288aa3594b48211",
+      "title": "合格产能瓶颈恶化项目经济"
+    },
+    {
+      "policy_id": "pol_ab9d5d2128c8a6ba183e",
+      "title": "平台系统性质量逃逸"
+    },
+    {
+      "policy_id": "pol_c7f54ca111287cffc9b7",
+      "title": "重大backlog提前批量转化"
+    },
+    {
+      "policy_id": "pol_99321ee05d6387b5ec4c",
+      "title": "已转收入合同重大回款失效"
+    },
+    {
+      "policy_id": "pol_3990c137e2010acc209d",
+      "title": "任务架构变更削弱平台份额"
+    },
+    {
+      "policy_id": "pol_122bb609dbe8adef08bc",
+      "title": "Space Systems backlog可执行性下修"
+    },
+    {
+      "policy_id": "pol_42ffc8bcd034ba71b635",
+      "title": "收购带入订单未能转化"
+    },
+    {
+      "policy_id": "pol_d1cd58dfbef400a5a0fd",
+      "title": "新平台发射前关键验收失败"
+    },
+    {
+      "policy_id": "pol_3c2876456eebfbb2176e",
+      "title": "新平台首批在轨目标失败"
+    },
+    {
+      "policy_id": "pol_b9534de3933546eb4b0b",
+      "title": "首批在轨成功带来重复采用"
+    },
+    {
+      "policy_id": "pol_b26b426a29bf7c97f3b3",
+      "title": "Photon LOXSAT演示失败"
+    },
+    {
+      "policy_id": "pol_12730dbdedc7ee1afcce",
+      "title": "平台合同降格为低价值组件供应"
+    },
+    {
+      "policy_id": "pol_7ca9c474e52b25f6a62f",
+      "title": "平台地面或数据安全事件阻断采用"
+    },
+    {
+      "policy_id": "pol_546b475983a277f4431e",
+      "title": "收购组件任务资格失败"
+    },
+    {
+      "policy_id": "pol_0ba7e27c66e56f099a44",
+      "title": "已资格组件量产失稳"
+    },
+    {
+      "policy_id": "pol_6d549ca71da89c7814b0",
+      "title": "外部关键单一来源中断"
+    },
+    {
+      "policy_id": "pol_94e6612a81898ccc27cf",
+      "title": "内部组件形成稳定批量供给"
+    },
+    {
+      "policy_id": "pol_2f924f1e289b5ec98bf0",
+      "title": "跨境合规限制阻断组件交付"
+    },
+    {
+      "policy_id": "pol_86fab545b052e3cf961d",
+      "title": "关键组件系统性在轨缺陷"
+    },
+    {
+      "policy_id": "pol_bd845896ff1af2d44738",
+      "title": "替代架构淘汰收购组件设计份额"
+    },
+    {
+      "policy_id": "pol_897d6790e26dc63f1eb5",
+      "title": "组件客户实质份额转向第二来源"
+    },
+    {
+      "policy_id": "pol_33288d9e3c26f5517bba",
+      "title": "Neutron首飞前地面验证推进"
+    },
+    {
+      "policy_id": "pol_b9b9096ee9373563768a",
+      "title": "Iridium交易取得剩余关键监管批准"
+    }
+  ],
+  "policies": [
+    {
+      "policy_id": "pol_6db9f073b136875b7be9",
+      "title": "任务批次由潜在需求转为正式授权",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "Launch Services任务级授权与已行权options显著增加"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。",
+          "calibration": {
+            "reference_state": "Launch Services backlog为9.402亿美元且manifest超过90项；截至cutoff另有客户已签署五项Neutron专属任务、排期延续至2029年，但该批次的逐项发射窗口及更广泛任务锁定度仍未完全确认。",
+            "trigger_boundary": "已知五项Neutron任务及仅给出多年期限的预订不触发；须确认其之外的重要客户多任务批次，同时具备有约束力的授权或合同和明确发射窗口；新增框架合同不触发。"
+          }
+        }
+      ]
+    }
+  ],
+  "w1_events": [
+    {
+      "canonical_summary": "Rocket Lab and Synspective reported 16 additional dedicated Electron missions booked through 2030, following a June contract described as covering 17 launches.",
+      "derived_from_event_ids": [],
+      "event_id": "E10",
+      "event_type": "MATERIAL_CONTRACT",
+      "facts": [
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F22",
+          "fact_occurred_at": "2026-09-02",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab had 16 additional dedicated Electron missions booked for Synspective through 2030.",
+          "subject_time": "2030"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F23",
+          "fact_occurred_at": "2026-09-03",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Synspective signed a contract for 17 additional Electron launches with Rocket Lab in June 2026.",
+          "subject_time": "2026-06"
+        }
+      ],
+      "known_event_summary": "From June through September 2026, Rocket Lab reported additional Synspective Electron bookings through 2030.",
+      "occurred_at": "2026-06-01..2026-09-04",
+      "occurrence_time_precision": "INTERVAL",
+      "related_event_ids": [
+        "E36"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Rocket Lab secures additional Synspective Electron bookings"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-14T10:16:29Z"
+  }
+}

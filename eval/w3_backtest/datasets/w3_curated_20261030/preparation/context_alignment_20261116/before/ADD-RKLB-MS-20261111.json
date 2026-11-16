@@ -1,0 +1,532 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E188",
+        "fact_ids": [
+          "F491",
+          "F501",
+          "F502",
+          "F516",
+          "F519",
+          "F522"
+        ]
+      },
+      {
+        "event_id": "E189",
+        "fact_ids": [
+          "F525",
+          "F531"
+        ]
+      }
+    ],
+    "reason": "Q3业绩、积压订单、Neutron合同与定价及长期毛利率目标已有记录；但Liwag上调2030年平均售价预估，并给出2030年收入和调整后EBITDA预测等分析师新估计，尚未被覆盖。",
+    "reference_ids": [
+      "E188",
+      "E189",
+      "E252"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [
+      {
+        "condition_ids": [
+          "C1"
+        ],
+        "policy_id": "pol_34cc5ee5c377486b9699f26a5796d4fe"
+      }
+    ],
+    "policy_hit": true,
+    "policy_ids": [
+      "pol_34cc5ee5c377486b9699f26a5796d4fe"
+    ],
+    "policy_related": false,
+    "reason": "Morgan Stanley分析师Liwag给出Overweight评级，并基于新合同价格上调2030年平均售价预测，构成具名卖方对Rocket Lab的明确正面新判断，满足C1。",
+    "related_policy_ids": []
+  },
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-11-10，Rocket Lab 已发布FY2026 Q3结果与Q4指引（E188、E189）：收入2.67834亿美元、同比增长73%，超过公司此前2.50亿–2.65亿美元指引；季度末backlog约35.7亿美元、环比增长52%，新增近10亿美元发射合同，Neutron签约任务达到16项、多个Q3任务按7000万美元新基础价售出，下一可订窗口在2030年代。另一方面，Q3 GAAP净亏损约7968万美元、摊薄每股亏损0.12美元，调整后EBITDA亏损约1805万美元、自由现金流为负2392万美元；Q4收入指引为2.70亿–2.90亿美元、调整后EBITDA仍指引亏损1400万–2000万美元。单季经营现金流转正主要来自可变的卫星项目里程碑回款，不代表持续现金转正。Neutron首飞现为2027年（首飞所需步骤的2027Q1目标来自E114，E188未将其改写）；公司仍承受研发、资格与商业化时点风险。E190的1.5亿美元OSC贷款是首飞后制造升级/回收周转的附条件偿还型承诺，尚未财务交割，不应计作已到账补助或当前资格资金。\n既有具名卖方基线仍包括Raymond James于2026-09-11首次覆盖并给出Outperform/80美元目标价，摘要将其理由联系到Neutron、Iridium/Mynaric机会及执行/整合/利润率风险，并称其预测2027/28年正EBITDA/FCF；原研报和完整模型未取得。Stifel文章正文标注2026-08-17，显示其维持Buy并估计Rocket Lab可能获得Viasat Swarm-1 award的可观份额（潜在高八位数美元机会）；这不是获奖份额、公司指引或新于该正文日期的11月观点。KeyBanc于2026-06-15升级至Overweight/135美元；E116记录其后因Neutron延期下修FY2027收入估计和目标价至100美元、仍维持Overweight。E116还记录Clear Street、Citizens和Goldman Sachs因Neutron延期调整目标/模型但维持各自评级，Cantor与Roth维持积极立场。\n2026-11-10的Q3后分析师响应已纳入当前基线（E193）：Cantor将目标价122→111美元但维持Overweight，并以紧张的运力供给、Rocket Lab竞争位置/积压订单/发射记录为正面理由，称当前价位是Neutron商业化与Iridium交易前的有利买入机会；这项明确正面观点不因目标价下调而消失。Clear Street将105→110美元、维持Buy，并以记录backlog带来的多年业务可见度为由。KeyBanc重申Overweight/100美元并称已在业绩后修订估计（数值/期间未披露），同时提到运力紧张、定价与backlog。Barclays维持Overweight、目标价降至82美元并指出订单和提价；BTIG维持Neutral并以约24倍2027共识销售额对约10.5倍同业估值及待Neutron进展说明审慎立场。以上均为个别卖方判断，不构成一致预期、公司预测或已实现经营结果。",
+            "trigger_boundary": "一次公开、可归属到具名分析师/机构、方向明确的新独立观点即可跨界：新覆盖不需要该机构不存在的旧模型作比较；首次明确的Buy/Outperform等积极推荐或既有明确升级本身足以记录一个新卖方意见，即使摘要没有可量化的年度现金模型。非评级式的概率/时点/风险判断，或只有目标价变化的报告，则须提供足够公开理由把新结论连到RKLB业务/风险，而非只随现价机械调整。无需完整盈利桥、第二家跟随或公司经营兑现。2026-08-17 Stifel维持Buy并估计Rocket Lab可能取得Viasat Swarm-1 award可观份额、对应高八位数美元机会，现为已知的单一分析师历史估计；仅重复或在11月7日等feed日期重新索引/转载该内容，不构成新的观点。相对RJ、Stifel及其他具体已知基线的新估计/风险更新仍需有明确业务理由。若同篇对经营路径与peer估值方法给出相反变化，只在其总体推荐/估值结论或明确主导的新判断仍偏正面时命中；净方向不清时不由下游拼模型，C1不成立。 2026-11-10 E193中的Cantor、Clear Street、KeyBanc等业绩后观点现已是当前基线；同一意见的再次转载、同日财报汇编或只重列已知评级/目标价，不构成新的观点。Cantor下调目标价但明示有利买入判断，Clear Street的上调亦有backlog依据，应以报告明确表达的整体新判断定向，不从目标价单项机械推断。后续若同一机构对经营概率、时点、风险或价值作出相对该基线的真实新判断，仍可满足C1，无需等待实际兑现。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "defdf570619e736b0d89e79fd0d499e3910497cf0008426e31239c3d6fa00b1b",
+          "criterion": "具名卖方机构首次公开给出明确偏正面的Rocket Lab推荐/独立基准，或明确上调其自身既有推荐，或在研报/有出处摘要中提出一项新的有利公司特定概率、时点或价值判断；首次推荐或明确评级上调本身可承载新的独立观点，单纯目标价变化则须能识别新的业务/风险依据，而非只随现价机械调整。",
+          "decision": "LONG",
+          "trigger_layer": "OUTER"
+        },
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-16，公司Neutron首飞基线已由E114更新为2027年，原2026年窗口撤销，替换件使用改良工艺，执行首飞所需步骤目标为2027Q1。E116记录KeyBanc因少一次可产生收入的2027年Neutron发射而下调FY2027收入估计及目标价135→100美元（维持Overweight）；Clear Street将129→105美元（维持Buy）；Citizens将130→90美元（维持Market Outperform），称影响FY2027–FY2028发射货币化；Goldman将75→67美元（维持Neutral），模型采用2027Q2首飞并预计近端费用/现金消耗增加；Cantor维持Overweight/122美元、Roth维持Buy/110美元。2026-10-29 Simply Wall St报告自身估值约105.05→102.15美元并小调营收增速/净利率，但期间不明、不是具名分析师共识，主要沿用已知延期与费用风险。\n2026-11-09 Q3实际披露（E188、E189）现进入基线：收入和订单/backlog强劲，Neutron共16项已签任务，若干新任务按7000万美元基础价；但GAAP亏损/EPS弱于分析师估计，调整后EBITDA与自由现金流仍为负，Q4仍指引亏损，Neutron首飞仍不早于2027年。增长、定价及已签合同不等于利润/现金已兑现；Neutron时间风险仍与财报实际相邻但不可重复计为新信息。\n2026-11-10 E193中的负向基线是Piper Sandler将目标价83→58美元、维持Neutral，称季度稳健但Neutron时点是近期关键指标，尽管发射需求仍强。BTIG维持Neutral，列出约24倍FY2027共识销售估值对比同业约10.5倍，并称待Neutron进一步进展；这不是新评级下调。Roth下调目标价30美元、Craig-Hallum下调20美元，但已提供报告未披露其目标价前后值/评级/理由，不能据此推定负向经营预测。Cantor下调目标价至111美元仍维持Overweight并给出有利买入判断；Barclays降至82美元仍维持Overweight且强调订单/价格，均不能只按目标价方向判为新的负向观点。上述是具名个别报告事实，不是共识。",
+            "trigger_boundary": "一次公开、可归属到具名分析师/机构、方向明确的新不利观点即可跨界：新覆盖首次给出明确偏负的建议，或既有机构明确降级，本身是新的卖方意见，不要求完整年度现金模型；也可由公开的新判断显示推迟重要现金/商业化时点或降低关键路径实现概率。E114已披露的2027年首飞预期及Q1步骤目标，E116已披露的KeyBanc收入/目标价下调、Clear Street目标价下调、Citizens关于FY2027–FY2028货币化的下调及Goldman对2027Q2首飞/更高费用和现金消耗的模型，以及Cantor/Roth的维持立场，均是当前已知基线；对这些内容的复述、旧稿再刊、评级保持或基于历史事实的机械估值重算不触发。2026-10-29 Simply Wall St的估值及增长/利润率模型值也进入基线，但预测期间不明，不能作为共识或公司经营事实；仅重复该更新不构成新的观点。相对这些具体基线的新估计/风险更新仍须有明确业务理由；单纯无新依据的目标价变化或仅因股价移动而改目标价不足。无需公司丢单、实际财务下修或其他分析师跟随。若报告中的一项假设变差但整体结论因其他变化转为更有利，不机械认定SHORT；如经营和peer估值子项方向冲突且报告未表达主导/净结论，则本Condition也不命中。 E193中的Piper Neutron时点论据及83→58美元目标价已是当前C2基线；其后同一切价行动的新闻重述（包括仅重列相同目标价和同一已知理由）不触发。单独的Roth/Craig-Hallum目标价降幅，以及Cantor/Barclays保持积极评级下的目标价下调，也不足以证明新负向总体判断。若日后出现相对此基线的明确新降级、首次负面覆盖，或有出处且连接公司特定经营/风险的实质新下修，仍可触发；不要求其他分析师跟随或等实际经营恶化。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "5a75bd86250434ce76f458b8d01da80bd6379ff0cfa17cf7ad211064c8a12428",
+          "criterion": "具名卖方机构首次公开给出明确偏负面的Rocket Lab推荐/独立基准，或明确下调其自身既有推荐，或在研报/有出处摘要中提出一项新的不利公司特定概率、时点或价值判断；首次推荐或明确评级下调本身可承载新的独立观点，单纯目标价变化则须能识别新的业务/风险依据，而非只随现价机械调整。",
+          "decision": "SHORT",
+          "trigger_layer": "OUTER"
+        }
+      ],
+      "match_scope": "匹配有明确出处、机构与分析师身份的Rocket Lab卖方研究、首次覆盖/独立基准、评级或核心假设更新；例如对Neutron资格与商业化时点、卫星及发射业务的兑现概率、待交割Iridium服务现金/风险，或这些公司特定路径所支撑的投资意见作出新判断。报道摘要可帮助召回，无需取得付费原研报；公司分析师名单只说明谁在跟踪，不是公司预测。通常评级复述、旧报告再刊、只有目标价对现价作机械调整的标题、股价升跌、财报/合同本身，以及仅发生同业倍数换算而未形成新的公司经营观点，不单独命中。",
+      "policy_id": "pol_34cc5ee5c377486b9699f26a5796d4fe",
+      "ref": [
+        "output/work/v21/research/OPEN_RESEARCH/0056/policy_01.json",
+        "context/document3/v21/shared/d1/c1.md",
+        "context/document3/v21/shared/d1/c3.md",
+        "context/document3/v21/shared/d1/c5.md",
+        "context/document3/v21/shared/d1/c4f_future_nodes.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md#股东、监管者与贷款人怎样共同使收购能够完成",
+        "https://investors.rocketlabcorp.com/stock/analyst-coverage",
+        "https://www.tipranks.com/news/the-fly/rocket-lab-initiated-with-an-outperform-at-raymond-james-thefly-news",
+        "context/document3/v21/shared/event_library.md#E114",
+        "context/document3/v21/shared/event_library.md#E116",
+        "context/document3/v21/shared/delta.json#/reference_view_delta",
+        "https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-90-from-130-at-citizens-thefly-news",
+        "https://www.tipranks.com/news/the-fly/rocket-lab-price-target-lowered-to-67-from-75-at-goldman-sachs-thefly-news",
+        "context/document3/v21/shared/maintenance_feed.json#case_4f08ced778ad4a538aea665e9140c139",
+        "context/document3/v21/shared/maintenance_feed.json#case_7307fb641f414ebd9b658de8bfceb96e",
+        "https://stocktwits.com/news-articles/markets/equity/rklb-fly-stocks-soar-premarket-this-analyst-says-space-sector-is-entering-busiest-era-since-first-moon-landing/cZKfLctR7dM",
+        "https://www.investing.com/news/stock-market-news/these-2-space-stocks-were-upgraded-at-keybanc-today-4741604?ampMode=1",
+        "context/document3/v21/shared/maintenance_feed.json#case_7d10269cd3f541f59b94d1624a5e95f1",
+        "https://stocktwits.com/news-articles/markets/equity/rklb-stock-jumps-as-stifel-calls-viasat-deal-another-success/cZYGXNSRJ1C",
+        "context/document3/v21/shared/event_library.md#E188",
+        "context/document3/v21/shared/event_library.md#E189",
+        "context/document3/v21/shared/event_library.md#E190",
+        "context/document3/v21/shared/event_library.md#E193",
+        "context/document3/v21/shared/maintenance_feed.json#case_2804d8e0654f4374b11374af98f4d9b2",
+        "context/document3/v21/shared/maintenance_feed.json#case_7e5e05a933054ab9bd7e8f351e50eefc",
+        "context/document3/v21/shared/maintenance_feed.json#case_bd27c2f97d8f4b6582beff0aa2136c98",
+        "context/document3/v21/shared/maintenance_feed.json#case_c3dc1837fb0b4b4db38f69524f22301d",
+        "context/document3/v21/shared/maintenance_feed.json#case_4f2db48b62664dd0bcfa7e6ed9f60173",
+        "context/document3/v21/shared/maintenance_feed.json#case_839f75a075af40bcbe17460fabac4c2d",
+        "context/document3/v21/shared/maintenance_feed.json#case_bcbe125ce8a3439e83575e6f9b53be6c"
+      ],
+      "title": "卖方对Rocket Lab经营前景与风险的独立新判断",
+      "transmission": "截至2026-11-09，Rocket Lab FY2026 Q3收入为2.67834亿美元、同比增长73%，超过公司此前Q3收入指引；季度末backlog约35.7亿美元、环比增长52%，新增近10亿美元发射合同。公司同时报告Q3 GAAP净亏损约7968万美元、摊薄每股亏损0.12美元、调整后EBITDA亏损约1805万美元、自由现金流为负2392万美元；季度经营现金流虽为正约720万美元，主要受可变的卫星项目里程碑收款推动，前九个月经营现金流仍为负。FY2026 Q4收入指引为2.70亿–2.90亿美元、调整后EBITDA仍预计亏损1400万–2000万美元。这些实际结果和管理层指引方向并不单一，不能相互抵销为单一的盈利结论。\n\nE189披露Q3新增八项Neutron任务、金额超过5.15亿美元，签约backlog为16项，多个任务采用7000万美元基础价，下一可订窗口进入2030年代；Neutron仍预计不早于2027年首飞，资格/制造与现金兑现风险未消失。E190另载OSC对首飞后制造升级、回收运输和缩短周转提供1.5亿美元附条件贷款承诺，财务交割仍待尽调和其他条件，属偿还型贷款，非补助或已到账现金。Iridium交易已由完成的ATM发行提供资金且股东/贷款人已批准部分条件，但交割仍待监管批准。\n\n卖方研究将这些已公开经营路径转成各自的概率、时点和价值判断，是独立于经营消息本身的观察入口。Raymond James 2026-09-11首次覆盖的Outperform观点、正文标注2026-08-17的Stifel维持Buy及Swarm-1高八位数美元潜在份额估计、E116的延期后估计/目标价调整，以及E193的Q3后分析师群组观点均是个别模型或建议，不是公司指引、一致预期或已实现损失/收入。当前卖方一致预期、完整预测模型及同日企业价值/净债务/摊薄分母仍未充分取得；不由下游拼凑价格影响或共识。只有可归属到具名卖方的新独立方向性判断，或与公司特定业务/风险相连的实质新概率、时点或价值更新，才进入相应Condition。"
+    }
+  ],
+  "w1_events": [
+    {
+      "canonical_summary": "Rocket Lab announced eight Q3 Neutron missions worth more than $515 million, growing the signed backlog to 16 missions and raising the base price to $70 million for several missions. The release identified several constellation customers and said the next booking opportunities were in the 2030s.",
+      "derived_from_event_ids": [],
+      "event_id": "E189",
+      "event_type": "MATERIAL_CONTRACT",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F525",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab said it signed eight Neutron launch missions across five constellation operators in FY2026 Q3, worth more than $515 million; the total included the previously announced Kepler and SB-AMTI missions.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F526",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "ICEYE signed for three dedicated Neutron launches beginning in late 2028.",
+          "subject_time": "from late 2028"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F527",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Muon Space signed for two dedicated Neutron launches, one planned for 2029 and one for 2030.",
+          "subject_time": "2029 and 2030"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F528",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Starcloud booked one dedicated Neutron launch planned for 2029.",
+          "subject_time": "2029"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F529",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "One of the eight Q3 Neutron missions was a U.S. Space Force SB-AMTI mission.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F530",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab’s Neutron signed-mission backlog reached 16; the next available launch opportunities for booking were in the 2030s.",
+          "subject_time": "current bookings; 2030s availability"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F531",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab raised Neutron’s base launch price from $55 million to $70 million, and several Q3 missions were sold at the higher base price.",
+          "subject_time": "FY2026-Q3 contracts and current price"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F532",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab attributed the Neutron price increase and backlog growth to strong demand and constrained launch capacity.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F533",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Management said Neutron backlog missions were firm customer commitments with real deposits and cancellation fees; it did not disclose the amounts or fee rates.",
+          "subject_time": "SAME"
+        }
+      ],
+      "known_event_summary": "On 2026-11-09, Rocket Lab announced eight Neutron launch missions worth more than $515 million across five operators; the backlog reached 16, ICEYE booked three launches from late 2028, Muon two in 2029/2030, Starcloud one in 2029, and the next slots were in the 2030s at a $70 million base price.",
+      "occurred_at": "2026-11-09",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E18",
+        "E20",
+        "E21",
+        "E45",
+        "E67",
+        "E76",
+        "E82",
+        "E101",
+        "E114",
+        "E171"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Rocket Lab lands more than $515 million in Q3 Neutron launch contracts"
+    },
+    {
+      "canonical_summary": "Rocket Lab reported record FY2026 Q3 revenue, a $3.57 billion backlog and positive GAAP operating cash flow, then issued Q4 guidance for revenue of $270–290 million. The release and results call also addressed Neutron timing and economics, production and contract metrics, and the still-pending Iridium acquisition.",
+      "derived_from_event_ids": [],
+      "event_id": "E188",
+      "event_type": "EARNINGS_RELEASE",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F491",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported record FY2026 Q3 revenue of $267.834 million, up 73% year over year and $34 million sequentially; this exceeded its prior $250–265 million Q3 revenue guidance.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F492",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab’s FY2026 Q3 revenue of $267.83 million exceeded the analyst revenue estimate cited in the report.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F493",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported a FY2026 Q3 net loss of $79.677 million and diluted loss per share of $0.12, versus $18.257 million and $0.03 per share in FY2025 Q3.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F494",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported FY2026 Q3 GAAP gross profit of $90.071 million and GAAP gross margin of 33.6%.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F495",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported FY2026 Q3 non-GAAP gross margin of 38.4%.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F496",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported a FY2026 Q3 GAAP operating loss of approximately $79.2 million.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F497",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported FY2026 Q3 adjusted EBITDA loss of $18.047 million, with an adjusted EBITDA margin of approximately negative 6.7%.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F498",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported FY2026 Q3 research and development expense of $98.388 million.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F499",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported positive FY2026 Q3 GAAP operating cash flow of $7.2 million, versus $84.1 million of operating cash use in Q2; operating cash flow for the first nine months remained negative $127.3 million.",
+          "subject_time": "FY2026-Q3 and FY2026 first nine months"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F500",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported FY2026 Q3 non-GAAP free cash flow of negative $23.92 million.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F501",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Management attributed the Q3 operating-cash-flow improvement mainly to satellite-program milestone receipts and noted that such receipts are variable.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F502",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "At FY2026 Q3 end, Rocket Lab reported backlog of approximately $3.57 billion, up 52% from Q2 end and a record.",
+          "subject_time": "2026-09-30"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F503",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported nearly $1 billion of new Q3 launch contracts across Electron, HASTE, and Neutron and a total launch backlog of 117 missions.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F504",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported signing $470 million in Space Systems contracts during FY2026 Q3.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "fact_id": "F505",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab guided FY2026 Q4 revenue to $270–290 million, with a midpoint of $280 million.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "fact_id": "F506",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab guided FY2026 Q4 GAAP gross margin to 34%–36% and non-GAAP gross margin to 39%–41%.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "fact_id": "F507",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab guided to a FY2026 Q4 adjusted EBITDA loss of $14–20 million.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "GUIDANCE",
+          "fact_id": "F508",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab guided FY2026 Q4 GAAP operating expenses to $162–168 million.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F509",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "At September 30, 2026, Rocket Lab reported approximately $4.45 billion of cash and cash equivalents; it raised approximately $3.91 billion through ATM equity sales in the first nine months of 2026.",
+          "subject_time": "2026-09-30 and FY2026 first nine months"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F510",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported FY2026 Q3 Space Systems revenue of $214.8 million and Launch Services revenue of $53.1 million.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F511",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab said its current rocket manufacturing rate was one rocket every eight days, 37.5% faster than a year earlier.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "fact_id": "F512",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab expected 32.9% of its Q3-end backlog, approximately $1.17 billion, to convert to revenue within the following 12 months.",
+          "subject_time": "12 months after 2026-09-30"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F513",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Management attributed Q3 gross margin above guidance to a full-quarter contribution from the acquired laser-communications business and stronger solar and optical-systems margins.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F514",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Management attributed sequential Q3 gross-margin decline to a mix shift toward lower-margin satellite platforms and the non-recurrence of Q2 one-time revenue recognition and launch-cancellation-fee income.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F515",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Twelve Rocket Lab-built spacecraft entered orbit in FY2026 Q3, including eight satellite platforms for Globalstar’s direct-to-device constellation.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F516",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab said more than 55 spacecraft were in development and build across its production complexes.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F517",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab furnished its FY2026 Q3 financial-results press release as Exhibit 99.1 to a Form 8-K.",
+          "subject_time": "FY2026-Q3 ended 2026-09-30"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F518",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab reported the pending Iridium acquisition was fully funded through a completed ATM equity offering, Iridium lenders had approved retaining the credit facility after closing, and Iridium shareholders had approved the transaction.",
+          "subject_time": "SAME"
+        },
+        {
+          "assertion_state": "PLAN",
+          "fact_id": "F519",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab’s November 9 results release reiterated that Neutron’s first launch was targeted for no earlier than 2027.",
+          "subject_time": "no earlier than 2027"
+        },
+        {
+          "assertion_state": "SCHEDULED",
+          "fact_id": "F520",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab scheduled its FY2026 Q3 financial-results webcast for 5:00 p.m. ET on November 9, 2026.",
+          "subject_time": "2026-11-09T17:00:00-05:00"
+        },
+        {
+          "assertion_state": "PLAN",
+          "fact_id": "F521",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab said it wants to reserve approximately half of Neutron’s longer-term capacity for its own services.",
+          "subject_time": "longer term"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "fact_id": "F522",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab expected Neutron to achieve non-GAAP gross margin above 50% over the longer term.",
+          "subject_time": "longer term"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F523",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab disclosed that it had recorded an expected loss provision for the Neutron second-flight vehicle in FY2026 Q3; no amount was disclosed.",
+          "subject_time": "FY2026-Q3"
+        },
+        {
+          "assertion_state": "EXPECTED",
+          "fact_id": "F524",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Rocket Lab’s CFO said adjusted EBITDA was expected to turn positive within six months after Neutron’s first successful flight, while cash-flow breakeven would come later and depend on fleet-expansion investment.",
+          "subject_time": "after Neutron’s first successful flight"
+        }
+      ],
+      "known_event_summary": "On 2026-11-09, Rocket Lab reported FY2026 Q3 revenue of $267.834 million (+73% YoY), net loss of $79.677 million and diluted loss per share of $0.12; quarter-end backlog was $3.57 billion (+52%), with Q4 revenue guidance of $270–290 million and adjusted EBITDA loss guidance of $14–20 million.",
+      "occurred_at": "2026-11-09",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E22",
+        "E72",
+        "E90",
+        "E94",
+        "E171"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": "E129",
+      "title": "Rocket Lab reports FY2026 Q3 results and Q4 guidance"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Morgan Stanley",
+          "Rocket Lab"
+        ],
+        "occurrence_date": "2026-11-11",
+        "proposition": "Morgan Stanley lowered its price target for Rocket Lab by $2.",
+        "subject_time": null
+      },
+      "known_before_current_message": true,
+      "provisional_event_id": "E252",
+      "semantic_day": "2026-11-11"
+    }
+  ],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": true,
+    "related_has_new_fact": false
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-12T08:45:17.165493Z"
+  }
+}

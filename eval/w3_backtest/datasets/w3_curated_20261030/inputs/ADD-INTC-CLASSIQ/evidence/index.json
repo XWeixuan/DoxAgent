@@ -45,6 +45,96 @@
       "publisher": "Intel / SEC",
       "published_at": "2026-07-23",
       "role": "公司财务规模"
+    },
+    {
+      "id": "sources/S06.md",
+      "path": "sources/S06.md",
+      "title": "Intel to Acquire Classiq to Create a Full-stack Quantum Computing Platform",
+      "url": "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-classiq-accelerate-scalable-quantum-computing.html",
+      "publisher": "Intel",
+      "published_at": "2026-10-26",
+      "role": "收购原发"
+    },
+    {
+      "id": "sources/S07.md",
+      "path": "sources/S07.md",
+      "title": "Quantum Computing at the BMW Group",
+      "url": "https://www.bmwgroup.com/en/news/allgemein/2025/quantum-computing.html",
+      "publisher": "BMW Group",
+      "published_at": "2025-02-04",
+      "role": "客户应用与行业阶段"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Intel Releases Quantum Software Development Kit Version 1.0",
+      "url": "https://download.intel.com/newsroom/archive/2025/en-us-2023-02-28-intel-releases-quantum-software-development-kit-version-10-to-grow-developer-ecosystem.pdf",
+      "publisher": "Intel",
+      "published_at": "2023-02-28",
+      "role": "既有软件平台"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Classiq collaborates with Hewlett Packard Enterprise on Hybrid Quantum Simulation",
+      "url": "https://www.classiq.io/insights/classiq-collaborates-with-hewlett-packard-enterprise-on-hybrid-quantum-simulation",
+      "publisher": "Classiq",
+      "published_at": "2024-05-29",
+      "role": "软件与高性能计算"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "Intel and QuTech Collaborate to Produce Silicon Qubits at Scale",
+      "url": "https://download.intel.com/newsroom/archive/2025/en-us-2022-04-14-intel-and-qutech-collaborate-to-produce-silicon-qubits-at-scale.pdf",
+      "publisher": "Intel",
+      "published_at": "2022-04-14",
+      "role": "芯片研究基础"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "NTT DOCOMO BUSINESS and Classiq enter strategic business partnership",
+      "url": "https://www.ntt.com/en/about-us/press-releases/news/article/2026/1008.html",
+      "publisher": "NTT DOCOMO BUSINESS",
+      "published_at": "2026-10-08",
+      "role": "日本渠道与产品"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Classiq and Sumitomo explore quantum Monte Carlo for finance",
+      "url": "https://www.classiq.io/insights/classiq-powers-quantum-breakthrough-with-sumitomo-corporation-and-mizuho-dl-financial-technology",
+      "publisher": "Classiq",
+      "published_at": "2025-03-25",
+      "role": "金融研究案例"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "Classiq platform integrated with Amazon Braket",
+      "url": "https://www.classiq.io/insights/explore",
+      "publisher": "Classiq",
+      "published_at": "2022-06-02",
+      "role": "多硬件渠道"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Classiq and ParityQC partner on quantum execution",
+      "url": "https://www.classiq.io/insights/classiq-and-parityqc-partner-to-optimize-and-streamline-quantum-execution",
+      "publisher": "Classiq / ParityQC",
+      "published_at": "2026-07-15",
+      "role": "技术限制与伙伴"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "IBM and AMD partner on quantum computing",
+      "url": "https://www.axios.com/2025/08/26/ibm-amd-quantum-computing",
+      "publisher": "Axios",
+      "published_at": "2025-08-26",
+      "role": "竞争技术路线"
     }
   ],
   "market": {

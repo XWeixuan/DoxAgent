@@ -34,7 +34,7 @@
       "title": "Synspective and Rocket Lab sign ten launch agreement",
       "url": "https://www.synspective.com/news/launch-agreement-rocketlab/",
       "publisher": "Synspective",
-      "published_at": "2024-06-27",
+      "published_at": "2024-06-18",
       "role": "既有合同"
     },
     {
@@ -43,7 +43,7 @@
       "title": "Rocket Lab and Synspective strike another 10-launch deal",
       "url": "https://rocketlabcorp.com/updates/rocket-lab-and-synspective-strike-another-10-launch-deal-boosting-contracted-missions-to-21-electron-launches/",
       "publisher": "Rocket Lab",
-      "published_at": "2025-09-18",
+      "published_at": "2025-09-29",
       "role": "既有合同"
     },
     {
@@ -72,6 +72,60 @@
       "publisher": "Rocket Lab / SEC",
       "published_at": "2026-08-10",
       "role": "业务与先前积压基线"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "MISSION SUCCESS: Rocket Lab Launches 97th Electron Mission",
+      "url": "https://rocketlabcorp.com/updates/mission-success-rocket-lab-launches-97th-electron-mission/",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-09-26",
+      "role": "同期履约与累计数"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "MISSION SUCCESS: Rocket Lab Launches 96th Electron Mission",
+      "url": "https://rocketlabcorp.gcs-web.com/news-releases/news-release-details/mission-success-rocket-lab-launches-96th-electron-mission",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-09-19",
+      "role": "临近发射及剩余合同"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "Rocket Lab Secures Multi-Launch Deal with iQPS",
+      "url": "https://rocketlabcorp.com/updates/rocket-lab-secures-multi-launch-deal-with-iqps-for-three-dedicated-missions/",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-07-30",
+      "role": "其他客户与发射时段竞争"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Rocket Lab’s Biggest Launch Deal Yet",
+      "url": "https://rocketlabcorp.com/updates/rocket-labs-biggest-launch-deal-yet-confidential-customer-books-multiple-neutron-and-electron-launches/",
+      "publisher": "Rocket Lab",
+      "published_at": "2026-05-07",
+      "role": "先前合同与积压口径"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "Rocket Lab fiscal Q2 2026 Form 10-Q, launch economics",
+      "url": "https://investors.rocketlabcorp.com/static-files/a801ee07-b95a-4ddc-aec4-5c28d189184f",
+      "publisher": "Rocket Lab / SEC",
+      "published_at": "2026-08-10",
+      "role": "平均任务价格定义"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Rocket Lab Q2 2026 Form 10-Q, contract and development context",
+      "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000062/rklb-20260630.htm",
+      "publisher": "Rocket Lab / SEC",
+      "published_at": "2026-08-10",
+      "role": "跨业务规模和其他合同"
     }
   ],
   "market": {

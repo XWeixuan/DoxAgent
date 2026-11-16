@@ -117,7 +117,7 @@ def test_shared_mother_fresh_children_and_no_operations(
             )
             if phase == "w3_template":
                 assert not origins
-                assert payload == dict(template_format="w3-entry-v5")
+                assert payload == dict(template_format="w3-entry-v6")
                 return {"ready": True}, SimpleNamespace(job_id="mother", thread_id="mother")
             return dict(
                 decision="LONG", reason="r", prior_expectation="p", expectation_delta="d"
@@ -147,7 +147,7 @@ def test_shared_mother_fresh_children_and_no_operations(
         p = prompts / name
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text("instructions")
-    write(prompts / "contract.json", dict(w3_contract_version="persistent-runtime.w3.v5"))
+    write(prompts / "contract.json", dict(w3_contract_version="persistent-runtime.w3.v6"))
     for key in ("C1", "C2"):
         raw = dict(
             case_key=key,
@@ -165,7 +165,7 @@ def test_shared_mother_fresh_children_and_no_operations(
             folder / "market_view.json",
             dict(
                 observed_at=raw["as_of"],
-                series={n: dict(rows=[[1]]) for n in ("daily", "hourly", "fine")},
+                series={n: dict(rows=[["2026-10-26T04:00:00+00:00"]]) for n in ("daily", "hourly", "fine")},
             ),
         )
     research = dataset / "research/r"

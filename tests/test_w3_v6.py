@@ -135,7 +135,7 @@ def test_v6_real_runner_injects_operations_only_at_phase(tmp_path):
     case.frozen_inputs["w3_assets"] = {
         "w3/AGENTS.md": "shared",
         "w3/skills/skill.md": "trade-only",
-        "w3/operations.md": "OPERATIONS_FROZEN_TEXT",
+        "w3/skills/operations.md": "OPERATIONS_FROZEN_TEXT",
     }
     case.frozen_inputs["w3_contracts"] = {"w3_entry_version": "w3-entry-v6"}
     j = RuntimeJournal(tmp_path / "r.db")
@@ -334,13 +334,13 @@ def test_bundle_requires_real_ops_asset_and_freezes_three_files(tmp_path):
     assets = {
         "w3/AGENTS.md": "common",
         "w3/skills/skill.md": "trade",
-        "w3/operations.md": "W3_OPERATIONS_PLACEHOLDER",
+        "w3/skills/operations.md": "W3_OPERATIONS_PLACEHOLDER",
     }
     with pytest.raises(ValueError, match="placeholder"):
         bundles.publish(
             prompts, assets=assets, orchestration_revision=3, w3_contract_version=W3_V6_CONTRACT
         )
-    assets["w3/operations.md"] = "ops-only"
+    assets["w3/skills/operations.md"] = "ops-only"
     key = bundles.publish(
         prompts,
         assets=assets,
@@ -348,9 +348,9 @@ def test_bundle_requires_real_ops_asset_and_freezes_three_files(tmp_path):
         w3_contract_version=W3_V6_CONTRACT,
         activate=False,
     )
-    assets["w3/operations.md"] = "later"
+    assets["w3/skills/operations.md"] = "later"
     saved = bundles.get(key)
-    assert saved["assets"]["w3/operations.md"] == "ops-only"
+    assert saved["assets"]["w3/skills/operations.md"] == "ops-only"
     assert saved["contracts"]["w3_entry_version"] == "w3-entry-v6"
     assert set(saved["contracts"]["w3_operations_schema"]["properties"]) == {
         "pin_actions",
@@ -653,7 +653,8 @@ def test_v6_replay_freezes_operations_and_isolates_research(tmp_path, monkeypatc
     from tests.test_w3_backtest_runner import fixture
 
     dataset, runner, worker, _ = fixture(tmp_path, monkeypatch, contract=W3_V6_CONTRACT)
-    (runner.prompt_root / "operations.md").write_text("FROZEN_OPERATIONS", encoding="utf8")
+    (runner.prompt_root / "skills").mkdir(exist_ok=True)
+    (runner.prompt_root / "skills/operations.md").write_text("FROZEN_OPERATIONS", encoding="utf8")
     store = W3ResearchStore(tmp_path / "research")
 
     async def prepare(ticker, components):
@@ -697,3 +698,11 @@ def test_v6_replay_freezes_operations_and_isolates_research(tmp_path, monkeypatc
     assert not trade.data_mcp_enabled and trade.web_search_mode == "disabled"
     assert json.loads(trade.prompt)["input"]["recent_trade"] == []
     assert "RECENT_TRADE" not in result["labels"]["additional_tags"]
+
+
+def test_operations_asset_new_location_and_old_frozen_case():
+    from doxagent.persistent_runtime_v2.w3_assets import operations_asset
+
+    assert operations_asset({"w3/skills/operations.md":"new"}) == "new"
+    assert operations_asset({"w3/operations.md":"frozen-old"}) == "frozen-old"
+    assert operations_asset({"w3/skills/operations.md":"new", "w3/operations.md":"old"}) == "new"

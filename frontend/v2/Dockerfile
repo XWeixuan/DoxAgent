@@ -12,5 +12,8 @@ ARG DOXAGENT_BUILD_COMMIT=unversioned
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT}
 COPY frontend/v2/deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/frontend/v2/dist /usr/share/nginx/html
+RUN find /usr/share/nginx/html -type d -exec chmod 755 {} + \
+ && find /usr/share/nginx/html -type f -exec chmod 644 {} +
+COPY --chmod=0755 frontend/v2/deploy/healthcheck.sh /usr/local/bin/doxagent-web-healthcheck
 EXPOSE 80
-HEALTHCHECK --interval=15s --timeout=3s --retries=3 CMD wget -q -O /dev/null http://127.0.0.1/api/doxagent/v2/auth/config || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 CMD /usr/local/bin/doxagent-web-healthcheck

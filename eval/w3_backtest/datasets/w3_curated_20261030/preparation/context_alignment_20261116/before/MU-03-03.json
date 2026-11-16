@@ -1,0 +1,120 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E217",
+        "fact_ids": [
+          "F1029",
+          "F1030"
+        ]
+      }
+    ],
+    "reason": "消息包含两个尚未被覆盖的核心事实：(1) WSTS 八月数据显示 memory 销售增长 36%、DRAM 价格升 8%、NAND 价格升 5%，这一月度聚合数据点不在任何已加载 Fact 中；(2) Circular Technologies 分析师 Brad Gastwirth 给出的 Q4 预测为 DRAM 15%-20%、NAND 12%-20%，与 E217 中 F1029（DRAM 10%-15%）和 F1030（NAND 15%-20%）存在明确数值差异，且来源和发布时间不同。",
+    "reference_ids": [
+      "E217"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为Barron's股价评论，核心事实包括：Micron股价周一微跌1.2%、上周公布强劲财报但投资者对持续性存疑、WSTS数据确认8月DRAM/NAND价格分别上涨8%/5%、分析师预测Q4 DRAM涨15-20%/NAND涨12-20%、\"定价持续走高即使消费端走弱\"、长期供货协议仍是客户沟通重点。所有criterion关注的触发路径（如高价值组合份额下降、ASP环比转跌、产能/交付瓶颈、合同延期/退款、库存增速超收入、产品召回/资格重置、汽车项目节点、竞争供应商HBM份额上升、FY27指引偏差、卖方EPS上调含新旧值等）在本消息中均无对应具体事实；消息实际呈现的价格与需求状态与多数触发条件方向相反。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "Memory forecasts pointed to higher contract prices, persistent server bottlenecks, and a large but undersupplied HBM market.",
+      "derived_from_event_ids": [],
+      "event_id": "E217",
+      "event_type": "SUPPLY_DEMAND_UPDATE",
+      "facts": [
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1029",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "DRAM contract prices were expected to rise approximately 10% to 15% sequentially in the fourth quarter of 2026.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1030",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "NAND contract prices were expected to rise approximately 15% to 20% sequentially in the fourth quarter of 2026.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1031",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Enterprise SSDs were the only memory category expected to accelerate because of AI inference demand.",
+          "subject_time": "FY2026-Q4"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1032",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Enterprise SSD bits were expected to grow approximately 80% in 2026.",
+          "subject_time": "FY2026"
+        },
+        {
+          "assertion_state": "ONGOING",
+          "fact_id": "F1033",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Server DRAM remained in shortage.",
+          "subject_time": "FY2026-FY2027"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1034",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Memory demand was expected to exceed supply by approximately three times through 2027 and 2028.",
+          "subject_time": "FY2027-FY2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1035",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Agentic AI was expected to drive server DRAM and DDR5 demand while NAND remained a bottleneck.",
+          "subject_time": "FY2027-FY2028"
+        },
+        {
+          "assertion_state": "FORECAST",
+          "fact_id": "F1036",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "The HBM market was forecast at approximately $160 billion in 2027 and $282 billion in 2028, with shortage rates near 20%, 19%, and 16% across the forecast period.",
+          "subject_time": "FY2027-FY2028"
+        }
+      ],
+      "known_event_summary": "Forecasts covered fourth-quarter DRAM and NAND price increases, enterprise-SSD demand, server-memory constraints, multi-year demand exceeding supply, and HBM market growth through 2028.",
+      "occurred_at": "2026-09-30",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E4",
+        "E11",
+        "E110",
+        "E198",
+        "E137"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Memory supply and HBM market outlook tightened"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

@@ -1,0 +1,799 @@
+{
+  "cases": [
+    {
+      "case_key": "BE-01-01",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "BE-02-01",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "BE-02-02",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "BE-02-03",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "BE-02-05",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "BE-03-01",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "BE-03-03",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "BE-03-05",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "INTC-01-01",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "INTC-01-02",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "INTC-01-04",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "INTC-01-05",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "INTC-02-01",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "INTC-02-02",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "INTC-02-03",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-01-01",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-01-03",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-01-04",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-01-05",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-02-02",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-02-03",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-02-05",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-03-01",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-03-02",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-03-03",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-03-04",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "MU-03-05",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "RKLB-01-02",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "EXTRA-INTC-OPENAI",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "EXTRA-INTC-TERAFAB",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "EXTRA-RKLB-SYNSPECTIVE",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "EXTRA-RKLB-NASA",
+      "source": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\w3_backtest\\datasets\\w3_history_20261014\\inputs\\EXTRA-RKLB-NASA\\case.json",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-COHR-SPIL",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-NBIS-CITI",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-INTC-HAMAS",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-SNOW-EVERCORE",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-COHR-CORNING",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-CEG-DOE",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-SNOW-OCI",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-INTC-CLASSIQ",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-INTC-ORACLE",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-INTC-NEWSTREET",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-NBIS-BETHUNE",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-AMZN-Q3-2026",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-MPWR-Q3-2026",
+      "source": "remote_frozen_case",
+      "provided": [
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-COHR-FERMI-20261113",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-BE-NEBIUS-20261112",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-RKLB-BERENBERG-20261112",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    },
+    {
+      "case_key": "ADD-RKLB-MS-20261111",
+      "source": "remote_frozen_case",
+      "provided": [
+        "alignment",
+        "policies",
+        "policy_title_rows",
+        "research_cutoffs",
+        "w1_assessment",
+        "w1_events",
+        "w2_assessment"
+      ],
+      "missing": [
+        "pins",
+        "recent_trade"
+      ]
+    }
+  ],
+  "remote_error": null
+}

@@ -1,0 +1,78 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E52",
+        "fact_ids": [
+          "F372"
+        ]
+      }
+    ],
+    "reason": "OpenAI ARR 从已知约 $40B（F372）跃升至近 $70B，且企业端销售自 7 月以来增长超 100%、Q3 消费者订阅收入超过整个 2025 年、OpenAI 与 Anthropic 正筹备潜在 IPO——均为 E52 已加载事实未覆盖的新核心进展。",
+    "reference_ids": [
+      "E52"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息报道OpenAI企业收入增长推动ARR接近700亿美元，属于AI服务商业务层面的宏观需求信号。该消息未涉及Micron的任何具体指标（CMBU/CDBU占比、HBM出货、ASP、毛利率、费用结构）、产品资格或交付状态、战略合同条款、扩产项目进展，也未直接披露服务器/HBM合同价格、内存供给约束或竞争供应商份额变化。与现有Policy criteria之间仅存在\"AI行业整体需求强\"这一宽泛主题层面的间接关联，缺乏具体、直接的触发事实对应，不满足Candidate召回标准。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "Anthropic and OpenAI disclosed rapid revenue growth and expanding enterprise demand, reinforcing the external AI-infrastructure demand path for Micron memory.",
+      "derived_from_event_ids": [],
+      "event_id": "E52",
+      "event_type": "SUPPLY_DEMAND_UPDATE",
+      "facts": [
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F371",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Anthropic's second-quarter 2026 revenue exceeded $11.5 billion, more than 14 times the prior-year level.",
+          "subject_time": "FY2026-Q2"
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F372",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "OpenAI's annualized revenue run rate reached approximately $40 billion.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F373",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "OpenAI's enterprise business generated more revenue than its consumer segment.",
+          "subject_time": null
+        }
+      ],
+      "known_event_summary": "2026-08-14..2026-09-14 AI-customer demand update: Anthropic revenue exceeded $11.5 billion, OpenAI reached a $40 billion annualized run rate, and enterprise revenue exceeded consumer revenue.",
+      "occurred_at": "2026-08-14..2026-09-14",
+      "occurrence_time_precision": "INTERVAL",
+      "related_event_ids": [
+        "E4",
+        "E28",
+        "E29"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Anthropic and OpenAI reported accelerating AI demand"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

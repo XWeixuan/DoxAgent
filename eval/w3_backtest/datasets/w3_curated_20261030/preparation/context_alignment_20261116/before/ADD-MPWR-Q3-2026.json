@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前没有加载任何 Canonical 或 provisional Facts，消息中的 Q3 2026 收入、利润率、每股收益、Q4 2026 业绩指引及新增 5 亿美元股份回购授权均未被已知事实覆盖，构成新的核心进展。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": false,
+    "reason": "MPS财报仅披露高电压产品组合扩展及面向800V数据中心架构的GaN方案开始送样，并称其补充现有SiC设计；未出现具名数据中心运营商或供电OEM就中压AC至800/1500VDC主转换作出的有约束生产选择/部署承诺，也未提及Coherent厚外延的生产级设计资格。仅800V架构及器件送样不足以落入该Policy的主转换范围。",
+    "related_policy_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-16T22:02:56.508969Z"
+  }
+}

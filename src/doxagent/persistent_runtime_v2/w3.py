@@ -1011,7 +1011,42 @@ class CodexW3AgentRunner:
                     exc.w3_step = "MATERIALIZE"
                 raise
 
-    def _observe_phase_job(self, case, phase, job):
+    def run_trade_pair(self, *, case, records, payload, context, research, save):
+        async def pair():
+            shared = {"ready": asyncio.Event()}
+
+            async def branch(label, record):
+                try:
+                    if label == "B" and "A" in records:
+                        await shared["ready"].wait()
+                        if "error" in shared:
+                            raise shared["error"]
+                    result, job = await self._run_phase(
+                        case=case,
+                        record=record,
+                        phase="trade_decision",
+                        payload=dict(payload),
+                        context=context,
+                        research=research,
+                        shared_trade=shared,
+                    )
+                    await write_io(self._journal.path, save, label, result, job, priority=0, retry=True)
+                except BaseException as exc:
+                    if not shared["ready"].is_set():
+                        shared["error"] = exc
+                        shared["ready"].set()
+                    raise
+
+            results = await asyncio.gather(
+                *(branch(k, v) for k, v in records.items()), return_exceptions=True
+            )
+            for value in results:
+                if isinstance(value, BaseException):
+                    raise value
+
+        return self._wait_v4(pair(), key=case.case_id + ":trade-pair")
+
+    def _observe_phase_job(self, case, phase, job, branch_key=None):
         # Live UI progress is auxiliary; a busy business writer must never hold
         # the model result/SSE reader behind this optional status update.
         if phase != "trade_decision" or job.status not in {"queued", "running"} or self._case_repository is None:
@@ -1021,9 +1056,10 @@ class CodexW3AgentRunner:
 
         state = dict(status="RUNNING" if job.status == "running" else "PENDING",
                      phase=phase, step=job.execution_phase, worker_job_id=job.job_id)
-        case.error_code = case.error_message = None
-        case.updated_at = self._journal.clock()
-        case.frozen_inputs["w3_execution_state"] = state
+        if branch_key is None:
+            case.error_code = case.error_message = None
+            case.updated_at = self._journal.clock()
+            case.frozen_inputs["w3_execution_state"] = state
         payload = encode(state)
         gate = write_lock(self._journal.path)
         if not gate.acquire(blocking=False):
@@ -1033,7 +1069,7 @@ class CodexW3AgentRunner:
                 with self._journal.transaction(timeout=0, operation="w3.progress", expand=False) as db:
                     db.execute("INSERT INTO runtime_values VALUES('w3_job_state',?,?) "
                                "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
-                               (case.case_id, payload))
+                               (case.case_id if branch_key is None else case.case_id+':'+branch_key, payload))
             except Exception as exc:
                 if not is_sqlite_contention(exc):
                     raise
@@ -1041,7 +1077,7 @@ class CodexW3AgentRunner:
             gate.release()
 
     async def _run_phase_materialized(
-        self, *, case, record, phase, payload, context=None, research=None
+        self, *, case, record, phase, payload, context=None, research=None, shared_trade=None
     ):
         from .journal import digest
         from .w3_contracts import (
@@ -1231,8 +1267,8 @@ class CodexW3AgentRunner:
                             deadline_at=case.frozen_inputs.get("w3_deadline_at"),
                         )
                         if is_pin_watch_contract(case.w3_contract_version):
-                            manifest['research_scope'] = SCOPE
-                            manifest['components'] = {k:v for k,v in manifest['components'].items() if k in {'d1','d2'}}
+                            from .w3_v6 import scoped_manifest
+                            manifest = scoped_manifest(manifest)
                             manifest['input_projection_issues'] = [
                                 dict(field='policies.cutoff', policy_title=p['title'],
                                      reason='no_frozen_policy_provenance')
@@ -1293,7 +1329,7 @@ class CodexW3AgentRunner:
             )
             if replay_instructions:
                 task["instruction"] = (
-                    "继承 AGENTS.md、唯一 Skill 与 backtest.md；按 input.as_of 冻结时点，"
+                    "继承 AGENTS.md、唯一 Skill 与 backtest.md；按 input.cutoff_at 冻结时点，"
                     "只完成本轮决策。通过 w3_research 读取本 Case 已提供的历史资料及行情。"
                 )
             if phase != "w3_template":
@@ -1396,7 +1432,14 @@ class CodexW3AgentRunner:
                 else ""
             ) + json.dumps(task, ensure_ascii=False)
             if phase == OPERATIONS_PHASE and is_pin_watch_contract(case.w3_contract_version):
-                prompt = assets['w3/operations.md'] + '\n\n' + prompt
+                from .w3_assets import operations_asset
+                prompt = operations_asset(assets) + '\n\n' + prompt
+        if shared_trade is not None:
+            if not shared_trade['ready'].is_set():
+                shared_trade.update(prompt=prompt, schema=schema)
+                shared_trade['ready'].set()
+            else:
+                prompt, schema = shared_trade['prompt'], shared_trade['schema']
         profile = execution_profile(
             case,
             model=self._model,
@@ -1466,7 +1509,8 @@ class CodexW3AgentRunner:
                 },
             )
             registry = W3ThreadRegistry(self._journal)
-            stage = await read_io(registry.stage, case.case_id, phase)
+            stage_key = record.get('stage_key',phase)
+            stage = await read_io(registry.stage, case.case_id, stage_key)
             refs = stage.get("input_refs") or {}
             saved = refs.get("prepare_request")
             if saved:
@@ -1482,7 +1526,7 @@ class CodexW3AgentRunner:
                     with self._journal.transaction(operation="stage.prepare_request") as db:
                         db.execute(
                             "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
-                            (json.dumps(refs), case.case_id, phase),
+                            (json.dumps(refs), case.case_id, stage_key),
                         )
 
                 await write_io(self._journal.path, save_prepare, retry=True)
@@ -1506,7 +1550,8 @@ class CodexW3AgentRunner:
             source_case_id=case.case_id
             if phase == "w3_template" and not case.case_id.startswith("public-")
             else None,
-            on_update=(lambda job: self._observe_phase_job(case, phase, job))
+            on_update=(lambda job: self._observe_phase_job(case, phase, job,
+                       record.get('stage_key') if shared_trade is not None else None))
             if phase == "trade_decision" else None,
             repair_output=phase == OPERATIONS_PHASE,
             on_recovery=getattr(self, '_recovery_notifier', None),

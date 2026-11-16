@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息的核心事实是：Nvidia披露Anthropic合同价值超过1800亿美元。现有Facts中，E52记录的是Anthropic自身季度营收（~$11.5B），E55是Nvidia与资产管理公司的$500B融资交易，E96是科技公司整体>7000亿美元AI基建承诺，均不包含Nvidia披露的Anthropic具体合同金额$180B这一事实命题。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息核心事实为Nvidia披露与Anthropic的合同价值超1800亿美元，属于AI基础设施行业宏观订单规模的公开信息。该消息未涉及Micron的HBM/数据中心组合指标、竞争供应商HBM份额、DRAM/NAND价格、产品资格、产能、合同交付、汽车平台或任何具体Policy criterion所关注的Micron相关财务或运营事实。仅存在AI行业的宽泛主题关联，不构成任何Policy的trigger path。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

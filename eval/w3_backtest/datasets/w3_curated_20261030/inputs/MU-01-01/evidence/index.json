@@ -72,6 +72,69 @@
       "publisher": "Micron",
       "published_at": "2026-06-24",
       "role": "财报与业务规模"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Samsung Ships Industry-First Commercial HBM4",
+      "url": "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+      "publisher": "Samsung",
+      "published_at": "2026-02-12",
+      "role": "原有竞品生产与工艺"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "SK hynix Ships Samples of 12-Layer Next-Gen HBM4E",
+      "url": "https://news.skhynix.com/en/sk-hynix-ships-samples-of-12-layer-next-gen-hbm4e-2/",
+      "publisher": "SK hynix",
+      "published_at": "2026-06-18",
+      "role": "另一竞争者产品状态"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "HBM Market Bulletin - June 23, 2026",
+      "url": "https://www.trendforce.com/research/download/RP260623IP3",
+      "publisher": "TrendForce",
+      "published_at": "2026-06-23",
+      "role": "既有资格与供应观点"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "HBM Industry Analysis - 3Q26",
+      "url": "https://www.trendforce.com/research/download/RP260805KC3",
+      "publisher": "TrendForce",
+      "published_at": "2026-08-05",
+      "role": "供需与份额预期"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "Micron in High-Volume Production of HBM4 Designed for NVIDIA Vera Rubin",
+      "url": "https://stage-investors.micron.com/news/press-release/2026/Micron-in-High-Volume-Production-of-HBM4-Designed-for-NVIDIA-Vera-Rubin-PCIe-Gen6-SSD-and-SOCAMM2-03-16-2026/default.aspx",
+      "publisher": "Micron",
+      "published_at": "2026-03-16",
+      "role": "目标公司产品和平台"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Micron and Anthropic Announce Strategic Agreement",
+      "url": "https://micron.gcs-web.com/news-releases/news-release-details/micron-and-anthropic-announce-strategic-agreement-scale-next",
+      "publisher": "Micron",
+      "published_at": "2026-06-22",
+      "role": "需求传导与多产品合同"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "Samsung Unveils HBM4E at NVIDIA GTC 2026",
+      "url": "https://news.samsung.com/global/samsung-unveils-hbm4e-showcasing-comprehensive-ai-solutions-nvidia-partnership-and-vision-at-nvidia-gtc-2026",
+      "publisher": "Samsung",
+      "published_at": "2026-03-17",
+      "role": "三星既有产品路线"
     }
   ],
   "market": {

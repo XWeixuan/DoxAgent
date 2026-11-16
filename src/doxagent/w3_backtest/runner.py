@@ -303,7 +303,7 @@ def time_awareness_runtime():
     return dict(path=str(resolved), sha256=fingerprint, companions={name: companion_sha})
 
 
-def local_worker(worker_root: Path, *, time_awareness_enabled=False):
+def local_worker(worker_root: Path, *, time_awareness_enabled=False, service_tier=None):
     """Only authentication is copied; production config, MCP and env files are excluded."""
     from openai_codex import CodexConfig, Sandbox
 
@@ -379,6 +379,7 @@ def local_worker(worker_root: Path, *, time_awareness_enabled=False):
         config=config,
         settings=settings,
         capability_secret="w3-local-replay-only-no-mcp-capabilities",
+        w3_service_tier=service_tier,
         container_isolated=False,
         preserve_requested_model=True,
         # Windows' read-only process policy rejects even Get-Content. The
@@ -415,9 +416,13 @@ class ReplayRunner:
         timeout_seconds=1800,
         model=None,
         effort=None,
+        trade_mode="single",
     ):
         if effort is not None and model is None:
             raise ValueError("effort requires a model override")
+        if trade_mode not in {"single","dual_consensus"}:
+            raise ValueError("invalid Trade mode")
+        self.trade_mode = trade_mode
         self.model_profile = (
             dict(model=model, effort=effort or "medium", provider=None) if model else None
         )
@@ -430,6 +435,10 @@ class ReplayRunner:
         replay_contract = asset_contract_version(
             {"w3/contract.json": marker.read_text(encoding="utf-8")} if marker.exists() else {}
         )
+        if self.trade_mode == 'dual_consensus':
+            from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
+            if not is_unified_contract(replay_contract):
+                raise ValueError('dual consensus requires v5/v6 direction contract')
         dataset, run_root = Path(dataset).resolve(), Path(run_root).resolve()
         case_dir = dataset / "inputs" / case_key
         raw = _read(case_dir / "case.json")
@@ -543,8 +552,8 @@ class ReplayRunner:
         }
         from doxagent.persistent_runtime_v2.w3_contracts import is_pin_watch_contract
         if is_pin_watch_contract(replay_contract):
-            assets['w3/operations.md'] = (self.prompt_root/'operations.md').read_text(encoding='utf8')
-            if 'W3_OPERATIONS_PLACEHOLDER' in assets['w3/operations.md']:
+            assets['w3/skills/operations.md'] = (self.prompt_root/'skills/operations.md').read_text(encoding='utf8')
+            if 'W3_OPERATIONS_PLACEHOLDER' in assets['w3/skills/operations.md']:
                 raise ValueError('Replace operations placeholder before v6 replay')
         if marker.exists():
             assets["w3/contract.json"] = marker.read_text(encoding="utf-8")
@@ -582,7 +591,7 @@ class ReplayRunner:
                 evidence,
                 window,
                 code_identity,
-                self.model_profile,
+                self.model_profile, self.trade_mode,
             ]
         )
         root = run_root / "cases" / case_key
@@ -607,7 +616,7 @@ class ReplayRunner:
         journal = RuntimeJournal(root / "runtime.sqlite3", clock=lambda: cutoff)
         repository = SQLitePersistentRuntimeV2Repository(journal.path)
         case.frozen_inputs.update(
-            w3_assets=assets,
+            w3_assets=assets, w3_trade_mode=self.trade_mode,
             # Legacy replay keeps file delivery; v6 uses the isolated local
             # research store with frozen evidence and disabled live capabilities.
             w3_contracts=dict(
@@ -785,6 +794,8 @@ class ReplayRunner:
             or (stages["post_decision_operations"] or {}).get("result_json"),
             host_receipt=stages["trade_decision"],
             stages=stages,
+            consensus=execution.registry.stage(case.case_id,"trade_decision").get("input_refs"),
+            branches={k:execution.registry.stage(case.case_id,"trade_decision:"+k) for k in ("A","B")} if self.trade_mode=="dual_consensus" else {},
         )
         for filename, value in (
             ("decision.json", result["decision"]),

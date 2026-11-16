@@ -1,0 +1,24 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息核心事实为 AMD 正式释放 EPYC 9006 (Venice/Zen 6) 全系列完整定价（$700–$14,904）及 SP7/SP8 平台规格与上市计划（SP7 Q4 2026，SP8 2027 H1）。已加载的 E25（涨价警告）、E20（市场规模预测）、E41（2026 售罄）及 provisional E734（编译时间预测）均未覆盖该产品定价发布事实。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息核心内容为AMD发布EPYC 9006（Venice）系列服务器芯片的完整定价与规格，涵盖SP7/SP8平台SKU、核心数、价格区间（$700-$14,904）及上市时间。未涉及任何Intel产品的采购、部署、续约、取消、供给状态、客户决策、财务数据或节点资格等具体事实。侧栏中出现的Intel VP标题为页面导航链接而非本文实质内容。该消息与任何Policy criterion均无直接触发关系，仅存在服务器CPU行业及Intel/AMD竞争格局的宽泛主题关联，不构成Candidate召回依据。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

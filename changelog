@@ -2974,6 +2974,68 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-13 Massive上线交付：独立规则/前端/45绑定已生效并合入main；61分钟观察获得55篇FULL和3个正式投递，首批放行复核2相关1误召（INTC Regal Intel）。保留BW/TMX正文失败、PRN列表RSS降级、其余来源正例与首小时残余本地判定等待未验收，未用测试历史补数。公开证据及私有回滚位置见上线报告。
 2026-11-13 Bloomberg BODY cache follow-up: use the existing publisher entitlement scope for Bloomberg, preventing legacy public/previews from being reused as authorized subscription FULL. No historical bulk re-fetch or extra cache subsystem; add public-vs-subscriber compatibility regression.
 
+
+2026-11-11 23:06 CST earnings monitor: local CEG/RKLB scripts/report absent; recovered RKLB six helpers from verified existing remote ops/scripts, restored CEG equivalent scoped paths/ticker, py_compile passed. No submission/launch/helper mutation executed remotely. Live original runs BUILD seq264/256, Worker healthy. Remote submitted.json/control/assets retained; historical local report not recreated as complete.
+
+
+2026-11-11 — Retire reviewed historical worktrees after local evidence archival. Migrate the sanitized frontend metric-semantics implementation plan and the single-message/zero-body-success regression into main as uncommitted changes; retain all branches and existing unrelated work. No metric implementation or production deployment is included.
+
+
+2026-11-12 scoped earnings snapshot recovery: CEG/RKLB next-task snapshots failed EMLINK, two navigation CAS entries reached65000links. Atomically rotated identical SHA/mode600/uid0/gid0 canonical entries preserving all historical hardlinks; six original snapshotRPCs now pass. Actual currentWorker immutable_evidence.link SHA7c6b6dcc... is directos.link without prior EMLINKfallback. No sharedWorker source/image/restart. Added guarded one-shot selected-node formalresume staging to preserve successful D1/D2/other nodes and originalcutoff; no business/modelattempt reset.
+
+
+2026-11-12 Massive Distribution首轮GOLD数据集：五家Newswire合并、排除Bloomberg；只读冻结3529篇已有完整阳性输入，按当前词库/正文版本匹配收据形成各ticker池，跨源/同稿/译稿去重分族后分层抽样。十ticker共994对，调试/验证各497；九ticker各50/50，IONQ仅94对全收为47/47。三个gpt-6.1-terra high子代理逐条标注，40包完整校验；保留五类标签、理由、置信度及原文，跨集新闻族重叠0。原正则回放994/994确认池归属，不宣称全市场recall或自然precision；本轮未调词、未调用Decision、未改生产配置。交付docs/massive-distribution-gold-dataset-delivery-20261112.md及eval/massive_distribution_gold_20261112/。
+
+
+## 2026-11-12 Massive Distribution 九 ticker 离线正则调试
+
+
+- 对 INTC/MU/BE/COHR/NBIS/CEG/RKLB/SNOW/ONDS 的冻结50/50 GOLD执行一次ticker级调试：12个常规候选、9个额外修正，共21候选全部完成两集评分；全部常规候选冻结后才开放验证，额外修正后未继续调参。
+- 新增任务内人工候选配方、原生regex_relevant回放/冻结/核验脚本，保留逐条完整证据和命中trace；唯一共享经验账本合并新增九个session。没有新增生产机制、改GOLD、调用Decision Model或修改远端配置。
+- 5/9两集P/R均>80%；BE、COHR、NBIS、CEG最佳但未达标。验证微平均P88.17%/R88.69%，仅为旧召回池内富集样本表现。报告保留标签尺度疑点与已知字段/词面缺陷，未将低精度COHR候选视作上线合格。
+- 核验：全部2100条候选预测独立重放一致；数据/候选哈希及冻结时序一致，跨集family重叠0，原生正则错误/超时0；Python编译和Ruff致命错误检查通过。
+- 交付：docs/massive-distribution-regex-tuning-report-20261112.md；eval/massive_distribution_regex_tuning_20261112/。
+
+
+## 2026-11-12 Massive BE/COHR/NBIS/CEG 简化重调
+
+
+- 基于原调试集重写四ticker正则，按用户最新要求优先直观搭配、准确率与可维护性；每套4-6组，移除容量数字、词距推断、负例黑名单与文章特判。四个首版，NBIS另做一次删除过宽标题词的修正，全部5候选各跑50/50。
+- 调试最终P/R：BE 100%/88.89%，COHR 100%/73.68%，NBIS 100%/69.57%，CEG 100%/95%。旧验证已曝光，仅作冻结后诊断；仅CEG两集均过线，BE/NBIS简化代价明显，未为追分追加规则或覆盖上一轮配置。
+- 保留本轮全部候选/指标/原文/trace，新增4条合并共享经验；500条预测独立原生回放一致，原文/GOLD/候选哈希核验通过，正则错误/超时0，编译及Ruff致命错误检查通过。
+- 交付：docs/massive-distribution-regex-simple-round2-20261112.md；eval/massive_distribution_regex_round2_20261112/。仅离线L2实验，未改生产、未调用Decision Model。
+
+
+## 2026-11-12 全局 Runtime → Read 投影性能专项诊断（未实施修复）
+
+
+- 新增执行级排查/修复方案 docs/runtime-read-projection-performance-diagnosis-and-repair-plan-20261112.md，以及 eval/runtime_read_projection_audit_20261112/ 的只读取证和本地复算脚本。冻结实际 Projector 代码，重建21小时负载/消费基线并连续观察15分钟。
+- 复现历史 gap 逐条连接读取与既有 event_reader 约50倍暖态差异，定位双 repair 调用、长期失败重试、完整冻结上下文反复展开和无效写事务；明确高峰 ingest/COMMIT 分摊尚需受控计时，不虚报唯一慢 SQL。
+- 取证中 Runtime 自然追平，但17,204条历史 gap 仍在；记录CPU竞争与维护块写放大，制定12/s Runtime、35/s全局容量、30分钟消退9,589条及延迟/资源/完整性验收。未改应用、生产配置、数据库或业务优先级，未部署修复。
+
+
+## 2026-11-12 TQQQ LIVE 授权单次低价挂撤单测试
+
+
+- 新增单次测试及独立只读核对探针；LIVE BUY 1 股 TQQQ、LMT $1.00，仅一次提交，券商 Submitted 后撤单确认 Cancelled，成交0、持仓0、无残留挂单。订单49 / permId 372543003。
+- 新增 docs/tqqq-live-one-share-limit-cancel-test-20261112.md 记录授权边界和证据；不含卖空/对冲验收，不改应用和账户配置，不重放历史意图，原始账户证据保持本地。
+
+
+2026-11-12 completion: CEG52Policiesv91 PARTIAL32gaps/RKLB102Policiesv164 PARTIAL27gaps exported and SHA/manifest verified, formally CAS activated with all4nodes and actual Bus/runtimeACK/currentEvent+config preservation. Added bounded final-pair verification and completion report; original containers naturally stopped, no sharedservice deployment. All4ticker refreshes now applied; remove monitor after acceptance.
+
+
+2026-11-12 Runtime→Read follow-up diagnosis (plan only): rechecked production six-file hashes and API/Projector generation, collected a new 15-minute window and live stack/profile evidence. Located whole-library rematerialization in Reference/activation plus full historical Policy catalog scans and non-preemptible event head-of-line blocking. Added docs/runtime-read-projection-followup-diagnosis-and-repair-plan-20261112.md with bounded immutable reuse, targeted Policy work, correctness tests and realistic mixed-load acceptance. Read-only experiment preserved derived output and avoided 3,479 already-identical payloads; no production repair, restart, migration or priority change.
+
+
+## 2026-11-12 生产前端白屏恢复
+
+
+- 根因：私有发布 umask 077 解包后 assets 目录为0700，镜像COPY继承权限，nginx worker无法遍历；HTML 200但JS/CSS 404，API-only健康检查误报健康。
+- 先在线恢复公开静态目录/文件0755/0644，再经canonical release lock、Compose、promote/rollback部署永久修复镜像 sha256:afd7485fe3792c130b1c85c0afdfd4cafcab74183a744510917535f39f8ff178，仅替换v2-web，40项静态文件SHA-256保持一致。
+- frontend/v2/Dockerfile归一化权限，新增deploy/healthcheck.sh，以HTTP检查index引用JS/CSS及auth/config；所属D:/DoxProjectionFollowup20261112工作树发布脚本同样补齐静态权限和发布前HTTP资源检查。
+- 验证：原/新镜像nginx身份读取负/正例通过，新容器healthy；用户原登录页面Overview KPI和标的表实际恢复，独立登录页正常且无页面错误。源码修正尚未提交，生产修复已生效；未改后端、交易或业务数据。
+- 证据：eval/frontend_white_screen_20261112/；远端/var/lib/doxagent/releases/frontend-permissions-20261112/保留前态、manifest、receipt。
+
 2026-11-13 Barrons body/latency repair: preserve scope-filter candidate reasons, allow the sole authenticated Barrons browser route up to15 seconds within the existing article deadline, refresh its HTTP JSON cache key without duplicate requests, and allow Close Login to release an exact-target-confirmed lost ordinary login reservation. Preserve Challenge pages, auth proof, Profile/Cookie, polling cadence and recheck=false. Add focused regression tests and per-stage production audit.
 
 2026-11-13 Barrons visible-body root cause: real maintained Chrome showed complete rendered paid paragraphs under a `crawler` container, which the legacy HTML heuristic rejected. Add bounded stable visible-DOM article snapshots, checking hidden/clipped ancestors and actual paywall controls; use the same document readiness for BODY and admin PROBE. Incomplete/hidden snapshots remain subscription failures. Real Chromium positive/hidden/clipped regressions and existing publisher tests:35 passed.
@@ -3023,6 +3085,26 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 - ACCESS追加真实比较后收敛缓存治理：POST401、随机参数400，no-cache仍可能返回grace。保留既有120秒硬上限；60秒TTL外的可用页面单列freshness_degraded，避免人为扩大采集失败。已有cycle同时记录最早/最新可见时间及交集，33项列表回归通过。
 
+## 2026-11-13 COHR/SOXL 人工平仓账本修正
+
+- 按用户授权，核对 LIVE 人工 BUY COHR6 / SELL SOXL7 成交及零实际持仓，以现有 adjust_lot 接口留痕清零策略数量；两条原 EXIT DONE，交易组 CLOSED，恢复 Executor 后核对无活动挂单/未对账订单/目标活动任务。本次无买卖或撤单，不回填人工收益费用。详见 docs/cohr-soxl-manual-close-reconciliation-20261113.md。
+
+2026-11-13 Emergency root-disk recovery: reclaim obsolete Site operation snapshots, archived journal, Clash access log and inactive browser whitelist caches; preserve two latest readable Site snapshots, live identities and business databases. Restore original Read Maintenance/CDECR containers; final free 9.74GiB, net used reduction 10.63GiB. Read reusable pages 18.16GiB remain a controlled-compaction candidate. Evidence: docs/remote-disk-emergency-recovery-20261113.md.
+2026-11-14 Emergency recovery final inspect: additionally start original Control/Bus/Enrichment/Initialization/Guardian containers whose persisted state showed Pid0 and NoSpace restart failures; Projector auto-recovered. All current persistent DoxAgent containers Running, no unhealthy service at 2026-11-14 00:06:58; final free 9.70GiB. No image release or healthy Worker/trading restart.
+
+
+2026-11-14 W3新增四条生产交易决策样本与双提示词重复回测：正式集45→49，四条Gold均按用户指定NO_TRADE；恢复原消息/绑定D1D2与远端真实三段行情，以Terra medium按问题覆盖准备47个来源条目（含4份输入归档），补充构造规范，冻结生产active与用户v6提示词。普通gpt-6-luna/max、Fast关闭，两版各5轮共40次有效判断全匹配；按用户要求改并行，容器中断后仅补3条未完成任务。原生40 Thread/单一代码指纹核验，保留2条可选计时缺失和1条v6理由未完成质量问题；报告见eval/w3_backtest/runs/badcase4_prompt_ab_20261114。独立启动脚本补显式Compose标签避免继承验收项目标签，生产逻辑和提示词未改。
+
+
+2026-11-14 生产根盘大块清理与机制复盘
+- 依据根盘全景方案完成旧遥测、退役维护工作区镜像/发布副本清退及 Read 纯物理压缩；补办已结算工作区退出，并按历史 execution 哈希认领/退出漏管初始化快照。
+- Research 清退已 ACK 的低价值重放收据；Acquisition 清退过期周期/无引用物理请求，并补齐现有 schema 已定义但生产库缺失的 captures_run(run_id,status) 索引。库内可复用空闲页与根盘净释放分别统计。
+- 已核验根盘净释放约 73.8 GiB、可用约 82.7 GiB（02:18 快照），Read 切换校验通过，API/Web 恢复健康；未重建镜像、未重构应用架构，未因本轮清理重启 Worker/交易执行。
+- 记录：docs/disk-cleanup-and-growth-mechanisms-20261114.md；证据：artifacts/audits/disk_cleanup_execution_20261114/。
+- 收尾：Bus 按原 7d 规则补扫并退出 767,500 条已 ACK 重放收据；最新 02:25:44 根盘净释放 74.58 GiB、可用 83.42 GiB，使用率 78%。
+
+2026-11-15 W2R2 input Policy references
+- W2R2 的新版 Policy 输入视图排除 ref 字段，减少上下文引用开销；Policy 原始存储、其他业务字段及其他节点输入保持原样。
 2026-11-13 Corporate IR production acceptance: source v5 / 13 endpoints / ten enabled bindings, IONQ20s and all previous cadences preserved. Thirteen endpoint heads healthy during bounded observation; real IONQ/SNOW/ONDS article samples FULL. API type definitions synchronized. Preserve BE/MU RSS-side 429/backoff and IONQ CDN caching/absence of a new-release latency sample as explicit limitations. See docs/corporate-ir-ionq-onds-snow-repair-20261113.md.
 
 2026-11-14: Fix Runtime→Read interruption recovery: FULL/ENOSPC bounded retry without business gaps; infrastructure failures retain event coordinates; repair storage failures preserve attempt budget and retry parents first. Add opt-in host ENOSPC startup recovery guard with maintenance pause/cooldown and scoped release overlay.
@@ -3033,3 +3115,28 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Project lean v6 inputs, freeze shared 48h actual ENTRY-fill history/tag evidence, constrain scoped research to D1/D2, and adapt full-input offline replay.
 - Run NEW fact capture through parallel W1R3 without delaying W3; isolate auxiliary failures, prevent Case/result/fact overwrites and reserve one existing background worker for short control tasks.
 - Keep active contract v5 and reject placeholder operations assets for v6 activation. See dev_plan/workflow_v2/w3_v6_implementation_20261115.md.
+
+
+2026-11-16 W3回测v6输入/编排升级：新运行仅v6，复用生产消息/W1/Policy可见投影和d1-d2研究scope；新增可选context.json及prepare-context，只读恢复48条远端Case与1条本地NASA档案。明确缺失与空状态、情景cutoff和消息精度；提供service-tier显式覆盖、实际模型路由、可见输入/覆盖与SDK审计；不执行Ops或交易。49条输入验收通过，Gold/as_of不变；21条低来源Case补164条资料并修复已知原文/时间问题，合计617条。124项相关测试与定向静态检查通过；旧v4双阶段时钟测试失败在原HEAD复现并留证，不属本次v6回归。未运行评分模型/未部署。回执：eval/w3_backtest/reports/context_alignment_20261116/completion.md。
+
+2026-11-16 W3 optional dual Trade consensus and unified production model
+- Freeze new W3 Cases to Luna/max independently of Policy; keep Trade Fast and force Operations standard tier, retaining frozen legacy requests.
+- Add default-single runtime mode, two isolated Trade branches under one existing Effect, durable per-branch outputs/telemetry, deterministic direction gate and one business/Operations commit. Preserve successful branches across retries and aggregate recovery.
+- Adapt stage ownership, late-fork recovery, audit projection/inspection and offline replay mode fingerprints; no new service, thread pool or Agent Schema.
+- Local development only; no production mode change/release. See dev_plan/workflow_v2/w3_dual_trade_implementation_20261116.md.
+2026-11-16 W3 operations资产路径修正与全量49条Luna回测
+- 新发布v6 Bundle从w3/skills/operations.md冻结、校验并在Operations阶段注入；兼容既有冻结Bundle旧路径，Trade指令注入不变。相关43项测试通过。仅本地修改，未部署。
+- 最新提示词+v6回测单Trade模式，gpt-6-luna/max/default，49/49首次成功，无补跑。37/49正确、误交易6/漏交易6；共同45条33/45，对照旧普通35/45，耗时中位/均值/p95为121.60/142.56/253.34秒。保留49条公开reason对照及质量分析；未改Gold。产物：eval/w3_backtest/runs/luna_full49_v6_20261116/。
+
+2026-11-16 W3旧12分歧Case三次复测：冻结上轮v6/Luna max标准档，36/36首次成功、无补跑；SNOW-OCI和Synspective按用户更正为LONG且无时效错误标签。6条判定波动、5条稳定错误、1条稳定正确；完成公开reason及工具路径对照。原全量新Gold成绩39/49，原报告加更正补充。产物：eval/w3_backtest/runs/luna_errors12_repeat3_20261116/analysis.md。
+
+2026-11-16 最新W3提示词全量Luna回测：冻结上轮v6代码/业务输入、替换当前AGENTS和Skill，max/default并发8。49/49首次成功，无补跑；按更正Gold为41/49（83.67%），对照上轮39/49，修复4/退化2；误交易4/漏交易4。中位/均值/p95为139.05/146.11/256.35秒，补齐公开reason、badcase、SDK耗时与稳定性分析。未改生产逻辑/未部署。产物：eval/w3_backtest/runs/luna_full49_prompt_rev2_20261116/quality_review.md。
+
+2026-11-16 W3最新提示词8条badcase三次复测：冻结rev2全量运行配置，24次有效结果，5条判定波动、3条稳定错误，正确次数1/8、1/8、3/8。一次SQLite计时起点缺失被保留排除，仅补该次MU-02-02（实际25次模型执行）；24个有效结果计时起点与冻结配置验收通过。完成公开reason、Prior/Delta及工具路径分析，未改生产逻辑/提示词/Gold。产物：eval/w3_backtest/runs/luna_rev2_errors8_repeat3_20261116/analysis.md。
+
+2026-11-16 W3 rev3提示词全量及badcase三次复测：冻结相同v6回测代码/输入/Gold，仅替换最新AGENTS/Skill，Luna max/default。全量35/49（上版41/49），误交易8/漏交易6；中位/均值/p95为153.53/165.52/280.14秒。14条错误各复测3次，正确4/14、2/14、2/14；6条波动、8条稳定错误，无稳定修复。91次均首次成功，未补跑，模型/effort及计时起点验收齐全。未改生产逻辑/提示词/Gold；报告：eval/w3_backtest/runs/luna_full49_prompt_rev3_repeat_20261116/evaluation_report.md。
+
+2026-11-16 integrated main production release preparation
+- Review and integrate pending W3 v6 orchestration, phase-only operations assets, unified Luna/max profile, optional dual Trade gate, replay context alignment, W2R2 ref exclusion and frontend healthcheck changes.
+- Activate the aligned v6 marker with skills/operations.md; release through the host-owned workflow, then explicitly enable dual_consensus for new W3 Effects.
+- 245 related regressions passed (one previously reproduced baseline latency assertion excluded), frontend build/typecheck passed. Keep prompt rev3 offline quality regression (35/49 vs 41/49) explicit; consensus does not prove correctness.

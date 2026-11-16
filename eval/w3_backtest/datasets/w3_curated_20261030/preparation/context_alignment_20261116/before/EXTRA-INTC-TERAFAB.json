@@ -1,0 +1,108 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E326",
+        "fact_ids": [
+          "F1291"
+        ]
+      },
+      {
+        "event_id": "E304",
+        "fact_ids": [
+          "F1245"
+        ]
+      }
+    ],
+    "reason": "Intel继续参与Terafab的核心事实已被F1291和E348覆盖，但Musk明确表态'TSMC可sublease部分设施但nothing more than that'以及'we will build and run the fab'是E304中F1245（仅确认在讨论TSMC合作）所不具备的新核心事实，定义了TSMC潜在角色的具体边界。",
+    "reference_ids": [
+      "E326",
+      "E304"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息描述的Foundry收入增长（Q1 $5.4B、Q2 $5.8B）及经营亏损$2.1B均为参考期（Q2 2026）本身的数据，而非Condition C1所要求的\"后续季度\"表现。消息未提供Q2之后任何季度的报告收入、外部客户收入（是否≤2.93亿）或利用率改善的确认信息，因此不满足\"后续季度报告收入上升+外部收入未改善+亏损未改善/利用率未改善\"的完整触发条件。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "Intel said it would continue working on Elon Musk’s Terafab chipmaking venture; the report did not disclose terms, scope, timetable or project progress.",
+      "derived_from_event_ids": [],
+      "event_id": "E326",
+      "event_type": "OTHER_CORPORATE_EVENT",
+      "facts": [
+        {
+          "assertion_state": "PLAN",
+          "fact_id": "F1291",
+          "fact_occurred_at": "2026-10-07",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Intel said it would continue working on Elon Musk’s Terafab chipmaking venture; the statement did not disclose terms, scope, timetable or progress.",
+          "subject_time": "FUTURE"
+        }
+      ],
+      "known_event_summary": "On 2026-10-07, Bloomberg’s report, republished by TradingView and cited by Reuters, said Intel would keep working on Elon Musk’s Terafab; no terms or progress were specified.",
+      "occurred_at": "2026-10-07",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E43",
+        "E304"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Intel said it would continue working on the Terafab venture"
+    },
+    {
+      "canonical_summary": "On 2026-10-03, Culpium reported that Intel's Terafab collaboration was not making progress, a status Intel had not confirmed. Elon Musk publicly confirmed that Terafab was in discussions with TSMC, which Culpium had reported was exploring ways to work with the project.",
+      "derived_from_event_ids": [],
+      "event_id": "E304",
+      "event_type": "OTHER_CORPORATE_EVENT",
+      "facts": [
+        {
+          "assertion_state": "RUMOR",
+          "fact_id": "F1244",
+          "fact_occurred_at": "2026-10-03",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Reports said TSMC was targeting or seeking participation in the Terafab project.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "ACTUAL",
+          "fact_id": "F1245",
+          "fact_occurred_at": "2026-10-03",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Elon Musk confirmed that Terafab, the chip-manufacturing project backed by SpaceX and Tesla, was in discussions with TSMC.",
+          "subject_time": null
+        },
+        {
+          "assertion_state": "RUMOR",
+          "fact_id": "F1258",
+          "fact_occurred_at": "2026-10-03",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Culpium reported that collaboration with Intel on Terafab was not making progress; Intel had not confirmed the reported status.",
+          "subject_time": "SAME"
+        }
+      ],
+      "known_event_summary": "On 2026-10-03, Culpium reported Intel-Terafab cooperation was not progressing (unconfirmed by Intel), and Musk confirmed Terafab talks with TSMC, which Culpium said was exploring a role.",
+      "occurred_at": "2026-10-03",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E43"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Musk confirmed TSMC-Terafab talks as Culpium reported stalled Intel collaboration"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T20:23:27.309793Z"
+  }
+}

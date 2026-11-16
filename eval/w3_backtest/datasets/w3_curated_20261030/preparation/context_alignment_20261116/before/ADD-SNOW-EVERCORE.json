@@ -1,0 +1,87 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息中 Snowflake 的核心进展是 Evercore ISI 于10月21日给予 Outperform 评级并设定430美元目标价；现有 Facts 仅覆盖 Truist、Needham、Phillip 等其他机构的评级/目标价及截至10月16日的股价下跌，未覆盖 Evercore 的这一新评级与目标价。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [
+      {
+        "condition_ids": [
+          "C1"
+        ],
+        "policy_id": "pol_e35e9a98c79d43ffa2a230a61fa7b53e"
+      }
+    ],
+    "policy_hit": true,
+    "policy_ids": [
+      "pol_e35e9a98c79d43ffa2a230a61fa7b53e"
+    ],
+    "policy_related": false,
+    "reason": "Evercore ISI 于10月21日对SNOW给出Outperform及430美元目标价，并基于与CEO、客户和合作伙伴的交流及纽约用户大会，提出至FY2028的beat/raise路径、40%+产品增长、利润率扩张及约14倍EV/CY2027销售额的估值判断，构成对SNOW前瞻经营与估值有方向性意义的新分析，完整满足C1；消息未包含C2所要求的负向下修。",
+    "related_policy_ids": []
+  },
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-19 06:00 UTC，仍无可核对的同期间卖方共识或前瞻估值倍数；FY2027产品收入约$6.07bn、同比+36%，调整后经营利润率14.5%、调整后FCF率23%均为公司指引，不能代称市场共识。可见卖方基线中，Phillip 9月28日首次覆盖摘要为Buy/$423，采用DCF WACC 5.7%及终值增长5.1%，预估FY27产品收入+36%、调整后EPS+63%、调整后FCF率23.8%；10月12日TheFly/TipRanks摘要记载Phillip下调Buy至Accumulate但保留$423目标价，并称跟随软件股重估。10月16日Investing.com公开报道Truist在10月15日纽约World Tour后重申Buy/$425（目标价未变），并称客户用配额、模型评估和路由控制CoCo成本且未减慢部署、CoWork开始触及非技术用户；Truist表示对AI消费尾风的耐久性增信。该报道标注AI辅助生成并经编辑审核，未附原始研究、具名客户、可复核使用/付费数据或同期间预测修订；据此将Truist的新定性卖方判断纳入公开预期基线，但不把它当成已独立验证的生产用量或财务结果。",
+            "trigger_boundary": "足够的正向边界是一份实际可传播的单一机构研究，其新事实或新分析在当时公开基线之外，实质改变对SNOW前瞻经营或估值的判断，并给出可解释影响的预测或价值桥。可以涉及同期间消费/AI捕获、增长期限、利润/FCF、公司特定风险，也可以是新的行业或贴现框架：后者须说明为何适用于SNOW、改变哪些风险/持续期/倍数假设，以及如何提高其前瞻价值，不必同时上调公司独有经营预测。首次覆盖可重释已知事实，但须区别于重复公司指引或已有AI标签。同机构前后比较须按相同期间和口径；缺少统一共识时不设固定目标价涨幅。一份有依据且明显不同的新估值论据可由单一机构成立，实际覆盖位置、受众及媒体可见度用于衡量触达，不要求订阅数、私人数据、多家跟随或事后股价验证。只提高目标价、改为Buy、机械跟随现价或一般板块倍数/利率变化而没有SNOW适用分析，仍不充分；融资后分母重算也不能冒作经营上修。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "b5e3fb3ea9379bd0bd3188d1481870fb2266dde502fb4622cabab21f6daf7ee0",
+          "criterion": "卖方机构首次建立或更新 SNOW 覆盖、公开修订研究模型/估值，或发布有清楚样本与期间的相关客户调查；该研究提出或重估一项对 SNOW 前瞻消费、AI变现/持续期、利润/FCF、公司特定风险或估值有方向性意义的新论据，并将其反映在更积极的投资判断中。所称新论据可以是新的公开事实，也可以是对既有事实具有可说明差异的新分析；报道只复述评级、目标价或既有AI主题则仅匹配、不命中。",
+          "decision": "LONG",
+          "trigger_layer": "OUTER"
+        },
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-19 06:00 UTC，同C1的公司经营基线为FY2027产品收入约$6.07bn、同比+36%公司指引而非共识；无可对齐的卖方市场共识/前瞻倍数。Phillip 9月28日公开摘要为Buy/$423及FY27产品收入+36%等预测，10月12日公开摘要为Accumulate/$423且称跟随软件股近期重估；没有披露SNOW同期间预测下修。10月16日Truist于纽约World Tour后重申Buy/$425（未改目标价），公开报道称其基于CoCo需求、成本管理及更广用户范围而对AI消费耐久性更积极；这是正向定性更新，不是负向模型修订。该AI辅助新闻摘要未附原始研究、可比预测或具名客户数据。10月16日股价回落本身没有公司特定归因，也不是分析师下修。",
+            "trigger_boundary": "SHORT在一份单一公开研究首先以可核验的新事实或有依据的新分析，实质下修SNOW的前瞻商业/估值路径时即可成立：报告应在相同期间/口径下给出预测或可信状态比较，并说明下调如何影响增长与AI付费捕获/持续期、现金转换、公司特定风险概率或适用于SNOW的风险调整估值。若是首次覆盖，应提供相对于公开经营路径的新下行论据；若是估值框架变化，应展示其对SNOW的实际价值影响，而非只引用一般软件股重估。单一有实际传播力的机构可足够；不需等收入损失、多个机构跟随或价格确认。仅将Buy改为Accumulate但目标价不变、因股价/行业共同重定价而机械降低评级或目标价、或把可转债现金/债务/股份分母重算当作经营观点下修，均未跨过边界。无可比共识时不设固定目标价下调比例，也不把LONG未命中或无新报告解释成SHORT。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "addd2b5b8218a8d06280b506f097221f272c5cacc1c0743a3881f70e25a6fcd5",
+          "criterion": "卖方机构首次给出或更新针对 SNOW 的负向研究判断，且其新论据/同口径修订下调消费增长或AI捕获/持续期、利润/FCF转换、公司特定风险调整或适用估值框架；该判断须有可识别的SNOW前瞻含义，不能只依据评级标签、股价回落或行业评论。",
+          "decision": "SHORT",
+          "trigger_layer": "OUTER"
+        }
+      ],
+      "match_scope": "财报以外针对 SNOW 的卖方首次覆盖、研究评级/重点推荐、同一机构前后版本的预测与估值变化、公开的SNOW或相关软件/AI买方调查，以及这些观点的新闻传播。应匹配到公开报告或调查中的实际估计对象、预测期间、口径、论据和传播方式；只改评级标签、首度覆盖、机械目标价更新、板块/股价跟随或同一报告的多次转载也属于相关消息，但不自动构成触发。广泛行业观点只有在明确说明其对 SNOW 的业务路径或估值适用性时进入判断。",
+      "policy_id": "pol_e35e9a98c79d43ffa2a230a61fa7b53e",
+      "ref": [
+        "output/work/v21/research/OPEN_EVENT/0001/policy_sell_side_revaluation.json",
+        "context/document3/v21/research_context/supplement_agenda.json",
+        "context/document3/v21/research_context/main_results.json",
+        "context/document3/v21/research_context/agenda.json",
+        "context/document3/v21/shared/d1/c1.md",
+        "context/document3/v21/shared/d1/c5.md",
+        "context/document3/v21/shared/event_library.md",
+        "https://www.poems.com.sg/stock-research/SNOW/",
+        "https://www.poems.com.sg/reports/daily-morning-note-28-september-2026/",
+        "https://www.stocksbnb.com/reports/snowflake-inc-growth-from-rising-coding-and-ai-agent-activities/",
+        "https://www.tipranks.com/news/the-fly/snowflake-downgraded-to-accumulate-from-buy-at-phillip-securities-thefly-news",
+        "https://www.sec.gov/about/reports-publications/investorpubsanalystshtm",
+        "https://doi.org/10.1016/j.bar.2006.07.015",
+        "https://doi.org/10.1007/s11142-019-9485-3",
+        "https://www.investing.com/news/analyst-ratings/truist-reiterates-snowflake-stock-buy-rating-on-ai-demand-strength-93CH-4954353"
+      ],
+      "title": "卖方新论据与预期模型对 SNOW 的公开重估",
+      "transmission": "卖方研究通过观点内容和传播覆盖影响投资者对 SNOW 前瞻现金流、风险与估值的判断：一项可核验的新论据或同口径预测修订可在公司业绩兑现前改变市场对消费增长、AI收入捕获与持续期、利润/现金转换或公司特定风险的估计；覆盖渠道、研究机构/分析师的真实受众和媒体传播会影响该判断抵达投资者的范围。经验研究提示，同方向盈利预测修订及新闻传播可能强化分析师观点的即时市场反应，但评级变更本身并不等于新增经济信息，行业与市场结论也不保证对 SNOW 的特定价值有重大影响。SNOW FY2027 产品收入指引为约$6.07bn、同比+36%，是公司指引而非卖方共识；Phillip 9月28日公开摘要给出FY27产品收入+36%、调整后EPS+63%、调整后FCF率23.8%及$423 DCF目标价（WACC 5.7%、终值增长5.1%），其中FY27产品增长与公司指引基本一致，AI产品贡献约一半Q2增长加速是其论据而非市场共识。10月12日公开摘要称 Phillip 将 Buy 调为 Accumulate、目标价仍为$423，并称动作跟随软件股近期重估；这不证明 SNOW 的AI或经营路径遭到新下修。当前没有可对齐的卖方共识/前瞻倍数；10月2日可转债又晚于初始报告，因此每股目标变化需与经营预测、估值假设、现金/债务和分母桥分开。10月16日股价下跌在Event Library中无原因归属，不作为分析师观点的事后验证。 10月16日公开报道转述Truist在纽约World Tour后维持Buy/$425，但对CoCo成本控制支持更多AI使用、CoWork拓宽用户面的组合更为积极，故对AI消费耐久性的判断上修；该定性研究视角现为已知基线。报道标注AI辅助生成且没有原始研究或具名客户/可量化付费使用细节，不能将其扩写为独立生产采用或收入事实；重复报道、评级重述和不变目标价不构成新的增量。"
+    }
+  ],
+  "w1_events": [],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": true,
+    "related_has_new_fact": false
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-18T15:54:52.251090Z"
+  }
+}

@@ -2,7 +2,7 @@
   "schema_version": "w3-backtest.dataset.v2",
   "dataset_id": "w3_curated_20261030",
   "evaluation_scope": "w3_decision_only",
-  "case_count": 45,
+  "case_count": 49,
   "cases": [
     {
       "case_key": "BE-01-01",
@@ -228,17 +228,37 @@
       "case_key": "ADD-MPWR-Q3-2026",
       "path": "inputs/ADD-MPWR-Q3-2026/case.json",
       "ticker": "COHR"
+    },
+    {
+      "case_key": "ADD-COHR-FERMI-20261113",
+      "path": "inputs/ADD-COHR-FERMI-20261113/case.json",
+      "ticker": "COHR"
+    },
+    {
+      "case_key": "ADD-BE-NEBIUS-20261112",
+      "path": "inputs/ADD-BE-NEBIUS-20261112/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "ADD-RKLB-BERENBERG-20261112",
+      "path": "inputs/ADD-RKLB-BERENBERG-20261112/case.json",
+      "ticker": "RKLB"
+    },
+    {
+      "case_key": "ADD-RKLB-MS-20261111",
+      "path": "inputs/ADD-RKLB-MS-20261111/case.json",
+      "ticker": "RKLB"
     }
   ],
   "construction_model": "gpt-6.1-terra",
   "construction_effort": "medium",
-  "prompt_root": "prompt_source",
+  "prompt_root": "prompt_source_v6_20261116",
   "preparation_status": "READY",
   "preparation_summary": {
-    "cases": 45,
-    "ready": 45,
+    "cases": 49,
+    "ready": 49,
     "incomplete": []
   },
-  "input_fingerprint": "cc2fc8ebb4c4171b3840a3cb06df1e81ea04b2470b0c30c1721edfe03e7c69a6",
+  "input_fingerprint": "e1db5f2c27dbbef57a9c29562dbc65f38c0503374ccc5c69e4b7045b4f220a30",
   "selection_revision": "user-remove-BE-02-04-20261030"
 }

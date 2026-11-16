@@ -1,0 +1,25 @@
+{
+  "w1_assessment": {
+    "result": "NEW",
+    "confidence": "normal",
+    "reference_ids": [],
+    "fact_attributions": [],
+    "reason": "当前消息核心事实为NASA接近宣布批量采购火箭发射服务以建设约300亿美元永久月球基地，涉及跨多种火箭类型采购以应对行业发射供应短缺。已加载Event E92仅涉及FAA提出豁免环境法规以简化商业太空发射审批的监管规则，与NASA月球基地批量发射采购在主体、事件性质和现实进展上均无重叠，核心事实完全未被覆盖。"
+  },
+  "w2_assessment": {
+    "policy_hit": false,
+    "policy_related": false,
+    "policy_ids": [],
+    "hit_condition_ids": [],
+    "matched_condition_ids": [],
+    "confidence": "normal",
+    "reason": "消息仅描述NASA\"接近宣布\"且\"正在考虑\"跨多火箭类型批量采购发射服务用于月球基地计划，属于尚未形成的意向/规划阶段，且文章截断。未出现任何具体事实：无正式合同、task order、option行权、工作授权、发射窗口分配，也无政府拨款/采购正式决定影响至少两个RL项目，更不涉及Iridium合并或Space Systems交付事件。不落入任何match_scope。"
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-14T10:16:29Z"
+  }
+}

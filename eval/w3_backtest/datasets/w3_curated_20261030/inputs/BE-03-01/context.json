@@ -1,0 +1,61 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E21",
+        "fact_ids": [
+          "F52"
+        ]
+      }
+    ],
+    "reason": "当前消息存在两个未被覆盖的核心新事实：(1) Bloom Energy 实际购买了 Fremont 158,000平方英尺工厂——E21 仅记录了2026-09-09的扩展产能\"计划\"(PLAN)，不含具体地产采购这一已执行动作(ACTUAL)；(2) Ameren 通过其密苏里受监管电力公司建议到2030年增加500MW天然气燃料电池——现有 Event 中无任何覆盖。股价从盘前约2%到全天涨14%属市场反应幅度变化，不构成独立核心新闻事实。",
+    "reference_ids": [
+      "E21"
+    ],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息核心事实为：(1) Bloom Energy股价因OpenAI相关事件后反弹14%；(2) Fremont市LinkedIn宣布Bloom购入158,000平方英尺设施用于扩建；(3) Morgan Stanley分析师将其解读为需求强劲信号；(4) Ameren建议2030年前增加500MW天然气燃料电池。所有事实均处于扩产投资/备货准备阶段，未披露任何设施级合格units/MW产出、两个可比周期的run-rate、生产计划达成或可供出货状态，也未陈述合格释放量低于计划或人员缺口导致错过窗口。三个Candidate Policy的trigger_boundary均未达到，全部NO HIT。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [
+    {
+      "canonical_summary": "On 2026-09-09, Bloom Energy planned to double factory capacity by the end of 2026 with approximately $100 million of investment.",
+      "derived_from_event_ids": [],
+      "event_id": "E21",
+      "event_type": "CAPACITY_OR_CAPEX",
+      "facts": [
+        {
+          "assertion_state": "PLAN",
+          "fact_id": "F52",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY",
+          "proposition": "Bloom Energy plans to double factory capacity by the end of 2026 with an investment of approximately $100 million.",
+          "subject_time": "2026-12-31"
+        }
+      ],
+      "known_event_summary": "On 2026-09-09, Bloom Energy planned to double factory capacity by year-end 2026 through approximately $100 million of investment.",
+      "occurred_at": "2026-09-09",
+      "occurrence_time_precision": "DAY",
+      "related_event_ids": [
+        "E19",
+        "E16"
+      ],
+      "status": "ACTIVE",
+      "supersedes_event_id": null,
+      "title": "Bloom Energy planned to double factory capacity by year-end 2026"
+    }
+  ],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-21T12:30:11.852735Z"
+  }
+}

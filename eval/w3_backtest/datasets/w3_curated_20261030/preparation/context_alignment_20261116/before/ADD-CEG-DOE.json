@@ -1,0 +1,105 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前核心事实是美国向Constellation Energy提供50亿美元贷款用于核升级；已知E14为Google与Constellation的购电协议，E21为DOE对Vistra的42亿美元有条件贷款承诺，均未覆盖Constellation获得美国50亿美元贷款这一新进展。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "hit_condition_ids": [],
+    "policy_hit": false,
+    "policy_ids": [],
+    "policy_related": true,
+    "reason": "消息仅称美国向Constellation Energy提供50亿美元贷款用于核升级。对pol_f67eaed879e346348210cecd430311fa，该政府项目融资属于其关注范围，但并非撤回或削减已承诺资金，未满足C2。对pol_533a5b78f9e842448aeaed1887572301，该贷款属于具名核电升级项目的融资条款范围，但未显示具名客户/共有人承接成本风险，或最终工程变更导致CEG净新增至少3亿美元成本，故均仅RELATED。",
+    "related_policy_ids": [
+      "pol_f67eaed879e346348210cecd430311fa",
+      "pol_533a5b78f9e842448aeaed1887572301"
+    ]
+  },
+  "policies": [
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "最新现金基线为2026年6月30日不受限现金6.97亿美元，H1全部资本开支25.21亿美元。Google 20年PPA支持890MW升级并公告超过43亿美元投资；Amazon 20年、690MW安排含190MW增容并支持超过30亿美元设施投入，但两项均未公开本轮可验证的直接客户付款日程、CEG逐项目权益、PPA价格或全部回购/担保条款。只有实际合同和已经公布的项目资金安排构成可比起点。",
+            "trigger_boundary": "比较局部已识别的原责任与新外部承担即可，不需未来给全集团精确峰值。3亿美元须是真实净责任转移，不是融资本金或当期现金前移；有限且封顶退款可以保留部分真转移，不能把未知PPA价格或保证当零。该量级相对H1资本开支25.21亿美元可有分量，但必须先确认是同范围实际成本风险减少而非用资金购买等值权益。"
+          },
+          "condition_id": "C1",
+          "condition_revision": "a2e51072fce0adc75dbdb646d71ff8b537f7796dba793cb27be8621ad84a4f10",
+          "criterion": "具名客户、共有人或投资方签署可执行项目共担文件，直接承接CEG本已承担的工程付款/资本或超支责任；对同一已公开项目范围，扣除CEG退款、回购、保证和可识别的价格/电量/权益让渡及新增义务后，CEG不可回收资本/成本风险净减少至少3亿美元，且该部分风险真实留在外部方。普通借款替换自筹、仅改变支付日或PPA支持收入不满足。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "H1全部资本开支25.21亿美元、经营现金流15.53亿美元；Google与Amazon多年度投资承诺远大于单季预算，但不能按公告总额计为近端集团付款。原3月39亿美元两年增长投资框架与新PPA/项目投入尚未去重，按未来事项发生前最新已公开范围和日期为基线，不要求取得内部全集团发票表。",
+            "trigger_boundary": "同输出范围的真实净超支是直接成本变化，可从局部工程责任与对应外部资金比较，不要求旧预算与全集团峰值全部调和，也不等竣工/财报。3亿美元不是任何短期现金占用的统一价值门槛；若变更带来更早/更多可售产出或新权利，须按已知对价判断而非机械SHORT。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "11194d51bf5e9397084ba59a1f4a6eb401073a18c6da1639cc73cd676d16ce2c",
+          "criterion": "已具名项目的最终工程/设备变更或强制改造决定，针对相同已承诺输出/服务范围，使CEG净新增不可取消工程成本至少3亿美元；计入客户、共有人及已绑定外部承担、取消的同额工作与获得的额外产出/权益后，该重要额外成本仍由CEG承担。仅付款提前、借款本金增加或毛投资公告不满足。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配CEG具名核电升级、维护与项目建设的最终预算/合同、设备订金、强制改造责任、付款里程碑、增量出力时间、客户直接出资/预付、共同业主分摊及融资/担保条款。例子包括Google支持的11台机组890MW升级、Amazon支持的Calvert Cliffs 190MW升级、共同业主直接承担份额，以及工程变更将付款提前或增量出力提前；基准区分这些项目与旧预算及既有690MW/2,700MW供电安排。公开的预付款、可退条件、担保和合同价格/电量让渡均须按净值计算；不披露的PPA价格不等于无折让，也不以设备公告或项目毛投资额替代CEG集团现金峰值。",
+      "policy_id": "pol_533a5b78f9e842448aeaed1887572301",
+      "ref": [
+        "output/work/v21/research/S0005/0037/policy_3.json",
+        "context/document3/v21/shared/document2.json#/shells/4/units/0",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "context/document3/v21/shared/d1/c4f_future_nodes.json#/future_nodes/10",
+        "context/document3/v21/shared/d1/c4f_future_nodes.json#/future_nodes/11",
+        "https://www.sec.gov/Archives/edgar/data/1168165/000186827526000104/ceg-20260630.htm",
+        "https://www.constellationenergy.com/news/2026/10/google-and-constellation-announce-landmark-agreement-to-bring-890-mw-of-new-nuclear-capacity-to-pjm-grid.html",
+        "https://www.constellationenergy.com/news/2026/09/constellation-and-amazon-announce-20-year-power-purchase-agreement-at-calvert-cliffs.html"
+      ],
+      "title": "多项目自筹峰值、工程排程与第三方风险共担",
+      "transmission": "项目资本风险、现金时点与借款融资是不同对象。H1全部资本开支25.21亿美元、CFO15.53亿美元、6月底不受限现金6.97亿美元为组合历史数，不是当前集团硬缓冲。Google超过43亿美元/890MW升级与Amazon超过30亿美元/190MW增量跨多年，和3月39亿美元增长预算的分期/重叠尚未调和，不能相加构成当前付款峰值。PPA不等客户出资；有封顶退款/保证也可能有部分真转移，但须扣责任回流及收益让渡。外部方真实承接重要既有成本风险，或同输出净超支直接增加CEG成本，可以局部公开合同独立比较；不把普通公共借款、3亿美元预付款或单纯付款提前当同额价值。当前集团付款峰值和纯时间成本仍缺基线。"
+    },
+    {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "Crane的10亿美元贷款已签最终文件，按合格成本80%及额度上限核提款；其已知借款主体、用途、2055到期与37.5bp Treasury加点已构成健康基线。最新Q2披露截至6月30日没有借款，但没有把未提款解释为额度不存在。其他项目的资格/条件承诺不等于CEG已获得资金。",
+            "trigger_boundary": "普通Crane额度内按计划报销本来属于2025年已签最高10亿美元融资路径，不是新增LONG。此处限于原已承诺资金被撤回且实质阻挡主要绑定项目，而不是3亿美元贷款面额等额损失或任意新增短借。正式撤回及公开项目付款后果可在首笔提款前成立，不需全集团资金桥；成本小幅重定价、100bp敏感度或未提款本身不够。"
+          },
+          "condition_id": "C2",
+          "condition_revision": "a0ddfb234284af100cec83a85c1ce7944936fbaac96b52b6485beb9c571cc6ab",
+          "criterion": "DOE/FFB或其他公共贷款方正式撤回/削减已对CEG具名项目承诺且原可按计划使用的资金，净减少未来12个月至少3亿美元可用支持；相应不可取消的工程付款仍到期，已知同实体同窗口客户资金、重新分期及可执行替代不足以承接，并已使该项目主要已承诺建设/供电阶段的必要付款或关键实施安排不能执行。",
+          "decision": "SHORT",
+          "trigger_layer": "INNER"
+        }
+      ],
+      "match_scope": "匹配CEG具名项目的DOE/FFB贷款、最终提款/报销条款、额度变更、利率与到期、借款人和追索，以及PJM区域竞争核电项目的政府融资与关键许可状态。新闻可表现为新签最终贷款文件、项目级环境决定、NRC功率提升许可、设备订单/供应排程，或贷款条件变化。区分借款承诺、实际借款、客户PPA和新增MW；同一政策先例不能当作CEG已获贷，非增量贷款提款也不能自动当作新股东价值。",
+      "policy_id": "pol_f67eaed879e346348210cecd430311fa",
+      "ref": [
+        "output/work/v21/research/S0005/0037/policy_2.json",
+        "context/document3/v21/shared/document2.json#/shells/4/units/0",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "context/document3/v21/shared/d1/c4f_future_nodes.json#/future_nodes/8",
+        "https://investors.constellationenergy.com/static-files/dcab113d-2e67-4dce-a1b7-a8504573fd8a",
+        "https://www.sec.gov/Archives/edgar/data/1868275/000186827526000104/ceg-20260630.htm",
+        "https://www.energy.gov/articles/energy-department-announces-42-billion-investment-boost-nuclear-power-and-help-lower",
+        "https://www.energy.gov/edf/edf-environmental-notices",
+        "https://www.nrc.gov/facilities-safety/operating-reactors/operating-reactor-licensing/power-uprates/status-of-power-uprate-applications/expected-applications-for-power-uprates",
+        "https://investor.vistracorp.com/2026-01-09-Vistra-and-Meta-Announce-Agreements-to-Support-Nuclear-Plants-in-PJM-and-Add-New-Nuclear-Generation-to-the-Grid"
+      ],
+      "title": "政府项目融资的增量可用性与PJM核电竞争供给",
+      "transmission": "公共贷款是有成本、须偿还的融资而非成本免除。Crane2025年签署最高10亿美元FFB额度，以合格成本80%及额度为限报销，运营借款人为Constellation Energy Generation, LLC且对其有追索；最后提款日2030年9月15日、2055年11月到期、逐笔Treasury加37.5bp。Q2截至6月30日未借款，不代表额度不存在或原须全部集团自筹；按原条款首次提款/报销不自动新增价值。原承诺资金实质撤回且重要绑定项目必要付款失去可执行性，才是这里的强风险路径。Vistra2026年10月5日最高42亿美元条件承诺支持近4GW既有能力及433MW增量，Meta协议2,176MW为既有电量，增量分阶段至2034年。单站最终贷款、环境决定或NRC许可可早于拨款改变概率，但当前分站MW/成本、真实未决瓶颈及供给路径分量未建立，不将任一正常批准扩大为全433MW股票冲击；任意缩减也不自动利好CEG。"
+    }
+  ],
+  "w1_events": [],
+  "alignment": {
+    "status": "COMPLETE",
+    "error": null,
+    "hit_has_new_fact": false,
+    "related_has_new_fact": true
+  },
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-10-18T02:13:57.176197Z"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "w1_assessment": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息核心事实为SpaceX在Q4部署660,000颗Nvidia GB300 GPU（分三批各220,000颗，分别于下周、11月、12月下旬），在新建Minihard设施启动，总成本约$50B。现有Event中E96仅涵盖科技巨头>$700B的AI基础设施总承诺，E4为通用供需与定价，E105为AMD数据中心收入及OpenAI/Meta部署计划，均未涉及SpaceX Colossus具体GPU部署数量、设施、时间节点和成本。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_assessment": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息核心事实为SpaceX在Colossus平台部署660万颗Nvidia GB300 GPU，确认AI/服务器算力需求保持强劲。但该消息未提供任何与Micron产品份额、HBM/数据中心组合、内存定价、客户合同、良率、扩产或财务指标相关的具体事实，也未涉及内存供给约束、竞争供应商HBM份额变化或产品资格等任何Policy criterion所关注的实体信息。仅凭AI算力扩容的宽泛行业信号，不构成与任何Memory具体触发路径的直接事实对应。",
+    "policy_hit": false,
+    "policy_related": false,
+    "hit_condition_ids": []
+  },
+  "policy_title_rows": [],
+  "policies": [],
+  "w1_events": [],
+  "research_cutoffs": {
+    "D1": null,
+    "D2": "2026-09-09T12:54:48Z"
+  }
+}

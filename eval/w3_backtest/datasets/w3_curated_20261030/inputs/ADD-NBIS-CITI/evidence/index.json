@@ -63,6 +63,69 @@
       "publisher": "Nebius / SEC",
       "published_at": "2026-08-12",
       "role": "财务规模与投资资金"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Commercial agreement with Microsoft",
+      "url": "https://assets.nebius.com/assets/86625727-9e66-46c1-af79-c27d57434e3c/25-25580-1_Nebius%2520Group%2520N.V._6-K.pdf%3Fcache-buster%3D2025-09-08T21%3A23%3A09.625Z",
+      "publisher": "Nebius / SEC",
+      "published_at": "2025-09-08",
+      "role": "客户合同条件"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Nebius Group announces closing of private offering of convertible senior notes",
+      "url": "https://www.stocktitan.net/sec-filings/NBIS/6-k-nebius-group-n-v-current-report-foreign-issuer-90f542875e1b.html",
+      "publisher": "Nebius / SEC filing via StockTitan",
+      "published_at": "2026-08-24",
+      "role": "既有融资完成状态"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "CoreWeave closes $2.6 billion loan facility",
+      "url": "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000357/ex991pr.htm",
+      "publisher": "CoreWeave / SEC",
+      "published_at": "2026-08-10",
+      "role": "同业资产融资与条件"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "NVIDIA and Nebius partner to scale full-stack AI cloud",
+      "url": "https://nebius.com/newsroom/nvidia-and-nebius-partner-to-scale-full-stack-ai-cloud",
+      "publisher": "NVIDIA and Nebius",
+      "published_at": "2026-03-11",
+      "role": "既有股权资金与GPU供给"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Nebius raises $775 million in first secured debt financing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465926084452/tm2620683d1_ex99-1.htm",
+      "publisher": "Nebius / SEC",
+      "published_at": "2026-07-17",
+      "role": "先前贷款结构与合同基线"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "Nebius Q2 2026 shareholder letter",
+      "url": "https://assets.nebius.com/assets/a6ecfd85-a6cb-4967-8ef7-9a25bd261f9c/SHLQ226.pdf-15",
+      "publisher": "Nebius",
+      "published_at": "2026-08-12",
+      "role": "容量需求与预付款范围"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Nebius gets $3.5 billion Citi facility for data center growth",
+      "url": "https://www.streetinsider.com/Reuters/Nebius%2Bgets%2B%243.5%2Bbillion%2BCiti%2Bfacility%2Bfor%2Bdata%2Bcenter%2Bgrowth/27218830.html",
+      "publisher": "Reuters",
+      "published_at": "2026-10-22T07:02:00-04:00",
+      "role": "同期传播与融资背景"
     }
   ],
   "market": {

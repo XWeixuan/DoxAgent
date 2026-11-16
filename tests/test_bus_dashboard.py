@@ -227,6 +227,41 @@ def test_period_e2e_is_per_new_message_and_replacement_does_not_double_count(tmp
     assert result['news']['latencies']==[2]
 
 
+def test_recent_business_one_message_keeps_a_real_zero_body_ratio(tmp_path):
+    store = ReadStore(tmp_path / 'read.db')
+    store.migrate()
+    store.migrate_projection_indexes()
+    store.ingest('test', 'single-article', [
+        {
+            'kind': 'native:live_deliveries', 'ticker': 'MU', 'id': 'article:MU',
+            'parent': 'article', 'source_id': 'audit',
+            'sort': '2026-09-08T11:59:00Z', 'day': '2026-09-08',
+            'data': {'standard_id': 'one', 'first_poll_due_at': '2026-09-08T11:59:00Z'},
+        },
+        {
+            'kind': 'native:article_body_results', 'ticker': '', 'id': 'article',
+            'data': {'outcome': 'FAILED', 'status': 'FAILED', 'eligible': True},
+        },
+        {
+            'kind': 'message', 'ticker': 'MU', 'id': 'one', 'source_id': 'audit',
+            'data': {
+                'pipeline': {'discovered_at': '2026-09-08T11:59:01Z'},
+                'stream_published_at': '2026-09-08T11:59:03Z',
+            },
+        },
+    ])
+    window = {'MU:audit': {'from_at': '2026-09-08T11:58:00Z', 'until_at': '2026-09-08T12:00:00Z'}}
+    business = recent_business(store, 'MU', window)['audit']
+    assert business['latencies'] == [2]
+    articles = business['articles']
+    assert len(articles) == 1
+    assert sum(value[0] in {'FULL', 'SHORT_FULL'} for value in articles.values()) == 0
+    # With one message, both mean and nearest-rank P95 are the observed latency.
+    assert sum(business['latencies']) / len(business['latencies']) == 2
+    assert sorted(business['latencies'])[0] == 2
+    assert sum(value[0] in {'FULL', 'SHORT_FULL'} for value in articles.values()) / len(articles) == 0
+
+
 def test_renewal_issues_new_scope_cursor_after_retained_reading_tail(tmp_path):
     store=ReadStore(tmp_path/'read.db');store.migrate()
     seq=store.ingest('test','initial',[message(x) for x in 'abcdef'])

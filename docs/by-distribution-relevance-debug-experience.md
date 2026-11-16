@@ -220,6 +220,175 @@
 原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/relevance_intc_ionq_20261103/IONQ`。
 <!-- /relevance-debug:IONQ-20261103-01 -->
 
+<!-- relevance-debug:MASSIVE-INTC-20261112-01 -->
+## MASSIVE-INTC-20261112-01 · INTC
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|89.7% / 86.7%|81.0% / 56.7%|
+|regex|attempt-02-overfit|86.7% / 86.7%|89.7% / 86.7%|
+
+少量业务主题的首轮结果良好，但验证暴露了产品范围缺口和泛词的字段凑合。补齐稳定产品市场并收紧局部关系后两集过线；仍存在词根误命中、把普通动词和名词搭配误当项目建设，以及跨字段拼出业务关系的问题。样本过线不等于表达式已经没有这些缺陷。应在编写前逐分支检查词边界和语法角色；达到反馈轮数上限后保留问题清单，不偷偷修订已冻结版本。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/INTC`。
+<!-- /relevance-debug:MASSIVE-INTC-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-MU-20261112-01 -->
+## MASSIVE-MU-20261112-01 · MU
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|92.9% / 65.0%|66.7% / 20.0%|
+|regex|attempt-02|100.0% / 100.0%|50.0% / 20.0%|
+|regex|attempt-03-overfit|87.0% / 100.0%|90.9% / 100.0%|
+
+只围绕开发集常见产品缩写容易遗漏价格、成本、需求替代、共享制造设备和客户部署等事实。增加有明确业务对象的稳定事实表达，比继续堆公司名称更有效。泛化补充同时引入了背景容量和设施用途误召，说明同篇共现不等于同一项目；这种代价必须与召回收益一起记录。不能把普通风险清单机械等同于已报告的供需变化。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/MU`。
+<!-- /relevance-debug:MASSIVE-MU-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-BE-20261112-01 -->
+## MASSIVE-BE-20261112-01 · BE
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|85.7% / 88.9%|31.6% / 50.0%|
+|regex|attempt-02-overfit|92.6% / 92.6%|68.8% / 91.7%|
+
+移除泛行业词后，主要误召从纯关键词转向公司介绍、潜在终端应用和替代市场边界。不能因为一次验证偏严，就把所有早期计划和相邻供给方式删掉；先核对合同、已冻结标签是否同尺度。保留原标签评分，并把标注疑点与确实的规则缺陷分开。额外修正提升了表现但精度仍未达标，不能靠放宽验收口径交付为成功。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/BE`。
+<!-- /relevance-debug:MASSIVE-BE-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-COHR-20261112-01 -->
+## MASSIVE-COHR-20261112-01 · COHR
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|100.0% / 78.9%|75.0% / 60.0%|
+|regex|attempt-02|100.0% / 100.0%|61.5% / 80.0%|
+|regex|attempt-03-overfit|94.1% / 84.2%|70.0% / 70.0%|
+
+简短规则在开发集完全命中也可能只是该集词面与题材分布较容易。动作词和业务对象放在不同位置，会把普通经营描述拼成具体项目；正文推荐区也会制造产品词误召。额外收紧没有提高两集平均表现，应保留旧版并按既定选择规则交付。均分选中的版本仍可能有很低的单项精度，平均值不能代替各项门槛或准确率优先的业务验收。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/COHR`。
+<!-- /relevance-debug:MASSIVE-COHR-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-NBIS-20261112-01 -->
+## MASSIVE-NBIS-20261112-01 · NBIS
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|94.7% / 78.3%|68.4% / 72.2%|
+|regex|attempt-02|92.0% / 100.0%|68.4% / 72.2%|
+|regex|attempt-03-overfit|90.9% / 87.0%|100.0% / 72.2%|
+
+减少泛化的标题主题和组件广告，可以提高精度，但把可接受的信息都压成实体建设或容量数字，也会漏掉市场结构、试验、供电条件和项目统计等有效事实。应区分“关系有证据”与“必须有具体订单”这两种门槛。本次精度提高而召回不足，说明局部收紧不是无代价的通用改进；不能用合并指标掩盖单个目标的缺口。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/NBIS`。
+<!-- /relevance-debug:MASSIVE-NBIS-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-CEG-20261112-01 -->
+## MASSIVE-CEG-20261112-01 · CEG
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|100.0% / 100.0%|64.3% / 60.0%|
+|regex|attempt-02-overfit|100.0% / 90.0%|100.0% / 73.3%|
+
+独立匹配行业背景词容易接受潜在应用和其他业务的介绍；改为产品市场主体及实际经营/工程事实后精度提高。要求过窄的项目措辞同时遗漏运行维护、配套设施和供需信息。准确率优先可以接受更保守的候选作为研究结果，但仍须明确召回未达标，不能把零误召的小样本外推成长期百分之百准确。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/CEG`。
+<!-- /relevance-debug:MASSIVE-CEG-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-RKLB-20261112-01 -->
+## MASSIVE-RKLB-20261112-01 · RKLB
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|96.2% / 100.0%|95.0% / 70.4%|
+|regex|attempt-02-overfit|96.2% / 100.0%|93.1% / 100.0%|
+
+开发时应覆盖完整业务范围及同一业务的多种常见称谓；不能用最显眼的公司与产品替代整个市场。验证修正补齐范围后改善召回，但通用组件用途和免责声明仍可能触发误放。来源元数据与文章实际语言未必完全一致，回放应保存原入口语言并按实际语料补词，而不是固定要求若干语言或改写输入以抬分。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/RKLB`。
+<!-- /relevance-debug:MASSIVE-RKLB-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-SNOW-20261112-01 -->
+## MASSIVE-SNOW-20261112-01 · SNOW
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|81.8% / 81.8%|80.0% / 57.1%|
+|regex|attempt-02-overfit|83.3% / 90.9%|86.7% / 92.9%|
+
+相邻产品、真实客户采用与跨系统架构事实能补召回，但一般数据治理词也广泛出现在垂直应用中。标题主体和正文独立事实需要结合，不能只依赖“存在数据”或者“出现平台名”。正式公司活动与背景介绍必须按同一业务尺度审查；对标签争议保留原判并单列，不用体裁黑名单追求指标。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/SNOW`。
+<!-- /relevance-debug:MASSIVE-SNOW-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-ONDS-20261112-01 -->
+## MASSIVE-ONDS-20261112-01 · ONDS
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|90.3% / 87.5%|100.0% / 65.6%|
+|regex|attempt-02-overfit|92.9% / 81.2%|93.8% / 93.8%|
+
+先审查业务范围是否遗漏完整产品分支，再设计词表。扩大稳定产品与关键组件表达可以补漏，撤掉宽泛动作词又会丢失采购、供应和技术事实；两者须同时评估。公司介绍中的真实产品词仍可能误触发，普通测量活动也可能被动作词拼成产品事件。一次验证修正用尽后停下并保留未解决机制，比继续按验证坏例追加特判更可靠。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_tuning_20261112/ONDS`。
+<!-- /relevance-debug:MASSIVE-ONDS-20261112-01 -->
+
+<!-- relevance-debug:MASSIVE-BE-20261112-02 -->
+## MASSIVE-BE-20261112-02 · BE
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|100.0% / 88.9%|44.4% / 33.3%|
+
+本轮先用可直接解释的业务对象搭配确定范围，不用容量数字和泛动作词推断行业联系。替代市场是否纳入应由业务尺度决定，不能为迎合个别标签而写隐蔽排除条件；对未覆盖的信息接受漏召并明确报告。简单词组也可能出现在公司背景或用途名单中，简化不等于消除了误召。 所有版本冻结后复测旧验证，只作历史样本诊断，不称为独立验收，不依据该分数继续调词。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_round2_20261112/BE`。
+<!-- /relevance-debug:MASSIVE-BE-20261112-02 -->
+
+<!-- relevance-debug:MASSIVE-COHR-20261112-02 -->
+## MASSIVE-COHR-20261112-02 · COHR
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|100.0% / 73.7%|80.0% / 40.0%|
+
+把公司主体、产品市场和少量高辨识度正文事实分别表达，可以降低维护和解释成本。撤掉宽泛项目推断会丢失一些间接相关消息，但不应立刻用数值、单位、机构清单和文章专用搭配补回来；是否接受这种取舍应看业务合理性，而不是开发集是否恰好过线。 所有版本冻结后复测旧验证，只作历史样本诊断，不称为独立验收，不依据该分数继续调词。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_round2_20261112/COHR`。
+<!-- /relevance-debug:MASSIVE-COHR-20261112-02 -->
+
+<!-- relevance-debug:MASSIVE-NBIS-20261112-02 -->
+## MASSIVE-NBIS-20261112-02 · NBIS
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|94.7% / 78.3%|87.5% / 38.9%|
+|regex|attempt-02|100.0% / 69.6%|100.0% / 16.7%|
+
+优先写清服务产品及必要设施条件，避免让泛行业词独立放行。背景介绍仍可能包含真实服务词，标题/摘要优先也可能漏掉正文经营事实。承认这两种边界，比继续叠加供应商名单和多层条件更可维护。 第二版仅删除不合理的独立设施词分支；没有按验证成绩反向选择版本。 所有版本冻结后复测旧验证，只作历史样本诊断，不称为独立验收，不依据该分数继续调词。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_round2_20261112/NBIS`。
+<!-- /relevance-debug:MASSIVE-NBIS-20261112-02 -->
+
+<!-- relevance-debug:MASSIVE-CEG-20261112-02 -->
+## MASSIVE-CEG-20261112-02 · CEG
+
+|板块|Attempt|调试 P/R|验证 P/R|
+|---|---|---|---|
+|regex|attempt-01|100.0% / 95.0%|86.7% / 86.7%|
+
+完整业务范围可以先由少量稳定市场词表达，不必给每个产品补不同的事件谓词。运行价格、供给设施等明确正文事实可独立补召回；一般背景应用仍需在偏差中暴露，而不以越来越长的排除清单追分。 所有版本冻结后复测旧验证，只作历史样本诊断，不称为独立验收，不依据该分数继续调词。
+
+原始指标与具体坏例：`C:/Users/WEIXUANXIE/Desktop/DoxAgent/eval/massive_distribution_regex_round2_20261112/CEG`。
+<!-- /relevance-debug:MASSIVE-CEG-20261112-02 -->
+
 <!-- relevance-debug:IONQ-MASSIVE-20261113-01 -->
 ## IONQ-MASSIVE-20261113-01 · IONQ
 

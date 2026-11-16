@@ -1,0 +1,22 @@
+[
+  {
+    "case_key": "ADD-COHR-FERMI-20261113",
+    "path": "inputs/ADD-COHR-FERMI-20261113/case.json",
+    "ticker": "COHR"
+  },
+  {
+    "case_key": "ADD-BE-NEBIUS-20261112",
+    "path": "inputs/ADD-BE-NEBIUS-20261112/case.json",
+    "ticker": "BE"
+  },
+  {
+    "case_key": "ADD-RKLB-BERENBERG-20261112",
+    "path": "inputs/ADD-RKLB-BERENBERG-20261112/case.json",
+    "ticker": "RKLB"
+  },
+  {
+    "case_key": "ADD-RKLB-MS-20261111",
+    "path": "inputs/ADD-RKLB-MS-20261111/case.json",
+    "ticker": "RKLB"
+  }
+]

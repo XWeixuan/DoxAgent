@@ -168,13 +168,13 @@ class W3ThreadRegistry:
             if not changed:
                 raise ValueError("template initialization lease was lost")
 
-    def create_case(self, *, ticker, case_id, compatibility, parent_id, accepted_at=None):
+    def create_case(self, *, ticker, case_id, compatibility, parent_id, accepted_at=None, stage_key="trade_decision"):
         now = self.journal.clock()
         received = accepted_at or now
         record_id = uuid4().hex
         with self.journal.transaction() as db:
             assert_write_lease(db)
-            stage = db.execute("SELECT input_refs FROM runtime_v2_w3_stages WHERE case_id=? AND phase='trade_decision'", (case_id,)).fetchone()
+            stage = db.execute("SELECT input_refs FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?", (case_id,stage_key)).fetchone()
             if stage is None:
                 raise ValueError('Trade stage must exist before binding a Case thread')
             refs = json.loads(stage[0]) if stage and stage[0] else {}
@@ -200,7 +200,7 @@ class W3ThreadRegistry:
                 ),
             )
             refs.update(record_id=record_id, operation_key='w3-fork:' + record_id)
-            db.execute("UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase='trade_decision'", (encode(refs),case_id))
+            db.execute("UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?", (encode(refs),case_id,stage_key))
             return dict(
                 db.execute(
                     "SELECT * FROM runtime_v2_w3_threads WHERE record_id=?", (record_id,)
@@ -223,6 +223,13 @@ class W3ThreadRegistry:
                 "WHERE owner_case_id=?",
                 (case_id,),
             )
+
+    def bound(self, case_id, stage_key="trade_decision"):
+        stage = self.stage(case_id, stage_key) or {}
+        rid = (stage.get('input_refs') or {}).get('record_id')
+        with self.journal.transaction(write=False) as db:
+            row = db.execute('SELECT * FROM runtime_v2_w3_threads WHERE record_id=?', (rid,)).fetchone()
+        return dict(row) if row else None
 
     def owned(self, case_id):
         with self.journal.transaction(write=False) as db:

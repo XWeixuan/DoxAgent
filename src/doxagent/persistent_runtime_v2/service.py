@@ -131,7 +131,7 @@ def _w2_detail_business_payload(details: PolicyDetailSnapshot) -> dict[str, Any]
     if isinstance(details, PolicyDetailSnapshotV3):
         return {
             "candidate_policy_ids": details.requested_policy_ids,
-            "policies": [p.model_dump(mode="json") for p in details.policies],
+            "policies": [p.model_dump(mode="json", exclude={"ref"}) for p in details.policies],
         }
     by_id = {policy.policy_id: policy for policy in details.policies}
     ordered = [by_id[policy_id] for policy_id in details.requested_policy_ids if policy_id in by_id]
@@ -604,7 +604,7 @@ class PersistentRuntimeV2Service:
                     k: v
                     for k, v in w3_bundle["assets"].items()
                     if (
-                        k in {"w3/AGENTS.md", "w3/skills/skill.md", "w3/operations.md"}
+                        k in {"w3/AGENTS.md", "w3/skills/skill.md", "w3/skills/operations.md", "w3/operations.md"}
                         if w3_bundle["contracts"].get("w3_asset_layout") in {"agents-skill.v1", "agents-skill-operations.v1"}
                         else k.startswith("w3/")
                     )
@@ -1776,6 +1776,8 @@ class PersistentRuntimeV2Service:
         if case.route.primary_route.value == "W3":
             from .w3_models import freeze_case_profile
 
+            from .w3_consensus import freeze_mode
+            freeze_mode(case, self.journal)
             freeze_case_profile(case, provider=getattr(self._w3_agent, "_model_provider", None))
         effects: list[RuntimeEffect] = []
         for effect_type in case.route.side_effects:

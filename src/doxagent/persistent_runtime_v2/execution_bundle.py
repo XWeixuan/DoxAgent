@@ -56,8 +56,8 @@ class ExecutionBundles:
             required = ("w3/AGENTS.md", "w3/skills/skill.md")
             v6 = is_pin_watch_contract(w3_contract_version)
             if v6:
-                required += ("w3/operations.md",)
-                if "W3_OPERATIONS_PLACEHOLDER" in value["assets"].get("w3/operations.md", ""):
+                required += ("w3/skills/operations.md",)
+                if "W3_OPERATIONS_PLACEHOLDER" in value["assets"].get("w3/skills/operations.md", ""):
                     raise ValueError("Replace operations placeholder before publishing v6")
             if any(not value["assets"].get(key, "").strip() for key in required):
                 raise ValueError("Two-phase W3 requires AGENTS.md and the single skills/skill.md")

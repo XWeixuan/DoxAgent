@@ -80,7 +80,7 @@ rt=ro(ROOT/'runtime/runtime.sqlite3')
 a=load(rt.execute("select payload from runtime_values "
  "where namespace='execution' and key='active'").fetchone()[0])
 b=load(rt.execute('select payload from runtime_snapshots where id=?',(a,)).fetchone()[0])
-assets={k:b['assets'][k] for k in ['w3/AGENTS.md','w3/skills/skill.md','w3/operations.md'] if k in b['assets']}
+assets={k:b['assets'][k] for k in ['w3/AGENTS.md','w3/skills/skill.md','w3/skills/operations.md'] if k in b['assets']}
 emit('prompts',bundle_id=a,assets=assets,contracts=b['contracts'])
 """,
         host,
@@ -103,7 +103,7 @@ emit('prompts',bundle_id=a,assets=assets,contracts=b['contracts'])
             bundle_id=value["bundle_id"],
             hashes={
                 n: hashlib.sha256((destination / n).read_bytes()).hexdigest()
-                for n in ("AGENTS.md", "skills/skill.md", "contract.json", "backtest.md", "operations.md") if (destination/n).exists()
+                for n in ("AGENTS.md", "skills/skill.md", "contract.json", "backtest.md", "skills/operations.md") if (destination/n).exists()
             },
         ),
     )
@@ -313,7 +313,7 @@ def build_curated(root):
             or market.get("series", {}).get(n, {}).get("session_state") == "MARKET_CLOSED"
             for n in ("daily", "hourly", "fine")
         )
-        if not case.get("as_of") or not sources or not has_market:
+        if not case.get("as_of") or not case.get("message", {}).get("title"):
             incomplete.append(
                 dict(
                     case_key=key,
@@ -329,7 +329,7 @@ def build_curated(root):
             dict(
                 as_of=case.get("as_of"),
                 sources=sources,
-                market=dict(access="w3_research.market_view", observed_at=case.get("as_of")),
+                market=dict(access="w3_research.market_view", observed_at=market.get("observed_at")),
             ),
         )
     manifest.update(
@@ -356,10 +356,11 @@ def construction_tasks(root, keys=None, batch_size=4):
             case_keys=batch,
             manual=str(MANUAL.resolve()),
             dataset=str(root),
+            prompt_root=str((root / manifest.get("prompt_root", "prompt_source")).resolve()),
             instructions=(
                 "先读构造规范手册；只读本批 inputs/*/case.js"
-                "on、research D1/D2、prompt_sourc"
-                "e/AGENTS.md、skills/skill.md、ba"
+                "on、research D1/D2、任务prompt_root中的"
+                "AGENTS.md、skills/skill.md、ba"
                 "cktest.md。禁止读 Gold、catalog、原始C"
                 "ase、preparation或历史报告，禁止读取实施方案。"
                 "基于身处 as_of 的 W3 研究需要执行真实 Web S"
@@ -372,7 +373,8 @@ def construction_tasks(root, keys=None, batch_size=4):
                 "b_gaps 或采集器可信度判断。研究问题与采集困难仅写独立"
                 " preparation/web_review/<case_"
                 "key>.md；不要判断交易方向或改 Gold/Tag。DA"
-                "TE精度案例仅补确认的原发精确时刻加5分钟并写回该Case "
+                "TE精度且尚无as_of的案例才补确认的原发精确时刻加5分钟；已有as_of保持不变。"
+                "仅对未定时Case写回"
                 "as_of/time_basis，其他原消息字段不改。每个来"
                 "源文件写 URL、原发时间、角色和实际读到的正文；12-20"
                 "份来源仅作参考，按信息覆盖选择，不设硬上限或凑数。完成后逐C"

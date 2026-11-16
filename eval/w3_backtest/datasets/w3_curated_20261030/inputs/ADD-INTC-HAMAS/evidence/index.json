@@ -63,6 +63,78 @@
       "publisher": "Ahram Online",
       "published_at": "2026-10-12",
       "role": "同期外交进度"
+    },
+    {
+      "id": "sources/S08.md",
+      "path": "sources/S08.md",
+      "title": "Intel 2025 Annual Report",
+      "url": "https://www.intc.com/filings-reports/annual-reports/content/0000050863-26-000011/0000050863-26-000011.pdf",
+      "publisher": "Intel",
+      "published_at": "2026-01-23",
+      "role": "生产网络与以色列暴露"
+    },
+    {
+      "id": "sources/S09.md",
+      "path": "sources/S09.md",
+      "title": "Kushner urges Netanyahu to test Hamas disarmament in Gaza",
+      "url": "https://www.axios.com/2026/08/17/kushner-netanyahu-hamas-gaza",
+      "publisher": "Axios",
+      "published_at": "2026-08-17T18:41:29Z",
+      "role": "先前各方立场"
+    },
+    {
+      "id": "sources/S10.md",
+      "path": "sources/S10.md",
+      "title": "Intel Kiryat Gat expansion frozen for foreseeable future",
+      "url": "https://en.globes.co.il/en/article-intel-kiryat-gat-expansion-frozen-for-foreseeable-future-1001515435",
+      "publisher": "Globes",
+      "published_at": "2025-07-10",
+      "role": "工厂项目状态"
+    },
+    {
+      "id": "sources/S11.md",
+      "path": "sources/S11.md",
+      "title": "One year on, Trump’s Gaza plan has not stopped Israeli fire or disarmed Hamas",
+      "url": "https://d2233.cms.socastsrm.com/2026/10/06/explainer-one-year-on-trumps-gaza-plan-has-not-stopped-israeli-fire-or-disarmed-hamas/",
+      "publisher": "Reuters",
+      "published_at": "2026-10-06",
+      "role": "同期停火与先前争议"
+    },
+    {
+      "id": "sources/S12.md",
+      "path": "sources/S12.md",
+      "title": "Trump’s Board of Peace proposes new plan on rebuilding Gaza",
+      "url": "https://apnews.com/article/ca3dcf44fea92db28678553bb7732c32",
+      "publisher": "Associated Press",
+      "published_at": "2026-09-23T14:09:04Z",
+      "role": "同期重建及谈判状态"
+    },
+    {
+      "id": "sources/S13.md",
+      "path": "sources/S13.md",
+      "title": "Israel says it has serious concerns with Hamas disarmament deal",
+      "url": "https://apnews.com/article/72b1493ca75bb9d4cf195f325d8dc425",
+      "publisher": "Associated Press",
+      "published_at": "2026-08-02T13:51:07Z",
+      "role": "以色列此前公开立场"
+    },
+    {
+      "id": "sources/S14.md",
+      "path": "sources/S14.md",
+      "title": "Hamas leaders tell Kushner they will demilitarize Gaza, sources say",
+      "url": "https://www.axios.com/2026/08/16/kushner-hamas-gaza-disarmament-egypt-israel",
+      "publisher": "Axios",
+      "published_at": "2026-08-16T20:13:03Z",
+      "role": "Hamas先前表态及条件"
+    },
+    {
+      "id": "sources/S15.md",
+      "path": "sources/S15.md",
+      "title": "Worker dies after explosion at Intel’s Kiryat Gat plant",
+      "url": "https://www.calcalistech.com/ctechnews/article/914lhis9l",
+      "publisher": "CTech",
+      "published_at": "2026-10-14",
+      "role": "同期设施事故调查"
     }
   ],
   "market": {

@@ -1,3 +1,29 @@
+# 2026-11-16：v6 单轮回测与可选真实上下文
+
+新运行仅支持 `persistent-runtime.w3.v6` 和 v2 数据集；历史报告仍可读取，不重跑旧双阶段运营。正式集仍为49条、Gold未变。默认指令包为 `prompt_source_v6_20261116`：它来自当前本地AGENTS/Skill及独立backtest.md，是明确的离线Trade包，不表示已激活生产bundle，也不要求operations.md。
+
+每Case可提供 `inputs/<case>/context.json`，包含原W1/Event、W2、关联Policy、alignment、PIN、48h实际ENTRY成交历史与研究cutoff中能恢复的部分。模型只看到共用生产v6投影；缺项与显式空集合不同。D1/D2/网页/行情缺失不再由宿主直接判NO_TRADE或禁止运行；错误文件与未来完整价格条仍报输入错误。
+
+```powershell
+# 准备期只读补上下文，不调用评分模型
+.venv/Scripts/python.exe -m doxagent.w3_backtest prepare-context --dataset w3_curated_20261030
+.venv/Scripts/python.exe -m doxagent.w3_backtest build --dataset w3_curated_20261030
+# 按生产W2路由（HIT/RELATED→Sol/medium，其余Luna/max），默认沿用生产速度档
+.venv/Scripts/python.exe -m doxagent.w3_backtest run --dataset w3_curated_20261030 --run-id D:/DoxAgentBacktest/runs/v6_trial --concurrency 8
+# 固定普通Luna/max实验；显式关闭Fast，无需复制修改源码
+.venv/Scripts/python.exe -m doxagent.w3_backtest run --dataset w3_curated_20261030 --run-id D:/DoxAgentBacktest/runs/v6_luna_standard --model gpt-6-luna --effort max --service-tier default --concurrency 8
+```
+
+本轮只开发、补料和静态/替身传输验证，以上评分命令没有执行。运行期仍关闭实时Web/Data MCP/IBKR/子Agent和生产动作；工具使用已冻结资料。运行结果保存 `visible_input.json`、覆盖清单、实际模型/档位和SDK审计。更换输入/指令/模型/档位必须新建run，恢复保留成功Case。全量构造旧命令 `prepare-curated` 会重新导入历史目录，不应覆盖当前增补集。
+
+验收与补料详情见 `reports/context_alignment_20261116/completion.md`。
+
+# 2026-11-14：新增四条生产决策样本
+
+`w3_curated_20261030`在45条正式集上增补4条（COHR/Fermi、BE/Nebius、RKLB/Berenberg、RKLB/Morgan Stanley），四条Gold均为用户指定的NO_TRADE。原消息、绑定D1/D2及三段真实行情恢复自生产；选择身份见`preparation/additions_20261114/entries.json`。证据构造与双提示词各五轮实验见`runs/badcase4_prompt_ab_20261114/STATUS.md`，以该状态及验收文件为准。
+
+本轮固定普通`gpt-6-luna/max`、`service_tier=default`、`fast_mode=false`。提示词一组使用准备时生产active快照，另一组使用用户指定的v6；统一框架和资料，只比较业务提示词，不回退整套生产架构。不得直接使用旧45条统计分母描述增补后的集合。
+
 # 2026-11-06：复用 W3 时间感知 Harness
 
 v2 决策级回测沿用生产的真实执行起点、Worker 元数据和原生时间片段，不在业务提示词中自行拼接倒计时。默认关闭；`run --time-awareness` 显式开启，`resume` 继承该 run 的开关。Elapsed 在公共提示词母线程就绪后、每条 Case 的研究准备和子线程创建前开始；真实运行耗时不推进历史 `as_of`。同一 Case 重试沿用原起点，Template 不携带提醒。

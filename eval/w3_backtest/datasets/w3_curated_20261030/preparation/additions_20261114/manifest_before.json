@@ -1,0 +1,244 @@
+{
+  "schema_version": "w3-backtest.dataset.v2",
+  "dataset_id": "w3_curated_20261030",
+  "evaluation_scope": "w3_decision_only",
+  "case_count": 45,
+  "cases": [
+    {
+      "case_key": "BE-01-01",
+      "path": "inputs/BE-01-01/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "BE-02-01",
+      "path": "inputs/BE-02-01/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "BE-02-02",
+      "path": "inputs/BE-02-02/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "BE-02-03",
+      "path": "inputs/BE-02-03/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "BE-02-05",
+      "path": "inputs/BE-02-05/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "BE-03-01",
+      "path": "inputs/BE-03-01/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "BE-03-03",
+      "path": "inputs/BE-03-03/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "BE-03-05",
+      "path": "inputs/BE-03-05/case.json",
+      "ticker": "BE"
+    },
+    {
+      "case_key": "INTC-01-01",
+      "path": "inputs/INTC-01-01/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "INTC-01-02",
+      "path": "inputs/INTC-01-02/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "INTC-01-04",
+      "path": "inputs/INTC-01-04/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "INTC-01-05",
+      "path": "inputs/INTC-01-05/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "INTC-02-01",
+      "path": "inputs/INTC-02-01/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "INTC-02-02",
+      "path": "inputs/INTC-02-02/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "INTC-02-03",
+      "path": "inputs/INTC-02-03/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "MU-01-01",
+      "path": "inputs/MU-01-01/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-01-03",
+      "path": "inputs/MU-01-03/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-01-04",
+      "path": "inputs/MU-01-04/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-01-05",
+      "path": "inputs/MU-01-05/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-02-02",
+      "path": "inputs/MU-02-02/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-02-03",
+      "path": "inputs/MU-02-03/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-02-05",
+      "path": "inputs/MU-02-05/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-03-01",
+      "path": "inputs/MU-03-01/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-03-02",
+      "path": "inputs/MU-03-02/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-03-03",
+      "path": "inputs/MU-03-03/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-03-04",
+      "path": "inputs/MU-03-04/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "MU-03-05",
+      "path": "inputs/MU-03-05/case.json",
+      "ticker": "MU"
+    },
+    {
+      "case_key": "RKLB-01-02",
+      "path": "inputs/RKLB-01-02/case.json",
+      "ticker": "RKLB"
+    },
+    {
+      "case_key": "EXTRA-INTC-OPENAI",
+      "path": "inputs/EXTRA-INTC-OPENAI/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "EXTRA-INTC-TERAFAB",
+      "path": "inputs/EXTRA-INTC-TERAFAB/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "EXTRA-RKLB-SYNSPECTIVE",
+      "path": "inputs/EXTRA-RKLB-SYNSPECTIVE/case.json",
+      "ticker": "RKLB"
+    },
+    {
+      "case_key": "EXTRA-RKLB-NASA",
+      "path": "inputs/EXTRA-RKLB-NASA/case.json",
+      "ticker": "RKLB"
+    },
+    {
+      "case_key": "ADD-COHR-SPIL",
+      "path": "inputs/ADD-COHR-SPIL/case.json",
+      "ticker": "COHR"
+    },
+    {
+      "case_key": "ADD-NBIS-CITI",
+      "path": "inputs/ADD-NBIS-CITI/case.json",
+      "ticker": "NBIS"
+    },
+    {
+      "case_key": "ADD-INTC-HAMAS",
+      "path": "inputs/ADD-INTC-HAMAS/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "ADD-SNOW-EVERCORE",
+      "path": "inputs/ADD-SNOW-EVERCORE/case.json",
+      "ticker": "SNOW"
+    },
+    {
+      "case_key": "ADD-COHR-CORNING",
+      "path": "inputs/ADD-COHR-CORNING/case.json",
+      "ticker": "COHR"
+    },
+    {
+      "case_key": "ADD-CEG-DOE",
+      "path": "inputs/ADD-CEG-DOE/case.json",
+      "ticker": "CEG"
+    },
+    {
+      "case_key": "ADD-SNOW-OCI",
+      "path": "inputs/ADD-SNOW-OCI/case.json",
+      "ticker": "SNOW"
+    },
+    {
+      "case_key": "ADD-INTC-CLASSIQ",
+      "path": "inputs/ADD-INTC-CLASSIQ/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "ADD-INTC-ORACLE",
+      "path": "inputs/ADD-INTC-ORACLE/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "ADD-INTC-NEWSTREET",
+      "path": "inputs/ADD-INTC-NEWSTREET/case.json",
+      "ticker": "INTC"
+    },
+    {
+      "case_key": "ADD-NBIS-BETHUNE",
+      "path": "inputs/ADD-NBIS-BETHUNE/case.json",
+      "ticker": "NBIS"
+    },
+    {
+      "case_key": "ADD-AMZN-Q3-2026",
+      "path": "inputs/ADD-AMZN-Q3-2026/case.json",
+      "ticker": "COHR"
+    },
+    {
+      "case_key": "ADD-MPWR-Q3-2026",
+      "path": "inputs/ADD-MPWR-Q3-2026/case.json",
+      "ticker": "COHR"
+    }
+  ],
+  "construction_model": "gpt-6.1-terra",
+  "construction_effort": "medium",
+  "prompt_root": "prompt_source",
+  "preparation_status": "READY",
+  "preparation_summary": {
+    "cases": 45,
+    "ready": 45,
+    "incomplete": []
+  },
+  "input_fingerprint": "cc2fc8ebb4c4171b3840a3cb06df1e81ea04b2470b0c30c1721edfe03e7c69a6",
+  "selection_revision": "user-remove-BE-02-04-20261030"
+}
