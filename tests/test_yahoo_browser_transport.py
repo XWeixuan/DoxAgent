@@ -25,6 +25,42 @@ def make_transport(handler, **kwargs):
     return YahooTransport(session_factory=factory, gap=0, jitter=0, **kwargs), calls
 
 
+async def test_rss_admission_does_not_consume_network_deadline():
+    async def handler(request):
+        await asyncio.sleep(.15)
+        return httpx.Response(200, text='rss')
+
+    transport, _ = make_transport(handler)
+    try:
+        responses = await asyncio.gather(*[
+            transport.request('GET', f'https://finance.yahoo.com/{i}',
+                              rate_scope='rss', timeout=.4) for i in range(5)
+        ])
+        assert len(responses) == 5
+    finally:
+        transport.close()
+
+
+async def test_cancelled_rss_waiter_returns_capacity():
+    async def handler(request):
+        await asyncio.sleep(.05)
+        return httpx.Response(200)
+
+    transport, _ = make_transport(handler)
+    try:
+        first = asyncio.create_task(transport.request('GET', 'https://finance.yahoo.com/1', rate_scope='rss'))
+        await asyncio.sleep(.01)
+        waiting = asyncio.create_task(transport.request('GET', 'https://finance.yahoo.com/2', rate_scope='rss'))
+        await asyncio.sleep(.01)
+        waiting.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await waiting
+        await first
+        assert (await asyncio.wait_for(transport.request('GET', 'https://finance.yahoo.com/3', rate_scope='rss'), 1)).status_code == 200
+    finally:
+        transport.close()
+
+
 async def test_proxy_is_scoped_to_yahoo_session_factory():
     transport, factories = make_transport(
         lambda _: httpx.Response(200, json={}),

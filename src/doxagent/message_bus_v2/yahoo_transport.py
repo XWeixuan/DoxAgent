@@ -17,7 +17,8 @@ from typing import Any
 
 import httpx
 from curl_cffi.requests import RequestsError
-from .publisher_http import PublisherSession as AsyncSession,http_budget
+from .publisher_http import (PublisherSession as AsyncSession, http_budget,
+                             joint_permits, network_timeout, network_wait)
 
 from .http_routes import approved_routes, transport_routes
 
@@ -92,7 +93,12 @@ class YahooTransport:
     async def _request_impl(self, method: str, url: str, *, rate_scope="api", **kwargs: Any):
         if self._lock is None:
             self._lock = asyncio.Lock()
-        async with asyncio.timeout(float(kwargs.get('timeout') or 15)),self._scope_locks.setdefault(rate_scope, asyncio.Semaphore(4 if rate_scope == "rss" else 1)),http_budget('yahoo_graphql_collector' if rate_scope == 'graphql' else 'yahoo_collector'):
+        # Match the other publisher transports: local admission/pacing is not
+        # network time. The caller's total poll deadline still bounds the work.
+        async with network_timeout(float(kwargs.get('timeout') or 15)), joint_permits(
+            self._scope_locks.setdefault(rate_scope, asyncio.Semaphore(4 if rate_scope == "rss" else 1)),
+            http_budget('yahoo_graphql_collector' if rate_scope == 'graphql' else 'yahoo_collector'),
+        ):
             endpoint_until, endpoint_status = self._endpoint_circuits.get(url, (0, 0))
             if self._clock() < endpoint_until:
                 raise YahooEndpointUnavailable(
@@ -104,11 +110,12 @@ class YahooTransport:
             until, strikes = self._circuits.get(rate_scope, (0, 0))
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
-            async with self._spacing_locks.setdefault(rate_scope,asyncio.Lock()):
-                await self._sleep(max(0, self._next_start.get(rate_scope, 0) - self._clock()))
-                gap = min(self._gap, .25) if rate_scope == "rss" else self._gap
-                jitter = min(self._jitter, .05) if rate_scope == "rss" else self._jitter
-                self._next_start[rate_scope] = self._clock() + gap + random.uniform(0, jitter)
+            with network_wait():
+                async with self._spacing_locks.setdefault(rate_scope,asyncio.Lock()):
+                    await self._sleep(max(0, self._next_start.get(rate_scope, 0) - self._clock()))
+                    gap = min(self._gap, .25) if rate_scope == "rss" else self._gap
+                    jitter = min(self._jitter, .05) if rate_scope == "rss" else self._jitter
+                    self._next_start[rate_scope] = self._clock() + gap + random.uniform(0, jitter)
             until, strikes = self._circuits.get(rate_scope, (0, 0))
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
@@ -160,12 +167,11 @@ class YahooTransport:
                             event.update(response_received_at=utc_now().isoformat(), status_code=response.status_code)
                         return response
 
-                    async with asyncio.timeout(float(kwargs.get("timeout") or 30)):
-                        response, self.last_http_route = await transport_routes(
-                            send,
-                            self._http_routes,
-                            (RequestsError, httpx.TransportError),
-                        )
+                    response, self.last_http_route = await transport_routes(
+                        send,
+                        self._http_routes,
+                        (RequestsError, httpx.TransportError),
+                    )
             except RequestsError as exc:
                 raise httpx.RequestError(
                     "Yahoo browser transport request failed", request=httpx.Request(method, url)

@@ -3159,3 +3159,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - cbff3269b deployed to Worker/Scheduler; real HTTP v6 A/B claim and repeat-binding canary passed. Dual mode remains enabled. Actual source/image hashes verified.
 - Confirmed 397 failed pre-dispatch Cases before cutover; none had an accepted model Job. After release, natural Cases completed both dual Trade aggregation and Operations; no historical trade replay.
 - Preserved explicit cancellation receipts for the final two maintenance Jobs; their tasks resumed through existing recovery. Restored all 58 temporarily held background tasks. Detailed evidence/report: docs/w3_v6_ready_scope_incident_20261116.md.
+
+2026-11-16 全局消息源逐源修复：Yahoo 专用 HTTP 路由补齐到实际 Collector 角色；复用联合许可与网络等待预算，避免本地排队放大为 RSS 未发送超时，保留总任务截止与现有限流。
