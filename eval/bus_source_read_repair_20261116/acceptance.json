@@ -260,5 +260,10 @@
       "stale": 0,
       "removed": 0
     }
+  },
+  "api_source_sha256": {
+    "src/doxagent/api_v2/article_samples.py": "85065b225dbe8529ec6bd77560c04e447bdbf87adfbe3ed7f2f8b8f37203fb85",
+    "src/doxagent/api_v2/news_timeliness.py": "60e781fcdbfc7032363e6e1421ef810e828a60f77c63a7958d8818941b211aa9",
+    "src/doxagent/v2_read/repository.py": "d32138846049bcce62da9cab2119e94d309d58cd70e5b76f15ac13b72b72a07e"
   }
 }
