@@ -3144,3 +3144,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Production-sized regression reproduced ContentUnavailable after aggregate commit: a dotted JSON update added consensus metadata beside a frozen_inputs Native marker.
 - Store the audit summary in an optional RuntimeCase root JSON field instead; preserve frozen Native references without re-encoding large contexts, and keep Agent/wire output schemas unchanged. Read/API uses the same receipt summary.
 - 119 related regressions passed; the affected dual tests now use >16KiB frozen inputs. Temporarily switched only new-Case dual admission to single while preparing this repair; no new production W3 Cases observed in the window.
+
+2026-11-16 integrated main production release completed
+- Pushed c401cdc3b and 27d8c0ab7 to origin/main; deployed the repaired backend/web through the existing host release owner and verified all 16 affected roles, actual revision and Worker/Scheduler source/prompt hashes.
+- Ten tickers now use the v6 entry bundle. Re-enabled dual_consensus for new W3 Effects; Luna/max Trade uses fast, Operations uses default. Existing identities/modes remain frozen.
+- Eight bounded observations across 28 minutes: minimum available RAM 21.0GiB, no new swap-out. No new natural W3 Case arrived, so dual peak/quality/latency acceptance remains open. Release report: docs/w3_v6_dual_main_release_20261116.md.

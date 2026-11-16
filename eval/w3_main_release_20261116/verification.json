@@ -1,0 +1,170 @@
+{
+  "at": "2026-11-16T01:59:50.214466+00:00",
+  "commit": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+  "components": {
+    "codex-worker": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "healthy"
+    },
+    "v2-api": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "healthy"
+    },
+    "v2-projector": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-scheduler": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-maintenance": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-web": {
+      "image": "sha256:5581686b531dd508d3b46350e3b4cf11935e5205ee6d2eb072dfee2c37a7046d",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "healthy"
+    },
+    "v2-initialization": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-cdecr-executor": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "healthy"
+    },
+    "v2-o4": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-executor": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-delivery": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-transport-maintenance": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-control": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-message-bus": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "running"
+    },
+    "v2-message-collector": {
+      "image": "sha256:81ae63ee5c588d5eb5950257296582489ac87835656f9fea91408ba8324fc4ab",
+      "revision": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "healthy"
+    }
+  },
+  "source_hashes": {
+    "src/doxagent/persistent_runtime_v2/w3.py": "52cc2fc4e7b45ddac09c9a2d837f308fae40241a8ad7de185c90655f4c2dfeec",
+    "src/doxagent/persistent_runtime_v2/w3_execution.py": "0f974ab13a8f1226c38b5ad3bc2c81a3049c54dd3a590ffde3260007d4562809",
+    "src/doxagent/persistent_runtime_v2/w3_consensus.py": "36a62661b6b229898d82ff9c9c7d3639b0136f7dfb3c348019324ea051be6b2c",
+    "src/doxagent/persistent_runtime_v2/w3_threads.py": "aba56f4fe9a833a8d64e68a33e818e7c36c949d8c39b13496d40abf4a9ac224f",
+    "src/doxagent/persistent_runtime_v2/w3_models.py": "3a204c4687096f77c8e8e8e78ac578745e68fde079f31b80e02f97e677431209",
+    "src/doxagent/persistent_runtime_v2/w3_assets.py": "99e73ca4fdcca74c120d450dc7e3ddc94e7cf5dd5d534aae6a1a077baef3293a",
+    "src/doxagent/persistent_runtime_v2/w3_contracts.py": "3cc1a7319f6113be561f02681b7cd3ca187b6e3a00018a110acffc397062c4de",
+    "src/doxagent/persistent_runtime_v2/w3_v6.py": "c2ea0bb0d0ef8c648c796e7d8bfafc7e10fe85ec482241eb8660e7baac49d025",
+    "src/doxagent/persistent_runtime_v2/execution_bundle.py": "b3017d60af1aa7498a70b71825f8da5708bc2152265796bd5ef49d2ec5e87f22",
+    "src/doxagent/persistent_runtime_v2/service.py": "55b2e2e035486341cc3b5730948030ebeac6c56d0a4a8d4ff1c20764e0bc96fe",
+    "src/doxagent/persistent_runtime_v2/schema.py": "803e22445fd9a4751ec7b65e2b4a12afd83cbc721e6450b7c948ac4cd1d82c61",
+    "src/doxagent/codex_worker/sdk_runtime.py": "f8555f72fd109164e1f6fa867853cbad91bda771eba07d04b7ef98839f06aef4",
+    "src/doxagent/codex_worker/w3_ready.py": "ca4f02e429d2369a870ab9d10116d38bca18e72e7889a658dbcfe4b16eabb461",
+    "prompts/persistent_runtime_v2/w3/AGENTS.md": "4add27174b101fddc57d0f6a01a6751239da0a4b9cb55d053515ddcda77c353f",
+    "prompts/persistent_runtime_v2/w3/skills/skill.md": "a1ed7337e4b4353cae5826c437030f64e53cdc480451a810e94cb9659d96888a",
+    "prompts/persistent_runtime_v2/w3/skills/operations.md": "9b506a6e89dec33beab7220421272be78904e92dc0ebcc85d9ff14677baa3a76",
+    "prompts/persistent_runtime_v2/w3/contract.json": "b42f881841b3eb8d71b9b1ebd07550e53fd447cbdd1205d50a8d731eab70cdfe"
+  },
+  "verified_source_roles": [
+    "codex-worker",
+    "v2-scheduler"
+  ],
+  "ready_profiles": [
+    [
+      "READY",
+      "gpt-6-luna",
+      "max",
+      "w3-entry-v6",
+      2
+    ],
+    [
+      "RETIRED",
+      "gpt-6-luna",
+      "max",
+      "w3-entry-v6",
+      1
+    ],
+    [
+      "RETIRING",
+      "gpt-6-luna",
+      "max",
+      "w3-entry-v6",
+      1
+    ]
+  ],
+  "historical_cleanup_errors": [
+    [
+      "CASE",
+      "DELETING",
+      "Server error '500 Internal Server Error' for url 'http://codex-worker:8791/v1/threads/01a14da4-690a-79c3-b3a0-d8fbe91213b0/status'\nFor more information check: https://developer.mozilla.org/en-US/docs/",
+      1
+    ],
+    [
+      "CASE",
+      "DELETING",
+      "Server error '500 Internal Server Error' for url 'http://codex-worker:8791/v1/threads/01a15911-159e-7440-8e60-a875a5e9f4a2'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTT",
+      1
+    ],
+    [
+      "CASE",
+      "DELETING",
+      "Server error '500 Internal Server Error' for url 'http://codex-worker:8791/v1/threads/01a15f2a-319a-78b2-ae1b-4eb4c71c1e17/status'\nFor more information check: https://developer.mozilla.org/en-US/docs/",
+      1
+    ],
+    [
+      "CASE",
+      "DELETING",
+      "Server error '500 Internal Server Error' for url 'http://codex-worker:8791/v1/threads/01a16072-2537-7563-8d0a-ca296e3cf092/status'\nFor more information check: https://developer.mozilla.org/en-US/docs/",
+      1
+    ],
+    [
+      "CASE",
+      "DELETING",
+      "Server error '500 Internal Server Error' for url 'http://codex-worker:8791/v1/threads/01a16234-f42f-7181-96d0-cb8837760e72/status'\nFor more information check: https://developer.mozilla.org/en-US/docs/",
+      1
+    ],
+    [
+      "CASE",
+      "DELETING",
+      "Server error '500 Internal Server Error' for url 'http://codex-worker:8791/v1/threads/01a17f15-8148-7a42-b94f-7cdbd4453768/status'\nFor more information check: https://developer.mozilla.org/en-US/docs/",
+      1
+    ]
+  ]
+}

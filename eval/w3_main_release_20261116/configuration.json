@@ -1,0 +1,1 @@
+{"model_turns": 0, "configuration": [{"phase": "trade_decision", "model": "gpt-6-luna", "tier": "fast", "fast_mode": true}, {"phase": "post_decision_operations", "model": "gpt-6-luna", "tier": "default", "fast_mode": false}]}
