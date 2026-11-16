@@ -1,0 +1,264 @@
+{
+  "deployment": {
+    "container": "ec37e1e8e473",
+    "health": "healthy",
+    "restarts": 0,
+    "image": "sha256:bffae76b0a792334ff966a1a593f5a7022e068ca5880183885154733026c2b03",
+    "commit": "6f28e20535bfc6b59f46ebc23e85ab70d2f97dd6"
+  },
+  "http": [
+    {
+      "path": "/message-bus/source-catalog",
+      "status": 200,
+      "seconds": 5.221,
+      "sources": 85
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.046
+    },
+    {
+      "path": "/tickers/BE/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.281
+    },
+    {
+      "path": "/tickers/BE/messages",
+      "status": 200,
+      "seconds": 0.114,
+      "items": 20
+    },
+    {
+      "path": "/tickers/BE/messages",
+      "status": 200,
+      "seconds": 0.097,
+      "page": 2,
+      "items": 17,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.06
+    },
+    {
+      "path": "/tickers/CEG/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.378
+    },
+    {
+      "path": "/tickers/CEG/messages",
+      "status": 200,
+      "seconds": 0.105,
+      "items": 20
+    },
+    {
+      "path": "/tickers/CEG/messages",
+      "status": 200,
+      "seconds": 0.081,
+      "page": 2,
+      "items": 1,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.044
+    },
+    {
+      "path": "/tickers/COHR/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.275
+    },
+    {
+      "path": "/tickers/COHR/messages",
+      "status": 200,
+      "seconds": 0.109,
+      "items": 20
+    },
+    {
+      "path": "/tickers/COHR/messages",
+      "status": 200,
+      "seconds": 0.08,
+      "page": 2,
+      "items": 16,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.044
+    },
+    {
+      "path": "/tickers/INTC/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.256
+    },
+    {
+      "path": "/tickers/INTC/messages",
+      "status": 200,
+      "seconds": 0.1,
+      "items": 20
+    },
+    {
+      "path": "/tickers/INTC/messages",
+      "status": 200,
+      "seconds": 0.147,
+      "page": 2,
+      "items": 20,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.042
+    },
+    {
+      "path": "/tickers/IONQ/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.368
+    },
+    {
+      "path": "/tickers/IONQ/messages",
+      "status": 200,
+      "seconds": 0.245,
+      "items": 20
+    },
+    {
+      "path": "/tickers/IONQ/messages",
+      "status": 200,
+      "seconds": 0.137,
+      "page": 2,
+      "items": 20,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.061
+    },
+    {
+      "path": "/tickers/MU/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.247
+    },
+    {
+      "path": "/tickers/MU/messages",
+      "status": 200,
+      "seconds": 0.099,
+      "items": 20
+    },
+    {
+      "path": "/tickers/MU/messages",
+      "status": 200,
+      "seconds": 0.383,
+      "page": 2,
+      "items": 20,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.073
+    },
+    {
+      "path": "/tickers/NBIS/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.342
+    },
+    {
+      "path": "/tickers/NBIS/messages",
+      "status": 200,
+      "seconds": 0.131,
+      "items": 20
+    },
+    {
+      "path": "/tickers/NBIS/messages",
+      "status": 200,
+      "seconds": 0.154,
+      "page": 2,
+      "items": 20,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.123
+    },
+    {
+      "path": "/tickers/ONDS/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.281
+    },
+    {
+      "path": "/tickers/ONDS/messages",
+      "status": 200,
+      "seconds": 0.125,
+      "items": 16
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.048
+    },
+    {
+      "path": "/tickers/RKLB/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.281
+    },
+    {
+      "path": "/tickers/RKLB/messages",
+      "status": 200,
+      "seconds": 0.183,
+      "items": 20
+    },
+    {
+      "path": "/tickers/RKLB/messages",
+      "status": 200,
+      "seconds": 0.082,
+      "page": 2,
+      "items": 9,
+      "duplicates": 0
+    },
+    {
+      "path": "/read-context",
+      "status": 200,
+      "seconds": 0.101
+    },
+    {
+      "path": "/tickers/SNOW/message-bus/dashboard",
+      "status": 200,
+      "seconds": 0.315
+    },
+    {
+      "path": "/tickers/SNOW/messages",
+      "status": 200,
+      "seconds": 0.175,
+      "items": 20
+    }
+  ],
+  "locator_cleanup": {
+    "preview": {
+      "applied": false,
+      "bindings": 336,
+      "candidate_limit": 6720,
+      "stale": 20,
+      "removed": 0
+    },
+    "execution": {
+      "applied": true,
+      "bindings": 336,
+      "candidate_limit": 6720,
+      "stale": 20,
+      "removed": 20
+    },
+    "after": {
+      "applied": false,
+      "bindings": 336,
+      "candidate_limit": 6720,
+      "stale": 0,
+      "removed": 0
+    }
+  }
+}
