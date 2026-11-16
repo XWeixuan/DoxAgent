@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="3.256" timestamp="2026-11-16T18:59:57.576376+08:00" hostname="DESKTOP-BQ2H2TD"><testcase classname="tests.test_runtime_oom_repair" name="test_eight_blocked_background_effects_do_not_queue_realtime" time="0.485"><failure message="assert 7 == 8&#10; +  where 7 = dispatch_pending_effects(limit=20)&#10; +    where dispatch_pending_effects = &lt;doxagent.persistent_runtime_v2.service.PersistentRuntimeV2Service object at 0x0000022BF56FCF90&gt;.dispatch_pending_effects">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3739/test_eight_blocked_background_0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000022BF20507D0&gt;
+
+    def test_eight_blocked_background_effects_do_not_queue_realtime(tmp_path, monkeypatch):
+        service, _, _, _ = runtime(tmp_path)
+        case = enqueue(service)
+        release, realtime = Event(), Event()
+        entered = []
+        original = service.repository.list_effects(case.case_id)[0]
+        with service.repository._connect() as db:
+            db.execute("DELETE FROM runtime_v2_effects WHERE effect_id=?", (original.effect_id,))
+        for i in range(12):
+            service.repository.enqueue_effect(
+                RuntimeEffect(
+                    case_id=case.case_id, effect_type="archive_message", idempotency_key=f"bg-{i}"
+                )
+            )
+    
+        def work(effect):
+            if effect.effect_type == "route_to_w3":
+                realtime.set()
+            else:
+                entered.append(effect.effect_id)
+                release.wait(10)
+    
+        monkeypatch.setattr(service, "_execute_effect", work)
+        try:
+&gt;           assert service.dispatch_pending_effects(limit=20) == 8
+E           assert 7 == 8
+E            +  where 7 = dispatch_pending_effects(limit=20)
+E            +    where dispatch_pending_effects = &lt;doxagent.persistent_runtime_v2.service.PersistentRuntimeV2Service object at 0x0000022BF56FCF90&gt;.dispatch_pending_effects
+
+tests\test_runtime_oom_repair.py:49: AssertionError</failure></testcase><testcase classname="tests.test_runtime_oom_repair" name="test_timing_diagnostics_yield_busy_business_writer" time="0.073"><failure message="AssertionError: assert []&#10; +  where [] = list(&lt;generator object Path.glob at 0x0000022B9D04E680&gt;)&#10; +    where &lt;generator object Path.glob at 0x0000022B9D04E680&gt; = glob('*.json')&#10; +      where glob = (WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3739/test_timing_diagnostics_yield_0') / 'boundary-timing').glob">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3739/test_timing_diagnostics_yield_0')
+
+    def test_timing_diagnostics_yield_busy_business_writer(tmp_path):
+        from threading import Thread
+        from doxagent.control_io import write_lock
+        from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+        from doxagent.w3_timing import effect_trace
+    
+        journal = RuntimeJournal(tmp_path / "runtime.sqlite3")
+        entered, leave = Event(), Event()
+    
+        def hold():
+            with write_lock(journal.path):
+                entered.set()
+                leave.wait(2)
+    
+        thread = Thread(target=hold)
+        thread.start()
+        assert entered.wait(1)
+        effect = RuntimeEffect(case_id="case", effect_type="route_to_w3", idempotency_key="case")
+        try:
+            started = time.monotonic()
+            with effect_trace(effect, journal):
+                pass
+            assert time.monotonic() - started &lt; 0.2
+            assert journal.get("w3_boundary_timing", effect.effect_id + ":0") is None
+&gt;           assert list((tmp_path / "boundary-timing").glob("*.json"))
+E           AssertionError: assert []
+E            +  where [] = list(&lt;generator object Path.glob at 0x0000022B9D04E680&gt;)
+E            +    where &lt;generator object Path.glob at 0x0000022B9D04E680&gt; = glob('*.json')
+E            +      where glob = (WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3739/test_timing_diagnostics_yield_0') / 'boundary-timing').glob
+
+tests\test_runtime_oom_repair.py:412: AssertionError</failure></testcase></testsuite></testsuites>

@@ -3154,3 +3154,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Diagnosed 373 Trade preparation failures: configure hashed the frozen v6 entry version while claim still hardcoded v5. No model Job had been accepted for these failed branches.
 - Carry the frozen entry version through Scheduler claim and Worker scope hashing; default omitted legacy requests to v5. Preserve existing slots, Job identity, dual mode and business/model/prompt rules.
 - Added v5/v6 concurrent Ready claim/idempotency and v6 Scheduler propagation regressions; 48 affected tests passed. Deploy only Worker/Scheduler via the formal release owner.
+
+2026-11-16 emergency W3 Ready repair released
+- cbff3269b deployed to Worker/Scheduler; real HTTP v6 A/B claim and repeat-binding canary passed. Dual mode remains enabled. Actual source/image hashes verified.
+- Confirmed 397 failed pre-dispatch Cases before cutover; none had an accepted model Job. After release, natural Cases completed both dual Trade aggregation and Operations; no historical trade replay.
+- Preserved explicit cancellation receipts for the final two maintenance Jobs; their tasks resumed through existing recovery. Restored all 58 temporarily held background tasks. Detailed evidence/report: docs/w3_v6_ready_scope_incident_20261116.md.

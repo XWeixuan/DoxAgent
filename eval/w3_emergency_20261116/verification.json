@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-16T11:06:55.226141+00:00",
+  "commit": "cbff3269b89f8f8b0b1faea1e074a3a2e662f421",
+  "components": {
+    "codex-worker": {
+      "image": "sha256:870718ba2b48075e2103fff8f2bdd3fdec92d80fb7b5c13d1648f0107f888e23",
+      "running": true,
+      "health": "healthy"
+    },
+    "v2-scheduler": {
+      "image": "sha256:870718ba2b48075e2103fff8f2bdd3fdec92d80fb7b5c13d1648f0107f888e23",
+      "running": true,
+      "health": "running"
+    }
+  },
+  "mode": "dual_consensus",
+  "hashes": {
+    "src/doxagent/codex_worker/w3_ready.py": "a07e9f546f552c86477e588446f58314a218947de7cddcffcb0aa492069644b0",
+    "src/doxagent/persistent_runtime_v2/w3.py": "0b5ecc5f6c6b4beabe68026c9ee095b299b0696edd5ef33c0c0611ab9d918db0"
+  }
+}

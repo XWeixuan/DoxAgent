@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="1.362" timestamp="2026-11-16T19:00:10.466873+08:00" hostname="DESKTOP-BQ2H2TD"><testcase classname="tests.test_w3_ready_v5" name="test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker[gpt-6-luna-2-w3-entry-v6]" time="0.537"><failure message="doxagent.codex_worker.w3_ready.ReadySlotError: public Template has not configured this profile">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3740/test_bound_ready_inventory_is_0')
+model = 'gpt-6-luna', target = 2, entry_version = 'w3-entry-v6'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("entry_version", ["w3-entry-v5", "w3-entry-v6"])
+    @pytest.mark.parametrize("model,target", [("gpt-6-luna", 2), ("gpt-6.1-sol", 1)])
+    async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(
+        tmp_path, model, target, entry_version
+    ):
+        workspaces = LocalWorkspaceStore(tmp_path)
+        jobs = SimpleNamespace(
+            store=JobStore(tmp_path), _runtime=Runtime(), _startup=asyncio.Semaphore(3)
+        )
+        jobs._runtime.entry_version = entry_version
+        jobs.thread_lifecycle = WorkerThreadLifecycle(jobs, workspaces)
+        with closing(jobs.store.connect()) as db, db:
+            db.execute(
+                "INSERT INTO w3_thread_registry VALUES('parent','TEMPLATE',NULL,'mother','ACTIVE')"
+            )
+        settings = SimpleNamespace(w3_ready_luna=2, w3_ready_sol=1)
+        slots = W3ReadySlots(jobs, workspaces, settings, SimpleNamespace(ready={}))
+        profile = dict(model=model, provider=None, effort="medium" if model == "gpt-6.1-sol" else "max")
+        config = dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "public"})
+        config["w3_entry_version"] = entry_version
+        try:
+            key = await slots.configure(config)
+            while slots.tasks:
+                await asyncio.gather(*list(slots.tasks.values()))
+            requests = [
+                dict(
+                    case_id=f"case{i}",
+                    record_id=f"record{i}",
+                    parent_thread_id="parent",
+                    profile=profile,
+                    **({"w3_entry_version": entry_version} if entry_version != "w3-entry-v5" else {}),
+                )
+                for i in range(20)
+            ]
+&gt;           values = await asyncio.gather(*(slots.claim(r) for r in requests))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w3_ready_v5.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\codex_worker\w3_ready.py:652: in claim
+    result, config = await write_io(
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:203: in write_io
+    return await settled(asyncio.wrap_future(future))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:153: in settled
+    return await asyncio.shield(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:143: in run
+    future.set_result(context.run(owned_call))
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:139: in owned_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;doxagent.codex_worker.w3_ready.W3ReadySlots object at 0x0000023699956110&gt;
+request = {'case_id': 'case3', 'parent_thread_id': 'parent', 'profile': {'effort': 'max', 'model': 'gpt-6-luna', 'provider': None}, 'record_id': 'record3', ...}
+key = '238819796ab504dc6b12c270846ba5f571cc0d7a3a7efa4b37014b445bca070e'
+
+    def _claim(self, request, key):
+        with closing(self.jobs.store.connect()) as db, db:
+            db.row_factory = __import__("sqlite3").Row
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT * FROM w3_ready_slots WHERE case_id=? AND record_id=?",
+                (request["case_id"], request["record_id"]),
+            ).fetchone()
+            if row and row["scope"] != key:
+                raise ReadySlotError(
+                    "w3_ready_identity_conflict", "ready-slot claim parameters changed"
+                )
+            if row and row["error"]:
+                if row["error"] == 'CASE_PREPARATION_RELEASED':
+                    raise ReadySlotError('w3_ready_case_released', 'Terminal Case preparation released')
+                operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + row["id"])
+                if not operation or operation["status"] == "FAILED":
+                    raise ReadySlotError(
+                        "w3_ready_prepare_failed",
+                        "ready-slot preparation failed: " + row["error"],
+                    )
+                # Transient operations retain their identity and physical startup budget.
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='BOUND',error=NULL WHERE id=?",
+                    (row["id"],),
+                )
+                row = db.execute("SELECT * FROM w3_ready_slots WHERE id=?", (row["id"],)).fetchone()
+            if row is None:
+                while True:
+                    row = db.execute(
+                        "SELECT * FROM w3_ready_slots WHERE scope=? "
+                        "AND state IN ('READY','BUILDING') AND case_id IS NULL "
+                        "ORDER BY state DESC LIMIT 1", (key,),
+                    ).fetchone()
+                    pool = getattr(self.jobs._runtime,'pool',None)
+                    if row is None or row['state'] != 'READY' or pool is None:
+                        break
+                    if any(c.thread_id == row['thread_id'] and c.healthy and c.process is not None
+                           and c.process.returncode is None for c in pool):
+                        break
+                    db.execute("UPDATE w3_ready_slots SET state='RETIRING',error='resident reaped' "
+                               "WHERE id=? AND state='READY'",(row['id'],))
+                if row is None:
+                    config = self.configs.get(key)
+                    if config is None:
+&gt;                       raise ReadySlotError(
+                            "w3_ready_unconfigured",
+                            "public Template has not configured this profile",
+                        )
+E                       doxagent.codex_worker.w3_ready.ReadySlotError: public Template has not configured this profile
+
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\codex_worker\w3_ready.py:798: ReadySlotError</failure></testcase><testcase classname="tests.test_w3_ready_v5" name="test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker[gpt-6.1-sol-1-w3-entry-v6]" time="0.362"><failure message="doxagent.codex_worker.w3_ready.ReadySlotError: public Template has not configured this profile">tmp_path = WindowsPath('C:/Users/WEIXUANXIE/AppData/Local/Temp/pytest-of-WEIXUANXIE/pytest-3740/test_bound_ready_inventory_is_1')
+model = 'gpt-6.1-sol', target = 1, entry_version = 'w3-entry-v6'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("entry_version", ["w3-entry-v5", "w3-entry-v6"])
+    @pytest.mark.parametrize("model,target", [("gpt-6-luna", 2), ("gpt-6.1-sol", 1)])
+    async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(
+        tmp_path, model, target, entry_version
+    ):
+        workspaces = LocalWorkspaceStore(tmp_path)
+        jobs = SimpleNamespace(
+            store=JobStore(tmp_path), _runtime=Runtime(), _startup=asyncio.Semaphore(3)
+        )
+        jobs._runtime.entry_version = entry_version
+        jobs.thread_lifecycle = WorkerThreadLifecycle(jobs, workspaces)
+        with closing(jobs.store.connect()) as db, db:
+            db.execute(
+                "INSERT INTO w3_thread_registry VALUES('parent','TEMPLATE',NULL,'mother','ACTIVE')"
+            )
+        settings = SimpleNamespace(w3_ready_luna=2, w3_ready_sol=1)
+        slots = W3ReadySlots(jobs, workspaces, settings, SimpleNamespace(ready={}))
+        profile = dict(model=model, provider=None, effort="medium" if model == "gpt-6.1-sol" else "max")
+        config = dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "public"})
+        config["w3_entry_version"] = entry_version
+        try:
+            key = await slots.configure(config)
+            while slots.tasks:
+                await asyncio.gather(*list(slots.tasks.values()))
+            requests = [
+                dict(
+                    case_id=f"case{i}",
+                    record_id=f"record{i}",
+                    parent_thread_id="parent",
+                    profile=profile,
+                    **({"w3_entry_version": entry_version} if entry_version != "w3-entry-v5" else {}),
+                )
+                for i in range(20)
+            ]
+&gt;           values = await asyncio.gather(*(slots.claim(r) for r in requests))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_w3_ready_v5.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\codex_worker\w3_ready.py:652: in claim
+    result, config = await write_io(
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:203: in write_io
+    return await settled(asyncio.wrap_future(future))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:153: in settled
+    return await asyncio.shield(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:143: in run
+    future.set_result(context.run(owned_call))
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\control_io.py:139: in owned_call
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;doxagent.codex_worker.w3_ready.W3ReadySlots object at 0x0000023699CAB690&gt;
+request = {'case_id': 'case0', 'parent_thread_id': 'parent', 'profile': {'effort': 'medium', 'model': 'gpt-6.1-sol', 'provider': None}, 'record_id': 'record0', ...}
+key = '15881074cd55316e2be428c274ef358caef743cc737ea705b8a8f5ce15861c2d'
+
+    def _claim(self, request, key):
+        with closing(self.jobs.store.connect()) as db, db:
+            db.row_factory = __import__("sqlite3").Row
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT * FROM w3_ready_slots WHERE case_id=? AND record_id=?",
+                (request["case_id"], request["record_id"]),
+            ).fetchone()
+            if row and row["scope"] != key:
+                raise ReadySlotError(
+                    "w3_ready_identity_conflict", "ready-slot claim parameters changed"
+                )
+            if row and row["error"]:
+                if row["error"] == 'CASE_PREPARATION_RELEASED':
+                    raise ReadySlotError('w3_ready_case_released', 'Terminal Case preparation released')
+                operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + row["id"])
+                if not operation or operation["status"] == "FAILED":
+                    raise ReadySlotError(
+                        "w3_ready_prepare_failed",
+                        "ready-slot preparation failed: " + row["error"],
+                    )
+                # Transient operations retain their identity and physical startup budget.
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='BOUND',error=NULL WHERE id=?",
+                    (row["id"],),
+                )
+                row = db.execute("SELECT * FROM w3_ready_slots WHERE id=?", (row["id"],)).fetchone()
+            if row is None:
+                while True:
+                    row = db.execute(
+                        "SELECT * FROM w3_ready_slots WHERE scope=? "
+                        "AND state IN ('READY','BUILDING') AND case_id IS NULL "
+                        "ORDER BY state DESC LIMIT 1", (key,),
+                    ).fetchone()
+                    pool = getattr(self.jobs._runtime,'pool',None)
+                    if row is None or row['state'] != 'READY' or pool is None:
+                        break
+                    if any(c.thread_id == row['thread_id'] and c.healthy and c.process is not None
+                           and c.process.returncode is None for c in pool):
+                        break
+                    db.execute("UPDATE w3_ready_slots SET state='RETIRING',error='resident reaped' "
+                               "WHERE id=? AND state='READY'",(row['id'],))
+                if row is None:
+                    config = self.configs.get(key)
+                    if config is None:
+&gt;                       raise ReadySlotError(
+                            "w3_ready_unconfigured",
+                            "public Template has not configured this profile",
+                        )
+E                       doxagent.codex_worker.w3_ready.ReadySlotError: public Template has not configured this profile
+
+D:\tmp\w3-ready-baseline-20261116\src\doxagent\codex_worker\w3_ready.py:798: ReadySlotError</failure></testcase></testsuite></testsuites>
