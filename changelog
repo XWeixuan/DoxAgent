@@ -3159,3 +3159,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - cbff3269b deployed to Worker/Scheduler; real HTTP v6 A/B claim and repeat-binding canary passed. Dual mode remains enabled. Actual source/image hashes verified.
 - Confirmed 397 failed pre-dispatch Cases before cutover; none had an accepted model Job. After release, natural Cases completed both dual Trade aggregation and Operations; no historical trade replay.
 - Preserved explicit cancellation receipts for the final two maintenance Jobs; their tasks resumed through existing recovery. Restored all 58 temporarily held background tasks. Detailed evidence/report: docs/w3_v6_ready_scope_incident_20261116.md.
+
+2026-11-16 Message Bus source read repair: cross-source delivery takeovers with no first-discovery anchor now remove their article locator; bounded sample reads verify current source and a recorded timestamp before reduction. Add an explicit recent-head locator prune with no timestamp fabrication or history scan. Fixes catalog/dashboard INTERNAL_ERROR from parsing NULL discovered_at (request f5d0b52a00954d3188d3e8a94dacfa16); 40 related tests passed.
