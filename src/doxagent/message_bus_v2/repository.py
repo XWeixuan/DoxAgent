@@ -1600,16 +1600,20 @@ class MessageBusV2Repository:
         if aliases:
             found.update((r[0], False) for r in db.execute(
                 "SELECT DISTINCT v.raw_message_id FROM message_identity_aliases a "
-                "JOIN logical_message_versions v ON v.ticker=a.ticker AND v.logical_message_id=a.logical_message_id "
-                "JOIN standard_messages s ON s.raw_message_id=v.raw_message_id "
-                "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                # Start with the small incoming alias set. Production statistics
+                # otherwise choose all historical versions for this ticker,
+                # including inside the final publication writer transaction.
+                "CROSS JOIN logical_message_versions v INDEXED BY sqlite_autoindex_logical_message_versions_2 "
+                "ON v.ticker=a.ticker AND v.logical_message_id=a.logical_message_id "
+                "CROSS JOIN standard_messages s ON s.raw_message_id=v.raw_message_id "
+                "CROSS JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
                 "WHERE a.ticker=? AND a.alias IN (SELECT value FROM json_each(?)) LIMIT 8",
                 (ticker, json.dumps(aliases))))
         if fingerprint and not found:
             for r in db.execute(
-                "SELECT v.raw_message_id FROM logical_message_versions v "
-                "JOIN standard_messages s ON s.raw_message_id=v.raw_message_id "
-                "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                "SELECT v.raw_message_id FROM logical_message_versions v INDEXED BY logical_content "
+                "CROSS JOIN standard_messages s ON s.raw_message_id=v.raw_message_id "
+                "CROSS JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
                 "WHERE v.ticker=? AND v.body_fingerprint=? LIMIT 32", (ticker, fingerprint)):
                 found.setdefault(r[0], True)
         return found
