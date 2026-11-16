@@ -1,0 +1,641 @@
+{
+  "catalog_at": "2026-11-16T14:11:03.671318Z",
+  "source_states": [
+    {
+      "source_id": "barrons_ticker_news",
+      "poll_counts": {
+        "succeeded": 10,
+        "partial": 0,
+        "failed": 0,
+        "unknown": 0
+      },
+      "metrics": {
+        "last_success_at": {
+          "state": "AVAILABLE",
+          "value": "2026-11-16T14:11:02.304045Z",
+          "reason": null
+        },
+        "published_today": {
+          "state": "AVAILABLE",
+          "value": 2,
+          "reason": null
+        },
+        "mean_e2e_seconds": 278.5538658536586,
+        "p95_e2e_seconds": 529.486787,
+        "e2e_samples": 41,
+        "mean_capture_seconds": 659.4730345454544,
+        "capture_samples": 22,
+        "refresh_seconds": 24.324822931933255,
+        "refresh_samples": 163,
+        "body_total": 40,
+        "body_full": 9,
+        "body_ratio": 0.225,
+        "body_applicable": true,
+        "article_samples": 41
+      }
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "poll_counts": {
+        "succeeded": 10,
+        "partial": 0,
+        "failed": 0,
+        "unknown": 0
+      },
+      "metrics": {
+        "last_success_at": {
+          "state": "AVAILABLE",
+          "value": "2026-11-16T14:11:04.274062Z",
+          "reason": null
+        },
+        "published_today": {
+          "state": "AVAILABLE",
+          "value": 13,
+          "reason": null
+        },
+        "mean_e2e_seconds": 263.59899648780487,
+        "p95_e2e_seconds": 651.254032,
+        "e2e_samples": 41,
+        "mean_capture_seconds": 16672.321292384615,
+        "capture_samples": 13,
+        "refresh_seconds": 30.929304165938465,
+        "refresh_samples": 194,
+        "body_total": 32,
+        "body_full": 15,
+        "body_ratio": 0.46875,
+        "body_applicable": true,
+        "article_samples": 41
+      }
+    },
+    {
+      "source_id": "google_news_search_rss",
+      "poll_counts": {
+        "succeeded": 9,
+        "partial": 0,
+        "failed": 0,
+        "unknown": 0
+      },
+      "metrics": {
+        "last_success_at": {
+          "state": "AVAILABLE",
+          "value": "2026-11-16T14:11:05.123459Z",
+          "reason": null
+        },
+        "published_today": {
+          "state": "AVAILABLE",
+          "value": 154,
+          "reason": null
+        },
+        "mean_e2e_seconds": 241.1369540275229,
+        "p95_e2e_seconds": 605.784,
+        "e2e_samples": 109,
+        "mean_capture_seconds": 15774.18785681651,
+        "capture_samples": 109,
+        "refresh_seconds": 21.95306363720104,
+        "refresh_samples": 163,
+        "body_total": 109,
+        "body_full": 85,
+        "body_ratio": 0.7798165137614679,
+        "body_applicable": true,
+        "article_samples": 109
+      }
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "poll_counts": {
+        "succeeded": 10,
+        "partial": 0,
+        "failed": 0,
+        "unknown": 0
+      },
+      "metrics": {
+        "last_success_at": {
+          "state": "AVAILABLE",
+          "value": "2026-11-16T14:11:05.831012Z",
+          "reason": null
+        },
+        "published_today": {
+          "state": "AVAILABLE",
+          "value": 19,
+          "reason": null
+        },
+        "mean_e2e_seconds": 504.44266282000007,
+        "p95_e2e_seconds": 1767.519526,
+        "e2e_samples": 50,
+        "mean_capture_seconds": 13259.657416586957,
+        "capture_samples": 46,
+        "refresh_seconds": 34.267639998027256,
+        "refresh_samples": 175,
+        "body_total": 49,
+        "body_full": 29,
+        "body_ratio": 0.5918367346938775,
+        "body_applicable": true,
+        "article_samples": 53
+      }
+    },
+    {
+      "source_id": "sec_edgar",
+      "poll_counts": {
+        "succeeded": 10,
+        "partial": 0,
+        "failed": 0,
+        "unknown": 0
+      },
+      "metrics": {
+        "last_success_at": {
+          "state": "AVAILABLE",
+          "value": "2026-11-16T14:11:06.187243Z",
+          "reason": null
+        },
+        "published_today": {
+          "state": "AVAILABLE",
+          "value": 0,
+          "reason": null
+        },
+        "mean_e2e_seconds": 5.368969,
+        "p95_e2e_seconds": 9.567753,
+        "e2e_samples": 4,
+        "mean_capture_seconds": 101.15468849999999,
+        "capture_samples": 2,
+        "refresh_seconds": 9.967815701961518,
+        "refresh_samples": 200,
+        "body_total": 4,
+        "body_full": 4,
+        "body_ratio": 1.0,
+        "body_applicable": true,
+        "article_samples": 4
+      }
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "poll_counts": {
+        "succeeded": 10,
+        "partial": 0,
+        "failed": 0,
+        "unknown": 0
+      },
+      "metrics": {
+        "last_success_at": {
+          "state": "AVAILABLE",
+          "value": "2026-11-16T14:10:52.959821Z",
+          "reason": null
+        },
+        "published_today": {
+          "state": "AVAILABLE",
+          "value": 47,
+          "reason": null
+        },
+        "mean_e2e_seconds": 148.377270630137,
+        "p95_e2e_seconds": 971.622727,
+        "e2e_samples": 73,
+        "mean_capture_seconds": 10762.65074692537,
+        "capture_samples": 67,
+        "refresh_seconds": 32.42493696212769,
+        "refresh_samples": 185,
+        "body_total": 68,
+        "body_full": 62,
+        "body_ratio": 0.9117647058823529,
+        "body_applicable": true,
+        "article_samples": 73
+      }
+    }
+  ],
+  "cohorts": {
+    "investing": {
+      "at": "2026-11-16T13:52:31.044851+00:00",
+      "by_day": {
+        "2026-11-13": {
+          "count": 13,
+          "mean_seconds": 1699.83,
+          "max_seconds": 9328.569436
+        },
+        "2026-11-16": {
+          "count": 18,
+          "mean_seconds": 620.879,
+          "max_seconds": 1182.337913
+        },
+        "2026-11-15": {
+          "count": 3,
+          "mean_seconds": 376.9,
+          "max_seconds": 457.265866
+        },
+        "2026-11-12": {
+          "count": 7,
+          "mean_seconds": 9.554,
+          "max_seconds": 22.709353
+        },
+        "2026-11-10": {
+          "count": 3,
+          "mean_seconds": 10.379,
+          "max_seconds": 18.222004
+        },
+        "2026-11-11": {
+          "count": 2,
+          "mean_seconds": 9.044,
+          "max_seconds": 9.216722
+        },
+        "2026-11-14": {
+          "count": 4,
+          "mean_seconds": 5.635,
+          "max_seconds": 6.058867
+        }
+      }
+    },
+    "finnhub": {
+      "at": "2026-11-16T14:06:02.841661+00:00",
+      "by_day": {
+        "2026-11-09": {
+          "count": 8,
+          "mean_seconds": 385.507,
+          "max_seconds": 692.650415
+        },
+        "2026-11-01": {
+          "count": 2,
+          "mean_seconds": 592.011,
+          "max_seconds": 592.233189
+        },
+        "2026-11-08": {
+          "count": 11,
+          "mean_seconds": 471.589,
+          "max_seconds": 528.104692
+        },
+        "2026-11-15": {
+          "count": 3,
+          "mean_seconds": 426.906,
+          "max_seconds": 452.512403
+        },
+        "2026-11-12": {
+          "count": 4,
+          "mean_seconds": 7.582,
+          "max_seconds": 22.506335
+        },
+        "2026-11-16": {
+          "count": 3,
+          "mean_seconds": 3.718,
+          "max_seconds": 6.748726
+        },
+        "2026-11-11": {
+          "count": 6,
+          "mean_seconds": 3.354,
+          "max_seconds": 6.251317
+        },
+        "2026-11-10": {
+          "count": 3,
+          "mean_seconds": 2.377,
+          "max_seconds": 3.882335
+        },
+        "2026-11-02": {
+          "count": 1,
+          "mean_seconds": 2.55,
+          "max_seconds": 2.550044
+        }
+      }
+    },
+    "google": {
+      "at": "2026-11-16T14:06:31.840413+00:00",
+      "by_day": {
+        "2026-11-16": {
+          "count": 103,
+          "mean_seconds": 245.443,
+          "max_seconds": 1111.452809
+        },
+        "2026-11-15": {
+          "count": 4,
+          "mean_seconds": 535.708,
+          "max_seconds": 542.962783
+        },
+        "2026-11-14": {
+          "count": 1,
+          "mean_seconds": 11.513,
+          "max_seconds": 11.51288
+        }
+      }
+    },
+    "barrons": {
+      "at": "2026-11-16T14:08:04.800274+00:00",
+      "by_day": {
+        "2026-11-13": {
+          "count": 7,
+          "mean_seconds": 1477.312,
+          "max_seconds": 5375.502015
+        },
+        "2026-11-08": {
+          "count": 1,
+          "mean_seconds": 529.487,
+          "max_seconds": 529.486787
+        },
+        "2026-11-16": {
+          "count": 2,
+          "mean_seconds": 91.919,
+          "max_seconds": 172.119344
+        },
+        "2026-11-11": {
+          "count": 6,
+          "mean_seconds": 18.882,
+          "max_seconds": 31.192647
+        },
+        "2026-11-10": {
+          "count": 3,
+          "mean_seconds": 14.807,
+          "max_seconds": 29.100075
+        },
+        "2026-11-12": {
+          "count": 11,
+          "mean_seconds": 10.629,
+          "max_seconds": 24.035989
+        },
+        "2026-11-09": {
+          "count": 4,
+          "mean_seconds": 9.775,
+          "max_seconds": 23.320999
+        },
+        "2026-11-05": {
+          "count": 3,
+          "mean_seconds": 10.229,
+          "max_seconds": 17.395595
+        },
+        "2026-11-06": {
+          "count": 2,
+          "mean_seconds": 6.741,
+          "max_seconds": 8.21065
+        },
+        "2026-11-04": {
+          "count": 2,
+          "mean_seconds": 4.148,
+          "max_seconds": 5.446798
+        }
+      }
+    }
+  },
+  "natural_poll_windows": {
+    "yahoo": {
+      "since": "2026-11-16T14:05:26+00:00",
+      "until": "2026-11-16T14:14:09.536408+00:00",
+      "logical_unit_counts": {
+        "HEAD": {
+          "CAPTURED:None": 174
+        },
+        "SUPPLEMENT_HEAD": {
+          "CAPTURED:None": 168,
+          "FAILED:UNPROVEN_LISTING": 1,
+          "FAILED:access_budget_exhausted": 1
+        },
+        "TAIL:YAHOO_TIME": {},
+        "GRAPHQL_HEAD": {
+          "CAPTURED:None": 172,
+          "FAILED:TimeoutError": 1,
+          "DISPATCHED:None": 1
+        }
+      }
+    },
+    "sec": {
+      "since": "2026-11-16T14:05:26+00:00",
+      "until": "2026-11-16T14:14:10.446804+00:00",
+      "logical_unit_counts": {
+        "HEAD": {
+          "CAPTURED:None": 524
+        }
+      }
+    }
+  },
+  "body_control": {
+    "seconds": 14.514,
+    "outcome": "FULL",
+    "reason": null,
+    "chars": 1973,
+    "attempts": [
+      {
+        "phase": "browser",
+        "reason": null,
+        "latency_ms": 14265
+      }
+    ],
+    "stage_timings": {
+      "capture_acquired_epoch_ms": 1794838216314,
+      "page_acquire_ms": 3310,
+      "fetch_anchor_reused": 0,
+      "fetch_anchor_thawed": 0,
+      "request_0_started_epoch_ms": 1794838209521,
+      "request_started_epoch_ms": 1794838209521,
+      "request_0_headers_epoch_ms": 1794838213466,
+      "request_0_status_code": 200,
+      "headers_received_epoch_ms": 1794838213466,
+      "navigation_ms": 4000,
+      "request_0_body_epoch_ms": 1794838213862,
+      "browser_runtime_ms": 10236,
+      "worker_command_wait_ms": 0,
+      "worker_wait_ms": 0,
+      "global_wait_ms": 0,
+      "worker_roundtrip_ms": 13897,
+      "attempt_ms": 13942,
+      "prior_retry_ms": 0,
+      "total_elapsed_ms": 14108
+    }
+  },
+  "natural_delivery_window": {
+    "at": "2026-11-16T14:10:29.668829+00:00",
+    "since": "2026-11-16T14:05:46+00:00",
+    "actual_lookup": {
+      "seconds": 0.00629,
+      "instructions": 2700,
+      "results": 0,
+      "warm": [
+        {
+          "seconds": 6.7e-05,
+          "instructions": 0
+        },
+        {
+          "seconds": 3.6e-05,
+          "instructions": 100
+        },
+        {
+          "seconds": 5.7e-05,
+          "instructions": 0
+        }
+      ]
+    },
+    "sources": {
+      "prnewswire_massive": {
+        "deliveries": 180,
+        "published": 5,
+        "pending": 0,
+        "e2e": {
+          "n": 5,
+          "mean": 34.023,
+          "max": 40.294822
+        },
+        "post_body": {
+          "n": 5,
+          "mean": 30.185,
+          "max": 36.456616
+        },
+        "outcomes": {
+          "FULL": 180
+        }
+      },
+      "google_news_search_rss": {
+        "deliveries": 5,
+        "published": 5,
+        "pending": 0,
+        "e2e": {
+          "n": 5,
+          "mean": 2.858,
+          "max": 4.662996
+        },
+        "post_body": {
+          "n": 5,
+          "mean": 0.923,
+          "max": 1.998339
+        },
+        "outcomes": {
+          "UNAVAILABLE": 5
+        }
+      },
+      "businesswire_massive": {
+        "deliveries": 90,
+        "published": 1,
+        "pending": 0,
+        "e2e": {
+          "n": 1,
+          "mean": 8.826,
+          "max": 8.82622
+        },
+        "post_body": {
+          "n": 1,
+          "mean": 6.449,
+          "max": 6.449013
+        },
+        "outcomes": {
+          "FULL": 90
+        }
+      },
+      "tmx_newsfile_massive": {
+        "deliveries": 10,
+        "published": 0,
+        "pending": 0,
+        "e2e": {
+          "n": 0,
+          "mean": null,
+          "max": null
+        },
+        "post_body": {
+          "n": 0,
+          "mean": null,
+          "max": null
+        },
+        "outcomes": {
+          "UNAVAILABLE": 10
+        }
+      },
+      "access_newswire_massive": {
+        "deliveries": 10,
+        "published": 0,
+        "pending": 0,
+        "e2e": {
+          "n": 0,
+          "mean": null,
+          "max": null
+        },
+        "post_body": {
+          "n": 0,
+          "mean": null,
+          "max": null
+        },
+        "outcomes": {
+          "FULL": 10
+        }
+      },
+      "globenewswire_massive": {
+        "deliveries": 140,
+        "published": 2,
+        "pending": 0,
+        "e2e": {
+          "n": 2,
+          "mean": 16.2,
+          "max": 25.620864
+        },
+        "post_body": {
+          "n": 2,
+          "mean": 13.313,
+          "max": 21.983812
+        },
+        "outcomes": {
+          "FULL": 140
+        }
+      },
+      "quantum_insider": {
+        "deliveries": 1,
+        "published": 1,
+        "pending": 0,
+        "e2e": {
+          "n": 1,
+          "mean": 3.227,
+          "max": 3.2269
+        },
+        "post_body": {
+          "n": 1,
+          "mean": 0.387,
+          "max": 0.387447
+        },
+        "outcomes": {
+          "FULL": 1
+        }
+      }
+    }
+  },
+  "release": {
+    "at": "2026-11-16T14:13:03.375774+00:00",
+    "root_free_gib": 49.48,
+    "roles": {
+      "v2-message-bus": {
+        "id": "8837b93672e2e4db200ffcf99e89be85b6885975dda4abf1d1eadfe34602eee4",
+        "started": "2026-11-16T14:04:31.453703112Z",
+        "running": true,
+        "health": null,
+        "commit": "cd57c3cf3a826e8238604363be5b0ed754782b07",
+        "yahoo_routes": "[\"de-standard-1\",\"tr-standard-1\"]",
+        "recheck": "false",
+        "hash_matches": {
+          "src/doxagent/message_bus_v2/yahoo_transport.py": true,
+          "src/doxagent/message_bus_v2/sec_edgar/http.py": true,
+          "src/doxagent/message_bus_v2/repository.py": true
+        }
+      },
+      "v2-message-collector": {
+        "id": "4eb420d2c806edc663c55fc8bc723d2acfbef6f250e0029d81b31fa9f90b71c2",
+        "started": "2026-11-16T14:05:07.768048464Z",
+        "running": true,
+        "health": "healthy",
+        "commit": "cd57c3cf3a826e8238604363be5b0ed754782b07",
+        "yahoo_routes": "[\"de-standard-1\",\"tr-standard-1\"]",
+        "recheck": "false",
+        "hash_matches": {
+          "src/doxagent/message_bus_v2/yahoo_transport.py": true,
+          "src/doxagent/message_bus_v2/sec_edgar/http.py": true,
+          "src/doxagent/message_bus_v2/repository.py": true
+        }
+      },
+      "v2-content-enrichment": {
+        "id": "80a4c19985820f9b15a410699f07a3ba033c38151a4a35eada8cc3169383a0b8",
+        "started": "2026-11-16T14:05:25.694497104Z",
+        "running": true,
+        "health": null,
+        "commit": "cd57c3cf3a826e8238604363be5b0ed754782b07",
+        "yahoo_routes": null,
+        "recheck": "false",
+        "hash_matches": {
+          "src/doxagent/message_bus_v2/yahoo_transport.py": true,
+          "src/doxagent/message_bus_v2/sec_edgar/http.py": true,
+          "src/doxagent/message_bus_v2/repository.py": true
+        }
+      },
+      "v2-chrome-supervisor": {
+        "id": "9bc69ac8eab097e5eb8bb7f0f1500074484ec5d47d19d9a41a6f5046d1a07c92",
+        "started": "2026-11-10T00:41:26.925298547Z",
+        "running": true,
+        "health": "healthy",
+        "commit": "05d6062222e1ee5c83233f07276a6a1d2fb582f4"
+      }
+    }
+  }
+}
