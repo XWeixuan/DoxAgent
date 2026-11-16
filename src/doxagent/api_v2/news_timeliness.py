@@ -7,18 +7,36 @@ from doxagent.semantic_clock import boundary, semantic_day
 
 
 def message_update_states(store,ticker,seq,messages):
-    """One bounded read at the view watermark; no per-ticker check-state writes."""
+    """Page-bounded identity reads at the view watermark; no check-state writes."""
     if not messages:return messages
     from doxagent.v2_read.repository import instant
-    table=store.snapshot_table(seq)
+    # Drive each lookup from this page's identities. A snapshot JOIN may scan
+    # all standard-message revisions even though a page has at most 100 rows.
+    from doxagent.v2_read.serving_schema import history_relation
+
     with store.connect() as db:
-        rows=db.execute(f"SELECT s.id,a.payload FROM {table} s JOIN {table} a "
-            "ON a.kind='native:live_articles' AND a.ticker='' AND a.id=json_extract(s.payload,'$.live_article_key') "
-            "AND a.valid_from<=? AND (a.valid_to IS NULL OR a.valid_to>?) "
-            "WHERE s.kind='native:standard_messages' AND s.ticker=? AND s.id IN (SELECT value FROM json_each(?)) "
-            "AND s.valid_from<=? AND (s.valid_to IS NULL OR s.valid_to>?)",
-            (seq,seq,ticker,json.dumps([v['standard_message_id'] for v in messages]),seq,seq)).fetchall()
-    states={identity:json.loads(payload) for identity,payload in rows}
+        def lookup(kind, scope, identities):
+            found = {}
+            for table in ("object_current", history_relation(db)):
+                missing = sorted(set(identities) - found.keys())
+                if not missing:
+                    break
+                history = " AND o.valid_to>?" if table != "object_current" else ""
+                rows = db.execute(
+                    "SELECT o.id,o.payload FROM json_each(?) q CROSS JOIN " + table + " o "
+                    "ON o.kind=? AND o.ticker=? AND o.id=q.value "
+                    "WHERE o.valid_from<=?" + history,
+                    [json.dumps(missing), kind, scope, seq, *([seq] if history else [])],
+                ).fetchall()
+                found.update((identity, json.loads(payload)) for identity, payload in rows)
+            return found
+
+        standard = lookup("native:standard_messages", ticker,
+                          [v["standard_message_id"] for v in messages])
+        articles = lookup("native:live_articles", "",
+                          [v["live_article_key"] for v in standard.values() if v.get("live_article_key")])
+    states = {identity: articles[value["live_article_key"]] for identity, value in standard.items()
+              if value.get("live_article_key") in articles}
     for message in messages:
         state=states.get(message['standard_message_id'])
         if state:
