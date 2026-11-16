@@ -496,7 +496,8 @@ def test_current_future_custom_profile_and_explicit_disabled_binding(tmp_path):
     bus = MessageBusV2Service(repo)
     bus.bootstrap()
     bus.start_ticker("MU")
-    assert repo.get_binding("MU:sec_edgar").polling.target_interval_seconds == 30
+    # The global realtime cadence profile overrides the adapter's initial 30s.
+    assert repo.get_binding("MU:sec_edgar").polling.target_interval_seconds == 10
     bus.save_default_profile(DefaultMonitoringProfile(profile_id="custom", entries=[]))
     bus.start_ticker("FUTURE", profile_id="custom")
     assert repo.get_binding("FUTURE:sec_edgar").enabled
@@ -542,6 +543,45 @@ async def test_429_stops_without_identity_or_route_fallback(tmp_path, monkeypatc
         with pytest.raises(SecHttpError, match="cooldown"):
             await reader.get("https://data.sec.gov/submissions/CIK0001819994.json")
         assert len(calls) == 1
+
+
+@pytest.mark.parametrize('raw', ['', '{', '[]', '{"cooldown":"bad"}', '{"body":NaN}'])
+async def test_corrupt_rate_state_recovers_once_with_shared_cooldown(tmp_path, monkeypatch, raw):
+    monkeypatch.setenv('SEC_USER_AGENT', 'DoxAgent test ops@doxagent.test')
+    now = [1000.]
+    monkeypatch.setattr('doxagent.message_bus_v2.sec_edgar.http.time.time', lambda: now[0])
+    (tmp_path / 'rate.json').write_text(raw)
+    one, body = SecHttp(rate_root=tmp_path), SecHttp('body', rate_root=tmp_path)
+    try:
+        for reader in (one, body):
+            with pytest.raises(SecHttpError, match='cooldown') as error:
+                reader._reserve()
+            assert error.value.retry_seconds == 60
+        now[0] += 61
+        assert one._reserve() == 0
+        assert body._reserve() == 0
+        assert one._reserve() == .5
+        assert not list(tmp_path.glob('rate-*.tmp'))
+    finally:
+        await one.close()
+        await body.close()
+
+
+async def test_failed_atomic_replace_preserves_existing_rate_state(tmp_path, monkeypatch):
+    monkeypatch.setenv('SEC_USER_AGENT', 'DoxAgent test ops@doxagent.test')
+    reader = SecHttp(rate_root=tmp_path)
+    reader._cooldown(90)
+    original = (tmp_path / 'rate.json').read_bytes()
+    def fail(*_):
+        raise OSError('write interrupted')
+    monkeypatch.setattr('doxagent.message_bus_v2.sec_edgar.http.os.replace', fail)
+    try:
+        with pytest.raises(OSError):
+            reader._cooldown(120)
+        assert (tmp_path / 'rate.json').read_bytes() == original
+        assert not list(tmp_path.glob('rate-*.tmp'))
+    finally:
+        await reader.close()
 
 
 @pytest.mark.parametrize(

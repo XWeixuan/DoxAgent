@@ -2,6 +2,8 @@
 
 import asyncio
 import json
+import logging
+import math
 import os
 import tempfile
 import time
@@ -13,6 +15,8 @@ import httpx
 
 from doxagent.content_enrichment.transport import retry_after
 from doxagent.settings import DoxAgentSettings
+
+log = logging.getLogger(__name__)
 
 
 class SecHttpError(RuntimeError):
@@ -77,25 +81,57 @@ class SecHttp:
         self.root.mkdir(parents=True, exist_ok=True)
         self.slots = asyncio.Semaphore(2)
 
+    def _write_state(self, state):
+        # The separate rate.lock remains held across replace; locking the JSON
+        # inode itself would cease protecting readers after the rename.
+        fd, name = tempfile.mkstemp(prefix="rate-", suffix=".tmp", dir=self.root)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                json.dump(state, stream)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(name, self.root / "rate.json")
+        finally:
+            Path(name).unlink(missing_ok=True)
+
+    def _read_state(self):
+        path = self.root / "rate.json"
+        if not path.exists():
+            return {}
+        try:
+            state = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(state, dict) or any(
+                not isinstance(state.get(k, 0), (int, float))
+                or not math.isfinite(state.get(k, 0))
+                for k in ("discovery", "body", "cooldown")
+            ):
+                raise ValueError("invalid rate state")
+            return state
+        except (ValueError, UnicodeError):
+            # A previous interrupted/truncated write must not permanently stop
+            # every ticker. Unknown prior throttling gets the normal 60s pause.
+            state = {"cooldown": time.time() + 60}
+            self._write_state(state)
+            log.warning("SEC rate state repaired; shared 60s cooldown applied")
+            return state
+
     def _reserve(self):
         with locked(self.root / "rate.lock"):
-            state_file = self.root / "rate.json"
-            state = json.loads(state_file.read_text()) if state_file.exists() else {}
+            state = self._read_state()
             now = time.time()
             cooldown = state.get("cooldown", 0)
             if cooldown > now:
                 raise SecHttpError("sec_rate_cooldown", retry_seconds=cooldown - now)
             at = max(now, state.get(self.lane, 0))
             state[self.lane] = at + 0.5
-            state_file.write_text(json.dumps(state))
+            self._write_state(state)
             return max(0, at - now)
 
     def _cooldown(self, seconds):
         with locked(self.root / "rate.lock"):
-            path = self.root / "rate.json"
-            state = json.loads(path.read_text()) if path.exists() else {}
+            state = self._read_state()
             state["cooldown"] = max(state.get("cooldown", 0), time.time() + seconds)
-            path.write_text(json.dumps(state))
+            self._write_state(state)
 
     async def get(self, url, *, headers=None, max_bytes=20 * 1024 * 1024):
         parsed = urlsplit(url)

@@ -20,6 +20,16 @@
 2. Yahoo 复用现有 `joint_permits/network_timeout/network_wait`，排队和节奏等待不消耗网络预算；调用方的总任务截止、限流熔断和许可数量均保留。不添加后台线程或新恢复状态机。
 3. 网络与取消等待回归后只发布 Collector；核对有效配置，观察全部订阅 ticker 的自然 RSS HEAD 和 browser supplement，不以一次 canary 作为恢复结论。
 
+发布与初验：`c010a2445`，合并同期 main 后以 `2d2f28bff` 发布 Collector。UTC13:45:55启动，已确认有效路由是DE/TR。全部10 ticker 的 RSS、GraphQL、浏览器补充均出现自然成功；源码18项 Yahoo 回归通过，外围55项通过。一项原有 LiveDeliveryWorker 测试 fixture 缺少 `binding_id` 失败，非此次 Yahoo 改动导致，未据此改业务代码。
+
+## 2. SEC EDGAR
+
+生产共享 `/data/bus/sec-http/rate.json` 大小为0，最后修改时间UTC2026-11-13 15:09:36，与最后成功时间一致。HEAD 约8毫秒即报JSONDecodeError，网络请求数组为空。当前报错是持久化本地状态损坏，不是SEC返回非法JSON；空文件形成时是否为磁盘满或进程中断，现有证据不足以唯一归因。
+
+原实现持有独立 `rate.lock`，但JSON使用 `write_text` 先截断原文件，异常后无恢复，导致全部 ticker 及BODY共用通道永久受影响。修复沿用原锁与两条2rps通道，临时文件完整写入、flush/fsync后原子替换；失败保留旧文件并收尾临时文件。读取发现损坏时原子重置为一次60秒共享cooldown，随后自然恢复，避免丢失未知旧限流后立即发请求。合法cooldown、发现/BODY独立节奏及SEC正文筛选均保留。
+
+先发布 Collector（验证自然发现），同一HTTP类被BODY使用，因此确认后同步发布 Enrichment，防止旧BODY进程继续使用非原子写法破坏共享文件。无需删除业务库、回放旧文章或重启Chrome。
+
 ## 后续逐源记录
 
-SEC 在 Yahoo 收尾后开始；高延迟先拆 Investing 的真实逐篇时间线，再评估是否有跨源共因。不凭均值把历史等待删除或把周末耗时强制归零。
+高延迟先拆 Investing 的真实逐篇时间线，再评估是否有跨源共因。不凭均值把历史等待删除或把周末耗时强制归零。
