@@ -642,7 +642,9 @@ class W3ReadySlots:
         return preview
 
     async def claim(self, request, *, wait=False):
-        key = sha(compact([request["parent_thread_id"], request["profile"], ENTRY]))
+        key = sha(compact([
+            request["parent_thread_id"], request["profile"], request.get("w3_entry_version", ENTRY)
+        ]))
         result = await read_io(self._completed_binding, request, key)
         if result is not None:
             await self._handoff_private(result['slot_id'])

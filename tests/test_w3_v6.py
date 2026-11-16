@@ -668,6 +668,7 @@ def test_v6_replay_freezes_operations_and_isolates_research(tmp_path, monkeypatc
         return {"ready": True}
 
     async def claim(request):
+        assert request["w3_entry_version"] == "w3-entry-v6"
         return dict(thread_id="v6-child", run_id="v6-workspace")
 
     async def market(manifest):

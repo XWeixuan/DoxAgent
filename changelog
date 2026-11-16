@@ -3149,3 +3149,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Pushed c401cdc3b and 27d8c0ab7 to origin/main; deployed the repaired backend/web through the existing host release owner and verified all 16 affected roles, actual revision and Worker/Scheduler source/prompt hashes.
 - Ten tickers now use the v6 entry bundle. Re-enabled dual_consensus for new W3 Effects; Luna/max Trade uses fast, Operations uses default. Existing identities/modes remain frozen.
 - Eight bounded observations across 28 minutes: minimum available RAM 21.0GiB, no new swap-out. No new natural W3 Case arrived, so dual peak/quality/latency acceptance remains open. Release report: docs/w3_v6_dual_main_release_20261116.md.
+
+2026-11-16 emergency W3 v6 Ready identity repair
+- Diagnosed 373 Trade preparation failures: configure hashed the frozen v6 entry version while claim still hardcoded v5. No model Job had been accepted for these failed branches.
+- Carry the frozen entry version through Scheduler claim and Worker scope hashing; default omitted legacy requests to v5. Preserve existing slots, Job identity, dual mode and business/model/prompt rules.
+- Added v5/v6 concurrent Ready claim/idempotency and v6 Scheduler propagation regressions; 48 affected tests passed. Deploy only Worker/Scheduler via the formal release owner.

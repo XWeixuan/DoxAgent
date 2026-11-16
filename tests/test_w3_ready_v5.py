@@ -17,7 +17,7 @@ class Runtime:
     async def prepare_fork(self, request, cwd, parent):
         self.forks += 1
         assert request.research_assets_mcp_enabled and not request.data_mcp_enabled
-        assert request.w3_entry_version == "w3-entry-v5"
+        assert request.w3_entry_version == getattr(self, "entry_version", "w3-entry-v5")
         await asyncio.sleep(0.01)
         return "child-" + request.run_id
 
@@ -82,14 +82,16 @@ async def test_failed_empty_bound_slot_reconciles_original_operation_once(tmp_pa
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("entry_version", ["w3-entry-v5", "w3-entry-v6"])
 @pytest.mark.parametrize("model,target", [("gpt-6-luna", 2), ("gpt-6.1-sol", 1)])
 async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(
-    tmp_path, model, target
+    tmp_path, model, target, entry_version
 ):
     workspaces = LocalWorkspaceStore(tmp_path)
     jobs = SimpleNamespace(
         store=JobStore(tmp_path), _runtime=Runtime(), _startup=asyncio.Semaphore(3)
     )
+    jobs._runtime.entry_version = entry_version
     jobs.thread_lifecycle = WorkerThreadLifecycle(jobs, workspaces)
     with closing(jobs.store.connect()) as db, db:
         db.execute(
@@ -99,6 +101,7 @@ async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker
     slots = W3ReadySlots(jobs, workspaces, settings, SimpleNamespace(ready={}))
     profile = dict(model=model, provider=None, effort="medium" if model == "gpt-6.1-sol" else "max")
     config = dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "public"})
+    config["w3_entry_version"] = entry_version
     try:
         key = await slots.configure(config)
         while slots.tasks:
@@ -109,6 +112,7 @@ async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker
                 record_id=f"record{i}",
                 parent_thread_id="parent",
                 profile=profile,
+                **({"w3_entry_version": entry_version} if entry_version != "w3-entry-v5" else {}),
             )
             for i in range(20)
         ]

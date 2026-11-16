@@ -591,6 +591,7 @@ class CodexW3AgentRunner:
             record_id=record["record_id"],
             parent_thread_id=record["parent_id"],
             profile=profile,
+            w3_entry_version=case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version", ENTRY),
             execution_lane='background' if case.runtime_mode == 'CLOSED' else 'realtime',
         )
         try:
