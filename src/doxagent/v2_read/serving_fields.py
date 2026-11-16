@@ -16,7 +16,7 @@ CASE_FIELDS={
     'case_id','runtime_mode','version_pin','trading_date','w1_final','w1_extraction','w2_alignment',
     'w2_alignment_status','w2_alignment_error','w2_contract_version','first_round_tags',
     'orchestration_revision','w2_final','w2_round1','w2_skipped','w3_result',
-    'w3_contract_version','w3_trade_decision','w3_operations_result','w3_operations_status','w3_operations_error',
+    'w3_consensus','w3_contract_version','w3_trade_decision','w3_operations_result','w3_operations_status','w3_operations_error',
     'error_code','error_message','updated_at','status',
     # Case detail's existing lifecycle clock needs its recorded stop boundary.
     'created_at','completed_at','decision_completed_at',
@@ -44,7 +44,7 @@ def select(kind,identity,value):
         result={k:v for k,v in value.items() if k in CASE_FIELDS}
         result['source']={'snapshot':{'ticker':value.get('source',{}).get('snapshot',{}).get('ticker')}}
         result['frozen_inputs']={k:v for k,v in value.get('frozen_inputs',{}).items()
-                                 if k in {'policy_watch_followup','w3_execution_state','w3_consensus'}}
+                                 if k in {'policy_watch_followup','w3_execution_state'}}
         return result
     if table=='runtime_v2_effects':
         return {**{k:value.get(k) for k in ['case_id','effect_type']}, 'payload':{k:v for k,v in value.get('payload',{}).items() if k=='decision_effective_at'}}

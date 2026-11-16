@@ -95,6 +95,7 @@ def test_freeze_existing_effect_is_single(tmp_path):
 def test_pair_commits_once_and_one_operations(tmp_path, a, b):
     s, j, agent, case, _ = setup_case(tmp_path)
     case.frozen_inputs["w3_trade_mode"] = "dual_consensus"
+    case.frozen_inputs["large_frozen_regression"] = "x" * 30000
     s.repository.save_case(case)
     calls = []
 
@@ -114,6 +115,12 @@ def test_pair_commits_once_and_one_operations(tmp_path, a, b):
     try:
         assert s.process_pending_effects() == 1
         saved = s.repository.get_case(case.case_id)
+        with j.transaction(write=False) as db:
+            frozen_raw = db.execute(
+                "SELECT json_extract(payload_json,'$.frozen_inputs') FROM runtime_v2_cases WHERE case_id=?",
+                (case.case_id,),
+            ).fetchone()[0]
+        assert set(json.loads(frozen_raw)) == {"$doxagent_content_v1", "bytes"}
         assert saved.w3_trade_decision["decision"] == (a if a == b else "NO_TRADE")
         assert calls == ["A", "B"] and agent.forks == 2
         from doxagent.persistent_runtime_v2.w3_execution import W3Execution
@@ -197,6 +204,7 @@ def test_failed_b_never_repeats_saved_a(tmp_path):
 
     s, j, agent, case, _ = setup_case(tmp_path)
     case.frozen_inputs["w3_trade_mode"] = "dual_consensus"
+    case.frozen_inputs["large_frozen_regression"] = "x" * 30000
     s.repository.save_case(case)
     seen = []
     fail = [True]
@@ -234,6 +242,7 @@ def test_saved_aggregate_recovery_keeps_audit_and_does_not_recall(tmp_path, monk
 
     s, _, agent, case, _ = setup_case(tmp_path)
     case.frozen_inputs["w3_trade_mode"] = "dual_consensus"
+    case.frozen_inputs["large_frozen_regression"] = "x" * 30000
     s.repository.save_case(case)
     calls = []
 
@@ -267,7 +276,7 @@ def test_saved_aggregate_recovery_keeps_audit_and_does_not_recall(tmp_path, monk
         execution.trade(s.repository.get_case(case.case_id))
         assert calls == ["A", "B"]
         saved = s.repository.get_case(case.case_id)
-        assert saved.frozen_inputs["w3_consensus"]["selected_branch"] == "A"
+        assert saved.w3_consensus["selected_branch"] == "A"
         selected = execution.registry.bound(case.case_id)
         with execution.journal.transaction(write=False) as db:
             rows = db.execute("SELECT * FROM runtime_v2_w3_threads WHERE kind='CASE'").fetchall()

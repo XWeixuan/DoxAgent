@@ -550,6 +550,7 @@ class RuntimeEffect(RuntimeV2Model):
 class RuntimeCase(RuntimeV2Model):
     w3_contract_version: str | None = None
     w3_trade_decision: JsonObject | None = None
+    w3_consensus: JsonObject | None = None
     w3_operations_result: JsonObject | None = None
     w3_operations_status: str | None = None
     w3_operations_error: str | None = None

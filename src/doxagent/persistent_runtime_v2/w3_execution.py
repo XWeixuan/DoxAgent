@@ -543,7 +543,7 @@ class W3Execution:
             operation_key="w3-fork:" + record["record_id"],
             branches={k: dict(stage_key=TRADE_PHASE + ":" + k) for k in branches},
         )
-        case.frozen_inputs["w3_consensus"] = dict(
+        case.w3_consensus = dict(
             summary,
             branches={
                 k: dict(
@@ -1197,10 +1197,8 @@ class W3Execution:
             # These are the only large result fields changed by the two commits.
             # Frozen research/source/W1/W2 already have durable Native references.
             prepared = json.loads(self.service.repository.content.encode(case.model_dump(
-                mode="json", include={"w3_trade_decision", "w3_operations_result"}
+                mode="json", include={"w3_trade_decision", "w3_operations_result", "w3_consensus"}
             )))
-            if case.frozen_inputs.get('w3_consensus'):
-                prepared['frozen_inputs.w3_consensus'] = case.frozen_inputs['w3_consensus']
             return prepared
         return None
 

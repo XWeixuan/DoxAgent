@@ -209,7 +209,7 @@ def install(app: FastAPI) -> None:
                 "completed_at",
                 "decision_completed_at",
                 "frozen_inputs.w3_execution_state",
-                "frozen_inputs.w3_consensus",
+                "w3_consensus",
                 "status",
             ],
         )
@@ -786,10 +786,10 @@ def install(app: FastAPI) -> None:
             value["policy_watch"]["actions"] = (case.get("w3_operations_result") or {}).get(
                 "watch_actions", []
             )
-        if case.get('frozen_inputs.w3_consensus'):
+        if case.get('w3_consensus'):
             state = value.get('w3_state')
             if state is not None:
-                state['receipt'] = dict(state.get('receipt') or {}, trade_consensus=case['frozen_inputs.w3_consensus'])
+                state['receipt'] = dict(state.get('receipt') or {}, trade_consensus=case['w3_consensus'])
         return app.state.respond(
             request,
             "CaseDetail",

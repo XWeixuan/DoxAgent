@@ -3140,3 +3140,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Review and integrate pending W3 v6 orchestration, phase-only operations assets, unified Luna/max profile, optional dual Trade gate, replay context alignment, W2R2 ref exclusion and frontend healthcheck changes.
 - Activate the aligned v6 marker with skills/operations.md; release through the host-owned workflow, then explicitly enable dual_consensus for new W3 Effects.
 - 245 related regressions passed (one previously reproduced baseline latency assertion excluded), frontend build/typecheck passed. Keep prompt rev3 offline quality regression (35/49 vs 41/49) explicit; consensus does not prove correctness.
+2026-11-16 pre-traffic dual Trade Native reference repair
+- Production-sized regression reproduced ContentUnavailable after aggregate commit: a dotted JSON update added consensus metadata beside a frozen_inputs Native marker.
+- Store the audit summary in an optional RuntimeCase root JSON field instead; preserve frozen Native references without re-encoding large contexts, and keep Agent/wire output schemas unchanged. Read/API uses the same receipt summary.
+- 119 related regressions passed; the affected dual tests now use >16KiB frozen inputs. Temporarily switched only new-Case dual admission to single while preparing this repair; no new production W3 Cases observed in the window.
