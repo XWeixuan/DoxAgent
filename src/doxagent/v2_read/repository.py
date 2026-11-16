@@ -533,7 +533,7 @@ class ReadStore:
                 ):
                     continue
                 if kind == 'native:live_deliveries':
-                    if payload is None:
+                    if not payload or not payload.get('first_discovered_at'):
                         db.execute('DELETE FROM article_sample_keys WHERE ticker=? AND id=?',(ticker,identity))
                     elif payload.get('first_discovered_at'):
                         found = datetime.fromisoformat(payload['first_discovered_at']).timestamp()

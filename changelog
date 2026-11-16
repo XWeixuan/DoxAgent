@@ -3161,3 +3161,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Preserved explicit cancellation receipts for the final two maintenance Jobs; their tasks resumed through existing recovery. Restored all 58 temporarily held background tasks. Detailed evidence/report: docs/w3_v6_ready_scope_incident_20261116.md.
 
 2026-11-16 全局消息源逐源修复：Yahoo 专用 HTTP 路由补齐到实际 Collector 角色；复用联合许可与网络等待预算，避免本地排队放大为 RSS 未发送超时，保留总任务截止与现有限流。
+2026-11-16 Message Bus source read repair: cross-source delivery takeovers with no first-discovery anchor now remove their article locator; bounded sample reads verify current source and a recorded timestamp before reduction. Add an explicit recent-head locator prune with no timestamp fabrication or history scan. Fixes catalog/dashboard INTERNAL_ERROR from parsing NULL discovered_at (request f5d0b52a00954d3188d3e8a94dacfa16); 40 related tests passed.
+
+2026-11-16 Message Bus list read repair: body-state enrichment now drives bounded exact identity lookups from the displayed page, with historical fallback at its pinned watermark. Avoid the query planner selecting a broad revision-range scan; production BE baseline improved from a 3-second timeout to approximately 0.05 seconds in the isolated real-data probe. Preserve cursor, snapshot and content-state semantics; no added index, worker or persistent state.

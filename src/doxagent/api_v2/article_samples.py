@@ -20,6 +20,8 @@ ARTICLE_FACTS_SQL = """SELECT q.value,d.parent,
  json_extract(m.payload,'$.publication_time_basis'),json_extract(m.payload,'$.source_published_at')
  FROM json_each(?) q CROSS JOIN object_current d INDEXED BY current_identity
  ON d.kind='native:live_deliveries' AND d.ticker=json_extract(q.value,'$[0]')
+ AND d.source_id=json_extract(q.value,'$[1]')
+ AND json_type(d.payload,'$.first_discovered_at')='text'
  AND d.id IN (SELECT x.id FROM article_sample_keys x INDEXED BY article_sample_source_time
  WHERE x.ticker=json_extract(q.value,'$[0]') AND x.source_id=json_extract(q.value,'$[1]')
  ORDER BY x.discovered_at DESC,x.id DESC LIMIT 20)
