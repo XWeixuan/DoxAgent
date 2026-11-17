@@ -3196,3 +3196,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-17：完成前一交易日消息效率只读排查，新增 docs/message-efficiency-assessment-20261117.md 与 eval/message_efficiency_20261117 取证/复算脚本。核实2065条、周一环比+611，其中Massive新增覆盖417；确认QZ/DCD正文污染、词义/背景误匹配和近重复处理，完成24源标题巡检。未修改或发布生产逻辑、配置、词表及消息。
 2026-11-17: 收紧本轮双任务当前owner保存实现：移除整段save回调进入短写执行器的包装；请求读取/哈希/telemetry与结果编码在当前owner普通线程完成，只将SQL提交送现有优先写通道。分支结果、审计refs与ACK意图合成一个原子事务，保持不可变结果与租约校验。76项合并及7项专项回归通过，包括编码不占短写线程、审计异常整笔回滚。
+
+2026-11-17: 将终态 ACK/resident 释放意图合入原阶段提交事务，业务 owner 不再为清理重复读取 stage/单独写两次DB；合成NO_TRADE按选中Thread身份释放另一分支，保留Operations原线程。增加同事务回滚/合成票无JobID与原Thread保护回归。离线验收改用源Stage/Round时钟，避免请求归档/投影滞后误报缺模型时钟，并验证W1R3不能掩盖W3内部等待。

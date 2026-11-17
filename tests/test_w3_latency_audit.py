@@ -19,6 +19,48 @@ def test_local_tool_work_is_returned_before_parallel_sdk_union():
     assert breakdown(0,10,a+[(1,6)],[])['non_sdk_ms']==0
 
 
+def test_release_acceptance_uses_source_clocks_without_projection_and_does_not_hide_w3_with_r3(tmp_path):
+    import gzip
+    import shutil
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    script=Path(__file__).resolve().parents[1]/'eval/w3_nonsdk_implementation_20261117/acceptance.py'
+    shutil.copy(script,tmp_path/'acceptance.py')
+    origin=datetime(2026,11,17,12,tzinfo=UTC)
+    stamp=lambda n:(origin+timedelta(seconds=n)).isoformat()
+    stages=[dict(phase=p,status=s,worker_job_id=j,committed_at=stamp(end) if end else None)
+            for p,s,j,end in [('trade_decision','COMMITTED','A',11),
+                              ('trade_decision:A','RESULT_SAVED','A',None),
+                              ('trade_decision:B','RESULT_SAVED','B',None),
+                              ('post_decision_operations','COMMITTED','O',15)]]
+    effects=[dict(effect_id=e,effect_type=k,status='COMPLETED',created_at=stamp(a),
+                  updated_at=stamp(b),effective_at=stamp(b))
+             for e,k,a,b in [('T','route_to_w3',2,11),('O','w3_post_decision',11,15)]]
+    jobs=[dict(id=j,phase=None,capsule_id=j,timing=dict(sdk_dispatched_at=stamp(a),sdk_completed_at=stamp(b)))
+          for j,a,b in [('A',5,10),('B',5,9),('O',12,14)]]
+    rounds=[dict(turn_id='R'+r,lane='W1',round_name=r,
+                 model_interval=json.dumps(dict(start=stamp(a),end=stamp(b))))
+            for r,a,b in [('R1',.5,1.5),('R3',2,15)]]
+    case=dict(case_id='test',ticker='MU',created_at=stamp(0),status='COMPLETED',stages=stages,
+              effects=effects,jobs=jobs,attempts=[],rounds=rounds)
+    traces=[dict(trace_id=e,effect_id=e,segment='effect_owner',finished_at=stamp(end))
+            for e,end in [('T',11),('O',15)]]
+    for filename,value in [('cohort-final.json.gz',dict(at=stamp(16),cases=[case])),
+                           ('logs-final.json.gz',dict(traces=traces,warnings=[]))]:
+        with gzip.open(tmp_path/filename,'wt') as out:json.dump(value,out)
+    subprocess.run([sys.executable,str(tmp_path/'acceptance.py'),'--since',stamp(0)],
+                   check=True,capture_output=True,text=True)
+    result=json.loads((tmp_path/'acceptance.json').read_text())
+    row=result['rows'][0]
+    assert row['missing']==[]
+    assert row['trade_non_sdk']==4 and row['operations_non_sdk']==2
+    assert row['whole_w3_non_sdk']==6 and row['whole_runtime_non_model']==7
+    assert row['runtime_union_with_aux_model']==1
+    assert result['acceptance_ready'] is False  # One Case cannot establish P95.
+
+
 def test_five_second_gate_is_whole_case_not_individual_phases(tmp_path):
     runtime,jobs=tmp_path/'runtime.db',tmp_path/'jobs.db'
     origin=datetime(2026,11,10,12,tzinfo=UTC)

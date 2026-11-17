@@ -109,17 +109,33 @@ class W3ThreadRegistry:
 
     def commit_stage(self, db, case_id, phase, disposition=None):
         assert_write_lease(db)
-        row = db.execute("SELECT worker_job_id FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?",
+        row = db.execute("SELECT worker_job_id,thread_id FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?",
                          (case_id, phase)).fetchone()
-        if row and row[0]:
-            # Publish cleanup eligibility in the same transaction as COMMITTED.
+        acknowledgements = [row[0]] if row and row[0] else []
+        release = []
+        if phase == 'post_decision_operations' and acknowledgements:
+            release.extend(acknowledgements)
+        elif phase == 'trade_decision' and row and row[1]:
+            # A synthetic consensus has no representative Job ID. Physical
+            # ownership follows the selected Thread, including that case.
+            release = [r[0] for r in db.execute(
+                "SELECT worker_job_id FROM runtime_v2_w3_stages WHERE case_id=? "
+                "AND phase IN ('trade_decision:A','trade_decision:B') "
+                "AND worker_job_id IS NOT NULL AND thread_id!=?",(case_id,row[1]))]
+        acknowledgements = list(dict.fromkeys(acknowledgements + release))
+        for job_id in acknowledgements:
+            # Cleanup intent and business completion share one rollback boundary.
             db.execute("INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
-                       (row[0], encode({'case_id': case_id})))
+                       (job_id, encode({'case_id': case_id})))
+        for job_id in release:
+            db.execute("INSERT OR IGNORE INTO runtime_values VALUES('w3_resident_release',?,'true')",
+                       (job_id,))
         db.execute(
             "UPDATE runtime_v2_w3_stages SET status='COMMITTED',committed_at=?,"
             "disposition=?,error=NULL WHERE case_id=? AND phase=?",
             (self.journal.clock().isoformat(), disposition, case_id, phase),
         )
+        return acknowledgements
 
     def template(self, ticker, key, compatibility):
         # A published compatibility key is immutable. Normal periodic preparation

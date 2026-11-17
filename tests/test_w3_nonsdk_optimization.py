@@ -165,3 +165,27 @@ def test_branch_result_and_audit_share_one_rollback_and_encoding_is_outside_writ
   assert prepared and stage['result_json'] is None and stage['status']=='PENDING'
   assert j.get('w3_ack_pending','rollback-A') is None
  finally:s.close()
+
+
+@pytest.mark.parametrize('representative_job',[None,'A'])
+def test_terminal_release_intents_are_atomic_and_use_selected_thread_for_synthetic_vote(tmp_path,representative_job):
+ j=RuntimeJournal(tmp_path/'j.db');r=W3ThreadRegistry(j)
+ for phase,thread,job in [('trade_decision','selected',representative_job),
+                          ('trade_decision:A','selected','A'),
+                          ('trade_decision:B','unselected','B'),
+                          ('post_decision_operations','selected','O')]:
+  r.begin_stage('case',phase,thread_id=thread)
+  r.save_result('case',phase,{},thread_id=thread,worker_job_id=job)
+ with pytest.raises(RuntimeError,match='rollback'):
+  with j.transaction() as db:
+   assert 'B' in r.commit_stage(db,'case','trade_decision')
+   raise RuntimeError('rollback')
+ assert r.stage('case','trade_decision')['status']=='RESULT_SAVED'
+ assert j.get('w3_resident_release','B') is None and j.get('w3_ack_pending','B') is None
+ with j.transaction() as db:ack=r.commit_stage(db,'case','trade_decision')
+ assert 'B' in ack and j.get('w3_resident_release','B') is True
+ assert j.get('w3_ack_pending','B')=={'case_id':'case'}
+ assert j.get('w3_resident_release','A') is None  # Operations retains its thread.
+ with j.transaction() as db:assert r.commit_stage(db,'case','post_decision_operations')==['O']
+ assert j.get('w3_resident_release','O') is True
+ assert r.stage('case','trade_decision:A')['thread_id']=='selected'

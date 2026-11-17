@@ -615,21 +615,10 @@ class W3Execution:
         return result
 
     @observed('case.ack_intent')
-    def _queue_ack(self, case_id, phase):
-        job_id = self.registry.stage(case_id, phase).get("worker_job_id")
-        if job_id:
-            release = []
-            if phase == OPERATIONS_PHASE:
-                release.append(job_id)
-            elif phase == TRADE_PHASE:
-                for label in ("A", "B"):
-                    branch = self.registry.stage(case_id, TRADE_PHASE + ":" + label) or {}
-                    if branch.get("worker_job_id") and branch["worker_job_id"] != job_id:
-                        release.append(branch["worker_job_id"])
-            for identity in release:
-                self.journal.set("w3_resident_release", identity, True)
-                self.journal.set("w3_ack_pending", identity, {"case_id": case_id})
-                self.service._effect_executor.submit(self._ack, identity)
+    def _queue_ack(self, job_ids):
+        # Durable intents already committed with the stage; no reread or new
+        # write transaction belongs on the business owner's completion path.
+        for job_id in job_ids or ():
             self.service._effect_executor.submit(self._ack, job_id)
 
     def _commit_trade(self, case, record, decision):
@@ -666,7 +655,7 @@ class W3Execution:
                             self.service.repository.save_daily_record_in_transaction(db,table,value,encoded)
                     else:
                         getattr(self.service.repository, {'runtime_v2_archives':'save_archive','runtime_v2_badcases':'save_badcase','runtime_v2_w3_coverage_gaps':'save_w3_coverage_gap'}[table])(value)
-                self.registry.commit_stage(db, case.case_id, TRADE_PHASE, outcome)
+                acknowledgements = self.registry.commit_stage(db, case.case_id, TRADE_PHASE, outcome)
                 if case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus':
                     db.execute('UPDATE runtime_v2_w3_threads SET owner_case_id=NULL,lease_until=NULL WHERE owner_case_id=? AND record_id!=?',
                                (case.case_id,record['record_id']))
@@ -681,7 +670,8 @@ class W3Execution:
                 )
                 self._save_case_in_transaction(db, case, prepared_case)
                 self._enqueue_in_transaction(db, operations)
-        self._write_result(commit)
+                return acknowledgements
+        acknowledgements = self._write_result(commit)
         from doxagent.w3_timing import identify
         identify(decision_effective_at=datetime.now(UTC).isoformat())
         from doxagent.w3_timing import mark
@@ -690,7 +680,7 @@ class W3Execution:
             self.service.repository.save_case(case)
         self._sync_route_case(case, record)
         self.service._wake_effects()
-        self._queue_ack(case.case_id, TRADE_PHASE)
+        self._queue_ack(acknowledgements)
         if getattr(self.agent, "entry_enabled", lambda c: False)(case):
             # This is resource cleanup after the durable decision, not a barrier
             # for consuming it or launching Operations. The prepared deadline
@@ -1047,7 +1037,7 @@ class W3Execution:
                     )
                 if archive is not None and hasattr(self.service.repository, "path"):
                     self.service.repository.save_archive_in_transaction(db, archive, archive_payload)
-                self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
+                acknowledgements = self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
                 case.w3_operations_status = "COMMITTED"
                 case.w3_operations_error = None
                 self._save_case_in_transaction(db, case, prepared_case)
@@ -1056,7 +1046,8 @@ class W3Execution:
                         repository.save_w3_case_in_transaction(db, route_case, route_payload)
                     db.execute('UPDATE runtime_v2_w3_threads SET owner_case_id=NULL,lease_until=NULL WHERE owner_case_id=?',
                                (case.case_id,))
-        self._write_result(commit)
+                return acknowledgements
+        acknowledgements = self._write_result(commit)
         from doxagent.w3_timing import mark
         mark('phase.business_committed',task_phase=OPERATIONS_PHASE)
         if archive is not None and not hasattr(self.service.repository, "path"):
@@ -1069,7 +1060,7 @@ class W3Execution:
             self._sync_route_case(case, record)
             self.registry.release(case.case_id)
 
-        self._queue_ack(case.case_id, OPERATIONS_PHASE)
+        self._queue_ack(acknowledgements)
 
     def _commit_pin_watch(self, case, record, result, state):
         case.w3_operations_result = result.model_dump(mode="json")
@@ -1113,7 +1104,7 @@ class W3Execution:
                             or [],
                         ),
                     )
-                self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
+                acknowledgements = self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
                 self._save_case_in_transaction(db, case, prepared)
                 if route and hasattr(repo, "save_w3_case_in_transaction"):
                     repo.save_w3_case_in_transaction(db, route, route_payload)
@@ -1121,15 +1112,16 @@ class W3Execution:
                     "UPDATE runtime_v2_w3_threads SET owner_case_id=NULL,lease_until=NULL WHERE owner_case_id=?",
                     (case.case_id,),
                 )
+                return acknowledgements
 
-        self._write_result(commit)
+        acknowledgements = self._write_result(commit)
         from doxagent.w3_timing import mark
 
         mark("phase.business_committed", task_phase=OPERATIONS_PHASE)
         if not hasattr(repo, "path"):
             repo.save_case(case)
             self._sync_route_case(case, record)
-        self._queue_ack(case.case_id, OPERATIONS_PHASE)
+        self._queue_ack(acknowledgements)
 
     def _fallback_archive(self, case, result, trade_stage):
         if not is_unified_contract(case.w3_contract_version):
