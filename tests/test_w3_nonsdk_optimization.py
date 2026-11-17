@@ -106,3 +106,28 @@ def test_market_cleanup_cannot_block_committed_trade(tmp_path):
     assert not release.is_set()
    finally:release.set()
  finally:service.close()
+
+
+def test_new_cases_dispatch_while_recovery_tick_is_busy_without_duplicate_or_cap_change(tmp_path):
+ from threading import Event
+ from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+ j=RuntimeJournal(tmp_path/'j.db');c=RuntimeCoordinator(SimpleNamespace(),j)
+ entered,release=Event(),Event();calls=[]
+ def run(task):
+  calls.append(task['id'])
+  if len(calls)==j.CASE_CONCURRENCY_PER_TICKER:entered.set()
+  release.wait(10)
+ c._execute=run
+ for i in range(j.CASE_CONCURRENCY_PER_TICKER+1):
+  j.put_task(f'new-{i}','MU','CASE',dict(mode='REALTIME'))
+ j.put_task('closed','MU','CASE',dict(mode='CLOSED'))
+ try:
+  with c._dispatch_lock:  # An unrelated recovery/calendar pass is still busy.
+   c.dispatch_realtime('MU')
+   assert entered.wait(5)
+   c.dispatch_realtime('MU')
+   assert len(calls)==len(set(calls))==j.CASE_CONCURRENCY_PER_TICKER
+   assert j.get_task('closed')['status']=='PENDING'
+   assert sum(j.get_task(f'new-{i}')['status']=='PENDING'
+              for i in range(j.CASE_CONCURRENCY_PER_TICKER+1))==1
+ finally:release.set();c.close()

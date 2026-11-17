@@ -56,6 +56,7 @@ class RuntimeCoordinator:
         self._futures: dict[str, Future[Any]] = {}
         self._closed = False
         self._dispatch_lock = Lock()
+        self._tasks_lock = Lock()
         self._leases = {}
         self._reconciled = set()
         self._effects = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-effects")
@@ -325,6 +326,26 @@ class RuntimeCoordinator:
         with self._dispatch_lock:
             self._tick(ticker)
 
+    def _submit_task(self, task, pool):
+        # The long recovery/calendar tick must not own admission of a new Case.
+        # Only the existing lease claim and in-memory registration are serialized.
+        with self._tasks_lock:
+            if self._closed or task['id'] in self._futures:
+                return
+            lease=self.journal.claim(task['id'],seconds=120)
+            if lease:
+                self._leases[task['id']]=lease
+                self._futures[task['id']]=pool.submit(self._execute,lease)
+
+    def dispatch_realtime(self, ticker):
+        """Immediately dispatch durable admitted Cases, using the same lease/pool."""
+        if self._closed or getattr(self,'_should_stop',lambda:False)():
+            return
+        for task in self.journal.task_controls(ticker):
+            if (task['kind']=='CASE' and task['inputs']['mode']=='REALTIME'
+                and task['due_at']<=self.journal.clock().isoformat()):
+                self._submit_task(task,self._realtime)
+
     def tick_existing(self, ticker: str) -> None:
         """Recover original durable work without consuming Stream or creating sweeps."""
         with self._dispatch_lock:
@@ -423,14 +444,20 @@ class RuntimeCoordinator:
                             "delivery-pump", ticker, type(exc).__name__, str(exc)[:1000]
                         )
                 self._delivery_future = self._delivery.submit(self._pump_delivery)
-        for identity, future in list(self._futures.items()):
+        with self._tasks_lock:
+            futures=list(self._futures.items())
+        for identity, future in futures:
             if future.done():
                 try:
                     future.result()
                 except Exception as exc:
                     self.journal.gap(identity, ticker, type(exc).__name__, str(exc)[:1000])
-                del self._futures[identity]
-                self._leases.pop(identity, None)
+                with self._tasks_lock:
+                    if self._futures.get(identity) is future:
+                        self._futures.pop(identity,None)
+                        self._leases.pop(identity, None)
+        with self._tasks_lock:
+            leases=list(self._leases.items())
         for task in self.journal.task_controls(ticker):
             if getattr(self, "_should_stop", lambda: False)():
                 break
@@ -441,7 +468,7 @@ class RuntimeCoordinator:
                 continue
             if kind in {"SWEEP", "MAINTENANCE"} and any(
                 lease["kind"] == kind and lease["ticker"] == ticker
-                for key, lease in self._leases.items()
+                for key, lease in leases
                 if key in self._futures
             ):
                 continue
@@ -457,7 +484,7 @@ class RuntimeCoordinator:
                     and lease["inputs"].get("mode") == "CLOSED"
                     and identity in self._futures
                     and not self._futures[identity].done()
-                    for identity, lease in self._leases.items()
+                    for identity, lease in leases
                 ):
                     continue  # Live sweeps retain their wave ownership and ordering.
             if kind == "SWEEP" and not self.journal.get("sweep_roster", task["id"]):
@@ -474,13 +501,7 @@ class RuntimeCoordinator:
                 if kind == "CASE" and not closed_recovery
                 else (self._sweeps if kind == "SWEEP" or closed_recovery else self._background)
             )
-            lease = self.journal.claim(
-                task["id"],
-                seconds=120,
-            )
-            if lease:
-                self._leases[task["id"]] = lease
-                self._futures[task["id"]] = pool.submit(self._execute, lease)
+            self._submit_task(task,pool)
 
         if not existing_only:
             previous = self._supplement_futures.get(ticker)
@@ -1150,9 +1171,10 @@ class RuntimeCoordinator:
 
     def close(self) -> None:
         with self._dispatch_lock:
-            self._closed = True
-            for identity, future in list(self._futures.items()):
-                if future.cancel() and identity in self._leases:
-                    ControlRepository(self.journal).defer(self._leases[identity])
+            with self._tasks_lock:
+                self._closed = True
+                for identity, future in list(self._futures.items()):
+                    if future.cancel() and identity in self._leases:
+                        ControlRepository(self.journal).defer(self._leases[identity])
         for pool in (self._realtime, self._background, self._sweeps, self._effects, self._delivery):
             pool.shutdown(wait=True, cancel_futures=True)

@@ -305,6 +305,10 @@ class UnifiedRuntimeSchedulerService:
                 for stream_item in pending_stream:
                     if coordinator is not None:
                         coordinator.accept_stream(stream_item)
+                        if getattr(self, 'background_runtime_dispatch', False):
+                            dispatch=getattr(coordinator,'dispatch_realtime',None)
+                            if dispatch:
+                                dispatch(normalized)
                         coordinator.journal.set(
                             "inbox_highwater", normalized, stream_item.item.stream_offset
                         )

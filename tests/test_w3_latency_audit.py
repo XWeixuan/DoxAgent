@@ -2,7 +2,7 @@ import json
 import sqlite3
 from datetime import datetime,UTC,timedelta
 
-from scripts.ops.w3_latency_audit import breakdown,audit
+from scripts.ops.w3_latency_audit import breakdown,audit,excluding
 
 
 def test_internal_time_is_union_based_and_charges_all_scheduler_delay():
@@ -10,6 +10,13 @@ def test_internal_time_is_union_based_and_charges_all_scheduler_delay():
     assert result['sdk_ms']==6000
     assert result['provider_wait_ms']==3000
     assert result['non_sdk_ms']==11000
+
+
+def test_local_tool_work_is_returned_before_parallel_sdk_union():
+    a=excluding((0,10),[(2,4),(3,5)])
+    assert a==[(0,2),(5,10)]
+    assert breakdown(0,10,a,[])['non_sdk_ms']==3000
+    assert breakdown(0,10,a+[(1,6)],[])['non_sdk_ms']==0
 
 
 def test_five_second_gate_is_whole_case_not_individual_phases(tmp_path):

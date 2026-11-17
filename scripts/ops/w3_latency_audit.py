@@ -32,6 +32,20 @@ def duration(intervals):
     return sum(end-start for start,end in merged(intervals))
 
 
+def excluding(interval, local):
+    pieces=[interval]
+    for x,y in merged(local):
+        following=[]
+        for a,b in pieces:
+            if y<=a or x>=b:
+                following.append((a,b))
+            else:
+                if a<x:following.append((a,min(x,b)))
+                if y<b:following.append((max(y,a),b))
+        pieces=following
+    return pieces
+
+
 def breakdown(start,end,sdk,external):
     clip=lambda xs:[(max(a,start),min(b,end)) for a,b in xs if b>start and a<end]
     sdk,external=clip(sdk),clip(external)
@@ -120,14 +134,21 @@ def audit(runtime,jobs,*,since,until=None,limit=300,target_seconds=10,receipts=(
                 if r:runs.add(r[0])
         found=set()
         for run in runs:
-            for r in worker.execute("SELECT id,status,json_extract(payload,'$.resource_receipt.execution_timing') timing "
+            for r in worker.execute("SELECT id,status,json_extract(payload,'$.resource_receipt.execution_timing') timing, "
+                "json_extract(payload,'$.resource_receipt.capsule_id') capsule_id "
                 "FROM jobs INDEXED BY jobs_run_owner WHERE json_extract(payload,'$.run_id')=? "
                 "AND json_extract(payload,'$.attempt_id') LIKE ?",(run,cid[-24:]+'-%')):
                 if r['id'] in found:continue
                 found.add(r['id'])
                 timing=json.loads(r['timing']) if r['timing'] else {}
                 a,b=timing.get('sdk_dispatched_at'),timing.get('sdk_completed_at')
-                if a and b:sdk.append((instant(a),instant(b)))
+                if a and b:
+                    local=[(instant(t['started_at']),instant(t['finished_at'])) for t in receipts
+                           if r['capsule_id'] and t.get('segment')=='research_tool'
+                           and t.get('capsule_id')==r['capsule_id'] and t.get('finished_at')]
+                    # Remove local tool work from EACH branch before taking the
+                    # union: overlapping inference in the other branch still counts.
+                    sdk+=excluding((instant(a),instant(b)),local)
                 else:result['missing'].append('sdk_timing:'+r['id'])
         if not found:result['missing'].append('worker_job')
         for phase in phases:
