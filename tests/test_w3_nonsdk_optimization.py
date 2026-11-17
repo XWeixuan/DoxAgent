@@ -80,3 +80,29 @@ async def test_ack_release_is_terminal_only_and_preserves_thread_history(tmp_pat
   assert (await client.post('/v1/jobs/j/acknowledge?release_resident=true')).status_code==200
   runtime.release_thread.assert_awaited_once_with('t')
   assert jobs.store.get('j').thread_id=='t' and jobs.store.get('j').status=='succeeded'
+
+
+def test_market_cleanup_cannot_block_committed_trade(tmp_path):
+ from threading import Event
+ from concurrent.futures import ThreadPoolExecutor
+ from tests.test_w3_v5_execution import setup_case
+ service,journal,agent,case,_=setup_case(tmp_path)
+ entered,release=Event(),Event();original=agent.run_phase
+ def run(**kwargs):
+  value=original(**kwargs)
+  if kwargs['phase']=='trade_decision':
+   agent.entry_enabled=lambda _:True
+  return value
+ def stop(_):
+  entered.set();release.wait(10)
+ agent.run_phase=run;agent.stop_market=stop
+ try:
+  with ThreadPoolExecutor(max_workers=1) as executor:
+   future=executor.submit(service.process_pending_effects)
+   try:
+    assert entered.wait(5)
+    assert future.result(timeout=2)==1
+    assert service._v4_execution().registry.stage(case.case_id,'trade_decision')['status']=='COMMITTED'
+    assert not release.is_set()
+   finally:release.set()
+ finally:service.close()

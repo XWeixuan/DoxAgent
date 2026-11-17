@@ -3187,3 +3187,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-17: 正式候选核验补齐 Runtime schema 导入图的 checked-hash pyc，避免仅 Worker 导入图覆盖造成 Scheduler 源码路径漏编译。
 2026-11-17: 发布后首个自然 Case 存在约70秒的 W1/W2 前置等待；按 P2 补 case_task/输入冻结/日索引/事实桥接标量计时。离线验收工具支持生产轮转日志中的最终 owner receipt，双任务四阶段不误判，10秒验收至少100例，未完成不冒充通过。
 2026-11-17: 生产分段计时证实 Library fact bridge 单次7.5–13.3秒。先过滤冻结/可见事实，再按剩余Fact ID沿既有不可变分支溯源，避免入组热路径全历史事实展开；保留首次入库/内容复用、历史分支与去重口径，不新增缓存、线程或表。
+2026-11-17: 将已提交 Trade 后的 market stop 资源通知复用既有异步收尾执行器，不再让网络清理阻塞 Effect 收尾或 Operations；原准备期限继续兜底，无新增队列或状态。补充 route/ACK span 区分历史未闭合尾部，未将约6秒缺口未经证实归因于某个 RPC。阻塞 stop 回归验证 Trade 仍可完成提交。

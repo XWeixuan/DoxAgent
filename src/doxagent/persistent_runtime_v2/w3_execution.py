@@ -609,6 +609,7 @@ class W3Execution:
                            thread_id=job.thread_id,worker_job_id=job.job_id))
         return result
 
+    @observed('case.ack_intent')
     def _queue_ack(self, case_id, phase):
         job_id = self.registry.stage(case_id, phase).get("worker_job_id")
         if job_id:
@@ -686,11 +687,16 @@ class W3Execution:
         self.service._wake_effects()
         self._queue_ack(case.case_id, TRADE_PHASE)
         if getattr(self.agent, "entry_enabled", lambda c: False)(case):
-            # A failed stop notification is recovered by the prepared deadline.
-            try:
-                self.agent.stop_market(case.case_id)
-            except Exception as exc:
-                self.journal.gap("w3-market-stop", case.ticker, type(exc).__name__, str(exc))
+            # This is resource cleanup after the durable decision, not a barrier
+            # for consuming it or launching Operations. The prepared deadline
+            # already bounds cleanup if the best-effort notification is lost.
+            self.service._effect_executor.submit(self._stop_market, case.case_id, case.ticker)
+
+    def _stop_market(self, case_id, ticker):
+        try:
+            self.agent.stop_market(case_id)
+        except Exception as exc:
+            self.journal.gap("w3-market-stop", ticker, type(exc).__name__, str(exc))
 
     def _v6_records(self, case, decision):
         records = []
@@ -1184,6 +1190,7 @@ class W3Execution:
                     ) | updates
             )
 
+    @observed('case.route_projection')
     def _sync_route_case(self, case, record):
         route_case = self._route_case_update(case, record)
         if route_case:
