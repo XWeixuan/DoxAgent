@@ -55,3 +55,14 @@ def test_five_second_gate_is_whole_case_not_individual_phases(tmp_path):
     incomplete=audit(runtime,jobs,since=stamp(-1),until=stamp(50))
     assert incomplete['measured_count']==0
     assert 'effect_terminal_trace:ops' in incomplete['cases'][0]['missing']
+    with sqlite3.connect(runtime) as db:
+        for label in ('A','B'):
+            db.execute('INSERT INTO runtime_v2_w3_stages VALUES(?,?,?,?,?)',
+                       (cid,'trade_decision:'+label,'RESULT_SAVED','trade',stamp(11)))
+    restored=audit(runtime,jobs,since=stamp(-1),until=stamp(50),receipts=[
+        dict(effect_id='ops',segment='effect_owner',started_at=stamp(11),finished_at=stamp(22),
+             effect_available_at=stamp(11)),
+        dict(effect_id='ops',segment='phase_io',started_at=stamp(11),finished_at=stamp(99))])
+    assert restored['measured_count']==1
+    assert restored['non_sdk_ms']['p95']==6000
+    assert restored['p95_within_target'] and not restored['acceptance_ready']

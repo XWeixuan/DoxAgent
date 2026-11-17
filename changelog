@@ -3185,3 +3185,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Supplement notifications drain off realtime dispatch in bounded 32-key pages; automatic global reference scans are reserved for explicit quiet maintenance. Terminal unselected/Operations residents release through recoverable ACK without deleting history.
 - Added ownership handoff, real query-plan, dirty cursor and terminal ACK regressions; 114 related regressions passed before final observation hooks; no prompt/model/schema/trading rule changes.
 2026-11-17: 正式候选核验补齐 Runtime schema 导入图的 checked-hash pyc，避免仅 Worker 导入图覆盖造成 Scheduler 源码路径漏编译。
+2026-11-17: 发布后首个自然 Case 存在约70秒的 W1/W2 前置等待；按 P2 补 case_task/输入冻结/日索引/事实桥接标量计时。离线验收工具支持生产轮转日志中的最终 owner receipt，双任务四阶段不误判，10秒验收至少100例，未完成不冒充通过。

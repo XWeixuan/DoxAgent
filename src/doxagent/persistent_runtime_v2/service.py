@@ -22,7 +22,7 @@ from pydantic import BaseModel, ValidationError
 from doxagent.event_library.contracts import CanonicalEvent
 from doxagent.event_library.provider import KnownEventIndexSnapshot
 from doxagent.semantic_clock import semantic_day
-from doxagent.w3_timing import observed
+from doxagent.w3_timing import observed, identify, mark, span
 from doxagent.v2_control.repository import ControlError, ControlRepository
 from doxagent.workflows.codex_document3.consumer_contracts import (
     PolicyDetailSnapshotV3,
@@ -490,6 +490,7 @@ class PersistentRuntimeV2Service:
             )
         existing = self.repository.get_case_by_source(source.source_message_id)
         if existing is not None:
+            identify(case_id=existing.case_id)
             if existing.status != RuntimeCaseStatus.RUNNING:
                 return existing
             return self._resume_hot(existing, phase=phase)
@@ -497,11 +498,12 @@ class PersistentRuntimeV2Service:
             raise RuntimeStopping("Persistent Runtime V2 is draining; new admission stopped")
         created = admitted_at or (self.journal.clock() if self.journal else utc_now())
         trading_date = semantic_day(created)
-        snapshot = (
-            input_snapshot or self.input_snapshot_loader(source.snapshot.ticker)
-            if self.input_snapshot_loader
-            else input_snapshot
-        )
+        with span('case.input_snapshot'):
+            snapshot = (
+                input_snapshot or self.input_snapshot_loader(source.snapshot.ticker)
+                if self.input_snapshot_loader
+                else input_snapshot
+            )
         index = (
             snapshot.index if snapshot else self.known_events.current_index(source.snapshot.ticker)
         )
@@ -567,6 +569,7 @@ class PersistentRuntimeV2Service:
             status=RuntimeCaseStatus.RUNNING,
         )
         case.w2_contract_version = self.w2_contract_version
+        identify(case_id=case.case_id)
         w1_daily_pin = {"day": trading_date.isoformat(), "instructions": index_instructions,
                         "event_library_root": index_root, "event_library_version": index.version}
         case.frozen_inputs["w1_daily_index"] = w1_daily_pin
@@ -716,6 +719,7 @@ class PersistentRuntimeV2Service:
                 origin_identity=f"inbox:{case.ticker}:{case.source.source_message_id}",
             )
         case = self.repository.save_case(case)
+        mark('case.admission_ready')
         if case.status is not RuntimeCaseStatus.RUNNING:
             return case
         return self._resume_hot(case, phase=phase)

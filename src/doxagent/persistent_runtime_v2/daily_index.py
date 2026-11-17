@@ -6,6 +6,7 @@ import json
 from doxagent.event_library.provider import KnownEventIndexSnapshot, PublishedEventLibraryReader
 from .providers import PublishedEventLibraryRuntimeProvider
 from .schema import RuntimeFactCandidate
+from doxagent.w3_timing import observed
 
 
 def event_provider(default, root):
@@ -34,6 +35,7 @@ def fact_content(candidate):
     return json.dumps(value, sort_keys=True)
 
 
+@observed('case.frozen_fact_contents')
 def frozen_fact_contents(default_provider, ticker, root, version, cache=None):
     """All frozen Library facts, including Events omitted from the compact index."""
     key = (ticker.upper(), root, version)
@@ -58,6 +60,7 @@ def visible_library_bridges(values, frozen_contents):
             or fact_content(value.candidate) not in frozen_contents]
 
 
+@observed('case.daily_index')
 def freeze_index(repository, provider, index, ticker, day, root, at, instructions):
     frozen = repository.daily_known_index(ticker, day)
     if frozen is None:
@@ -73,6 +76,7 @@ def freeze_index(repository, provider, index, ticker, day, root, at, instruction
     return KnownEventIndexSnapshot.model_validate(frozen["index"]), frozen["event_library_root"], frozen["instructions"]
 
 
+@observed('case.library_fact_bridge')
 def retain_new_library_facts(repository, default_provider, ticker, day, *,
                              frozen_index, frozen_root, current_index, current_root, completed=None,
                              frozen_contents=None):

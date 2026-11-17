@@ -553,7 +553,11 @@ class RuntimeCoordinator:
         from .heartbeat import heartbeat
 
         if task["kind"] == "CASE":
-            self._execute_owned(task)
+            from doxagent.w3_timing import segment_trace
+            with segment_trace('case_task', task_id=task['id'], ticker=task['ticker'],
+                               admitted_at=task['inputs'].get('admitted_at'),
+                               claimed_at=task.get('updated_at')):
+                self._execute_owned(task)
         else:
             with heartbeat(lambda: self.journal.renew(task)):
                 self._execute_owned(task)
@@ -565,7 +569,9 @@ class RuntimeCoordinator:
                 f"{task['id']}:{task['token']}", task["ticker"], case_id=task["id"]
             )
             if kind == "CASE":
-                self.journal.prepare_claimed(task, self.prepare_case_inputs)
+                from doxagent.w3_timing import span
+                with span('case.freeze_task_inputs'):
+                    self.journal.prepare_claimed(task, self.prepare_case_inputs)
                 self._case(task)
             elif kind == "SWEEP":
                 self._sweep(task)

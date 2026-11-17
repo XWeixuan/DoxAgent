@@ -50,7 +50,7 @@ def summary(values):
     return dict(count=len(values),p50=pct(.5),p95=pct(.95),maximum=values[-1])
 
 
-def audit(runtime,jobs,*,since,until=None,limit=300,target_seconds=10):
+def audit(runtime,jobs,*,since,until=None,limit=300,target_seconds=10,receipts=()):
     connect=lambda p:sqlite3.connect(Path(p).resolve().as_uri()+'?mode=ro',uri=True,timeout=2)
     db,worker=connect(runtime),connect(jobs)
     db.row_factory=worker.row_factory=sqlite3.Row
@@ -75,6 +75,12 @@ def audit(runtime,jobs,*,since,until=None,limit=300,target_seconds=10):
             records=[json.loads(r[0]) for r in db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace='w3_boundary_timing' AND key>=? AND key<?",
                 (prefix,prefix+'\uffff'))]
+            # Production uses the rotated log sink rather than per-step DB writes.
+            # Only terminal owner receipts define business completion, not ACKs.
+            records += [r for r in receipts if r.get('effect_id')==effect['effect_id']
+                        and r.get('segment')=='effect_owner']
+            records = list({r.get('trace_id') or (r['started_at'],r.get('finished_at')):r
+                            for r in records}.values())
             records.sort(key=lambda r:r['started_at'])
             traces+=records
             for index,trace in enumerate(records):
@@ -140,7 +146,7 @@ def audit(runtime,jobs,*,since,until=None,limit=300,target_seconds=10):
                 target_seconds=target_seconds,
                 p95_within_target=stats['p95'] is not None and stats['p95']<=target_seconds*1000,
                 p95_within_5s=stats['p95'] is not None and stats['p95']<=5000,
-                acceptance_ready=(not truncated and len(measured)>=60 and len(measured)==len(cases)
+                acceptance_ready=(not truncated and len(measured)>=100 and len(measured)==len(cases)
                                   and stats['p95'] is not None and stats['p95']<=target_seconds*1000),
                 cases=cases)
 
@@ -153,5 +159,8 @@ if __name__=='__main__':
     parser.add_argument('--until')
     parser.add_argument('--limit',type=int,default=300)
     parser.add_argument('--target-seconds',type=float,default=10)
+    parser.add_argument('--receipts',type=Path,help='Content-free timing receipts JSON exported from rotated logs')
     args=parser.parse_args()
-    print(json.dumps(audit(args.runtime,args.jobs,since=args.since,until=args.until,limit=args.limit,target_seconds=args.target_seconds),indent=2))
+    receipts=json.loads(args.receipts.read_text(encoding='utf-8')) if args.receipts else []
+    if isinstance(receipts,dict):receipts=receipts['traces']
+    print(json.dumps(audit(args.runtime,args.jobs,since=args.since,until=args.until,limit=args.limit,target_seconds=args.target_seconds,receipts=receipts),indent=2))
