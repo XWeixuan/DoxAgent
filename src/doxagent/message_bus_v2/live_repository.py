@@ -1574,8 +1574,8 @@ class LiveRepository:
                     return False  # Reprepare once outside BEGIN; keep the downloaded result.
             if current[0] == row["body_digest"] and current[1]:
                 db.execute(
-                    "UPDATE live_deliveries SET state='PUBLISHED' WHERE article_key=? AND ticker=?",
-                    (key, ticker),
+                    "UPDATE live_deliveries SET state='PUBLISHED',regex_result=coalesce(?,regex_result) WHERE article_key=? AND ticker=?",
+                    (1 if row.get("_positive_regex") else None, key, ticker),
                 )
                 return
             # A tiny current-binding/ownership check, not a fresh roster snapshot.
@@ -1601,7 +1601,8 @@ class LiveRepository:
                 db.execute(
                     "UPDATE live_deliveries SET state='PUBLISHED',raw_id=?,standard_id=?,decision_digest=?,"
                     "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL,"
-                    "initial_decision=coalesce(initial_decision,'PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?) "
+                    "initial_decision=coalesce(initial_decision,'PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?), "
+                    "regex_result=coalesce(?,regex_result) "
                     "WHERE article_key=? AND ticker=?",
                     (
                         raw.raw_message_id,
@@ -1610,6 +1611,7 @@ class LiveRepository:
                         row["body_digest"],
                         prepared.get("known_consumable_at"),
                         utc_now().isoformat(),
+                        1 if row.get("_positive_regex") else None,
                         key,
                         ticker,
                     ),

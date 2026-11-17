@@ -96,3 +96,22 @@ async def test_storage_execute_keeps_static_defense_caller_contract():
     lane=StorageLane()
     assert await lane.read(lambda:5)==5
     assert lane.metrics['thread_cpu_s']>=0
+
+
+async def test_reused_publication_keeps_positive_regex_receipt(tmp_path):
+    from tests.test_cross_source_live_dedup import capture, drain, input_message
+    from tests.test_massive_distribution import terms
+    repo,bus,source,_=_setup(tmp_path)
+    bus.live_queue=LiveQueue(bus)
+    pipeline=(repo,bus,Extractor())
+    capture(pipeline,source.source_id,input_message(987,'https://example.test/reused'))
+    await drain(pipeline)
+    repo.save_source(source.model_copy(update={'acquisition_mode':AcquisitionMode.MASSIVE_DISTRIBUTION, 'version':source.version+1}))
+    terms(repo)
+    with repo.transaction() as db:
+        db.execute("UPDATE live_deliveries SET state='PENDING',regex_result=0")
+    await LiveDeliveryWorker(bus).run_available()
+    with repo._connect() as db:
+        row=db.execute('SELECT state,regex_result FROM live_deliveries').fetchone()
+        assert tuple(row)==('PUBLISHED',1)
+        assert db.execute('SELECT count(*) FROM stream_items').fetchone()[0]==1

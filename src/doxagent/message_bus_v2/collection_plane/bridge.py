@@ -87,7 +87,7 @@ class CaptureBridge:
             except Exception:
                 log.exception("collection bridge retrying durable delta")
                 count = 0
-            await asyncio.sleep(0.01 if count else 0.1)
+            await asyncio.sleep(0.01 if count else 0.25)
 
     async def close(self):
         self.stopping = True

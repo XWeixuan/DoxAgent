@@ -47,6 +47,9 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
     scheduler = GlobalPollScheduler(repository, service, adapters)
     scheduler.collection_plane_enabled = settings.message_bus_v2_collection_plane_enabled
     if scheduler.collection_plane_enabled:
+        scheduler.intake.tasks = [None]
+        scheduler.intake.idle_interval = 30
+    if scheduler.collection_plane_enabled:
         from .collection_plane.bridge import CaptureBridge
         scheduler.capture_bridge = CaptureBridge(service)
     secret = settings.dashscope_api_key or ""

@@ -781,4 +781,4 @@ class LiveDeliveryWorker:
             except Exception:
                 log.exception("live delivery pump awaiting local recovery")
                 processed = 0
-            await asyncio.sleep(0 if processed else 0.1)
+            await asyncio.sleep(0 if processed else 0.25)
