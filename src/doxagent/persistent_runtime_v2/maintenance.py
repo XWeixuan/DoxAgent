@@ -555,6 +555,10 @@ class RuntimeMaintenance:
             ),
         )
 
+        prepare = getattr(self.runtime, "prepare_library_visibility", None)
+        if prepare:
+            prepare(revision["ticker"])
+
     def _consume(self, task: dict[str, Any], frame: dict[str, Any]) -> None:
         self.runtime.repository.mark_daily_records_processed(
             candidate_keys=[

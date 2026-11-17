@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import hashlib
 import hmac
@@ -30,6 +31,7 @@ class ResearchMcp:
         self.scoped_token = service_token(secret, "d1-d2.v1")
         self.research_scope = ContextVar("w3_research_scope", default=None)
         self.ready = {}
+        self._ready_waiters = {}
         self.calls = 0
         self.capsule = ContextVar("w3_mcp_capsule", default="")
         common = {
@@ -102,9 +104,22 @@ class ResearchMcp:
         )
         self.manager = StreamableHTTPSessionManager(self.server, stateless=True, json_response=True)
 
+    async def wait_ready(self, capsule, timeout):
+        if capsule in self.ready:
+            return
+        event = self._ready_waiters.setdefault(capsule, asyncio.Event())
+        try:
+            await asyncio.wait_for(event.wait(), timeout)
+        finally:
+            if self._ready_waiters.get(capsule) is event:
+                self._ready_waiters.pop(capsule, None)
+
     async def list_tools(self, ctx, params):
         if self.capsule.get():
             self.ready[self.capsule.get()] = time.monotonic()
+            waiter = self._ready_waiters.get(self.capsule.get())
+            if waiter is not None:
+                waiter.set()
         return types.ListToolsResult(tools=self.tools)
 
     def _market_read(self, args):

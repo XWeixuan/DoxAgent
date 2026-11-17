@@ -180,6 +180,11 @@ def extend_context(store, case_id, days=7):
     if not case_id or not 1 <= days <= 365:
         raise ValueError("case-id and 1..365 extension days required")
     until = (datetime.now(UTC) + timedelta(days=days)).isoformat()
+    with closing(store.connect()) as db:
+        manifests = db.execute('SELECT manifest_sha FROM w3_case_contexts WHERE case_id=?', (case_id,)).fetchall()
+    for row in manifests:
+        manifest = json.loads((store.contexts / (row[0] + '.json')).read_bytes())
+        store.protect_components(manifest.get('components', {}), until)
     with closing(store.connect()) as db, db:
         cursor = db.execute(
             "UPDATE w3_case_contexts SET expires_at=max(expires_at,?) WHERE case_id=?",
@@ -207,58 +212,77 @@ def restore_archive(root, run_id):
 
 
 def gc_derivatives(store, *, apply=False):
-    """Only reproducible views, never canonical sources, audit or Case outputs."""
+    """Bounded metadata selection; only atomic rename occurs under the writer."""
     import time
+    import shutil
     started = time.monotonic()
-    cutoff = datetime.now(UTC) - timedelta(hours=24)
-    protected = set()
-    candidates = []
-    with closing(store.connect()) as db, db:
-        db.execute("BEGIN IMMEDIATE")
-        for row in db.execute(
-            "SELECT manifest_sha FROM w3_case_contexts WHERE expires_at>?",
-            (datetime.now(UTC).isoformat(),),
-        ):
-            manifest = json.loads((store.contexts / (row[0] + ".json")).read_bytes())
-            protected.update(manifest.get("components", {}).values())
-        # Keep the newest ready source of each ticker/kind warm.
-        latest = db.execute(
-            "SELECT id,ticker,kind,updated_at FROM w3_asset_builds "
-            "WHERE state='READY' ORDER BY updated_at DESC"
-        ).fetchall()
-        seen = set()
-        for row in latest:
-            key = row["ticker"], row["kind"]
-            if key not in seen:
-                protected.add(row["id"])
-                seen.add(key)
-        for path in store.packs.iterdir() if store.packs.exists() else []:
-            if len(candidates) >= 64 or time.monotonic() - started >= 0.25:
+    now = datetime.now(UTC).isoformat()
+    cutoff = (datetime.now(UTC) - timedelta(hours=24)).isoformat()
+    with closing(store.connect()) as db:
+        rows = db.execute("SELECT id,source_path,source_sha FROM w3_asset_builds a "
+            "WHERE state='READY' AND retained_until<? AND updated_at<? "
+            "AND EXISTS (SELECT 1 FROM w3_asset_builds b WHERE b.ticker=a.ticker "
+            "AND b.kind=a.kind AND b.state='READY' AND b.updated_at>a.updated_at) LIMIT 16",
+            (now, cutoff)).fetchall()
+    # Old NULL watermarks stay protected until a bounded pass covers all live contexts.
+    if apply and not getattr(store, '_gc_backfilled', False):
+        cursor = getattr(store, '_gc_context_cursor', '')
+        with closing(store.connect()) as db:
+            contexts = db.execute("SELECT token_hash,manifest_sha,expires_at FROM w3_case_contexts "
+                "WHERE token_hash>? AND expires_at>? ORDER BY token_hash LIMIT 128", (cursor, now)).fetchall()
+        for context in contexts:
+            if time.monotonic() - started >= .25:
                 break
-            if not path.is_dir() or path.is_symlink() or path.name in protected:
-                continue
-            row = db.execute(
-                "SELECT source_path,source_sha FROM w3_asset_builds WHERE id=?", (path.name,)
-            ).fetchone()
-            if not row or datetime.fromtimestamp(path.stat().st_mtime, UTC) > cutoff:
-                continue
-            source = Path(row["source_path"])
-            if not source.is_file() or sha(source.read_bytes()) != row["source_sha"]:
-                continue
-            candidates.append(str(path))
-            if apply:
-                import shutil
-
-                target = path.resolve()
-                if target.parent != store.packs.resolve():
-                    raise ValueError("GC target escaped owned pack root")
-                tombstone = store.root / ".w3-retired" / path.name
-                tombstone.parent.mkdir(exist_ok=True)
-                if tombstone.exists():
+            manifest = json.loads((store.contexts / (context['manifest_sha'] + '.json')).read_bytes())
+            store.protect_components(manifest.get('components', {}), context['expires_at'])
+            store._gc_context_cursor = context['token_hash']
+        if not contexts:
+            with closing(store.connect()) as db, db:
+                db.execute("UPDATE w3_asset_builds SET retained_until='1970-01-01' WHERE retained_until IS NULL")
+            store._gc_backfilled = True
+    candidates = []
+    # A failed post-commit delete must not leave a permanent tombstone.
+    retired = store.root / '.w3-retired'
+    if apply and retired.exists():
+        for n, path in enumerate(retired.iterdir()):
+            if n >= 8 or time.monotonic() - started >= .25:
+                break
+            with closing(store.connect()) as db:
+                owner = db.execute('SELECT state FROM w3_asset_builds WHERE id=?', (path.name,)).fetchone()
+            if owner and (owner[0] == 'COLD' or (store.packs / path.name).exists()):
+                if path.is_dir() and not path.is_symlink():
+                    shutil.rmtree(path)
+    for row in rows:
+        if time.monotonic() - started >= .25:
+            break
+        path = store.packs / row['id']
+        source = Path(row['source_path'])
+        if not path.is_dir() or path.is_symlink() or not source.is_file():
+            continue
+        if sha(source.read_bytes()) != row['source_sha']:
+            continue
+        candidates.append(str(path))
+        if not apply:
+            continue
+        tombstone = store.root / '.w3-retired' / row['id']
+        tombstone.parent.mkdir(exist_ok=True)
+        moved = False
+        try:
+            with closing(store.connect()) as db, db:
+                db.execute('BEGIN IMMEDIATE')
+                changed = db.execute("UPDATE w3_asset_builds SET state='COLD' WHERE id=? "
+                    "AND state='READY' AND retained_until<? AND source_sha=?",
+                    (row['id'], now, row['source_sha'])).rowcount
+                if not changed or tombstone.exists():
+                    db.rollback()
                     continue
                 path.rename(tombstone)
-                db.execute("UPDATE w3_asset_builds SET state='COLD' WHERE id=?", (path.name,))
-                shutil.rmtree(tombstone)
+                moved = True
+        except BaseException:
+            if moved and not path.exists():
+                tombstone.rename(path)
+            raise
+        shutil.rmtree(tombstone)
     return candidates
 
 

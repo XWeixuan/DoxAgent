@@ -188,6 +188,33 @@ class W3ResearchStore:
                   UNIQUE(case_id,phase));
             """)
 
+        with closing(self.connect()) as db, db:
+            if 'retained_until' not in {r[1] for r in db.execute('PRAGMA table_info(w3_asset_builds)')}:
+                db.execute('ALTER TABLE w3_asset_builds ADD COLUMN retained_until TEXT')
+            db.execute('CREATE INDEX IF NOT EXISTS w3_asset_expiry ON w3_asset_builds(state,retained_until,updated_at)')
+            db.execute('CREATE INDEX IF NOT EXISTS w3_asset_latest ON w3_asset_builds(ticker,kind,state,updated_at)')
+
+    def protect_components(self, components, until):
+        identities = set(components.values())
+        while True:
+            cold = []
+            with closing(self.connect()) as db, db:
+                db.execute('BEGIN IMMEDIATE')
+                for identity in identities:
+                    row = db.execute('SELECT state FROM w3_asset_builds WHERE id=?', (identity,)).fetchone()
+                    if row and row[0] == 'COLD':
+                        cold.append(identity)
+                    elif row and row[0] != 'READY':
+                        raise ValueError('research asset is not ready for context binding')
+                if not cold:
+                    for identity in identities:
+                        db.execute("UPDATE w3_asset_builds SET retained_until=? WHERE id=? AND (retained_until IS NULL OR retained_until<?)", (until, identity, until))
+                    return
+            # Cold derivatives are rebuilt from their immutable source, outside SQL.
+            # A rebuilt asset has a fresh updated_at and cannot immediately expire again.
+            for identity in cold:
+                self.build(identity)
+
     def connect(self):
         db = sqlite3.connect(self.path, timeout=30)
         db.row_factory = sqlite3.Row
@@ -221,7 +248,7 @@ class W3ResearchStore:
         identity = sha(compact([source_sha, kind, ticker, RENDERER]))
         with closing(self.connect()) as db, db:
             db.execute(
-                "INSERT OR IGNORE INTO w3_asset_builds VALUES(?,?,?,?,?,'PENDING',?,NULL)",
+                "INSERT OR IGNORE INTO w3_asset_builds(id,kind,ticker,source_sha,source_path,state,updated_at,error,retained_until) VALUES(?,?,?,?,?,'PENDING',?,NULL,'1970-01-01')",
                 (identity, kind, ticker, source_sha, str(path), datetime.now(UTC).isoformat()),
             )
         return identity
@@ -329,6 +356,8 @@ class W3ResearchStore:
         }
 
     def bind(self, case_id, phase, manifest):
+        until = (datetime.now(UTC) + timedelta(days=7)).isoformat()
+        self.protect_components(manifest.get("components", {}), until)
         manifest = dict(manifest)
         manifest["snapshot_catalog"] = sorted([
             {k: v for k, v in obj.items() if k not in {"body", "sources"}}
@@ -378,7 +407,9 @@ class W3ResearchStore:
                 token = "w3ctx_" + hmac.new(
                     seed_path.read_bytes(), data, hashlib.sha256
                 ).hexdigest()
-                atomic(self.contexts / (identity + ".json"), data)
+                target = self.contexts / (identity + ".json")
+                if not target.exists():
+                    atomic(target, data)
                 db.execute(
                     "INSERT OR IGNORE INTO w3_case_contexts VALUES(?,?,?,?,?,'ACTIVE')",
                     (

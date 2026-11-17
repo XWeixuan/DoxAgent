@@ -61,6 +61,7 @@ class W3ReadySlots:
             db.execute("CREATE INDEX IF NOT EXISTS w3_ready_case ON w3_ready_slots(case_id,record_id)")
             db.execute("CREATE INDEX IF NOT EXISTS w3_ready_scope_times ON "
                        "w3_ready_slots(scope,failed_at DESC,ready_at)")
+            db.execute("CREATE INDEX IF NOT EXISTS w3_ready_success ON w3_ready_slots(scope,ready_at DESC)")
             # Old unclaimed slots lost their resident SDK on Worker restart.
             db.execute(
                 "UPDATE w3_ready_slots SET state='RETIRING' WHERE state IN ('READY','BUILDING')"
@@ -93,13 +94,14 @@ class W3ReadySlots:
                 await write_io(self.jobs.store.path, retire_superseded, retry=True)
         self.configs[key] = config
         # Count these as the existing warm inventory, not in addition to it.
-        self.jobs._runtime.w3_warm_target = 1
+        self.jobs._runtime.w3_warm_target = 0
+        self.jobs._runtime.w3_ready_targets = {scope: self.target(value) for scope, value in self.configs.items() if value.get("active_public", True)}
         await self.fill(key)
         return key
 
     async def fill(self, key):
         admission = getattr(self.jobs._runtime, "admission", None)
-        if admission is not None and not admission.allow_speculation():
+        if admission is not None and not admission.allow_baseline():
             return
         async with self.lock:
             await write_io(self.jobs.store.path, self.reconcile_residents, retry=True)
@@ -131,20 +133,28 @@ class W3ReadySlots:
 
         self.tasks[identity] = asyncio.create_task(replenish())
 
+    def target(self, config):
+        return (self.settings.w3_ready_sol if config["profile"]["model"] in
+                {"gpt-6-sol", "gpt-6.1-sol"} else self.settings.w3_ready_luna)
+
     def _fill(self, key, config):
         if not config.get("active_public", True):
             return
-        target = (
-            self.settings.w3_ready_sol
-            if config["profile"]["model"] in {"gpt-6-sol", "gpt-6.1-sol"}
-            else self.settings.w3_ready_luna
-        )
+        target = self.target(config)
         with closing(self.jobs.store.connect()) as db, db:
+            count, building = db.execute(
+                "SELECT count(*),coalesce(max(state='BUILDING' AND case_id IS NULL),0) "
+                "FROM w3_ready_slots "
+                "WHERE scope=? AND state IN ('BUILDING','READY')",
+                (key,),
+            ).fetchone()
+            if count >= target or building:
+                return
             failures = db.execute(
                 "SELECT error,failed_at FROM w3_ready_slots "
                 "WHERE scope=? AND error IS NOT NULL AND failed_at IS NOT NULL "
-                "AND failed_at > COALESCE((SELECT max(ready_at) FROM w3_ready_slots "
-                "WHERE scope=?), '') ORDER BY failed_at DESC LIMIT 2",
+                "AND failed_at > COALESCE((SELECT ready_at FROM w3_ready_slots "
+                "WHERE scope=? AND ready_at IS NOT NULL ORDER BY ready_at DESC LIMIT 1), '') ORDER BY failed_at DESC LIMIT 2",
                 (key, key),
             ).fetchall()
             if failures:
@@ -165,12 +175,6 @@ class W3ReadySlots:
                     seconds=cooldown
                 ):
                     return
-            count, building = db.execute(
-                "SELECT count(*),coalesce(max(state='BUILDING' AND case_id IS NULL),0) "
-                "FROM w3_ready_slots "
-                "WHERE scope=? AND state IN ('BUILDING','READY')",
-                (key,),
-            ).fetchone()
             if count < target and not building:
                 return self._insert(db, key, config)
 
@@ -255,7 +259,11 @@ class W3ReadySlots:
                 request = W3PrepareRequest.model_validate_json(original[0])
             operation = await self.jobs.thread_lifecycle.prepare(request)
             while not self.closed and operation["status"] not in {"COMPLETED", "FAILED"}:
-                await asyncio.sleep(0.1)
+                preparation = self.jobs.thread_lifecycle.preparations.get(request.operation_key)
+                if preparation is not None and not preparation.done():
+                    await asyncio.wait({preparation}, timeout=0.25)
+                else:
+                    await asyncio.sleep(0.1)
                 operation = await read_io(
                     self.jobs.thread_lifecycle.operation, request.operation_key
                 )
@@ -381,7 +389,11 @@ class W3ReadySlots:
                     return bound_deadline
 
                 bound_deadline = await read_io(bound_deadline)
-                for _ in range(100):
+                wait_ready = getattr(self.mcp, "wait_ready", None)
+                if wait_ready:
+                    timeout = min(5, max(0, float(bound_deadline) - time.time() - 15)) if bound_deadline else 5
+                    await wait_ready(capsule.identity, timeout)
+                for _ in range(1 if wait_ready else 100):
                     if capsule.identity in self.mcp.ready:
                         break
                     if bound_deadline and time.time() >= float(bound_deadline) - 15:
@@ -391,6 +403,7 @@ class W3ReadySlots:
                     raise RuntimeError("research MCP tools not ready in prepared capsule")
                 capsule.ready_slot = True
                 capsule.ready_profile = profile["model"]
+                capsule.ready_scope = sha(compact([config["parent_thread_id"], config["profile"], config.get("w3_entry_version", ENTRY)]))
 
             def publish_ready():
                 with closing(self.jobs.store.connect()) as db, db:

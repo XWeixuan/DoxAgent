@@ -98,20 +98,20 @@ def create_worker_app(
         import logging
         import time
 
-        next_gc = time.monotonic() + 3600
+        next_gc = time.monotonic() + 60
         while True:
             try:
+                for key in list(ready_slots.configs):
+                    ready_slots._schedule_fill(key)
                 await asyncio.to_thread(research.reconcile)
                 for ticker in list(market.fixed_tasks):
                     market.warm_fixed(ticker)
-                for key in list(ready_slots.configs):
-                    await ready_slots.fill(key)
                 await ready_slots.retire()
                 if time.monotonic() >= next_gc:
                     from .w3_resources import gc_derivatives
 
                     await asyncio.to_thread(gc_derivatives, research, apply=True)
-                    next_gc = time.monotonic() + 3600
+                    next_gc = time.monotonic() + (3600 if getattr(research, "_gc_backfilled", False) else 30)
             except Exception:
                 logging.getLogger(__name__).exception("W3 background preparation will retry")
             await asyncio.sleep(30)
@@ -232,26 +232,25 @@ def create_worker_app(
     async def w3_readiness():
         from contextlib import closing
 
-        await write_io(jobs.store.path, ready_slots.reconcile_residents, retry=True)
-
         def ready_counts():
             with closing(jobs.store.connect()) as db:
                 return db.execute(
-                    "SELECT scope,state,count(*) FROM w3_ready_slots "
-                    "WHERE state='READY' GROUP BY scope,state"
+                    "SELECT scope,state,thread_id FROM w3_ready_slots WHERE state='READY'"
                 ).fetchall()
 
         rows = await read_io(ready_counts)
+        live = {c.thread_id for c in getattr(jobs._runtime, "pool", ())
+                if c.healthy and c.process is not None and c.process.returncode is None}
         profiles = {}
         for key, config in ready_slots.configs.items():
             if not config.get("active_public", True):
                 continue
             profiles[config["profile"]["model"]] = sum(
-                n for scope, state, n in rows if scope == key and state == "READY"
+                1 for scope, state, thread in rows if scope == key and thread in live
             )
         return {
             "ready": jobs.dispatcher_status()["ready"]
-            and all(profiles.get(model, 0) > 0 for model in ("gpt-6-luna", "gpt-6.1-sol")),
+            and bool(profiles) and all(n > 0 for n in profiles.values()),
             "profiles": profiles,
             "mcp_calls": research_mcp.calls,
             "dispatcher": jobs.dispatcher_status(),

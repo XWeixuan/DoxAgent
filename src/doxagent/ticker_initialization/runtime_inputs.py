@@ -33,6 +33,24 @@ class ActivatedRuntimeInputs:
             return None
         return self.from_revision(ticker, revision)
 
+    def public_pin(self, ticker):
+        """Template/research preparation needs artifact identities, not compiled business views."""
+        from doxagent.persistent_runtime_v2.schema import RuntimeVersionPin
+        revision = self.control.active_revision(ticker)
+        state = self.runtime_control.get(ticker) if self.runtime_control else None
+        if state and state.get('initialization_incomplete'):
+            if not state.get('activation_id'):
+                return None
+            revision = self.control.revision(state['activation_id'])
+        if revision is None:
+            return None
+        refs = revision['artifacts']
+        version = int(refs['document3']['version'])
+        return RuntimeVersionPin(event_library_root=refs['event_library'].get('root'),
+            event_library_version=int(refs['event_library']['version']),
+            document1_run_id=refs['document1']['run_id'], document2_run_id=refs['document2']['run_id'],
+            policy_set_version=version, runtime_projection_version=version, provisional_snapshot_version=0)
+
     def for_admission(self, ticker: str, revision_id: str) -> RuntimeInputSnapshot | None:
         """Validate a candidate without making it the source for ordinary new Cases."""
         revision = self.control.active_revision(ticker)

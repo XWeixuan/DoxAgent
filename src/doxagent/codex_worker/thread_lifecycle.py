@@ -317,13 +317,15 @@ class WorkerThreadLifecycle:
 
         values["updated_at"] = datetime.now(UTC).isoformat()
         with closing(self.jobs.store.connect()) as db, db:
-            db.execute(
+            changed = db.execute(
                 "UPDATE w3_thread_operations SET "
                 + ",".join(k + "=?" for k in values)
                 + " WHERE operation_key=?"
                 + (" AND owner_token=?" if owner else ""),
                 (*values.values(), key, *((owner,) if owner else ())),
-            )
+            ).rowcount
+            if owner and not changed:
+                raise asyncio.CancelledError("prepare owner replaced")
 
     async def prepare(self, request):
         value, legacy, recover = await write_io(
@@ -399,6 +401,8 @@ class WorkerThreadLifecycle:
     async def _prepare_operation_observed(self, request, legacy, recover):
         from .schema import ThreadForkRequest, WorkerRunRequest
 
+        from datetime import UTC, datetime
+
         key = request.operation_key
         owner = uuid4().hex
         await write_io(
@@ -461,6 +465,8 @@ class WorkerThreadLifecycle:
             return binding["priority"]
 
         async def checkpoint(stage, **values):
+            if stage == "BOOTING":
+                return  # boot.json owns import telemetry; durable barriers follow.
             current = await read_io(self.operation, key)
             if current.get("owner_token") != owner:
                 raise asyncio.CancelledError("prepare owner replaced")
@@ -632,31 +638,18 @@ class WorkerThreadLifecycle:
 
             def register_prepared_child():
                 with closing(self.jobs.store.connect()) as db, db:
-                    db.execute(
-                        "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?,'ACTIVE')",
-                        (
-                            thread_id,
-                            "PREPARED" if request.source_case_id is None else "CASE",
-                            request.parent_thread_id,
-                            request.run_id,
-                        ),
-                    )
-
+                    changed = db.execute(
+                        "UPDATE w3_thread_operations SET thread_id=?,status='COMPLETED',step='READY',"
+                        "error_code=NULL,error_message=NULL,last_error=NULL,next_retry_at=NULL,updated_at=? "
+                        "WHERE operation_key=? AND owner_token=?",
+                        (thread_id, datetime.now(UTC).isoformat(), key, owner),
+                    ).rowcount
+                    if not changed:
+                        raise asyncio.CancelledError("prepare owner replaced")
+                    db.execute("INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?,'ACTIVE')",
+                               (thread_id, "PREPARED" if request.source_case_id is None else "CASE",
+                                request.parent_thread_id, request.run_id))
             await write_io(self.jobs.store.path, register_prepared_child, retry=True)
-            await write_io(
-                self.jobs.store.path,
-                self._operation_update,
-                key,
-                owner=owner,
-                thread_id=thread_id,
-                status="COMPLETED",
-                step="READY",
-                error_code=None,
-                error_message=None,
-                last_error=None,
-                next_retry_at=None,
-                retry=True,
-            )
         except BaseException as exc:
             current = await read_io(self.operation, key)
             deadline = await budget()

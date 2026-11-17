@@ -59,6 +59,7 @@ def test_view_gc_preserves_live_context_and_recovers_expired_view_from_immutable
     assert str(directory) not in gc_derivatives(store)
     with closing(store.connect()) as db, db:
         db.execute("UPDATE w3_case_contexts SET expires_at='2000-01-01'")
+        db.execute("UPDATE w3_asset_builds SET retained_until='2000-01-01',updated_at='2000-01-01' WHERE id=?", (old["d1"],))
     assert str(directory) in gc_derivatives(store, apply=True)
     assert not directory.exists()
     extend_context(store, "case1")

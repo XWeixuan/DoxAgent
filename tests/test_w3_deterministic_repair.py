@@ -674,7 +674,7 @@ def test_public_prewarm_and_case_share_template_key_without_sweep_assets(tmp_pat
     try:
         execution = service._v4_execution()
         execution.prepare_public("MU")
-        assert len(agent.calls) == 2
+        assert len(agent.calls) == 1  # Production has one unified Luna profile.
         case = enqueue(service)
         case.frozen_inputs["w3_assets"] = {
             k: v for k, v in assets.items() if k in {"w3/AGENTS.md", "w3/skills/skill.md"}
@@ -684,7 +684,7 @@ def test_public_prewarm_and_case_share_template_key_without_sweep_assets(tmp_pat
         )
         execution.registry.begin_stage(case.case_id, "trade_decision")
         execution._thread(case, None, None, [])
-        assert len(agent.calls) == 2
+        assert len(agent.calls) == 1  # Reuse the same public template, no extra model.
     finally:
         service.close()
 

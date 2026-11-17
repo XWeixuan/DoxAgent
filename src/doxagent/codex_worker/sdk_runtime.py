@@ -30,8 +30,6 @@ from doxagent.codex_worker.schema import WorkerRunRequest, WorkerTurnTelemetry
 from doxagent.codex_worker.telemetry import project_turn_telemetry
 from doxagent.codex_worker.time_awareness import W3TimeControl, configured_codex
 from doxagent.codex_worker.turn_usage import read_turn_usage, rollout_path
-from doxagent.data_runtime.contracts import build_data_tool_contracts
-from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
 from doxagent.mcp.data_names import GUIDE_TOOL_NAME, READ_TOOL_NAME
 from doxagent.settings import DoxAgentSettings
 from doxagent.w3_timing import measured
@@ -319,10 +317,10 @@ class OpenAICodexRuntime:
         self._w3_mcp_token = hmac.new(
             secret.encode(), b"w3-research-http-v2", hashlib.sha256
         ).hexdigest()
-        self._data_capabilities = DataCapabilityCodec(secret)
+        self._data_capabilities = None
         self._capability_secret = secret
         self._o4_capabilities = None
-        self._data_policy = DataToolPolicyRegistry()
+        self._data_policy = None
         self._data_contracts = None
         self._contract_node = None
         self._prepared_thread = None
@@ -501,6 +499,11 @@ class OpenAICodexRuntime:
             )
 
         if request.data_mcp_enabled:
+            from doxagent.data_runtime.contracts import build_data_tool_contracts
+            from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
+            if self._data_capabilities is None:
+                self._data_capabilities = DataCapabilityCodec(self._capability_secret)
+                self._data_policy = DataToolPolicyRegistry()
             contract_node = "w3" if request.node == CodexPersistentRuntimeNode.W3 else "default"
             if self._contract_node != contract_node:
                 if contract_node == "w3":
@@ -852,6 +855,8 @@ class OpenAICodexRuntime:
 
 
 def _write_atomic_text(path: Path, content: str) -> None:
+    if path.is_file() and path.read_text(encoding="utf-8") == content:
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
     try:

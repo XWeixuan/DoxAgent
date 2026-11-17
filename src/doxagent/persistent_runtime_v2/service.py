@@ -476,6 +476,34 @@ class PersistentRuntimeV2Service:
             # Diagnostics must not prevent dispatch or mask a business failure.
             pass
 
+    def prepare_library_visibility(self, ticker):
+        from .daily_index import retain_new_library_facts
+        from doxagent.event_library.provider import KnownEventIndexSnapshot
+        day = semantic_day(self.journal.clock() if self.journal else utc_now())
+        if not self.input_snapshot_loader:
+            return
+        snapshot = self.input_snapshot_loader(ticker)
+        if snapshot is None:
+            return
+        from .daily_index import event_provider
+        from datetime import timedelta
+        from hashlib import sha256
+        prepare = getattr(self.repository, 'prepared_known_index', None)
+        source = event_provider(self.known_events, snapshot.event_library_root)
+        if prepare and hasattr(source, 'filtered_index'):
+            for selected_day in (day, day + timedelta(days=1)):
+                identity = sha256(repr((ticker.upper(), str(selected_day), snapshot.event_library_root, snapshot.index.version)).encode()).hexdigest()
+                if prepare(identity) is None:
+                    index = source.filtered_index(ticker, snapshot.index.version, selected_day)
+                    if index is not None:
+                        prepare(identity, index.model_dump(mode='json'))
+        frozen = self.repository.daily_known_index(ticker, day)
+        if frozen is not None:
+            retain_new_library_facts(self.repository, self.known_events, ticker, day,
+                frozen_index=KnownEventIndexSnapshot.model_validate(frozen['index']),
+                frozen_root=frozen['event_library_root'], current_index=snapshot.index,
+                current_root=snapshot.event_library_root, completed=self._w1_bridge_heads)
+
     def execute_message(
         self,
         source: SourceMessageEnvelope,

@@ -1366,6 +1366,36 @@ class SQLitePersistentRuntimeV2Repository:
         # Native expansion and model validation never occupy the SQL writer.
         return ProvisionalFactDetail.model_validate(self.content.decode(payload))
 
+    def prepared_known_index(self, identity, candidate=None):
+        payload = self.content.encode(candidate) if candidate is not None else None
+        with self._connect() as db:
+            exists = db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_values'").fetchone()
+            if not exists and payload is None:
+                return None
+            if payload is not None:
+                db.execute("CREATE TABLE IF NOT EXISTS runtime_values(namespace TEXT,key TEXT,payload TEXT NOT NULL,PRIMARY KEY(namespace,key))")
+                db.execute("INSERT OR IGNORE INTO runtime_values VALUES('w1_prepared_index',?,?)", (identity, payload))
+            row = db.execute("SELECT payload FROM runtime_values WHERE namespace='w1_prepared_index' AND key=?", (identity,)).fetchone()
+        return json.loads(self.content.text(row[0])) if row else None
+
+    def library_bridge_applied(self, identity):
+        with self._connect() as db:
+            if not db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_values'").fetchone():
+                return False
+            return db.execute("SELECT 1 FROM runtime_values WHERE namespace='w1_library_bridge' AND key=?",
+                              (identity,)).fetchone() is not None
+
+    def apply_library_bridge(self, identity, items):
+        prepared = [self.prepare_provisional(**item) for item in items]
+        with write_lock(self.path), self._lock, self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute("CREATE TABLE IF NOT EXISTS runtime_values(namespace TEXT NOT NULL,key TEXT NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(namespace,key))")
+            if db.execute("SELECT 1 FROM runtime_values WHERE namespace='w1_library_bridge' AND key=?", (identity,)).fetchone():
+                return
+            for item in prepared:
+                self.allocate_provisional_in_transaction(db, item)
+            db.execute("INSERT INTO runtime_values VALUES('w1_library_bridge',?,'true')", (identity,))
+
     def prepare_provisional(
         self, *, ticker, trading_date, source_message_id, candidate_index, candidate,
         published_max_event_numeric_id, case_id=None, originating_node=None,

@@ -129,6 +129,23 @@ class StartupAdmission:
             return getattr(level, "value", level)
         return "NORMAL"
 
+    def allow_baseline(self):
+        """One background builder may refill useful stock without CPU hysteresis."""
+        if self.quarantined:
+            return False
+        if not self.safety:
+            return True
+        snapshot = self.safety.read()
+        level = getattr(snapshot.level, "value", snapshot.level)
+        if level == "CRITICAL":
+            return False
+        if level == "NORMAL":
+            return True
+        # Do not create additional residents during real aggregate/host shortage.
+        return not any(reason in {"low_available_with_pressure", "cgroup_high_with_pressure",
+                                  "cgroup_near_hard_boundary", "host_available_critical"}
+                       for reason in snapshot.reasons)
+
     def allow_speculation(self):
         if self.memory_level() != "NORMAL":
             return False
@@ -142,9 +159,9 @@ class StartupAdmission:
                     return float(dict(x.split("=") for x in line.split()[1:])["avg10"])
 
                 cpu, io = psi("cpu"), psi("io")
-                if cpu >= 60 or io >= 20:
+                if cpu >= 80 or io >= 30:
                     self.startup_pressure, self._healthy_at = True, None
-                elif cpu < 40 and io < 10:
+                elif cpu < 60 and io < 15:
                     self._healthy_at = self._healthy_at or now
                     if now - self._healthy_at >= 10:
                         self.startup_pressure = False
@@ -173,7 +190,7 @@ class StartupAdmission:
             lambda: (
                 not self.quarantined
                 and self.memory_level() != "CRITICAL"
-                and (rank() == 0 or self.allow_speculation())
+                and (rank() == 0 or (self.allow_baseline() if str(scope.get("key", "")).startswith("w3-slot-fork:") else self.allow_speculation()))
             ),
             remaining(180),
             label=scope.get("key"),

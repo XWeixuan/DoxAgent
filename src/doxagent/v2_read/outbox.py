@@ -300,13 +300,19 @@ class SourceOutbox:
                     )
                     if operation == "UPDATE":
                         technical = (
-                            {"lease_until", "updated_at"} if table == "runtime_tasks" else set()
+                            {"lease_until", "updated_at"} if table == "runtime_tasks" else {"updated_at"} if table == "runtime_v2_cases" else set()
                         )
                         changed = " OR ".join(
                             f"OLD.{quoted(r[1])} IS NOT NEW.{quoted(r[1])}"
                             for r in columns
                             if r[1] not in technical
                         )
+                        if table == "runtime_v2_cases":
+                            changed = " OR ".join(
+                                f"OLD.{quoted(r[1])} IS NOT NEW.{quoted(r[1])}"
+                                for r in columns if r[1] not in {"updated_at", "payload_json"})
+                            changed += (" OR json_remove(OLD.payload_json,'$.updated_at') IS NOT "
+                                        "json_remove(NEW.payload_json,'$.updated_at')")
                         if table == "poll_states":
                             # Scheduling-only writes do not change observed health or
                             # freshness. Completed attempts and failures still capture

@@ -82,16 +82,22 @@ class W3Execution:
         assets = instruction_assets(bundle["assets"])
         if "w3/AGENTS.md" not in assets:
             return
-        snapshot = self.service.input_snapshot_loader(ticker)
-        pin = RuntimeVersionPin(
-            event_library_root=snapshot.event_library_root,
-            document1_run_id=snapshot.document1_run_id,
-            document2_run_id=snapshot.document2_run_id,
-            event_library_version=snapshot.index.version,
-            policy_set_version=snapshot.projection.policy_set_version,
-            runtime_projection_version=snapshot.projection.policy_set_version,
-            provisional_snapshot_version=0,
-        )
+        load_pin = getattr(self.service.input_snapshot_loader, 'public_pin', None)
+        if load_pin:
+            pin = load_pin(ticker)
+            if pin is None:
+                return
+        else:
+            snapshot = self.service.input_snapshot_loader(ticker)
+            pin = RuntimeVersionPin(
+                event_library_root=snapshot.event_library_root,
+                document1_run_id=snapshot.document1_run_id,
+                document2_run_id=snapshot.document2_run_id,
+                event_library_version=snapshot.index.version,
+                policy_set_version=snapshot.projection.policy_set_version,
+                runtime_projection_version=snapshot.projection.policy_set_version,
+                provisional_snapshot_version=0,
+            )
         identity = digest([active, pin.model_dump(mode="json"), "instructions-only-v1"])
         new_public = bundle.get("contracts", {}).get("w3_entry_version") in {ENTRY, "w3-entry-v6"}
         business_contract = (
@@ -1354,8 +1360,7 @@ class W3Execution:
                     "DELETE FROM runtime_values WHERE namespace='w3_ack_pending' AND key=?",
                     (job_id,),
                 )
-            if release_requested:
-                with self.journal.transaction() as db:
+                if release_requested:
                     db.execute("DELETE FROM runtime_values WHERE namespace='w3_resident_release' AND key=?", (job_id,))
         except Exception as exc:
             self.journal.set("w3_ack_pending", job_id, str(exc)[:500])

@@ -610,11 +610,13 @@ class CapsuleRuntime:
         async with self._lock:
             protected = set()
             if pressure and not all_idle:
-                profiles = set()
+                profiles = {}
+                targets = getattr(self, "w3_ready_targets", {})
+                memory_shortage = not self.admission.allow_baseline()
                 for c in self.pool:
-                    profile = getattr(c, "ready_profile", None)
-                    if c.ready_slot and self.live(c) and profile not in profiles:
-                        profiles.add(profile)
+                    profile = getattr(c, "ready_scope", getattr(c, "ready_profile", None))
+                    if c.ready_slot and self.live(c) and profiles.get(profile, 0) < (0 if memory_shortage else targets.get(profile, 0 if targets else 1)):
+                        profiles[profile] = profiles.get(profile, 0) + 1
                         protected.add(c.identity)
             selected = [
                 c

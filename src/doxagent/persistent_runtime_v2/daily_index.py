@@ -1,6 +1,8 @@
 """Ticker/day W1 index publication and post-freeze Library fact visibility."""
 from datetime import date
 from hashlib import sha256
+from functools import lru_cache
+from threading import RLock
 import json
 
 from doxagent.event_library.provider import KnownEventIndexSnapshot, PublishedEventLibraryReader
@@ -66,7 +68,10 @@ def freeze_index(repository, provider, index, ticker, day, root, at, instruction
     if frozen is None:
         source = event_provider(provider, root)
         build = getattr(source, "filtered_index", None)
-        selected = build(ticker, index.version, day) if build else index
+        prepared = getattr(repository, 'prepared_known_index', None)
+        identity = sha256(repr((ticker.upper(), str(day), root, index.version)).encode()).hexdigest()
+        raw = prepared(identity) if prepared else None
+        selected = KnownEventIndexSnapshot.model_validate(raw) if raw else (build(ticker, index.version, day) if build else index)
         if selected is None:
             raise ValueError("Daily Known Event Index source version unavailable")
         frozen = repository.daily_known_index(ticker, day, {
@@ -76,8 +81,12 @@ def freeze_index(repository, provider, index, ticker, day, root, at, instruction
     return KnownEventIndexSnapshot.model_validate(frozen["index"]), frozen["event_library_root"], frozen["instructions"]
 
 
-@observed('case.library_fact_bridge')
-def retain_new_library_facts(repository, default_provider, ticker, day, *,
+@lru_cache(maxsize=128)
+def _bridge_lock(head):
+    return RLock()
+
+
+def _retain_new_library_facts(repository, default_provider, ticker, day, *,
                              frozen_index, frozen_root, current_index, current_root, completed=None,
                              frozen_contents=None):
     """Already-published supplemental facts use the existing provisional wire path.
@@ -85,33 +94,50 @@ def retain_new_library_facts(repository, default_provider, ticker, day, *,
     Persist them as PROCESSED atomically so O2 never reimports them. Runtime-born
     provisional facts remain visible after their ordinary O2 settlement as before.
     """
-    if frozen_root == current_root and current_index.version <= frozen_index.version:
+    if frozen_root == current_root and current_index.version == frozen_index.version:
         return
-    head = (ticker.upper(), day, frozen_root, frozen_index.version, current_root, current_index.version)
+    head = (ticker.upper(), str(day), frozen_root, frozen_index.version, current_root, current_index.version)
     if completed is not None and head in completed:
         return
     source = event_provider(default_provider, current_root)
-    changed = getattr(source, "new_library_facts", None)
+    changed = getattr(source, "published_facts", None)
     if changed is None:
         return
     maximum = event_provider(default_provider, frozen_root).max_event_numeric_id(
         ticker, frozen_index.version) or 0
-    after = frozen_index.version if frozen_root == current_root else 0
     values = repository.list_provisional(ticker, day)
     if frozen_contents is None:
         frozen_contents = frozen_fact_contents(default_provider, ticker, frozen_root, frozen_index.version)
     seen = {fact_content(value.candidate) for value in values} | frozen_contents
-    for version, event, fact in changed(ticker, after, current_index.version, excluded_contents=seen):
+    batch = []
+    for event, fact in changed(ticker, current_index.version):
         candidate = fact_candidate(event, fact)
         if fact_content(candidate) in seen:
             continue
-        root_hash = sha256(str(current_root).encode()).hexdigest()[:16]
-        repository.allocate_provisional(ticker=ticker, trading_date=day,
-            source_message_id=f"library-bridge:{ticker}:{day}:{root_hash}:v{version}:{fact.fact_id}",
+        content_hash = sha256(fact_content(candidate).encode()).hexdigest()
+        batch.append(dict(ticker=ticker, trading_date=day,
+            source_message_id=f"library-bridge:{ticker}:{day}:{content_hash}",
             candidate_index=0, candidate=candidate, published_max_event_numeric_id=maximum,
-            already_published=True)
+            already_published=True))
         seen.add(fact_content(candidate))
+    apply = getattr(repository, "apply_library_bridge", None)
+    if apply:
+        apply(sha256(repr(head).encode()).hexdigest(), batch)
+    else:
+        for item in batch:
+            repository.allocate_provisional(**item)
     if completed is not None:
         if len(completed) >= 128:
             completed.clear()
         completed.add(head)
+
+@observed('case.library_fact_bridge')
+def retain_new_library_facts(repository, default_provider, ticker, day, **kwargs):
+    head = (ticker.upper(), str(day), kwargs['frozen_root'], kwargs['frozen_index'].version,
+            kwargs['current_root'], kwargs['current_index'].version)
+    identity = sha256(repr(head).encode()).hexdigest()
+    with _bridge_lock(head):
+        check = getattr(repository, 'library_bridge_applied', None)
+        if check and check(identity):
+            return
+        return _retain_new_library_facts(repository, default_provider, ticker, day, **kwargs)
