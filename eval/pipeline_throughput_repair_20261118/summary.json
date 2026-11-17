@@ -1,0 +1,117 @@
+{
+  "at": "2026-11-17T19:06:31.478237+00:00",
+  "states": {
+    "NO_PUBLIC_BODY": 220,
+    "IRRELEVANT": 1541,
+    "PUBLISHED": 90,
+    "DEDUPLICATED": 5
+  },
+  "new_stream_items": 89,
+  "body_to_verdict_including_models_and_release": {
+    "n": 1855,
+    "p50": 0.321349,
+    "p95": 1.629254,
+    "max": 8.09218
+  },
+  "body_to_publish_including_models_and_release": {
+    "n": 88,
+    "p50": 0.6923135,
+    "p95": 3.160592,
+    "max": 8.09218
+  },
+  "deterministic_newswires": {
+    "n": 1580,
+    "p50": 0.311663,
+    "p95": 1.312771,
+    "max": 2.478733,
+    "by_source": {
+      "prnewswire_massive": 630,
+      "businesswire_massive": 500,
+      "globenewswire_massive": 280,
+      "tmx_newsfile_massive": 40,
+      "access_newswire_massive": 130
+    }
+  },
+  "pending": [],
+  "code": {
+    "message-bus": {
+      "id": "1ffed1a6d22e",
+      "commit": "2dd5f5d64df572970181f2bd456dc8ad47df8fce",
+      "started": "2026-11-17T18:38:32.055158738Z",
+      "running": true,
+      "restarts": 0,
+      "health": null,
+      "files": {
+        "factory.py": true,
+        "live.py": true,
+        "live_repository.py": true,
+        "schema.py": true,
+        "storage_lane.py": true,
+        "polling.py": true,
+        "scheduler.py": true,
+        "test_delivery.py": true,
+        "collection_plane/store.py": true,
+        "collection_plane/bridge.py": true,
+        "collection_plane/worker.py": true
+      }
+    },
+    "message-collector": {
+      "id": "88858f0fb953",
+      "commit": "b940e012e945ec40782c55b92fb881d8f7cc53d1",
+      "started": "2026-11-17T18:12:56.719649047Z",
+      "running": true,
+      "restarts": 0,
+      "health": "healthy",
+      "files": {
+        "factory.py": true,
+        "live.py": true,
+        "live_repository.py": true,
+        "schema.py": true,
+        "storage_lane.py": true,
+        "polling.py": true,
+        "scheduler.py": true,
+        "test_delivery.py": true,
+        "collection_plane/store.py": true,
+        "collection_plane/bridge.py": true,
+        "collection_plane/worker.py": true
+      }
+    },
+    "content-enrichment": {
+      "id": "5860ff0ae705",
+      "commit": "b940e012e945ec40782c55b92fb881d8f7cc53d1",
+      "started": "2026-11-17T18:12:44.007967147Z",
+      "running": true,
+      "restarts": 0,
+      "health": null,
+      "files": {
+        "factory.py": true,
+        "live.py": true,
+        "live_repository.py": true,
+        "schema.py": true,
+        "storage_lane.py": true,
+        "polling.py": true,
+        "scheduler.py": true,
+        "test_delivery.py": true,
+        "collection_plane/store.py": true,
+        "collection_plane/bridge.py": true,
+        "collection_plane/worker.py": true
+      }
+    },
+    "chrome-supervisor": {
+      "id": "9bc69ac8eab0",
+      "commit": "05d6062222e1ee5c83233f07276a6a1d2fb582f4",
+      "started": "2026-11-17T14:52:44.539033801Z",
+      "running": true,
+      "restarts": 0,
+      "health": "healthy"
+    },
+    "site-access": {
+      "id": "ec6ba17674b4",
+      "commit": "ec5355dbbff4b652eeb67d480134d88c7e6986c4",
+      "started": "2026-11-17T18:46:29.927776812Z",
+      "running": true,
+      "restarts": 0,
+      "health": "healthy"
+    }
+  }
+}
