@@ -612,6 +612,18 @@ class W3Execution:
     def _queue_ack(self, case_id, phase):
         job_id = self.registry.stage(case_id, phase).get("worker_job_id")
         if job_id:
+            release = []
+            if phase == OPERATIONS_PHASE:
+                release.append(job_id)
+            elif phase == TRADE_PHASE:
+                for label in ("A", "B"):
+                    branch = self.registry.stage(case_id, TRADE_PHASE + ":" + label) or {}
+                    if branch.get("worker_job_id") and branch["worker_job_id"] != job_id:
+                        release.append(branch["worker_job_id"])
+            for identity in release:
+                self.journal.set("w3_resident_release", identity, True)
+                self.journal.set("w3_ack_pending", identity, {"case_id": case_id})
+                self.service._effect_executor.submit(self._ack, identity)
             self.service._effect_executor.submit(self._ack, job_id)
 
     def _commit_trade(self, case, record, decision):
@@ -1266,7 +1278,11 @@ class W3Execution:
     def _ack(self, job_id):
         # An ACK failure is recoverable housekeeping, never a reason to repeat a valid decision.
         try:
-            self.agent.acknowledge_job(job_id)
+            release_requested = bool(self.journal.get("w3_resident_release", job_id)) and hasattr(self.agent, "release_completed_job")
+            if release_requested:
+                self.agent.release_completed_job(job_id)
+            else:
+                self.agent.acknowledge_job(job_id)
             # Exact keys only. Decode/compact outside the global writer, including NativeContent.
             with self.journal.transaction(write=False, expand=False) as db:
                 invocation_row = db.execute(
@@ -1334,6 +1350,9 @@ class W3Execution:
                     "DELETE FROM runtime_values WHERE namespace='w3_ack_pending' AND key=?",
                     (job_id,),
                 )
+            if release_requested:
+                with self.journal.transaction() as db:
+                    db.execute("DELETE FROM runtime_values WHERE namespace='w3_resident_release' AND key=?", (job_id,))
         except Exception as exc:
             self.journal.set("w3_ack_pending", job_id, str(exc)[:500])
 

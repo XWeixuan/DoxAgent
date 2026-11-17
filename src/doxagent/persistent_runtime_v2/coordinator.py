@@ -73,6 +73,8 @@ class RuntimeCoordinator:
         self._storage_next = perf_counter() + 900
         self._maintenance_recovery_next = {}
         self._maintenance_recovery_cursor = {}
+        self._supplement_futures = {}
+        self._supplement_cursors = {}
 
     def mode(self, ticker: str, now: datetime | None = None) -> tuple[str, str | None]:
         at = now or self.journal.clock()
@@ -421,7 +423,6 @@ class RuntimeCoordinator:
                             "delivery-pump", ticker, type(exc).__name__, str(exc)[:1000]
                         )
                 self._delivery_future = self._delivery.submit(self._pump_delivery)
-            self._schedule_supplements(ticker)
         for identity, future in list(self._futures.items()):
             if future.done():
                 try:
@@ -480,6 +481,16 @@ class RuntimeCoordinator:
             if lease:
                 self._leases[task["id"]] = lease
                 self._futures[task["id"]] = pool.submit(self._execute, lease)
+
+        if not existing_only:
+            previous = self._supplement_futures.get(ticker)
+            if previous is None or previous.done():
+                if previous is not None:
+                    try:
+                        previous.result()
+                    except Exception:
+                        logging.getLogger(__name__).exception("supplement page deferred ticker=%s", ticker)
+                self._supplement_futures[ticker] = self._background.submit(self._schedule_supplements, ticker)
 
     def _orphan_closed_recovery(self, task) -> bool:
         if not task["receipt"].get("infrastructure_recovery"):
@@ -1034,17 +1045,20 @@ class RuntimeCoordinator:
             # do not hydrate every Case/effect on every scheduler tick.
             with self.journal.transaction(write=False, expand=False) as db:
                 notifications = [
-                    json.loads(r[0])
+                    (r[0], json.loads(r[1]) if r[1] else None)
                     for r in db.execute(
-                        "SELECT d.payload FROM runtime_values d "
-                        "JOIN runtime_v2_cases c ON c.case_id=d.key "
-                        "WHERE d.namespace='dirty_case' AND c.ticker=? AND (c.trading_date<? "
+                        "SELECT d.key,CASE WHEN c.case_id IS NOT NULL THEN d.payload END "
+                        "FROM (SELECT key,payload FROM runtime_values WHERE namespace='dirty_case' "
+                        "AND key>? ORDER BY key LIMIT 32) d "
+                        "LEFT JOIN runtime_v2_cases c ON c.case_id=d.key AND c.ticker=? AND (c.trading_date<? "
                         "OR json_extract(c.payload_json,'$.sweep_id') IS NOT NULL "
                         "OR EXISTS(SELECT 1 FROM runtime_values o "
-                        "WHERE o.namespace='case_maintenance_owner' AND o.key=c.case_id))",
-                        (ticker, semantic_day(self.journal.clock()).isoformat()),
+                        "WHERE o.namespace='case_maintenance_owner' AND o.key=c.case_id)) ORDER BY d.key",
+                        (self._supplement_cursors.get(ticker, ""), ticker, semantic_day(self.journal.clock()).isoformat()),
                     )
                 ]
+            self._supplement_cursors[ticker] = notifications[-1][0] if len(notifications) == 32 else ""
+            notifications = [value for _, value in notifications if value is not None]
         else:
             notifications = self.journal.values("dirty_case")
         parents = {}

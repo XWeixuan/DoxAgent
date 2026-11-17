@@ -267,8 +267,10 @@ def create_worker_app(
 
     @app.post("/v1/w3/ready-slots/claim", dependencies=[Depends(require_service_auth)])
     async def claim_ready(payload: dict):
+        from doxagent.w3_timing import segment_trace
         try:
-            return await ready_slots.claim(payload, wait=True)
+            with segment_trace("ready_claim", case_id=payload["case_id"], record_id=payload["record_id"]):
+                return await ready_slots.claim(payload, wait=True)
         except ValueError as exc:
             raise HTTPException(
                 409,
@@ -315,10 +317,12 @@ def create_worker_app(
             raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.post("/v1/jobs/{job_id}/acknowledge", dependencies=[Depends(require_service_auth)])
-    async def acknowledge_job(job_id: str):
+    async def acknowledge_job(job_id: str, release_resident: bool = False):
         try:
             job = await write_io(jobs.store.path, jobs.store.acknowledge, job_id, retry=True)
             await disk.run(jobs._persist, job)
+            if release_resident and job.thread_id:
+                await jobs._runtime.release_thread(job.thread_id)
             return {"job_id": job.job_id, "acknowledged": True}
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc

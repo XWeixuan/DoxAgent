@@ -152,7 +152,7 @@ async def test_pair_wrapper_starts_b_before_a_finishes(tmp_path):
 
     runner = object.__new__(CodexW3AgentRunner)
     runner._journal = RuntimeJournal(tmp_path / "r.db")
-    runner._wait_v4 = lambda coroutine, **kw: coroutine
+    runner._wait_v4 = lambda coroutine, **kw: asyncio.run(coroutine)
     both = asyncio.Event()
 
     async def phase(**kw):
@@ -166,7 +166,7 @@ async def test_pair_wrapper_starts_b_before_a_finishes(tmp_path):
 
     runner._run_phase = phase
     saved = []
-    await runner.run_trade_pair(
+    await asyncio.to_thread(runner.run_trade_pair,
         case=SimpleNamespace(case_id="C"),
         records={k: dict(id=k) for k in ("A", "B")},
         payload={},

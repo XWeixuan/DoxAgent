@@ -241,8 +241,8 @@ class HttpCodexWorkerClient:
         response.raise_for_status()
         return response.json()
 
-    async def acknowledge_job(self, job_id: str) -> None:
-        response = await self._client.post(f"/v1/jobs/{job_id}/acknowledge")
+    async def acknowledge_job(self, job_id: str, *, release_resident=False) -> None:
+        response = await self._client.post(f"/v1/jobs/{job_id}/acknowledge", params={"release_resident": "true"} if release_resident else None)
         response.raise_for_status()
 
     def __init__(

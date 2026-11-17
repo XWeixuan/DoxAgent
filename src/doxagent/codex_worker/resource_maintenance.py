@@ -32,7 +32,9 @@ async def run(workspaces,jobs,settings):
     while True:
         await asyncio.sleep(300)
         try:
-            await asyncio.to_thread(collect_inputs,workspaces,jobs,settings)
+            # Candidate limits do not bound the global reference proof. Keep
+            # collect_inputs as an explicit quiet-maintenance entrypoint until
+            # its cross-run proof is scoped; never sweep it beside live W3.
             # SDK tree listing remains an infrequent quiet-maintenance operation.
             # The bounded input owners above never wait for global business idleness.
             if time.monotonic()>=session_next and jobs.session_retention is not None:

@@ -3160,6 +3160,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - Confirmed 397 failed pre-dispatch Cases before cutover; none had an accepted model Job. After release, natural Cases completed both dual Trade aggregation and Operations; no historical trade replay.
 - Preserved explicit cancellation receipts for the final two maintenance Jobs; their tasks resumed through existing recovery. Restored all 58 temporarily held background tasks. Detailed evidence/report: docs/w3_v6_ready_scope_incident_20261116.md.
 
+2026-11-16 生产rev2 W3提示词49x4稳定性评估：只读核实生产active bundle与rev2快照LF哈希一致；41条各补3次=123有效新执行，复用原8条24个有效复测及原全量49条，共196条。37/49四次一致（34正确/3错误），10条3:1、2条2:2；GOLD应交易10条仅4条四次一致、仅2条稳定正确命中。本轮124次Case执行，1次计时起点缺失仅单条替换；旧8条无新增调用。196个Thread/计时起点/原生模型与冻结配置验收通过。报告：eval/w3_backtest/runs/luna_rev2_stability49x4_20261116/stability_report.md。
+
 2026-11-16 全局消息源逐源修复：Yahoo 专用 HTTP 路由补齐到实际 Collector 角色；复用联合许可与网络等待预算，避免本地排队放大为 RSS 未发送超时，保留总任务截止与现有限流。
 2026-11-16 Message Bus source read repair: cross-source delivery takeovers with no first-discovery anchor now remove their article locator; bounded sample reads verify current source and a recorded timestamp before reduction. Add an explicit recent-head locator prune with no timestamp fabrication or history scan. Fixes catalog/dashboard INTERNAL_ERROR from parsing NULL discovered_at (request f5d0b52a00954d3188d3e8a94dacfa16); 40 related tests passed.
 
@@ -3170,3 +3172,15 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-16 消息发布延迟：Investing 样本确认历史故障与BODY后本地积压并存；修复生产去重候选查询误选ticker历史范围扫描，固定既有别名/版本主键和指纹索引访问，保留去重及发布业务语义，增加万条历史成本回归。
 
 2026-11-16 Reuters APPLIED专项：18笔真实Provider Cookie写入/首次业务发送链确认17次DataDome API拒绝；新增无登录Profile生产对照亦复发，未宣称稳定恢复。新增事务性Reuters身份晋升/回退运维工具，试验失败后恢复原主备并保留两套原页/人工任务，Backup不重建；记录代理依赖与新出口不可用证据及7项迁移/回退回归，详见docs/reuters-applied-cookie-acceptance-repair-20261116.md。
+
+2026-11-16 独立legacy-aligned候选提示词全量回测：原样存储用户AGENTS(5)/skill(5)至prompts/w3_backtest/candidates/legacy_aligned_20261116，不覆盖现有提示词（前后哈希核验）。49条Luna max/default首次成功，36/49正确、误交易6/漏交易7；中位/均值/p95为169.50/176.98/292.90秒。相对生产rev2首轮修复1/退化6，唯一标签修复NBIS存在35亿误写3.5亿美元理由错误；无三次追加复测/无生产变更。报告：eval/w3_backtest/runs/luna_full49_legacy_aligned_candidate_20261116/evaluation_report.md。
+
+2026-11-17 原始v7 W3提示词全量回测（目录按启动日20261116归档）：直接使用备份原AGENTS/Skill、保留原运营章节，不作提示词对齐；源目录/归档/实际worker文本核验，现行提示词未变。Luna max/default，49/49首次成功，无补测；37/49正确、误交易5/漏交易7，中位/均值/p95为146.19/171.14/308.89秒。相对微调附件版修复3/退化2，净+1正确；NBIS金额恢复35亿美元，MU-02-03 reason仍有数字自相矛盾。报告：eval/w3_backtest/runs/luna_full49_v7_original_20261116/evaluation_report.md。
+
+2026-11-17 Runtime非SDK延时回退专项勘察（未实施/未发布）：回顾历轮修复；1293个完整时钟Case复算未发现双Trade区间漏扣，确认正式source-release遗漏pyc编译、模板查询未命中部分索引、双任务旧Future写租约交接风险及同步补充维护读放大。完成断网导入AB/本地租约复现，输出执行粒度方案；保留最初I/O来源等未证实假设。文档：dev_plan/workflow_v2/runtime_nonsdk_latency_regression_diagnosis_and_repair_plan_20261117.md。
+
+2026-11-17 Runtime non-model latency implementation (10s target)
+- Restored checked-hash import compilation to the canonical source-release context; qualified template lookups for the existing partial index.
+- Dual Future returns durable model outcomes; current Effect ownership saves branch stages, including partial success. Lease renewal uses the existing priority short writer; late lease loss during error settlement is contained.
+- Supplement notifications drain off realtime dispatch in bounded 32-key pages; automatic global reference scans are reserved for explicit quiet maintenance. Terminal unselected/Operations residents release through recoverable ACK without deleting history.
+- Added ownership handoff, real query-plan, dirty cursor and terminal ACK regressions; 114 related regressions passed before final observation hooks; no prompt/model/schema/trading rule changes.

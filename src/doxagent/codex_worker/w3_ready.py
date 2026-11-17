@@ -10,6 +10,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from doxagent.control_io import read_io, write_io
+from doxagent.w3_timing import observed
 from doxagent.persistent_runtime_v2.w3_research_store import ENTRY, compact, sha
 
 from .schema import W3PrepareRequest, WorkerRunRequest
@@ -690,6 +691,7 @@ class W3ReadySlots:
             bind_operation_key='w3-slot-bind:' + request['case_id'] + ':' + request['record_id'],
         )
 
+    @observed("ready.private_handoff")
     async def _handoff_private(self, identity):
         def binding():
             with closing(self.jobs.store.connect()) as db:

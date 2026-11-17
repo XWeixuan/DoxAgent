@@ -375,7 +375,7 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
     receipt = dict(commit=commit,images={},dependencies={},started=time.time())
     allowed = ['Dockerfile.v2','.dockerignore','deploy','src','prompts','pyproject.toml',
                'uv.lock','README.md','dev_plan/workflow_v2/api_contract',
-               'scripts/ops/migrate_source_access_scopes.py','frontend/v2']
+               'scripts/ops/migrate_source_access_scopes.py','scripts/ops/compile_w3_imports.py','frontend/v2']
     probe='scripts/ops/message_bus_lean_acceptance.py'
     if subprocess.run(['git','-C',str(repo),'cat-file','-e',commit+':'+probe],
                       stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:

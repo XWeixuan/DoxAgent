@@ -1,0 +1,82 @@
+import asyncio,json,sqlite3
+from contextlib import closing
+from datetime import datetime,UTC,timedelta
+from types import SimpleNamespace
+import pytest
+from doxagent.persistent_runtime_v2.fencing import write_scope,assert_write_lease
+from doxagent.persistent_runtime_v2.schema import RuntimeEffect
+from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner,W3Error
+from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+from doxagent.persistent_runtime_v2.w3_threads import W3ThreadRegistry
+
+def test_dual_completed_results_saved_by_new_owner(tmp_path):
+ p=tmp_path/'r.db'
+ with closing(sqlite3.connect(p)) as db,db:
+  db.execute('create table runtime_v2_effects(effect_id text,status text,payload_json text)')
+  db.execute('insert into runtime_v2_effects values(?,?,?)',('e','RUNNING',json.dumps(dict(lease_token=1,lease_until=(datetime.now(UTC)+timedelta(minutes=2)).isoformat()))))
+ runner=object.__new__(CodexW3AgentRunner);runner._journal=SimpleNamespace(path=p)
+ def wait(coro,**kw):
+  value=asyncio.run(coro)
+  if kw.get('key'):
+   exc=W3Error('w3_pending_external','original Future');exc.phase_result=lambda:value;raise exc
+  return value
+ runner._wait_v4=wait
+ async def phase(**kw):
+  kw['shared_trade']['ready'].set()
+  with closing(sqlite3.connect(p)) as db,db:db.execute("update runtime_v2_effects set payload_json=json_set(payload_json,'$.lease_token',2)")
+  return {},SimpleNamespace()
+ runner._run_phase=phase;saved=[]
+ def save(label,*unused):
+  with closing(sqlite3.connect(p)) as db:assert_write_lease(db)
+  saved.append(label)
+ e=RuntimeEffect(effect_id='e',case_id='c',effect_type='route_to_w3',idempotency_key='c',lease_token=1)
+ with write_scope('effect',e,lambda:datetime.now(UTC)),pytest.raises(W3Error) as error:
+  runner.run_trade_pair(case=SimpleNamespace(case_id='c'),records={'A':{},'B':{}},payload={},context=None,research=None,save=save)
+ assert saved==[]
+ with write_scope('effect',e.model_copy(update={'lease_token':2}),lambda:datetime.now(UTC)):
+  error.value.phase_result()
+ assert saved==['A','B']
+
+def test_template_query_uses_existing_partial_index(tmp_path):
+ import ast,inspect,textwrap
+ j=RuntimeJournal(tmp_path/'j.db');W3ThreadRegistry(j)
+ tree=ast.parse(textwrap.dedent(inspect.getsource(W3ThreadRegistry.template)))
+ queries=[n.value for n in ast.walk(tree) if isinstance(n,ast.Constant) and isinstance(n.value,str) and n.value.startswith('SELECT') and 'template_key' in n.value]
+ assert len(queries)==2
+ with j.transaction(write=False) as db:
+  for query in queries:
+   plan=' '.join(r[3] for r in db.execute('EXPLAIN QUERY PLAN '+query,('key',)))
+   assert 'USING INDEX w3_template_key' in plan
+
+def test_dirty_page_rotates_past_busy_notifications(tmp_path,monkeypatch):
+ from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+ j=RuntimeJournal(tmp_path/'j.db')
+ with j.transaction() as db:
+  db.execute('create table runtime_v2_cases(case_id text primary key,ticker text,trading_date text,payload_json text)')
+  for i in range(40):
+   cid=f'c{i:03}';db.execute('insert into runtime_v2_cases values(?,?,?,?)',(cid,'MU','2020-01-01','{}'))
+   db.execute('insert into runtime_values values(?,?,?)',('dirty_case',cid,json.dumps(dict(case_id=cid,ticker='MU'))))
+ c=RuntimeCoordinator(SimpleNamespace(repository=SimpleNamespace(path=j.path)),j);seen=[]
+ monkeypatch.setattr(c,'_schedule_case_supplement',lambda dirty,parents:seen.append(dirty['case_id']))
+ try:
+  c._schedule_supplements('MU');assert len(seen)==32
+  c._schedule_supplements('MU');assert len(set(seen))==40
+ finally:c.close()
+
+@pytest.mark.asyncio
+async def test_ack_release_is_terminal_only_and_preserves_thread_history(tmp_path):
+ import httpx
+ from unittest.mock import AsyncMock
+ from doxagent.codex_worker.app import create_worker_app
+ from doxagent.codex_worker.schema import WorkerJob
+ runtime=SimpleNamespace(release_thread=AsyncMock())
+ app=create_worker_app(workspace_root=str(tmp_path),bearer_token='s'*32,capability_secret='k'*32,runtime=runtime)
+ jobs=app.state.jobs
+ jobs.store.save(WorkerJob(job_id='j',run_id='r',attempt_id='a',status='running',thread_id='t'))
+ async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://test',headers={'Authorization':'Bearer '+'s'*32}) as client:
+  assert (await client.post('/v1/jobs/j/acknowledge?release_resident=true')).status_code==409
+  runtime.release_thread.assert_not_awaited()
+  jobs.store.save(jobs.store.get('j').model_copy(update={'status':'succeeded'}))
+  assert (await client.post('/v1/jobs/j/acknowledge?release_resident=true')).status_code==200
+  runtime.release_thread.assert_awaited_once_with('t')
+  assert jobs.store.get('j').thread_id=='t' and jobs.store.get('j').status=='succeeded'

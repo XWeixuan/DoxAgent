@@ -50,7 +50,7 @@ def summary(values):
     return dict(count=len(values),p50=pct(.5),p95=pct(.95),maximum=values[-1])
 
 
-def audit(runtime,jobs,*,since,until=None,limit=300):
+def audit(runtime,jobs,*,since,until=None,limit=300,target_seconds=10):
     connect=lambda p:sqlite3.connect(Path(p).resolve().as_uri()+'?mode=ro',uri=True,timeout=2)
     db,worker=connect(runtime),connect(jobs)
     db.row_factory=worker.row_factory=sqlite3.Row
@@ -88,7 +88,9 @@ def audit(runtime,jobs,*,since,until=None,limit=300):
                     if wait_end>=instant(wait['observed_at']):
                         external.append((instant(wait['observed_at']),wait_end))
         result=dict(case_id=cid,complete=False,missing=[])
-        if len(phases)!=2 or any(p['status']!='COMMITTED' for p in phases):
+        main_phases=[p for p in phases if p['phase'] in ('trade_decision','post_decision_operations')]
+        branches=[p for p in phases if p['phase'].startswith('trade_decision:')]
+        if len(main_phases)!=2 or any(p['status']!='COMMITTED' for p in main_phases) or any(p['status']!='RESULT_SAVED' for p in branches):
             result['missing'].append('phase_not_committed')
         if len(effects)!=2 or any(e['status']!='COMPLETED' for e in effects):
             result['missing'].append('effect_not_completed')
@@ -135,9 +137,11 @@ def audit(runtime,jobs,*,since,until=None,limit=300):
     truncated=bool(len(candidates)==limit and instant(candidates[-1]['created_at'])>instant(since))
     return dict(since=since,until=until,window_truncated=truncated,case_count=len(cases),measured_count=len(measured),
                 incomplete_count=len(cases)-len(measured),non_sdk_ms=stats,
+                target_seconds=target_seconds,
+                p95_within_target=stats['p95'] is not None and stats['p95']<=target_seconds*1000,
                 p95_within_5s=stats['p95'] is not None and stats['p95']<=5000,
                 acceptance_ready=(not truncated and len(measured)>=60 and len(measured)==len(cases)
-                                  and stats['p95'] is not None and stats['p95']<=5000),
+                                  and stats['p95'] is not None and stats['p95']<=target_seconds*1000),
                 cases=cases)
 
 
@@ -148,5 +152,6 @@ if __name__=='__main__':
     parser.add_argument('--since',required=True)
     parser.add_argument('--until')
     parser.add_argument('--limit',type=int,default=300)
+    parser.add_argument('--target-seconds',type=float,default=10)
     args=parser.parse_args()
-    print(json.dumps(audit(args.runtime,args.jobs,since=args.since,until=args.until,limit=args.limit),indent=2))
+    print(json.dumps(audit(args.runtime,args.jobs,since=args.since,until=args.until,limit=args.limit,target_seconds=args.target_seconds),indent=2))

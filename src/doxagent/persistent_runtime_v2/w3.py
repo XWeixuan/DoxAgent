@@ -942,6 +942,9 @@ class CodexW3AgentRunner:
     def acknowledge_job(self, job_id):
         return self._wait_v4(self._worker.acknowledge_job(job_id))
 
+    def release_completed_job(self, job_id):
+        return self._wait_v4(self._worker.acknowledge_job(job_id, release_resident=True))
+
     def write_result(self, callback):
         # Reuse the existing priority writer and its unchanged short SQL policy.
         # Only the SQL callback belongs here, never preparation/network I/O.
@@ -1031,7 +1034,7 @@ class CodexW3AgentRunner:
                         research=research,
                         shared_trade=shared,
                     )
-                    await write_io(self._journal.path, save, label, result, job, priority=0, retry=True)
+                    return label, result, job
                 except BaseException as exc:
                     if not shared["ready"].is_set():
                         shared["error"] = exc
@@ -1041,11 +1044,27 @@ class CodexW3AgentRunner:
             results = await asyncio.gather(
                 *(branch(k, v) for k, v in records.items()), return_exceptions=True
             )
+            return results
+
+        def consume(results):
+            # Invoked by the CURRENT Effect owner, never in the original Future's
+            # copied write_scope. Worker receipts already protect paid results.
+            for value in results:
+                if not isinstance(value, BaseException):
+                    label, result, job = value
+                    self.write_result(lambda: save(label, result, job))
             for value in results:
                 if isinstance(value, BaseException):
                     raise value
 
-        return self._wait_v4(pair(), key=case.case_id + ":trade-pair")
+        try:
+            results = self._wait_v4(pair(), key=case.case_id + ":trade-pair")
+        except W3Error as exc:
+            reader = getattr(exc, "phase_result", None)
+            if reader is not None:
+                exc.phase_result = lambda: consume(reader())
+            raise
+        return consume(results)
 
     def _observe_phase_job(self, case, phase, job, branch_key=None):
         # Live UI progress is auxiliary; a busy business writer must never hold

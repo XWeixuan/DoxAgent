@@ -122,7 +122,7 @@ class W3ThreadRegistry:
         # must not join the business writer just to rediscover a READY template.
         with self.journal.transaction(write=False) as db:
             ready = db.execute(
-                "SELECT * FROM runtime_v2_w3_threads WHERE template_key=? AND status='READY'",
+                "SELECT * FROM runtime_v2_w3_threads WHERE kind='TEMPLATE' AND template_key=? AND status='READY'",
                 (key,),
             ).fetchone()
         if ready is not None:
@@ -138,7 +138,7 @@ class W3ThreadRegistry:
             )
             row = dict(
                 db.execute(
-                    "SELECT * FROM runtime_v2_w3_threads WHERE template_key=?", (key,)
+                    "SELECT * FROM runtime_v2_w3_threads WHERE kind='TEMPLATE' AND template_key=?", (key,)
                 ).fetchone()
             )
             acquired = row["status"] != "READY" and (

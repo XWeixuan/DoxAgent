@@ -1965,7 +1965,8 @@ class PersistentRuntimeV2Service:
             try:
                 batch = getattr(self.repository, "renew_effects", None)
                 if batch:
-                    lost = batch(effects) or ()
+                    writer = getattr(self._w3_agent, "write_result", None)
+                    lost = (writer(lambda: batch(effects)) if writer else batch(effects)) or ()
                     with self._w3_threads_lock:
                         for identity in lost:
                             if identity not in self._running_effect_ids:
@@ -2057,7 +2058,17 @@ class PersistentRuntimeV2Service:
                 return result
         return self._process_claimed_effect_inner(effect, dispatch_timing=dispatch_timing)
 
-    def _process_claimed_effect_inner(
+    def _process_claimed_effect_inner(self, effect, *, dispatch_timing=None):
+        # Error settlement can itself lose the lease. Treat it as the same
+        # ownership boundary, not an unhandled thread exception.
+        try:
+            return self._process_effect_body(effect, dispatch_timing=dispatch_timing)
+        except LeaseLost:
+            self._effect_continuations.pop(effect.effect_id, None)
+            self._phase_waiters.pop(effect.effect_id, None)
+            return 0
+
+    def _process_effect_body(
         self,
         effect: RuntimeEffect,
         *,
