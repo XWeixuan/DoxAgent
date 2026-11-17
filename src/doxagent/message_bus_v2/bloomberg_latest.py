@@ -75,7 +75,7 @@ def story_hint(row: RawMessageInput) -> str:
     return sha256_text(canonical_json([row.title, row.raw_payload.get("updatedAt")]))
 
 
-async def poll_latest(adapter, context):
+async def poll_latest(adapter, context, *, slot_seconds=30):
     from .collection_override import CollectionStopped
     from .newswire_listing import cache_evidence
     from .poll_trace import REQUESTS, validate_listing
@@ -90,7 +90,7 @@ async def poll_latest(adapter, context):
     rows, caches, page_ids = {}, [], set()
     # Bounded shared key, not a random value per request. This is enabled only after
     # comparing actual content freshness against the canonical cached endpoint.
-    slot = int(context.requested_at.timestamp() // 30)
+    slot = int(context.requested_at.timestamp() // slot_seconds)
     cutoff = context.requested_at - timedelta(minutes=30)
     recipe = {"method": "GET", "routes": ["direct"]}
     failure = None

@@ -84,6 +84,25 @@ async def poll_realtime(adapter, context):
     snapshot_valid = False
     expired_pending, overflow_pending = 0, 0
 
+    async def latest_fallback(reason):
+        # Artemis is an optional fast discovery channel. An anonymous-session
+        # block must not strand the source while its public Latest API works.
+        # Reuse normal parsing, freshness, dedup and physical request proofs.
+        from .bloomberg_latest import poll_latest
+        result = await poll_latest(adapter, context, slot_seconds=10)
+        cutoff = context.requested_at - timedelta(minutes=30)
+        retained = {key: value for key, value in pending.items()
+                    if datetime.fromisoformat(value['publishedAt'].replace('Z', '+00:00')) >= cutoff}
+        if not result.failures:
+            result.next_checkpoint['pending'] = retained
+        result.acquisition_metadata.update(
+            discovery_channel='latest_fallback', artemis_error=reason,
+            artemis_retry_seconds=300)
+        return result
+
+    if state.get('retry_at', 0) > time.monotonic():
+        return await latest_fallback(state['last_error'])
+
     async def get(url, *, token=False, metadata=False):
         offset = len(events or [])
         headers = {"Referer": ENTRY_URL}
@@ -188,6 +207,12 @@ async def poll_realtime(adapter, context):
         raise
     except Exception as exc:
         errors.append(failure_reason(exc))
+
+    if not snapshot_valid and errors:
+        # Five minutes is an in-memory admission delay for this failing entry,
+        # not a polling delay: the same 10s unit continues through Latest.
+        state.update(retry_at=time.monotonic() + 300, last_error=errors[0])
+        return await latest_fallback(errors[0])
 
     proven = validate_listing(events or [], parsed_ids, since=start_event) if snapshot_valid else []
     checkpoint = {"seen": dict(list(seen.items())[-512:]), "pending": pending} if snapshot_valid else previous

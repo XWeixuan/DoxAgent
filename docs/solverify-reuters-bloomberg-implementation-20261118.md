@@ -40,3 +40,7 @@ Site Access 已发布 f511e939c，Reuters/Bloomberg 实际 provider_for 均为 s
 Bloomberg 额外故障与验证码无关：WIRE:realtime 最新持续失败为 ValueError:bloomberg_realtime_pending_overflow，checkpoint 实存703条pending、seen仅14条，包含11月13日旧稿；每轮先追加pending，再在>128时抛错，因snapshot_valid已设true又将过大pending提交，下轮永远无法走到metadata出队。WIRE:latest仍以30秒正常抓取，20:21–20:23 UTC近期十篇BODY均FULL。单次受限元数据核验返回200/两条fulfilled，不能归因于此刻网络或PX。
 
 修复：pending按既有30分钟新闻准入窗口自然过期；真正的新ID优先，既存缺失ID走有序重试；超过128条保留最新128条、明确PARTIAL/overflow计数，同时继续执行最多10条元数据请求并提交成功进度，绝不先抛错锁死整个管线。不清数据库/身份，不改变10秒Realtime+30秒Latest节奏，不新增请求批次或后台组件。过期/overflow计数复用本轮acquisition_metadata；不伪装旧消息为新消息。定向回归38通过，覆盖703条旧积压恢复、容量溢出仍出队和新ID不被重复缺失项抢占。
+
+后续自然运行发现第二层故障：重启HTTP会话后Artemis warm `/latest`403；有界比对direct sentry412、原DE代理sentry200但实际HTML/PX，而非JSON授权。Latest JSON仍正常。Realtime失败时现在复用既有poll_latest的正常直连路径、解析与物理请求证明；保持10秒单元调度和10秒共享cache槽，5分钟内不重复撞失败Artemis入口，届时正常单元才重新尝试。无新组件/定时器/浏览器抓列表。HTTP失败与Chrome挑战不混淆；若Latest也失败仍诚实返回失败。新增回归证明blocked入口只试一次、后续真实列表不重复发布、成功证明只来自实际Latest请求，共39通过。
+
+注意：接入后20:23:43 UTC正常正文采集自然触发Bloomberg PX Solverify任务，返回ERROR_TASK_FAILED/cost0、PROVIDER_UNDETERMINED，没有ready或Cookie应用，不能宣称解码通过。20:23后正文存在实际PX阻塞，先前十篇FULL并不代表后续仍健康；最终验收必须分列列表恢复与该正文限制。不为此次失败主动追加购买或持续守候。

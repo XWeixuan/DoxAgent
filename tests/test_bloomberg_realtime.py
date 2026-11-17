@@ -158,3 +158,36 @@ async def test_existing_missing_metadata_does_not_jump_ahead_of_new_discoveries(
     metadata_url = next(url for url, _ in a.seen if '/api/stories/' in url)
     requested = urlsplit(metadata_url).path.rsplit('/', 1)[-1].split(',')
     assert requested[-1] == first_id and requested[0] == rows[1]['id']
+
+
+async def test_blocked_artemis_uses_proven_latest_at_same_cadence_without_repeated_warmup():
+    a = adapter()
+    original = a.listing_request.side_effect
+    async def request(ctx, url, recipe, headers):
+        if '/api/stories?' in url or url.endswith('/latest'):
+            a.seen.append((url, dict(headers)))
+            blocked = url.endswith('/latest')
+            status = 403 if blocked else 200
+            events = REQUESTS.get()
+            if events is not None:
+                events.append(dict(physical_request_id=str(len(events)), status_code=status,
+                    role='listing', proof_basis='TRANSPORT_SEND',
+                    response_received_at=ctx.requested_at.isoformat()))
+            return httpx.Response(status, json={} if blocked else metadata(),
+                request=httpx.Request('GET', url)), recipe['routes'][0]
+        return await original(ctx, url, recipe, headers)
+    a.listing_request.side_effect = request
+    token = REQUESTS.set([])
+    try:
+        first = await poll_realtime(a, context())
+        assert not first.failures and len(first.messages) == 5
+        assert first.acquisition_metadata['validated_request_ids'] == ['1']
+        assert first.acquisition_metadata['discovery_channel'] == 'latest_fallback'
+        assert 'session_http_403' in first.acquisition_metadata['artemis_error']
+        second = await poll_realtime(a, context(checkpoint=first.next_checkpoint))
+        assert not second.failures and not second.messages
+        assert len([u for u, _ in a.seen if u.endswith('/latest')]) == 1
+        assert len([u for u, _ in a.seen if '/api/stories?' in u]) == 2
+        assert not any('/sentry' in u or '/oscillator' in u for u, _ in a.seen)
+    finally:
+        REQUESTS.reset(token)
