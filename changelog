@@ -3228,3 +3228,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-17：统一提交全部当前产品开发改动及关联文档，e06cece02已推送并独立核对origin main。生产发布受阻：SG两个代理入口、直连及HK备用均未完成SSH握手；未执行远端构建或容器切换，未修改代理区域。详见docs/message-efficiency-release-20261117.md。
 2026-11-17：服务器假死取证：SAR在22:21/22:36记录load约566/450、blocked382/289、iowait69/83%、可用内存约2.3/2.4GiB及文件缓存约1GiB，换入很低，符合内存回收/文件页重读I/O拥塞。修复既有SafetyController的主机低可用内存压力盲区：门槛按aggregate预算1/10缩放并限定1–3GiB，仍要求真实PSI/换页压力并沿用15秒滞回，不改实时并发上限或正常工作准入。新增回归并10 passed，宿主部署及自然负载验收另记。
 2026-11-17：统一发布终检发现并纳入并行开发的热路径修正：warm ticker绕过跨ticker冷预热锁；兼容finalization在提交锁外准备并按实际保留正文执行进阶去重，提交时仅做CAS与记账。专项及Google/查询成本/资源保护31 passed，补充固定镜像发布，保留先前完整生产回执。
+
+2026-11-17：吞吐守恒/长尾专项取证：只读提取旧生产cd57c3cf3的11:45–13:35完整SourceOutbox标量回执，核对两轮输入/终态及600–1100秒BODY后长尾。审查待发布进阶去重并修正热ticker被冷预热全局锁阻塞、兼容finalization将证据准备/Native序列化置于提交锁内及按传入而非实际保留消息记账的问题；保留提交epoch和最终CAS。主性能修复仅拟方案，本聊天未发起生产发布。代码小修由并行发布会话纳入c2b0f6509，测试与报告另记。
+2026-11-17：补齐冷预热并发完成性：仅在有界历史读取与参照加载成功后设置warmed标记，同ticker并发请求等待该次预热；不影响已热ticker快速路径。新增并发回归，进阶/Google/查询成本/资源保护组合32 passed，纳入统一生产补发。

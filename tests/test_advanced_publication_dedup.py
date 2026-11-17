@@ -116,6 +116,45 @@ def test_compatibility_finalization_prepares_outside_commit_lock(tmp_path, monke
     assert 'new' not in engine.records
 
 
+def test_same_ticker_waits_for_unfinished_cold_preload():
+    from contextlib import contextmanager
+    from threading import Event, Thread
+    from types import SimpleNamespace
+
+    engine = AdvancedDeduplication()
+    loading, release, second_started, second_done = Event(), Event(), Event(), Event()
+
+    def sources():
+        loading.set()
+        assert release.wait(3)
+        return []
+
+    @contextmanager
+    def connect():
+        yield SimpleNamespace(execute=lambda *args: SimpleNamespace(fetchall=lambda: []))
+
+    repo = SimpleNamespace(list_sources=sources, _connect=connect)
+    first = Thread(target=engine.warm, args=(repo, 'MU'))
+
+    def second():
+        second_started.set()
+        engine.warm(repo, 'MU')
+        second_done.set()
+
+    first.start()
+    assert loading.wait(2)
+    next_request = Thread(target=second)
+    next_request.start()
+    try:
+        assert second_started.wait(2)
+        assert not second_done.wait(.1)
+    finally:
+        release.set()
+        first.join(3)
+        next_request.join(3)
+    assert second_done.is_set() and not engine.metrics['warm_failed']
+
+
 def test_defaults_ibkr_and_verified_google_suffix():
     from doxagent.message_bus_v2.schema import RawMessageInput
 

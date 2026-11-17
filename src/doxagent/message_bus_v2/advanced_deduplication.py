@@ -280,7 +280,6 @@ class AdvancedDeduplication:
         with self.lock:
             if self.warmed.get(ticker, 0) > monotonic():
                 return
-            self.warmed[ticker] = float("inf")
         try:
             sources = {s.source_id: s for s in repository.list_sources()}
             cutoff, offset, values = time() - self.ttl, 2**63 - 1, []
@@ -329,6 +328,8 @@ class AdvancedDeduplication:
                         break
             for f, key, stamp in reversed(values):
                 self.remember(f, key, stamp)
+            with self.lock:
+                self.warmed[ticker] = float("inf")
         except Exception:
             with self.lock:
                 self.metrics["warm_failed"] += 1
