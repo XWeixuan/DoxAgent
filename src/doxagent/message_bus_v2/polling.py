@@ -1151,7 +1151,7 @@ class CaptureIntake:
         # Keep the existing storage stages occupied while another capture waits
         # for its writer turn: two reads + two preparations + one commit.
         # These are pipeline tickets, not extra read/browser/DB concurrency.
-        self.tasks = [None] * 5
+        self.tasks = [None]
         self.wake = asyncio.Event()
         self.stopping = False
         self._maintenance_at = 0.0
@@ -1188,7 +1188,7 @@ class CaptureIntake:
                 # empty intake queue is not evidence the realtime writer is idle.
                 self.wake.clear()
                 try:
-                    await asyncio.wait_for(self.wake.wait(), 0.25)
+                    await asyncio.wait_for(self.wake.wait(), 30)
                 except TimeoutError:
                     pass
                 continue

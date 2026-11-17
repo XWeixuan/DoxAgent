@@ -91,17 +91,20 @@ def commit(repo, prepared):
         if inserted:
             repo._refs(db,'test_publications',identity,prepared['refs'])
         db.execute("UPDATE live_deliveries SET state='TEST_PUBLISHED',published_digest=?,decision_digest=?,"
-            "initial_decision=coalesce(initial_decision,'TEST_PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?) "
-            "WHERE article_key=? AND ticker=?",(row['body_digest'],row['body_digest'],stamp,row['article_key'],row['ticker']))
+            "initial_decision=coalesce(initial_decision,'TEST_PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?),regex_result=coalesce(?,regex_result) "
+            "WHERE article_key=? AND ticker=?",(row['body_digest'],row['body_digest'],stamp,1 if row.get('_positive_regex') else None,row['article_key'],row['ticker']))
     return (prepared['advanced_standard_id'], datetime.fromisoformat(stamp).timestamp()) if inserted else True
 
 
 def maintain(repo):
     from datetime import timedelta
     cutoff=(utc_now()-timedelta(days=14)).isoformat()
-    with repo.bus.transaction() as db:
+    with repo.bus._connect() as db:
         keys=[r[0] for r in db.execute("SELECT article_key FROM live_articles WHERE delivery_mode='test' AND first_seen_at<? "
             "AND state NOT IN ('FETCH_DUE','FETCHING','COMMIT_DUE') LIMIT 64",(cutoff,))]
+    if not keys:
+        return 0
+    with repo.bus.transaction() as db:
         for key in keys:
             publications=[r[0] for r in db.execute('SELECT publication_id FROM test_publications WHERE article_key=?',(key,))]
             db.executemany("DELETE FROM artifact_ref WHERE owner_type='test_publications' AND owner_id=?",[(i,) for i in publications])

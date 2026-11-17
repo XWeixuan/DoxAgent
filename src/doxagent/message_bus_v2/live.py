@@ -6,7 +6,7 @@ import asyncio
 import logging
 import json
 import time
-from collections import defaultdict
+from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -41,6 +41,7 @@ class LiveQueue:
         self._sources = {}
         self._claim_round = 0
         self._spool_replay_at = 0
+        self._maintenance_at = 0
         self.bus.repository.live_queue = self
 
     def enqueue_frozen(self, job):
@@ -78,6 +79,12 @@ class LiveQueue:
         self._sources[identity] = source
         return source
 
+    async def _claim(self, *, limit, background=False):
+        candidates = await self.bus.storage.read(self.repository.claim_candidates, limit=limit, background=background)
+        if not candidates:
+            return []
+        return await self.bus.storage.call(self.repository.claim, limit=limit, background=background, candidates=candidates)
+
     async def claim(self, limit, *, allow_background=True):
         if time.monotonic() - self._spool_replay_at >= 1:
             self._spool_replay_at = time.monotonic()
@@ -98,13 +105,11 @@ class LiveQueue:
         self._claim_round += 1
         claims = []
         if allow_background and self._claim_round % 8 == 0:
-            claims = await self.bus.storage.call(self.repository.claim, limit=1, background=True)
+            claims = await self._claim(limit=1, background=True)
         if len(claims) < limit:
-            claims += await self.bus.storage.call(self.repository.claim, limit=limit - len(claims))
+            claims += await self._claim(limit=limit - len(claims))
         if allow_background and len(claims) < limit:
-            claims += await self.bus.storage.call(
-                self.repository.claim, limit=limit - len(claims), background=True
-            )
+            claims += await self._claim(limit=limit - len(claims), background=True)
         jobs = []
         for key, revision, token in claims:
             # Prefer a previously successful download to any new HTTP work.
@@ -309,8 +314,10 @@ class LiveQueue:
 
     async def checks(self):
         from .test_delivery import maintain
-        await self.bus.storage.call(maintain, self.repository, _lane_priority=2)
-        await self.bus.storage.call(self.repository.retire_acceptances, _lane_priority=2)
+        if time.monotonic()-self._maintenance_at >= 60:
+            await self.bus.storage.call(maintain, self.repository, _lane_priority=2)
+            await self.bus.storage.call(self.repository.retire_acceptances, _lane_priority=2)
+            self._maintenance_at = time.monotonic()
         return await self.bus.storage.call(self.repository.enqueue_checks, _lane_priority=2)
 
     async def adopt(self, job):
@@ -445,6 +452,8 @@ class LiveDeliveryWorker:
         self.active_articles = set()
         self.configuration_revision = None
         self.configuration_checked_at = 0
+        self.work_metrics = Counter()
+        self.slow_reported_at = 0
         self.advanced_reported_at = 0
         self.delivery_round = 0
 
@@ -492,6 +501,10 @@ class LiveDeliveryWorker:
         return message, source, binding, found
 
     def _prepare_batch(self, rows):
+        with self.bus.repository.connection_scope():
+            return self._prepare_batch_scoped(rows)
+
+    def _prepare_batch_scoped(self, rows):
         messages, sources, terms = {}, {}, {}
         prepared=[]
         for row in rows:
@@ -510,18 +523,24 @@ class LiveDeliveryWorker:
                 return
         raise RuntimeError('live_publication_changed')  # Existing delivery retry, never another BODY fetch.
 
-    async def process(self, row, prepared=None):
+    async def _decision(self, decisions, row, state, **kwargs):
+        if decisions is not None:
+            decisions.append((row, state, kwargs))
+            return
+        return await self.bus.storage.call(self.repository.decision, row, state, **kwargs)
+
+    async def process(self, row, prepared=None, decisions=None):
         if row.get('_prepare_error'):
             raise row['_prepare_error']
         decision_terms = row.get('_decision_terms_revision', row["terms_revision"])
         message, source, binding, found = prepared or await self.bus.storage.prepare(self._prepare, row)
         if not source or not binding or not binding.enabled:
-            await self.bus.storage.call(self.repository.decision, row, "CANCELLED")
+            await self._decision(decisions, row, "CANCELLED")
             return
         from .distribution_repository import _complete_body_required, _complete_body_verified
 
         if _complete_body_required(source) and not _complete_body_verified(message):
-            await self.bus.storage.call(self.repository.decision, row, "NO_PUBLIC_BODY")
+            await self._decision(decisions, row, "NO_PUBLIC_BODY")
             return
         relevance_required = source.acquisition_mode.shared_distribution or (
             source.source_id == "google_news_search_rss"
@@ -532,14 +551,14 @@ class LiveDeliveryWorker:
         language = ((message.metadata.get("language") if massive or source.delivery_mode == "test" else None) or source.content_language or "en")
         from .massive_relevance import massive_configured, massive_relevant
         if massive and not massive_configured(found[1] if found else None, language):
-            await self.bus.storage.call(self.repository.decision, row, "CONFIG_INCOMPLETE", error="MASSIVE_TERMS_MISSING")
+            await self._decision(decisions, row, "CONFIG_INCOMPLETE", error="MASSIVE_TERMS_MISSING")
             return
         if (row.get("raw_id") and not massive) or not relevance_required:
             await self.publish(row, source, binding, message)
             return
         if found is None:
-            await self.bus.storage.call(
-                self.repository.decision, row, "CONFIG_INCOMPLETE", error="TERMS_MISSING"
+            await self._decision(
+                decisions, row, "CONFIG_INCOMPLETE", error="TERMS_MISSING"
             )
             return
         revision, definition = found
@@ -559,18 +578,18 @@ class LiveDeliveryWorker:
             await self.publish(row, source, binding, message)
             return
         if (massive_relevant(definition, language, message) if massive else regex_relevant(definition, language, message)):
-            await self.bus.storage.call(self.repository.decision, row, "PENDING", regex=True)
+            row["_positive_regex"] = True
             await self.publish(row, source, binding, message)
         elif model_expired:
-            await self.bus.storage.call(self.repository.decision, row, 'IRRELEVANT',
+            await self._decision(decisions, row, 'IRRELEVANT',
                                         regex=False, error='DECISION_MODEL_EXPIRED')
         elif source.acquisition_mode is not AcquisitionMode.MASSIVE_DISTRIBUTION and ((source.distribution_policy and source.distribution_policy.jev_enabled) or (
             source.source_id == "google_news_search_rss"
             and binding.source_parameters.get("require_relevance") is True
         )):
-            await self.bus.storage.call(self.repository.decision, row, "L2_DUE", regex=False)
+            await self._decision(decisions, row, "L2_DUE", regex=False)
         else:
-            await self.bus.storage.call(self.repository.decision, row, "IRRELEVANT", regex=False)
+            await self._decision(decisions, row, "IRRELEVANT", regex=False)
 
     async def classify(self, rows):
         key = rows[0]["article_key"]
@@ -669,6 +688,7 @@ class LiveDeliveryWorker:
             with engine.lock:
                 counters, records, body_bytes = dict(engine.metrics), len(engine.records), engine.body_bytes
             log.info("advanced dedup counters=%s references=%d body_bytes=%d", counters, records, body_bytes)
+            log.info("live throughput totals=%s storage_totals=%s", dict(self.work_metrics), dict(self.bus.storage.metrics))
             self.advanced_reported_at = started
         if time.monotonic() - self.configuration_checked_at >= 1:
             revision = await self.bus.storage.read(self._configuration_revision)
@@ -703,21 +723,39 @@ class LiveDeliveryWorker:
         selected = {(r['article_key'],r['ticker'],r['binding_id']) for r in fair}
         rows = fair + [r for r in foreground + background[:1]
                        if (r['article_key'],r['ticker'],r['binding_id']) not in selected]
+        rows = rows[:32]
         processed = 0
-        from itertools import groupby
-        for _, article_rows in groupby(rows,key=lambda r:r['article_key']):
-            prepared = await self.bus.storage.prepare(self._prepare_batch,list(article_rows))
+        groups = defaultdict(list)
+        for row in rows:
+            groups[row["article_key"]].append(row)
+        for article_rows in groups.values():
+            preparing = time.monotonic()
+            prepared = await self.bus.storage.prepare(self._prepare_batch,article_rows)
+            self.work_metrics["prepare_wall_s"] += time.monotonic()-preparing
+            self.work_metrics["prepared_targets"] += len(prepared)
+            self.work_metrics["article_blocks"] += 1
+            decisions = []
             for row, *facts in prepared:
+                processing = time.monotonic()
                 try:
-                    await self.process(row, facts)
+                    await self.process(row, facts, decisions)
                 except Exception as exc:
                     log.warning("live delivery awaiting local recovery: %s", type(exc).__name__)
                     await self.bus.storage.call(
                         self.repository.decision, row, "PENDING", error=type(exc).__name__, retry=True
                     )
+                self.work_metrics["process_wall_s"] += time.monotonic()-processing
+                self.work_metrics["used_targets"] += 1
+                if time.monotonic()-self.slow_reported_at >= 60 and (utc_now()-datetime.fromisoformat(row["due_at"])).total_seconds()>5:
+                    log.info("live delayed target article=%s ticker=%s due=%s selected_wall=%s", row["article_key"][:16], row["ticker"], row["due_at"], utc_now().isoformat())
+                    self.slow_reported_at = time.monotonic()
                 processed += 1
-                if max_seconds is not None and time.monotonic() - started >= max_seconds:
-                    break
+            if decisions:
+                committing = time.monotonic()
+                results = await self.bus.storage.call(self.repository.decisions, decisions)
+                self.work_metrics["decision_batch_wall_s"] += time.monotonic()-committing
+                self.work_metrics["decision_commits"] += 1
+                self.work_metrics["decision_applied"] += sum(results)
             if max_seconds is not None and time.monotonic()-started>=max_seconds:
                 break
         if len(self.decisions) < 2:
@@ -734,9 +772,10 @@ class LiveDeliveryWorker:
     async def run(self):
         while True:
             try:
-                await self.run_available(max_seconds=0.25)
+                processed = await self.run_available(max_seconds=0.25)
             except asyncio.CancelledError:
                 raise
             except Exception:
                 log.exception("live delivery pump awaiting local recovery")
-            await asyncio.sleep(0.1)
+                processed = 0
+            await asyncio.sleep(0 if processed else 0.1)

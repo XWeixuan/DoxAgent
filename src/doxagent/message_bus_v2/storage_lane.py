@@ -3,12 +3,13 @@
 import asyncio
 import logging
 import time
+from collections import Counter
 from collections.abc import Callable
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any
 from weakref import WeakKeyDictionary
-from contextvars import ContextVar
 
 WRITE_ADMISSION = ContextVar("bus_write_admission", default=False)
 WRITE_TIMINGS = ContextVar("bus_write_timings", default=None)
@@ -63,6 +64,7 @@ class _Lane:
 class StorageLane:
     def __init__(self) -> None:
         self._lanes: WeakKeyDictionary = WeakKeyDictionary()
+        self.metrics = Counter()
 
     def _lane(self):
         loop = asyncio.get_running_loop()
@@ -90,12 +92,26 @@ class StorageLane:
 
     async def read(self, operation: Callable[..., Any], *args, **kwargs):
         """Caller supplies an operation-scoped read connection; no writer lock."""
+        queued = time.monotonic()
         async with self._lane().readers:
-            return await self._execute(operation, args, kwargs)
+            started = time.monotonic()
+            self.metrics['read_queue_s'] += started - queued
+            try:
+                return await self._execute(operation, args, kwargs)
+            finally:
+                self.metrics['read_work_s'] += time.monotonic() - started
+                self.metrics['read_calls'] += 1
 
     async def prepare(self, operation: Callable[..., Any], *args, **kwargs):
+        queued = time.monotonic()
         async with self._lane().preparation:
-            return await self._execute(operation, args, kwargs)
+            started = time.monotonic()
+            self.metrics['prepare_queue_s'] += started - queued
+            try:
+                return await self._execute(operation, args, kwargs)
+            finally:
+                self.metrics['prepare_work_s'] += time.monotonic() - started
+                self.metrics['prepare_calls'] += 1
 
     async def call(self, operation: Callable[..., Any], *args, _lane_priority=1, **kwargs):
         queued_at = time.monotonic()
@@ -105,15 +121,20 @@ class StorageLane:
         try:
             while True:
                 try:
+                    admission_at = time.monotonic()
                     async with self._lane().writer(_lane_priority):
                         started = time.monotonic()
+                        self.metrics["writer_queue_s"] += started-admission_at
                         try:
                             return await self._execute(operation, args, kwargs)
                         finally:
+                            self.metrics["writer_attempts"] += 1
+                            self.metrics["writer_work_s"] += time.monotonic()-started
                             elapsed, wait = time.monotonic() - started, started - queued_at
                             if elapsed >= 0.05 or wait >= 1:
                                 logging.getLogger(__name__).warning(
-                                    "bus_storage_slow operation=%s elapsed_ms=%s wait_ms=%s phases=%s",
+                                    "bus_storage_slow operation=%s elapsed_ms=%s "
+                                    "wait_ms=%s phases=%s",
                                     getattr(operation, "__qualname__", type(operation).__name__),
                                     round(elapsed * 1000),
                                     round(wait * 1000),
@@ -122,7 +143,10 @@ class StorageLane:
                 except WriteAdmissionBusy:
                     if time.monotonic() - queued_at >= 30:
                         raise
+                    self.metrics["writer_backoff_count"] += 1
                     await asyncio.sleep(0.025)
         finally:
+            for phase in ("begin_wait_ms", "transaction_ms", "commit_ms"):
+                self.metrics[phase] += timings[phase]
             WRITE_ADMISSION.reset(token)
             WRITE_TIMINGS.reset(trace)

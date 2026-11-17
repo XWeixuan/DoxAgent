@@ -223,7 +223,6 @@ class GlobalPollScheduler:
 
     async def run_once(self) -> list[PollExecutionResult]:
         if getattr(self, "collection_plane_enabled", False):
-            self.intake.start()
             self.capture_bridge.start()
             if getattr(self, "live_worker", None) is not None:
                 self.live_worker.start()
@@ -265,7 +264,8 @@ class GlobalPollScheduler:
         return await self._run_admitted_once()
 
     async def _run_admitted_once(self) -> list[PollExecutionResult]:
-        self.intake.start()
+        if not getattr(self, "collection_plane_enabled", False):
+            self.intake.start()
         if getattr(self, "collection_plane_enabled", False):
             if self.runtime_orchestration is not None:
                 return await self.runtime_orchestration.run_once(self, collect=False)

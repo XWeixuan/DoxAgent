@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS live_articles(
 CREATE INDEX IF NOT EXISTS live_article_due ON live_articles(state,due_at,article_key);
 CREATE INDEX IF NOT EXISTS live_article_publisher ON live_articles(state,publisher,due_at);
 CREATE INDEX IF NOT EXISTS live_article_check ON live_articles(next_check_at,article_key);
+CREATE INDEX IF NOT EXISTS live_article_active_due ON live_articles(publisher,due_at) WHERE state='FETCH_DUE' AND work_kind<>'recheck';
+CREATE INDEX IF NOT EXISTS live_article_recovery_check ON live_articles(next_check_at) WHERE state='READY' AND last_error IN ('site_recovery_pending','domain_cooldown');
 CREATE INDEX IF NOT EXISTS live_article_observed ON live_articles(first_seen_at,article_key);
 CREATE TABLE IF NOT EXISTS live_deliveries(
  article_key TEXT NOT NULL,ticker TEXT NOT NULL,source_id TEXT NOT NULL,binding_id TEXT NOT NULL,
@@ -606,11 +608,10 @@ class LiveRepository:
                 db.execute("INSERT INTO collection_acceptances VALUES(?,?)", (capture_id, now))
         return keys
 
-    def claim(self, *, limit, background=False):
+    def claim_candidates(self, *, limit, background=False):
         now = utc_now()
         stamp = now.isoformat()
         recent = (now - timedelta(minutes=30)).isoformat()
-        claimed = []
         recheck_filter = "" if self.bus.body_recheck_enabled else " AND work_kind<>'recheck' "
         with self.bus._connect() as db:
             if background:
@@ -653,12 +654,26 @@ class LiveRepository:
                     "AND lease_until<=? " + recheck_filter + "ORDER BY lease_until LIMIT ?",
                     (stamp, limit - len(rows)),
                 ).fetchall()
+        return [(r[0], r[1]) for r in rows]
+
+    def claim(self, *, limit, background=False, candidates=None):
+        now = utc_now()
+        stamp = now.isoformat()
+        claimed = []
+        rows = self.claim_candidates(limit=limit, background=background) if candidates is None else candidates
         if not rows:
             return []
         with self.bus.transaction() as db:
             test_active = db.execute("SELECT count(*) FROM live_articles WHERE delivery_mode='test' AND state='FETCHING' AND lease_until>?", (stamp,)).fetchone()[0]
             for row in rows:
-                mode = db.execute('SELECT delivery_mode FROM live_articles WHERE article_key=?',(row[0],)).fetchone()[0]
+                current = db.execute('SELECT delivery_mode,publisher,work_kind FROM live_articles WHERE article_key=?',(row[0],)).fetchone()
+                if not current or (current[2]=='recheck' and not self.bus.body_recheck_enabled):
+                    continue
+                if db.execute("SELECT count(*) FROM live_articles WHERE state='FETCHING' AND lease_until>? AND publisher=?", (stamp,current[1])).fetchone()[0]>=2:
+                    continue
+                if background and db.execute("SELECT 1 FROM live_articles WHERE state='FETCHING' AND work_kind IN ('recheck','capability_resume') AND lease_until>? LIMIT 1", (stamp,)).fetchone():
+                    continue
+                mode = current[0]
                 if mode == 'test' and test_active:
                     continue
                 if mode == 'test':
@@ -1066,7 +1081,7 @@ class LiveRepository:
                 + (
                     "ORDER BY d.due_at,d.article_key LIMIT ?"
                     if old_only
-                    else "ORDER BY (a.delivery_mode='test'),foreground DESC,a.first_seen_at DESC,d.due_at,d.article_key LIMIT ?"
+                    else "ORDER BY (a.delivery_mode='test'),foreground DESC,d.due_at,d.article_key,d.ticker LIMIT ?"
                 ),
                 (recent, state, now.isoformat(), limit),
             ).fetchall()
@@ -1085,6 +1100,11 @@ class LiveRepository:
                 "AND a.result_ref IS NOT NULL AND (? OR d.state='CANCELLED' OR t.current_revision!=d.terms_revision) LIMIT 2048)",
                 (utc_now().isoformat(), int(restarted)),
             ).rowcount
+
+    def decisions(self, values):
+        # One short transaction; individual CAS and per-ticker receipts survive.
+        with self.bus.atomic_intake():
+            return [self.decision(dict(row), state, **kwargs) for row, state, kwargs in values]
 
     def decision(self, row, state, *, regex=None, score=None, error=None, retry=False):
         with self.bus.transaction() as db:
@@ -1494,7 +1514,7 @@ class LiveRepository:
         if prepared.get('advanced_hit'):
             gate, representative = prepared['advanced_hit']
             self.decision(prepared['row'], 'TEST_DUPLICATE' if prepared.get('test') else 'DEDUPLICATED',
-                          error=f'ADV_DUPLICATE:{gate}:{representative}')
+                          error=f'ADV_DUPLICATE:{gate}:{representative}', regex=True if prepared["row"].get("_positive_regex") else prepared["row"].get("regex_result"))
             return
         receipt = self._publish(prepared)
         if receipt and isinstance(receipt, tuple) and advanced:
@@ -1694,7 +1714,8 @@ class LiveRepository:
             db.execute(
                 "UPDATE live_deliveries SET state=?,raw_id=?,standard_id=?,decision_digest=?,"
                 "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL,"
-                "initial_decision=coalesce(initial_decision,?),initial_decision_at=coalesce(initial_decision_at,?) "
+                "initial_decision=coalesce(initial_decision,?),initial_decision_at=coalesce(initial_decision_at,?), "
+                "regex_result=coalesce(?,regex_result) "
                 "WHERE article_key=? AND ticker=?",
                 (
                     "PUBLISHED"
@@ -1708,6 +1729,7 @@ class LiveRepository:
                     row["body_digest"],
                     (prepared.get("known_consumable_at") or stamp) if published else None,
                     'PUBLISHED' if published else 'SUPPRESSED' if raw.bootstrap_suppressed else 'BUFFERED',stamp,
+                    1 if row.get('_positive_regex') else None,
                     key,
                     ticker,
                 ),

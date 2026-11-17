@@ -49,17 +49,6 @@ def binding_id_for(ticker: str, source_id: str) -> str:
 class BusModel(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
-    @model_validator(mode="after")
-    def fill_publisher_identity(self):
-        if hasattr(self, "source_name") and self.source_name is None:
-            from .source_identity import resolve_source_name
-
-            self.source_name = resolve_source_name(
-                publisher_name=getattr(self, "publisher_name", None) or getattr(self, "source", None),
-                resolved_domain=getattr(self, "resolved_domain", None),
-                url=getattr(self, "url", None),
-            )
-        return self
 
 
 class UpdateActor(StrEnum):
@@ -368,7 +357,21 @@ class TickerMonitoringState(BusModel):
         return value.strip().upper()
 
 
-class RawMessageInput(BusModel):
+class PublisherModel(BusModel):
+    @model_validator(mode="after")
+    def fill_publisher_identity(self):
+        if hasattr(self, "source_name") and self.source_name is None:
+            from .source_identity import resolve_source_name
+
+            self.source_name = resolve_source_name(
+                publisher_name=getattr(self, "publisher_name", None) or getattr(self, "source", None),
+                resolved_domain=getattr(self, "resolved_domain", None),
+                url=getattr(self, "url", None),
+            )
+        return self
+
+
+class RawMessageInput(PublisherModel):
     @model_validator(mode="before")
     @classmethod
     def normalize_time_precision(cls, data: Any) -> Any:
@@ -466,7 +469,7 @@ class RawMessageInput(BusModel):
         return value.astimezone(UTC)
 
 
-class RawMessage(BusModel):
+class RawMessage(PublisherModel):
     @model_validator(mode="before")
     @classmethod
     def preserve_legacy_date_basis(cls, data: Any) -> Any:
@@ -513,7 +516,7 @@ class RawMessage(BusModel):
     bootstrap_suppressed: bool = False
 
 
-class StandardMessage(BusModel):
+class StandardMessage(PublisherModel):
     @model_validator(mode="before")
     @classmethod
     def preserve_legacy_date_basis(cls, data: Any) -> Any:
@@ -556,7 +559,7 @@ class StreamMember(BusModel):
     standard_message_id: str
 
 
-class MaterializedStreamMember(BusModel):
+class MaterializedStreamMember(PublisherModel):
     metadata: JsonObject = Field(default_factory=dict)
     admission_context: AdmissionContext | None = None
     publication_time_basis: str = "EXACT"
