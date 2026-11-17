@@ -189,11 +189,13 @@ def retry_provider_bootstrap(recovery, scene):
 
 
 class TwoCaptcha:
+    base_url = "https://api.2captcha.com/"
+
     async def request(self, key, method, **payload):
         try:
             async with httpx.AsyncClient(trust_env=False, timeout=12) as client:
                 response = await client.post(
-                    "https://api.2captcha.com/" + method, json={"clientKey": key, **payload}
+                    self.base_url + method, json={"clientKey": key, **payload}
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -207,15 +209,63 @@ class TwoCaptcha:
         return data
 
 
+class Solverify(TwoCaptcha):
+    """Translate the vendor wire contract; keep recovery and browser ownership shared."""
+    base_url = "https://solver.solverify.net/"
+
+    async def request(self, key, method, **payload):
+        if method == "createTask":
+            task = dict(payload["task"])
+            task.update(type="datadome", useragent=task.pop("userAgent"),
+                        proxyPort=str(task["proxyPort"]))
+            payload = {**payload, "task": task}
+        data = await super().request(key, method, **payload)
+        if method == "getTaskResult":
+            status = data.get("status")
+            if status == "failed":
+                code = str(data.get("errorCode") or "SOLVERIFY_TASK_FAILED")
+                raise SolverError(code if re.fullmatch(r"[A-Z0-9_]{1,100}", code) else "SOLVERIFY_TASK_FAILED")
+            data = {**data, "status": {"pending": "processing", "processing": "processing",
+                                      "completed": "ready"}.get(status, status)}
+        return data
+
+    @staticmethod
+    def cookie(solution, website, expected_user_agent):
+        # Never rewrite native Chrome's identity to fit a provider's default Mac UA.
+        if not expected_user_agent or solution.get("useragent") != expected_user_agent:
+            raise SolverError("SOLVERIFY_USER_AGENT_MISMATCH")
+        value = solution.get("cookies", {}).get("datadome")
+        if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9_~%+./=-]{1,16384}", value):
+            raise SolverError("INVALID_PROVIDER_COOKIE")
+        host = urlsplit(website).hostname
+        if host not in {"www.reuters.com", "reuters.com"}:
+            raise SolverError("SOLVERIFY_PUBLISHER_NOT_ENABLED")
+        # Reuters uses a parent-domain Cookie. Do not introduce a host-only shadow.
+        return f"datadome={value}; Domain=.reuters.com; Path=/; Secure; SameSite=Lax"
+
+
 class DataDomeSolver:
     def __init__(self, coordinator):
         self.coordinator = coordinator
         self.provider = TwoCaptcha()
+        self.solverify = Solverify()
         self.browser_factory = NativeChallenge
         self.provider_ticks = set()
         self._egress_checks = {}
         self._proof_refresh_at = {}
         self.egress_reason = 'NOT_CHECKED'
+
+    def provider_for(self, config, *, job=None, identity_id=None):
+        # Durable tasks are always collected from their original provider, even
+        # after an operator rolls back the per-identity selection. Legacy = 2Captcha.
+        name = (job.get("provider", "2captcha") if job else
+                config.get("provider_by_identity", {}).get(identity_id, "2captcha"))
+        if name not in {"2captcha", "solverify"}:
+            raise SolverError("INVALID_PROVIDER_SELECTION")
+        key = config.get("solverify_api_key" if name == "solverify" else "api_key")
+        if not key:
+            raise SolverError("PROVIDER_KEY_UNAVAILABLE")
+        return (self.solverify if name == "solverify" else self.provider), key, name
 
     def config(self):
         credentials = getattr(self.coordinator.service, "credential_store", None)
@@ -331,8 +381,9 @@ class DataDomeSolver:
             job["last_provider_poll_at"] = now.isoformat()
             self.save(job)
             try:
-                data = await self.provider.request(
-                    config["api_key"], "getTaskResult", taskId=job["task_id"]
+                provider, key, _ = self.provider_for(config, job=job)
+                data = await provider.request(
+                    key, "getTaskResult", taskId=job["task_id"]
                 )
                 if data.get("status") == "ready":
                     job.update(
@@ -539,8 +590,9 @@ class DataDomeSolver:
             # owns the Viewer. Billing does not require a Profile writer.
             if active and active["status"] == "PENDING":
                 self.provider_ticks.add(recovery.recovery_id)
-                data = await self.provider.request(
-                    config["api_key"], "getTaskResult", taskId=active["task_id"]
+                provider, key, _ = self.provider_for(config, job=active)
+                data = await provider.request(
+                    key, "getTaskResult", taskId=active["task_id"]
                 )
                 if data.get("status") == "processing":
                     return True
@@ -612,9 +664,12 @@ class DataDomeSolver:
                     ):
                         self.fail(active, recovery, "SCENE_OR_EGRESS_CHANGED")
                         return False
+                    solution = data.get("solution") or {}
+                    cookie = (self.solverify.cookie(solution, scene["website"], active.get("requested_user_agent"))
+                              if active.get("provider") == "solverify" else solution.get("cookie"))
                     active.update(status="APPLYING", verification_reason="application_in_progress")
                     self.save(active)  # Crash here is uncertain, never an invitation to set again.
-                    application = await browser.apply(data.get("solution", {}).get("cookie"), scene["website"])
+                    application = await browser.apply(cookie, scene["website"])
                     application = application if isinstance(application, dict) else {}
                     if application:
                         active["application_evidence"] = application
@@ -655,6 +710,9 @@ class DataDomeSolver:
                 if active is None:
                     active = self.new_job(recovery, scene, route)
                     active['admission']='ACKNOWLEDGED_RETRY_PROVIDER_BOOTSTRAP' if provider_bootstrap else 'LOCAL_SLIDER_READY'
+                provider, key, provider_name = self.provider_for(config, identity_id=identity.identity_id)
+                if provider_name == "solverify" and recovery.site_id != "reuters":
+                    raise SolverError("SOLVERIFY_PUBLISHER_NOT_ENABLED")
                 with self.coordinator.service.repository.transaction() as db:
                     count = db.execute(
                         "select count(*) from datadome_solver_jobs where "
@@ -681,6 +739,8 @@ class DataDomeSolver:
                         scene=signature,
                         binding=route,
                         submitted_at=utc_now().isoformat(),
+                        provider=provider_name,
+                        requested_user_agent=scene["user_agent"],
                     )
                     active["updated_at"] = utc_now().isoformat()
                     db.execute(
@@ -692,8 +752,8 @@ class DataDomeSolver:
                     for k in ["proxyAddress", "proxyPort", "proxyLogin", "proxyPassword"]
                 }
                 self.provider_ticks.add(recovery.recovery_id)
-                data = await self.provider.request(
-                    config["api_key"],
+                data = await provider.request(
+                    key,
                     "createTask",
                     task={
                         **task,
@@ -705,10 +765,18 @@ class DataDomeSolver:
                     },
                 )
                 task_id = data.get("taskId")
-                if isinstance(task_id, str) and task_id.isascii() and task_id.isdigit():
-                    task_id = int(task_id)
-                if not isinstance(task_id, int) or isinstance(task_id, bool) or task_id <= 0:
-                    raise SolverError("INVALID_TASK_ID")
+                if provider_name == "solverify":
+                    from uuid import UUID
+                    try:
+                        if not isinstance(task_id, str) or str(UUID(task_id)) != task_id.lower():
+                            raise ValueError()
+                    except ValueError:
+                        raise SolverError("INVALID_TASK_ID") from None
+                else:
+                    if isinstance(task_id, str) and task_id.isascii() and task_id.isdigit():
+                        task_id = int(task_id)
+                    if not isinstance(task_id, int) or isinstance(task_id, bool) or task_id <= 0:
+                        raise SolverError("INVALID_TASK_ID")
                 active.update(status="PENDING", task_id=task_id)
                 self.save(active)
                 self.coordinator.event(

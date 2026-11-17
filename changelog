@@ -3250,3 +3250,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-18：慢项诊断区分真实选中、准备完成与处理结束时刻，并标明延后批量提交，避免把处理完成时间误当首次选中；保持每分钟最多一条慢项现场及固定阶段汇总。
 
 2026-11-18：生产验收定位SNOW持久准入到Task领取约53秒；在现有Future完成后即时唤醒同ticker待领取实时Case，复用原claim、租约及线程池，保持每ticker6 Case/12节点容量；注册回调放在注册锁外，避免已完成Future同步回调死锁。
+
+2026-11-18 Reuters login storage and optional Solverify: bound only ABTastyData.VisitedPages to the newest 256 entries, preserving Arc auth and all other storage; install once per Reuters browser context and inspect warm pages at most once/minute. Add per-identity Solverify selection with frozen provider/task ownership, explicit actual Chrome UA, UUID task IDs, validated parent-domain Cookie and unchanged 2Captcha default/fallback. Keep APPLIED distinct from real CRAWLER/BODY recovery. Production/manual and regional route evidence: docs/reuters-regions-storage-solverify-20261118.md.

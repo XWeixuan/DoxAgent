@@ -1400,6 +1400,9 @@ class SiteAccessRuntime:
             except RuntimeError:
                 pass
         page = anchor.page if anchor else await lease.__aenter__()
+        if resolved.site_id == "reuters":
+            from .reuters_storage import prepare_reuters_storage
+            await prepare_reuters_storage(page)
         gate = anchor.gate if anchor else _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         if hasattr(lease, "on_closed"):
             lease.on_closed = gate.close
@@ -2469,6 +2472,9 @@ class SiteAccessRuntime:
                     effective_identity, egress, deadline=deadline
                 )
                 page = await lease.__aenter__()
+                if target_site_id == "reuters":
+                    from .reuters_storage import prepare_reuters_storage
+                    await prepare_reuters_storage(page, force=True)
                 stage = "navigation_gate"
                 gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
                 await gate.start()
