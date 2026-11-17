@@ -3231,3 +3231,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-17：吞吐守恒/长尾专项取证：只读提取旧生产cd57c3cf3的11:45–13:35完整SourceOutbox标量回执，核对两轮输入/终态及600–1100秒BODY后长尾。审查待发布进阶去重并修正热ticker被冷预热全局锁阻塞、兼容finalization将证据准备/Native序列化置于提交锁内及按传入而非实际保留消息记账的问题；保留提交epoch和最终CAS。主性能修复仅拟方案，本聊天未发起生产发布。代码小修由并行发布会话纳入c2b0f6509，测试与报告另记。
 2026-11-17：补齐冷预热并发完成性：仅在有界历史读取与参照加载成功后设置warmed标记，同ticker并发请求等待该次预热；不影响已热ticker快速路径。新增并发回归，进阶/Google/查询成本/资源保护组合32 passed，纳入统一生产补发。
+2026-11-17：完成main整体生产发布及终检补发，最终应用486931723含全部产品开发与热/冷预热并发修正；15后端+Site共16角色，每角色80文件、1280次固定Git blob SHA全部一致，22运行容器无unhealthy/restart0。RapidFuzz3.14.6正式依赖层构建，83启用源中82开进阶/IBKR关闭、Google9/9筛选；最终Bus重启后跨5ticker产生8个自然Stream。宿主安全修复1bfb08fa9已启用，最终可用约17GiB、memory PSI为0/NORMAL；SAR证明事故窗口严重内存回收与文件重读I/O拥塞，未声称首发进程归因或长期不复发已完成。按用户授权中断任务，保留回滚/私有环境，例行协调退役资源无错误；详见docs/server-hang-and-main-release-20261117.md。

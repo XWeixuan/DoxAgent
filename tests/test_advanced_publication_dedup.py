@@ -87,6 +87,7 @@ def test_warm_ticker_does_not_wait_for_another_tickers_cold_load():
 
 def test_compatibility_finalization_prepares_outside_commit_lock(tmp_path, monkeypatch):
     from types import SimpleNamespace
+
     from doxagent.message_bus_v2.schema import PublicationMode, StreamingConfig
     from tests.test_content_enrichment_hub import _setup
 

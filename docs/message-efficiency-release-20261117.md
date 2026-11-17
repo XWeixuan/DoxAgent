@@ -1,6 +1,6 @@
 # 消息效率统一发布状态（2026-11-17）
 
-**Git 同步完成，生产发布未完成。**
+**更新：生产发布及终检修正补发均已完成。最新结果及服务器假死排查见 [完整记录](server-hang-and-main-release-20261117.md)。以下保留最初 SSH 阻塞时的历史记录。**
 
 产品候选固定提交：`e06cece02f1637824c9f843893df03a89739fb98`。已推送 origin main，随后通过 `git ls-remote origin refs/heads/main` 独立核对一致。
 

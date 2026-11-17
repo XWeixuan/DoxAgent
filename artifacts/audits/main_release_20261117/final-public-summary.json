@@ -1,0 +1,230 @@
+{
+  "at": "2026-11-17T15:44:06.363364+00:00",
+  "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+  "roles": 16,
+  "files_each": 80,
+  "hash_failures": {},
+  "containers": [
+    {
+      "name": "/doxagent-v2-v2-scheduler-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:43:21.374188372Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-api-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T15:42:52.764853745Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-message-collector-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T15:42:41.798576913Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-message-bus-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:42:33.185358711Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-content-enrichment-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:42:24.921372047Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-site-access-1",
+      "image": "sha256:ce07decba52b17fcec6bf5bf11d89afc7d9549e23042e63f7924b49abacdd597",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T15:42:16.60065945Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-maintenance-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:42:07.804990226Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-initialization-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:41:59.757320977Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-cdecr-executor-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T15:41:51.579996551Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-o4-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:41:43.345308042Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-executor-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:41:33.266454175Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-delivery-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:41:22.36487099Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-transport-maintenance-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:41:14.390205509Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-control-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:41:06.521112901Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-projector-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:40:58.639848189Z"
+    },
+    {
+      "name": "/doxagent-v2-codex-worker-1",
+      "image": "sha256:c271fe1fd01db1debc17fd8f29df3f1554da1e6ed116964a8b81a200f57799e3",
+      "commit": "486931723cc1b1241e1c3d139a178af1ffdc85cb",
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T15:40:50.459089082Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-web-1",
+      "image": "sha256:5581686b531dd508d3b46350e3b4cf11935e5205ee6d2eb072dfee2c37a7046d",
+      "commit": "27d8c0ab7e60949d73073374faa9081167ffdbd8",
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T14:52:44.579171734Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-agent-mcp-tunnel-1",
+      "image": "sha256:8f149bb8b53c195eb12767ce02a122a07849aaa7c013344c487104f397324a0f",
+      "commit": null,
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T14:52:44.565397367Z"
+    },
+    {
+      "name": "/doxagent-v2-v2-chrome-supervisor-1",
+      "image": "sha256:d55858c58d0d9c4e51ad7eef58b9116e063c3cce2faf6dc2ed3aacc26187a2dd",
+      "commit": "05d6062222e1ee5c83233f07276a6a1d2fb582f4",
+      "health": "healthy",
+      "restarts": 0,
+      "started": "2026-11-17T14:52:44.539033801Z"
+    },
+    {
+      "name": "/doxagent-v2-initialization-guardian-1",
+      "image": "sha256:6c78ff86e51cb459102c576e4dff92c4c0bd13f65c1c9a5363578f2afec6874b",
+      "commit": "ae5f3f8ada5299ab7be528c57a16d8a12224b735",
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T14:52:44.587870103Z"
+    },
+    {
+      "name": "/doxagent-captcha-proxy",
+      "image": "sha256:650d21f00ba6f762108e1e5528d15de061abf4dd939bb7102bc27c5c8308487d",
+      "commit": null,
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T15:05:30.176755137Z"
+    },
+    {
+      "name": "/doxagent-egress-clash",
+      "image": "sha256:739edd73a352d6beb82fad6790ef9d417a4d6f061584cc3cab1bd4536d1c60e5",
+      "commit": null,
+      "health": null,
+      "restarts": 0,
+      "started": "2026-11-17T14:52:44.528294151Z"
+    }
+  ],
+  "memory": "               total        used        free      shared  buff/cache   available\nMem:            30Gi        13Gi       3.9Gi       443Mi        14Gi        17Gi\nSwap:          2.0Gi       391Mi       1.6Gi\n",
+  "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/vda3       374G  352G   22G  95% /\n",
+  "memory_psi": "some avg10=0.00 avg60=0.00 avg300=0.00 total=18151328\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=5272079\n",
+  "io_psi": "some avg10=5.71 avg60=4.17 avg300=3.33 total=211227951\nfull avg10=0.29 avg60=0.26 avg300=0.66 total=29699081\n",
+  "safety": {
+    "level": "NORMAL",
+    "metrics": {
+      "descendant_oom_events": 0,
+      "high_events": 21566,
+      "host_available": 18769272832,
+      "local_oom_events_available": true,
+      "memory_current": 19554619392,
+      "memory_max": 32212254720,
+      "memory_swap_current": 399056896,
+      "observed_at": 1794930245.60892,
+      "oom_events": 0,
+      "psi_full_avg10": 0.0,
+      "psi_some_avg10": 0.0,
+      "swap_io_bytes_per_minute": 0.0
+    },
+    "observed_at": 1794930245.60892,
+    "reasons": [],
+    "version": 1
+  },
+  "business": {
+    "sources": 83,
+    "advanced_on": 82,
+    "advanced_off": [
+      "ibkr_news"
+    ],
+    "google_total": 9,
+    "google_filtered": 9,
+    "streams_since_final_restart": {
+      "BE": 0,
+      "CEG": 2,
+      "COHR": 2,
+      "INTC": 1,
+      "IONQ": 1,
+      "MU": 2,
+      "NBIS": 0,
+      "ONDS": 0,
+      "RKLB": 0,
+      "SNOW": 0
+    }
+  }
+}

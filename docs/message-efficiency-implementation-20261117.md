@@ -1,5 +1,7 @@
 # 消息效率优化开发记录
 
+更新：后续已发布生产，最终版本及服务器排查见 [发布记录](server-hang-and-main-release-20261117.md)。下文保留开发阶段的原始状态与验证结果。
+
 2026-11-17。依据 [轻量修复方案](message-efficiency-lean-repair-plan-20261117.md) 完成本地开发，未部署生产镜像。本轮没有新增生产配置操作；Google 9 个现有订阅的相关性筛选配置沿用上一轮结果。
 
 ## 已实现
@@ -48,3 +50,11 @@ RuntimeJournal 失败已用 **git HEAD 的 journal.py 独立加载复现**：`pr
 ## 发布边界
 
 本轮只完成开发与本地验证。部署时需同步更新会读取严格 SourceDefinition 的实际消费者；优先用源开关回退，IBKR 保持关闭。仍需在真实服务器确认 loop lag、提交延时、冷启动读取和自然流量效果。Google 本轮没有重新执行配置，也不把上一轮配置读回视为本轮自然流量验收。
+
+## 吞吐专项复查补充（2026-11-17）
+
+对待发布能力做并行复查后，c2b0f6509 修正：已预热 ticker 不再被其他 ticker 的冷预热锁阻塞；兼容 finalization 的证据读取与 Native 准备移到提交锁外，并按实际保留/提交的消息及 standard ID 检查和记账。486931723 进一步将预热完成标志移至代表真正加载后，保留同 ticker 冷启动互斥，避免快路径把正在加载误当已完成。既有 epoch、CAS、scope 和业务 gate 保留。
+
+本轮组合回归 56 passed、1 个已知 RuntimeJournal 基线失败用例 deselected；最终进阶组 16 passed，包含同 ticker 冷预热并发回归。组间有重叠。新进阶能力没有参与 UTC12–13 点旧 cd57c3cf3 的生产积压，不能将其视为该旧问题根因，也不能把其上线当作全局吞吐已经恢复。主性能方案本轮未实施；并行发布与版本切换单列。
+
+完整补充取证、容量回放及修复顺序：[吞吐守恒与长尾最终方案](../dev_plan/workflow_v2/message_pipeline_throughput_tail_repair_plan_20261117.md)。

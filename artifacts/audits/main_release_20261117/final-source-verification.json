@@ -1,0 +1,82 @@
+{
+  "codex-worker": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-projector": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-site-access": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-api": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-scheduler": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-initialization": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-control": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-transport-maintenance": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-delivery": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-executor": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-o4": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-maintenance": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-cdecr-executor": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-content-enrichment": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-message-collector": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  },
+  "v2-message-bus": {
+    "returncode": 0,
+    "result": "{\"checked\": 80, \"mismatched\": []}",
+    "error": ""
+  }
+}
