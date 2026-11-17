@@ -73,7 +73,8 @@ class StorageLane:
             lane = self._lanes[loop] = _Lane()
         return lane
 
-    async def _execute(self, operation, args, kwargs):
+    @staticmethod
+    async def _execute(operation, args, kwargs, *, metrics=None):
         cpu = [0.0]
         def run():
             started = time.thread_time()
@@ -96,7 +97,8 @@ class StorageLane:
             await asyncio.gather(work, return_exceptions=True)
             raise
         finally:
-            self.metrics['thread_cpu_s'] += cpu[0]
+            if metrics is not None:
+                metrics['thread_cpu_s'] += cpu[0]
 
     async def read(self, operation: Callable[..., Any], *args, **kwargs):
         """Caller supplies an operation-scoped read connection; no writer lock."""
@@ -105,7 +107,7 @@ class StorageLane:
             started = time.monotonic()
             self.metrics['read_queue_s'] += started - queued
             try:
-                return await self._execute(operation, args, kwargs)
+                return await self._execute(operation, args, kwargs, metrics=self.metrics)
             finally:
                 self.metrics['read_work_s'] += time.monotonic() - started
                 self.metrics['read_calls'] += 1
@@ -116,7 +118,7 @@ class StorageLane:
             started = time.monotonic()
             self.metrics['prepare_queue_s'] += started - queued
             try:
-                return await self._execute(operation, args, kwargs)
+                return await self._execute(operation, args, kwargs, metrics=self.metrics)
             finally:
                 self.metrics['prepare_work_s'] += time.monotonic() - started
                 self.metrics['prepare_calls'] += 1
@@ -134,7 +136,7 @@ class StorageLane:
                         started = time.monotonic()
                         self.metrics["writer_queue_s"] += started-admission_at
                         try:
-                            return await self._execute(operation, args, kwargs)
+                            return await self._execute(operation, args, kwargs, metrics=self.metrics)
                         finally:
                             self.metrics["writer_attempts"] += 1
                             self.metrics["writer_work_s"] += time.monotonic()-started

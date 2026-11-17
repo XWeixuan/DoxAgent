@@ -88,3 +88,11 @@ def test_acquisition_wal_lifetime_and_full_durability(tmp_path):
     finally:
         store.close()
     assert store._anchor is None
+
+
+async def test_storage_execute_keeps_static_defense_caller_contract():
+    from doxagent.message_bus_v2.storage_lane import StorageLane
+    assert await StorageLane._execute(lambda value:value+1,(3,),{})==4
+    lane=StorageLane()
+    assert await lane.read(lambda:5)==5
+    assert lane.metrics['thread_cpu_s']>=0

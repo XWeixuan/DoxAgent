@@ -3238,3 +3238,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-18：吞吐P1独立批次：AcquisitionStore同步Owner单元复用连接；仅长生命周期Collector/Bridge持有无活动事务的WAL锚连接并优雅关闭，写连接使用FULL保持耐久性，短期查询不持锚。补齐StorageLane线程CPU累计、恢复候选查询移出writer，空集合不进入写队列。新增跨线程写、FULL设置、WAL存续与作用域复用回归。
 
 2026-11-18：终检保留一个30秒级兼容入口恢复巡检，覆盖崩溃前持久化且未来到期的旧任务；新平面每轮不反复唤醒，正式兼容producer仍即时唤醒。避免停用旧五轮询后遗漏旧队列重放。
+
+2026-11-18：Runtime全局非SDK延时修复：统一当前scope私有READY目标4及压力保留/补货，取消额外W3通用warm，BOOTING微进度免SQL、child/operation合并与owner CAS，MCP就绪通知、索引化fill及只读readiness；Bridge改为当前可见内容差异、原provisional批量原子提交及持久完成标记，激活后预编译日索引；公共准备读产物身份、禁用能力延迟导入、重复派生文件免写；GC引用高水位/有界迁移，文件hash和递归删除移出writer，ACK收尾合并，Case纯技术更新时间不复制投影回执。模型/提示词/交易规则未调整，生产10秒验收待发布实测。
+
+2026-11-18：生产验收发现线程CPU计量改动破坏StorageLane._execute静态调用，影响SpaceNews防御路径。恢复静态兼容接口，实例计量改为可选关键字，新增实际类调用回归并窄补发Collector/Bus/BODY；IBKR回调无时间戳和外部429另列，不作为本轮恢复成果。

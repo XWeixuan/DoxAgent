@@ -691,7 +691,7 @@ class LiveDeliveryWorker:
             with engine.lock:
                 counters, records, body_bytes = dict(engine.metrics), len(engine.records), engine.body_bytes
             log.info("advanced dedup counters=%s references=%d body_bytes=%d", counters, records, body_bytes)
-            log.info("live throughput totals=%s storage_totals=%s", dict(self.work_metrics), dict(self.bus.storage.metrics))
+            log.warning("live throughput totals=%s storage_totals=%s", dict(self.work_metrics), dict(self.bus.storage.metrics))
             self.advanced_reported_at = started
         if time.monotonic() - self.configuration_checked_at >= 1:
             revision = await self.bus.storage.read(self._configuration_revision)
@@ -750,7 +750,7 @@ class LiveDeliveryWorker:
                 self.work_metrics["process_wall_s"] += time.monotonic()-processing
                 self.work_metrics["used_targets"] += 1
                 if time.monotonic()-self.slow_reported_at >= 60 and (utc_now()-datetime.fromisoformat(row["due_at"])).total_seconds()>5:
-                    log.info("live delayed target article=%s ticker=%s due=%s selected_wall=%s", row["article_key"][:16], row["ticker"], row["due_at"], utc_now().isoformat())
+                    log.warning("live delayed target article=%s ticker=%s due=%s selected_wall=%s", row["article_key"][:16], row["ticker"], row["due_at"], utc_now().isoformat())
                     self.slow_reported_at = time.monotonic()
                 processed += 1
             if decisions:
