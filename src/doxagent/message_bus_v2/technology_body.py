@@ -4,6 +4,7 @@ import asyncio
 from datetime import datetime
 from urllib.parse import urlsplit
 
+from doxagent.content_enrichment.publisher_cleanup import clean_text
 from lxml import html
 
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html, title_match
@@ -38,13 +39,13 @@ class TechnologyBodyReader:
         ):
             return MediaExtractionResult(
                 record=record,
-                content=cached["content"],
+                content=clean_text(cached["content"], capture.url),
                 final_url=capture.url,
                 http_status=304,
                 extraction_method="http_not_modified",
                 diagnostics={
                     "outcome": cached["outcome"],
-                    "http_not_modified": True,
+                    "http_not_modified": clean_text(cached["content"], capture.url) == cached["content"],
                     "body_acquired_at": cached.get("acquired_at"),
                     "validators": cached.get("validators", {}),
                 },

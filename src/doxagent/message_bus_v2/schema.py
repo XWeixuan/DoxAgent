@@ -217,6 +217,7 @@ class SourceDefinition(BusModel):
     adapter_ref: str
     acquisition_mode: AcquisitionMode = AcquisitionMode.BY_TICKER
     delivery_mode: Literal["production", "test"] = "production"
+    advanced_dedup_enabled: bool = True
     entry_url: str | None = None
     content_language: str | None = None
     site_id: str | None = None
@@ -235,6 +236,13 @@ class SourceDefinition(BusModel):
     updated_at: datetime = Field(default_factory=utc_now)
     updated_by: UpdateActor = UpdateActor.USER
     updated_reason: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _advanced_default(cls, value: Any) -> Any:
+        if isinstance(value, dict) and value.get("source_id") == "ibkr_news" and "advanced_dedup_enabled" not in value:
+            return {**value, "advanced_dedup_enabled": False}
+        return value
 
     @model_validator(mode="before")
     @classmethod

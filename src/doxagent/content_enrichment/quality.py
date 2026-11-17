@@ -238,6 +238,9 @@ def inspect_html(
         root = html_parser.fromstring(html)
     except (ValueError, html_parser.etree.ParserError):
         return result
+    from .publisher_cleanup import clean_document, clean_candidates
+    if clean_document(root, url):
+        html = html_parser.tostring(root, encoding="unicode")
     strategy = strategy_ref or legacy_strategy_ref(url)
     parameters = strategy_parameters or {}
     if (urlparse(url).hostname or '').lower() in {'pcguide.com','www.pcguide.com'}:
@@ -498,7 +501,7 @@ def inspect_html(
         result.page_kind = "article"
     elif not result.candidates and re.search(r"flutter|__next|id=[\"']root[\"']", html, re.I):
         result.page_kind = "app_shell"
-    return result
+    return clean_candidates(result, url)
 
 
 def inspect_reader(
@@ -645,7 +648,8 @@ def inspect_reader(
     result.candidates.append(
         Candidate("\n\n".join(selected), "reader_article", False, result.headline)
     )
-    return result
+    from .publisher_cleanup import clean_candidates
+    return clean_candidates(result, url)
 
 
 def choose_candidate(

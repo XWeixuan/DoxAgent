@@ -1,0 +1,20 @@
+{
+  "markdown_links_valid": true,
+  "google_bindings": 9,
+  "changed": 8,
+  "MU_not_subscribed": true,
+  "prototype_removals": 110,
+  "review_counts": {
+    "UNVERIFIED": 58,
+    "UNVERIFIED_FILING_IDENTITY": 7,
+    "DUPLICATE_NO_NEW_ARTICLE_FACT": 38,
+    "ENRICHMENT": 6,
+    "FACT_CHANGED": 1
+  },
+  "google_tests": {
+    "command": ".venv/Scripts/python.exe -m pytest -q tests/test_google_relevance_opt_in.py",
+    "passed": 5,
+    "seconds": 3.61,
+    "scope": "Existing tests executed this session before document completion; natural new-article verification remains pending."
+  }
+}

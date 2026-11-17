@@ -48,9 +48,16 @@ def prepare(repo, bus, row, source, binding, message):
     if isinstance(raw, IngestResult):
         return dict(test=True,row=row,rejected=raw.error_code)
     standard = bus._standardize(raw)
+    from .advanced_deduplication import features
+    feature = features(raw, source)
+    hit, epoch = repo.bus.advanced_dedup.check(feature)
+    advanced = (feature, epoch) if feature else None
+    if hit:
+        return dict(test=True,row=row,advanced=advanced,advanced_hit=hit)
     ref, refs = repo.put(dict(raw=raw.model_dump(mode='json'),standard=standard.model_dump(mode='json'),
         test_publication=True,terms_revision=row['terms_revision']))
     return dict(test=True,row=row,ref=ref,refs=refs,source_version=source.version,
+        advanced=advanced,advanced_standard_id=standard.standard_message_id,
         fingerprint=message.metadata.get('v2_body_completion',{}).get('body_fingerprint') or row['body_digest'],
         outcome=message.metadata.get('media_enrichment',{}).get('outcome'),prepared_at=utc_now().isoformat())
 
@@ -86,7 +93,7 @@ def commit(repo, prepared):
         db.execute("UPDATE live_deliveries SET state='TEST_PUBLISHED',published_digest=?,decision_digest=?,"
             "initial_decision=coalesce(initial_decision,'TEST_PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?) "
             "WHERE article_key=? AND ticker=?",(row['body_digest'],row['body_digest'],stamp,row['article_key'],row['ticker']))
-    return True
+    return (prepared['advanced_standard_id'], datetime.fromisoformat(stamp).timestamp()) if inserted else True
 
 
 def maintain(repo):

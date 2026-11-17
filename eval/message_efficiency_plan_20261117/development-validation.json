@@ -1,0 +1,22 @@
+{
+  "status": "local development, not deployed",
+  "publisher_suite": {
+    "passed": 158
+  },
+  "massive_and_advanced_suite": {
+    "passed": 27,
+    "skipped": 1
+  },
+  "final_google_lookup_advanced_suite": {
+    "passed": 19
+  },
+  "wide_dedup_suite": {
+    "passed": 86,
+    "failed": 1,
+    "failure": "test_prepare_failure_does_not_claim_or_mutate_pending_task",
+    "baseline_reproduced": true
+  },
+  "new_module_ruff": "passed",
+  "diff_check": "passed",
+  "note": "Test groups overlap; counts are not additive."
+}

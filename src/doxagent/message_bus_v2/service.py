@@ -1313,6 +1313,8 @@ class MessageBusV2Service:
         first_seen_resolved: bool = False,
         published_article_update: bool = False,
     ) -> RawMessage | IngestResult:
+        from doxagent.content_enrichment.publisher_cleanup import clean_message
+        message = clean_message(message)
         now = collected_at or utc_now()
         if not first_seen_resolved:
             message = self.repository.resolve_first_seen(message, binding.binding_id)

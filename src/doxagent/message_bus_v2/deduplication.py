@@ -1,4 +1,4 @@
-"""Conservative ticker-local article identity and business-version evidence.
+"""Basic deduplication: conservative article identity and business-version evidence.
 
 No semantic/similarity filter: titles only help detect conflicting identities.
 All reservations and evidence writes run inside the repository's write transaction.

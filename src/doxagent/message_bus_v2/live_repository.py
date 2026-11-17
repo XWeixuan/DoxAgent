@@ -746,6 +746,8 @@ class LiveRepository:
         return job.model_copy(update={'fetch_round':row[0]})
 
     def prepare_result(self, job, message, *, outcome=None):
+        from doxagent.content_enrichment.publisher_cleanup import clean_message
+        message = clean_message(message)
         message = message.model_copy(update={"metadata": {**message.metadata, "_delivery_mode": job.source.delivery_mode}})
         meta = message.metadata.get("media_enrichment", {})
         if job.source.source_id=='bloomberg_massive':
@@ -969,7 +971,7 @@ class LiveRepository:
                 ("canonical:" + value["canonical"], key, "resolved", "canonical", "", current[4], "[]"))
             db.execute(
                 "UPDATE live_deliveries SET state='PENDING',due_at=? WHERE article_key=? "
-                "AND ? AND (state='WAIT_BODY' OR (? AND state IN ('PUBLISHED','TEST_PUBLISHED','TEST_DUPLICATE','IRRELEVANT','NO_PUBLIC_BODY')))",
+                "AND ? AND (state='WAIT_BODY' OR (? AND state IN ('PUBLISHED','TEST_PUBLISHED','TEST_DUPLICATE','IRRELEVANT','NO_PUBLIC_BODY','DEDUPLICATED')))",
                 (stamp, key, int(not preserve_owner or usable), int(changed)),
             )
             if value.get("site_outcome"):
@@ -1443,12 +1445,23 @@ class LiveRepository:
         )
         from doxagent.v2_read.source_lifecycle import native_hashes
 
+        from .advanced_deduplication import features
+        advanced = None
+        if source.advanced_dedup_enabled and raw.streaming_config.publication_mode.value == 'immediate':
+            engine = self.bus.advanced_dedup
+            engine.warm(self.bus, ticker)
+            feature = features(raw, source)
+            hit, epoch = engine.check(feature)
+            advanced = (feature, epoch)
+            if hit and not consumed:
+                return dict(row=row, advanced=advanced, advanced_hit=hit)
         raw_json = self.bus._json(raw)
         standard_json = self.bus._json(standard)
         refs = set(native_hashes(raw_json)) | set(native_hashes(standard_json))
         from .massive_relevance import uses_massive_rules
         return dict(
             row=row,
+            advanced=advanced,
             massive_regex=uses_massive_rules(source),
             raw=raw,
             standard=standard,
@@ -1471,6 +1484,24 @@ class LiveRepository:
         )
 
     def publish(self, prepared):
+        with self.bus.advanced_dedup.commit_lock:
+            return self._publish_checked(prepared)
+
+    def _publish_checked(self, prepared):
+        advanced = prepared.get('advanced')
+        if advanced and self.bus.advanced_dedup.epochs[prepared['row']['ticker']] != advanced[1]:
+            return False
+        if prepared.get('advanced_hit'):
+            gate, representative = prepared['advanced_hit']
+            self.decision(prepared['row'], 'TEST_DUPLICATE' if prepared.get('test') else 'DEDUPLICATED',
+                          error=f'ADV_DUPLICATE:{gate}:{representative}')
+            return
+        receipt = self._publish(prepared)
+        if receipt and isinstance(receipt, tuple) and advanced:
+            self.bus.advanced_dedup.remember(advanced[0], receipt[0], receipt[1])
+        return receipt
+
+    def _publish(self, prepared):
         if prepared.get("test"):
             from .test_delivery import commit
             return commit(self, prepared)
@@ -1681,3 +1712,5 @@ class LiveRepository:
                     ticker,
                 ),
             )
+        if published:
+            return standard.standard_message_id, datetime.fromisoformat(prepared.get('known_consumable_at') or stamp).timestamp()

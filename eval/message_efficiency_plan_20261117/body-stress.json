@@ -1,0 +1,29 @@
+{
+  "note": "Local workstation synthetic cost, not server SLA; linear estimate is not a full 1024 run.",
+  "cases": [
+    {
+      "chars": 8192,
+      "ratio": 93.505859375,
+      "comparisons_in_probe": 385,
+      "elapsed_ms": 100.245,
+      "max_one_comparison_ms": 0.434,
+      "linear_1024_comparison_ms_estimate": 266.6
+    },
+    {
+      "chars": 32768,
+      "ratio": 93.5028076171875,
+      "comparisons_in_probe": 28,
+      "elapsed_ms": 100.971,
+      "max_one_comparison_ms": 3.789,
+      "linear_1024_comparison_ms_estimate": 3692.7
+    },
+    {
+      "chars": 65536,
+      "ratio": 93.50128173828125,
+      "comparisons_in_probe": 8,
+      "elapsed_ms": 112.133,
+      "max_one_comparison_ms": 14.143,
+      "linear_1024_comparison_ms_estimate": 14353.0
+    }
+  ]
+}

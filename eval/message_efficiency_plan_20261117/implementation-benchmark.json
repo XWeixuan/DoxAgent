@@ -1,0 +1,24 @@
+{
+  "scope": "Local implemented module incl. normalization/admission/expiry; 20ms budget; reconstructed default source scopes; Google suffix not stripped without verified publisher metadata; no SQL or server SLA.",
+  "evaluated": 2011,
+  "hits": {
+    "url": 12,
+    "body": 12,
+    "title": 20
+  },
+  "removed": 44,
+  "latency_ms": {
+    "0.5": 0.189,
+    "0.95": 2.2231,
+    "0.99": 5.6292,
+    "1": 11.0917
+  },
+  "peak_records": 1400,
+  "peak_body_bytes": 7775166,
+  "peak_header_estimate_bytes": 1165554,
+  "metrics": {
+    "url": 12,
+    "body": 12,
+    "title": 20
+  }
+}

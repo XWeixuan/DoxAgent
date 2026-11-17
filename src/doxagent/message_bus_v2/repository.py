@@ -126,6 +126,8 @@ class MessageBusV2Repository:
         from .polling import PollJournal
 
         self.polling = PollJournal(self)
+        from .advanced_deduplication import AdvancedDeduplication
+        self.advanced_dedup = AdvancedDeduplication()
 
     def _connect(self) -> sqlite3.Connection:
         borrowed = self._atomic_connection.get() or self._scope_connection.get()
@@ -1307,6 +1309,8 @@ class MessageBusV2Repository:
     def save_source(self, source: SourceDefinition) -> None:
         with self.transaction() as connection:
             self._save_source_tx(connection, source)
+        if not source.advanced_dedup_enabled:
+            self.advanced_dedup.configure([source])
 
     def save_source_with_bindings(
         self, source: SourceDefinition, bindings: Sequence[TickerSourceBinding]
@@ -1315,6 +1319,8 @@ class MessageBusV2Repository:
             self._save_source_tx(connection, source)
             for binding in bindings:
                 self._save_binding_tx(connection, binding)
+        if not source.advanced_dedup_enabled:
+            self.advanced_dedup.configure([source])
 
     def _save_source_tx(self, connection: sqlite3.Connection, source: SourceDefinition) -> None:
         value = self._json(source)
@@ -2533,6 +2539,29 @@ class MessageBusV2Repository:
         return item
 
     def finalize_standard(self, *, raw, message, streaming):
+        from .advanced_deduplication import features
+        source = self.get_source(message.source_id)
+        if source is None or not source.advanced_dedup_enabled or streaming.publication_mode is not PublicationMode.IMMEDIATE:
+            return self._finalize_standard(raw=raw, message=message, streaming=streaming)
+        engine = self.advanced_dedup
+        engine.warm(self, message.ticker)
+        feature = features(message, source)
+        for _ in range(3):
+            hit, epoch = engine.check(feature)
+            with engine.commit_lock:
+                if epoch != engine.epochs[message.ticker]:
+                    continue
+                if hit and hit[1] != message.standard_message_id:
+                    self.save_raw(raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED,
+                        "metadata": {**raw.metadata, "advanced_duplicate": {"gate": hit[0], "representative": hit[1]}}}))
+                    return None
+                item = self._finalize_standard(raw=raw, message=message, streaming=streaming)
+                if item:
+                    engine.remember(feature, message.standard_message_id, item.published_at.timestamp())
+                return item
+        raise RuntimeError('advanced_publication_changed')
+
+    def _finalize_standard(self, *, raw, message, streaming):
         # Compatibility callers prepare outside the SQLite writer. Live delivery
         # already uses its own prepare/commit boundary and never calls this path.
         for attempt in range(3):
@@ -2634,20 +2663,77 @@ class MessageBusV2Repository:
         normalized_ticker = ticker.strip().upper()
         if any(message.ticker != normalized_ticker for message in messages):
             raise ValueError("all stream members must belong to the stream ticker")
-        with self.transaction() as connection:
-            return self._publish_in_transaction(connection, normalized_ticker, messages, mode)
+        from .advanced_deduplication import AdvancedDeduplication, features
+        engine = self.advanced_dedup
+        engine.warm(self, normalized_ticker)
+        sources = {s.source_id: s for s in self.list_sources()}
+        for _ in range(3):
+            epoch = engine.epochs[normalized_ticker]
+            local, survivors, prepared = AdvancedDeduplication(), [], {}
+            for message in messages:
+                source = sources.get(message.source_id)
+                f = features(message, source) if source else None
+                hit = engine.check(f)[0] or local.check(f)[0]
+                if not hit or hit[1] == message.standard_message_id:
+                    survivors.append(message)
+                    prepared[message.standard_message_id] = f
+                    local.remember(f, message.standard_message_id, utc_now().timestamp())
+            with engine.commit_lock:
+                if epoch != engine.epochs[normalized_ticker]:
+                    continue
+                if not survivors:
+                    return None
+                actual = []
+                with self.transaction() as connection:
+                    item = self._publish_in_transaction(connection, normalized_ticker, survivors, mode, published_ids=actual)
+                if item:
+                    for key in actual:
+                        engine.remember(prepared[key], key, item.published_at.timestamp())
+                return item
+        raise RuntimeError('advanced_publication_changed')
 
-    def publish_buffered(
-        self, ticker: str, messages: Sequence[StandardMessage]
+    def publish_buffered(self, ticker, messages):
+        from .advanced_deduplication import AdvancedDeduplication, features
+        engine = self.advanced_dedup
+        engine.warm(self, ticker)
+        sources = {s.source_id: s for s in self.list_sources()}
+        for _ in range(3):
+            epoch = engine.epochs[ticker]
+            local = AdvancedDeduplication()
+            survivors, discarded, prepared = [], [], {}
+            for message in messages:
+                source = sources.get(message.source_id)
+                f = features(message, source) if source else None
+                hit, _ = engine.check(f)
+                hit = hit or local.check(f)[0]
+                if hit and hit[1] != message.standard_message_id:
+                    discarded.append((message.standard_message_id, f'ADV_DUPLICATE:{hit[0]}:{hit[1]}'))
+                else:
+                    survivors.append(message)
+                    prepared[message.standard_message_id] = f
+                    local.remember(f, message.standard_message_id, utc_now().timestamp())
+            with engine.commit_lock:
+                if epoch != engine.epochs[ticker]:
+                    continue
+                actual = []
+                item = self._publish_buffered(ticker, survivors, discarded=discarded, published_ids=actual)
+                if item:
+                    for key in actual:
+                        engine.remember(prepared[key], key, item.published_at.timestamp())
+                return item
+        raise RuntimeError('advanced_publication_changed')
+
+    def _publish_buffered(
+        self, ticker: str, messages: Sequence[StandardMessage], *, discarded=(), published_ids=None
     ) -> StreamItem | None:
         """Atomically publish a buffered batch and remove exactly its pending members."""
 
-        if not messages:
+        if not messages and not discarded:
             raise ValueError("cannot publish an empty buffered stream item")
         normalized_ticker = ticker.strip().upper()
         if any(message.ticker != normalized_ticker for message in messages):
             raise ValueError("all buffered members must belong to the stream ticker")
-        identifiers = [message.standard_message_id for message in messages]
+        identifiers = [message.standard_message_id for message in messages] + [key for key, _ in discarded]
         placeholders = ",".join("?" for _ in identifiers)
         with self.transaction() as connection:
             present = connection.execute(
@@ -2666,11 +2752,11 @@ class MessageBusV2Repository:
                 ).fetchone()
                 is not None
             ]
-            if not messages:
-                return None  # Another publisher already terminally filtered this batch.
             item = self._publish_in_transaction(
-                connection, normalized_ticker, messages, PublicationMode.BUFFERED
-            )
+                connection, normalized_ticker, messages, PublicationMode.BUFFERED, published_ids=published_ids
+            ) if messages else None
+            for key, reason in discarded:
+                connection.execute("UPDATE live_deliveries SET state='DEDUPLICATED',last_error=? WHERE standard_id=? AND state='BUFFERED'", (reason, key))
             connection.execute(
                 f"delete from buffer_entries where standard_message_id in ({placeholders})",
                 identifiers,
@@ -2683,6 +2769,7 @@ class MessageBusV2Repository:
         ticker: str,
         messages: Sequence[StandardMessage],
         mode: PublicationMode,
+        *, published_ids=None,
     ) -> StreamItem | None:
         from .admission import evaluate_admission
 
@@ -2754,6 +2841,8 @@ class MessageBusV2Repository:
                    values(?,?,?,?)""",
                 (item_id, index, message.standard_message_id, self._json(member)),
             )
+        if published_ids is not None:
+            published_ids.extend(message.standard_message_id for message in messages)
         return item
 
     def get_stream_item(self, stream_item_id: str) -> MaterializedStreamItem | None:

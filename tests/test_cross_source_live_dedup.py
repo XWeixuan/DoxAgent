@@ -29,6 +29,9 @@ class Extractor(_GovernedExtractor):
 @pytest.fixture
 def pipeline(tmp_path):
     repo, bus, _, _ = _setup(tmp_path)
+    # These tests isolate hard identity/rights from opt-in approximate suppression.
+    for source in repo.list_sources():
+        repo.save_source(source.model_copy(update={"advanced_dedup_enabled": False}))
     bus.live_queue = LiveQueue(bus)
     extractor = Extractor()
     return repo, bus, extractor

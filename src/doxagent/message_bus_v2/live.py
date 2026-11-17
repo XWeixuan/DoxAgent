@@ -445,6 +445,7 @@ class LiveDeliveryWorker:
         self.active_articles = set()
         self.configuration_revision = None
         self.configuration_checked_at = 0
+        self.advanced_reported_at = 0
         self.delivery_round = 0
 
     def start(self):
@@ -464,7 +465,8 @@ class LiveDeliveryWorker:
         ref=row['result_ref']
         if ref not in messages:
             messages[ref]=RawMessageInput.model_validate(self.repository.load(ref, shared=True))
-        message=messages[ref]
+        from doxagent.content_enrichment.publisher_cleanup import clean_message
+        message=clean_message(messages[ref])
         if row['source_id'] not in sources:
             sources[row['source_id']]=self.queue.source(row['source_id']) or self.bus.repository.get_source(row['source_id'])
         source=sources[row['source_id']]
@@ -662,6 +664,12 @@ class LiveDeliveryWorker:
 
     async def run_available(self, *, max_seconds=None):
         started = time.monotonic()
+        if started - self.advanced_reported_at >= 60:
+            engine = self.bus.repository.advanced_dedup
+            with engine.lock:
+                counters, records, body_bytes = dict(engine.metrics), len(engine.records), engine.body_bytes
+            log.info("advanced dedup counters=%s references=%d body_bytes=%d", counters, records, body_bytes)
+            self.advanced_reported_at = started
         if time.monotonic() - self.configuration_checked_at >= 1:
             revision = await self.bus.storage.read(self._configuration_revision)
             if revision != self.configuration_revision:
@@ -670,6 +678,8 @@ class LiveDeliveryWorker:
                     restarted=self.configuration_revision is None,
                     _lane_priority=1,
                 )
+                sources = await self.bus.storage.read(self.bus.repository.list_sources)
+                self.bus.repository.advanced_dedup.configure(sources)
                 self.configuration_revision = revision
             self.configuration_checked_at = time.monotonic()
         for task in tuple(self.decisions):

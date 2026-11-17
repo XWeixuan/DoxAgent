@@ -3221,3 +3221,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-17：补充消息效率离线去重及Newswire标签评估，新增 docs/message-efficiency-dedup-and-newswire-tags-20261117.md 与 eval/message_efficiency_followup_20261117。2065条全日同ticker实验：正文95%命中45次合并，复核36纯重复/6补充/3字段变化；保守去重复放减少43次处理、20条初始W3。验证GNW/PRN RSS、BW RSC及ACCESS HTML标签被现有解析器丢弃，未应用生产策略。
 
 2026-11-17: 非SDK延时修复发布与验收收尾：本轮最后业务镜像82fc441d0，后继并行发布86b1f9864已继承全部W3/Library修复并核验源码SHA。最终纯版本固定12例全部完成，Trade/Ops/完整W3/整Runtime内部耗时P95为17.61/7.24/21.84/25.51秒，整体10秒目标明确未通过；事实读取降至约0.41/0.31秒，主要残差仍为10–11秒私有Ready冷准备。报告区分过渡窗、最终窗、并行发布、已证实问题与未实施优化；无新增实时并发限制、常驻资源或诊断模型调用。
+
+2026-11-17：完成消息效率轻量修复方案 docs/message-efficiency-lean-repair-plan-20261117.md；新增有界内存进阶去重的架构、三 gate OR、IBKR 例外、事务/恢复/缓冲出口与 QZ/DCD 正文修复方案，产品逻辑尚未实施。本地12小时组合回放候选拦截110/2065，已知38纯重复/6补充/1事实变化/65未验证，另以近阈值长正文压力探针确认必须限制比较预算。按本轮授权，13:31UTC通过现有update_binding正式配置8个Google订阅require_relevance=true，INTC原已开启，读回9/9；保留MU未订阅、全部搜索/轮询参数，无重启。现有Google回归5 passed；13:44UTC前无新Google article，自然流量验收待后续新文。证据 eval/message_efficiency_plan_20261117/。
+
+2026-11-17：按消息效率方案完成本地开发，新增有界内存进阶去重（三gate OR、源级默认开启、IBKR缺省关闭）、Live提交前检查/epoch竞争复核/提交后记账、缓冲及兼容发布覆盖；QZ/DCD定向正文清理覆盖候选、304与结果复用。新增RapidFuzz及语义/资源/冷启动/缓冲/竞争测试；无新DB表/索引/后台服务，未部署生产。正文相关158 passed，测试分发与进阶27 passed/1 skipped，查询成本与进阶14 passed；宽回归86 passed/1失败，RuntimeJournal准备失败状态问题已用HEAD原实现独立复现。实际模块本地冻结回放P95/P99约2.22/5.63ms，详见 docs/message-efficiency-implementation-20261117.md。

@@ -8,7 +8,7 @@
 
 - 六个 Massive 通用源合计 417 条，前周一为 0，解释净增量的 **68.2%**。11 月 13 日附近正式启用的覆盖，不能与此前周一直接视为同配置比较。
 - 剔除这六源后，为 1,648 对 1,454 条，增长 194 条（13.3%）。Quantum Zeitgeist 增加 86 条、HuggingNews 增加 61 条，是存量来源中最值得关注的两个。
-- **已证实异常**：Quantum Zeitgeist 固定宣传尾句参与相关性判定；DCD 推荐文章列表混入正文；部分正则把背景提及、韩文多义词和子串和宣传用语当作目标业务事实；新闻稿换 URL、微改尾注后重复处理。
+- **已证实异常**：Quantum Zeitgeist 固定宣传尾句参与相关性判定；DCD 推荐文章列表混入正文；部分正则把背景提及、韩文多义词、子串和宣传用语当作目标业务事实；新闻稿换 URL、微改尾注后重复处理。
 - **未发现整体失控证据**：页面消息数与正式 Stream 成员数一致；同 ticker 的逻辑消息身份、文章键和有效规范化 URL 没有重复计数。Massive 的 417 条全部有正则命中，并通过当前完整正文验证函数，没有发现模型兜底或测试消息混入。
 - **质量优化空间明确**：Google 同名词误召、律师催客稿、市场报告销售稿、消费硬件/复古内容、同稿多语言版本，以及普通行业源模型轨的宽泛放行。应先修已证实的输入和身份问题，再讨论收窄业务范围。
 
@@ -271,3 +271,8 @@ Read 中 389 条消息当前路由状态为 FAILED，1,674 条 ARCHIVE，另 2 �
 - `read_messages.json`、`bus_evidence.json`：按日标题/标量及 Live cohort 状态；`summarize.py` 可离线复算加总与断言。
 
 配置变动依据同仓库的 [Massive 上线回执](massive-distribution-production-rollout-20261113.md)、[IONQ Massive 回执](ionq-massive-distribution-regex-tuning-report-20261113.md) 与实际版本化配置回读交叉核对。普通 IONQ 研究召回边界参照 [既有调试说明](intc-ionq-relevance-optimization-20261103.md)，不擅自将本轮标题价值判断覆盖既有业务口径。
+
+
+## 9. 后续：更宽去重与 Newswire 标签
+
+2026-11-17 完成进一步离线实验及原生列表字段核查，见[更宽去重实验与 Newswire 列表标签核查](message-efficiency-dedup-and-newswire-tags-20261117.md)。正文 ≥95% 的 45 次拟合并中，36 次纯重复、6 次同稿补充、3 次字段变化；已复核纯重复边重放可减少 43 次处理，其中 20 条初始进入 W3。确认 GNW/PRN RSS、Business Wire JSON 和 ACCESS 卡片有可利用标签，现有解析器未保留；尚未应用生产。
