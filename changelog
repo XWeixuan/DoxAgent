@@ -3246,3 +3246,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-18：补齐已发布内容复用/unchanged分支的正向regex最终回执，保持ARTICLE_ONCE且不重发Stream；加入原已发布消息重新判定回归。根据生产阶段账降低空Bridge/Live队列轮询至250ms（忙时不等待，所有网站轮询频率不变），减少空库初始化CPU消耗。
 
 2026-11-18：提交Runtime全局非SDK延时修复用于正式发布：当前scope基础READY=4、基础补货/压力回收协同、Fork微阶段短写与MCP通知、日冻结/激活Bridge及GC引用保护，附本地恢复/共识/冻结验证；发布后按自然Case及资源联合验收，不以部署健康替代10秒P95。
+
+2026-11-18：慢项诊断区分真实选中、准备完成与处理结束时刻，并标明延后批量提交，避免把处理完成时间误当首次选中；保持每分钟最多一条慢项现场及固定阶段汇总。

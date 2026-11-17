@@ -733,7 +733,9 @@ class LiveDeliveryWorker:
             groups[row["article_key"]].append(row)
         for article_rows in groups.values():
             preparing = time.monotonic()
+            selected_wall = utc_now().isoformat()
             prepared = await self.bus.storage.prepare(self._prepare_batch,article_rows)
+            prepared_wall = utc_now().isoformat()
             self.work_metrics["prepare_wall_s"] += time.monotonic()-preparing
             self.work_metrics["prepared_targets"] += len(prepared)
             self.work_metrics["article_blocks"] += 1
@@ -750,7 +752,7 @@ class LiveDeliveryWorker:
                 self.work_metrics["process_wall_s"] += time.monotonic()-processing
                 self.work_metrics["used_targets"] += 1
                 if time.monotonic()-self.slow_reported_at >= 60 and (utc_now()-datetime.fromisoformat(row["due_at"])).total_seconds()>5:
-                    log.warning("live delayed target article=%s ticker=%s due=%s selected_wall=%s", row["article_key"][:16], row["ticker"], row["due_at"], utc_now().isoformat())
+                    log.warning("live delayed target article=%s ticker=%s due=%s selected_wall=%s prepared_wall=%s processed_wall=%s deferred_decision=%s", row["article_key"][:16], row["ticker"], row["due_at"], selected_wall, prepared_wall, utc_now().isoformat(), bool(decisions))
                     self.slow_reported_at = time.monotonic()
                 processed += 1
             if decisions:
