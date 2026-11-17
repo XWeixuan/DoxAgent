@@ -1,0 +1,1 @@
+{"baseline": {"wall_ms": 5358.755016000941, "cpu_ms": 2130.653115}, "optimized": {"wall_ms": 705.634476034902, "cpu_ms": 694.8566019999997}, "equal": true, "eligible_facts": 0, "seen_contents": 3059, "frozen_version": 85, "current_version": 86, "maxrss_kib": 59840}

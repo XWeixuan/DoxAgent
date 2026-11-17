@@ -4,9 +4,9 @@
 
 ## 1. 交付状态与验收边界
 
-已实现并发布 Worker/Scheduler 修复，双任务模式保持开启。模型、参数、Fast、Prompt/Skill、输出 Schema、W1/W2 路由、交易资格及冻结上下文业务规则没有调整。
+已实现并发布本文列出的 Worker/Scheduler 修复，双任务模式保持开启。本轮延时修复没有调整模型、参数、Fast、Prompt/Skill、输出 Schema、W1/W2 路由、交易资格及冻结上下文业务规则。独立并行开发随后发布的变化另列于版本表后，不混入本轮固定窗口。
 
-**发布完成不等于 10 秒验收通过。** 初始发布后仍实际观察到超标，因而继续修复了输入读取放大、实时准入等待和 v6 终态快路径遗漏。过渡版本已有明确失败记录；最终版本必须独立验收，不能拿单个步骤的 A/B 或进程重启后的空闲内存冒充端到端达标。
+**整体 10 秒目标尚未达成，不能宣布任务的性能目标已经完成。** 已发布的修改消除了多项真实放大和错误交接，但最终纯版本固定窗口的 12 例全部收尾后，完整 Runtime 内部耗时 P95 仍为 **25.51s**，完整 W3 **21.84s**；剩余主要残差在私有线程冷准备，详见最终验收。不能拿单个步骤的 A/B 或较空闲窗口冒充端到端达标。
 
 ## 2. 已修复的问题
 
@@ -116,7 +116,7 @@
 
 最终仍按单 Case 的真实累计关键链验收 10 秒，而不是要求每条 SQL 单独达标就宣布完成。
 
-## 4. 发布与版本核验
+## 4. 本轮发布与实际版本核验
 
 | 组件 | 实际运行源码版本 | 实际启动 UTC |
 |---|---|---|
@@ -126,6 +126,12 @@
 Worker 镜像 `sha256:b5575b994c3647e42b7533a007858a044a457af6323270a8624b6d67e8613b7e`；最终 Scheduler 镜像 `sha256:51ea3bcd8b41d7fcfeba4de69db99569ef53453a3d1ae132293d27128c727360`。后续输入、索引及收尾调整只作用于 Scheduler，没有为它们重复替换 Worker。API/Projector 的指标代码哈希与本地一致，无需为本轮重建。
 
 正式候选与实际运行镜像均核验 Worker Schema、SDK runtime、Runtime Schema、SDK async client 四个探针的 checked-hash 编译缓存。发布使用既有 release owner/锁/组件流程，保留其他组件和远端 changelog 尾部。
+
+**并行发布边界：** 最终核验 UTC 12:51:52 时，另一并行开发已在 12:45:03 将 Scheduler 更新为 `86b1f9864a7ad7e516702d4a17512e4e0d6a68a4`，镜像 `sha256:3d70ee0fffef1b5feaec4f429cf90bc805816ab4c5ee50a700bb6ae957e590e7`。该提交是 `82fc441d0` 的后继，加入 W1/W2 缓存边界、Policy 输入删减及 W1R3 medium/default 等独立优化。本轮没有将其当作自己的模型参数调整，也没有回滚这次发布。
+
+实际容器的 W3 执行文件哈希与本轮版本相同，另核验 Event Library repository 为 `f0254385011e240a72bebf8774ee6a13b5195e3102558f24e83a7b620c04e7f8`、W3 Thread registry 为 `9fb9135b74d286d8ad45499a83201821dd007a07251071a2f25de912e87c8ecf`，均与 `82fc441d0` 源码逐字节一致，证明本文修复被继承。
+
+因此，`82fc441d0` 同版运行约 7 分 58 秒后被后继发布接替；不能声称最终镜像取得了连续 10 分钟的纯版本观察。下文固定入组窗口止于 12:42:06，全部最终 owner 在 12:45 发布之前已经结束，性能数据不混入后继配置。
 
 首次 Worker 切换前暂缓了 903 条未领取维护任务，随后全部恢复；正式取消了 2 个仍在途的非 W3 维护 Job，并保留回执。后续仅切换 Scheduler，Worker 中已受理 Job 保持原身份。发布未取消实时 W3 Job，也未为了测试恢复历史交易 Case。Scheduler 后台维护无法自然退出时，在确认无实时 W3 owner 和热 CASE 后结束旧 Scheduler；部署窗口的等待不会在统计中改列为 Provider 等待。
 
@@ -203,13 +209,37 @@ v6 终态快路径版本（`455a18176`）在 UTC 11:33:06 的窗口：22 例入�
 
 INTC `case_ea871530ed5b46f5a6f1eab6c4849a4a` 的 W3 5.37s，进入 W3 前内部时间 7.65s；MU `case_e3e7b9566ad14aab9fa424b7fe22d161` 分别为 4.55s 和 7.26s；另一 INTC 为 3.56s 和 6.59s。该窗口说明 W3 主链已有改善，但整体目标仍不通过，因此继续实施了上文批量读取，而没有在此停止或宣称达标。
 
+### 最终批量读取版本的固定窗口：未通过
+
+`82fc441d0`：UTC **12:37:06–12:42:06** 入组，12:44:22 采集，**12 例全部完整结束、无缺时钟、无失败**。该窗口包含发布后的一批集中到达消息，没有剔除冷启动或慢 Case。
+
+| 内部耗时，秒 | n | P50 | 小样本 P95/最大值 |
+|---|---:|---:|---:|
+| Trade | 12 | 10.67 | 17.61 |
+| Operations | 12 | 2.92 | 7.24 |
+| 完整 W3 | 12 | 14.20 | 21.84 |
+| 严格完整 Runtime | 12 | 15.70 | 25.51 |
+
+**最终窗口仍实质超标，并非只因不到 100 例而未通过。** 输入优化有效，但没有消除 W3 冷准备残差；不同批次启动密度不同，因此不能把上一窗的 7.81s 最大值当成稳定水平，也不能反向认定批量事实读取使 W3 变慢。
+
+INTC `case_18be69c978cf479d8596bf04a5d1d6cb` 的具体闭合：
+
+- 进入 W3 前内部时间 **3.27s**，frozen facts **0.41s**、bridge **0.31s**；同 ticker 先前数秒的输入读取已明显下降。
+- Trade 内部 **17.61s**，两分支 claim HTTP 包络约 **10.65/11.60s**，Worker claim 本体约 **10.32/11.21s**。这是实际准备等待，未改列 SDK 推理。
+- A Slot 绑定→Ready **10.76s**；其 Capsule SDK_READY 墙钟 **5.00s**、CPU **1.78s**，其中导入/构造 **4.63s**、SDK 初始化 **0.37s**；operation 创建→FORK_DISPATCHED **7.81s**，派发→operation READY **2.63s**。B 也为实时 lane，SDK_READY **4.27s**、CPU **1.71s**，绑定→Ready约 **10.11s**。
+- 初始 Effect owner 约 **1.80s**，最终 Trade owner 约 **1.82s**，Operations 内部 **2.26s**。完整 W3 **19.27s**，整 Runtime **22.54s**。本窗口其他 Case 的完整最大值更高，按上表保留。
+
+服务器实查 8 个在线 CPU，Worker 容器没有设置自身 CPU quota/cpuset；CPU 与 I/O PSI 都存在等待信号。但这些值**不足以证明全部剩余延时源自 CPU 或某一个事务**。SDK_READY 墙钟与进程 CPU 的差也不能自动归为某个线程池。
+
+为补私有 Fork 的细分证据，UTC 12:47:16–12:49:46 使用一次性 inotify 只监听新产生的小 timing 文件，没有扫描旧目录。期间有 8 个其他 timing 文件、没有新的 capsule_prepare receipt、无溢出；监听已退出。因此没有取得新的 Native Fork 分段样本，不能把该段记作零，也没有为诊断制造额外模型 Case。
+
 ## 6. 测试、资源和剩余边界
 
 140 项合并回归通过，覆盖共识选择、owner 换代、结果/租约恢复、Ready、忙写事务、生命周期、fact bridge、每日冻结及索引格式；审计口径组最终 4 项通过，包含局部工具区间、并行模型重叠、源 Stage/时钟不依赖投影，以及并行 W1R3 不能掩盖内部等待。即时派发的后续 46 项入口/原 Job 恢复/准入/正确性回归通过，另 28 项调度与维护聚焦回归通过；writer/v6 合并组 76 项、原子 ACK 最终组 101 项通过，包含编码不占短写线程、分支结果和审计同事务回滚。这些组有重叠，不将它们相加冒充唯一用例数。Ruff F821 通过。
 
 扩展检查另外暴露了旧回测夹具的 `READY` / `RUNTIME_DELAY_EXCEEDED` 预期差异、CLOSED 恢复夹具缺少 inputs_preparing 所需 callable，以及 D2 注入和 CDECR 无可消费输出两项与本轮改动路径无关的失败；CLOSED 用例在本轮前代码也复现失败。批量事实的扩展组为 46 通过、5 失败，后者包含上述 D2/CDECR 两项和三项既有日期/复审校验预期差异；将方法替换回 `686926947` 的原逐对象读取，5 项全部同样失败。批量读取聚焦组 38 项、每日索引组最终 14 项通过，组间有重叠。没有为使测试通过改动交易延时规则、D2 Prompt、日期/复审校验或 CDECR 行为。对应日志应与本轮通过的聚焦回归分开读取，不能声称整个仓库测试全绿。
 
-资源方面，初次切换后可用 RAM 曾回升至约 15GiB；这包含进程重启效果，不是长期内存收益证明。最终 Scheduler 上线约一分钟时，可用 RAM 约 11.6GiB，未发生新容器 OOM；Swap 仍几乎占满，不能宣称换页风险已消失。浏览器两角色仍各占数 GiB，未借本轮授权重启或削减它们。
+资源方面，初次切换后可用 RAM 曾回升至约 15GiB；这包含进程重启效果，不是长期内存收益证明。最终纯版本窗口 UTC 12:44:24 可用约 15.1GiB，Worker约6.79GiB、Scheduler约1.44GiB；后继发布后 12:51:52 可用约12.1GiB，Worker约9.63GiB、Scheduler约1.31GiB，Worker自身没有重启。两次均无新 OOM/自动重启；Swap仍几乎占满，不能宣称换页风险已消失。浏览器两角色仍各占数GiB，未借本轮授权重启或削减它们。最终根盘余约21.38GiB、使用率95%，需与长期存储维护分开观察。
 
 自动广域 workspace/snapshot 回收转为显式静默维护，是本轮明确的运维边界；在引用证明真正有界前不恢复实时全历史扫描。需要继续观察磁盘增长，而不是把“未冒险删除”解释为长期存储问题已经解决。
 
@@ -218,6 +248,7 @@ INTC `case_ea871530ed5b46f5a6f1eab6c4849a4a` 的 W3 5.37s，进入 W3 前内部�
 ### 剩余工作与不应跨越的边界
 
 1. **启动仍有真实超标，不能宣称目标完成。** 当前优先证据是按 Slot 读取的 SDK_READY 和 Fork/登记间隔；下一步应把已有 operation/startup receipt 与 private prepare trace 精确关联，定位同一请求的 loop 调度、Native Fork、回包和落库，避免随机目录扫描缺证据后猜测门槛。保留现在正确的实时 bypass。
+   - 代码层还可见 `checkpoint` 对每个 `BOOTING` 微阶段重复执行 owner/deadline 读取和 operation 写入；身份、step不变时主要变化是导入进度 telemetry。候选精简是保留 owner/deadline 检查、BOOT_ATTEMPT/FORK_DISPATCHED/SDK_READY/CHILD_KNOWN 等必要持久屏障，仅合并同 Capsule、同 BOOTING step 的中间进度写入；中间诊断继续由已有 boot.json/失败 startup_receipt 承担。**该精简尚未实施，也没有证实其贡献了全部启动差额**，不能先放松租约或启动恢复保障再测。
 2. **批量当前事实读取已实施，首次内容入库溯源仍保留。** 如后续特定 Case 在批量读取后仍超标，应单独观察剩余候选数、分支深度和首次内容比对，不能用事件发生日或最新修订日替代首次入库，也不为理论上的大样本再叠缓存层。未实施按 Fact 出生版本裁剪分支链的进一步优化。
 3. 不通过减少实时双任务并发、延长 SQLite timeout/重试、放宽 lease、扩大 Ready/warm 池，或将内部步骤记为 Provider 等待来达到数值。SDK 物理 client 复用还没有隔离安全证明，未实施。
 4. 正式验收需最终版本至少 100 个连续自然 Case、完整源时钟及全部终态；Trade、Operations、完整 W3、整 Runtime 均按同一口径单独报告。当前只有短窗结果，且已有实际超标，不能用测试通过取代业务验收。
@@ -227,10 +258,11 @@ INTC `case_ea871530ed5b46f5a6f1eab6c4849a4a` 的 W3 5.37s，进入 W3 前内部�
 目录：`eval/w3_nonsdk_implementation_20261117/`。
 
 - `final-inventory.json`：实际镜像、启动时间、关键源码哈希及双任务配置。
-- `final-regression.xml`、`index-regression.xml`：聚焦回归。
-- `bridge-ab.json`、`index-ab.json`：真实固定版本的零 SDK 只读 A/B。
+- `final-regression.xml`、`atomic-ack-regression.xml`、`batch-focused-regression.xml`、`batch-daily-index-regression.xml`：聚焦回归，组间有重叠。
+- `bridge-ab.json`、`index-ab.json`、`batch-ab.json`：真实固定版本的零 SDK 只读 A/B。
 - `cohort-*.json.gz`、`logs-*.json.gz`：有界元数据及无正文/密钥的 timing receipt。
 - `acceptance*.json`、`acceptance.py`：原始入组名单、缺失、逐 Case 重算与区间并集算法。
+- `acceptance-summary.json`、`acceptance-pre-batch-summary.json`、`acceptance-pre-atomicack-summary.json`：最终及过渡版本的无正文汇总；`final-batch-slowcase-probe.json` 和 `live-prepare.json` 保存最后一次准备细分及临时监听的证据/缺口。
 - `resources-*.json` / `resources-*.txt`：有限资源快照；累计 I/O 不等于该采样窗口 I/O。
 
 关键代码提交：`c5d9759d9`、`6006500ca`、`92d8501c9`、`87f02bb29`、`d531226c6`、`528d80c30`、`8ef8c8917`、`455a18176`、`4cd683981`、`686926947`、`82fc441d0`。报告/测试文件的后续提交不要求重建业务运行容器，组件运行版本以上述核验为准。原始生产 cohort 含页面结果，仅本地/受限审计目录保留，不随报告批量推送；入库的是汇总、无正文计时和验收代码。

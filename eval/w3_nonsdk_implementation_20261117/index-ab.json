@@ -1,0 +1,1 @@
+{"baseline": {"wall_ms": 692.9473310010508, "cpu_ms": 656.933451}, "optimized": {"wall_ms": 25.848157005384564, "cpu_ms": 22.82598800000013}, "equal": true, "index_chars": 154633, "rows": 893, "sdk_calls": 0}

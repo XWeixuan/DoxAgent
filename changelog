@@ -3217,3 +3217,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-12 CEG/RKLB refresh complete, accepted explicitPARTIAL32/27gaps and52/102Policies; exported tar/manifests SHAverified. Formal CAS activation runs init-ceg-79a9a0a588554fd0ae93570309659489 and init-rklb-c02e76fb902e4301a329fbb02213062b passed four nodes/actualACK/active refs, preserved currentEventv26/v56 and monitoring. IONQ/COHR refreshedD1/D2 stillactive under normalmaintenance. All4 complete; no sharedservice restart. Completion report ops/earnings-refresh-completion-20261112.md.
 
 2026-11-17：整体提交开发代码/测试/文档至origin main（86b1f9864），按固定依赖层完整构建并发布API与Scheduler，镜像3d70ee0fffef；实际bundle cd79babe仅调整W1R3 medium/default，提示词与业务契约不变。20条自然W1/W2回执全部OK，4条W1R3实际返回default，2条W2R2确认精简字段；其余29容器镜像/启动时间未变。授权清理约28MiB过期构建缓存及1个无依赖旧候选镜像，保留回滚及全部数据卷。远端独有历史changelog记录已合并留存。
+
+2026-11-17：补充消息效率离线去重及Newswire标签评估，新增 docs/message-efficiency-dedup-and-newswire-tags-20261117.md 与 eval/message_efficiency_followup_20261117。2065条全日同ticker实验：正文95%命中45次合并，复核36纯重复/6补充/3字段变化；保守去重复放减少43次处理、20条初始W3。验证GNW/PRN RSS、BW RSC及ACCESS HTML标签被现有解析器丢弃，未应用生产策略。
+
+2026-11-17: 非SDK延时修复发布与验收收尾：本轮最后业务镜像82fc441d0，后继并行发布86b1f9864已继承全部W3/Library修复并核验源码SHA。最终纯版本固定12例全部完成，Trade/Ops/完整W3/整Runtime内部耗时P95为17.61/7.24/21.84/25.51秒，整体10秒目标明确未通过；事实读取降至约0.41/0.31秒，主要残差仍为10–11秒私有Ready冷准备。报告区分过渡窗、最终窗、并行发布、已证实问题与未实施优化；无新增实时并发限制、常驻资源或诊断模型调用。
