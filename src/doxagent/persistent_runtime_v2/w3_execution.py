@@ -452,9 +452,6 @@ class W3Execution:
 
         def save(label, result, job):
             key = TRADE_PHASE + ":" + label
-            self.registry.save_result(
-                case.case_id, key, result, thread_id=job.thread_id, worker_job_id=job.job_id
-            )
             stage = self.registry.stage(case.case_id, key)
             refs = dict(stage.get("input_refs") or {})
             refs.update(
@@ -484,16 +481,24 @@ class W3Execution:
             }
             refs["input_sha"] = digest([request.get("prompt"), request.get("output_schema")])
             refs["workspace"] = workspace
-            with self.journal.transaction() as db:
-                assert_write_lease(db)
-                db.execute(
-                    "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
-                    (encode(refs), case.case_id, key),
-                )
-                db.execute(
-                    "INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
-                    (job.job_id, encode({"case_id": case.case_id})),
-                )
+            # Native reads, request hashing and large telemetry encoding stay on
+            # the current owner, outside BOTH the short writer and SQL transaction.
+            payload=result.model_dump(mode='json') if hasattr(result,'model_dump') else result
+            prepared,encoded_refs,ack=encode(payload),encode(refs),encode({'case_id':case.case_id})
+            def persist():
+                with self.journal.transaction() as db:
+                    self.registry.save_result_in_transaction(
+                        db,case.case_id,key,payload,prepared,
+                        thread_id=job.thread_id,worker_job_id=job.job_id)
+                    db.execute(
+                        "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                        (encoded_refs, case.case_id, key),
+                    )
+                    db.execute(
+                        "INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
+                        (job.job_id, ack),
+                    )
+            self._write_result(persist)
             self.service._effect_executor.submit(self._ack, job.job_id)
 
         try:

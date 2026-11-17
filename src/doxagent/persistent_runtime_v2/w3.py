@@ -1052,7 +1052,7 @@ class CodexW3AgentRunner:
             for value in results:
                 if not isinstance(value, BaseException):
                     label, result, job = value
-                    self.write_result(lambda: save(label, result, job))
+                    save(label, result, job)
             for value in results:
                 if isinstance(value, BaseException):
                     raise value

@@ -3191,3 +3191,8 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-17: case.input_snapshot 实测0.8–3.3秒，确认全量三列 Known Event Index 读取无关 Fact 明细。新增只读事件标量查询，沿用原发生时间排序及 wire 格式、版本/ACTIVE边界；每日14/7天筛选路径保持原规则，无新增缓存。22项索引/桥接/格式回归通过。
 2026-11-17: 最终自然样本再次证实入组到领取28–39秒，根因是新实时任务只由串行ticker恢复轮次发起。正式 V2 消费者在持久准入后复用原执行器立即派发；短task注册锁与长恢复轮次分离，复用原CAS/Control准入/6 Case并发及Future注册，不新增队列、池或持久状态；阻塞恢复+重复派发+原并发上限回归通过。审计按分支回加本地工具时间后再求模型并集。
 2026-11-17: 历史回溯确认057a67e45(11/11)终态标量/投影快路径未随dcded5e6f(11/15)扩展v6，致新W3退回完整Case收尾。SQL复用统一TWO_PHASE_CONTRACTS覆盖v4/v5/v6，不改业务Schema；三版事务回滚、v6禁止完整refresh等76项回归通过。更新正式入口替身验证轻量即时派发且原Stream提交不等待模型/历史恢复。
+
+2026-11-17：完成 W1/W2 前一交易日 token 成本只读审计，新增 docs/runtime-w1-w2-cost-audit-20261117.md 与 eval/runtime_cost_audit_20261117 取证脚本；定位 v6 W1R3 覆盖扩大和 OpenAI W1R1 增量显式缓存端点复用问题。未修改或发布生产逻辑。
+
+2026-11-17：完成前一交易日消息效率只读排查，新增 docs/message-efficiency-assessment-20261117.md 与 eval/message_efficiency_20261117 取证/复算脚本。核实2065条、周一环比+611，其中Massive新增覆盖417；确认QZ/DCD正文污染、词义/背景误匹配和近重复处理，完成24源标题巡检。未修改或发布生产逻辑、配置、词表及消息。
+2026-11-17: 收紧本轮双任务当前owner保存实现：移除整段save回调进入短写执行器的包装；请求读取/哈希/telemetry与结果编码在当前owner普通线程完成，只将SQL提交送现有优先写通道。分支结果、审计refs与ACK意图合成一个原子事务，保持不可变结果与租约校验。76项合并及7项专项回归通过，包括编码不占短写线程、审计异常整笔回滚。

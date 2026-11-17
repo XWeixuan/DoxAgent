@@ -87,21 +87,25 @@ class W3ThreadRegistry:
         payload = result.model_dump(mode="json") if hasattr(result, "model_dump") else result
         prepared = encode(payload)
         with self.journal.transaction() as db:
-            assert_write_lease(db)
-            old = db.execute(
-                "SELECT result_json FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?",
-                (case_id, phase),
-            ).fetchone()
-            if not old:
-                raise ValueError("phase must be registered before saving its result")
-            if old[0] and json.loads(old[0]) != payload:
-                raise ValueError("a saved W3 phase result is immutable")
-            db.execute(
-                "UPDATE runtime_v2_w3_stages SET result_json=?,thread_id=?,"
-                "worker_job_id=?,status='RESULT_SAVED' WHERE case_id=? AND phase=? "
-                "AND status!='COMMITTED'",
-                (prepared, thread_id, worker_job_id, case_id, phase),
-            )
+            self.save_result_in_transaction(db,case_id,phase,payload,prepared,
+                                            thread_id=thread_id,worker_job_id=worker_job_id)
+
+    def save_result_in_transaction(self,db,case_id,phase,payload,prepared,*,thread_id,worker_job_id=None):
+        assert_write_lease(db)
+        old = db.execute(
+            "SELECT result_json FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?",
+            (case_id, phase),
+        ).fetchone()
+        if not old:
+            raise ValueError("phase must be registered before saving its result")
+        if old[0] and json.loads(old[0]) != payload:
+            raise ValueError("a saved W3 phase result is immutable")
+        db.execute(
+            "UPDATE runtime_v2_w3_stages SET result_json=?,thread_id=?,"
+            "worker_job_id=?,status='RESULT_SAVED' WHERE case_id=? AND phase=? "
+            "AND status!='COMMITTED'",
+            (prepared, thread_id, worker_job_id, case_id, phase),
+        )
 
     def commit_stage(self, db, case_id, phase, disposition=None):
         assert_write_lease(db)

@@ -27,6 +27,8 @@ def test_dual_completed_results_saved_by_new_owner(tmp_path):
   return {},SimpleNamespace()
  runner._run_phase=phase;saved=[]
  def save(label,*unused):
+  from doxagent.control_io import SHORT_WRITE
+  assert not SHORT_WRITE.get(), 'result preparation cannot occupy the short SQL owner'
   with closing(sqlite3.connect(p)) as db:assert_write_lease(db)
   saved.append(label)
  e=RuntimeEffect(effect_id='e',case_id='c',effect_type='route_to_w3',idempotency_key='c',lease_token=1)
@@ -131,3 +133,35 @@ def test_new_cases_dispatch_while_recovery_tick_is_busy_without_duplicate_or_cap
    assert sum(j.get_task(f'new-{i}')['status']=='PENDING'
               for i in range(j.CASE_CONCURRENCY_PER_TICKER+1))==1
  finally:release.set();c.close()
+
+
+def test_branch_result_and_audit_share_one_rollback_and_encoding_is_outside_writer(tmp_path,monkeypatch):
+ from tests.test_w3_v5_execution import setup_case
+ from tests.test_w3_v5_contracts import direction
+ from doxagent.control_io import SHORT_WRITE
+ from doxagent.persistent_runtime_v2 import w3_execution
+ s,j,agent,case,_=setup_case(tmp_path)
+ case.frozen_inputs['w3_trade_mode']='dual_consensus';s.repository.save_case(case)
+ execution=s._v4_execution();original=w3_execution.encode;prepared=[]
+ def encode(value):
+  if isinstance(value,dict) and 'input_sha' in value:
+   assert not SHORT_WRITE.get()
+   prepared.append(True)
+  return original(value)
+ monkeypatch.setattr(w3_execution,'encode',encode)
+ def pair(**kw):
+  record=kw['records']['A']
+  job=SimpleNamespace(job_id='rollback-A',thread_id=record['thread_id'],started_at=None,
+                      finished_at=None,final_response=json.dumps(direction('NO_TRADE')))
+  kw['save']('A',direction('NO_TRADE'),job)
+ agent.run_trade_pair=pair
+ try:
+  with j.transaction() as db:
+   db.execute("CREATE TRIGGER abort_branch_audit BEFORE UPDATE OF input_refs ON runtime_v2_w3_stages "
+              "WHEN NEW.phase='trade_decision:A' AND NEW.status='RESULT_SAVED' "
+              "BEGIN SELECT RAISE(ABORT,'audit rollback'); END")
+  assert s.process_pending_effects()==0
+  stage=execution.registry.stage(case.case_id,'trade_decision:A')
+  assert prepared and stage['result_json'] is None and stage['status']=='PENDING'
+  assert j.get('w3_ack_pending','rollback-A') is None
+ finally:s.close()
