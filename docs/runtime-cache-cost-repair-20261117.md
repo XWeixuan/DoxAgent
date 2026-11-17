@@ -1,6 +1,6 @@
 # W1/W2 缓存与成本优化实现记录
 
-日期：2026-11-17。状态：本地实现及隔离真实调用验证完成，尚未发布生产。
+日期：2026-11-17。状态：已提交 origin/main 并发布生产，实际调用验证通过。
 
 ## 实现范围
 
@@ -65,4 +65,20 @@ provisional 继续采用当前每 5 行为一块的确定性分块，不增加�
 - `tests/test_openai_cache_boundaries.py`、`tests/test_w2_r2_compact_policy.py` 及现有 Luna 测试：回归。
 - `eval/runtime_cache_cost_repair_20261117/`：真实回执、验证结果、回归结果、隔离调用与取证脚本。
 
-本轮未提交/推送或部署生产。后续发布应同步 API 与 Scheduler 的上述三份代码并重建对应镜像；Scheduler 创建新的执行 bundle 后，检查 `runtime_models.json` 只将 W1:R3 改为 medium/default。不能只换文件却继续使用旧 bundle，或批量改写历史 Case 的冻结模型参数。无需重建前端、Codex Worker、消息采集或交易执行容器。
+发布已同步 API 与 Scheduler 的完整 main 源码并重建对应镜像；新执行 bundle 的 `runtime_models.json` 仅将 W1:R3 改为 medium/default。历史 Case 冻结参数没有批量改写。前端、Codex Worker、消息采集及交易执行容器不需要因本次改动重建。
+
+## 生产发布验收
+
+- 源码提交：`86b1f9864a7ad7e516702d4a17512e4e0d6a68a4`，已推送 origin/main，包含全部待提交的开发代码、测试、报告、审计脚本及回测候选提示词；原始运行捕获和批量导出数据留在本地。
+- 使用既有 `storage_release.py` 发布锁、固定依赖层及完整提交构建；新镜像 `sha256:3d70ee0fffef1b5feaec4f429cf90bc805816ab4c5ee50a700bb6ae957e590e7`。
+- API 于 UTC 12:44:35（北京时间 20:44:35）启动，健康检查通过；Scheduler 于 UTC 12:45:03 启动，运行正常。两者 restart_count 均为 0。其余 29 个已有容器的镜像及启动时间保持不变，包括 Worker 和维护任务容器。
+- 实际激活 bundle：`cd79babe37b8678185c3443137c8d2f9034ccbf29662322e13077e929b8677cb`。与发布前比较，唯一变化的模型轮次为 W1:R3，其他模型配置、提示词和业务契约不变；fallback 仍为 Haiku high / Google Vertex Global。
+- 发布后四个新 Case 共 20 条自然 W1/W2 调用全部 OK，覆盖全部六个轮次；其中 4 条 W1R3 均为 medium，provider 实际返回的 service_tier 均为 default。另两条 W2R2 的冻结输入均确认已移除 transmission / trigger_layer，保留 match_scope。
+- 三份生产模块源码哈希与候选镜像离线探针完全一致。验收证据见 `production-verification-final.json`、`host-verification.json`；没有把仅配置正确当成真实调用成功。
+- 生产发布归档：`/var/lib/doxagent/releases/runtime-cache-cost-20261117/`。保存构建回执、发布前状态/Compose、旧执行 bundle、清理证明；保留当前和上一有效回滚镜像。
+
+## 授权的构建缓存及镜像清理
+
+先按现有台账清理过期构建缓存，首轮可用空间增加 29,458,432 字节（约 28.1 MiB），没有误删受保护镜像。新版本验收后，额外确认并退休一个已被当前 main 取代、无运行/回滚/模板依赖的旧候选镜像：`doxagent-v2:storage-c5d9759d9447`。
+
+在线数据库持续写入，镜像又共享依赖层，因此没有用镜像展示大小或 df 瞬时差值宣称独立回收量。最后核查磁盘可用约 21.7 GiB。未清理任何数据卷、数据库或用户浏览器资料；所有清理错误列表为空。证据见 `cleanup-output.txt`、`cleanup-final.txt`。

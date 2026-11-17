@@ -121,9 +121,9 @@
 | 组件 | 实际运行源码版本 | 实际启动 UTC |
 |---|---|---|
 | codex-worker | `6006500cadc5086f29aab570f11930c7a089010a` | 09:54:28 |
-| v2-scheduler | `6869269476806207436d7532947ad260c4cfca66` | 12:18:48 |
+| v2-scheduler | `82fc441d052a726376f6b8e82856b4081e0a6c39` | 12:37:06 |
 
-Worker 镜像 `sha256:b5575b994c3647e42b7533a007858a044a457af6323270a8624b6d67e8613b7e`；最终 Scheduler 镜像 `sha256:bf2a8106ae88d6c35ac2276a91f0456e136ad1e0e29ce9957c0d2897c1c52658`。后续输入、索引及收尾调整只作用于 Scheduler，没有为它们重复替换 Worker。API/Projector 的指标代码哈希与本地一致，无需为本轮重建。
+Worker 镜像 `sha256:b5575b994c3647e42b7533a007858a044a457af6323270a8624b6d67e8613b7e`；最终 Scheduler 镜像 `sha256:51ea3bcd8b41d7fcfeba4de69db99569ef53453a3d1ae132293d27128c727360`。后续输入、索引及收尾调整只作用于 Scheduler，没有为它们重复替换 Worker。API/Projector 的指标代码哈希与本地一致，无需为本轮重建。
 
 正式候选与实际运行镜像均核验 Worker Schema、SDK runtime、Runtime Schema、SDK async client 四个探针的 checked-hash 编译缓存。发布使用既有 release owner/锁/组件流程，保留其他组件和远端 changelog 尾部。
 

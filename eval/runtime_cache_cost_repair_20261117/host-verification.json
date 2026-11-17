@@ -1,0 +1,52 @@
+{
+  "commit": "86b1f9864a7ad7e516702d4a17512e4e0d6a68a4",
+  "roles": {
+    "doxagent-v2-v2-api-1": {
+      "image": "sha256:3d70ee0fffef1b5feaec4f429cf90bc805816ab4c5ee50a700bb6ae957e590e7",
+      "started": "2026-11-17T12:44:35.769571979Z",
+      "running": true,
+      "health": "healthy",
+      "restart_count": 0
+    },
+    "doxagent-v2-v2-scheduler-1": {
+      "image": "sha256:3d70ee0fffef1b5feaec4f429cf90bc805816ab4c5ee50a700bb6ae957e590e7",
+      "started": "2026-11-17T12:45:03.866179298Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0
+    }
+  },
+  "unaffected_containers": [
+    "doxagent-v2-codex-worker-1",
+    "doxagent-v2-v2-content-enrichment-1",
+    "doxagent-v2-v2-message-collector-1",
+    "doxagent-v2-v2-message-bus-1",
+    "doxagent-v2-v2-projector-1",
+    "doxagent-v2-v2-control-1",
+    "doxagent-v2-v2-transport-maintenance-1",
+    "doxagent-v2-v2-delivery-1",
+    "doxagent-v2-v2-executor-1",
+    "doxagent-v2-v2-o4-1",
+    "doxagent-v2-v2-cdecr-executor-1",
+    "doxagent-v2-v2-initialization-1",
+    "doxagent-v2-v2-web-1",
+    "doxagent-v2-v2-maintenance-1",
+    "doxagent-v2-v2-site-access-1",
+    "doxagent-v2-v2-agent-mcp-tunnel-1",
+    "doxagent-rklb-refresh-20261111",
+    "doxagent-ceg-refresh-20261110",
+    "doxagent-cohr-refresh-20261110",
+    "doxagent-ionq-refresh-20261110",
+    "doxagent-cohr-refresh-20261110-before-20261111",
+    "doxagent-ionq-refresh-20261110-before-20261111",
+    "doxagent-v2-v2-chrome-supervisor-1",
+    "doxagent-v2-initialization-guardian-1",
+    "doxagent-v2-v2-migrate-1",
+    "doxagent-intc-refresh-20261101",
+    "doxagent-be-refresh-20261025",
+    "doxagent-captcha-proxy",
+    "doxagent-egress-clash"
+  ],
+  "other_changed_containers": [],
+  "disk_free_bytes": 23256281088
+}

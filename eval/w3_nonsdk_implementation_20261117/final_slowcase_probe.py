@@ -1,11 +1,12 @@
 """Selected source keys only; no frozen prompt, tool content or SDK call."""
 import json
 import sqlite3
+import sys
 from pathlib import Path
 
 root=Path('/var/lib/docker/volumes/doxagent-v2_v2-data/_data')
 out=[]
-for cid in ('case_b6aecbececbf4bf4a347743b4784f2ce','case_fbef85346c3e4a869bcf876fe7e00333'):
+for cid in sys.argv[1:] or ('case_b6aecbececbf4bf4a347743b4784f2ce','case_fbef85346c3e4a869bcf876fe7e00333'):
     with sqlite3.connect((root/'runtime/runtime.sqlite3').as_uri()+'?mode=ro',uri=True,timeout=.1) as d:
         rows=d.execute("SELECT phase,accepted_at,committed_at,length(input_refs),json_extract(input_refs,'$.workspace') "
                        "FROM runtime_v2_w3_stages WHERE case_id=?",(cid,)).fetchall()
