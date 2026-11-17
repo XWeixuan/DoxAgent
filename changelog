@@ -3190,3 +3190,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-17: 将已提交 Trade 后的 market stop 资源通知复用既有异步收尾执行器，不再让网络清理阻塞 Effect 收尾或 Operations；原准备期限继续兜底，无新增队列或状态。补充 route/ACK span 区分历史未闭合尾部，未将约6秒缺口未经证实归因于某个 RPC。阻塞 stop 回归验证 Trade 仍可完成提交。
 2026-11-17: case.input_snapshot 实测0.8–3.3秒，确认全量三列 Known Event Index 读取无关 Fact 明细。新增只读事件标量查询，沿用原发生时间排序及 wire 格式、版本/ACTIVE边界；每日14/7天筛选路径保持原规则，无新增缓存。22项索引/桥接/格式回归通过。
 2026-11-17: 最终自然样本再次证实入组到领取28–39秒，根因是新实时任务只由串行ticker恢复轮次发起。正式 V2 消费者在持久准入后复用原执行器立即派发；短task注册锁与长恢复轮次分离，复用原CAS/Control准入/6 Case并发及Future注册，不新增队列、池或持久状态；阻塞恢复+重复派发+原并发上限回归通过。审计按分支回加本地工具时间后再求模型并集。
+2026-11-17: 历史回溯确认057a67e45(11/11)终态标量/投影快路径未随dcded5e6f(11/15)扩展v6，致新W3退回完整Case收尾。SQL复用统一TWO_PHASE_CONTRACTS覆盖v4/v5/v6，不改业务Schema；三版事务回滚、v6禁止完整refresh等76项回归通过。更新正式入口替身验证轻量即时派发且原Stream提交不等待模型/历史恢复。

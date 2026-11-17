@@ -36,7 +36,7 @@ def test_slow_recovery_does_not_block_ingress_or_accumulate_dispatchers():
 
 
 @pytest.mark.asyncio
-async def test_coordinator_stream_acceptance_commits_without_synchronous_dispatch(tmp_path):
+async def test_coordinator_stream_acceptance_commits_without_waiting_for_history_or_models(tmp_path):
     from doxagent.message_bus_v2.schema import utc_now
     from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
     from doxagent.persistent_runtime_v2.journal import RuntimeJournal
@@ -55,6 +55,8 @@ async def test_coordinator_stream_acceptance_commits_without_synchronous_dispatc
     seen = []
     coordinator.reconcile = lambda ticker: None
     coordinator.accept_stream = lambda item: seen.append(item.item.stream_item_id)
+    dispatched=[]
+    coordinator.dispatch_realtime=lambda ticker:dispatched.append(ticker)
 
     def forbidden(_):
         raise AssertionError("ingress must not wait for history/model dispatch")
@@ -69,5 +71,6 @@ async def test_coordinator_stream_acceptance_commits_without_synchronous_dispatc
                              message=_input("fresh", published_at=now), bootstrap=False)
     scheduler.tick_ticker("MU", now=now, include_detail=False)
     assert len(seen) == 1
+    assert dispatched==['MU']
     assert bus.pending_stream("persistent_runtime_v2", "MU") == []
     assert runtime.journal.get("inbox_highwater", "MU") == 1

@@ -980,7 +980,7 @@ class SQLitePersistentRuntimeV2Repository:
 
     def completed_w3_projection_payload(self, case_id: str):
         """Only terminal view fields; do not hydrate frozen research to notify."""
-        from .w3_contracts import W3_CONTRACT, W3_LEGACY_CONTRACT
+        from .w3_contracts import TWO_PHASE_CONTRACTS
         with self._connect() as db:
             db.row_factory = sqlite3.Row
             row = db.execute(
@@ -999,8 +999,9 @@ class SQLitePersistentRuntimeV2Repository:
                 "FROM runtime_v2_cases c WHERE c.case_id=? AND c.status='COMPLETED' "
                 "AND c.technical_status='OK' AND json_extract(c.payload_json,'$.completed_at') IS NOT NULL "
                 "AND json_extract(c.payload_json,'$.decision_completed_at') IS NOT NULL "
-                "AND json_extract(c.payload_json,'$.w3_contract_version') IN (?,?)",
-                (case_id,W3_CONTRACT,W3_LEGACY_CONTRACT),
+                "AND json_extract(c.payload_json,'$.w3_contract_version') IN ("+
+                ','.join('?' for _ in TWO_PHASE_CONTRACTS)+')',
+                (case_id,*TWO_PHASE_CONTRACTS),
             ).fetchone()
         return dict(row) if row else None
 
@@ -1314,7 +1315,7 @@ class SQLitePersistentRuntimeV2Repository:
             if effect.status is RuntimeEffectStatus.COMPLETED and effect.effect_type in {
                 RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION
             }:
-                from .w3_contracts import W3_CONTRACT, W3_LEGACY_CONTRACT
+                from .w3_contracts import TWO_PHASE_CONTRACTS
                 # Same completion rule as Service, in the Effect's existing
                 # transaction. Patch current scalar fields; never rewrite an
                 # expanded stale Case over a concurrent Operations result.
@@ -1323,11 +1324,12 @@ class SQLitePersistentRuntimeV2Repository:
                     "payload_json=json_set(payload_json,'$.status','COMPLETED','$.technical_status','OK',"
                     "'$.completed_at',coalesce(json_extract(payload_json,'$.completed_at'),"
                     "json_extract(payload_json,'$.decision_completed_at'))) "
-                    "WHERE case_id=? AND json_extract(payload_json,'$.w3_contract_version') IN (?,?) "
+                    "WHERE case_id=? AND json_extract(payload_json,'$.w3_contract_version') IN ("+
+                    ','.join('?' for _ in TWO_PHASE_CONTRACTS)+") "
                     "AND json_extract(payload_json,'$.decision_completed_at') IS NOT NULL "
                     "AND (status!='COMPLETED' OR technical_status!='OK' "
                     "OR json_extract(payload_json,'$.completed_at') IS NULL)",
-                    (effect.case_id, W3_CONTRACT, W3_LEGACY_CONTRACT),
+                    (effect.case_id, *TWO_PHASE_CONTRACTS),
                 )
         return effect
 

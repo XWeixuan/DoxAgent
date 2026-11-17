@@ -60,7 +60,7 @@ def test_public_prepare_reconfigures_but_does_not_rewrite_unchanged_markers(tmp_
     profiles.clear();writes=[];old=journal.set
     monkeypatch.setattr(journal,'set',lambda *a,**kw:(writes.append(a[:2]),old(*a,**kw))[1])
     execution.prepare_public('MU')
-    assert profiles == ['gpt-6-luna','gpt-6.1-sol']
+    assert profiles == ['gpt-6-luna']  # Production now has one unified Trade profile.
     assert writes == []
 
 
@@ -204,15 +204,16 @@ def test_effect_completion_never_rewrites_a_concurrent_operations_result(tmp_pat
     finally:service.close()
 
 
-def test_effect_and_scalar_case_completion_roll_back_together(tmp_path):
+@pytest.mark.parametrize('contract',['persistent-runtime.w3.v4','persistent-runtime.w3.v5','persistent-runtime.w3.v6'])
+def test_effect_and_scalar_case_completion_roll_back_together(tmp_path,contract):
     from doxagent.persistent_runtime_v2.schema import RuntimeEffectStatus
     service,journal,_,case,_=setup_case(tmp_path,hit=False,novelty='NEW')
     try:
         effect=service.repository.claim_effects()[0]
         with journal.transaction(expand=False) as db:
             db.execute("UPDATE runtime_v2_cases SET payload_json=json_set(payload_json,"
-                       "'$.decision_completed_at',?,'$.w3_contract_version','persistent-runtime.w3.v5') WHERE case_id=?",
-                       (journal.clock().isoformat(),case.case_id))
+                       "'$.decision_completed_at',?,'$.w3_contract_version',?) WHERE case_id=?",
+                       (journal.clock().isoformat(),contract,case.case_id))
             db.execute("CREATE TRIGGER test_fail_case_completion BEFORE UPDATE ON runtime_v2_cases "
                        "WHEN NEW.status='COMPLETED' BEGIN SELECT RAISE(ABORT,'completion rollback'); END")
         with pytest.raises(sqlite3.IntegrityError,match='completion rollback'):
@@ -243,8 +244,11 @@ def test_w3_terminal_projection_matches_full_case_without_native_expansion(tmp_p
     finally:service.close()
 
 
-def test_normal_w3_effect_skips_full_completion_refresh(tmp_path,monkeypatch):
-    service,_,_,_,_=setup_case(tmp_path,hit=False,novelty='NEW')
+@pytest.mark.parametrize('contract',['persistent-runtime.w3.v5','persistent-runtime.w3.v6'])
+def test_normal_w3_effect_skips_full_completion_refresh(tmp_path,monkeypatch,contract):
+    service,_,_,case,_=setup_case(tmp_path,hit=False,novelty='NEW')
+    case.w3_contract_version=contract
+    service.repository.save_case(case)
     def unexpected(*args,**kwargs):raise AssertionError('full completion refresh is redundant')
     monkeypatch.setattr(service,'_refresh_case_completion',unexpected)
     try:

@@ -19,6 +19,7 @@ from .schema import (
 W3_LEGACY_CONTRACT = "persistent-runtime.w3.v4"
 W3_CONTRACT = "persistent-runtime.w3.v5"
 W3_V6_CONTRACT = "persistent-runtime.w3.v6"
+TWO_PHASE_CONTRACTS = (W3_LEGACY_CONTRACT, W3_CONTRACT, W3_V6_CONTRACT)
 
 
 def is_pin_watch_contract(version):
@@ -30,7 +31,7 @@ OPERATIONS_PHASE = "post_decision_operations"
 
 
 def is_two_phase_contract(version):
-    return version in {W3_LEGACY_CONTRACT, W3_CONTRACT, W3_V6_CONTRACT}
+    return version in TWO_PHASE_CONTRACTS
 
 
 def is_unified_contract(version):
