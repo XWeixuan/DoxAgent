@@ -9,6 +9,7 @@ import sys
 def compile_imports(*, include_calendar=False):
     from doxagent.codex_worker.schema import WorkerRunRequest  # noqa: F401
     from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime  # noqa: F401
+    import doxagent.persistent_runtime_v2.schema  # noqa: F401
     if include_calendar:
         # Compile the observed pandas/calendar cold path without constructing
         # a schedule or initializing an SDK client.
