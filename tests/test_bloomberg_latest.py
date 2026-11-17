@@ -94,7 +94,8 @@ async def test_shared_poll_reads_every_card_keeps_late_items_and_deduplicates_up
     assert third.messages[0].published_at==first.messages[0].published_at
     args=a.listing_request.call_args_list[0].args
     assert "types=ARTICLE%2CFEATURE%2CINTERACTIVE%2CLETTER%2CEXPLAINERS" in args[1]
-    assert "&_=" in args[1] and args[2]=={"method":"GET","routes":["direct"]}
+    assert "&_=" in args[1] and args[2]=={"method":"GET","routes":["direct"],
+        "client_scope":"bloomberg-public-latest","discard_cookies":True}
     assert args[3]["Referer"]=="https://www.bloomberg.com/latest"
 
 

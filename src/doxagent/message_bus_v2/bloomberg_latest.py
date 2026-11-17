@@ -92,7 +92,10 @@ async def poll_latest(adapter, context, *, slot_seconds=30):
     # comparing actual content freshness against the canonical cached endpoint.
     slot = int(context.requested_at.timestamp() // slot_seconds)
     cutoff = context.requested_at - timedelta(minutes=30)
-    recipe = {"method": "GET", "routes": ["direct"]}
+    # The public JSON API needs no browser or Artemis session. Keep challenge/
+    # authorization cookies from other entries out of this healthy channel.
+    recipe = {"method": "GET", "routes": ["direct"],
+              "client_scope": "bloomberg-public-latest", "discard_cookies": True}
     failure = None
     try:
         async with network_timeout(12):

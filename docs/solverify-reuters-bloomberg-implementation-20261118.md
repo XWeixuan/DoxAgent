@@ -44,3 +44,5 @@ Bloomberg 额外故障与验证码无关：WIRE:realtime 最新持续失败为 V
 后续自然运行发现第二层故障：重启HTTP会话后Artemis warm `/latest`403；有界比对direct sentry412、原DE代理sentry200但实际HTML/PX，而非JSON授权。Latest JSON仍正常。Realtime失败时现在复用既有poll_latest的正常直连路径、解析与物理请求证明；保持10秒单元调度和10秒共享cache槽，5分钟内不重复撞失败Artemis入口，届时正常单元才重新尝试。无新组件/定时器/浏览器抓列表。HTTP失败与Chrome挑战不混淆；若Latest也失败仍诚实返回失败。新增回归证明blocked入口只试一次、后续真实列表不重复发布、成功证明只来自实际Latest请求，共39通过。
 
 注意：接入后20:23:43 UTC正常正文采集自然触发Bloomberg PX Solverify任务，返回ERROR_TASK_FAILED/cost0、PROVIDER_UNDETERMINED，没有ready或Cookie应用，不能宣称解码通过。20:23后正文存在实际PX阻塞，先前十篇FULL并不代表后续仍健康；最终验收必须分列列表恢复与该正文限制。不为此次失败主动追加购买或持续守候。
+
+最终补充对照：20:33运行中列表会话403，但同出口新建无Cookie curl会话对30秒和10秒两个cache槽均200/JSON/age0。为避免公共列表被其他入口的会话/错误响应Cookie污染，Latest改为独立client_scope=bloomberg-public-latest、discard_cookies=True，复用已在by-ID元数据路径使用的机制，不触碰Chrome Cookie。该对照支持HTTP会话差异是内部可优化因素，未读取或归因某一具体Cookie；不夸大为已经证明所有403均由Cookie引起。

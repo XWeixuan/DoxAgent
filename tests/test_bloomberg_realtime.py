@@ -165,6 +165,9 @@ async def test_blocked_artemis_uses_proven_latest_at_same_cadence_without_repeat
     original = a.listing_request.side_effect
     async def request(ctx, url, recipe, headers):
         if '/api/stories?' in url or url.endswith('/latest'):
+            if '/api/stories?' in url:
+                assert recipe['client_scope'] == 'bloomberg-public-latest'
+                assert recipe['discard_cookies'] is True
             a.seen.append((url, dict(headers)))
             blocked = url.endswith('/latest')
             status = 403 if blocked else 200
