@@ -47,13 +47,14 @@ def test_release_acceptance_uses_source_clocks_without_projection_and_does_not_h
               effects=effects,jobs=jobs,attempts=[],rounds=rounds)
     traces=[dict(trace_id=e,effect_id=e,segment='effect_owner',finished_at=stamp(end))
             for e,end in [('T',11),('O',15)]]
-    for filename,value in [('cohort-final.json.gz',dict(at=stamp(16),cases=[case])),
+    for filename,value in [('cohort-final.json.gz',dict(at=stamp(16),cases=[case,dict(created_at=stamp(100))])),
                            ('logs-final.json.gz',dict(traces=traces,warnings=[]))]:
         with gzip.open(tmp_path/filename,'wt') as out:json.dump(value,out)
-    subprocess.run([sys.executable,str(tmp_path/'acceptance.py'),'--since',stamp(0)],
+    subprocess.run([sys.executable,str(tmp_path/'acceptance.py'),'--since',stamp(0),'--until',stamp(20)],
                    check=True,capture_output=True,text=True)
     result=json.loads((tmp_path/'acceptance.json').read_text())
     row=result['rows'][0]
+    assert result['enrolled']==1 and result['until']==stamp(20)
     assert row['missing']==[]
     assert row['trade_non_sdk']==4 and row['operations_non_sdk']==2
     assert row['whole_w3_non_sdk']==6 and row['whole_runtime_non_model']==7

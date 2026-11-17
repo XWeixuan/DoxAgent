@@ -646,7 +646,7 @@ class EventLibraryRepository:
             self._require_native_version(connection,normalized,selected_version)
             rows = connection.execute(
                 """
-                SELECT e.event_no
+                SELECT e.event_no,r.payload_json
                 FROM canonical_events e
                 JOIN canonical_event_states s
                   ON s.ticker=e.ticker AND s.event_no=e.event_no
@@ -655,20 +655,45 @@ class EventLibraryRepository:
                     WHERE s2.ticker=e.ticker AND s2.event_no=e.event_no
                       AND s2.library_version<=?
                  )
+                LEFT JOIN canonical_event_revisions r
+                  ON r.ticker=e.ticker AND r.event_no=e.event_no
+                 AND r.library_version=(
+                    SELECT MAX(r2.library_version) FROM canonical_event_revisions r2
+                    WHERE r2.ticker=e.ticker AND r2.event_no=e.event_no
+                      AND r2.library_version<=?
+                 )
                 WHERE e.ticker=? AND e.created_version<=? AND s.status='ACTIVE'
                 ORDER BY e.event_no
                 """,
-                (selected_version, normalized, selected_version),
+                (selected_version, selected_version, normalized, selected_version),
             ).fetchall()
-            return [
-                self._event_from_connection(
-                    connection,
-                    normalized,
-                    int(row["event_no"]),
-                    selected_version,
-                )
-                for row in rows
-            ]
+            facts = {int(row['event_no']): [] for row in rows}
+            numbers=list(facts)
+            for offset in range(0,len(numbers),400):
+                batch=numbers[offset:offset+400]
+                marks=','.join('?' for _ in batch)
+                members=connection.execute(
+                    "SELECT m.event_no,m.fact_no,r.payload_json FROM event_fact_memberships m "
+                    "LEFT JOIN canonical_fact_revisions r ON r.ticker=m.ticker AND r.fact_no=m.fact_no "
+                    "AND r.library_version=(SELECT MAX(r2.library_version) FROM canonical_fact_revisions r2 "
+                    "WHERE r2.ticker=m.ticker AND r2.fact_no=m.fact_no AND r2.library_version<=?) "
+                    "WHERE m.ticker=? AND m.event_no IN ("+marks+") AND m.valid_from_version<=? "
+                    "AND (m.valid_to_version IS NULL OR m.valid_to_version>=?) ORDER BY m.event_no,m.fact_no",
+                    (selected_version,normalized,*batch,selected_version,selected_version)).fetchall()
+                for member in members:
+                    if member['payload_json'] is None:
+                        raise EventLibraryError(f"Fact F{member['fact_no']} is missing its active revision")
+                    payload=json.loads(member['payload_json'])
+                    payload.pop('entities',None)  # Preserve historical V1 compatibility.
+                    facts[int(member['event_no'])].append(payload)
+        result=[]
+        for row in rows:
+            if row['payload_json'] is None:
+                raise EventLibraryError(f"Event E{row['event_no']} has incomplete revision state")
+            payload=json.loads(row['payload_json'])
+            payload.update(status='ACTIVE',facts=facts[int(row['event_no'])])
+            result.append(CanonicalEvent.model_validate(payload))
+        return result
 
     def known_index_entries(self, ticker: str, version: int | None = None):
         """The index's four scalar fields, without loading Fact memberships."""

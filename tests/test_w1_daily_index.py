@@ -48,6 +48,38 @@ def library(tmp_path):
     return root, repo, PublishedEventLibraryRuntimeProvider(PublishedEventLibraryReader(root))
 
 
+def test_published_event_batch_matches_individual_reads_across_versions_and_memberships(tmp_path):
+    _,repo,_=library(tmp_path)
+    publish(repo,1,boundary(DAY),[event(n) for n in range(1,406)])
+    publish(repo,2,boundary(DAY),[
+        event(1,facts=[{'fact_id':'F406','proposition':'replacement','assertion_state':'ACTUAL'}]),
+        event(2,facts=[{'fact_id':'F2','proposition':'fact 2','assertion_state':'ACTUAL'},
+                       {'fact_id':'F1','proposition':'fact 1','assertion_state':'ACTUAL'}])])
+    with repo._write() as db:
+        db.execute("INSERT INTO canonical_event_states VALUES('MU',3,2,'SUPPRESSED',NULL)")
+        db.execute("UPDATE canonical_fact_revisions SET payload_json=json_set(payload_json,'$.entities',json('[\"legacy\"]')) WHERE fact_no=1")
+    publish(repo,3,boundary(DAY),[event(3)])
+    for version in (1,2,3):
+        with repo._read() as db:
+            # Independent single-object reader preserves the pre-optimization
+            # contract, including latest state and inclusive membership edges.
+            expected=[]
+            for number in range(1,406):
+                value=repo._event_from_connection(db,'MU',number,version)
+                if value.status.value=='ACTIVE':expected.append(value.model_dump(mode='json'))
+        assert [e.model_dump(mode='json') for e in repo.published_events('MU',version)]==expected
+    assert repo.published_events('MU',0)==[]
+
+
+@pytest.mark.parametrize('table,identity',[('canonical_event_revisions','Event E1'),('canonical_fact_revisions','Fact F1')])
+def test_batch_reader_keeps_incomplete_revision_errors(tmp_path,table,identity):
+    from doxagent.event_library.repository import EventLibraryError
+    _,repo,_=library(tmp_path)
+    publish(repo,1,boundary(DAY),[event(1)])
+    with repo._write() as db:db.execute('DELETE FROM '+table)
+    with pytest.raises(EventLibraryError,match=identity):repo.published_events('MU',1)
+
+
 def test_bridge_reads_history_only_for_unseen_fact_ids(tmp_path,monkeypatch):
     from doxagent.persistent_runtime_v2.daily_index import fact_candidate,fact_content
     root,repo,provider=library(tmp_path)

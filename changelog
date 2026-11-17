@@ -3198,3 +3198,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-17: 收紧本轮双任务当前owner保存实现：移除整段save回调进入短写执行器的包装；请求读取/哈希/telemetry与结果编码在当前owner普通线程完成，只将SQL提交送现有优先写通道。分支结果、审计refs与ACK意图合成一个原子事务，保持不可变结果与租约校验。76项合并及7项专项回归通过，包括编码不占短写线程、审计异常整笔回滚。
 
 2026-11-17: 将终态 ACK/resident 释放意图合入原阶段提交事务，业务 owner 不再为清理重复读取 stage/单独写两次DB；合成NO_TRADE按选中Thread身份释放另一分支，保留Operations原线程。增加同事务回滚/合成票无JobID与原Thread保护回归。离线验收改用源Stage/Round时钟，避免请求归档/投影滞后误报缺模型时钟，并验证W1R3不能掩盖W3内部等待。
+
+2026-11-17：优化原生 OpenAI W1R1 provisional 显式缓存，保留已完成块的查询边界，12h与5行分块不变；W1R3改medium/default，保留Haiku high fallback；W2R2投影删除transmission及Condition.trigger_layer，按用户确认保留match_scope。224项定向回归通过（2不适用跳过、3既存时效fixture失败独立复现）；11次隔离真实调用成功，增量缓存写入97395→464 token。新增docs/runtime-cache-cost-repair-20261117.md与评估回执；尚未发布生产。
+
+2026-11-17: 最终11例W3均小于8秒，但整Runtime有3例10–13秒；源计时证明冷事实读取/bridge耗时2–5秒，改为按固定版本批量读取ACTIVE Event修订与每400 Event的Fact成员/最新修订，消除逐Event/Fact SQL往返。保持成员有效区间、顺序、历史entities兼容及缺修订报错；真实893 Event对象与桥接结果逐项相同，读取约659–684ms降为102–165ms，bridge约707–785ms降为161–165ms。聚焦38项及每日索引14项通过，扩展5项失败用旧算法复现，不修改校验规则。离线验收支持固定until及窗口截断检测，避免持续新消息令入组窗口永不收口。

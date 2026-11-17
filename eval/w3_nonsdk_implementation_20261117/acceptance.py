@@ -2,7 +2,7 @@ import json,gzip,math,statistics,argparse
 from pathlib import Path
 from datetime import datetime
 p=Path(__file__).parent
-parser=argparse.ArgumentParser();parser.add_argument('--since',default='2026-11-17T09:54:56Z');parser.add_argument('--output',default='acceptance.json');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--since',default='2026-11-17T09:54:56Z');parser.add_argument('--until');parser.add_argument('--output',default='acceptance.json');args=parser.parse_args()
 def ts(v):
  value=datetime.fromisoformat(v.replace('Z','+00:00'))
  if value.tzinfo is None:raise ValueError('Audit clocks require an explicit timezone')
@@ -31,6 +31,7 @@ def stats(xs):
 data=json.load(gzip.open(p/'cohort-final.json.gz'));logs=json.load(gzip.open(p/'logs-final.json.gz'));traces=logs['traces'];rows=[]
 for c in data['cases']:
  if ts(c['created_at'])<ts(args.since):continue
+ if args.until and ts(c['created_at'])>ts(args.until):continue
  row=dict(case_id=c['case_id'],ticker=c['ticker'],created=c['created_at'],status=c['status'],missing=[])
  ef={v['effect_type']:v for v in c['effects']};st={v['phase']:v for v in c['stages']}
  phase_by_job={a['attempt_id']:a.get('phase') for a in c['attempts'] if a.get('node_id')=='W3'}
@@ -78,5 +79,6 @@ for c in data['cases']:
   assert row['whole_runtime_non_model']>=row['whole_w3_non_sdk']-0.001
  rows.append(row)
 metrics={k:stats([r[k] for r in rows if k in r]) for k in ('trade_non_sdk','operations_non_sdk','whole_w3_non_sdk','whole_runtime_non_model')}
-result=dict(since=args.since,at=data['at'],enrolled=len(rows),target_seconds=10,metrics=metrics,acceptance_ready=len(rows)>=100 and all(not r['missing'] for r in rows) and all(v.get('p95',1e9)<=10 for v in metrics.values()),rows=rows,warnings=logs['warnings'])
+truncated=bool(data.get('candidate_count',0)>=2500 and ts(data['oldest_candidate'])>ts(args.since))
+result=dict(since=args.since,until=args.until,at=data['at'],window_truncated=truncated,enrolled=len(rows),target_seconds=10,metrics=metrics,acceptance_ready=not truncated and len(rows)>=100 and all(not r['missing'] for r in rows) and all(v.get('p95',1e9)<=10 for v in metrics.values()),rows=rows,warnings=logs['warnings'])
 (p/args.output).write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2))
