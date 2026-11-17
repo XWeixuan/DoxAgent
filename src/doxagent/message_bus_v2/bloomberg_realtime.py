@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import quote
 
 from .bloomberg_latest import ENTRY_URL, parse_stories
@@ -82,6 +82,7 @@ async def poll_realtime(adapter, context):
     started = time.monotonic()
     parsed_ids, caches, messages, errors = [], [], [], []
     snapshot_valid = False
+    expired_pending, overflow_pending = 0, 0
 
     async def get(url, *, token=False, metadata=False):
         offset = len(events or [])
@@ -136,17 +137,32 @@ async def poll_realtime(adapter, context):
             rows = parse_snapshot(response.text)
             parsed_ids.extend(ids)
             snapshot_valid = True
+            # Metadata retries are only useful inside the same admission window
+            # as Latest. Never let old failures permanently gate new discoveries.
+            cutoff = context.requested_at - timedelta(minutes=30)
+            def eligible(item):
+                return datetime.fromisoformat(item['publishedAt'].replace('Z', '+00:00')) >= cutoff
+            old_pending = pending
+            pending = {key: value for key, value in pending.items() if eligible(value)}
+            expired_pending = len(old_pending) - len(pending)
             observed = max((e["response_received_at"] for e in events or []
                             if e.get("physical_request_id") in ids and e.get("response_received_at")),
                            default=utc_now().isoformat())
-            fresh = [row["id"] for row in rows if row["id"] not in seen]
+            fresh = [row['id'] for row in rows if row['id'] not in seen
+                     and row['id'] not in pending and eligible(row)]
             for row in rows:
-                if row["id"] not in seen:
+                if row["id"] not in seen and eligible(row):
                     pending.setdefault(row["id"], {**row, "id_first_seen_at": observed})
             if len(pending) > 128:
-                raise ValueError("bloomberg_realtime_pending_overflow")
+                # Report incomplete coverage, but still drain the newest bounded
+                # backlog. Raising here used to checkpoint an ever-growing queue
+                # and skip every metadata request on all subsequent polls.
+                overflow_pending = len(pending) - 128
+                pending = dict(sorted(pending.items(), key=lambda pair: pair[1]['publishedAt'])[-128:])
+                errors.append('bloomberg_realtime_pending_overflow')
             # New HEAD ids precede retries of older metadata, bounded to one small batch.
-            identifiers = list(dict.fromkeys([*fresh, *pending]))[:10]
+            retries = sorted(pending, key=lambda key: pending[key]['id_first_seen_at'])
+            identifiers = [key for key in dict.fromkeys([*fresh, *retries]) if key in pending][:10]
             if identifiers:
                 # The official client also provides one batch endpoint. Its tested
                 # route avoids the repeatedly blocked single-id query and five serial RTTs.
@@ -178,6 +194,7 @@ async def poll_realtime(adapter, context):
     metadata = {"method": "bloomberg_realtime_http", "route": ROUTE, "metadata_route": "direct",
                 "request_seconds": round(time.monotonic() - started, 3), "cache": caches,
                 "delta_items": len(messages), "pending": len(pending),
+                "expired_pending": expired_pending, "overflow_pending": overflow_pending,
                 "validated_request_ids": [e["physical_request_id"] for e in proven]}
     if snapshot_valid and context.on_page is not None:
         # Commit valid progress before a sibling metadata failure. Reuse the existing

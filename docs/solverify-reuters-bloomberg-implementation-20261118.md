@@ -32,3 +32,11 @@ Squid保留精确来源158.180.12.56/32和旧2Captcha来源、认证、CONNECT/4
 待补精确源码提交、实际配置映射、单元/回归结果、角色发布及原Chrome保留证明。此阶段没有真实Challenge，不宣称现场端到端解码成功；由正常采集/恢复流程被动触发。
 
 官方契约：[DataDome](https://solverify.net/docs/datadome)、[PerimeterX](https://solverify.net/docs/perimeterx)、[结果和费用](https://solverify.net/docs/get-task-result)、[HUMAN依赖域名](https://docs.humansecurity.com/applications/about-enforcers)。
+
+## 生产配置验收与 Bloomberg 现有故障修复
+
+Site Access 已发布 f511e939c，Reuters/Bloomberg 实际 provider_for 均为 solverify，原2Captcha key及已提交job provider冻结保留。Bloomberg Site revision4启用恢复；四个Chrome instance/PID与发布前完全一致。代理只热加载配置，原绑定不变；回归241通过。未购买新任务，当前无真实Challenge可供端到端验收，不宣称平台已成功解码。
+
+Bloomberg 额外故障与验证码无关：WIRE:realtime 最新持续失败为 ValueError:bloomberg_realtime_pending_overflow，checkpoint 实存703条pending、seen仅14条，包含11月13日旧稿；每轮先追加pending，再在>128时抛错，因snapshot_valid已设true又将过大pending提交，下轮永远无法走到metadata出队。WIRE:latest仍以30秒正常抓取，20:21–20:23 UTC近期十篇BODY均FULL。单次受限元数据核验返回200/两条fulfilled，不能归因于此刻网络或PX。
+
+修复：pending按既有30分钟新闻准入窗口自然过期；真正的新ID优先，既存缺失ID走有序重试；超过128条保留最新128条、明确PARTIAL/overflow计数，同时继续执行最多10条元数据请求并提交成功进度，绝不先抛错锁死整个管线。不清数据库/身份，不改变10秒Realtime+30秒Latest节奏，不新增请求批次或后台组件。过期/overflow计数复用本轮acquisition_metadata；不伪装旧消息为新消息。定向回归38通过，覆盖703条旧积压恢复、容量溢出仍出队和新ID不被重复缺失项抢占。

@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 
 import httpx
 import pytest
+from datetime import timedelta
 from urllib.parse import urlsplit
 
 from doxagent.message_bus_v2.bloomberg_realtime import POLL_URL, TOPICS, parse_snapshot, poll_realtime, topic_checksum
@@ -114,3 +115,46 @@ def test_realtime_snapshot_and_full_list_have_independent_cadence():
     from doxagent.message_bus_v2.polling_cadence import unit_interval
     assert unit_interval(source(),'TEST:WIRE:realtime',30)==10
     assert unit_interval(source(),'TEST:WIRE:latest',30)==30
+
+
+async def test_days_old_poisoned_backlog_expires_and_real_metadata_drains():
+    c = context()
+    old = (c.requested_at - timedelta(days=3)).isoformat()
+    pending = {f'OLD{i:011d}': {'id': f'OLD{i:011d}', 'publishedAt': old,
+                                'id_first_seen_at': old} for i in range(703)}
+    a = adapter()
+    first = await poll_realtime(a, c.model_copy(update={'checkpoint': {'pending': pending}}))
+    assert len(first.messages) == 5 and not first.failures
+    assert first.acquisition_metadata['expired_pending'] == 703
+    assert first.next_checkpoint['pending'] == {}
+    second = await poll_realtime(a, c.model_copy(update={'checkpoint': first.next_checkpoint}))
+    assert not second.failures and not second.messages
+
+
+async def test_overflow_still_fetches_metadata_and_commits_bounded_progress():
+    c = context()
+    recent = (c.requested_at - timedelta(minutes=10)).isoformat()
+    pending = {f'OLD{i:011d}': {'id': f'OLD{i:011d}', 'publishedAt': recent,
+                                'id_first_seen_at': recent} for i in range(140)}
+    callback = AsyncMock()
+    a = adapter()
+    result = await poll_realtime(a, c.model_copy(update={
+        'checkpoint': {'pending': pending}, 'on_page': callback}))
+    assert len(result.messages) == 5
+    assert len(result.next_checkpoint['pending']) == 123
+    assert result.acquisition_metadata['overflow_pending'] == 17
+    assert result.failures and 'pending_overflow' in result.failures[0].error_message
+    callback.assert_awaited_once()
+    assert any('/api/stories/' in url for url, _ in a.seen)
+
+
+async def test_existing_missing_metadata_does_not_jump_ahead_of_new_discoveries():
+    c = context()
+    rows = snapshot()[0]['topicsData']['LATEST_STORIES']['data']
+    first_id = rows[0]['id']
+    pending = {first_id: {**rows[0], 'id_first_seen_at': c.requested_at.isoformat()}}
+    a = adapter()
+    await poll_realtime(a, c.model_copy(update={'checkpoint': {'pending': pending}}))
+    metadata_url = next(url for url, _ in a.seen if '/api/stories/' in url)
+    requested = urlsplit(metadata_url).path.rsplit('/', 1)[-1].split(',')
+    assert requested[-1] == first_id and requested[0] == rows[1]['id']
