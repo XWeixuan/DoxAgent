@@ -1,0 +1,126 @@
+{
+  "at": "2026-11-17T18:55:53.074143+00:00",
+  "versions": {
+    "codex-worker": {
+      "commit": "d227e7629826d065201df476705ce3d87dfb6bc2",
+      "files": 18,
+      "mismatches": [],
+      "ready_target": 4
+    },
+    "v2-projector": {
+      "commit": "d227e7629826d065201df476705ce3d87dfb6bc2",
+      "files": 18,
+      "mismatches": [],
+      "ready_target": 4
+    },
+    "v2-control": {
+      "commit": "d227e7629826d065201df476705ce3d87dfb6bc2",
+      "files": 18,
+      "mismatches": [],
+      "ready_target": 4
+    },
+    "v2-maintenance": {
+      "commit": "d227e7629826d065201df476705ce3d87dfb6bc2",
+      "files": 18,
+      "mismatches": [],
+      "ready_target": 4
+    },
+    "v2-api": {
+      "commit": "d227e7629826d065201df476705ce3d87dfb6bc2",
+      "files": 18,
+      "mismatches": [],
+      "ready_target": 4
+    },
+    "v2-scheduler": {
+      "commit": "1f961d5a4993ccf8dd2b33b00515e98a01323823",
+      "files": 18,
+      "mismatches": [],
+      "ready_target": 4
+    }
+  },
+  "initial_release": {
+    "since": "2026-11-17T18:31:44.105652+00:00",
+    "until": "2026-11-17T18:43:55Z",
+    "at": "2026-11-17T18:44:40.910926+00:00",
+    "window_truncated": false,
+    "enrolled": 20,
+    "target_seconds": 10,
+    "metrics": {
+      "trade_non_sdk": {
+        "n": 20,
+        "p50": 15.825986623764038,
+        "p95": 48.02306294441223,
+        "max": 49.071369886398315
+      },
+      "operations_non_sdk": {
+        "n": 19,
+        "p50": 2.786159038543701,
+        "p95": 9.674487829208374,
+        "max": 9.674487829208374
+      },
+      "whole_w3_non_sdk": {
+        "n": 19,
+        "p50": 18.548650979995728,
+        "p95": 54.22748064994812,
+        "max": 54.22748064994812
+      },
+      "whole_runtime_non_model": {
+        "n": 19,
+        "p50": 27.272250175476074,
+        "p95": 63.872071743011475,
+        "max": 63.872071743011475
+      }
+    },
+    "acceptance_ready": false
+  },
+  "followup": {
+    "since": "2026-11-17T18:45:01.840520+00:00",
+    "until": null,
+    "at": "2026-11-17T18:55:53.311939+00:00",
+    "window_truncated": false,
+    "enrolled": 8,
+    "target_seconds": 10,
+    "metrics": {
+      "trade_non_sdk": {
+        "n": 8,
+        "p50": 7.481423616409302,
+        "p95": 21.646413803100586,
+        "max": 21.646413803100586
+      },
+      "operations_non_sdk": {
+        "n": 8,
+        "p50": 3.0601099729537964,
+        "p95": 7.562828063964844,
+        "max": 7.562828063964844
+      },
+      "whole_w3_non_sdk": {
+        "n": 8,
+        "p50": 13.279311418533325,
+        "p95": 24.62689995765686,
+        "max": 24.62689995765686
+      },
+      "whole_runtime_non_model": {
+        "n": 8,
+        "p50": 15.720059514045715,
+        "p95": 26.37445878982544,
+        "max": 26.37445878982544
+      }
+    },
+    "acceptance_ready": false
+  },
+  "resources": {
+    "available_kib": "15061488 kB",
+    "disk_free_bytes": 7593447424,
+    "safety": "NORMAL",
+    "ready_stock": 4,
+    "restarts": {
+      "codex-worker": 0,
+      "v2-scheduler": 0,
+      "v2-projector": 0,
+      "v2-control": 0,
+      "v2-maintenance": 0,
+      "v2-api": 0
+    },
+    "oom": false
+  }
+}
