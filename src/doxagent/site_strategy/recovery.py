@@ -657,7 +657,7 @@ class BrowserRecoveryCoordinator:
                             age=(utc_now()-datetime.fromisoformat(preparation['started_at'])).total_seconds()
                             point=next((p for p in (5,15,30,60) if p>age),60)
                             delay=max(1,point-age)
-                        await self._defer(recovery, "datadome_solver_pending", delay=delay)
+                        await self._defer(recovery, "perimeterx_solver_pending" if recovery.assessment.get("provider") in {"PERIMETERX", "HUMAN_PERIMETERX"} else "datadome_solver_pending", delay=delay)
                         return
                     if (
                         scope.source_id == "ctee_semiconductor"

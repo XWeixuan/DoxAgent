@@ -84,6 +84,14 @@ def _record_solver_diagnostic(repository, identity_id, stage, summary, *, recove
         if already_recorded(previous):
             return
         job["diagnostics"] = {**job.get("diagnostics", {}), stage: observation}
+        layer = observation.get('http_evidence', {}).get('layer')
+        if layer in {'DATADOME', 'PERIMETERX'} and (summary.get('challenge') == 'BLOCKED' or
+                (summary.get('http_status') or 0) >= 400):
+            job['failure_stage'] = 'SITE_ACCEPTANCE'
+        elif layer == 'AUTHENTICATION' or summary.get('authentication') in {'REAUTH_REQUIRED','ENTITLEMENT_MISSING'}:
+            job['failure_stage'] = 'SESSION_AUTHENTICATION'
+        elif layer == 'PROXY_NETWORK':
+            job['failure_stage'] = 'PROXY_NETWORK'
         job["diagnostic_timeline"] = [*job.get("diagnostic_timeline", []),
                                       {"stage": stage, **observation}][-8:]
         db.execute("update datadome_solver_jobs set data_json=?,updated_at=? where job_id=?",
@@ -154,12 +162,31 @@ def mark_solver_outcome(
 
 
 class SolverError(RuntimeError):
-    pass
+    def __init__(self, code, *, failure_stage=None, cost=None, network_reason=None):
+        super().__init__(code)
+        self.failure_stage = failure_stage
+        self.cost = cost
+        self.network_reason = network_reason
+
+
+def provider_failure(code, description='', *, cost=None):
+    # Classify explicit signals only; ERROR_TASK_FAILED alone proves neither a
+    # proxy failure nor a bad answer. Never persist the provider's raw message.
+    text = (str(code) + ' ' + str(description))[:2048].lower()
+    hints = [('PROXY_AUTH_REJECTED', r'proxy.{0,25}(?:auth|407)'),
+             ('PROXY_CONNECT_FAILED', r'proxy.{0,40}(?:connection|connect|timeout|unreachable|refused)|err_tunnel_connection_failed|econnrefused')]
+    network = next((name for name, pattern in hints if re.search(pattern, text)), None)
+    stage = ('PROXY_NETWORK' if network else 'PROVIDER_DECODE' if code in
+             {'ERROR_CAPTCHA_UNSOLVABLE', 'ERROR_UNSOLVABLE'} else 'PROVIDER_UNDETERMINED')
+    return SolverError(code, failure_stage=stage, cost=cost, network_reason=network)
 
 
 def scene_key(scene):
     # Presentation state may change while the same paid challenge is processing.
-    return digest_json({key: scene.get(key) for key in ("url", "website", "user_agent")})
+    value = {key: scene.get(key) for key in ("url", "website", "user_agent")}
+    if scene.get('family') == 'PERIMETERX':
+        value['website_key'] = scene.get('website_key')
+    return digest_json(value)
 
 
 def retry_provider_bootstrap(recovery, scene):
@@ -200,12 +227,11 @@ class TwoCaptcha:
                 response.raise_for_status()
                 data = response.json()
         except (httpx.HTTPError, ValueError):
-            raise SolverError("PROVIDER_TRANSPORT_UNCERTAIN") from None
+            raise SolverError("PROVIDER_TRANSPORT_UNCERTAIN", failure_stage='PROVIDER_API') from None
         if data.get("errorId"):
             code = str(data.get("errorCode", "PROVIDER_ERROR"))
-            raise SolverError(
-                code if code.isascii() and code.replace("_", "").isalnum() else "PROVIDER_ERROR"
-            )
+            code = code if code.isascii() and code.replace("_", "").isalnum() else "PROVIDER_ERROR"
+            raise provider_failure(code, data.get('errorDescription'), cost=data.get('cost'))
         return data
 
 
@@ -213,18 +239,40 @@ class Solverify(TwoCaptcha):
     """Translate the vendor wire contract; keep recovery and browser ownership shared."""
     base_url = "https://solver.solverify.net/"
 
+    @staticmethod
+    def prepare_task(source):
+        task = dict(source)
+        family = task.pop('challengeFamily', 'DATADOME')
+        if family == 'PERIMETERX':
+            if not re.fullmatch(r'PX[a-zA-Z0-9]{4,64}', task.get('websiteKey', '')):
+                raise SolverError('PERIMETERX_APP_ID_MISSING', failure_stage='INPUT_CONFIGURATION')
+        else:
+            try:
+                p = urlsplit(task.get('captchaUrl', ''))
+                q = parse_qs(p.query)
+                valid = (p.scheme == 'https' and p.hostname and
+                    (p.hostname == 'captcha-delivery.com' or p.hostname.endswith('.captcha-delivery.com'))
+                    and p.port in {None, 443} and not p.username
+                    and p.path.rstrip('/') in {'/captcha', '/interstitial'}
+                    and all(q.get(k) for k in ('cid', 'initialCid', 'hash')))
+            except ValueError:
+                valid = False
+            if not valid:
+                raise SolverError('DATADOME_CHALLENGE_INPUT_INVALID', failure_stage='INPUT_CONFIGURATION')
+        task.update(type="perimeterx" if family == 'PERIMETERX' else "datadome", useragent=task.pop("userAgent"),
+                    proxyPort=str(task["proxyPort"]))
+        return task
+
     async def request(self, key, method, **payload):
         if method == "createTask":
-            task = dict(payload["task"])
-            task.update(type="datadome", useragent=task.pop("userAgent"),
-                        proxyPort=str(task["proxyPort"]))
-            payload = {**payload, "task": task}
+            payload = {**payload, "task": self.prepare_task(payload["task"])}
         data = await super().request(key, method, **payload)
         if method == "getTaskResult":
             status = data.get("status")
             if status == "failed":
                 code = str(data.get("errorCode") or "SOLVERIFY_TASK_FAILED")
-                raise SolverError(code if re.fullmatch(r"[A-Z0-9_]{1,100}", code) else "SOLVERIFY_TASK_FAILED")
+                code = code if re.fullmatch(r"[A-Z0-9_]{1,100}", code) else "SOLVERIFY_TASK_FAILED"
+                raise provider_failure(code, data.get('errorDescription'), cost=data.get('cost'))
             data = {**data, "status": {"pending": "processing", "processing": "processing",
                                       "completed": "ready"}.get(status, status)}
         return data
@@ -250,22 +298,32 @@ class DataDomeSolver:
         self.provider = TwoCaptcha()
         self.solverify = Solverify()
         self.browser_factory = NativeChallenge
+        from .perimeterx_browser import PerimeterXChallenge
+        self.perimeterx_browser_factory = PerimeterXChallenge
         self.provider_ticks = set()
         self._egress_checks = {}
         self._proof_refresh_at = {}
         self.egress_reason = 'NOT_CHECKED'
 
-    def provider_for(self, config, *, job=None, identity_id=None):
+    def provider_for(self, config, *, job=None, identity_id=None, site_id=None):
         # Durable tasks are always collected from their original provider, even
         # after an operator rolls back the per-identity selection. Legacy = 2Captcha.
         name = (job.get("provider", "2captcha") if job else
-                config.get("provider_by_identity", {}).get(identity_id, "2captcha"))
+                config.get("provider_by_identity", {}).get(identity_id,
+                    config.get('provider_by_site', {}).get(site_id, "2captcha")))
         if name not in {"2captcha", "solverify"}:
             raise SolverError("INVALID_PROVIDER_SELECTION")
         key = config.get("solverify_api_key" if name == "solverify" else "api_key")
         if not key:
             raise SolverError("PROVIDER_KEY_UNAVAILABLE")
         return (self.solverify if name == "solverify" else self.provider), key, name
+
+    def event(self, recovery, event, **details):
+        family = details.pop('solver_family', None) or (
+            'PERIMETERX' if recovery.assessment.get('provider') in {'PERIMETERX', 'HUMAN_PERIMETERX'} else 'DATADOME')
+        if family == 'PERIMETERX' and event.startswith('DATADOME_'):
+            event = event.replace('DATADOME_', 'PERIMETERX_', 1)
+        return self.coordinator.event(recovery, event, challenge_family=family, **details)
 
     def config(self):
         credentials = getattr(self.coordinator.service, "credential_store", None)
@@ -375,6 +433,7 @@ class DataDomeSolver:
                     status="FAILED",
                     verification_state="INDETERMINATE",
                     reason="SOLVER_DEADLINE_EXCEEDED",
+                    failure_stage='PROVIDER_UNDETERMINED',
                 )
                 self.save(job)
                 continue
@@ -395,8 +454,11 @@ class DataDomeSolver:
                         reason="INCIDENT_ENDED_RESULT_NOT_APPLIED",
                     )
                     self.save(job)
-            except SolverError:
-                pass  # The same durable task remains eligible until its bounded deadline.
+            except SolverError as exc:
+                if str(exc) != 'PROVIDER_TRANSPORT_UNCERTAIN':
+                    job.update(status='FAILED', reason=str(exc), failure_stage=exc.failure_stage,
+                               provider_cost=exc.cost, cost=exc.cost, verification_state='SUPERSEDED')
+                    self.save(job)
 
     def new_job(self, recovery, scene, binding):
         now = utc_now().isoformat()
@@ -405,6 +467,8 @@ class DataDomeSolver:
                 "job_id": new_id("dd"),
                 "recovery_id": recovery.recovery_id,
                 "identity_id": recovery.identity_id,
+                'site_id': recovery.site_id,
+                'challenge_family': scene.get('family', 'DATADOME'),
                 "created_at": now,
                 "status": "PREPARING",
                 "scene": scene_key(scene),
@@ -510,14 +574,14 @@ class DataDomeSolver:
                     self.coordinator.store.save_recovery(
                         value.model_copy(update={'scene_preparation':dict(action)}),
                         expected_generation=recovery.generation)
-                    self.coordinator.event(recovery,'DATADOME_RETRY_NOT_DISPATCHED',
+                    self.event(recovery,'DATADOME_RETRY_NOT_DISPATCHED',
                         retry_action_id=action['retry_action_id'],stage=action['failure_stage'],
                         error_type=action['error_type'])
                 raise
             action={**action,'status':'CLICKED'}
             self.coordinator.store.save_recovery(value.model_copy(update={'scene_preparation':action}),
                                                   expected_generation=recovery.generation)
-            self.coordinator.event(recovery,'DATADOME_RETRY_CLICKED',attempt_no=attempts+1,
+            self.event(recovery,'DATADOME_RETRY_CLICKED',attempt_no=attempts+1,
                                    retry_action_id=action['retry_action_id'])
             return True
         if scene.get('state') in {'INTERSTITIAL','UNAVAILABLE'} and not previous:
@@ -529,7 +593,7 @@ class DataDomeSolver:
             self.coordinator.store.save_recovery(recovery.model_copy(update={'scene_preparation':action}),
                                                  expected_generation=recovery.generation)
             await browser.reload()
-            self.coordinator.event(recovery,'DATADOME_RETRY_REGENERATED',previous_state=scene['state'])
+            self.event(recovery,'DATADOME_RETRY_REGENERATED',previous_state=scene['state'])
             return True
         return False
 
@@ -548,14 +612,18 @@ class DataDomeSolver:
         config = self.config()
         if not config.get("enabled") or recovery.site_id not in config.get("sites", ["reuters"]):
             return False
+        jobs = self.jobs(recovery.recovery_id)
+        active = jobs[-1] if jobs else None
+        family = ('PERIMETERX' if recovery.assessment.get('provider') in {'HUMAN_PERIMETERX', 'PERIMETERX'}
+                  else recovery.assessment.get('provider'))
+        if active and (active.get('task_id') or active.get('submitted_at')):
+            family = active.get('challenge_family', 'DATADOME')
         if (
-            recovery.assessment.get("provider") != "DATADOME"
+            family not in {'DATADOME', 'PERIMETERX'}
             or identity.runtime_kind.value != "external_chrome"
         ):
             return False
         binding = config.get("bindings", {}).get(identity.identity_id)
-        jobs = self.jobs(recovery.recovery_id)
-        active = jobs[-1] if jobs else None
         if not active and utc_now() - recovery.opened_at > timedelta(days=7):
             return False  # Historic GC may have removed an already-paid tombstone.
         if active and active["status"] in {"FAILED", "APPLIED", "SUBMITTING", "APPLYING", "SUPERSEDED"}:
@@ -567,6 +635,8 @@ class DataDomeSolver:
                     status="APPLIED",
                     verification_state="INDETERMINATE",
                     verification_reason="application_interrupted",
+                    failure_stage='RESULT_APPLICATION',
+                    application_state='PARTIAL_OR_UNKNOWN',
                 )
                 self.save(active)
             elif active["status"] == "APPLIED" and not active.get("verification_state"):
@@ -627,7 +697,8 @@ class DataDomeSolver:
             async with self.coordinator.service.profile_use.recovery(
                 identity, recovery.recovery_id, recovery.generation
             ):
-                browser = self.browser_factory(self.coordinator, recovery, identity)
+                factory = self.perimeterx_browser_factory if family == 'PERIMETERX' else self.browser_factory
+                browser = factory(self.coordinator, recovery, identity)
                 scene = await browser.inspect()
                 if not scene.get("website") or not scene.get("user_agent"):
                     return False
@@ -647,7 +718,7 @@ class DataDomeSolver:
                 if active and active["status"] == "PENDING":
                     if active["scene"] != signature or active["binding"] != route:
                         self.fail(active, recovery, "SCENE_OR_EGRESS_CHANGED")
-                        self.coordinator.event(recovery,'DATADOME_SOLVER_UNAVAILABLE',egress_reason=self.egress_reason)
+                        self.event(recovery,'DATADOME_SOLVER_UNAVAILABLE',egress_reason=self.egress_reason)
                         return False
                     current_egress = self.coordinator.service.repository.get_egress(
                         identity.egress_id
@@ -665,8 +736,15 @@ class DataDomeSolver:
                         self.fail(active, recovery, "SCENE_OR_EGRESS_CHANGED")
                         return False
                     solution = data.get("solution") or {}
-                    cookie = (self.solverify.cookie(solution, scene["website"], active.get("requested_user_agent"))
-                              if active.get("provider") == "solverify" else solution.get("cookie"))
+                    if active.get('challenge_family') == 'PERIMETERX':
+                        from .perimeterx_browser import cookie_parameters
+                        try:
+                            cookie = cookie_parameters(solution, scene['website'], active.get('requested_user_agent'))
+                        except ValueError as exc:
+                            raise SolverError(str(exc), failure_stage='RESULT_APPLICATION') from None
+                    else:
+                        cookie = (self.solverify.cookie(solution, scene["website"], active.get("requested_user_agent"))
+                                  if active.get("provider") == "solverify" else solution.get("cookie"))
                     active.update(status="APPLYING", verification_reason="application_in_progress")
                     self.save(active)  # Crash here is uncertain, never an invitation to set again.
                     application = await browser.apply(cookie, scene["website"])
@@ -677,42 +755,75 @@ class DataDomeSolver:
                         status="APPLIED",
                         applied_at=(application or {}).get("cookie_written_at") or utc_now().isoformat(),
                         verification_state="PENDING",
+                        application_state='COOKIE_WRITE_VERIFIED',
+                        failure_stage=None,
                     )
                     active["cookie_scope_verified"] = True
                     self.save(active)
-                    self.coordinator.event(
+                    self.event(
                         recovery,
                         "DATADOME_SOLVER_APPLIED",
+                        solver_family=family,
                         task_id=active["task_id"],
                         cost=active["cost"],
                     )
                     return (
                         True  # Next tick must prove the real listing/body, never mark healthy here.
                     )
-                provider_bootstrap=retry_provider_bootstrap(recovery,scene)
+                provider_bootstrap=family == 'DATADOME' and retry_provider_bootstrap(recovery,scene)
                 if scene['state'] != 'SOLVABLE' and not provider_bootstrap:
-                    preparing=await self.prepare_scene(recovery,browser,scene)
-                    if active and active.get('status') == 'WAITING_SLIDER':
-                        reason='DATADOME_'+scene['state']
-                        if active.get('reason') != reason:
-                            active['reason']=reason
-                            self.save(active)
-                    return preparing
+                    choice = config.get('provider_by_identity', {}).get(identity.identity_id,
+                        config.get('provider_by_site', {}).get(recovery.site_id, '2captcha'))
+                    stalled_auto = (family == 'DATADOME' and choice == 'solverify'
+                        and scene.get('state') == 'INTERSTITIAL' and scene.get('visible') is True
+                        and scene.get('loaded_frame_id') and (utc_now()-recovery.opened_at).total_seconds() >= 60)
+                    if not stalled_auto:
+                        preparing=await self.prepare_scene(recovery,browser,scene) if family == 'DATADOME' else False
+                        if active and active.get('status') == 'WAITING_SLIDER':
+                            reason = 'DATADOME_' + scene['state']
+                            if active.get('reason') != reason:
+                                active['reason'] = reason
+                                self.save(active)
+                        if family == 'PERIMETERX' and scene.get('visible') and not scene.get('website_key'):
+                            if active is None:
+                                active = self.new_job(recovery, scene, route)
+                            if active.get('reason') != 'PERIMETERX_APP_ID_MISSING':
+                                active.update(reason='PERIMETERX_APP_ID_MISSING', failure_stage='INPUT_CONFIGURATION')
+                                self.save(active)
+                        return preparing
                 runtime=self.coordinator.service.repository.get_identity_runtime(identity.identity_id)
                 if runtime.paid_cooldown_until and runtime.paid_cooldown_until > utc_now():
-                    return False
-                if not await self.egress_matches(binding, egress):
-                    self.coordinator.event(
-                        recovery, "DATADOME_SOLVER_UNAVAILABLE", reason="PROXY_EGRESS_NOT_VERIFIED",
-                        egress_reason=self.egress_reason,
-                    )
                     return False
                 if active is None:
                     active = self.new_job(recovery, scene, route)
                     active['admission']='ACKNOWLEDGED_RETRY_PROVIDER_BOOTSTRAP' if provider_bootstrap else 'LOCAL_SLIDER_READY'
-                provider, key, provider_name = self.provider_for(config, identity_id=identity.identity_id)
-                if provider_name == "solverify" and recovery.site_id != "reuters":
+                    active['challenge_family'] = family
+                if not await self.egress_matches(binding, egress):
+                    if active.get('network_reason') != self.egress_reason:
+                        active.update(failure_stage='PROXY_NETWORK', network_reason=self.egress_reason)
+                        self.save(active)
+                        self.event(recovery, 'CHALLENGE_SOLVER_NETWORK_FAILED',
+                            family=family, reason=self.egress_reason)
+                    return False
+                provider, key, provider_name = self.provider_for(config, identity_id=identity.identity_id, site_id=recovery.site_id)
+                host = urlsplit(scene['website']).hostname
+                if provider_name == "solverify" and host not in {'www.reuters.com', 'reuters.com', 'www.bloomberg.com', 'bloomberg.com'}:
                     raise SolverError("SOLVERIFY_PUBLISHER_NOT_ENABLED")
+                if family == 'PERIMETERX' and provider_name != 'solverify':
+                    raise SolverError('PERIMETERX_PROVIDER_NOT_ENABLED')
+                task = {
+                    k: binding[k]
+                    for k in ["proxyAddress", "proxyPort", "proxyLogin", "proxyPassword"]
+                }
+                request_task = {
+                    **task, 'type':'DataDomeSliderTask', 'proxyType':'http',
+                    'websiteURL':scene['website'], 'userAgent':scene['user_agent']}
+                if family == 'PERIMETERX':
+                    request_task.update(challengeFamily=family, websiteKey=scene['website_key'])
+                else:
+                    request_task['captchaUrl'] = scene['url']
+                if provider_name == 'solverify':
+                    self.solverify.prepare_task(request_task)  # Local validation before paid reservation.
                 with self.coordinator.service.repository.transaction() as db:
                     count = db.execute(
                         "select count(*) from datadome_solver_jobs where "
@@ -730,7 +841,7 @@ class DataDomeSolver:
                         (identity.identity_id, (utc_now() - timedelta(minutes=10)).isoformat()),
                     ).fetchone()[0]
                     if local_count >= 2:
-                        self.coordinator.event(
+                        self.event(
                             recovery, "DATADOME_SOLVER_BUDGET", reason="IDENTITY_10M_LIMIT"
                         )
                         return False
@@ -741,28 +852,22 @@ class DataDomeSolver:
                         submitted_at=utc_now().isoformat(),
                         provider=provider_name,
                         requested_user_agent=scene["user_agent"],
+                        challenge_family=family,
+                        failure_stage=None,
+                        network_reason=None,
+                        reason=None,
+                        network_preflight={'scope':'LOCAL_PROXY','result':'MATCH','observed_ip':egress.observed_ip},
                     )
                     active["updated_at"] = utc_now().isoformat()
                     db.execute(
                         "update datadome_solver_jobs set updated_at=?,data_json=? where job_id=?",
                         (active["updated_at"], json.dumps(active), active["job_id"]),
                     )
-                task = {
-                    k: binding[k]
-                    for k in ["proxyAddress", "proxyPort", "proxyLogin", "proxyPassword"]
-                }
                 self.provider_ticks.add(recovery.recovery_id)
                 data = await provider.request(
                     key,
                     "createTask",
-                    task={
-                        **task,
-                        "type": "DataDomeSliderTask",
-                        "proxyType": "http",
-                        "websiteURL": scene["website"],
-                        "captchaUrl": scene["url"],
-                        "userAgent": scene["user_agent"],
-                    },
+                    task=request_task,
                 )
                 task_id = data.get("taskId")
                 if provider_name == "solverify":
@@ -779,8 +884,8 @@ class DataDomeSolver:
                         raise SolverError("INVALID_TASK_ID")
                 active.update(status="PENDING", task_id=task_id)
                 self.save(active)
-                self.coordinator.event(
-                    recovery, "DATADOME_SOLVER_SUBMITTED", task_id=active["task_id"]
+                self.event(
+                    recovery, "DATADOME_SOLVER_SUBMITTED", task_id=active["task_id"], solver_family=family
                 )
                 return True
         except SolverError as exc:
@@ -791,6 +896,11 @@ class DataDomeSolver:
             ):
                 return True  # Poll the durable task again; never create a replacement purchase.
             if active:
+                if exc.cost is not None:
+                    active.update(cost=exc.cost, provider_cost=exc.cost)
+                active.update(failure_stage=exc.failure_stage or
+                    ('RESULT_APPLICATION' if str(exc) in {'SOLVERIFY_USER_AGENT_MISMATCH','INVALID_PROVIDER_COOKIE'}
+                     else 'PROVIDER_UNDETERMINED'), network_reason=exc.network_reason)
                 self.fail(active, recovery, str(exc))
             return False
         except Exception as exc:
@@ -800,7 +910,7 @@ class DataDomeSolver:
                 if isinstance(exc, RuntimeError) and str(exc).startswith("solver_")
                 else "BROWSER_OR_PROXY_UNAVAILABLE"
             )
-            self.coordinator.event(
+            self.event(
                 recovery,
                 "DATADOME_SOLVER_UNAVAILABLE",
                 reason=reason,
@@ -812,6 +922,9 @@ class DataDomeSolver:
                     verification_state="INDETERMINATE",
                     applied_at=utc_now().isoformat(),
                     verification_reason="application_outcome_unknown",
+                    failure_stage='RESULT_APPLICATION',
+                    application_state='PARTIAL_OR_UNKNOWN',
+                    cookie_scope_verified=False,
                 )
                 self.save(active)
                 return False
@@ -845,6 +958,7 @@ class DataDomeSolver:
                 if report and report.challenge == "BLOCKED"
                 else "INDETERMINATE",
                 verification_reason="confirmation_window_expired",
+                failure_stage='SITE_ACCEPTANCE' if report and report.challenge == 'BLOCKED' else 'PROOF_UNAVAILABLE',
             )
             self.save(job)
             return None
@@ -887,8 +1001,10 @@ class DataDomeSolver:
             solver_verification='STILL_BLOCKED' if reason == 'ERROR_CAPTCHA_UNSOLVABLE' else 'INDETERMINATE',
         )
         self.save(job)
-        self.coordinator.event(
-            recovery, "DATADOME_SOLVER_FAILED", reason=reason, task_id=job.get("task_id")
+        self.event(
+            recovery, "DATADOME_SOLVER_FAILED" if job.get('challenge_family') != 'PERIMETERX' else 'PERIMETERX_SOLVER_FAILED',
+            reason=reason, task_id=job.get("task_id"), failure_stage=job.get('failure_stage'),
+            solver_family=job.get('challenge_family', 'DATADOME')
         )
         from .schema import SitePurpose
 

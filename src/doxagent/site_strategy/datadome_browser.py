@@ -406,27 +406,34 @@ class NativeChallenge:
             await call('Page.reload', {'ignoreCache':False})
 
     async def apply(self, cookie, website):
+        returned = SimpleCookie()
+        returned.load(cookie)
+        attributes = {key: str(returned['datadome'][key])
+                      for key in ('domain', 'path', 'secure', 'httponly', 'samesite')}
+        return await self.apply_cookies([solution_cookie(cookie, website)], website,
+                                        provider_attributes=attributes)
+
+    async def apply_cookies(self, cookies, website, *, return_to_article=False, provider_attributes=None):
         async with self.connection() as call:
             root = (await call("DOM.getDocument", {"depth": 0}))["root"]
             if urlsplit(root.get("documentURL", "")).hostname != urlsplit(website).hostname:
                 raise RuntimeError("solver_document_changed")
-            params = solution_cookie(cookie, website)
+            params = cookies[0]
             observation, trace = {}, None
             # Paid application only: one bounded passive window, no interception,
             # extra navigation, provider request or recurring screenshot.
-            if hasattr(call, "observe_for") and self.recovery.site_id == "reuters":
+            if hasattr(call, "observe_for") and urlsplit(website).hostname in {'www.reuters.com', 'reuters.com', 'www.bloomberg.com', 'bloomberg.com'}:
                 from .solver_forensics import WireEvidence, cookie_summary, fingerprint
                 observation = {"schema_version": 1, "observation_seconds": 5,
                     "identity_id": self.identity.identity_id,
                     "profile_id": self.identity.profile_id,
                     "instance_id": self.target.browser_instance_id, "target_id": self.target.target_id,
-                    "solution_fingerprint": fingerprint(params["value"], self.recovery.recovery_id)}
-                returned = SimpleCookie()
-                returned.load(cookie)
-                observation["provider_attributes"] = {key: str(returned["datadome"][key])
-                    for key in ("domain", "path", "secure", "httponly", "samesite")}
+                    "solution_fingerprint": fingerprint(params["value"], self.recovery.recovery_id),
+                    "solution_cookies": cookie_summary(cookies, self.recovery.recovery_id)}
+                if provider_attributes is not None:
+                    observation['provider_attributes'] = provider_attributes
                 try:
-                    trace = WireEvidence(self.recovery.recovery_id)
+                    trace = WireEvidence(self.recovery.recovery_id, website=website)
                     call.observer = trace.event
                     async with asyncio.timeout(2):
                         await call("Network.enable", {"maxTotalBufferSize": 131072, "maxResourceBufferSize": 65536})
@@ -437,22 +444,25 @@ class NativeChallenge:
                 except (RuntimeError, TimeoutError, ValueError, KeyError, TypeError):
                     trace, call.observer = None, None
                     observation["read_state"] = "BEFORE_UNAVAILABLE"
-            result = await call("Network.setCookie", params)
-            if result.get("success") is False:
-                raise RuntimeError("solver_cookie_rejected")
+            for item in cookies:
+                result = await call("Network.setCookie", item)
+                if result.get("success") is False:
+                    raise RuntimeError("solver_cookie_rejected")
             visible = await call("Network.getCookies", {"urls": [website]})
-            if not any(
-                c.get("name") == params["name"]
-                and c.get("value") == params["value"]
-                and c.get("domain") == params["domain"]
-                for c in visible.get("cookies", [])
-            ):
+            if not all(any(c.get('name') == item['name'] and c.get('value') == item['value']
+                           and c.get('domain') == item['domain'] for c in visible.get('cookies', []))
+                       for item in cookies):
                 raise RuntimeError("solver_cookie_not_visible_to_publisher")
             if trace:
                 from .schema import utc_now
                 observation["cookie_written_at"] = utc_now().isoformat()
                 observation["cookies_after_write"] = cookie_summary(visible.get("cookies", []), self.recovery.recovery_id)
-            await call("Page.reload", {"ignoreCache": False})
+            if return_to_article:
+                # Bloomberg redirects to /tosv2.html; reloading that endpoint
+                # would keep showing the block even after correct cookie writes.
+                await call('Page.navigate', {'url': website})
+            else:
+                await call("Page.reload", {"ignoreCache": False})
             if trace:
                 try:
                     # This observes the already-issued reload, never waits for

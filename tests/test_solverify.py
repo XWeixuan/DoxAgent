@@ -17,7 +17,7 @@ async def test_wire_translation_uses_actual_browser_and_normalizes_vendor_states
     monkeypatch.setattr(TwoCaptcha, 'request', request)
     client = Solverify()
     await client.request('private', 'createTask', task={'type': 'DataDomeSliderTask',
-        'userAgent': UA, 'proxyPort': 18791, 'websiteURL': 'https://www.reuters.com/'})
+        'userAgent': UA, 'proxyPort': 18791, 'websiteURL': 'https://www.reuters.com/', 'captchaUrl': 'https://geo.captcha-delivery.com/captcha/?t=fe&cid=c&initialCid=i&hash=h'})
     wire = request.await_args.kwargs['task']
     assert wire['type'] == 'datadome' and wire['useragent'] == UA and wire['proxyPort'] == '18791'
     assert 'userAgent' not in wire
@@ -45,7 +45,7 @@ def enable(solver, recovery, identity, browser):
               'provider_by_identity': {identity.identity_id: 'solverify'}}
     solver.config = lambda: config
     solver.coordinator.service.resolve = lambda url: SimpleNamespace(site_id='reuters')
-    browser.inspect.return_value.update(website='https://www.reuters.com/', user_agent=UA)
+    browser.inspect.return_value.update(website='https://www.reuters.com/', user_agent=UA, url='https://geo.captcha-delivery.com/captcha/?t=fe&cid=c&initialCid=i&hash=h')
     return recovery.model_copy(update={'site_id': 'reuters'}), config
 
 

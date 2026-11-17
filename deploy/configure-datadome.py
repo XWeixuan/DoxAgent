@@ -41,7 +41,7 @@ def squid_config(bindings, listeners, subnet, *, solver_source_ips=()):
         "acl CONNECT method CONNECT",
         "acl SSL_ports port 443",
         "acl solver_src src " + " ".join(dict.fromkeys(["138.201.188.166/32", subnet, *sources])),
-        "acl allowed dstdomain .reuters.com .captcha-delivery.com .datadome.co api.ipify.org",
+        "acl allowed dstdomain .reuters.com .captcha-delivery.com .datadome.co api.ipify.org .bloomberg.com .perimeterx.net .px-cdn.net .px-cloud.net",
         "acl private_dst dst 0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 ::1/128 fc00::/7 fe80::/10",
         "acl too_many maxconn 16",
         "http_access deny !solver_src",

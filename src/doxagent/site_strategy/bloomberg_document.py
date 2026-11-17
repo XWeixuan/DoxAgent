@@ -25,6 +25,10 @@ _READ = r"""() => {
    }
    return true;
  };
+ if([...document.querySelectorAll('#px-captcha,.px-captcha-visible')].some(e=>visible(e)
+      && e.getBoundingClientRect().width>0 && e.getBoundingClientRect().height>0)
+    && /press\s*(?:&|and)\s*hold|are you a robot|detected unusual activity/i.test(document.body?.innerText||''))
+   return {challenge:true};
  const article=document.querySelector('article.current[data-story-id]')
    || document.querySelector('article[data-story-id]');
  const body=article?.querySelector('.body-content');
@@ -81,6 +85,8 @@ async def capture_document(page, *, timeout=12):
     latest = None
     while True:
         latest = await page.evaluate(_READ)
+        if latest and latest.get('challenge'):
+            return await page.content(), page.url
         if latest:
             signature = (latest['storyId'], latest['text'], latest['complete'])
             if latest['complete'] and signature == previous:

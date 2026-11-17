@@ -61,6 +61,12 @@ def classify(html, *, status=0, headers=None):
     scripts = [s for s in scripts if s]
     provider, kind, confidence, signals = "UNKNOWN", "UNKNOWN", "UNKNOWN", []
     text = (title + " " + visible).lower()
+    if not active_px:
+        active_px = bool(root.xpath('//*[@id="px-captcha" and not(@hidden or @aria-hidden="true")]')) and bool(
+            re.search(r'press\s*(?:&|and)\s*hold|are you a robot|detected unusual activity', text)
+            and (re.search(r'\b_pxAppId\s*=', html or '') or any(
+                (urlsplit(s).hostname or '').endswith(('.px-cdn.net', '.px-cloud.net', '.perimeterx.net'))
+                for s in scripts)))
     if any(
         (urlsplit(s).hostname or "").endswith(".captcha-delivery.com")
         or urlsplit(s).hostname == "captcha-delivery.com"

@@ -120,15 +120,17 @@ async def test_capture_waits_for_entitlement_hydration_and_stable_body():
     assert page.evaluate.await_count == 3
 
 
-@pytest.mark.parametrize('source,expected', [('bloomberg_massive', 'managed'), ('businesswire_massive', 'public')])
+@pytest.mark.parametrize('source,url,expected', [('bloomberg_massive', URL, 'managed'),
+    ('businesswire_massive', 'https://www.businesswire.com/news/home/example', 'managed'),
+    ('globenewswire_massive', 'https://www.globenewswire.com/news-release/example', 'public')])
 @pytest.mark.asyncio
-async def test_massive_routing_uses_paid_identity_only_for_bloomberg(source, expected):
+async def test_massive_routing_preserves_publisher_policies_and_public_wires(source, url, expected):
     extractor = SharedContentExtractor()
     extractor.start = AsyncMock()
     extractor._session = object()
     extractor._pipeline = SimpleNamespace(extract=AsyncMock(return_value='public'))
     extractor._managed_pipeline = SimpleNamespace(extract=AsyncMock(return_value='managed'))
-    record = MediaEnrichmentRecord('id', 'id', source, 'MU', TITLE, '', URL)
+    record = MediaEnrichmentRecord('id', 'id', source, 'MU', TITLE, '', url)
     assert await extractor.extract_version(record, 'body_v2.2') == expected
 
 
