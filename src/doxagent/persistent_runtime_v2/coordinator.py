@@ -329,22 +329,45 @@ class RuntimeCoordinator:
     def _submit_task(self, task, pool):
         # The long recovery/calendar tick must not own admission of a new Case.
         # Only the existing lease claim and in-memory registration are serialized.
+        future = None
         with self._tasks_lock:
             if self._closed or task['id'] in self._futures:
                 return
             lease=self.journal.claim(task['id'],seconds=120)
             if lease:
                 self._leases[task['id']]=lease
-                self._futures[task['id']]=pool.submit(self._execute,lease)
+                future = pool.submit(self._execute,lease)
+                self._futures[task['id']] = future
+        if future is not None and task['kind'] == 'CASE' and task['inputs'].get('mode') == 'REALTIME':
+            # Register outside the lock: an already-completed Future calls inline.
+            future.add_done_callback(lambda done: self._case_capacity_available(task, done))
+        return future is not None
 
-    def dispatch_realtime(self, ticker):
+    def _case_capacity_available(self, task, future):
+        with self._tasks_lock:
+            if self._futures.get(task['id']) is future:
+                self._futures.pop(task['id'], None)
+                self._leases.pop(task['id'], None)
+        try:
+            self.dispatch_realtime(task['ticker'], limit=1)
+        except Exception:
+            # Durable pending work remains eligible for the existing recovery tick.
+            logging.getLogger(__name__).exception('Immediate Case capacity wakeup failed')
+
+    def dispatch_realtime(self, ticker, *, limit=None):
         """Immediately dispatch durable admitted Cases, using the same lease/pool."""
         if self._closed or getattr(self,'_should_stop',lambda:False)():
             return
+        dispatched = 0
         for task in self.journal.task_controls(ticker):
+            if limit is not None and task['status'] != 'PENDING':
+                continue
             if (task['kind']=='CASE' and task['inputs']['mode']=='REALTIME'
                 and task['due_at']<=self.journal.clock().isoformat()):
-                self._submit_task(task,self._realtime)
+                if self._submit_task(task,self._realtime):
+                    dispatched += 1
+                    if limit is not None and dispatched >= limit:
+                        break
 
     def tick_existing(self, ticker: str) -> None:
         """Recover original durable work without consuming Stream or creating sweeps."""

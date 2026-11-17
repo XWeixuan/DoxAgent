@@ -140,3 +140,37 @@ def test_bridge_visibility_does_not_read_content_first_admission_history(tmp_pat
     # Durable receipt prevents re-reading the current Library after a process restart.
     monkeypatch.setattr(provider, 'published_facts', no_history)
     retain_new_library_facts(repo, provider, 'MU', DAY, **args)
+
+
+def test_completion_dispatches_waiting_case_without_recovery_tick_or_capacity_change(tmp_path):
+    from threading import Event
+    from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    journal = RuntimeJournal(tmp_path / 'runtime.db')
+    coordinator = RuntimeCoordinator(SimpleNamespace(), journal)
+    release, full, successor = Event(), Event(), Event()
+    calls = []
+    def run(task):
+        calls.append(task['id'])
+        if len(calls) == journal.CASE_CONCURRENCY_PER_TICKER:
+            full.set()
+        if task['id'] == 'waiting':
+            successor.set()
+        else:
+            release.wait(5)
+        journal.finish(task)
+    coordinator._execute = run
+    for n in range(journal.CASE_CONCURRENCY_PER_TICKER):
+        journal.put_task(f'active-{n}', 'MU', 'CASE', {'mode':'REALTIME'})
+    journal.put_task('waiting', 'MU', 'CASE', {'mode':'REALTIME'})
+    try:
+        coordinator.dispatch_realtime('MU')
+        assert full.wait(3)
+        assert not successor.is_set()
+        assert journal.get_task('waiting')['status'] == 'PENDING'
+        release.set()
+        assert successor.wait(3)
+        assert calls.count('waiting') == 1
+    finally:
+        release.set()
+        coordinator.close()
