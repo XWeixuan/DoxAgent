@@ -18,6 +18,18 @@ from doxagent.settings import DoxAgentSettings
 _log = logging.getLogger(__name__)
 
 
+def without_plugin_market(config: CodexConfig) -> CodexConfig:
+    return replace(
+        config,
+        config_overrides=(
+            *config.config_overrides,
+            "features.plugins=false",
+            "features.remote_plugin=false",
+            "features.recommended_plugins=false",
+        ),
+    )
+
+
 def configured_codex(config: CodexConfig | None, settings: DoxAgentSettings) -> CodexConfig:
     config = config or CodexConfig(client_name="doxagent-codex-worker")
     if config.codex_bin or not settings.codex_runtime_bin:

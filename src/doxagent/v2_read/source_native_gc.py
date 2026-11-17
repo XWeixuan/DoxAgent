@@ -7,7 +7,7 @@ import shutil
 import time
 
 from .outbox import quoted
-from .source_lifecycle import replace_packet_refs
+from .source_lifecycle import migrate as migrate_transport, native_hashes, replace_packet_hashes
 
 
 def migrate(db):
@@ -52,92 +52,142 @@ def orphan_refs(db,table,owner,keys,*,limit,started,seconds,packet=False):
 def reconcile(source, *, limit=64, seconds=.3):
     """Repair old append-only owner refs before considering any source CAS file."""
     started=time.monotonic();report=dict(rows=0,owners=0,ready=False)
-    with closing(source.connection(write=True)) as db,db:
-        db.execute('BEGIN IMMEDIATE');migrate(db)
-        names={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        tables=[]
+    with closing(source.connection()) as db:
+        names = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        tables = []
         for table in sorted(names):
-            if table.startswith('sqlite_'):continue
-            info=list(db.execute('PRAGMA table_info('+quoted(table)+')'))
-            columns=[r[1] for r in info if r[1] in {'payload','payload_json','inputs','receipt','data_json'}]
+            if table.startswith("sqlite_"):
+                continue
+            info = list(db.execute("PRAGMA table_info(" + quoted(table) + ")"))
+            columns = [row[1] for row in info
+                       if row[1] in {"payload", "payload_json", "inputs", "receipt", "data_json"}]
             if columns:
-                keys=[r[1] for r in sorted((r for r in info if r[5]),key=lambda r:r[5])]
-                tables.append((table,columns,keys))
-        packets=[(table,owner) for table,owner in (('v2_receipt_packs','transport_pack'),('v2_receipt_archive','transport_archive'),
-                 ('v2_source_exception_receipts','transport_exception')) if table in names]
-        # Register the complete work set before a time budget can yield. A
-        # completed prefix is not proof that every owner has been reconciled.
-        owners=[t for t,_,_ in tables]+[owner for _,owner in packets]
-        db.executemany('INSERT OR IGNORE INTO v2_native_ref_scan VALUES(?,0,0)',
-                       [(identity,) for owner in owners for identity in (owner,'orphan:'+owner)])
-        for table,columns,keys in tables:
-            db.execute('INSERT OR IGNORE INTO v2_native_ref_scan VALUES(?,0,0)',(table,))
-            after,done=db.execute('SELECT cursor,done FROM v2_native_ref_scan WHERE owner=?',(table,)).fetchone()
+                keys = [row[1] for row in sorted(info, key=lambda row: row[5]) if row[5]]
+                tables.append((table, columns, keys))
+        packets = [(table, owner) for table, owner in (
+            ("v2_receipt_packs", "transport_pack"),
+            ("v2_receipt_archive", "transport_archive"),
+            ("v2_source_exception_receipts", "transport_exception"),
+        ) if table in names]
+        owners = [(table, table, columns, keys) for table, columns, keys in tables]
+        owners += [(table, owner, [], ["seq"]) for table, owner in packets]
+        wanted = {name for _, owner, _, _ in owners for name in (owner, "orphan:" + owner)}
+        scan = dict((row[0], (row[1], row[2])) for row in db.execute(
+            "SELECT owner,cursor,done FROM v2_native_ref_scan"
+        )) if "v2_native_ref_scan" in names else {}
+    if wanted - scan.keys():
+        with closing(source.connection(write=True)) as db, db:
+            db.execute("BEGIN IMMEDIATE")
+            migrate(db)
+            db.executemany("INSERT OR IGNORE INTO v2_native_ref_scan VALUES(?,0,0)",
+                           [(key,) for key in wanted - scan.keys()])
+    for table, owner, columns, keys in owners:
+        done = scan.get(owner, (0, 0))[1]
+        orphan_done = scan.get("orphan:" + owner, (0, 0))[1]
+        if done and orphan_done:
+            continue
+        if time.monotonic() - started >= seconds and report["rows"]:
+            break
+        selector = "rowid" if columns else "seq"
+        fields = list(dict.fromkeys(keys + columns))
+        selected = ",".join(map(quoted, fields))
+        key_positions = [1 + fields.index(key) for key in keys] if columns else []
+        payload_positions = [1 + fields.index(column) for column in columns]
+        query = ("SELECT " + selector + "," + selected) if columns else "SELECT *"
+        query += " FROM " + quoted(table)
+        prepared = []
+        if not done:
+            cursor = scan.get(owner, (0, 0))[0]
+            with closing(source.connection()) as db:
+                rows = db.execute(query + f" WHERE {selector}>? ORDER BY {selector} LIMIT ?",
+                                  (cursor, limit)).fetchall()
+                for row in rows:
+                    identity = json.dumps([row[position] for position in key_positions],
+                                          separators=(",", ":"), ensure_ascii=False) if keys and columns else str(row[0])
+                    raw = tuple(row) if columns else source.event(row[0], decode=False, connection=db)
+                    if raw is None:
+                        raise ValueError("native ref packet unavailable")
+                    prepared.append((tuple(row), identity, set(native_hashes(raw if not columns else [raw[position] for position in payload_positions]))))
+                    if time.monotonic() - started >= seconds:
+                        break
+        with closing(source.connection(write=True)) as db, db:
+            db.execute("BEGIN IMMEDIATE")
             if done:
-                checked=orphan_refs(db,table,table,keys,limit=limit,started=started,seconds=seconds)
-                report['orphan_owners']=report.get('orphan_owners',0)+checked
-                if checked and time.monotonic()-started>=seconds:break
+                checked = orphan_refs(db, table, owner, keys, limit=limit, started=started,
+                                      seconds=seconds, packet=not columns)
+                report["orphan_owners"] = report.get("orphan_owners", 0) + checked
                 continue
-            rows=db.execute('SELECT rowid AS _native_rowid,* FROM '+quoted(table)+' WHERE rowid>? ORDER BY rowid LIMIT ?',(after,limit)).fetchall()
-            for row in rows:
-                identity=json.dumps([row[k] for k in keys],separators=(',',':'),ensure_ascii=False) if keys else str(row['_native_rowid'])
-                replace_packet_refs(db,table,identity,{k:row[k] for k in columns})
-                after=row['_native_rowid'];report['rows']+=1
-                if time.monotonic()-started>=seconds:break
-            if not rows:
-                done=1;report['owners']+=1
-            db.execute('UPDATE v2_native_ref_scan SET cursor=?,done=? WHERE owner=?',(after,done,table))
-            if time.monotonic()-started>=seconds:break
-        # Imported archive mappings need explicit refs; their payloads do not
-        # reside in SQL JSON columns. Usually expiry has already removed them.
-        for table,owner in packets:
-            db.execute('INSERT OR IGNORE INTO v2_native_ref_scan VALUES(?,0,0)',(owner,))
-            after,done=db.execute('SELECT cursor,done FROM v2_native_ref_scan WHERE owner=?',(owner,)).fetchone()
-            if done:
-                checked=orphan_refs(db,table,owner,['seq'],limit=limit,started=started,seconds=seconds,packet=True)
-                report['orphan_owners']=report.get('orphan_owners',0)+checked
-                if checked and time.monotonic()-started>=seconds:break
+            if tuple(db.execute("SELECT cursor,done FROM v2_native_ref_scan WHERE owner=?", (owner,)).fetchone()) != (cursor, 0):
                 continue
-            rows=db.execute('SELECT seq FROM '+table+' WHERE seq>? ORDER BY seq LIMIT ?',(after,limit)).fetchall()
-            for seq, in rows:
-                raw=source.event(seq,decode=False)
-                if raw is None:raise ValueError('native ref packet unavailable')
-                replace_packet_refs(db,owner,seq,raw);after=seq;report['rows']+=1
-                if time.monotonic()-started>=seconds:break
-            if not rows:
-                done=1
-            db.execute('UPDATE v2_native_ref_scan SET cursor=?,done=? WHERE owner=?',(after,done,owner))
-            if time.monotonic()-started>=seconds:break
-        report['ready']=not db.execute('SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1').fetchone()
+            for row, identity, hashes in prepared:
+                current = db.execute(query + f" WHERE {selector}=?", (row[0],)).fetchone()
+                if current is None or tuple(current) != row:
+                    break
+                replace_packet_hashes(db, owner, identity, hashes)
+                cursor = row[0]
+                report["rows"] += 1
+            finished = not rows and not db.execute(
+                "SELECT 1 FROM " + quoted(table) + f" WHERE {selector}>? LIMIT 1", (cursor,)
+            ).fetchone()
+            report["owners"] += int(finished)
+            db.execute("UPDATE v2_native_ref_scan SET cursor=?,done=? WHERE owner=?",
+                       (cursor, int(finished), owner))
+    with closing(source.connection()) as db:
+        report["ready"] = not db.execute("SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1").fetchone()
     return report
 
 
 def inventory(source, *, limit=64):
     """Register only verified-format native CAS paths, including abandoned puts."""
-    root=source.path.parent/'native-files';count=0;last=''
-    with closing(source.connection(write=True)) as db,db:
-        db.execute('BEGIN IMMEDIATE');migrate(db)
-        if db.execute('SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1').fetchone():return 0
-        row=db.execute('SELECT after_digest FROM v2_native_inventory WHERE id=1').fetchone();after=row[0] if row else ''
-        if root.is_symlink():raise ValueError('native root is linked')
-        if root.exists():
-            for prefix in sorted(root.iterdir()):
-                if not prefix.is_dir() or prefix.is_symlink() or not re.fullmatch('[0-9a-f]{2}',prefix.name):continue
-                if after and prefix.name<after[:2]:continue
-                for p in sorted(prefix.iterdir()):
-                    if p.name<=after or p.is_symlink() or not re.fullmatch('[0-9a-f]{64}',p.name):continue
-                    if p.parent.name!=p.name[:2]:raise ValueError('native CAS prefix mismatch')
-                    manifest=p/'manifest.json'
-                    value=json.loads(manifest.read_text(encoding='utf-8'))
-                    if value.get('sha256')!=p.name or value.get('version')!=1:raise ValueError('native inventory manifest mismatch')
-                    created=datetime.fromtimestamp(manifest.stat().st_mtime,UTC).isoformat()
-                    db.execute("INSERT OR IGNORE INTO artifact(id,sha256,size,codec,location,class,created_at) VALUES(?,?,?,'json-chunks-v1',?,'BUSINESS',?)",
-                               (p.name,p.name,value['size'],'native-files/'+p.name[:2]+'/'+p.name,created))
-                    count+=1;last=p.name
-                    if count>=limit:break
-                if count>=limit:break
-        db.execute('INSERT INTO v2_native_inventory VALUES(1,?) ON CONFLICT(id) DO UPDATE SET after_digest=excluded.after_digest',(last if count>=limit else '',))
-    return count
+    root = source.path.parent / "native-files"
+    with closing(source.connection()) as db:
+        if db.execute("SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1").fetchone():
+            return 0
+        row = db.execute("SELECT after_digest FROM v2_native_inventory WHERE id=1").fetchone()
+    after = row[0] if row else ""
+    if root.is_symlink():
+        raise ValueError("native root is linked")
+    prepared = []
+    for prefix in sorted(root.iterdir()) if root.exists() else ():
+        if prefix.name < after[:2] or prefix.is_symlink() or not re.fullmatch("[0-9a-f]{2}", prefix.name) or not prefix.is_dir():
+            continue
+        for path in sorted(prefix.iterdir()):
+            if path.name <= after or path.is_symlink() or not re.fullmatch("[0-9a-f]{64}", path.name):
+                continue
+            if path.name[:2] != prefix.name:
+                raise ValueError("native CAS prefix mismatch")
+            manifest = path / "manifest.json"
+            try:
+                value = json.loads(manifest.read_text(encoding="utf-8"))
+                created = datetime.fromtimestamp(manifest.stat().st_mtime, UTC).isoformat()
+            except FileNotFoundError:
+                continue
+            if value.get("sha256") != path.name or value.get("version") != 1:
+                raise ValueError("native inventory manifest mismatch")
+            prepared.append((path.name, value["size"], created))
+            if len(prepared) >= limit:
+                break
+        if len(prepared) >= limit:
+            break
+    if not prepared and not after:
+        return 0
+    with closing(source.connection(write=True)) as db, db:
+        db.execute("BEGIN IMMEDIATE")
+        current = db.execute("SELECT after_digest FROM v2_native_inventory WHERE id=1").fetchone()
+        if (tuple(current) if current else None) != (tuple(row) if row else None) or db.execute("SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1").fetchone():
+            return 0
+        db.executemany(
+            "INSERT OR IGNORE INTO artifact(id,sha256,size,codec,location,class,created_at) "
+            "VALUES(?,?,?,'json-chunks-v1',?,'BUSINESS',?)",
+            [(digest, digest, size, f"native-files/{digest[:2]}/{digest}", created)
+             for digest, size, created in prepared],
+        )
+        db.execute(
+            "INSERT INTO v2_native_inventory VALUES(1,?) "
+            "ON CONFLICT(id) DO UPDATE SET after_digest=excluded.after_digest",
+            (prepared[-1][0] if len(prepared) >= limit else "",),
+        )
+    return len(prepared)
 
 
 def collect(source, *, now=None, limit=32):
@@ -145,6 +195,40 @@ def collect(source, *, now=None, limit=32):
     now=now or datetime.now(UTC);report=dict(quarantined=0,deleted=0,allocated=0)
     protected="EXISTS(SELECT 1 FROM artifact_ref r WHERE r.artifact_id=a.id) OR EXISTS(SELECT 1 FROM retention_hold h WHERE h.released_at IS NULL AND (h.scope='ALL' OR h.id=a.id))"
     root=source.path.parent.resolve();quarantine=root/'native-quarantine'
+    cutoff = (now - timedelta(days=7)).isoformat()
+    with closing(source.connection()) as db:
+        if not db.execute("SELECT 1 FROM v2_native_ref_scan LIMIT 1").fetchone() or db.execute(
+            "SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1"
+        ).fetchone():
+            return report
+        cursor_row = db.execute(
+            "SELECT cursor FROM v2_transport_gc_state WHERE kind='native-age-scan'"
+        ).fetchone() if db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='v2_transport_gc_state'"
+        ).fetchone() else None
+        cursor = cursor_row[0][3:] if cursor_row else ""
+        page = db.execute(
+            "SELECT id, state, codec, location, created_at FROM artifact "
+            "WHERE id>? ORDER BY id LIMIT 256", (cursor,),
+        ).fetchall()
+        aged = []
+        next_cursor = ""
+        for inspected, (digest, state, codec, location, created) in enumerate(page, 1):
+            next_cursor = digest
+            if state == "LIVE" and codec == "json-chunks-v1" and created < cutoff and (
+                location == f"native-files/{digest[:2]}/{digest}"
+            ) and not db.execute(
+                "SELECT 1 FROM artifact a WHERE id=? AND (" + protected + ")", (digest,)
+            ).fetchone():
+                aged.append((digest,))
+                if len(aged) >= limit:
+                    break
+        if page and inspected == len(page) and len(page) < 256:
+            next_cursor = ""
+    if not page and not cursor and not aged:
+        with closing(source.connection()) as db:
+            if not db.execute("SELECT 1 FROM v2_native_exit LIMIT 1").fetchone():
+                return report
     with closing(source.connection(write=True)) as db,db:
         db.execute('BEGIN IMMEDIATE');migrate(db)
         # A current-source snapshot can still read a formerly-current native
@@ -168,8 +252,22 @@ def collect(source, *, now=None, limit=32):
                 elif q.exists():shutil.rmtree(q)
                 db.execute('DELETE FROM v2_native_exit WHERE id=?',row)
             else:candidates.append(row)
-        if not early:
-            candidates=db.execute("SELECT a.id FROM artifact a WHERE a.state='LIVE' AND a.codec='json-chunks-v1' AND a.location='native-files/'||substr(a.id,1,2)||'/'||a.id AND a.created_at<? AND NOT ("+protected+") LIMIT ?",((now-timedelta(days=7)).isoformat(),limit)).fetchall()
+        if not early and (page or cursor):
+            migrate_transport(db)
+            current = db.execute(
+                "SELECT cursor FROM v2_transport_gc_state WHERE kind='native-age-scan'"
+            ).fetchone()
+            if (current[0] if current else None) == (cursor_row[0] if cursor_row else None):
+                candidates = [row for row in aged if db.execute(
+                    "SELECT 1 FROM artifact a WHERE a.id=? AND state='LIVE' AND created_at<? "
+                    "AND codec='json-chunks-v1' AND location='native-files/'||substr(id,1,2)||'/'||id "
+                    "AND NOT (" + protected + ")", (*row, cutoff)
+                ).fetchone()]
+                db.execute(
+                    "INSERT INTO v2_transport_gc_state(kind,cursor) VALUES('native-age-scan',?) "
+                    "ON CONFLICT(kind) DO UPDATE SET cursor=excluded.cursor "
+                    "WHERE cursor<>excluded.cursor", ("id:" + next_cursor,),
+                )
         for digest, in candidates:
             if not re.fullmatch('[0-9a-f]{64}',digest):raise ValueError('invalid native identity')
             p=root/'native-files'/digest[:2]/digest;q=quarantine/digest

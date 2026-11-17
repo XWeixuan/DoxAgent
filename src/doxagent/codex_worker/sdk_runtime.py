@@ -446,6 +446,7 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.startup_timeout_sec": 10,
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
+        turn_service_tier = None
         if request.node == CodexPersistentRuntimeNode.W3:
             # Operations is standard-tier even when resuming a Fast Trade thread.
             luna_fast = execution_model == "gpt-6-luna" and request.task_phase != "post_decision_operations"
@@ -453,8 +454,16 @@ class OpenAICodexRuntime:
                 luna_fast = self._w3_service_tier == "fast"
             if luna_fast and execution_model != "gpt-6-luna":
                 raise ValueError("W3 Fast replay requires gpt-6-luna")
-            sdk_config["service_tier"] = "fast" if luna_fast else "default"
-            sdk_config["features.fast_mode"] = luna_fast
+            tier = "fast" if luna_fast else "default"
+            if request.w3_entry_version == "w3-entry-v6" and execution_model == "gpt-6-luna":
+                # Retain one resident configuration. The server applies the
+                # actual speed to each newly started turn independently.
+                turn_service_tier = tier
+                sdk_config["service_tier"] = "default"
+                sdk_config["features.fast_mode"] = True
+            else:
+                sdk_config["service_tier"] = tier
+                sdk_config["features.fast_mode"] = luna_fast
         if request.node in {
             CodexD3Node.O3_DISCOVERY,
             CodexD3Node.O3_PLANNING,
@@ -817,6 +826,7 @@ class OpenAICodexRuntime:
             thread.turn(
                 request.prompt,
                 cwd=str(cwd),
+                **({"turn_service_tier": turn_service_tier} if turn_service_tier else {}),
                 effort=ReasoningEffort(request.effort),
                 model=request.model,
                 sandbox=sandbox,

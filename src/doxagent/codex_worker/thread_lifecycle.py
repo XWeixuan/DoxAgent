@@ -68,10 +68,12 @@ class AppServerThreads:
 
                 from doxagent.settings import DoxAgentSettings
 
-                from .time_awareness import configured_codex
+                from .time_awareness import configured_codex, without_plugin_market
 
                 identity = "lifecycle-" + uuid4().hex
-                config = configured_codex(self.config or CodexConfig(), DoxAgentSettings())
+                config = without_plugin_market(
+                    configured_codex(self.config or CodexConfig(), DoxAgentSettings())
+                )
                 config = replace(
                     config,
                     env={**os.environ, **(config.env or {}), "DOXAGENT_CAPSULE_ID": identity},
@@ -586,6 +588,8 @@ class WorkerThreadLifecycle:
                 prompt="",
                 output_schema={},
                 task_phase=request.phase,
+                allow_subagents=False,
+                max_subagents=0,
                 model=profile.get("model"),
                 model_provider=profile.get("provider"),
                 effort=profile.get("effort") or "max",
@@ -1060,7 +1064,19 @@ class WorkerThreadLifecycle:
                     await self.transport.request("thread/delete", {"threadId": thread_id})
                 except Exception as exc:
                     if not self._missing(exc):
-                        raise
+                        if "thread not loaded" not in str(exc).lower():
+                            raise
+                        # A second, read-only protocol response must confirm
+                        # absence. An unloaded row or a timeout is ambiguous.
+                        try:
+                            await self.transport.request(
+                                "thread/read", {"threadId": thread_id, "includeTurns": False}
+                            )
+                        except Exception as status_error:
+                            if not self._missing(status_error):
+                                raise
+                        else:
+                            raise
 
             def mark_deleted():
                 with closing(self.jobs.store.connect()) as db, db:

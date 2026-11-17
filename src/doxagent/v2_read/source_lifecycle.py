@@ -67,9 +67,13 @@ def native_hashes(value):
 
 
 def replace_packet_refs(db, owner, identity, packet):
+    replace_packet_hashes(db, owner, identity, set(native_hashes(packet)))
+
+
+def replace_packet_hashes(db, owner, identity, hashes):
     from .artifact_registry import retain
     db.execute('DELETE FROM artifact_ref WHERE owner_type=? AND owner_id=?',(owner,str(identity)))
-    for digest in set(native_hashes(packet)):
+    for digest in hashes:
         retain(db,digest,digest,0,codec='json-chunks-v1',
                location='native-files/'+digest[:2]+'/'+digest,owner_type=owner,owner_id=str(identity))
 
@@ -171,6 +175,45 @@ def expire(source, *, now=None, limit=500):
     # The capture contract and the immutable business tables remain in place.
     # Expiry never changes domain rows, capture epoch or source head.
     if not source.capture():raise ValueError('current source capture metadata required')
+    # Prepare archived packets and pinned exception payloads without the writer.
+    with closing(source.connection()) as db:
+        tables = ["v2_source_outbox", "v2_receipt_archive"]
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():
+            tables.append("v2_receipt_packs")
+        has_gc_state = db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='v2_transport_gc_state'"
+        ).fetchone()
+        cursors = dict(db.execute("SELECT kind,cursor FROM v2_transport_gc_state")) if has_gc_state else {}
+        ack = db.execute("SELECT min(checkpoint) FROM v2_source_consumers").fetchone()[0]
+        if ack is None:
+            return report
+        pin = db.execute("SELECT min(seq) FROM v2_source_pins").fetchone()[0]
+        floor = min(ack, pin - 1) if pin is not None else ack
+        pins = {row[0] for row in db.execute("SELECT seq FROM v2_source_exception_pins")} if has_gc_state else set()
+        pack_cache = {}
+        pages = {}
+        for table in tables:
+            rows = db.execute(
+                "SELECT * FROM " + table + " WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?",
+                (cursors.get(table, 0), floor, limit),
+            ).fetchall()
+            prepared = []
+            for row in rows:
+                seq = row["seq"]
+                recent = table == "v2_source_outbox" and datetime.fromisoformat(row["recorded_at"]) >= before
+                packet, raw_json, hashes = None, None, ()
+                if not recent and (table != "v2_source_outbox" or seq in pins):
+                    packet = source.event(seq, decode=False, connection=db, pack_cache=pack_cache)
+                    if packet is None:
+                        raise ValueError("transport packet missing")
+                    recent = datetime.fromisoformat(packet["recorded_at"]) >= before
+                    if seq in pins and not recent:
+                        raw = {key: value for key, value in packet.items() if key != "row"}
+                        raw_json = json.dumps(raw, ensure_ascii=False, separators=(",", ":"))
+                        hashes = set(native_hashes(raw))
+                prepared.append((row, recent, raw_json, hashes))
+            pages[table] = prepared
+
     with closing(source.connection(write=True)) as db, db:
         db.execute('BEGIN IMMEDIATE');migrate(db)
         # Only the temporary importer prefix has a bounded lease. A killed
@@ -188,26 +231,28 @@ def expire(source, *, now=None, limit=500):
         pin=db.execute('SELECT min(seq) FROM v2_source_pins').fetchone()[0]
         floor=min(ack,pin-1) if pin is not None else ack
         pins={r[0] for r in db.execute('SELECT seq FROM v2_source_exception_pins')}
-        tables=['v2_source_outbox','v2_receipt_archive']
-        if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():tables.append('v2_receipt_packs')
-        pack_cache = {}
-        for table in tables:
-            db.execute('INSERT OR IGNORE INTO v2_transport_gc_state(kind) VALUES(?)',(table,))
-            cursor=db.execute('SELECT cursor FROM v2_transport_gc_state WHERE kind=?',(table,)).fetchone()[0]
-            rows=db.execute('SELECT * FROM '+table+' WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?',(cursor,floor,limit)).fetchall()
-            for row in rows:
-                report['scanned']+=1
-                if table=='v2_source_outbox' and datetime.fromisoformat(row['recorded_at']) >= before:
+        for table, prepared in pages.items():
+            cursor = cursors.get(table, 0)
+            db.execute("INSERT OR IGNORE INTO v2_transport_gc_state(kind) VALUES(?)", (table,))
+            if db.execute("SELECT cursor FROM v2_transport_gc_state WHERE kind=?", (table,)).fetchone()[0] != cursor:
+                continue
+            last = 0 if not prepared else cursor
+            for row, recent, raw_json, hashes in prepared:
+                seq = row["seq"]
+                if seq > floor or (not recent and seq in pins and raw_json is None):
+                    break
+                current = db.execute("SELECT * FROM " + table + " WHERE seq=?", (seq,)).fetchone()
+                if current is not None and tuple(current) != tuple(row):
+                    break
+                last = seq
+                report["scanned"] += 1
+                if current is None or recent:
                     continue
-                packet=source.event(row['seq'],decode=False,connection=db,pack_cache=pack_cache)
-                if packet is None:raise ValueError('transport packet missing')
-                if datetime.fromisoformat(packet['recorded_at']) >= before:continue
-                if row['seq'] in pins:
-                    raw={k:v for k,v in packet.items() if k!='row'}
-                    db.execute('INSERT OR REPLACE INTO v2_source_exception_receipts VALUES(?,?)',
-                               (row['seq'],json.dumps(raw,ensure_ascii=False,separators=(',',':'))))
-                    replace_packet_refs(db,'transport_exception',row['seq'],raw)
-                    report['exceptions']+=1
+                if seq in pins:
+                    db.execute("INSERT OR REPLACE INTO v2_source_exception_receipts VALUES(?,?)",
+                               (seq, raw_json))
+                    replace_packet_hashes(db, "transport_exception", seq, hashes)
+                    report["exceptions"] += 1
                 if table=='v2_source_outbox':
                     db.execute('DELETE FROM v2_source_outbox WHERE seq=?',(row['seq'],))
                     db.execute('DELETE FROM v2_source_receipts WHERE id=?',(row['receipt_id'],))
@@ -220,11 +265,11 @@ def expire(source, *, now=None, limit=500):
                         db.execute('INSERT OR IGNORE INTO v2_transport_files_exit VALUES(?,?,?)',(folder,row['digest'],time.time()+300))
                 db.execute('UPDATE v2_transport_gc_state SET expired_floor=max(expired_floor,?) WHERE kind=?',(row['seq'],table))
                 report['expired']+=1
-            db.execute('UPDATE v2_transport_gc_state SET cursor=? WHERE kind=?',(rows[-1]['seq'] if rows else 0,table))
+            db.execute('UPDATE v2_transport_gc_state SET cursor=? WHERE kind=?',(last,table))
         for seq, in db.execute('SELECT seq FROM v2_source_exception_receipts WHERE NOT EXISTS(SELECT 1 FROM v2_source_exception_pins p WHERE p.seq=v2_source_exception_receipts.seq) LIMIT ?',(limit,)).fetchall():
             db.execute('DELETE FROM v2_source_exception_receipts WHERE seq=?',(seq,))
             db.execute("DELETE FROM artifact_ref WHERE owner_type='transport_exception' AND owner_id=?",(str(seq),))
-        for folder,digest in db.execute('SELECT folder,digest FROM v2_transport_files_exit WHERE not_before<=? LIMIT ?',(time.time(),limit)).fetchall():
+        for folder,digest in db.execute('SELECT folder,digest FROM v2_transport_files_exit WHERE not_before<=? LIMIT 1',(time.time(),)).fetchall():
             table='v2_receipt_packs' if folder=='receipt-packs' else 'v2_receipt_archive'
             if not db.execute('SELECT 1 FROM '+table+' WHERE digest=? LIMIT 1',(digest,)).fetchone():
                 p=source.path.parent/folder/source.source/digest[:2]/digest

@@ -57,7 +57,15 @@ async def main() -> None:
         wire.flush()
 
     boot_marker("RUNTIME_CONSTRUCT")
-    runtime = OpenAICodexRuntime()
+    if os.environ.get("DOXAGENT_CAPSULE_W3") == "1":
+        from openai_codex import CodexConfig
+        from .time_awareness import without_plugin_market
+
+        runtime = OpenAICodexRuntime(
+            config=without_plugin_market(CodexConfig(client_name="doxagent-codex-worker"))
+        )
+    else:
+        runtime = OpenAICodexRuntime()
     runtime_ready = time.perf_counter_ns()
     boot_marker("SDK_INITIALIZE")
     await runtime.initialize()

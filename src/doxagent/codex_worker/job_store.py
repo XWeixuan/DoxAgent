@@ -43,6 +43,21 @@ class JobStore:
                     )
                 db.execute("INSERT INTO metadata VALUES('legacy_imported','1')")
 
+    def keep_wal_open(self) -> None:
+        if getattr(self, "_wal_keeper", None) is None:
+            connection = self.connect()
+            try:
+                connection.execute("SELECT 1 FROM metadata LIMIT 1").fetchall()
+            except BaseException:
+                connection.close()
+                raise
+            self._wal_keeper = connection
+
+    def close(self) -> None:
+        if getattr(self, "_wal_keeper", None) is not None:
+            self._wal_keeper.close()
+            self._wal_keeper = None
+
     def connect(self) -> sqlite3.Connection:
         from doxagent.control_io import SHORT_WRITE
 

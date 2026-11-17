@@ -36,6 +36,7 @@ class Capsule:
     def __init__(self, root: Path, boot_timeout: float = 90) -> None:
         self.identity = uuid4().hex
         self.root = root
+        self.w3_profile = False
         self.process: asyncio.subprocess.Process | None = None
         self.thread_id: str | None = None
         self.turn_id: str | None = None
@@ -63,24 +64,27 @@ class Capsule:
     async def launch(self) -> None:
         directory = self.root / "capsules" / self.identity
         directory.mkdir(parents=True)
-        self.process = await asyncio.create_subprocess_exec(
-            sys.executable,
-            "-m",
-            "doxagent.codex_worker.capsule_child",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            env={
-                **os.environ,
-                "DOXAGENT_CAPSULE_ID": self.identity,
-                "DOXAGENT_MCP_BUDGET_ROOT": str(directory / "tool-slots"),
-            },
-            start_new_session=os.name != "nt",
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0,
-            limit=16 * 1024 * 1024,
-        )
+        with span("capsule.process_start"):
+            self.process = await asyncio.create_subprocess_exec(
+                sys.executable,
+                "-m",
+                "doxagent.codex_worker.capsule_child",
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env={
+                    **os.environ,
+                    "DOXAGENT_CAPSULE_ID": self.identity,
+                    "DOXAGENT_CAPSULE_W3": "1" if self.w3_profile else "0",
+                    "DOXAGENT_MCP_BUDGET_ROOT": str(directory / "tool-slots"),
+                },
+                start_new_session=os.name != "nt",
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0,
+                limit=16 * 1024 * 1024,
+            )
         self._stderr_task = asyncio.create_task(self._drain_stderr())
-        started = await asyncio.to_thread(pid_start_ticks, self.process.pid)
+        with span("capsule.process_identity"):
+            started = await asyncio.to_thread(pid_start_ticks, self.process.pid)
         (directory / "owner.json").write_text(
             json.dumps(
                 {
@@ -389,14 +393,17 @@ class CapsuleRuntime:
             ],
         )
 
-    async def _reserve(self, thread_id):
+    async def _reserve(self, thread_id, *, w3_profile=False):
         async with self._lock:
             if thread_id is not None and any(
                 c.thread_id == thread_id and (c.busy or getattr(c, "cleanup_state", None))
                 for c in self.pool
             ):
                 raise CapsuleError("CAPSULE_CLEANUP_QUARANTINED", "original thread owner still active")
-            idle = [c for c in self.pool if not c.busy and self.live(c)]
+            idle = [
+                c for c in self.pool
+                if not c.busy and self.live(c) and getattr(c, "w3_profile", False) == w3_profile
+            ]
             if thread_id is not None:
                 match = next((c for c in idle if c.thread_id == thread_id), None)
                 if match is not None:
@@ -408,15 +415,16 @@ class CapsuleRuntime:
                 return unbound
         return None
 
-    async def _take(self, thread_id: str | None) -> Capsule:
-        capsule = await self._reserve(thread_id)
+    async def _take(self, thread_id: str | None, *, w3_profile=False) -> Capsule:
+        capsule = await self._reserve(thread_id, w3_profile=w3_profile)
         if capsule is not None:
             return capsule
         async with self.admission.boot():
-            capsule = await self._reserve(thread_id)
+            capsule = await self._reserve(thread_id, w3_profile=w3_profile)
             if capsule is not None:
                 return capsule
             capsule = Capsule(self.root)
+            capsule.w3_profile = w3_profile
             capsule.boot_timeout = self.boot_timeout
             self.pool.append(capsule)
             try:
@@ -487,7 +495,8 @@ class CapsuleRuntime:
         return await self._prepare(request, cwd, None)
 
     async def _prepare(self, request, cwd, parent_thread_id):
-        capsule = await self._take(None)
+        with span("capsule.acquire_prepare"):
+            capsule = await self._take(None, w3_profile=str(request.node) == "persistent_runtime_w3")
         try:
             async with self.admission.handshake_for():
                 await progress(
@@ -503,7 +512,8 @@ class CapsuleRuntime:
                         "timing_directory": str(self.root / "boundary-timing"),
                     }
                 )
-                ready = await asyncio.wait_for(capsule.receive(), remaining(self.prepare_timeout))
+                with span("capsule.prepare_reply"):
+                    ready = await asyncio.wait_for(capsule.receive(), remaining(self.prepare_timeout))
             capsule.thread_id = ready["thread_id"]
             await progress("CHILD_KNOWN", thread_id=capsule.thread_id)
             capsule.prepared = True
@@ -533,7 +543,7 @@ class CapsuleRuntime:
     async def _start_owned(self, request: WorkerRunRequest, cwd: Path) -> Capsule:
         try:
             with span("capsule.acquire"):
-                capsule = await self._take(request.thread_id)
+                capsule = await self._take(request.thread_id, w3_profile=str(request.node) == "persistent_runtime_w3")
         except BaseException as exc:
             self._failures[self.key(request)] = {
                 **getattr(exc, "startup_receipt", {}),
@@ -573,6 +583,14 @@ class CapsuleRuntime:
 
     def failure_for(self, request):
         return self._failures.pop(self.key(request), None)
+
+    def retains_w3_resident(self, request: WorkerRunRequest) -> bool:
+        capsule = self.active.get(self.key(request))
+        return bool(
+            request.w3_entry_version and not request.max_subagents
+            and capsule and self.live(capsule)
+            and getattr(capsule, "last_result_status", None) == "completed"
+        )
 
     async def release(self, request: WorkerRunRequest) -> None:
         capsule = self.active.get(self.key(request))

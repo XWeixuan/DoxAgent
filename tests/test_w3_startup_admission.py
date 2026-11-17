@@ -256,3 +256,26 @@ async def test_successful_trade_handoff_survives_idle_rule_until_operations_rele
     assert capsule.handoff_until == 0
     capsule.idle_at -= 60
     assert await runtime.reap_idle() == 1 and closed
+
+
+@pytest.mark.asyncio
+async def test_eligible_baseline_bypasses_ineligible_queue_head():
+    from doxagent.codex_worker.startup_admission import PriorityGate
+
+    gate = PriorityGate()
+    entered = asyncio.Event()
+
+    async def speculate():
+        async with gate.acquire(priority=1, allowed=lambda: False):
+            entered.set()
+
+    first = asyncio.create_task(speculate())
+    try:
+        await asyncio.sleep(0)
+        assert gate.snapshot()["queued"] == 1
+        async with gate.acquire(priority=1, timeout=0.2):
+            assert gate.active and not entered.is_set()
+    finally:
+        first.cancel()
+        await asyncio.gather(first, return_exceptions=True)
+    assert not gate.active and gate.snapshot()["queued"] == 0

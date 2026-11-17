@@ -456,7 +456,7 @@ class W3Execution:
         if not records:
             return self._commit_pair(case)
 
-        def save(label, result, job):
+        def prepare_save(label, result, job):
             key = TRADE_PHASE + ":" + label
             stage = self.registry.stage(case.case_id, key)
             refs = dict(stage.get("input_refs") or {})
@@ -490,22 +490,44 @@ class W3Execution:
             # Native reads, request hashing and large telemetry encoding stay on
             # the current owner, outside BOTH the short writer and SQL transaction.
             payload=result.model_dump(mode='json') if hasattr(result,'model_dump') else result
-            prepared,encoded_refs,ack=encode(payload),encode(refs),encode({'case_id':case.case_id})
+            return key, job, payload, encode(payload), encode(refs)
+
+        def save_batch(results):
+            prepared = [prepare_save(*result) for result in results]
+            ack = encode({"case_id": case.case_id})
+
             def persist():
+                saved_jobs = []
                 with self.journal.transaction() as db:
-                    self.registry.save_result_in_transaction(
-                        db,case.case_id,key,payload,prepared,
-                        thread_id=job.thread_id,worker_job_id=job.job_id)
-                    db.execute(
-                        "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
-                        (encoded_refs, case.case_id, key),
-                    )
-                    db.execute(
-                        "INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
-                        (job.job_id, ack),
-                    )
-            self._write_result(persist)
-            self.service._effect_executor.submit(self._ack, job.job_id)
+                    for key, job, payload, result_json, refs_json in prepared:
+                        old = db.execute(
+                            "SELECT worker_job_id, result_json FROM runtime_v2_w3_stages "
+                            "WHERE case_id=? AND phase=?", (case.case_id, key),
+                        ).fetchone()
+                        if old and old[1] is not None:
+                            if old[0] != job.job_id or json.loads(old[1]) != payload:
+                                raise ValueError("a saved W3 branch result and Job are immutable")
+                            continue
+                        self.registry.save_result_in_transaction(
+                            db, case.case_id, key, payload, result_json,
+                            thread_id=job.thread_id, worker_job_id=job.job_id,
+                        )
+                        db.execute(
+                            "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                            (refs_json, case.case_id, key),
+                        )
+                        db.execute(
+                            "INSERT OR IGNORE INTO runtime_values VALUES('w3_ack_pending',?,?)",
+                            (job.job_id, ack),
+                        )
+                        saved_jobs.append(job.job_id)
+                return saved_jobs
+
+            for job_id in self._write_result(persist):
+                self.service._effect_executor.submit(self._ack, job_id)
+
+        def save(label, result, job):
+            save_batch([(label, result, job)])
 
         try:
             self.agent.run_trade_pair(
@@ -515,6 +537,7 @@ class W3Execution:
                 context=context,
                 research=research,
                 save=save,
+                save_batch=save_batch,
             )
         except W3Error as exc:
             reader = getattr(exc, "phase_result", None)

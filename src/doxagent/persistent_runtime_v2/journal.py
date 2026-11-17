@@ -205,10 +205,10 @@ class RuntimeJournal:
                     db.execute("PRAGMA synchronous=FULL")
                 if write:
                     deadline = started + (self.busy_timeout_seconds if timeout is None else timeout)
-                    db.execute("PRAGMA busy_timeout=100")
+                    db.execute("PRAGMA busy_timeout=" + str(100 if timeout is None else min(100, max(0, int(timeout * 1000)))))
                     while True:
                         with span('journal.gate', operation=operation):
-                            held = gate.acquire(timeout=0.1)
+                            held = gate.acquire(timeout=0.1 if timeout is None else min(0.1, max(0, timeout)))
                         if held:
                             try:
                                 with span('journal.sqlite_begin', operation=operation):

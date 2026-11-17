@@ -121,6 +121,8 @@ def create_worker_app(
         import asyncio
 
         await asyncio.to_thread(research.initialize)
+        if runtime is None:
+            jobs.store.keep_wal_open()
         jobs.start()
         preparation = asyncio.create_task(prepare_assets())
         from .resource_maintenance import run as maintain_resources
@@ -139,8 +141,11 @@ def create_worker_app(
                 try:
                     await jobs.close()
                 finally:
-                    if owner is not None:
-                        owner.__exit__()
+                    try:
+                        jobs.store.close()
+                    finally:
+                        if owner is not None:
+                            owner.__exit__()
 
     capabilities = CapabilityTokenCodec(capability_secret)
     app = FastAPI(title="DoxAgent Codex Worker", version="1.0.0", lifespan=lifespan)

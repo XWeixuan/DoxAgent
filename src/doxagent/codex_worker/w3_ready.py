@@ -261,7 +261,7 @@ class W3ReadySlots:
             while not self.closed and operation["status"] not in {"COMPLETED", "FAILED"}:
                 preparation = self.jobs.thread_lifecycle.preparations.get(request.operation_key)
                 if preparation is not None and not preparation.done():
-                    await asyncio.wait({preparation}, timeout=0.25)
+                    await asyncio.wait({preparation})
                 else:
                     await asyncio.sleep(0.1)
                 operation = await read_io(
@@ -303,6 +303,9 @@ class W3ReadySlots:
                             agent_role="w3_duty_trading_expert",
                             run_id=run_id,
                             attempt_id="prepared",
+                            allow_subagents=False,
+                            max_subagents=0,
+                            task_phase="trade_decision",
                             cutoff_at=request.cutoff_at,
                             prompt="",
                             output_schema={},

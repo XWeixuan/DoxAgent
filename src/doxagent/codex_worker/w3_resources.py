@@ -230,12 +230,23 @@ def gc_derivatives(store, *, apply=False):
         with closing(store.connect()) as db:
             contexts = db.execute("SELECT token_hash,manifest_sha,expires_at FROM w3_case_contexts "
                 "WHERE token_hash>? AND expires_at>? ORDER BY token_hash LIMIT 128", (cursor, now)).fetchall()
+        watermarks = {}
         for context in contexts:
             if time.monotonic() - started >= .25:
                 break
-            manifest = json.loads((store.contexts / (context['manifest_sha'] + '.json')).read_bytes())
-            store.protect_components(manifest.get('components', {}), context['expires_at'])
-            store._gc_context_cursor = context['token_hash']
+            manifest = json.loads((store.contexts / (context["manifest_sha"] + ".json")).read_bytes())
+            until = context["expires_at"]
+            for identity in manifest.get("components", {}).values():
+                watermarks[identity] = max(watermarks.get(identity, until), until)
+            cursor = context["token_hash"]
+        if watermarks:
+            with closing(store.connect()) as db, db:
+                db.executemany(
+                    "UPDATE w3_asset_builds SET retained_until=? WHERE id=? "
+                    "AND (retained_until IS NULL OR retained_until<?)",
+                    [(until, identity, until) for identity, until in watermarks.items()],
+                )
+        store._gc_context_cursor = cursor
         if not contexts:
             with closing(store.connect()) as db, db:
                 db.execute("UPDATE w3_asset_builds SET retained_until='1970-01-01' WHERE retained_until IS NULL")

@@ -118,8 +118,8 @@ class W3PreparedContext(BaseModel):
     version_pin: W3ContextVersionPin
     document1: str = Field(min_length=1)
     document2: Document2DocumentV21 | Document2Document
-    policy_set: PolicySetV3 | PolicySet
-    reference_view: str = Field(min_length=1)
+    policy_set: PolicySetV3 | PolicySet | None = None
+    reference_view: str | None = Field(default=None, min_length=1)
     document2_publication_state: str
     research_identity: str | None = None
     reference_identity: str | None = None
@@ -171,7 +171,7 @@ class PublishedW3ContextProvider:
         self._policy_consumption = policy_consumption_reader
         self._storage = published_storage
         self._context_cache_size = context_cache_size
-        self._context_cache: OrderedDict[tuple[str, str, str, int, int], W3PreparedContext] = (
+        self._context_cache: OrderedDict[tuple[str, str, str, int, int, bool], W3PreparedContext] = (
             OrderedDict()
         )
         self._context_cache_lock = threading.RLock()
@@ -198,32 +198,35 @@ class PublishedW3ContextProvider:
             case.ticker,
             case.version_pin.event_library_version,
         )
-        if key not in self._reference_cache:
-            reader = (
-                PublishedEventLibraryReader(case.version_pin.event_library_root)
-                if case.version_pin.event_library_root
-                else self._events
-            )
-            view = reader.reference_view(
-                case.ticker, version=case.version_pin.event_library_version
-            )
-            if view is None or not view.reference_view.strip():
-                raise W3Error("w3_reference_view_unavailable", "Pinned Reference View unavailable")
+        with self._context_cache_lock:
+            cached = self._reference_cache.get(key)
+        if cached is not None:
+            return cached
+        reader = (
+            PublishedEventLibraryReader(case.version_pin.event_library_root)
+            if case.version_pin.event_library_root
+            else self._events
+        )
+        view = reader.reference_view(case.ticker, version=case.version_pin.event_library_version)
+        if view is None or not view.reference_view.strip():
+            raise W3Error("w3_reference_view_unavailable", "Pinned Reference View unavailable")
+        with self._context_cache_lock:
             self._reference_cache[key] = view
             while len(self._reference_cache) > self._context_cache_size:
                 self._reference_cache.popitem(last=False)
-        return self._reference_cache[key]
+        return view
 
     async def _load(self, case: RuntimeCase) -> W3PreparedContext:
         if case.version_pin.document2_run_id:
-            pinned = self._runtime.get_bundle(case.version_pin.document2_run_id)
+            pinned = await read_io(self._runtime.get_bundle, case.version_pin.document2_run_id)
             if not isinstance(pinned, Document2Bundle) or pinned.ticker.upper() != case.ticker:
                 raise W3Error("w3_document2_unavailable", "Pinned Published D2 is unavailable")
             d2_bundle = pinned
         else:
-            d2_bundle = self._current_document2(case.ticker)
+            d2_bundle = await read_io(self._current_document2, case.ticker)
         if d2_bundle.handoff is None:
             raise W3Error("w3_document2_unavailable", "Current Published D2 has no handoff")
+        v6 = is_pin_watch_contract(getattr(case, "w3_contract_version", None))
         cache_key = (
             case.ticker,
             d2_bundle.run_id,
@@ -232,18 +235,19 @@ class PublishedW3ContextProvider:
             + (case.version_pin.event_library_root or ""),
             case.version_pin.event_library_version,
             case.version_pin.policy_set_version,
+            v6,
         )
         cached = self._cached_context(cache_key)
         with span("context.cache_lookup", hit=cached is not None):
             pass
         if cached is not None:
-            return self._without_consumed_policies(cached)
+            return cached if v6 else await read_io(self._without_consumed_policies, cached)
         base_key = (*cache_key[:3], cache_key[4])
-        base = self._research_bases.get(base_key)
+        base = None if v6 else self._research_bases.get(base_key)
         if base is not None:
             from .journal import digest
 
-            reference = self._reference(case)
+            reference = await read_io(self._reference, case)
             prepared = base.model_copy(
                 update={
                     "version_pin": base.version_pin.model_copy(
@@ -258,7 +262,8 @@ class PublishedW3ContextProvider:
             )
             self._cache_context(cache_key, prepared)
             return self._without_consumed_policies(prepared)
-        d2_published = self._runtime.get_published_document(
+        d2_published = await read_io(
+            self._runtime.get_published_document,
             d2_bundle.run_id,
             d2_bundle.handoff.document2_artifact_id,
         )
@@ -266,13 +271,14 @@ class PublishedW3ContextProvider:
             raise W3Error("w3_document2_unavailable", "Current Published D2 body is unavailable")
         d2_text = (await self._read_published(d2_published)).decode("utf-8")
         try:
-            document2 = parse_document2(d2_text)
+            document2 = await read_io(parse_document2, d2_text)
         except ValidationError as exc:
             raise W3Error("w3_document2_invalid", "Current Published D2 is invalid") from exc
         if document2.ticker.upper() != case.ticker:
             raise W3Error("w3_document2_ticker_mismatch", "Published D2 ticker mismatch")
 
-        d1_bundle = self._runtime.get_bundle(
+        d1_bundle = await read_io(
+            self._runtime.get_bundle,
             case.version_pin.document1_run_id or document2.source_global_run_id
         )
         if not isinstance(d1_bundle, GlobalResearchBundle) or d1_bundle.handoff is None:
@@ -282,7 +288,8 @@ class PublishedW3ContextProvider:
             )
         if d1_bundle.ticker.upper() != case.ticker:
             raise W3Error("w3_document1_ticker_mismatch", "Pinned D1 ticker mismatch")
-        d1_published = self._runtime.get_published_document(
+        d1_published = await read_io(
+            self._runtime.get_published_document,
             d1_bundle.run_id,
             d1_bundle.handoff.document_artifact_id,
         )
@@ -290,7 +297,24 @@ class PublishedW3ContextProvider:
             raise W3Error("w3_document1_unavailable", "Published D1 body is unavailable")
         document1 = (await self._read_published(d1_published)).decode("utf-8")
 
-        policy_set = self._policies.get_version(
+        if v6:
+            prepared = W3PreparedContext(
+                version_pin=W3ContextVersionPin(
+                    document1_run_id=d1_bundle.run_id,
+                    document2_run_id=d2_bundle.run_id,
+                    event_library_version=case.version_pin.event_library_version,
+                    policy_set_version=case.version_pin.policy_set_version,
+                ),
+                document1=document1,
+                document2=document2,
+                document2_publication_state=str(d2_bundle.publication_state or "COMPLETE"),
+                original_document2=d2_text,
+                context_cutoffs={"D1": None, "D2": document2.as_of.isoformat()},
+            )
+            self._cache_context(cache_key, prepared)
+            return prepared
+
+        policy_set = await read_io(self._policies.get_version,
             case.ticker,
             case.version_pin.policy_set_version,
         )
@@ -299,7 +323,7 @@ class PublishedW3ContextProvider:
                 "w3_policy_set_unavailable",
                 "Version-pinned full PolicySet is unavailable",
             )
-        reference = self._reference(case)
+        reference = await read_io(self._reference, case)
 
         origins = {}
         original_policy = policy_set.model_dump_json()
@@ -415,7 +439,7 @@ class PublishedW3ContextProvider:
             return bundle
         raise W3Error("w3_document2_unavailable", "No current Published D2 is available")
 
-    def _cached_context(self, key: tuple[str, str, str, int, int]) -> W3PreparedContext | None:
+    def _cached_context(self, key: tuple[str, str, str, int, int, bool]) -> W3PreparedContext | None:
         with self._context_cache_lock:
             value = self._context_cache.get(key)
             if value is None:
@@ -425,7 +449,7 @@ class PublishedW3ContextProvider:
 
     def _cache_context(
         self,
-        key: tuple[str, str, str, int, int],
+        key: tuple[str, str, str, int, int, bool],
         value: W3PreparedContext,
     ) -> None:
         with self._context_cache_lock:
@@ -529,7 +553,7 @@ class CodexW3AgentRunner:
                 components=components,
                 version_pin=context.version_pin.model_dump(mode="json"),
                 context_cutoffs=context.context_cutoffs,
-                reference_event_ids=sorted(
+                reference_event_ids=[] if is_pin_watch_contract(case.w3_contract_version) else sorted(
                     context.reference_event_ids
                     if context.reference_event_ids is not None
                     else set(_EVENT_ID.findall(context.reference_view))
@@ -851,7 +875,7 @@ class CodexW3AgentRunner:
 
     def _citation_context(self, case, context):
         """Expose only already-frozen, loaded Events alongside the pinned reference."""
-        if (
+        if is_pin_watch_contract(getattr(case, "w3_contract_version", None)) or (
             case.frozen_inputs.get("w3_contracts", {}).get("w3_citation_scope_version")
             != "loaded-events.v1"
         ):
@@ -948,7 +972,13 @@ class CodexW3AgentRunner:
     def write_result(self, callback):
         # Reuse the existing priority writer and its unchanged short SQL policy.
         # Only the SQL callback belongs here, never preparation/network I/O.
-        return self._wait_v4(write_io(self._journal.path, callback, priority=0, retry=True))
+        async def persist():
+            with span("result.loop_handoff", queued_ms=(perf_counter() - submitted) * 1000):
+                return await write_io(self._journal.path, callback, priority=0, retry=True)
+
+        from time import perf_counter
+        submitted = perf_counter()
+        return self._wait_v4(persist())
 
     def bind_recovery_notifier(self, callback):
         self._recovery_notifier = callback
@@ -1015,7 +1045,7 @@ class CodexW3AgentRunner:
                     exc.w3_step = "MATERIALIZE"
                 raise
 
-    def run_trade_pair(self, *, case, records, payload, context, research, save):
+    def run_trade_pair(self, *, case, records, payload, context, research, save, save_batch=None):
         async def pair():
             shared = {"ready": asyncio.Event()}
 
@@ -1049,10 +1079,12 @@ class CodexW3AgentRunner:
         def consume(results):
             # Invoked by the CURRENT Effect owner, never in the original Future's
             # copied write_scope. Worker receipts already protect paid results.
-            for value in results:
-                if not isinstance(value, BaseException):
-                    label, result, job = value
-                    save(label, result, job)
+            successful = [value for value in results if not isinstance(value, BaseException)]
+            if successful and save_batch is not None:
+                save_batch(successful)
+            else:
+                for value in successful:
+                    save(*value)
             for value in results:
                 if isinstance(value, BaseException):
                     raise value

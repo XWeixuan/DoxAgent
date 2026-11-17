@@ -596,10 +596,13 @@ class WorkerJobManager:
     async def _settle_execution(self, job_id, request):
         try:
             cleanup_started = time.monotonic()
-            try:
-                await self._update(job_id, execution_phase="CLEANING")
-            except Exception:
-                logging.getLogger(__name__).warning("Cleaning marker failed for %s", job_id)
+            planned_finish = self._pending_finish.get(job_id, {})
+            retain = getattr(self._runtime, "retains_w3_resident", None)
+            if not (planned_finish.get("status") == "succeeded" and retain and retain(request)):
+                try:
+                    await self._update(job_id, execution_phase="CLEANING")
+                except Exception:
+                    logging.getLogger(__name__).warning("Cleaning marker failed for %s", job_id)
             cleanup = getattr(self._runtime, "release", None)
             cleanup_ok = True
             if callable(cleanup):
@@ -668,12 +671,14 @@ class WorkerJobManager:
                 else:
                     finish["error_code"] = "WORKER_INFRA_RECOVERY_EXHAUSTED"
             observation = finish.pop("w3_observation", None)
+            execution_timing = finish.pop("_execution_timing", None)
             # A mirror/event write can fail after SQLite committed. Retrying the
             # settlement must not spend another infrastructure retry generation.
             self._pending_finish[job_id] = {
                 **finish,
                 "_settlement_planned": True,
                 "w3_observation": observation,
+                "_execution_timing": execution_timing,
             }
             if not cleanup_ok:
                 # Only retain the physical lookup key, never a second prompt copy.
@@ -690,6 +695,7 @@ class WorkerJobManager:
                 else "CLEANUP_QUARANTINED",
                 resource_receipt={
                     **current.resource_receipt,
+                    **({"execution_timing": execution_timing} if execution_timing else {}),
                     **({"w3_observation": observation} if observation is not None else {}),
                     "cleanup_ms": int((time.monotonic() - cleanup_started) * 1000),
                 },
@@ -951,15 +957,7 @@ class WorkerJobManager:
             )
             async with asyncio.timeout(remaining):
                 result = await handle.run()
-            if getattr(result, "execution_timing", None):
-                current = await read_io(self.store.get, job_id)
-                await self._update(
-                    job_id,
-                    resource_receipt={
-                        **current.resource_receipt,
-                        "execution_timing": result.execution_timing,
-                    },
-                )
+            execution_timing = getattr(result, "execution_timing", None)
             telemetry = result.telemetry
             if telemetry is not None:
                 telemetry = telemetry.model_copy(
@@ -975,6 +973,7 @@ class WorkerJobManager:
                     error_code="CODEX_TURN_FAILED",
                     error_message=result.error_message or result.status,
                     telemetry=telemetry,
+                    _execution_timing=execution_timing,
                     w3_observation=getattr(result, "observation", None),
                 )
                 return
@@ -985,6 +984,7 @@ class WorkerJobManager:
                 turn_id=result.turn_id,
                 final_response=result.final_response,
                 telemetry=telemetry,
+                _execution_timing=execution_timing,
                 w3_observation=getattr(result, "observation", None),
             )
         except asyncio.CancelledError:

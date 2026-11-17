@@ -79,13 +79,17 @@ class PriorityGate:
                     if len(self.waiters) >= self.max_pending:
                         raise RuntimeError("startup admission queue full; retry original operation")
                     self.sequence += 1
-                    entry = (rank, self.sequence, time.monotonic())
+                    entry = (rank, self.sequence, time.monotonic(), allowed)
                     self.waiters.append(entry)
                     try:
                         while not bypass() and (
                             self.active
-                            or min(self.waiters, key=lambda x: (x[0](), x[1])) != entry
                             or not allowed()
+                            or min(
+                                (waiter for waiter in self.waiters
+                                 if waiter is entry or waiter[3]()),
+                                key=lambda waiter: (waiter[0](), waiter[1]),
+                            ) is not entry
                         ):
                             try:
                                 # Condition owns the current task's lock. A wait_for

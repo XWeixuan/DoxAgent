@@ -100,7 +100,8 @@ async def test_cancelled_prepare_awaits_actual_execution_and_rejects_old_owner(t
     assert int(row["startup_attempts"]) == int(stage == "BOOT_ATTEMPT")
     assert row["thread_id"] == ("child" if stage == "CHILD_KNOWN" else None)
     value._operation_update("w3-fork:one", owner_token="replacement")
-    value._operation_update("w3-fork:one", owner=owner, status="COMPLETED")
+    with pytest.raises(asyncio.CancelledError, match="prepare owner replaced"):
+        value._operation_update("w3-fork:one", owner=owner, status="COMPLETED")
     assert value.operation("w3-fork:one")["status"] == "CREATING"
     await value.close()
 
