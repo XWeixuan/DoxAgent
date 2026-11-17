@@ -23,19 +23,19 @@ Squid保留精确来源158.180.12.56/32和旧2Captcha来源、认证、CONNECT/4
 
 ## 本轮有界连通性复核
 
-没有新增解码任务、没有制造Challenge。两笔旧任务当前getTaskResult均ERROR_TASK_NOT_FOUND；不能覆盖此前保存的ERROR_TASK_FAILED/cost=0终态，也不能据此反推旧失败原因。API/profile可达、余额仍$0.05。API当前DNS为54.36.246.192，与探测所得158.180.12.56不同，不把API地址冒充worker来源。
+手工有界网络复核没有新增解码任务、没有制造Challenge。两笔旧任务当前getTaskResult均ERROR_TASK_NOT_FOUND；不能覆盖此前保存的ERROR_TASK_FAILED/cost=0终态，也不能据此反推旧失败原因。API/profile可达、余额仍$0.05。API当前DNS为54.36.246.192，与探测所得158.180.12.56不同，不把API地址冒充worker来源。
 
 既有网络fixture缺少真实动态验证码参数已确认，不满足当前DataDome契约；正式代码现在本地拦截。宿主机公网端口回环预检ConnectTimeout，先前容器内认证代理预检成功；该回环并非允许来源的外部worker，故不将其认定为平台连接失败。现有证据仍不能唯一区分平台未发连接、来源变化、云入站过滤及无效输入导致提前退出。后续自然真实任务依据明确Provider网络信号和已有Squid/原页证据分层，不扩大公网白名单或重复买无效样本。
 
 ## 配置及代码验收
 
-待补精确源码提交、实际配置映射、单元/回归结果、角色发布及原Chrome保留证明。此阶段没有真实Challenge，不宣称现场端到端解码成功；由正常采集/恢复流程被动触发。
+正式接入源码 f511e939c，具体生产配置、回归和原Chrome保留证明见下节。初始网络复核没有真实Challenge，之后正常采集自然触发的一笔PX失败另列；从未将接口接入当作端到端解码成功。
 
 官方契约：[DataDome](https://solverify.net/docs/datadome)、[PerimeterX](https://solverify.net/docs/perimeterx)、[结果和费用](https://solverify.net/docs/get-task-result)、[HUMAN依赖域名](https://docs.humansecurity.com/applications/about-enforcers)。
 
 ## 生产配置验收与 Bloomberg 现有故障修复
 
-Site Access 已发布 f511e939c，Reuters/Bloomberg 实际 provider_for 均为 solverify，原2Captcha key及已提交job provider冻结保留。Bloomberg Site revision4启用恢复；四个Chrome instance/PID与发布前完全一致。代理只热加载配置，原绑定不变；回归241通过。未购买新任务，当前无真实Challenge可供端到端验收，不宣称平台已成功解码。
+Site Access 已发布 f511e939c，Reuters/Bloomberg 实际 provider_for 均为 solverify，原2Captcha key及已提交job provider冻结保留。Bloomberg Site revision4启用恢复；四个Chrome instance/PID与发布前完全一致。代理只热加载配置，原绑定不变；回归241通过。接入配置阶段未主动购买测试任务；后续自然PX任务的实际失败见下文，不宣称平台已成功解码。
 
 Bloomberg 额外故障与验证码无关：WIRE:realtime 最新持续失败为 ValueError:bloomberg_realtime_pending_overflow，checkpoint 实存703条pending、seen仅14条，包含11月13日旧稿；每轮先追加pending，再在>128时抛错，因snapshot_valid已设true又将过大pending提交，下轮永远无法走到metadata出队。WIRE:latest仍以30秒正常抓取，20:21–20:23 UTC近期十篇BODY均FULL。单次受限元数据核验返回200/两条fulfilled，不能归因于此刻网络或PX。
 
@@ -46,3 +46,17 @@ Bloomberg 额外故障与验证码无关：WIRE:realtime 最新持续失败为 V
 注意：接入后20:23:43 UTC正常正文采集自然触发Bloomberg PX Solverify任务，返回ERROR_TASK_FAILED/cost0、PROVIDER_UNDETERMINED，没有ready或Cookie应用，不能宣称解码通过。20:23后正文存在实际PX阻塞，先前十篇FULL并不代表后续仍健康；最终验收必须分列列表恢复与该正文限制。不为此次失败主动追加购买或持续守候。
 
 最终补充对照：20:33运行中列表会话403，但同出口新建无Cookie curl会话对30秒和10秒两个cache槽均200/JSON/age0。为避免公共列表被其他入口的会话/错误响应Cookie污染，Latest改为独立client_scope=bloomberg-public-latest、discard_cookies=True，复用已在by-ID元数据路径使用的机制，不触碰Chrome Cookie。该对照支持HTTP会话差异是内部可优化因素，未读取或归因某一具体Cookie；不夸大为已经证明所有403均由Cookie引起。
+
+
+发布留痕：Site Access f511e939c健康；Collector先发布72f76329a/157e89f06，在自然回执中继续定位Artemis阻断与公共HTTP会话差异，最终目标源码b938abe8f。宿主发布脚本只缺少仓库已提交的compile_w3_imports.py构建清单，已同步该单行差异；首次b938构建因512MiB写入保留线自动取消，未替换运行容器。按既有授权清理闲置BuildKit缓存、压缩journal至128MiB并删除已轮转旧syslog，保留当前日志、业务库、Profile与发布备份。不得将构建失败期间旧版本统计混入最终版本验收。
+
+## 最终自然业务验收（UTC 2026-11-17 20:42:29 / 北京时间11-18 04:42:29）
+
+- Site Access f511e939c、Collector b938abe8f已健康；Collector两个修改文件与该精确Git提交SHA256一致。Chrome Supervisor和代理容器未重建；四个Chrome实例/PID保留，2Captcha回退仍在。源码及changelog已推送origin/main。
+- 自最终Collector20:41:14启动，WIRE:realtime 5个独立自然物理周期CAPTURED、WIRE:latest3个周期CAPTURED，合计80个ticker回执（10ticker共享8次物理周期），没有失败。20个活动unit投影均succeeded。不能把80回执说成80次网站访问。
+- 实时原生Artemis路径已自行重新可用，最新物理证明为HTTP200/age10s，Latest200/age0s；因此并非只凭fallback的存在判成功。最近耗时Realtime368ms、Latest440ms。原pending704条降为0、seen40，未手工修改checkpoint。该窗口约74秒，仅证明短窗恢复，不作长期稳定性保证。
+- 20:23:43自然PX任务dd_5628840446184acea75437308dbd09ad：FAILED/ERROR_TASK_FAILED/cost0、PROVIDER_UNDETERMINED，无Cookie应用、无恢复证明。该窗口Squid只有内部预检的3个成功CONNECT，未观察到158.180.12.56的外部worker请求；仍不能区分云过滤/worker地址变化/Provider未连代理而提前失败，不能归罪解码答案。保留原Challenge现场供人工。
+- 20:42:25自然恢复流程新建第二笔PX任务dd_e05af593fcb741e792ad46a1b6957268，此快照PENDING/cost未知。没有主动提交测试、没有额外Provider API调用或守候新Challenge。正文在20:23之前16篇FULL，之后存在PX阻塞；截至此快照没有新的FULL证明，正文**尚未完全恢复**。
+- 下一步：由平台提供这两笔自然task的失败环节及稳定worker源IP后再精确校验18791白名单；不盲目扩大公网来源、不重复购买无效测试。当前Bloomberg可用人工Open Original处理保留的PX现场；正常恢复流程仍自然运行。
+
+主要证据：eval/solverify_dual_family_20261118/core-acceptance.json、configuration.json、proxy-acceptance.json、proxy-logs-summary.json、bloomberg-checkpoint.json、bloomberg-listing-control.json、acceptance-isolated.json、collector-actual-hashes.json及两组回归XML。中间版本acceptance-final.json有旧失败，最终以acceptance-isolated.json窗口为准，不覆盖历史。
