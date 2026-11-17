@@ -123,6 +123,27 @@ def _safety_module():
     return module
 
 
+def test_file_cache_pressure_before_host_exhaustion(tmp_path):
+    from dataclasses import replace
+
+    module = _safety_module()
+    controller = module.SafetyController(tmp_path, tmp_path / "safety.json")
+    sample = module.Sample(
+        observed_at=1, memory_current=25 * module.GIB, memory_max=30 * module.GIB,
+        memory_swap_current=2 * module.GIB, host_available=int(2.5 * module.GIB),
+        psi_some_avg10=0, psi_full_avg10=0, swap_io_bytes_per_minute=0,
+        high_events=0, oom_events=0,
+    )
+    assert controller.evaluate(sample, now=0)[0] == "NORMAL"
+    assert controller.evaluate(sample, now=20)[0] == "NORMAL"
+    pressured = replace(sample, psi_some_avg10=8)
+    assert controller.evaluate(pressured, now=21)[0] == "NORMAL"
+    level, reasons = controller.evaluate(pressured, now=37)
+    assert level == "PRESSURE" and "low_available_with_pressure" in reasons
+    assert controller.evaluate(sample, now=40)[0] == "PRESSURE"
+    assert controller.evaluate(sample, now=101)[0] == "NORMAL"
+
+
 def test_safety_controller_uses_actual_pressure_and_hysteresis(tmp_path):
     module = _safety_module()
     controller = module.SafetyController(tmp_path, tmp_path / "safety.json")

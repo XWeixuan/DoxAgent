@@ -125,7 +125,10 @@ class SafetyController:
         # aggregate cgroup boundary instead of treating a 32GB host as 16GB.
         if sample.memory_current >= sample.memory_max * 14 / 15 and pressure_signal:
             pressure_reasons.append("cgroup_high_with_pressure")
-        if sample.host_available < GIB and pressure_signal:
+        # Leave room for the working file cache before direct reclaim stalls
+        # the host. Low availability alone must never gate ordinary work.
+        available_floor = max(GIB, min(3 * GIB, sample.memory_max / 10))
+        if sample.host_available < available_floor and pressure_signal:
             pressure_reasons.append("low_available_with_pressure")
         if high_increased and pressure_signal:
             pressure_reasons.append("memory_high_events_with_pressure")

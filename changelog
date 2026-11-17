@@ -3226,3 +3226,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-17：按消息效率方案完成本地开发，新增有界内存进阶去重（三gate OR、源级默认开启、IBKR缺省关闭）、Live提交前检查/epoch竞争复核/提交后记账、缓冲及兼容发布覆盖；QZ/DCD定向正文清理覆盖候选、304与结果复用。新增RapidFuzz及语义/资源/冷启动/缓冲/竞争测试；无新DB表/索引/后台服务，未部署生产。正文相关158 passed，测试分发与进阶27 passed/1 skipped，查询成本与进阶14 passed；宽回归86 passed/1失败，RuntimeJournal准备失败状态问题已用HEAD原实现独立复现。实际模块本地冻结回放P95/P99约2.22/5.63ms，详见 docs/message-efficiency-implementation-20261117.md。
 2026-11-17：统一提交全部当前产品开发改动及关联文档，e06cece02已推送并独立核对origin main。生产发布受阻：SG两个代理入口、直连及HK备用均未完成SSH握手；未执行远端构建或容器切换，未修改代理区域。详见docs/message-efficiency-release-20261117.md。
+2026-11-17：服务器假死取证：SAR在22:21/22:36记录load约566/450、blocked382/289、iowait69/83%、可用内存约2.3/2.4GiB及文件缓存约1GiB，换入很低，符合内存回收/文件页重读I/O拥塞。修复既有SafetyController的主机低可用内存压力盲区：门槛按aggregate预算1/10缩放并限定1–3GiB，仍要求真实PSI/换页压力并沿用15秒滞回，不改实时并发上限或正常工作准入。新增回归并10 passed，宿主部署及自然负载验收另记。
