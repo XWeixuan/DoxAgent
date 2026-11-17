@@ -223,6 +223,10 @@ class GlobalPollScheduler:
 
     async def run_once(self) -> list[PollExecutionResult]:
         if getattr(self, "collection_plane_enabled", False):
+            # One low-frequency restart-recovery sweep for persisted legacy work.
+            # Explicit compatibility producers still wake it immediately.
+            if self.intake.task is None or self.intake.task.done():
+                self.intake.start()
             self.capture_bridge.start()
             if getattr(self, "live_worker", None) is not None:
                 self.live_worker.start()

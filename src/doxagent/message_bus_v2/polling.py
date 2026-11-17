@@ -1179,6 +1179,7 @@ class CaptureIntake:
         previous_capture, burst = None, 0
         while not self.stopping:
             if claim is None:
+                self.wake.clear()
                 if await self.bus.storage.read(self.journal.ready):
                     claim = await self.bus.storage.call(self.journal.claim, _lane_priority=0)
             if not claim:
@@ -1186,7 +1187,6 @@ class CaptureIntake:
 
                 # History retirement is an independent maintenance job. An
                 # empty intake queue is not evidence the realtime writer is idle.
-                self.wake.clear()
                 try:
                     await asyncio.wait_for(self.wake.wait(), 30)
                 except TimeoutError:

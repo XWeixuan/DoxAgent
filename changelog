@@ -3236,3 +3236,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-18：吞吐长尾P0修复：同篇已准备块完整执行、工作单元连接复用、负例逐项CAS批量事务、正向regex并入最终提交、前台FIFO与忙时合作让出；添加内存阶段累计计量与有界慢目标日志。BODY候选读取移出writer并在提交重检，停用recheck局部索引、兼容空轮询退出、新平面不再启动旧五轮询、空测试维护不抢writer；消息publisher验证限于消息模型。采集Owner连接生命周期/FULL修改另作独立P1发布验证。保留相关性、准入、去重及原采集频率。
 
 2026-11-18：吞吐P1独立批次：AcquisitionStore同步Owner单元复用连接；仅长生命周期Collector/Bridge持有无活动事务的WAL锚连接并优雅关闭，写连接使用FULL保持耐久性，短期查询不持锚。补齐StorageLane线程CPU累计、恢复候选查询移出writer，空集合不进入写队列。新增跨线程写、FULL设置、WAL存续与作用域复用回归。
+
+2026-11-18：终检保留一个30秒级兼容入口恢复巡检，覆盖崩溃前持久化且未来到期的旧任务；新平面每轮不反复唤醒，正式兼容producer仍即时唤醒。避免停用旧五轮询后遗漏旧队列重放。
