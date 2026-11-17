@@ -48,8 +48,17 @@ Main 的 www.reuters.com localStorage 为5,242,879字符，单字符写入即 Qu
 
 ## 用户追加：从腾讯云拒绝日志识别Solverify出口IP
 
-已确认是CVM ins-e5vof1l6、ap-singapore，不是根据历史描述假定Lighthouse。当前无本地/服务器tccli身份、无CAM实例角色（metadata cam/security-credentials/返回404），浏览器控制工具两种入口均启动失败（kernel assets路径不存在），所以当前不能读取腾讯云账户内的流日志。宿主机内核近2小时没有DPT=18791记录，**不能推断云侧没有拒绝流量**，云侧DROP本来就可能不到达宿主机。
+上一轮仅凭metadata中的ins-e5vof1l6推断为CVM不充分，这个产品类型判断错误；2026-11-18用户已确认是新加坡Lighthouse，当前无可用VPC流日志。当前无本地/服务器tccli身份、无CAM实例角色（metadata cam/security-credentials/返回404），浏览器控制工具两种入口均启动失败（kernel assets路径不存在），所以当前不能读取腾讯云账户内的流日志。宿主机内核近2小时没有DPT=18791记录，**不能推断云侧没有拒绝流量**，云侧DROP本来就可能不到达宿主机。
 
 此外，本轮尚未创建Solverify task，没有对应的worker CONNECT尝试可归因；不能把随机扫描IP或API域名解析地址当Solver来源。下一步需要确认该CVM网卡已开启VPC流日志并投递CLS；在一次真实自然Challenge提交的精确UTC窗，筛选18791/REJECT的源IP，再用受认证CONNECT和同出口证明核对。没有历史流日志时不能事后回溯。普通操作/安全组变更日志不是逐连接拒绝日志。
 
 已请求用户确认日志是否开启及提供日志主题或必要四列记录。在取得来源证据前不扩大公网放行，不关闭已有2Captcha。官方依据：[VPC Flow Logs](https://main.qcloudimg.com/raw/document/intl/product/pdf/682_18930_en.pdf)、[企业安全组流日志依赖CLS配置](https://cloud.tencent.com/document/product/1132/112639)。此处属于证据/访问条件未满足，不能列为Solverify实测失败或实测成功。
+
+
+## Lighthouse纠正及一次性来源探测（2026-11-18）
+
+用户明确选择18792临时TCP监听：只accept/close，完全不读取CONNECT、凭据或其他payload，不提供代理或转发。探测器非root运行，15分钟TTL、32MiB内存、5% CPU、最多64个唯一公网IP，私有输出仅IP。使用完立即停止监听，云防火墙由用户撤销。不得仅凭metadata实例ID推断产品类型。
+
+本轮Solverify网络诊断任务006d90b3-1040-4c52-a83d-6d81b232e9ef使用明确标注的不可解码网络fixture，仅触发同一datadome任务类型的代理连接，不是真实Challenge解码验收，也禁止应用任何结果。提交UTC19:16:40，随后记录来源158.180.12.56；18792监听立即停止并核实无LISTEN。用户确认已删除18792临时规则，新增18791的158.180.12.56/32并保留2Captcha来源。后续以受认证18791连接、父代理和真实出口进一步核对，不能把一次观察当平台永久固定地址。
+
+configure-datadome.py新增可选精确solver_source_ips，默认2Captcha来源/认证/目标域名/CONNECT/never_direct限制全部保留；bootstrap保留既有额外Profile绑定和Provider私有配置，避免重跑丢失Solverify或第三身份绑定。7项配置相关回归通过。尚需追加正常代理实测及费用终态。

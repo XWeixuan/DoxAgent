@@ -5,6 +5,7 @@ approval; real egress preflight still gates every paid submission.
 """
 
 import argparse
+import ipaddress
 import json
 import os
 import re
@@ -15,7 +16,13 @@ import sys
 from pathlib import Path
 
 
-def squid_config(bindings, listeners, subnet):
+def squid_config(bindings, listeners, subnet, *, solver_source_ips=()):
+    sources = []
+    for value in solver_source_ips:
+        address = ipaddress.ip_address(value)
+        if address.version != 4 or not address.is_global:
+            raise ValueError("solver source must be an observed public IPv4 address")
+        sources.append(str(address) + "/32")
     lines = [
         "http_port 18791",
         "visible_hostname doxagent-captcha-proxy",
@@ -33,7 +40,7 @@ def squid_config(bindings, listeners, subnet):
         "auth_param basic credentialsttl 30 minutes",
         "acl CONNECT method CONNECT",
         "acl SSL_ports port 443",
-        "acl solver_src src 138.201.188.166/32 " + subnet,
+        "acl solver_src src " + " ".join(dict.fromkeys(["138.201.188.166/32", subnet, *sources])),
         "acl allowed dstdomain .reuters.com .captcha-delivery.com .datadome.co api.ipify.org",
         "acl private_dst dst 0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 ::1/128 fc00::/7 fe80::/10",
         "acl too_many maxconn 16",
@@ -102,11 +109,12 @@ def main():
     config_path = data / "credentials/datadome-solver.json"
     old = json.loads(config_path.read_text()) if config_path.exists() else {}
     config = {
+        **old,
         "enabled": args.enable,
         "api_key": key,
         "daily_tasks": 20,
         "sites": ["reuters"],
-        "bindings": {},
+        "bindings": dict(old.get("bindings", {})),
     }
     listeners = {}
     from urllib.parse import urlsplit
@@ -149,6 +157,17 @@ def main():
                 "proxyLogin": prior.get("proxyLogin", "dd-" + secrets.token_hex(8)),
                 "proxyPassword": prior.get("proxyPassword", secrets.token_urlsafe(32)),
             }
+        for binding in config["bindings"].values():
+            if binding["egress_id"] in listeners:
+                continue
+            row = db.execute("select data_json from proxy_egresses where egress_id=?",
+                             (binding["egress_id"],)).fetchone()
+            if not row:
+                raise SystemExit("retained binding egress is unavailable")
+            endpoint = urlsplit(json.loads(row[0])["endpoint"])
+            if endpoint.hostname != "doxagent-egress-clash" or endpoint.scheme != "http":
+                raise SystemExit("retained binding is not a registered local Clash endpoint")
+            listeners[binding["egress_id"]] = (endpoint.hostname, endpoint.port)
     network = json.loads(
         subprocess.check_output(["docker", "network", "inspect", "doxagent-v2_default"])
     )[0]
@@ -166,7 +185,8 @@ def main():
         passwords.append(b["proxyLogin"] + ":" + hashed)
     for name, content in [
         ("passwords", "\n".join(passwords) + "\n"),
-        ("squid.conf", squid_config(config["bindings"], listeners, subnet)),
+        ("squid.conf", squid_config(config["bindings"], listeners, subnet,
+                                    solver_source_ips=config.get("solver_source_ips", []))),
     ]:
         path = root / name
         path.write_text(content)
