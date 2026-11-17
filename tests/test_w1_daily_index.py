@@ -74,6 +74,18 @@ def test_bridge_reads_history_only_for_unseen_fact_ids(tmp_path,monkeypatch):
     assert calls==[]  # Metadata-only publication does not reopen the lineage.
 
 
+def test_current_index_matches_full_event_view_without_loading_facts(tmp_path,monkeypatch):
+    from doxagent.event_library.compiler import EventLibraryViewCompiler,_event_order,_wire_cell,_display_occurrence_time
+    _,repo,_=library(tmp_path)
+    publish(repo,1,boundary(DAY),[event(3),event(1),event(2)])
+    expected=''.join(' | '.join([e.event_id,_wire_cell(_display_occurrence_time(e.occurred_at)),
+                               _wire_cell(e.known_event_summary)])+'\n'
+                     for e in _event_order(repo.published_events('MU',1)))
+    def unwanted(*a,**kw):raise AssertionError('Index must not hydrate Fact details')
+    monkeypatch.setattr(repo,'published_events',unwanted)
+    assert EventLibraryViewCompiler(repo).known_event_index('MU',1)==expected
+
+
 def test_union_uses_admission_not_occurrence_and_ignores_maintenance(tmp_path):
     root, repo, provider = library(tmp_path)
     publish(repo, 1, boundary(DAY-timedelta(days=40)), [event(n,ref=n==1) for n in [1,4,5,6,8,9]])

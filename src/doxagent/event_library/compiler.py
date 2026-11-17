@@ -75,14 +75,14 @@ def _display_occurrence_time(value: str | None) -> str:
     return parsed.astimezone(_EASTERN).date().isoformat()
 
 
+def _occurrence_order(occurred_at, precision, event_id):
+    anchor = occurrence_anchor(occurred_at, precision)
+    return (anchor is None,-(anchor.toordinal() if anchor is not None else 0),int(event_id[1:]))
+
+
 def _event_order(events: list[CanonicalEvent]) -> list[CanonicalEvent]:
     def order(item: CanonicalEvent) -> tuple[bool, int, int]:
-        anchor = occurrence_anchor(item.occurred_at, item.occurrence_time_precision)
-        return (
-            anchor is None,
-            -(anchor.toordinal() if anchor is not None else 0),
-            int(item.event_id[1:]),
-        )
+        return _occurrence_order(item.occurred_at,item.occurrence_time_precision,item.event_id)
 
     return sorted(events, key=order)
 
@@ -154,17 +154,23 @@ class EventLibraryViewCompiler:
         self._repository = repository
 
     def known_event_index(self, ticker: str, version: int | None = None, *, day=None) -> str:
-        if day is None:
-            events = self._repository.published_events(ticker, version)
+        if day is None and hasattr(self._repository,'known_index_entries'):
+            entries = self._repository.known_index_entries(ticker, version)
         else:
-            selected = self._repository.published_version(ticker) if version is None else version
-            events = self._repository.runtime_known_events(ticker, selected, day)
+            if day is None:
+                events=self._repository.published_events(ticker,version)
+            else:
+                selected = self._repository.published_version(ticker) if version is None else version
+                events=self._repository.runtime_known_events(ticker,selected,day)
+            entries = [{key:getattr(event,key) for key in
+                        ('event_id','occurred_at','occurrence_time_precision','known_event_summary')}
+                       for event in events]
         lines: list[str] = []
-        for event in _event_order(events):
+        for event in sorted(entries,key=lambda e:_occurrence_order(e['occurred_at'],e['occurrence_time_precision'],e['event_id'])):
             cells = [
-                event.event_id,
-                _wire_cell(_display_occurrence_time(event.occurred_at)),
-                _wire_cell(event.known_event_summary),
+                event['event_id'],
+                _wire_cell(_display_occurrence_time(event['occurred_at'])),
+                _wire_cell(event['known_event_summary']),
             ]
             lines.append(" | ".join(cells))
         return "" if not lines else "\n".join(lines) + "\n"

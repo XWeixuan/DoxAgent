@@ -3188,3 +3188,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-17: 发布后首个自然 Case 存在约70秒的 W1/W2 前置等待；按 P2 补 case_task/输入冻结/日索引/事实桥接标量计时。离线验收工具支持生产轮转日志中的最终 owner receipt，双任务四阶段不误判，10秒验收至少100例，未完成不冒充通过。
 2026-11-17: 生产分段计时证实 Library fact bridge 单次7.5–13.3秒。先过滤冻结/可见事实，再按剩余Fact ID沿既有不可变分支溯源，避免入组热路径全历史事实展开；保留首次入库/内容复用、历史分支与去重口径，不新增缓存、线程或表。
 2026-11-17: 将已提交 Trade 后的 market stop 资源通知复用既有异步收尾执行器，不再让网络清理阻塞 Effect 收尾或 Operations；原准备期限继续兜底，无新增队列或状态。补充 route/ACK span 区分历史未闭合尾部，未将约6秒缺口未经证实归因于某个 RPC。阻塞 stop 回归验证 Trade 仍可完成提交。
+2026-11-17: case.input_snapshot 实测0.8–3.3秒，确认全量三列 Known Event Index 读取无关 Fact 明细。新增只读事件标量查询，沿用原发生时间排序及 wire 格式、版本/ACTIVE边界；每日14/7天筛选路径保持原规则，无新增缓存。22项索引/桥接/格式回归通过。

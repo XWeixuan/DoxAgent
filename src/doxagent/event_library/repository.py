@@ -670,6 +670,37 @@ class EventLibraryRepository:
                 for row in rows
             ]
 
+    def known_index_entries(self, ticker: str, version: int | None = None):
+        """The index's four scalar fields, without loading Fact memberships."""
+        normalized=self._ticker(ticker)
+        head=self.published_version(normalized)
+        selected=head if version is None else version
+        if selected<0 or selected>head:
+            raise UnknownLibraryObjectError(f"library version {selected} is not Published for {normalized}")
+        if selected==0:
+            return []
+        with self._read() as db:
+            self._require_native_version(db,normalized,selected)
+            rows=db.execute("""
+                SELECT 'E'||e.event_no event_id,r.payload_json IS NULL missing,
+                       json_extract(r.payload_json,'$.occurred_at') occurred_at,
+                       json_extract(r.payload_json,'$.occurrence_time_precision') occurrence_time_precision,
+                       json_extract(r.payload_json,'$.known_event_summary') known_event_summary
+                FROM canonical_events e
+                JOIN canonical_event_states s ON s.ticker=e.ticker AND s.event_no=e.event_no
+                 AND s.library_version=(SELECT max(x.library_version) FROM canonical_event_states x
+                    WHERE x.ticker=e.ticker AND x.event_no=e.event_no AND x.library_version<=?)
+                LEFT JOIN canonical_event_revisions r ON r.ticker=e.ticker AND r.event_no=e.event_no
+                 AND r.library_version=(SELECT max(x.library_version) FROM canonical_event_revisions x
+                    WHERE x.ticker=e.ticker AND x.event_no=e.event_no AND x.library_version<=?)
+                WHERE e.ticker=? AND e.created_version<=? AND s.status='ACTIVE'
+                ORDER BY e.event_no
+                """,(selected,selected,normalized,selected)).fetchall()
+        if any(row['missing'] for row in rows):
+            raise EventLibraryError('Known Event Index has an incomplete Event revision')
+        return [{key:row[key] for key in ('event_id','occurred_at','occurrence_time_precision','known_event_summary')}
+                for row in rows]
+
     def _admission_history(self, ticker: str, version: int, *, fact_nos=None):
         """Read publication history through the existing minimal-branch lineage.
 
