@@ -101,7 +101,7 @@ def retain_new_library_facts(repository, default_provider, ticker, day, *,
     if frozen_contents is None:
         frozen_contents = frozen_fact_contents(default_provider, ticker, frozen_root, frozen_index.version)
     seen = {fact_content(value.candidate) for value in values} | frozen_contents
-    for version, event, fact in changed(ticker, after, current_index.version):
+    for version, event, fact in changed(ticker, after, current_index.version, excluded_contents=seen):
         candidate = fact_candidate(event, fact)
         if fact_content(candidate) in seen:
             continue

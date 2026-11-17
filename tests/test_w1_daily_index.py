@@ -48,6 +48,32 @@ def library(tmp_path):
     return root, repo, PublishedEventLibraryRuntimeProvider(PublishedEventLibraryReader(root))
 
 
+def test_bridge_reads_history_only_for_unseen_fact_ids(tmp_path,monkeypatch):
+    from doxagent.persistent_runtime_v2.daily_index import fact_candidate,fact_content
+    root,repo,provider=library(tmp_path)
+    publish(repo,1,boundary(DAY),[event(1),event(2)])
+    publish(repo,2,boundary(DAY),[event(2,facts=[
+        {'fact_id':'F2','proposition':'changed fact','assertion_state':'ACTUAL'}])])
+    publish(repo,3,boundary(DAY),[event(2),event(3)])
+    # Returning to old content keeps its FIRST historical admission.
+    expected=repo.fact_admissions('MU',3)
+    assert repo.fact_admissions('MU',3,fact_ids=['F2'])=={'F2':expected['F2']}
+    assert expected['F2'][0]==1
+    frozen={fact_content(fact_candidate(e,f)) for e,f in provider.published_facts('MU',1)}
+    calls=[];original=EventLibraryRepository._admission_history
+    def capture(self,ticker,version,**kwargs):
+        calls.append(kwargs.get('fact_nos'))
+        return original(self,ticker,version,**kwargs)
+    monkeypatch.setattr(EventLibraryRepository,'_admission_history',capture)
+    fresh=provider.new_library_facts('MU',1,3,excluded_contents=frozen)
+    assert [f.fact_id for _,_,f in fresh]==['F3']
+    assert calls==[[3]]
+    calls.clear()
+    frozen.add(fact_content(fact_candidate(fresh[0][1],fresh[0][2])))
+    assert provider.new_library_facts('MU',1,3,excluded_contents=frozen)==[]
+    assert calls==[]  # Metadata-only publication does not reopen the lineage.
+
+
 def test_union_uses_admission_not_occurrence_and_ignores_maintenance(tmp_path):
     root, repo, provider = library(tmp_path)
     publish(repo, 1, boundary(DAY-timedelta(days=40)), [event(n,ref=n==1) for n in [1,4,5,6,8,9]])

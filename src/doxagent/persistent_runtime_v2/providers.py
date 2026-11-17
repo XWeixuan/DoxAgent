@@ -72,17 +72,23 @@ class PublishedEventLibraryRuntimeProvider:
         return [(event, fact) for event in repository.published_events(ticker, version)
                 for fact in event.facts]
 
-    def new_library_facts(self, ticker, after_version, version):
+    def new_library_facts(self, ticker, after_version, version, *, excluded_contents=()):
         repository = self.reader._repository(ticker)
         if repository is None:
             return []
-        admissions = repository.fact_admissions(ticker, version)
+        from .daily_index import fact_candidate, fact_content
+        candidates=[(event,fact) for event in repository.published_events(ticker, version)
+                    for fact in event.facts
+                    if fact_content(fact_candidate(event,fact)) not in excluded_contents]
+        if not candidates:
+            return []
+        admissions = repository.fact_admissions(ticker, version,
+                                               fact_ids=[fact.fact_id for _,fact in candidates])
         found = {}
-        for event in repository.published_events(ticker, version):
-            for fact in event.facts:
-                first_version, _ = admissions[fact.fact_id]
-                if first_version > after_version:
-                    found.setdefault(fact.fact_id, (first_version, event, fact))
+        for event,fact in candidates:
+            first_version, _ = admissions[fact.fact_id]
+            if first_version > after_version:
+                found.setdefault(fact.fact_id, (first_version, event, fact))
         return sorted(found.values(), key=lambda x: (x[0], int(x[2].fact_id[1:])))
 
     def details(

@@ -670,7 +670,7 @@ class EventLibraryRepository:
                 for row in rows
             ]
 
-    def _admission_history(self, ticker: str, version: int):
+    def _admission_history(self, ticker: str, version: int, *, fact_nos=None):
         """Read publication history through the existing minimal-branch lineage.
 
         A minimal branch retains only its base snapshot and subsequent changes.
@@ -695,17 +695,30 @@ class EventLibraryRepository:
                 ):
                     versions.setdefault(int(r["version"]), datetime.fromisoformat(
                         (r["published_at"] or r["created_at"]).replace("Z", "+00:00")))
-                rows.extend(db.execute(
-                    "SELECT fact_no,library_version,revision_no,payload_json "
-                    "FROM canonical_fact_revisions WHERE ticker=? AND library_version>? "
-                    "AND library_version<=?", (ticker, base, ceiling)).fetchall())
+                if fact_nos is None:
+                    rows.extend(db.execute(
+                        "SELECT fact_no,library_version,revision_no,payload_json "
+                        "FROM canonical_fact_revisions WHERE ticker=? AND library_version>? "
+                        "AND library_version<=?", (ticker, base, ceiling)).fetchall())
+                else:
+                    # The bridge needs provenance only for facts absent from its
+                    # frozen/visible content. Use the existing per-Fact index;
+                    # never deserialize unrelated Library history on admission.
+                    for offset in range(0,len(fact_nos),400):
+                        batch=fact_nos[offset:offset+400]
+                        marks=','.join('?' for _ in batch)
+                        rows.extend(db.execute(
+                            "SELECT fact_no,library_version,revision_no,payload_json "
+                            "FROM canonical_fact_revisions WHERE ticker=? AND fact_no IN ("+marks+") "
+                            "AND library_version>? AND library_version<=?",
+                            (ticker,*batch,base,ceiling)).fetchall())
             if branch is None:
                 break
             path, ceiling = Path(branch["source"]), min(ceiling, base)
         rows.sort(key=lambda r: (r["library_version"], r["revision_no"]))
         return versions, rows
 
-    def fact_admissions(self, ticker: str, version: int):
+    def fact_admissions(self, ticker: str, version: int, *, fact_ids=None):
         """First publication of each current Fact's business content, by stable ID.
 
         Repeated Event/reference maintenance cannot move this timestamp. A new
@@ -713,7 +726,12 @@ class EventLibraryRepository:
         changing references, review clocks or other metadata is not.
         """
         normalized = self._ticker(ticker)
-        return self._fact_admission_map(*self._admission_history(normalized, version))
+        if fact_ids is None:
+            return self._fact_admission_map(*self._admission_history(normalized, version))
+        numbers=sorted({_numeric_id(identity) for identity in fact_ids})
+        if not numbers:
+            return {}
+        return self._fact_admission_map(*self._admission_history(normalized, version,fact_nos=numbers))
 
     @staticmethod
     def _fact_admission_map(versions, rows):
