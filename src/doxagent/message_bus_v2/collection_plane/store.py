@@ -6,8 +6,8 @@ import json
 import sqlite3
 import threading
 import time
-from functools import wraps
 from contextlib import closing, contextmanager, nullcontext
+from functools import wraps
 from pathlib import Path
 
 from ..schema import AcquisitionMode, canonical_json, new_id, utc_now
@@ -27,7 +27,8 @@ def durable_write(function):
     def run(*args, **kwargs):
         for attempt in range(4):
             try:
-                return function(*args, **kwargs)
+                with args[0].connection_scope():
+                    return function(*args, **kwargs)
             except sqlite3.OperationalError as exc:
                 busy = (getattr(exc, "sqlite_errorcode", 0) & 255) in {5, 6} or "locked" in str(
                     exc
@@ -40,9 +41,11 @@ def durable_write(function):
 
 
 class AcquisitionStore:
-    def __init__(self, path, *, initialize=False):
+    def __init__(self, path, *, initialize=False, keep_wal=False):
         self.path = Path(path)
         self._writer = threading.RLock()
+        self._local = threading.local()
+        self._anchor = None
         if initialize:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with closing(sqlite3.connect(self.path, isolation_level=None)) as db:
@@ -87,12 +90,40 @@ class AcquisitionStore:
                     db.execute("ALTER TABLE units ADD COLUMN head_json TEXT NOT NULL DEFAULT '{}'")
                 db.execute("CREATE INDEX IF NOT EXISTS units_checkpoint ON units(json_extract(state,'$.checkpoint_ref'))")
 
+        if keep_wal:
+            # Never used by callers, never holds a read transaction: prevent
+            # every short writer becoming the WAL's last-close checkpointer.
+            self._anchor = sqlite3.connect(self.path, isolation_level=None, check_same_thread=False)
+            self._anchor.execute('SELECT name FROM sqlite_master LIMIT 1').fetchall()
+
+    def close(self):
+        if self._anchor is not None:
+            self._anchor.close()
+            self._anchor = None
+
+    @contextmanager
+    def connection_scope(self):
+        """Reuse connections only inside one synchronous durable operation."""
+        if getattr(self._local, 'db', None) is not None:
+            yield
+            return
+        db = sqlite3.connect(self.path, timeout=1, isolation_level=None)
+        db.row_factory = sqlite3.Row
+        db.execute('PRAGMA synchronous=FULL')
+        self._local.db = db
+        try:
+            yield
+        finally:
+            self._local.db = None
+            db.close()
+
     @contextmanager
     def connect(self, *, write=False):
         # SQLite has one physical writer. Queue only these short durable
         # commits, never a request permit, browser visit or business admission.
         with self._writer if write else nullcontext():
-            db = sqlite3.connect(
+            borrowed = getattr(self._local, 'db', None)
+            db = borrowed or sqlite3.connect(
                 self.path if write else self.path.resolve().as_uri() + "?mode=ro",
                 uri=not write,
                 timeout=1.0 if write else 0.2,
@@ -101,7 +132,7 @@ class AcquisitionStore:
             try:
                 db.row_factory = sqlite3.Row
                 if write:
-                    db.execute("PRAGMA synchronous=NORMAL")
+                    db.execute("PRAGMA synchronous=FULL")
                     db.execute("BEGIN IMMEDIATE")
                 yield db
                 if write:
@@ -111,7 +142,8 @@ class AcquisitionStore:
                     db.rollback()
                 raise
             finally:
-                db.close()
+                if borrowed is None:
+                    db.close()
 
     def get_meta(self, key, default=None):
         with self.connect() as db:
@@ -474,8 +506,9 @@ class AcquisitionStore:
 
     @durable_write
     def normalize_unknown(self, source_id, messages, observed):
-        from ..schema import identity_key_for
         from datetime import datetime
+
+        from ..schema import identity_key_for
 
         if not any(m.publication_time_basis == "UNKNOWN_FIRST_SEEN" for m in messages):
             return messages

@@ -613,6 +613,7 @@ class LiveRepository:
         stamp = now.isoformat()
         recent = (now - timedelta(minutes=30)).isoformat()
         recheck_filter = "" if self.bus.body_recheck_enabled else " AND work_kind<>'recheck' "
+        due_table = "live_articles" + ("" if self.bus.body_recheck_enabled else " INDEXED BY live_article_active_due")
         with self.bus._connect() as db:
             if background:
                 limit = min(limit, 1)
@@ -631,7 +632,7 @@ class LiveRepository:
                 )
             }
             publishers = db.execute(
-                "SELECT publisher,min(due_at) first_due,max(first_seen_at) newest,max(first_seen_at>=? OR work_kind='content_update') urgent FROM live_articles "
+                "SELECT publisher,min(due_at) first_due,max(first_seen_at) newest,max(first_seen_at>=? OR work_kind='content_update') urgent FROM " + due_table + " "
                 "WHERE state='FETCH_DUE' AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
                 + recheck_filter + "GROUP BY publisher ORDER BY min(delivery_mode='test')," + ('first_due,newest DESC' if background else 'urgent DESC,newest DESC,first_due') + " LIMIT 64",
                 (recent, stamp, int(background)),
@@ -641,7 +642,7 @@ class LiveRepository:
                 available = min(limit - len(rows), max(0, 2 - active.get(publisher[0], 0)))
                 if available:
                     rows += db.execute(
-                        "SELECT article_key,input_revision FROM live_articles WHERE state='FETCH_DUE' "
+                        "SELECT article_key,input_revision FROM " + due_table + " WHERE state='FETCH_DUE' "
                         "AND publisher=? AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
                         + recheck_filter + "ORDER BY (delivery_mode='test')," + ('due_at,first_seen_at' if background else "(first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at") + " LIMIT ?",
                         (publisher[0], stamp, int(background), *([] if background else [recent]), available),
@@ -1034,7 +1035,7 @@ class LiveRepository:
             )
         return len(keys)
 
-    def enqueue_checks(self, *, limit=4):
+    def check_candidates(self, *, limit=4):
         now = utc_now()
         stamp = now.isoformat()
         cutoff = (now - timedelta(hours=24)).isoformat()
@@ -1042,7 +1043,9 @@ class LiveRepository:
             " AND work_kind<>'recheck' AND last_error IN ('site_recovery_pending','domain_cooldown') ")
         with self.bus._connect() as db:
             rows = db.execute(
-                "SELECT article_key,last_error FROM live_articles WHERE state='READY' "
+                "SELECT article_key,last_error FROM live_articles "
+                + ("" if self.bus.body_recheck_enabled else "INDEXED BY live_article_recovery_check ")
+                + "WHERE state='READY' "
                 "AND next_check_at<=? AND (first_seen_at>=? OR last_error IN ('site_recovery_pending','domain_cooldown')) "
                 "AND EXISTS(SELECT 1 FROM source_definitions s WHERE s.source_id=live_articles.source_id) "
                 + recheck_filter + "ORDER BY next_check_at LIMIT ?",
@@ -1054,6 +1057,12 @@ class LiveRepository:
                 "ORDER BY next_check_at LIMIT 128",
                 (stamp, cutoff),
             ).fetchall()
+        return rows, expired
+
+    def enqueue_checks(self, *, limit=4, candidates=None):
+        now = utc_now()
+        stamp = now.isoformat()
+        rows, expired = self.check_candidates(limit=limit) if candidates is None else candidates
         if not rows and not expired:
             return 0
         with self.bus.transaction() as db:

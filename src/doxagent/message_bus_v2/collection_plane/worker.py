@@ -100,7 +100,8 @@ class SnapshotGate:
 class Collector:
     def __init__(self, settings, adapters, *, store=None, config_loader=load):
         self.settings, self.adapters = settings, adapters
-        self.store = store or AcquisitionStore(path_for(settings.message_bus_v2_sqlite_path))
+        self._owns_store = store is None
+        self.store = store or AcquisitionStore(path_for(settings.message_bus_v2_sqlite_path), keep_wal=True)
         self.config_loader = ConfigurationLoader() if config_loader is load else config_loader
         self.config = Configuration()
         self.inflight = {}
@@ -437,6 +438,8 @@ class Collector:
             for t in self.inflight.values():
                 t.cancel()
             await asyncio.gather(refresh, maintenance, stream, *([control] if control else []), *self.inflight.values(), return_exceptions=True)
+            if self._owns_store:
+                self.store.close()
 
     async def acquire(self, source, targets, unit, options):
         from doxagent.site_strategy.scope import AccessRoutingContext, access_routing

@@ -16,7 +16,8 @@ log = logging.getLogger(__name__)
 class CaptureBridge:
     def __init__(self, bus, *, store=None):
         self.bus, self.repo = bus, bus.repository
-        self.store = store or AcquisitionStore(path_for(self.repo.path))
+        self._owns_store = store is None
+        self.store = store or AcquisitionStore(path_for(self.repo.path), keep_wal=True)
         self.task = None
         self.stopping = False
 
@@ -93,3 +94,5 @@ class CaptureBridge:
         if self.task:
             self.task.cancel()
             await asyncio.gather(self.task, return_exceptions=True)
+        if self._owns_store:
+            self.store.close()

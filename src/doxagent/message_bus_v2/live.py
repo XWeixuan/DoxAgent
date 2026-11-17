@@ -318,7 +318,10 @@ class LiveQueue:
             await self.bus.storage.call(maintain, self.repository, _lane_priority=2)
             await self.bus.storage.call(self.repository.retire_acceptances, _lane_priority=2)
             self._maintenance_at = time.monotonic()
-        return await self.bus.storage.call(self.repository.enqueue_checks, _lane_priority=2)
+        candidates = await self.bus.storage.read(self.repository.check_candidates)
+        if not any(candidates):
+            return 0
+        return await self.bus.storage.call(self.repository.enqueue_checks, candidates=candidates, _lane_priority=2)
 
     async def adopt(self, job):
         """One-time transfer of a frozen old work item, not a second BODY lane."""

@@ -73,9 +73,15 @@ class StorageLane:
             lane = self._lanes[loop] = _Lane()
         return lane
 
-    @staticmethod
-    async def _execute(operation, args, kwargs):
-        work = asyncio.create_task(asyncio.to_thread(operation, *args, **kwargs))
+    async def _execute(self, operation, args, kwargs):
+        cpu = [0.0]
+        def run():
+            started = time.thread_time()
+            try:
+                return operation(*args, **kwargs)
+            finally:
+                cpu[0] = time.thread_time()-started
+        work = asyncio.create_task(asyncio.to_thread(run))
         try:
             return await asyncio.shield(work)
         except asyncio.CancelledError:
@@ -89,6 +95,8 @@ class StorageLane:
                     break
             await asyncio.gather(work, return_exceptions=True)
             raise
+        finally:
+            self.metrics['thread_cpu_s'] += cpu[0]
 
     async def read(self, operation: Callable[..., Any], *args, **kwargs):
         """Caller supplies an operation-scoped read connection; no writer lock."""

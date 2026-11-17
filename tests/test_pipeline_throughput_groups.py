@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 import pytest
 
@@ -66,3 +67,24 @@ async def test_one_preparation_and_one_negative_transaction_per_article(tmp_path
         print({"targets":count,"seconds":elapsed,"effective_per_second":count/elapsed})
     finally:
         await hub.close()
+
+
+def test_acquisition_wal_lifetime_and_full_durability(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
+    store=AcquisitionStore(tmp_path/"acquisition.sqlite3",initialize=True,keep_wal=True)
+    try:
+        with store.connection_scope():
+            with store.connect(write=True) as first:
+                assert first.execute("PRAGMA synchronous").fetchone()[0]==2
+            with store.connect(write=True) as second:
+                assert first is second
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            list(executor.map(lambda i:store.meta(str(i),i),range(10)))
+        assert store.get_meta('9')==9
+        assert not store._anchor.in_transaction
+        assert Path(str(store.path)+'-wal').exists()
+    finally:
+        store.close()
+    assert store._anchor is None
