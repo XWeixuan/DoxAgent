@@ -2545,19 +2545,29 @@ class MessageBusV2Repository:
             return self._finalize_standard(raw=raw, message=message, streaming=streaming)
         engine = self.advanced_dedup
         engine.warm(self, message.ticker)
-        feature = features(message, source)
         for _ in range(3):
+            # This can read/decode retained evidence and serialize Native
+            # content. Keep it out of the cross-publication commit lock, and
+            # compare the exact message which will be committed.
+            prepared = self.prepare_finalization(raw=raw, message=message, streaming=streaming)
+            feature = features(prepared['message'], source)
+            published_key = prepared['message'].standard_message_id
             hit, epoch = engine.check(feature)
             with engine.commit_lock:
                 if epoch != engine.epochs[message.ticker]:
                     continue
-                if hit and hit[1] != message.standard_message_id:
+                if hit and hit[1] != published_key:
                     self.save_raw(raw.model_copy(update={"processing_status": RawProcessingStatus.COMPLETED,
                         "metadata": {**raw.metadata, "advanced_duplicate": {"gate": hit[0], "representative": hit[1]}}}))
                     return None
-                item = self._finalize_standard(raw=raw, message=message, streaming=streaming)
+                try:
+                    item = self.commit_finalization(prepared)
+                except RuntimeError as exc:
+                    if str(exc) not in {'raw_changed_during_preparation', 'standard_changed_during_preparation'}:
+                        raise
+                    continue
                 if item:
-                    engine.remember(feature, message.standard_message_id, item.published_at.timestamp())
+                    engine.remember(feature, published_key, item.published_at.timestamp())
                 return item
         raise RuntimeError('advanced_publication_changed')
 

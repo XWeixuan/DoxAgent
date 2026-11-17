@@ -71,6 +71,51 @@ def test_budget_does_not_disable_exact_gates():
     assert engine.check(f(title="same"))[0] == ("title", "published")
 
 
+def test_warm_ticker_does_not_wait_for_another_tickers_cold_load():
+    from threading import Event, Thread
+
+    engine = AdvancedDeduplication()
+    engine.warmed['MU'] = float('inf')
+    finished = Event()
+    with engine.warm_lock:  # Another ticker owns the cold preload lock.
+        thread = Thread(target=lambda: (engine.warm(None, 'MU'), finished.set()))
+        thread.start()
+        completed_while_cold_locked = finished.wait(1)
+    thread.join(2)
+    assert completed_while_cold_locked
+
+
+def test_compatibility_finalization_prepares_outside_commit_lock(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from doxagent.message_bus_v2.schema import PublicationMode, StreamingConfig
+    from tests.test_content_enrichment_hub import _setup
+
+    repo, _, source, _ = _setup(tmp_path)
+    engine = repo.advanced_dedup
+    engine.warmed['MU'] = float('inf')
+    incoming = SimpleNamespace(ticker='MU', source_id=source.source_id,
+                               standard_message_id='new', title='stale title',
+                               metadata={}, url='https://example.test/new', body='')
+    committed = SimpleNamespace(**{**vars(incoming), 'title': 'retained current title',
+                                   'standard_message_id': 'retained'})
+    prepared = {'message': committed}
+    def prepare(**kwargs):
+        assert not engine.commit_lock._is_owned()
+        return prepared
+    def commit(value):
+        assert engine.commit_lock._is_owned()
+        assert value is prepared
+        from doxagent.message_bus_v2.schema import utc_now
+        return SimpleNamespace(published_at=utc_now())
+    monkeypatch.setattr(repo, 'prepare_finalization', prepare)
+    monkeypatch.setattr(repo, 'commit_finalization', commit)
+    repo.finalize_standard(raw=None, message=incoming,
+                           streaming=StreamingConfig(publication_mode=PublicationMode.IMMEDIATE))
+    assert engine.check(features(committed, source))[0] == ('url', 'retained')
+    assert engine.records['retained'][0].title == 'retained current title'
+    assert 'new' not in engine.records
+
+
 def test_defaults_ibkr_and_verified_google_suffix():
     from doxagent.message_bus_v2.schema import RawMessageInput
 

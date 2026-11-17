@@ -264,6 +264,11 @@ class AdvancedDeduplication:
             self.epochs[f.bucket[0]] += 1
 
     def warm(self, repository, ticker):
+        # A different ticker's cold SQL/Native reads must not serialize the
+        # already-warm publication path. _warm rechecks after taking the lock.
+        with self.lock:
+            if self.warmed.get(ticker, 0) > monotonic():
+                return
         with self.warm_lock:
             try:
                 self._warm(repository, ticker)
