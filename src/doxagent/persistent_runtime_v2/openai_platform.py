@@ -12,6 +12,20 @@ from .transport import RuntimeResponsesError, RuntimeResponsesResult, _validatio
 ENDPOINT = "https://api.openai.com/v1/responses"
 
 
+def _w1_provisional_breakpoints(messages, ttl):
+    """Keep completed chunk endpoints eligible when the provisional tail grows.
+
+    OpenAI looks up explicit endpoints present in this request. Unlike Anthropic,
+    marking only the newest chunk does not discover earlier unmarked chunks.
+    Lookup markers are not write slots: the API selects at most four writes.
+    The first two and latest fifty markers remain eligible for lookup.
+    """
+    # The shared builder emits reference, immutable completed chunks, live tail.
+    # Reuse its text, IDs, order and configured promotion size without changing Haiku.
+    for block in messages[1]["content"][1:-1]:
+        block["prompt_cache_breakpoint"] = {"mode": "explicit", "ttl": ttl}
+
+
 def build_request(request):
     from .openrouter import build_case_schema_request, build_w1_r1_cached_request, build_w2_r1_cached_request
     if (request.model != "gpt-6-luna" or request.metadata.get("round") not in {"R1", "R2", "R3"}
@@ -45,6 +59,8 @@ def build_request(request):
                     item["prompt_cache_breakpoint"] = {"mode": "explicit", "ttl": ttl}
                 content.append(item)
         messages.append({"role": "developer" if recall and message["role"] == "system" else message["role"], "content": content})
+    if recall and request.metadata["lane"] == "W1":
+        _w1_provisional_breakpoints(messages, ttl)
     schema = copy.deepcopy(original["response_format"]["json_schema"]["schema"])
     def tighten(value):
         if isinstance(value, dict):

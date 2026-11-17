@@ -1,0 +1,82 @@
+import json,collections
+from pathlib import Path
+base=Path('eval/runtime_cost_audit_20261117')
+d=json.loads((base/'evidence.json').read_text(encoding='utf-8-sig'));r=d['report']
+b=json.loads((base/'business.json').read_text(encoding='utf-8-sig'))
+lines=['# W1/W2 前一交易日 Token 与成本上升排查（2026-11-17）','',
+'结论：存在 Case 数量以外的成本推动因素。最应优先修复的是 W1R1 的 OpenAI 增量事实显式缓存断点；另一个主要增量来自 W3 v6 将 NEW Case 事实提取移交 W1R3，这是已上线业务职责变化，不能当作重试故障删除。','',
+'## 1. 统计口径与证据边界','',
+'- 前一交易日为 2026-11-16。沿用 Runtime 语义日，美东 02:00 至次日 02:00，即 UTC 11-16 07:00 至 11-17 07:00，北京时间 11-16 15:00 至 11-17 15:00。按 Case 的 trading_date 归属其全部 W1/W2 回执。11 月 16 日这批回执无跨日调用。',
+'- 读取生产原生 runtime.sqlite3 的 Case、Turn、冻结 round_inputs 和候选事实；只读连接，未改业务数据、生产代码或模型配置，未重启容器，未发起任何付费模型调用。抽样上下文只读取 72 个冻结 W1R1 输入。',
+'- token = input_tokens + output_tokens；cached / cache write 已包含在 input，reasoning 已包含在 output，不重复累计。缓存命中的 token 仍是 token 用量，不能把总 token 增幅直接当作账单增幅。',
+'- 金额：OpenAI 按实际返回 service_tier=fast、原生缓存写入 TTL 及项目版本化费率估算；OpenRouter 优先使用 provider 回执 cost。未取得 OpenAI 账户发票/账单，金额不是账单对账结果，也不含 W3、CDECR、其他对话测试。',
+'- 周五存在 846 条 usage/价格未知的失败回执，未知项未按零补齐。故历史 token/金额是已记录部分；另以 11-11 的较干净样本交叉对比（仅 2 条未知）。11-16 的 9,072 条回执均有 token 和价格，完整性较高。','',
+'## 2. 总量与单位 Case','',
+'|交易日|Case|W1/W2 调用回执|已记录总 token|已记录/估算 USD|每 Case token|每 Case USD|',
+'|---|---:|---:|---:|---:|---:|---:|']
+for day in ['2026-11-09','2026-11-10','2026-11-11','2026-11-12','2026-11-13','2026-11-16']:
+ a=r['daily'][day];n=r['case_daily'][day]['cases'];lines.append(f"|{day}|{n:,}|{a['turns']:,}|{a['total_tokens']/1e6:.3f}M|{a['total_cost_usd']:.4f}|{a['total_tokens']/n:,.0f}|{a['total_cost_usd']/n:.6f}|")
+lines += ['',
+'与 11-13 相比：Case +84.2%，token +106.9%，金额 +159.3%；每 Case token +12.3%，每 Case金额 +40.8%。与 11-11 相比，分别为 +76.8%、+110.6%、+153.9%；说明并非仅周五失败回执缺失造成。',
+'',
+'11-16 含 REALTIME 1,764 Case（151.680M token / $15.6643）和 CLOSED 299 Case（20.990M / $2.2735）。只看 REALTIME，相比周五 Case +57.5%，token +81.8%，金额 +126.5%，同样有单位成本上升。','',
+'按周五每 Case 水平机械放大到 2,063 Case，应为 153.715M token / $12.7408；实际多出 18.955M / $5.1969。这个分解是描述性比较，不是严格因果或可节省金额预测。','',
+'## 3. 各轮成本落点','',
+'|节点|周五成功 Case|11-16 成功 Case|周五 USD|11-16 USD|11-16 费用占比|11-16 平均输入/输出 token（成功调用）|',
+'|---|---:|---:|---:|---:|---:|---:|']
+for lane,rnd in [('W1','R1'),('W1','R2'),('W1','R3'),('W2','R1'),('W2','R2'),('W2','R3')]:
+ key=lane+'|'+rnd;a=r['stages']['2026-11-13|'+key];z=r['stages']['2026-11-16|'+key]
+ ts=[t for t in d['turns'] if t['day']=='2026-11-16' and t['lane']==lane and t['round_name']==rnd and t['status']=='OK']
+ mean=lambda k:sum(t[k] or 0 for t in ts)/len(ts)
+ prev=len({t['case_id'] for t in d['turns'] if t['day']=='2026-11-13' and t['lane']==lane and t['round_name']==rnd and t['status']=='OK'})
+ lines.append(f"|{lane}{rnd}|{prev:,}|{len(ts):,}|{a['total_cost_usd']:.4f}|{z['total_cost_usd']:.4f}|{z['total_cost_usd']/r['daily']['2026-11-16']['total_cost_usd']:.1%}|{mean('input_tokens'):,.0f} / {mean('output_tokens'):,.0f}|")
+lines += ['',
+'整日费用构成：普通输入 $3.8650（21.6%）、缓存读取 $2.7702（15.4%）、缓存写入 $3.4993（19.5%）、输出 $7.8032（43.5%）。其中 reasoning 6.829M，占 output 87.5%，已经包含在输出费用中。','',
+'## 4. 已确认的业务变化：W1R3 调用范围大幅扩大','',
+'- 周五 W3 contract 为 v5，路由到 W3 的 Case 由 W3 提交事实；W1R3 主要处理不进 W3 的 NEW Case。周五仅 78 / 1,120 = 7.0% 的 Case 有成功 W1R3。',
+'- 11-16 全部 Case 使用 v6；router.py 现在允许 v6 的 NEW Case 同时发出 route_to_w3 + emit_delta。W1R3 因此成为与 W3 并行的事实提取轮，成功调用 1,673 / 2,063 = 81.1%；只看 REALTIME 也达到 80.6%。',
+'- 改动来源：dcded5e6f（11-15 提交）的 router.py。该行为有明确代码依据，并非模型把同一轮反复执行。NEW 比例本身从 86.9% 变为 84.7%，并没有突增。',
+'- W1R3 费用从 $0.1558 上升至 $3.2887；按周五 Case 数放大后，仍有约 $3.0017 增量。新一日 W1R3 单次输入 4,548，反而低于周五 5,428；问题在调用覆盖面，不是每次塞入超大父上下文。',
+'- 输出共 6,224 candidates，1,673 次均非空；provisional 因而积累更快，再增加后续 W1R1 输入与缓存写入。旧日仍有 W3 产出的事实，因此不能把全部 6,224 条视为业务净新增，更不能把 W1R3 增量直接等同整体系统成本增量。',
+'- 11-16 所有 W1R3 只成功调用一次，没有重复 R3 回执。建议保留这条业务职责，不通过关闭 R3 或删除当日事实去节省费用。若要降低提取成本，应另用冻结样本评估 W1R3 的推理强度及事实选择质量，再决定是否变更。','',
+'## 5. 首要可修复项：W1R1 增量缓存断点不适配 OpenAI','',
+'### 5.1 机制与根因','',
+'当前 build_w1_r1_cached_request 仍按 Haiku 的布局：每 5 行事实一个不可变内容块，只在最新完整块和向前第 21 个块打标，再加固定 system/reference，共最多 4 个标记。原生 OpenAI build_request 直接将这些 cache_control 映射成 prompt_cache_breakpoint。',
+'当 facts 从 1,339 行增加到 1,345 行，先前最新完整端点是第 1,335 行；当前仅标记第 1,345、1,245 行，没有保留第 1,335 行的查找端点。即使前面的文本一个字都没改，OpenAI 显式模式仍只能查本次请求提供的边界，可能退回固定 reference 前缀。',
+'OpenAI 官方文档明确：显式模式仅查本次传入的显式边界（当前文档为最初 2 个及最近 50 个），每次最多创建 4 个写入；“可查的边界”不等于“本次最多写 4 处”。现实现混用了两者，且把 Haiku 的内容块回看策略直接复用到了 OpenAI。见 [官方缓存规则](https://developers.openai.com/api/docs/guides/prompt-caching)。','',
+'### 5.2 真实回执证据','',
+'INTC 相邻输入：','',
+'|UTC 启动时间|Case|provisional 行数|input|cache read|cache write|',
+'|---|---|---:|---:|---:|---:|',
+'|11-17 04:54:39|case_6becc9e627614102898e0897df26ba70|1,339|73,619|72,807|0|',
+'|11-17 05:00:21|case_fa8ccaaa3ef34aa3b6a1b1ef84c29182|1,345|74,243|24,498|48,622|',
+'|11-17 05:02:40|case_579181460c874e6a91d9bd20f79e74f8|1,351|74,394|69,370|3,901|','',
+'第二条输入完整保留前一条全部 1,339 行，却重写 48,622 token 的 12h 缓存。同类例子在 MU、NBIS 也出现。INTC 06:28 的 Case ce0925 同样从此前 73,552 cache read 降至 24,498，并重写 49,362 token。个别并发同时写相同前缀也会增加写入，但不能解释上述相隔数分钟、前缀稳定且端点移位的规律。','',
+'### 5.3 规模与优先修复方向','',
+'- W1R1 缓存读取率仍有 87.4%，因此只看平均命中率容易遗漏问题；12h write 从 1.868M 升到 6.694M（3.58 倍），写入费 $3.3469，占 W1R1 自身费用 53.5%。',
+'- 134 次 W1R1 调用各写入超过 15k token，合计 3.544M write（费用约 $1.7720）；其中含正常首次写入，不能全算成可避免浪费。',
+'- 平均 W1R1 输入从 27,526 升至 35,302（+28.2%）；REALTIME 平均达到 37,117。INTC 输入从日初约25k升至日末约76k，provisional 从 0 行升至 1,378 行。',
+'- 72 份冻结输入覆盖 INTC/MU/NBIS 两个交易日；每个 ticker/day 的 Known Event Index、固定 instructions 各只有一个哈希，provisional 全部仅在末尾追加，未见改序或覆盖。当前问题是边界发现，而不是文本前缀不稳定；抽样结论不冒充全量字节校验。',
+'- 最小修复：仅为原生 OpenAI W1R1 生成自己的断点布局。保留不可变 5 行块及历史已完成块的边界，让上一请求的端点在新请求里仍是可查边界；按官方规则由服务选择写入，保留固定前缀边界。不引入第二套状态数据库，不改 facts 内容/顺序/ID，不改日冻结、12h TTL、模型、Schema 或 Haiku fallback 布局。',
+'- 验收需包含：跨 5 行、跨 100 行、一次新增多块、超过 50 块、相同事实并发、当日 O2 后事实保留等情况；再顺序真实调用跨块样本，要求增长时缓存命中延伸至旧完整 provisional 端点，写入主要落在新增部分。不能以同一输入连续调用两次的漂亮命中率作为验收。',
+'- 12h write 按普通输入的 2.5 倍、cache read 按 0.1 倍计费，反复重写比多一点未缓存尾部更昂贵；先修可查边界，再考虑批大小和 TTL 成本优化。现阶段不承诺具体节省金额。[官方缓存计费](https://developers.openai.com/api/docs/guides/prompt-caching)','',
+'## 6. 已检查、不是本次主因的方向','',
+'- W1/W2 回执只有 2 次失败：W2R2、W2R3 各一次 semantic_output_validation_failed，随后 Haiku 成功。两条 fallback 总费用约 $0.0073，失败原生调用可见费用约 $0.0081，不构成当天成本跃升主因。',
+'- 9,070 条 OpenAI 调用均为 high / fast；2 条 OpenRouter 为 Haiku high / 1h。未发现临时变为更贵模型或提高档位。R1 12h、R2/R3 30m，与现行配置一致。',
+'- 除上述两次重试，每个 Case 的每轮只调用一次；未见 response_id 重复记账。同 ticker + logical_message_id 无重复 Case，跨 ticker 同文章属于各 ticker 的独立研判，不视作重复调度。',
+'- W2R1 成功调用平均输入 31,878，周五 32,159；W1R2 4,187，周五 4,706；W2R2 9,584，周五 11,804；W2R3 8,608，周五 10,731。没有全链路上下文膨胀。',
+'- 单次输出 W1R1 557（周五 546），W2R1 790（周五 780），W1R2 620（周五 695），W2R2 1,382（周五 1,669）。没有普遍的单次失控长输出；reasoning 总量增加主要跟调用量与 R3 覆盖变化有关。',
+'- 没有超长上下文价格阶梯：11-16 最大单次 input 76,373，未达到项目 Luna 长上下文阈值 272k。',
+'- post-freeze Library bridge 只有 105 条，与消息产生的数千事实相比很少；未见旧的“整库重复灌入 provisional”模式复发。','',
+'## 7. 独立发现与本轮边界','',
+'11-16 的 389 个 Case 终态为 FAILED，错误 w3_ready_unconfigured；但它们此前的 W1/W2 成本已经发生。现有 W1/W2 成功回执复用机制没有把这些成功轮次重复跑一遍。这是独立的 W3 可用性问题，不能将它们的 token 扣掉，也不能据此认定 W1/W2 大量 provider 失败。该错误的 W3 根因不在本次成本排查中展开。','',
+'本轮仅形成审计证据及修改建议，未修改/发布生产逻辑。建议先修原生 W1R1 边界复用，保留 v6 事实覆盖；随后评估 W1R3 推理成本。','',
+'## 8. 可复核文件','',
+'- eval/runtime_cost_audit_20261117/evidence.json：2026-11-07 至 11-16 Case 与精简回执，含归属日、实际调用日、缓存细分及估价。',
+'- summary.json：按交易日、节点、ticker、模型、模式聚合。',
+'- details.json：72 份冻结输入的哈希、行数、前缀一致性和对应缓存回执。',
+'- business.json：v5/v6 路由、NEW/OLD、R3 candidates 与 bridge 来源统计。',
+'- collect.py/detail.py/business.py：只读取证脚本；report.py：从证据生成本报告。',
+'- 关键实现：src/doxagent/persistent_runtime_v2/router.py、openrouter.py、openai_platform.py、daily_index.py、service.py、w1_context.py；计费 src/doxagent/v2_read/pricing.py。','']
+out=Path('docs/runtime-w1-w2-cost-audit-20261117.md');out.write_text('\n'.join(lines),encoding='utf8')
+print(out)

@@ -1,0 +1,136 @@
+[
+  {
+    "case_id": "case_6becc9e627614102898e0897df26ba70",
+    "lane": "W1",
+    "round": "R1",
+    "arm": "old",
+    "references_in_frozen_input": true
+  },
+  {
+    "case_id": "case_fa8ccaaa3ef34aa3b6a1b1ef84c29182",
+    "lane": "W1",
+    "round": "R1",
+    "arm": "old",
+    "references_in_frozen_input": true
+  },
+  {
+    "case_id": "case_579181460c874e6a91d9bd20f79e74f8",
+    "lane": "W1",
+    "round": "R1",
+    "arm": "old",
+    "references_in_frozen_input": true
+  },
+  {
+    "case_id": "case_6becc9e627614102898e0897df26ba70",
+    "lane": "W1",
+    "round": "R1",
+    "arm": "new",
+    "references_in_frozen_input": true
+  },
+  {
+    "case_id": "case_fa8ccaaa3ef34aa3b6a1b1ef84c29182",
+    "lane": "W1",
+    "round": "R1",
+    "arm": "new",
+    "references_in_frozen_input": true
+  },
+  {
+    "case_id": "case_579181460c874e6a91d9bd20f79e74f8",
+    "lane": "W1",
+    "round": "R1",
+    "arm": "new",
+    "references_in_frozen_input": true
+  },
+  {
+    "case_id": "case_059e3e60655644ec9e3d241067b31165",
+    "lane": "W1",
+    "round": "R3",
+    "arm": "new"
+  },
+  {
+    "case_id": "case_7bfd02e1bc554998a261992e112c4bb7",
+    "lane": "W1",
+    "round": "R3",
+    "arm": "new"
+  },
+  {
+    "case_id": "case_d04a1024dbc64fb8be56fb88aa9a4657",
+    "lane": "W2",
+    "round": "R2",
+    "arm": "new",
+    "historical_decision": {
+      "policy_hit": true,
+      "policy_related": true,
+      "policy_ids": [
+        "pol_0486926d40484cd3a171ab19f3e18200"
+      ],
+      "related_policy_ids": [
+        "pol_2f583decdad14c139c90934b5f321547",
+        "pol_174e1e71876b4c60bd0367d852d1c9a9"
+      ],
+      "hit_condition_ids": [
+        {
+          "condition_ids": [
+            "C4"
+          ],
+          "policy_id": "pol_0486926d40484cd3a171ab19f3e18200"
+        }
+      ]
+    },
+    "new_decision": {
+      "policy_hit": true,
+      "policy_related": true,
+      "policy_ids": [
+        "pol_0486926d40484cd3a171ab19f3e18200"
+      ],
+      "related_policy_ids": [
+        "pol_2f583decdad14c139c90934b5f321547",
+        "pol_174e1e71876b4c60bd0367d852d1c9a9"
+      ],
+      "hit_condition_ids": [
+        {
+          "policy_id": "pol_0486926d40484cd3a171ab19f3e18200",
+          "condition_ids": [
+            "C4"
+          ]
+        }
+      ]
+    },
+    "agreement": true
+  },
+  {
+    "case_id": "case_059e3e60655644ec9e3d241067b31165",
+    "lane": "W2",
+    "round": "R2",
+    "arm": "new",
+    "historical_decision": {
+      "policy_hit": false,
+      "policy_related": true,
+      "policy_ids": [],
+      "related_policy_ids": [
+        "pol_1af45d7fb4134e41b180b934072310c1",
+        "pol_1c994bc18b624cd79019a41bb6cb7383",
+        "pol_91636faae1c04231b71c9cb53cd4df61"
+      ],
+      "hit_condition_ids": []
+    },
+    "new_decision": {
+      "policy_hit": false,
+      "policy_related": true,
+      "policy_ids": [],
+      "related_policy_ids": [
+        "pol_1af45d7fb4134e41b180b934072310c1",
+        "pol_1c994bc18b624cd79019a41bb6cb7383",
+        "pol_91636faae1c04231b71c9cb53cd4df61"
+      ],
+      "hit_condition_ids": []
+    },
+    "agreement": true
+  },
+  {
+    "case_id": "case_3d35cefeaa204ab4bef4851326323d85",
+    "lane": "W1",
+    "round": "R3",
+    "arm": "new"
+  }
+]

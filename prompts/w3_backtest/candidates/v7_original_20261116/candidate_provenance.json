@@ -1,0 +1,30 @@
+{
+  "name": "v7_original_20261116",
+  "source_directory": "C:\\Users\\WEIXUANXIE\\Desktop\\prompt backup\\W3\\v7（实盘首个生产版本）\\w3",
+  "source_files": {
+    "AGENTS.md": {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\prompt backup\\W3\\v7（实盘首个生产版本）\\w3\\AGENTS.md",
+      "sha256": "e4985d78b72bf60d6f5e787c58d9c98840842e164f1f5379096de86ee92f0617"
+    },
+    "contract.json": {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\prompt backup\\W3\\v7（实盘首个生产版本）\\w3\\contract.json",
+      "sha256": "e8dc9ac01dfc8d9bdb26c04b3a8f81794c7eae288f1a3e004c3eba5209dd2944"
+    },
+    "skills\\skill.md": {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\prompt backup\\W3\\v7（实盘首个生产版本）\\w3\\skills\\skill.md",
+      "sha256": "bf12e813244c27ebf444c64f740c255017254c9103e408880b7f8ab332499a90"
+    },
+    "skills\\weekend_sweep.md": {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\prompt backup\\W3\\v7（实盘首个生产版本）\\w3\\skills\\weekend_sweep.md",
+      "sha256": "7ae2e01cfc2b3c5a1c177b803116ddaecc6983224b51fce66c00ff13a16f73bb"
+    }
+  },
+  "protected_prompt_hashes_before": {
+    "prompts\\persistent_runtime_v2\\w3\\AGENTS.md": "ee4460525b9ced04fac62cb1ce1f45a3eb6dd852f28660162107c251f0064dd4",
+    "prompts\\persistent_runtime_v2\\w3\\contract.json": "df9fa182af8bfaf6ab6de0ca48c698afb0611c20f8c41a5938b66efa8bfd17c1",
+    "prompts\\persistent_runtime_v2\\w3\\skills\\operations.md": "4dd0c46e2ee39eefc0f1b65124a3e25a9acbdfd171ed464b6fbce79ee4781e25",
+    "prompts\\persistent_runtime_v2\\w3\\skills\\skill.md": "15de027b00241f12b7d38f5ac1a9f5e99f1dedccdf49fefe38ff50621f89150c",
+    "prompts\\persistent_runtime_v2\\w3\\skills\\weekend_sweep.md": "7ae2e01cfc2b3c5a1c177b803116ddaecc6983224b51fce66c00ff13a16f73bb"
+  },
+  "note": "All source files archived unchanged. Evaluation uses AGENTS/skill bytes as-is; offline wrapper contract marker v6 and existing backtest.md only, no prompt alignment edits."
+}

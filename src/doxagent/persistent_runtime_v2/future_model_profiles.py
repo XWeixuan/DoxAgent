@@ -87,6 +87,9 @@ def configured_rounds(settings):
                     provider_endpoint="https://api.openai.com/v1/responses",
                     transport="responses_json_schema", reasoning_effort="high",
                     service_tier="fast", cache_ttl="30m")
+            # Fact compilation is background work; retain high/fast for the other
+            # rounds and the separately frozen Haiku high fallback.
+            result["W1:R3"].update(reasoning_effort="medium", service_tier="default")
     if profile in {"vertex_recall", "vertex_glm"}:
         if not settings.vertex_project:
             raise ValueError("Vertex profile requires DOXAGENT_VERTEX_PROJECT")

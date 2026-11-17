@@ -1,0 +1,1 @@
+{"response_id": "resp_0ff34a6e78774ae7016afc4753e77087d2b177abd910f4c760", "latency_ms": 13594, "input_tokens": 4508, "output_tokens": 1338, "reasoning_tokens": 965, "cached_input_tokens": 2761, "cache_write_input_tokens": 0, "case_id": "case_3d35cefeaa204ab4bef4851326323d85", "arm": "new", "lane": "W1", "round": "R3", "status": "OK", "wall_seconds": 13.643288335995749}

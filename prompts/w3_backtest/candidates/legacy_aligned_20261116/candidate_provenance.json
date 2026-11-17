@@ -1,0 +1,22 @@
+{
+  "name": "legacy_aligned_20261116",
+  "description": "User supplied pre-orchestration prompt adapted to new orchestration. Isolated candidate; production prompts retained.",
+  "source_files": {
+    "AGENTS.md": {
+      "path": "C:\\Users\\WEIXUANXIE\\Downloads\\AGENTS(5).md",
+      "sha256": "c0f6406dbfa7dcdddff08d144bc38b6fe2961238a7e407b930cf354486379bff"
+    },
+    "skills/skill.md": {
+      "path": "C:\\Users\\WEIXUANXIE\\Downloads\\skill(5).md",
+      "sha256": "51d3c59e5d05c4603c29c044b0887832aba93598049d55db3c9fb57717dc09b3"
+    }
+  },
+  "protected_prompt_hashes_before": {
+    "prompts\\persistent_runtime_v2\\w3\\AGENTS.md": "ee4460525b9ced04fac62cb1ce1f45a3eb6dd852f28660162107c251f0064dd4",
+    "prompts\\persistent_runtime_v2\\w3\\contract.json": "df9fa182af8bfaf6ab6de0ca48c698afb0611c20f8c41a5938b66efa8bfd17c1",
+    "prompts\\persistent_runtime_v2\\w3\\skills\\operations.md": "4dd0c46e2ee39eefc0f1b65124a3e25a9acbdfd171ed464b6fbce79ee4781e25",
+    "prompts\\persistent_runtime_v2\\w3\\skills\\skill.md": "15de027b00241f12b7d38f5ac1a9f5e99f1dedccdf49fefe38ff50621f89150c",
+    "prompts\\persistent_runtime_v2\\w3\\skills\\weekend_sweep.md": "7ae2e01cfc2b3c5a1c177b803116ddaecc6983224b51fce66c00ff13a16f73bb"
+  },
+  "support_files_from": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\eval\\w3_backtest\\runs\\luna_full49_prompt_rev2_20261116\\prompts"
+}

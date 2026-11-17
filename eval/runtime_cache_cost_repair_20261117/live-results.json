@@ -1,0 +1,1082 @@
+{
+  "run": "17a053b9f2ee",
+  "receipts": [
+    {
+      "response_id": "resp_04643eda0fde7e74016afc459cb3a487d2b4065110a9f72c50",
+      "latency_ms": 4679,
+      "input_tokens": 73619,
+      "output_tokens": 430,
+      "reasoning_tokens": 400,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 72807,
+      "provider_usage": {
+        "input_tokens": 73619,
+        "input_tokens_details": {
+          "cache_write_tokens": 72807,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 72807,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 430,
+        "output_tokens_details": {
+          "reasoning_tokens": 400
+        },
+        "total_tokens": 74049,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_222c234af3144d3eafd87913947b713d",
+        "cache_ttl": "12h"
+      },
+      "case_id": "case_6becc9e627614102898e0897df26ba70",
+      "arm": "old",
+      "round": "R1",
+      "status": "OK",
+      "wall_seconds": 4.684760494972579,
+      "normalized": {
+        "input_tokens": 73619,
+        "cached_input_tokens": 0,
+        "output_tokens": 430,
+        "cache_write_input_tokens": 72807,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 400,
+        "input_tokens_uncached": 812,
+        "total_tokens": 74049,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0001624",
+        "cached_input_cost_usd": "0.00",
+        "cache_write_cost_usd": "0.0364035",
+        "input_cost_usd": "0.0365659",
+        "output_cost_usd": "0.00043",
+        "total_cost_usd": "0.0369959",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.0369959",
+        "currency": "USD"
+      },
+      "output": {
+        "event_ids": [
+          "E1909",
+          "E1910",
+          "E1911"
+        ]
+      }
+    },
+    {
+      "response_id": "resp_050f677e64fdafc9016afc45a138f887d2912b59d261a32d4e",
+      "latency_ms": 13899,
+      "input_tokens": 74243,
+      "output_tokens": 2558,
+      "reasoning_tokens": 2522,
+      "cached_input_tokens": 24498,
+      "cache_write_input_tokens": 48622,
+      "provider_usage": {
+        "input_tokens": 74243,
+        "input_tokens_details": {
+          "cache_write_tokens": 48622,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 48622,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 24498
+        },
+        "output_tokens": 2558,
+        "output_tokens_details": {
+          "reasoning_tokens": 2522
+        },
+        "total_tokens": 76801,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_d0a6640c76e346999b83346e09e3c04e",
+        "cache_ttl": "12h"
+      },
+      "case_id": "case_fa8ccaaa3ef34aa3b6a1b1ef84c29182",
+      "arm": "old",
+      "round": "R1",
+      "status": "OK",
+      "wall_seconds": 13.903653510962613,
+      "normalized": {
+        "input_tokens": 74243,
+        "cached_input_tokens": 24498,
+        "output_tokens": 2558,
+        "cache_write_input_tokens": 48622,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 2522,
+        "input_tokens_uncached": 1123,
+        "total_tokens": 76801,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0002246",
+        "cached_input_cost_usd": "0.00048996",
+        "cache_write_cost_usd": "0.024311",
+        "input_cost_usd": "0.02502556",
+        "output_cost_usd": "0.002558",
+        "total_cost_usd": "0.02758356",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.02758356",
+        "currency": "USD"
+      },
+      "output": {
+        "event_ids": [
+          "E984",
+          "E1889",
+          "E1680",
+          "E1102",
+          "E985"
+        ]
+      }
+    },
+    {
+      "response_id": "resp_0df8f4fb17297a81016afc45af2f0087d2aced783af6acb187",
+      "latency_ms": 5452,
+      "input_tokens": 74394,
+      "output_tokens": 664,
+      "reasoning_tokens": 643,
+      "cached_input_tokens": 24498,
+      "cache_write_input_tokens": 48773,
+      "provider_usage": {
+        "input_tokens": 74394,
+        "input_tokens_details": {
+          "cache_write_tokens": 48773,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 48773,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 24498
+        },
+        "output_tokens": 664,
+        "output_tokens_details": {
+          "reasoning_tokens": 643
+        },
+        "total_tokens": 75058,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_4c5de9a227ff4a04aa5cc2f5b8fb9d75",
+        "cache_ttl": "12h"
+      },
+      "case_id": "case_579181460c874e6a91d9bd20f79e74f8",
+      "arm": "old",
+      "round": "R1",
+      "status": "OK",
+      "wall_seconds": 5.4562400879804045,
+      "normalized": {
+        "input_tokens": 74394,
+        "cached_input_tokens": 24498,
+        "output_tokens": 664,
+        "cache_write_input_tokens": 48773,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 643,
+        "input_tokens_uncached": 1123,
+        "total_tokens": 75058,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0002246",
+        "cached_input_cost_usd": "0.00048996",
+        "cache_write_cost_usd": "0.0243865",
+        "input_cost_usd": "0.02510106",
+        "output_cost_usd": "0.000664",
+        "total_cost_usd": "0.02576506",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.02576506",
+        "currency": "USD"
+      },
+      "output": {
+        "event_ids": [
+          "E759"
+        ]
+      }
+    },
+    {
+      "response_id": "resp_0c550d4a0a2f83d1016afc45b4d68487d2a45afd18da20dc3d",
+      "latency_ms": 4396,
+      "input_tokens": 73619,
+      "output_tokens": 420,
+      "reasoning_tokens": 390,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 72807,
+      "provider_usage": {
+        "input_tokens": 73619,
+        "input_tokens_details": {
+          "cache_write_tokens": 72807,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 72807,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 420,
+        "output_tokens_details": {
+          "reasoning_tokens": 390
+        },
+        "total_tokens": 74039,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_bbc05953b4234739aa7eddcbdb39bf1d",
+        "cache_ttl": "12h"
+      },
+      "case_id": "case_6becc9e627614102898e0897df26ba70",
+      "arm": "new",
+      "round": "R1",
+      "status": "OK",
+      "wall_seconds": 4.4004164839861915,
+      "normalized": {
+        "input_tokens": 73619,
+        "cached_input_tokens": 0,
+        "output_tokens": 420,
+        "cache_write_input_tokens": 72807,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 390,
+        "input_tokens_uncached": 812,
+        "total_tokens": 74039,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0001624",
+        "cached_input_cost_usd": "0.00",
+        "cache_write_cost_usd": "0.0364035",
+        "input_cost_usd": "0.0365659",
+        "output_cost_usd": "0.00042",
+        "total_cost_usd": "0.0369859",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.0369859",
+        "currency": "USD"
+      },
+      "output": {
+        "event_ids": [
+          "E1909",
+          "E1910",
+          "E1911"
+        ]
+      }
+    },
+    {
+      "response_id": "resp_07c9ecbf3cd142d8016afc45b91d5087d29b20d5ee481c7e71",
+      "latency_ms": 12990,
+      "input_tokens": 74243,
+      "output_tokens": 2416,
+      "reasoning_tokens": 2379,
+      "cached_input_tokens": 72807,
+      "cache_write_input_tokens": 313,
+      "provider_usage": {
+        "input_tokens": 74243,
+        "input_tokens_details": {
+          "cache_write_tokens": 313,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 313,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 72807
+        },
+        "output_tokens": 2416,
+        "output_tokens_details": {
+          "reasoning_tokens": 2379
+        },
+        "total_tokens": 76659,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_7df214810a484136874a7d9a78134a15",
+        "cache_ttl": "12h"
+      },
+      "case_id": "case_fa8ccaaa3ef34aa3b6a1b1ef84c29182",
+      "arm": "new",
+      "round": "R1",
+      "status": "OK",
+      "wall_seconds": 12.99332485103514,
+      "normalized": {
+        "input_tokens": 74243,
+        "cached_input_tokens": 72807,
+        "output_tokens": 2416,
+        "cache_write_input_tokens": 313,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 2379,
+        "input_tokens_uncached": 1123,
+        "total_tokens": 76659,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0002246",
+        "cached_input_cost_usd": "0.00145614",
+        "cache_write_cost_usd": "0.0001565",
+        "input_cost_usd": "0.00183724",
+        "output_cost_usd": "0.002416",
+        "total_cost_usd": "0.00425324",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.00425324",
+        "currency": "USD"
+      },
+      "output": {
+        "event_ids": [
+          "E984",
+          "E1680",
+          "E1863",
+          "E1146",
+          "E1657"
+        ]
+      }
+    },
+    {
+      "response_id": "resp_034e8140b2281c5e016afc45c62c5c87d2a766d1683c29188d",
+      "latency_ms": 3484,
+      "input_tokens": 74394,
+      "output_tokens": 356,
+      "reasoning_tokens": 338,
+      "cached_input_tokens": 73120,
+      "cache_write_input_tokens": 151,
+      "provider_usage": {
+        "input_tokens": 74394,
+        "input_tokens_details": {
+          "cache_write_tokens": 151,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 151,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 73120
+        },
+        "output_tokens": 356,
+        "output_tokens_details": {
+          "reasoning_tokens": 338
+        },
+        "total_tokens": 74750,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_58dd494fff5e43748a9d53ecd62d2456",
+        "cache_ttl": "12h"
+      },
+      "case_id": "case_579181460c874e6a91d9bd20f79e74f8",
+      "arm": "new",
+      "round": "R1",
+      "status": "OK",
+      "wall_seconds": 3.488010414992459,
+      "normalized": {
+        "input_tokens": 74394,
+        "cached_input_tokens": 73120,
+        "output_tokens": 356,
+        "cache_write_input_tokens": 151,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 338,
+        "input_tokens_uncached": 1123,
+        "total_tokens": 74750,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0002246",
+        "cached_input_cost_usd": "0.0014624",
+        "cache_write_cost_usd": "0.0000755",
+        "input_cost_usd": "0.0017625",
+        "output_cost_usd": "0.000356",
+        "total_cost_usd": "0.0021185",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.0021185",
+        "currency": "USD"
+      },
+      "output": {
+        "event_ids": []
+      }
+    },
+    {
+      "response_id": "resp_0ffbc7cfadce04ff016afc45e4b26087d282993d0d3b6df9a1",
+      "latency_ms": 21989,
+      "input_tokens": 10324,
+      "output_tokens": 2177,
+      "reasoning_tokens": 1719,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 2761,
+      "provider_usage": {
+        "input_tokens": 10324,
+        "input_tokens_details": {
+          "cache_write_tokens": 2761,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2761
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 2177,
+        "output_tokens_details": {
+          "reasoning_tokens": 1719
+        },
+        "total_tokens": 12501,
+        "service_tier": "default",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_29c5c753f2d84fe4994d3d98f98341dc",
+        "cache_ttl": "30m"
+      },
+      "case_id": "case_059e3e60655644ec9e3d241067b31165",
+      "arm": "new",
+      "round": "R3",
+      "status": "OK",
+      "wall_seconds": 21.993053943035193,
+      "normalized": {
+        "input_tokens": 10324,
+        "cached_input_tokens": 0,
+        "output_tokens": 2177,
+        "cache_write_input_tokens": 2761,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 1719,
+        "input_tokens_uncached": 7563,
+        "total_tokens": 12501,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0007563",
+        "cached_input_cost_usd": "0.00",
+        "cache_write_cost_usd": "0.000345125",
+        "input_cost_usd": "0.001101425",
+        "output_cost_usd": "0.0010885",
+        "total_cost_usd": "0.002189925",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:default:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.002189925",
+        "currency": "USD"
+      },
+      "output": {
+        "candidates": [
+          {
+            "proposition": "分析师一致预期Micron FY2027标准化每股收益将达到176.50美元。",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2027",
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "分析师一致预期Micron FY2028标准化每股收益将达到207.76美元。",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2028",
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "Micron FY2026 DRAM价格上涨约180%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026",
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "DRAM"
+            ]
+          },
+          {
+            "proposition": "Micron FY2026 NAND价格上涨约200%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026",
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "NAND"
+            ]
+          },
+          {
+            "proposition": "Micron FY2026位元出货量增长处于20%中段区间。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026",
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "Micron FY2026自由现金流为590亿美元，低于约850亿美元的净利润。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026",
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "Micron FY2026应收账款占用了252亿美元经营现金流。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026",
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "分析师一致预期Micron FY2027毛利率为87.0%。",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2027",
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          },
+          {
+            "proposition": "分析师一致预期Micron FY2030毛利率降至65.5%。",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2030",
+            "occurrence_date": null,
+            "entities": [
+              "Micron"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "response_id": "resp_0ae64261517d7d80016afc46c2b70887d2b0f5395b54a18b16",
+      "latency_ms": 23125,
+      "input_tokens": 4857,
+      "output_tokens": 2481,
+      "reasoning_tokens": 1788,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 2761,
+      "provider_usage": {
+        "input_tokens": 4857,
+        "input_tokens_details": {
+          "cache_write_tokens": 2761,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2761
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 2481,
+        "output_tokens_details": {
+          "reasoning_tokens": 1788
+        },
+        "total_tokens": 7338,
+        "service_tier": "default",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_e235c8b3e984488da1e1f0c4617c716d",
+        "cache_ttl": "30m"
+      },
+      "case_id": "case_7bfd02e1bc554998a261992e112c4bb7",
+      "arm": "new",
+      "lane": "W1",
+      "round": "R3",
+      "status": "OK",
+      "wall_seconds": 23.13418407808058,
+      "normalized": {
+        "input_tokens": 4857,
+        "cached_input_tokens": 0,
+        "output_tokens": 2481,
+        "cache_write_input_tokens": 2761,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 1788,
+        "input_tokens_uncached": 2096,
+        "total_tokens": 7338,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0002096",
+        "cached_input_cost_usd": "0.00",
+        "cache_write_cost_usd": "0.000345125",
+        "input_cost_usd": "0.000554725",
+        "output_cost_usd": "0.0012405",
+        "total_cost_usd": "0.001795225",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:default:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.001795225",
+        "currency": "USD"
+      },
+      "output": {
+        "candidates": [
+          {
+            "proposition": "全球高级分析市场2025年规模为475亿美元，预计2035年达到3065.9亿美元，2025至2035年复合年增长率为20.50%。",
+            "assertion_state": "FORECAST",
+            "subject_time": "2025—2035年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场"
+            ]
+          },
+          {
+            "proposition": "软件占全球高级分析市场2025年份额的66.80%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2025年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "软件"
+            ]
+          },
+          {
+            "proposition": "大数据分析占全球高级分析市场2025年份额的36.50%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2025年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "大数据分析"
+            ]
+          },
+          {
+            "proposition": "大型企业占全球高级分析市场2025年份额的64.20%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2025年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "大型企业"
+            ]
+          },
+          {
+            "proposition": "BFSI占全球高级分析市场2025年份额的26.10%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2025年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "BFSI"
+            ]
+          },
+          {
+            "proposition": "客户分析是高级分析市场增长最快的类型，2026至2035年复合年增长率为23.20%。",
+            "assertion_state": "FORECAST",
+            "subject_time": "2026—2035年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "客户分析"
+            ]
+          },
+          {
+            "proposition": "中小企业是高级分析市场增长最快的组织规模类别，复合年增长率为23.80%。",
+            "assertion_state": "FORECAST",
+            "subject_time": "2026—2035年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "中小企业"
+            ]
+          },
+          {
+            "proposition": "医疗保健是高级分析市场增长最快的终端用户类别，复合年增长率为23.40%。",
+            "assertion_state": "FORECAST",
+            "subject_time": "2026—2035年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "医疗保健"
+            ]
+          },
+          {
+            "proposition": "北美占全球高级分析市场2025年份额的38.40%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2025年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "北美"
+            ]
+          },
+          {
+            "proposition": "欧洲占全球高级分析市场2025年份额的24.60%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2025年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "欧洲"
+            ]
+          },
+          {
+            "proposition": "亚太地区占全球高级分析市场2025年份额的24.20%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2025年",
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "亚太地区"
+            ]
+          },
+          {
+            "proposition": "中东和非洲占全球高级分析市场份额的6.40%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "高级分析市场",
+              "中东和非洲"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "response_id": "resp_08922f3bd1b1055f016afc46e4accc87d28b00bb56316ae28c",
+      "latency_ms": 8815,
+      "input_tokens": 11752,
+      "output_tokens": 1755,
+      "reasoning_tokens": 1409,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 2756,
+      "provider_usage": {
+        "input_tokens": 11752,
+        "input_tokens_details": {
+          "cache_write_tokens": 2756,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2756
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1755,
+        "output_tokens_details": {
+          "reasoning_tokens": 1409
+        },
+        "total_tokens": 13507,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_5496742055924c33927810fb448fb5e3",
+        "cache_ttl": "30m"
+      },
+      "case_id": "case_d04a1024dbc64fb8be56fb88aa9a4657",
+      "arm": "new",
+      "lane": "W2",
+      "round": "R2",
+      "status": "OK",
+      "wall_seconds": 8.818384033977054,
+      "normalized": {
+        "input_tokens": 11752,
+        "cached_input_tokens": 0,
+        "output_tokens": 1755,
+        "cache_write_input_tokens": 2756,
+        "cache_write_5m_input_tokens": null,
+        "cache_write_1h_input_tokens": null,
+        "reasoning_tokens": 1409,
+        "input_tokens_uncached": 8996,
+        "total_tokens": 13507,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0017992",
+        "cached_input_cost_usd": "0.00",
+        "cache_write_cost_usd": "0.000689",
+        "input_cost_usd": "0.0024882",
+        "output_cost_usd": "0.001755",
+        "total_cost_usd": "0.0042432",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.0042432",
+        "currency": "USD"
+      },
+      "output": {
+        "policy_hit": true,
+        "policy_related": true,
+        "policy_ids": [
+          "pol_0486926d40484cd3a171ab19f3e18200"
+        ],
+        "hit_condition_ids": [
+          {
+            "policy_id": "pol_0486926d40484cd3a171ab19f3e18200",
+            "condition_ids": [
+              "C4"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "pol_0486926d40484cd3a171ab19f3e18200：TrendForce给出的4Q26企业SSD合约价预测为环比上涨15%—20%，相较基线23%—28%中点下修超过3个百分点，满足C4；其他现货下跌及1Q27预测不构成对应条件命中。pol_2f583decdad14c139c90934b5f321547：手机厂商削减基础存储容量、提高高容量配置价格，属于其容量梯度与升级收费范围，但未达到指定Pro系列触发条件。pol_174e1e71876b4c60bd0367d852d1c9a9：交易商清库存及PC厂商优先去库存、暂不下新内存订单，属于库存与采购节拍范围；未提供主流系列排程及对应净采购变动，未命中。",
+        "related_policy_ids": [
+          "pol_2f583decdad14c139c90934b5f321547",
+          "pol_174e1e71876b4c60bd0367d852d1c9a9"
+        ]
+      },
+      "policy_chars_before": 15765,
+      "policy_chars_after": 13600
+    },
+    {
+      "response_id": "resp_0ce24b039fcdad5b016afc46fbccb087d2965b169d63d90318",
+      "latency_ms": 11346,
+      "input_tokens": 11142,
+      "output_tokens": 1814,
+      "reasoning_tokens": 1522,
+      "cached_input_tokens": 2756,
+      "cache_write_input_tokens": 0,
+      "provider_usage": {
+        "input_tokens": 11142,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 2756
+        },
+        "output_tokens": 1814,
+        "output_tokens_details": {
+          "reasoning_tokens": 1522
+        },
+        "total_tokens": 12956,
+        "service_tier": "fast",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_c859ea804d7c49a8b189b83a781876c2",
+        "cache_ttl": "30m"
+      },
+      "case_id": "case_059e3e60655644ec9e3d241067b31165",
+      "arm": "new",
+      "lane": "W2",
+      "round": "R2",
+      "status": "OK",
+      "wall_seconds": 11.349657031008974,
+      "normalized": {
+        "input_tokens": 11142,
+        "cached_input_tokens": 2756,
+        "output_tokens": 1814,
+        "cache_write_input_tokens": 0,
+        "cache_write_5m_input_tokens": 0,
+        "cache_write_1h_input_tokens": 0,
+        "reasoning_tokens": 1522,
+        "input_tokens_uncached": 8386,
+        "total_tokens": 12956,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0016772",
+        "cached_input_cost_usd": "0.00005512",
+        "cache_write_cost_usd": "0.000",
+        "input_cost_usd": "0.00173232",
+        "output_cost_usd": "0.001814",
+        "total_cost_usd": "0.00354632",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:fast:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.00354632",
+        "currency": "USD"
+      },
+      "output": {
+        "policy_hit": false,
+        "policy_related": true,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "confidence": "normal",
+        "reason": "pol_1af45d7fb4134e41b180b934072310c1：文章讨论MU正常化盈利、估值及合同对周期的影响，属于相关研究论点，但未显示研究机构撤回既有下行基准并据此上调基本价值。pol_1c994bc18b624cd79019a41bb6cb7383：提及26份协议、收入覆盖及2027年产出承诺，属于SCA覆盖事实，但未披露同口径覆盖展望上修或下修。pol_91636faae1c04231b71c9cb53cd4df61：提及美光、竞争者及CXMT新厂在2027—2028年开始产出，属于相关供给项目背景，但没有同阶段节点变化或提前合格商业出货事实。",
+        "related_policy_ids": [
+          "pol_1af45d7fb4134e41b180b934072310c1",
+          "pol_1c994bc18b624cd79019a41bb6cb7383",
+          "pol_91636faae1c04231b71c9cb53cd4df61"
+        ]
+      },
+      "policy_chars_before": 14036,
+      "policy_chars_after": 11548
+    },
+    {
+      "response_id": "resp_0ff34a6e78774ae7016afc4753e77087d2b177abd910f4c760",
+      "latency_ms": 13594,
+      "input_tokens": 4508,
+      "output_tokens": 1338,
+      "reasoning_tokens": 965,
+      "cached_input_tokens": 2761,
+      "cache_write_input_tokens": 0,
+      "provider_usage": {
+        "input_tokens": 4508,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 2761
+        },
+        "output_tokens": 1338,
+        "output_tokens_details": {
+          "reasoning_tokens": 965
+        },
+        "total_tokens": 5846,
+        "service_tier": "default",
+        "response_model": "gpt-6-luna",
+        "response_status": "completed",
+        "request_id": "req_a6699315e6144efdae936165f6ffd674",
+        "cache_ttl": "30m"
+      },
+      "case_id": "case_3d35cefeaa204ab4bef4851326323d85",
+      "arm": "new",
+      "lane": "W1",
+      "round": "R3",
+      "status": "OK",
+      "wall_seconds": 13.643288335995749,
+      "normalized": {
+        "input_tokens": 4508,
+        "cached_input_tokens": 2761,
+        "output_tokens": 1338,
+        "cache_write_input_tokens": 0,
+        "cache_write_5m_input_tokens": 0,
+        "cache_write_1h_input_tokens": 0,
+        "reasoning_tokens": 965,
+        "input_tokens_uncached": 1747,
+        "total_tokens": 5846,
+        "normalization_version": "cost-audit-20261021-v2"
+      },
+      "money": {
+        "noncached_input_cost_usd": "0.0001747",
+        "cached_input_cost_usd": "0.00002761",
+        "cache_write_cost_usd": "0.000",
+        "input_cost_usd": "0.00020231",
+        "output_cost_usd": "0.000669",
+        "total_cost_usd": "0.00087131",
+        "price_version": "openai-luna-20261106-v1",
+        "fx_version": "product-fixed-6.8",
+        "fx_rate": "6.8",
+        "cost_basis": "ESTIMATED",
+        "reason": null,
+        "price_rule_id": "openai:gpt-6-luna:default:short:20261106-v1",
+        "price_source": "https://developers.openai.com/api/docs/pricing",
+        "tariff_as_of": "2026-11-06",
+        "reported_cost_native": null,
+        "calculated_cost_native": "0.00087131",
+        "currency": "USD"
+      },
+      "output": {
+        "candidates": [
+          {
+            "proposition": "半导体业界人士预计，美国新规对半导体上游供应链及已在东南亚设厂的台湾半导体厂商影响有限。",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "美国",
+              "半导体上游供应链",
+              "台湾半导体厂商"
+            ]
+          },
+          {
+            "proposition": "半导体业界人士称，AI晶片需求持续强劲，市场仍供不应求。",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "AI晶片"
+            ]
+          },
+          {
+            "proposition": "美系云端服务供应商正在马来西亚、新加坡和泰国扩充AI资料中心容量。",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "美系云端服务供应商",
+              "马来西亚",
+              "新加坡",
+              "泰国",
+              "AI资料中心"
+            ]
+          },
+          {
+            "proposition": "部分已在东南亚建置的AI算力容量由设立在新加坡的中国企业租用。",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "新加坡的中国企业",
+              "东南亚",
+              "AI算力"
+            ]
+          },
+          {
+            "proposition": "半导体业界人士称，中国取得AI晶片的渠道日趋多元，包括经多层转手购买AI伺服器后拆解取出晶片、通过东南亚灰色物流运输，以及冒充客户下单转卖。",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "中国",
+              "AI晶片",
+              "东南亚"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

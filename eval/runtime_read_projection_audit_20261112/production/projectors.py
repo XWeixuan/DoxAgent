@@ -1,0 +1,969 @@
+"""Explicit native-to-wire adapters. Native snapshots never escape through HTTP."""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime
+from typing import Any
+
+from doxagent.api_v2.dto import available, missing, validate
+from doxagent.persistent_runtime_v2 import policy_consumption
+from doxagent.semantic_clock import semantic_day
+
+from .ordering import message_anchor
+from .projector import native
+from .repository import ReadStore, instant
+
+
+def timestamp(value: str) -> str:
+    return instant(datetime.fromisoformat(value))
+
+
+def state_wire(state: dict[str, Any]) -> dict[str, Any]:
+    running, removed = state["analysis_allowed"], state["removed"]
+    initializing = state.get("initialization_incomplete", False)
+
+    def permission(allowed: bool, reason: str) -> dict[str, Any]:
+        return {"allowed": allowed, "reason": None if allowed else reason}
+
+    value = {
+        "ticker": state["ticker"],
+        "requested_mode": state["requested_mode"],
+        "effective_mode": available(state["mode"])
+        if state["activation_id"]
+        else missing("NO_ACTIVE_REVISION", "UNAVAILABLE"),
+        "run_state": state["status"],
+        "health": "UNKNOWN",
+        "health_reasons": ["NOT_RECORDED"],
+        "initialization_id": state["initialization_id"],
+        "initialization_incomplete": state.get(
+            "initialization_incomplete",
+            bool(state["initialization_id"] and not state["activation_id"]),
+        ),
+        "removed": removed,
+        "removed_at": timestamp(state["removed_at"]) if state["removed_at"] else None,
+        "control_etag": '"' + str(state["revision"]) + '"',
+        "control_revision": state["revision"],
+        "work_epoch": state["epoch"],
+        "cutoff_at": timestamp(state["cutoff_at"]) if state["cutoff_at"] else None,
+        "mode_effective_at": timestamp(state["mode_effective_at"])
+        if state.get("mode_effective_at")
+        else None,
+        "existing_trades_continue": True,
+        "actions": {
+            "pause": permission(
+                running and not removed and not initializing,
+                "INITIALIZATION_IN_PROGRESS" if initializing else "NOT_RUNNING",
+            ),
+            "restart": permission(
+                not running and not removed and not initializing and bool(state["activation_id"]),
+                "INITIALIZATION_IN_PROGRESS"
+                if initializing
+                else "ALREADY_RUNNING"
+                if running
+                else "NO_ACTIVE_REVISION",
+            ),
+            "remove": permission(not removed, "TICKER_REMOVED"),
+            "retry_initialization": permission(
+                bool(state.get("initialization_failed")) and not removed, "NO_FAILED_INITIALIZATION"
+            ),
+        },
+    }
+    return validate("TickerState", value)
+
+
+class DomainProjectors:
+    def __init__(self, store: ReadStore) -> None:
+        self.store = store
+
+    @staticmethod
+    def source_name(source):
+        from doxagent.message_bus_v2.source_identity import resolve_source_name
+
+        snapshot = source.get("snapshot")
+        if snapshot is not None:
+            return snapshot.get("source_name") or (
+                resolve_source_name(url=source.get("url"))
+                if source.get("member_count", 1) <= 1
+                else None
+            )
+        return source.get("source_name") or resolve_source_name(
+            publisher_name=source.get("publisher_name") or source.get("source"),
+            resolved_domain=source.get("resolved_domain"),
+            url=source.get("url"),
+        )
+
+    def source_label(self, source: dict[str, Any]) -> dict[str, Any]:
+        definition = self.store.get("native:source_definitions", "", source["source_id"])
+        if not definition:
+            raise ValueError("source definition must be indexed before messages")
+        return {
+            "source_id": source["source_id"],
+            "binding_id": source["binding_id"],
+            "name": definition["display_name"],
+            "kind": definition["kind"],
+        }
+
+    def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        if event.get("serving_skipped"):
+            return [], []
+        from doxagent.message_bus_v2.collection_plane.observability import RETIRED_TABLES, enabled
+        if enabled() and event['table_name'] in RETIRED_TABLES:
+            return [],[]
+        table, row, value = event["table_name"], event["row"], native(event)
+        if table in {'poll_runs', 'poll_captures'}:
+            value = {**row, **value}
+            for key in ('payload_json', 'receipt_json', 'data_json'):
+                value.pop(key, None)
+            kind = 'poll_schedule' if table == 'poll_runs' and row['status'] == 'SCHEDULE' else 'native:'+table
+            targets = json.loads(row.get('targets_json','[]')) if table == 'poll_captures' else []
+            targets = targets or [{'binding_id':row['binding_id'],'ticker':row['ticker']}]
+            return [{"kind":kind, "ticker":target['ticker'],
+                     "source_id":row['source_id'], "id":event['entity_id'],
+                     "sort":row.get('dispatch_at') or row['observed_at'],
+                     "day":semantic_day(datetime.fromisoformat(row.get('dispatch_at') or row['observed_at'])).isoformat(),
+                     "data":None if event['operation']=='DELETE' else {**value,**target}}
+                    for target in targets], []
+        ticker = value.get("ticker", row.get("ticker", ""))
+        if table == "runtime_values" and row["namespace"] == "policy_authorization_head":
+            ticker = row["key"]
+        initialization_run = None
+        if table == "initialization_repair_incidents":
+            ticker = value["ticker"]
+        elif table == "initialization_repair_rounds":
+            with self.store.connect() as db:
+                found = db.execute(
+                    "SELECT ticker FROM object_current "
+                    "WHERE kind='native:initialization_repair_incidents' "
+                    "AND id=? AND valid_to IS NULL",
+                    (value["incident_id"],),
+                ).fetchone()
+                if not found and event["operation"] == "DELETE":
+                    found = db.execute(
+                        "SELECT ticker FROM object_current "
+                        "WHERE kind='native:initialization_repair_rounds' "
+                        "AND id=? AND valid_to IS NULL",
+                        (value["round_id"],),
+                    ).fetchone()
+            if not found:
+                raise ValueError("repair incident must be indexed before repair round")
+            ticker = found[0]
+        elif table.startswith("initialization_"):
+            if table == "initialization_runs":
+                initialization_run = value
+            else:
+                with self.store.connect() as db:
+                    found = db.execute(
+                        "SELECT payload FROM object_current WHERE kind='native:initialization_runs' "
+                        "AND id=? AND valid_to IS NULL",
+                        (row["run_id"],),
+                    ).fetchone()
+                if not found:
+                    raise ValueError("initialization run must be indexed first")
+                initialization_run = json.loads(found[0])
+            ticker = initialization_run["ticker"]
+        if table == "runtime_v2_cases":
+            ticker = value["source"]["snapshot"]["ticker"]
+        related_case = None
+        if table in {"runtime_v2_turns", "runtime_v2_effects"}:
+            with self.store.connect() as db:
+                found = db.execute(
+                    "SELECT ticker FROM object_current WHERE kind='native:runtime_v2_cases' "
+                    "AND id=? AND valid_to IS NULL",
+                    (value["case_id"],),
+                ).fetchone()
+            if not found:
+                raise ValueError("turn Case must be indexed first")
+            ticker=found[0]
+            if table=='runtime_v2_turns': related_case={'source':{'snapshot':{'ticker':ticker}}}
+        identity = next(
+            (
+                value[key]
+                for key in (
+                    "case_id",
+                    "standard_message_id",
+                    "source_id",
+                    "binding_id",
+                    "initialization_id",
+                    "revision_id",
+                )
+                if key in value
+            ),
+            event["entity_id"],
+        )
+        # Keep a turn's primary identity separate from its Case foreign key.
+        if table == "v2_ticker_control":
+            identity = ticker
+        if table == "runtime_values":
+            identity = row["namespace"] + ":" + row["key"]
+        if table in {"ticker_source_bindings", "poll_states"}:
+            identity = value["binding_id"]
+        if table == "article_body_results":
+            identity = value["fetch_key"]
+            value = {k:v for k,v in value.items() if k not in {"content", "diagnostics"}}
+        if table in {"live_articles", "live_deliveries", "live_origins"} and str(value.get("article_key", "")).startswith("test_"):
+            return [], []
+        if table=="live_articles":
+            identity=value["article_key"]
+            value={k:v for k,v in value.items() if k not in {'input_ref','result_ref','attempts_json','validators_json','claim_token','lease_until'}}
+            ticker=""
+        if table=="live_origins":
+            identity=value["origin_key"]
+            ticker=""
+        if table=="live_deliveries":
+            identity=value["article_key"]+":"+value["ticker"]
+        if table in {"message_observations", "content_enrichment_jobs"}:
+            identity = event["entity_id"]
+            ticker = row.get("ticker") or (value.get("binding") or {}).get("ticker", "")
+        if table == "ir_endpoint_states":
+            ticker = value["binding_id"].split(":",1)[0]
+            identity = value["binding_id"]+":"+value["endpoint_id"]
+        if table == "ticker_monitoring_states":
+            identity = ticker
+        if table == "v2_control_ack":
+            identity = f"{row['epoch']}:{row['consumer']}"
+        if table == "runtime_tasks":
+            identity = value["id"]
+            value = {
+                **value,
+                "inputs": json.loads(value["inputs"]),
+                "receipt": json.loads(value["receipt"]),
+            }
+        if table == "stream_items":
+            identity = value["stream_item_id"]
+        if table in {"runtime_v2_turns", "runtime_v2_effects"}:
+            identity = value["turn_id"] if table.endswith("turns") else value["effect_id"]
+        if table in {
+            "runtime_v2_candidates",
+            "runtime_v2_archives",
+            "runtime_v2_badcases",
+            "runtime_v2_policy_activations",
+        }:
+            identity = event["entity_id"]
+        if table == "initialization_repair_incidents":
+            identity = value["incident_id"]
+        if table == "initialization_repair_rounds":
+            identity = value["round_id"]
+        record = {
+            "kind": "native:" + table,
+            "ticker": ticker,
+            "id": identity,
+            "data": None if event["operation"] == "DELETE" else value,
+            "parent": value.get("case_id"),
+            "source_id": value.get("source_id"),
+        }
+        records, metrics = [record], []
+        if table == 'live_deliveries':
+            record['parent'] = value['article_key']
+            record['sort'] = timestamp(value.get('first_poll_due_at') or value.get('first_discovered_at') or value['created_at'])
+            record['day'] = semantic_day(datetime.fromisoformat(record['sort'])).isoformat()
+        if table=="live_articles":
+            full=value.get("outcome") in {"FULL","SHORT_FULL"}
+            eligible=value.get("state") not in {"MERGED","NOT_APPLICABLE"} and value.get("outcome")!='NOT_APPLICABLE'
+            status="READY" if full else "PENDING" if value.get("state") in {"FETCH_DUE","FETCHING","COMMIT_DUE"} else "FAILED"
+            records.append({"kind":"native:article_body_results","ticker":"","id":value["article_key"],
+                "source_id":value["source_id"],"data":{
+                    "fetch_key":value["article_key"],"source_id":value["source_id"],"first_observed_at":value["first_seen_at"],
+                    "title":value.get("title"),"url":value["url"],"status":status,"outcome":value.get("outcome"),
+                    "eligible":eligible,"acquired_at":value.get("acquired_at"),"checked_at":value.get("checked_at"),
+                    "last_error":value.get("last_error"),"fetch_total":value.get("fetch_total",0),
+                    "full_total":value.get("full_total",0),"cache_total":value.get("cache_total",0),
+                    "initial_request_at":value.get('initial_request_at'),
+                    "initial_result_at":value.get('initial_result_at'),
+                    "initial_outcome":value.get('initial_outcome'),
+                    "live":True}})
+        if table=='live_origins' and value['origin_key'].startswith('legacy_body:'):
+            records.append({'kind':'article_alias','ticker':'','id':value['origin_key'].removeprefix('legacy_body:'),
+                'parent':value['article_key'],'data':{'article_key':value['article_key']}})
+        if table=="live_origins" and value["source_id"]!="resolved":
+            for target in json.loads(value.get("targets_json","[]")):
+                records.append({"kind":"article_observation","ticker":target,
+                    "id":value["source_id"]+":"+value["article_key"],"parent":value["article_key"],
+                    "source_id":value["source_id"],"data":{"fetch_key":value["article_key"],
+                        "source_id":value["source_id"],"first_observed_at":value["first_seen_at"]}})
+        if table == "content_enrichment_jobs":
+            records.append({"kind":"body_job","ticker":ticker,"id":value["job_id"],
+                "parent":value.get("body_result_key"), "source_id":value["source"]["source_id"],
+                "data":{k:value.get(k) for k in ("job_id","status","work_kind","execution_seq",
+                    "body_result_key","created_at","budget_started_at","first_fetch_at","updated_at","result")}})
+        if table == "message_observations":
+            key = value.get("metadata", {}).get("article_body_result_key")
+            if key:
+                source_id = row["source_id"]
+                observation_id = source_id + ":" + key
+                prior = self.store.get("article_observation", ticker, observation_id) or {}
+                first = min(prior.get("first_observed_at", row["first_seen_at"]), row["first_seen_at"])
+                records.append({"kind":"article_observation", "ticker":ticker, "id":observation_id,
+                    "parent":key,"source_id":source_id,"day":semantic_day(datetime.fromisoformat(first)).isoformat(),
+                    "search":(value.get("title") or "").casefold(),
+                    "data":{"fetch_key":key,"source_id":source_id,"first_observed_at":first,
+                            "title":value.get("title"),"url":value.get("url")}})
+        if table == "poll_states" and (value.get("last_dispatch_at") or value.get("last_attempt_at")):
+            record["day"] = semantic_day(datetime.fromisoformat(value.get("last_dispatch_at") or value["last_attempt_at"])).isoformat()
+        if table == "initialization_repair_rounds":
+            metrics.append(
+                {
+                    "metric": "nonroutine_repairs",
+                    "ticker": ticker,
+                    "entity": value["round_id"],
+                    "day": semantic_day(datetime.fromisoformat(value["created_at"])).isoformat(),
+                    "value": None if event["operation"] == "DELETE" else 1,
+                }
+            )
+        if table == "v2_analysis_admission":
+            records.append(
+                {
+                    "kind": "business_provenance",
+                    "ticker": row["ticker"],
+                    "id": row["identity"],
+                    "data": {
+                        "basis": "V2_CONTROL_ADMISSION",
+                        "origin_epoch": value["origin_epoch"],
+                        "origin_mode": value["origin_mode"],
+                    },
+                }
+            )
+        if table.startswith("te_"):
+            from .executions import ExecutionProjector
+
+            executed, counts = ExecutionProjector(self.store).project(event, record)
+            records.extend(executed)
+            metrics.extend(counts)
+            from .pnl import project as project_pnl
+
+            realized, counts = project_pnl(self.store, event, records)
+            records.extend(realized)
+            metrics.extend(counts)
+        if (
+            table == "runtime_v2_candidates"
+            and value.get("case_id")
+            and value.get("originating_node")
+        ):
+            candidate = validate(
+                "Candidate",
+                {
+                    **value["candidate"],
+                    "candidate_id": identity,
+                    "dedupe_key": value["runtime_signature"],
+                    "originating_node": value["originating_node"],
+                    "provisional_event_id": value["provisional_event_id"],
+                    "created_at": timestamp(value["created_at"]),
+                },
+            )
+            records.append(
+                {
+                    "kind": "candidate",
+                    "ticker": ticker,
+                    "id": identity,
+                    "parent": value["case_id"],
+                    "sort": candidate["created_at"],
+                    "data": candidate,
+                }
+            )
+            metrics.append(
+                {
+                    "metric": "new_fact_candidates",
+                    "ticker": ticker,
+                    "entity": identity,
+                    "day": value["trading_date"],
+                    "value": "1",
+                }
+            )
+        result_kind = {
+            "runtime_v2_candidates": "EVENT_DISCOVERY",
+            "runtime_v2_archives": "ARCHIVE",
+            "runtime_v2_badcases": "BADCASE",
+        }.get(table)
+        if result_kind and value.get("case_id"):
+            summary = self.store.get("case", ticker, value["case_id"])
+            if not summary:
+                raise ValueError("result Case must be indexed first")
+            summary["results"] = sorted(set(summary["results"]) | {result_kind})
+            records.append(
+                {
+                    "kind": "case",
+                    "ticker": ticker,
+                    "id": summary["case_id"],
+                    "data": summary,
+                    "sort": summary["received_at"],
+                    "day": summary["semantic_day"],
+                    "parent": summary["stream_item_id"],
+                    "source_id": summary["source"]["source_id"],
+                    "route": summary["resolved_route"] or summary["initial_route"],
+                }
+            )
+        if related_case:
+            from .runtime import turn_records
+
+            turns, usage = turn_records(value, related_case)
+            records.extend(turns)
+            metrics.extend(usage)
+        if initialization_run:
+            if table == "initialization_runs":
+                record["id"] = initialization_run["initialization_id"]
+            else:
+                record["parent"] = row["run_id"]
+                record["id"] = event["entity_id"]
+                if table == "initialization_events":
+                    record["data"] = {**row, "payload": value}
+            from .initialization import progress
+
+            if not getattr(self.store,'defer_initialization_progress',False):
+                records.append(progress(self.store, initialization_run, record))
+        if table == "source_definitions":
+            record.update(ticker="", id=value["source_id"])
+        elif table == "runtime_v2_policy_activations":
+            key = value["policy_id"] + ":" + value["activation_revision"]
+            record["id"] = key
+            if not self.store.get("business_provenance", ticker, value["case_id"]):
+                raise ValueError("PROVENANCE_UNVERIFIED")
+            records.append(
+                {"kind": "policy_consumption", "ticker": ticker, "id": key, "data": value}
+            )
+            prior = self.store.get("policy_catalog", ticker, key)
+            if prior:
+                prior.update(
+                    consumed=available(True),
+                    consumed_at=available(timestamp(value["activated_at"])),
+                    effective=available(False)
+                    if policy_consumption.POLICY_AUTO_FREEZE_ENABLED
+                    else available(prior.get("lifecycle") == "ACTIVE"),
+                )
+                records.append(
+                    {"kind": "policy_catalog", "ticker": ticker, "id": key, "data": prior}
+                )
+        elif table == "runtime_values" and row["namespace"] == "policy_direction_usage":
+            records.append(
+                dict(kind="policy_direction_usage", ticker=ticker, id=row["key"], data=value)
+            )
+            from .lifecycle import direction_evidence, direction_summary, rows
+
+            evidence = direction_evidence(self.store, ticker)
+            for key, summary in rows(self.store, "policy_catalog", ticker).items():
+                if summary["policy_id"] == value["policy_id"] and "directions" in summary:
+                    summary = direction_summary(self.store, ticker, summary, pending_state=value, evidence=evidence)
+                    records.append(dict(kind="policy_catalog", ticker=ticker, id=key, data=summary))
+        elif table == "runtime_values" and row["namespace"] == "policy_authorization_head":
+            from .lifecycle import direction_evidence, direction_summary, rows
+
+            evidence = direction_evidence(self.store, ticker)
+            for key, summary in rows(self.store, "policy_catalog", ticker).items():
+                if "directions" in summary:
+                    records.append(
+                        dict(
+                            kind="policy_catalog",
+                            ticker=ticker,
+                            id=key,
+                            data=direction_summary(self.store, ticker, summary, admitted=True, evidence=evidence),
+                        )
+                    )
+        elif table == "v2_ticker_control":
+            wire = state_wire(value)
+            records.append({"kind": "ticker", "ticker": ticker, "id": ticker, "data": wire})
+            records.append(
+                {
+                    "kind": "navigation",
+                    "ticker": "",
+                    "id": ticker,
+                    "data": {
+                        key: wire[key]
+                        for key in (
+                            "ticker",
+                            "run_state",
+                            "health",
+                            "initialization_incomplete",
+                            "removed",
+                        )
+                    }
+                    if not wire["removed"] and not wire["initialization_incomplete"]
+                    else None,
+                }
+            )
+        elif table == "runtime_v2_cases":
+            if not self.store.get("business_provenance", ticker, value["case_id"]):
+                raise ValueError("PROVENANCE_UNVERIFIED")
+            records.extend(self.case(value, event["seq"], reconstruct_archive=event.get("w3_outcomes_complete", False)))
+            summary = records[1]["data"]
+            final = summary["final_novelty"].get("value")
+            hit = summary["final_policy_hit"].get("value")
+            counts = {
+                "processed_cases": True,
+                "new_cases": final == "NEW",
+                "old_cases": final == "OLD",
+                "hit_cases": hit is True,
+                "policy_decided_cases": hit is not None,
+                "w3_cases": summary["initial_route"] == "W3",
+            }
+            metrics.extend(
+                {
+                    "metric": key,
+                    "ticker": ticker,
+                    "entity": summary["case_id"],
+                    "day": summary["semantic_day"],
+                    "value": "1" if count else "0",
+                }
+                for key, count in counts.items()
+            )
+            from .runtime import hot_path_contributions, w3_contributions
+
+            metrics.extend(hot_path_contributions(self.store, value))
+            metrics.extend(w3_contributions(self.store, value))
+            from .policy_hits import project as policy_hits
+
+            hits, counts = policy_hits(self.store, value, summary, event)
+            records.extend(hits)
+            metrics.extend(counts)
+        elif table == "runtime_values" and row["namespace"] == "worker_invocations":
+            template_source = (
+                value.get("source_case_id") if value.get("task_phase") == "w3_template" else None
+            )
+            if template_source and not self.store.get(
+                "business_provenance", ticker, template_source
+            ):
+                raise ValueError("PROVENANCE_UNVERIFIED")
+            if (
+                not value.get("case_id")
+                and value.get("control_epoch") is None
+                and not template_source
+            ):
+                raise ValueError("PROVENANCE_UNVERIFIED")
+            if value.get("case_id") and not self.store.get(
+                "business_provenance", ticker, value["case_id"]
+            ):
+                raise ValueError("PROVENANCE_UNVERIFIED")
+            from .runtime import worker_records
+
+            attempts, counts = worker_records(value)
+            records.extend(attempts)
+            metrics.extend(counts)
+        elif table == "standard_messages":
+            content = self.store.put_content(ticker, value["body"], "text/plain")
+            record["data"] = {**value, "body_ref": content}
+            if value.get('metadata',{}).get('live_article_key'):
+                record['data']['live_article_key']=value['metadata']['live_article_key']
+            current_message = self.store.get("message",ticker,value["standard_message_id"])
+            if current_message:
+                records.extend(self.message({"standard_message_id":value["standard_message_id"],
+                    "stream_item_id":current_message["stream_item_id"],"member_index":current_message["member_index"]},
+                    event["seq"],override_message=record["data"]))
+            records.append(
+                {
+                    "kind": "message_raw_link",
+                    "ticker": ticker,
+                    "id": value["raw_message_id"],
+                    "parent": value["standard_message_id"],
+                    "data": {"standard_message_id": value["standard_message_id"]},
+                }
+            )
+        elif table == "audit_log" and value["entity_type"] == "body_completion":
+            attempt = value["payload"]
+            if attempt.get("v2_control_origin") or (attempt.get("intake_owned") and attempt.get("body_result_key")):
+                records.append(
+                    {
+                        "kind": "body_attempt",
+                        "ticker": attempt["ticker"],
+                        "id": attempt["attempt_id"],
+                        "parent": attempt["raw_message_id"],
+                        "source_id": attempt["source_id"],
+                        # Legacy receipts prove the attempt, not its start date. Keep
+                        # ALL evidence; do not assign it to an invented daily cohort.
+                        "day": semantic_day(
+                            datetime.fromisoformat(attempt["started_at"])
+                        ).isoformat()
+                        if attempt.get("started_at")
+                        else "",
+                        "data": {
+                            **attempt,
+                            "time_basis": "STARTED_AT"
+                            if attempt.get("started_at")
+                            else "NOT_RECORDED",
+                        },
+                    }
+                )
+        elif table == "stream_members":
+            records.extend(self.message(value, event["seq"]))
+        elif table == "runtime_values" and row["namespace"] in {
+            "trade_intents",
+            "analysis_trade_decisions",
+            "candidates",
+        }:
+            if not self.store.get("business_provenance", ticker, value["case_id"]):
+                raise ValueError("PROVENANCE_UNVERIFIED")
+            if row["namespace"] == "trade_intents" and value.get("released_at"):
+                from .executions import pending_intent
+
+                records.extend(pending_intent(self.store, ticker, value))
+            prior = self.store.get("case", ticker, value["case_id"])
+            if prior:
+                disposition = value.get("trade_disposition") or (
+                    "CANDIDATE"
+                    if row["namespace"] == "candidates"
+                    else value.get("status", "NOT_EVALUATED")
+                )
+                if disposition in {"UNKNOWN", "DELIVERY_FAILED"}:
+                    disposition = "READY"
+                prior = {**prior, "trade_disposition": disposition, "revision": event["seq"]}
+                records.append(
+                    {
+                        "kind": "case",
+                        "ticker": ticker,
+                        "id": prior["case_id"],
+                        "data": prior,
+                        "sort": prior["received_at"],
+                        "day": prior["semantic_day"],
+                        "parent": prior["stream_item_id"],
+                        "source_id": prior["source"]["source_id"],
+                        "route": prior["resolved_route"] or prior["initial_route"],
+                    }
+                )
+            if value.get("released_at") and value.get("status") not in {
+                "DUPLICATE_POLICY",
+                "DUPLICATE_REALTIME_OUTPUT",
+                "DUPLICATE_EVENT_TRADE",
+                "SELECTED_CONDITION_INVALID",
+                "POLICY_MIGRATION_UNRESOLVED",
+                "EXPIRED_SEMANTIC_DAY",
+                "RUNTIME_DELAY_EXCEEDED",
+                "BANNED_TRADE_DAY",
+                "EXECUTION_CONFIGURATION_NOT_APPLIED",
+            }:
+                metrics.append(
+                    {
+                        "metric": "trade_triggered",
+                        "ticker": ticker,
+                        "entity": value["intent_id"],
+                        "day": semantic_day(
+                            datetime.fromisoformat(value["released_at"])
+                        ).isoformat(),
+                        "value": "1",
+                    }
+                )
+        # Route attribution can settle after publication; replace the same contribution.
+        for message in records:
+            if message["kind"] == "message" and message["data"]:
+                metrics.append(
+                    {
+                        "metric": "messages",
+                        "ticker": message["ticker"],
+                        "entity": message["id"],
+                        "day": message["day"],
+                        "value": "1",
+                        "dimensions": {
+                            "source_id": message["source_id"],
+                            "kind": message["data"]["source"]["kind"],
+                            "route": message["data"]["case"]["route_group"],
+                        },
+                    }
+                )
+        from .trade_outcomes import project_case_trade
+
+        affected = {
+            (r["ticker"], r["id"]): r["data"]
+            for r in records
+            if r["kind"] == "case" and r.get("data")
+        }
+        for item in records:
+            if item["kind"] == "execution" and item.get("parent"):
+                key = (item["ticker"], item["parent"])
+                if key not in affected:
+                    affected[key] = self.store.get("case", *key)
+        records = [r for r in records if r["kind"] != "case"]
+        for (case_ticker, _), summary in affected.items():
+            if summary:
+                case_record, count = project_case_trade(self.store, case_ticker, summary, records)
+                records.append(case_record)
+                metrics.append(count)
+        changed_cases = {
+            r["id"]: (r["ticker"], r["data"]) for r in records if r["kind"] == "case" and r["data"]
+        }
+        for item in records:
+            if item["kind"] in {"attempt","native:runtime_v2_effects"} and item.get("parent") not in changed_cases:
+                summary = self.store.get("case", ticker, item["parent"])
+                if summary:
+                    changed_cases[summary["case_id"]] = (ticker, summary)
+        if changed_cases and not getattr(self.store,'defer_graph_projection',False):
+            from .graph import project
+
+            for case_ticker, summary in changed_cases.values():
+                from .decision_metrics import project as decision_project
+                summary, tag, timing_counts = decision_project(self.store, case_ticker, summary, records)
+                for item in records:
+                    if item["kind"]=="case" and item["id"]==summary["case_id"]: item["data"]=summary
+                if not any(item["kind"]=="case" and item["id"]==summary["case_id"] for item in records):
+                    previous=self.store.get("case",case_ticker,summary["case_id"])
+                    if previous != summary:
+                        records.append(dict(kind="case",ticker=case_ticker,id=summary["case_id"],sort=summary["received_at"],day=summary["semantic_day"],parent=summary["stream_item_id"],source_id=summary["source"]["source_id"],data=summary))
+                records.append(tag);metrics.extend(timing_counts)
+                members, counts = project(self.store, case_ticker, summary, records)
+                records.extend(members)
+                metrics.extend(counts)
+        if table in {
+            "v2_ticker_control",
+            "v2_control_ack",
+            "ticker_monitoring_states",
+            "poll_states",
+        }:
+            from .health import project as health
+
+            health(self.store, ticker, records)
+        from doxagent.revenue_audit.projection import project as revenue_project
+        records.extend(revenue_project(self.store, event, records))
+        return records, metrics
+
+    def case(self, value: dict[str, Any], revision: int, *, reconstruct_archive: bool = False) -> list[dict[str, Any]]:
+        from doxagent.persistent_runtime_v2.case_outcomes import (
+            decision_direction,
+            effective_novelty,
+            effective_policy,
+            historical_archive,
+        )
+        from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
+
+        source, ticker = value["source"], value["source"]["snapshot"]["ticker"]
+        w1, w2 = value.get("w1_final"), value.get("w2_final")
+        initial = (value.get("route") or {}).get("primary_route")
+        resolved = (value.get("resolved_route") or {}).get("primary_route")
+        final = value.get("w3_operations_result") or value.get("w3_result")
+        decision = value.get("w3_trade_decision")
+        w1, novelty_source = effective_novelty(value)
+        w2, policy_source = effective_policy(value)
+        pending = initial == "W3" and not resolved
+        execution = value.get("frozen_inputs", {}).get("w3_execution_state", {})
+        w3_status = (
+            "RESOLVED"
+            if final or decision
+            else "FAILED"
+            if pending and value["status"] in {"FAILED", "UNAVAILABLE"}
+            else execution.get("status")
+            if pending and execution.get("status")
+            else "FAILED_RETRYABLE"
+            if pending and value.get("error_code")
+            else "PENDING"
+            if pending
+            else None
+        )
+        old = self.store.get("case", ticker, value["case_id"])
+        settled = value["status"] in {"COMPLETED", "FAILED", "UNAVAILABLE"}
+        completed = value.get("completed_at")
+        created = value["created_at"]
+        summary = {
+            "case_id": value["case_id"],
+            "first_round_tags": value.get("first_round_tags", []),
+            "w3_decision": available(decision_direction(decision, policies=value.get("frozen_inputs", {}).get("projection", {}).get("policies", []))) if decision_direction(decision, policies=value.get("frozen_inputs", {}).get("projection", {}).get("policies", [])) else missing(),
+            "final_novelty_source": novelty_source if w1 else None,
+            "final_policy_source": policy_source if w2 else None,
+            "revision": revision,
+            "semantic_day": value["trading_date"],
+            "runtime_mode": value["runtime_mode"],
+            "first_round_shape": (
+                "PARALLEL"
+                if value["runtime_mode"] == "REALTIME"
+                else "W1_ONLY"
+                if value["w2_skipped"]
+                else "SEQUENTIAL"
+            ),
+            "status": value["status"],
+            "technical_status": value["technical_status"],
+            "title": available(source["snapshot"]["title"])
+            if source["snapshot"].get("title")
+            else missing(),
+            "source": self.source_label(source),
+            "source_name": self.source_name(source),
+            "w3_operations_status": value.get("w3_operations_status"),
+            "received_at": timestamp(created),
+            "completed_at": available(timestamp(completed)) if completed else missing(),
+            "duration_seconds": available(
+                (
+                    datetime.fromisoformat(completed) - datetime.fromisoformat(created)
+                ).total_seconds()
+            )
+            if completed
+            else missing(),
+            "initial_route": initial,
+            "resolved_route": resolved,
+            "w3_status": w3_status,
+            "final_novelty": available(w1["result"]) if w1 and (not pending or is_unified_contract(value.get("w3_contract_version"))) else missing(),
+            "final_policy_hit": available(w2.get("policy_hit", bool(w2["policy_ids"])))
+            if w2 and (not pending or is_unified_contract(value.get("w3_contract_version")))
+            else missing(),
+            "results": [result for result in old["results"] if result != "FAILURE"] if old else [],
+            "trade": old.get(
+                "trade", {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []}
+            )
+            if old
+            else {"intent_count": 0, "state": "NOT_APPLICABLE", "reason_codes": []},
+            "result_settled": settled,
+            "trade_disposition": old["trade_disposition"] if old else "NOT_EVALUATED",
+            "stream_item_id": source["stream_item_id"],
+            "member_count": source["member_count"],
+        }
+        if value["status"] in {"FAILED", "UNAVAILABLE"}:
+            summary["results"].append("FAILURE")
+        # Absence of a Read result is not evidence that its source had no output.
+        # Only the bounded source-verified reprojection may reconstruct old archives.
+        if reconstruct_archive and historical_archive(value, summary["results"]):
+            summary["results"].append("ARCHIVE")
+        validate("CaseSummary", summary)
+        records = [
+            {
+                "kind": "case",
+                "ticker": ticker,
+                "id": summary["case_id"],
+                "data": summary,
+                "parent": source["stream_item_id"],
+                "sort": summary["received_at"],
+                "day": summary["semantic_day"],
+                "source_id": source["source_id"],
+                "route": resolved or initial,
+            }
+        ]
+        reasons = {}
+        for name, result in (("w1", value.get("w1_final")), ("w2", value.get("w2_final"))):
+            if result and result.get("reason"):
+                reasons[name] = self.store.put_content(ticker, result["reason"])
+        recall = value.get("w2_round1") or {}
+        if recall.get("reason") and not recall.get("candidate_policy_ids"):
+            reasons["w2"] = self.store.put_content(ticker, recall["reason"])
+        elif (value.get("w2_final") or {}).get("reason") == "no_policy_candidate_recalled":
+            # Historical routing marker is not a recorded recall explanation.
+            reasons.pop("w2", None)
+        if is_unified_contract(value.get("w3_contract_version")):
+            reasons["w3_policy"] = reasons.get("w2")
+        for name in ("novelty", "policy", "expert_trade"):
+            result = (value.get("w3_operations_result") or value.get("w3_result") or {}).get(name)
+            if result and result.get("reason"):
+                reasons["w3_" + name] = self.store.put_content(ticker, result["reason"])
+        if decision:
+            reasons["w3_expert_trade"] = self.store.put_content(ticker, decision["reason"])
+            reasons["w3_trade"] = reasons["w3_expert_trade"]
+        records.append(
+            {"kind": "case_reasoning", "ticker": ticker, "id": value["case_id"], "data": reasons}
+        )
+        for identity in source.get("member_message_ids") or [source["source_message_id"]]:
+            message = self.store.get("message", ticker, identity)
+            if message:
+                standard = self.store.get("native:standard_messages", ticker, identity) or {}
+                message["case"] = self.case_link(summary)
+                message["row_revision"] = revision
+                records.append(
+                    {
+                        "kind": "message",
+                        "ticker": ticker,
+                        "id": identity,
+                        "data": message,
+                        "parent": summary["case_id"],
+                        "source_id": source["source_id"],
+                        "route": message["case"]["route_group"],
+                        "sort": message_anchor(message),
+                        "search": self.message_search(ticker, standard),
+                        "day": semantic_day(
+                            datetime.fromisoformat(message["stream_published_at"])
+                        ).isoformat(),
+                    }
+                )
+        return records
+
+    @staticmethod
+    def case_link(summary: dict[str, Any] | None) -> dict[str, Any]:
+        return {
+            "case_id": summary["case_id"] if summary else None,
+            "status": summary["status"] if summary else None,
+            "initial_route": summary["initial_route"] if summary else None,
+            "w3_status": summary["w3_status"] if summary else None,
+            "resolved_route": summary["resolved_route"] if summary else None,
+            "route_group": (
+                "NOT_PROCESSED"
+                if not summary
+                else "FAILED"
+                if (
+                    summary["status"] in {"FAILED", "UNAVAILABLE"}
+                    or summary["w3_status"] in {"FAILED", "FAILED_RETRYABLE"}
+                )
+                else "W3_PENDING"
+                if summary["w3_status"] == "PENDING"
+                else summary["resolved_route"] or summary["initial_route"] or "NOT_PROCESSED"
+            ),
+        }
+
+    def message_search(self, ticker: str, message: dict[str, Any]) -> str:
+        if message.get("body_ref"):
+            return self.store.search_content(ticker, message["body_ref"], message.get("body"))
+        return (message.get("title") or "") + "\n" + (message.get("body") or "")
+
+    def message(self, member: dict[str, Any], revision: int, *, override_message=None) -> list[dict[str, Any]]:
+        # stream_members has no ticker; the stream identity is indexed on publication.
+        with self.store.connect() as db:
+            row = db.execute(
+                "SELECT s.ticker,s.payload,json_extract(m.payload,'$.pipeline') FROM object_current s "
+                "LEFT JOIN object_current m ON m.kind='message' AND m.ticker=s.ticker AND m.id=? "
+                "WHERE s.kind='native:stream_items' AND s.id=? AND s.valid_to IS NULL",
+                (member['standard_message_id'],member["stream_item_id"]),
+            ).fetchone()
+        if not row:
+            raise ValueError("stream not indexed")
+        ticker, stream = row[0], json.loads(row[1])
+        message = override_message or self.store.get("native:standard_messages", ticker, member["standard_message_id"])
+        if not message:
+            raise ValueError("standard message not indexed")
+        if not message.get("metadata", {}).get("v2_control_origin") and not self.store.get(
+            "business_provenance", ticker, message["standard_message_id"]
+        ):
+            raise ValueError("PROVENANCE_UNVERIFIED")
+        body_ref = message["body_ref"]
+        with self.store.connect() as db:
+            seq = self.store.highwater(db)
+        cases = self.store.page("case", ticker, seq, parent=member["stream_item_id"], limit=1)
+        case = cases[0]["data"] if cases else None
+        summary = {key: message[key] for key in ("standard_message_id", "revision", "url")}
+        summary.update(
+            row_revision=revision,
+            title=available(message["title"]) if message.get("title") else missing(),
+            source=self.source_label(message),
+            source_name=self.source_name(message),
+            source_published_at=timestamp(message["published_at"]),
+            publication_time_basis=message.get('publication_time_basis', 'UNKNOWN_FIRST_SEEN'),
+            publication_time_verified='publication_time_basis' in message,
+            collected_at=timestamp(message["collected_at"]),
+            normalized_at=timestamp(message["normalized_at"]),
+            stream_published_at=timestamp(stream["published_at"]),
+            stream_item_id=member["stream_item_id"],
+            stream_offset=stream["stream_offset"],
+            member_index=member["member_index"],
+            exact_duplicate_count=missing(),
+            case=self.case_link(case),
+            body=body_ref,
+            content_update={
+                "revision":message.get("metadata",{}).get("message_version",{}).get("content_revision",1),
+                "pending":message.get("metadata",{}).get("body_update_state",{}).get("pending",False),
+                "last_error":message.get("metadata",{}).get("body_update_state",{}).get("last_error"),
+                "last_checked_at":timestamp(message["metadata"]["body_update_state"]["last_checked_at"]) if message.get("metadata",{}).get("body_update_state",{}).get("last_checked_at") else None,
+                "body_acquired_at":timestamp(message["metadata"]["media_enrichment"]["body_acquired_at"]) if message.get("metadata",{}).get("media_enrichment",{}).get("body_acquired_at") else None,
+            },
+        )
+        article_key = message.get('metadata',{}).get('live_article_key')
+        prior_pipeline=json.loads(row[2]) if row[2] else None
+        delivery = self.store.get('native:live_deliveries',ticker,article_key+':'+ticker) if article_key and not prior_pipeline else None
+        if prior_pipeline:
+            # The first published message owns this anchor through BODY revisions
+            # and canonical merges, even after its old delivery alias is removed.
+            summary['pipeline']=prior_pipeline
+        elif delivery and delivery.get('first_discovered_at'):
+            summary['pipeline'] = {
+                'discovered_at': timestamp(delivery['first_discovered_at']),
+                'poll_due_at': timestamp(delivery['first_poll_due_at']) if delivery.get('first_poll_due_at') else None,
+            }
+        validate("MessageSummary", summary)
+        return [
+            {
+                "kind": "message",
+                "ticker": ticker,
+                "id": message["standard_message_id"],
+                "data": summary,
+                "sort": message_anchor(summary),
+                "source_id": message["source_id"],
+                "route": summary["case"]["route_group"],
+                "parent": case["case_id"] if case else None,
+                "search": self.message_search(ticker, message),
+                "day": semantic_day(datetime.fromisoformat(stream["published_at"])).isoformat(),
+            }
+        ]

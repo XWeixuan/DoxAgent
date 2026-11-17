@@ -1,0 +1,29 @@
+{
+  "run": "6b23565ec550",
+  "receipts": [
+    {
+      "case_id": "case_6becc9e627614102898e0897df26ba70",
+      "arm": "old",
+      "round": "R1",
+      "status": "ERROR",
+      "error_code": "provider_stream_failed",
+      "message": "Invalid OpenAI stream",
+      "usage": {
+        "response_id": null,
+        "raw_output": "",
+        "input_tokens": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "cached_input_tokens": null,
+        "cache_write_input_tokens": null,
+        "provider_usage": {
+          "service_tier": null,
+          "response_model": null,
+          "response_status": null,
+          "request_id": null,
+          "cache_ttl": "12h"
+        }
+      }
+    }
+  ]
+}

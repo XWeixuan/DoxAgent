@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="3" time="2.368" timestamp="2026-11-17T20:20:56.819048+08:00" hostname="DESKTOP-BQ2H2TD"><testcase classname="tests.test_runtime_policy_direction_usage" name="test_native_r1_r2_w3_ready_direction_and_delta_survive_rejection" time="1.295"><failure message="AssertionError: assert ['RUNTIME_DEL...LAY_EXCEEDED'] == ['DUPLICATE_P...ADY', 'READY']&#10;  &#10;  At index 0 diff: 'RUNTIME_DELAY_EXCEEDED' != 'DUPLICATE_POLICY'&#10;  Use -v to get more diff">E   AssertionError: assert ['RUNTIME_DEL...LAY_EXCEEDED'] == ['DUPLICATE_P...ADY', 'READY']
+      
+      At index 0 diff: 'RUNTIME_DELAY_EXCEEDED' != 'DUPLICATE_POLICY'
+      Use -v to get more diff</failure></testcase><testcase classname="tests.test_runtime_policy_direction_usage" name="test_output_guard_head_race_is_retryable_and_stale_generation_rejected" time="0.264"><failure message="AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'POLICY_AUTHO..._NOT_ADMITTED'&#10;  &#10;  - POLICY_AUTHORIZATION_NOT_ADMITTED&#10;  + RUNTIME_DELAY_EXCEEDED">E   AssertionError: assert 'RUNTIME_DELAY_EXCEEDED' == 'POLICY_AUTHO..._NOT_ADMITTED'
+      
+      - POLICY_AUTHORIZATION_NOT_ADMITTED
+      + RUNTIME_DELAY_EXCEEDED</failure></testcase><testcase classname="tests.test_runtime_policy_direction_usage" name="test_completed_w3_result_retries_output_without_research_again" time="0.627"><failure message="AssertionError: assert 0 == 1&#10; +  where 0 = len([])&#10; +    where [] = values('policy_consumptions')&#10; +      where values = &lt;doxagent.persistent_runtime_v2.journal.RuntimeJournal object at 0x0000025407758B50&gt;.values">E   AssertionError: assert 0 == 1
+     +  where 0 = len([])
+     +    where [] = values('policy_consumptions')
+     +      where values = &lt;doxagent.persistent_runtime_v2.journal.RuntimeJournal object at 0x0000025407758B50&gt;.values</failure></testcase></testsuite></testsuites>

@@ -22,7 +22,8 @@ def test_only_r3_changes_from_current_profile():
         for lane in ['W1','W2']:
             for rnd in ['R1','R2']:assert new['rounds'][lane+':'+rnd]==old[lane+':'+rnd]
             r=new['rounds'][lane+':R3'];f=new['case_fallback'][lane+':R3']
-            assert (r['model'],r['provider'],r['reasoning_effort'],r['service_tier'],r['cache_ttl'])==('gpt-6-luna','openai','high','fast','30m')
+            effort,tier=('medium','default') if lane=='W1' else ('high','fast')
+            assert (r['model'],r['provider'],r['reasoning_effort'],r['service_tier'],r['cache_ttl'])==('gpt-6-luna','openai',effort,tier,'30m')
             assert (f['model'],f['provider_endpoint'],f['reasoning_effort'],f['cache_ttl'])==(HAIKU_MODEL,'google-vertex/global','high','1h')
     finally:c.close()
 

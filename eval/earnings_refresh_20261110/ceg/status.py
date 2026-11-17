@@ -1,0 +1,12 @@
+import json
+from pathlib import Path
+from doxagent.settings import DoxAgentSettings
+from doxagent.ticker_initialization.repository import InitializationRepository
+from doxagent.event_library.provider import PublishedEventLibraryReader
+s=DoxAgentSettings(); r=InitializationRepository(s.ticker_initialization_control_path)
+x=json.loads(Path('/data/ops/ceg-refresh-20261110/submitted.json').read_text()); run=r.get(x['run']['initialization_id'])
+e=PublishedEventLibraryReader(s.event_library_root).reference_view('CEG',version=x['event_version'])
+assert e.sha256==x['event_sha256']
+print(json.dumps({'run':run.model_dump(mode='json'),'nodes':[{'key':n.key,'status':n.status,'error':n.error,'child_run_id':n.receipt.get('child_run_id')} for n in r.nodes(run.initialization_id,top_level_only=True)],'event_root':s.event_library_root,'event_sha256':e.sha256},ensure_ascii=False))
+
+
