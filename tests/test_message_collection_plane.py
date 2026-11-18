@@ -429,6 +429,32 @@ async def test_small_ledger_writes_serialize_without_losing_cycles_and_restart_f
         assert db.execute("SELECT count(*) FROM cycles WHERE status='ABANDONED_GENERATION'").fetchone()[0]==100
 
 
+def test_restart_recovery_ignores_large_completed_capture_history(tmp_path):
+    store = AcquisitionStore(tmp_path / 'acquisition.sqlite3', initialize=True)
+    now = utc_now().isoformat()
+    with store.connect(write=True) as db:
+        db.executemany('INSERT INTO cycles(run_id,status,finished_at,data_json) VALUES(?,?,?,?)',
+                       ((str(i), 'CAPTURED', now, '{"attempt_finished":true}') for i in range(10000)))
+        db.execute("INSERT INTO cycles(run_id,status,data_json) VALUES('interrupted','CAPTURED',?)",
+                   ('{"attempt_finished":false}',))
+    # A small VM-step budget admits indexed recovery, not a scan of old proofs.
+    steps = 0
+    def budget():
+        nonlocal steps
+        steps += 1
+        return steps > 100
+    with store.connection_scope():
+        with store.connect() as db:
+            db.set_progress_handler(budget, 100)
+            try:
+                assert store.recover_previous_owner() == 1
+            finally:
+                db.set_progress_handler(None, 0)
+    with store.connect() as db:
+        assert db.execute("SELECT count(*) FROM cycles WHERE finished_at=?", (now,)).fetchone()[0] == 10000
+        assert db.execute("SELECT reason,json_extract(data_json,'$.attempt_finished') FROM cycles WHERE run_id='interrupted'").fetchone()[:] == ('PREVIOUS_COLLECTOR_EXIT', 1)
+
+
 async def test_failed_terminal_commit_does_not_turn_the_unit_into_a_100ms_refetch_loop(tmp_path,monkeypatch):
     import asyncio
     from unittest.mock import AsyncMock
