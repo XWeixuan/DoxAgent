@@ -1,0 +1,1112 @@
+{
+  "start": "2026-11-18T14:30:05.829369+00:00",
+  "end": "2026-11-18T14:30:26.031747+00:00",
+  "schedstats_enabled": "0",
+  "swap_pages_delta": {
+    "pswpin": 417,
+    "pswpout": 0
+  },
+  "processes": [
+    {
+      "pid": 3457824,
+      "nspid": [
+        "3457824",
+        "1"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "docker-init",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3457868,
+      "nspid": [
+        "3457868",
+        "7"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 1.02,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 1486,
+      "write_mib": 22.15625,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3474252,
+      "nspid": [
+        "3474252",
+        "4858"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3556676,
+      "nspid": [
+        "3556676",
+        "31618"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.00390625,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3556742,
+      "nspid": [
+        "3556742",
+        "31674"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.36,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 69,
+      "write_mib": 2.45703125,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3557044,
+      "nspid": [
+        "3557044",
+        "31878"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3557045,
+      "nspid": [
+        "3557045",
+        "31879"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3557819,
+      "nspid": [
+        "3557819",
+        "32275"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.03,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 2769,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3558579,
+      "nspid": [
+        "3558579",
+        "32573"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.00390625,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3558644,
+      "nspid": [
+        "3558644",
+        "32584"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.23,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 225,
+      "write_mib": 1.05859375,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3558854,
+      "nspid": [
+        "3558854",
+        "32713"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3558855,
+      "nspid": [
+        "3558855",
+        "32714"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3559333,
+      "nspid": [
+        "3559333",
+        "32871"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:09.861314+00:00",
+      "cpu_s": 0.05,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 92,
+      "write_mib": 0.01171875,
+      "states": {
+        "S": 5
+      }
+    },
+    {
+      "pid": 3559348,
+      "nspid": [
+        "3559348",
+        "32883"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:09.861314+00:00",
+      "cpu_s": 0.24,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 149,
+      "write_mib": 1.35546875,
+      "states": {
+        "S": 5
+      }
+    },
+    {
+      "pid": 3559460,
+      "nspid": [
+        "3559460",
+        "32958"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:24.009564+00:00",
+      "cpu_s": 0.07,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 245,
+      "write_mib": 0.01953125,
+      "states": {
+        "S": 19
+      }
+    },
+    {
+      "pid": 3559486,
+      "nspid": [
+        "3559486",
+        "32963"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:24.009564+00:00",
+      "cpu_s": 0.38,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 1138,
+      "write_mib": 1.4765625,
+      "states": {
+        "S": 19
+      }
+    },
+    {
+      "pid": 3559623,
+      "nspid": [
+        "3559623",
+        "33083"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 1527,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3560060,
+      "nspid": [
+        "3560060",
+        "33219"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "bash",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3560061,
+      "nspid": [
+        "3560061",
+        "33220"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "find",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 2.96,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 569,
+      "write_mib": 0.0,
+      "states": {
+        "D": 16,
+        "R": 5
+      }
+    },
+    {
+      "pid": 3561502,
+      "nspid": [
+        "3561502",
+        "33355"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.05,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 130,
+      "write_mib": 0.01171875,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3561557,
+      "nspid": [
+        "3561557",
+        "33373"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.3,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 230,
+      "write_mib": 0.9609375,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3561649,
+      "nspid": [
+        "3561649",
+        "33445"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3561781,
+      "nspid": [
+        "3561781",
+        "33506"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3561869,
+      "nspid": [
+        "3561869",
+        "33553"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.02,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 29,
+      "write_mib": 0.38671875,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562167,
+      "nspid": [
+        "3562167",
+        "33725"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 6,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562305,
+      "nspid": [
+        "3562305",
+        "33808"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562325,
+      "nspid": [
+        "3562325",
+        "33819"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.02,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 6,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562441,
+      "nspid": [
+        "3562441",
+        "33916"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562454,
+      "nspid": [
+        "3562454",
+        "33924"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 6,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562544,
+      "nspid": [
+        "3562544",
+        "33995"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 2,
+      "write_mib": 0.00390625,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562610,
+      "nspid": [
+        "3562610",
+        "34012"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.21,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 876,
+      "write_mib": 0.8125,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562715,
+      "nspid": [
+        "3562715",
+        "34090"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562932,
+      "nspid": [
+        "3562932",
+        "34115"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:24.009564+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 19
+      }
+    },
+    {
+      "pid": 3562943,
+      "nspid": [
+        "3562943",
+        "34126"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562960,
+      "nspid": [
+        "3562960",
+        "34140"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3562965,
+      "nspid": [
+        "3562965",
+        "34142"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.04,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 58,
+      "write_mib": 0.55859375,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3563117,
+      "nspid": [
+        "3563117",
+        "34237"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3563118,
+      "nspid": [
+        "3563118",
+        "34238"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3563273,
+      "nspid": [
+        "3563273",
+        "34272"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:09.861314+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 5
+      }
+    },
+    {
+      "pid": 3563605,
+      "nspid": [
+        "3563605",
+        "34313"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3563694,
+      "nspid": [
+        "3563694",
+        "34340"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3563728,
+      "nspid": [
+        "3563728",
+        "34343"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.65,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 47822,
+      "write_mib": 76.1796875,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564037,
+      "nspid": [
+        "3564037",
+        "34461"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564038,
+      "nspid": [
+        "3564038",
+        "34462"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564336,
+      "nspid": [
+        "3564336",
+        "34515"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564478,
+      "nspid": [
+        "3564478",
+        "34536"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.00390625,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564557,
+      "nspid": [
+        "3564557",
+        "34550"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.69,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 10655,
+      "write_mib": 1.8671875,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564678,
+      "nspid": [
+        "3564678",
+        "34605"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564734,
+      "nspid": [
+        "3564734",
+        "34660"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564735,
+      "nspid": [
+        "3564735",
+        "34661"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564825,
+      "nspid": [
+        "3564825",
+        "34675"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.01,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 7,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3564907,
+      "nspid": [
+        "3564907",
+        "34752"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3565080,
+      "nspid": [
+        "3565080",
+        "34771"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 7,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3565309,
+      "nspid": [
+        "3565309",
+        "34887"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.05,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 3673,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3460425,
+      "nspid": [
+        "3460425",
+        "1"
+      ],
+      "role": "/doxagent-v2-v2-scheduler-1",
+      "name": "docker-init",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3460472,
+      "nspid": [
+        "3460472",
+        "7"
+      ],
+      "role": "/doxagent-v2-v2-scheduler-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 18.88,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 1544,
+      "write_mib": 12.96484375,
+      "states": {
+        "S": 8,
+        "R": 13
+      }
+    },
+    {
+      "pid": 3393951,
+      "nspid": [
+        "3393951",
+        "1"
+      ],
+      "role": "/doxagent-v2-v2-projector-1",
+      "name": "docker-init",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 21
+      }
+    },
+    {
+      "pid": 3394001,
+      "nspid": [
+        "3394001",
+        "7"
+      ],
+      "role": "/doxagent-v2-v2-projector-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:05.829369+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 4.03,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 741,
+      "write_mib": 61.8515625,
+      "states": {
+        "S": 15,
+        "R": 6
+      }
+    },
+    {
+      "pid": 3566154,
+      "nspid": [
+        "3566154",
+        "34997"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "bash",
+      "first": "2026-11-18T14:30:17.945261+00:00",
+      "last": "2026-11-18T14:30:17.945261+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "S": 1
+      }
+    },
+    {
+      "pid": 3566157,
+      "nspid": [
+        "3566157",
+        "35000"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "first": "2026-11-18T14:30:17.945261+00:00",
+      "last": "2026-11-18T14:30:17.945261+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 0,
+      "write_mib": 0.0,
+      "states": {
+        "R": 1
+      }
+    },
+    {
+      "pid": 3566194,
+      "nspid": [
+        "3566194",
+        "35011"
+      ],
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "first": "2026-11-18T14:30:18.960256+00:00",
+      "last": "2026-11-18T14:30:26.031747+00:00",
+      "cpu_s": 0.0,
+      "major_fault_delta": 0,
+      "minor_fault_delta": 59,
+      "write_mib": 0.0,
+      "states": {
+        "S": 8
+      }
+    }
+  ]
+}

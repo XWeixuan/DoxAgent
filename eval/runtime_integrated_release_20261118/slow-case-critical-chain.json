@@ -1,0 +1,1122 @@
+[
+  {
+    "case_id": "case_d09c3b6908904cee91e6c0d736adf13c",
+    "ticker": "MU",
+    "created": "2026-11-18T14:05:41.824786+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 23.923290967941284,
+    "trade_ledger_lower_bound": 23.58694291114807,
+    "operations_non_sdk": 3.3562278747558594,
+    "whole_w3_non_sdk": 26.94317078590393,
+    "runtime_union_with_aux_model": 21.675748109817505,
+    "pre_w3_non_model": 2.877650260925293,
+    "whole_runtime_non_model": 29.820821046829224,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 2.967362880706787,
+      "first_owner": 6.412489175796509,
+      "first_owner_to_first_model": 12.93827486038208,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.4207420349121094,
+      "final_owner": 1.1844220161437988
+    },
+    "sum_seconds": 23.923290967941284,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 2,
+        "elapsed_ms": 570.445,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 47.258,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 5163.923,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 39.893,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 33,
+        "elapsed_ms": 3182.116,
+        "errors": 0
+      },
+      "journal.retry_wait": {
+        "count": 25,
+        "elapsed_ms": 835.257,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 192.611,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.023,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 1561.394,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 2,
+        "elapsed_ms": 0.083,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 18.041,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 32.348,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 0.299,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.081,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 1033.967,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 5826.742,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.007,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_39cec2f1b25d432290f73ac1a432c78a",
+    "ticker": "COHR",
+    "created": "2026-11-18T14:05:40.002624+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 15.22580599784851,
+    "trade_ledger_lower_bound": 14.95247197151184,
+    "operations_non_sdk": 2.641071081161499,
+    "whole_w3_non_sdk": 17.59354305267334,
+    "runtime_union_with_aux_model": 12.15078330039978,
+    "pre_w3_non_model": 7.430385112762451,
+    "whole_runtime_non_model": 25.02392816543579,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 0.6455469131469727,
+      "first_owner": 0.9181809425354004,
+      "first_owner_to_first_model": 12.673794031143188,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.24576306343078613,
+      "final_owner": 0.7425210475921631
+    },
+    "sum_seconds": 15.22580599784851,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 90.799,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 8.034,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 423.315,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 80.893,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 8,
+        "elapsed_ms": 46.845,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 6.98,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.021,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 202.395,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 31.017,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 5.978,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.032,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 1.103,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.071,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 105.03,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 737.694,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.007,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_6c1fa8b3d72d4510be865a004f498246",
+    "ticker": "MU",
+    "created": "2026-11-18T14:05:42.505139+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 16.40103507041931,
+    "trade_ledger_lower_bound": 16.181954860687256,
+    "operations_non_sdk": 2.550938129425049,
+    "whole_w3_non_sdk": 18.732892990112305,
+    "runtime_union_with_aux_model": 18.19136118888855,
+    "pre_w3_non_model": 5.789494276046753,
+    "whole_runtime_non_model": 24.522387266159058,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 0.8219330310821533,
+      "first_owner": 3.495605945587158,
+      "first_owner_to_first_model": 10.219445943832397,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.5065159797668457,
+      "final_owner": 1.3575341701507568
+    },
+    "sum_seconds": 16.40103507041931,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 2,
+        "elapsed_ms": 385.941,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 10.801,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 2059.485,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 88.07,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 17,
+        "elapsed_ms": 1325.667,
+        "errors": 0
+      },
+      "journal.retry_wait": {
+        "count": 9,
+        "elapsed_ms": 257.814,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 8,
+        "elapsed_ms": 15.266,
+        "errors": 1
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.022,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 1267.962,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 2,
+        "elapsed_ms": 0.075,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 53.193,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 6.627,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 1.131,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.09,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 530.062,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 3189.758,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.102,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_e5c9579c3a1c446a913687862a44f6db",
+    "ticker": "BE",
+    "created": "2026-11-18T14:05:49.579840+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 15.3677499294281,
+    "trade_ledger_lower_bound": 15.131570100784302,
+    "operations_non_sdk": 1.7957630157470703,
+    "whole_w3_non_sdk": 16.927333116531372,
+    "runtime_union_with_aux_model": 15.660502195358276,
+    "pre_w3_non_model": 6.161715984344482,
+    "whole_runtime_non_model": 23.089049100875854,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 0.7014651298522949,
+      "first_owner": 1.209542989730835,
+      "first_owner_to_first_model": 12.101569890975952,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.28835201263427734,
+      "final_owner": 1.0668199062347412
+    },
+    "sum_seconds": 15.3677499294281,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 111.652,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 10.943,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 527.263,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 55.733,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 8,
+        "elapsed_ms": 83.527,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 16.14,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.021,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 307.381,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 59.652,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 0.975,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.032,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 0.301,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.075,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 193.68,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 924.421,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.02,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_3dda46859ab544f6bb430d843e2e7061",
+    "ticker": "INTC",
+    "created": "2026-11-18T14:00:32.226519+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 13.457172870635986,
+    "trade_ledger_lower_bound": 13.119467973709106,
+    "operations_non_sdk": 3.8082730770111084,
+    "whole_w3_non_sdk": 16.927741050720215,
+    "runtime_union_with_aux_model": 11.983974933624268,
+    "pre_w3_non_model": 4.210915803909302,
+    "whole_runtime_non_model": 21.138656854629517,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 1.0556960105895996,
+      "first_owner": 2.4256858825683594,
+      "first_owner_to_first_model": 8.705552101135254,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.23869800567626953,
+      "final_owner": 1.031540870666504
+    },
+    "sum_seconds": 13.457172870635986,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 184.927,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 8.708,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 1826.196,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 45.282,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 13,
+        "elapsed_ms": 1084.856,
+        "errors": 0
+      },
+      "journal.retry_wait": {
+        "count": 5,
+        "elapsed_ms": 150.642,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 20.102,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.018,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 1222.134,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 21.206,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 5.679,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.028,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 4.103,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.082,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 364.722,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 2125.045,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.008,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_edc83e0df97849959d04666a5d0cfa9e",
+    "ticker": "CEG",
+    "created": "2026-11-18T14:00:51.312402+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 13.447963953018188,
+    "trade_ledger_lower_bound": 13.035106897354126,
+    "operations_non_sdk": 5.179957866668701,
+    "whole_w3_non_sdk": 18.215064764022827,
+    "runtime_union_with_aux_model": 14.114851951599121,
+    "pre_w3_non_model": 2.479112148284912,
+    "whole_runtime_non_model": 20.69417691230774,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 0.4801609516143799,
+      "first_owner": 3.590329885482788,
+      "first_owner_to_first_model": 6.864525079727173,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.6994199752807617,
+      "final_owner": 1.813528060913086
+    },
+    "sum_seconds": 13.447963953018188,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 122.044,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 3.98,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 2994.33,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 43.897,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 21,
+        "elapsed_ms": 1909.593,
+        "errors": 0
+      },
+      "journal.retry_wait": {
+        "count": 13,
+        "elapsed_ms": 358.27,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 9.503,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.021,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 1826.125,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 21.87,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 3.261,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.036,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 1.458,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.069,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 404.15,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 3295.831,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.005,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_db550e36689f4b138ec4a47940c67a27",
+    "ticker": "NBIS",
+    "created": "2026-11-18T14:05:43.399918+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 16.362037181854248,
+    "trade_ledger_lower_bound": 16.235382080078125,
+    "operations_non_sdk": 0.7137570381164551,
+    "whole_w3_non_sdk": 16.94913911819458,
+    "runtime_union_with_aux_model": 10.109496831893921,
+    "pre_w3_non_model": 3.12593674659729,
+    "whole_runtime_non_model": 20.07507586479187,
+    "local_tools_union": 0.6446681022644043,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 0.9287049770355225,
+      "first_owner": 6.883965969085693,
+      "first_owner_to_first_model": 8.13581109046936,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.12555599212646484,
+      "final_owner": 0.28799915313720703
+    },
+    "sum_seconds": 16.362037181854248,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 544.061,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 12.377,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 5393.608,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 31.314,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 38,
+        "elapsed_ms": 3765.891,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 8,
+        "elapsed_ms": 165.084,
+        "errors": 1
+      },
+      "journal.retry_wait": {
+        "count": 30,
+        "elapsed_ms": 951.444,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.022,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 4661.428,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 18.523,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 52.206,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.023,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 2.536,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.906,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 673.364,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 5782.973,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.007,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_2468e5b8324f47479400efb6c9a04ba6",
+    "ticker": "NBIS",
+    "created": "2026-11-18T14:01:50.204414+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 11.520707845687866,
+    "trade_ledger_lower_bound": 10.769532918930054,
+    "operations_non_sdk": 4.516712188720703,
+    "whole_w3_non_sdk": 15.286245107650757,
+    "runtime_union_with_aux_model": 11.901063203811646,
+    "pre_w3_non_model": 3.2965140342712402,
+    "whole_runtime_non_model": 18.582759141921997,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 1.084165096282959,
+      "first_owner": 2.935447931289673,
+      "first_owner_to_first_model": 4.109935998916626,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 1.0373318195343018,
+      "final_owner": 2.3538269996643066
+    },
+    "sum_seconds": 11.520707845687866,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 91.15,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 15.666,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 2308.69,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 57.247,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 18,
+        "elapsed_ms": 1514.636,
+        "errors": 0
+      },
+      "journal.retry_wait": {
+        "count": 10,
+        "elapsed_ms": 256.22,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 26.955,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.023,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 1500.953,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 42.975,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 12.949,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.04,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 0.278,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.075,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 250.557,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 2726.488,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.007,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_2436d4b0c38245a9a8fcd69a004c1170",
+    "ticker": "INTC",
+    "created": "2026-11-18T14:05:40.724120+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 10.279715299606323,
+    "trade_ledger_lower_bound": 10.08786129951477,
+    "operations_non_sdk": 3.305152177810669,
+    "whole_w3_non_sdk": 13.39301347732544,
+    "runtime_union_with_aux_model": 12.529099702835083,
+    "pre_w3_non_model": 4.033335208892822,
+    "whole_runtime_non_model": 17.42634868621826,
+    "local_tools_union": 0,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 2.88175106048584,
+      "first_owner": 4.403183937072754,
+      "first_owner_to_first_model": 2.3784141540527344,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 0.18170905113220215,
+      "final_owner": 0.43465709686279297
+    },
+    "sum_seconds": 10.279715299606323,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 201.588,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 11.249,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 3652.592,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 33.226,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 27,
+        "elapsed_ms": 2533.761,
+        "errors": 0
+      },
+      "journal.retry_wait": {
+        "count": 19,
+        "elapsed_ms": 641.243,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 106.234,
+        "errors": 0
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.021,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 1015.145,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 76.633,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 2.652,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.036,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 1.911,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.077,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 1963.673,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 4006.865,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.007,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  },
+  {
+    "case_id": "case_a6d1f30f482b464f82ba9bbaf516f818",
+    "ticker": "BE",
+    "created": "2026-11-18T14:00:50.602110+00:00",
+    "status": "COMPLETED",
+    "missing": [],
+    "trade_non_sdk": 10.334404945373535,
+    "trade_ledger_lower_bound": 9.958062887191772,
+    "operations_non_sdk": 4.458915948867798,
+    "whole_w3_non_sdk": 14.557090759277344,
+    "runtime_union_with_aux_model": 14.231427192687988,
+    "pre_w3_non_model": 2.76389741897583,
+    "whole_runtime_non_model": 17.320988178253174,
+    "local_tools_union": 0.14011192321777344,
+    "trade_disjoint_seconds": {
+      "route_to_first_owner": 0.46231698989868164,
+      "first_owner": 2.6941168308258057,
+      "first_owner_to_first_model": 1.3402581214904785,
+      "between_model_union_intervals": 0.0,
+      "last_model_to_final_owner": 4.725556135177612,
+      "final_owner": 0.9720449447631836
+    },
+    "sum_seconds": 10.194293022155762,
+    "job_count": 2,
+    "first_owner_totals": {
+      "case.read": {
+        "count": 1,
+        "elapsed_ms": 104.866,
+        "errors": 0
+      },
+      "journal.connect": {
+        "count": 38,
+        "elapsed_ms": 12.459,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 38,
+        "elapsed_ms": 2046.348,
+        "errors": 1
+      },
+      "journal.commit": {
+        "count": 37,
+        "elapsed_ms": 56.937,
+        "errors": 0
+      },
+      "journal.gate": {
+        "count": 15,
+        "elapsed_ms": 1100.19,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 8,
+        "elapsed_ms": 238.097,
+        "errors": 1
+      },
+      "stage.accepted": {
+        "count": 3,
+        "elapsed_ms": 0.02,
+        "errors": 0
+      },
+      "stage.begin": {
+        "count": 3,
+        "elapsed_ms": 744.258,
+        "errors": 0
+      },
+      "history.global_snapshot": {
+        "count": 1,
+        "elapsed_ms": 45.259,
+        "errors": 0
+      },
+      "context.prepare": {
+        "count": 1,
+        "elapsed_ms": 3.331,
+        "errors": 0
+      },
+      "thread.resolve_event_subjects": {
+        "count": 1,
+        "elapsed_ms": 0.04,
+        "errors": 0
+      },
+      "case.events": {
+        "count": 1,
+        "elapsed_ms": 4.117,
+        "errors": 0
+      },
+      "case.payload": {
+        "count": 1,
+        "elapsed_ms": 0.079,
+        "errors": 0
+      },
+      "case.thread_prepare": {
+        "count": 2,
+        "elapsed_ms": 1178.398,
+        "errors": 0
+      },
+      "journal.retry_wait": {
+        "count": 7,
+        "elapsed_ms": 202.04,
+        "errors": 0
+      },
+      "case.trade": {
+        "count": 1,
+        "elapsed_ms": 2453.687,
+        "errors": 1
+      },
+      "effect.body_return": {
+        "count": 1,
+        "elapsed_ms": 0.005,
+        "errors": 0
+      }
+    },
+    "first_owner_events_sampled": true
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "code_commit": "7db63aacde026c286a108400d6f905900c1c121c",
+  "released_at_utc": "2026-11-18T13:54:15.613386Z",
+  "cohort_since": "2026-11-18T13:53:59.565090Z",
+  "cohort_until": "2026-11-18T14:35:00Z",
+  "measured_at": "2026-11-18T14:35:58.234227+00:00",
+  "enrolled": 105,
+  "complete": 105,
+  "failed": 0,
+  "missing_clocks": 0,
+  "metrics": {
+    "trade_non_sdk": {
+      "n": 105,
+      "p50": 5.027401924133301,
+      "p95": 13.457172870635986,
+      "max": 23.923290967941284
+    },
+    "operations_non_sdk": {
+      "n": 105,
+      "p50": 2.4551548957824707,
+      "p95": 4.200721979141235,
+      "max": 5.280692100524902
+    },
+    "whole_w3_non_sdk": {
+      "n": 105,
+      "p50": 7.198118686676025,
+      "p95": 16.927741050720215,
+      "max": 26.94317078590393
+    },
+    "whole_runtime_non_model": {
+      "n": 105,
+      "p50": 10.124799251556396,
+      "p95": 20.69417691230774,
+      "max": 29.820821046829224
+    }
+  },
+  "performance_pass": false,
+  "thread_integrity_errors": [],
+  "report": "dev_plan/workflow_v2/runtime_integrated_repair_release_and_deep_acceptance_20261118.md"
+}

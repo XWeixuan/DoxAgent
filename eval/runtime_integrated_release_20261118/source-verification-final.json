@@ -1,0 +1,62 @@
+{
+  "read_journal_mode": "wal",
+  "source_hashes": {
+    "v2-scheduler": [
+      "61fa70d8a236ce0296430288776ebf9fef80fe1b58291a8a0c47ee3c5fc3af41  /app/src/doxagent/persistent_runtime_v2/w3.py",
+      "1b66cdc494856db0d80f696e55c941f820cb7b7640bf3064e97fe994aede97d3  /app/src/doxagent/persistent_runtime_v2/service.py"
+    ],
+    "codex-worker": [
+      "65011874ad542a37e4425fd56bbd0101cbcc7cd7732ca8422fe11e6debfaecc7  /app/src/doxagent/codex_worker/capsules.py",
+      "dfdc4b1568ea229f34db340b5a6a793a8468734b916c2765cbf4244b3c574665  /app/src/doxagent/codex_worker/capsule_child.py"
+    ],
+    "v2-transport-maintenance": [
+      "64d5449a36cefd11dbaf109700a4869334721e8bb1b52b7a90d47fae033bb967  /app/src/doxagent/v2_read/source_native_gc.py",
+      "477535d50ff5a704695d312dab7c5da7922495cacee463ee334db4ffb7426b90  /app/src/doxagent/v2_read/artifact_registry.py"
+    ]
+  },
+  "commit_blob_matches": [
+    {
+      "role": "v2-scheduler",
+      "file": "src/doxagent/persistent_runtime_v2/w3.py",
+      "commit_blob_sha256": "61fa70d8a236ce0296430288776ebf9fef80fe1b58291a8a0c47ee3c5fc3af41",
+      "actual_sha256": "61fa70d8a236ce0296430288776ebf9fef80fe1b58291a8a0c47ee3c5fc3af41",
+      "matches": true
+    },
+    {
+      "role": "v2-scheduler",
+      "file": "src/doxagent/persistent_runtime_v2/service.py",
+      "commit_blob_sha256": "1b66cdc494856db0d80f696e55c941f820cb7b7640bf3064e97fe994aede97d3",
+      "actual_sha256": "1b66cdc494856db0d80f696e55c941f820cb7b7640bf3064e97fe994aede97d3",
+      "matches": true
+    },
+    {
+      "role": "codex-worker",
+      "file": "src/doxagent/codex_worker/capsules.py",
+      "commit_blob_sha256": "65011874ad542a37e4425fd56bbd0101cbcc7cd7732ca8422fe11e6debfaecc7",
+      "actual_sha256": "65011874ad542a37e4425fd56bbd0101cbcc7cd7732ca8422fe11e6debfaecc7",
+      "matches": true
+    },
+    {
+      "role": "codex-worker",
+      "file": "src/doxagent/codex_worker/capsule_child.py",
+      "commit_blob_sha256": "dfdc4b1568ea229f34db340b5a6a793a8468734b916c2765cbf4244b3c574665",
+      "actual_sha256": "dfdc4b1568ea229f34db340b5a6a793a8468734b916c2765cbf4244b3c574665",
+      "matches": true
+    },
+    {
+      "role": "v2-transport-maintenance",
+      "file": "src/doxagent/v2_read/source_native_gc.py",
+      "commit_blob_sha256": "64d5449a36cefd11dbaf109700a4869334721e8bb1b52b7a90d47fae033bb967",
+      "actual_sha256": "64d5449a36cefd11dbaf109700a4869334721e8bb1b52b7a90d47fae033bb967",
+      "matches": true
+    },
+    {
+      "role": "v2-transport-maintenance",
+      "file": "src/doxagent/v2_read/artifact_registry.py",
+      "commit_blob_sha256": "477535d50ff5a704695d312dab7c5da7922495cacee463ee334db4ffb7426b90",
+      "actual_sha256": "477535d50ff5a704695d312dab7c5da7922495cacee463ee334db4ffb7426b90",
+      "matches": true
+    }
+  ],
+  "comparison_note": "Git archive uses committed blob bytes; Windows worktree has CRLF. Compare to release commit blobs, not checkout bytes."
+}
