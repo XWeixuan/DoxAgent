@@ -226,15 +226,18 @@ class W3ResearchStore:
         self._encoding = tiktoken.get_encoding("o200k_base")
 
     def enqueue(self, kind, ticker, raw=None, source_path=None, expected_sha=None):
+        from doxagent.codex_runtime.published_storage import local_body_path, read_local_body
+
         if raw is not None:
             data = raw.encode()
             source_sha = sha(data)
             path = self.root / ".w3-sources" / source_sha
-            for canonical in (
-                self.root.parent / "research" / "published-contents" / source_sha,
-                self.root.parent / "published-contents" / source_sha,
-            ):
-                if canonical.is_file() and sha(canonical.read_bytes()) == source_sha:
+            for directory in (self.root.parent / 'research', self.root.parent):
+                compressed = local_body_path(directory, source_sha, compressed=True)
+                canonical = compressed if compressed.is_file() else local_body_path(
+                    directory, source_sha, compressed=False,
+                )
+                if canonical.is_file() and read_local_body(canonical, source_sha) == data:
                     path = canonical
                     break
             if not path.exists():
@@ -280,7 +283,9 @@ class W3ResearchStore:
                     )
                 return identity
             try:
-                raw = Path(row["source_path"]).read_bytes()
+                from doxagent.codex_runtime.published_storage import read_local_body
+
+                raw = read_local_body(Path(row['source_path']), row['source_sha'])
                 if sha(raw) != row["source_sha"]:
                     raise ValueError("research source checksum mismatch")
                 text = raw.decode()

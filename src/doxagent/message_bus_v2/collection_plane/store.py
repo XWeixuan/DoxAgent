@@ -255,7 +255,12 @@ class AcquisitionStore:
         )
         sql = """INSERT INTO units VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(binding_id,unit) DO UPDATE SET
                required=excluded.required,generation=excluded.generation,state=excluded.state,
-               input_key=coalesce(excluded.input_key,units.input_key),head_json=excluded.head_json"""
+               input_key=coalesce(excluded.input_key,units.input_key),head_json=excluded.head_json
+               WHERE units.required IS NOT excluded.required
+                  OR units.generation IS NOT excluded.generation
+                  OR units.state IS NOT excluded.state
+                  OR units.input_key IS NOT coalesce(excluded.input_key,units.input_key)
+                  OR units.head_json IS NOT excluded.head_json"""
         if db is not None:
             if checkpoint:db.execute('INSERT INTO physical_checkpoints VALUES(?,?) ON CONFLICT(identity) DO UPDATE SET '
                 'checkpoint=excluded.checkpoint WHERE checkpoint!=excluded.checkpoint',checkpoint)
@@ -325,12 +330,17 @@ class AcquisitionStore:
             "winning_request_id": winning.get("physical_request_id") if winning else None,
             "listing_received_at": winning.get("response_received_at") if winning else None,
         }
-        if source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION:
-            proof['wire_observation']=state.get('wire_observation',{})
+        diagnostic = {}
+        if source.acquisition_mode == AcquisitionMode.MASSIVE_DISTRIBUTION and state.get('wire_observation'):
+            diagnostic['wire_observation'] = state['wire_observation']
+        if not valid and state.get('http_timing'):
+            diagnostic['http_timing'] = state['http_timing']
+        operational_state = {key: value for key, value in state.items()
+                             if key not in {'wire_observation', 'http_timing'}}
         with self.connect(write=True) as db:
             db.execute('INSERT INTO physical_cycles VALUES(?,?,?) ON CONFLICT(run_id) DO UPDATE SET '
                 'finished_at=excluded.finished_at,requests_json=excluded.requests_json',(run_id,now,canonical_json(requests)))
-            for target in targets:
+            for index, target in enumerate(targets):
                 previous = db.execute(
                     "SELECT data_json FROM cycles WHERE run_id=?",
                     (run_id + ":" + target.binding_id,),
@@ -341,8 +351,8 @@ class AcquisitionStore:
                     "terminal_error_message": state.get("last_error_message") if reason else None,
                     "attempt_finished": True,
                 }
-                if not valid and state.get('http_timing'):
-                    target_proof['http_timing'] = state['http_timing']
+                if index == 0:
+                    target_proof.update(diagnostic)
                 if not target_proof["list_validated"] and prior_proof.get("list_validated"):
                     target_proof.update(
                         {
@@ -385,7 +395,9 @@ class AcquisitionStore:
                 if current.get('checkpoint_ref'):
                     cp=db.execute('SELECT checkpoint FROM physical_checkpoints WHERE identity=?',(current.pop('checkpoint_ref'),)).fetchone()
                     current['checkpoint']=json.loads(cp[0]) if cp else {}
-                current.update(state)
+                current.pop('wire_observation', None)
+                current.pop('http_timing', None)
+                current.update(operational_state)
                 if target_proof["list_validated"]:
                     current.update(
                         last_capture_at=target_proof["listing_received_at"], last_success_at=now

@@ -4,7 +4,16 @@ from datetime import UTC, datetime, timedelta
 import json
 from pathlib import Path
 import shutil
+import sqlite3
 import time
+
+
+HOT_EXPIRY_INDEX = 'v2_source_outbox_expiry'
+
+
+def migrate_expiry_index(db):
+    if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='v2_source_outbox'").fetchone():
+        db.execute(f'CREATE INDEX IF NOT EXISTS {HOT_EXPIRY_INDEX} ON v2_source_outbox(julianday(recorded_at),seq)')
 
 
 def migrate(db):
@@ -167,23 +176,31 @@ def sync_business_facts(source, store, *, budget=None):
     return complete
 
 
-def expire(source, *, now=None, limit=500):
+def expire(source, *, now=None, limit=500, hot_only=False):
     """Bounded scan, including old archives; one repair pins one packet only."""
     if not 1 <= limit <= 500:raise ValueError('invalid expiry batch')
-    now=now or datetime.now(UTC);before=now-timedelta(days=7)
+    now = now or datetime.now(UTC)
+    before = now - timedelta(days=2 if source.source in {'research', 'bus'} else 7)
     report=dict(expired=0,exceptions=0,scanned=0,files=0)
     # The capture contract and the immutable business tables remain in place.
     # Expiry never changes domain rows, capture epoch or source head.
-    if not source.capture():raise ValueError('current source capture metadata required')
+    capture = source.capture()
+    if not capture:
+        raise ValueError('current source capture metadata required')
     # Prepare archived packets and pinned exception payloads without the writer.
     with closing(source.connection()) as db:
-        tables = ["v2_source_outbox", "v2_receipt_archive"]
-        if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():
-            tables.append("v2_receipt_packs")
+        tables = ["v2_source_outbox"]
+        if not hot_only:
+            tables.append("v2_receipt_archive")
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():
+                tables.append("v2_receipt_packs")
         has_gc_state = db.execute(
             "SELECT 1 FROM sqlite_master WHERE name='v2_transport_gc_state'"
         ).fetchone()
         cursors = dict(db.execute("SELECT kind,cursor FROM v2_transport_gc_state")) if has_gc_state else {}
+        indexed_hot = not hot_only and bool(db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='index' AND name=?", (HOT_EXPIRY_INDEX,)
+        ).fetchone())
         ack = db.execute("SELECT min(checkpoint) FROM v2_source_consumers").fetchone()[0]
         if ack is None:
             return report
@@ -193,10 +210,26 @@ def expire(source, *, now=None, limit=500):
         pack_cache = {}
         pages = {}
         for table in tables:
-            rows = db.execute(
-                "SELECT * FROM " + table + " WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?",
-                (cursors.get(table, 0), floor, limit),
-            ).fetchall()
+            if table == 'v2_source_outbox' and indexed_hot:
+                cutoff_deadline = time.monotonic() + .05
+                db.set_progress_handler(lambda: time.monotonic() >= cutoff_deadline, 1000)
+                try:
+                    rows = db.execute(
+                        "SELECT * FROM v2_source_outbox WHERE julianday(recorded_at)<julianday(?) "
+                        "AND seq<=? ORDER BY julianday(recorded_at),seq LIMIT ?",
+                        (before.isoformat(), floor, limit),
+                    ).fetchall()
+                except sqlite3.OperationalError as exc:
+                    if exc.sqlite_errorcode != sqlite3.SQLITE_INTERRUPT:
+                        raise
+                    indexed_hot = False  # A lagging ACK can make the time index unselective.
+                finally:
+                    db.set_progress_handler(None, 0)
+            if table != 'v2_source_outbox' or not indexed_hot:
+                rows = db.execute(
+                    "SELECT * FROM " + table + " WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?",
+                    (cursors.get(table, 0), floor, limit),
+                ).fetchall()
             prepared = []
             for row in rows:
                 seq = row["seq"]
@@ -215,7 +248,14 @@ def expire(source, *, now=None, limit=500):
             pages[table] = prepared
 
     with closing(source.connection(write=True)) as db, db:
-        db.execute('BEGIN IMMEDIATE');migrate(db)
+        if hot_only:
+            db.execute('PRAGMA busy_timeout=0')
+        db.execute('BEGIN IMMEDIATE')
+        epoch = db.execute('SELECT epoch FROM v2_source_state WHERE source=?', (source.source,)).fetchone()
+        if not epoch or epoch[0] != capture['source_epoch']:
+            return report
+        if not has_gc_state:
+            migrate(db)
         # Only the temporary importer prefix has a bounded lease. A killed
         # importer must not pin a suffix forever; ordinary Read consumers are
         # retired explicitly by their generation owner.
@@ -233,8 +273,9 @@ def expire(source, *, now=None, limit=500):
         pins={r[0] for r in db.execute('SELECT seq FROM v2_source_exception_pins')}
         for table, prepared in pages.items():
             cursor = cursors.get(table, 0)
+            use_cursor = table != 'v2_source_outbox' or not indexed_hot
             db.execute("INSERT OR IGNORE INTO v2_transport_gc_state(kind) VALUES(?)", (table,))
-            if db.execute("SELECT cursor FROM v2_transport_gc_state WHERE kind=?", (table,)).fetchone()[0] != cursor:
+            if use_cursor and db.execute("SELECT cursor FROM v2_transport_gc_state WHERE kind=?", (table,)).fetchone()[0] != cursor:
                 continue
             last = 0 if not prepared else cursor
             for row, recent, raw_json, hashes in prepared:
@@ -265,7 +306,10 @@ def expire(source, *, now=None, limit=500):
                         db.execute('INSERT OR IGNORE INTO v2_transport_files_exit VALUES(?,?,?)',(folder,row['digest'],time.time()+300))
                 db.execute('UPDATE v2_transport_gc_state SET expired_floor=max(expired_floor,?) WHERE kind=?',(row['seq'],table))
                 report['expired']+=1
-            db.execute('UPDATE v2_transport_gc_state SET cursor=? WHERE kind=?',(last,table))
+            if use_cursor:
+                db.execute('UPDATE v2_transport_gc_state SET cursor=? WHERE kind=? AND cursor IS NOT ?', (last, table, last))
+        if hot_only:
+            return report
         for seq, in db.execute('SELECT seq FROM v2_source_exception_receipts WHERE NOT EXISTS(SELECT 1 FROM v2_source_exception_pins p WHERE p.seq=v2_source_exception_receipts.seq) LIMIT ?',(limit,)).fetchall():
             db.execute('DELETE FROM v2_source_exception_receipts WHERE seq=?',(seq,))
             db.execute("DELETE FROM artifact_ref WHERE owner_type='transport_exception' AND owner_id=?",(str(seq),))

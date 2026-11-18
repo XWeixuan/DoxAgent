@@ -207,9 +207,10 @@ class SourceOutbox:
             from .artifact_registry import native_triggers
 
             migrate_artifacts(db)
-            from .source_lifecycle import migrate as migrate_lifecycle
+            from .source_lifecycle import migrate as migrate_lifecycle, migrate_expiry_index
 
             migrate_lifecycle(db)
+            migrate_expiry_index(db)
             names.add('v2_source_receipts')
             for native_table in sorted(names):
                 if native_table.startswith("sqlite_"):

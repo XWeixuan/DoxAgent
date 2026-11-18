@@ -11,6 +11,7 @@ from pathlib import Path
 from uuid import uuid4
 
 CHUNK = 131072
+SINGLE_FILE = 'body.v2.gz'
 
 class ContentUnavailable(ValueError):
     """Missing or corrupt immutable business content; retry cannot repair it."""
@@ -27,6 +28,48 @@ class ContentFiles:
             raise ValueError("invalid content identity")
         return self.root / identity[:2] / identity
 
+    def link_single(self, source: Path, identity: str) -> bool:
+        """Share validated small published bytes on the same filesystem."""
+        if source.is_symlink() or not source.is_file():
+            return False
+        target = self._path(identity)
+        if target.exists():
+            return True
+        target.parent.mkdir(parents=True, exist_ok=True)
+        pending = target.with_name(f'.{identity}.{uuid4().hex}')
+        pending.mkdir()
+        try:
+            try:
+                os.link(source, pending / SINGLE_FILE)
+            except OSError:
+                return target.exists()
+            self._read_single(pending, identity)
+            self._publish(pending, target)
+            return True
+        finally:
+            if pending.exists():
+                shutil.rmtree(pending)
+
+    @staticmethod
+    def _publish(temporary: Path, target: Path) -> None:
+        if os.name != 'nt':
+            fd = os.open(temporary, os.O_RDONLY)
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+        try:
+            temporary.rename(target)
+        except OSError:
+            if not target.exists():
+                raise
+        if os.name != 'nt':
+            fd = os.open(target.parent, os.O_RDONLY)
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+
     def put(self, raw: bytes) -> str:
         identity = hashlib.sha256(raw).hexdigest()
         target = self._path(identity)
@@ -37,28 +80,24 @@ class ContentFiles:
         temporary.mkdir()
         try:
             blocks = []
-            for offset in range(0, len(raw), CHUNK):
-                chunk = raw[offset:offset + CHUNK]
-                blocks.append(hashlib.sha256(chunk).hexdigest())
-                with (temporary / str(offset // CHUNK)).open("xb") as stream:
-                    stream.write(gzip.compress(chunk, mtime=0))
+            if len(raw) <= CHUNK and os.getenv('DOXAGENT_CONTENT_SINGLE_FILE') == '1':
+                with (temporary / SINGLE_FILE).open('xb') as stream:
+                    stream.write(gzip.compress(raw, mtime=0))
                     stream.flush()
                     os.fsync(stream.fileno())
-            with (temporary / "manifest.json").open("x", encoding="utf-8") as stream:
-                json.dump({"version": 1, "size": len(raw), "sha256": identity, "chunks": blocks}, stream)
-                stream.flush()
-                os.fsync(stream.fileno())
-            try:
-                temporary.rename(target)
-            except OSError:
-                if not target.exists():
-                    raise
-            if os.name != "nt":
-                fd = os.open(target.parent, os.O_RDONLY)
-                try:
-                    os.fsync(fd)
-                finally:
-                    os.close(fd)
+            else:
+                for offset in range(0, len(raw), CHUNK):
+                    chunk = raw[offset:offset + CHUNK]
+                    blocks.append(hashlib.sha256(chunk).hexdigest())
+                    with (temporary / str(offset // CHUNK)).open("xb") as stream:
+                        stream.write(gzip.compress(chunk, mtime=0))
+                        stream.flush()
+                        os.fsync(stream.fileno())
+                with (temporary / "manifest.json").open("x", encoding="utf-8") as stream:
+                    json.dump({"version": 1, "size": len(raw), "sha256": identity, "chunks": blocks}, stream)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            self._publish(temporary, target)
             return identity
         finally:
             if temporary.exists():
@@ -69,7 +108,7 @@ class ContentFiles:
         check_deadline()
         try:
             return self._read(identity, offset, size)
-        except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        except (OSError, EOFError, ValueError, KeyError, IndexError, TypeError) as exc:
             raise ContentUnavailable() from exc
 
     def read_all(self, identity: str) -> bytes:
@@ -77,6 +116,9 @@ class ContentFiles:
         from .query_budget import check_deadline
         try:
             path = self._path(identity)
+            if (path / SINGLE_FILE).is_file():
+                check_deadline()
+                return self._read_single(path, identity)
             manifest = json.loads((path / "manifest.json").read_text(encoding="utf-8"))
             if manifest["version"] != 1 or manifest["sha256"] != identity:
                 raise ContentUnavailable()
@@ -93,14 +135,24 @@ class ContentFiles:
             if len(raw) != manifest["size"] or digest.hexdigest() != identity:
                 raise ContentUnavailable()
             return raw
-        except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        except (OSError, EOFError, ValueError, KeyError, IndexError, TypeError) as exc:
             raise ContentUnavailable() from exc
+
+    @staticmethod
+    def _read_single(path: Path, identity: str) -> bytes:
+        with gzip.open(path / SINGLE_FILE, 'rb') as stream:
+            raw = stream.read(CHUNK + 1)
+        if len(raw) > CHUNK or hashlib.sha256(raw).hexdigest() != identity:
+            raise ContentUnavailable()
+        return raw
 
     def _read(self, identity: str, offset: int, size: int) -> bytes:
         from .query_budget import check_deadline
         if offset < 0 or not 0 < size <= CHUNK:
             raise ValueError("invalid content range")
         path = self._path(identity)
+        if (path / SINGLE_FILE).is_file():
+            return self._read_single(path, identity)[offset:offset + size]
         manifest = json.loads((path / "manifest.json").read_text(encoding="utf-8"))
         if manifest["version"] != 1 or manifest["sha256"] != identity:
             raise ValueError("content manifest mismatch")
@@ -117,6 +169,19 @@ class ContentFiles:
         start = offset % CHUNK
         return b"".join(chunks)[start:start + end - offset]
 
+    def verify(self, identity: str) -> int:
+        path = self._path(identity)
+        if (path / SINGLE_FILE).is_file():
+            return len(self._read_single(path, identity))
+        manifest = json.loads((path / 'manifest.json').read_text(encoding='utf-8'))
+        size = manifest['size']
+        digest = hashlib.sha256()
+        for offset in range(0, size, CHUNK):
+            digest.update(self.read(identity, offset, CHUNK))
+        if digest.hexdigest() != identity:
+            raise ValueError('content verification failed')
+        return size
+
     def backup(self, database: Path, destination: Path) -> None:
         """Copy precisely the content referenced by an already consistent DB backup."""
         import sqlite3
@@ -130,19 +195,16 @@ class ContentFiles:
     def copy(self, identities, destination: Path) -> None:
         for identity in identities:
             source = self._path(identity)
-            manifest = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
-            digest = hashlib.sha256()
-            for offset in range(0, manifest["size"], CHUNK):
-                digest.update(self.read(identity, offset, CHUNK))
-            if digest.hexdigest() != identity:
-                raise ValueError("backup content verification failed")
-            target = ContentFiles(destination)._path(identity)
+            size = self.verify(identity)
+            copied = ContentFiles(destination)
+            target = copied._path(identity)
             target.parent.mkdir(parents=True, exist_ok=True)
             if source.resolve() != target.resolve():
-                shutil.copytree(source, target, dirs_exist_ok=True)
-            copied = ContentFiles(destination)
-            verified = hashlib.sha256()
-            for offset in range(0, manifest["size"], CHUNK):
-                verified.update(copied.read(identity, offset, CHUNK))
-            if verified.hexdigest() != identity:
+                try:
+                    valid_copy = copied.verify(identity) == size
+                except (OSError, EOFError, ValueError):
+                    valid_copy = False
+                if not valid_copy:
+                    shutil.copytree(source, target, dirs_exist_ok=True)
+            if copied.verify(identity) != size:
                 raise ValueError("copied content verification failed")

@@ -35,9 +35,8 @@ def migrate(db):
 
 def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
     """Current owners replace their references; deleted owners release them."""
-    # A table can have several JSON columns. Rebuild all of its references in
-    # one trigger, otherwise updates of two columns can erase each other's refs.
-    for name, in db.execute("SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE ?", ("v2_artifact_"+table+"_%",)).fetchall():
+    # Compare the union of JSON columns so a hash shared by two fields remains owned.
+    for name, in db.execute("SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name=? AND name GLOB ?", (table,"v2_artifact_"+table+"_*",)).fetchall():
         db.execute("DROP TRIGGER "+quoted(name))
     assert classification in {'BUSINESS', 'SERVING'}
     old_identity=identity.replace('NEW.','OLD.')
@@ -51,10 +50,15 @@ def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
     hashes=' UNION '.join(queries)
     for operation in ('INSERT','UPDATE'):
         event='UPDATE OF '+','.join(map(quoted,columns)) if operation=='UPDATE' else 'INSERT'
-        clear=("DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+";") if operation=='UPDATE' else ''
+        clear = ''
+        if operation == 'UPDATE':
+            clear = ("DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+
+                     " AND ("+old_identity+" IS NOT "+identity+" OR artifact_id NOT IN ("+hashes+"));")
+        unowned = ("NOT EXISTS(SELECT 1 FROM artifact_ref WHERE owner_type='"+table+
+                   "' AND owner_id="+identity+" AND artifact_id=n.value)")
         db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_'+operation)+" AFTER "+event+" ON "+quoted(table)+" BEGIN "+clear+
-            "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'"+classification+"',strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM ("+hashes+") WHERE 1 "+conflict+"; "+
-            "INSERT INTO artifact_ref SELECT '"+table+"',"+identity+",value FROM ("+hashes+") WHERE 1 ON CONFLICT DO NOTHING; END")
+            "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'"+classification+"',strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM ("+hashes+") n WHERE "+unowned+" "+conflict+"; "+
+            "INSERT INTO artifact_ref SELECT '"+table+"',"+identity+",value FROM ("+hashes+") n WHERE "+unowned+" ON CONFLICT DO NOTHING; END")
     db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_DELETE')+" AFTER DELETE ON "+quoted(table)+" BEGIN DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+"; END")
 
 
@@ -153,6 +157,7 @@ def collect_diagnostics(store, *, now, limit=10):
 def inventory(store, *, limit=1000):
     """Register preexisting material without guessing that it is disposable."""
     import re
+    from .content_files import ContentFiles, SINGLE_FILE
     from .repository import instant
     from datetime import datetime, UTC
     inspected = []
@@ -162,20 +167,25 @@ def inventory(store, *, limit=1000):
     last = after
     for folder in ("content-files", "native-files"):
         root = store.path.parent / folder
-        for path in sorted(root.glob("*/*/manifest.json")):
+        for path in sorted({p.parent for p in root.glob('*/*/manifest.json')} |
+                           {p.parent for p in root.glob(f'*/*/{SINGLE_FILE}')}):
             if len(inspected) >= limit:
                 break
-            coordinate = folder + "/" + path.parent.name
+            coordinate = folder + "/" + path.name
             if coordinate <= after:
                 continue
-            identity = path.parent.name
+            identity = path.name
             last = coordinate
             if not re.fullmatch("[0-9a-f]{64}", identity):
                 continue
-            value = json.loads(path.read_text(encoding="utf-8"))
-            if value.get("sha256") != identity:
-                raise ValueError("content inventory identity mismatch")
-            inspected.append((identity, value["size"], str(path.parent.relative_to(store.path.parent))))
+            if (path / SINGLE_FILE).is_file():
+                size = ContentFiles(root).verify(identity)
+            else:
+                value = json.loads((path / 'manifest.json').read_text(encoding='utf-8'))
+                if value.get('sha256') != identity:
+                    raise ValueError('content inventory identity mismatch')
+                size = value['size']
+            inspected.append((identity, size, str(path.relative_to(store.path.parent))))
     with store.connect(write=True) as db:
         db.execute("INSERT INTO read_meta VALUES('artifact_inventory_after',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (last if len(inspected)>=limit else "",))
         for identity, size, location in inspected:
@@ -202,11 +212,20 @@ def register_diagnostic(store, path, *, created_at, producer, identity):
 
 def upgrade_native_trigger_conflicts(db):
     """Small transactional DDL repair; leaves all rows and capture identities intact."""
-    rows = db.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name LIKE 'v2_artifact_%'").fetchall()
-    for name, sql in rows:
+    rows = db.execute("SELECT name,tbl_name,sql FROM sqlite_master WHERE type='trigger' AND name GLOB 'v2_artifact_*'").fetchall()
+    for name, _, sql in rows:
         if "INSERT OR IGNORE INTO artifact" not in sql:
             continue
         fixed = sql.replace("INSERT OR IGNORE INTO artifact", "INSERT INTO artifact").replace(
             "WHERE key='$doxagent_content_v1';", "WHERE key='$doxagent_content_v1' ON CONFLICT DO NOTHING;")
         db.execute("DROP TRIGGER " + quoted(name))
         db.execute(fixed)
+    for name, table, sql in rows:
+        prefix = f"INSERT INTO artifact_ref SELECT '{table}',"
+        if name != f'v2_artifact_{table}_UPDATE' or prefix not in sql or 'artifact_id NOT IN (' in sql:
+            continue
+        identity = sql.split(prefix, 1)[1].split(',value FROM (', 1)[0]
+        header = sql.split(' AFTER UPDATE OF ', 1)[1].split(' ON ', 1)[0]
+        columns = [name.strip('"') for name in header.split(',')]
+        classification = 'SERVING' if "'SERVING',strftime" in sql else 'BUSINESS'
+        native_triggers(db, table, columns, identity, classification=classification)

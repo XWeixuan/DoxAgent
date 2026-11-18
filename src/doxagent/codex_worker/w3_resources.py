@@ -270,7 +270,11 @@ def gc_derivatives(store, *, apply=False):
         source = Path(row['source_path'])
         if not path.is_dir() or path.is_symlink() or not source.is_file():
             continue
-        if sha(source.read_bytes()) != row['source_sha']:
+        from doxagent.codex_runtime.published_storage import read_local_body
+
+        try:
+            read_local_body(source, row['source_sha'])
+        except (OSError, ValueError):
             continue
         candidates.append(str(path))
         if not apply:

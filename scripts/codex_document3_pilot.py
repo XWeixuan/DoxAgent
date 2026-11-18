@@ -11,10 +11,14 @@ from doxagent.codex_runtime.client import HttpCodexWorkerClient
 from doxagent.codex_runtime.config import CodexRuntimeConfig
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.codex_document3.pilot import Document3PilotEvaluator
+from doxagent.workflows.codex_document3.state_v21 import StateV21
 
 
 async def _run(run_id: str, output: Path | None, orchestration_version: str = "v2") -> int:
-    config = CodexRuntimeConfig.from_settings(DoxAgentSettings())
+    settings = DoxAgentSettings()
+    config = CodexRuntimeConfig.from_settings(settings)
+    path = Path(settings.codex_runtime_sqlite_path)
+    state = StateV21(path, read_only=True) if orchestration_version == "v2.1" and path.is_file() else None
     if not config.worker_bearer_token or not config.capability_secret:
         raise ValueError("Codex worker credentials are required")
     client = HttpCodexWorkerClient(
@@ -23,7 +27,7 @@ async def _run(run_id: str, output: Path | None, orchestration_version: str = "v
         capability_secret=config.capability_secret,
     )
     try:
-        report = await Document3PilotEvaluator(client).evaluate(
+        report = await Document3PilotEvaluator(client, state=state).evaluate(
             run_id, orchestration_version=orchestration_version
         )
     finally:

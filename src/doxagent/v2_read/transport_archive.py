@@ -85,17 +85,24 @@ def main():
     parser.add_argument('--source', action='append', default=[])
     parser.add_argument('--checkpoint-root', type=Path, default=Path('/data/storage-archive/checkpoints'))
     parser.add_argument('--once', action='store_true')
+    parser.add_argument('--install-expiry-index', action='store_true')
     args = parser.parse_args()
     sources = [SourceOutbox(path, name) for name, path in (item.split('=', 1) for item in args.source)]
     for source in sources:
         if source.capture() is None:raise ValueError('source transport requires explicit migration: '+source.source)
+    if args.install_expiry_index:
+        from contextlib import closing
+
+        from .source_lifecycle import migrate_expiry_index
+
+        for source in sources:
+            with closing(source.connection(write=True)) as db, db:
+                migrate_expiry_index(db)
+        return
     capacity_at=0
     while True:
         from doxagent.message_bus_v2.pressure import background_allowed
-        if not args.once and not background_allowed():
-            print(json.dumps({'maintenance':'transport_expiry','deferred':'MESSAGE_PIPELINE_RESOURCE_RESERVE'}),flush=True)
-            time.sleep(15)
-            continue
+        constrained = not args.once and not background_allowed()
         started = time.monotonic()
         result = {}
         for source in sources:
@@ -106,16 +113,19 @@ def main():
             while time.monotonic() - source_started < 2 / max(1, len(sources)):
                 try:
                     from .source_lifecycle import expire
-                    batch = expire(source,limit=64)
+                    batch = expire(source, limit=4 if constrained else 64, hot_only=constrained)
                     changed = batch['expired']
                     scanned += batch['scanned']
                 except (sqlite3.OperationalError, OSError, ValueError) as exc:
                     error = str(exc)
                     break
                 count += changed
-                if not changed:
+                if constrained or not batch['scanned']:
                     break
             result[source.source] = dict(expired=count,scanned=scanned,error=error)
+            if constrained:
+                result[source.source]['native_deferred'] = 'MESSAGE_PIPELINE_RESOURCE_RESERVE'
+                continue
             if source.source=='bus' and time.monotonic()>=capacity_at:
                 from .storage_status import capacity
                 try:result[source.source]['capacity']=capacity(source)

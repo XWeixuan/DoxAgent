@@ -668,7 +668,7 @@ class RuntimeJournal:
 
     def set(self, namespace: str, key: str, value: Any) -> None:
         payload = (
-            self.content.encode(value)
+            self.content.encode(value, keep=('before', 'after') if namespace == 'reference_deliveries' else ())
             if namespace
             in {
                 "worker_requests",
@@ -676,6 +676,8 @@ class RuntimeJournal:
                 "round_inputs",
                 "worker_invocations",
                 "sweep_bundle",
+                "reference_baselines",
+                "reference_deliveries",
             }
             else encode(value)
         )

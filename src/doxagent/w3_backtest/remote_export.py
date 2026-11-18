@@ -245,6 +245,10 @@ if __name__ == "__main__":
             ).fetchone()
             doc = load(row[0])
             text = doc.get("content_text")
+            if text is None and doc.get('local_content_codec') is not None:
+                from doxagent.codex_runtime.published_storage import load_published_body
+
+                text = load_published_body(ROOT / 'research', doc).decode('utf-8')
             if text is None:
                 path = doc.get("storage_path")
                 text = (ROOT / path.removeprefix("/data/")).read_text() if path else None

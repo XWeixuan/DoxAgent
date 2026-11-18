@@ -40,6 +40,7 @@ class ProfileSnapshotManager:
         self.snapshot_root.mkdir(parents=True, exist_ok=True)
         self._batch_lock = threading.Lock()
         self._registry_hashes = {}
+        self._next_registry_prune = 0.0
 
     @staticmethod
     def _hash(path: Path) -> str:
@@ -246,16 +247,18 @@ class ProfileSnapshotManager:
             if archive.is_file():
                 archive.unlink()
             manifest.unlink()
-        references = set()
-        for manifest in self.snapshot_root.glob("*.tar.json"):
-            references.add(json.loads(manifest.read_text(encoding="utf-8")).get("registry_backup"))
-        for registry in self.snapshot_root.glob("registry-*.sqlite3"):
-            if (
-                registry.name not in references
-                and time.time() - registry.stat().st_mtime > 7 * 86400
-            ):
-                registry.unlink()
-                self._registry_hashes.pop(registry, None)
+        with self._batch_lock:
+            if time.monotonic() < self._next_registry_prune:
+                return
+            references = {
+                json.loads(manifest.read_text(encoding='utf-8')).get('registry_backup')
+                for manifest in self.snapshot_root.glob('*.tar.json')
+            }
+            for registry in self.snapshot_root.glob('registry-*.sqlite3'):
+                if registry.name not in references and time.time()-registry.stat().st_mtime > 7*86400:
+                    registry.unlink()
+                    self._registry_hashes.pop(registry, None)
+            self._next_registry_prune = time.monotonic() + 3600
 
 
 __all__ = ["ProfileSnapshotManager"]

@@ -139,6 +139,8 @@ def reconcile(source, *, limit=64, seconds=.3):
 
 def inventory(source, *, limit=64):
     """Register only verified-format native CAS paths, including abandoned puts."""
+    from .content_files import ContentFiles, SINGLE_FILE
+
     root = source.path.parent / "native-files"
     with closing(source.connection()) as db:
         if db.execute("SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1").fetchone():
@@ -157,14 +159,20 @@ def inventory(source, *, limit=64):
             if path.name[:2] != prefix.name:
                 raise ValueError("native CAS prefix mismatch")
             manifest = path / "manifest.json"
+            single = path / SINGLE_FILE
             try:
-                value = json.loads(manifest.read_text(encoding="utf-8"))
-                created = datetime.fromtimestamp(manifest.stat().st_mtime, UTC).isoformat()
+                if single.is_file() and not single.is_symlink():
+                    size = ContentFiles(root).verify(path.name)
+                    created = datetime.fromtimestamp(single.stat().st_mtime, UTC).isoformat()
+                else:
+                    value = json.loads(manifest.read_text(encoding="utf-8"))
+                    if value.get("sha256") != path.name or value.get("version") != 1:
+                        raise ValueError("native inventory manifest mismatch")
+                    size = value['size']
+                    created = datetime.fromtimestamp(manifest.stat().st_mtime, UTC).isoformat()
             except FileNotFoundError:
                 continue
-            if value.get("sha256") != path.name or value.get("version") != 1:
-                raise ValueError("native inventory manifest mismatch")
-            prepared.append((path.name, value["size"], created))
+            prepared.append((path.name, size, created))
             if len(prepared) >= limit:
                 break
         if len(prepared) >= limit:
@@ -192,9 +200,24 @@ def inventory(source, *, limit=64):
 
 def collect(source, *, now=None, limit=32):
     """Current/immutable/transport/hold refs protect files; unowned puts get 7d."""
+    from doxagent.trade_execution.worker import WriterLock
+
+    # Serialize collectors for this file pool across the post-commit delete.
+    # Publishers continue to use their ordinary SQLite writer and state guards.
+    try:
+        with WriterLock(source.path.parent / 'native-collection'):
+            return _collect(source, now=now, limit=limit)
+    except RuntimeError as exc:
+        if str(exc) != 'EXECUTOR_ALREADY_RUNNING':
+            raise
+        return dict(quarantined=0, deleted=0, allocated=0, deferred='collector_active')
+
+
+def _collect(source, *, now, limit):
     now=now or datetime.now(UTC);report=dict(quarantined=0,deleted=0,allocated=0)
     protected="EXISTS(SELECT 1 FROM artifact_ref r WHERE r.artifact_id=a.id) OR EXISTS(SELECT 1 FROM retention_hold h WHERE h.released_at IS NULL AND (h.scope='ALL' OR h.id=a.id))"
     root=source.path.parent.resolve();quarantine=root/'native-quarantine'
+    claimed = []
     cutoff = (now - timedelta(days=7)).isoformat()
     with closing(source.connection()) as db:
         if not db.execute("SELECT 1 FROM v2_native_ref_scan LIMIT 1").fetchone() or db.execute(
@@ -294,11 +317,27 @@ def collect(source, *, now=None, limit=32):
             if not_before<0 and db.execute("SELECT 1 FROM artifact WHERE id=? AND state='LIVE'",(digest,)).fetchone():
                 continue  # Pending explicit exits have not entered quarantine yet.
             if not_before>time.time():continue
+            # The existing reference and hold guards reject new protection in
+            # DELETING. The canonical path is never removed here. A concurrent
+            # publisher can prepare it and retry its reference after finalization.
+            db.execute("UPDATE artifact SET state='DELETING' WHERE id=?", (digest,))
+            claimed.append((digest, q))
+            break
+    for digest, q in claimed:
+        allocated = 0
+        try:
+            for child in q.iterdir():
+                if child.is_file():
+                    info = child.stat()
+                    allocated += getattr(info, 'st_blocks', (info.st_size + 511) // 512) * 512
+            shutil.rmtree(q)
+        except FileNotFoundError:
             if q.exists():
-                for f in q.iterdir():
-                    if f.is_file():
-                        stat=f.stat();report['allocated']+=getattr(stat,'st_blocks',(stat.st_size+511)//512)*512
-                shutil.rmtree(q)
-            db.execute("UPDATE artifact SET state='DELETED' WHERE id=?",(digest,))
-            db.execute('DELETE FROM v2_native_exit WHERE id=?',(digest,));report['deleted']+=1
+                raise
+        with closing(source.connection(write=True)) as db, db:
+            db.execute('BEGIN IMMEDIATE')
+            if db.execute("UPDATE artifact SET state='DELETED' WHERE id=? AND state='DELETING'", (digest,)).rowcount:
+                db.execute('DELETE FROM v2_native_exit WHERE id=?', (digest,))
+                report['deleted'] += 1
+                report['allocated'] += allocated
     return report

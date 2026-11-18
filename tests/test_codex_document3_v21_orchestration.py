@@ -1038,7 +1038,14 @@ async def test_crlf_material_and_pilot_explicit_state_binding(rig, tmp_path):
         result.run_id, "context/document3/v21/shared/additional/0000.txt"
     )
     assert file.content == "unchanged\r\noriginal\r\n" and file.sha256 == digest(file.content)
-    report = await Document3PilotEvaluator(rig.workspace).evaluate(
+    assert all(
+        item.relative_path != "artifacts/document3/v21_state.json"
+        and not item.relative_path.startswith("output/final/")
+        for item in (await rig.workspace.inventory(result.run_id)).files
+    )
+    report = await Document3PilotEvaluator(
+        rig.workspace, state=StateV21(rig.state.path, read_only=True)
+    ).evaluate(
         result.run_id, orchestration_version="v2.1"
     )
     assert (

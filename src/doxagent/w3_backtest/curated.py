@@ -130,7 +130,10 @@ for row in rt.execute(query+','.join('?'*len(IDS))+')',IDS):
   row2=research.execute("select payload_json from codex_runtime_records "
    "where record_type='published_documents' and run_id=? and record_key=?",(run,aid)).fetchone()
   doc=load(row2[0]);content=doc.get('content_text');path=doc.get('storage_path')
-  if not content and path:content=(ROOT/path.removeprefix('/data/')).read_text()
+  if content is None and doc.get('local_content_codec') is not None:
+   from doxagent.codex_runtime.published_storage import load_published_body
+   content=load_published_body(ROOT/'research',doc).decode('utf-8')
+  if content is None and path:content=(ROOT/path.removeprefix('/data/')).read_text()
   if not content:raise ValueError('published document unavailable: '+str(run))
   texts[name]=content
  emit('case',case=c,research=texts)

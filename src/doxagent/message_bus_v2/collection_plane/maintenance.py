@@ -9,92 +9,162 @@ from ..schema import utc_now, canonical_json
 from ..cadence import cadence
 
 
-def _retire_hour(store, cutoff):
-    deadline = time.monotonic() + .5
-    archive = None
-    cycles = []
+_HOUR_PAGE = 128
+_WINDOW = "binding_id=? AND unit=? AND dispatch_at>=? AND dispatch_at<?"
+_ACTIVE = ("(status='DISPATCHED' OR (status='CAPTURED' AND finished_at IS NULL "
+           "AND coalesce(json_extract(data_json,'$.attempt_finished'),1)=0))")
+_TERMINAL = "status!='SCHEDULE' AND NOT " + _ACTIVE
+
+
+def _retire_hour(store, cutoff, archive_floor, deferred):
     with store.connect() as db:
+        deadline = time.monotonic() + .5
         db.set_progress_handler(lambda: time.monotonic() >= deadline, 1000)
         first = db.execute(
-            "SELECT binding_id,unit,dispatch_at FROM cycles WHERE dispatch_at<? "
-            "AND status NOT IN ('SCHEDULE','DISPATCHED') ORDER BY dispatch_at LIMIT 1",
-            (cutoff,),
+            "SELECT binding_id,unit,dispatch_at FROM cycles WHERE dispatch_at<? AND " + _TERMINAL +
+            " AND NOT EXISTS (SELECT 1 FROM json_each(?) d WHERE "
+            "binding_id=json_extract(d.value,'$[0]') AND unit=json_extract(d.value,'$[1]') "
+            "AND substr(dispatch_at,1,13)=json_extract(d.value,'$[2]')) "
+            "ORDER BY dispatch_at LIMIT 1", (cutoff, canonical_json(sorted(deferred))),
         ).fetchone()
-        if first:
-            binding, unit, at = first
-            start = datetime.fromisoformat(at).replace(minute=0, second=0, microsecond=0)
-            end = start + timedelta(hours=1)
-            known = db.execute(
-                "SELECT 1 FROM unit_hours WHERE binding_id=? AND unit=? AND hour=?",
-                (binding, unit, start.isoformat()),
-            ).fetchone()
-            samples = [
-                dict(r)
-                for r in db.execute(
-                    "SELECT * FROM cycles WHERE binding_id=? AND unit=? "
-                    "AND dispatch_at>=? AND dispatch_at<? AND status NOT IN ('SCHEDULE','DISPATCHED') ORDER BY dispatch_at",
-                    (binding, unit, start.isoformat(), end.isoformat()),
-                )
-            ]
-            if not known:
-                schedules = [
-                    dict(r)
-                    for r in db.execute(
-                        "SELECT * FROM cycles WHERE status='SCHEDULE' AND binding_id=? "
-                        "AND unit=? AND dispatch_at=(SELECT max(dispatch_at) FROM cycles "
-                        "WHERE status='SCHEDULE' AND binding_id=? AND unit=? AND dispatch_at<=?) "
-                        "UNION ALL SELECT * FROM cycles WHERE status='SCHEDULE' AND binding_id=? "
-                        "AND unit=? AND dispatch_at>? AND dispatch_at<? ORDER BY dispatch_at",
-                        (binding, unit, binding, unit, start.isoformat(),
-                         binding, unit, start.isoformat(), end.isoformat()),
-                    )
-                ]
-                physical = {
-                    r[0]: json.loads(r[1])
-                    for r in db.execute(
-                        "SELECT run_id,requests_json FROM physical_cycles "
-                        "WHERE run_id IN (SELECT value FROM json_each(?))",
-                        (
-                            canonical_json(
-                                [json.loads(r["data_json"]).get("physical_run_id") for r in samples]
-                            ),
-                        ),
-                    )
+        if not first:
+            return None
+        binding, unit, at = first
+        start = datetime.fromisoformat(at).replace(minute=0, second=0, microsecond=0)
+        end = start + timedelta(hours=1)
+        key = (binding, unit, at[:13])
+        window = (binding, unit, start.isoformat(), end.isoformat())
+        report = {'binding': binding, 'unit': unit, 'hour': start.isoformat()}
+
+        def defer(reason):
+            deferred.add(key)
+            return {**report, 'deferred': reason}
+
+        seal = None
+        archive = None
+        if end.isoformat() <= archive_floor:
+            # Past the summary window, raw terminal proof needs no new rollup.
+            rows = _exit_rows(db, window)
+        elif known := db.execute(
+            'SELECT data_json FROM unit_hours WHERE binding_id=? AND unit=? AND hour=?',
+            window[:3],
+        ).fetchone():
+            seal = json.loads(known[0]).get('_archive_seal')
+            if seal is None:
+                return defer('legacy_archive')
+            rows = _exit_rows(db, window, seal=seal)
+            if not rows:
+                return defer('late_finish')
+        elif _inflight(db, window):
+            return defer('inflight')
+        else:
+            # The one active hourly scan survives across maintenance calls.
+            # A process restart may replay the read pages. No raw row is
+            # retired until the exact histogram has been committed.
+            work = getattr(store, '_archive_scan', None)
+            if work is None or work['window'] != window:
+                work = store._archive_scan = {
+                    'window': window, 'cursor': ('', ''), 'samples': [],
                 }
-                receipts = []
-                for row in samples:
-                    row.update(json.loads(row.pop("data_json")))
-                    row["requests"] = physical.get(
-                        row.get("physical_run_id"), row.get("requests", [])
-                    )
-                    if row.get("list_validated"):
-                        winner = next(
-                            (
-                                r
-                                for r in row["requests"]
-                                if r["physical_request_id"] == row.get("winning_request_id")
-                            ),
-                            None,
-                        )
-                        if winner:
-                            receipts.append(
-                                {
-                                    **row,
-                                    "observed_at": row["listing_received_at"],
-                                    "request_started_at": winner["request_started_at"],
-                                    "committed_at": row["finished_at"],
-                                }
-                            )
-                stats = cadence(schedules + samples, receipts, start, end)
-                archive = (binding, unit, start.isoformat(), canonical_json(stats))
-            cycles = [r["run_id"] for r in samples[:512]]
-    if not first:
-        return None
+            page = [dict(r) for r in db.execute(
+                'SELECT rowid AS archive_rowid,* FROM cycles WHERE ' + _WINDOW +
+                ' AND ' + _TERMINAL + ' AND (dispatch_at,run_id)>(?,?) '
+                'ORDER BY dispatch_at,run_id LIMIT ?', (*window, *work['cursor'], _HOUR_PAGE),
+            )]
+            _prepare_archive_page(db, page)
+            work['samples'].extend(page)
+            if len(page) == _HOUR_PAGE:
+                last = page[-1]
+                work['cursor'] = (last['dispatch_at'], last['run_id'])
+                return {**report, 'cycles': 0, 'scanned': len(page)}
+            samples = work['samples']
+            store._archive_scan = None
+            if not samples:
+                return defer('source_changed')
+            archive, seal = _hour_stats(db, window, start, end, samples)
+            rows = [(r['run_id'], r['archive_rowid'], r['finished_at']) for r in samples[:512]]
+
     with store.connect(write=True) as db:
-        if archive:
-            db.execute("INSERT OR IGNORE INTO unit_hours VALUES(?,?,?,?)", archive)
-        db.executemany("DELETE FROM cycles WHERE run_id=? AND status!='DISPATCHED'", [(v,) for v in cycles])
-    return {'binding': binding, 'unit': unit, 'hour': start.isoformat(), 'cycles': len(cycles)}
+        if archive is not None:
+            current = db.execute(
+                "SELECT count(*),max(rowid),coalesce(max(finished_at),'') FROM cycles WHERE " +
+                _WINDOW + ' AND ' + _TERMINAL, window,
+            ).fetchone()
+            if list(current) != seal or _inflight(db, window):
+                return defer('source_changed')
+            if not db.execute('INSERT OR IGNORE INTO unit_hours VALUES(?,?,?,?)', archive).rowcount:
+                return defer('already_archived')
+        deleted = db.executemany(
+            'DELETE FROM cycles WHERE run_id=? AND rowid=? AND finished_at IS ? AND ' + _TERMINAL,
+            rows,
+        ).rowcount
+    return {**report, 'cycles': deleted}
+
+
+def _exit_rows(db, window, *, seal=None):
+    age = " AND rowid<=? AND coalesce(finished_at,'')<=?" if seal is not None else ''
+    return db.execute(
+        'SELECT run_id,rowid,finished_at FROM cycles WHERE ' + _WINDOW + ' AND ' + _TERMINAL +
+        age + ' LIMIT 512', (*window, *seal[1:]) if seal is not None else window,
+    ).fetchall()
+
+
+def _inflight(db, window):
+    return db.execute('SELECT 1 FROM cycles WHERE ' + _WINDOW + ' AND ' + _ACTIVE + ' LIMIT 1',
+                      window).fetchone()
+
+
+def _prepare_archive_page(db, rows):
+    identities = set()
+    for row in rows:
+        proof = json.loads(row.pop('data_json'))
+        row.update({key: proof[key] for key in (
+            'physical_run_id', 'required', 'shared_run_id', 'list_validated',
+            'listing_received_at', 'winning_request_id', 'requests',
+        ) if key in proof})
+        if row.get('physical_run_id'):
+            identities.add(row['physical_run_id'])
+    physical = {r[0]: json.loads(r[1]) for r in db.execute(
+        'SELECT run_id,requests_json FROM physical_cycles '
+        'WHERE run_id IN (SELECT value FROM json_each(?))', (canonical_json(sorted(identities)),),
+    )}
+    for row in rows:
+        # The rollup uses listing identities and start times. Keep the source
+        # physical request and the exact cadence calculation unchanged.
+        requests = physical.get(row.get('physical_run_id'), row.get('requests', []))
+        row['requests'] = [
+            {key: r[key] for key in ('physical_request_id', 'request_started_at') if key in r}
+            for r in requests if r.get('role', 'listing') == 'listing'
+        ]
+
+
+def _hour_stats(db, window, start, end, samples):
+    binding, unit, first, last = window
+    schedules = [dict(r) for r in db.execute(
+        "SELECT * FROM cycles WHERE status='SCHEDULE' AND binding_id=? "
+        "AND unit=? AND dispatch_at=(SELECT max(dispatch_at) FROM cycles "
+        "WHERE status='SCHEDULE' AND binding_id=? AND unit=? AND dispatch_at<=?) "
+        "UNION ALL SELECT * FROM cycles WHERE status='SCHEDULE' AND binding_id=? "
+        "AND unit=? AND dispatch_at>? AND dispatch_at<? ORDER BY dispatch_at",
+        (binding, unit, binding, unit, first, binding, unit, first, last),
+    )]
+    for row in schedules:
+        row.update(json.loads(row.pop('data_json')))
+    receipts = []
+    for row in samples:
+        if not row.get('list_validated'):
+            continue
+        winner = next((r for r in row['requests']
+                       if r.get('physical_request_id') == row.get('winning_request_id')), None)
+        if winner and winner.get('request_started_at'):
+            receipts.append({**row, 'observed_at': row['listing_received_at'],
+                             'request_started_at': winner['request_started_at'],
+                             'committed_at': row['finished_at']})
+    stats = cadence(schedules + samples, receipts, start, end)
+    seal = [len(samples), max(r['archive_rowid'] for r in samples),
+            max(r['finished_at'] or '' for r in samples)]
+    stats['_archive_seal'] = seal
+    return (binding, unit, first, canonical_json(stats)), seal
 
 
 def _physical(store, cutoff):
@@ -178,13 +248,15 @@ def _checkpoints(store):
 def maintain(store, *, budget=2, hours=128):
     now = utc_now()
     cutoff = (now-timedelta(hours=48)).replace(minute=0, second=0, microsecond=0).isoformat()
+    archive_floor = (now-timedelta(days=7)).isoformat()
     deadline = time.monotonic()+budget
     report = {'at': now.isoformat(), 'hours': [], 'errors': [], 'stages': {}}
+    deferred = set()
     try:
         for _ in range(hours):
             if time.monotonic() >= deadline:
                 break
-            result = _retire_hour(store, cutoff)
+            result = _retire_hour(store, cutoff, archive_floor, deferred)
             if result is None:
                 break
             report['hours'].append(result)

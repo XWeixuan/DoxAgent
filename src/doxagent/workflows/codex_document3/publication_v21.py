@@ -45,7 +45,10 @@ async def finalize_candidate_v21(
         raise ValueError("V21 candidate requires a completed staged release")
     payload, receipt = staged
     policy = parse_policy_set(payload)
-    projection = parse_runtime_projection(receipt["projection"])
+    projection_file = await workspace.read_text(run_id, receipt["files"]["runtime_projection.json"])
+    projection = parse_runtime_projection(projection_file.content)
+    if "projection" in receipt and projection != parse_runtime_projection(receipt["projection"]):
+        raise ValueError("candidate projection differs from legacy staged receipt")
     from .runtime_projection import project_policy_set_v3
     from .state_v21 import digest
 

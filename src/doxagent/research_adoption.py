@@ -10,7 +10,12 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-from doxagent.codex_runtime.published_storage import cache_local_published_content
+from doxagent.codex_runtime.published_storage import (
+    cache_local_published_content,
+    load_published_body,
+    local_body_refs_enabled,
+    put_local_body,
+)
 from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
 from doxagent.codex_runtime.schema import PublishedDocument
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
@@ -77,6 +82,21 @@ def inspect_source(spec):
 
 def copy_records(spec, repository):
     runs = [spec["d1_run"], spec["d2_run"], spec["d3_run"]]
+    origin = Path(spec['source_database']).parent
+    query = ' OR '.join('(run_id=? OR run_id LIKE ?)' for _ in runs)
+    args = [v for run in runs for v in (run, run + '-%')]
+    # Publish transferred canonical files before their SQL rows become visible.
+    from contextlib import closing
+
+    with closing(source_database(spec['source_database'])) as source:
+        for row in source.execute(
+            "SELECT payload_json FROM codex_runtime_records WHERE record_type='published_documents' "
+            "AND json_extract(payload_json,'$.local_content_codec') IS NOT NULL "
+            f'AND ({query})', args,
+        ):
+            record = json.loads(row[0])
+            put_local_body(Path(repository.path).parent, record['sha256'],
+                           load_published_body(origin, record), compressed=True)
     with (
         source_database(spec["source_database"]) as source,
         sqlite3.connect(repository.path, timeout=30) as target,
@@ -89,8 +109,6 @@ def copy_records(spec, repository):
             info = source.execute(f"PRAGMA table_info({table})").fetchall()
             columns = [r[1] for r in info]
             keys = [r[1] for r in sorted(info, key=lambda r: r[5]) if r[5]]
-            query = " OR ".join("(run_id=? OR run_id LIKE ?)" for _ in runs)
-            args = [v for run in runs for v in (run, run + "-%")]
             for row in source.execute(f"SELECT * FROM {table} WHERE {query}", args):
                 values = dict(row)
                 prior = target.execute(
@@ -109,6 +127,7 @@ def copy_records(spec, repository):
                                 for item in (left, right):
                                     item.pop("content_text", None)
                                     item.pop("storage_path", None)
+                                    item.pop('local_content_codec', None)
                         if left != right:
                             raise ValueError(f"research identity collision: {table}:{keys}")
                     continue
@@ -128,9 +147,12 @@ def copy_records(spec, repository):
             "AND (" + " OR ".join("run_id=? OR run_id LIKE ?" for _ in runs) + ")",
             [v for run in runs for v in (run, run + "-%")],
         ).fetchall()
-    origin = Path(spec["source_database"]).parent
     for row in rows:
-        document = PublishedDocument.model_validate_json(row[0])
+        record = json.loads(row[0])
+        if record.get('local_content_codec') is not None:
+            load_published_body(Path(repository.path).parent, record)
+            continue
+        document = PublishedDocument.model_validate(record)
         content = document.content_text.encode() if document.content_text is not None else None
         if content is None:
             candidates = [
@@ -149,7 +171,8 @@ def copy_records(spec, repository):
             or hashlib.sha256(content).hexdigest() != document.sha256
         ):
             raise ValueError(f"published source body missing or corrupt: {document.artifact_id}")
-        cache_local_published_content(repository, document.sha256, content)
+        if not local_body_refs_enabled():
+            cache_local_published_content(repository, document.sha256, content)
         repository.save_published_document(
             PublishedDocument.model_validate(
                 {

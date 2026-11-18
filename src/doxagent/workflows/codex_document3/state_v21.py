@@ -6,6 +6,7 @@ import hashlib
 import json
 import sqlite3
 import threading
+from collections import Counter
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -21,12 +22,15 @@ def digest(value):
 
 
 class StateV21:
-    def __init__(self, path: str | Path):
+    def __init__(self, path: str | Path, *, read_only: bool = False):
         self.path = str(path)
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        self.read_only = read_only
         self.lock = threading.RLock()
         from doxagent.v2_read.native_content import NativeContent
         self.codec = NativeContent(path)
+        if read_only:
+            return
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             db.executescript("""
             CREATE TABLE IF NOT EXISTS codex_document3_v21_runs
@@ -58,7 +62,8 @@ class StateV21:
 
     @contextmanager
     def connect(self):
-        db = sqlite3.connect(self.path, timeout=30)
+        target = Path(self.path).resolve().as_uri() + "?mode=ro" if self.read_only else self.path
+        db = sqlite3.connect(target, uri=self.read_only, timeout=30)
         db.row_factory = sqlite3.Row
         try:
             with db:
@@ -100,6 +105,59 @@ class StateV21:
                 value.setdefault('final', staged[0].get('policies', []))
                 value.setdefault('handoff', staged[1])
         return value
+
+    def pilot_view(self, run_id):
+        if self.read_only:
+            with self.connect() as db:
+                if not db.execute("SELECT 1 FROM sqlite_master WHERE name='codex_document3_v21_runs'").fetchone():
+                    return None
+        run = self.run(run_id)
+        if run is None:
+            return None
+        tasks = self.tasks(run_id)
+        drafts = self.drafts(run_id)
+        view = {
+            **{
+                k: v
+                for k, v in run.items()
+                if k not in {"prepared", "assets", "basis", "final_candidates", "scan_inputs"}
+            },
+            "input_manifest": run.get("prepared", {}).get("manifest", []),
+            "material_refs": list(run.get("prepared", {}).get("files", {})),
+            "basis_paths": list(run.get("basis", {})),
+            "candidate_paths": list(run.get("final_candidates", {})),
+            "task_metrics": {
+                "total": len(tasks),
+                "by_status": dict(Counter(t["status"] for t in tasks.values())),
+                "attempts": sum(t["attempt_count"] for t in tasks.values()),
+                "readable_records": sum(len(t.get("files", {})) for t in tasks.values()),
+                "readable_policy_count": len(drafts),
+                "readable_condition_count": sum(
+                    len(d["policy"]["activation_conditions"]) for d in drafts.values()
+                ),
+                "quarantined_policy_count": len(
+                    {
+                        i["path"]
+                        for i in run.get("diagnostics", [])
+                        if isinstance(i, dict)
+                        and i.get("error")
+                        and i.get("path")
+                        and "/policies/" in i["path"]
+                        and i["path"] not in drafts
+                    }
+                ),
+                "quarantined_condition_count": sum(
+                    len(d.get("errors", [])) for d in drafts.values()
+                ),
+                "main_tasks": {
+                    k: t["status"] for k, t in tasks.items() if k.startswith("research:")
+                },
+                "supplement_tasks": {
+                    k: t["status"] for k, t in tasks.items() if k.startswith("supplement:")
+                },
+            },
+        }
+        return view
 
     def update(self, run_id, **values):
         packed = self._pack(values)
@@ -337,7 +395,10 @@ class StateV21:
                 (run_id,),
             ).fetchone()
             if old:
-                if old[0] != canonical(data) or old[1] != canonical(receipt):
+                previous = json.loads(old[1])
+                if "projection" not in receipt:
+                    previous.pop("projection", None)
+                if old[0] != canonical(data) or previous != receipt:
                     raise ValueError("immutable staged commit mismatch")
                 return
             db.execute(

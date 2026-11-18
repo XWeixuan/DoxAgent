@@ -8,6 +8,8 @@ from pydantic import BaseModel, Field
 
 from doxagent.codex_runtime.client import WorkspaceClient
 
+from .state_v21 import StateV21
+
 from .schema import (
     CalibrationLogEntry,
     ContractModel,
@@ -46,8 +48,9 @@ class Document3PilotReport(ContractModel):
 
 
 class Document3PilotEvaluator:
-    def __init__(self, workspace: WorkspaceClient) -> None:
+    def __init__(self, workspace: WorkspaceClient, *, state: StateV21 | None = None) -> None:
         self._workspace = workspace
+        self._state = state
 
     async def evaluate(self, run_id: str, *, orchestration_version: str = "v2") -> BaseModel:
         if orchestration_version == "v2.1":
@@ -55,8 +58,10 @@ class Document3PilotEvaluator:
 
             from .schema_v21 import WorkModel
 
-            file = await self._workspace.read_text(run_id, "artifacts/document3/v21_state.json")
-            run = json.loads(file.content)
+            run = self._state.pilot_view(run_id) if self._state is not None else None
+            if run is None:
+                file = await self._workspace.read_text(run_id, "artifacts/document3/v21_state.json")
+                run = json.loads(file.content)
 
             class V21Report(WorkModel):
                 run_id: str

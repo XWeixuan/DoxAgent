@@ -85,6 +85,32 @@ def test_hour_commit_survives_other_retirement_failure(tmp_path,monkeypatch):
         assert db.execute('SELECT count(*) FROM cycles').fetchone()[0]==0
 
 
+def test_hour_archive_pages_exact_rows_and_waits_for_validated_inflight(tmp_path, monkeypatch):
+    from doxagent.message_bus_v2.collection_plane import maintenance
+    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
+
+    store = AcquisitionStore(tmp_path/'acquisition.db', initialize=True)
+    moment = datetime(2026, 10, 1, tzinfo=UTC)
+    at = moment.isoformat()
+    monkeypatch.setattr(maintenance, 'utc_now', lambda: moment + timedelta(days=3))
+    with store.connect(write=True) as db:
+        db.executemany('INSERT INTO cycles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [
+            (f'fixture-{i}', 'b', 's', 'MU', 'HEAD', at, at, 1, 1, 1, 'FAILED', 'refused', at, '{}')
+            for i in range(130)
+        ])
+        db.execute('INSERT INTO cycles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                   ('active', 'b', 's', 'MU', 'HEAD', at, at, 1, 1, 1, 'CAPTURED', None,
+                    None, '{"attempt_finished":false}'))
+    assert maintenance.maintain(store, hours=1)['hours'][0]['deferred'] == 'inflight'
+    with store.connect(write=True) as db:
+        db.execute("UPDATE cycles SET status='FAILED',finished_at=?,data_json='{}' WHERE run_id='active'", (at,))
+    assert maintenance.maintain(store, hours=1)['hours'][0]['scanned'] == 128
+    assert maintenance.maintain(store, hours=1)['hours'][0]['cycles'] == 131
+    with store.connect() as db:
+        stats = json.loads(db.execute('SELECT data_json FROM unit_hours').fetchone()[0])
+        assert stats['units'][0]['statuses'] == {'FAILED': 131}
+
+
 def test_d3_immutable_inputs_and_compaction_preserve_exact_published_version(tmp_path):
     from doxagent.workflows.codex_document3.state_v21 import StateV21,canonical
     state=StateV21(tmp_path/'research.db')

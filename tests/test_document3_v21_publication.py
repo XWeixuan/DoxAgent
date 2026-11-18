@@ -51,6 +51,61 @@ async def test_staged_candidate_promotion_is_idempotent_and_does_not_activate(ri
 
 
 @pytest.mark.asyncio
+async def test_published_reference_preserves_exact_body_in_read_and_backup(rig, tmp_path, monkeypatch):
+    import json
+    import sqlite3
+    from contextlib import closing
+    from pathlib import Path
+
+    from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
+    from doxagent.v2_read.artifacts import PublishedArtifacts
+    from doxagent.v2_read.cli import backup
+    from doxagent.v2_read.content_files import SINGLE_FILE, ContentFiles
+    from doxagent.v2_read.repository import ReadStore
+
+    monkeypatch.setenv('DOXAGENT_PUBLISHED_CONTENT_REFS', '1')
+    runtime = SQLiteCodexRuntimeRepository(rig.state.path)
+    result = await rig.orchestrator.initialize(ticker='MU', as_of=NOW, run_id='canonical-v21')
+    await finalize_candidate_v21(
+        result.run_id, state=rig.state, workspace=rig.workspace,
+        runtime_repository=runtime, policy_repository=rig.policy,
+    )
+    artifact = next(a for a in runtime.get_bundle(result.run_id).artifacts
+                    if a.relative_path.endswith('/document3.json'))
+    original = await rig.workspace.read_text(result.run_id, artifact.relative_path)
+    with closing(sqlite3.connect(runtime.path)) as db:
+        value = json.loads(db.execute(
+            "SELECT payload_json FROM codex_runtime_records WHERE record_type='published_documents' "
+            "AND record_key=?", (artifact.artifact_id,),
+        ).fetchone()[0])
+    assert value['local_content_codec'] == 'gzip-v1' and 'content_text' not in value
+    assert runtime.get_published_document(result.run_id, artifact.artifact_id).content_text == original.content
+    from doxagent.codex_runtime.published_storage import compact_inline_documents
+
+    with closing(sqlite3.connect(runtime.path)) as db, db:
+        db.execute("UPDATE codex_runtime_records SET payload_json=json_set("
+                   "json_remove(payload_json,'$.local_content_codec'),'$.content_text',?) "
+                   "WHERE record_type='published_documents' AND record_key=?",
+                   (original.content, artifact.artifact_id))
+    converted = compact_inline_documents(Path(runtime.path))
+    assert converted['converted'] == 1 and not converted['conflicts']
+    if artifact.size_bytes <= ContentFiles.CHUNK:
+        source_path = Path(runtime.path).parent / 'published-contents' / (artifact.sha256 + '.gz')
+        reader = ReadStore(tmp_path/'read'/'read.sqlite3')
+        reader.path.parent.mkdir()
+        reader.migrate()
+        ref = reader.put_content('MU', original.content, 'application/json', canonical_file=source_path)
+        assert reader.content('MU', ref['content_id'])[1] == original.content
+        body = ContentFiles(reader.path.parent/'content-files')._path(artifact.sha256) / SINGLE_FILE
+        assert body.samefile(source_path)
+    target = tmp_path / 'backup' / 'research.sqlite3'
+    target.parent.mkdir()
+    backup(Path(runtime.path), target)
+    _, copied = PublishedArtifacts(target).body(result.run_id, artifact.artifact_id)
+    assert copied == original.content
+
+
+@pytest.mark.asyncio
 async def test_v21_internal_rerun_uses_frozen_owner_phase_without_publication(
     rig, tmp_path, monkeypatch
 ):

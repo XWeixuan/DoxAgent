@@ -69,7 +69,7 @@ def backup_manifest(sources, destination, *, artifact_roots=()):
                 {"original": str(path), "file": relative.as_posix(), "sha256": before}
             )
     tracked = {entry["file"] for entry in manifest["artifacts"]}
-    for root_name in ("native-files", "content-files", "receipt-files", "receipt-packs"):
+    for root_name in ("native-files", "content-files", "published-contents", "receipt-files", "receipt-packs"):
         for path in (destination / root_name).rglob("*"):
             if path.is_symlink():
                 raise ValueError("backup content must not contain symlinks")

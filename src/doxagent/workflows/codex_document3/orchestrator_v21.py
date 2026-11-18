@@ -6,7 +6,7 @@ import asyncio
 import json
 import re
 import sqlite3
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import datetime
 from uuid import uuid4
 
@@ -351,7 +351,6 @@ class Document3OrchestratorV21:
         )
         view_timing = HostTiming()
         view_timing.step("view_write")
-        await self._write_view(run_id)
         result.setdefault("host_spans", []).extend([*material_spans, *view_timing.finish()])
         self.state.save_task(run_id, key, result)
         return result
@@ -410,55 +409,6 @@ class Document3OrchestratorV21:
             "missing": missing,
             "producers": producers,
         }
-
-    async def _write_view(self, run_id):
-        run = self.state.run(run_id)
-        tasks = self.state.tasks(run_id)
-        drafts = self.state.drafts(run_id)
-        view = {
-            **{
-                k: v
-                for k, v in run.items()
-                if k not in {"prepared", "assets", "basis", "final_candidates", "scan_inputs"}
-            },
-            "input_manifest": run.get("prepared", {}).get("manifest", []),
-            "material_refs": list(run.get("prepared", {}).get("files", {})),
-            "basis_paths": list(run.get("basis", {})),
-            "candidate_paths": list(run.get("final_candidates", {})),
-            "task_metrics": {
-                "total": len(tasks),
-                "by_status": dict(Counter(t["status"] for t in tasks.values())),
-                "attempts": sum(t["attempt_count"] for t in tasks.values()),
-                "readable_records": sum(len(t.get("files", {})) for t in tasks.values()),
-                "readable_policy_count": len(drafts),
-                "readable_condition_count": sum(
-                    len(d["policy"]["activation_conditions"]) for d in drafts.values()
-                ),
-                "quarantined_policy_count": len(
-                    {
-                        i["path"]
-                        for i in run.get("diagnostics", [])
-                        if isinstance(i, dict)
-                        and i.get("error")
-                        and i.get("path")
-                        and "/policies/" in i["path"]
-                        and i["path"] not in drafts
-                    }
-                ),
-                "quarantined_condition_count": sum(
-                    len(d.get("errors", [])) for d in drafts.values()
-                ),
-                "main_tasks": {
-                    k: t["status"] for k, t in tasks.items() if k.startswith("research:")
-                },
-                "supplement_tasks": {
-                    k: t["status"] for k, t in tasks.items() if k.startswith("supplement:")
-                },
-            },
-        }
-        await self.workspace.write_text(
-            run_id, "artifacts/document3/v21_state.json", canonical(view)
-        )
 
     async def _json(self, run_id, path, model):
         try:
@@ -836,7 +786,6 @@ class Document3OrchestratorV21:
                 discovery_missing=collected["missing"],
                 diagnostics=[*run["diagnostics"], *collected["diagnostics"]],
             )
-        await self._write_view(run_id)
         self._pilot_boundary("discovery", run_id)
         run = self.state.run(run_id)
         if "agenda" not in run:
@@ -878,7 +827,6 @@ class Document3OrchestratorV21:
                 diagnostics=[*diagnostics, *({"warning": w} for w in warnings)],
                 phase="BUILD",
             )
-        await self._write_view(run_id)
         self._pilot_boundary("planning", run_id)
         run = self.state.run(run_id)
         agenda = Agenda.model_validate(run["agenda"])
@@ -903,7 +851,6 @@ class Document3OrchestratorV21:
                 diagnostics=[*run["diagnostics"], *diagnostics],
                 phase="INTEGRATION",
             )
-        await self._write_view(run_id)
         self._pilot_boundary("build", run_id)
         run = self.state.run(run_id)
         if "review" not in run:
@@ -1382,7 +1329,6 @@ class Document3OrchestratorV21:
         for name, text in content.items():
             path = f"artifacts/document3/releases/{commit['version']}/{name}"
             await self.workspace.write_text(run_id, path, text)
-            await self.workspace.write_text(run_id, f"output/final/{name}", text)
             file = await self.workspace.read_text(run_id, path)
             if file.content != text or digest(file.content) != digest(text):
                 raise ValueError("release four-file checksum mismatch")
@@ -1411,13 +1357,11 @@ class Document3OrchestratorV21:
             **commit,
             "files": paths,
             "hashes": hashes,
-            "projection": project_policy_set_v3(policy_set),
             "policy_origins": origins,
             "release_manifest_path": release_manifest,
         }
         self.state.save_staged_v3(run_id, policy_set, receipt)
         self.state.update(run_id, phase="STAGED", handoff=receipt)
-        await self._write_view(run_id)
         return RunResultV21(
             run_id=run_id,
             ticker=policy_set.ticker,
@@ -1560,7 +1504,6 @@ class Document3OrchestratorV21:
                     "status": "NOOP",
                 }
                 self.state.update(run_id, **payload)
-                await self._write_view(run_id)
                 return RunResultV21(
                     run_id=run_id,
                     ticker=ticker,
@@ -1616,7 +1559,6 @@ class Document3OrchestratorV21:
                 version_floor=max(run["version_floor"], base_policy_version),
             )
         if run.get("status") == "NOOP":
-            await self._write_view(run_id)
             return RunResultV21(
                 run_id=run_id,
                 ticker=ticker,
@@ -1652,7 +1594,6 @@ class Document3OrchestratorV21:
         if patch is None or patch.base_policy_set_version != base_policy_version:
             missing = ["maintenance patch unavailable or wrong base"]
             self.state.update(run_id, status="DEGRADED", missing=missing, phase="DEGRADED")
-            await self._write_view(run_id)
             return RunResultV21(
                 run_id=run_id, ticker=ticker, mode="maintain", status="DEGRADED", missing=missing
             )
@@ -1757,7 +1698,6 @@ class Document3OrchestratorV21:
             and not missing
         ):
             self.state.update(run_id, status="NOOP", phase="NOOP")
-            await self._write_view(run_id)
             return RunResultV21(
                 run_id=run_id,
                 ticker=ticker,

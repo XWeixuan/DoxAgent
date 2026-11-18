@@ -270,7 +270,46 @@ def compact_frame(journal,control_path,run,info,now):
     return {k:v for k,v in proof.items() if k!='frozen_selection'} if changed else None
 
 
-def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=None):
+def compact_d3(journal, run, info, now, settings):
+    """Retire only the staged process payload of this consumed Runtime owner."""
+    if not settings or info['status'] != 'SUCCEEDED' or now-datetime.fromisoformat(info['at']) < timedelta(days=1):
+        return None
+    from doxagent.codex_worker.session_retention import run_held
+    from doxagent.codex_worker.workspace_retention import family_jobs
+    from doxagent.workflows.codex_document3.state_v21 import StateV21
+
+    candidate = run + '-o3'
+    with journal.transaction(write=False, expand=False) as db:
+        receipt = db.execute(
+            "SELECT json_extract(receipt,'$.o3.run_id'),json_extract(receipt,'$.result.revision_id') "
+            "FROM runtime_tasks WHERE id=? AND status='SUCCEEDED' AND updated_at=?",
+            (info['task'], info['at']),
+        ).fetchone()
+    if not receipt or tuple(receipt) != (candidate, run + '-activation'):
+        return None
+    research = Path(settings.codex_runtime_sqlite_path)
+    jobs = Path(settings.codex_workspace_root) / 'worker-jobs.sqlite3'
+    if not research.is_file() or not jobs.is_file():
+        return None
+    view = StateV21(research, read_only=True)
+    with view.connect() as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE name='codex_document3_v21_runs'").fetchone():
+            return None
+        eligible = db.execute(
+            "SELECT 1 FROM codex_document3_v21_runs WHERE run_id=? "
+            "AND json_type(payload,'$.settlement')='object' "
+            "AND json_type(payload,'$.resource_retirement') IS NULL",
+            (candidate,),
+        ).fetchone()
+    if not eligible or run_held(settings, candidate):
+        return None
+    with closing(sqlite3.connect(jobs.resolve().as_uri()+'?mode=ro', uri=True, timeout=.1)) as db:
+        if any(status in {'queued', 'running'} for status, *_ in family_jobs(db, run)):
+            return None
+    return StateV21(research).retire(candidate, now=now, authority='runtime-activation-consumed')
+
+
+def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=None,settings=None):
     now=now or journal.clock();root=journal.path.resolve().parent/'runtime_artifacts'
     report=dict(at=now.isoformat(),retired=[],compacted=[],skipped=[],available_before=shutil.disk_usage(root.parent).free)
     if not root.exists():return report
@@ -300,6 +339,13 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
             stamp=datetime.fromisoformat(info['at']) if info else datetime.fromtimestamp(run.stat().st_mtime,UTC)
             failed=info is None or info['status']=='FAILED'
             if info and info['status'] not in {'SUCCEEDED','FAILED'}:continue
+            if info and not dry_run:
+                try:
+                    d3 = compact_d3(journal, run.name, info, now, settings)
+                    if d3:
+                        report.setdefault('d3_compacted', []).append(run.name)
+                except (OSError, ValueError, sqlite3.Error) as exc:
+                    report['skipped'].append(dict(run=run.name, reason=str(exc)[:200]))
             if info and info['status']=='SUCCEEDED' and (now-stamp).total_seconds()<48*3600:
                 if not dry_run:
                     changed=compact_process(journal,{run.name:info},set(),now,limit=8)

@@ -123,9 +123,67 @@ def test_receipt_envelope_pins_nested_native_hash_and_delete_releases_owner(tmp_
         db.execute("INSERT INTO poll_states VALUES('big','source','MU','succeeded','1',?)",(native,))
         refs=db.execute("SELECT owner_type,artifact_id FROM artifact_ref WHERE owner_type IN ('poll_states','v2_source_receipts')").fetchall()
         assert {r[0] for r in refs}=={'poll_states','v2_source_receipts'}
+        db.execute("CREATE TRIGGER track_ref_release AFTER DELETE ON artifact_ref "
+                   "WHEN OLD.owner_type='poll_states' BEGIN SELECT RAISE(ABORT,'unexpected ref release'); END")
+        updated = json.dumps({**json.loads(native), 'status': 'valid'})
+        db.execute("UPDATE poll_states SET data_json=? WHERE binding_id='big'", (updated,))
+        db.execute('DROP TRIGGER track_ref_release')
         db.execute("UPDATE poll_states SET data_json='{}' WHERE binding_id='big'")
         assert not db.execute("SELECT 1 FROM artifact_ref WHERE owner_type='poll_states'").fetchone()
         assert db.execute("SELECT 1 FROM artifact_ref WHERE owner_type='v2_source_receipts'").fetchone()
+
+
+def test_small_native_codec_and_48h_hot_exit_share_existing_reference_guards(tmp_path, monkeypatch):
+    from doxagent.v2_read import source_native_gc as gc
+    from doxagent.v2_read.content_files import SINGLE_FILE
+
+    source = fixture_source(tmp_path)
+    monkeypatch.setenv('DOXAGENT_CONTENT_SINGLE_FILE', '1')
+    value = {'content': 'evidence ' * 2300}
+    encoded = source.content.encode({'value': value})
+    marker = json.loads(encoded)['value']
+    digest = marker['$doxagent_content_v1']
+    files = source.content.files
+    assert [p.name for p in files._path(digest).iterdir()] == [SINGLE_FILE]
+    assert json.loads(files.read_all(digest)) == value
+    assert files.read(digest, 2, 12) == files.read_all(digest)[2:14]
+    files.copy([digest], tmp_path / 'copied')
+
+    now = datetime.now(UTC)
+    with closing(source.connection(write=True)) as db, db:
+        db.execute('UPDATE v2_source_outbox SET recorded_at=? WHERE seq<=3', ((now-timedelta(days=3)).isoformat(),))
+        db.execute('UPDATE v2_source_outbox SET recorded_at=? WHERE seq>3', ((now-timedelta(days=1)).isoformat(),))
+    source.acknowledge_exceptions('live', 6, [2])
+    assert expire(source, now=now)['expired'] == 3
+    assert source.event(2) and source.event(4)
+    assert expire(source, now=now)['scanned'] == 0
+    while not gc.reconcile(source, seconds=2)['ready']:
+        pass
+    assert gc.inventory(source) == 1
+    assert gc.collect(source, now=now+timedelta(days=9))['quarantined'] == 1
+    with closing(source.connection(write=True)) as db, db:
+        db.execute('UPDATE v2_native_exit SET not_before=0 WHERE id=?', (digest,))
+    remove = gc.shutil.rmtree
+
+    def interrupted(path):
+        with closing(source.connection(write=True)) as db, db:
+            db.execute('PRAGMA busy_timeout=0')
+            db.execute('BEGIN IMMEDIATE')
+            assert db.execute('SELECT state FROM artifact WHERE id=?', (digest,)).fetchone()[0] == 'DELETING'
+        raise OSError('interrupted after claim')
+
+    monkeypatch.setattr(gc.shutil, 'rmtree', interrupted)
+    with pytest.raises(OSError, match='interrupted after claim'):
+        gc.collect(source)
+    monkeypatch.setattr(gc.shutil, 'rmtree', remove)
+    assert source.content.encode({'value': value}) == encoded
+    with pytest.raises(sqlite3.IntegrityError, match='ARTIFACT_RECLAIM_IN_PROGRESS'):
+        with closing(source.connection(write=True)) as db, db:
+            db.execute("INSERT INTO poll_states VALUES('new','source','MU','succeeded','1',?)", (encoded,))
+    assert gc.collect(source)['deleted'] == 1
+    with closing(source.connection(write=True)) as db, db:
+        db.execute("INSERT INTO poll_states VALUES('new','source','MU','succeeded','1',?)", (encoded,))
+    assert json.loads(files.read_all(digest)) == value
 
 
 def test_small_business_fact_sync_preserves_settlement_and_withdrawal(tmp_path):

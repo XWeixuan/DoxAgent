@@ -94,12 +94,7 @@ def _build(source,target,*,reserve_bytes):
             return
         original = ContentFiles(source.parent / folder)
         root = original._path(digest)
-        manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
-        observed = hashlib.sha256()
-        for offset in range(0, manifest['size'], ContentFiles.CHUNK):
-            observed.update(original.read(digest, offset, ContentFiles.CHUNK))
-        if observed.hexdigest() != digest:
-            raise ValueError('generation content checksum mismatch: ' + digest)
+        original.verify(digest)
         dest = ContentFiles(target.parent / folder)._path(digest)
         dest.mkdir(parents=True)
         for item in root.iterdir():

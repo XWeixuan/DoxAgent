@@ -4,7 +4,7 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 
-from .content_files import ContentFiles,CHUNK
+from .content_files import ContentFiles
 from .source_lifecycle import native_hashes
 from .outbox import quoted
 
@@ -12,8 +12,7 @@ from .outbox import quoted
 def identities(database, source):
     result=set();source=Path(source)
     def read(files,identity):
-        manifest=json.loads((files._path(identity)/'manifest.json').read_text())
-        return json.loads(b''.join(files.read(identity,offset,CHUNK) for offset in range(0,manifest['size'],CHUNK)))
+        return json.loads(files.read_all(identity))
     with closing(sqlite3.connect(Path(database).resolve().as_uri()+'?mode=ro',uri=True)) as db:
         tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         for table in sorted(tables):

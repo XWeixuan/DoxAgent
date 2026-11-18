@@ -529,9 +529,10 @@ class SQLiteCodexRuntimeRepository:
                     raise RuntimeError(f"SQLite v2 citation checksum mismatch for {record_key}")
 
     def _upsert(
-        self, record_type: str, key: str, run_id: str, value: BaseModel, order: int = 0
+        self, record_type: str, key: str, run_id: str, value: BaseModel, order: int = 0,
+        *, payload_override: str | None = None,
     ) -> None:
-        payload = value.model_dump_json(by_alias=True)
+        payload = value.model_dump_json(by_alias=True) if payload_override is None else payload_override
         workflow_version = str(getattr(value, "workflow_version", "codex_d1_v2"))
         research_lane_value = getattr(value, "research_lane", ResearchLane.LEGACY_DOCUMENT1)
         research_lane = str(getattr(research_lane_value, "value", research_lane_value))
@@ -546,7 +547,12 @@ class SQLiteCodexRuntimeRepository:
                      workflow_version=excluded.workflow_version,
                      research_lane=excluded.research_lane,
                      sort_order=excluded.sort_order,
-                     payload_json=excluded.payload_json, updated_at=CURRENT_TIMESTAMP""",
+                     payload_json=excluded.payload_json, updated_at=CURRENT_TIMESTAMP
+                   WHERE codex_runtime_records.run_id IS NOT excluded.run_id
+                      OR codex_runtime_records.workflow_version IS NOT excluded.workflow_version
+                      OR codex_runtime_records.research_lane IS NOT excluded.research_lane
+                      OR codex_runtime_records.sort_order IS NOT excluded.sort_order
+                      OR codex_runtime_records.payload_json IS NOT excluded.payload_json""",
                 (
                     record_type,
                     key,
@@ -828,11 +834,35 @@ class SQLiteCodexRuntimeRepository:
         _validate_published_document_artifact(
             document, self.get_artifact(document.run_id, document.artifact_id)
         )
-        self._upsert("published_documents", document.artifact_id, document.run_id, document)
+        from .published_storage import LOCAL_BODY_CODEC, local_body_refs_enabled, put_local_body
+
+        payload = None
+        if document.content_text is not None and local_body_refs_enabled():
+            put_local_body(Path(self.path).parent, document.sha256, document.content_text.encode('utf-8'), compressed=True)
+            payload = json.dumps({
+                **document.model_dump(mode='json', exclude={'content_text'}),
+                'local_content_codec': LOCAL_BODY_CODEC,
+            }, ensure_ascii=False, separators=(',', ':'))
+        self._upsert(
+            "published_documents", document.artifact_id, document.run_id, document,
+            payload_override=payload,
+        )
 
     def get_published_document(self, run_id: str, artifact_id: str) -> PublishedDocument | None:
-        item = self._one("published_documents", artifact_id, PublishedDocument)
-        return item if item is not None and item.run_id == run_id else None
+        from .published_storage import load_published_body
+
+        with self._lock, self._connect() as db:
+            row = db.execute(
+                "SELECT payload_json FROM codex_runtime_records WHERE record_type='published_documents' "
+                "AND run_id=? AND record_key=?", (run_id, artifact_id),
+            ).fetchone()
+        if not row:
+            return None
+        value = json.loads(row['payload_json'])
+        if value.get('local_content_codec') is not None:
+            value['content_text'] = load_published_body(Path(self.path).parent, value).decode('utf-8')
+            value.pop('local_content_codec')
+        return PublishedDocument.model_validate(value)
 
 
 class PostgresCodexRuntimeRepository:

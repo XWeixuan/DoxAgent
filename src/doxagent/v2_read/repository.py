@@ -1019,12 +1019,16 @@ class ReadStore:
                 db.execute("INSERT OR IGNORE INTO content_search VALUES(?,?)", (digest, body.casefold()))
         return "@body:" + digest
 
-    def put_content(self, ticker: str, body: str, kind: str = "text/plain") -> dict[str, Any]:
+    def put_content(
+        self, ticker: str, body: str, kind: str = 'text/plain', *, canonical_file: Path | None = None,
+    ) -> dict[str, Any]:
         raw = body.encode("utf-8")
         sha = hashlib.sha256(raw).hexdigest()
         identity = hashlib.sha256(f"{ticker}:{kind}:{sha}".encode()).hexdigest()
         from .content_files import ContentFiles
-        ContentFiles(self.path.parent / "content-files").put(raw)
+        files = ContentFiles(self.path.parent / 'content-files')
+        if canonical_file is None or len(raw) > ContentFiles.CHUNK or not files.link_single(canonical_file, sha):
+            files.put(raw)
         with self.connect(write=True) as db:
             db.execute(
                 "INSERT OR IGNORE INTO contents VALUES(?,?,?,?,?,?)",

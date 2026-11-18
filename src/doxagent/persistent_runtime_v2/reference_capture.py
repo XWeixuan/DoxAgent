@@ -62,9 +62,8 @@ def prepare(journal, task, compiler, root, day, delta):
         ("before", delta.from_library_version),
         ("after", delta.to_library_version),
     ):
-        snapshots[side] = snapshot(compiler, task["ticker"], version)
-        if side == "before":
-            snapshots[side] = journal.get("reference_baselines", task["id"]) or snapshots[side]
+        baseline = journal.get('reference_baselines', task['id']) if side == 'before' else None
+        snapshots[side] = baseline if baseline is not None else snapshot(compiler, task['ticker'], version)
     value = {
         "delta_id": task["id"],
         "ticker": task["ticker"],
@@ -81,10 +80,15 @@ def prepare(journal, task, compiler, root, day, delta):
 
 
 def settle(journal, identity, status):
-    value = journal.get("reference_deliveries", identity)
-    if value and value["status"] != "SUCCEEDED":
-        journal.set(
-            "reference_deliveries",
-            identity,
-            {**value, "status": status, "settled_at": journal.clock().isoformat()},
-        )
+    from .journal import retry_write
+
+    def save():
+        with journal.transaction(operation='value.reference_deliveries.settle') as db:
+            db.execute(
+                "UPDATE runtime_values SET payload=json_set(payload,'$.status',?,'$.settled_at',?) "
+                "WHERE namespace='reference_deliveries' AND key=? "
+                "AND json_extract(payload,'$.status')<>'SUCCEEDED'",
+                (status, journal.clock().isoformat(), identity),
+            )
+
+    retry_write(save, seconds=journal.busy_timeout_seconds)

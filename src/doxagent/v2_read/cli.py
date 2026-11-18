@@ -62,14 +62,13 @@ def _backup(source: Path, target: Path) -> None:
     native_root = source.parent / "native-files"
     published_root = source.parent / "published-contents"
     if published_root.exists():
-        import hashlib
         import shutil
+        from doxagent.codex_runtime.published_storage import read_local_body
 
         for item in published_root.iterdir():
-            if not item.is_file():
+            if not item.is_file() or item.name.startswith('.'):
                 continue
-            if hashlib.sha256(item.read_bytes()).hexdigest() != item.name:
-                raise ValueError("published content backup checksum mismatch")
+            raw = read_local_body(item, item.stem)
             destination_file = target.parent / "published-contents" / item.name
             destination_file.parent.mkdir(parents=True, exist_ok=True)
             if destination_file.exists():
@@ -77,6 +76,8 @@ def _backup(source: Path, target: Path) -> None:
                     raise ValueError("immutable published backup collision")
             else:
                 shutil.copyfile(item, destination_file)
+            if read_local_body(destination_file, item.stem) != raw:
+                raise ValueError('published content backup checksum mismatch')
     if native_root.exists():
         from .backup_native import identities as native_identities
         identities = native_identities(target,source)
@@ -119,6 +120,7 @@ def main() -> None:
             "projection-indexes",
             "serving-generation",
             "current-snapshot",
+            "compact-published-bodies",
         ),
     )
     parser.add_argument("--read-db", type=Path, default=Path(".tmp/v2_read.sqlite3"))
@@ -128,6 +130,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--once", action="store_true")
     parser.add_argument("--limit", type=int, default=100)
+    parser.add_argument('--after', default='')
     parser.add_argument("--table")
     parser.add_argument("--ticker")
     parser.add_argument("--backup-dir", type=Path)
@@ -147,7 +150,17 @@ def main() -> None:
             parser.error("source kind must be known and unique within one read store")
         sources.append(SourceOutbox(path, kind))
     store = ReadStore(args.read_db)
-    if args.command == "projection-indexes":
+    if args.command == 'compact-published-bodies':
+        research = next((source.path for source in sources if source.source == 'research'), None)
+        if research is None or len(sources) != 1 or args.limit > 128:
+            parser.error('published body conversion expects one research source and limit <=128')
+        if args.dry_run:
+            print(json.dumps({'dry_run': True, 'source': str(research), 'after': args.after, 'limit': args.limit}))
+        else:
+            from doxagent.codex_runtime.published_storage import compact_inline_documents
+
+            print(json.dumps(compact_inline_documents(research, after=args.after, limit=args.limit)))
+    elif args.command == "projection-indexes":
         store.migrate_projection_indexes()
         print(json.dumps({"projection_indexes": "ready"}))
     elif args.command == "migrate":

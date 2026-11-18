@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from doxagent.api_v2.dto import VERSION, available, coverage, missing, validate
+from doxagent.codex_runtime.published_storage import LOCAL_BODY_CODEC, load_published_body, local_body_path
 from doxagent.codex_runtime.schema import FutureNode
 from doxagent.workflows.codex_document3.consumer_contracts import parse_document2
 
@@ -39,24 +40,9 @@ class PublishedArtifacts:
         if not artifact["published"]:
             raise ValueError("artifact is not published")
         document = self.record("published_documents", identity, run_id)
-        text = document.get("content_text")
-        if text is None:
-            digest = artifact["sha256"]
-            if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
-                raise ValueError("PUBLISHED_CHECKSUM_MISMATCH")
-            cached = self.path.parent / "published-contents" / digest
-            if not cached.is_file():
-                raise ValueError("REMOTE_CONTENT_BACKFILL_REQUIRED")
-            text = cached.read_text(encoding="utf-8")
-        data = text.encode("utf-8")
-        if (
-            hashlib.sha256(data).hexdigest() != artifact["sha256"]
-            or len(data) != artifact["size_bytes"]
-        ):
+        if (document['sha256'], document['size_bytes']) != (artifact['sha256'], artifact['size_bytes']):
             raise ValueError("PUBLISHED_CHECKSUM_MISMATCH")
-        if document["sha256"] != artifact["sha256"]:
-            raise ValueError("PUBLISHED_CHECKSUM_MISMATCH")
-        return document, text
+        return document, load_published_body(self.path.parent, document).decode('utf-8')
 
 
 def resource(value: Any, *, reason: str = "NOT_PRODUCED") -> dict[str, Any]:
@@ -145,8 +131,11 @@ class ArtifactIndexer:
             artifact = bundle["reports"].get(section.lower()) or bundle["reports"].get(section)
             if artifact is None:
                 raise ValueError("published research missing required section")
-            _, text = self.source.body(run_id, artifact["artifact_id"])
-            content = self.store.put_content(ticker, text, "text/markdown")
+            body_record, text = self.source.body(run_id, artifact['artifact_id'])
+            canonical_file = None
+            if body_record.get('local_content_codec') == LOCAL_BODY_CODEC:
+                canonical_file = local_body_path(self.source.path.parent, body_record['sha256'], compressed=True)
+            content = self.store.put_content(ticker, text, 'text/markdown', canonical_file=canonical_file)
             sections.append({"section": section, "content": resource(content)})
             files.append(
                 {

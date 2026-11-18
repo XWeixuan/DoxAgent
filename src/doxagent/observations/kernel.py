@@ -63,13 +63,14 @@ class ObservationKernel:
         availability: DataAvailability,
         latency_ms: int = 0,
     ) -> DataDelivery:
-        self.store.save_raw_result(
-            tool_call_id,
-            {
-                "input": deepcopy(input_payload),
-                "tool_result": json.loads(result.model_dump_json()),
-            },
-        )
+        if result.status != ResultStatus.SUCCEEDED:
+            self.store.save_raw_result(
+                tool_call_id,
+                _redact({
+                    'input': deepcopy(input_payload),
+                    'tool_result': json.loads(result.model_dump_json()),
+                }),
+            )
         profiled = apply_output_profile(contract, result.output)
         persisted: list[PersistedObservation] = []
         for block in segment_cleaned_output(profiled.content):
