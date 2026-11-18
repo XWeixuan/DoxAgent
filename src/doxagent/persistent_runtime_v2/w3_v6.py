@@ -191,6 +191,16 @@ def freeze_recent_trade(journal, repository, case):
     saved = journal.get("w3_recent_filled_snapshot", case.case_id)
     if saved is not None:
         return saved["items"]
+    saved = prepare_recent_trade(journal, repository, case)
+    payload = encode(saved)
+    with journal.transaction(operation="w3.filled_history.freeze") as db:
+        db.execute("INSERT OR IGNORE INTO runtime_values(namespace,key,payload) VALUES(?,?,?)",
+                   ("w3_recent_filled_snapshot", case.case_id, payload))
+    return journal.get("w3_recent_filled_snapshot", case.case_id)["items"]
+
+
+def prepare_recent_trade(journal, repository, case):
+    """Build the original immutable snapshot outside its registration writer."""
     from .w3_context import actual_policy_hits, event_matches, resolve_event_subjects
 
     replay = case.frozen_inputs.get("w3_replay")
@@ -202,8 +212,7 @@ def freeze_recent_trade(journal, repository, case):
             matches=replay.get("recent_trade_matches", []) if replay.get("recent_trade") else [],
             members=replay.get("recent_trade_members", []),
         )
-        journal.set("w3_recent_filled_snapshot", case.case_id, saved)
-        return saved["items"]
+        return saved
     cutoff = case.source.message_bus_event_time
     lower = cutoff - timedelta(hours=48)
     selected = {}
@@ -302,16 +311,7 @@ def freeze_recent_trade(journal, repository, case):
             )
             members.append(dict(case_id=cid, fills=[e for _, e in selected[cid]]))
     saved = dict(items=result, matches=matches, members=members, cutoff_at=cutoff.isoformat())
-    payload = encode(saved)
-    with journal.transaction(operation="w3.filled_history.freeze") as db:
-        db.execute(
-            "INSERT OR IGNORE INTO runtime_values(namespace,key,payload) "
-            "VALUES('w3_recent_filled_snapshot',?,?)",
-            (case.case_id, payload),
-        )
-    # Another recovery attempt may already have frozen this identity.
-    result = journal.get("w3_recent_filled_snapshot", case.case_id)["items"]
-    return result
+    return saved
 
 
 def history_matches(journal, repository, case):

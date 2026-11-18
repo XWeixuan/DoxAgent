@@ -249,29 +249,7 @@ class W3Execution:
             raise
         return template
 
-    @observed("case.thread_prepare")
-    def _thread(self, case, context, research, event_keys=None, stage_key=TRADE_PHASE):
-        owned = self.registry.bound(case.case_id, stage_key)
-        stage = self.registry.stage(case.case_id, stage_key)
-        record_id = (stage.get("input_refs") or {}).get("record_id")
-        if owned is None and record_id:
-            with self.journal.transaction() as db:
-                row = db.execute(
-                    "SELECT * FROM runtime_v2_w3_threads WHERE record_id=?", (record_id,)
-                ).fetchone()
-                if row is None or row["owner_case_id"] not in {None, case.case_id}:
-                    raise W3Error(
-                        "w3_prepare_identity_conflict", "Original Case record unavailable"
-                    )
-                db.execute(
-                    "UPDATE runtime_v2_w3_threads SET owner_case_id=? WHERE record_id=?",
-                    (case.case_id, record_id),
-                )
-                owned = dict(row)
-                owned["owner_case_id"] = case.case_id
-        accepted_at = datetime.fromisoformat(
-            self.registry.stage(case.case_id, stage_key)["accepted_at"]
-        )
+    def _thread_signature(self, case):
         profile = execution_profile(
             case,
             model=getattr(self.agent, "_model", "gpt-6-luna"),
@@ -304,6 +282,32 @@ class W3Execution:
                 layout,
             ]
         )
+        return profile, new_entry, compatibility, layout
+
+    @observed("case.thread_prepare")
+    def _thread(self, case, context, research, event_keys=None, stage_key=TRADE_PHASE):
+        owned = self.registry.bound(case.case_id, stage_key)
+        stage = self.registry.stage(case.case_id, stage_key)
+        record_id = (stage.get("input_refs") or {}).get("record_id")
+        if owned is None and record_id:
+            with self.journal.transaction() as db:
+                row = db.execute(
+                    "SELECT * FROM runtime_v2_w3_threads WHERE record_id=?", (record_id,)
+                ).fetchone()
+                if row is None or row["owner_case_id"] not in {None, case.case_id}:
+                    raise W3Error(
+                        "w3_prepare_identity_conflict", "Original Case record unavailable"
+                    )
+                db.execute(
+                    "UPDATE runtime_v2_w3_threads SET owner_case_id=? WHERE record_id=?",
+                    (case.case_id, record_id),
+                )
+                owned = dict(row)
+                owned["owner_case_id"] = case.case_id
+        accepted_at = datetime.fromisoformat(
+            self.registry.stage(case.case_id, stage_key)["accepted_at"]
+        )
+        profile, new_entry, compatibility, layout = self._thread_signature(case)
         if owned is None:
             template_key = digest([None if new_entry else case.ticker, compatibility, layout])
             template, acquired = self.registry.template(case.ticker, template_key, compatibility)
@@ -332,6 +336,9 @@ class W3Execution:
                     "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
                     (encode(wanted), case.case_id, stage_key),
                 )
+        return self._prepared_thread(case, owned, profile, stage_key)
+
+    def _prepared_thread(self, case, owned, profile, stage_key):
         if not owned["thread_id"] and not getattr(self.agent, "supports_prepare", False):
             child = self.agent.fork_thread(
                 ThreadForkRequest(
@@ -344,27 +351,59 @@ class W3Execution:
             )
             owned["thread_id"] = child["thread_id"]
             self.registry.set_thread(owned["record_id"], owned["thread_id"])
-        if new_entry and not owned["thread_id"] and not getattr(self.agent, "late_ready_claim", False):
+        if getattr(self.agent, "entry_enabled", lambda c: False)(case) and not owned["thread_id"] and not getattr(self.agent, "late_ready_claim", False):
             self.agent.claim_ready(case, owned, profile)
         owned["stage_key"] = stage_key
         return owned
 
+    def _register_entry(self, case):
+        stages, records, frozen = self.registry.registration(case.case_id)
+        main = stages.get(TRADE_PHASE)
+        if main and main['status'] == 'COMMITTED':
+            return stages, records, frozen
+        phases = (TRADE_PHASE+':A', TRADE_PHASE+':B') if case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus' else (TRADE_PHASE,)
+        needed = {'w3_recent_filled_snapshot', 'w3_global_input', 'w3_time_awareness'}
+        if main and all(p in stages and p in records and records[p]['owner_case_id'] == case.case_id for p in phases) and needed <= frozen.keys():
+            return stages, records, frozen
+        origin = dict(case_id=case.case_id, started_at_utc=datetime.now(UTC).isoformat())
+        accepted_at = self.journal.clock()
+        if 'w3_recent_filled_snapshot' not in frozen:
+            from .w3_v6 import prepare_recent_trade
+            frozen['w3_recent_filled_snapshot'] = prepare_recent_trade(self.journal, self.service.repository, case)
+        if 'w3_global_input' not in frozen:
+            replay = case.frozen_inputs.get('w3_replay') or {}
+            with self.journal.transaction(write=False, operation='case.global_input.read') as db:
+                frozen['w3_global_input'] = replay.get('global_state') or global_snapshot(db, case.ticker, self.journal.clock())
+        frozen.setdefault('w3_time_awareness', origin)
+        profile, new_entry, compatibility, layout = self._thread_signature(case)
+        key = digest([None if new_entry else case.ticker, compatibility, layout])
+        template = self.registry.find_ready_template(key, compatibility)
+        # Cold public preparation keeps a main/frozen anchor; normal READY
+        # registration creates all missing identities in this same transaction.
+        registered = self.registry.register_trade_bundle(
+            case_id=case.case_id, ticker=case.ticker, phases=phases if template else (),
+            template=template, compatibility=compatibility, frozen=frozen, accepted_at=accepted_at,
+        )
+        return registered if template else (registered[0], None, registered[2])
+
     @observed("case.trade")
     def trade(self, case):
-        stage = self.registry.begin_stage(case.case_id, TRADE_PHASE)
+        bundle = self._register_entry(case) if (is_pin_watch_contract(case.w3_contract_version)
+                  and getattr(self.agent, 'entry_enabled', lambda c: False)(case)) else None
+        stage = bundle[0][TRADE_PHASE] if bundle else self.registry.begin_stage(case.case_id, TRADE_PHASE)
         if stage["status"] == "COMMITTED":
             self._restore_trade(case, stage)
             self._sync_route_case(case, {"thread_id": stage["thread_id"]})
             return
         if stage["result_json"] is None:
-            if is_pin_watch_contract(case.w3_contract_version):
+            if is_pin_watch_contract(case.w3_contract_version) and not bundle:
                 from .w3_v6 import freeze_recent_trade
                 freeze_recent_trade(self.journal, self.service.repository, case)
-            record = self.registry.owned(case.case_id)
+            record = (bundle[1] or {}).get(TRADE_PHASE) if bundle else self.registry.owned(case.case_id)
             recovered = None if case.frozen_inputs.get("w3_trade_mode") == "dual_consensus" else self._recover_result(case, TRADE_PHASE, record)
             if recovered is not None:
                 return self._commit_trade(case,record,recovered)
-            if hasattr(self.agent, "begin_trade_timing"):
+            if not bundle and hasattr(self.agent, "begin_trade_timing"):
                 self.agent.begin_trade_timing(case.case_id)
             if hasattr(self.agent, "queue_market"):
                 self.agent.queue_market(case)
@@ -374,7 +413,7 @@ class W3Execution:
             membership = None if is_pin_watch_contract(case.w3_contract_version) else freeze_history(
                 self.journal, case, datetime.fromisoformat(stage["accepted_at"])
             )
-            saved_state = self.journal.get("w3_global_input", case.case_id)
+            saved_state = bundle[2]['w3_global_input'] if bundle else self.journal.get("w3_global_input", case.case_id)
             if saved_state is None:
                 with self.journal.transaction(
                     write=False, operation="case.global_input.read"
@@ -391,7 +430,8 @@ class W3Execution:
             )
             if is_pin_watch_contract(case.w3_contract_version):
                 from .w3_v6 import history_matches
-                history, matches = [], history_matches(self.journal, self.service.repository, case)
+                history, matches = [], (bundle[2]['w3_recent_filled_snapshot']['matches'] if bundle
+                                       else history_matches(self.journal, self.service.repository, case))
             else:
                 history, matches = history_payload(self.journal, self.service.repository, case, membership)
             if replay is not None and not is_pin_watch_contract(case.w3_contract_version):
@@ -420,8 +460,9 @@ class W3Execution:
                 payload["research_path"] = "context/research/" + research[0]
                 self.journal.set("w3_case_research", case.case_id, payload["research_path"])
             if case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus':
-                return self._trade_pair(case, payload, context, research, event_keys)
-            record = self._thread(case, context, research, event_keys)
+                return self._trade_pair(case, payload, context, research, event_keys, registration=bundle)
+            record = (self._prepared_thread(case, bundle[1][TRADE_PHASE], self._thread_signature(case)[0], TRADE_PHASE)
+                      if bundle and bundle[1] else self._thread(case, context, research, event_keys))
             try:
                 decision, job = self.agent.run_phase(
                     case=case, record=record, phase=TRADE_PHASE,
@@ -446,13 +487,15 @@ class W3Execution:
             record = self.registry.bound(case.case_id) or self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
         return self._commit_trade(case, record, decision)
 
-    def _trade_pair(self, case, payload, context, research, event_keys):
+    def _trade_pair(self, case, payload, context, research, event_keys, registration=None):
         records = {}
         for label in ("A", "B"):
             key = TRADE_PHASE + ":" + label
-            stage = self.registry.begin_stage(case.case_id, key)
+            stage = registration[0][key] if registration and registration[1] else self.registry.begin_stage(case.case_id, key)
             if stage["result_json"] is None:
-                records[label] = self._thread(case, context, research, event_keys, stage_key=key)
+                records[label] = (self._prepared_thread(case, registration[1][key], self._thread_signature(case)[0], key)
+                                  if registration and registration[1]
+                                  else self._thread(case, context, research, event_keys, stage_key=key))
         if not records:
             return self._commit_pair(case)
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from doxagent.w3_timing import observed, span
@@ -71,6 +71,102 @@ class W3ThreadRegistry:
                 value[key] = json.loads(value[key]) if value[key] else None
             values[value['phase']] = value
         return values
+
+    def registration(self, case_id):
+        """One short snapshot; decode frozen material after releasing SQLite."""
+        with self.journal.transaction(write=False, expand=False) as db:
+            stages = db.execute(
+                "SELECT * FROM runtime_v2_w3_stages WHERE case_id=? AND phase IN "
+                "('trade_decision','trade_decision:A','trade_decision:B')", (case_id,)
+            ).fetchall()
+            records = db.execute(
+                "SELECT s.phase,t.* FROM runtime_v2_w3_stages s JOIN runtime_v2_w3_threads t "
+                "ON t.record_id=json_extract(s.input_refs,'$.record_id') WHERE s.case_id=? "
+                "AND s.phase IN ('trade_decision','trade_decision:A','trade_decision:B')", (case_id,)
+            ).fetchall()
+            frozen = db.execute(
+                "SELECT namespace,payload FROM runtime_values WHERE key=? AND namespace IN "
+                "('w3_recent_filled_snapshot','w3_global_input','w3_time_awareness')", (case_id,)
+            ).fetchall()
+        return self._registration(stages, records, frozen)
+
+    def _registration(self, stages, records, frozen):
+        result = {}
+        for row in stages:
+            value = dict(row)
+            for key in ('input_refs', 'result_json'):
+                value[key] = json.loads(value[key]) if value[key] else None
+            result[value['phase']] = value
+        return result, {r['phase']: dict(r) for r in records}, {
+            r['namespace']: json.loads(self.journal.content.text(r['payload'])) for r in frozen
+        }
+
+    def find_ready_template(self, key, compatibility):
+        with self.journal.transaction(write=False, expand=False) as db:
+            row = db.execute(
+                "SELECT * FROM runtime_v2_w3_threads WHERE kind='TEMPLATE' AND template_key=? "
+                "AND compatibility_key=? AND status='READY'", (key, compatibility)
+            ).fetchone()
+        return dict(row) if row else None
+
+    @observed('stage.register_trade_bundle')
+    def register_trade_bundle(self, *, case_id, ticker, phases, template, compatibility,
+                              frozen, accepted_at):
+        prepared = [(ns, encode(value)) for ns, value in frozen.items()]
+        identities = {phase: uuid4().hex for phase in phases}
+        now = self.journal.clock()
+        with self.journal.transaction(operation='w3.register_trade_bundle', expand=False) as db:
+            assert_write_lease(db)
+            main = db.execute("SELECT accepted_at FROM runtime_v2_w3_stages WHERE case_id=? "
+                              "AND phase='trade_decision'", (case_id,)).fetchone()
+            received = main[0] if main else accepted_at.isoformat()
+            for phase in ('trade_decision', *[p for p in phases if p != 'trade_decision']):
+                db.execute("INSERT OR IGNORE INTO runtime_v2_w3_stages"
+                           "(case_id,phase,status,accepted_at) VALUES(?,?,'PENDING',?)",
+                           (case_id, phase, received))
+            for ns, payload in prepared:
+                db.execute("INSERT OR IGNORE INTO runtime_values VALUES(?,?,?)", (ns, case_id, payload))
+            for phase in phases:
+                stage = db.execute("SELECT input_refs FROM runtime_v2_w3_stages WHERE case_id=? "
+                                   "AND phase=?", (case_id, phase)).fetchone()
+                refs = json.loads(stage[0]) if stage[0] else {}
+                identity = refs.get('record_id')
+                if identity:
+                    old = db.execute("SELECT owner_case_id FROM runtime_v2_w3_threads WHERE record_id=?",
+                                     (identity,)).fetchone()
+                    if old is None or old[0] not in (None, case_id):
+                        raise ValueError('original Case thread identity is unavailable')
+                    if old[0] is None:
+                        db.execute("UPDATE runtime_v2_w3_threads SET owner_case_id=? WHERE record_id=?",
+                                   (case_id, identity))
+                    continue
+                valid = template and db.execute(
+                    "SELECT 1 FROM runtime_v2_w3_threads WHERE record_id=? AND kind='TEMPLATE' "
+                    "AND status='READY' AND compatibility_key=? AND thread_id=?",
+                    (template['record_id'], compatibility, template['thread_id'])
+                ).fetchone()
+                if not valid:
+                    raise ValueError('public Template changed before Case registration')
+                identity = identities[phase]
+                db.execute(
+                    "INSERT INTO runtime_v2_w3_threads(record_id,ticker,kind,compatibility_key,"
+                    "parent_id,workspace,status,last_received_at,expires_at,owner_case_id,"
+                    "lease_token,lease_until) VALUES(?,?,'CASE',?,?,?,'ACTIVE',?,?,?,1,?)",
+                    (identity, ticker, compatibility, template['thread_id'], 'w3-case-'+identity,
+                     received, (datetime.fromisoformat(received)+timedelta(hours=48)).isoformat(),
+                     case_id, (now+timedelta(minutes=20)).isoformat())
+                )
+                refs.update(record_id=identity, operation_key='w3-fork:'+identity)
+                db.execute("UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                           (encode(refs), case_id, phase))
+            stages = db.execute("SELECT * FROM runtime_v2_w3_stages WHERE case_id=? AND phase IN "
+                                "('trade_decision','trade_decision:A','trade_decision:B')", (case_id,)).fetchall()
+            records = db.execute("SELECT s.phase,t.* FROM runtime_v2_w3_stages s JOIN runtime_v2_w3_threads t "
+                                 "ON t.record_id=json_extract(s.input_refs,'$.record_id') WHERE s.case_id=? "
+                                 "AND s.phase IN ('trade_decision','trade_decision:A','trade_decision:B')", (case_id,)).fetchall()
+            saved = db.execute("SELECT namespace,payload FROM runtime_values WHERE key=? AND namespace IN "
+                               "('w3_recent_filled_snapshot','w3_global_input','w3_time_awareness')", (case_id,)).fetchall()
+        return self._registration(stages, records, saved)
 
     @observed("stage.begin")
     def begin_stage(self, case_id, phase, *, thread_id=None, input_refs=None):
