@@ -840,7 +840,9 @@ class WorkerJobManager:
         while True:
             async with self._condition:
                 revision = self._event_revision
+            status_started = utc_now()
             status = await read_io(self.store.status, job_id)
+            status_returned = utc_now()
             if status is None:
                 return
             pending = await read_io(self.store.events, job_id, after_sequence)
@@ -854,7 +856,9 @@ class WorkerJobManager:
                 "failed",
                 "cancelled",
             }:
-                logging.getLogger(__name__).info('w3_sse_terminal job_id=%s at=%s status=%s', job_id, utc_now().isoformat(), status)
+                logging.getLogger(__name__).info('w3_sse_terminal %s', json.dumps(dict(
+                    job_id=job_id, status=status, status_started_at=status_started.isoformat(),
+                    status_returned_at=status_returned.isoformat(), stream_closed_at=utc_now().isoformat())))
                 return
             async with self._condition:
                 if revision != self._event_revision:

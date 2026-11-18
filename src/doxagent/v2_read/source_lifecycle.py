@@ -103,7 +103,7 @@ def acknowledge_prepared(source, consumer, checkpoint, repairs, previous=None):
 def retire_consumer(source, consumer):
     """Explicit generation retirement; inactivity alone never retires a consumer."""
     with closing(source.connection(write=True)) as db, db:
-        db.execute('BEGIN IMMEDIATE'); migrate(db)
+        db.execute('BEGIN IMMEDIATE')
         db.execute('DELETE FROM v2_source_consumers WHERE id=?',(consumer,))
         db.execute('DELETE FROM v2_source_exception_pins WHERE consumer=?',(consumer,))
         db.execute('DELETE FROM v2_source_pins WHERE id=? OR id=?',(consumer,consumer+':repair'))

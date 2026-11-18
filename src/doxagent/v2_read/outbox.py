@@ -207,9 +207,10 @@ class SourceOutbox:
             from .artifact_registry import native_triggers
 
             migrate_artifacts(db)
-            from .source_lifecycle import migrate as migrate_lifecycle, migrate_expiry_index
+            from .source_lifecycle import migrate as migrate_lifecycle, migrate_expiry_index, migrate_archive_times
 
             migrate_lifecycle(db)
+            migrate_archive_times(db)
             migrate_expiry_index(db)
             names.add('v2_source_receipts')
             for native_table in sorted(names):

@@ -3293,3 +3293,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-19 Runtime critical-chain E: derive consensus from durable A/B receipts and publish the main representative, Trade business output and route projection in one fenced transaction; fold W3 dispatch ticket into quota/generation admission. Accepted/unknown/404 recovery remains unchanged. Regression: 61 passed.
 
 2026-11-19 Runtime critical-chain D: set Luna private READY default to 6 with existing single-builder/pressure semantics; trace settlement through terminal SQL, notification, audit, SSE and client consumption, plus Fork receipt/send boundaries. Worker regression: 113 passed; combined final: 50 passed; bounded expiry/pin-race: 26 passed.
+
+2026-11-19 Runtime critical-chain completion: initialize archive-time schema once at migration/maintenance startup, remove consumer-retirement DDL, complete SSE/GET clocks, and validate original Case removal epoch in merged admission even for an existing dispatch ticket. Regression: 26 transport and 14 admission/replacement tests passed.

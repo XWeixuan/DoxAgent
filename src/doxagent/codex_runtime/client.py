@@ -346,8 +346,14 @@ class HttpCodexWorkerClient:
                             break
                     if job is None:
                         post_started = True
+                        if str(request.node) == 'persistent_runtime_w3':
+                            from doxagent.w3_timing import mark
+                            mark('worker.http_request_started', method='POST')
                         response = await self._client.post('/v1/jobs',json=request.model_dump(mode='json'))
                     else:
+                        if str(request.node) == 'persistent_runtime_w3':
+                            from doxagent.w3_timing import mark
+                            mark('worker.http_request_started', method='GET', job_id=job.job_id)
                         response = await self._client.get(f'/v1/jobs/{job.job_id}')
                     if response.status_code == 429:
                         # Admission wait is not a failed execution, even for a full queue.

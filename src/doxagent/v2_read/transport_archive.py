@@ -124,6 +124,13 @@ def main():
     sources = [SourceOutbox(path, name) for name, path in (item.split('=', 1) for item in args.source)]
     for source in sources:
         if source.capture() is None:raise ValueError('source transport requires explicit migration: '+source.source)
+        from contextlib import closing
+        from .source_lifecycle import migrate_archive_times
+        with closing(source.connection()) as db:
+            has_times = db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_archive_times'").fetchone()
+        if not has_times:
+            with closing(source.connection(write=True)) as db, db:
+                migrate_archive_times(db)
     if args.install_expiry_index:
         from contextlib import closing
 

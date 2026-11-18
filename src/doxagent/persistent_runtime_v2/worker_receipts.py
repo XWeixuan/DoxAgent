@@ -363,7 +363,7 @@ class ReceiptWorker:
                 assert_write_lease(db)
                 from doxagent.v2_control.repository import ControlRepository
                 ControlRepository(self.journal).dispatch_in_transaction(
-                    db, request.idempotency_key, request.ticker)
+                    db, request.idempotency_key, request.ticker, case_id=self.case_id)
                 row = db.execute("SELECT payload FROM runtime_values WHERE namespace='w3_provider_pause' "
                                  "AND key='codex'").fetchone()
                 current = json.loads(row[0]) if row else {}
