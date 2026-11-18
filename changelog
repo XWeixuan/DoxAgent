@@ -3289,3 +3289,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-19 Runtime critical-chain B2: expiry plans and rechecks only candidate-page exception pins, skips empty work, and removes lazy schema installation from expiry writer transactions; keeps epoch/cursor/row/reference revalidation. Regression: 24 passed.
 
 2026-11-19 Runtime critical-chain C: enforce and verify Read WAL at migration/startup/activation, give new O3 requests exact workspace bootstrap paths, combine Executor health/heartbeat, and keep optional Time Awareness contention quiet. WAL/bootstrap targeted regression: 7 passed.
+
+2026-11-19 Runtime critical-chain E: derive consensus from durable A/B receipts and publish the main representative, Trade business output and route projection in one fenced transaction; fold W3 dispatch ticket into quota/generation admission. Accepted/unknown/404 recovery remains unchanged. Regression: 61 passed.

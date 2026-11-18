@@ -544,21 +544,21 @@ class ControlRepository:
 
     def dispatch(self, identity: str, ticker: str, *, case_id: str | None = None) -> None:
         with self.journal.transaction() as db:
-            state = control_in(db, ticker)
-            if state is None:
-                return
-            if not state["analysis_allowed"]:
-                raise ControlError("ANALYSIS_PAUSED")
-            if case_id:
-                origin = db.execute(
-                    "SELECT payload FROM v2_analysis_admission WHERE identity=?", (case_id,)
-                ).fetchone()
-                if not origin or json.loads(origin[0])["removal_epoch"] != state["removal_epoch"]:
-                    raise ControlError("ANALYSIS_REMOVED")
-            db.execute(
-                "INSERT OR IGNORE INTO v2_dispatch_ticket VALUES(?,?,?,?)",
-                (identity, ticker, state["epoch"], self.journal.clock().isoformat()),
-            )
+            self.dispatch_in_transaction(db, identity, ticker, case_id=case_id)
+
+    def dispatch_in_transaction(self, db, identity, ticker, *, case_id=None):
+        state = control_in(db, ticker)
+        if state is None:
+            return
+        if not state['analysis_allowed']:
+            raise ControlError('ANALYSIS_PAUSED')
+        if case_id:
+            origin = db.execute('SELECT payload FROM v2_analysis_admission WHERE identity=?', (case_id,)).fetchone()
+            if not origin or json.loads(origin[0])['removal_epoch'] != state['removal_epoch']:
+                raise ControlError('ANALYSIS_REMOVED')
+        if not db.execute('SELECT 1 FROM v2_dispatch_ticket WHERE identity=?', (identity,)).fetchone():
+            db.execute('INSERT INTO v2_dispatch_ticket VALUES(?,?,?,?)',
+                       (identity, ticker, state['epoch'], self.journal.clock().isoformat()))
 
     def defer(self, task: dict[str, Any]) -> None:
         """Return a leased task without consuming its technical failure budget."""

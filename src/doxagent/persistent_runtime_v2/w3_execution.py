@@ -634,28 +634,12 @@ class W3Execution:
                 for k, v in branches.items()
             },
         )
-        # Publish the representative binding and result together, before the
-        # existing single business transaction. A crash resumes this exact vote.
-        with self.journal.transaction() as db:
-            assert_write_lease(db)
-            old = db.execute(
-                "SELECT result_json FROM runtime_v2_w3_stages WHERE case_id=? AND phase=?",
-                (case.case_id, TRADE_PHASE),
-            ).fetchone()
-            if old[0] is not None and json.loads(old[0]) != result:
-                raise ValueError("saved consensus is immutable")
-            db.execute(
-                "UPDATE runtime_v2_w3_stages SET input_refs=?,result_json=?,thread_id=?,worker_job_id=?,status='RESULT_SAVED' WHERE case_id=? AND phase=? AND status!='COMMITTED'",
-                (
-                    encode(summary),
-                    encode(result),
-                    record["thread_id"],
-                    selected["worker_job_id"] if summary["result_source"] == "MODEL_BRANCH" else None,
-                    case.case_id,
-                    TRADE_PHASE,
-                ),
-            )
-        return self._commit_trade(case, record, W3DirectionDecision.model_validate(result))
+        # Immutable paid A/B receipts already form the recovery anchor. The
+        # derived representative is published with the business decision.
+        representative = (encode(summary), encode(result), record['thread_id'],
+                          selected['worker_job_id'] if summary['result_source'] == 'MODEL_BRANCH' else None)
+        return self._commit_trade(case, record, W3DirectionDecision.model_validate(result),
+                                  consensus=(representative, stages))
 
     def _resume_result(self, case_id, phase, record_id, reader):
         from doxagent.w3_timing import mark
@@ -694,7 +678,7 @@ class W3Execution:
         for job_id in job_ids or ():
             self.service._effect_executor.submit(self._ack, job_id)
 
-    def _commit_trade(self, case, record, decision):
+    def _commit_trade(self, case, record, decision, *, consensus=None):
         case.w3_trade_decision = decision.model_dump(mode="json")
         trade, override = self._trade_record(case, decision)
         operations = RuntimeEffect(
@@ -706,9 +690,26 @@ class W3Execution:
         prepared_case = self._prepare_case_payload(case)
         v6_records = self._v6_records(case, decision) if is_pin_watch_contract(case.w3_contract_version) else []
         encoded_records = [(table, value, self.service.repository.content.encode(value.model_dump(mode='json')) if hasattr(self.service.repository,'content') else None) for table,value in v6_records]
+        repository = self.service.repository
+        atomic_route = hasattr(repository, 'save_w3_case_in_transaction')
+        route_case = self._route_case_update(case, record) if atomic_route else None
+        route_payload = json.loads(repository.content.encode(route_case.model_dump(mode='json'))) if route_case else None
         def commit():
             with self.journal.transaction() as db:
                 assert_write_lease(db)
+                if consensus is not None:
+                    representative, expected = consensus
+                    rows = db.execute('SELECT phase,result_json,worker_job_id,thread_id FROM runtime_v2_w3_stages WHERE case_id=?', (case.case_id,)).fetchall()
+                    actual = {r['phase']: r for r in rows}
+                    for phase in (TRADE_PHASE+':A', TRADE_PHASE+':B'):
+                        row = actual.get(phase)
+                        if row is None or json.loads(row['result_json']) != expected[phase]['result_json'] or any(row[k] != expected[phase][k] for k in ('thread_id', 'worker_job_id')):
+                            raise ValueError('paid consensus branch changed before commit')
+                    old = actual[TRADE_PHASE]['result_json']
+                    if old is not None and json.loads(old) != case.w3_trade_decision:
+                        raise ValueError('saved consensus is immutable')
+                    db.execute("UPDATE runtime_v2_w3_stages SET input_refs=?,result_json=?,thread_id=?,worker_job_id=?,status='RESULT_SAVED' WHERE case_id=? AND phase=? AND status!='COMMITTED'",
+                               (*representative, case.case_id, TRADE_PHASE))
                 outcome = (
                     TradeOutputService(self.journal).record_in_transaction(
                         db, case, trade, disposition_override=override
@@ -742,6 +743,12 @@ class W3Execution:
                     persist=False,
                 )
                 self._save_case_in_transaction(db, case, prepared_case)
+                if route_case:
+                    route = route_case.model_copy(update={'resolved_route': case.resolved_route,
+                                                          'operations_status': case.w3_operations_status})
+                    payload = dict(route_payload, resolved_route=case.resolved_route.model_dump(mode='json'),
+                                   operations_status=case.w3_operations_status)
+                    repository.save_w3_case_in_transaction(db, route, encode(payload))
                 self._enqueue_in_transaction(db, operations)
                 return acknowledgements
         acknowledgements = self._write_result(commit)
@@ -751,7 +758,8 @@ class W3Execution:
         mark('phase.business_committed',task_phase=TRADE_PHASE)
         if not hasattr(self.service.repository, "path"):
             self.service.repository.save_case(case)
-        self._sync_route_case(case, record)
+        if not atomic_route:
+            self._sync_route_case(case, record)
         self.service._wake_effects()
         self._queue_ack(acknowledgements)
         if getattr(self.agent, "entry_enabled", lambda c: False)(case):

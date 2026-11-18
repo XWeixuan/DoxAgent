@@ -267,11 +267,13 @@ def test_saved_aggregate_recovery_keeps_audit_and_does_not_recall(tmp_path, monk
     monkeypatch.setattr(
         execution,
         "_commit_trade",
-        lambda *args: (_ for _ in ()).throw(RuntimeError("commit failed")),
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("commit failed")),
     )
     try:
         with pytest.raises(RuntimeError):
             execution.trade(case)
+        assert execution.registry.stage(case.case_id, 'trade_decision')['result_json'] is None
+        assert all(execution.registry.stage(case.case_id, 'trade_decision:'+label)['result_json'] is not None for label in ('A', 'B'))
         monkeypatch.setattr(execution, "_commit_trade", original)
         execution.trade(s.repository.get_case(case.case_id))
         assert calls == ["A", "B"]

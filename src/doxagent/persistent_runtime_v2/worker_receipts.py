@@ -191,10 +191,11 @@ class ReceiptWorker:
         if request.task_phase is not None and generation_updates is not None:
             existing_job = await self._lookup(dispatched_request)
         if existing_job is None:
-            await write_io(self.journal.path, ControlRepository(self.journal).dispatch,
-                           frozen["idempotency_key"], request.ticker, retry=True)
             if request.task_phase is not None:
                 probe = await self._admit(dispatched_request, generation_updates)
+            else:
+                await write_io(self.journal.path, ControlRepository(self.journal).dispatch,
+                               frozen["idempotency_key"], request.ticker, retry=True)
         try:
             if existing_job is not None and hasattr(self.worker, "resume_job"):
                 job = await self.worker.resume_job(dispatched_request, existing_job,
@@ -360,6 +361,9 @@ class ReceiptWorker:
         def admit():
             with self.journal.transaction(operation='w3.quota_admit') as db:
                 assert_write_lease(db)
+                from doxagent.v2_control.repository import ControlRepository
+                ControlRepository(self.journal).dispatch_in_transaction(
+                    db, request.idempotency_key, request.ticker)
                 row = db.execute("SELECT payload FROM runtime_values WHERE namespace='w3_provider_pause' "
                                  "AND key='codex'").fetchone()
                 current = json.loads(row[0]) if row else {}
@@ -393,9 +397,8 @@ class ReceiptWorker:
                     db.executemany("INSERT INTO runtime_values VALUES(?,?,?) ON CONFLICT(namespace,key) "
                                    "DO UPDATE SET payload=excluded.payload", updates)
                 return token, recovered
-        # Healthy requests need no empty writer admission transaction.
-        if not pause and not updates:
-            return None
+        # The necessary dispatch ticket and any generation/probe updates share
+        # this writer entry. Successful existing Jobs bypass admission entirely.
         token, recovered = await write_io(self.journal.path, admit, priority=0, retry=True)
         if recovered:
             self._notify_recovery()
