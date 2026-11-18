@@ -1,11 +1,14 @@
 """Derive disjoint Trade intervals for selected, fully completed natural Cases."""
+import gzip
 import json
 from datetime import datetime
 from pathlib import Path
 
 p = Path(__file__).parent
-cases = json.loads((p / "cohort.json").read_text(encoding="utf-8-sig"))["cases"]
-traces = json.loads((p / "logs.json").read_text(encoding="utf-8-sig"))["traces"]
+with gzip.open(p / "cohort-final.json.gz") as stream:
+    cases = json.load(stream)["cases"]
+with gzip.open(p / "logs-final.json.gz") as stream:
+    traces = json.load(stream)["traces"]
 acceptance = json.loads((p / "acceptance-final.json").read_text())
 
 
