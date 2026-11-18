@@ -5,9 +5,11 @@ There is no public/mock mode. Offline tests inject a verifier explicitly.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import hashlib
 import json
+import logging
 import math
 import re
 import time
@@ -18,6 +20,9 @@ import httpx
 
 from .errors import ApiFailure
 
+logger = logging.getLogger("doxagent.v2.auth")
+AUTH_SECONDS = 8
+
 
 @dataclass(frozen=True)
 class Principal:
@@ -27,7 +32,12 @@ class Principal:
     read_only: bool = False
 
     def wire(self) -> dict[str, Any]:
-        return {"user_id": self.user_id, "tier": self.tier, "can_read": True, "can_operate": not self.read_only}
+        return {
+            "user_id": self.user_id,
+            "tier": self.tier,
+            "can_read": True,
+            "can_operate": not self.read_only,
+        }
 
 
 class SupabaseAuth:
@@ -66,8 +76,13 @@ class SupabaseAuth:
         self.client = client or httpx.AsyncClient(timeout=10, follow_redirects=False)
         self._owns_client = client is None
         self.cache: dict[str, tuple[float, Principal]] = {}
+        self._inflight: dict[str, asyncio.Task[Principal]] = {}
 
     async def close(self) -> None:
+        pending = list(self._inflight.values())
+        for task in pending:
+            task.cancel()
+        await asyncio.gather(*pending, return_exceptions=True)
         if self._owns_client:
             await self.client.aclose()
 
@@ -95,25 +110,71 @@ class SupabaseAuth:
         cached = self.cache.get(digest)
         if cached and cached[0] > now:
             return cached[1]
+        task = self._inflight.get(digest)
+        if task is None:
+            task = asyncio.create_task(self._verify(token, digest, expires))
+            self._inflight[digest] = task
+
+            def finished(done):
+                self._inflight.pop(digest, None)
+                if not done.cancelled():
+                    done.exception()  # Also consume failures if every waiter disconnected.
+
+            task.add_done_callback(finished)
+        # One cancelled page request must not abort other requests' shared verification.
+        return await asyncio.shield(task)
+
+    async def _get(self, stage: str, path: str, headers, **kwargs) -> httpx.Response:
+        # Only idempotent authentication GETs; one retry, no retry of credential rejection.
+        for attempt in range(2):
+            try:
+                response = await self.client.get(
+                    self.url + path, headers=headers, timeout=3, **kwargs
+                )
+            except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError) as exc:
+                logger.warning(
+                    "supabase_auth stage=%s attempt=%d failure=%s",
+                    stage,
+                    attempt + 1,
+                    type(exc).__name__,
+                )
+                if attempt:
+                    raise
+            else:
+                if response.status_code not in {502, 503, 504} or attempt:
+                    return response
+                logger.warning(
+                    "supabase_auth stage=%s attempt=1 status=%d", stage, response.status_code
+                )
+
+    async def _verify(self, token: str, digest: str, expires: float) -> Principal:
         headers = {"Authorization": f"Bearer {token}", "apikey": self.key}
         try:
-            result = await self.client.get(self.url + "/auth/v1/user", headers=headers)
-            if result.status_code in {401, 403}:
-                raise ApiFailure("UNAUTHORIZED", 401)
-            result.raise_for_status()
-            user_id = result.json()["id"]
-            result = await self.client.get(
-                self.url + "/rest/v1/" + self.table,
-                headers=headers,
-                params={"select": "tier", "user_id": "eq." + user_id, "limit": "1"},
-            )
-            result.raise_for_status()
-            profiles = result.json()
+            async with asyncio.timeout(AUTH_SECONDS):
+                result = await self._get("identity", "/auth/v1/user", headers)
+                if result.status_code in {401, 403}:
+                    raise ApiFailure("UNAUTHORIZED", 401)
+                result.raise_for_status()
+                user_id = result.json()["id"]
+                result = await self._get(
+                    "profile",
+                    "/rest/v1/" + self.table,
+                    headers,
+                    params={"select": "tier", "user_id": "eq." + user_id, "limit": "1"},
+                )
+                result.raise_for_status()
+                profiles = result.json()
             if not profiles or profiles[0].get("tier") != self.tier:
                 self.cache.pop(digest, None)
                 raise ApiFailure("FORBIDDEN", 403)
+        except TimeoutError:
+            logger.warning("supabase_auth failure=total_deadline")
+            raise ApiFailure("AUTH_UNAVAILABLE", 503, retryable=True) from None
         except (httpx.HTTPError, ValueError, KeyError, TypeError):
             raise ApiFailure("AUTH_UNAVAILABLE", 503, retryable=True) from None
+        now = time.time()
+        if expires <= now:
+            raise ApiFailure("UNAUTHORIZED", 401)
         principal = Principal(user_id, self.tier, expires)
         if len(self.cache) >= 2048:
             self.cache = {key: value for key, value in self.cache.items() if value[0] > now}
