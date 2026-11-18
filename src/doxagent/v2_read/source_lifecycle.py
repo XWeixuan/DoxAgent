@@ -3,7 +3,6 @@ from contextlib import closing
 from datetime import UTC, datetime, timedelta
 import json
 from pathlib import Path
-import shutil
 import sqlite3
 import time
 
@@ -14,6 +13,13 @@ HOT_EXPIRY_INDEX = 'v2_source_outbox_expiry'
 def migrate_expiry_index(db):
     if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='v2_source_outbox'").fetchone():
         db.execute(f'CREATE INDEX IF NOT EXISTS {HOT_EXPIRY_INDEX} ON v2_source_outbox(julianday(recorded_at),seq)')
+
+
+def migrate_archive_times(db):
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_archive_times'").fetchone():
+        db.execute('CREATE TABLE v2_archive_times('
+                   'kind TEXT NOT NULL,seq INTEGER NOT NULL,digest TEXT NOT NULL,recorded_at TEXT NOT NULL,'
+                   'PRIMARY KEY(kind,seq)) WITHOUT ROWID')
 
 
 def migrate(db):
@@ -187,6 +193,11 @@ def expire(source, *, now=None, limit=500, hot_only=False):
     capture = source.capture()
     if not capture:
         raise ValueError('current source capture metadata required')
+    from .detached_files import detach, drain
+
+    discard = source.path.parent / 'transport-quarantine' / source.source
+    if not hot_only:
+        report['files'] += drain(discard)
     # Prepare archived packets and pinned exception payloads without the writer.
     with closing(source.connection()) as db:
         tables = ["v2_source_outbox"]
@@ -194,6 +205,9 @@ def expire(source, *, now=None, limit=500, hot_only=False):
             tables.append("v2_receipt_archive")
             if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():
                 tables.append("v2_receipt_packs")
+        has_archive_times = not hot_only and db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='v2_archive_times'"
+        ).fetchone() is not None
         has_gc_state = db.execute(
             "SELECT 1 FROM sqlite_master WHERE name='v2_transport_gc_state'"
         ).fetchone()
@@ -233,18 +247,25 @@ def expire(source, *, now=None, limit=500, hot_only=False):
             prepared = []
             for row in rows:
                 seq = row["seq"]
-                recent = table == "v2_source_outbox" and datetime.fromisoformat(row["recorded_at"]) >= before
+                archived = table != 'v2_source_outbox'
+                hint = db.execute(
+                    'SELECT recorded_at FROM v2_archive_times WHERE kind=? AND seq=? AND digest=?',
+                    (table, seq, row['digest']),
+                ).fetchone() if archived and has_archive_times else None
+                stamp = (hint[0] if hint else None) if archived else row['recorded_at']
+                recent = stamp is not None and datetime.fromisoformat(stamp) >= before
                 packet, raw_json, hashes = None, None, ()
-                if not recent and (table != "v2_source_outbox" or seq in pins):
+                if stamp is None or (seq in pins and not recent):
                     packet = source.event(seq, decode=False, connection=db, pack_cache=pack_cache)
                     if packet is None:
                         raise ValueError("transport packet missing")
-                    recent = datetime.fromisoformat(packet["recorded_at"]) >= before
+                    stamp = packet['recorded_at']
+                    recent = datetime.fromisoformat(stamp) >= before
                     if seq in pins and not recent:
                         raw = {key: value for key, value in packet.items() if key != "row"}
                         raw_json = json.dumps(raw, ensure_ascii=False, separators=(",", ":"))
                         hashes = set(native_hashes(raw))
-                prepared.append((row, recent, raw_json, hashes))
+                prepared.append((row, recent, raw_json, hashes, stamp if archived and hint is None else None))
             pages[table] = prepared
 
     with closing(source.connection(write=True)) as db, db:
@@ -256,6 +277,9 @@ def expire(source, *, now=None, limit=500, hot_only=False):
             return report
         if not has_gc_state:
             migrate(db)
+        if not hot_only and not has_archive_times and any(pages.get(t) for t in tables[1:]):
+            migrate_archive_times(db)
+            has_archive_times = True
         # Only the temporary importer prefix has a bounded lease. A killed
         # importer must not pin a suffix forever; ordinary Read consumers are
         # retired explicitly by their generation owner.
@@ -278,7 +302,7 @@ def expire(source, *, now=None, limit=500, hot_only=False):
             if use_cursor and db.execute("SELECT cursor FROM v2_transport_gc_state WHERE kind=?", (table,)).fetchone()[0] != cursor:
                 continue
             last = 0 if not prepared else cursor
-            for row, recent, raw_json, hashes in prepared:
+            for row, recent, raw_json, hashes, learned_time in prepared:
                 seq = row["seq"]
                 if seq > floor or (not recent and seq in pins and raw_json is None):
                     break
@@ -287,6 +311,10 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                     break
                 last = seq
                 report["scanned"] += 1
+                if current is not None and recent and learned_time is not None:
+                    db.execute('INSERT INTO v2_archive_times VALUES(?,?,?,?) ON CONFLICT(kind,seq) '
+                               'DO UPDATE SET digest=excluded.digest,recorded_at=excluded.recorded_at',
+                               (table, seq, row['digest'], learned_time))
                 if current is None or recent:
                     continue
                 if seq in pins:
@@ -299,6 +327,8 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                     db.execute('DELETE FROM v2_source_receipts WHERE id=?',(row['receipt_id'],))
                 else:
                     db.execute('DELETE FROM '+table+' WHERE seq=?',(row['seq'],))
+                    if has_archive_times:
+                        db.execute('DELETE FROM v2_archive_times WHERE kind=? AND seq=?', (table, row['seq']))
                     db.execute('DELETE FROM artifact_ref WHERE owner_type=? AND owner_id=?',
                                ('transport_pack' if table=='v2_receipt_packs' else 'transport_archive',str(row['seq'])))
                     if not db.execute('SELECT 1 FROM '+table+' WHERE digest=? LIMIT 1',(row['digest'],)).fetchone():
@@ -320,6 +350,9 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                 if p.exists():
                     if p.is_symlink() or p.resolve().parent.parent != (source.path.parent/folder/source.source).resolve():
                         raise ValueError('transport path escaped owner')
-                    shutil.rmtree(p);report['files']+=1
+                    detach(p, discard)
                 db.execute('DELETE FROM v2_transport_files_exit WHERE folder=? AND digest=?',(folder,digest))
+            else:
+                db.execute('DELETE FROM v2_transport_files_exit WHERE folder=? AND digest=?',(folder,digest))
+    report['files'] += drain(discard)
     return report

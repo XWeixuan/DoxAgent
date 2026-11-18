@@ -14,6 +14,28 @@ _WINDOW = "binding_id=? AND unit=? AND dispatch_at>=? AND dispatch_at<?"
 _ACTIVE = ("(status='DISPATCHED' OR (status='CAPTURED' AND finished_at IS NULL "
            "AND coalesce(json_extract(data_json,'$.attempt_finished'),1)=0))")
 _TERMINAL = "status!='SCHEDULE' AND NOT " + _ACTIVE
+_SCAN_KEY = 'retention_hour_scan'
+_SCAN_PAGES = 'retention_hour_scan:'
+
+
+def _clear_hour_scan(db):
+    db.execute('DELETE FROM meta WHERE key=? OR (key>=? AND key<?)',
+               (_SCAN_KEY, _SCAN_PAGES, _SCAN_PAGES + '\uffff'))
+
+
+def _stage_page(store, window, work, page):
+    last = page[-1]
+    pages = work['pages'] + 1
+    progress = {
+        'window': window, 'cursor': (last['dispatch_at'], last['run_id']), 'pages': pages,
+    }
+    with store.connect(write=True) as db:
+        if not work['pages']:
+            _clear_hour_scan(db)
+        db.executemany('INSERT OR REPLACE INTO meta VALUES(?,?)', (
+            (_SCAN_PAGES + f'{pages:08d}', canonical_json(page)),
+            (_SCAN_KEY, canonical_json(progress)),
+        ))
 
 
 def _retire_hour(store, cutoff, archive_floor, deferred):
@@ -58,27 +80,27 @@ def _retire_hour(store, cutoff, archive_floor, deferred):
         elif _inflight(db, window):
             return defer('inflight')
         else:
-            # The one active hourly scan survives across maintenance calls.
-            # A process restart may replay the read pages. No raw row is
-            # retired until the exact histogram has been committed.
-            work = getattr(store, '_archive_scan', None)
-            if work is None or work['window'] != window:
-                work = store._archive_scan = {
-                    'window': window, 'cursor': ('', ''), 'samples': [],
-                }
+            # Keep one resumable scan. Only slim proof pages are staged, and
+            # none are needed after the exact histogram is durably sealed.
+            saved = db.execute('SELECT value FROM meta WHERE key=?', (_SCAN_KEY,)).fetchone()
+            work = json.loads(saved[0]) if saved else {}
+            if work.get('window') != list(window):
+                work = {'cursor': ('', ''), 'pages': 0}
             page = [dict(r) for r in db.execute(
                 'SELECT rowid AS archive_rowid,* FROM cycles WHERE ' + _WINDOW +
                 ' AND ' + _TERMINAL + ' AND (dispatch_at,run_id)>(?,?) '
                 'ORDER BY dispatch_at,run_id LIMIT ?', (*window, *work['cursor'], _HOUR_PAGE),
             )]
             _prepare_archive_page(db, page)
-            work['samples'].extend(page)
             if len(page) == _HOUR_PAGE:
-                last = page[-1]
-                work['cursor'] = (last['dispatch_at'], last['run_id'])
+                _stage_page(store, window, work, page)
                 return {**report, 'cycles': 0, 'scanned': len(page)}
-            samples = work['samples']
-            store._archive_scan = None
+            samples = []
+            if work['pages']:
+                for stored in db.execute('SELECT value FROM meta WHERE key>=? AND key<? ORDER BY key',
+                                         (_SCAN_PAGES, _SCAN_PAGES + '\uffff')):
+                    samples.extend(json.loads(stored[0]))
+            samples.extend(page)
             if not samples:
                 return defer('source_changed')
             archive, seal = _hour_stats(db, window, start, end, samples)
@@ -91,9 +113,12 @@ def _retire_hour(store, cutoff, archive_floor, deferred):
                 _WINDOW + ' AND ' + _TERMINAL, window,
             ).fetchone()
             if list(current) != seal or _inflight(db, window):
+                _clear_hour_scan(db)
                 return defer('source_changed')
             if not db.execute('INSERT OR IGNORE INTO unit_hours VALUES(?,?,?,?)', archive).rowcount:
+                _clear_hour_scan(db)
                 return defer('already_archived')
+            _clear_hour_scan(db)
         deleted = db.executemany(
             'DELETE FROM cycles WHERE run_id=? AND rowid=? AND finished_at IS ? AND ' + _TERMINAL,
             rows,

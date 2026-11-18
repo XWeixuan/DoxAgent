@@ -3,6 +3,9 @@ import os
 import sqlite3
 import time
 from contextlib import closing
+from datetime import UTC, datetime, timedelta
+
+import pytest
 
 from doxagent.codex_worker.job_store import JobStore
 from doxagent.codex_worker.w3_resources import (
@@ -12,6 +15,7 @@ from doxagent.codex_worker.w3_resources import (
     restore,
     restore_archive,
     retire,
+    retire_settled_contexts,
 )
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.persistent_runtime_v2.w3_research_store import W3ResearchStore, atomic, compact, sha
@@ -83,3 +87,38 @@ def test_ready_workspace_archive_preserves_audit_without_second_research_pack(tm
         json.loads((tmp_path / run / "attempts/c/audit/result.json").read_bytes())["decision"]
         == "NO_TRADE"
     )
+
+
+def test_settled_context_waits_for_ack_and_keeps_exact_replay(tmp_path):
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.persistent_runtime_v2.repository import SQLitePersistentRuntimeV2Repository
+    from doxagent.persistent_runtime_v2.w3_threads import W3ThreadRegistry
+
+    store = W3ResearchStore(tmp_path / 'worker')
+    manifest = {'components': {}, 'state': {'facts': ['exact frozen input']}}
+    binding = store.bind('case', 'trade_decision', manifest)
+    now = datetime.now(UTC)
+    at = (now - timedelta(days=2)).isoformat()
+    path = tmp_path / 'runtime.sqlite3'
+    journal = RuntimeJournal(path)
+    SQLitePersistentRuntimeV2Repository(path)
+    W3ThreadRegistry(journal)
+    with journal.transaction() as db:
+        db.execute('INSERT INTO runtime_v2_cases VALUES(?,?,?,?,?,?,?,?,?)',
+                   ('case', 'message', 'MU', '2026-11-16', 'COMPLETED', 'OK', '{}', at, at))
+        db.executemany('INSERT INTO runtime_v2_w3_stages '
+                       '(case_id,phase,status,result_json,worker_job_id,accepted_at,committed_at) '
+                       'VALUES(?,?,\'COMMITTED\',?,?,?,?)', (
+                           ('case', 'trade_decision', '{"decision":"NO_TRADE"}', 'job', at, at),
+                           ('case', 'post_decision_operations', '{"pin_actions":[],"watch_actions":[]}', 'ops', at, at),
+                       ))
+        db.execute("INSERT INTO runtime_values VALUES('w3_ack_pending','job','true')")
+    assert not retire_settled_contexts(store, path, now=now)
+    with journal.transaction() as db:
+        db.execute("DELETE FROM runtime_values WHERE namespace='w3_ack_pending'")
+    assert retire_settled_contexts(store, path, now=now)
+    with pytest.raises(PermissionError, match='replay extension'):
+        store.context(binding['context_ref'])
+    extend_context(store, 'case')
+    assert store.context(binding['context_ref'])[1]['state'] == manifest['state']
+    assert not retire_settled_contexts(store, path, now=now)

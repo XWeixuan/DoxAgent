@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -95,9 +96,11 @@ class JobStore:
                 request is not None
                 and not db.execute("SELECT 1 FROM jobs WHERE id=?", (job.job_id,)).fetchone()
             ):
+                family = re.match(r"(runtime-maintain-[0-9a-f]{24})(?:-|$)", request.run_id)
                 if db.execute(
-                    "SELECT 1 FROM metadata WHERE key=?",
-                    ("workspace_retirement:" + request.run_id,),
+                    "SELECT 1 FROM metadata WHERE key IN (?,?)",
+                    ("workspace_retirement:" + request.run_id,
+                     "workspace_retirement:" + (family[1] if family else request.run_id)),
                 ).fetchone():
                     raise ValueError("PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN")
             db.execute(
@@ -164,6 +167,54 @@ class JobStore:
             if audit.is_file() and audit.resolve().is_relative_to(self.root.resolve()):
                 audit.write_text(job.model_dump_json(), encoding="utf-8")
         return job
+
+    @staticmethod
+    def retire_consumed_process(root: Path, request: dict, receipt: dict) -> bool:
+        """Discard only the duplicate process trace of a durably consumed Maintenance job."""
+        root = root.resolve()
+        path = root / 'worker-jobs.sqlite3'
+        run, attempt, job_id = (request.get('run_id'), request.get('attempt_id'), receipt.get('job_id'))
+        if not path.is_file() or not all(
+            isinstance(part, str) and re.fullmatch(r'[A-Za-z0-9_-]+', part)
+            for part in (run, attempt, job_id)
+        ) or not run.startswith('runtime-maintain-'):
+            return False
+        audit = root / run / 'audit' / 'jobs' / (job_id + '.json')
+        trace = root / run / 'attempts' / attempt / 'audit' / 'agent_loop.jsonl'
+        if audit.resolve() != audit or trace.resolve() != trace:
+            return False
+        with closing(sqlite3.connect(path, timeout=.1)) as db:
+            row = db.execute('SELECT status,payload,request FROM jobs WHERE id=?', (job_id,)).fetchone()
+        if not row or row[0] != receipt.get('status') or row[0] not in {'succeeded','failed','cancelled'}:
+            return False
+        job = WorkerJob.model_validate_json(row[1])
+        if (job.run_id, job.attempt_id, job.final_response, job.turn_id) != (
+            run, attempt, receipt.get('final_response'), receipt.get('turn_id')
+        ):
+            return False
+        saved = json.loads(row[2]) if row[2] else None
+        if saved and (saved.get('task_phase') or saved.get('idempotency_key') != request.get('idempotency_key')):
+            return False
+        if job.telemetry:
+            job.telemetry.events = []
+        payload = job.model_dump_json()
+        compact = row[2]
+        if saved is not None and (saved.get('prompt') or saved.get('output_schema')):
+            saved.update(prompt='', output_schema={})
+            compact = json.dumps(saved, ensure_ascii=False, separators=(',', ':'))
+        with closing(sqlite3.connect(path, timeout=.1)) as db, db:
+            db.execute('BEGIN IMMEDIATE')
+            if db.execute('SELECT status,payload,request FROM jobs WHERE id=?', (job_id,)).fetchone() != row:
+                return False
+            if payload != row[1] or compact != row[2]:
+                db.execute('UPDATE jobs SET payload=?,request=? WHERE id=?', (payload, compact, job_id))
+            db.execute('DELETE FROM events WHERE job_id=?', (job_id,))
+        if audit.is_file() and audit.read_bytes() != payload.encode():
+            from doxagent.v2_read.maintenance import atomic_json
+
+            atomic_json(audit, job.model_dump(mode='json'))
+        trace.unlink(missing_ok=True)
+        return True
 
     @staticmethod
     def _lane_expression() -> str:

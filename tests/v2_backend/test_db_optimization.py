@@ -198,7 +198,7 @@ async def test_query_pool_gives_cooperative_interrupt_a_grace_window():
         await runner.close()
 
 
-def test_native_large_input_roundtrip_capture_and_backup(tmp_path):
+def test_native_large_input_roundtrip_backup_without_capture_copy(tmp_path):
     path = tmp_path / "runtime.db"
     journal = RuntimeJournal(path)
     source = SourceOutbox(path,"runtime")
@@ -210,7 +210,8 @@ def test_native_large_input_roundtrip_capture_and_backup(tmp_path):
     with sqlite3.connect(path) as db:
         assert len(db.execute("SELECT inputs FROM runtime_tasks").fetchone()[0]) < 1000
     event = source.read(0)[0]
-    assert json.loads(event["row"]["inputs"]) == inputs
+    assert event['row']['id'] == 'case'
+    assert 'inputs' not in event['row'] and 'receipt' not in event['row']
     target = tmp_path / "backup" / "runtime.db"
     backup(path,target)
     assert RuntimeJournal(target,initialize=False).get_task("case")["inputs"] == inputs

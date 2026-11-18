@@ -1,20 +1,20 @@
 # 存储源头减量开发回执
 
-实施基线为 `b99d0dbea`，包含本地 `main` 已交付的 W3 非模型延时修复。开发位于 `codex/storage-source-reduction-20261118`，原工作目录用于读取两份方案。以下为本地开发结果，生产部署和存量清理另行安排。
+实施基线为 `b99d0dbea`，包含 `main` 已交付的 W3 非模型延时修复。开发位于 `codex/storage-source-reduction-20261118`。首次提交是 `b1aaddaa2`，本页同时记录后续开发。生产验收和正式存量清理尚未执行。
 
 | 工作包 | 本轮交付 | 待完成 |
 |---|---|---|
-| P0-01 D3 与 Maintenance | 取消每轮 `v21_state.json` 镜像和 V21 `output/final` 重复输出。Pilot 按需构建视图，兼容历史文件。新 staged receipt 引用已校验的投影文件。Runtime 从同一已结算维护任务核对 D3 消费与 Jobs 状态，调用现有 D3 过程字段退休入口 | Workspace 的发布副本单份化，以及非 W3 ACK 后的过程文件与 Session 局部退出 |
+| P0-01 D3 与 Maintenance | 取消逐轮过程视图和生产 `output/final` 重复输出，Pilot 按需生成。已消费、同族 Jobs 终态且通过 manifest 校验的 D3 使用同 inode 保留旧发布路径，退出派生视图。非 W3 已消费 Maintenance Job 退休重复请求和事件，保留业务结果与用量 | 工作区其他过程输入仍由原有快照和复用规则保护，SDK Session 大树扫描待收敛。生产新增长至少降 70% 待实测 |
 | P0-02 Research 正文 | SQLite 发布入口支持 SHA 寻址压缩正文，兼容旧 inline 和已有外部存储。读取、adoption、W3 编译、备份以及评估导出支持新引用。历史转换命令每次处理有限页面 | 后续发布时统一启用 writer，实测压缩与写入规模，迁移后再审查旧副本 |
-| P0-03 Acquisition | 省去相同 unit head/state 重写，物理请求诊断只随一个逻辑结果保存。按 128 条读取一小时的薄证明，以原 cadence 算法计算结果。保护已取证但在途的 cycle，归档提交后再退出原行，超出七天的终态明细直接退出 | 小时扫描的进程内进度在重启后会重读原始页。完成真正晚到且落在已归档小时的指标合并，以及物理证明与更多派生字段的归一化。50% 块写下降尚未实测 |
-| P0-04 CDC | Research 与 Bus 已 ACK 热回放改为 48h，其他源保持现有窗口。年龄索引与有限回退，事务重查 source epoch、ACK 与 pin。压力条件下每源尝试一小批热包，使用零等待 writer。Native ref 按集合差量维护 | 旧 archive/pack 的独立到期元数据回填，以及其余投影字段审查 |
-| P0-05 Native | 小对象支持单 gzip 成员，旧 chunk 格式继续可读。Source Native 常规最终删除采用现有 `DELETING` 状态，文件删除在 writer 外，退出记录可在中断后重试 | 对复活及历史异常分支中的残余锁内文件操作继续验证。没有把它们统一移到锁外 |
-| P1-01 Runtime | Reference 的 before/after 与 baseline 大字段复用 Native SHA，同一快照不反复写正文。结算只更新状态和时点。原有 activation/branch 引用协议沿用 | 全量历史 Event 分支退役策略、W3 citation scope 与 round inputs 的引用收敛 |
-| P1-02 Read | 新发布的合适大小正文在同一文件系统可共享已验证的压缩文件，保留原 API 内容身份与访问权限。大对象沿用可按范围读取的 chunk | 全投影减量及存量转换 |
-| P1-03 W3 | 新编译资源支持从 canonical 研究文件重建，支持先发布 reader。保留现有启动、READY、模型调用及结果结算设计 | Context 的真实 obligation 终态退出、旧 source/pack 回收及 SDK Session 生命周期 |
-| P1-04 其他 owner | 成功 Observation 直接落既有 canonical blocks、alias、调用回执和交付，省去无独立消费者的 raw transport 副本。保留去敏的异常诊断 | 初始化快照、CDECR 和修复/验证现场的统一结算 |
-| P2-01 浏览器 | Profile 恢复点修剪沿用原规则，跨 profile 的孤立 Registry 快照扫描每小时最多一次 | 保护期限和成功恢复隔离目录退出 |
-| P2-02 发布与备份 | 压缩发布正文进入已有备份校验和目录清单 | 统一其他发布入口、旧恢复点及日志退出规则 |
+| P0-03 Acquisition | 相同 unit state/head 跳过重写，物理诊断只随一个逻辑结果保存。现有 `meta` 保存一小时的薄证据分页，重启续跑。真实在途周期阻止 seal，上一代有有效列表证明的中断周期保留 `CAPTURED`，单独记录运行中断。完成时核对终态水位，提交精确 cadence 后再退出原行 | 旧已归档小时已有的晚到原记录继续留到窗口结束。物理/逻辑字段的进一步归并和生产 50% 块写下降待实测 |
+| P0-04 CDC | Research 与 Bus 的已 ACK 热回放改为 48h，保留 repair pin、有效消费者及源 epoch。压力下每源独立短批。Native ref 按集合差量维护。归档同时记录时间，旧 pack 的近龄时间随有限页读取回填 | 生产旧库索引安装、历史 pack 的 backfill 进展及其他字段级消费契约待生产验收 |
+| P0-05 Native | 小对象单 gzip 成员保持旧 chunk 可读。`DELETING` 及异常隔离目录的递归删除在 writer 外，退出队列可续跑。Transport 归档统一走 pack，锁外准备，短事务复核坐标并登记引用 | 生产物理写入、inode 与持锁耗时待实测 |
+| P1-01 Runtime | Reference 快照复用 Native SHA，结算只更新状态和时点。旧版 W3 citation scope 按不可变事件内容复用，保留逻辑形状。带 Journal 的新 Case 用 round key 指向既有冻结输入，内存调用继续留原字段。Runtime 常驻退出按已有终态 run 索引分页，保留显式历史扫描和选版压缩 | 历史 Event 分支根路径及已落盘的 Case round 副本需单独核对与迁移 |
+| P1-02 Read | 新小正文可同文件系统共享校验过的压缩文件。日内 Reference 链只保存下次差分的基线，完整交付证据仍可查。复用现有 `serving_fields` 薄投影和短 view/stream 协议 | 历史重投影与物理空间回收待按生产实测安排。端到端时延尚无上线数据 |
+| P1-03 W3 | 编译资源能从 canonical 正文重建。无需 trade、watch 或 pin 的已结算 Case 在两阶段 ACK 后退出在线 Context 义务，可用现有 extension 重新读取原始冻结快照 | 未回收共享 `.w3-contexts/snapshots` 实体和旧 canonical source 副本。SDK Session 全树枚举及 SDK logs 留存仍待解决 |
+| P1-04 其他 owner | Observation 只物化 canonical blocks、alias、调用回执和交付。初始化预节点快照去除重复目录检查和原 Worker 可查的 `agent_loop.jsonl`，仍可恢复旧快照。沿用 CDECR 临时解包清理和 Initialization Repair 已终态干净工作树退出 | `.init` 还未换成仅保留必要输入的 manifest。Ops/验证临时库和 Source Maintenance 后续候选需继续验证 owner |
+| P2-01 浏览器 | Registry 孤立快照最多每小时扫一次。新恢复有精确 inode 和恢复时点回执，只有当前已验证身份才退出对应的旧 profile 隔离目录。现有可再生缓存继续使用 owner 锁与 PID 检查 | 未给 legacy protected snapshot 猜测过期时间，也未清退旧格式隔离目录或宿主 legacy 路径 |
+| P2-02 发布与备份 | 新正文纳入恢复校验。成功迁移备份保留当前与同一数据库集合的前一验证恢复点，重跑旧任务不会清退更晚备份。继续用现有发布 owner 和 Compose 日志限额 | 其他历史发布入口、已失效备份与无主产物需要分别核对，不把未完成备份自动认定为无价值 |
 
 ## 后续启用顺序
 
@@ -35,3 +35,12 @@
 - W3 启动与 READY admission、Observation、Profile 快照组合 25 项通过。
 - 单独重跑 Native 删除中断、新发布复活与小时归档两项关键边界，均通过。
 - Site 较广组合有一项基线失败。`test_maintenance_inspection_waits_for_navigation_without_reload` 的 Page 测试替身缺少 `url`，在原始 `main` 复现。其余 70 项通过。生产写入量、真实业务延时与物理容量收益待发布后验收。
+- 第二批跨组件回归 125 项通过、1 项跳过。后续 D3、Workspace、W3 兼容组合 75 项通过。包含薄物理证明与轮次引用的最后一组有 66 项通过。另有一项交易时点相关用例在 `b99d0dbea` 同样复现 `RUNTIME_DELAY_EXCEEDED`，未调整生产交易判定。上述组合有重叠；静态未定义引用检查通过。
+
+## 生产与清理进度
+
+北京时间 2026-11-18 10:43 的根盘巡检显示可用约 2.64 GiB，`df` 显示 100%。生产仍为 `b99d0dbea`。22 个容器仍运行，Read API `/readyz` 为 HTTP 200、`ok=true`，Worker 健康。以上为现行生产版本的巡检。新存储格式尚未启用，所有生产业务验收与净释放量仍待执行。
+
+已有 backend、site、supervisor、guardian 和 repair-agent 稳定依赖镜像。发布脚本的 10 GiB 门槛适用于需重新构建的大依赖层。沿用缓存仍需核对应用构建、业务写入和回滚的实际余量。正式清理按交付要求排在发布验收之后。独立的临时余量处置尚未获得本轮确认。
+
+正式清理候选优先看 Maintenance 已结算过程体与可校验重复文件、已无引用 Runtime 分支、已导入的 Ops/验证现场。对 Research、Read 和 Acquisition 分别核算实际文件删除与 SQLite 可复用空闲页。当前只读检查显示，发布目录下的 backups 合计约 1.59 GiB，不能将这一整组当成足够的发布余量。正式清理仍需要记录逐批实测和恢复点复核。

@@ -180,7 +180,7 @@ def compact_one(journal,control_path,identity,run,path,versions,now, should_yiel
             return proof
 
 
-def compact_process(journal,runs,protected,now,*,limit=64):
+def compact_process(journal,runs,protected,now,*,limit=64,settings=None):
     import hashlib
     changed=[]
     for run,info in runs.items():
@@ -191,6 +191,23 @@ def compact_process(journal,runs,protected,now,*,limit=64):
         def terminal(db):
             task=db.execute('SELECT status,updated_at FROM runtime_tasks WHERE id=?',(info['task'],)).fetchone()
             return task and task[0]==info['status'] and (now-datetime.fromisoformat(task[1])).total_seconds()>=days*86400
+        def acknowledge_trace(key, request, receipt):
+            if not (settings and info['status'] == 'SUCCEEDED' and not request.get('worker_trace_retired')
+                    and receipt.get('job_id')):
+                return False
+            from doxagent.codex_worker.job_store import JobStore
+            from doxagent.codex_worker.session_retention import run_held
+
+            if run_held(settings, run) or not JobStore.retire_consumed_process(
+                Path(settings.codex_workspace_root), request, receipt
+            ):
+                return False
+            payload = journal.content.encode({**request, 'worker_trace_retired': True})
+            with journal.transaction(operation='resource.process.acknowledged') as db:
+                if terminal(db):
+                    db.execute("UPDATE runtime_values SET payload=? WHERE namespace='worker_requests' AND key=?",
+                               (payload, key))
+            return True
         # This is only the pre-O3 retry input. The delivered before/after
         # evidence remains in reference_deliveries and native version pins.
         with journal.transaction() as db:
@@ -202,8 +219,12 @@ def compact_process(journal,runs,protected,now,*,limit=64):
         for key in keys:
             if len(changed)>=limit:return changed
             request=journal.get('worker_requests',key);receipt=journal.get('worker_receipts',key)
-            if not request or request.get('retired_process') or request.get('task_phase') is not None or request.get('node')=='persistent_runtime_w3':continue
+            if not request or request.get('task_phase') is not None or request.get('node')=='persistent_runtime_w3':continue
             if not receipt or receipt.get('status') not in {'succeeded','failed','cancelled'}:continue
+            if request.get('retired_process'):
+                if acknowledge_trace(key, request, receipt):
+                    changed.append(key)
+                continue
             compact={k:request[k] for k in ('run_id','attempt_id','idempotency_key','node','ticker','thread_id','workflow_version','model','model_provider','effort') if k in request}
             compact.update(retired_process=True,request_sha256=hashlib.sha256(json.dumps(request,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest())
             payload=journal.content.encode(compact)
@@ -217,6 +238,7 @@ def compact_process(journal,runs,protected,now,*,limit=64):
                 if encoded_receipt is not None:
                     db.execute("UPDATE runtime_values SET payload=? WHERE namespace='worker_receipts' AND key=?",(encoded_receipt,key))
                 changed.append(key)
+            acknowledge_trace(key, compact, receipt)
     return changed
 
 
@@ -275,7 +297,7 @@ def compact_d3(journal, run, info, now, settings):
     if not settings or info['status'] != 'SUCCEEDED' or now-datetime.fromisoformat(info['at']) < timedelta(days=1):
         return None
     from doxagent.codex_worker.session_retention import run_held
-    from doxagent.codex_worker.workspace_retention import family_jobs
+    from doxagent.codex_worker.workspace_retention import family_jobs, retire_d3_copies
     from doxagent.workflows.codex_document3.state_v21 import StateV21
 
     candidate = run + '-o3'
@@ -289,7 +311,9 @@ def compact_d3(journal, run, info, now, settings):
         return None
     research = Path(settings.codex_runtime_sqlite_path)
     jobs = Path(settings.codex_workspace_root) / 'worker-jobs.sqlite3'
-    if not research.is_file() or not jobs.is_file():
+    directory = jobs.parent.resolve() / candidate
+    if (not research.is_file() or not jobs.is_file() or not directory.is_dir()
+        or directory.resolve() != directory or (directory/'audit/d3-process-exit.json').is_file()):
         return None
     view = StateV21(research, read_only=True)
     with view.connect() as db:
@@ -297,19 +321,29 @@ def compact_d3(journal, run, info, now, settings):
             return None
         eligible = db.execute(
             "SELECT 1 FROM codex_document3_v21_runs WHERE run_id=? "
-            "AND json_type(payload,'$.settlement')='object' "
-            "AND json_type(payload,'$.resource_retirement') IS NULL",
+            "AND json_type(payload,'$.settlement')='object' ",
             (candidate,),
         ).fetchone()
     if not eligible or run_held(settings, candidate):
         return None
-    with closing(sqlite3.connect(jobs.resolve().as_uri()+'?mode=ro', uri=True, timeout=.1)) as db:
-        if any(status in {'queued', 'running'} for status, *_ in family_jobs(db, run)):
+    staged = view.get_staged_by_run(candidate)
+    if not staged or not staged[1].get('release_manifest_path'):
+        return None
+    with closing(sqlite3.connect(jobs, timeout=.1)) as db, db:
+        db.execute('BEGIN IMMEDIATE')
+        family = family_jobs(db, run)
+        if any(status in {'queued', 'running'} for status, *_ in family):
             return None
-    return StateV21(research).retire(candidate, now=now, authority='runtime-activation-consumed')
+        db.executemany('INSERT OR IGNORE INTO metadata VALUES(?,?)',
+                       [('workspace_retirement:'+owner, now.isoformat())
+                        for owner in {run, candidate, *(row[1] for row in family)}])
+    receipt = StateV21(research).retire(candidate, now=now, authority='runtime-activation-consumed')
+    if receipt:
+        return retire_d3_copies(directory, staged[1], now)
+    return None
 
 
-def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=None,settings=None):
+def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=None,settings=None,owned_only=False):
     now=now or journal.clock();root=journal.path.resolve().parent/'runtime_artifacts'
     report=dict(at=now.isoformat(),retired=[],compacted=[],skipped=[],available_before=shutil.disk_usage(root.parent).free)
     if not root.exists():return report
@@ -318,18 +352,44 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
     try:prior=json.loads(previous.read_text());cursor=prior.get('cursor','')
     except (OSError,ValueError):prior={};cursor=''
     pending=list(dict.fromkeys(prior.get('pending',[])))
-    paths=sorted(p for p in root.iterdir() if p.is_dir() and not p.is_symlink())
-    retry=[p for p in paths if p.name in pending[:1]]
-    scan_paths=[p for p in paths if p.name>cursor]
+    page = max(8, limit * 4)
+    if owned_only:
+        with journal.transaction(write=False, expand=False) as db:
+            owners = [r[0] for r in db.execute(
+                'SELECT DISTINCT '+TASK_RUN+' FROM runtime_tasks INDEXED BY runtime_gc_task_run '
+                'WHERE '+TASK_RUN+'>? AND status IN (\'SUCCEEDED\',\'FAILED\') '
+                'ORDER BY '+TASK_RUN+' LIMIT ?', (cursor, page),
+            )]
+        scan_paths = [root/name for name in owners if Path(name).name == name and not name.startswith('.')]
+        retry = [root/name for name in pending[:1] if Path(name).name == name]
+        more_candidates = len(owners) == page
+    else:
+        paths=sorted(p for p in root.iterdir() if p.is_dir() and not p.is_symlink())
+        retry=[p for p in paths if p.name in pending[:1]]
+        scan_paths=[p for p in paths if p.name>cursor]
+        more_candidates = False
     paths=retry+[p for p in scan_paths if p not in retry]
     report['cursor']=cursor
     deadline=time.monotonic()+5
     def pause():return time.monotonic()>=deadline
     with WriterLock(root/'resource-retirement'):
-        for run in paths[:max(8,limit*4)]:
+        for run in paths[:page]:
             if pause():break
             report['cursor']=max(report['cursor'],run.name)
             if run.name in pending:pending.remove(run.name)
+            if run.is_symlink():continue
+            if not run.is_dir():
+                # The filesystem rename precedes the retirement receipt. In
+                # owner mode, recover its exact tombstone without a tree scan.
+                if owned_only and not dry_run:
+                    tombstone = run.with_name('.retiring-'+run.name)
+                    if tombstone.is_dir() and not tombstone.is_symlink():
+                        if journal.get('resource_retired', run.name):
+                            shutil.rmtree(tombstone)
+                        else:
+                            os.replace(tombstone, run)
+                            pending.append(run.name)
+                continue
             if run.name.startswith('.retiring-'):
                 if not dry_run:shutil.rmtree(run)
                 continue
@@ -344,11 +404,11 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
                     d3 = compact_d3(journal, run.name, info, now, settings)
                     if d3:
                         report.setdefault('d3_compacted', []).append(run.name)
-                except (OSError, ValueError, sqlite3.Error) as exc:
+                except (OSError, KeyError, ValueError, sqlite3.Error) as exc:
                     report['skipped'].append(dict(run=run.name, reason=str(exc)[:200]))
             if info and info['status']=='SUCCEEDED' and (now-stamp).total_seconds()<48*3600:
                 if not dry_run:
-                    changed=compact_process(journal,{run.name:info},set(),now,limit=8)
+                    changed=compact_process(journal,{run.name:info},set(),now,limit=8,settings=settings)
                     report.setdefault('process_compacted',[]).extend(changed)
                     proof=compact_frame(journal,control_path,run.name,info,now)
                     if proof:report.setdefault('frames_compacted',[]).append(proof)
@@ -358,7 +418,7 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
             refs,protected,_=referenced(journal,control_path,now=now,only_root=identity)
             if pause():pending.append(run.name);break
             if info and not dry_run:
-                changed=compact_process(journal,{run.name:info},protected,now,limit=8)
+                changed=compact_process(journal,{run.name:info},protected,now,limit=8,settings=settings)
                 report.setdefault('process_compacted',[]).extend(changed)
                 proof=compact_frame(journal,control_path,run.name,info,now)
                 if proof:report.setdefault('frames_compacted',[]).append(proof)
@@ -400,7 +460,7 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False,should_yield=N
                         pending.append(run.name)
                         report['skipped'].append(dict(run=run.name,reason=str(exc)[:200]))
             if len(report['retired'])+len(report['compacted'])>=limit:break
-        if not scan_paths or report.get('cursor')==scan_paths[-1].name:report['cursor']=''
+        if not scan_paths or (not more_candidates and report.get('cursor')==scan_paths[-1].name):report['cursor']=''
         report['pending']=list(dict.fromkeys(pending))
         report['available_after']=shutil.disk_usage(root.parent).free
         atomic_json(previous,report)

@@ -391,9 +391,11 @@ class W3ResearchStore:
 
             with closing(self.connect()) as db, db:
                 previous = db.execute(
-                    "SELECT manifest_sha FROM w3_case_contexts WHERE case_id=? AND phase=?",
+                    "SELECT manifest_sha,status FROM w3_case_contexts WHERE case_id=? AND phase=?",
                     (case_id, phase),
                 ).fetchone()
+                if previous and previous[1] == 'RETIRED':
+                    raise PermissionError('settled research context requires an explicit replay extension')
                 if previous and previous[0] != identity:
                     # Older bindings derived catalog order from dict insertion order.
                     # Journal JSON round-trips sort those keys. Reuse the exact old
@@ -457,6 +459,8 @@ class W3ResearchStore:
             ).fetchone()
         if not row:
             raise PermissionError("unknown research context")
+        if row['status'] == 'RETIRED':
+            raise PermissionError('settled research context requires an explicit replay extension')
         if row["expires_at"] < datetime.now(UTC).isoformat():
             raise PermissionError("research context expired; restore its frozen manifest")
         data = (self.contexts / (row["manifest_sha"] + ".json")).read_bytes()

@@ -3,9 +3,11 @@ from contextlib import closing
 from datetime import UTC,datetime,timedelta
 import hashlib
 import json
+import os
 from pathlib import Path
 import sqlite3
 import re
+from uuid import uuid4
 
 from doxagent.v2_read.maintenance import atomic_json
 from .session_retention import run_held
@@ -38,6 +40,59 @@ def family_root(run,d3_roots):
 
 def family_jobs(db,run):
     return list(db.execute("SELECT status,json_extract(payload,'$.run_id'),coalesce(json_extract(payload,'$.finished_at'),json_extract(payload,'$.updated_at')),json_extract(request,'$.node'),json_extract(request,'$.task_phase') FROM jobs WHERE json_extract(payload,'$.run_id')=? OR (json_extract(payload,'$.run_id')>=? AND json_extract(payload,'$.run_id')<?)",(run,run+'-',run+'.')))
+
+
+def retire_d3_copies(directory, staged, now):
+    """Collapse exact aliases for one D3 owner whose Worker family is fenced."""
+    from pathlib import PurePosixPath
+
+    def owned_path(relative):
+        parts = PurePosixPath(relative).parts
+        if not parts or '..' in parts or PurePosixPath(relative).is_absolute():
+            raise ValueError('invalid D3 publication path')
+        target = directory.joinpath(*parts)
+        if target.resolve() != target or not target.is_relative_to(directory):
+            raise ValueError('linked or escaped D3 publication member')
+        return target
+
+    manifest = owned_path(staged['release_manifest_path'])
+    if manifest.name != 'manifest.json' or manifest.parent.parent != directory/'published':
+        raise ValueError('invalid D3 immutable release directory')
+    entries = {item['relative_path']: item['sha256']
+               for item in json.loads(manifest.read_bytes())['artifacts']}
+    copied = 0
+    for name, relative in staged['files'].items():
+        digest = staged['hashes'][name]
+        source = owned_path(relative)
+        if not relative.startswith('artifacts/document3/releases/') or entries.get(relative) != digest:
+            raise ValueError('stage and publication manifest disagree')
+        release_member = manifest.parent / source.relative_to(directory/'artifacts')
+        if release_member.resolve() != release_member or not release_member.is_file():
+            raise ValueError('D3 published copy is unavailable')
+        aliases = [release_member, owned_path('output/final/' + source.name)]
+        with source.open('rb') as stream:
+            if hashlib.file_digest(stream, 'sha256').hexdigest() != digest:
+                raise ValueError('D3 publication checksum mismatch')
+        for alias in aliases:
+            if alias.resolve() != alias or not alias.is_file() or alias.samefile(source):
+                continue
+            with alias.open('rb') as stream:
+                if hashlib.file_digest(stream, 'sha256').hexdigest() != digest:
+                    if alias == release_member:
+                        raise ValueError('D3 published copy checksum mismatch')
+                    continue
+            temporary = alias.with_name('.storage-alias-' + uuid4().hex)
+            try:
+                os.link(source, temporary)
+                os.replace(temporary, alias)
+            finally:
+                temporary.unlink(missing_ok=True)
+            copied += 1
+    # This view is derived from StateV21, and Pilot can now export it on demand.
+    owned_path('artifacts/document3/v21_state.json').unlink(missing_ok=True)
+    receipt = {'at': now.isoformat(), 'aliases_shared': copied, 'manifest': staged['release_manifest_path']}
+    atomic_json(owned_path('audit/d3-process-exit.json'), receipt)
+    return receipt
 
 
 def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False,run_ids=None):

@@ -299,6 +299,8 @@ def test_v1_frozen_bundle_keeps_legacy_r2_schema_and_skips_alignment(tmp_path):
         )
         frozen = journal.get("round_inputs", f"{case.case_id}:W2:R2")
         assert frozen["schema_hash"] == digest(W2PolicyResult.model_json_schema())
+        assert case.frozen_inputs['round_input_refs']['W2:R2'] == f'{case.case_id}:W2:R2'
+        assert 'W2:R2' not in case.frozen_inputs.get('round_inputs', {})
     finally:
         runtime.close()
 

@@ -79,29 +79,33 @@ class ContentFiles:
         temporary = target.with_name(identity + "." + uuid4().hex)
         temporary.mkdir()
         try:
-            blocks = []
-            if len(raw) <= CHUNK and os.getenv('DOXAGENT_CONTENT_SINGLE_FILE') == '1':
-                with (temporary / SINGLE_FILE).open('xb') as stream:
-                    stream.write(gzip.compress(raw, mtime=0))
-                    stream.flush()
-                    os.fsync(stream.fileno())
-            else:
-                for offset in range(0, len(raw), CHUNK):
-                    chunk = raw[offset:offset + CHUNK]
-                    blocks.append(hashlib.sha256(chunk).hexdigest())
-                    with (temporary / str(offset // CHUNK)).open("xb") as stream:
-                        stream.write(gzip.compress(chunk, mtime=0))
-                        stream.flush()
-                        os.fsync(stream.fileno())
-                with (temporary / "manifest.json").open("x", encoding="utf-8") as stream:
-                    json.dump({"version": 1, "size": len(raw), "sha256": identity, "chunks": blocks}, stream)
-                    stream.flush()
-                    os.fsync(stream.fileno())
+            self._write_prepared(temporary, raw, identity)
             self._publish(temporary, target)
             return identity
         finally:
             if temporary.exists():
                 shutil.rmtree(temporary)
+
+    @staticmethod
+    def _write_prepared(directory: Path, raw: bytes, identity: str) -> None:
+        if len(raw) <= CHUNK and os.getenv('DOXAGENT_CONTENT_SINGLE_FILE') == '1':
+            with (directory / SINGLE_FILE).open('xb') as stream:
+                stream.write(gzip.compress(raw, mtime=0))
+                stream.flush()
+                os.fsync(stream.fileno())
+            return
+        blocks = []
+        for offset in range(0, len(raw), CHUNK):
+            chunk = raw[offset:offset + CHUNK]
+            blocks.append(hashlib.sha256(chunk).hexdigest())
+            with (directory / str(offset // CHUNK)).open("xb") as stream:
+                stream.write(gzip.compress(chunk, mtime=0))
+                stream.flush()
+                os.fsync(stream.fileno())
+        with (directory / "manifest.json").open("x", encoding="utf-8") as stream:
+            json.dump({"version": 1, "size": len(raw), "sha256": identity, "chunks": blocks}, stream)
+            stream.flush()
+            os.fsync(stream.fileno())
 
     def read(self, identity: str, offset: int, size: int) -> bytes:
         from .query_budget import check_deadline

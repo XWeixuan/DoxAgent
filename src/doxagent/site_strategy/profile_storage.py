@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import logging
 import os
 import shutil
 import tarfile
@@ -16,7 +17,9 @@ from pathlib import Path
 
 from .repository import SiteStrategyRepository
 from .runtime import OwnerFileLock, profile_browser_processes
-from .schema import BrowserProfile
+from .schema import AuthState, BrowserProfile
+
+log = logging.getLogger(__name__)
 
 
 class ProfileSnapshotManager:
@@ -197,7 +200,7 @@ class ProfileSnapshotManager:
                     raise ValueError("snapshot profile payload is missing")
                 quarantine = self.profile_root / (
                     f"{profile.directory_key}.quarantine-"
-                    + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+                    + datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
                 )
                 if target.exists():
                     target.replace(quarantine)
@@ -207,6 +210,18 @@ class ProfileSnapshotManager:
                     if quarantine.exists() and not target.exists():
                         quarantine.replace(target)
                     raise
+                if quarantine.is_dir():
+                    from doxagent.v2_read.maintenance import atomic_json
+
+                    current = target.stat()
+                    try:
+                        atomic_json(self.snapshot_root / (quarantine.name + '.restore.json'), {
+                            'profile_id': profile.profile_id, 'snapshot_id': snapshot_id,
+                            'restored_at': datetime.now(UTC).isoformat(),
+                            'directory': quarantine.name, 'current_inode': [current.st_dev, current.st_ino],
+                        })
+                    except OSError:
+                        log.warning('profile restored with its rollback directory retained', exc_info=True)
             return {"snapshot_id": snapshot_id, "profile_directory": str(target)}
         finally:
             lock.release()
@@ -222,10 +237,56 @@ class ProfileSnapshotManager:
             try:
                 lock.acquire()
                 self._prune(profile.profile_id)
+                retirement = self._verified_restore_exit(profile)
             except RuntimeError:
                 continue
             finally:
                 lock.release()
+            if retirement is not None:
+                marker, directory = retirement
+                if directory.exists():
+                    shutil.rmtree(directory)
+                marker.unlink(missing_ok=True)
+
+    def _verified_restore_exit(self, profile: BrowserProfile):
+        """A verified restored identity can exit its exact pre-restore directory."""
+        prefix = profile.directory_key + '.quarantine-'
+        markers = sorted(self.snapshot_root.glob(prefix + '*.restore.json'), reverse=True)
+        if not markers:
+            return None
+        current = self.profile_root / profile.directory_key
+        if current.is_symlink() or not current.is_dir() or current.resolve().parent != self.profile_root:
+            return None
+        stat = current.stat()
+        identities = [identity for _, identity in self.repository.list_active_identities()
+                      if identity.profile_id == profile.profile_id]
+        if not identities:
+            return None
+        for marker in markers:
+            if marker.is_symlink():
+                continue
+            receipt = json.loads(marker.read_bytes())
+            if receipt['profile_id'] != profile.profile_id or receipt['current_inode'] != [stat.st_dev, stat.st_ino]:
+                continue
+            restored = datetime.fromisoformat(receipt['restored_at'])
+            for identity in identities:
+                records = self.repository.list_site_identity_auth(identity_id=identity.identity_id)
+                runtime = self.repository.get_identity_runtime(identity.identity_id)
+                if not records or any(
+                    not auth.verified_at or auth.verified_at <= restored
+                    or (auth.auth_state is not AuthState.VALID and auth.reason_code != 'public_access_ready')
+                    or auth.observed_session_revision != runtime.session_revision for auth in records
+                ):
+                    return None
+            directory = self.profile_root / receipt['directory']
+            if (marker.name != directory.name + '.restore.json' or directory.is_symlink()
+                or directory.resolve().parent != self.profile_root or not directory.name.startswith(prefix)):
+                raise ValueError('profile restore retirement path changed')
+            if not directory.exists():
+                marker.unlink(missing_ok=True)
+            elif directory.is_dir() and not profile_browser_processes(directory):
+                return marker, directory
+        return None
 
     def _prune(self, profile_id: str) -> None:
         manifests = sorted(

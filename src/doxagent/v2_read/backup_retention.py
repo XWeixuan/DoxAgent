@@ -115,12 +115,13 @@ def complete_migration_backup(directory, originals):
             report['errors'].append(dict(path=str(directory), error=str(exc)))
             return report  # Preserve previous rollback if new housekeeping did not finish.
     else:
-        current = json.loads(marker.read_text(encoding='utf-8'))
-        if current.get('owner') != OWNER or current.get('originals') != sources:
+        receipt = json.loads(marker.read_text(encoding='utf-8'))
+        if receipt.get('owner') != OWNER or receipt.get('originals') != sources:
             raise ValueError('migration backup ownership differs')
     # Only this entry point's successful copies of the same database set. Failed,
     # explicit operator backups and unrelated directories have no matching marker.
-    for candidate in sorted(directory.parent.iterdir()):
+    completed = []
+    for candidate in directory.parent.iterdir():
         if candidate == directory or candidate.is_symlink() or not candidate.is_dir():
             continue
         marker = candidate / MARKER
@@ -130,8 +131,19 @@ def complete_migration_backup(directory, originals):
             previous = json.loads(marker.read_text(encoding='utf-8'))
             if previous.get('owner') != OWNER or previous.get('originals') != sources:
                 continue
+            if previous['completed_at'] >= receipt['completed_at']:
+                continue
+            files = [candidate / entry['file'] for entry in previous['databases']]
+            if not files or any(not p.is_file() or p.is_symlink() or p.parent != candidate for p in files):
+                continue
             if candidate.resolve(strict=True).parent != directory.parent:
                 raise ValueError('backup retirement escaped its owning parent')
+            completed.append((previous['completed_at'], candidate))
+        except (KeyError, OSError, ValueError) as exc:
+            report['errors'].append(dict(path=str(candidate), error=str(exc)))
+    # Keep the last verified recovery point of this exact set, including after retry.
+    for _, candidate in sorted(completed, reverse=True)[1:]:
+        try:
             shutil.rmtree(candidate)
             report['retired'].append(str(candidate))
         except (OSError, ValueError) as exc:

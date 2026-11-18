@@ -11,6 +11,10 @@ def test_success_retires_only_previous_completed_matching_migration(tmp_path):
     first.mkdir(parents=True)
     (first/'runtime.sqlite3').write_bytes(b'first rollback')
     complete_migration_backup(first, originals)
+    previous = parent/'previous'
+    previous.mkdir()
+    (previous/'runtime.sqlite3').write_bytes(b'previous rollback')
+    complete_migration_backup(previous, originals)
     partial = parent/'failed-migration'
     partial.mkdir()
     (partial/'runtime.sqlite3').write_bytes(b'needed for resume')
@@ -23,6 +27,7 @@ def test_success_retires_only_previous_completed_matching_migration(tmp_path):
     report = complete_migration_backup(current, originals)
     assert report['retired'] == [str(first)]
     assert not first.exists()
+    assert gzip.decompress((previous/'runtime.sqlite3.gz').read_bytes()) == b'previous rollback'
     assert not (current/'runtime.sqlite3').exists()
     assert gzip.decompress((current/'runtime.sqlite3.gz').read_bytes()) == b'latest rollback'
     assert (partial/'runtime.sqlite3').read_bytes() == b'needed for resume'

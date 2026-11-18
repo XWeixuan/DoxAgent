@@ -1440,7 +1440,10 @@ class PersistentRuntimeV2Service:
             cache_context_keys = tuple(frozen.get("cache_context_keys", cache_context_keys))
             inherit_context = frozen.get("inherit_context", False)
         model_settings = frozen.get("model_settings", model_settings)
-        case.frozen_inputs.setdefault("round_inputs", {})[f"{lane}:{round_name}"] = frozen
+        if self.journal:
+            case.frozen_inputs.setdefault("round_input_refs", {})[f"{lane}:{round_name}"] = round_key
+        else:
+            case.frozen_inputs.setdefault("round_inputs", {})[f"{lane}:{round_name}"] = frozen
         # Provider recovery is attempt-local: immutable business inputs/prompts
         # remain unchanged, and every paid request retains its own provider receipt.
         recall_fallback = None

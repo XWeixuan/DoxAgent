@@ -22,6 +22,23 @@ def required_unit(source_id, unit):
             or source_id in {'reuters_site_search','globenewswire_search','calcalist_search'})
 
 
+_PHYSICAL_PROOF_FIELDS = {
+    'physical_request_id', 'role', 'transport', 'request_started_at', 'response_received_at',
+    'status_code', 'proof_basis', 'list_validated',
+}
+
+
+def _physical_proof(requests, *, accepted):
+    """Keep the timing and validation facts used by cadence and replay."""
+    proof = []
+    for request in requests:
+        status = request.get('status_code')
+        if accepted and not request.get('error_type') and (status is None or 200 <= status < 400):
+            request = {key: value for key, value in request.items() if key in _PHYSICAL_PROOF_FIELDS}
+        proof.append(request)
+    return canonical_json(proof)
+
+
 def durable_write(function):
     @wraps(function)
     def run(*args, **kwargs):
@@ -337,9 +354,10 @@ class AcquisitionStore:
             diagnostic['http_timing'] = state['http_timing']
         operational_state = {key: value for key, value in state.items()
                              if key not in {'wire_observation', 'http_timing'}}
+        physical = _physical_proof(requests, accepted=winning is not None)
         with self.connect(write=True) as db:
             db.execute('INSERT INTO physical_cycles VALUES(?,?,?) ON CONFLICT(run_id) DO UPDATE SET '
-                'finished_at=excluded.finished_at,requests_json=excluded.requests_json',(run_id,now,canonical_json(requests)))
+                'finished_at=excluded.finished_at,requests_json=excluded.requests_json',(run_id,now,physical))
             for index, target in enumerate(targets):
                 previous = db.execute(
                     "SELECT data_json FROM cycles WHERE run_id=?",
@@ -569,13 +587,12 @@ class AcquisitionStore:
             if r.get("role", "listing") == "listing" and r.get("response_received_at")
             and r.get('list_validated') and r.get('proof_basis')=='TRANSPORT_SEND'
         ]
+        winning = listing[-1] if listing else None
+        accepted = bool(winning and (winning.get('status_code') is None or 200 <= winning['status_code'] < 400)
+                        and not winning.get('error_type'))
+        physical = _physical_proof(requests, accepted=accepted)
         with self.connect(write=True) as db:
-            winning = listing[-1] if listing else None
-            if (
-                winning
-                and (winning.get("status_code") is None or 200 <= winning["status_code"] < 400)
-                and not winning.get("error_type")
-            ):
+            if accepted:
                 proof = {
                     "physical_run_id": run_id,
                     "required": required_unit(source.source_id,unit),
@@ -590,7 +607,7 @@ class AcquisitionStore:
                 )
             db.execute('INSERT INTO physical_cycles VALUES(?,?,?) ON CONFLICT(run_id) DO UPDATE SET '
                 'finished_at=excluded.finished_at,requests_json=excluded.requests_json',
-                (run_id,utc_now().isoformat(),canonical_json(requests)))
+                (run_id,utc_now().isoformat(),physical))
             self._capture(
                 db,
                 source,
@@ -606,11 +623,29 @@ class AcquisitionStore:
 
     @durable_write
     def recover_previous_owner(self):
+        now = utc_now().isoformat()
+        # The new checked-in owner starts before any poll. A validated page
+        # survives the prior owner, even if that attempt never ran finish().
+        with self.connect() as db:
+            interrupted = [row[0] for row in db.execute(
+                "SELECT run_id FROM cycles WHERE status='CAPTURED' AND finished_at IS NULL "
+                "AND json_extract(data_json,'$.attempt_finished')=0"
+            )]
         with self.connect(write=True) as db:
-            return db.execute(
+            recovered = db.execute(
                 "UPDATE cycles SET status='ABANDONED_GENERATION',reason='PREVIOUS_COLLECTOR_EXIT',finished_at=? WHERE status='DISPATCHED'",
-                (utc_now().isoformat(),),
+                (now,),
             ).rowcount
+        for start in range(0, len(interrupted), 512):
+            with self.connect(write=True) as db:
+                recovered += db.executemany(
+                    "UPDATE cycles SET reason='PREVIOUS_COLLECTOR_EXIT',finished_at=?,"
+                    "data_json=json_set(data_json,'$.attempt_finished',json('true'),"
+                    "'$.terminal_error','PREVIOUS_COLLECTOR_EXIT') "
+                    "WHERE run_id=? AND status='CAPTURED' AND finished_at IS NULL",
+                    [(now, run_id) for run_id in interrupted[start:start + 512]],
+                ).rowcount
+        return recovered
 
     def pending(self, *, limit=8):
         # Round-robin publishers. A large older delta backlog cannot keep a new

@@ -214,9 +214,15 @@ def collect(source, *, now=None, limit=32):
 
 
 def _collect(source, *, now, limit):
+    from .detached_files import detach, drain
+
     now=now or datetime.now(UTC);report=dict(quarantined=0,deleted=0,allocated=0)
     protected="EXISTS(SELECT 1 FROM artifact_ref r WHERE r.artifact_id=a.id) OR EXISTS(SELECT 1 FROM retention_hold h WHERE h.released_at IS NULL AND (h.scope='ALL' OR h.id=a.id))"
     root=source.path.parent.resolve();quarantine=root/'native-quarantine'
+    if quarantine.is_symlink():
+        raise ValueError('linked Native quarantine')
+    discard = quarantine / '.discarded'
+    report['discarded'] = drain(discard)
     claimed = []
     cutoff = (now - timedelta(days=7)).isoformat()
     with closing(source.connection()) as db:
@@ -272,7 +278,7 @@ def _collect(source, *, now, limit):
                 p=root/'native-files'/digest[:2]/digest;q=quarantine/digest
                 if p.is_symlink() or q.is_symlink():raise ValueError('linked native CAS')
                 if not p.exists() and q.exists():p.parent.mkdir(exist_ok=True,parents=True);q.rename(p)
-                elif q.exists():shutil.rmtree(q)
+                elif q.exists():detach(q, discard)
                 db.execute('DELETE FROM v2_native_exit WHERE id=?',row)
             else:candidates.append(row)
         if not early and (page or cursor):
@@ -297,7 +303,7 @@ def _collect(source, *, now, limit):
             if p.is_symlink() or q.is_symlink():raise ValueError('linked native CAS')
             quarantine.mkdir(exist_ok=True)
             if p.exists():
-                if q.exists():shutil.rmtree(q)
+                if q.exists():detach(q, discard)
                 p.rename(q)
             if q.exists():
                 db.execute("UPDATE artifact SET state='QUARANTINED' WHERE id=?",(digest,))
@@ -311,7 +317,7 @@ def _collect(source, *, now, limit):
             if p.is_symlink() or q.is_symlink():raise ValueError('linked native quarantine')
             if db.execute('SELECT 1 FROM artifact a WHERE a.id=? AND ('+protected+')',(digest,)).fetchone():
                 if not p.exists() and q.exists():p.parent.mkdir(parents=True,exist_ok=True);q.rename(p)
-                elif q.exists():shutil.rmtree(q)
+                elif q.exists():detach(q, discard)
                 db.execute("UPDATE artifact SET state='LIVE' WHERE id=?",(digest,))
                 db.execute('DELETE FROM v2_native_exit WHERE id=?',(digest,));continue
             if not_before<0 and db.execute("SELECT 1 FROM artifact WHERE id=? AND state='LIVE'",(digest,)).fetchone():
@@ -340,4 +346,5 @@ def _collect(source, *, now, limit):
                 db.execute('DELETE FROM v2_native_exit WHERE id=?', (digest,))
                 report['deleted'] += 1
                 report['allocated'] += allocated
+    report['discarded'] += drain(discard)
     return report

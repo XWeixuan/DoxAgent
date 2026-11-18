@@ -183,6 +183,10 @@ async def test_only_one_profile_can_be_maintained(service: SiteStrategyService) 
 async def test_snapshot_round_trip_is_consistent(
     service: SiteStrategyService, tmp_path: Path
 ) -> None:
+    from datetime import UTC, datetime
+
+    from doxagent.site_strategy.schema import AuthState, SiteIdentityAuth
+
     profile = service.repository.get_profile("barrons-1")
     assert profile is not None
     profile_dir = tmp_path / "profiles" / profile.directory_key
@@ -193,6 +197,19 @@ async def test_snapshot_round_trip_is_consistent(
     marker.write_text("after", encoding="utf-8")
     await service.restore_profile("barrons-1", snapshot["snapshot_id"])
     assert marker.read_text(encoding="utf-8") == "before"
+    rollback = next(profile_dir.parent.glob(profile.directory_key + '.quarantine-*'))
+    service.profile_storage.maintain()
+    assert (rollback / 'Cookies.test').read_text(encoding='utf-8') == 'after'
+    for _, identity in service.repository.list_active_identities():
+        if identity.profile_id == profile.profile_id:
+            runtime = service.repository.get_identity_runtime(identity.identity_id)
+            service.repository.save_site_identity_auth(SiteIdentityAuth(
+                site_id=profile.site_id, identity_id=identity.identity_id, auth_state=AuthState.VALID,
+                verified_at=datetime.now(UTC), observed_session_revision=runtime.session_revision,
+            ))
+    service.profile_storage.maintain()
+    assert not rollback.exists()
+    assert marker.read_text(encoding='utf-8') == 'before'
 
 
 @pytest.mark.asyncio

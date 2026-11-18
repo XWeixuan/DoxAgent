@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
+import time
 from contextlib import ExitStack, closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -187,12 +188,79 @@ def extend_context(store, case_id, days=7):
         store.protect_components(manifest.get('components', {}), until)
     with closing(store.connect()) as db, db:
         cursor = db.execute(
-            "UPDATE w3_case_contexts SET expires_at=max(expires_at,?) WHERE case_id=?",
+            "UPDATE w3_case_contexts SET expires_at=max(expires_at,?),status='EXTENDED' WHERE case_id=?",
             (until, case_id),
         )
         if cursor.rowcount == 0:
             raise ValueError("unknown frozen Case")
     return {"case_id": case_id, "expires_at_at_least": until}
+
+
+def retire_settled_contexts(store, runtime_db, *, now=None):
+    """End the online obligation of completed no-trade phases, retaining exact replay inputs."""
+    if not Path(runtime_db).is_file():
+        return []
+    now = now or datetime.now(UTC)
+    cursor = getattr(store, '_settled_context_cursor', '')
+    with closing(store.connect()) as db:
+        candidates = db.execute(
+            "SELECT token_hash,case_id,expires_at,status FROM w3_case_contexts "
+            "WHERE token_hash>? ORDER BY token_hash LIMIT 128", (cursor,),
+        ).fetchall()
+    # Explicit extensions remain in force, even when the original Case is closed.
+    settled = []
+    cutoff = (now - timedelta(hours=24)).isoformat()
+    deadline = time.monotonic() + .25
+    last = cursor
+    exhausted = True
+    with closing(readonly(runtime_db)) as runtime:
+        runtime.execute('PRAGMA busy_timeout=100')
+        for candidate in candidates:
+            if time.monotonic() >= deadline:
+                exhausted = False
+                break
+            last = candidate['token_hash']
+            if candidate['status'] != 'ACTIVE':
+                continue
+            case_id = candidate['case_id']
+            if not runtime.execute(
+                "SELECT 1 FROM runtime_v2_cases c WHERE c.case_id=? AND c.status='COMPLETED' "
+                "AND c.technical_status='OK' AND c.updated_at<=? "
+                "AND NOT EXISTS (SELECT 1 FROM runtime_v2_trade_records WHERE case_id=c.case_id) "
+                "AND NOT EXISTS (SELECT 1 FROM runtime_v2_effects WHERE case_id=c.case_id AND status<>'COMPLETED') "
+                "AND NOT EXISTS (SELECT 1 FROM runtime_v2_w3_threads WHERE owner_case_id=c.case_id)",
+                (case_id, cutoff),
+            ).fetchone():
+                continue
+            stages = {row['phase']: row for row in runtime.execute(
+                "SELECT phase,status,committed_at,result_json FROM runtime_v2_w3_stages WHERE case_id=?",
+                (case_id,),
+            )}
+            trade = stages.get('trade_decision')
+            operations = stages.get('post_decision_operations')
+            if not trade or not operations or any(
+                stage['status'] != 'COMMITTED' or not stage['committed_at'] or stage['committed_at'] > cutoff
+                for stage in (trade, operations)
+            ):
+                continue
+            operations_result = json.loads(operations['result_json'] or '{}')
+            if (json.loads(trade['result_json'] or '{}').get('decision') != 'NO_TRADE'
+                or operations_result.get('watch_actions') != [] or operations_result.get('pin_actions') != []):
+                continue
+            if runtime.execute(
+                "SELECT 1 FROM runtime_v2_w3_stages s JOIN runtime_values v ON v.key=s.worker_job_id "
+                "AND v.namespace IN ('w3_ack_pending','w3_resident_release') WHERE s.case_id=? LIMIT 1",
+                (case_id,),
+            ).fetchone():
+                continue
+            settled.append((candidate['token_hash'], candidate['expires_at']))
+    if settled:
+        with closing(store.connect()) as db, db:
+            db.execute('PRAGMA busy_timeout=100')
+            db.executemany("UPDATE w3_case_contexts SET status='RETIRED' "
+                           "WHERE token_hash=? AND status='ACTIVE' AND expires_at=?", settled)
+    store._settled_context_cursor = '' if exhausted and len(candidates) < 128 else last
+    return [token_hash for token_hash, _ in settled]
 
 
 def restore_archive(root, run_id):
@@ -229,7 +297,8 @@ def gc_derivatives(store, *, apply=False):
         cursor = getattr(store, '_gc_context_cursor', '')
         with closing(store.connect()) as db:
             contexts = db.execute("SELECT token_hash,manifest_sha,expires_at FROM w3_case_contexts "
-                "WHERE token_hash>? AND expires_at>? ORDER BY token_hash LIMIT 128", (cursor, now)).fetchall()
+                "WHERE token_hash>? AND expires_at>? AND status<>'RETIRED' "
+                "ORDER BY token_hash LIMIT 128", (cursor, now)).fetchall()
         watermarks = {}
         for context in contexts:
             if time.monotonic() - started >= .25:

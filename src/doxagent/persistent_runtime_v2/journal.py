@@ -667,8 +667,10 @@ class RuntimeJournal:
         return json.loads(self.content.text(row[0])) if row else default
 
     def set(self, namespace: str, key: str, value: Any) -> None:
+        keep = {'reference_deliveries': ('before', 'after'),
+                'w3_citation_scope': ('events',)}.get(namespace, ())
         payload = (
-            self.content.encode(value, keep=('before', 'after') if namespace == 'reference_deliveries' else ())
+            self.content.encode(value, keep=keep)
             if namespace
             in {
                 "worker_requests",
@@ -678,6 +680,7 @@ class RuntimeJournal:
                 "sweep_bundle",
                 "reference_baselines",
                 "reference_deliveries",
+                "w3_citation_scope",
             }
             else encode(value)
         )

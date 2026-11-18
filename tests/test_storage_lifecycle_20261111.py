@@ -105,7 +105,10 @@ def test_hour_archive_pages_exact_rows_and_waits_for_validated_inflight(tmp_path
     with store.connect(write=True) as db:
         db.execute("UPDATE cycles SET status='FAILED',finished_at=?,data_json='{}' WHERE run_id='active'", (at,))
     assert maintenance.maintain(store, hours=1)['hours'][0]['scanned'] == 128
+    store = AcquisitionStore(tmp_path/'acquisition.db')
+    assert store.get_meta('retention_hour_scan')['pages'] == 1
     assert maintenance.maintain(store, hours=1)['hours'][0]['cycles'] == 131
+    assert store.get_meta('retention_hour_scan') is None
     with store.connect() as db:
         stats = json.loads(db.execute('SELECT data_json FROM unit_hours').fetchone()[0])
         assert stats['units'][0]['statuses'] == {'FAILED': 131}

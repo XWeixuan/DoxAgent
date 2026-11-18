@@ -623,68 +623,9 @@ class SourceOutbox:
         Callers keep the checkpoint backup and its immutable files as a recovery set.
         Explicit pins (including repairs/shadows) prevent crossing protected coordinates.
         """
-        from datetime import UTC, datetime, timedelta
+        from .transport_archive import archive
 
-        from .content_files import ContentFiles
-
-        if datetime.fromisoformat(before) > datetime.now(UTC) - timedelta(days=7):
-            raise ValueError("transport retention must be at least seven days")
-        if not 1 <= limit <= 500:
-            raise ValueError("invalid archive batch")
-        backup = sqlite3.connect(
-            Path(checkpoint_database).resolve(strict=True).as_uri() + "?mode=ro", uri=True
-        )
-        try:
-            state = backup.execute(
-                "SELECT epoch,head FROM v2_source_state WHERE source=?", (self.source,)
-            ).fetchone()
-            if state is None:
-                raise ValueError("checkpoint has no source identity")
-        finally:
-            backup.close()
-        files = ContentFiles(self.path.parent / "receipt-files" / self.source)
-        with self.connection(write=True) as db:
-            db.execute("BEGIN IMMEDIATE")
-            current = db.execute(
-                "SELECT epoch FROM v2_source_state WHERE source=?", (self.source,)
-            ).fetchone()
-            if not current or current[0] != state[0]:
-                raise ValueError("checkpoint epoch mismatch")
-            acknowledged = db.execute("SELECT min(checkpoint) FROM v2_source_consumers").fetchone()[
-                0
-            ]
-            if acknowledged is None:
-                raise ValueError("no registered consumers")
-            floor = min(acknowledged, state[1])
-            pin = db.execute("SELECT min(seq) FROM v2_source_pins").fetchone()[0]
-            if pin is not None:
-                floor = min(floor, pin - 1)
-            rows = db.execute(
-                "SELECT o.*,r.payload FROM v2_source_outbox o JOIN v2_source_receipts r ON r.id=o.receipt_id "
-                "WHERE o.seq<=? AND o.recorded_at<? ORDER BY o.seq LIMIT ?",
-                (floor, before, limit),
-            ).fetchall()
-            for row in rows:
-                raw = json.dumps(
-                    dict(row), ensure_ascii=False, sort_keys=True, separators=(",", ":")
-                ).encode()
-                identity = files.put(raw)
-                db.execute(
-                    "INSERT OR IGNORE INTO v2_receipt_archive VALUES(?,?,?)",
-                    (row["seq"], identity, len(raw)),
-                )
-                db.execute("DELETE FROM v2_source_outbox WHERE seq=?", (row["seq"],))
-                db.execute("DELETE FROM v2_source_receipts WHERE id=?", (row["receipt_id"],))
-            if rows:
-                # A floor is a contiguous boundary, never MAX(archived seq).
-                retained = db.execute(
-                    "SELECT coalesce(min(seq)-1,?) FROM v2_source_outbox", (floor,)
-                ).fetchone()[0]
-                db.execute(
-                    "UPDATE v2_source_state SET retained_floor=max(retained_floor,?) WHERE source=?",
-                    (retained, self.source),
-                )
-            return len(rows)
+        return archive(self, checkpoint_database, before=before, limit=limit)
 
     def backfill(
         self, table: str, *, limit: int = 100, namespaces: tuple[str, ...] | None = None

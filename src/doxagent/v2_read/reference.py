@@ -22,7 +22,12 @@ def project(store, value):
             "before_root": prior.get("before_root", prior["root"]),
         }
     records, refs, snapshot_ids, events = [evidence], {}, {}, {}
-    records.append({"kind": "reference_day_chain", "ticker": ticker, "id": day, "data": value})
+    # The next delta needs its original baseline, not a second complete
+    # delivery. The per-delivery evidence still carries the exact submission.
+    records.append({"kind": "reference_day_chain", "ticker": ticker, "id": day, "data": {
+        "prepared_at": value["prepared_at"], "before": value["before"],
+        "before_root": value.get("before_root", value["root"]), "root": value["root"],
+    }})
     digest = sha256(encode([ticker, identity, day, value['prepared_at'],
                            str(LibraryIndexer(value.get('before_root',value['root'])).root),
                            str(LibraryIndexer(value.get('after_root',value['root'])).root),

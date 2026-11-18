@@ -181,23 +181,21 @@ class LocalWorkspaceStore:
         transient = {".venv", ".uv-cache"} if shared_snapshot else set()
         def ignored(directory, names):
             relative = Path(directory).relative_to(source).parts
-            allowed = not relative or (
+            tool_environment = not relative or (
                 len(relative) == 3 and relative[0] == "attempts" and relative[2] == "output"
             )
-            return set(names) & transient if allowed else set()
-
-        invalid = source.is_symlink()
-        for directory, dirs, files in os.walk(source, followlinks=False):
-            skipped = ignored(directory, dirs + files)
-            dirs[:] = [name for name in dirs if name not in skipped]
-            for name in dirs + [name for name in files if name not in skipped]:
+            skipped = set(names) & transient if tool_environment else set()
+            if shared_snapshot and len(relative) == 3 and relative[0] == "attempts" and relative[2] == "audit":
+                # The Worker keeps its own trace. A fork resumes from the frozen
+                # invocation and artifacts, which do not consume that trace.
+                skipped.update(set(names) & {"agent_loop.jsonl"})
+            for name in set(names) - skipped:
                 item = Path(directory) / name
                 if item.is_symlink() or not self._is_contained(item, source):
-                    invalid = True
-                    break
-            if invalid:
-                break
-        if invalid:
+                    raise InvalidWorkspacePath("snapshot cannot include symlinks or escaping paths")
+            return skipped
+
+        if source.is_symlink():
             raise InvalidWorkspacePath("snapshot cannot include symlinks or escaping paths")
         destination.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix=".s-", dir=destination.parent) as temporary:
@@ -209,7 +207,7 @@ class LocalWorkspaceStore:
                     return str(target)
                 shutil.copytree(source,staging,copy_function=copy_file,ignore=ignored)
             else:
-                shutil.copytree(source, staging)
+                shutil.copytree(source, staging, ignore=ignored)
             if identity is not None:
                 marker = staging / "audit" / "initialization-fork.json"
                 marker.parent.mkdir(parents=True, exist_ok=True)

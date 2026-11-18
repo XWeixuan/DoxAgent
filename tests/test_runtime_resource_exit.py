@@ -38,7 +38,7 @@ def test_owner_retires_unreferenced_compacts_history_and_keeps_current_and_frame
     journal.set('reference_baselines','task-old',dict(version=1,events=['duplicate retry snapshot']))
     journal.set('reference_deliveries','delivered',dict(root=str(roots['old']),ticker='MU',status='SUCCEEDED',before=dict(version=1,events=['delivered evidence']),after=dict(version=1)))
     original=EventLibraryRepository(roots['old']/'US/MU/event_library.sqlite3',read_only=True);before=snapshot_digest(original,'MU',1)
-    report=collect(journal,control,now=now,limit=10)
+    report=collect(journal,control,now=now,limit=10,owned_only=True)
     assert not roots['unused'].parent.exists()
     assert roots['current'].is_dir() and roots['inflight'].is_dir()
     target=EventLibraryRepository(roots['old']/'US/MU/event_library.sqlite3',read_only=True)
@@ -77,3 +77,62 @@ def test_terminal_process_exit_includes_failed_owner_and_failed_retries(tmp_path
     for run in ('recent','active','held','w3'):
         assert 'prompt' in journal.get('worker_requests',keys[run])
     assert compact_process(journal,runs,protected,now)==[]
+
+
+def test_d3_process_exit_shares_only_verified_aliases(tmp_path):
+    import hashlib
+    import os
+
+    from doxagent.codex_worker.workspace_retention import retire_d3_copies
+
+    directory = tmp_path.resolve()
+    relative = 'artifacts/document3/releases/1/document3.md'
+    source = directory / relative
+    release = directory / 'published/release'
+    published = release / 'document3/releases/1/document3.md'
+    final = directory / 'output/final/document3.md'
+    view = directory / 'artifacts/document3/v21_state.json'
+    for path, content in ((source, b'formal body'), (published, b'formal body'),
+                          (final, b'different historical output'), (view, b'derived')):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    (release / 'manifest.json').write_text(json.dumps({'artifacts': [
+        {'relative_path': relative, 'sha256': digest},
+    ]}))
+    staged = {'release_manifest_path': 'published/release/manifest.json',
+              'files': {'document3.md': relative}, 'hashes': {'document3.md': digest}}
+    assert retire_d3_copies(directory, staged, datetime.now(UTC))['aliases_shared'] == 1
+    assert os.path.samefile(source, published)
+    assert final.read_bytes() == b'different historical output'
+    assert not view.exists()
+    assert retire_d3_copies(directory, staged, datetime.now(UTC))['aliases_shared'] == 0
+
+
+def test_worker_process_exit_requires_the_exact_consumed_receipt(tmp_path):
+    from doxagent.codex_worker.job_store import JobStore
+    from doxagent.codex_worker.schema import WorkerJob
+
+    store = JobStore(tmp_path)
+    job = WorkerJob(job_id='job', run_id='runtime-maintain-run-o3', attempt_id='a',
+                    status='succeeded', final_response='official', turn_id='turn')
+    store.save(job)
+    request = {'run_id': job.run_id, 'attempt_id': job.attempt_id, 'task_phase': None,
+               'idempotency_key': 'exact', 'prompt': 'duplicated', 'output_schema': {'a': 1}}
+    with closing(store.connect()) as db, db:
+        db.execute('UPDATE jobs SET request=? WHERE id=?', (json.dumps(request), job.job_id))
+        db.execute('INSERT INTO events VALUES(?,?,?)', (job.job_id, 0, '{}'))
+    trace = tmp_path / job.run_id / 'attempts/a/audit/agent_loop.jsonl'
+    trace.parent.mkdir(parents=True)
+    trace.write_bytes(b'redundant trace')
+    receipt = job.model_dump(mode='json')
+    assert not store.retire_consumed_process(tmp_path, request, {**receipt, 'turn_id': 'other'})
+    assert trace.is_file()
+    assert store.retire_consumed_process(tmp_path, request, receipt)
+    assert store.retire_consumed_process(tmp_path, request, receipt)
+    assert not trace.is_file()
+    assert store.get(job.job_id).final_response == 'official'
+    with closing(store.connect()) as db:
+        assert not db.execute('SELECT 1 FROM events').fetchone()
+        saved = json.loads(db.execute('SELECT request FROM jobs').fetchone()[0])
+        assert saved['prompt'] == '' and saved['idempotency_key'] == 'exact'

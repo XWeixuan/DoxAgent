@@ -108,9 +108,13 @@ def create_worker_app(
                     market.warm_fixed(ticker)
                 await ready_slots.retire()
                 if time.monotonic() >= next_gc:
-                    from .w3_resources import gc_derivatives
+                    from .w3_resources import gc_derivatives, retire_settled_contexts
 
                     await asyncio.to_thread(gc_derivatives, research, apply=True)
+                    if runtime is None:
+                        await asyncio.to_thread(
+                            retire_settled_contexts, research, settings.persistent_runtime_v2_sqlite_path
+                        )
                     next_gc = time.monotonic() + (3600 if getattr(research, "_gc_backfilled", False) else 30)
             except Exception:
                 logging.getLogger(__name__).exception("W3 background preparation will retry")

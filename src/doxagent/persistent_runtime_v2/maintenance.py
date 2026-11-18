@@ -78,7 +78,7 @@ class RuntimeMaintenance:
         self.resource_gc_due=False
         from doxagent.message_bus_v2.pressure import background_allowed
         return collect(self.journal,self.settings.ticker_initialization_control_path,limit=4,
-                       settings=self.settings,
+                       settings=self.settings,owned_only=True,
                        should_yield=lambda: not background_allowed() or bool(should_yield and should_yield()))
 
     def _frame(self, task: dict[str, Any]) -> dict[str, Any]:

@@ -104,16 +104,17 @@ def test_case_technical_time_does_not_copy_source_receipt_but_business_change_do
 
 def test_gc_rechecks_protection_acquired_during_hash_without_holding_writer(tmp_path, monkeypatch):
     import doxagent.codex_worker.w3_resources as module
+    import doxagent.codex_runtime.published_storage as published_storage
     store = W3ResearchStore(tmp_path)
     old = store.install({'d1': '# C1\nold'}, 'MU')
     store.install({'d1': '# C1\nnew'}, 'MU')
     with closing(store.connect()) as db, db:
         db.execute("UPDATE w3_asset_builds SET updated_at='2000-01-01',retained_until='2000-01-01' WHERE id=?", (old['d1'],))
-    original = module.sha
-    def protect_during_hash(data):
+    original = published_storage.read_local_body
+    def protect_during_hash(*args, **kwargs):
         store.protect_components(old, '2099-01-01')
-        return original(data)
-    monkeypatch.setattr(module, 'sha', protect_during_hash)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(published_storage, 'read_local_body', protect_during_hash)
     module.gc_derivatives(store, apply=True)
     assert (store.packs / old['d1']).exists()
     with closing(store.connect()) as db:
