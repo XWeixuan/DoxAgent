@@ -2063,6 +2063,13 @@ class SiteAccessRuntime:
                     assessment=getattr(page, "_doxagent_assessment", None),
                 )
             except Exception as exc:
+                native_failure = getattr(exc, "native_search_failure", None)
+                if native_failure:
+                    logger.warning(
+                        "native search failure site=%s identity=%s operation=%s evidence=%s",
+                        resolved.site_id, identity.identity_id, request.operation_id,
+                        json.dumps(native_failure, ensure_ascii=True, separators=(",", ":")),
+                    )
                 # A native redirect/late WAF document may replace the initial
                 # commit while a recipe or content selector is still waiting.
                 # Inspect before cleanup; do not retry/close a human challenge.

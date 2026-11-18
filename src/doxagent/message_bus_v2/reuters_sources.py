@@ -108,7 +108,15 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
     listening=hasattr(page,'on')
     if listening:page.on('response',observe)
     try:
-        rows=await _capture_reuters_search_dom(page,query,offset,navigation=navigation)
+        try:
+            rows=await _capture_reuters_search_dom(page,query,offset,navigation=navigation)
+        except Exception as error:
+            # A rejected API request can leave the HTML shell visible and its
+            # result selector waiting. Preserve that response even on DOM timeout.
+            denied=next((item for item in reversed(responses) if item.status>=400),None)
+            if denied is not None:
+                await _attach_native_search_failure(error,denied)
+            raise
         if listening and navigation.get('interactive'):
             async with asyncio.timeout(12):await ready.wait()
         if responses:
@@ -116,7 +124,13 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
             if response.status!=200:
                 error=RuntimeError('Reuters native search request rejected')
                 error.status_code=response.status;error.response_url=page.url
-                error.response_body=await page.content();error.response_headers={}
+                await _attach_native_search_failure(error,response)
+                try:
+                    async with asyncio.timeout(1):
+                        error.response_body=await page.content()
+                except Exception:
+                    error.response_body=''
+                error.response_headers={}
                 raise error
             payload=await response.json()
             page._doxagent_reuters_consumed=(response.request,int(time.time()*1000))
@@ -124,6 +138,32 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
         return rows
     finally:
         if listening:page.remove_listener('response',observe)
+
+
+async def _attach_native_search_failure(error: Exception, response: Any) -> None:
+    """Keep API provenance separate from the rendered page used by maintenance.
+
+    Observe only the response already received. Never persist raw Cookie,
+    challenge URLs, response content, or query values in this diagnostic.
+    """
+    from doxagent.site_strategy.solver_forensics import response_summary
+
+    headers={};body=None;body_state='NOT_READ'
+    try:
+        async with asyncio.timeout(1):
+            headers=await response.all_headers()
+            size=str(headers.get('content-length',''))
+            if size.isdigit() and 0<int(size)<=65536:
+                body=(await response.text())[:16384]
+                body_state='OBSERVED'
+            else:
+                body_state='SKIPPED_SIZE_UNKNOWN_OR_LARGE'
+    except Exception:
+        body_state='UNAVAILABLE'
+    error.native_search_failure={
+        **response_summary(response.url,response.status,headers,body,wire_body=body is not None),
+        'body_state':body_state,
+    }
 
 
 def mark_consumed_search(page, tracked_requests, timings):
