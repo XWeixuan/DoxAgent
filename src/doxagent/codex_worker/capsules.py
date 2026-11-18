@@ -516,6 +516,8 @@ class CapsuleRuntime:
                     )
                 with span("capsule.prepare_reply"):
                     ready = await asyncio.wait_for(capsule.receive(), remaining(self.prepare_timeout))
+                    from doxagent.w3_timing import mark
+                    mark('capsule.prepare_reply_received', thread_id=ready.get('thread_id'))
             capsule.thread_id = ready["thread_id"]
             await progress("CHILD_KNOWN", thread_id=capsule.thread_id)
             capsule.prepared = True

@@ -28,7 +28,7 @@ class DoxAgentSettings(BaseSettings):
         default=None, validation_alias="DOXAGENT_CODEX_RUNTIME_BIN"
     )
     w3_market_refresh_seconds: float = Field(default=30, ge=15, validation_alias="DOXAGENT_W3_MARKET_REFRESH_SECONDS")
-    w3_ready_luna: int = Field(default=4, ge=0, le=16, validation_alias="DOXAGENT_W3_READY_LUNA")
+    w3_ready_luna: int = Field(default=6, ge=0, le=16, validation_alias="DOXAGENT_W3_READY_LUNA")
     w3_boot_timeout_seconds: int = Field(
         default=90, ge=30, le=180, validation_alias="DOXAGENT_W3_BOOT_TIMEOUT_SECONDS"
     )

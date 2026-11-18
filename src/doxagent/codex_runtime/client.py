@@ -354,7 +354,12 @@ class HttpCodexWorkerClient:
                         await asyncio.sleep(5)
                         continue
                     response.raise_for_status()
+                    if str(request.node) == 'persistent_runtime_w3':
+                        from doxagent.w3_timing import mark
+                        mark('worker.http_response_received', job_id=job.job_id if job else None)
                     job = WorkerJob.model_validate(response.json())
+                    if str(request.node) == 'persistent_runtime_w3' and job.status not in {'queued', 'running'}:
+                        mark('worker.terminal_parsed', job_id=job.job_id)
                     await observe(job)
                     unavailable_since = None
                     if job.status in {"queued", "running"}:
@@ -408,9 +413,13 @@ class HttpCodexWorkerClient:
                 event = json.loads(line[5:].strip())
                 after = max(after, event["sequence"])
                 if event["event_type"] in {"job.succeeded", "job.failed", "job.cancelled"}:
+                    from doxagent.w3_timing import mark
+                    mark('worker.sse_terminal_received', job_id=job_id)
                     return after
                 if event["event_type"] == "job.running" and on_update is not None:
                     await on_update(WorkerJob.model_validate(event["payload"]))
+        from doxagent.w3_timing import mark
+        mark('worker.sse_closed', job_id=job_id)
         return after
 
     async def cancel(self, job_id: str) -> WorkerJob | None:

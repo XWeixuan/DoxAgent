@@ -203,22 +203,24 @@ async def main() -> None:
                                     request, Path(payload["cwd"])
                                 )
                             mark("capsule.control_completed", thread_id=thread_id)
+                            from .workspace_store import LocalWorkspaceStore
+
+                            if payload["type"] == "prepare_fork":
+                                LocalWorkspaceStore._atomic_write(
+                                    Path(payload["cwd"]) / ".w3-fork-receipt.json",
+                                    json.dumps(
+                                        {
+                                            "thread_id": thread_id,
+                                            "parent_id": payload["parent_thread_id"],
+                                            "run_id": payload["request"]["run_id"],
+                                        }
+                                    ).encode(),
+                                )
+                            mark("capsule.receipt_persisted", thread_id=thread_id)
+                            send({"type": "ready", "thread_id": thread_id})
+                            mark("capsule.reply_sent", thread_id=thread_id)
                     finally:
                         save_trace(trace, payload.get("timing_directory"))
-                    from .workspace_store import LocalWorkspaceStore
-
-                    if payload["type"] == "prepare_fork":
-                        LocalWorkspaceStore._atomic_write(
-                            Path(payload["cwd"]) / ".w3-fork-receipt.json",
-                            json.dumps(
-                                {
-                                    "thread_id": thread_id,
-                                    "parent_id": payload["parent_thread_id"],
-                                    "run_id": payload["request"]["run_id"],
-                                }
-                            ).encode(),
-                        )
-                    send({"type": "ready", "thread_id": thread_id})
                 except Exception as exc:
                     send(
                         {

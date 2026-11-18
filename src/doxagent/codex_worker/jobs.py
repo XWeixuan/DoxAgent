@@ -530,6 +530,17 @@ class WorkerJobManager:
         await self._execute_leased(job_id, request)
 
     async def _execute_leased(self, job_id: str, request: WorkerRunRequest) -> None:
+        if str(request.node) != 'persistent_runtime_w3':
+            return await self._execute_owned(job_id, request)
+        trace = BoundaryTrace(job_id=job_id, run_id=request.run_id, attempt_id=request.attempt_id,
+                              phase=request.task_phase, worker_generation=self.generation)
+        with trace.activate():
+            try:
+                return await self._execute_owned(job_id, request)
+            finally:
+                await read_io(save_trace, trace, self.store.root/'boundary-timing')
+
+    async def _execute_owned(self, job_id: str, request: WorkerRunRequest) -> None:
         self._entered.add(job_id)
         try:
             await self._run(job_id, request)
@@ -843,6 +854,7 @@ class WorkerJobManager:
                 "failed",
                 "cancelled",
             }:
+                logging.getLogger(__name__).info('w3_sse_terminal job_id=%s at=%s status=%s', job_id, utc_now().isoformat(), status)
                 return
             async with self._condition:
                 if revision != self._event_revision:
@@ -857,7 +869,7 @@ class WorkerJobManager:
                 yield WorkerEvent(sequence=after_sequence, event_type="heartbeat", payload={})
 
     async def _run(self, job_id: str, request: WorkerRunRequest) -> None:
-        if str(request.node) != "persistent_runtime_w3":
+        if str(request.node) != "persistent_runtime_w3" or snapshot_current() is not None:
             return await self._run_observed(job_id, request)
         trace = BoundaryTrace(
             job_id=job_id,
@@ -882,6 +894,9 @@ class WorkerJobManager:
 
     async def _run_observed(self, job_id: str, request: WorkerRunRequest) -> None:
         job = await read_io(self.store.get, job_id)
+        if str(request.node) == 'persistent_runtime_w3':
+            from doxagent.w3_timing import identify
+            identify(worker_queue_to_run_ms=max(0, round((utc_now()-job.created_at).total_seconds()*1000, 3)))
         started = time.monotonic()
         phase = "START_THREAD"
         try:
@@ -1078,8 +1093,12 @@ class WorkerJobManager:
 
     async def _update(self, job_id: str, **updates: object) -> None:
         def update_record():
-            job = self.store.get(job_id).model_copy(update={**updates, "updated_at": utc_now()})
-            self.store.save(job)
+            with span('worker.update_sql'):
+                job = self.store.get(job_id).model_copy(update={**updates, "updated_at": utc_now()})
+                self.store.save(job)
+            if job.status in {'succeeded', 'failed', 'cancelled'}:
+                from doxagent.w3_timing import mark
+                mark('worker.terminal_commit_return', job_id=job_id)
             return job
 
         job = await write_io(self.store.path, update_record, priority=0, retry=True)
@@ -1089,7 +1108,10 @@ class WorkerJobManager:
             async with self._condition:
                 self._event_revision += 1
                 self._condition.notify_all()
-        await blocking(self._persist, job)
+            from doxagent.w3_timing import mark
+            mark('worker.terminal_notify', job_id=job_id)
+        with span('worker.audit_mirror'):
+            await blocking(self._persist, job)
         await self._emit(
             job_id,
             f"job.{job.status}",
