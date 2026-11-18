@@ -1,0 +1,2 @@
+{"codec_proof": {"7a10600d98": {"size": 17, "single": false}, "4ad318dee0": {"size": 400, "single": true}, "4d00d1d8ff": {"size": 320000, "single": false}}, "published_gzip": true}
+{"native_triggers": {"read": {"update_triggers": 2, "differential": 2, "row_changes": 0}, "research": {"update_triggers": 7, "differential": 7, "row_changes": 0}, "initialization": {"update_triggers": 14, "differential": 14, "row_changes": 0}, "bus": {"update_triggers": 37, "differential": 37, "row_changes": 0}, "runtime": {"update_triggers": 39, "differential": 39, "row_changes": 0}}}

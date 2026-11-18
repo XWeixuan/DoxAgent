@@ -1,0 +1,30 @@
+Process 3127069: python -m doxagent.message_bus_v2.cli run-collector
+Python v3.11.13 (/usr/local/bin/python3.11)
+
+Thread 7 (active): "MainThread"
+    EpollSelector.select (selectors.py:468)
+    BaseEventLoop._run_once (asyncio/base_events.py:1898)
+    BaseEventLoop.run_forever (asyncio/base_events.py:608)
+    BaseEventLoop.run_until_complete (asyncio/base_events.py:641)
+    Runner.run (asyncio/runners.py:118)
+    run (asyncio/runners.py:190)
+    main (doxagent/message_bus_v2/cli.py:108)
+    <module> (doxagent/message_bus_v2/cli.py:260)
+    _run_code (<frozen runpy>:88)
+    _run_module_as_main (<frozen runpy>:198)
+Thread 22 (active): "yahoo-http"
+    EpollSelector.select (selectors.py:468)
+    BaseEventLoop._run_once (asyncio/base_events.py:1898)
+    BaseEventLoop.run_forever (asyncio/base_events.py:608)
+    Thread.run (threading.py:982)
+    Thread._bootstrap_inner (threading.py:1045)
+    Thread._bootstrap (threading.py:1002)
+Thread 23 (active): "asyncio_0"
+    AcquisitionStore.recover_previous_owner.<locals>.<listcomp> (doxagent/message_bus_v2/collection_plane/store.py:630)
+    AcquisitionStore.recover_previous_owner (doxagent/message_bus_v2/collection_plane/store.py:630)
+    durable_write.<locals>.run (doxagent/message_bus_v2/collection_plane/store.py:48)
+    _WorkItem.run (concurrent/futures/thread.py:58)
+    _worker (concurrent/futures/thread.py:83)
+    Thread.run (threading.py:982)
+    Thread._bootstrap_inner (threading.py:1045)
+    Thread._bootstrap (threading.py:1002)

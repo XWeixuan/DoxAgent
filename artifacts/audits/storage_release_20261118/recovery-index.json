@@ -1,0 +1,1 @@
+{"index": "cycles_unfinished", "seconds": 330.7668485819886, "query_seconds": 0.0026426949916640297, "interrupted_cycles": 19, "plan": [[3, 0, 0, "SEARCH cycles USING INDEX cycles_unfinished (status=?)"]], "row_changes": 0}
