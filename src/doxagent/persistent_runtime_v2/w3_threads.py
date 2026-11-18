@@ -58,6 +58,20 @@ class W3ThreadRegistry:
             value[key] = json.loads(value[key]) if value[key] else None
         return value
 
+    def trade_stages(self, case_id):
+        with self.journal.transaction(write=False) as db:
+            rows = db.execute(
+                "SELECT * FROM runtime_v2_w3_stages WHERE case_id=? "
+                "AND phase IN ('trade_decision','trade_decision:A','trade_decision:B')", (case_id,),
+            ).fetchall()
+        values = {}
+        for row in rows:
+            value = dict(row)
+            for key in ("result_json", "input_refs"):
+                value[key] = json.loads(value[key]) if value[key] else None
+            values[value['phase']] = value
+        return values
+
     @observed("stage.begin")
     def begin_stage(self, case_id, phase, *, thread_id=None, input_refs=None):
         existing = self.stage(case_id, phase)

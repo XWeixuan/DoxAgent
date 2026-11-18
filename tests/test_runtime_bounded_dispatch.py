@@ -136,6 +136,18 @@ def test_success_resumes_directly_to_commit_without_repreparing(
 
     monkeypatch.setattr(execution.registry, "commit_stage", count_commit)
     monkeypatch.setattr(execution, "_sync_route_case", fail_after_commit)
+    if post_commit_retry and phase == "post_decision_operations":
+        queue_ack = execution._queue_ack
+
+        def fail_after_atomic_commit(*args):
+            # SQLite Operations now saves the route in the business transaction,
+            # so the legacy _sync_route_case hook is no longer executed here.
+            monkeypatch.setattr(execution, "_queue_ack", queue_ack)
+            monkeypatch.setattr(execution, "_sync_route_case", sync)
+            assert execution.registry.stage(case.case_id, phase)["status"] == "COMMITTED"
+            raise sqlite3.OperationalError("database is locked")
+
+        monkeypatch.setattr(execution, "_queue_ack", fail_after_atomic_commit)
 
     def count_prepare(value):
         prepared.append(value.case_id)

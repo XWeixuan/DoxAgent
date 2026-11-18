@@ -2173,7 +2173,7 @@ class PersistentRuntimeV2Service:
                     }))
                 return 0
             pending = getattr(exc, "pending_future", None)
-            if getattr(exc, "code", None) == "w3_pending_external" and pending is not None:
+            if getattr(exc, "code", None) in {"w3_pending_external", "w3_prepare_pending"} and pending is not None:
                 with self._w3_threads_lock:
                     self._phase_waiters[effect.effect_id] = pending
                     continuation = getattr(exc, "effect_continuation", None)
@@ -2185,6 +2185,22 @@ class PersistentRuntimeV2Service:
                     self._resume_phase(effect)
                 pending.add_done_callback(resume)
                 return 0
+            if effect.effect_type in {RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION}:
+                import httpx
+
+                unavailable = isinstance(exc, httpx.RequestError) or (
+                    isinstance(exc, httpx.HTTPStatusError)
+                    and (exc.response.status_code >= 500 or exc.response.status_code in {408, 429})
+                )
+                if unavailable:
+                    # Materialization RPCs precede ReceiptWorker.run. Preserve their
+                    # original identities and do not spend the model failure budget.
+                    self.repository.save_effect(effect.model_copy(update={
+                        "status": RuntimeEffectStatus.PENDING_RETRY,
+                        "available_at": utc_now() + timedelta(seconds=1),
+                        "last_error": "W3 infrastructure unavailable: " + type(exc).__name__,
+                    }))
+                    return 0
             if (isinstance(exc, ControlError) or is_sqlite_contention(exc)
                 or isinstance(exc, RuntimeError) and str(exc) == "can't start new thread"):
                 self.repository.save_effect(

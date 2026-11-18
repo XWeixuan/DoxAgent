@@ -186,11 +186,17 @@ class PublishedW3ContextProvider:
             case.ticker,
             pin.document1_run_id,
             pin.document2_run_id,
-            pin.event_library_root,
-            pin.policy_set_version,
+            None if is_pin_watch_contract(case.w3_contract_version) else pin.event_library_root,
+            None if is_pin_watch_contract(case.w3_contract_version) else pin.policy_set_version,
         )
         async with self._load_locks.setdefault(key, asyncio.Lock()):
-            return await self._load(case)
+            value = await self._load(case)
+            if is_pin_watch_contract(case.w3_contract_version):
+                value = value.model_copy(update={"version_pin": value.version_pin.model_copy(update={
+                    "event_library_version": pin.event_library_version,
+                    "policy_set_version": pin.policy_set_version,
+                })})
+            return value
 
     def _reference(self, case):
         key = (
@@ -217,6 +223,11 @@ class PublishedW3ContextProvider:
         return view
 
     async def _load(self, case: RuntimeCase) -> W3PreparedContext:
+        if is_pin_watch_contract(case.w3_contract_version) and case.version_pin.document1_run_id and case.version_pin.document2_run_id:
+            cached = self._cached_context((case.ticker, case.version_pin.document2_run_id,
+                                           case.version_pin.document1_run_id + ":", 0, 0, True))
+            if cached is not None:
+                return cached
         if case.version_pin.document2_run_id:
             pinned = await read_io(self._runtime.get_bundle, case.version_pin.document2_run_id)
             if not isinstance(pinned, Document2Bundle) or pinned.ticker.upper() != case.ticker:
@@ -232,9 +243,9 @@ class PublishedW3ContextProvider:
             d2_bundle.run_id,
             (case.version_pin.document1_run_id or d2_bundle.source_global_run_id)
             + ":"
-            + (case.version_pin.event_library_root or ""),
-            case.version_pin.event_library_version,
-            case.version_pin.policy_set_version,
+            + ("" if v6 else case.version_pin.event_library_root or ""),
+            0 if v6 else case.version_pin.event_library_version,
+            0 if v6 else case.version_pin.policy_set_version,
             v6,
         )
         cached = self._cached_context(cache_key)
@@ -263,7 +274,7 @@ class PublishedW3ContextProvider:
             self._cache_context(cache_key, prepared)
             return self._without_consumed_policies(prepared)
         d2_published = await read_io(
-            self._runtime.get_published_document,
+            self._published_metadata,
             d2_bundle.run_id,
             d2_bundle.handoff.document2_artifact_id,
         )
@@ -289,7 +300,7 @@ class PublishedW3ContextProvider:
         if d1_bundle.ticker.upper() != case.ticker:
             raise W3Error("w3_document1_ticker_mismatch", "Pinned D1 ticker mismatch")
         d1_published = await read_io(
-            self._runtime.get_published_document,
+            self._published_metadata,
             d1_bundle.run_id,
             d1_bundle.handoff.document_artifact_id,
         )
@@ -298,6 +309,9 @@ class PublishedW3ContextProvider:
         document1 = (await self._read_published(d1_published)).decode("utf-8")
 
         if v6:
+            from .journal import digest
+            from .w3_research_store import RENDERER
+
             prepared = W3PreparedContext(
                 version_pin=W3ContextVersionPin(
                     document1_run_id=d1_bundle.run_id,
@@ -310,6 +324,11 @@ class PublishedW3ContextProvider:
                 document2_publication_state=str(d2_bundle.publication_state or "COMPLETE"),
                 original_document2=d2_text,
                 context_cutoffs={"D1": None, "D2": document2.as_of.isoformat()},
+                research_identity=await read_io(digest, [
+                    "w3-research-v6", RENDERER, case.w3_contract_version,
+                    case.ticker, d1_bundle.run_id, d2_bundle.run_id,
+                    d1_published.sha256, d2_published.sha256,
+                ]),
             )
             self._cache_context(cache_key, prepared)
             return prepared
@@ -458,20 +477,44 @@ class PublishedW3ContextProvider:
             while len(self._context_cache) > self._context_cache_size:
                 self._context_cache.popitem(last=False)
 
+    def _published_metadata(self, run_id, artifact_id):
+        local = getattr(self._runtime, "local", self._runtime)
+        reader = getattr(local, "get_published_document_metadata", None)
+        if reader is not None:
+            value = reader(run_id, artifact_id)
+            if value is not None:
+                return value
+        return self._runtime.get_published_document(run_id, artifact_id)
+
+    def _local_published_bytes(self, value):
+        from doxagent.codex_runtime.published_storage import local_body_path, read_local_body
+
+        local = getattr(self._runtime, "local", self._runtime)
+        database = getattr(local, "path", None)
+        if database is None:
+            return None
+        for compressed in (True, False):
+            path = local_body_path(Path(database).parent, value.sha256, compressed=compressed)
+            if path.is_file():
+                return read_local_body(path, value.sha256)
+        return None
+
     @observed("context.published_read")
     async def _read_published(self, value: PublishedDocument) -> bytes:
         if value.content_text is not None:
-            content = value.content_text.encode("utf-8")
-        elif self._storage is not None and value.storage_path is not None:
-            content = await self._storage.get(value.storage_path)
+            content = await read_io(value.content_text.encode, "utf-8")
         else:
+            content = await read_io(self._local_published_bytes, value)
+        if content is None and self._storage is not None and value.storage_path is not None:
+            content = await self._storage.get(value.storage_path)
+        if content is None:
             raise W3Error(
                 "w3_published_storage_unavailable",
                 "Published artifact storage unavailable",
             )
         if len(content) != value.size_bytes:
             raise W3Error("w3_published_size_mismatch", "Published artifact size mismatch")
-        if hashlib.sha256(content).hexdigest() != value.sha256:
+        if (await read_io(hashlib.sha256, content)).hexdigest() != value.sha256:
             raise W3Error("w3_published_digest_mismatch", "Published artifact digest mismatch")
         return content
 
@@ -525,6 +568,7 @@ class CodexW3AgentRunner:
         self._loop_thread.start()
         self._closed = False
         self._asset_preparations = {}
+        self._component_installations = {}
         self._pending_v4 = {}
         self._pending_v4_lock = threading.Lock()
 
@@ -541,14 +585,39 @@ class CodexW3AgentRunner:
         ) in {ENTRY, V6_ENTRY} and hasattr(self._worker, "bind_w3_context")
 
     def _install_context(self, case, context):
+        async def prepare_components():
+            key = ("components:" + context.research_identity
+                   if is_pin_watch_contract(case.w3_contract_version) and context.research_identity else None)
+            if key:
+                saved = await read_io(self._journal.get, "w3_research_v2", key)
+                if saved is not None:
+                    return saved
+            def component_texts():
+                components = dict(d1=context.document1,
+                                  d2=context.original_document2 or compact(context.document2.model_dump(mode="json")))
+                if not is_pin_watch_contract(case.w3_contract_version):
+                    components.update(policy=context.original_policy_set or compact(context.policy_set.model_dump(mode="json")),
+                                      reference=context.reference_view)
+                return components
+            components = await self._worker.prepare_w3_research(case.ticker, await read_io(component_texts))
+            if key:
+                await write_io(self._journal.path, self._journal.set, "w3_research_v2", key, components, retry=True)
+            return components
+
         async def install():
-            components = await self._worker.prepare_w3_research(
-                case.ticker,
-                dict(d1=context.document1, d2=context.original_document2 or compact(context.document2.model_dump(mode="json")))
-                if is_pin_watch_contract(case.w3_contract_version) else dict(
-                    d1=context.document1, d2=context.original_document2 or compact(context.document2.model_dump(mode="json")),
-                    policy=context.original_policy_set or compact(context.policy_set.model_dump(mode="json")), reference=context.reference_view),
-            )
+            key = context.research_identity if is_pin_watch_contract(case.w3_contract_version) else None
+            if key:
+                pending = self._component_installations.get(key)
+                if pending is None:
+                    pending = asyncio.create_task(prepare_components())
+                    self._component_installations[key] = pending
+                try:
+                    components = await asyncio.shield(pending)
+                finally:
+                    if pending.done() and self._component_installations.get(key) is pending:
+                        self._component_installations.pop(key, None)
+            else:
+                components = await prepare_components()
             saved = dict(
                 components=components,
                 version_pin=context.version_pin.model_dump(mode="json"),
@@ -834,15 +903,20 @@ class CodexW3AgentRunner:
                             pending.result()
                             saved = self._journal.get("w3_research_v2", key)
                         if saved is None:
-                            if pending is None or pending.done():
-                                self._asset_preparations[key] = asyncio.run_coroutine_threadsafe(
-                                    asyncio.to_thread(self.prepare_public_assets, case), self._loop
-                                )
-                            raise W3Error(
+                            with self._pending_v4_lock:
+                                pending = self._asset_preparations.get(key)
+                                if pending is None or pending.done():
+                                    pending = asyncio.run_coroutine_threadsafe(
+                                        asyncio.to_thread(self.prepare_public_assets, case), self._loop
+                                    )
+                                    self._asset_preparations[key] = pending
+                            error = W3Error(
                                 "w3_prepare_pending",
                                 "Exact pinned research is preparing off the Case stage; "
                                 "no version substitution",
                             )
+                            error.pending_future = pending
+                            raise error
                 policies = case.frozen_inputs.get("projection", {}).get("policies", [])
                 wrapped = [
                     SimpleNamespace(
@@ -973,12 +1047,29 @@ class CodexW3AgentRunner:
         # Reuse the existing priority writer and its unchanged short SQL policy.
         # Only the SQL callback belongs here, never preparation/network I/O.
         async def persist():
+            mark("result.loop_started")
             with span("result.loop_handoff", queued_ms=(perf_counter() - submitted) * 1000):
-                return await write_io(self._journal.path, callback, priority=0, retry=True)
+                try:
+                    return await write_io(self._journal.path, write, priority=0, retry=True)
+                finally:
+                    mark("result.loop_resumed")
+
+        def write():
+            mark("result.callback_started")
+            try:
+                with span("result.writer_callback"):
+                    return callback()
+            finally:
+                mark("result.callback_finished")
 
         from time import perf_counter
+        from doxagent.w3_timing import mark
         submitted = perf_counter()
-        return self._wait_v4(persist())
+        mark("result.submitted")
+        try:
+            return self._wait_v4(persist())
+        finally:
+            mark("result.owner_resumed")
 
     def bind_recovery_notifier(self, callback):
         self._recovery_notifier = callback
@@ -1449,18 +1540,19 @@ class CodexW3AgentRunner:
                 '初始化 AGENTS.md、唯一 Skill 与 backtest.md；不处理消息或开展研究。'
                 '返回 {"ready": true}。'
             )
-        await write(
-            run_id, f"{case_root}/task.json", json.dumps(task, ensure_ascii=False, indent=2)
-        )
+        task_text = await read_io(json.dumps, task, ensure_ascii=False)
+        task_file = await read_io(json.dumps, task, ensure_ascii=False, indent=2)
+        schema_file = await read_io(json.dumps, schema, ensure_ascii=False, indent=2)
+        await write(run_id, f"{case_root}/task.json", task_file)
         await write(
             run_id,
             f"{case_root}/output_schema.json",
-            json.dumps(schema, ensure_ascii=False, indent=2),
+            schema_file,
         )
         prompt = template
         for token, value in {
             "{phase}": phase,
-            "{payload}": json.dumps(task, ensure_ascii=False),
+            "{payload}": task_text,
             "{task_path}": f"{case_root}/task.json",
             "{schema_path}": f"{case_root}/output_schema.json",
             "{skill_path}": skill_path,
@@ -1482,7 +1574,7 @@ class CodexW3AgentRunner:
                 + ((replay_instructions + "\n\n") if replay_instructions else "")
                 if phase == "w3_template"
                 else ""
-            ) + json.dumps(task, ensure_ascii=False)
+            ) + task_text
             if phase == OPERATIONS_PHASE and is_pin_watch_contract(case.w3_contract_version):
                 from .w3_assets import operations_asset
                 prompt = operations_asset(assets) + '\n\n' + prompt

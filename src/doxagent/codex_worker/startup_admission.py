@@ -72,6 +72,10 @@ class PriorityGate:
         rank = priority if callable(priority) else lambda: priority
         owner = asyncio.current_task()
         admitted = False
+        from doxagent.w3_timing import mark
+
+        started = time.monotonic()
+        mark("cold.admission_wait", label=label, priority=rank())
         try:
             # The initial lock acquisition is part of the admission budget too.
             async with asyncio.timeout(timeout):
@@ -106,6 +110,8 @@ class PriorityGate:
                     finally:
                         self.waiters.remove(entry)
                         self.condition.notify_all()
+            mark("cold.admitted", label=label, wait_ms=round((time.monotonic()-started)*1000, 3),
+                 bypassed=not admitted)
             yield
         finally:
             if admitted and self._owner is owner:

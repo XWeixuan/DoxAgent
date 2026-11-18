@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 from urllib.parse import quote
@@ -15,6 +16,16 @@ from uuid import uuid4
 import httpx
 
 LOCAL_BODY_CODEC = 'gzip-v1'
+
+
+@dataclass(frozen=True)
+class PublishedDocumentMetadata:
+    """Descriptor for a pinned publication; reading its body remains explicit."""
+
+    sha256: str
+    size_bytes: int
+    content_text: str | None
+    storage_path: str | None
 
 
 def local_body_refs_enabled():

@@ -104,15 +104,23 @@ class HttpCodexWorkerClient:
         )
 
     async def prepare_w3_research(self, ticker, components):
+        from doxagent.control_io import read_io
+
+        body = await read_io(json.dumps, {"ticker": ticker, "components": components})
         response = await self._client.post(
-            "/v1/w3/research/prepare", json={"ticker": ticker, "components": components}
+            "/v1/w3/research/prepare", content=body.encode('utf-8'),
+            headers={"Content-Type": "application/json"},
         )
         response.raise_for_status()
         return response.json()["components"]
 
     async def bind_w3_context(self, case_id, phase, manifest):
+        from doxagent.control_io import read_io
+
+        body = await read_io(json.dumps, {"case_id": case_id, "phase": phase, "manifest": manifest})
         response = await self._client.post(
-            "/v1/w3/contexts", json={"case_id": case_id, "phase": phase, "manifest": manifest}
+            "/v1/w3/contexts", content=body.encode('utf-8'),
+            headers={"Content-Type": "application/json"},
         )
         response.raise_for_status()
         return response.json()

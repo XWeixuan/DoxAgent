@@ -56,7 +56,10 @@ def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
                      " AND ("+old_identity+" IS NOT "+identity+" OR artifact_id NOT IN ("+hashes+"));")
         unowned = ("NOT EXISTS(SELECT 1 FROM artifact_ref WHERE owner_type='"+table+
                    "' AND owner_id="+identity+" AND artifact_id=n.value)")
-        db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_'+operation)+" AFTER "+event+" ON "+quoted(table)+" BEGIN "+clear+
+        changed = (" WHEN " + old_identity + " IS NOT " + identity + " OR " +
+                   " OR ".join("OLD."+quoted(column)+" IS NOT NEW."+quoted(column) for column in columns)
+                   if operation == 'UPDATE' else '')
+        db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_'+operation)+" AFTER "+event+" ON "+quoted(table)+changed+" BEGIN "+clear+
             "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'"+classification+"',strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM ("+hashes+") n WHERE "+unowned+" "+conflict+"; "+
             "INSERT INTO artifact_ref SELECT '"+table+"',"+identity+",value FROM ("+hashes+") n WHERE "+unowned+" ON CONFLICT DO NOTHING; END")
     db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_DELETE')+" AFTER DELETE ON "+quoted(table)+" BEGIN DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+"; END")
@@ -222,7 +225,9 @@ def upgrade_native_trigger_conflicts(db):
         db.execute(fixed)
     for name, table, sql in rows:
         prefix = f"INSERT INTO artifact_ref SELECT '{table}',"
-        if name != f'v2_artifact_{table}_UPDATE' or prefix not in sql or 'artifact_id NOT IN (' in sql:
+        if name != f'v2_artifact_{table}_UPDATE' or prefix not in sql:
+            continue
+        if 'artifact_id NOT IN (' in sql and ' WHEN ' in sql:
             continue
         identity = sql.split(prefix, 1)[1].split(',value FROM (', 1)[0]
         header = sql.split(' AFTER UPDATE OF ', 1)[1].split(' ON ', 1)[0]

@@ -821,6 +821,12 @@ class OpenAICodexRuntime:
             await asyncio.to_thread(self._time_control.write, request, thread.id)
         dispatched_monotonic = time.monotonic()
         dispatched_at = datetime.now(UTC).isoformat()
+        if request.w3_entry_version:
+            from doxagent.w3_timing import mark
+
+            mark("sdk.turn_parameters", task_phase=request.task_phase,
+                 turn_service_tier=turn_service_tier or sdk_config.get("service_tier"),
+                 model=execution_model, effort=request.effort)
         handle = await measured(
             "sdk.turn_start",
             thread.turn(

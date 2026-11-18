@@ -499,19 +499,21 @@ class CapsuleRuntime:
             capsule = await self._take(None, w3_profile=str(request.node) == "persistent_runtime_w3")
         try:
             async with self.admission.handshake_for():
-                await progress(
-                    "FORK_DISPATCHED" if parent_thread_id else "RESUMING_CHILD",
-                    capsule_id=getattr(capsule, "identity", None),
-                )
-                await capsule.send(
-                    {
-                        "type": "prepare_fork" if parent_thread_id else "prepare_resume",
-                        "request": request.model_dump(mode="json"),
-                        "cwd": str(cwd),
-                        "parent_thread_id": parent_thread_id,
-                        "timing_directory": str(self.root / "boundary-timing"),
-                    }
-                )
+                with span("capsule.fork_checkpoint"):
+                    await progress(
+                        "FORK_DISPATCHED" if parent_thread_id else "RESUMING_CHILD",
+                        capsule_id=getattr(capsule, "identity", None),
+                    )
+                with span("capsule.prepare_send"):
+                    await capsule.send(
+                        {
+                            "type": "prepare_fork" if parent_thread_id else "prepare_resume",
+                            "request": request.model_dump(mode="json"),
+                            "cwd": str(cwd),
+                            "parent_thread_id": parent_thread_id,
+                            "timing_directory": str(self.root / "boundary-timing"),
+                        }
+                    )
                 with span("capsule.prepare_reply"):
                     ready = await asyncio.wait_for(capsule.receive(), remaining(self.prepare_timeout))
             capsule.thread_id = ready["thread_id"]

@@ -53,24 +53,30 @@ def reconcile(source, *, limit=64, seconds=.3):
     """Repair old append-only owner refs before considering any source CAS file."""
     started=time.monotonic();report=dict(rows=0,owners=0,ready=False)
     with closing(source.connection()) as db:
-        names = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        tables = []
-        for table in sorted(names):
-            if table.startswith("sqlite_"):
-                continue
-            info = list(db.execute("PRAGMA table_info(" + quoted(table) + ")"))
-            columns = [row[1] for row in info
-                       if row[1] in {"payload", "payload_json", "inputs", "receipt", "data_json"}]
-            if columns:
-                keys = [row[1] for row in sorted(info, key=lambda row: row[5]) if row[5]]
-                tables.append((table, columns, keys))
-        packets = [(table, owner) for table, owner in (
-            ("v2_receipt_packs", "transport_pack"),
-            ("v2_receipt_archive", "transport_archive"),
-            ("v2_source_exception_receipts", "transport_exception"),
-        ) if table in names]
-        owners = [(table, table, columns, keys) for table, columns, keys in tables]
-        owners += [(table, owner, [], ["seq"]) for table, owner in packets]
+        version = db.execute("PRAGMA schema_version").fetchone()[0]
+        cached = getattr(source, "_native_schema", None)
+        if cached is None or cached[0] != version:
+            names = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            tables = []
+            for table in sorted(names):
+                if table.startswith("sqlite_"):
+                    continue
+                info = list(db.execute("PRAGMA table_info(" + quoted(table) + ")"))
+                columns = [row[1] for row in info
+                           if row[1] in {"payload", "payload_json", "inputs", "receipt", "data_json"}]
+                if columns:
+                    keys = [row[1] for row in sorted(info, key=lambda row: row[5]) if row[5]]
+                    tables.append((table, columns, keys))
+            packets = [(table, owner) for table, owner in (
+                ("v2_receipt_packs", "transport_pack"),
+                ("v2_receipt_archive", "transport_archive"),
+                ("v2_source_exception_receipts", "transport_exception"),
+            ) if table in names]
+            owners = [(table, table, columns, keys) for table, columns, keys in tables]
+            owners += [(table, owner, [], ["seq"]) for table, owner in packets]
+            source._native_schema = (version, names, owners)
+        else:
+            _, names, owners = cached
         wanted = {name for _, owner, _, _ in owners for name in (owner, "orphan:" + owner)}
         scan = dict((row[0], (row[1], row[2])) for row in db.execute(
             "SELECT owner,cursor,done FROM v2_native_ref_scan"
@@ -149,35 +155,72 @@ def inventory(source, *, limit=64):
     after = row[0] if row else ""
     if root.is_symlink():
         raise ValueError("native root is linked")
+    import os
+
+    scan = getattr(source, "_native_inventory_scan", None)
+    if scan is not None and scan[0] != after:
+        scan[2].close()
+        scan = None
+    if scan is None:
+        prefix = int(after[2:], 16) if after.startswith("p:") else (
+            int(after[:2], 16) if after else 0
+        )
+        scan = (after, prefix, None)
+    _, prefix, entries = scan
     prepared = []
-    for prefix in sorted(root.iterdir()) if root.exists() else ():
-        if prefix.name < after[:2] or prefix.is_symlink() or not re.fullmatch("[0-9a-f]{2}", prefix.name) or not prefix.is_dir():
-            continue
-        for path in sorted(prefix.iterdir()):
-            if path.name <= after or path.is_symlink() or not re.fullmatch("[0-9a-f]{64}", path.name):
-                continue
-            if path.name[:2] != prefix.name:
-                raise ValueError("native CAS prefix mismatch")
-            manifest = path / "manifest.json"
-            single = path / SINGLE_FILE
+    inspected = 0
+    prefixes = 0
+    while inspected < limit and prefixes < 256:
+        if entries is None:
+            folder = root / f"{prefix:02x}"
+            if folder.is_symlink():
+                raise ValueError("native prefix is linked")
             try:
-                if single.is_file() and not single.is_symlink():
-                    size = ContentFiles(root).verify(path.name)
-                    created = datetime.fromtimestamp(single.stat().st_mtime, UTC).isoformat()
-                else:
-                    value = json.loads(manifest.read_text(encoding="utf-8"))
-                    if value.get("sha256") != path.name or value.get("version") != 1:
-                        raise ValueError("native inventory manifest mismatch")
-                    size = value['size']
-                    created = datetime.fromtimestamp(manifest.stat().st_mtime, UTC).isoformat()
+                entries = os.scandir(folder)
             except FileNotFoundError:
+                prefixes += 1
+                prefix = (prefix + 1) % 256
                 continue
-            prepared.append((path.name, size, created))
-            if len(prepared) >= limit:
-                break
-        if len(prepared) >= limit:
-            break
-    if not prepared and not after:
+        try:
+            entry = next(entries)
+        except StopIteration:
+            entries.close()
+            entries = None
+            prefixes += 1
+            prefix = (prefix + 1) % 256
+            continue
+        inspected += 1
+        path = root / f"{prefix:02x}" / entry.name
+        if entry.is_symlink() or not re.fullmatch("[0-9a-f]{64}", entry.name) or not entry.is_dir():
+            continue
+        if path.name[:2] != f"{prefix:02x}":
+            raise ValueError("native CAS prefix mismatch")
+        with closing(source.connection()) as db:
+            known = db.execute(
+                "SELECT 1 FROM artifact WHERE id=? AND sha256=? AND size>0 "
+                "AND codec='json-chunks-v1' AND location=?",
+                (path.name, path.name, f"native-files/{path.name[:2]}/{path.name}"),
+            ).fetchone()
+        if known:
+            continue
+        manifest = path / "manifest.json"
+        single = path / SINGLE_FILE
+        try:
+            if single.is_file() and not single.is_symlink():
+                size = ContentFiles(root).verify(path.name)
+                created = datetime.fromtimestamp(single.stat().st_mtime, UTC).isoformat()
+            else:
+                value = json.loads(manifest.read_text(encoding="utf-8"))
+                if value.get("sha256") != path.name or value.get("version") != 1:
+                    raise ValueError("native inventory manifest mismatch")
+                size = value['size']
+                created = datetime.fromtimestamp(manifest.stat().st_mtime, UTC).isoformat()
+        except FileNotFoundError:
+            continue
+        prepared.append((path.name, size, created))
+    next_cursor = f"p:{prefix:02x}"
+    source._native_inventory_scan = (next_cursor, prefix, entries)
+    if not prepared and next_cursor == after:
         return 0
     with closing(source.connection(write=True)) as db, db:
         db.execute("BEGIN IMMEDIATE")
@@ -186,14 +229,17 @@ def inventory(source, *, limit=64):
             return 0
         db.executemany(
             "INSERT OR IGNORE INTO artifact(id,sha256,size,codec,location,class,created_at) "
-            "VALUES(?,?,?,'json-chunks-v1',?,'BUSINESS',?)",
+            "VALUES(?,?,?,'json-chunks-v1',?,'BUSINESS',?) ON CONFLICT(id) DO UPDATE SET size=excluded.size "
+            "WHERE artifact.sha256=excluded.sha256 AND artifact.size=0 AND artifact.codec=excluded.codec "
+            "AND artifact.location=excluded.location",
             [(digest, digest, size, f"native-files/{digest[:2]}/{digest}", created)
              for digest, size, created in prepared],
         )
         db.execute(
             "INSERT INTO v2_native_inventory VALUES(1,?) "
-            "ON CONFLICT(id) DO UPDATE SET after_digest=excluded.after_digest",
-            (prepared[-1][0] if len(prepared) >= limit else "",),
+            "ON CONFLICT(id) DO UPDATE SET after_digest=excluded.after_digest "
+            "WHERE after_digest<>excluded.after_digest",
+            (next_cursor,),
         )
     return len(prepared)
 

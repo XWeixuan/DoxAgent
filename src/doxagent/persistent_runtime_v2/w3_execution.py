@@ -556,13 +556,14 @@ class W3Execution:
         from .w3_consensus import aggregate
         from .w3_contracts import W3DirectionDecision
 
-        main = self.registry.stage(case.case_id, TRADE_PHASE)
+        stages = self.registry.trade_stages(case.case_id)
+        main = stages[TRADE_PHASE]
         if main["status"] == "COMMITTED":
             self._restore_trade(case, main)
             return
         branches = {}
         for label in ("A", "B"):
-            stage = self.registry.stage(case.case_id, TRADE_PHASE + ":" + label)
+            stage = stages.get(TRADE_PHASE + ":" + label)
             if not stage or stage["result_json"] is None:
                 raise W3Error("CONSENSUS_INCOMPLETE", "Two valid Trade results are required")
             branches[label] = dict(
@@ -570,7 +571,7 @@ class W3Execution:
                 duration_ms=(stage.get("input_refs") or {}).get("duration_ms"),
             )
         result, summary = aggregate(branches)
-        selected = self.registry.stage(case.case_id, TRADE_PHASE + ":" + summary["selected_branch"])
+        selected = stages[TRADE_PHASE + ":" + summary["selected_branch"]]
         record = self.registry.bound(case.case_id, TRADE_PHASE + ":" + summary["selected_branch"])
         summary.update(
             record_id=record["record_id"],
@@ -582,10 +583,10 @@ class W3Execution:
             branches={
                 k: dict(
                     v,
-                    worker_job_id=self.registry.stage(case.case_id, TRADE_PHASE + ":" + k)[
+                    worker_job_id=stages[TRADE_PHASE + ":" + k][
                         "worker_job_id"
                     ],
-                    thread_id=self.registry.stage(case.case_id, TRADE_PHASE + ":" + k)["thread_id"],
+                    thread_id=stages[TRADE_PHASE + ":" + k]["thread_id"],
                 )
                 for k, v in branches.items()
             },

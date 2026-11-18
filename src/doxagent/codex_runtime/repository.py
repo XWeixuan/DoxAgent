@@ -848,6 +848,24 @@ class SQLiteCodexRuntimeRepository:
             payload_override=payload,
         )
 
+    def get_published_document_metadata(self, run_id: str, artifact_id: str):
+        from .published_storage import LOCAL_BODY_CODEC, PublishedDocumentMetadata
+
+        with self._lock, self._connect() as db:
+            row = db.execute(
+                "SELECT payload_json FROM codex_runtime_records WHERE record_type='published_documents' "
+                "AND run_id=? AND record_key=?", (run_id, artifact_id),
+            ).fetchone()
+        if not row:
+            return None
+        value = json.loads(row['payload_json'])
+        if value.get('local_content_codec') not in (None, LOCAL_BODY_CODEC):
+            raise ValueError('unsupported published content codec')
+        return PublishedDocumentMetadata(
+            sha256=value['sha256'], size_bytes=value['size_bytes'],
+            content_text=value.get('content_text'), storage_path=value.get('storage_path'),
+        )
+
     def get_published_document(self, run_id: str, artifact_id: str) -> PublishedDocument | None:
         from .published_storage import load_published_body
 
@@ -856,7 +874,7 @@ class SQLiteCodexRuntimeRepository:
                 "SELECT payload_json FROM codex_runtime_records WHERE record_type='published_documents' "
                 "AND run_id=? AND record_key=?", (run_id, artifact_id),
             ).fetchone()
-        if not row:
+        if row is None:
             return None
         value = json.loads(row['payload_json'])
         if value.get('local_content_codec') is not None:

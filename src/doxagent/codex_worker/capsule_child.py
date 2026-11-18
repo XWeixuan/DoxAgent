@@ -183,13 +183,14 @@ async def main() -> None:
                 task = asyncio.create_task(execute(payload))
             elif payload["type"] in {"prepare_fork", "prepare_resume"}:
                 try:
-                    from doxagent.w3_timing import save_trace
+                    from doxagent.w3_timing import save_trace, mark
 
                     trace = BoundaryTrace(
                         plane="capsule_prepare", run_id=payload["request"]["run_id"]
                     )
                     try:
                         with trace.activate():
+                            mark("capsule.command_received")
                             request = WorkerRunRequest.model_validate(payload["request"])
                             if payload["type"] == "prepare_fork":
                                 thread_id = await runtime.prepare_fork(
@@ -201,6 +202,7 @@ async def main() -> None:
                                 thread_id = await runtime.prepare_resume(
                                     request, Path(payload["cwd"])
                                 )
+                            mark("capsule.control_completed", thread_id=thread_id)
                     finally:
                         save_trace(trace, payload.get("timing_directory"))
                     from .workspace_store import LocalWorkspaceStore
