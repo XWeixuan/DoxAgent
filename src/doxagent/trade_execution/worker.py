@@ -215,8 +215,12 @@ def scheduler_health(executor):
     value = {"checked_at": now.isoformat(), "overdue_exits": overdue, "old_entries": old_entries}
     if overdue or old_entries:
         logging.getLogger(__name__).warning("execution_jobs_stalled %s", json.dumps(value))
-    executor.journal.set("execution_scheduler", "health", value)
-    executor.journal.set("v2_workers", "executor", {"heartbeat_at": now.isoformat()})
+    from doxagent.persistent_runtime_v2.journal import encode
+    values = [("execution_scheduler", "health", encode(value)),
+              ("v2_workers", "executor", encode({"heartbeat_at": now.isoformat()}))]
+    with executor.journal.transaction(operation='executor.health') as db:
+        db.executemany('INSERT INTO runtime_values VALUES(?,?,?) ON CONFLICT(namespace,key) '
+                       'DO UPDATE SET payload=excluded.payload', values)
 
 
 async def run_worker(executor: Any, *, once: Any = False) -> Any:

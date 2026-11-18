@@ -187,9 +187,18 @@ class ReadStore:
             else:
                 idle[write].append(db)
 
+    def ensure_wal(self) -> None:
+        """Startup/activation boundary only; ordinary requests never change mode."""
+        with closing(sqlite3.connect(self.path.as_uri()+'?mode=rw', uri=True, timeout=2)) as db:
+            if db.execute('PRAGMA journal_mode').fetchone()[0].lower() == 'wal':
+                return
+            if db.execute('PRAGMA journal_mode=WAL').fetchone()[0].lower() != 'wal':
+                raise RuntimeError('Read database requires WAL mode')
+
     def migrate(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with closing(sqlite3.connect(self.path)) as db, db:
+            self.ensure_wal()
             existing = db.execute("SELECT 1 FROM sqlite_master WHERE name='schema_meta'").fetchone()
             if existing:
                 version = db.execute('SELECT version FROM schema_meta').fetchone()[0]

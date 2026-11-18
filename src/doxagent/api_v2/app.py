@@ -82,6 +82,7 @@ def create_app(
     from .agent_read_auth import configured_auth, require_read_scope
     auth = configured_auth(auth)
     # Fail at startup, never silently create empty source/read databases on a GET.
+    store.ensure_wal()
     with store.connect() as db:
         if db.execute("SELECT version FROM schema_meta").fetchone()[0] != ReadStore.VERSION:
             raise ValueError("V2 migration required")

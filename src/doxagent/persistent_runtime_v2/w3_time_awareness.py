@@ -26,7 +26,10 @@ def time_context(
                 )
             saved = journal.get("w3_time_awareness", case_id)
         return W3TimeAwarenessContext.model_validate(saved) if saved is not None else None
-    except sqlite3.Error:
+    except sqlite3.Error as exc:
         # Optional elapsed telemetry must not replace the business outcome.
-        _log.warning("W3 time origin unavailable for %s", case_id, exc_info=True)
+        if getattr(exc, 'sqlite_errorcode', 0) & 255 in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
+            _log.debug("W3 optional time origin busy for %s", case_id)
+        else:
+            _log.warning("W3 time origin unavailable for %s", case_id, exc_info=True)
         return None

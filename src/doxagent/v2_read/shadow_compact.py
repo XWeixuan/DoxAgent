@@ -123,7 +123,8 @@ def build(source, target):
         if writer.execute('PRAGMA quick_check').fetchall() != [('ok',)]:
             raise ValueError('shadow integrity check failed')
         writer.commit()
-        writer.execute('PRAGMA journal_mode=WAL').fetchall()
+        if writer.execute('PRAGMA journal_mode=WAL').fetchone()[0].lower() != 'wal':
+            raise RuntimeError('compacted Read database requires WAL')
         writer.close()
         writer = sqlite3.connect(target)
         writer.execute('PRAGMA synchronous=FULL')

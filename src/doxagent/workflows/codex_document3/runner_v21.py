@@ -345,12 +345,14 @@ class RunnerV21:
                     idempotency_key=f"{run_id}:{key}:{attempt}",
                     cutoff_at=as_of,
                     prompt=(
-                        f"Read task file {task_path}, role AGENTS.md, common and "
-                        f"{'initialize_discovery' if phase == 'discovery' else phase} assets "
-                        "under context/document3/v21/assets/. Write only the declared output "
+                        "The current working directory is this task's workspace root (.). "
+                        "Read ./AGENTS.md directly; do not search parent or sibling directories for instructions. "
+                        f"Read task file ./{task_path}, ./context/document3/v21/assets/common.md and "
+                        f"./context/document3/v21/assets/{'initialize_discovery' if phase == 'discovery' else phase}.md. "
+                        "Read the exact schema paths in the task's schemas mapping. Write only the declared output "
                         "paths. Use read_mapping to read canonical refs. "
                         + (
-                            "For OPEN Discovery, also read initialize_discovery_open.md. "
+                            "For OPEN Discovery, also read ./context/document3/v21/assets/initialize_discovery_open.md. "
                             if phase == "discovery" and is_open
                             else ""
                         )

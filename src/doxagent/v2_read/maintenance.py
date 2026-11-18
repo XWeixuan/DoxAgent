@@ -319,6 +319,7 @@ def activate_alias(alias, target, sources):
         raise ValueError("generation/source set mismatch")
     if any(store.position(s.source) < s.head() for s in sources):
         raise ValueError("shadow must catch up before switching the alias")
+    store.ensure_wal()
     value = {
         "format": "doxagent.v2.read-alias.1",
         "path": str(store.path),

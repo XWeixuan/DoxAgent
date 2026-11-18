@@ -5,6 +5,7 @@ from doxagent.v2_read import cli
 
 @pytest.mark.parametrize('code,retry',[(sqlite3.SQLITE_BUSY,True),(sqlite3.SQLITE_LOCKED,True),(sqlite3.SQLITE_BUSY_SNAPSHOT,True),(sqlite3.SQLITE_CORRUPT,False)])
 def test_projection_loop_retries_only_contention(tmp_path,monkeypatch,code,retry):
+ cli.ReadStore(tmp_path/'read.db').migrate()
  calls=[]
  def tick(self,**kwargs):
   calls.append(1)

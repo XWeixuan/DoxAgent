@@ -327,7 +327,8 @@ async def test_discovery_open_skill_is_owner_scoped(rig, monkeypatch):
         assert "context/document3/v21/assets/initialize_discovery.md" in files
         is_open = request.run_id.endswith("-open")
         assert ("context/document3/v21/assets/initialize_discovery_open.md" in files) == is_open
-        assert ("also read initialize_discovery_open.md" in request.prompt) == is_open
+        assert ("also read ./context/document3/v21/assets/initialize_discovery_open.md" in request.prompt) == is_open
+        assert 'do not search parent or sibling directories' in request.prompt
 
 
 @pytest.mark.asyncio

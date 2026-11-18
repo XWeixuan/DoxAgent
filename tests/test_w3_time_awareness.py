@@ -155,7 +155,7 @@ async def test_sdk_control_updates_without_resuming_resident_thread(tmp_path, mo
         update=dict(
             task_phase="trade_decision",
             research_assets_mcp_enabled=True,
-            w3_entry_version="w3-test",
+            w3_entry_version="w3-entry-v6",
             w3_time_awareness=metadata,
         )
     )

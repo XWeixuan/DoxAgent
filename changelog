@@ -3287,3 +3287,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-19 Runtime critical-chain B1: Projector compiles consumer pin deltas outside the writer, validates epoch/consumer metadata at commit, and refreshes repair membership only on changes; legacy snapshot ACK remains. Regression: 26 passed.
 
 2026-11-19 Runtime critical-chain B2: expiry plans and rechecks only candidate-page exception pins, skips empty work, and removes lazy schema installation from expiry writer transactions; keeps epoch/cursor/row/reference revalidation. Regression: 24 passed.
+
+2026-11-19 Runtime critical-chain C: enforce and verify Read WAL at migration/startup/activation, give new O3 requests exact workspace bootstrap paths, combine Executor health/heartbeat, and keep optional Time Awareness contention quiet. WAL/bootstrap targeted regression: 7 passed.

@@ -307,6 +307,7 @@ def main() -> None:
         from doxagent.trade_execution.worker import WriterLock
 
         with WriterLock(Path(str(store.path) + ".projector")):
+            store.ensure_wal()
             from .recovery import retryable_storage, retry_delay
             failures = 0
             next_report = time.monotonic() + 60

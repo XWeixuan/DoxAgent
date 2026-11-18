@@ -265,7 +265,8 @@ def _build(source,target,*,reserve_bytes):
         report['linked_content_objects'] = len(linked)
         report['generation'] = dst.execute('SELECT id FROM generation').fetchone()[0]
         dst.commit()
-        dst.execute('PRAGMA journal_mode=WAL').fetchall()
+        if dst.execute('PRAGMA journal_mode=WAL').fetchone()[0].lower() != 'wal':
+            raise RuntimeError('serving generation requires WAL')
         dst.execute('PRAGMA synchronous=FULL')
     with closing(sqlite3.connect(target)) as check:
         check.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchall()
