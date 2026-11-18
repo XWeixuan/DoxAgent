@@ -262,7 +262,6 @@ def expire(source, *, now=None, limit=500, hot_only=False):
             return report
         pin = db.execute("SELECT min(seq) FROM v2_source_pins").fetchone()[0]
         floor = min(ack, pin - 1) if pin is not None else ack
-        pins = {row[0] for row in db.execute("SELECT seq FROM v2_source_exception_pins")} if has_gc_state else set()
         pack_cache = {}
         pages = {}
         for table in tables:
@@ -286,6 +285,9 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                     "SELECT * FROM " + table + " WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?",
                     (cursors.get(table, 0), floor, limit),
                 ).fetchall()
+            candidates = json.dumps([row['seq'] for row in rows])
+            pins = {r[0] for r in db.execute('SELECT DISTINCT seq FROM v2_source_exception_pins '
+                    'WHERE seq IN (SELECT value FROM json_each(?))', (candidates,))} if has_gc_state else set()
             prepared = []
             for row in rows:
                 seq = row["seq"]
@@ -309,7 +311,21 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                         hashes = set(native_hashes(raw))
                 prepared.append((row, recent, raw_json, hashes, stamp if archived and hint is None else None))
             pages[table] = prepared
+        cleanup_due = not hot_only and has_gc_state and any((
+            db.execute("SELECT 1 FROM v2_source_consumers WHERE id LIKE 'snapshot:%' AND julianday(updated_at)<julianday(?) LIMIT 1", ((now-timedelta(hours=24)).isoformat(),)).fetchone(),
+            db.execute('SELECT 1 FROM v2_source_exception_receipts e WHERE NOT EXISTS(SELECT 1 FROM v2_source_exception_pins p WHERE p.seq=e.seq) LIMIT 1').fetchone(),
+            db.execute('SELECT 1 FROM v2_transport_files_exit WHERE not_before<=? LIMIT 1', (time.time(),)).fetchone(),
+        ))
 
+    if not any(pages.values()) and not cleanup_due:
+        return report
+    page_ids = {table: json.dumps([item[0]['seq'] for item in prepared]) for table, prepared in pages.items()}
+    # Explicit source/archive migrations own schema creation. Read-only planning
+    # above never installs schema while contending with live business commits.
+    if not has_gc_state:
+        raise ValueError('source lifecycle migration required')
+    if not hot_only and not has_archive_times and any(pages.get(t) for t in tables[1:]):
+        raise ValueError('archive-time migration required')
     with closing(source.connection(write=True)) as db, db:
         if hot_only:
             db.execute('PRAGMA busy_timeout=0')
@@ -317,11 +333,6 @@ def expire(source, *, now=None, limit=500, hot_only=False):
         epoch = db.execute('SELECT epoch FROM v2_source_state WHERE source=?', (source.source,)).fetchone()
         if not epoch or epoch[0] != capture['source_epoch']:
             return report
-        if not has_gc_state:
-            migrate(db)
-        if not hot_only and not has_archive_times and any(pages.get(t) for t in tables[1:]):
-            migrate_archive_times(db)
-            has_archive_times = True
         # Only the temporary importer prefix has a bounded lease. A killed
         # importer must not pin a suffix forever; ordinary Read consumers are
         # retired explicitly by their generation owner.
@@ -336,8 +347,11 @@ def expire(source, *, now=None, limit=500, hot_only=False):
         if ack is None:return report
         pin=db.execute('SELECT min(seq) FROM v2_source_pins').fetchone()[0]
         floor=min(ack,pin-1) if pin is not None else ack
-        pins={r[0] for r in db.execute('SELECT seq FROM v2_source_exception_pins')}
         for table, prepared in pages.items():
+            if not prepared:
+                continue
+            pins = {r[0] for r in db.execute('SELECT DISTINCT seq FROM v2_source_exception_pins '
+                    'WHERE seq IN (SELECT value FROM json_each(?))', (page_ids[table],))}
             cursor = cursors.get(table, 0)
             use_cursor = table != 'v2_source_outbox' or not indexed_hot
             db.execute("INSERT OR IGNORE INTO v2_transport_gc_state(kind) VALUES(?)", (table,))
