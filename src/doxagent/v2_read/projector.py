@@ -25,6 +25,7 @@ class ProjectionWorker:
         self.consumer_id=consumer_id
         self._coverage_keys = {}
         self._acknowledgements = {}
+        self._pins_dirty = set(source.source for source in sources)
         self._next_repair = 0.0
         self.timings = {}
         self.store.projection_timings = self.timings
@@ -77,10 +78,12 @@ class ProjectionWorker:
                             reason,
                         ),
                     )
-                    db.execute(
+                    changed = db.execute(
                         "INSERT OR IGNORE INTO gaps(source,event,reason) VALUES(?,?,?)",
                         (source.source, "source-unavailable", reason),
                     )
+                    if changed.rowcount:
+                        self._pins_dirty.add(source.source)
                 capture = self.store.get("capture_coverage", "", source.source)
                 if capture:
                     self._coverage(
@@ -90,10 +93,12 @@ class ProjectionWorker:
                     )
                 continue
             with self.store.connect(write=True) as db:
-                db.execute(
+                changed = db.execute(
                     "DELETE FROM gaps WHERE source=? AND event='source-unavailable'",
                     (source.source,),
                 )
+                if changed.rowcount:
+                    self._pins_dirty.add(source.source)
             reader = (source.event_reader(serving=True, projection=True) if isinstance(source, SourceOutbox)
                       else source.event_reader() if hasattr(source, "event_reader")
                       else nullcontext(getattr(source, "event", None)))
@@ -122,9 +127,13 @@ class ProjectionWorker:
                 ).fetchone()
             from hashlib import sha256
             consumer = self.consumer_id or "read:" + sha256(str(self.store.path).encode()).hexdigest()[:24]
-            with self.store.connect() as db:
-                repair = db.execute("SELECT min(CASE WHEN event NOT GLOB '*[^0-9]*' THEN CAST(event AS INTEGER) ELSE 0 END) FROM gaps WHERE source=?", (source.source,)).fetchone()[0]
-                repairs = [int(r[0]) for r in db.execute("SELECT event FROM gaps WHERE source=? AND event<>'' AND event NOT GLOB '*[^0-9]*'",(source.source,))]
+            acknowledged = self._acknowledgements.get(source.source)
+            if acknowledged is None or source.source in self._pins_dirty:
+                with self.store.connect() as db:
+                    repair = db.execute("SELECT min(CASE WHEN event NOT GLOB '*[^0-9]*' THEN CAST(event AS INTEGER) ELSE 0 END) FROM gaps WHERE source=?", (source.source,)).fetchone()[0]
+                    repairs = tuple(int(r[0]) for r in db.execute("SELECT event FROM gaps WHERE source=? AND event<>'' AND event NOT GLOB '*[^0-9]*' ORDER BY CAST(event AS INTEGER)",(source.source,)))
+            else:
+                _, repairs, repair = acknowledged[0]
             if hasattr(source, "acknowledge"):
                 try:
                     if hasattr(source,'acknowledge_exceptions'):
@@ -132,14 +141,17 @@ class ProjectionWorker:
                         facts_complete = sync_business_facts(source,self.store,budget=.25)
                     else:
                         facts_complete = True
-                    signature = (checkpoint, tuple(sorted(repairs)), repair)
-                    acknowledged = self._acknowledgements.get(source.source)
+                    signature = (checkpoint, repairs, repair)
                     if facts_complete is not False and (acknowledged is None or signature != acknowledged[0] or time.monotonic() - acknowledged[1] >= 60):
-                        if hasattr(source,'acknowledge_exceptions'):
+                        state = None
+                        if hasattr(source, 'acknowledge_prepared'):
+                            state = source.acknowledge_prepared(consumer, checkpoint, repairs, acknowledged[2] if acknowledged else None)
+                        elif hasattr(source,'acknowledge_exceptions'):
                             source.acknowledge_exceptions(consumer,checkpoint,repairs)
                         else:
                             source.acknowledge(consumer, checkpoint, repair)
-                        self._acknowledgements[source.source] = (signature, time.monotonic())
+                        self._acknowledgements[source.source] = (signature, time.monotonic(), state)
+                        self._pins_dirty.discard(source.source)
                 except sqlite3.OperationalError as exc:
                     if getattr(exc, "sqlite_errorcode", None) not in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
                         raise
@@ -225,6 +237,7 @@ class ProjectionWorker:
             except (OSError, sqlite3.OperationalError):
                 raise  # Infrastructure failure is never a successfully skipped receipt.
             except (ValueError, KeyError, TypeError) as exc:
+                self._pins_dirty.add(source.source)
                 self.store.ingest(
                     source.source,
                     str(event["seq"]),
@@ -294,6 +307,7 @@ class ProjectionWorker:
                     self.store.ingest(source.source, gap[1] + ":repair:1", records,
                                       contributions=contributions, position=event["seq"],
                                       at=event["recorded_at"], resolved_gap=gap[1])
+                    self._pins_dirty.add(source.source)
                     repaired += 1
                 except sqlite3.IntegrityError as exc:
                     if str(exc) != 'ARTIFACT_RECLAIM_IN_PROGRESS':

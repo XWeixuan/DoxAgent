@@ -606,6 +606,10 @@ class SourceOutbox:
         from .source_lifecycle import acknowledge
         acknowledge(self,consumer,checkpoint,repairs)
 
+    def acknowledge_prepared(self, consumer, checkpoint, repairs, previous=None):
+        from .source_lifecycle import acknowledge_prepared
+        return acknowledge_prepared(self, consumer, checkpoint, repairs, previous)
+
     def retire_consumer(self, consumer):
         from .source_lifecycle import retire_consumer
         retire_consumer(self,consumer)

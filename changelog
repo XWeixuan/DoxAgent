@@ -3283,3 +3283,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-19 Runtime critical-chain A: register v6 main/A/B, private thread identities and frozen snapshots in one fenced transaction; preserve paid results, original identities and independent branch dispatch. Regression: 63 passed.
 2026-11-19 Dashboard authentication resilience: diagnosed production AUTH_UNAVAILABLE as Supabase HTTPS read timeouts, before SQL dispatch. Coalesce concurrent checks of the same token, retry transient authentication GET failures once (3-second attempt timeout, 8-second total budget), and log only stage/failure categories. Preserve trusted DEVELOPER profile checks, token expiry, 30-second cache and rejection semantics; no stale-permission fallback or background task. API-only release; regression tests cover retries, cancellation, deadlines and authorization.
+
+2026-11-19 Runtime critical-chain B1: Projector compiles consumer pin deltas outside the writer, validates epoch/consumer metadata at commit, and refreshes repair membership only on changes; legacy snapshot ACK remains. Regression: 26 passed.

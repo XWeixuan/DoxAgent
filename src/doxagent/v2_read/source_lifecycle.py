@@ -58,6 +58,48 @@ def acknowledge(source, consumer, checkpoint, repairs):
                    (consumer,checkpoint))
 
 
+def acknowledge_prepared(source, consumer, checkpoint, repairs, previous=None):
+    """Projector-owned consumer: compile pin deltas without the shared writer.
+
+    The Projector's existing exclusive file lock owns this consumer. Metadata and
+    source epoch are still compared at commit, including on a process restart.
+    Snapshot importers keep the independent full-set acknowledgement API.
+    """
+    repairs = frozenset(int(x) for x in repairs if int(x) > 0)
+    for attempt in range(2):
+        if previous is None:
+            with closing(source.connection()) as db:
+                db.execute('BEGIN')
+                epoch = db.execute('SELECT epoch FROM v2_source_state WHERE source=?', (source.source,)).fetchone()[0]
+                row = db.execute('SELECT checkpoint,updated_at FROM v2_source_consumers WHERE id=?', (consumer,)).fetchone()
+                metadata = tuple(row) if row else None
+                existing = frozenset(r[0] for r in db.execute('SELECT seq FROM v2_source_exception_pins WHERE consumer=?', (consumer,)))
+        else:
+            epoch, metadata, existing = previous
+        removed, added = existing - repairs, repairs - existing
+        with closing(source.connection(write=True)) as db, db:
+            db.execute('BEGIN IMMEDIATE')
+            current_epoch = db.execute('SELECT epoch FROM v2_source_state WHERE source=?', (source.source,)).fetchone()[0]
+            if current_epoch != epoch:
+                raise ValueError('SOURCE_EPOCH_MISMATCH')
+            row = db.execute('SELECT checkpoint,updated_at FROM v2_source_consumers WHERE id=?', (consumer,)).fetchone()
+            if (tuple(row) if row else None) != metadata:
+                previous = None
+                continue
+            db.executemany('DELETE FROM v2_source_exception_pins WHERE consumer=? AND seq=?', ((consumer, x) for x in removed))
+            db.executemany('INSERT INTO v2_source_exception_pins VALUES(?,?)', ((consumer, x) for x in added))
+            db.execute('DELETE FROM v2_source_pins WHERE id=?', (consumer+':repair',))
+            db.execute("INSERT INTO v2_source_consumers VALUES(?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now')) "
+                       "ON CONFLICT(id) DO UPDATE SET checkpoint=max(checkpoint,excluded.checkpoint),updated_at=excluded.updated_at",
+                       (consumer, checkpoint))
+            row = db.execute('SELECT checkpoint,updated_at FROM v2_source_consumers WHERE id=?', (consumer,)).fetchone()
+            result = (epoch, tuple(row), repairs)
+        return result
+    error = sqlite3.OperationalError('consumer acknowledgement changed during preparation')
+    error.sqlite_errorcode = sqlite3.SQLITE_BUSY
+    raise error
+
+
 def retire_consumer(source, consumer):
     """Explicit generation retirement; inactivity alone never retires a consumer."""
     with closing(source.connection(write=True)) as db, db:
