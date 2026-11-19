@@ -563,9 +563,9 @@ export function SourceCard({
           </dd>
           <dt>当天新增</dt>
           <dd>{today ? valueText(today) : "未记录"}</dd>
-          <dt>实时首发端到端 · 24h</dt>
-          <dd title={`滚动24h全量 · ${s.recent?.e2e_samples ?? 0}篇`}>
-            {s.recent?.mean_e2e_seconds == null ? "暂无近期数据" : seconds(s.recent.mean_e2e_seconds)}
+          <dt>平均端到端耗时</dt>
+          <dd title={`文章取样 · ${s.recent?.e2e_samples ?? 0}条新消息`}>
+            {seconds(s.recent?.mean_e2e_seconds)}
           </dd>
           <dt>真实抓取延时</dt>
           <dd>{seconds(s.recent?.mean_capture_seconds)}</dd>

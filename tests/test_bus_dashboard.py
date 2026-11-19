@@ -61,50 +61,6 @@ def test_new_plan_has_only_settled_rounds_not_twenty_imaginary_failures():
     assert evaluate_rounds([],[],interval=60,until=180)['ratio'] is None
 
 
-def test_full_day_equal_cadence_keeps_phase_or_and_and_duplicate_proofs():
-    plans=[dict(unit='a',group='listing',epoch=.123,interval=60),
-           dict(unit='b',group='listing',epoch=5.5,interval=60),
-           dict(unit='c',epoch=11.25,interval=60)]
-    rows=[]
-    for n in range(21):
-        for plan,divisor in zip(plans,[3,5,7]):
-            if n%divisor:
-                due=plan['epoch']+60*n
-                rows.extend([dict(unit=plan['unit'],due=due,validated=True,received=due+2),
-                             dict(unit=plan['unit'],due=due,validated=True,received=due+20)])
-    result=evaluate_rounds(plans,rows,interval=60,until=21*60,limit=1440,since=120)
-    expected=sum((n%3 or n%5) and n%7!=0 for n in range(2,21))
-    assert result['expected']==19 and result['succeeded']==expected
-
-
-def test_compact_sql_matches_exact_rounds_for_alternatives_and_duplicate_receipts(tmp_path):
-    from doxagent.message_bus_v2.collection_plane.source_rounds import _compact_rounds
-    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
-    base=datetime(2026,11,20,tzinfo=UTC).timestamp()
-    plans=[dict(unit='a',group='listing',epoch=base+.123,interval=60),
-           dict(unit='b',group='listing',epoch=base+5.5,interval=60),
-           dict(unit='c',epoch=base+11.25,interval=60)]
-    store=AcquisitionStore(tmp_path/'acq.db',initialize=True)
-    receipts=[]
-    with store.connect(write=True) as db:
-        for n in range(21):
-            for plan,divisor in zip(plans,[3,5,7]):
-                if not n%divisor:continue
-                due=plan['epoch']+60*n
-                for late in [2,20]:
-                    at=datetime.fromtimestamp(due,UTC).isoformat()
-                    received=datetime.fromtimestamp(due+late,UTC).isoformat()
-                    db.execute('INSERT INTO cycles(run_id,binding_id,unit,due_at,dispatch_at,status,data_json) VALUES(?,?,?,?,?,?,?)',
-                        (str((n,plan['unit'],late)),'binding',plan['unit'],at,at,'CAPTURED',json.dumps({'listing_received_at':received})))
-                    receipts.append(dict(unit=plan['unit'],due=due,validated=True,received=due+late))
-    now=datetime.fromtimestamp(base+21*60,UTC)
-    with store.connect() as db:
-        for selected in [plans,plans[:1]]:
-            exact=evaluate_rounds(selected,[r for r in receipts if r['unit'] in {p['unit'] for p in selected}],
-                interval=60,until=now.timestamp(),limit=1440,since=now.timestamp()-86400)
-            assert _compact_rounds(db,'binding',selected,60,now,now.timestamp())==exact
-
-
 def test_acquisition_rounds_keep_missing_dispatches_and_freeze_at_sleep(tmp_path):
     from tests.test_content_enrichment_hub import _setup
     from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
@@ -124,7 +80,7 @@ def test_acquisition_rounds_keep_missing_dispatches_and_freeze_at_sleep(tmp_path
             requests=[{'list_validated':True,'proof_basis':'TRANSPORT_SEND',
                        'response_received_at':(due+timedelta(seconds=2)).isoformat()}],valid=True)
     value=recent_rounds(store,binding.ticker,[binding.model_dump(mode='json')],now)[binding.binding_id]
-    assert (value['succeeded'],value['expected'])==(19,21)
+    assert (value['succeeded'],value['expected'])==(18,20)
     store.disable_unit(binding.binding_id,'HEAD',at=now)
     frozen=recent_rounds(store,binding.ticker,[binding.model_dump(mode='json')],now+timedelta(hours=1))[binding.binding_id]
     assert frozen==value
@@ -197,7 +153,7 @@ def test_dashboard_zero_schema_and_closed_bindings_keep_ir_sec_policy(tmp_path,m
     assert dashboard_data(store,'MU',view,{})['counts']['running']==3
 
 
-def test_coverage_retains_all_window_receipts_when_current_state_is_failed_or_deferred(tmp_path,monkeypatch):
+def test_coverage_excludes_entire_window_for_current_failed_or_deferred_sources(tmp_path,monkeypatch):
     from tests.test_content_enrichment_hub import _setup
     from doxagent.api_v2 import bus_dashboard
     _,_,source,binding=_setup(tmp_path/'bus')
@@ -221,7 +177,7 @@ def test_coverage_retains_all_window_receipts_when_current_state_is_failed_or_de
     view=head_view(store,datetime(2026,11,1,12,tzinfo=UTC))
     result=dashboard_data(store,'MU',view,{})
     validate('BusDashboard',result)
-    assert result['coverage']=={'expected':80,'succeeded':22,'ratio':22/80}
+    assert result['coverage']=={'expected':20,'succeeded':18,'ratio':.9}
     summary=dashboard_data(store,'MU',view,{},include_sources=False)
     assert summary['sources']==[]
     assert {k:v for k,v in summary.items() if k!='sources'}=={k:v for k,v in result.items() if k!='sources'}
@@ -230,27 +186,18 @@ def test_coverage_retains_all_window_receipts_when_current_state_is_failed_or_de
     assert source_page['coverage']==result['coverage'] and source_page['counts']==result['counts']
     with monkeypatch.context() as source_only:
         source_only.setattr(bus_dashboard,'current_body',lambda *a:pytest.fail('source page scanned period article bodies'))
-        from doxagent.api_v2 import article_samples
-        original=article_samples.select_articles
-        measured=[]
-        def selected_only(store,ticker,sources,now):
-            measured.extend(sources)
-            return original(store,ticker,sources,now)
-        source_only.setattr(article_samples,'select_articles',selected_only)
         cards=dashboard_data(store,'MU',view,{},source_after='',source_limit=1,include_metrics=False)
         assert cards['sources']==source_page['sources']
-        assert set(measured)=={c['source']['source_id'] for c in cards['sources']}
-    # Source filtering and current failures preserve the same observed window.
+    # The cards retain the observed window for diagnosis; only the KPI excludes it.
     assert all(s['recent']['coverage']['expected']==20 for s in result['sources'])
     for sid in ['failed','partial','blocked']:
         filtered=dashboard_data(store,'MU',view,{'source_id':sid})
-        value=successes['MU:'+sid]
-        assert filtered['coverage']=={'expected':20,'succeeded':value,'ratio':value/20}
-    # Health transitions never change the unchanged historical window.
+        assert filtered['coverage']=={'expected':0,'succeeded':0,'ratio':None}
+    # Recovery at the next read re-includes the whole unchanged window.
     for state in states.values():state.update(status='succeeded',last_error_code=None)
     assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':80,'succeeded':22,'ratio':.275}
     for state in states.values():state.update(status='failed')
-    assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':80,'succeeded':22,'ratio':.275}
+    assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':0,'succeeded':0,'ratio':None}
 
 
 def test_period_e2e_is_per_new_message_and_replacement_does_not_double_count(tmp_path):

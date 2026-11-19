@@ -119,10 +119,10 @@ def test_weighted_delivery_statistics_do_not_duplicate_shared_body_or_zero_poll_
         [{"samples": 19, "refresh_seconds": 60}, {"samples": 19, "refresh_seconds": 60}],
         10,
     )
-    assert result["mean_e2e_seconds"] == 10
-    assert result["p95_e2e_seconds"] == 10
+    assert result["mean_e2e_seconds"] == 91
+    assert result["p95_e2e_seconds"] == 100
     assert result["body_total"] == result["body_full"] == 1
-    assert result["article_samples"] == result["e2e_samples"] == 1
+    assert result["article_samples"] == result["e2e_samples"] == 10
     assert result["refresh_seconds"] == 60
     assert result["published_today"] == available(10)
 
@@ -242,7 +242,7 @@ def test_public_entries_omit_credentials_and_keep_actual_ticker_parameters():
     assert "secret" not in json.dumps(result)
 
 
-def test_batch_sampling_uses_all_recent_without_history_fallback(tmp_path):
+def test_batch_sampling_keeps_pending_and_each_binding_fallback_without_global_relimit(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()
     records = []
@@ -265,9 +265,9 @@ def test_batch_sampling_uses_all_recent_without_history_fallback(tmp_path):
             )
     store.ingest("test", "articles", records)
     cohorts = select_article_facts_many(store, [("MU", "news"), ("INTC", "news")], NOW)
-    assert len(cohorts[("MU", "news")]) == 4 and len(cohorts[("INTC", "news")]) == 6
+    assert len(cohorts[("MU", "news")]) == 5 and len(cohorts[("INTC", "news")]) == 6
     result = aggregate_metrics([r for rows in cohorts.values() for r in rows], [], [], 0)
-    assert result["body_total"] == 4  # Two keys were already discovered globally outside 24h.
+    assert result["body_total"] == 6  # 11 observations, six shared canonical articles.
     assert result["body_ratio"] == 0 and result["e2e_samples"] == 0
 
 

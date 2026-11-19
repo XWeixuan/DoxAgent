@@ -602,7 +602,7 @@ export interface MessageSummary extends MessageKey {
 export interface MessageBaseline { messages: Page<MessageSummary>; stream_cursor: string }
 export interface BusMetrics { published_revisions: Metric; body_completion_success_ratio: Metric; new_article_body?: ArticleBodyCohort }
 export interface BusRoundCoverage { expected: Count; succeeded: Count; ratio: number | null }
-export interface BusSourceMetrics extends SourceMetricEvidence {
+export interface BusSourceMetrics {
   mean_capture_seconds?: number | null; capture_samples?: Count; article_samples?: Count;
   coverage: BusRoundCoverage;
   mean_e2e_seconds: number | null; p95_e2e_seconds: number | null; e2e_samples: Count;
@@ -673,16 +673,7 @@ export interface SourceClassification {
   listing: SourceMethods; body: SourceMethods;
   applicability: "GLOBAL" | "INDUSTRY"; sector_ids: string[];
 }
-export interface SourceMetricEvidence {
-  window_hours?: number;
-  first_body_samples?: Count; mean_first_body_seconds?: number | null;
-  last_historical?: { at: string; e2e_seconds: number } | null;
-  last_historical_body?: { at: string; full: boolean } | null;
-  last_historical_first_body?: { at: string; seconds: number } | null;
-  publication_classes?: { [kind: string]: { samples: Count; mean_seconds: number | null } };
-  poll_expected?: Count; poll_succeeded?: Count;
-}
-export interface GlobalSourceMetrics extends SourceMetricEvidence {
+export interface GlobalSourceMetrics {
   last_success_at: Value<Instant>; published_today: Value<Count>;
   mean_e2e_seconds: number | null; p95_e2e_seconds: number | null; e2e_samples: Count;
   mean_capture_seconds: number | null; capture_samples: Count;

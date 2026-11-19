@@ -27,7 +27,7 @@ for (const width of [1262, 1559]) {
     ).toBeLessThanOrEqual(width);
     await expect(
       page.locator(".catalog-card").first().locator("dt"),
-    ).toHaveCount(9);
+    ).toHaveCount(7);
     await expect(page.locator('[data-source-id="newswire_rss"]')).toContainText(
       "0.0%",
     );
