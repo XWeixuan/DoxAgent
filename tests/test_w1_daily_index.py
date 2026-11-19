@@ -178,6 +178,28 @@ def test_retired_publication_clocks_use_only_proven_age_bounds(tmp_path):
             .known_event_index.splitlines()} == {'E1','E2'}
 
 
+def test_cold_no_change_branches_are_not_required_for_exact_fact_admissions(tmp_path):
+    from doxagent.persistent_runtime_v2.event_branch import branch_library
+
+    _, source, _ = library(tmp_path)
+    old = boundary(DAY-timedelta(days=40))
+    publish(source, 1, old, [event(1)])
+    changed = branch_library(source.path, tmp_path/'changed/US/MU/event_library.sqlite3', 'MU', 1)
+    publish(changed, 2, boundary(DAY), [event(2)])
+    empty = branch_library(changed.path, tmp_path/'no-change/US/MU/event_library.sqlite3', 'MU', 2)
+    leaf = branch_library(empty.path, tmp_path/'leaf/US/MU/event_library.sqlite3', 'MU', 2)
+    expected = leaf.fact_admissions('MU', 2)
+    empty.path.unlink()  # Cold archival keeps the lineage sidecar.
+    assert leaf.fact_admissions('MU', 2) == expected
+    assert expected['F1'] == (1, old)
+    provider = PublishedEventLibraryRuntimeProvider(PublishedEventLibraryReader(tmp_path/'leaf'))
+    assert {line.split(' | ')[0] for line in provider.filtered_index('MU', 2, DAY).known_event_index.splitlines()} == {'E2'}
+    # A real publication owner is never silently replaced with guessed clocks.
+    changed.path.unlink()
+    with pytest.raises(FileNotFoundError):
+        leaf.fact_admissions('MU', 2)
+
+
 @pytest.mark.parametrize("kind", ["memory", "sqlite"])
 def test_day_freeze_and_post_o2_visibility_with_no_reimport(tmp_path,kind):
     root, repo, provider = library(tmp_path)
