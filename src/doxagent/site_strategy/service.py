@@ -820,7 +820,8 @@ class SiteStrategyService:
             if (
                 scope.enabled
                 and scope.source_id
-                and primary.lifecycle.residency is BrowserResidency.ALWAYS_ON
+                and (primary.lifecycle.residency is BrowserResidency.ALWAYS_ON
+                     or parallel_source_runtime(scope, "CRAWLER"))
             ):
                 route = (await registry_io(self.repository.get_runtime, f"scope:{scope.scope_id}"))
                 hot.update(scope_identity_ids(scope) if parallel_source_runtime(scope, "CRAWLER")

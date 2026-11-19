@@ -80,7 +80,8 @@ class WorkerRuntimeFacade:
             if (
                 scope.enabled
                 and scope.source_id
-                and primary and primary.lifecycle.residency.value == "always_on"
+                and primary and (primary.lifecycle.residency.value == "always_on"
+                                 or parallel_source_runtime(scope, "CRAWLER"))
             ):
                 hot.update(scope_identity_ids(scope) if parallel_source_runtime(scope, "CRAWLER") else [selected])
         now = time.monotonic()
