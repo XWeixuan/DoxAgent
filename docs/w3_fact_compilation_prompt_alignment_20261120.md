@@ -71,8 +71,10 @@ W1R3 的合同仍为 `{"candidates": [...]}`，但现在允许 `{"candidates": [
 
 ## 5. 提示词需同步的地方
 
-现行 `prompts/persistent_runtime_v2/w3/skills/operations.md` 明确写着“不抽事实”、只提交 PIN/WATCH 两个根字段。负责提示词的对话需要把这一处职责和输出示例对齐为“PIN/WATCH＋事实候选”，并明确无合格事实时返回空数组；不得恢复新旧或 Policy 命中复核职责，也无需增加任何 Input 注入。W1R3 的完成标准也应允许空候选。
+`prompts/persistent_runtime_v2/w3/skills/operations.md` 已由负责提示词的对话对齐为“PIN/WATCH＋事实候选”，并明确无合格事实时返回空数组；不恢复新旧或 Policy 命中复核职责，也不增加任何 Input 注入。W1R3 的完成标准同样允许空候选。
 
-本轮按用户要求没有修改该 skill，也没有发布生产或发起真实 W3 调用。提示词与代码需在上线时同批对齐。
+2026-11-20 已将该提示词与编排代码同批发布至生产 API/Scheduler；未改 W3 Input 上下文。W1R1 同批取消 Fast，显式使用 `service_tier=default`，保留 high、12h 缓存及 fallback。生产两个自然 Case 的请求与提供方回执均为 default，其他节点配置保持原状。
+
+代码提交 `7902d3cda`，合并后推送 `origin/main` 为 `857db5f29`。本次使用各角色已验收镜像叠加该提交的源文件和提示词构建新镜像；未启用另一会话尚在构建的原生 Codex 补丁，Worker 未重启。活动执行版本为 `58382a2ab9529c14844cc0670b4d507b3ccd04fe1219cb80a9624768d9d2237e`，已核验 Operations 三字段 Schema 和新 skill 同时激活。发布后完整 W3 Operations 自然完成与候选入库尚未作为业务验收结论。
 
 已完成 253 项编排回归，另有 2 个不适用参数组合跳过；覆盖空候选、NEW/OLD/LOW、WATCH 派发、CLOSED 分阶段、旧合同收尾、原子回滚、重复消费，以及事实与 PIN/WATCH 同批应用。W3 输入构造和 Trade 提交函数另做源码对比，均未变化。
