@@ -1101,6 +1101,7 @@ class GovernanceRepository:
             )
             if (
                 old
+                and value.phase != "RESOLVED"
                 and value.handling_mode == "HUMAN"
                 and (old.handling_mode == "AUTO" or value.manual_review_reason)
                 and (not linked or linked.state == "RESOLVED")

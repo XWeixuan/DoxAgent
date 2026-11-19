@@ -22,6 +22,8 @@ def fingerprint(value, incident):
 def cookie_summary(cookies, incident):
     return [{"name": c["name"], "domain": c.get("domain"), "path": c.get("path"),
              "secure": c.get("secure"), "http_only": c.get("httpOnly"),
+             "same_site": c.get("sameSite"), "expires": c.get("expires"),
+             "value_length": len(c.get("value", "")),
              "partitioned": bool(c.get("partitionKey")),
              "fingerprint": fingerprint(c.get("value", ""), incident)}
             for c in cookies if relevant_cookie(c.get('name', ''))][:12]
@@ -120,16 +122,21 @@ class WireEvidence:
     def event(self, message):
         method, p = message.get("method"), message.get("params", {})
         key = p.get("requestId")
+        if method in {"Network.loadingFinished", "Network.loadingFailed"} and key not in self.requests:
+            self.extras.pop(key, None)
+            return
         if method == "Network.requestWillBeSent":
             request = p.get("request", {})
             is_bloomberg = (self.website and urlsplit(self.website).hostname in {'www.bloomberg.com', 'bloomberg.com'}
                             and urlsplit(request.get('url', '')).hostname == urlsplit(self.website).hostname
                             and (p.get('type') == 'Document' or urlsplit(request.get('url', '')).path.startswith('/lineup-next/api/')))
             if key not in self.requests and (not (is_bloomberg or self.interested(request.get("url", ""))) or len(self.requests) >= 6):
+                self.extras.pop(key, None)
                 return
             row = self.requests.setdefault(key, {"url": safe_url(request["url"]), "redirects": []})
             row.update(request_at=p.get("wallTime"), resource_type=p.get("type"),
                 method=request.get("method"), request_headers=request_headers(request.get("headers", {})),
+                cookie_evidence="REQUEST_HEADER" if any(k.lower()=="cookie" for k in request.get("headers", {})) else "UNAVAILABLE",
                 request_cookies=header_cookies(request.get("headers", {}), self.incident))
             if key in self.extras:
                 extra = self.extras.pop(key)
@@ -144,6 +151,7 @@ class WireEvidence:
                 if c.get('cookie', {}).get('name') == 'datadome' or
                    re.fullmatch(r'_px[a-zA-Z0-9_]{0,32}|pxcts', c.get('cookie', {}).get('name', ''))][:12]
             extra = {"request_cookies": header_cookies(p.get("headers", {}), self.incident),
+                     "cookie_evidence": "EXTRA_INFO",
                      "request_headers": request_headers(p.get("headers", {})),
                      'associated_challenge_cookies': challenge_cookies,
                      "associated_datadome": [dict(cookie_summary([c["cookie"]], self.incident)[0],
@@ -152,7 +160,9 @@ class WireEvidence:
             if key in self.requests:
                 extra["request_headers"] = {**self.requests[key].get("request_headers", {}), **extra["request_headers"]}
                 self.requests[key].update(extra)
-            elif challenge_cookies and len(self.extras) < 8:
+            elif len(self.extras) < 8:
+                # ExtraInfo may precede requestWillBeSent, including requests
+                # with no DD cookie. Missing observation is not absence proof.
                 self.extras[key] = extra
         elif key in self.requests and method == "Network.responseReceived":
             r = p.get("response", {})
@@ -160,7 +170,12 @@ class WireEvidence:
             row["response"] = response_summary(r.get("url", ""), r.get("status"), r.get("headers", {}))
             row["transport"] = {"protocol": r.get("protocol"), "remote_ip": r.get("remoteIPAddress"),
                 "tls_issuer": r.get("securityDetails", {}).get("issuer"),
-                "from_cache": bool(r.get("fromDiskCache")), "from_service_worker": bool(r.get("fromServiceWorker"))}
+                "from_cache": bool(r.get("fromDiskCache") or r.get("fromPrefetchCache") or row.get("served_from_cache")),
+                "from_service_worker": bool(r.get("fromServiceWorker"))}
+        elif key in self.requests and method == "Network.requestServedFromCache":
+            self.requests[key]["served_from_cache"] = True
+            if "transport" in self.requests[key]:
+                self.requests[key]["transport"]["from_cache"] = True
         elif key in self.requests and method == "Network.responseReceivedExtraInfo":
             self.requests[key]["response_extra"] = {
                 "status": p.get("statusCode"), "set_cookies": set_cookie_summary(p.get("headers", {}), self.incident),
