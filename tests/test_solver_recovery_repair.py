@@ -542,13 +542,13 @@ def test_provider_unsolvable_has_terminal_verification_state(solver_setup, monke
 @pytest.mark.parametrize(
     "kind,query,ready",
     [
-        ("NONE", "Micron", True),
+        ("NONE", "Micron", False),
         ("INTERACTIVE", "Micron", False),
         ("UNKNOWN", "Micron", False),
         ("NONE", "Samsung", False),
     ],
 )
-def test_reuters_original_document_proves_only_matching_unblocked_query(setup, kind, query, ready):
+def test_reuters_original_document_without_api_proof_is_not_ready(setup, kind, query, ready):
     from doxagent.site_strategy.recovery import recovery_context, verify_capture
     from doxagent.site_strategy.runtime import RuntimeResponse
 
@@ -592,14 +592,14 @@ def test_reuters_legitimate_zero_results_are_business_proof(setup, text, ready):
         recipe_parameters={"query": "Ondas"},
     )
     capture = RuntimeResponse(
-        0,
+        200,
         request.url,
         {},
         body="<main>" + text + "</main>",
         assessment={"kind": "NONE"},
         provenance=SimpleNamespace(instance_id="chrome"),
     )
-    report = verify_capture(service, scope, recovery_context(request), capture, observed=True)
+    report = verify_capture(service, scope, recovery_context(request), capture)
     assert (report.crawler == "READY") is ready
     assert (report.challenge == "CLEARED") is ready
 

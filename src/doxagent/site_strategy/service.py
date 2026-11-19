@@ -3574,6 +3574,8 @@ class SiteStrategyService:
                     )
                     and original.provenance
                     and report.challenge != "BLOCKED"
+                    and not (scope.source_id == "reuters_site_search"
+                             and original.recipe_result is None)
                 ):
                     # The live, exact human-owned page can itself prove the
                     # configured collector contract. Do not open its duplicate

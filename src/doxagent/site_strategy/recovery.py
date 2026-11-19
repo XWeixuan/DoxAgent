@@ -355,6 +355,14 @@ def verify_capture(service, scope, context, capture, *, observed=False):
         return report
     if context["purpose"] == "CRAWLER":
         request = AccessRequest(**context)
+        if (observed and scope.source_id == "reuters_site_search"
+                and capture.recipe_result is None):
+            # Reuters renders a listing shell/SSR links independently of its
+            # protected search API. Observing the old DOM cannot attest that
+            # the next real query is accepted. Reuse the already scheduled
+            # business probe; do not close the original or add a new request.
+            report.reason = "reuters_search_requires_business_probe"
+            return report
         try:
             crawler_ready = validate_crawler_capture(scope.source_id, capture, request)
         except (RuntimeError, ValueError, KeyError):
