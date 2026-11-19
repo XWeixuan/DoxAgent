@@ -204,12 +204,10 @@ class ArticlePipeline:
                     "reader": READER_STAGE_SECONDS.get(publisher_host(url), 8) if record.source_id == 'google_news_search_rss' else 8,
                     "zyte": 20, "zyte_http": 10, "google_browser": 10,
                 }[stage]))
-                if (strategy_ref == "builtin:barrons@1" and access_order == ["browser"]
-                        and stage == "browser" and "browser_timeout_seconds" not in strategy_parameters):
-                    # One authenticated route has no second route to reserve eight
-                    # seconds for. Let normal Chrome startup/hydration complete
-                    # within the existing article deadline instead of restarting it.
-                    cap = 15
+                if access_order == ["browser"] and "browser_timeout_seconds" not in strategy_parameters:
+                    # Spend the existing article budget once on its sole route,
+                    # instead of timing out at 8s then paying backoff and repeating.
+                    cap = min(20, remaining(20))
                 auth = {}
                 if google and stage == 'reader' and publisher_host(url) == 'futunn.com':
                     cap = 14
@@ -285,6 +283,11 @@ class ArticlePipeline:
                                 diagnostics.update(verified(urlparse(url).hostname or "") or {})
                             diagnostics["auth_state"] = "VALID"
                         break
+                if reason in {"login_required", "reauth_required", "subscription_required", "entitlement_missing"}:
+                    # A parsed gate or a typed owner auth receipt is terminal for this input.
+                    # A timeout/401 alone is never promoted into an authentication verdict.
+                    diagnostics["permission_evidence"] = ("document" if info.access_reason else "site_access")
+                    break
                 if stage in {"browser", "browser_fetch"} and observation.reason:
                     diagnostics["browser_failure_reason"] = observation.reason
                 if info.publisher_links and hop < 2:

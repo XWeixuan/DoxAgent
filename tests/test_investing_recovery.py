@@ -293,7 +293,7 @@ async def test_bootstrap_403_requires_observed_same_frame_200_not_just_normal_do
     result = await runtime._browser(
         AccessRequest(operation_id="native", url=URL, purpose="CRAWLER", mode=AccessMode.BROWSER),
         SimpleNamespace(
-            site_id="investing", body=SimpleNamespace(ref="builtin:generic@1", parameters={}),
+            site_id="investing", strategy_revision=1, body=SimpleNamespace(ref="builtin:generic@1", parameters={}),
             challenge=ChallengePolicy(),
         ),
         BrowserIdentitySpec(

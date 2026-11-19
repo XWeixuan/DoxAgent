@@ -146,7 +146,14 @@ def dashboard_data(store,ticker,view,args,*,include_sources=True,source_after=No
             'refresh_seconds':r.get('refresh_seconds'),'body_total':total,'body_full':full,
             'body_ratio':full/total if total else None,
             'mean_capture_seconds':sum(capture)/len(capture) if capture else None,
-            'capture_samples':len(capture),'article_samples':samples['article_samples']}
+            'capture_samples':len(capture),'article_samples':samples['article_samples'],
+            'window_hours':24,
+            'last_historical':samples['last_historical'],
+            'last_historical_body':samples['last_historical_body'],
+            'last_historical_first_body':samples['last_historical_first_body'],
+            'first_body_samples':len(samples['first_body_seconds']),
+            'mean_first_body_seconds':sum(samples['first_body_seconds'])/len(samples['first_body_seconds']) if samples['first_body_seconds'] else None,
+            'publication_classes':{k:{'samples':len(v),'mean_seconds':sum(v)/len(v) if v else None} for k,v in samples['publication_classes'].items()}}
     if not include_metrics:
         return {'sources':cards}
     selected=[s['source']['source_id'] for s in sources if
@@ -159,15 +166,13 @@ def dashboard_data(store,ticker,view,args,*,include_sources=True,source_after=No
     body=dict(total=total,full=full,pending=pending,failed=total-full-pending,ratio=full/total if total else None,
               network_attempts=None,network_succeeded=None,cache_reuses=None,basis='FIRST_OBSERVED_ARTICLE',legacy_excluded=True)
     data=metrics(store,ticker,view,{k:args[k] for k in ['source_id','source_kind'] if args.get(k)},body=body)
-    eligible=[business[s['source']['source_id']] for s in sources if s['source']['source_id'] in selected and s['poll_status']!='failed']
+    eligible=[business[s['source']['source_id']] for s in sources if s['source']['source_id'] in selected]
     times=[t for v in eligible for t in v['latencies']];capture=[t for v in eligible for t in v['capture']]
     count=len(times);mean=sum(times)/count if count else None
-    # Eligibility is the current source state: exclude its whole window, including
-    # earlier successes. Keep card diagnostics and the logical-round ledger intact.
+    # Current health never erases real successes/failures in the rolling window.
     chosen=[{k:rounds.get(s['source']['binding_id'],{}).get(k,0) for k in ['expected','succeeded']}
             for s in sources if s['source']['source_id'] in selected
-            and s['poll_status'] not in {'partial','failed'}
-            and not (s['current_error'] or {}).get('code','').startswith('SOURCE_DEFERRED:')]
+]
     expected=sum(c['expected'] for c in chosen);success=sum(c['succeeded'] for c in chosen)
     return {'metrics':data,'sources':cards,'counts':counts,'mean_e2e_seconds':mean,'e2e_samples':count,
             'coverage':{'expected':expected,'succeeded':success,'ratio':success/expected if expected else None},

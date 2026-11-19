@@ -85,7 +85,6 @@ class AcquisitionStore:
                     CREATE INDEX IF NOT EXISTS cycles_schedule_ticker ON cycles(ticker,binding_id,unit,dispatch_at) WHERE status='SCHEDULE';
                     CREATE TABLE IF NOT EXISTS physical_cycles(run_id TEXT PRIMARY KEY,finished_at TEXT,requests_json TEXT NOT NULL);
                     CREATE INDEX IF NOT EXISTS physical_cycles_time ON physical_cycles(finished_at,run_id);
-                    CREATE INDEX IF NOT EXISTS cycles_unit_time ON cycles(binding_id,unit,dispatch_at);
                     CREATE TABLE IF NOT EXISTS unit_hours(binding_id TEXT,unit TEXT,hour TEXT,data_json TEXT NOT NULL,
                         PRIMARY KEY(binding_id,unit,hour));
                     CREATE INDEX IF NOT EXISTS unit_hours_time ON unit_hours(hour);
@@ -104,6 +103,14 @@ class AcquisitionStore:
                     CREATE INDEX IF NOT EXISTS inputs_time ON inputs(observed_at);
                     CREATE TABLE IF NOT EXISTS first_seen(identity TEXT PRIMARY KEY,observed_at TEXT NOT NULL);
                 """)
+                # Upgrade the existing unused-payload seek index in place, rather
+                # than adding a second index to every high-frequency cycle write.
+                prior = db.execute("SELECT sql FROM sqlite_master WHERE type='index' AND name='cycles_unit_time'").fetchone()
+                if prior and 'listing_received_at' not in prior[0]:
+                    db.execute('DROP INDEX cycles_unit_time')
+                db.execute("CREATE INDEX IF NOT EXISTS cycles_unit_time ON cycles("
+                    "binding_id,unit,dispatch_at,due_at,status,json_extract(data_json,'$.listing_received_at')) "
+                    "WHERE status!='SCHEDULE'")
                 if "head_json" not in {r[1] for r in db.execute("PRAGMA table_info(units)")}:
                     db.execute("ALTER TABLE units ADD COLUMN head_json TEXT NOT NULL DEFAULT '{}'")
                 db.execute("CREATE INDEX IF NOT EXISTS units_checkpoint ON units(json_extract(state,'$.checkpoint_ref'))")

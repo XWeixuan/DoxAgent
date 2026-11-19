@@ -22,6 +22,7 @@ from doxagent.monitoring.media_enrichment import (
 
 DEADLINE: ContextVar[float | None] = ContextVar("body_completion_deadline", default=None)
 WORK_CLASS: ContextVar[str] = ContextVar("body_work_class", default="foreground")
+BODY_DEMAND: ContextVar[dict] = ContextVar("body_admission_demand", default={})
 WORK_AGE: ContextVar[float] = ContextVar("body_work_age", default=0)
 REVALIDATION: ContextVar[dict | None] = ContextVar("body_revalidation",default=None)
 RESUME_STAGE = ContextVar("body_resume_stage", default=None)

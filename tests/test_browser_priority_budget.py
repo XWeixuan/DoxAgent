@@ -4,7 +4,7 @@ from doxagent.site_strategy.budget import JointBudget
 from doxagent.site_strategy.schema import SitePurpose
 
 
-async def test_body_load_reserves_crawler_capacity_and_one_body_per_identity():
+async def test_no_idle_reservation_when_body_borrow_is_enabled():
     budget = JointBudget(max_concurrency=4)
     budget.body_borrow = True  # Explicit legacy opt-in; production defaults keep two BODY slots.
     release = asyncio.Event()
@@ -26,10 +26,10 @@ async def test_body_load_reserves_crawler_capacity_and_one_body_per_identity():
 
     bodies = [asyncio.create_task(work(f"body{i}", SitePurpose.BODY, str(i))) for i in range(4)]
     await asyncio.sleep(0.03)
-    assert len(entered) == 3
+    assert len(entered) == 4
     crawler = asyncio.create_task(work("crawler", SitePurpose.CRAWLER, "0"))
     await asyncio.sleep(0.03)
-    assert "crawler" in entered and "body3" not in entered
+    assert "crawler" not in entered and "body3" in entered
     release.set()
     await asyncio.gather(*bodies, crawler)
-    assert budget._active == 0
+    assert "crawler" in entered and budget._active == 0

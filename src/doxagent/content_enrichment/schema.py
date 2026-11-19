@@ -51,6 +51,7 @@ class EnrichmentJob(BusModel):
     execution_seq: int = Field(default=0, ge=0)
     budget_started_at: datetime | None = None
     first_fetch_at: datetime | None = None
+    ready_since: datetime | None = None
     fetch_budget_seconds: int = Field(default=180, ge=1, le=1800)
     body_result_key: str | None = None
     known_article_raw_id: str | None = None

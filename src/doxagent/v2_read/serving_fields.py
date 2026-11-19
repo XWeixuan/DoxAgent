@@ -39,7 +39,8 @@ def select(kind,identity,value):
         # Only first-discovery anchors and the published identity, never the
         # admission document or worker state. Reuse the existing source index.
         return {k:v for k,v in value.items() if k in {
-            'standard_id','first_discovered_at','first_poll_due_at'}}
+            'standard_id','first_discovered_at','first_poll_due_at',
+            'consumable_at','initial_decision','first_publish_kind'}}
     if table=='runtime_v2_cases':
         result={k:v for k,v in value.items() if k in CASE_FIELDS}
         result['source']={'snapshot':{'ticker':value.get('source',{}).get('snapshot',{}).get('ticker')}}

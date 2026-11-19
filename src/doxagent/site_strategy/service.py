@@ -26,7 +26,7 @@ ACCESS_DEADLINE=ContextVar('site_access_entry_deadline',default=None)
 from doxagent.content_enrichment.quality import inspect_html
 from doxagent.content_enrichment.strategies import validate_body_strategy
 
-from .budget import SiteBudgetManager
+from .budget import SiteBudgetManager, AdmissionDeferred
 from .egress import probe_egress
 from .health import RISK_FAILURES, CombinationHealthManager
 from .profile_storage import ProfileSnapshotManager
@@ -1922,6 +1922,7 @@ class SiteStrategyService:
                     identity_id = choice.identity_id or choice.combination_id
                     status = await registry_io(self.failover.candidate_status, scope, identity_id, SitePurpose.CRAWLER)
                     if not status["selectable"]:
+                        self.budgets.joint.forget_identity(identity_id)
                         if status.get("eligible") and request.purpose is SitePurpose.CRAWLER:
                             await self.failover.schedule_async(scope, SitePurpose.CRAWLER, candidate_id=identity_id)
                         continue
@@ -2193,8 +2194,10 @@ class SiteStrategyService:
             ) / 1000
             if request.purpose is SitePurpose.BODY:
                 queue_cap = min(queue_cap, 3.0)
+            demand = request.parameters.get("_body_demand", {}) if request.purpose is SitePurpose.BODY else {}
+            admission = {"task_key": demand.get("key") or request.operation_id, "ready_since": demand.get("ready_since")} if request.purpose is SitePurpose.BODY else {}
             permit = (
-                budget.permit(request.purpose, timeout_seconds=min(remaining, queue_cap))
+                budget.permit(request.purpose, timeout_seconds=min(remaining, queue_cap), **admission)
                 if request.mode is AccessMode.HTTP_PUBLIC
                 else self.budgets.joint.permit(
                     request.purpose,
@@ -2208,6 +2211,7 @@ class SiteStrategyService:
                     work_class=request.work_class,
                     work_age_seconds=request.work_age_seconds,
                     due_at=request.recipe_parameters.get('_poll_due_at'),
+                    **admission,
                     # The legacy head-only EWMA excludes TAIL cost and can
                     # shrink a healthy dual pool to one slot. Existing physical
                     # member/global limits govern this explicitly sized pool.
@@ -2317,7 +2321,7 @@ class SiteStrategyService:
                     )
                 unavailable += 1
                 continue
-            except TimeoutError:
+            except TimeoutError as admission_error:
                 waited = max(0,int((time.monotonic()-queue_started)*1000))
                 if attempting:
                     attempts.append(AccessAttempt(combination_id=combination.combination_id,
@@ -2330,9 +2334,9 @@ class SiteStrategyService:
                     resolved,
                     AccessDisposition.BUDGET_DEFERRED,
                     category=FailureCategory.BUDGET_DEFERRED,
-                    reason="browser_attempt_timeout" if attempting else "site_queue_timeout",
+                    reason="browser_attempt_timeout" if attempting else "body_admission_pending" if isinstance(admission_error, AdmissionDeferred) else "site_queue_timeout",
                     attempts=attempts,
-                    retry_not_before=utc_now()+timedelta(seconds=1) if not attempting else None,
+                    retry_not_before=utc_now()+timedelta(seconds=admission_error.retry_seconds if isinstance(admission_error, AdmissionDeferred) else 1) if not attempting else None,
                     started=started,
                 )
                 if not attempting:
@@ -4063,6 +4067,10 @@ class SiteStrategyService:
         )
 
     async def _put_cache(self, result: AccessResult, *, cache_key: str, ttl=60) -> None:
+        # Admission is a live capacity decision, not an idempotent website result.
+        # Reusing it for 60s would defeat retry_not_before and soft BODY claims.
+        if result.disposition is AccessDisposition.BUDGET_DEFERRED:
+            return
         size = len(result.body.encode("utf-8")) + len(str(result.recipe_result).encode("utf-8"))
         if size > 32 * 1024 * 1024:
             return

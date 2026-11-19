@@ -43,6 +43,4 @@ def test_retired_reuters_tail_completion_survives_reload_and_only_new_head_reope
 
     collector.states[binding.binding_id, 'QUERY:q']['state']['checkpoint']['queries']['q']['head_at'] = 'new-head'
     units = dict(scheduler.work_units(source, binding, collector.binding_state(binding), utc_now(), include_all=True))
-    tail = next(v for v in units.values() if v['acquisition_unit'] == 'TAIL:q')
-    assert tail['checkpoint']['queries']['q']['head_at'] == 'new-head'
-    assert not tail['checkpoint']['queries']['q']['done']
+    assert not any(v['acquisition_unit'].startswith('TAIL:') for v in units.values())

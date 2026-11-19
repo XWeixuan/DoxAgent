@@ -80,7 +80,7 @@ def test_acquisition_rounds_keep_missing_dispatches_and_freeze_at_sleep(tmp_path
             requests=[{'list_validated':True,'proof_basis':'TRANSPORT_SEND',
                        'response_received_at':(due+timedelta(seconds=2)).isoformat()}],valid=True)
     value=recent_rounds(store,binding.ticker,[binding.model_dump(mode='json')],now)[binding.binding_id]
-    assert (value['succeeded'],value['expected'])==(18,20)
+    assert (value['succeeded'],value['expected'])==(19,21)
     store.disable_unit(binding.binding_id,'HEAD',at=now)
     frozen=recent_rounds(store,binding.ticker,[binding.model_dump(mode='json')],now+timedelta(hours=1))[binding.binding_id]
     assert frozen==value
@@ -153,7 +153,7 @@ def test_dashboard_zero_schema_and_closed_bindings_keep_ir_sec_policy(tmp_path,m
     assert dashboard_data(store,'MU',view,{})['counts']['running']==3
 
 
-def test_coverage_excludes_entire_window_for_current_failed_or_deferred_sources(tmp_path,monkeypatch):
+def test_coverage_retains_all_window_receipts_when_current_state_is_failed_or_deferred(tmp_path,monkeypatch):
     from tests.test_content_enrichment_hub import _setup
     from doxagent.api_v2 import bus_dashboard
     _,_,source,binding=_setup(tmp_path/'bus')
@@ -177,7 +177,7 @@ def test_coverage_excludes_entire_window_for_current_failed_or_deferred_sources(
     view=head_view(store,datetime(2026,11,1,12,tzinfo=UTC))
     result=dashboard_data(store,'MU',view,{})
     validate('BusDashboard',result)
-    assert result['coverage']=={'expected':20,'succeeded':18,'ratio':.9}
+    assert result['coverage']=={'expected':80,'succeeded':22,'ratio':22/80}
     summary=dashboard_data(store,'MU',view,{},include_sources=False)
     assert summary['sources']==[]
     assert {k:v for k,v in summary.items() if k!='sources'}=={k:v for k,v in result.items() if k!='sources'}
@@ -188,16 +188,17 @@ def test_coverage_excludes_entire_window_for_current_failed_or_deferred_sources(
         source_only.setattr(bus_dashboard,'current_body',lambda *a:pytest.fail('source page scanned period article bodies'))
         cards=dashboard_data(store,'MU',view,{},source_after='',source_limit=1,include_metrics=False)
         assert cards['sources']==source_page['sources']
-    # The cards retain the observed window for diagnosis; only the KPI excludes it.
+    # Source filtering and current failures preserve the same observed window.
     assert all(s['recent']['coverage']['expected']==20 for s in result['sources'])
     for sid in ['failed','partial','blocked']:
         filtered=dashboard_data(store,'MU',view,{'source_id':sid})
-        assert filtered['coverage']=={'expected':0,'succeeded':0,'ratio':None}
-    # Recovery at the next read re-includes the whole unchanged window.
+        value=successes['MU:'+sid]
+        assert filtered['coverage']=={'expected':20,'succeeded':value,'ratio':value/20}
+    # Health transitions never change the unchanged historical window.
     for state in states.values():state.update(status='succeeded',last_error_code=None)
     assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':80,'succeeded':22,'ratio':.275}
     for state in states.values():state.update(status='failed')
-    assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':0,'succeeded':0,'ratio':None}
+    assert dashboard_data(store,'MU',view,{})['coverage']=={'expected':80,'succeeded':22,'ratio':.275}
 
 
 def test_period_e2e_is_per_new_message_and_replacement_does_not_double_count(tmp_path):

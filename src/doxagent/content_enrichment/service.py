@@ -18,6 +18,7 @@ from doxagent.content_enrichment.native import native_article
 from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
 from doxagent.content_enrichment.transport import (
     DEADLINE,
+    BODY_DEMAND,
     REVALIDATION,
     RESUME_STAGE,
     WORK_AGE,
@@ -146,6 +147,8 @@ class ContentEnrichmentHub:
     async def _process_guarded(self, job: EnrichmentJob, now: datetime) -> None:
         work_token = WORK_CLASS.set("recheck" if job.work_kind in {"recheck", "capability_resume"} else "backfill" if job.bootstrap else "foreground")
         age_token = WORK_AGE.set(max(0, (utc_now() - job.created_at).total_seconds()))
+        demand_token = BODY_DEMAND.set({"key": f"{job.article_id or job.job_id}:{job.provider_raw_hash or 0}:{job.work_kind}",
+            "ready_since": (job.ready_since or job.first_fetch_at or now).isoformat()})
         from doxagent.message_bus_v2.publisher_http import HTTP_CONTEXT
         http_token=HTTP_CONTEXT.set('body')
         heartbeat = asyncio.create_task(self._renew(job))
@@ -173,6 +176,7 @@ class ContentEnrichmentHub:
             WORK_CLASS.reset(work_token)
             HTTP_CONTEXT.reset(http_token)
             WORK_AGE.reset(age_token)
+            BODY_DEMAND.reset(demand_token)
             heartbeat.cancel()
             processing.cancel()
             await asyncio.gather(heartbeat,processing,return_exceptions=True)
@@ -627,7 +631,7 @@ class ContentEnrichmentHub:
         if not capability_wait and not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred", "domain_cooldown"}:
             delay = max((item.retry_after_seconds for item in result.attempts
                          if item.retry_after_seconds and item.retry_after_seconds > 0), default=5)
-            not_before = finished_at + timedelta(seconds=max(5,delay))
+            not_before = finished_at + timedelta(seconds=max(.05,delay) if result.reason == "site_budget_deferred" else max(5,delay))
             if job.owner_kind == 'live_article' or not_before < job.deadline_at:
                 await self._requeue(
                     job.model_copy(

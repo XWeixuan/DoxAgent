@@ -1,7 +1,6 @@
-"""Bounded source-level rounds. One winning path per alternative group; AND across complements.
+"""Rolling-24h source rounds. OR within alternative paths; AND across complements.
 
-No writes or historical reconstruction: at most 21 logical slots per binding,
-using the existing unit heads and indexed acquisition receipts.
+No writes or historical fallback; existing plans and covering-index receipts.
 """
 from contextlib import nullcontext
 import json
@@ -17,7 +16,7 @@ def instant(value):
     return datetime.fromtimestamp(value, UTC).isoformat().replace('+00:00', 'Z')
 
 
-def evaluate_rounds(plans, receipts, *, interval, until, limit=20):
+def evaluate_rounds(plans, receipts, *, interval, until, limit=20, since=None):
     """Receipts are actual due opportunities, not just successful result rows."""
     if not plans:
         return {'expected': 0, 'succeeded': 0, 'ratio': None, 'refresh_seconds': None,
@@ -32,6 +31,8 @@ def evaluate_rounds(plans, receipts, *, interval, until, limit=20):
         if receipt['validated'] and receipt.get('received'):
             key = receipt['unit'], round(receipt['due'], 3)
             proven[key] = min(proven.get(key, receipt['received']), receipt['received'])
+    if since is not None:
+        begin = max(begin, math.ceil(since / interval)*interval)
     rounds = []
     for start in range(int(begin), int(end), interval):
         groups = {}
@@ -89,6 +90,7 @@ def recent_rounds_many(store, bindings, now, *, units=None, db=None):
                 until = stamp(latest) if latest else now.timestamp()
             plans, receipts = [], []
             source_period = binding['polling']['target_interval_seconds']
+            count = math.ceil(86400/max(1,source_period))
             for unit in units:
                 head = json.loads(unit['head_json'])
                 plan = head.get('coverage_plan', {})
@@ -98,21 +100,16 @@ def recent_rounds_many(store, bindings, now, *, units=None, db=None):
                     continue
                 plans.append({'unit': unit['unit'], 'group': plan.get('group'),
                               'epoch': epoch, 'interval': period})
-                start = math.floor(until / source_period) * source_period - 21 * source_period
-                # Retained receipts are 48h. Do not invent failures outside retention.
-                if start < now.timestamp() - 48 * 3600:
-                    plans = []
-                    break
-                cap = 22 * (math.ceil(source_period / period) + 1)
-                found = db.execute("SELECT due_at,json_extract(data_json,'$.list_validated'),"
-                    "json_extract(data_json,'$.listing_received_at') FROM cycles INDEXED BY cycles_unit_time "
+                start = now.timestamp() - 86400
+                found = db.execute("SELECT due_at,max(status='CAPTURED'),"
+                    "min(CASE WHEN status='CAPTURED' THEN json_extract(data_json,'$.listing_received_at') END) FROM cycles INDEXED BY cycles_unit_time "
                     "WHERE binding_id=? AND unit=? AND dispatch_at>=? AND dispatch_at<=? "
-                    "AND status!='SCHEDULE' ORDER BY dispatch_at DESC LIMIT ?",
+                    "AND status!='SCHEDULE' GROUP BY due_at ORDER BY due_at",
                     (bid,unit['unit'],instant(start).replace('Z','+00:00'),
-                     instant(now.timestamp()).replace('Z','+00:00'),cap)).fetchall()
+                     instant(now.timestamp()).replace('Z','+00:00'))).fetchall()
                 receipts.extend({'unit':unit['unit'],'due':stamp(r[0]),'validated':bool(r[1]),
                                  'received':stamp(r[2])} for r in found)
-            result[bid] = evaluate_rounds(plans,receipts,interval=source_period,until=until)
+            result[bid] = evaluate_rounds(plans,receipts,interval=source_period,until=until,limit=count,since=now.timestamp()-86400)
         return result
 
 

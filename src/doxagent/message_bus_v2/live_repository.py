@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS live_articles(
  article_key TEXT PRIMARY KEY,source_id TEXT NOT NULL,url TEXT NOT NULL,publisher TEXT NOT NULL DEFAULT '',
  material_hint TEXT NOT NULL,first_seen_at TEXT NOT NULL,input_ref TEXT NOT NULL,
  input_revision INTEGER NOT NULL DEFAULT 1,material_observed_at TEXT NOT NULL DEFAULT '',state TEXT NOT NULL,due_at TEXT NOT NULL,
- attempt INTEGER NOT NULL DEFAULT 0,claim_token TEXT,lease_until TEXT,first_fetch_at TEXT,
+ attempt INTEGER NOT NULL DEFAULT 0,claim_token TEXT,lease_until TEXT,first_fetch_at TEXT,ready_since TEXT,
  result_ref TEXT,outcome TEXT,body_digest TEXT,acquired_at TEXT,checked_at TEXT,
  revision INTEGER NOT NULL DEFAULT 0,last_error TEXT,next_check_at TEXT,work_kind TEXT NOT NULL,
  attempts_json TEXT NOT NULL DEFAULT '[]',validators_json TEXT NOT NULL DEFAULT '{}',title TEXT NOT NULL DEFAULT '',last_result_id TEXT,
@@ -84,13 +84,17 @@ class LiveRepository:
                 "cache_total": "INTEGER NOT NULL DEFAULT 0",
                 "fetch_round": "INTEGER NOT NULL DEFAULT 0",
                 "initial_request_at": "TEXT",
+                "ready_since": "TEXT",
+                "admission_deferrals": "INTEGER NOT NULL DEFAULT 0",
+                "admission_wait_ms": "INTEGER NOT NULL DEFAULT 0",
                 "initial_result_at": "TEXT",
                 "initial_outcome": "TEXT",
                 "execution_spent_ms": "INTEGER NOT NULL DEFAULT 0",
             },
             "live_origins": {"targets_json": "TEXT NOT NULL DEFAULT '[]'"},
             "live_deliveries": {"initial_decision_at": "TEXT", "initial_decision": "TEXT",
-                                "first_discovered_at": "TEXT", "first_poll_due_at": "TEXT"},
+                                "first_discovered_at": "TEXT",
+                "first_publish_kind": "TEXT", "first_poll_due_at": "TEXT"},
         }.items():
             existing = {r[1] for r in db.execute("PRAGMA table_info(" + table + ")")}
             for field, definition in fields.items():
@@ -438,7 +442,7 @@ class LiveRepository:
 
                     db.execute(
                         "INSERT INTO live_articles(article_key,source_id,url,publisher,material_hint,"
-                        "first_seen_at,input_ref,state,due_at,title,material_observed_at,work_kind,delivery_mode) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "first_seen_at,input_ref,state,due_at,title,material_observed_at,work_kind,delivery_mode,ready_since) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                         (
                             key,
                             item["source_id"],
@@ -455,6 +459,7 @@ class LiveRepository:
                             item["observed"],
                             item["kind"],
                             item.get("delivery_mode", "production"),
+                            now,
                         ),
                     )
                 elif changed or (
@@ -465,7 +470,7 @@ class LiveRepository:
                     # An updated listing is not a new first-download budget.
                     # Keep attempts/age until the first result actually exists.
                     pending_first = not old['result_ref'] and old['state'] != 'NOT_APPLICABLE'
-                    reset = '' if pending_first else "attempt=0,fetch_round=0,execution_spent_ms=0,first_fetch_at=NULL,attempts_json='[]',"
+                    reset = '' if pending_first else "attempt=0,fetch_round=0,execution_spent_ms=0,first_fetch_at=NULL,ready_since=NULL,attempts_json='[]',"
                     db.execute(
                         "UPDATE live_articles SET material_hint=?,input_ref=?,input_revision=input_revision+1,"
                         "source_id=?,state='FETCH_DUE',due_at=?,claim_token=NULL,lease_until=NULL," + reset + "title=CASE WHEN ? AND ?='' THEN title ELSE ? END,"
@@ -500,7 +505,7 @@ class LiveRepository:
                     # This is a durable re-entry/TAIL delta, not every unchanged
                     # poll. Check once in the background; existing FULL stays readable.
                     db.execute(
-                        "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,execution_spent_ms=0,first_fetch_at=NULL,"
+                        "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,execution_spent_ms=0,first_fetch_at=NULL,ready_since=NULL,"
                         "work_kind='recheck',attempts_json='[]',next_check_at=NULL WHERE article_key=?",
                         (now, key),
                     )
@@ -611,7 +616,6 @@ class LiveRepository:
     def claim_candidates(self, *, limit, background=False):
         now = utc_now()
         stamp = now.isoformat()
-        recent = (now - timedelta(minutes=30)).isoformat()
         recheck_filter = "" if self.bus.body_recheck_enabled else " AND work_kind<>'recheck' "
         due_table = "live_articles" + ("" if self.bus.body_recheck_enabled else " INDEXED BY live_article_active_due")
         with self.bus._connect() as db:
@@ -632,10 +636,10 @@ class LiveRepository:
                 )
             }
             publishers = db.execute(
-                "SELECT publisher,min(due_at) first_due,max(first_seen_at) newest,max(first_seen_at>=? OR work_kind='content_update') urgent FROM " + due_table + " "
+                "SELECT publisher,min(due_at) first_due,min(coalesce(ready_since,first_seen_at)) first_ready,max(first_seen_at) newest FROM " + due_table + " "
                 "WHERE state='FETCH_DUE' AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
-                + recheck_filter + "GROUP BY publisher ORDER BY min(delivery_mode='test')," + ('first_due,newest DESC' if background else 'urgent DESC,newest DESC,first_due') + " LIMIT 64",
-                (recent, stamp, int(background)),
+                + recheck_filter + "GROUP BY publisher ORDER BY min(delivery_mode='test')," + ('first_due,newest DESC' if background else 'first_ready,first_due') + " LIMIT 64",
+                (stamp, int(background)),
             ).fetchall()
             rows = []
             for publisher in publishers:
@@ -644,8 +648,8 @@ class LiveRepository:
                     rows += db.execute(
                         "SELECT article_key,input_revision FROM " + due_table + " WHERE state='FETCH_DUE' "
                         "AND publisher=? AND due_at<=? AND (work_kind IN ('recheck','capability_resume'))=? "
-                        + recheck_filter + "ORDER BY (delivery_mode='test')," + ('due_at,first_seen_at' if background else "(first_seen_at>=? OR work_kind='content_update') DESC,first_seen_at DESC,due_at") + " LIMIT ?",
-                        (publisher[0], stamp, int(background), *([] if background else [recent]), available),
+                        + recheck_filter + "ORDER BY (delivery_mode='test')," + ('due_at,first_seen_at' if background else "coalesce(ready_since,first_seen_at),due_at") + " LIMIT ?",
+                        (publisher[0], stamp, int(background), available),
                     ).fetchall()
                 if len(rows) >= limit:
                     break
@@ -692,10 +696,10 @@ class LiveRepository:
                 token = new_id("live-fetch")
                 updated = db.execute(
                     "UPDATE live_articles SET state='FETCHING',claim_token=?,lease_until=?,"
-                    "attempt=attempt+1,first_fetch_at=coalesce(first_fetch_at,?) WHERE article_key=? "
+                    "attempt=attempt+1,ready_since=coalesce(ready_since,first_fetch_at,?),first_fetch_at=coalesce(first_fetch_at,?) WHERE article_key=? "
                     "AND ((state='FETCH_DUE' AND due_at<=?) OR (state='FETCHING' AND lease_until<=?)) "
                     "RETURNING input_revision",
-                    (token, (now + timedelta(seconds=60)).isoformat(), stamp, row[0], stamp, stamp),
+                    (token, (now + timedelta(seconds=60)).isoformat(), stamp, stamp, row[0], stamp, stamp),
                 ).fetchone()
                 if updated:
                     claimed.append((row[0], updated[0], token))
@@ -740,7 +744,8 @@ class LiveRepository:
                     "WHERE article_key=? AND claim_token=?",(sent,key,job.claim_token))
             db.execute(
                 "UPDATE live_articles SET state='FETCH_DUE',due_at=?,claim_token=NULL,lease_until=NULL,"
-                "last_error=?,attempt=?,attempts_json=?,fetch_round=?,execution_spent_ms=? WHERE article_key=? AND claim_token=?",
+                "last_error=?,attempt=?,attempts_json=?,fetch_round=?,execution_spent_ms=?,"
+                "admission_deferrals=admission_deferrals+?,admission_wait_ms=admission_wait_ms+? WHERE article_key=? AND claim_token=?",
                 (
                     job.not_before.isoformat(),
                     "awaiting_capability" if job.attempt_count == 0 else "retry",
@@ -748,6 +753,8 @@ class LiveRepository:
                     canonical_json(attempts),
                     job.fetch_round,
                     job.execution_spent_ms,
+                    int(bool(attempts) and attempts[-1].get("reason")=="site_budget_deferred"),
+                    int(attempts[-1].get("latency_ms",0)) if attempts and attempts[-1].get("reason")=="site_budget_deferred" else 0,
                     key,
                     job.claim_token,
                 ),
@@ -1073,7 +1080,7 @@ class LiveRepository:
             for row in rows:
                 db.execute(
                     "UPDATE live_articles SET state='FETCH_DUE',due_at=?,attempt=0,fetch_round=0,execution_spent_ms=0,"
-                    "first_fetch_at=NULL,work_kind=?,attempts_json='[]',next_check_at=NULL WHERE article_key=? AND state='READY'",
+                    "first_fetch_at=NULL,ready_since=NULL,work_kind=?,attempts_json='[]',next_check_at=NULL WHERE article_key=? AND state='READY'",
                     (stamp, 'capability_resume' if row[1] in {'site_recovery_pending','domain_cooldown'} else 'recheck', row[0]),
                 )
         return len(rows)
@@ -1601,6 +1608,10 @@ class LiveRepository:
                 db.execute(
                     "UPDATE live_deliveries SET state='PUBLISHED',raw_id=?,standard_id=?,decision_digest=?,"
                     "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL,"
+                    "first_publish_kind=CASE WHEN consumable_at IS NULL THEN (SELECT CASE "
+                    "WHEN work_kind='content_update' THEN 'content_update' "
+                    "WHEN work_kind IN ('capability_resume','recheck') THEN 'capability_resume' ELSE 'realtime' END "
+                    "FROM live_articles WHERE article_key=live_deliveries.article_key) ELSE first_publish_kind END,"
                     "initial_decision=coalesce(initial_decision,'PUBLISHED'),initial_decision_at=coalesce(initial_decision_at,?), "
                     "regex_result=coalesce(?,regex_result) "
                     "WHERE article_key=? AND ticker=?",
@@ -1725,6 +1736,10 @@ class LiveRepository:
             db.execute(
                 "UPDATE live_deliveries SET state=?,raw_id=?,standard_id=?,decision_digest=?,"
                 "published_digest=?,consumable_at=coalesce(consumable_at,?),last_error=NULL,"
+                    "first_publish_kind=CASE WHEN consumable_at IS NULL THEN (SELECT CASE "
+                    "WHEN work_kind='content_update' THEN 'content_update' "
+                    "WHEN work_kind IN ('capability_resume','recheck') THEN 'capability_resume' ELSE 'realtime' END "
+                    "FROM live_articles WHERE article_key=live_deliveries.article_key) ELSE first_publish_kind END,"
                 "initial_decision=coalesce(initial_decision,?),initial_decision_at=coalesce(initial_decision_at,?), "
                 "regex_result=coalesce(?,regex_result) "
                 "WHERE article_key=? AND ticker=?",

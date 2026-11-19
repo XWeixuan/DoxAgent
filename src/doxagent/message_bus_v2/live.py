@@ -258,6 +258,7 @@ class LiveQueue:
             deadline_at=utc_now() + timedelta(seconds=max(0.001, budget - spent)),
             fetch_budget_seconds=budget,
             first_fetch_at=started,
+            ready_since=datetime.fromisoformat(row["ready_since"] or row["first_fetch_at"]),
             budget_started_at=started,
             claim_token=token,
             status="running",

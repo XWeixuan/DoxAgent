@@ -88,9 +88,20 @@ def state_bucket(status):
 
 
 def aggregate_metrics(facts, statuses, rounds, today, *, body_applicable=True):
-    times = sorted(r["e2e"] for r in facts if r["e2e"] is not None)
-    capture = [r["capture"] for r in facts if r["capture"] is not None]
-    # A BODY is shared; each Ticker's delivery latency is an independent observation.
+    # One article per source is the global business unit, regardless of ticker fanout.
+    unique = {}
+    for row in facts:
+        key = row["article_key"]
+        prior = unique.get(key)
+        if prior is None or (row.get("completed_at") and (not prior.get("completed_at") or row["completed_at"] < prior["completed_at"])):
+            unique[key] = row
+    facts = [{**r, "e2e":r.get("global_e2e",r["e2e"]),"capture":r.get("global_capture",r["capture"]),
+              "eligible":r["eligible"] and r.get("global_fresh", True)} for r in unique.values()]
+    from .article_samples import reduce_articles
+    detail = reduce_articles(facts)
+    times = sorted(detail["latencies"])
+    capture = detail["capture"]
+    # BODY and global latency both count the shared article once.
     bodies = {r["article_key"]: r for r in facts if r["eligible"]}
     total, full = len(bodies), sum(r["full"] for r in bodies.values())
     gaps = sum(r.get("samples", 0) for r in rounds)
@@ -114,7 +125,16 @@ def aggregate_metrics(facts, statuses, rounds, today, *, body_applicable=True):
         "body_full": full,
         "body_ratio": full / total if total else None,
         "body_applicable": body_applicable,
-        "article_samples": len(facts),
+        "article_samples": detail["article_samples"],
+        "window_hours": 24,
+        "first_body_samples":len(detail["first_body_seconds"]),
+        "mean_first_body_seconds":sum(detail["first_body_seconds"])/len(detail["first_body_seconds"]) if detail["first_body_seconds"] else None,
+        "last_historical":detail["last_historical"],
+        "last_historical_body":detail["last_historical_body"],
+        "last_historical_first_body":detail["last_historical_first_body"],
+        "publication_classes":{k:{"samples":len(v),"mean_seconds":sum(v)/len(v) if v else None} for k,v in detail["publication_classes"].items()},
+        "poll_expected":sum(r.get("expected",0) for r in rounds),
+        "poll_succeeded":sum(r.get("succeeded",0) for r in rounds),
     }
 
 
@@ -208,7 +228,15 @@ def catalog_data(store, calendar, now=None, *, journal=None):
                     json.loads(conf[0]).get("at") if conf else None,
                 )
             )
-            rounds = recent_rounds_many(acq, bindings, now, units=units, db=db)
+            round_bindings, shared = [], set()
+            for binding in sorted(bindings, key=lambda b:not (b["enabled"] and b["polling"]["enabled"])):
+                sid = binding["source_id"]
+                if definitions.get(sid,{}).get("acquisition_mode") in {"by_distribution","massive_distribution"}:
+                    if sid in shared:
+                        continue
+                    shared.add(sid)
+                round_bindings.append(binding)
+            rounds = recent_rounds_many(acq, round_bindings, now, units=units, db=db)
     by_source = defaultdict(list)
     for binding in bindings:
         by_source[binding["source_id"]].append(binding)
@@ -246,6 +274,7 @@ def catalog_data(store, calendar, now=None, *, journal=None):
             else None
         )
         source_facts = [r for b in subscribed for r in facts[(b["ticker"], sid)]]
+        metric_subscriptions = [b for b in subscribed if b["binding_id"] in rounds] if source.get("acquisition_mode") in {"by_distribution","massive_distribution"} else subscribed
         default_interval = source.get("default_polling_config", {}).get("target_interval_seconds")
         result.append(
             {
@@ -282,7 +311,7 @@ def catalog_data(store, calendar, now=None, *, journal=None):
                 "metrics": aggregate_metrics(
                     source_facts,
                     statuses,
-                    [rounds.get(b["binding_id"], {}) for b in subscribed],
+                    [rounds.get(b["binding_id"], {}) for b in metric_subscriptions],
                     today.get(sid, 0) if today is not None else None,
                     body_applicable=source.get("content_enrichment_mode") != "skip",
                 ),

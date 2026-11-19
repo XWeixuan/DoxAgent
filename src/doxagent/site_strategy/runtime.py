@@ -1374,7 +1374,11 @@ class SiteAccessRuntime:
                 for k in request.recipe_parameters
             )
         )
-        anchor = await self.fetch_anchors.take(identity, egress) if anchor_eligible else None
+        body_anchor = (request.purpose is SitePurpose.BODY
+                       and resolved.site_id in {"barrons", "investorshub", "newsfile"}
+                       and not any(k.startswith(("_maintenance", "_recovery")) for k in request.recipe_parameters))
+        anchor_eligible = anchor_eligible or body_anchor
+        anchor = await self.fetch_anchors.take(identity, egress, purpose=request.purpose.value, site_id=resolved.site_id, strategy_revision=resolved.strategy_revision) if anchor_eligible else None
         listing_key = (identity.identity_id, identity.revision, egress.egress_id, request.url)
         lease = anchor.lease if anchor else await self.browser_runtimes.page(identity, egress, deadline=deadline)
         _BROWSER_TIMINGS.get()["page_acquire_ms"] = int((time.monotonic()-lease_started)*1000)
@@ -1729,7 +1733,7 @@ class SiteAccessRuntime:
                             anchor.created_at if anchor else time.monotonic()),freeze=False,limit=1)
                     return result
                 navigation_started = time.monotonic()
-                response = response if anchor else await page.goto(
+                response = response if anchor and request.purpose is SitePurpose.CRAWLER else await page.goto(
                     request.url,
                     # These ad-heavy publishers can keep DOMContentLoaded pending
                     # after the actual news document has arrived. Wait for the
@@ -1964,7 +1968,7 @@ class SiteAccessRuntime:
                     response = observed_response
                     status = response.status
                     headers = await response.all_headers()
-                html = native_document[0] if native_document else await page.content()
+                capture_started = time.monotonic()
                 if (
                     resolved.site_id == "barrons"
                     and request.purpose in {SitePurpose.BODY, SitePurpose.PROBE}
@@ -1974,6 +1978,9 @@ class SiteAccessRuntime:
                 ):
                     from .barrons_document import capture_document
                     html = await capture_document(page, timeout=max(.001,min(12,deadline-time.monotonic())))
+                else:
+                    html = native_document[0] if native_document else await page.content()
+                command_timings["body_capture_ms"] = int((time.monotonic()-capture_started)*1000)
                 if len(html.encode("utf-8")) > request.max_response_bytes:
                     return RuntimeResponse(
                         0,
@@ -2047,6 +2054,15 @@ class SiteAccessRuntime:
                                 anchor.created_at if anchor else time.monotonic(),
                             ),
                         )
+                if body_anchor and not retained and status == 200 and not challenge:
+                    normal = inspect_html(html, page.url, "", strategy_ref=resolved.body.ref,
+                                          strategy_parameters=dict(resolved.body.parameters), generic_extraction=False)
+                    if normal.page_kind == "article" and not normal.access_reason:
+                        from .fetch_anchors import FetchAnchor
+                        keep_anchor = self.fetch_anchors.put(identity,
+                            FetchAnchor(lease, page, gate, response, identity.revision,
+                                        egress.egress_id, time.monotonic(), purpose="BODY"),
+                            freeze=True, limit=1)
                 return RuntimeResponse(
                     int(status),
                     native_document[1] if native_document else page.url,
@@ -2165,10 +2181,13 @@ class SiteAccessRuntime:
                 page.remove_listener('requestfinished',observe_finished)
             if hasattr(page,"remove_listener"):
                 page.remove_listener("response", observe_response)
+            release_started = time.monotonic()
             if not retained and not keep_anchor and not getattr(page, "_doxagent_handoff_pending", False):
                 await lease.__aexit__(None, None, None)
                 if not hasattr(lease, "on_closed"):
                     await gate.close()
+            command_timings["page_release_ms"] = int((time.monotonic()-release_started)*1000)
+            command_timings["body_page_retained"] = int(bool(body_anchor and keep_anchor))
 
     async def _wait_automatic_document(self, lease, page, gate, resolved, html, deadline):
         from .challenge_detection import assess

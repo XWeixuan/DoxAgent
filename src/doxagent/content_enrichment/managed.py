@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 from doxagent.content_enrichment.transport import (
     DEADLINE,
+    BODY_DEMAND,
     WORK_AGE,
     WORK_CLASS,
     Observation,
@@ -63,7 +64,7 @@ class SiteAccessTransport:
                 work_age_seconds=WORK_AGE.get(),
                 url=request_url,
                 method=method,
-                parameters={"publisher_url":publisher_url} if publisher_url else {},
+                parameters={"_body_demand": BODY_DEMAND.get(), **({"publisher_url":publisher_url} if publisher_url else {})},
                 mode=AccessMode.HTTP_PUBLIC,
                 remaining_budget_ms=max(1, int(remaining(180) * 1000)),
                 allowed_headers=(
@@ -130,6 +131,7 @@ class SiteAccessBrowserReader:
                 work_age_seconds=WORK_AGE.get(),
                 url=url,
                 mode=AccessMode(mode),
+                parameters={"_body_demand": BODY_DEMAND.get()},
                 recipe_parameters={"expand": expand, **(parameters or {})},
                 remaining_budget_ms=max(1, int(remaining(180) * 1000)),
             )

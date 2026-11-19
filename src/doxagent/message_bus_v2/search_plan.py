@@ -28,7 +28,7 @@ def build_query_plan(
 ) -> QueryPlan:
     language = source.content_language or "en"
     concepts = (
-        terms.l1_concepts[:1] if source.source_id == GOOGLE_NEWS_SOURCE_ID else terms.l1_concepts
+        terms.l1_concepts[:1] if source.source_id in {GOOGLE_NEWS_SOURCE_ID, "reuters_site_search"} else terms.l1_concepts
     )
     if any(language not in item.expressions for item in concepts):
         raise ValueError(f"CONFIG_INCOMPLETE: missing L1 language {language}")
@@ -46,7 +46,7 @@ def build_query_plan(
             queries=[SearchQuery(concept_ids=ids, query=query, query_key=key)],
         )
     policy = source.search_policy or SearchPolicy()
-    rendered = [(item.concept_id, _quote(item.expressions[language])) for item in terms.l1_concepts]
+    rendered = [(item.concept_id, _quote(item.expressions[language])) for item in concepts]
     groups = [rendered] if policy.mode == "or" else [[item] for item in rendered]
     queries = []
     for group in groups:

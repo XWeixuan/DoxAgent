@@ -22,7 +22,10 @@ def install(settings):
     migrate_http_capacity(repo)
     SourceOutbox(repo.path, "bus").migrate()
     store.meta("schema", {"version": 2, "installed_at": utc_now().isoformat()})
-    return {"schema": 2, "path": str(store.path)}
+    from ..metric_migration import migrate as metric_upgrade
+    import os
+    metrics = metric_upgrade(repo.path, os.environ.get("DOXAGENT_V2_READ_SQLITE_PATH", str(repo.path.parent.parent/"read"/"active.json")))
+    return {"schema": 2, "path": str(store.path), **metrics}
 
 
 def migrate_http_capacity(repo):

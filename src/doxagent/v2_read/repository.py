@@ -58,9 +58,11 @@ class ReadStore:
 
     def migrate_article_sample_index(self):
         """Explicit maintenance only; never called on API startup or GET."""
-        from doxagent.api_v2.article_samples import INDEX_SQL, SOURCE_INDEX_SQL
+        from doxagent.api_v2.article_samples import INDEX_SQL, SOURCE_INDEX_SQL, METRIC_INDEXES
         with self.connect(write=True) as db:
             db.execute(INDEX_SQL);db.execute(SOURCE_INDEX_SQL)
+            for statement in METRIC_INDEXES:
+                db.execute(statement)
 
     def migrate_projection_indexes(self):
         """Explicit worker release migration, never DDL inside an HTTP read."""
@@ -361,8 +363,10 @@ class ReadStore:
                 db.execute("INSERT INTO read_meta VALUES('event_sort_v1','1')")
             db.execute("INSERT OR IGNORE INTO object_current SELECT * FROM objects WHERE valid_to IS NULL")
             if not existing:
-                from doxagent.api_v2.article_samples import INDEX_SQL, SOURCE_INDEX_SQL
+                from doxagent.api_v2.article_samples import INDEX_SQL, SOURCE_INDEX_SQL, METRIC_INDEXES
                 db.execute(INDEX_SQL);db.execute(SOURCE_INDEX_SQL)
+                for statement in METRIC_INDEXES:
+                    db.execute(statement)
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('highwater',?)", (str(db.execute("SELECT coalesce(max(seq),0) FROM commits").fetchone()[0]),))
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('retained_floor','0')")
             db.execute("INSERT OR IGNORE INTO read_meta VALUES('first_at',?)", (db.execute("SELECT coalesce(min(at),'') FROM commits").fetchone()[0],))

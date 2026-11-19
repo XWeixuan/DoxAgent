@@ -18,6 +18,7 @@ class FetchAnchor:
     revision: int
     egress_id: str
     created_at: float
+    purpose: str = "CRAWLER"
     expiry: asyncio.Task | None = None
     lifecycle_task: asyncio.Task | None = None
     frozen: bool = False
@@ -30,11 +31,14 @@ class FetchAnchors:
         self.idle_seconds = idle_seconds
         self.idle = {}
 
-    async def take(self, identity, egress):
+    async def take(self, identity, egress, *, purpose="CRAWLER", site_id=None, strategy_revision=None):
         bucket = self.idle.get(identity.identity_id, [])
         if not bucket:
             return None
-        anchor = bucket.pop()
+        anchor = next((a for a in reversed(bucket) if a.purpose == purpose and (site_id is None or getattr(getattr(a.gate,"resolved",None),"site_id",None)==site_id)), None)
+        if anchor is None:
+            return None
+        bucket.remove(anchor)
         if not bucket:
             self.idle.pop(identity.identity_id, None)
         try:
@@ -43,7 +47,8 @@ class FetchAnchors:
                 await anchor.lifecycle_task
             if anchor.closed:return None
             if (
-                anchor.revision != identity.revision
+                (strategy_revision is not None and getattr(getattr(anchor.gate,"resolved",None),"strategy_revision",None)!=strategy_revision)
+                or anchor.revision != identity.revision
                 or anchor.egress_id != egress.egress_id
                 or anchor.page.is_closed()
                 or anchor.gate.blocked
@@ -92,7 +97,7 @@ class FetchAnchors:
             freeze = False
         bucket = self.idle.setdefault(identity.identity_id, [])
         limit = limit or identity.access.max_concurrency
-        if len(bucket) >= limit:
+        if sum(a.purpose == anchor.purpose for a in bucket) >= limit:
             return False
         bucket.append(anchor)
         if freeze:
@@ -105,7 +110,7 @@ class FetchAnchors:
         return True
 
     async def _expire(self, key, anchor):
-        await asyncio.sleep(getattr(anchor.page, "_doxagent_idle_seconds", self.idle_seconds))
+        await asyncio.sleep(60 if anchor.purpose == "BODY" else getattr(anchor.page, "_doxagent_idle_seconds", self.idle_seconds))
         bucket = self.idle.get(key, [])
         if anchor in bucket:
             bucket.remove(anchor)
