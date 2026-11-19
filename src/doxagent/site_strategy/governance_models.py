@@ -15,6 +15,21 @@ def dual_active_crawler(scope, purpose):
                 and scope.verification_plan.get("crawler_routing") == "dual_active")
 
 
+def parallel_source_runtime(scope, purpose):
+    """Reuters pool is opt-in per purpose; legacy dual-active remains crawler-only."""
+    return bool(dual_active_crawler(scope, purpose) or (
+        scope and scope.owner_site_id == "reuters" and scope.source_id == "reuters_site_search"
+        and str(purpose) in {"CRAWLER", "BODY"}
+        and scope.verification_plan.get(str(purpose).lower() + "_routing") == "active_pool"))
+
+
+def scope_identity_ids(scope):
+    if not scope:
+        return []
+    return [member for member in [scope.primary_identity_id, scope.fallback_identity_id,
+        *scope.verification_plan.get("additional_active_identity_ids", [])] if member]
+
+
 class SourceAccessScope(SiteModel):
     scope_id: str = Field(pattern=r"^(source|publisher):[a-z0-9_.:-]+$")
     source_id: str | None = None
@@ -31,6 +46,21 @@ class SourceAccessScope(SiteModel):
             raise ValueError("primary and fallback must be independent identities")
         if self.source_id and self.scope_id != f"source:{self.source_id}":
             raise ValueError("source scope must match its source_id")
+        extra = self.verification_plan.get("additional_active_identity_ids", [])
+        if (not isinstance(extra, list) or len(extra) > 1
+                or any(not isinstance(member, str) or not member for member in extra)):
+            raise ValueError("at most one additional active identity is supported")
+        if extra and not (self.owner_site_id == "reuters" and self.source_id == "reuters_site_search"
+                          and self.verification_plan.get("crawler_routing") == "active_pool"):
+            raise ValueError("additional identity requires Reuters active pool")
+        if len(scope_identity_ids(self)) != len(set(scope_identity_ids(self))):
+            raise ValueError("scope members must be distinct")
+        cap = self.verification_plan.get("max_parallel_concurrency")
+        if cap is not None and (type(cap) is not int or not 1 <= cap <= 4):
+            raise ValueError("parallel concurrency must be between one and four")
+        interval = self.verification_plan.get("min_parallel_interval_ms")
+        if interval is not None and (type(interval) is not int or interval < 0):
+            raise ValueError("parallel interval must be a non-negative integer")
         return self
 
 

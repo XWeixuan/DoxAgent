@@ -5,6 +5,7 @@ from contextlib import suppress
 from datetime import timedelta
 from uuid import uuid4
 
+from .governance_models import scope_identity_ids
 from .governance_models import (
     ChallengeTask,
     MaintenanceCommand,
@@ -135,7 +136,7 @@ class MaintenanceController:
             (
                 scope.scope_id,
                 scope.owner_site_id,
-                [scope.primary_identity_id, scope.fallback_identity_id],
+                scope_identity_ids(scope),
                 scope.enabled,
             )
             for scope in scopes
@@ -448,10 +449,7 @@ class MaintenanceController:
                     "task_id": session.task_id,
                     "site_id": session.site_id,
                 }
-            if not scope or identity_id not in (
-                scope.primary_identity_id,
-                scope.fallback_identity_id,
-            ):
+            if not scope or identity_id not in scope_identity_ids(scope):
                 raise ValueError("Select a registered source identity")
             session = self.store.save_session(
                 MaintenanceSession(
@@ -605,7 +603,7 @@ class MaintenanceController:
                 required = spec.auth.requirement
             if (
                 session.kind == "LOGIN"
-                and session.identity_id == scope.fallback_identity_id
+                and session.identity_id != scope.primary_identity_id
                 and required == "required"
                 and report.authentication == "VALID"
                 and report.body in {"FULL", "SHORT_FULL"}

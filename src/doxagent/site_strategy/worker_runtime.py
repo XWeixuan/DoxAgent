@@ -7,6 +7,7 @@ from contextvars import ContextVar
 from pathlib import Path
 from uuid import uuid4
 
+from .governance_models import scope_identity_ids, parallel_source_runtime
 from .browser_operations import decode_response
 from .browser_runtime import RuntimeProvenance
 from .budget import BROWSER_ADMITTED
@@ -70,7 +71,7 @@ class WorkerRuntimeFacade:
         scopes = await registry_io(store.list_scopes)
         identities = dict((spec.identity_id,spec) for _,spec in (await registry_io(self.runtime.repository.list_active_identities)))
         reuters_ids = {member for scope in scopes if scope.owner_site_id=='reuters'
-                       for member in (scope.primary_identity_id,scope.fallback_identity_id) if member}
+                       for member in scope_identity_ids(scope)}
         for scope in scopes:
             route = await registry_io(self.runtime.repository.get_runtime, f"scope:{scope.scope_id}") if scope.fallback_identity_id else None
             selected = (route.active_combination_id if route else None) or scope.primary_identity_id
@@ -81,7 +82,7 @@ class WorkerRuntimeFacade:
                 and scope.source_id
                 and primary and primary.lifecycle.residency.value == "always_on"
             ):
-                hot.add(selected)
+                hot.update(scope_identity_ids(scope) if parallel_source_runtime(scope, "CRAWLER") else [selected])
         now = time.monotonic()
         for identity_id, status in list(self.runtime.workers.status().items()):
             identity = await registry_io(self.runtime.repository.get_identity, identity_id)

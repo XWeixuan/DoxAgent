@@ -9,6 +9,7 @@ import json
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit, urlunsplit
 
+from .governance_models import scope_identity_ids
 from .governance_models import (
     BrowserRecovery,
     ChallengeTask,
@@ -186,9 +187,7 @@ class GovernanceRepository:
         return row[0] if row else None
 
     def apply_scope(self, scope: SourceAccessScope, expected_revision: int | None):
-        members = [scope.primary_identity_id]
-        if scope.fallback_identity_id:
-            members.append(scope.fallback_identity_id)
+        members = scope_identity_ids(scope)
         with self.repository.transaction() as connection:
             row = connection.execute(
                 "select revision from source_access_scopes where scope_id=?", (scope.scope_id,)
@@ -198,7 +197,7 @@ class GovernanceRepository:
                 raise RuntimeError("source scope revision conflict")
             previous_scope = self.get_scope(scope.scope_id)
             previous_members = (
-                {previous_scope.primary_identity_id, previous_scope.fallback_identity_id}
+                set(scope_identity_ids(previous_scope))
                 if previous_scope
                 else set()
             )
@@ -230,18 +229,18 @@ class GovernanceRepository:
             for identity in identities:
                 if identity.owner_scope_id not in (None, scope.scope_id):
                     raise ValueError("identity belongs to another scope")
-                from .governance_models import dual_active_crawler
+                from .governance_models import parallel_source_runtime
 
                 if (
                     identity.runtime_kind,
                     identity.browser_release,
                     identity.environment,
-                    None if independent_capacity or dual_active_crawler(scope, "CRAWLER") else identity.access,
+                    None if independent_capacity or parallel_source_runtime(scope, "CRAWLER") else identity.access,
                 ) != (
                     primary.runtime_kind,
                     primary.browser_release,
                     primary.environment,
-                    None if independent_capacity or dual_active_crawler(scope, "CRAWLER") else primary.access,
+                    None if independent_capacity or parallel_source_runtime(scope, "CRAWLER") else primary.access,
                 ):
                     raise ValueError("fallback must use the same runtime and environment")
                 egress = self.repository.get_egress(identity.egress_id)
@@ -264,7 +263,9 @@ class GovernanceRepository:
                 def contract(spec):
                     value = spec.model_dump(exclude={"revision"})
                     value['verification_plan'] = {k: v for k, v in value['verification_plan'].items()
-                        if k not in {'crawler_routing', '_routing_capability_revision'}}
+                        if k not in {'crawler_routing', 'body_routing', 'additional_active_identity_ids',
+                                     'max_parallel_concurrency', 'min_parallel_interval_ms',
+                                     '_routing_capability_revision'}}
                     return value
 
                 plan = dict(stored.verification_plan)
@@ -380,7 +381,7 @@ class GovernanceRepository:
                     (
                         s
                         for s in self.list_scopes()
-                        if target.identity_id in (s.primary_identity_id, s.fallback_identity_id)
+                        if target.identity_id in scope_identity_ids(s)
                     ),
                     None,
                 )
@@ -1293,10 +1294,7 @@ class GovernanceRepository:
             if not identity:
                 raise ValueError("unknown recovery identity")
             scope = self.maintenance_scope(value.scope_id)
-            if not scope or value.identity_id not in {
-                scope.primary_identity_id,
-                scope.fallback_identity_id,
-            }:
+            if not scope or value.identity_id not in scope_identity_ids(scope):
                 raise ValueError("recovery identity is outside scope")
             previous = self.get_recovery(value.identity_id)
             self._record_capability_relapse(connection,value)

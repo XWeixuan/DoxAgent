@@ -13,6 +13,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .governance_models import scope_identity_ids
 from .browser_operations import MAX_FRAME_BYTES
 from .operation_gate import OperationGate
 from .schema import BrowserRuntimeKind, IdentityOperationalState, SiteStrategySpec, digest_json
@@ -84,7 +85,7 @@ class IdentityWorkerManager:
             (
                 scope
                 for scope in self.owner.store.list_scopes()
-                if identity.identity_id in (scope.primary_identity_id, scope.fallback_identity_id)
+                if identity.identity_id in scope_identity_ids(scope)
             ),
             None,
         )

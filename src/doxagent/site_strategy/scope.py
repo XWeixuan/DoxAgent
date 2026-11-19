@@ -6,6 +6,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import wraps
 
+from .governance_models import scope_identity_ids
 from .governance_models import SourceAccessScope
 from .governance_repository import GovernanceRepository
 from .schema import AccessCombination, BrowserProfile, BrowserResidency
@@ -85,7 +86,7 @@ class ScopeResolver:
                 if not scopes:
                     return resolved
                 scope = self._provision_publisher(resolved, self.publisher_key(resolved))
-        members = [scope.primary_identity_id, scope.fallback_identity_id]
+        members = scope_identity_ids(scope)
         combinations = [
             AccessCombination(id=identity, identity_id=identity, priority=index)
             for index, identity in enumerate(members)
@@ -127,7 +128,7 @@ class ScopeResolver:
         claimed = {
             member
             for scope in self.governance.list_scopes()
-            for member in (scope.primary_identity_id, scope.fallback_identity_id)
+            for member in scope_identity_ids(scope)
             if member
         }
         references = {

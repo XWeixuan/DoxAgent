@@ -292,10 +292,12 @@ def create_app(
             if service.repository.get_strategy(scope.owner_site_id) is None:
                 raise ValueError("unknown owner site")
             previous = maintenance.store.get_scope(scope.scope_id)
+            from .governance_models import scope_identity_ids
             if (
                 previous
-                and (previous.primary_identity_id, previous.fallback_identity_id)
-                != (scope.primary_identity_id, scope.fallback_identity_id)
+                and ((previous.primary_identity_id, previous.fallback_identity_id)
+                     != (scope.primary_identity_id, scope.fallback_identity_id)
+                     or set(scope_identity_ids(previous)) - set(scope_identity_ids(scope)))
                 and service._scope_inflight.get(f"scope:{scope.scope_id}", 0)
             ):
                 raise ValueError(

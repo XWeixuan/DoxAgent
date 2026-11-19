@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .governance_models import scope_identity_ids, parallel_source_runtime
 from .storage import registry_io
 import hashlib
 import inspect
@@ -822,7 +823,8 @@ class SiteStrategyService:
                 and primary.lifecycle.residency is BrowserResidency.ALWAYS_ON
             ):
                 route = (await registry_io(self.repository.get_runtime, f"scope:{scope.scope_id}"))
-                hot.add(route.active_combination_id or scope.primary_identity_id)
+                hot.update(scope_identity_ids(scope) if parallel_source_runtime(scope, "CRAWLER")
+                           else [route.active_combination_id or scope.primary_identity_id])
         candidates = []
         if scopes:
             for identity_id in hot:
@@ -1234,11 +1236,7 @@ class SiteStrategyService:
             (
                 scope
                 for scope in scopes
-                if identity_id
-                in {
-                    scope.primary_identity_id,
-                    scope.fallback_identity_id,
-                }
+                if identity_id in scope_identity_ids(scope)
             ),
             None,
         )
@@ -1908,34 +1906,37 @@ class SiteStrategyService:
                 and request.purpose in {SitePurpose.CRAWLER, SitePurpose.BODY}
                 and request.mode is not AccessMode.HTTP_PUBLIC
                 and not any(k.startswith(("_maintenance", "_recovery")) for k in request.recipe_parameters)):
-            from .governance_models import dual_active_crawler
             from .governance_repository import GovernanceRepository
 
             scope = await registry_io(GovernanceRepository(self.repository).get_scope,
                                       resolved.match_evidence.get("scope_id", ""))
-            if dual_active_crawler(scope, SitePurpose.CRAWLER):
-                combinations = await registry_io(self._purpose_combinations, resolved, SitePurpose.CRAWLER)
+            if parallel_source_runtime(scope, SitePurpose.CRAWLER):
+                routing_purpose = (request.purpose if parallel_source_runtime(scope, request.purpose)
+                                   else SitePurpose.CRAWLER)
+                combinations = await registry_io(self._purpose_combinations, resolved, routing_purpose)
                 _, choices, _ = await self.health.candidates(resolved.runtime_key, combinations,
-                    excluded=set(request.excluded_combinations), transport=request.mode, purpose=SitePurpose.CRAWLER)
+                    excluded=set(request.excluded_combinations), transport=request.mode, purpose=routing_purpose)
                 members = []
                 for choice in choices:
                     identity_id = choice.identity_id or choice.combination_id
-                    status = await registry_io(self.failover.candidate_status, scope, identity_id, SitePurpose.CRAWLER)
+                    status = await registry_io(self.failover.candidate_status, scope, identity_id, routing_purpose)
                     if not status["selectable"]:
                         self.budgets.joint.forget_identity(identity_id)
-                        if status.get("eligible") and request.purpose is SitePurpose.CRAWLER:
-                            await self.failover.schedule_async(scope, SitePurpose.CRAWLER, candidate_id=identity_id)
+                        if status.get("eligible"):
+                            await self.failover.schedule_async(scope, routing_purpose, candidate_id=identity_id)
                         continue
                     identity = await registry_io(self.repository.get_identity, identity_id)
                     members.append((identity_id, identity.access.max_concurrency, identity.access.min_interval_ms))
                 if members:
                     resolved = resolved.model_copy(update={"access": resolved.access.model_copy(update={
-                        "max_concurrency": max(resolved.access.max_concurrency,
+                        "max_concurrency": min(scope.verification_plan.get("max_parallel_concurrency", 4),
+                            max(resolved.access.max_concurrency,
                             sum(limit for _, limit, _ in members)) if len(members) > 1
-                            else resolved.access.max_concurrency,
-                        "min_interval_ms": self.budgets.joint.combined_interval_ms(
-                            resolved.access.min_interval_ms, members)})})
-                    if request.purpose is SitePurpose.BODY:
+                            else min(resolved.access.max_concurrency, members[0][1])),
+                        "min_interval_ms": max(scope.verification_plan.get("min_parallel_interval_ms", 0),
+                            self.budgets.joint.combined_interval_ms(
+                                resolved.access.min_interval_ms, members))})})
+                    if request.purpose is SitePurpose.BODY and not parallel_source_runtime(scope, request.purpose):
                         # Same aggregate clock/slots, existing BODY route and auth
                         # eligibility. A legacy site cap must not strand BODY
                         # behind two concurrent crawler pages in a three-slot pool.
@@ -1945,6 +1946,7 @@ class SiteStrategyService:
                                                                        preferred_identity=selected)
                         return result.model_copy(update={"stage_timings": {**result.stage_timings,
                             "routing_balanced": 1, "routing_members": len(members),
+                            "routing_member_index": scope_identity_ids(scope).index(selected),
                             "routing_selected_member": int(selected == scope.fallback_identity_id)}})
         return await self._execute_uncached_selected(request, resolved=resolved)
 
@@ -1990,9 +1992,7 @@ class SiteStrategyService:
                 resolved.match_evidence["scope_id"]
             ))
             if scope and request.mode is not AccessMode.HTTP_PUBLIC:
-                from .governance_models import dual_active_crawler
-
-                balanced = dual_active_crawler(scope, request.purpose)
+                balanced = parallel_source_runtime(scope, request.purpose)
                 selected = []
                 for candidate in candidates:
                     status = await registry_io(self.failover.candidate_status,
@@ -2007,7 +2007,7 @@ class SiteStrategyService:
                     candidates.sort(key=lambda c: (c.identity_id or c.combination_id) != preferred_identity)
         if not candidates:
             if scope and request.mode is not AccessMode.HTTP_PUBLIC:
-                for candidate in (scope.primary_identity_id, scope.fallback_identity_id):
+                for candidate in scope_identity_ids(scope):
                     if candidate and candidate not in request.excluded_combinations:
                         status = (await registry_io(self.failover.candidate_status, scope, candidate, request.purpose))
                         if status.get("eligible") and not status["selectable"]:
@@ -2085,8 +2085,8 @@ class SiteStrategyService:
             remaining = request.remaining_budget_ms / 1000 - (time.monotonic() - started)
             if (
                 scope
-                and combination.identity_id == scope.fallback_identity_id
-                and route.active_combination_id != scope.fallback_identity_id
+                and combination.identity_id != scope.primary_identity_id
+                and route.active_combination_id != combination.identity_id
                 and not balanced
                 and remaining < 5
             ):
@@ -2119,9 +2119,9 @@ class SiteStrategyService:
             egress = (await registry_io(self.repository.get_egress, combination.egress_id))
             if (
                 scope
-                and combination.identity_id == scope.fallback_identity_id
+                and combination.identity_id != scope.primary_identity_id
                 and egress
-                and route.active_combination_id != scope.fallback_identity_id
+                and route.active_combination_id != combination.identity_id
                 and not balanced
             ):
                 primary = (await registry_io(self.repository.get_identity, scope.primary_identity_id))
@@ -2165,8 +2165,8 @@ class SiteStrategyService:
                 continue
             if (
                 scope
-                and combination.identity_id == scope.fallback_identity_id
-                and route.active_combination_id != scope.fallback_identity_id
+                and combination.identity_id != scope.primary_identity_id
+                and route.active_combination_id != combination.identity_id
                 and request.mode is not AccessMode.HTTP_PUBLIC
                 and not (await registry_io(self.failover.usable, scope, combination.identity_id, request.purpose))
             ):
@@ -3043,7 +3043,7 @@ class SiteStrategyService:
                 if any(
                     (identity := self.repository.get_identity(member))
                     and identity.profile_id == profile_id
-                    for member in (scope.primary_identity_id, scope.fallback_identity_id)
+                    for member in scope_identity_ids(scope)
                     if member
                 )
             ),
@@ -3331,7 +3331,7 @@ class SiteStrategyService:
                 (
                     s
                     for s in GovernanceRepository(self.repository).list_scopes()
-                    if identity_id in (s.primary_identity_id, s.fallback_identity_id)
+                    if identity_id in scope_identity_ids(s)
                 ),
                 None,
             )

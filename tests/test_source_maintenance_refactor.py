@@ -256,6 +256,7 @@ async def test_maintenance_inspection_waits_for_navigation_without_reload(seeded
 
     class Page:
         calls = 0
+        url = "https://www.reuters.com/site-search/?query=Micron"
 
         async def content(self):
             self.calls += 1
