@@ -199,7 +199,7 @@ def test_native_loop_retry_refreshes_and_operations_exclude_history(native):
     assert native.requests[1]["input"][: len(first)] == first
 
     native.actions.extend(["retry", "final"])
-    enable(native, 180, "case-retry")
+    enable(native, 150, "case-retry")
     assert native.thread.run("Trade Decision retry").final_response == "Synthetic result."
     retry = native.requests[-2:]
     assert [len(reminders(body)) for body in retry] == [1, 2]
@@ -234,8 +234,10 @@ def test_native_code_mode_companion_executes_before_research(native):
 def test_native_stages_fork_resume_and_compaction_are_scoped(native):
     for seconds, text in [
         (0, None),
-        (120, "任务耗时较长"),
-        (180, "后续几轮"),
+        (99, None),
+        (100, "任务耗时较长"),
+        (149, "任务耗时较长"),
+        (150, "后续几轮"),
         (240, "停止新增调查"),
     ]:
         enable(native, seconds, f"case-{seconds}")
@@ -244,7 +246,7 @@ def test_native_stages_fork_resume_and_compaction_are_scoped(native):
         assert len(current) == 1
         elapsed = int(re.search(r"Elapsed: (\d+)s", current[0])[1])
         assert seconds <= elapsed < seconds + 10
-        assert ("任务耗时" in current[0]) is (seconds in (120, 180))
+        assert ("任务耗时" in current[0]) is (seconds in (100, 149, 150))
         if text:
             assert text in current[0]
 
@@ -256,7 +258,6 @@ def test_native_stages_fork_resume_and_compaction_are_scoped(native):
     native.control.write_text('{"enabled":false}')
     native.thread.run("Post-Decision Operations after resume")
     assert reminders(native.requests[-1]) == []
-
     count = len(native.requests)
     native.thread.compact()
     deadline = time.monotonic() + 20
@@ -274,3 +275,23 @@ def test_native_stages_fork_resume_and_compaction_are_scoped(native):
     native.control.write_text('{"enabled":false}')
     native.thread.run("Post-Decision Operations after compaction")
     assert reminders(native.requests[-1]) == []
+
+
+def test_native_bad_control_does_not_block_and_next_turn_recovers(native):
+    for failure in ('missing', 'malformed', 'wrong_thread'):
+        if failure == 'missing':
+            native.control.unlink(missing_ok=True)
+        elif failure == 'malformed':
+            native.control.write_text('partial JSON')
+        else:
+            enable(native, 240)
+            value = json.loads(native.control.read_text())
+            value['thread_id'] = 'other-thread'
+            native.control.write_text(json.dumps(value))
+        result = native.thread.run('Trade Decision with degraded time control')
+        assert result.final_response == 'Synthetic result.'
+        assert reminders(native.requests[-1]) == []
+    enable(native, 240, 'recovered-case')
+    assert native.thread.run('Next Trade Decision').final_response == 'Synthetic result.'
+    assert len(reminders(native.requests[-1])) == 1
+    assert '停止新增调查' in reminders(native.requests[-1])[0]

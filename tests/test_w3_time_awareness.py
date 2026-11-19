@@ -1,5 +1,9 @@
 import hashlib
 import json
+import sqlite3
+import threading
+import time
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from types import SimpleNamespace
 
@@ -24,13 +28,16 @@ from tests.test_w3_v4 import PhaseAgent
 from tests.test_w3_v5_execution import setup_case
 
 
-def test_origin_uses_real_time_survives_reopen_and_separates_cases(tmp_path):
+def test_origin_reuses_durable_value_and_memory_fallback_without_writes(tmp_path):
     historical = datetime(2000, 1, 1, tzinfo=UTC)
     path = tmp_path / "runtime.db"
     journal = RuntimeJournal(path, clock=lambda: historical)
     before = datetime.now(UTC)
     first = time_context(journal, "case-1", start=True)
     assert before <= first.started_at_utc <= datetime.now(UTC)
+    assert journal.get('w3_time_awareness', 'case-1') is None
+    # Durability belongs to the existing business transaction, not this helper.
+    journal.set('w3_time_awareness', 'case-1', first.model_dump(mode='json'))
     reopened = RuntimeJournal(path, clock=lambda: historical)
     assert time_context(reopened, "case-1", start=True) == first
     other = time_context(reopened, "case-2", start=True)
@@ -38,13 +45,40 @@ def test_origin_uses_real_time_survives_reopen_and_separates_cases(tmp_path):
     assert other.started_at_utc >= first.started_at_utc
 
 
-def test_optional_origin_does_not_wait_for_database_writer_or_start_late(tmp_path):
+@pytest.mark.parametrize('layer', ['gate', 'sqlite'])
+def test_origin_does_not_wait_for_writers_and_keeps_first_memory_value(tmp_path, layer):
     journal = RuntimeJournal(tmp_path / "runtime.db")
-    with journal.transaction() as db:
-        db.execute("INSERT INTO runtime_values VALUES('test','lock','{}')")
-        assert time_context(journal, "blocked", start=True) is None
-    # Dispatch only reads the origin; it must not silently start a later clock.
-    assert time_context(journal, "blocked") is None
+    ready, release = threading.Event(), threading.Event()
+
+    def hold():
+        if layer == 'gate':
+            with journal.transaction():
+                ready.set()
+                release.wait(5)
+        else:
+            db = sqlite3.connect(journal.path)
+            try:
+                db.execute('BEGIN IMMEDIATE')
+                ready.set()
+                release.wait(5)
+            finally:
+                db.close()
+
+    holder = threading.Thread(target=hold)
+    holder.start()
+    assert ready.wait(5)
+    try:
+        started = time.perf_counter()
+        origin = time_context(journal, 'blocked', start=True)
+        assert origin is not None
+        assert time.perf_counter() - started < 0.25
+        assert holder.is_alive()  # The writer is still held; we did not wait.
+        assert time_context(journal, 'blocked') == origin
+    finally:
+        release.set()
+        holder.join(5)
+    assert time_context(journal, 'blocked', start=True) == origin
+    assert journal.get('w3_time_awareness', 'blocked') is None
 
 
 def test_trade_origin_precedes_preparation_and_is_not_started_for_operations(tmp_path):
@@ -56,7 +90,8 @@ def test_trade_origin_precedes_preparation_and_is_not_started_for_operations(tmp
         return time_context(journal, case_id, start=True)
 
     def prepare(_case):
-        assert journal.get("w3_time_awareness", case.case_id) is not None
+        assert time_context(journal, case.case_id) is not None
+        assert _case.frozen_inputs['w3_time_awareness']['case_id'] == case.case_id
         order.append("market")
 
     agent.begin_trade_timing = begin
@@ -69,6 +104,42 @@ def test_trade_origin_precedes_preparation_and_is_not_started_for_operations(tmp
         assert order == ["origin", "market"]
     finally:
         service.close()
+
+
+def test_frozen_origin_avoids_all_database_io_and_is_shared_by_branches(tmp_path, monkeypatch):
+    journal = RuntimeJournal(tmp_path / 'runtime.db')
+    case, _ = fixture_case()
+    metadata = W3TimeAwarenessContext(case_id=case.case_id, started_at_utc=datetime.now(UTC))
+    case.frozen_inputs['w3_time_awareness'] = metadata.model_dump(mode='json')
+    runner = object.__new__(CodexW3AgentRunner)
+    runner._journal, runner._time_awareness_enabled = journal, True
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError('Elapsed must not do database I/O for a frozen Case')
+
+    monkeypatch.setattr(journal, 'transaction', forbidden)
+    assert runner._trade_time_context(case, 'trade_decision') == metadata
+    assert runner._trade_time_context(case.model_copy(deep=True), 'trade_decision') == metadata
+    assert runner._trade_time_context(case, 'post_decision_operations') is None
+
+
+@pytest.mark.parametrize('saved', [{'case_id': 'other', 'started_at_utc': 'bad'}, {'bad': 1}])
+def test_invalid_origin_and_database_failure_use_one_shared_fallback(tmp_path, monkeypatch, saved):
+    journal = RuntimeJournal(tmp_path / 'runtime.db')
+    reads = []
+
+    @contextmanager
+    def unavailable(**kwargs):
+        assert kwargs['write'] is False and kwargs['timeout'] == 0
+        reads.append(kwargs)
+        raise sqlite3.OperationalError('database is locked')
+        yield
+
+    monkeypatch.setattr(journal, 'transaction', unavailable)
+    first = time_context(journal, 'case', start=True, saved=saved)
+    assert first.case_id == 'case'
+    assert time_context(journal, 'case', start=True) == first
+    assert len(reads) == 1  # No retry, and subsequent dispatch is memory-only.
 
 
 @pytest.mark.parametrize("enabled", [False, True])
@@ -184,10 +255,67 @@ async def test_sdk_control_updates_without_resuming_resident_thread(tmp_path, mo
         runtime._time_control.close()
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('failure', ['write', 'context'])
+async def test_sdk_elapsed_degradation_still_starts_trade_once(tmp_path, monkeypatch, failure):
+    from pathlib import Path
+
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr('doxagent.codex_worker.sdk_runtime.AsyncCodex', lambda _: sdk)
+    runtime = OpenAICodexRuntime(
+        settings=DoxAgentSettings(
+            _env_file=None, w3_time_awareness_enabled=True, codex_runtime_bin='patched-test',
+        ),
+        capability_secret='s' * 32, container_isolated=True,
+    )
+    base = request().model_copy(update=dict(
+        task_phase='trade_decision', w3_entry_version='w3-entry-v6',
+        w3_time_awareness=None if failure == 'context' else W3TimeAwarenessContext(
+            case_id='case', started_at_utc=datetime.now(UTC)),
+    ))
+    attempts = []
+    replace = Path.replace
+
+    def fail_control(path, target):
+        if target == runtime._time_control.path:
+            attempts.append(str(path))
+            raise OSError('synthetic control failure')
+        return replace(path, target)
+
+    if failure == 'write':
+        runtime._time_control.path.write_text('{"enabled":true}')
+        monkeypatch.setattr(Path, 'replace', fail_control)
+    try:
+        handle = await runtime.start(base, tmp_path)
+        assert handle.thread_id
+        if failure == 'write':
+            assert len(attempts) == 1  # No retry during SDK startup.
+            assert not runtime._time_control.path.exists()
+        else:
+            assert json.loads(runtime._time_control.path.read_text()) == {'enabled': False}
+        assert (await handle.run()).status == 'completed'
+    finally:
+        runtime._time_control.close()
+
+
 def test_missing_patch_disables_optional_control(caplog):
     control = W3TimeControl(CodexConfig(), enabled=True)
     assert control.path is None
     assert "no patched Codex runtime" in caplog.text
+
+
+def test_control_directory_failure_is_nonfatal(monkeypatch):
+    def unavailable(**kwargs):
+        raise OSError('synthetic directory failure')
+
+    monkeypatch.delenv('DOXAGENT_MCP_BUDGET_ROOT', raising=False)
+    monkeypatch.setattr(
+        'doxagent.codex_worker.time_awareness.tempfile.TemporaryDirectory', unavailable,
+    )
+    control = W3TimeControl(CodexConfig(codex_bin='patched-test'), enabled=True)
+    assert control.path is None
+    control.write(request(), 'child')
+    control.close()
 
 
 @pytest.mark.asyncio

@@ -54,6 +54,9 @@ class ReplayWorker(ModelWorker):
 
 def fixture(tmp_path, monkeypatch, contract=W3_LEGACY_CONTRACT):
     case, _ = fixture_case()
+    # This is a fresh READY replay, not a runtime-delay rejection scenario.
+    # The shared fixture's source timestamp predates this replay clock by weeks.
+    case.source.message_bus_event_time = NOW
     context = PhaseAgent().prepare_case(case)
     monkeypatch.setattr("doxagent.w3_backtest.runner.parse_document2", lambda _: context.document2)
     dataset = tmp_path / "dataset"
@@ -96,7 +99,9 @@ def fixture(tmp_path, monkeypatch, contract=W3_LEGACY_CONTRACT):
     for name in ("AGENTS.md", "skills/skill.md", "skills/weekend_sweep.md"):
         (prompt_root / name).write_text("Offline fixture instructions", encoding="utf-8")
     write(prompt_root / "contract.json", dict(w3_contract_version=contract))
-    runner = ReplayRunner(worker_factory=worker_factory, prompt_root=prompt_root)
+    runner = ReplayRunner(
+        worker_factory=worker_factory, prompt_root=prompt_root, model='gpt-6.1-sol',
+    )
     return dataset, runner, worker, stores
 
 
@@ -113,7 +118,9 @@ def test_replay_uses_production_two_stages_with_isolated_evidence(tmp_path, monk
         assert request.data_mcp_enabled is False
         assert request.allow_subagents is False
         assert request.cutoff_at == NOW
-        assert request.model == "gpt-6.1-sol"
+        assert request.model == (
+            "gpt-6-luna" if request.task_phase == OPERATIONS_PHASE else "gpt-6.1-sol"
+        )
     assert worker.requests[1].thread_id == worker.requests[2].thread_id == "offline-child"
     assert "evidence" not in json.loads(worker.requests[0].prompt.split("\n\n")[-1])
     assert "evidence" in json.loads(worker.requests[1].prompt)

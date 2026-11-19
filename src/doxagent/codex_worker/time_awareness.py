@@ -13,6 +13,7 @@ from openai_codex import CodexConfig
 
 from doxagent.codex_runtime.schema import CodexPersistentRuntimeNode
 from doxagent.codex_worker.schema import WorkerRunRequest
+from doxagent.control_io import diagnostic_warning
 from doxagent.settings import DoxAgentSettings
 
 _log = logging.getLogger(__name__)
@@ -58,8 +59,14 @@ class W3TimeControl:
         if budget:
             root = Path(budget).parent
         else:
-            self._temporary = tempfile.TemporaryDirectory(prefix="doxagent-w3-time-")
-            root = Path(self._temporary.name)
+            try:
+                self._temporary = tempfile.TemporaryDirectory(prefix="doxagent-w3-time-")
+                root = Path(self._temporary.name)
+            except OSError as exc:
+                diagnostic_warning(
+                    __name__, "W3 elapsed control setup degraded error=%s", type(exc).__name__,
+                )
+                return
         self.path = root / "w3-time-context.json"
         self.config = replace(
             config,
@@ -79,6 +86,11 @@ class W3TimeControl:
                 task_phase=request.task_phase,
                 **request.w3_time_awareness.model_dump(mode="json"),
             )
+        elif (request.node == CodexPersistentRuntimeNode.W3
+              and request.task_phase == "trade_decision"):
+            diagnostic_warning(
+                __name__, "W3 elapsed context absent thread_id=%s; continuing Trade", thread_id,
+            )
         self._write(value)
 
     def clear(self) -> None:
@@ -92,8 +104,16 @@ class W3TimeControl:
             temporary = self.path.with_suffix(".tmp")
             temporary.write_text(json.dumps(value), encoding="utf-8")
             temporary.replace(self.path)
-        except OSError:
-            _log.warning("W3 time control unavailable", exc_info=True)
+        except OSError as exc:
+            # No retry, database lookup or recovery: the business turn proceeds.
+            diagnostic_warning(
+                __name__, "W3 elapsed control write degraded enabled=%s thread_id=%s error=%s",
+                value.get("enabled"), value.get("thread_id"), type(exc).__name__,
+            )
+            try:
+                self.path.unlink(missing_ok=True)
+            except OSError:
+                pass  # Best effort removal of a stale record, never a retry loop.
 
     def close(self) -> None:
         self.clear()

@@ -579,6 +579,18 @@ class CodexW3AgentRunner:
             return time_context(self._journal, case_id, start=True)
         return None
 
+    def _trade_time_context(self, case, phase):
+        from .w3_time_awareness import time_context
+
+        if phase != "trade_decision" or not self._time_awareness_enabled or self._journal is None:
+            return None
+        context = time_context(
+            self._journal, case.case_id, start=True,
+            saved=case.frozen_inputs.get("w3_time_awareness"),
+        )
+        case.frozen_inputs["w3_time_awareness"] = context.model_dump(mode="json")
+        return context
+
     def entry_enabled(self, case):
         return case.frozen_inputs.get("w3_contracts", {}).get(
             "w3_entry_version"
@@ -1231,7 +1243,6 @@ class CodexW3AgentRunner:
             parse_w3_operations,
             parse_w3_trade_decision,
         )
-        from .w3_time_awareness import time_context
         from .worker_receipts import ReceiptWorker
 
         assets = case.frozen_inputs["w3_assets"]
@@ -1720,13 +1731,7 @@ class CodexW3AgentRunner:
                     output_schema=schema,
                     thread_id=record.get("thread_id"),
                     task_phase=phase,
-                    w3_time_awareness=(
-                        await read_io(
-                            time_context, self._journal, case.case_id
-                        )
-                        if phase == "trade_decision" and self._time_awareness_enabled
-                        else None
-                    ),
+                    w3_time_awareness=self._trade_time_context(case, phase),
                     web_search_mode="disabled"
                     if phase == "w3_template"
                     else self.environment.web_search_mode,

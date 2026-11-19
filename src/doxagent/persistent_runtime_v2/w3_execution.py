@@ -362,7 +362,8 @@ class W3Execution:
         if main and main['status'] == 'COMMITTED':
             return stages, records, frozen
         phases = (TRADE_PHASE+':A', TRADE_PHASE+':B') if case.frozen_inputs.get('w3_trade_mode') == 'dual_consensus' else (TRADE_PHASE,)
-        needed = {'w3_recent_filled_snapshot', 'w3_global_input', 'w3_time_awareness'}
+        # Missing optional timing alone must not reopen the registration writer.
+        needed = {'w3_recent_filled_snapshot', 'w3_global_input'}
         if main and all(p in stages and p in records and records[p]['owner_case_id'] == case.case_id for p in phases) and needed <= frozen.keys():
             return stages, records, frozen
         origin = dict(case_id=case.case_id, started_at_utc=datetime.now(UTC).isoformat())
@@ -391,6 +392,10 @@ class W3Execution:
         bundle = self._register_entry(case) if (is_pin_watch_contract(case.w3_contract_version)
                   and getattr(self.agent, 'entry_enabled', lambda c: False)(case)) else None
         stage = bundle[0][TRADE_PHASE] if bundle else self.registry.begin_stage(case.case_id, TRADE_PHASE)
+        if bundle and bundle[2].get('w3_time_awareness') is not None:
+            # The registration already loaded the authoritative origin. Carry it
+            # with the Case to both branches instead of querying SQLite again.
+            case.frozen_inputs['w3_time_awareness'] = bundle[2]['w3_time_awareness']
         if stage["status"] == "COMMITTED":
             self._restore_trade(case, stage)
             self._sync_route_case(case, {"thread_id": stage["thread_id"]})
@@ -403,8 +408,13 @@ class W3Execution:
             recovered = None if case.frozen_inputs.get("w3_trade_mode") == "dual_consensus" else self._recover_result(case, TRADE_PHASE, record)
             if recovered is not None:
                 return self._commit_trade(case,record,recovered)
-            if not bundle and hasattr(self.agent, "begin_trade_timing"):
-                self.agent.begin_trade_timing(case.case_id)
+            if ((not bundle or not case.frozen_inputs.get('w3_time_awareness'))
+                    and hasattr(self.agent, "begin_trade_timing")):
+                origin = self.agent.begin_trade_timing(case.case_id)
+                if origin is not None:
+                    case.frozen_inputs.setdefault(
+                        'w3_time_awareness', origin.model_dump(mode='json'),
+                    )
             if hasattr(self.agent, "queue_market"):
                 self.agent.queue_market(case)
             elif hasattr(self.agent, "start_market"):

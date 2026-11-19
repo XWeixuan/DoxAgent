@@ -104,6 +104,17 @@ def test_real_entry_registration_reuses_frozen_origin_without_new_writer(tmp_pat
         journal.transaction = no_write
         second = execution._register_entry(case)
         assert second == first
+        journal.transaction = original
+        with journal.transaction() as db:
+            db.execute(
+                "DELETE FROM runtime_values WHERE namespace='w3_time_awareness' AND key=?",
+                (case.case_id,),
+            )
+        journal.transaction = no_write
+        # Missing time metadata alone must not acquire a writer/re-register W3.
+        incomplete = execution._register_entry(case)
+        assert 'w3_time_awareness' not in incomplete[2]
+        assert incomplete[:2] == first[:2]
     finally:
         journal.transaction = original if 'original' in locals() else journal.transaction
         service.close()
