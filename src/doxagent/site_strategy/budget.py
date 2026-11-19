@@ -290,6 +290,17 @@ class JointBudget:
                             and self._site_next.get(item.site_key, 0.0) <= now
                             and self._identity_next.get(item.identity_id, 0.0) <= now
                         ]
+                        # A detached soft claim has no executing coroutine. It
+                        # may retain BODY order on its own identity, but must
+                        # never win the global permit and leave every slot idle.
+                        detached = {}
+                        for item in eligible:
+                            if not item.attached and item.purpose is SitePurpose.BODY:
+                                rank = item.rank(now)
+                                detached[item.identity_id] = min(rank, detached.get(item.identity_id, rank))
+                        eligible = [item for item in eligible if item.attached and (
+                            item.purpose is not SitePurpose.BODY or item.identity_id not in detached
+                            or item.rank(now) < detached[item.identity_id])]
                         best = min(eligible, key=lambda item: item.rank(now)) if eligible else None
                         crawlers = [w for w in eligible if w.purpose is SitePurpose.CRAWLER
                                     and now-w.enqueued_at >= w.aging_seconds]

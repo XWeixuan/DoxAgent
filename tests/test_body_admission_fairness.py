@@ -50,6 +50,24 @@ async def test_busy_identity_demand_does_not_reserve_free_capacity_on_another_id
     budget.forget_identity("busy")
 
 
+@pytest.mark.parametrize('purpose',[SitePurpose.CRAWLER,SitePurpose.BODY])
+async def test_detached_ready_body_cannot_win_an_idle_global_permit(purpose):
+    budget = JointBudget(max_concurrency=4)
+    async with permit(budget, SitePurpose.CRAWLER, 'newsfile'):
+        with pytest.raises(AdmissionDeferred):
+            async with permit(budget, SitePurpose.BODY, 'newsfile', task_key='old:1',
+                ready_since=(datetime.now(UTC)-timedelta(seconds=30)).isoformat()):
+                pass
+    assert budget._active == 0 and not budget._body_claims['old:1'].attached
+    # The oldest claim's identity is now free, exactly the production deadlock:
+    # selecting that absent coroutine cannot make progress for any other site.
+    async with asyncio.timeout(.3):
+        async with permit(budget, purpose, 'reuters', task_key='new:1' if purpose is SitePurpose.BODY else None):
+            assert budget._active == 1
+    assert 'old:1' in budget._body_claims  # Keep its original age, not a reservation.
+    budget.forget_identity('newsfile')
+
+
 async def test_crawler_gets_bounded_progress_under_continuous_body_demand():
     budget = JointBudget(max_concurrency=1)
     entered = asyncio.Event()
