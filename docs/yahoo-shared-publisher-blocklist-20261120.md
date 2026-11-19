@@ -11,3 +11,5 @@ RSS、GraphQL、浏览器统一经过 Yahoo mapper，在正文任务和正式接
 新增测试覆盖黑名单子域、域名边界、Yahoo托管转载、正常Yahoo、未知来源、畸形域名、共用名单变更、重复统计，以及三渠道mapper；既有Google测试按新授权更新Yahoo例外断言，其他Google预期保留。未发布生产。
 
 验证结果：Google/Yahoo联合回归98项通过；随后补充原文外链和Yahoo域+出版社名称组合用例，新增来源过滤测试18项全部通过。
+
+生产发布：北京时间2026-11-20 01:18—01:20，提交b4b360192已推送origin/main并同步远端；沿用带锁发布/回滚管理，在原角色镜像上窄覆盖四个源码/名单文件，更新v2-message-collector、v2-message-bus、v2-content-enrichment，保留其余服务与身份。三个角色运行中，四文件均与提交字节哈希一致，容器内黑名单命中/Yahoo例外/Google规则断言通过。短窗口自然RSS/GraphQL/浏览器分别49/50/48轮CAPTURED，唯一FAILED为采集重建时SNOW SUPPLEMENT_HEAD的CANCELLED，未观察到规则异常。统计样本并非长期稳定性验收。证据位于eval/yahoo-blacklist-20261120/production-verification.json、natural-cycles.json及release-output.txt。

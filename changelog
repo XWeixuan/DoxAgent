@@ -3330,3 +3330,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-20 Yahoo共享站点黑名单：复用Google单份名单，在三渠道mapper及既有接纳入口按真实出版社本地过滤；Yahoo托管域例外、精确来源别名、边界匹配及分源过滤统计；只读回放1000条生产输入识别751、命中162，无新增网络/常驻服务。
 
 2026-11-20 W1/W3 production release acceptance: W1R1 default tier only; publish exclusive W3 Operations/W1R3 fact ownership and aligned Operations skill together. API healthy, Scheduler running; two natural W1R1 receipts confirm actual default, sibling W1R2/W2R1 remain fast. Regression 158 passed, 2 skipped. Preserve accepted Worker/native runtime; full natural W3 Operations completion remains unobserved. See docs/w3_fact_compilation_prompt_alignment_20261120.md.
+
+2026-11-20 Yahoo共享黑名单生产发布：b4b360192同步origin/main与远端，窄更新Collector/Bus/Content Enrichment；四文件哈希及容器过滤断言通过，三渠道自然采集恢复，保留身份与其他角色。
