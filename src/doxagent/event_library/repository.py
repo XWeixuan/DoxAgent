@@ -743,6 +743,12 @@ class EventLibraryRepository:
             sidecar = Path(str(path) + ".branch.json")
             branch = json.loads(sidecar.read_text(encoding="utf-8")) if sidecar.is_file() else None
             base = int(branch["base_version"]) if branch else -1
+            # This snapshot contains no publication in our requested interval.
+            # Its compact sidecar is sufficient to continue through cold-retired
+            # no-change branches; actual publication history is still mandatory.
+            if branch is not None and ceiling <= base:
+                path = Path(branch["source"])
+                continue
             repository = EventLibraryRepository(path, read_only=True)
             with repository._read() as db:
                 for r in db.execute(

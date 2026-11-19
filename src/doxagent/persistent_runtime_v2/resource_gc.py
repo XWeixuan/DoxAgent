@@ -104,6 +104,20 @@ def referenced(journal,control_path,*,now=None,only_root=None):
         if root!=only_root:continue
         for v in (eversion if eversion is not None else version,before,after):add(root,ticker,v)
         if status not in {'SUCCEEDED','FAILED'} or before is None and bhash or after is None and ahash:protected.add(root)
+    if only_root not in protected:
+        # Advancing branches own first-publication history used by future daily
+        # W1 indexes, even after their direct Cases have settled. No-change
+        # copies remain eligible; this checks only this candidate's small header.
+        for path in (Path(only_root)/'US').glob('*/event_library.sqlite3'):
+            sidecar = Path(str(path)+'.branch.json')
+            if not sidecar.is_file():
+                continue
+            base = int(json.loads(sidecar.read_text(encoding='utf-8'))['base_version'])
+            with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True)) as event:
+                if event.execute("SELECT 1 FROM library_versions WHERE ticker=? AND version>? AND status='PUBLISHED' LIMIT 1",
+                                 (path.parent.name,base)).fetchone():
+                    protected.add(only_root)
+                    break
     jobs=journal.path.resolve().parent.parent/'workspaces'/'worker-jobs.sqlite3'
     if jobs.is_file():
         with closing(sqlite3.connect(jobs.as_uri()+'?mode=ro',uri=True)) as db:

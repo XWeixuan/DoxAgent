@@ -11,6 +11,29 @@ from doxagent.persistent_runtime_v2.retained_events import snapshot_digest
 from tests.test_codex_event_library_incremental import _publish_v1
 
 
+def test_gc_keeps_publication_owners_but_not_no_change_copies(tmp_path):
+    from doxagent.persistent_runtime_v2.resource_gc import migrate, referenced
+    from tests.test_w1_daily_index import library, publish, event, DAY, boundary
+    from doxagent.persistent_runtime_v2.event_branch import branch_library
+
+    journal = RuntimeJournal(tmp_path/'runtime.sqlite3')
+    control = tmp_path/'control.db'
+    with closing(sqlite3.connect(control)) as db, db:
+        db.execute('CREATE TABLE activation_revisions(revision_id TEXT PRIMARY KEY,ticker TEXT,payload TEXT)')
+        db.execute('CREATE TABLE ticker_active_revision(ticker TEXT,revision_id TEXT)')
+    migrate(journal, control)
+    root, source, _ = library(tmp_path)
+    publish(source, 1, boundary(DAY), [event(1)])
+    changed = tmp_path/'changed'
+    repo = branch_library(source.path, changed/'US/MU/event_library.sqlite3', 'MU', 1)
+    publish(repo, 2, boundary(DAY), [event(2)])
+    unchanged = tmp_path/'unchanged'
+    branch_library(repo.path, unchanged/'US/MU/event_library.sqlite3', 'MU', 2)
+    # An ancestor owns publication history even without a direct Case reference.
+    assert str(changed) in referenced(journal, control, only_root=str(changed))[1]
+    assert str(unchanged) not in referenced(journal, control, only_root=str(unchanged))[1]
+
+
 def test_owner_retires_unreferenced_compacts_history_and_keeps_current_and_frame(tmp_path):
     now=datetime.now(UTC);old=now-timedelta(days=12)
     journal=RuntimeJournal(tmp_path/'runtime'/'runtime.sqlite3',clock=lambda:old)

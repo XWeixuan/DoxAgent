@@ -40,7 +40,7 @@ function setup() {
   const document = { visibilityState: "visible", addEventListener: (name: string, fn: () => void) => listeners.set(name, fn),
     removeEventListener: (name: string) => listeners.delete(name) };
   vi.stubGlobal("document", document);
-  return { request, setQueryData, document, listeners, cache, key };
+  return { request, setQueryData, document, listeners, cache, key, active };
 }
 beforeEach(() => { vi.useFakeTimers(); fixture.effects = []; });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -78,4 +78,33 @@ it("does not overwrite a context replaced by another completed refresh", async (
   resume({ data: { view_id: "late" } });
   await pending;
   expect(f.cache.get(JSON.stringify(f.key))).toBe(newer);
+});
+
+it("Runtime renewal replaces its context without replaying expired minute-view reads", async () => {
+  const f = setup();
+  const key = ["owner", "MU", "RUNTIME", "context", "CURRENT_TRADING_DAY"];
+  f.cache.set(JSON.stringify(key), fixture.data);
+  f.active.queryKey = ["owner", "pages", "Cases", "/tickers/MU/runtime/cases?view_id=expired-minute", "expired-minute"];
+  f.request.mockImplementation(async (name) => {
+    if (name !== "ReadContext") throw new Error("VIEW_EXPIRED");
+    return { data: { view_id: "new", expires_at: new Date(Date.now() + 900_000).toISOString() } } as never;
+  });
+  await usePageContext("MU", "RUNTIME", "CURRENT_TRADING_DAY", { refreshReads: false }).refetch();
+  expect(f.request.mock.calls.map((c) => c[0])).toEqual(["ReadContext"]);
+  expect(f.cache.get(JSON.stringify(key))).toMatchObject({ data: { view_id: "new" } });
+  expect(f.setQueryData.mock.calls.some((c) => c[0][1] === "pages")).toBe(false);
+});
+
+it("Runtime renewal still preserves a context from a newer concurrent refresh", async () => {
+  const f = setup();
+  const key = ["owner", "MU", "RUNTIME", "context", "CURRENT_TRADING_DAY"];
+  f.cache.set(JSON.stringify(key), fixture.data);
+  let resume!: (value: unknown) => void;
+  f.request.mockImplementationOnce(() => new Promise((resolve) => { resume = resolve; }) as never);
+  const pending = usePageContext("MU", "RUNTIME", "CURRENT_TRADING_DAY", { refreshReads: false }).refetch();
+  const newer = { data: { view_id: "newer" } };
+  f.cache.set(JSON.stringify(key), newer);
+  resume({ data: { view_id: "late" } });
+  await pending;
+  expect(f.cache.get(JSON.stringify(key))).toBe(newer);
 });
