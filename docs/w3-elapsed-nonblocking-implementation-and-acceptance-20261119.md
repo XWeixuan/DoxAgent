@@ -1,3 +1,5 @@
+> 2026-11-20 更新：已随 100/150 秒阈值变更发布生产，见[发布与清理记录](w3-elapsed-100-150-production-release-20261119.md)。下文保留原开发验收时间点的历史状态。
+
 # W3 Elapsed：非阻塞修复实施与验收
 
 2026-11-19，北京时间。依据[修订方案](../dev_plan/workflow_v2/w3_elapsed_reliability_root_cause_and_lean_repair_plan_20261119.md)完成开发、隔离测试及本地延时验收。**本次代码尚未部署生产**；上一轮生产 53 Case / 106 分支的观测属于原子登记旧版本，不能作为本次发布验收。
