@@ -94,7 +94,7 @@ from .transport import (
 )
 from .w2_alignment import W2_CONTRACT, assessment, validate_alignment
 from .w3 import W3Agent, W3Error, defer_phase_waits
-from .w3_contracts import is_two_phase_contract, is_unified_contract, is_pin_watch_contract
+from .w3_contracts import is_two_phase_contract, is_unified_contract, is_pin_watch_contract, has_legacy_pin_watch_schema
 
 if TYPE_CHECKING:
     from .projection import RuntimeV2ProjectionOutbox
@@ -819,16 +819,8 @@ class PersistentRuntimeV2Service:
                 case.w1_round1, case.w1_final = w1_r1, w1_final
                 self.repository.save_case(case)
                 if phase == "W1":
-                    if w1_final.result is W1NoveltyVerdict.NEW:
-                        self._execute_r3(
-                            case,
-                            RuntimeEffect(
-                                case_id=case.case_id,
-                                effect_type=RuntimeSideEffect.EMIT_DELTA,
-                                idempotency_key=f"{case.case_id}:emit_delta",
-                                payload={"previous_response_id": w1_response_id},
-                            ),
-                        )
+                    # W2/WATCH can still route this CLOSED Case into W3. Fact
+                    # compilation must wait for the final route, like REALTIME.
                     return self.repository.get_case(case.case_id) or case
                 if (
                     w1_final.result is W1NoveltyVerdict.OLD
@@ -891,6 +883,10 @@ class PersistentRuntimeV2Service:
             w2_contract_version=case.w2_contract_version,
             alignment_unavailable=case.w2_alignment_status == "UNAVAILABLE",
         )
+        if (has_legacy_pin_watch_schema(case) and route.primary_route.value == "W3"
+                and w1_final.result is W1NoveltyVerdict.NEW):
+            # An admitted old Case still has its two-field Operations contract.
+            route.side_effects.append(RuntimeSideEffect.EMIT_DELTA)
         if case.orchestration_revision >= 3 and self.journal:
             from .policy_watch import freeze_followup
 
@@ -1403,6 +1399,12 @@ class PersistentRuntimeV2Service:
                 self.journal.set("round_inputs", round_key, frozen)
             schema = output_model.model_json_schema()
             compatible_hashes = {digest(schema)}
+            if output_model is W1FactExtractionResult:
+                import copy
+
+                legacy = copy.deepcopy(schema)
+                legacy["properties"]["candidates"]["minItems"] = 1
+                compatible_hashes.add(digest(legacy))
             if output_model is W1NoveltyResult:
                 import copy
 
@@ -1823,11 +1825,14 @@ class PersistentRuntimeV2Service:
             freeze_case_profile(case, provider=getattr(self._w3_agent, "_model_provider", None))
         effects: list[RuntimeEffect] = []
         for effect_type in case.route.side_effects:
+            if (case.route.primary_route.value == "W3" and effect_type is RuntimeSideEffect.EMIT_DELTA
+                    and not has_legacy_pin_watch_schema(case)):
+                continue
             payload: dict[str, Any] = {}
             if effect_type is RuntimeSideEffect.EMIT_DELTA:
                 payload["previous_response_id"] = w1_response_id
-                if is_pin_watch_contract(case.w3_contract_version) and case.route.primary_route.value == 'W3':
-                    payload['auxiliary_to_w3'] = True
+                if case.route.primary_route.value == "W3":
+                    payload["auxiliary_to_w3"] = True
             effects.append(
                 RuntimeEffect(
                     case_id=case.case_id,
@@ -2879,7 +2884,26 @@ class PersistentRuntimeV2Service:
             )
         )
 
+    def _w1_compilation_recorded(self, case: RuntimeCase) -> bool:
+        """Use existing receipts to retain ownership when resuming old Cases."""
+        if case.w1_extraction is not None:
+            return True
+        if self.journal and hasattr(self.repository, "path"):
+            with self.journal.transaction(write=False) as db:
+                return db.execute(
+                    "SELECT 1 FROM runtime_v2_turns WHERE case_id=? AND lane='W1' "
+                    "AND round_name='R3' AND status='OK' LIMIT 1", (case.case_id,),
+                ).fetchone() is not None
+        return any(t.lane == "W1" and t.round_name == "R3" and t.status is RuntimeTechnicalStatus.OK
+                   for t in self.repository.list_turns(case.case_id))
+
     def _execute_r3(self, case: RuntimeCase, effect: RuntimeEffect) -> None:
+        if case.w1_extraction is not None:
+            return
+        if (case.route and case.route.primary_route.value == "W3"
+                and not has_legacy_pin_watch_schema(case) and not self._w1_compilation_recorded(case)):
+            # Drain a stale queued v6 sibling effect without another model call.
+            return
         if (
             case.resolved_route is not None
             and case.resolved_route.primary_route.value == "ARCHIVE"
@@ -2915,8 +2939,8 @@ class PersistentRuntimeV2Service:
         maximum = self._known_for_case(case).max_event_numeric_id(
             case.ticker,
             case.version_pin.event_library_version,
-        )
-        if maximum is None:
+        ) if extraction.candidates else None
+        if extraction.candidates and maximum is None:
             raise RuntimeInputUnavailable(
                 "event_library_max_id_unavailable",
                 "Published Event maximum ID is unavailable",

@@ -76,7 +76,7 @@ def configured_rounds(settings):
                 result[f"{lane}:R1"] = dict(model="gpt-6-luna", provider="openai",
                     provider_endpoint="https://api.openai.com/v1/responses",
                     transport="responses_json_schema", reasoning_effort="high",
-                    service_tier="fast", cache_ttl="12h",
+                    service_tier="default" if lane == "W1" else "fast", cache_ttl="12h",
                     timeout_seconds=(settings.persistent_runtime_v2_timeout_seconds if lane == "W1"
                                      else settings.persistent_runtime_v2_w2_r1_timeout_seconds),
                     **({"provisional_cache_batch_size": settings.persistent_runtime_v2_w1_provisional_cache_batch_size}

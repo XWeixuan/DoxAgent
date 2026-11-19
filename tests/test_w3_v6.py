@@ -15,7 +15,7 @@ from tests.test_w3_v5_execution import setup_case
 
 
 def test_schema_and_upstream_authority():
-    assert parse_w3_operations({"pin_actions": [], "watch_actions": []}, version=W3_V6_CONTRACT)[
+    assert parse_w3_operations({"pin_actions": [], "watch_actions": [], "delta_candidates": []}, version=W3_V6_CONTRACT)[
         0
     ] == W3OperationsResultV6(pin_actions=[], watch_actions=[])
     for key in ["novelty", "delta_candidates", "policy", "decision"]:
@@ -81,7 +81,7 @@ def test_v6_commits_without_novelty_and_no_duplicate_actions(tmp_path, action, h
         assert service.process_pending_effects() == 1
         saved = service.repository.get_case(case.case_id)
         assert saved.w3_operations_status == "COMMITTED"
-        assert saved.w3_operations_result == dict(pin_actions=[], watch_actions=[])
+        assert saved.w3_operations_result == dict(pin_actions=[], watch_actions=[], delta_candidates=[])
         assert len(j.values("w3_operations_applied")) == 1
     finally:
         service.close()
@@ -123,7 +123,7 @@ def test_v6_real_runner_injects_operations_only_at_phase(tmp_path):
             value = (
                 direction("NO_TRADE")
                 if request.task_phase == "trade_decision"
-                else dict(pin_actions=[], watch_actions=[])
+                else dict(pin_actions=[], watch_actions=[], delta_candidates=[])
             )
             return job.model_copy(update=dict(final_response=json.dumps(value)))
 
@@ -193,15 +193,14 @@ def test_v6_real_runner_injects_operations_only_at_phase(tmp_path):
             else:
                 assert req.prompt.startswith("OPERATIONS_FROZEN_TEXT\n\n")
                 task = json.loads(req.prompt.split("\n\n", 1)[1])
-                assert set(req.output_schema["properties"]) == {"pin_actions", "watch_actions"}
+                assert set(req.output_schema["properties"]) == {"pin_actions", "watch_actions", "delta_candidates"}
             assert set(task) == {"phase", "input", "context_ref", "instruction", "output_fields"}
     finally:
         runner.close()
 
 
-def test_new_w3_has_sibling_capture_and_capture_failure_is_auxiliary(tmp_path):
+def test_new_w3_has_no_sibling_capture(tmp_path):
     from doxagent.persistent_runtime_v2.router import route_runtime_case
-    from doxagent.persistent_runtime_v2.schema import RuntimeEffectStatus
 
     service, j, agent, case, _ = setup_case(tmp_path)
     case.w3_contract_version = W3_V6_CONTRACT
@@ -213,14 +212,7 @@ def test_new_w3_has_sibling_capture_and_capture_failure_is_auxiliary(tmp_path):
         service._enqueue_route_effects(case, "original-w1-response")
         effects = service.repository.list_effects(case.case_id)
         types = {e.effect_type.value for e in effects}
-        assert {"route_to_w3", "emit_delta"} <= types
-        r3 = next(e for e in effects if e.effect_type.value == "emit_delta")
-        assert r3.payload["previous_response_id"] == "original-w1-response"
-        service.repository.save_effect(
-            r3.model_copy(
-                update=dict(status=RuntimeEffectStatus.FAILED, last_error="blocked provider")
-            )
-        )
+        assert types == {"route_to_w3"}
         service._refresh_case_completion(case.case_id)
         assert service.repository.get_case(case.case_id).status.value not in {
             "FAILED",
@@ -355,6 +347,7 @@ def test_bundle_requires_real_ops_asset_and_freezes_three_files(tmp_path):
     assert set(saved["contracts"]["w3_operations_schema"]["properties"]) == {
         "pin_actions",
         "watch_actions",
+        "delta_candidates",
     }
 
 
@@ -478,6 +471,9 @@ def test_late_capture_cannot_overwrite_committed_w3(tmp_path, monkeypatch):
         return extraction, "response"
 
     monkeypatch.setattr(service, "_call_with_retry", model)
+    # Only a pre-upgrade successful R3 receipt may finish an already compiled
+    # result for a W3 Case; fresh sibling effects are now discarded.
+    monkeypatch.setattr(service, "_w1_compilation_recorded", lambda case: True)
     monkeypatch.setattr(
         service, "_known_for_case", lambda c: SimpleNamespace(max_event_numeric_id=lambda *args: 1)
     )
@@ -680,7 +676,7 @@ def test_v6_replay_freezes_operations_and_isolates_research(tmp_path, monkeypatc
         job = await original(request)
         if request.task_phase == "post_decision_operations":
             return job.model_copy(
-                update=dict(final_response=json.dumps(dict(pin_actions=[], watch_actions=[])))
+                update=dict(final_response=json.dumps(dict(pin_actions=[], watch_actions=[], delta_candidates=[])))
             )
         return job
 

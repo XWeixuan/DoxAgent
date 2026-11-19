@@ -1758,7 +1758,8 @@ class CodexW3AgentRunner:
     @observed('phase.validate')
     async def _validate_phase_job(self, case, phase, job, context, worker):
         from .w3_contracts import (OPERATIONS_PHASE, W3_LEGACY_CONTRACT,
-                                  parse_w3_operations, parse_w3_trade_decision, is_unified_contract)
+                                  parse_w3_operations, parse_w3_trade_decision, is_unified_contract,
+                                  has_legacy_pin_watch_schema)
         if job.status != "succeeded" or not job.final_response or not job.thread_id:
             raise W3Error(
                 job.error_code or "w3_phase_failed", job.error_message or job.status, step="MODEL"
@@ -1770,7 +1771,8 @@ class CodexW3AgentRunner:
                 result = {"ready": True}
             elif phase == OPERATIONS_PHASE:
                 result, issues = parse_w3_operations(
-                    job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT
+                    job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT,
+                    allow_legacy_pin_watch=has_legacy_pin_watch_schema(case),
                 )
                 (
                     await write_io(

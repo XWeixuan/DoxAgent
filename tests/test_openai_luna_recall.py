@@ -32,7 +32,7 @@ def test_opt_in_only_changes_recall_and_freezes_haiku_fallback():
         for lane in ['W1','W2']:
             assert all(new['rounds'][lane+':'+rnd] == old[lane+':'+rnd] for rnd in ['R2','R3'])
             r = new['rounds'][lane+':R1'];f = new['recall_fallback'][lane+':R1']
-            assert (r['model'],r['provider'],r['cache_ttl'],r['service_tier'],r['reasoning_effort']) == ('gpt-6-luna','openai','12h','fast','high')
+            assert (r['model'],r['provider'],r['cache_ttl'],r['service_tier'],r['reasoning_effort']) == ('gpt-6-luna','openai','12h','default' if lane=='W1' else 'fast','high')
             assert (f['model'],f['provider'],f['cache_ttl'],f['reasoning_effort']) == (HAIKU_MODEL,'openrouter','1h','high')
             assert f.get('service_tier') is None and f['timeout_seconds'] == r['timeout_seconds']
         assert new['recall_fallback']['W1:R1']['provisional_cache_batch_size'] == new['rounds']['W1:R1']['provisional_cache_batch_size']

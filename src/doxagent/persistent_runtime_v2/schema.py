@@ -333,7 +333,7 @@ class RuntimeFactCandidate(RuntimeV2Model):
 
 
 class W1FactExtractionResult(RuntimeV2Model):
-    candidates: list[RuntimeFactCandidate] = Field(min_length=1, max_length=12)
+    candidates: list[RuntimeFactCandidate] = Field(max_length=12)
 
 
 class W2Round1RecallResult(RuntimeV2Model):

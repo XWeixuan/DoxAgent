@@ -1154,12 +1154,35 @@ class W3Execution:
         self._queue_ack(acknowledgements)
 
     def _commit_pin_watch(self, case, record, result, state):
+        from .w3_contracts import has_legacy_pin_watch_schema
+
+        repo = self.service.repository
+        atomic = hasattr(repo, "allocate_provisional_in_transaction")
+        provisionals = []
+        # Preserve already successful pre-upgrade W1R3 compilation (including
+        # an empty result); fresh W3 Cases never dispatch that sibling effect.
+        if (result.delta_candidates and not has_legacy_pin_watch_schema(case)
+                and not self.service._w1_compilation_recorded(case)):
+            maximum = self.service._known_for_case(case).max_event_numeric_id(
+                case.ticker, case.version_pin.event_library_version
+            )
+            if maximum is None:
+                raise W3Error("event_library_max_id_unavailable", "Published Event maximum is unavailable")
+            for index, candidate in enumerate(result.delta_candidates):
+                allocate = repo.prepare_provisional if atomic else repo.allocate_provisional
+                prepared_fact = allocate(
+                    case_id=case.case_id, originating_node="W3", ticker=case.ticker,
+                    trading_date=case.trading_date, source_message_id=case.source.source_message_id,
+                    candidate_index=index, candidate=candidate,
+                    published_max_event_numeric_id=maximum,
+                )
+                if atomic:
+                    provisionals.append(prepared_fact)
         case.w3_operations_result = result.model_dump(mode="json")
         case.w3_operations_status = "COMMITTED"
         case.w3_operations_error = None
         prepared = self._prepare_case_payload(case)
         route = self._route_case_update(case, record, operations_status="COMMITTED")
-        repo = self.service.repository
         route_payload = (
             repo.content.encode(route.model_dump(mode="json"))
             if route and hasattr(repo, "content")
@@ -1170,6 +1193,8 @@ class W3Execution:
             with self.journal.transaction() as db:
                 assert_write_lease(db)
                 if policy_consumption.get_value(db, "w3_operations_applied", case.case_id) is None:
+                    for provisional in provisionals:
+                        repo.allocate_provisional_in_transaction(db, provisional)
                     watch = apply_v4_actions(
                         db, case=case, result=result, frozen=state, now=self.journal.clock()
                     )

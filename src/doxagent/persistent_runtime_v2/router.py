@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .w3_contracts import is_two_phase_contract, is_pin_watch_contract
+from .w3_contracts import is_two_phase_contract
 
 from .schema import (
     FirstRoundTag,
@@ -133,8 +133,8 @@ def route_runtime_case(
     if primary is RuntimePrimaryRoute.W3:
         effects.append(RuntimeSideEffect.ROUTE_TO_W3)
 
-    # Legacy W3 owns exception-plane facts. v6 NEW Cases use sibling W1R3.
-    if (primary is not RuntimePrimaryRoute.W3 or is_pin_watch_contract(w3_contract_version)) and (
+    # W3 Operations owns facts for every W3 entry, including LOW and WATCH.
+    if primary is not RuntimePrimaryRoute.W3 and (
         w1.result is W1NoveltyVerdict.NEW or primary is RuntimePrimaryRoute.ADD_TO_DELTA
     ):
         effects.append(RuntimeSideEffect.EMIT_DELTA)

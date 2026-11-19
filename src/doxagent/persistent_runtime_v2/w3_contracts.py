@@ -26,6 +26,13 @@ def is_pin_watch_contract(version):
     return version == W3_V6_CONTRACT
 
 
+def has_legacy_pin_watch_schema(case):
+    schema = case.frozen_inputs.get("w3_contracts", {}).get("w3_operations_schema", {})
+    return is_pin_watch_contract(case.w3_contract_version) and set(schema.get("properties", {})) == {
+        "pin_actions", "watch_actions",
+    }
+
+
 TRADE_PHASE = "trade_decision"
 OPERATIONS_PHASE = "post_decision_operations"
 
@@ -127,6 +134,9 @@ class W3OperationsResultV5(RuntimeV2Model):
 class W3OperationsResultV6(RuntimeV2Model):
     pin_actions: list[MessagePinAction]
     watch_actions: list[PolicyWatchAction]
+    # Old frozen v6 receipts have only PIN/WATCH. New strict output schemas
+    # require this field, but reading those historical receipts remains valid.
+    delta_candidates: list[RuntimeFactCandidate] = Field(default_factory=list, max_length=12)
 
 
 def contract_models(version):
@@ -152,14 +162,18 @@ def parse_w3_trade_decision(value: str | dict, *, version=W3_LEGACY_CONTRACT):
     return model.model_validate(json.loads(value) if isinstance(value, str) else value)
 
 
-def parse_w3_operations(value: str | dict, *, version=W3_LEGACY_CONTRACT):
+def parse_w3_operations(value: str | dict, *, version=W3_LEGACY_CONTRACT, allow_legacy_pin_watch=False):
     payload = json.loads(value) if isinstance(value, str) else dict(value)
     if is_unified_contract(version) and any(
         key not in payload for key in ("watch_actions", "pin_actions")
     ):
         raise ValueError("v5 requires watch_actions and pin_actions, including empty lists")
-    if is_pin_watch_contract(version) and set(payload) != {"pin_actions", "watch_actions"}:
-        raise ValueError("v6 operations requires exactly pin_actions and watch_actions")
+    if is_pin_watch_contract(version):
+        fields = {"pin_actions", "watch_actions", "delta_candidates"}
+        if set(payload) != fields and not (
+            allow_legacy_pin_watch and set(payload) == fields - {"delta_candidates"}
+        ):
+            raise ValueError("v6 operations requires pin_actions, watch_actions and delta_candidates")
     if is_pin_watch_contract(version) and any(not isinstance(payload[k], list) for k in ('pin_actions','watch_actions')):
         raise ValueError('v6 action fields must be arrays')
     issues = []
