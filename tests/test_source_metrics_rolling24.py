@@ -69,3 +69,14 @@ def test_completion_window_recovery_class_and_global_article_unit_are_independen
     compact_metrics=aggregate_metrics([r for rs in compact.values() for r in rs],[],[],0)
     assert compact_metrics==result
     assert sum(map(len,compact.values()))<sum(map(len,grouped.values()))
+
+
+def test_recent_article_full_ratio_uses_available_body_not_its_old_failed_attempt(tmp_path):
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    found=NOW-timedelta(minutes=5)
+    rows=records('recovered-body',found,found+timedelta(seconds=3))
+    rows[0]['data'].update(initial_outcome='UNAVAILABLE',outcome='FULL')
+    store.ingest('test','body-now-full',rows)
+    metrics=reduce_articles(select_article_facts_many(store,[('MU','news')],NOW)['MU','news'])
+    assert metrics['body_total']==metrics['body_full']==1
+    assert metrics['first_body_seconds']==[2]

@@ -119,7 +119,7 @@ def select_article_facts_many(store, pairs, now=None, *, db=None, global_only=Fa
         kind = kind or ('legacy_recovery' if decision in {'IRRELEVANT','NO_PUBLIC_BODY'} and end else 'realtime')
         grouped[tuple(json.loads(pair))].append(dict(article_key=key,found=found,
             eligible=fresh and eligible != 0 and outcome != 'NOT_APPLICABLE',
-            full=outcome in {'FULL','SHORT_FULL'},current_full=current in {'FULL','SHORT_FULL'},
+            full=(current if current is not None else outcome) in {'FULL','SHORT_FULL'},
             pending=fresh and (bool(missing) or status in {'FETCH_DUE','FETCHING','PENDING'}),
             e2e=e2e if recent_pub else None,capture=capture if recent_pub else None,
             completed_at=end,publish_kind=kind,
