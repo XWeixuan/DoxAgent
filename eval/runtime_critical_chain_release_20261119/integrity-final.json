@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-19T00:22:53.610280+00:00",
+  "cases": 35,
+  "admissions": 43,
+  "admission_status": {
+    "COMPLETED": 43
+  },
+  "case_status": {
+    "COMPLETED": 35
+  },
+  "jobs": {
+    "succeeded": 105
+  },
+  "bad_thread_continuity": [],
+  "distinct_trade_threads": 70,
+  "cross_case_thread_duplicates": {},
+  "failed_jobs": []
+}

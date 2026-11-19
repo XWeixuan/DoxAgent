@@ -1,0 +1,776 @@
+[
+  {
+    "case_id": "case_9fcdc8c57d6848aaabe3e1fc44b56d03",
+    "ticker": "BE",
+    "job_id": "6962a986db00507bab3d4fb79fea629ac77aa3943a69413bf15fca4d5ed0b93f",
+    "sdk_end_to_commit_ms": 33.621,
+    "commit_to_receive_ms": 51.539,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 35.197
+  },
+  {
+    "case_id": "case_9fcdc8c57d6848aaabe3e1fc44b56d03",
+    "ticker": "BE",
+    "job_id": "700c093f10b4e8728efa1a6070c80493148e08e669f00ed184ea96b338f5d0f9",
+    "sdk_end_to_commit_ms": 29.668,
+    "commit_to_receive_ms": 47.97,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 58.28
+  },
+  {
+    "case_id": "case_7a5a0d9711334ec0aa3c3bad7cd73df0",
+    "ticker": "NBIS",
+    "job_id": "06f33bd2f52848385dd6c9ecebec88fa639204bd177172ac619acb4b9cf58ca9",
+    "sdk_end_to_commit_ms": 20.873,
+    "commit_to_receive_ms": 44.506,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 51.376
+  },
+  {
+    "case_id": "case_7a5a0d9711334ec0aa3c3bad7cd73df0",
+    "ticker": "NBIS",
+    "job_id": "fb254f70fdde607b273feebc8bba2c1cf4c0c0a6f411ac6fc5e16601da6a518f",
+    "sdk_end_to_commit_ms": 24.073,
+    "commit_to_receive_ms": 21.887,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 27.426
+  },
+  {
+    "case_id": "case_2602d9f7c78f4f8787016d5a14f08306",
+    "ticker": "INTC",
+    "job_id": "391eb42186e79fb91772e205cfbecf658e76085a4856b054acb34eed8b469a54",
+    "sdk_end_to_commit_ms": 34.154,
+    "commit_to_receive_ms": 48.82,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 64.486
+  },
+  {
+    "case_id": "case_ee7f80afe905457dbb56a79c42f71046",
+    "ticker": "INTC",
+    "job_id": "33897af12b3ebaae42bb03aa4d9bb9745b58b73a46bd7c8eb94fee71db29d705",
+    "sdk_end_to_commit_ms": 30.059,
+    "commit_to_receive_ms": 19.121,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 46.128
+  },
+  {
+    "case_id": "case_ee7f80afe905457dbb56a79c42f71046",
+    "ticker": "INTC",
+    "job_id": "d495de4364db969277ae109208a12b5af5e2721a18ed2b7a0667c59615d4ee69",
+    "sdk_end_to_commit_ms": 16.404,
+    "commit_to_receive_ms": 48.287,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 36.315
+  },
+  {
+    "case_id": "case_ee7f80afe905457dbb56a79c42f71046",
+    "ticker": "INTC",
+    "job_id": "282d6527e04eef797f0b490951c21fda9b2a0e89460a5aee70591060f8bc7887",
+    "sdk_end_to_commit_ms": 20.514,
+    "commit_to_receive_ms": 22.365,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 19.124
+  },
+  {
+    "case_id": "case_b68ac553d95d4e6bb7789ce9c3da542e",
+    "ticker": "NBIS",
+    "job_id": "01293c25a92bb0e56fc066cfb382b81079864de58d8c3dd57b63af504e9e6df8",
+    "sdk_end_to_commit_ms": 24.628,
+    "commit_to_receive_ms": 33.023,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 106.405
+  },
+  {
+    "case_id": "case_b68ac553d95d4e6bb7789ce9c3da542e",
+    "ticker": "NBIS",
+    "job_id": "625d662164fbb2019a67bfea1e91d338f69cfb5e360657a6d80661fee393c2c8",
+    "sdk_end_to_commit_ms": 19.501,
+    "commit_to_receive_ms": 17.28,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 41.687
+  },
+  {
+    "case_id": "case_b68ac553d95d4e6bb7789ce9c3da542e",
+    "ticker": "NBIS",
+    "job_id": "85969fb066515512404f74404129ba8d286b376bffc1b652e31bbbec11985129",
+    "sdk_end_to_commit_ms": 30.185,
+    "commit_to_receive_ms": 67.284,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 20.025
+  },
+  {
+    "case_id": "case_c2bfd71444834e71be42e064b3311361",
+    "ticker": "NBIS",
+    "job_id": "7a7381f81af1dbff2bab59f558ef483fc97d015f738a6759f4699a5f451715fe",
+    "sdk_end_to_commit_ms": 84.566,
+    "commit_to_receive_ms": 61.97,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 70.592
+  },
+  {
+    "case_id": "case_c2bfd71444834e71be42e064b3311361",
+    "ticker": "NBIS",
+    "job_id": "b53be1626984cc7e8f74e1aa3cac09a29f7ea3b5d944b0df932cda059878a5f8",
+    "sdk_end_to_commit_ms": 14.452,
+    "commit_to_receive_ms": 18.329,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 304.091
+  },
+  {
+    "case_id": "case_c2bfd71444834e71be42e064b3311361",
+    "ticker": "NBIS",
+    "job_id": "fac5fea5c099dc4f1d024487bdb7540ca8833c7d4f0cbf65a8a881010d2517a3",
+    "sdk_end_to_commit_ms": 39.527,
+    "commit_to_receive_ms": 81.394,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 47.157
+  },
+  {
+    "case_id": "case_e82250d49bdb410690fe8f8a2c2c7e76",
+    "ticker": "INTC",
+    "job_id": "5c0b3280e74727c4a6979a6d901ee70d77d371dc01a4fe1f6329689cbe2a4bf2",
+    "sdk_end_to_commit_ms": 32.029,
+    "commit_to_receive_ms": 33.691,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 263.467
+  },
+  {
+    "case_id": "case_e82250d49bdb410690fe8f8a2c2c7e76",
+    "ticker": "INTC",
+    "job_id": "fbd2baffb090c90f4352b4eefca35e278af77ff65e5f5cb989ca947b182726b0",
+    "sdk_end_to_commit_ms": 23.342,
+    "commit_to_receive_ms": 46.706,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 26.437
+  },
+  {
+    "case_id": "case_e82250d49bdb410690fe8f8a2c2c7e76",
+    "ticker": "INTC",
+    "job_id": "9c0478de586409861286f500149dccf3fbf669cd9bbade1b51e4710623f58b77",
+    "sdk_end_to_commit_ms": 94.928,
+    "commit_to_receive_ms": 38.702,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 236.579
+  },
+  {
+    "case_id": "case_97e2a816362f4ed6b68befccc89ea886",
+    "ticker": "COHR",
+    "job_id": "1af4f6c1b0fa0e8a9fa436d25579f85191867c0a5a9de431a96fd6f251a0c04a",
+    "sdk_end_to_commit_ms": 142.954,
+    "commit_to_receive_ms": 67.464,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 81.153
+  },
+  {
+    "case_id": "case_97e2a816362f4ed6b68befccc89ea886",
+    "ticker": "COHR",
+    "job_id": "7d19dceb3ecbbae9773e76f920622b855372642b5d81d26a659004325d5d1b09",
+    "sdk_end_to_commit_ms": 65.99,
+    "commit_to_receive_ms": 144.26,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 51.888
+  },
+  {
+    "case_id": "case_97e2a816362f4ed6b68befccc89ea886",
+    "ticker": "COHR",
+    "job_id": "30d097b675d22eb37448f8153052aaff193715576896398c84d7559b8dbd74e0",
+    "sdk_end_to_commit_ms": 25.712,
+    "commit_to_receive_ms": 69.726,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 257.26
+  },
+  {
+    "case_id": "case_e91980ff18534303b8787ed2548358b6",
+    "ticker": "CEG",
+    "job_id": "13127f73f2d43c2abc01cc024b4cc8eb58b6ca282b3bf0a818f7dbc4ecddc30f",
+    "sdk_end_to_commit_ms": 29.509,
+    "commit_to_receive_ms": 15.607,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 82.114
+  },
+  {
+    "case_id": "case_e91980ff18534303b8787ed2548358b6",
+    "ticker": "CEG",
+    "job_id": "8c30f0107e8fae5d8b81aed585d605dcae3130c19d36967c9fdb16ebcab54392",
+    "sdk_end_to_commit_ms": 26.275,
+    "commit_to_receive_ms": 21.154,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 30.605
+  },
+  {
+    "case_id": "case_e91980ff18534303b8787ed2548358b6",
+    "ticker": "CEG",
+    "job_id": "429e66f5ebe4f042ab3eb928a2aab39e9d654e59e5080de2f3b2cd38f93b3374",
+    "sdk_end_to_commit_ms": 43.535,
+    "commit_to_receive_ms": 61.897,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 52.409
+  },
+  {
+    "case_id": "case_1b35e17087394745a322f48d97f41a49",
+    "ticker": "BE",
+    "job_id": "1f6efd30b8710f9d9c371143059f7259afa0d4b1dca1efdc4105dade0fc92f1c",
+    "sdk_end_to_commit_ms": 45.413,
+    "commit_to_receive_ms": 144.797,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 104.198
+  },
+  {
+    "case_id": "case_1b35e17087394745a322f48d97f41a49",
+    "ticker": "BE",
+    "job_id": "25ebe6045af69c87a96b76f4014f90a1f514798951e59e4f3c26e4660743a736",
+    "sdk_end_to_commit_ms": 62.034,
+    "commit_to_receive_ms": 27.314,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 177.481
+  },
+  {
+    "case_id": "case_1b35e17087394745a322f48d97f41a49",
+    "ticker": "BE",
+    "job_id": "385e3d670d70449f16e052f1f3dae6a1f951074df379227c4b2dd20426535efb",
+    "sdk_end_to_commit_ms": 25.452,
+    "commit_to_receive_ms": 41.178,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 57.807
+  },
+  {
+    "case_id": "case_e563ee5cd24a42b4a852af0c06a89a53",
+    "ticker": "MU",
+    "job_id": "d04752141f213cfbf50405a7f35395190716b884a2a2c240c6df640f64378c16",
+    "sdk_end_to_commit_ms": 90.069,
+    "commit_to_receive_ms": 105.449,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 53.918
+  },
+  {
+    "case_id": "case_e563ee5cd24a42b4a852af0c06a89a53",
+    "ticker": "MU",
+    "job_id": "68604e0e66bd462a25817dee9d966de415f1cdc696cc674e4b8bdfee1bb1aa21",
+    "sdk_end_to_commit_ms": 53.77,
+    "commit_to_receive_ms": 39.94,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 59.913
+  },
+  {
+    "case_id": "case_e563ee5cd24a42b4a852af0c06a89a53",
+    "ticker": "MU",
+    "job_id": "6a9f7e813cb5ee6d57c0bba80e3d138429cd2ff0605c47b7075a2b98b613537e",
+    "sdk_end_to_commit_ms": 80.207,
+    "commit_to_receive_ms": 124.158,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 71.552
+  },
+  {
+    "case_id": "case_7a3ef81a8d10438bb32bfb43af59b813",
+    "ticker": "INTC",
+    "job_id": "c1b3e1b678bc67d194322f7c3e56ed1df8dbe099e4837950d86f89c757b4fbec",
+    "sdk_end_to_commit_ms": 20.378,
+    "commit_to_receive_ms": 13.627,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 62.811
+  },
+  {
+    "case_id": "case_7a3ef81a8d10438bb32bfb43af59b813",
+    "ticker": "INTC",
+    "job_id": "8fb14b9122f02b00635664874a9f823a21716e4e00b3adf839be31c9a7005cad",
+    "sdk_end_to_commit_ms": 18.092,
+    "commit_to_receive_ms": 35.555,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 43.13
+  },
+  {
+    "case_id": "case_7a3ef81a8d10438bb32bfb43af59b813",
+    "ticker": "INTC",
+    "job_id": "6377c1c543093f57ba826d765098c890a8bb430e2d3c3612d2c1c9c58597c526",
+    "sdk_end_to_commit_ms": 91.61,
+    "commit_to_receive_ms": 93.818,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 37.896
+  },
+  {
+    "case_id": "case_7a1babc185b945ef81876060d783b678",
+    "ticker": "INTC",
+    "job_id": "c93580aeff498ce2e668d0b49c7cf519be7c39cc4c206580364f8d1932710db6",
+    "sdk_end_to_commit_ms": 45.332,
+    "commit_to_receive_ms": 34.411,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 34.685
+  },
+  {
+    "case_id": "case_7a1babc185b945ef81876060d783b678",
+    "ticker": "INTC",
+    "job_id": "c8cdf04902c49224164ce182977d79d21dac7f56ebb42facae10827277365342",
+    "sdk_end_to_commit_ms": 80.148,
+    "commit_to_receive_ms": 96.326,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 69.797
+  },
+  {
+    "case_id": "case_7a1babc185b945ef81876060d783b678",
+    "ticker": "INTC",
+    "job_id": "1899666114c526ff91d2dfdc8fff4504b49249af746a2e50ad800f3201d6c220",
+    "sdk_end_to_commit_ms": 35.952,
+    "commit_to_receive_ms": 78.796,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 41.153
+  },
+  {
+    "case_id": "case_ab8898eebc1a4c59939d32c5b5be3346",
+    "ticker": "SNOW",
+    "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1",
+    "sdk_end_to_commit_ms": 65.408,
+    "commit_to_receive_ms": 3141.908,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 30.506
+  },
+  {
+    "case_id": "case_ab8898eebc1a4c59939d32c5b5be3346",
+    "ticker": "SNOW",
+    "job_id": "25cee569004c4ce1f2eac4445588b6f0c615a02af4b0a0b3e26b9f33744680fa",
+    "sdk_end_to_commit_ms": 59.245,
+    "commit_to_receive_ms": 184.739,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 24.916
+  },
+  {
+    "case_id": "case_ab8898eebc1a4c59939d32c5b5be3346",
+    "ticker": "SNOW",
+    "job_id": "4f9c23b95abe2006c05005b598613a7983d629c36b5d7234af890c79e19e6144",
+    "sdk_end_to_commit_ms": 11.845,
+    "commit_to_receive_ms": 13.119,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 33.921
+  },
+  {
+    "case_id": "case_aaab4259852e43a08c5489cbfa33f12d",
+    "ticker": "SNOW",
+    "job_id": "00c0a98bb6ca9d1331580af2635d16333edcb17cb33f3dd063f23c6458a52ab3",
+    "sdk_end_to_commit_ms": 30.402,
+    "commit_to_receive_ms": 19.814,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 22.837
+  },
+  {
+    "case_id": "case_aaab4259852e43a08c5489cbfa33f12d",
+    "ticker": "SNOW",
+    "job_id": "aa9047edd6fd9d39b84363802391dda2733e68c2faf20e0b425a2c2079a082f3",
+    "sdk_end_to_commit_ms": 33.834,
+    "commit_to_receive_ms": 40.957,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 46.655
+  },
+  {
+    "case_id": "case_aaab4259852e43a08c5489cbfa33f12d",
+    "ticker": "SNOW",
+    "job_id": "212872f464bfa5b4314c49c1e5b3aaecf0dd34e626ab5128cf7bc675a9e9d189",
+    "sdk_end_to_commit_ms": 17.759,
+    "commit_to_receive_ms": 53.438,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 33.13
+  },
+  {
+    "case_id": "case_d18744e10bc949a5b25a90dac309d539",
+    "ticker": "NBIS",
+    "job_id": "02d609145a097b832c220756b9298cb70e59f4fec772d58dae5c765855eabf4e",
+    "sdk_end_to_commit_ms": 28.678,
+    "commit_to_receive_ms": 26.604,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 25.991
+  },
+  {
+    "case_id": "case_d18744e10bc949a5b25a90dac309d539",
+    "ticker": "NBIS",
+    "job_id": "33f64ccec9e0249ef15669193cf190117195e4ce86284a49e9123cbf85390558",
+    "sdk_end_to_commit_ms": 15.871,
+    "commit_to_receive_ms": 49.651,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 14.238
+  },
+  {
+    "case_id": "case_d18744e10bc949a5b25a90dac309d539",
+    "ticker": "NBIS",
+    "job_id": "b35854d83199dba2a0648af2b8746abae85d51cd32c1ae8abf06c901a61e94e4",
+    "sdk_end_to_commit_ms": 17.266,
+    "commit_to_receive_ms": 15.859,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 193.322
+  },
+  {
+    "case_id": "case_99750181cc6b414abd9db701995ed651",
+    "ticker": "INTC",
+    "job_id": "4225501ad98987e3d98162eaeee8a47e58fac8bcf64e3b34d608e66293311c1e",
+    "sdk_end_to_commit_ms": 15.813,
+    "commit_to_receive_ms": 22.572,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 56.303
+  },
+  {
+    "case_id": "case_99750181cc6b414abd9db701995ed651",
+    "ticker": "INTC",
+    "job_id": "1e52b7c1295bf83cf6c44c4a0d155dc555aaf1f0f23e4d86074098c85bd5b0ae",
+    "sdk_end_to_commit_ms": 13.568,
+    "commit_to_receive_ms": 21.503,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 31.335
+  },
+  {
+    "case_id": "case_99750181cc6b414abd9db701995ed651",
+    "ticker": "INTC",
+    "job_id": "88005392d0f34533e4802cddc0b7961a8e9f5ed9aa1b0b4881a9d01bdcd17c73",
+    "sdk_end_to_commit_ms": 22.414,
+    "commit_to_receive_ms": 39.529,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 247.2
+  },
+  {
+    "case_id": "case_94891cf570c4464d86541bb29b3d1038",
+    "ticker": "COHR",
+    "job_id": "278d423d3bc11f53f9fa485a7d363bca83f965243d9a141d35cd21da7837ecd3",
+    "sdk_end_to_commit_ms": 27.439,
+    "commit_to_receive_ms": 208.594,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 47.28
+  },
+  {
+    "case_id": "case_94891cf570c4464d86541bb29b3d1038",
+    "ticker": "COHR",
+    "job_id": "d59cad7e354c71652665ba639c9a92716ebae5c04a269f9bf1ab5bf271ec5032",
+    "sdk_end_to_commit_ms": 18.384,
+    "commit_to_receive_ms": 19.319,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 36.722
+  },
+  {
+    "case_id": "case_94891cf570c4464d86541bb29b3d1038",
+    "ticker": "COHR",
+    "job_id": "c735da28b5063db07a46874ca8c64c1a006ebf600e044a0330c503b8e4ba4a27",
+    "sdk_end_to_commit_ms": 14.185,
+    "commit_to_receive_ms": 14.773,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 32.548
+  },
+  {
+    "case_id": "case_38952ac802e445e99434583d330653c4",
+    "ticker": "COHR",
+    "job_id": "249100c2073778d30dbc959beb736692782d9ece2c542de5fe5ef70d9eee6074",
+    "sdk_end_to_commit_ms": 41.178,
+    "commit_to_receive_ms": 78.017,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 41.06
+  },
+  {
+    "case_id": "case_38952ac802e445e99434583d330653c4",
+    "ticker": "COHR",
+    "job_id": "9fc48c2a93c7c6630b434a3680d4d3d57f24220e7f8b51efbcea5e9bcd9f1210",
+    "sdk_end_to_commit_ms": 22.944,
+    "commit_to_receive_ms": 71.009,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 45.92
+  },
+  {
+    "case_id": "case_38952ac802e445e99434583d330653c4",
+    "ticker": "COHR",
+    "job_id": "2322219fae6adda87f2b9c965b47b24958d010370d3ab8ecd418221093cc3503",
+    "sdk_end_to_commit_ms": 12.6,
+    "commit_to_receive_ms": 24.503,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 35.408
+  },
+  {
+    "case_id": "case_2257c9f8856c4518bbec971a8eac5449",
+    "ticker": "MU",
+    "job_id": "8599b6fe3e72c506bb10a7026c0977bd97c8279ac55ebcc4c57807a4ecdad832",
+    "sdk_end_to_commit_ms": 48.342,
+    "commit_to_receive_ms": 95.747,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 77.767
+  },
+  {
+    "case_id": "case_2257c9f8856c4518bbec971a8eac5449",
+    "ticker": "MU",
+    "job_id": "e6f2276b746976f0a4a16b4c9a1eee15398ab7775e10dc366ddbbfd447ff40e8",
+    "sdk_end_to_commit_ms": 22.0,
+    "commit_to_receive_ms": 185.022,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 27.946
+  },
+  {
+    "case_id": "case_2257c9f8856c4518bbec971a8eac5449",
+    "ticker": "MU",
+    "job_id": "883a180581565ee1f0f34c33bb3d44a8a32162b9c8532acee70b0a2285a5c5e0",
+    "sdk_end_to_commit_ms": 27.137,
+    "commit_to_receive_ms": 20.107,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 129.448
+  },
+  {
+    "case_id": "case_1e6c6bcd536a45efa4fb250398d2c17c",
+    "ticker": "INTC",
+    "job_id": "840c9cd4ff2883c8c5e69f3a5ca915dc11e9ba575cc7a43bfd1c3371c02df5a2",
+    "sdk_end_to_commit_ms": 17.085,
+    "commit_to_receive_ms": 59.167,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 19.221
+  },
+  {
+    "case_id": "case_1e6c6bcd536a45efa4fb250398d2c17c",
+    "ticker": "INTC",
+    "job_id": "9f2410095ed084b0d515a76b930eed54bb183a746c316546739f492e573e734d",
+    "sdk_end_to_commit_ms": 45.583,
+    "commit_to_receive_ms": 56.584,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 67.19
+  },
+  {
+    "case_id": "case_1e6c6bcd536a45efa4fb250398d2c17c",
+    "ticker": "INTC",
+    "job_id": "8183e4f6d883f01cebb19cff0e69229b5f520e5319b5dfc155b255ec620d590f",
+    "sdk_end_to_commit_ms": 31.216,
+    "commit_to_receive_ms": 80.04,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 105.49
+  },
+  {
+    "case_id": "case_a11835963fdf442498106865385f0fc3",
+    "ticker": "NBIS",
+    "job_id": "e9b4230567476e86dec53895f6ce4e0f6631b078ba35432687c87bb5e2033001",
+    "sdk_end_to_commit_ms": 52.875,
+    "commit_to_receive_ms": 37.328,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 61.809
+  },
+  {
+    "case_id": "case_a11835963fdf442498106865385f0fc3",
+    "ticker": "NBIS",
+    "job_id": "70df6618a154aea308a7cec5c779a7ef74d07b3def172a3315b706393cc16bbe",
+    "sdk_end_to_commit_ms": 25.432,
+    "commit_to_receive_ms": 24.812,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 25.04
+  },
+  {
+    "case_id": "case_a11835963fdf442498106865385f0fc3",
+    "ticker": "NBIS",
+    "job_id": "2150dbf9d7a8cb6280d000f5ee26ad352744b1f9905d4d0897023c779d6d8fe2",
+    "sdk_end_to_commit_ms": 33.131,
+    "commit_to_receive_ms": 26.066,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 36.957
+  },
+  {
+    "case_id": "case_641b5e9c09aa40d0a3bb283bcf07bb60",
+    "ticker": "NBIS",
+    "job_id": "145f5ec4b6863d00150ce5143820a61c2201c9c16cfe680f1d7a4976374d2f50",
+    "sdk_end_to_commit_ms": 30.65,
+    "commit_to_receive_ms": 21.305,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 97.934
+  },
+  {
+    "case_id": "case_641b5e9c09aa40d0a3bb283bcf07bb60",
+    "ticker": "NBIS",
+    "job_id": "587f2fdc95bcbc03ca8472b10dd4a614f10a4821ba198d031bdc4e57141e85fe",
+    "sdk_end_to_commit_ms": 15.024,
+    "commit_to_receive_ms": 11.668,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 32.047
+  },
+  {
+    "case_id": "case_641b5e9c09aa40d0a3bb283bcf07bb60",
+    "ticker": "NBIS",
+    "job_id": "a47068c1819f0853d452abc9ce209bbb7dc9e3246cab711268e192da18cd0208",
+    "sdk_end_to_commit_ms": 31.385,
+    "commit_to_receive_ms": 53.284,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 44.267
+  },
+  {
+    "case_id": "case_c58477ecf06d4b01868e14b75f3d031a",
+    "ticker": "NBIS",
+    "job_id": "b3a12e59c1865f4aeafbfc9e7aaefb286110d62ec5354192a3fdb08377a8beaa",
+    "sdk_end_to_commit_ms": 27.778,
+    "commit_to_receive_ms": 15.876,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 98.092
+  },
+  {
+    "case_id": "case_c58477ecf06d4b01868e14b75f3d031a",
+    "ticker": "NBIS",
+    "job_id": "375e4c525e91e519865583102835b40e3f964fa65d41124257e287af6e7a3fa7",
+    "sdk_end_to_commit_ms": 19.273,
+    "commit_to_receive_ms": 24.12,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 22.716
+  },
+  {
+    "case_id": "case_c58477ecf06d4b01868e14b75f3d031a",
+    "ticker": "NBIS",
+    "job_id": "271f2ed50d3564530cd5531d5e9f013a5a89633f86193b57ed64b6d4f5cbedd6",
+    "sdk_end_to_commit_ms": 22.672,
+    "commit_to_receive_ms": 12.004,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 71.576
+  },
+  {
+    "case_id": "case_8e9fcd2e8d344c0e88105c310abcf840",
+    "ticker": "INTC",
+    "job_id": "ff274a555684ac24958335f94bac07aa7905424c12eaa568ffa48c7afd5d37cd",
+    "sdk_end_to_commit_ms": 18.313,
+    "commit_to_receive_ms": 29.156,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 36.968
+  },
+  {
+    "case_id": "case_8e9fcd2e8d344c0e88105c310abcf840",
+    "ticker": "INTC",
+    "job_id": "1a16c765d6d206fdd1b4c6d453c4c0a3ef1477037072040d7d3e58f542f7df23",
+    "sdk_end_to_commit_ms": 19.387,
+    "commit_to_receive_ms": 28.844,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 72.524
+  },
+  {
+    "case_id": "case_8e9fcd2e8d344c0e88105c310abcf840",
+    "ticker": "INTC",
+    "job_id": "9fd42fa9724e17788de6709e9d1fd7985612f4c658eba67d9f5d32c9ee82251c",
+    "sdk_end_to_commit_ms": 14.454,
+    "commit_to_receive_ms": 16.917,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 27.469
+  },
+  {
+    "case_id": "case_e33ed1bdfcbb41a7b66828dfc6ddc42a",
+    "ticker": "COHR",
+    "job_id": "65a0e34277983623852cfd945c79339ed363f8223ddc23fe52ae2f8e2c02bcc3",
+    "sdk_end_to_commit_ms": 30.443,
+    "commit_to_receive_ms": 16.025,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 59.883
+  },
+  {
+    "case_id": "case_e33ed1bdfcbb41a7b66828dfc6ddc42a",
+    "ticker": "COHR",
+    "job_id": "c7dc95f2c24ba4b7c62e7f89728d5bf63ef9e04f04b6173d05bfe8ab71ac8fe3",
+    "sdk_end_to_commit_ms": 15.234,
+    "commit_to_receive_ms": 19.169,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 22.864
+  },
+  {
+    "case_id": "case_e33ed1bdfcbb41a7b66828dfc6ddc42a",
+    "ticker": "COHR",
+    "job_id": "c04657ab7221c63194843675b26e1efb8b5076b37c99f66835ad27ab8fca990f",
+    "sdk_end_to_commit_ms": 26.186,
+    "commit_to_receive_ms": 44.716,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 18.562
+  },
+  {
+    "case_id": "case_febaf7a381d246e59cd6cf24c976afe6",
+    "ticker": "NBIS",
+    "job_id": "897ea6596da6b245b66fc28b52f15968b26912bcb0213fe19729831ebc373ee4",
+    "sdk_end_to_commit_ms": 23.348,
+    "commit_to_receive_ms": 23.313,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 36.338
+  },
+  {
+    "case_id": "case_febaf7a381d246e59cd6cf24c976afe6",
+    "ticker": "NBIS",
+    "job_id": "117f9bab43dd2d88814b7356eec4f6976ca05e95ee7b3c8c65017ec8bfa16988",
+    "sdk_end_to_commit_ms": 20.89,
+    "commit_to_receive_ms": 21.424,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 22.319
+  },
+  {
+    "case_id": "case_febaf7a381d246e59cd6cf24c976afe6",
+    "ticker": "NBIS",
+    "job_id": "79920bf159ee98619ab0dfdd1df26c0e8840df18084651bbdd916d93eae8db56",
+    "sdk_end_to_commit_ms": 27.114,
+    "commit_to_receive_ms": 25.012,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 21.069
+  },
+  {
+    "case_id": "case_c33cb4643e994d2b8ff2e3a71c12b405",
+    "ticker": "NBIS",
+    "job_id": "3147f5eb3c9fef7ae46b3e50de2cdce2ba23b8728e7f41880a178d83ad03292d",
+    "sdk_end_to_commit_ms": 18.217,
+    "commit_to_receive_ms": 55.616,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 48.818
+  },
+  {
+    "case_id": "case_c33cb4643e994d2b8ff2e3a71c12b405",
+    "ticker": "NBIS",
+    "job_id": "d8c6a5c71916a3438603680dccdf21d569f3ddaa70dacd5edb3b8f4e6c7d0dec",
+    "sdk_end_to_commit_ms": 24.876,
+    "commit_to_receive_ms": 11.355,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 27.124
+  },
+  {
+    "case_id": "case_c33cb4643e994d2b8ff2e3a71c12b405",
+    "ticker": "NBIS",
+    "job_id": "c3d4f95bda0f76c06389186d946432758d8b889b730f37fc352e98c6b851b07f",
+    "sdk_end_to_commit_ms": 16.495,
+    "commit_to_receive_ms": 134.455,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 17.416
+  },
+  {
+    "case_id": "case_820b2d00c9e24798b025d71e47bd1b78",
+    "ticker": "ONDS",
+    "job_id": "05a013fa0c8cb77612a79002cb875a77bdce530fe03adfcfea85d970a659da96",
+    "sdk_end_to_commit_ms": 33.959,
+    "commit_to_receive_ms": 17.932,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 21.069
+  },
+  {
+    "case_id": "case_820b2d00c9e24798b025d71e47bd1b78",
+    "ticker": "ONDS",
+    "job_id": "e92711687447302e735cea22c015ffc470665792a1b28899e5da1f6fe0d12f4b",
+    "sdk_end_to_commit_ms": 25.728,
+    "commit_to_receive_ms": 23.162,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 23.01
+  },
+  {
+    "case_id": "case_820b2d00c9e24798b025d71e47bd1b78",
+    "ticker": "ONDS",
+    "job_id": "25afc092bacb6db0f21ae1f98273080ec8ba8c32d3985b86727ef12ed94cdc16",
+    "sdk_end_to_commit_ms": 20.018,
+    "commit_to_receive_ms": 12.04,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 35.67
+  },
+  {
+    "case_id": "case_16962a44d4274ba6917f26e3d067712f",
+    "ticker": "BE",
+    "job_id": "c7069cc8f3a18d374bd79fdaf9215427a90dd60c7ce436c564ea0f8bf64538fe",
+    "sdk_end_to_commit_ms": 42.179,
+    "commit_to_receive_ms": 39.218,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 47.388
+  },
+  {
+    "case_id": "case_16962a44d4274ba6917f26e3d067712f",
+    "ticker": "BE",
+    "job_id": "1539b33d992f2fb63744bc1fa3de177b9f71835f4e05201152229e6bd5e0b9ca",
+    "sdk_end_to_commit_ms": 39.731,
+    "commit_to_receive_ms": 19.925,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 30.151
+  },
+  {
+    "case_id": "case_16962a44d4274ba6917f26e3d067712f",
+    "ticker": "BE",
+    "job_id": "ff187e4e4f569a8af8bdf84d5eb933023bff8eea1555da7a99f3442359924085",
+    "sdk_end_to_commit_ms": 24.846,
+    "commit_to_receive_ms": 25.767,
+    "worker_sdk_resume": null,
+    "worker_queue_ms": 27.497
+  }
+]

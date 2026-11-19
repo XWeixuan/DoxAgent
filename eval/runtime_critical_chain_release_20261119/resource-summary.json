@@ -1,0 +1,39 @@
+{
+  "window": [
+    "2026-11-18T23:40:11.697395+00:00",
+    "2026-11-18T23:50:11.789134+00:00"
+  ],
+  "samples": 61,
+  "host_available_gib_min": 14.117279052734375,
+  "swap_in_mib": 9.4609375,
+  "swap_out_mib": 0.00390625,
+  "peak_psi": {
+    "cpu": 43.47,
+    "io": 11.38,
+    "memory": 1.62
+  },
+  "roles": {
+    "/doxagent-v2-codex-worker-1": {
+      "memory_gib_peak": 2.5550498962402344,
+      "oom_kill_delta": 0,
+      "pids_peak": 385
+    },
+    "/doxagent-v2-v2-scheduler-1": {
+      "memory_gib_peak": 0.9068946838378906,
+      "oom_kill_delta": 0,
+      "pids_peak": 37
+    },
+    "/doxagent-v2-v2-projector-1": {
+      "memory_gib_peak": 0.27520751953125,
+      "oom_kill_delta": 0,
+      "pids_peak": 2
+    },
+    "/doxagent-v2-v2-transport-maintenance-1": {
+      "memory_gib_peak": 0.406463623046875,
+      "oom_kill_delta": 0,
+      "pids_peak": 2
+    }
+  },
+  "ready_pss_mib": 943.6767578125,
+  "ready_processes": 12
+}

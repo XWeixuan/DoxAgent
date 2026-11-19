@@ -1,0 +1,106 @@
+[
+  {
+    "at": "2026-11-19T00:37:58.078944+00:00",
+    "threads": []
+  },
+  {
+    "at": "2026-11-19T00:37:59.096817+00:00",
+    "threads": [
+      {
+        "name": "runtime-dispatch",
+        "gil": false,
+        "frames": [
+          "/app/src/doxagent/v2_control/repository.py:104 ControlRepository.read",
+          "/usr/local/lib/python3.11/contextlib.py:144 _GeneratorContextManager.__exit__",
+          "/app/src/doxagent/v2_control/repository.py:148 ControlRepository.get",
+          "/app/src/doxagent/runtime_scheduler/v2.py:69 V2Scheduler._recover_existing_once",
+          "/app/src/doxagent/runtime_scheduler/v2.py:32 V2Scheduler._start_existing_recovery.<locals>.recover"
+        ]
+      },
+      {
+        "name": "runtime-effects_0",
+        "gil": false,
+        "frames": [
+          "/app/src/doxagent/persistent_runtime_v2/fencing.py:78 FencedConnection.execute",
+          "/app/src/doxagent/persistent_runtime_v2/repository.py:1108 SQLitePersistentRuntimeV2Repository.claim_effects.<locals>.select_due",
+          "/app/src/doxagent/persistent_runtime_v2/repository.py:1130 SQLitePersistentRuntimeV2Repository.claim_effects",
+          "/app/src/doxagent/persistent_runtime_v2/repository.py:61 retry_sqlite_write.<locals>.run.<locals>.<lambda>",
+          "/app/src/doxagent/persistent_runtime_v2/journal.py:50 retry_write"
+        ]
+      },
+      {
+        "name": "MainThread",
+        "gil": false,
+        "frames": [
+          "/app/src/doxagent/v2_control/repository.py:104 ControlRepository.read",
+          "/usr/local/lib/python3.11/contextlib.py:144 _GeneratorContextManager.__exit__",
+          "/app/src/doxagent/v2_control/repository.py:148 ControlRepository.get",
+          "/app/src/doxagent/ticker_initialization/consumers.py:175 admit_runtime_revisions",
+          "/app/src/doxagent/runtime_scheduler/service.py:176 UnifiedRuntimeSchedulerService.run_due_once"
+        ]
+      }
+    ]
+  },
+  {
+    "at": "2026-11-19T00:38:00.115024+00:00",
+    "threads": []
+  },
+  {
+    "at": "2026-11-19T00:38:01.136171+00:00",
+    "threads": [
+      {
+        "name": "runtime-dispatch",
+        "gil": false,
+        "frames": [
+          "/app/src/doxagent/v2_control/repository.py:31 control_in",
+          "/app/src/doxagent/v2_control/repository.py:149 ControlRepository.get",
+          "/app/src/doxagent/runtime_scheduler/v2.py:69 V2Scheduler._recover_existing_once",
+          "/app/src/doxagent/runtime_scheduler/v2.py:32 V2Scheduler._start_existing_recovery.<locals>.recover",
+          "/usr/local/lib/python3.11/threading.py:982 Thread.run"
+        ]
+      },
+      {
+        "name": "runtime-effects_0",
+        "gil": false,
+        "frames": [
+          "/app/src/doxagent/persistent_runtime_v2/repository.py:80 _ClosingSQLiteConnection.__exit__",
+          "/app/src/doxagent/persistent_runtime_v2/repository.py:1129 SQLitePersistentRuntimeV2Repository.claim_effects",
+          "/app/src/doxagent/persistent_runtime_v2/repository.py:61 retry_sqlite_write.<locals>.run.<locals>.<lambda>",
+          "/app/src/doxagent/persistent_runtime_v2/journal.py:50 retry_write",
+          "/app/src/doxagent/persistent_runtime_v2/repository.py:61 retry_sqlite_write.<locals>.run"
+        ]
+      },
+      {
+        "name": "MainThread",
+        "gil": false,
+        "frames": [
+          "/app/src/doxagent/ticker_initialization/repository.py:184 InitializationRepository._connection",
+          "/usr/local/lib/python3.11/contextlib.py:137 _GeneratorContextManager.__enter__",
+          "/app/src/doxagent/ticker_initialization/repository.py:1595 InitializationRepository.current_revision_admitted",
+          "/app/src/doxagent/ticker_initialization/consumers.py:196 admit_runtime_revisions",
+          "/app/src/doxagent/runtime_scheduler/service.py:176 UnifiedRuntimeSchedulerService.run_due_once"
+        ]
+      }
+    ]
+  },
+  {
+    "at": "2026-11-19T00:38:02.157208+00:00",
+    "threads": [
+      {
+        "name": "MainThread",
+        "gil": false,
+        "frames": [
+          "/app/src/doxagent/v2_control/repository.py:31 control_in",
+          "/app/src/doxagent/v2_control/repository.py:149 ControlRepository.get",
+          "/app/src/doxagent/runtime_scheduler/service.py:265 UnifiedRuntimeSchedulerService.tick_ticker",
+          "/app/src/doxagent/runtime_scheduler/v2.py:125 V2Scheduler._run_admitted_once",
+          "/app/src/doxagent/runtime_scheduler/service.py:195 UnifiedRuntimeSchedulerService.run_due_once"
+        ]
+      }
+    ]
+  },
+  {
+    "at": "2026-11-19T00:38:03.180157+00:00",
+    "threads": []
+  }
+]

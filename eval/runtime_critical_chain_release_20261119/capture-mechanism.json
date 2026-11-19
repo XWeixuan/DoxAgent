@@ -1,0 +1,1 @@
+[{"capture": true, "total_changes": 120, "counts": {"runtime_values": 30, "v2_source_receipts": 30, "v2_source_outbox": 30}, "serving_skipped": true}, {"capture": false, "total_changes": 30, "counts": {"runtime_values": 30, "v2_source_receipts": 0, "v2_source_outbox": 0}}]

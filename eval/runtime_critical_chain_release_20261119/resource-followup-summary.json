@@ -1,0 +1,139 @@
+{
+  "window": [
+    "2026-11-19T00:17:25.695757+00:00",
+    "2026-11-19T00:17:45.792746+00:00"
+  ],
+  "roles": {
+    "/doxagent-v2-codex-worker-1": {
+      "cpu_cores": 0.07733466938753861,
+      "write_bytes": 7630848,
+      "memory_gib": 2.3944320678710938
+    },
+    "/doxagent-v2-v2-scheduler-1": {
+      "cpu_cores": 0.8961611612565444,
+      "write_bytes": 2248704,
+      "memory_gib": 1.5798988342285156
+    },
+    "/doxagent-v2-v2-projector-1": {
+      "cpu_cores": 0.04913979900173106,
+      "write_bytes": 6643712,
+      "memory_gib": 0.24752426147460938
+    }
+  },
+  "common_processes_by_cpu": [
+    {
+      "pid": 645831,
+      "role": "/doxagent-v2-v2-scheduler-1",
+      "name": "python",
+      "cpu_seconds": 18.0,
+      "write_bytes": 15945728
+    },
+    {
+      "pid": 725575,
+      "role": "/doxagent-v2-v2-projector-1",
+      "name": "python",
+      "cpu_seconds": 0.98,
+      "write_bytes": 9154560
+    },
+    {
+      "pid": 740038,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "cpu_seconds": 0.64,
+      "write_bytes": 2396160
+    },
+    {
+      "pid": 642124,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "cpu_seconds": 0.63,
+      "write_bytes": 2252800
+    },
+    {
+      "pid": 740466,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex-code-mode",
+      "cpu_seconds": 0.04,
+      "write_bytes": 0
+    },
+    {
+      "pid": 648848,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "cpu_seconds": 0.01,
+      "write_bytes": 32768
+    },
+    {
+      "pid": 722778,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "cpu_seconds": 0.01,
+      "write_bytes": 0
+    },
+    {
+      "pid": 723019,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "cpu_seconds": 0.01,
+      "write_bytes": 0
+    }
+  ],
+  "common_processes_by_write": [
+    {
+      "pid": 645831,
+      "role": "/doxagent-v2-v2-scheduler-1",
+      "name": "python",
+      "cpu_seconds": 18.0,
+      "write_bytes": 15945728
+    },
+    {
+      "pid": 725575,
+      "role": "/doxagent-v2-v2-projector-1",
+      "name": "python",
+      "cpu_seconds": 0.98,
+      "write_bytes": 9154560
+    },
+    {
+      "pid": 740038,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "cpu_seconds": 0.64,
+      "write_bytes": 2396160
+    },
+    {
+      "pid": 642124,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "cpu_seconds": 0.63,
+      "write_bytes": 2252800
+    },
+    {
+      "pid": 648848,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "cpu_seconds": 0.01,
+      "write_bytes": 32768
+    },
+    {
+      "pid": 642077,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "docker-init",
+      "cpu_seconds": 0.0,
+      "write_bytes": 0
+    },
+    {
+      "pid": 722671,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "python",
+      "cpu_seconds": 0.0,
+      "write_bytes": 0
+    },
+    {
+      "pid": 722778,
+      "role": "/doxagent-v2-codex-worker-1",
+      "name": "codex",
+      "cpu_seconds": 0.01,
+      "write_bytes": 0
+    }
+  ]
+}

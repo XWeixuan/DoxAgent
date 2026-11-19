@@ -1,0 +1,1 @@
+{"heartbeat_during_foreign_traffic": false, "configured_interval_ms": 100, "foreign_observation_ms": 650, "notifications": 20, "max_notification_gap_ms": 46.999999991385266, "event": "heartbeat"}

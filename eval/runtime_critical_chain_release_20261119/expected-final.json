@@ -1,0 +1,72 @@
+{
+  "v2-scheduler": {
+    "commit": "307db28d2e46d53ef5ba926b901bae8fa123dd56",
+    "files": {
+      "src/doxagent/persistent_runtime_v2/w3_execution.py": "34af164a45658b694dc9a9242bcf28229e1647fcaafbe54c0b4b3e5e8e641648",
+      "src/doxagent/persistent_runtime_v2/w3_threads.py": "57135cc38ee58a312a4b414a66ca92eee5f75031e9b572ea64b92a729a182786",
+      "src/doxagent/persistent_runtime_v2/w3_v6.py": "2643343efdf4dc467dcb9685d9b6dcf8be6e76d30d82f2416e2815a047ad17b2",
+      "src/doxagent/persistent_runtime_v2/worker_receipts.py": "a48ecf25e0b707a2700d7895d0564327eaaf95211cce15996f0f5a6b92223453",
+      "src/doxagent/codex_runtime/client.py": "69d807da5d6e2168e056a1f27b174e56b7b2ce727d79d3e165eb11aa0c916ea2",
+      "src/doxagent/settings.py": "849db64ed69d044aaeb571cf402c9ee9fad0ee9d836f5d6cfe26a153c0702d58"
+    }
+  },
+  "codex-worker": {
+    "commit": "307db28d2e46d53ef5ba926b901bae8fa123dd56",
+    "files": {
+      "src/doxagent/codex_worker/jobs.py": "0e9026c990e04ac392c5bf45281d65493b68923fb000a3ce205f925283a8f966",
+      "src/doxagent/codex_worker/capsule_child.py": "a96ad0e4818fe330365bb7da7aa47be4087596f4142c6f3141d31220e1fed682",
+      "src/doxagent/codex_worker/capsules.py": "1d228d232839d6a137e26c4612ad76db192838213fa69535242895c100a9cf40",
+      "src/doxagent/codex_worker/w3_ready.py": "62e484aae3ca396fda4f34fb61dc1b555c0d3d50f184c7108f43702df51ccb0a",
+      "src/doxagent/codex_worker/sdk_runtime.py": "8dfa2f142242a3581bc0a95b82f550b5813539c98df1b91bba27e14187cf0a5c",
+      "src/doxagent/settings.py": "849db64ed69d044aaeb571cf402c9ee9fad0ee9d836f5d6cfe26a153c0702d58"
+    }
+  },
+  "v2-projector": {
+    "commit": "48d0284eecaf0835fa0b5a173b37839257fe3157",
+    "files": {
+      "src/doxagent/v2_read/projector.py": "a5f29a56208bfea7d9d131889206c0cbc7b92405303126d5f7ea1e5dae1b2c24",
+      "src/doxagent/v2_read/source_lifecycle.py": "5359db45053e3503113c720e9c7ea3c36aafb4616ee893e4f0a829ddb4a4ef3e",
+      "src/doxagent/v2_read/outbox.py": "855e8c93eec4d9240b9804507ccb6dac22a2aa0a75a330245083ee0ec15e519f",
+      "src/doxagent/v2_read/repository.py": "ede31a733637600c94b69c8e2eb7fefa9f9f3911d2c234aa364edbe20567b0d1"
+    }
+  },
+  "v2-api": {
+    "commit": "e259765d90dd504866eeb2796d20cc1c6c54660c",
+    "files": {
+      "src/doxagent/api_v2/app.py": "63dd233108edbd4491ab2dd098bbdd48793e308f64887b883ddc32e4a1c1e54d",
+      "src/doxagent/v2_read/repository.py": "ede31a733637600c94b69c8e2eb7fefa9f9f3911d2c234aa364edbe20567b0d1"
+    }
+  },
+  "v2-executor": {
+    "commit": "e259765d90dd504866eeb2796d20cc1c6c54660c",
+    "files": {
+      "src/doxagent/trade_execution/worker.py": "9d336dcd0a820f19ec391219755828f2a4cae9576c26ba385873d3eb00fe536f"
+    }
+  },
+  "v2-transport-maintenance": {
+    "commit": "307db28d2e46d53ef5ba926b901bae8fa123dd56",
+    "files": {
+      "src/doxagent/v2_read/source_lifecycle.py": "8ae668acb66afbe508abf69dc614fb4f7e452449d0444ccbb91a192875fb5940",
+      "src/doxagent/v2_read/transport_archive.py": "2b25cb3ec061c5eb94d1f738804555bc551fe5269d6f90144c61832fae686f9a"
+    }
+  },
+  "v2-maintenance": {
+    "commit": "307db28d2e46d53ef5ba926b901bae8fa123dd56",
+    "files": {
+      "src/doxagent/workflows/codex_document3/runner_v21.py": "d60848bf184394a29c7922ad62852c73304d8f7c9a0e3fb58689e2629e85b55d",
+      "src/doxagent/v2_read/maintenance.py": "f3eadf54839aadf692e18f5c51d5ba856bae49579f07f93065a4396998d7f21c"
+    }
+  },
+  "v2-initialization": {
+    "commit": "307db28d2e46d53ef5ba926b901bae8fa123dd56",
+    "files": {
+      "src/doxagent/workflows/codex_document3/runner_v21.py": "d60848bf184394a29c7922ad62852c73304d8f7c9a0e3fb58689e2629e85b55d"
+    }
+  },
+  "v2-cdecr-executor": {
+    "commit": "307db28d2e46d53ef5ba926b901bae8fa123dd56",
+    "files": {
+      "src/doxagent/workflows/codex_document3/runner_v21.py": "d60848bf184394a29c7922ad62852c73304d8f7c9a0e3fb58689e2629e85b55d"
+    }
+  }
+}

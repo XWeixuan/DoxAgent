@@ -1,0 +1,25 @@
+Linux 7.0.0-14-generic (VM-0-15-ubuntu) 	11/19/26 	_x86_64_	(8 CPU)
+
+08:00:00        CPU     %user     %nice   %system   %iowait    %steal     %idle
+08:10:01        all     63.87      0.04     10.90      1.45      0.00     23.75
+Average:        all     63.87      0.04     10.90      1.45      0.00     23.75
+
+08:00:00     pswpin/s pswpout/s
+08:10:01         6.04     90.39
+Average:         6.04     90.39
+
+08:00:00          tps      rtps      wtps      dtps   bread/s   bwrtn/s   bdscd/s
+08:10:01      1622.82    369.11   1253.70      0.00  10654.95  39208.35      0.00
+Average:      1622.82    369.11   1253.70      0.00  10654.95  39208.35      0.00
+
+08:00:00    kbmemfree   kbavail kbmemused  %memused kbbuffers  kbcached  kbcommit   %commit  kbactive   kbinact   kbdirty
+08:10:01      2929916  15543444  15065392     46.40    639200   7536912  90104488    260.68   9415108  13340972      7020
+Average:      2929916  15543444  15065392     46.40    639200   7536912  90104488    260.68   9415108  13340972      7020
+
+08:00:00    kbswpfree kbswpused  %swpused  kbswpcad   %swpcad
+08:10:01         3384   2093764     99.84    151096      7.22
+Average:         3384   2093764     99.84    151096      7.22
+
+08:00:00      runq-sz  plist-sz   ldavg-1   ldavg-5  ldavg-15   blocked
+08:10:01            6      4227      6.36     10.24      9.83         0
+Average:            6      4227      6.36     10.24      9.83         0

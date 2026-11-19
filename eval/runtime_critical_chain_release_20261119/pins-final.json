@@ -1,0 +1,1 @@
+{"at": "2026-11-18T23:58:53.751261+00:00", "consumers": [{"id": "read:f5a9a5abef8b59b55708558f", "checkpoint": 5063903, "updated_at": "2026-11-18T23:58:35.811Z", "pin_count": 17207, "limit_reached": false, "missing_count": 0, "extra_count": 0, "same_members": true, "comparison_is_cross_db_observation": true}], "read_gap_count": 17207, "read_limit_reached": false}

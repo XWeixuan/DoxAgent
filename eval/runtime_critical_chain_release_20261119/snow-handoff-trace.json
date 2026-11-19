@@ -1,0 +1,1197 @@
+{
+  "worker": {
+    "schema_version": "w3-boundary-timing-v1",
+    "trace_id": "bcb58fc8c6bd474f8f1ce7088d67f402",
+    "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1",
+    "run_id": "w3-ready-be9e17508b8a40d389b9f216318d8fce",
+    "attempt_id": "bc1a4c59939d32c5b5be3346-trade_decision",
+    "phase": "trade_decision",
+    "worker_generation": "d81988188d20421c850f20d5ab2c0ce4",
+    "worker_queue_to_run_ms": 30.506,
+    "milestones": {
+      "worker.terminal_commit_return": {
+        "at": "2026-11-19T00:05:00.275928+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      "worker.terminal_notify": {
+        "at": "2026-11-19T00:05:00.276169+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      }
+    },
+    "started_at": "2026-11-19T00:03:39.039076+00:00",
+    "finished_at": "2026-11-19T00:05:00.331867+00:00",
+    "elapsed_ms": 81292.79,
+    "events": [
+      {
+        "span_id": 1,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 3.717,
+        "elapsed_ms": 3.399,
+        "error_type": null,
+        "queued_ms": 3.652,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 3,
+        "parent_span_id": 2,
+        "name": "file_io.call",
+        "offset_ms": 8.263,
+        "elapsed_ms": 3.519,
+        "error_type": null,
+        "queued_ms": 0.479,
+        "operation": "LocalWorkspaceStore.ensure_attempt"
+      },
+      {
+        "span_id": 2,
+        "parent_span_id": null,
+        "name": "worker.ensure_attempt",
+        "offset_ms": 7.759,
+        "elapsed_ms": 4.31,
+        "error_type": null
+      },
+      {
+        "span_id": 5,
+        "parent_span_id": 4,
+        "name": "worker.update_sql",
+        "offset_ms": 12.457,
+        "elapsed_ms": 1.854,
+        "error_type": null
+      },
+      {
+        "span_id": 4,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 12.429,
+        "elapsed_ms": 1.902,
+        "error_type": null,
+        "queued_ms": 0.237,
+        "operation": "WorkerJobManager._update.<locals>.update_record"
+      },
+      {
+        "span_id": 7,
+        "parent_span_id": 6,
+        "name": "file_io.call",
+        "offset_ms": 15.117,
+        "elapsed_ms": 6.025,
+        "error_type": null,
+        "queued_ms": 0.103,
+        "operation": "WorkerJobManager._persist"
+      },
+      {
+        "span_id": 6,
+        "parent_span_id": null,
+        "name": "worker.audit_mirror",
+        "offset_ms": 14.989,
+        "elapsed_ms": 6.279,
+        "error_type": null
+      },
+      {
+        "span_id": 8,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 21.706,
+        "elapsed_ms": 1.858,
+        "error_type": null,
+        "queued_ms": 0.291,
+        "operation": "JobStore.event"
+      },
+      {
+        "span_id": 9,
+        "parent_span_id": null,
+        "name": "worker.startup_wait",
+        "offset_ms": 23.738,
+        "elapsed_ms": 0.012,
+        "error_type": null
+      },
+      {
+        "span_id": 11,
+        "parent_span_id": 10,
+        "name": "capsule.acquire",
+        "offset_ms": 23.811,
+        "elapsed_ms": 0.037,
+        "error_type": null
+      },
+      {
+        "span_id": 12,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 27.974,
+        "elapsed_ms": 4.686,
+        "error_type": null,
+        "queued_ms": 0.451,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 13,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 33.4,
+        "elapsed_ms": 2.607,
+        "error_type": null,
+        "queued_ms": 0.617,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 14,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 36.302,
+        "elapsed_ms": 1.993,
+        "error_type": null,
+        "queued_ms": 0.143,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 15,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 43.501,
+        "elapsed_ms": 5.184,
+        "error_type": null,
+        "queued_ms": 0.923,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 17,
+        "parent_span_id": 16,
+        "name": "worker.update_sql",
+        "offset_ms": 51.118,
+        "elapsed_ms": 2.382,
+        "error_type": null
+      },
+      {
+        "span_id": 16,
+        "parent_span_id": 10,
+        "name": "io.write",
+        "offset_ms": 51.104,
+        "elapsed_ms": 2.43,
+        "error_type": null,
+        "queued_ms": 0.622,
+        "operation": "WorkerJobManager._update.<locals>.update_record"
+      },
+      {
+        "span_id": 19,
+        "parent_span_id": 18,
+        "name": "file_io.call",
+        "offset_ms": 53.928,
+        "elapsed_ms": 4.175,
+        "error_type": null,
+        "queued_ms": 0.206,
+        "operation": "WorkerJobManager._persist"
+      },
+      {
+        "span_id": 18,
+        "parent_span_id": 10,
+        "name": "worker.audit_mirror",
+        "offset_ms": 53.696,
+        "elapsed_ms": 4.865,
+        "error_type": null
+      },
+      {
+        "span_id": 20,
+        "parent_span_id": 10,
+        "name": "io.write",
+        "offset_ms": 58.878,
+        "elapsed_ms": 5.741,
+        "error_type": null,
+        "queued_ms": 0.159,
+        "operation": "JobStore.event"
+      },
+      {
+        "span_id": 21,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 70.574,
+        "elapsed_ms": 0.567,
+        "error_type": null,
+        "queued_ms": 0.873,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 22,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 72.386,
+        "elapsed_ms": 2.071,
+        "error_type": null,
+        "queued_ms": 1.102,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 23,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 78.2,
+        "elapsed_ms": 0.617,
+        "error_type": null,
+        "queued_ms": 0.412,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 24,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 81.561,
+        "elapsed_ms": 0.588,
+        "error_type": null,
+        "queued_ms": 0.594,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 26,
+        "parent_span_id": 25,
+        "name": "worker.update_sql",
+        "offset_ms": 82.485,
+        "elapsed_ms": 5.348,
+        "error_type": null
+      },
+      {
+        "span_id": 25,
+        "parent_span_id": 10,
+        "name": "io.write",
+        "offset_ms": 82.476,
+        "elapsed_ms": 5.385,
+        "error_type": null,
+        "queued_ms": 0.069,
+        "operation": "WorkerJobManager._update.<locals>.update_record"
+      },
+      {
+        "span_id": 28,
+        "parent_span_id": 27,
+        "name": "file_io.call",
+        "offset_ms": 88.554,
+        "elapsed_ms": 22.084,
+        "error_type": null,
+        "queued_ms": 0.512,
+        "operation": "WorkerJobManager._persist"
+      },
+      {
+        "span_id": 27,
+        "parent_span_id": 10,
+        "name": "worker.audit_mirror",
+        "offset_ms": 88.013,
+        "elapsed_ms": 22.904,
+        "error_type": null
+      },
+      {
+        "span_id": 29,
+        "parent_span_id": 10,
+        "name": "io.write",
+        "offset_ms": 111.195,
+        "elapsed_ms": 1.996,
+        "error_type": null,
+        "queued_ms": 0.106,
+        "operation": "JobStore.event"
+      },
+      {
+        "span_id": 30,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 113.795,
+        "elapsed_ms": 2.776,
+        "error_type": null,
+        "queued_ms": 0.356,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 31,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 118.284,
+        "elapsed_ms": 2.488,
+        "error_type": null,
+        "queued_ms": 0.185,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 32,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 122.33,
+        "elapsed_ms": 0.764,
+        "error_type": null,
+        "queued_ms": 1.268,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 33,
+        "parent_span_id": 10,
+        "name": "io.read",
+        "offset_ms": 124.343,
+        "elapsed_ms": 3.362,
+        "error_type": null,
+        "queued_ms": 0.982,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 35,
+        "parent_span_id": 34,
+        "name": "worker.update_sql",
+        "offset_ms": 129.991,
+        "elapsed_ms": 3.559,
+        "error_type": null
+      },
+      {
+        "span_id": 34,
+        "parent_span_id": 10,
+        "name": "io.write",
+        "offset_ms": 129.977,
+        "elapsed_ms": 3.62,
+        "error_type": null,
+        "queued_ms": 0.235,
+        "operation": "WorkerJobManager._update.<locals>.update_record"
+      },
+      {
+        "span_id": 37,
+        "parent_span_id": 36,
+        "name": "file_io.call",
+        "offset_ms": 135.071,
+        "elapsed_ms": 4.768,
+        "error_type": null,
+        "queued_ms": 1.263,
+        "operation": "WorkerJobManager._persist"
+      },
+      {
+        "span_id": 36,
+        "parent_span_id": 10,
+        "name": "worker.audit_mirror",
+        "offset_ms": 133.768,
+        "elapsed_ms": 9.979,
+        "error_type": null
+      },
+      {
+        "span_id": 38,
+        "parent_span_id": 10,
+        "name": "io.write",
+        "offset_ms": 144.116,
+        "elapsed_ms": 1.727,
+        "error_type": null,
+        "queued_ms": 0.08,
+        "operation": "JobStore.event"
+      },
+      {
+        "span_id": 10,
+        "parent_span_id": null,
+        "name": "worker.runtime_start",
+        "offset_ms": 23.766,
+        "elapsed_ms": 122.867,
+        "error_type": null
+      },
+      {
+        "span_id": 40,
+        "parent_span_id": 39,
+        "name": "worker.update_sql",
+        "offset_ms": 154.839,
+        "elapsed_ms": 5.386,
+        "error_type": null
+      },
+      {
+        "span_id": 39,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 154.824,
+        "elapsed_ms": 5.446,
+        "error_type": null,
+        "queued_ms": 7.971,
+        "operation": "WorkerJobManager._update.<locals>.update_record"
+      },
+      {
+        "span_id": 42,
+        "parent_span_id": 41,
+        "name": "file_io.call",
+        "offset_ms": 160.564,
+        "elapsed_ms": 7.245,
+        "error_type": null,
+        "queued_ms": 0.133,
+        "operation": "WorkerJobManager._persist"
+      },
+      {
+        "span_id": 41,
+        "parent_span_id": null,
+        "name": "worker.audit_mirror",
+        "offset_ms": 160.406,
+        "elapsed_ms": 8.591,
+        "error_type": null
+      },
+      {
+        "span_id": 43,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 169.512,
+        "elapsed_ms": 1.543,
+        "error_type": null,
+        "queued_ms": 0.118,
+        "operation": "JobStore.event"
+      },
+      {
+        "span_id": 44,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 81224.744,
+        "elapsed_ms": 1.561,
+        "error_type": null,
+        "queued_ms": 0.11,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 46,
+        "parent_span_id": 45,
+        "name": "worker.update_sql",
+        "offset_ms": 81226.775,
+        "elapsed_ms": 10.011,
+        "error_type": null
+      },
+      {
+        "span_id": 47,
+        "parent_span_id": 45,
+        "name": "worker.terminal_commit_return",
+        "offset_ms": 81236.869,
+        "elapsed_ms": 0.01,
+        "error_type": null,
+        "at": "2026-11-19T00:05:00.275928+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      {
+        "span_id": 45,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 81226.756,
+        "elapsed_ms": 10.139,
+        "error_type": null,
+        "queued_ms": 0.16,
+        "operation": "WorkerJobManager._update.<locals>.update_record"
+      },
+      {
+        "span_id": 48,
+        "parent_span_id": null,
+        "name": "worker.terminal_notify",
+        "offset_ms": 81237.096,
+        "elapsed_ms": 0.008,
+        "error_type": null,
+        "at": "2026-11-19T00:05:00.276169+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      {
+        "span_id": 50,
+        "parent_span_id": 49,
+        "name": "file_io.call",
+        "offset_ms": 81237.508,
+        "elapsed_ms": 11.643,
+        "error_type": null,
+        "queued_ms": 0.368,
+        "operation": "WorkerJobManager._persist"
+      },
+      {
+        "span_id": 49,
+        "parent_span_id": null,
+        "name": "worker.audit_mirror",
+        "offset_ms": 81237.12,
+        "elapsed_ms": 12.134,
+        "error_type": null
+      },
+      {
+        "span_id": 51,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 81249.831,
+        "elapsed_ms": 2.481,
+        "error_type": null,
+        "queued_ms": 0.172,
+        "operation": "JobStore.event"
+      },
+      {
+        "span_id": 52,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 81252.735,
+        "elapsed_ms": 0.979,
+        "error_type": null,
+        "queued_ms": 0.244,
+        "operation": "JobStore.get"
+      },
+      {
+        "span_id": 53,
+        "parent_span_id": null,
+        "name": "file_io.call",
+        "offset_ms": 81259.241,
+        "elapsed_ms": 32.916,
+        "error_type": null,
+        "queued_ms": 0.224,
+        "operation": "WorkerJobManager._persist_telemetry"
+      }
+    ],
+    "totals": {
+      "io.read": {
+        "count": 15,
+        "elapsed_ms": 33.642,
+        "errors": 0,
+        "queued_ms": 11.911999999999999
+      },
+      "file_io.call": {
+        "count": 8,
+        "elapsed_ms": 92.375,
+        "errors": 0,
+        "queued_ms": 3.288
+      },
+      "worker.ensure_attempt": {
+        "count": 1,
+        "elapsed_ms": 4.31,
+        "errors": 0
+      },
+      "worker.update_sql": {
+        "count": 6,
+        "elapsed_ms": 28.54,
+        "errors": 0
+      },
+      "io.write": {
+        "count": 12,
+        "elapsed_ms": 44.268,
+        "errors": 0,
+        "queued_ms": 10.22
+      },
+      "worker.audit_mirror": {
+        "count": 6,
+        "elapsed_ms": 64.752,
+        "errors": 0
+      },
+      "worker.startup_wait": {
+        "count": 1,
+        "elapsed_ms": 0.012,
+        "errors": 0
+      },
+      "capsule.acquire": {
+        "count": 1,
+        "elapsed_ms": 0.037,
+        "errors": 0
+      },
+      "worker.runtime_start": {
+        "count": 1,
+        "elapsed_ms": 122.867,
+        "errors": 0
+      },
+      "worker.terminal_commit_return": {
+        "count": 1,
+        "elapsed_ms": 0.01,
+        "errors": 0
+      },
+      "worker.terminal_notify": {
+        "count": 1,
+        "elapsed_ms": 0.008,
+        "errors": 0
+      }
+    },
+    "active_spans": [
+      {
+        "span_id": 54,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 81292.688,
+        "queued_ms": 0.128,
+        "operation": "save_trace"
+      }
+    ],
+    "events_truncated": true
+  },
+  "scheduler": {
+    "schema_version": "w3-boundary-timing-v1",
+    "trace_id": "85665b46650447b396a19a6125936d69",
+    "case_id": "case_ab8898eebc1a4c59939d32c5b5be3346",
+    "effect_id": "effect_609dc672061641b08e3d0c0f9bdaa30c",
+    "phase": "route_to_w3",
+    "lease_token": 1,
+    "effect_created_at": "2026-11-19T00:03:37.947172+00:00",
+    "effect_available_at": "2026-11-19T00:03:37.947167+00:00",
+    "effect_attempt_count": 0,
+    "effect_age_at_start_ms": 379.493,
+    "effect_claim_started_at": "2026-11-19T00:03:38.214365+00:00",
+    "effect_claim_elapsed_ms": 111.228,
+    "effect_claim_batch_size": 1,
+    "effect_dispatched_at": "2026-11-19T00:03:38.325627+00:00",
+    "effect_thread_start_ms": 0.974,
+    "segment": "phase_io",
+    "task_phase": "trade_decision",
+    "milestones": {
+      "worker.http_request_started": {
+        "at": "2026-11-19T00:05:03.387317+00:00",
+        "method": "GET",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      "worker.http_response_received": {
+        "at": "2026-11-19T00:05:03.416235+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      "worker.terminal_parsed": {
+        "at": "2026-11-19T00:05:03.416585+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      "worker.result_received": {
+        "at": "2026-11-19T00:05:03.417836+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1",
+        "status": "succeeded",
+        "worker_finished_at": "2026-11-19T00:05:00.265526+00:00"
+      },
+      "worker.receipt_saved": {
+        "at": "2026-11-19T00:05:03.715267+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      }
+    },
+    "segment_complete": true,
+    "started_at": "2026-11-19T00:03:38.569588+00:00",
+    "finished_at": "2026-11-19T00:05:03.717326+00:00",
+    "elapsed_ms": 85147.743,
+    "events": [
+      {
+        "span_id": 1,
+        "parent_span_id": null,
+        "name": "journal.connect",
+        "offset_ms": 1.195,
+        "elapsed_ms": 0.014,
+        "error_type": null
+      },
+      {
+        "span_id": 2,
+        "parent_span_id": null,
+        "name": "journal.begin",
+        "offset_ms": 1.231,
+        "elapsed_ms": 0.027,
+        "error_type": null,
+        "write": false
+      },
+      {
+        "span_id": 3,
+        "parent_span_id": null,
+        "name": "journal.commit",
+        "offset_ms": 1.382,
+        "elapsed_ms": 0.058,
+        "error_type": null,
+        "write": false
+      },
+      {
+        "span_id": 5,
+        "parent_span_id": 4,
+        "name": "journal.connect",
+        "offset_ms": 2.613,
+        "elapsed_ms": 0.009,
+        "error_type": null
+      },
+      {
+        "span_id": 6,
+        "parent_span_id": 4,
+        "name": "journal.begin",
+        "offset_ms": 2.642,
+        "elapsed_ms": 0.024,
+        "error_type": null,
+        "write": false
+      },
+      {
+        "span_id": 7,
+        "parent_span_id": 4,
+        "name": "journal.commit",
+        "offset_ms": 3.492,
+        "elapsed_ms": 0.035,
+        "error_type": null,
+        "write": false
+      },
+      {
+        "span_id": 4,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 2.591,
+        "elapsed_ms": 0.956,
+        "error_type": null,
+        "queued_ms": 0.936,
+        "operation": "RuntimeJournal.get"
+      },
+      {
+        "span_id": 9,
+        "parent_span_id": 8,
+        "name": "journal.connect",
+        "offset_ms": 3.888,
+        "elapsed_ms": 0.01,
+        "error_type": null
+      },
+      {
+        "span_id": 10,
+        "parent_span_id": 8,
+        "name": "journal.begin",
+        "offset_ms": 3.919,
+        "elapsed_ms": 0.013,
+        "error_type": null,
+        "write": false
+      },
+      {
+        "span_id": 11,
+        "parent_span_id": 8,
+        "name": "journal.commit",
+        "offset_ms": 4.283,
+        "elapsed_ms": 0.046,
+        "error_type": null,
+        "write": false
+      },
+      {
+        "span_id": 8,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 3.865,
+        "elapsed_ms": 0.481,
+        "error_type": null,
+        "queued_ms": 0.098,
+        "operation": "RuntimeJournal.get"
+      },
+      {
+        "span_id": 12,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 4.782,
+        "elapsed_ms": 0.12,
+        "error_type": null,
+        "queued_ms": 0.075,
+        "operation": "NativeContent.encode"
+      },
+      {
+        "span_id": 16,
+        "parent_span_id": 15,
+        "name": "journal.gate",
+        "offset_ms": 50.239,
+        "elapsed_ms": 0.029,
+        "error_type": null,
+        "operation": "value.w3_context_manifest_v2"
+      },
+      {
+        "span_id": 17,
+        "parent_span_id": 15,
+        "name": "journal.sqlite_begin",
+        "offset_ms": 50.292,
+        "elapsed_ms": 0.072,
+        "error_type": null,
+        "operation": "value.w3_context_manifest_v2"
+      },
+      {
+        "span_id": 13,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 5.198,
+        "elapsed_ms": 68.699,
+        "error_type": null,
+        "queued_ms": 0.094,
+        "operation": "RuntimeJournal.set"
+      },
+      {
+        "span_id": 20,
+        "parent_span_id": 19,
+        "name": "io.read",
+        "offset_ms": 77.005,
+        "elapsed_ms": 0.051,
+        "error_type": null,
+        "queued_ms": 1.882,
+        "operation": "dumps"
+      },
+      {
+        "span_id": 19,
+        "parent_span_id": null,
+        "name": "case.context_bind",
+        "offset_ms": 75.078,
+        "elapsed_ms": 15.506,
+        "error_type": null
+      },
+      {
+        "span_id": 24,
+        "parent_span_id": 23,
+        "name": "journal.gate",
+        "offset_ms": 135.552,
+        "elapsed_ms": 0.028,
+        "error_type": null,
+        "operation": "value.w3_context_v2"
+      },
+      {
+        "span_id": 25,
+        "parent_span_id": 23,
+        "name": "journal.sqlite_begin",
+        "offset_ms": 135.601,
+        "elapsed_ms": 0.024,
+        "error_type": null,
+        "operation": "value.w3_context_v2"
+      },
+      {
+        "span_id": 21,
+        "parent_span_id": null,
+        "name": "io.write",
+        "offset_ms": 90.901,
+        "elapsed_ms": 56.444,
+        "error_type": null,
+        "queued_ms": 0.181,
+        "operation": "RuntimeJournal.set"
+      },
+      {
+        "span_id": 27,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 147.641,
+        "elapsed_ms": 0.232,
+        "error_type": null,
+        "queued_ms": 0.091,
+        "operation": "dumps"
+      },
+      {
+        "span_id": 28,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 148.067,
+        "elapsed_ms": 0.363,
+        "error_type": null,
+        "queued_ms": 0.069,
+        "operation": "dumps"
+      },
+      {
+        "span_id": 29,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 148.705,
+        "elapsed_ms": 0.184,
+        "error_type": null,
+        "queued_ms": 0.149,
+        "operation": "dumps"
+      },
+      {
+        "span_id": 34,
+        "parent_span_id": 33,
+        "name": "journal.gate",
+        "offset_ms": 195.134,
+        "elapsed_ms": 0.025,
+        "error_type": null,
+        "operation": "w3.ready_binding"
+      },
+      {
+        "span_id": 35,
+        "parent_span_id": 33,
+        "name": "journal.sqlite_begin",
+        "offset_ms": 195.183,
+        "elapsed_ms": 0.02,
+        "error_type": null,
+        "operation": "w3.ready_binding"
+      },
+      {
+        "span_id": 31,
+        "parent_span_id": 30,
+        "name": "io.write",
+        "offset_ms": 165.933,
+        "elapsed_ms": 35.62,
+        "error_type": null,
+        "queued_ms": 0.599,
+        "operation": "CodexW3AgentRunner._claim_ready.<locals>.save"
+      },
+      {
+        "span_id": 30,
+        "parent_span_id": null,
+        "name": "thread.ready_claim",
+        "offset_ms": 149.089,
+        "elapsed_ms": 52.749,
+        "error_type": null
+      },
+      {
+        "span_id": 37,
+        "parent_span_id": null,
+        "name": "io.read",
+        "offset_ms": 260.305,
+        "elapsed_ms": 1.529,
+        "error_type": null,
+        "queued_ms": 0.177,
+        "operation": "time_context"
+      },
+      {
+        "span_id": 42,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 263.239,
+        "elapsed_ms": 0.216,
+        "error_type": null,
+        "queued_ms": 0.118,
+        "operation": "RuntimeJournal.get"
+      },
+      {
+        "span_id": 46,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 263.665,
+        "elapsed_ms": 0.173,
+        "error_type": null,
+        "queued_ms": 0.072,
+        "operation": "RuntimeJournal.get"
+      },
+      {
+        "span_id": 50,
+        "parent_span_id": 41,
+        "name": "io.write",
+        "offset_ms": 332.659,
+        "elapsed_ms": 45.926,
+        "error_type": null,
+        "queued_ms": 68.402,
+        "operation": "RuntimeJournal.set"
+      },
+      {
+        "span_id": 56,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 379.155,
+        "elapsed_ms": 0.323,
+        "error_type": null,
+        "queued_ms": 0.228,
+        "operation": "RuntimeJournal.get"
+      },
+      {
+        "span_id": 60,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 379.729,
+        "elapsed_ms": 0.013,
+        "error_type": null,
+        "queued_ms": 0.106,
+        "operation": "ReceiptWorker._rate_wait"
+      },
+      {
+        "span_id": 61,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 385.023,
+        "elapsed_ms": 0.174,
+        "error_type": null,
+        "queued_ms": 0.154,
+        "operation": "RuntimeJournal.get"
+      },
+      {
+        "span_id": 65,
+        "parent_span_id": 41,
+        "name": "io.write",
+        "offset_ms": 411.593,
+        "elapsed_ms": 23.241,
+        "error_type": null,
+        "queued_ms": 26.128,
+        "operation": "ReceiptWorker._admit.<locals>.admit"
+      },
+      {
+        "span_id": 71,
+        "parent_span_id": 41,
+        "name": "worker.http_request_started",
+        "offset_ms": 438.332,
+        "elapsed_ms": 0.012,
+        "error_type": null,
+        "at": "2026-11-19T00:03:39.007900+00:00",
+        "method": "POST"
+      },
+      {
+        "span_id": 72,
+        "parent_span_id": 41,
+        "name": "worker.http_response_received",
+        "offset_ms": 472.843,
+        "elapsed_ms": 0.014,
+        "error_type": null,
+        "at": "2026-11-19T00:03:39.042342+00:00",
+        "job_id": null
+      },
+      {
+        "span_id": 73,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 473.439,
+        "elapsed_ms": 0.144,
+        "error_type": null,
+        "queued_ms": 0.345,
+        "operation": "CodexW3AgentRunner._run_phase_materialized.<locals>.<lambda>"
+      },
+      {
+        "span_id": 74,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 502.443,
+        "elapsed_ms": 36.903,
+        "error_type": null,
+        "queued_ms": 0.115,
+        "operation": "CodexW3AgentRunner._run_phase_materialized.<locals>.<lambda>"
+      },
+      {
+        "span_id": 80,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 647.659,
+        "elapsed_ms": 0.156,
+        "error_type": null,
+        "queued_ms": 0.146,
+        "operation": "CodexW3AgentRunner._run_phase_materialized.<locals>.<lambda>"
+      },
+      {
+        "span_id": 81,
+        "parent_span_id": 41,
+        "name": "worker.http_request_started",
+        "offset_ms": 84817.754,
+        "elapsed_ms": 0.016,
+        "error_type": null,
+        "at": "2026-11-19T00:05:03.387317+00:00",
+        "method": "GET",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      {
+        "span_id": 82,
+        "parent_span_id": 41,
+        "name": "worker.http_response_received",
+        "offset_ms": 84846.669,
+        "elapsed_ms": 0.011,
+        "error_type": null,
+        "at": "2026-11-19T00:05:03.416235+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      {
+        "span_id": 83,
+        "parent_span_id": 41,
+        "name": "worker.terminal_parsed",
+        "offset_ms": 84847.005,
+        "elapsed_ms": 0.008,
+        "error_type": null,
+        "at": "2026-11-19T00:05:03.416585+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1"
+      },
+      {
+        "span_id": 84,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 84847.708,
+        "elapsed_ms": 0.011,
+        "error_type": null,
+        "queued_ms": 0.658,
+        "operation": "CodexW3AgentRunner._run_phase_materialized.<locals>.<lambda>"
+      },
+      {
+        "span_id": 85,
+        "parent_span_id": 41,
+        "name": "worker.result_received",
+        "offset_ms": 84848.254,
+        "elapsed_ms": 0.008,
+        "error_type": null,
+        "at": "2026-11-19T00:05:03.417836+00:00",
+        "job_id": "1694c6cb93761945f2ed6143936d8dded067036eb11fe59b614a983736000ce1",
+        "status": "succeeded",
+        "worker_finished_at": "2026-11-19T00:05:00.265526+00:00"
+      },
+      {
+        "span_id": 86,
+        "parent_span_id": 41,
+        "name": "io.read",
+        "offset_ms": 84856.591,
+        "elapsed_ms": 0.193,
+        "error_type": null,
+        "queued_ms": 7.741,
+        "operation": "RuntimeJournal.get"
+      },
+      {
+        "span_id": 91,
+        "parent_span_id": 90,
+        "name": "io.read",
+        "offset_ms": 84860.322,
+        "elapsed_ms": 6.154,
+        "error_type": null,
+        "queued_ms": 0.619,
+        "operation": "ReceiptWorker.run.<locals>.<lambda>"
+      },
+      {
+        "span_id": 90,
+        "parent_span_id": 41,
+        "name": "worker.receipt_encode",
+        "offset_ms": 84859.674,
+        "elapsed_ms": 7.301,
+        "error_type": null
+      }
+    ],
+    "totals": {
+      "journal.connect": {
+        "count": 16,
+        "elapsed_ms": 2.603,
+        "errors": 0
+      },
+      "journal.begin": {
+        "count": 16,
+        "elapsed_ms": 266.545,
+        "errors": 0
+      },
+      "journal.commit": {
+        "count": 16,
+        "elapsed_ms": 15.918,
+        "errors": 0
+      },
+      "io.read": {
+        "count": 20,
+        "elapsed_ms": 48.397,
+        "errors": 0,
+        "queued_ms": 15.107
+      },
+      "journal.gate": {
+        "count": 7,
+        "elapsed_ms": 28.612,
+        "errors": 0
+      },
+      "journal.sqlite_begin": {
+        "count": 7,
+        "elapsed_ms": 0.244,
+        "errors": 0
+      },
+      "io.write": {
+        "count": 6,
+        "elapsed_ms": 350.014,
+        "errors": 0,
+        "queued_ms": 244.337
+      },
+      "case.context_bind": {
+        "count": 1,
+        "elapsed_ms": 15.506,
+        "errors": 0
+      },
+      "thread.ready_claim": {
+        "count": 1,
+        "elapsed_ms": 52.749,
+        "errors": 0
+      },
+      "worker.http_request_started": {
+        "count": 2,
+        "elapsed_ms": 0.028,
+        "errors": 0
+      },
+      "worker.http_response_received": {
+        "count": 2,
+        "elapsed_ms": 0.025,
+        "errors": 0
+      },
+      "worker.terminal_parsed": {
+        "count": 1,
+        "elapsed_ms": 0.008,
+        "errors": 0
+      },
+      "worker.result_received": {
+        "count": 1,
+        "elapsed_ms": 0.008,
+        "errors": 0
+      },
+      "worker.receipt_encode": {
+        "count": 1,
+        "elapsed_ms": 7.301,
+        "errors": 0
+      },
+      "worker.receipt_saved": {
+        "count": 1,
+        "elapsed_ms": 0.014,
+        "errors": 0
+      },
+      "worker.roundtrip.trade_decision": {
+        "count": 1,
+        "elapsed_ms": 84884.491,
+        "errors": 0
+      },
+      "phase.validate": {
+        "count": 1,
+        "elapsed_ms": 0.078,
+        "errors": 0
+      }
+    },
+    "active_spans": [],
+    "events_truncated": true,
+    "role": "v2-scheduler"
+  }
+}
