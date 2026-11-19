@@ -30,3 +30,15 @@ def test_changed_ack_metadata_reloads_pins_before_committing(tmp_path):
     source.acknowledge_prepared('live', 6, [4], state)
     with closing(source.connection()) as db:
         assert [r[0] for r in db.execute('SELECT seq FROM v2_source_exception_pins')] == [4]
+
+
+def test_borrowed_projection_connection_releases_snapshot_and_reloads(tmp_path):
+    source = fixture_source(tmp_path)
+    with source.projection_session():
+        state = source.acknowledge_prepared('live', 2, [1])
+        assert not source.connection().in_transaction
+        source.acknowledge_exceptions('live', 5, [2, 3])
+        source.acknowledge_prepared('live', 6, [4], state)
+        assert not source.connection().in_transaction
+        with closing(source.connection()) as db:
+            assert [r[0] for r in db.execute('SELECT seq FROM v2_source_exception_pins')] == [4]

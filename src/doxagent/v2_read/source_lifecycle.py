@@ -68,7 +68,9 @@ def acknowledge_prepared(source, consumer, checkpoint, repairs, previous=None):
     repairs = frozenset(int(x) for x in repairs if int(x) > 0)
     for attempt in range(2):
         if previous is None:
-            with closing(source.connection()) as db:
+            # projection_session lends a connection whose close() is a no-op.
+            # End our read snapshot here, before acquiring the separate writer.
+            with closing(source.connection()) as db, db:
                 db.execute('BEGIN')
                 epoch = db.execute('SELECT epoch FROM v2_source_state WHERE source=?', (source.source,)).fetchone()[0]
                 row = db.execute('SELECT checkpoint,updated_at FROM v2_source_consumers WHERE id=?', (consumer,)).fetchone()
