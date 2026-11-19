@@ -186,8 +186,16 @@ def test_coverage_retains_all_window_receipts_when_current_state_is_failed_or_de
     assert source_page['coverage']==result['coverage'] and source_page['counts']==result['counts']
     with monkeypatch.context() as source_only:
         source_only.setattr(bus_dashboard,'current_body',lambda *a:pytest.fail('source page scanned period article bodies'))
+        from doxagent.api_v2 import article_samples
+        original=article_samples.select_articles
+        measured=[]
+        def selected_only(store,ticker,sources,now):
+            measured.extend(sources)
+            return original(store,ticker,sources,now)
+        source_only.setattr(article_samples,'select_articles',selected_only)
         cards=dashboard_data(store,'MU',view,{},source_after='',source_limit=1,include_metrics=False)
         assert cards['sources']==source_page['sources']
+        assert set(measured)=={c['source']['source_id'] for c in cards['sources']}
     # Source filtering and current failures preserve the same observed window.
     assert all(s['recent']['coverage']['expected']==20 for s in result['sources'])
     for sid in ['failed','partial','blocked']:

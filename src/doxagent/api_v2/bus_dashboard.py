@@ -125,14 +125,20 @@ def dashboard_data(store,ticker,view,args,*,include_sources=True,source_after=No
         elif s['poll_status'] in {'partial','failed'}:counts['abnormal']+=1
         elif state=='SCHEDULED':counts['running']+=1
         else:counts['unknown']+=1
-    rounds=recent_rounds(store_from_environment(),ticker,bindings,now)
     cards=sources if include_sources else []
     if source_after is not None:
         cards=sorted((s for s in cards if s['source']['binding_id']>source_after),
                      key=lambda s:s['source']['binding_id'])[:source_limit+1]
-    card_ids={s['source']['binding_id'] for s in cards}
+    selected=[s['source']['source_id'] for s in sources if
+              (not args.get('source_id') or s['source']['source_id']==args['source_id']) and
+              (not args.get('source_kind') or s['source']['kind']==args['source_kind'])]
+    needed={s['source']['source_id'] for s in cards}
+    if include_metrics:
+        needed.update(selected)
+    rounds=recent_rounds(store_from_environment(),ticker,
+        [b for b in bindings if b['source_id'] in needed],now)
     from .article_samples import select_articles
-    business=select_articles(store,ticker,[s['source']['source_id'] for s in sources],now)
+    business=select_articles(store,ticker,sorted(needed),now)
     today=source_counts_today(store,ticker,seq,view['wire']['clock']['semantic_day']) if cards else None
     for s in cards:
         sid=s['source']['source_id'];r=rounds.get(s['source']['binding_id'],{})
@@ -156,9 +162,6 @@ def dashboard_data(store,ticker,view,args,*,include_sources=True,source_after=No
             'publication_classes':{k:{'samples':len(v),'mean_seconds':sum(v)/len(v) if v else None} for k,v in samples['publication_classes'].items()}}
     if not include_metrics:
         return {'sources':cards}
-    selected=[s['source']['source_id'] for s in sources if
-              (not args.get('source_id') or s['source']['source_id']==args['source_id']) and
-              (not args.get('source_kind') or s['source']['kind']==args['source_kind'])]
     selected_ids=selected if args.get('source_id') or args.get('source_kind') else None
     selected_samples=[v for sid,v in business.items() if sid in selected]
     total=sum(v['body_total'] for v in selected_samples);full=sum(v['body_full'] for v in selected_samples)
