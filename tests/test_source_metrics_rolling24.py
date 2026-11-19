@@ -29,6 +29,13 @@ def test_all_recent_samples_no_twenty_row_limit_and_no_minimum(tmp_path):
     metrics=reduce_articles(facts)
     assert len(metrics["latencies"])==30 and metrics["body_full"]==30
     assert len(metrics["first_body_seconds"])==30
+    from doxagent.api_v2.article_samples import GLOBAL_ARTICLE_FACTS_SQL
+    import json
+    with store.connect() as db:
+        args=((NOW-timedelta(hours=24)).timestamp()/86400+2440587.5,
+              NOW.timestamp()/86400+2440587.5,(NOW-timedelta(hours=24)).timestamp(),json.dumps([['MU','news']]))
+        plan=[tuple(r)[-1] for r in db.execute('EXPLAIN QUERY PLAN '+GLOBAL_ARTICLE_FACTS_SQL,args)]
+    assert not any('current_identity (kind=?)' in step or 'source_delivery_parent (kind=?)' in step for step in plan), [s for s in plan if 'current_identity' in s or 'source_delivery_parent' in s]
 
 
 def test_old_publication_is_separate_history_without_reading_old_unfinished_work(tmp_path):
@@ -58,3 +65,7 @@ def test_completion_window_recovery_class_and_global_article_unit_are_independen
     assert result["publication_classes"]["capability_resume"]["samples"]==1
     assert result["publication_classes"]["realtime"]["samples"]==1
     assert result["body_total"]==1
+    compact=select_article_facts_many(store,[("MU","news"),("INTC","news")],NOW,global_only=True)
+    compact_metrics=aggregate_metrics([r for rs in compact.values() for r in rs],[],[],0)
+    assert compact_metrics==result
+    assert sum(map(len,compact.values()))<sum(map(len,grouped.values()))

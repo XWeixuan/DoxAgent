@@ -192,7 +192,7 @@ def catalog_data(store, calendar, now=None, *, journal=None):
             )
         }
         facts = select_article_facts_many(
-            store, [(b["ticker"], b["source_id"]) for b in bindings], now, db=db
+            store, [(b["ticker"], b["source_id"]) for b in bindings], now, db=db, global_only=True
         )
         covered = db.execute(
             "SELECT value FROM read_meta WHERE key='bus_aggregates_from'"

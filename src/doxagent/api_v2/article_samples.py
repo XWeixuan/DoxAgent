@@ -22,7 +22,7 @@ ARTICLE_FACTS_SQL = """WITH bounds AS (SELECT ? AS since,? AS until,? AS epoch),
  json_extract(value,'$[1]') source_id FROM json_each(?)),
  completed AS MATERIALIZED (
  SELECT c.id,c.source_id FROM (SELECT DISTINCT source_id FROM requested) s
- CROSS JOIN bounds JOIN object_current c INDEXED BY source_article_completed
+ CROSS JOIN bounds CROSS JOIN object_current c INDEXED BY source_article_completed
  ON c.kind='native:article_body_results' AND c.source_id=s.source_id
  AND julianday(json_extract(c.payload,'$.initial_result_at')) BETWEEN bounds.since AND bounds.until
  ),
@@ -30,12 +30,12 @@ ARTICLE_FACTS_SQL = """WITH bounds AS (SELECT ? AS since,? AS until,? AS epoch),
  SELECT q.pair,x.id FROM requested q CROSS JOIN bounds JOIN article_sample_keys x INDEXED BY article_sample_source_time
  ON x.ticker=q.ticker AND x.source_id=q.source_id AND x.discovered_at>=bounds.epoch
  UNION
- SELECT q.pair,z.id FROM requested q CROSS JOIN bounds JOIN object_current z INDEXED BY source_delivery_published
+ SELECT q.pair,z.id FROM requested q CROSS JOIN bounds CROSS JOIN object_current z INDEXED BY source_delivery_published
  ON z.kind='native:live_deliveries' AND z.ticker=q.ticker AND z.source_id=q.source_id
  AND julianday(json_extract(z.payload,'$.consumable_at')) BETWEEN bounds.since AND bounds.until
  UNION
- SELECT q.pair,z.id FROM requested q JOIN completed c ON c.source_id=q.source_id
- JOIN object_current z INDEXED BY source_delivery_parent ON z.kind='native:live_deliveries'
+ SELECT q.pair,z.id FROM requested q CROSS JOIN completed c ON c.source_id=q.source_id
+ CROSS JOIN object_current z INDEXED BY source_delivery_parent ON z.kind='native:live_deliveries'
  AND z.source_id=q.source_id AND z.parent=c.id AND z.ticker=q.ticker
  UNION
  SELECT q.pair,(SELECT h.id FROM object_current h INDEXED BY source_delivery_published
@@ -44,19 +44,19 @@ ARTICLE_FACTS_SQL = """WITH bounds AS (SELECT ? AS since,? AS until,? AS epoch),
  ORDER BY julianday(json_extract(h.payload,'$.consumable_at')) DESC LIMIT 1) FROM requested q CROSS JOIN bounds
  UNION
  SELECT q.pair,(SELECT z.id FROM object_current c INDEXED BY source_article_completed
- JOIN object_current z INDEXED BY source_delivery_parent ON z.kind='native:live_deliveries'
+ CROSS JOIN object_current z INDEXED BY source_delivery_parent ON z.kind='native:live_deliveries'
  AND z.source_id=q.source_id AND z.parent=c.id AND z.ticker=q.ticker
  WHERE c.kind='native:article_body_results' AND c.source_id=q.source_id
  AND julianday(json_extract(c.payload,'$.initial_result_at'))<bounds.since
  ORDER BY julianday(json_extract(c.payload,'$.initial_result_at')) DESC LIMIT 1) FROM requested q CROSS JOIN bounds
  ), articles AS MATERIALIZED (
- SELECT DISTINCT q.source_id,d.parent FROM candidates k JOIN requested q ON q.pair=k.pair
- JOIN object_current d INDEXED BY current_identity ON d.kind='native:live_deliveries'
+ SELECT DISTINCT q.source_id,d.parent FROM candidates k CROSS JOIN requested q ON q.pair=k.pair
+ CROSS JOIN object_current d INDEXED BY current_identity ON d.kind='native:live_deliveries'
  AND d.ticker=q.ticker AND d.source_id=q.source_id AND d.id=k.id
  ), globals AS MATERIALIZED (
  SELECT a.source_id,a.parent,min(json_extract(g.payload,'$.consumable_at')) published,
  min(json_extract(g.payload,'$.first_discovered_at')) found FROM articles a
- JOIN object_current g INDEXED BY source_delivery_parent ON g.kind='native:live_deliveries'
+ CROSS JOIN object_current g INDEXED BY source_delivery_parent ON g.kind='native:live_deliveries'
  AND g.source_id=a.source_id AND g.parent=a.parent GROUP BY a.source_id,a.parent
  )
  SELECT q.pair,d.parent,json_extract(d.payload,'$.first_discovered_at'),
@@ -69,16 +69,30 @@ ARTICLE_FACTS_SQL = """WITH bounds AS (SELECT ? AS since,? AS until,? AS epoch),
  json_extract(b.payload,'$.initial_result_at'),json_extract(d.payload,'$.first_publish_kind'),
  json_extract(d.payload,'$.initial_decision'),g.published,
  json_extract(b.payload,'$.outcome'),b.source_id,g.found
- FROM candidates k JOIN requested q ON q.pair=k.pair
- JOIN object_current d INDEXED BY current_identity ON d.kind='native:live_deliveries'
+ FROM candidates k CROSS JOIN requested q ON q.pair=k.pair
+ CROSS JOIN object_current d INDEXED BY current_identity ON d.kind='native:live_deliveries'
  AND d.ticker=q.ticker AND d.source_id=q.source_id AND d.id=k.id
- JOIN globals g ON g.source_id=d.source_id AND g.parent=d.parent
+ CROSS JOIN globals g ON g.source_id=d.source_id AND g.parent=d.parent
  LEFT JOIN object_current b INDEXED BY current_identity ON b.kind='native:article_body_results' AND b.ticker='' AND b.id=d.parent
  LEFT JOIN object_current m INDEXED BY current_identity ON m.kind='message' AND m.ticker=d.ticker AND m.id=json_extract(d.payload,'$.standard_id')
  WHERE json_type(d.payload,'$.first_discovered_at')='text'"""
 
 
-def select_article_facts_many(store, pairs, now=None, *, db=None):
+GLOBAL_ARTICLE_FACTS_SQL = ARTICLE_FACTS_SQL.replace(
+    "articles AS MATERIALIZED (\n SELECT DISTINCT q.source_id,d.parent FROM candidates",
+    "candidate_articles AS MATERIALIZED (\n SELECT q.source_id,d.parent,coalesce(json_extract(d.payload,'$.consumable_at'),'9999')"
+    "||char(31)||q.pair representative FROM candidates",
+).replace(
+    "AND d.ticker=q.ticker AND d.source_id=q.source_id AND d.id=k.id\n ), globals",
+    "AND d.ticker=q.ticker AND d.source_id=q.source_id AND d.id=k.id\n ), articles AS MATERIALIZED ("
+    "SELECT source_id,parent,min(representative) representative FROM candidate_articles GROUP BY source_id,parent\n ), globals",
+).replace(
+    "min(json_extract(g.payload,'$.first_discovered_at')) found FROM articles a",
+    "min(json_extract(g.payload,'$.first_discovered_at')) found,a.representative FROM articles a",
+) + " AND q.pair=substr(g.representative,instr(g.representative,char(31))+1)"
+
+
+def select_article_facts_many(store, pairs, now=None, *, db=None, global_only=False):
     """All valid rolling-24h observations, plus explicitly separate last historical facts."""
     now = now or datetime.now(UTC)
     cutoff = now - timedelta(hours=24)
@@ -86,7 +100,7 @@ def select_article_facts_many(store, pairs, now=None, *, db=None):
     if not grouped:
         return grouped
     with nullcontext(db) if db is not None else store.connect() as connection:
-        rows = connection.execute(ARTICLE_FACTS_SQL, (
+        rows = connection.execute(GLOBAL_ARTICLE_FACTS_SQL if global_only else ARTICLE_FACTS_SQL, (
             cutoff.timestamp()/86400+2440587.5, now.timestamp()/86400+2440587.5,
             cutoff.timestamp(), json.dumps(list(grouped)))).fetchall()
     def instant(value):

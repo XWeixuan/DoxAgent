@@ -16,6 +16,11 @@ from .worker_manager import IdentityOperationError, IdentityWorkerManager
 from .storage import registry_io
 
 
+def _warm_public_body(identity):
+    return (getattr(identity,"execution_mode","identity")=="public_identity"
+            and identity.owner_scope_id=="publisher:newsfile")
+
+
 class WorkerRuntimeFacade:
     def __init__(self, runtime):
         self.runtime = runtime
@@ -99,6 +104,8 @@ class WorkerRuntimeFacade:
             timeout = identity.lifecycle.idle_seconds if reuters else min(identity.lifecycle.idle_seconds, 600 if identity_id in active else 120)
             if (identity.owner_scope_id or '').startswith('publisher:'):
                 timeout = min(timeout,180)
+            if _warm_public_body(identity):
+                timeout = min(timeout,60)
             rotate = status["age_seconds"] >= 4 * 3600 or status["high_rss_samples"] >= 3
             driver_idle = status["idle_seconds"] >= 600
             native_idle = (
@@ -152,6 +159,8 @@ class WorkerRuntimeFacade:
             )
             if lost_scene:
                 timeout = 120
+            if _warm_public_body(identity):
+                timeout = min(timeout,60)
             if status and (status["stage"] != "IDLE" or status["idle_seconds"] < timeout):
                 self._inactive_since.pop(identity.identity_id, None)
                 continue
@@ -242,6 +251,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 await slots.acquire()
         slot_wait_ms = int((time.monotonic()-admitted_at)*1000)
         worker_started = time.monotonic()
+        response = None
         from .recovery_policy import public_identity
         if public_identity(identity):
             request = request.model_copy(update={"recipe_parameters": {
@@ -337,7 +347,9 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 slots.release()
             if getattr(identity, "execution_mode", "identity") == "public_identity":
                 handle = self.workers.workers.get(identity.identity_id)
-                if handle and handle.stage == "IDLE" and not handle.pending:
+                warm_body = (_warm_public_body(identity) and response is not None
+                             and response.stage_timings.get("body_page_retained")==1)
+                if handle and handle.stage == "IDLE" and not handle.pending and not warm_body:
                     await self.browser_runtimes.stop_identity(identity, reason="publisher_work_complete")
 
     def _binding(self, token):

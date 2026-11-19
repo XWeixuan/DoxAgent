@@ -145,3 +145,26 @@ def test_durable_body_order_uses_ready_age_instead_of_reassigned_due_time(tmp_pa
     with repo._connect() as db:
         row=db.execute("SELECT ready_since,first_seen_at FROM live_articles WHERE article_key='old'").fetchone()
         assert row[0]==row[1]
+
+
+@pytest.mark.parametrize('scope,retained,stops',[
+    ('publisher:newsfile',1,0),('publisher:newsfile',0,1),('publisher:other',1,1)])
+async def test_only_verified_newsfile_body_survives_public_work_complete(monkeypatch,scope,retained,stops):
+    from contextvars import ContextVar
+    from doxagent.site_strategy import worker_runtime as module
+    from doxagent.site_strategy.runtime import RuntimeResponse
+    from doxagent.site_strategy.schema import AccessRequest, AccessMode, BrowserRuntimeKind
+    runtime=object.__new__(module.WorkerSiteAccessRuntime)
+    runtime._business_slots=asyncio.Semaphore(4);runtime._recovery_slots=asyncio.Semaphore(1)
+    runtime._reserved_recovery=ContextVar('reserved-test',default=False);runtime._tokens={}
+    runtime.workers=SimpleNamespace(command=AsyncMock(return_value={}),workers={
+        'public':SimpleNamespace(stage='IDLE',pending={})})
+    runtime.browser_runtimes=SimpleNamespace(stop_identity=AsyncMock())
+    response=RuntimeResponse(200,'https://example.test/article',{},stage_timings={'body_page_retained':retained})
+    monkeypatch.setattr(module,'decode_response',lambda _:response)
+    identity=SimpleNamespace(identity_id='public',execution_mode='public_identity',owner_scope_id=scope,
+                             runtime_kind=BrowserRuntimeKind.MANAGED_PLAYWRIGHT)
+    request=AccessRequest(operation_id='body:test',url=response.final_url,purpose=SitePurpose.BODY,mode=AccessMode.BROWSER,remaining_budget_ms=1000)
+    await runtime._browser(request,SimpleNamespace(model_dump=lambda **_:{}),identity,None)
+    assert runtime.browser_runtimes.stop_identity.await_count==stops
+    assert runtime._business_slots._value==4

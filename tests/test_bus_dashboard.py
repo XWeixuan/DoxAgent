@@ -61,6 +61,50 @@ def test_new_plan_has_only_settled_rounds_not_twenty_imaginary_failures():
     assert evaluate_rounds([],[],interval=60,until=180)['ratio'] is None
 
 
+def test_full_day_equal_cadence_keeps_phase_or_and_and_duplicate_proofs():
+    plans=[dict(unit='a',group='listing',epoch=.123,interval=60),
+           dict(unit='b',group='listing',epoch=5.5,interval=60),
+           dict(unit='c',epoch=11.25,interval=60)]
+    rows=[]
+    for n in range(21):
+        for plan,divisor in zip(plans,[3,5,7]):
+            if n%divisor:
+                due=plan['epoch']+60*n
+                rows.extend([dict(unit=plan['unit'],due=due,validated=True,received=due+2),
+                             dict(unit=plan['unit'],due=due,validated=True,received=due+20)])
+    result=evaluate_rounds(plans,rows,interval=60,until=21*60,limit=1440,since=120)
+    expected=sum((n%3 or n%5) and n%7!=0 for n in range(2,21))
+    assert result['expected']==19 and result['succeeded']==expected
+
+
+def test_compact_sql_matches_exact_rounds_for_alternatives_and_duplicate_receipts(tmp_path):
+    from doxagent.message_bus_v2.collection_plane.source_rounds import _compact_rounds
+    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
+    base=datetime(2026,11,20,tzinfo=UTC).timestamp()
+    plans=[dict(unit='a',group='listing',epoch=base+.123,interval=60),
+           dict(unit='b',group='listing',epoch=base+5.5,interval=60),
+           dict(unit='c',epoch=base+11.25,interval=60)]
+    store=AcquisitionStore(tmp_path/'acq.db',initialize=True)
+    receipts=[]
+    with store.connect(write=True) as db:
+        for n in range(21):
+            for plan,divisor in zip(plans,[3,5,7]):
+                if not n%divisor:continue
+                due=plan['epoch']+60*n
+                for late in [2,20]:
+                    at=datetime.fromtimestamp(due,UTC).isoformat()
+                    received=datetime.fromtimestamp(due+late,UTC).isoformat()
+                    db.execute('INSERT INTO cycles(run_id,binding_id,unit,due_at,dispatch_at,status,data_json) VALUES(?,?,?,?,?,?,?)',
+                        (str((n,plan['unit'],late)),'binding',plan['unit'],at,at,'CAPTURED',json.dumps({'listing_received_at':received})))
+                    receipts.append(dict(unit=plan['unit'],due=due,validated=True,received=due+late))
+    now=datetime.fromtimestamp(base+21*60,UTC)
+    with store.connect() as db:
+        for selected in [plans,plans[:1]]:
+            exact=evaluate_rounds(selected,[r for r in receipts if r['unit'] in {p['unit'] for p in selected}],
+                interval=60,until=now.timestamp(),limit=1440,since=now.timestamp()-86400)
+            assert _compact_rounds(db,'binding',selected,60,now,now.timestamp())==exact
+
+
 def test_acquisition_rounds_keep_missing_dispatches_and_freeze_at_sleep(tmp_path):
     from tests.test_content_enrichment_hub import _setup
     from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
