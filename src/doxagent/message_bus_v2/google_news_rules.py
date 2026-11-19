@@ -1,4 +1,4 @@
-"""Google News RSS rules, shared by every ticker but no other source."""
+"""Shared publisher blocklist for Google News and Yahoo Finance."""
 
 from __future__ import annotations
 
@@ -71,24 +71,26 @@ def google_news_blocklist() -> GoogleNewsBlocklist:
 
 
 def google_news_message_blocked(source_id: str, message: RawMessageInput) -> bool:
-    return source_id == GOOGLE_NEWS_SOURCE_ID and google_news_blocklist().blocks(
-        publisher_domain(message)
-    )
+    if source_id not in {GOOGLE_NEWS_SOURCE_ID, "yahoo_finance_news"}:
+        return False
+    host = source_publisher_domain(source_id, message)
+    return bool(host) and google_news_blocklist().blocks(host)
 
 
 def filter_google_news_result(source_id: str, result: PollResult) -> PollResult:
-    if source_id != GOOGLE_NEWS_SOURCE_ID:
+    if source_id not in {GOOGLE_NEWS_SOURCE_ID, "yahoo_finance_news"}:
         return result
     policy = google_news_blocklist()
+    prefix = "yahoo" if source_id == "yahoo_finance_news" else "google_news"
     kept = []
     blocked: Counter[str] = Counter()
     for message in result.messages:
-        host = publisher_domain(message)
+        host = source_publisher_domain(source_id, message)
         if policy.blocks(host):
             blocked[host] += 1
         else:
             kept.append(message)
-    previous = result.acquisition_metadata.get("google_news_blacklist_filtered_sites", {})
+    previous = result.acquisition_metadata.get(f"{prefix}_blacklist_filtered_sites", {})
     sites = Counter(previous)
     sites.update(blocked)
     return result.model_copy(
@@ -96,9 +98,16 @@ def filter_google_news_result(source_id: str, result: PollResult) -> PollResult:
             "messages": kept,
             "acquisition_metadata": {
                 **result.acquisition_metadata,
-                "google_news_blacklist_policy_hash": policy.policy_hash,
-                "google_news_blacklist_filtered_count": sum(sites.values()),
-                "google_news_blacklist_filtered_sites": dict(sites),
+                f"{prefix}_blacklist_policy_hash": policy.policy_hash,
+                f"{prefix}_blacklist_filtered_count": sum(sites.values()),
+                f"{prefix}_blacklist_filtered_sites": dict(sites),
             },
         }
     )
+
+
+def source_publisher_domain(source_id: str, message: RawMessageInput) -> str:
+    if source_id == "yahoo_finance_news":
+        from .yahoo_publisher import yahoo_publisher_domain
+        return yahoo_publisher_domain(message)
+    return publisher_domain(message)

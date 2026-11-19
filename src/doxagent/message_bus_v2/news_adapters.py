@@ -562,7 +562,7 @@ class YahooFinanceNewsAdapter:
                     },
                 )
             )
-        return PollResult(
+        result = PollResult(
             messages=messages,
             failures=failures,
             window_coverage="COMPLETE" if mode == "ncp_latest_news" and not failures else "PARTIAL",
@@ -581,6 +581,7 @@ class YahooFinanceNewsAdapter:
                 **(metadata or {}),
             },
         )
+        return filter_google_news_result(context.source.source_id, result)
 
 
 def _rss_rows(xml_text: str) -> list[JsonObject]:

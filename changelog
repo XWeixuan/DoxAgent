@@ -3327,4 +3327,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-11-19 Runtime Case admission production acceptance: release db3cd1735 to Scheduler only; restore 130 original Event lineage databases (486,141,952 bytes) with SHA-256, integrity and version checks. All ten uncached daily-index reads and 80 Runtime route checks succeeded; natural Case creation resumed for six previously blocked tickers, with INTC/BE lists and node panels verified in Chrome. Preserve old failed inbox receipts without stale trading replay; IONQ natural post-repair arrival remains an explicit acceptance boundary.
 
+2026-11-20 Yahoo共享站点黑名单：复用Google单份名单，在三渠道mapper及既有接纳入口按真实出版社本地过滤；Yahoo托管域例外、精确来源别名、边界匹配及分源过滤统计；只读回放1000条生产输入识别751、命中162，无新增网络/常驻服务。
+
 2026-11-20 W1/W3 production release acceptance: W1R1 default tier only; publish exclusive W3 Operations/W1R3 fact ownership and aligned Operations skill together. API healthy, Scheduler running; two natural W1R1 receipts confirm actual default, sibling W1R2/W2R1 remain fast. Regression 158 passed, 2 skipped. Preserve accepted Worker/native runtime; full natural W3 Operations completion remains unobserved. See docs/w3_fact_compilation_prompt_alignment_20261120.md.

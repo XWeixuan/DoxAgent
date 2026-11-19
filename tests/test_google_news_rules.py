@@ -151,7 +151,7 @@ def test_domain_boundaries_and_unknown_publishers_preserve_coverage(host):
 
 def test_google_filter_is_idempotent_and_never_filters_other_sources():
     original = PollResult(messages=[message("on3.com"), message("reuters.com")])
-    for source_id in ("yahoo_finance_news", "reuters_site_search", "another_source"):
+    for source_id in ("reuters_site_search", "another_source"):
         assert filter_google_news_result(source_id, original) is original
     filtered = filter_google_news_result(GOOGLE_NEWS_SOURCE_ID, original)
     again = filter_google_news_result(GOOGLE_NEWS_SOURCE_ID, filtered)
@@ -253,7 +253,7 @@ async def test_google_filter_protects_all_tickers_and_durable_intake(tmp_path, t
     ) == (None, False)
 
 
-async def test_google_blacklist_does_not_stop_yahoo_body_intake(tmp_path):
+async def test_shared_blacklist_stops_yahoo_body_intake(tmp_path):
     repo = MessageBusV2Repository(tmp_path / "bus.sqlite3")
     bus = MessageBusV2Service(repo, enrichment_queue_enabled=True)
     bus.bootstrap()
@@ -266,5 +266,5 @@ async def test_google_blacklist_does_not_stop_yahoo_body_intake(tmp_path):
         binding=binding,
         result=PollResult(messages=[message("marketbeat.com")]),
     )
-    assert receipt.queued_count == 1
-    assert repo.snapshot_counts()["content_enrichment_jobs"] == 1
+    assert receipt.queued_count == 0
+    assert repo.snapshot_counts()["content_enrichment_jobs"] == 0
