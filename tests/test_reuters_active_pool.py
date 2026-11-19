@@ -51,7 +51,8 @@ async def test_three_members_balance_listing_and_body_without_duplicate_attempts
         attempts.clear()
         for i in range(9):
             result = await service._execute_uncached(request.model_copy(update={
-                'purpose': purpose, 'operation_id': f'{purpose}-{i}'}))
+                'purpose': purpose, 'operation_id': f'{purpose}-{i}',
+                'recipe_parameters': {'query': f'concept-{i}'}}))
             assert result.disposition.value == 'SUCCESS'
             assert result.stage_timings['routing_members'] == 3
             generations.append(repo.get_runtime('scope:' + scope.scope_id).generation)
@@ -142,3 +143,29 @@ def test_configuration_preserves_existing_envelope_and_creates_no_credentials(se
     assert identity.credential_ref is None and profile.auth_state.value == 'UNKNOWN'
     assert identity.profile_id != main['profile_id']
     assert identity.environment.model_dump(mode='json') == main['environment']
+
+
+@pytest.mark.asyncio
+async def test_query_affinity_balances_once_then_reuses_one_browser_cache_per_query():
+    from doxagent.site_strategy.budget import JointBudget
+    budget=JointBudget()
+    members=[('main',2,0),('backup',2,0),('third',2,0)]
+    owners={}
+    for cycle in range(5):
+        for query in range(10):
+            async with budget.route_members('reuters',members,affinity_key=str(query),
+                                            affinity_members=[m[0] for m in members]) as member:
+                if cycle:assert owners[query]==member
+                owners[query]=member
+    assert sorted(Counter(owners.values()).values())==[3,3,4]
+    assert len(budget._routing_affinity)==10 and not budget._routing_pending
+    query=next(q for q,member in owners.items() if member=='third')
+    async with budget.route_members('reuters',members[:2],affinity_key=str(query),
+                                    affinity_members=[m[0] for m in members]) as borrowed:
+        assert borrowed!='third'
+    async with budget.route_members('reuters',members,affinity_key=str(query),
+                                    affinity_members=[m[0] for m in members]) as returned:
+        assert returned=='third'
+    for query in range(200):
+        async with budget.route_members('reuters',members,affinity_key='bounded-'+str(query)):pass
+    assert len(budget._routing_affinity)==128

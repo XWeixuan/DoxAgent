@@ -1945,11 +1945,20 @@ class SiteStrategyService:
                         # eligibility. A legacy site cap must not strand BODY
                         # behind two concurrent crawler pages in a three-slot pool.
                         return await self._execute_uncached_selected(request, resolved=resolved)
-                    async with self.budgets.joint.route_members(resolved.runtime_key, members) as selected:
+                    affinity = None
+                    if (request.purpose is SitePurpose.CRAWLER
+                            and scope.verification_plan.get("crawler_routing") == "active_pool"):
+                        value = (str(request.recipe_parameters.get("query", "")).strip().casefold(),
+                                 str(request.recipe_parameters.get("offset", 0)))
+                        if value[0]:
+                            affinity = hashlib.sha256(repr(value).encode()).hexdigest()[:24]
+                    async with self.budgets.joint.route_members(resolved.runtime_key, members,
+                            affinity_key=affinity, affinity_members=scope_identity_ids(scope)) as selected:
                         result = await self._execute_uncached_selected(request, resolved=resolved,
                                                                        preferred_identity=selected)
                         return result.model_copy(update={"stage_timings": {**result.stage_timings,
                             "routing_balanced": 1, "routing_members": len(members),
+                            "routing_affinity_enabled": int(affinity is not None),
                             "routing_member_index": scope_identity_ids(scope).index(selected),
                             "routing_selected_member": int(selected == scope.fallback_identity_id)}})
         return await self._execute_uncached_selected(request, resolved=resolved)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections import OrderedDict
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -127,6 +128,7 @@ class JointBudget:
         self._routing_pending: dict[str, int] = {}
         self._routing_last: dict[tuple[str, str], int] = {}
         self._routing_sequence = 0
+        self._routing_affinity = OrderedDict()
 
     def _drop_claim(self, waiter):
         if waiter in self._waiters:
@@ -156,7 +158,7 @@ class JointBudget:
         return min(configured, ceil(1 / sum(1 / interval for _, _, interval in members)))
 
     @asynccontextmanager
-    async def route_members(self, site_key, members):
+    async def route_members(self, site_key, members, *, affinity_key=None, affinity_members=None):
         """Choose ONE member; normal permits still own all physical admission.
 
         members supplies identity_id, max_concurrency, min_interval_ms. These
@@ -182,6 +184,25 @@ class JointBudget:
                         self._routing_last.get((site_key, key), 0), key)
 
             selected = min(members, key=score)[0]
+            if affinity_key:
+                configured = tuple(affinity_members or [member[0] for member in members])
+                key = (site_key, configured, affinity_key)
+                owner = self._routing_affinity.get(key)
+                if owner is None:
+                    counts = {member: 0 for member in configured}
+                    for (site, pool, _), assigned in self._routing_affinity.items():
+                        if site == site_key and pool == configured:
+                            counts[assigned] += 1
+                    owner = min(configured, key=counts.get)
+                    self._routing_affinity[key] = owner
+                self._routing_affinity.move_to_end(key)
+                while len(self._routing_affinity) > 128:
+                    self._routing_affinity.popitem(last=False)
+                preferred = next((member for member in members if member[0] == owner), None)
+                # Preserve normal cache locality without waiting behind a slow,
+                # busy or unavailable owner. Borrowing does not rewrite ownership.
+                if preferred and score(preferred)[0] <= score(next(m for m in members if m[0] == selected))[0] + 1:
+                    selected = owner
             self._routing_sequence += 1
             self._routing_last[site_key, selected] = self._routing_sequence
             self._routing_pending[selected] = self._routing_pending.get(selected, 0) + 1
