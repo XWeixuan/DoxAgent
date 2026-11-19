@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "3451c7ae01e709be944546ae9c67ddcd4ae1e2e337ecb14c1698a9f0461d9246",
+  "source_sha256": "20cb4d77e32bcc1d611229a920313d80325c1d77697bd689f50df20feaf9fc82",
   "$defs": {
     "Id": {
       "type": "string"
@@ -28203,6 +28203,115 @@
     "BusSourceMetrics": {
       "type": "object",
       "properties": {
+        "window_hours": {
+          "type": "number"
+        },
+        "first_body_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "mean_first_body_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "last_historical": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "e2e_seconds": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "at",
+                "e2e_seconds"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_historical_body": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "full": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "at",
+                "full"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_historical_first_body": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "seconds": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "at",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "publication_classes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "samples": {
+                "$ref": "#/$defs/Count"
+              },
+              "mean_seconds": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "samples",
+              "mean_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "poll_expected": {
+          "$ref": "#/$defs/Count"
+        },
+        "poll_succeeded": {
+          "$ref": "#/$defs/Count"
+        },
         "mean_capture_seconds": {
           "type": [
             "number",
@@ -30291,6 +30400,115 @@
     "GlobalSourceMetrics": {
       "type": "object",
       "properties": {
+        "window_hours": {
+          "type": "number"
+        },
+        "first_body_samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "mean_first_body_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "last_historical": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "e2e_seconds": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "at",
+                "e2e_seconds"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_historical_body": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "full": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "at",
+                "full"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_historical_first_body": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "seconds": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "at",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "publication_classes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "samples": {
+                "$ref": "#/$defs/Count"
+              },
+              "mean_seconds": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "samples",
+              "mean_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "poll_expected": {
+          "$ref": "#/$defs/Count"
+        },
+        "poll_succeeded": {
+          "$ref": "#/$defs/Count"
+        },
         "last_success_at": {
           "$ref": "#/$defs/Value%3CInstant%3E"
         },

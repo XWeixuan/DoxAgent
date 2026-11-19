@@ -53,8 +53,11 @@ class DeferredQueries:
                     if not self.started:
                         await self.runner.start()
                         self.started = True
-                entry["pin"] = await self.runner.run({**job,"kind":"query_pin","query_id":entry["id"]},timeout=2)
-                entry["expires"] = min(entry["expires"],int(entry["pin"].rsplit(".",1)[1]))
+                # The live global directory has no view_id/MVCC token. Existing
+                # view-scoped aggregates still pin their exact view as before.
+                if job['url'].split('?',1)[0] != '/api/doxagent/v2/message-bus/source-catalog':
+                    entry["pin"] = await self.runner.run({**job,"kind":"query_pin","query_id":entry["id"]},timeout=2)
+                    entry["expires"] = min(entry["expires"],int(entry["pin"].rsplit(".",1)[1]))
                 entry["state"] = "RUNNING"
                 entry["result"] = await self.runner.run(job,timeout=30)
                 entry["state"] = "SUCCEEDED" if entry["result"][0] < 400 else "FAILED"

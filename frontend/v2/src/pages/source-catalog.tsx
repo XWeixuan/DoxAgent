@@ -92,7 +92,7 @@ const seconds = (v: number | null) =>
   v == null
     ? "—"
     : `${v.toLocaleString("zh-CN", { maximumFractionDigits: 2 })}s`;
-const sampleNote = "各订阅近24h最多20篇；不足5篇取最近5篇后汇总";
+const sampleNote = "滚动24h全量有效样本 · 同源文章去重";
 
 function MultiFilter({
   label,
@@ -231,7 +231,7 @@ export default function SourceCatalogPage() {
   const query = useQuery({
     queryKey: [scope, "source-catalog"],
     queryFn: ({ signal }) =>
-      api.request("SourceCatalog", "/message-bus/source-catalog", { signal }),
+      api.request("SourceCatalog", `/message-bus/source-catalog?refresh=${Date.now()}`, { signal }),
     gcTime: 0,
     staleTime: Infinity,
     retry: false,
@@ -570,34 +570,39 @@ function DirectoryCard({
       "全部Ticker正式发布条目，同一文章分发多个Ticker分别计数",
     ],
     [
-      "平均端到端耗时",
-      seconds(m.mean_e2e_seconds),
-      `${sampleNote} · ${m.e2e_samples}条消息`,
+      "实时首发端到端",
+      m.mean_e2e_seconds == null ? "暂无近期数据" : `${seconds(m.mean_e2e_seconds)} · ${m.e2e_samples}篇`,
+      `${sampleNote} · ${m.e2e_samples}篇${m.last_historical && !m.e2e_samples ? `；历史 ${seconds(m.last_historical.e2e_seconds)} · ${formatInstant(m.last_historical.at)}` : ""}`,
     ],
     [
       "真实抓取延时",
-      seconds(m.mean_capture_seconds),
+      m.mean_capture_seconds == null ? "暂无近期数据" : seconds(m.mean_capture_seconds),
       `原文发布时间至Bus发布 · ${m.capture_samples}条有效消息`,
     ],
     [
-      "P95端到端耗时",
-      seconds(m.p95_e2e_seconds),
+      "实时首发P95",
+      m.p95_e2e_seconds == null ? "暂无近期数据" : seconds(m.p95_e2e_seconds),
       `${m.e2e_samples}条消息的P95`,
     ],
     [
       "实际刷新间隔",
-      seconds(m.refresh_seconds),
-      `各订阅近20逻辑轮次汇总 · ${m.refresh_samples}个间隔`,
+      m.refresh_seconds == null ? "暂无近期数据" : seconds(m.refresh_seconds),
+      `滚动24h逻辑轮次 · ${m.refresh_samples}个间隔`,
     ],
+    ["首次BODY耗时", m.mean_first_body_seconds == null ? "暂无近期数据 · 0篇" : `${seconds(m.mean_first_body_seconds)} · ${m.first_body_samples ?? 0}篇`, `滚动24h首次完成 · ${m.first_body_samples ?? 0}篇`],
+    ["轮询成功率", m.poll_expected ? `${(((m.poll_succeeded ?? 0) / m.poll_expected) * 100).toFixed(1)}%` : "暂无近期数据", `${m.poll_succeeded ?? 0} / ${m.poll_expected ?? 0}轮 · 滚动24h`],
     [
       "正文补全成功率",
       !m.body_applicable
         ? "不适用"
         : m.body_ratio == null
-          ? "—"
-          : `${(m.body_ratio * 100).toFixed(1)}%`,
-      `共享文章去重 · 完整 ${m.body_full} / ${m.body_total}篇`,
+          ? "暂无近期数据"
+          : `${(m.body_ratio * 100).toFixed(1)}% · ${m.body_full}/${m.body_total}篇`,
+      `滚动24h全量 · 同源文章去重 · 完整 ${m.body_full} / ${m.body_total}篇`,
     ],
+    ...([['content_update','内容更新首发'],['capability_resume','能力恢复首发'],['legacy_recovery','旧恢复/更新未分类']] as const)
+      .filter(([key]) => (m.publication_classes?.[key]?.samples ?? 0) > 0)
+      .map(([key,label]) => [label, `${seconds(m.publication_classes?.[key]?.mean_seconds ?? null)} · ${m.publication_classes?.[key]?.samples ?? 0}篇`, '独立统计，不混入实时首发均值']),
   ];
   const entry = (e: GlobalSourceCard["entry_points"][number], i: number) => (
     <span key={`${e.url}-${i}`}>
@@ -726,6 +731,9 @@ function DirectoryCard({
             </div>
           ))}
         </dl>
+        {!m.e2e_samples && m.last_historical && <p className="text-muted-foreground">最近历史发布：{seconds(m.last_historical.e2e_seconds)} · {formatInstant(m.last_historical.at)}</p>}
+        {!m.body_total && m.last_historical_body && <p className="text-muted-foreground">历史正文：{m.last_historical_body.full ? '完整' : '未完整'} · {formatInstant(m.last_historical_body.at)}</p>}
+        {!m.first_body_samples && m.last_historical_first_body && <p className="text-muted-foreground">历史首次BODY：{seconds(m.last_historical_first_body.seconds)} · {formatInstant(m.last_historical_first_body.at)}</p>}
         <div className="catalog-classification">
           <div>
             <Network aria-hidden="true" />

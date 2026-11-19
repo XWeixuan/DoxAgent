@@ -227,11 +227,17 @@ def create_app(
                     "body": request._body if request.method != "GET" else None,
                     "headers": {k: v for k, v in request.headers.items() if k in {"if-none-match", "if-match", "idempotency-key", "accept", "content-type", "x-doxagent-projection-clock"}},
                 }
-                deferred = request.method == "GET" and bool(request.query_params.get("q")) and path.endswith("/metrics")
+                catalog_read = request.method == "GET" and path == PREFIX + "/message-bus/source-catalog"
+                deferred = catalog_read or (request.method == "GET" and bool(request.query_params.get("q")) and path.endswith("/metrics"))
                 if deferred:
                     existing = app.state.deferred_queries.existing(job)
                     if existing is not None:
                         return existing
+                if catalog_read:
+                    # Exact 24h reads use the existing isolated read executor once,
+                    # not a doomed 5s foreground attempt followed by a full replay.
+                    request.state.query_submitted = True
+                    return await app.state.deferred_queries.submit(job)
                 try:
                     request.state.query_submitted = True
                     status, headers, content = await runner.run(job, timeout=limits.detail_seconds if "/body" in path or "/download" in path or path.endswith("/message-bus/source-catalog") else limits.query_seconds)
