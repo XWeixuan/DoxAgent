@@ -60,7 +60,7 @@ export default function RuntimePage() {
   const [p, setP] = useSearchParams();
   const period = (periods.find((x) => x[0] === p.get("period"))?.[0] ??
     "CURRENT_TRADING_DAY") as Period;
-  const c = usePageContext(ticker, "RUNTIME", period);
+  const c = usePageContext(ticker, "RUNTIME", period, { refreshReads: false });
   return (
     <>
       <PageTitle

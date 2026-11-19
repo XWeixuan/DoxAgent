@@ -14,7 +14,7 @@ export function usePageContext(
   ticker: string,
   page: PageKind,
   period?: Period,
-  options: { renew?: boolean } = {},
+  options: { renew?: boolean; refreshReads?: boolean } = {},
 ) {
   const { api, scope, query: cache } = useRuntime();
   const key = [scope, ticker, page, "context", period];
@@ -40,6 +40,12 @@ export function usePageContext(
           refresh: "MANUAL",
         }),
     );
+    if (options.refreshReads === false) {
+      // Minute reads may hold a different, expired view. Let each module load
+      // the new context instead of requiring old-view reads to succeed first.
+      if (cache.getQueryData(key) === before) cache.setQueryData(key, next);
+      return next;
+    }
     const old = result.data?.data.view_id,
       view = next.data.view_id;
     const otherContexts = cache
