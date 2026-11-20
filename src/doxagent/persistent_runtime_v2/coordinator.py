@@ -15,7 +15,7 @@ from threading import Lock
 from time import perf_counter
 from typing import Any
 
-from doxagent.message_bus_v2.schema import MaterializedStreamItem, MaterializedStreamMember
+from doxagent.message_bus_v2.schema import MaterializedStreamItem
 from doxagent.semantic_clock import boundary, semantic_day
 from doxagent.v2_control.repository import ControlError, ControlRepository
 from doxagent.workflows.codex_document3.consumer_contracts import (
@@ -58,6 +58,7 @@ class RuntimeCoordinator:
         self._dispatch_lock = Lock()
         self._tasks_lock = Lock()
         self._leases = {}
+        self._claims_inflight = 0
         self._reconciled = set()
         self._effects = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-effects")
         self._effect_future: Future[Any] | None = None
@@ -162,75 +163,115 @@ class RuntimeCoordinator:
             inputs = {**inputs, "control_epoch": state["epoch"] if state else None}
             self.journal.put_task(identity, ticker, kind, inputs, due_at=due_at)
 
-    def accept_stream(self, stream_item: MaterializedStreamItem) -> None:
-        from doxagent.message_bus_v2.admission import evaluate_admission
+    def ensure_schedule(self, ticker):
+        """Only a missing day boundary is a prerequisite of inbox admission.
 
-        # Freeze the compiled groups before admitting any Case. On cursor retry use
-        # this plan, never shrink a buffered group around an already accepted latest item.
-        receipt_key = f"{stream_item.item.ticker}:{stream_item.item.stream_item_id}"
-        plan = self.journal.get("stream_admission_plans", receipt_key)
-        if plan is None:
-            previous = SourceMessageEnvelope.from_stream_item(stream_item)
-            if self.journal.get_task(
-                f"inbox:{stream_item.item.ticker}:{previous.source_message_id}"
-            ):
-                return
-            groups: dict[str, list[MaterializedStreamMember]] = {}
-            for member in stream_item.members:
-                identity = f"inbox:{stream_item.item.ticker}:{member.standard_message_id}"
-                reason = evaluate_admission(
-                    member.published_at,
-                    member.admission_context,
-                    self.journal.clock(),
-                    member.publication_time_basis,
-                )
-                context = member.admission_context
-                if not reason and context and context.mode == "CLOSED_SWEEP":
-                    parent = self.journal.get_task(context.sweep_id or "")
-                    child = self.journal.get_task(context.source_task_id or "")
-                    if (
-                        not parent
-                        or not child
-                        or parent["ticker"] != stream_item.item.ticker
-                        or child["inputs"].get("sweep_id") != context.sweep_id
-                    ):
-                        reason = "SWEEP_OWNER_MISMATCH"
-                    elif datetime.fromisoformat(parent["inputs"]["cutoff"]) != context.cutoff:
-                        reason = "SWEEP_WINDOW_MISMATCH"
-                    elif (
-                        parent["inputs"].get("window_start")
-                        and datetime.fromisoformat(parent["inputs"]["window_start"])
-                        != context.window_start
-                    ):
-                        reason = "SWEEP_WINDOW_MISMATCH"
-                if reason:
-                    self.journal.set(
-                        "message_admission_skips",
-                        identity,
-                        {
-                            "reason": reason,
-                            "stream_offset": stream_item.item.stream_offset,
-                            "published_at": member.published_at.isoformat(),
-                        },
-                    )
-                    continue
-                key = context.model_dump_json() if context else "legacy"
-                groups.setdefault(key, []).append(member)
-            plan = []
-            for members in groups.values():
-                value = MaterializedStreamItem(
-                    item=stream_item.item.model_copy(update={"member_count": len(members)}),
-                    members=[
-                        m.model_copy(update={"member_index": i}) for i, m in enumerate(members)
-                    ],
-                )
-                plan.append(SourceMessageEnvelope.from_stream_item(value).model_dump(mode="json"))
-            self.journal.set("stream_admission_plans", receipt_key, plan)
-        for source in plan:
-            self.accept(
-                SourceMessageEnvelope.model_validate(source),
-                stream_offset=stream_item.item.stream_offset,
-            )
+        The existing background reconcile still updates mode/calendar changes.
+        Every new message computes its own current mode outside the writer.
+        """
+        state = self.journal.get("schedule", ticker)
+        if not state or state.get("last_boundary") != semantic_day(self.journal.clock()).isoformat():
+            self.reconcile(ticker)
+
+    def accept_stream(self, stream_item: MaterializedStreamItem) -> list[str]:
+        from doxagent.message_bus_v2.admission import evaluate_admission
+        from .journal import AdmissionClockChanged, AdmissionPlanChanged
+        from doxagent.w3_timing import span
+
+        ticker, stream_id = stream_item.item.ticker, stream_item.item.stream_item_id
+        offset = stream_item.item.stream_offset
+        key = f"{ticker}:{stream_id}"
+        while True:  # Only recompute an actual clock boundary or a concurrent legacy upgrade.
+            plan, legacy_raw = self.journal.stream_admission_plan(key)
+            if isinstance(plan, dict):
+                ids = plan.get('tasks')
+                if ((plan.get('version'), plan.get('stream_id'), plan.get('stream_offset')) != (2, stream_id, offset)
+                    or not isinstance(ids, list) or any(not isinstance(i, str) for i in ids)):
+                    raise ValueError('invalid stream admission receipt')
+                found = self.journal.task_controls_by_id(ids)
+                if ({t['id'] for t in found} != set(ids)
+                    or any(t['ticker'] != ticker or t['kind'] != 'CASE' for t in found)):
+                    raise ValueError('missing original stream task')
+                self._stream_registered(ticker, stream_id, replay=True)
+                return ids
+            prepared_at = self.journal.clock()
+            candidates, skips = [], []
+            if plan is not None:
+                if not isinstance(plan, list):
+                    raise ValueError('invalid legacy stream admission plan')
+                # Older releases could save a plan before only some Tasks.
+                # Preserve that exact grouping and original acceptance behavior.
+                for source in plan:
+                    identity = self.accept(SourceMessageEnvelope.model_validate(source), stream_offset=offset)
+                    if self.journal.task_controls_by_id([identity]):
+                        candidates.append(dict(id=identity, inputs=None))
+            else:
+                prior_source_id = (stream_item.members[0].standard_message_id if len(stream_item.members) == 1
+                                   else SourceMessageEnvelope.from_stream_item(stream_item).source_message_id)
+                prior_id = f"inbox:{ticker}:{prior_source_id}"
+                if self.journal.task_controls_by_id([prior_id]):
+                    candidates.append(dict(id=prior_id, inputs=None))
+                else:
+                    groups = {}
+                    for member in stream_item.members:
+                        identity = f"inbox:{ticker}:{member.standard_message_id}"
+                        reason = evaluate_admission(member.published_at, member.admission_context,
+                                                    self.journal.clock(), member.publication_time_basis)
+                        context = member.admission_context
+                        if not reason and context and context.mode == "CLOSED_SWEEP":
+                            parent = self.journal.get_task(context.sweep_id or "")
+                            child = self.journal.get_task(context.source_task_id or "")
+                            if (not parent or not child or parent['ticker'] != ticker
+                                or child['inputs'].get('sweep_id') != context.sweep_id):
+                                reason = 'SWEEP_OWNER_MISMATCH'
+                            elif datetime.fromisoformat(parent['inputs']['cutoff']) != context.cutoff:
+                                reason = 'SWEEP_WINDOW_MISMATCH'
+                            elif (parent['inputs'].get('window_start') and
+                                  datetime.fromisoformat(parent['inputs']['window_start']) != context.window_start):
+                                reason = 'SWEEP_WINDOW_MISMATCH'
+                        if reason:
+                            skips.append((identity, dict(reason=reason, stream_offset=offset,
+                                                         published_at=member.published_at.isoformat())))
+                        else:
+                            group = context.model_dump_json() if context else 'legacy'
+                            groups.setdefault(group, []).append(member)
+                    with span('ingress.prepare'):
+                        for members in groups.values():
+                            value = MaterializedStreamItem(
+                                item=stream_item.item.model_copy(update={'member_count': len(members)}),
+                                members=[m.model_copy(update={'member_index': i}) for i, m in enumerate(members)])
+                            source = SourceMessageEnvelope.from_stream_item(value)
+                            identity = f"inbox:{ticker}:{source.source_message_id}"
+                            if identity != prior_id and self.journal.task_controls_by_id([identity]):
+                                candidates.append(dict(id=identity, inputs=None))
+                                continue
+                            reason = evaluate_admission(source.published_at, source.admission_context,
+                                                        self.journal.clock(), source.publication_time_basis)
+                            if reason:
+                                skips.append((identity, dict(reason=reason, stream_offset=offset)))
+                                continue
+                            inputs = self._case_task_inputs(source, offset, prepared_at)
+                            candidates.append(dict(id=f"inbox:{ticker}:{source.source_message_id}",
+                                                   eligibility_at=source.eligibility_at or source.message_bus_event_time,
+                                                   inputs=self.journal.content.encode(inputs)))
+            try:
+                with span('ingress.register'):
+                    ids = self.journal.register_stream_admission(ticker, stream_id, offset, candidates,
+                                                                 skips, prepared_at, legacy_plan_raw=legacy_raw)
+                self._stream_registered(ticker, stream_id, replay=False)
+                return ids
+            except (AdmissionClockChanged, AdmissionPlanChanged):
+                continue
+
+    def _stream_registered(self, ticker, stream_id, *, replay):
+        from doxagent.w3_timing import mark
+        mark('ingress.registered', stream_id=stream_id, replay=replay)
+        if not getattr(self, '_first_stream_registered', False):
+            self._first_stream_registered = True
+            from doxagent.control_io import diagnostic_call
+            diagnostic_call(logging.getLogger('doxagent.w3_timing.receipts').info,
+                'runtime_ingress_first_registration ticker=%s stream_id=%s replay=%s at=%s',
+                ticker, stream_id, replay, self.journal.clock().isoformat())
 
     def accept(self, source: SourceMessageEnvelope, *, stream_offset: int | None = None) -> str:
         ticker = source.snapshot.ticker
@@ -256,6 +297,12 @@ class RuntimeCoordinator:
             identity, ticker, source.eligibility_at or source.message_bus_event_time
         )
         at = self.journal.clock()
+        self.journal.put_task(identity, ticker, "CASE",
+                              self._case_task_inputs(source, stream_offset, at), max_failures=1)
+        return identity
+
+    def _case_task_inputs(self, source, stream_offset, at):
+        ticker = source.snapshot.ticker
         mode, cycle = self.mode(ticker, at)
         owner = None
         if source.admission_context and source.admission_context.mode == "CLOSED_SWEEP":
@@ -306,40 +353,37 @@ class RuntimeCoordinator:
                 },
             )
             self.journal.set("sweep_roster", owner, {"source_tasks": []})
-        self.journal.put_task(
-            identity,
-            ticker,
-            "CASE",
-            {
-                "source": source.model_dump(mode="json"),
-                "stream_offset": stream_offset,
-                "admitted_at": at.isoformat(),
-                "mode": mode,
-                "sweep_id": owner,
-                "closed_cycle_id": cycle,
-            },
-            max_failures=1,
-        )
-        return identity
+        return dict(source=source.model_dump(mode="json"), stream_offset=stream_offset,
+                    admitted_at=at.isoformat(), mode=mode, sweep_id=owner, closed_cycle_id=cycle)
 
     def tick(self, ticker: str) -> None:
         with self._dispatch_lock:
             self._tick(ticker)
 
     def _submit_task(self, task, pool):
-        # The long recovery/calendar tick must not own admission of a new Case.
-        # Only the existing lease claim and in-memory registration are serialized.
-        future = None
         with self._tasks_lock:
-            if self._closed or task['id'] in self._futures:
-                return
-            lease=self.journal.claim(task['id'],seconds=120)
-            if lease:
-                self._leases[task['id']]=lease
-                future = pool.submit(self._execute,lease)
-                self._futures[task['id']] = future
-        if future is not None and task['kind'] == 'CASE' and task['inputs'].get('mode') == 'REALTIME':
-            # Register outside the lock: an already-completed Future calls inline.
+            if self._closed or task['id'] in self._futures or getattr(self, '_should_stop', lambda: False)():
+                return False
+            self._claims_inflight = getattr(self, '_claims_inflight', 0) + 1
+        lease, future = None, None
+        try:
+            # Durable lease arbitrates claimers. No registry mutex over SQL/I/O.
+            lease = self.journal.claim(task['id'], seconds=120)
+            if not lease:
+                return False
+            with self._tasks_lock:
+                if not self._closed and not getattr(self, '_should_stop', lambda: False)():
+                    future = pool.submit(self._execute, lease)
+                    self._leases[task['id']] = lease
+                    self._futures[task['id']] = future
+        finally:
+            try:
+                if lease is not None and future is None:
+                    ControlRepository(self.journal).defer(lease)
+            finally:
+                with self._tasks_lock:
+                    self._claims_inflight -= 1
+        if task['kind'] == 'CASE' and task['inputs'].get('mode') == 'REALTIME' and future is not None:
             future.add_done_callback(lambda done: self._case_capacity_available(task, done))
         return future is not None
 
@@ -354,12 +398,16 @@ class RuntimeCoordinator:
             # Durable pending work remains eligible for the existing recovery tick.
             logging.getLogger(__name__).exception('Immediate Case capacity wakeup failed')
 
-    def dispatch_realtime(self, ticker, *, limit=None):
+    def dispatch_realtime(self, ticker, *, limit=None, task_ids=None):
         """Immediately dispatch durable admitted Cases, using the same lease/pool."""
         if self._closed or getattr(self,'_should_stop',lambda:False)():
             return
         dispatched = 0
-        for task in self.journal.task_controls(ticker):
+        tasks = (self.journal.task_controls_by_id(task_ids) if task_ids is not None
+                 else self.journal.task_controls(ticker))
+        for task in tasks:
+            if task['ticker'] != ticker:
+                raise ValueError('task ticker mismatch')
             if limit is not None and task['status'] != 'PENDING':
                 continue
             if (task['kind']=='CASE' and task['inputs']['mode']=='REALTIME'
@@ -1196,8 +1244,11 @@ class RuntimeCoordinator:
         with self._dispatch_lock:
             with self._tasks_lock:
                 self._closed = True
-                for identity, future in list(self._futures.items()):
-                    if future.cancel() and identity in self._leases:
-                        ControlRepository(self.journal).defer(self._leases[identity])
+                pending = [(future, self._leases.get(identity)) for identity, future in self._futures.items()]
+        # cancel() invokes capacity callbacks inline. No registry/dispatch lock
+        # may surround it, and callbacks may remove the lease from the registry.
+        for future, lease in pending:
+            if future.cancel() and lease is not None:
+                ControlRepository(self.journal).defer(lease)
         for pool in (self._realtime, self._background, self._sweeps, self._effects, self._delivery):
             pool.shutdown(wait=True, cancel_futures=True)

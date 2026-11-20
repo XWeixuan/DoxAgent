@@ -74,38 +74,36 @@ def test_trade_output_is_atomic_idempotent_and_expires_after_midnight(tmp_path):
         runtime.close()
 
 
-def test_closed_candidates_do_not_consume_policy_and_w1_replays_receipts(tmp_path):
+def test_closed_w3_candidates_do_not_duplicate_fact_compilation_or_replay_w1(tmp_path):
     now = [datetime(2026, 9, 6, 12, tzinfo=UTC)]
     runtime, journal = runtime_at(tmp_path, now)
     try:
         case = runtime.execute_message(
             _source(), mode="CLOSED", phase="W1", sweep_id="sweep", closed_cycle_id="2026-09-05"
         )
-        successful = len(runtime.repository.list_turns(case.case_id))
+        w1_turns = [t.turn_id for t in runtime.repository.list_turns(case.case_id)]
         from doxagent.persistent_runtime_v2.schema import (
             W1FactExtractionResult,
-            W2NovelFactAlignmentResult,
+            RuntimePrimaryRoute,
         )
 
-        extraction = next(
-            r for r in runtime.responses.calls if r.output_model is W1FactExtractionResult
-        )
-        parent = next(
-            t
-            for t in runtime.repository.list_turns(case.case_id)
-            if t.lane == "W1" and t.round_name == "R2"
-        )
-        assert extraction.payload == {} and extraction.inherit_context
-        from doxagent.persistent_runtime_v2.transport import _cache_optimized_input
+        # W1-only CLOSED processing has no final route yet. R3 must not compile
+        # facts until W2/WATCH have settled whether this Case enters W3.
+        assert not any(r.output_model is W1FactExtractionResult for r in runtime.responses.calls)
+        assert all(r.metadata['lane'] != 'W2' for r in runtime.responses.calls)
+        routed = runtime.execute_message(_source(), phase="ALL")
+        assert routed.route.primary_route is RuntimePrimaryRoute.W3
+        assert [t.turn_id for t in runtime.repository.list_turns(case.case_id)
+                if t.lane == 'W1' and t.round_name in {'R1', 'R2'}] == w1_turns
+        runtime.process_pending_effects()
 
-        assert _cache_optimized_input(extraction.payload, extraction.cache_context_keys)[0] == "{}"
-        assert extraction.previous_response_id == parent.response_id
-        assert all(
-            r.output_model is not W2NovelFactAlignmentResult for r in runtime.responses.calls
-        )
+        # This Case takes W3: current exclusive compilation belongs to W3,
+        # rather than a second W1R3 call using the old CLOSED-only contract.
+        assert not any(r.output_model is W1FactExtractionResult for r in runtime.responses.calls)
         assert runtime.repository.list_provisional("MU", case.trading_date)
+        successful = len(runtime.repository.list_turns(case.case_id))
         runtime.execute_message(_source(), phase="ALL")
-        assert len(runtime.repository.list_turns(case.case_id)) == successful + 3
+        assert len(runtime.repository.list_turns(case.case_id)) == successful
         runtime.process_pending_effects()
         assert len(journal.values("candidates")) == 1
         assert not journal.values("trade_intents")

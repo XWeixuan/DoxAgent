@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import tempfile
 import time
@@ -529,6 +530,98 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
     return receipt
 
 
+def stop_idle_scheduler(container='doxagent-v2-v2-scheduler-1', *, seconds=30,
+                        call=subprocess.check_output, clock=time.monotonic, sleep=time.sleep):
+    def inspect():
+        return json.loads(call(['docker', 'inspect', container], text=True))[0]
+
+    original = inspect()
+    if not original['State']['Running']:
+        return {'already_stopped': True}
+    # No signal is sent to an unsupported image: SIGUSR1 defaults to termination.
+    call(['docker', 'exec', original['Id'], 'python', '-c',
+          'from doxagent.runtime_scheduler.v2 import V2Scheduler; '
+          'assert hasattr(V2Scheduler,"stop_if_idle"),"legacy Scheduler requires reviewed drain"'], text=True)
+    policy = original.get('HostConfig', {}).get('RestartPolicy', {})
+    name = policy.get('Name') or 'no'
+    restart = name + (':' + str(policy['MaximumRetryCount']) if name == 'on-failure' and policy.get('MaximumRetryCount') else '')
+    receipt = dict(container=original['Id'], restart_policy=restart,
+                   requested_at=datetime.now().astimezone().isoformat())
+    # A cooperative normal exit must not immediately restart under unless-stopped.
+    # Restore policy on a busy/error exit; a successful cutover owns its restoration.
+    call(['docker', 'update', '--restart=no', original['Id']], text=True)
+    try:
+        deadline = clock() + seconds
+        while clock() < deadline:
+            current = inspect()
+            if current['Id'] != original['Id']:
+                raise RuntimeError('Scheduler changed during release; review current owner')
+            if not current['State']['Running']:
+                return dict(receipt, stopped_at=datetime.now().astimezone().isoformat())
+            call(['docker', 'kill', '--signal=USR1', original['Id']], text=True)
+            sleep(min(1, max(0, deadline-clock())))
+        current = inspect()
+        if current['Id'] != original['Id']:
+            raise RuntimeError('Scheduler changed during release; review current owner')
+        if not current['State']['Running']:
+            return dict(receipt, stopped_at=datetime.now().astimezone().isoformat())
+        raise RuntimeError('Scheduler remains busy; keep serving and retry release, no forced stop')
+    except BaseException:
+        # Also cancels a late cooperative acceptance after the timeout. Start is
+        # idempotent for a running owner; never start a different container ID.
+        resume_scheduler(receipt, call=call)
+        raise
+
+
+def resume_scheduler(receipt, *, call=subprocess.check_output):
+    if not receipt or receipt.get('already_stopped'):
+        return
+    identity = receipt['container']
+    call(['docker', 'start', identity], text=True)
+    call(['docker', 'update', '--restart='+receipt['restart_policy'], identity], text=True)
+
+
+
+def stop_worker_for_release(*, call=subprocess.check_output, stop_worker=None, stop_scheduler=None):
+    """Keep ingestion alive until Worker and Scheduler can actually cut over.
+
+    A raced non-W3 Job aborts the cutover and restores the old Scheduler. Never
+    hold the Worker writer while asking a busy Scheduler to finish its round.
+    """
+    worker = json.loads(call(['docker', 'inspect', 'doxagent-v2-codex-worker-1'], text=True))[0]
+    if not worker['State']['Running']:
+        return None
+    data = next((Path(m['Source']) for m in worker['Mounts'] if m['Destination'] == '/data'), None)
+    if data is None:
+        raise RuntimeError('Worker data mount unavailable; keep serving')
+    jobs = data / 'workspaces/worker-jobs.sqlite3'
+    with contextlib.closing(sqlite3.connect(jobs.resolve().as_uri()+'?mode=ro', uri=True, timeout=.2)) as db:
+        if db.execute("SELECT 1 FROM jobs WHERE status IN ('queued','running') LIMIT 1").fetchone():
+            raise RuntimeError('Worker has accepted Jobs; keep serving and retry release')
+    scheduler = json.loads(call(['docker', 'inspect', 'doxagent-v2-v2-scheduler-1'], text=True))[0]
+    receipt = (stop_scheduler or stop_idle_scheduler)(call=call) if scheduler['State']['Running'] else None
+    try:
+        if stop_worker is None:
+            stop_worker = stop_idle_worker
+        stop_worker(jobs, data/'runtime/runtime.sqlite3', worker['Id'])
+    except BaseException:
+        resume_scheduler(receipt, call=call)
+        raise
+    return receipt
+
+
+def stop_idle_worker(database, runtime_database, worker_id):
+    # Existing Worker queued/running writer fence, held only during idle stop.
+    with contextlib.closing(sqlite3.connect(database, timeout=.2, isolation_level=None)) as db:
+        try:
+            db.execute('BEGIN IMMEDIATE')
+            if db.execute("SELECT 1 FROM jobs WHERE status IN ('queued','running') LIMIT 1").fetchone():
+                raise ValueError('Worker has accepted work; keep serving')
+            subprocess.run(['docker','stop','-t','15',worker_id], check=True, timeout=30)
+        finally:
+            db.rollback()
+
+
 def deploy(root, state, manifest):
     """Manifest supplies the actual Compose command, per-service candidate and checks."""
     base_command=manifest['compose_command'];commit=manifest['commit']
@@ -538,42 +631,71 @@ def deploy(root, state, manifest):
     command=[*base_command,'-f',str(override)]
     state['compose_commands']=[command]
     state['compose_base_command']=base_command
-    for component, candidate in manifest['components'].items():
-        identity=run(['docker','image','inspect','--format','{{.Id}}',candidate['image']])
-        state.setdefault('candidates',[]).append(dict(image=identity,expires=time.time()+48*3600))
-        atomic(root/'state.json',state)
-        previous=configuration['services'].get(component)
-        if previous is None:
-            old=state.get('components',{}).get(component,{}).get('current')
-            previous={'image':old['image']} if old else None
-        new={k:v for k,v in candidate.items() if k in ('environment','command','entrypoint')}
-        new['image']=identity;configuration['services'][component]=new
-        atomic(override,configuration)
-        try:
-            subprocess.run([*command,'up','-d','--no-deps','--no-build',component],check=True)
-            started=time.monotonic();deadline=started+candidate.get('health_seconds',90)
-            while True:
-                container=run([*command,'ps','-q',component])
-                if container:
-                    info=json.loads(run(['docker','inspect',container]))[0]
-                    if info['Image'] != identity:raise ValueError('Compose selected a different image')
-                    health=info['State'].get('Health',{}).get('Status')
-                    if info['State']['Running'] and (health=='healthy' or health is None and time.monotonic()-started>=5):break
-                if time.monotonic()>deadline:raise TimeoutError('candidate health failed: '+component)
-                time.sleep(2)
-            for check in candidate.get('checks',[]):subprocess.run(check,check=True)
-        except BaseException:
-            if previous is not None:
-                configuration['services'][component]=previous;atomic(override,configuration)
+    # Keep the consumer alive through unrelated role replacements/health checks.
+    order = {'codex-worker': 1, 'v2-scheduler': 2}
+    components = sorted(manifest['components'].items(), key=lambda pair: order.get(pair[0], 0))
+    scheduler_stopped = None
+    try:
+        for component, candidate in components:
+            identity=run(['docker','image','inspect','--format','{{.Id}}',candidate['image']])
+            state.setdefault('candidates',[]).append(dict(image=identity,expires=time.time()+48*3600))
+            atomic(root/'state.json',state)
+            previous=configuration['services'].get(component)
+            if previous is None:
+                old=state.get('components',{}).get(component,{}).get('current')
+                previous={'image':old['image']} if old else None
+            new={k:v for k,v in candidate.items() if k in ('environment','command','entrypoint')}
+            new['image']=identity
+            if component == 'codex-worker' and previous != new:
+                scheduler_stopped = stop_worker_for_release()
+            if component == 'v2-scheduler' and previous != new:
+                receipt = stop_idle_scheduler()
+                if not receipt.get('already_stopped'):
+                    scheduler_stopped = receipt
+                atomic(root/(commit+'.scheduler-cutover.json'), receipt)
+            configuration['services'][component]=new
+            atomic(override,configuration)
+            try:
                 subprocess.run([*command,'up','-d','--no-deps','--no-build',component],check=True)
-            state['cleanup_pending']=True;atomic(root/'state.json',state)
-            raise
-        promote(state,component,identity,commit=commit,schema=candidate.get('schema'))
-        record_live_references(state,inspect_images(),inspect_containers())
-        state['components'][component]['current']['compose']=new
-        # This write is the recovery boundary: a crash before cleanup retains
-        # both accepted versions and the timer can complete retirement later.
-        atomic(root/'state.json',state)
+                started=time.monotonic();deadline=started+candidate.get('health_seconds',90)
+                while True:
+                    container=run([*command,'ps','-q',component])
+                    if container:
+                        info=json.loads(run(['docker','inspect',container]))[0]
+                        if info['Image'] != identity:raise ValueError('Compose selected a different image')
+                        health=info['State'].get('Health',{}).get('Status')
+                        if info['State']['Running'] and (health=='healthy' or health is None and time.monotonic()-started>=5):break
+                    if time.monotonic()>deadline:raise TimeoutError('candidate health failed: '+component)
+                    time.sleep(2)
+                for check in candidate.get('checks',[]):subprocess.run(check,check=True)
+            except BaseException:
+                if previous is not None:
+                    configuration['services'][component]=previous;atomic(override,configuration)
+                    subprocess.run([*command,'up','-d','--no-deps','--no-build',component],check=True)
+                    if component == 'v2-scheduler' and previous != new:
+                        scheduler_stopped = None  # Compose restored the previous role/policy under a new ID.
+                if scheduler_stopped:
+                    resume_scheduler(scheduler_stopped)
+                    scheduler_stopped = None
+                state['cleanup_pending']=True;atomic(root/'state.json',state)
+                raise
+            if scheduler_stopped and component == 'v2-scheduler':
+                if previous == new:
+                    resume_scheduler(scheduler_stopped)
+                scheduler_stopped = None  # Healthy replacement owns its Compose restart policy.
+            promote(state,component,identity,commit=commit,schema=candidate.get('schema'))
+            record_live_references(state,inspect_images(),inspect_containers())
+            state['components'][component]['current']['compose']=new
+            if scheduler_stopped and (component == 'v2-scheduler' or 'v2-scheduler' not in manifest['components']):
+                if component != 'v2-scheduler':
+                    resume_scheduler(scheduler_stopped)
+                scheduler_stopped = None
+            # This write is the recovery boundary: a crash before cleanup retains
+            # both accepted versions and the timer can complete retirement later.
+            atomic(root/'state.json',state)
+    finally:
+        if scheduler_stopped:
+            resume_scheduler(scheduler_stopped)
     return reconcile(root,state)
 
 

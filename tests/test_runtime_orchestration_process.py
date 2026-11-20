@@ -9,7 +9,7 @@ from tests.test_persistent_runtime_v2 import _source
 from tests.test_runtime_orchestration_execution import runtime_at
 
 
-def test_process_killed_between_w1_and_w2_resumes_without_repeating_w1(tmp_path):
+def test_process_killed_between_w1_and_w2_keeps_unknown_dispatch_without_repeating_w1(tmp_path):
     code = r"""
 import sys, time
 from pathlib import Path
@@ -62,7 +62,11 @@ runtime.execute_message(_source())
             if turn.lane == "W1"
         ]
         resumed = runtime.execute_message(_source())
-        assert resumed.status is RuntimeCaseStatus.ADJUDICATED
+        # Killing the caller does not prove the paid W2 request was rejected.
+        # Current transport deliberately retains UNKNOWN instead of redispatch.
+        assert resumed.status is RuntimeCaseStatus.UNAVAILABLE
+        assert resumed.error_code == 'provider_dispatch_unknown'
+        assert not any(r.metadata['lane'] == 'W2' for r in runtime.responses.calls)
         assert [
             turn.turn_id
             for turn in runtime.repository.list_turns(before.case_id)
@@ -70,7 +74,7 @@ runtime.execute_message(_source())
         ] == w1
         runtime.process_pending_effects()
         runtime.process_pending_effects()
-        assert len(journal.values("trade_intents")) == 1
+        assert len(journal.values("trade_intents")) == 0
     finally:
         runtime.close()
 

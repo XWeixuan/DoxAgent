@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import nullcontext
 from collections.abc import Iterable
 from datetime import UTC, datetime, time
 from typing import Any
@@ -42,6 +43,7 @@ ET = ZoneInfo("America/New_York")
 RUNNABLE_STATUSES = {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED}
 ENABLED_MONITOR_MODES = {MonitorMode.MESSAGE_MONITORING, MonitorMode.TRADING}
 RUNTIME_V2_CONSUMER_ID = "persistent_runtime_v2"
+_UNREAD = object()
 
 
 class UnsupportedMonitorMode(ValueError):
@@ -156,13 +158,21 @@ class UnifiedRuntimeSchedulerService:
         self.repository.upsert_state(state)
         return state
 
-    def run_due_once(
+    def run_due_once(self, *, now=None, event_limit=100, include_detail=True):
+        from doxagent.w3_timing import slow_segment_trace
+        with slow_segment_trace('runtime_ingress_round'):
+            return self._run_due_once(now=now, event_limit=event_limit, include_detail=include_detail)
+
+    def _run_due_once(
         self,
         *,
         now: datetime | None = None,
         event_limit: int = 100,
         include_detail: bool = True,
     ) -> list[TickerRunDetail]:
+        from doxagent.w3_timing import span
+
+        self._ingress_round = None
         recover = getattr(self, "_start_existing_recovery", None) or getattr(self, "_recover_existing_once", None)
         if recover is not None:
             recover()
@@ -173,9 +183,10 @@ class UnifiedRuntimeSchedulerService:
             from doxagent.ticker_initialization.repository import InitializationRepository
 
             try:
-                admitted = admit_runtime_revisions(
-                    InitializationRepository(control_path, initialize=False), self
-                )
+                with span('ingress.activation'):
+                    admitted = admit_runtime_revisions(
+                        InitializationRepository(control_path, initialize=False), self
+                    )
                 self.admission_degraded_reason = None
             except Exception:
                 logging.getLogger(__name__).exception("runtime new admission deferred")
@@ -229,18 +240,35 @@ class UnifiedRuntimeSchedulerService:
                 details.append(detail)
         return details
 
-    def tick_ticker(
+    def tick_ticker(self, ticker, *, now=None, event_limit=100, include_detail=True,
+                    state=None, control_state=_UNREAD, stream_position=None):
+        from doxagent.w3_timing import slow_segment_trace
+        from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+        runtime = self.runtime_v2_service
+        bus = self.message_bus_v2_service
+        empty = stream_position is not None and stream_position[0] >= stream_position[1]
+        scope = (bus.repository.connection_scope() if not empty and bus is not None and
+                 isinstance(getattr(runtime, 'coordinator', None), RuntimeCoordinator) else nullcontext())
+        with slow_segment_trace('runtime_ingress_tick', ticker=ticker), scope:
+            return self._tick_ticker(ticker, now=now, event_limit=event_limit, include_detail=include_detail,
+                                     state=state, control_state=control_state, stream_position=stream_position)
+
+    def _tick_ticker(
         self,
         ticker: str,
         *,
         now: datetime | None = None,
         event_limit: int = 100,
         include_detail: bool = True,
+        state=None,
+        control_state=_UNREAD,
+        stream_position=None,
     ) -> TickerRunDetail | None:
         normalized = _ticker(ticker)
-        state = self.repository.get_state(normalized)
+        state = state if state is not None else self.repository.get_state(normalized)
         if state is None:
             raise ValueError("Ticker has no admitted activation")
+        previous_state = state
         current_time = _utc(now)
         if state.status not in RUNNABLE_STATUSES:
             self._audit(
@@ -261,7 +289,7 @@ class UnifiedRuntimeSchedulerService:
         from doxagent.v2_control.repository import ControlRepository
 
         runtime_journal = getattr(self.runtime_v2_service, "journal", None)
-        control = (
+        control = control_state if control_state is not _UNREAD else (
             ControlRepository(runtime_journal).get(normalized)
             if isinstance(runtime_journal, RuntimeJournal)
             else None
@@ -287,33 +315,45 @@ class UnifiedRuntimeSchedulerService:
             try:
                 bus = self._require_message_bus_v2()
                 runtime = self._require_runtime_v2_for_trading()
-                pending_stream = bus.pending_stream(
-                    RUNTIME_V2_CONSUMER_ID,
-                    normalized,
-                    limit=event_limit,
-                )
+                from doxagent.w3_timing import span, mark, slow_segment_trace
+                with span('ingress.bus_read'):
+                    if stream_position is not None:
+                        cursor, head = stream_position
+                        pending_stream = (bus.repository.read_stream(normalized, after_offset=cursor, limit=event_limit)
+                                          if head > cursor else [])
+                    else:
+                        pending_stream = bus.pending_stream(RUNTIME_V2_CONSUMER_ID, normalized, limit=event_limit)
+                read_at = datetime.now(UTC).isoformat()
                 pending_count_before_runtime = len(pending_stream)
                 coordinator = getattr(runtime, "coordinator", None)
                 from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
 
                 if not isinstance(coordinator, RuntimeCoordinator):
                     coordinator = None
-                if coordinator is not None:
-                    coordinator.reconcile(normalized)
+                if coordinator is not None and pending_stream:
+                    with span('ingress.schedule'):
+                        coordinator.ensure_schedule(normalized)
                 if coordinator is None:
                     runtime.process_pending_effects(limit=20)
                 for stream_item in pending_stream:
                     if coordinator is not None:
-                        coordinator.accept_stream(stream_item)
-                        if getattr(self, 'background_runtime_dispatch', False):
-                            dispatch=getattr(coordinator,'dispatch_realtime',None)
-                            if dispatch:
-                                dispatch(normalized)
-                        coordinator.journal.set(
-                            "inbox_highwater", normalized, stream_item.item.stream_offset
-                        )
-                        bus.commit_stream(RUNTIME_V2_CONSUMER_ID, stream_item)
-                        consumed_count += 1
+                        with slow_segment_trace('stream_ingress', ticker=normalized,
+                                stream_id=stream_item.item.stream_item_id,
+                                stream_offset=stream_item.item.stream_offset,
+                                bus_event_at=stream_item.item.published_at.isoformat(), first_read_at=read_at):
+                            ids = coordinator.accept_stream(stream_item)
+                            if ids is None:  # Older external coordinator adapters.
+                                coordinator.journal.set('inbox_highwater', normalized, stream_item.item.stream_offset)
+                            with span('ingress.bus_cursor'):
+                                bus.commit_stream(RUNTIME_V2_CONSUMER_ID, stream_item)
+                            mark('ingress.cursor_committed')
+                            consumed_count += 1
+                            if getattr(self, 'background_runtime_dispatch', False):
+                                with span('ingress.dispatch'):
+                                    if ids is None:
+                                        coordinator.dispatch_realtime(normalized)
+                                    else:
+                                        coordinator.dispatch_realtime(normalized, task_ids=ids)
                         continue
                     from doxagent.message_bus_v2.admission import evaluate_admission
                     from doxagent.message_bus_v2.schema import MaterializedStreamItem, utc_now
@@ -378,13 +418,11 @@ class UnifiedRuntimeSchedulerService:
                     severity=AuditSeverity.ERROR,
                 )
         if self.message_bus_v2_enabled:
-            pending_count_after_runtime = len(
-                self._require_message_bus_v2().pending_stream(
-                    RUNTIME_V2_CONSUMER_ID,
-                    normalized,
-                    limit=event_limit,
-                )
-            )
+            if stream_position is not None and stream_position[0] >= stream_position[1] and not runtime_failed:
+                pending_count_after_runtime = 0  # Exact at this round's indexed head read.
+            else:
+                pending_count_after_runtime = self._require_message_bus_v2().repository.pending_stream_count(
+                    RUNTIME_V2_CONSUMER_ID, normalized, limit=event_limit)
         else:
             pending_count_after_runtime = 0
         counters = state.counters.model_copy(
@@ -442,7 +480,17 @@ class UnifiedRuntimeSchedulerService:
             },
             deep=True,
         )
-        self.repository.upsert_state(state)
+        # Existing health cadence, rather than a write/readback for every empty poll.
+        changed = (state.model_dump(exclude={'updated_at'}) != previous_state.model_dump(exclude={'updated_at'}))
+        heartbeat = (current_time - previous_state.updated_at).total_seconds() >= 15
+        updates = getattr(self, '_state_heartbeats', None)
+        if heartbeat and not changed and updates is not None and hasattr(self.repository, 'save_heartbeats'):
+            updates.append((state.model_dump(mode='json')['updated_at'], normalized,
+                            previous_state.model_dump(mode='json')['updated_at']))
+        elif changed or heartbeat:
+            from doxagent.w3_timing import span
+            with span('ingress.state_save'):
+                self.repository.upsert_state(state)
         return self.detail(normalized, now=current_time) if include_detail else None
 
     def detail(

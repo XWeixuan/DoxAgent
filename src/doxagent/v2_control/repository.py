@@ -148,6 +148,17 @@ class ControlRepository:
         with self.read() as db:
             return control_in(db, ticker.upper())
 
+    def states_for(self, tickers):
+        tickers = list(tickers)
+        if not tickers:
+            return {}
+        with self.journal.transaction(write=False, expand=False, operation='control.round') as db:
+            if not db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_ticker_control'").fetchone():
+                return {}
+            rows = db.execute('SELECT ticker,payload FROM v2_ticker_control WHERE ticker IN ('
+                              + ','.join('?' for _ in tickers) + ')', tickers).fetchall()
+        return {r['ticker']: json.loads(r['payload']) for r in rows}
+
     def _save(self, db: sqlite3.Connection, state: dict[str, Any], kind: str) -> None:
         db.execute(
             "INSERT INTO v2_ticker_control VALUES(?,?,?) ON CONFLICT(ticker) DO UPDATE "
@@ -490,34 +501,39 @@ class ControlRepository:
         origin_identity: str | None = None,
     ) -> None:
         with self.journal.transaction() as db:
-            state = control_in(db, ticker)
-            if state is None:
-                return
-            if not state["analysis_allowed"]:
-                raise ControlError("ANALYSIS_PAUSED")
-            eligible = state["mode"] != "MESSAGE_MONITORING"
-            if published_at and state.get("mode_effective_at"):
-                eligible &= published_at >= datetime.fromisoformat(state["mode_effective_at"])
-            value = {
-                "origin_epoch": state["epoch"],
-                "origin_mode": state["mode"],
-                "trade_eligible": eligible,
-                "removal_epoch": state["removal_epoch"],
-                "admitted_at": self.journal.clock().isoformat(),
-            }
-            if origin_identity:
-                origin = db.execute(
-                    "SELECT payload FROM v2_analysis_admission WHERE identity=? AND ticker=?",
-                    (origin_identity, ticker),
-                ).fetchone()
-                if origin:
-                    value = json.loads(origin[0])
-                    if value["removal_epoch"] != state["removal_epoch"]:
-                        raise ControlError("ANALYSIS_REMOVED")
-            db.execute(
-                "INSERT OR IGNORE INTO v2_analysis_admission VALUES(?,?,?)",
-                (identity, ticker, encode(value)),
-            )
+            self.admit_in_transaction(db, identity, ticker, published_at,
+                                      origin_identity=origin_identity)
+
+    def admit_in_transaction(self, db, identity, ticker, published_at=None, *, origin_identity=None):
+        """Same authorization barrier inside a caller's existing short writer."""
+        state = control_in(db, ticker)
+        if state is None:
+            return
+        if not state["analysis_allowed"]:
+            raise ControlError("ANALYSIS_PAUSED")
+        eligible = state["mode"] != "MESSAGE_MONITORING"
+        if published_at and state.get("mode_effective_at"):
+            eligible &= published_at >= datetime.fromisoformat(state["mode_effective_at"])
+        value = {
+            "origin_epoch": state["epoch"],
+            "origin_mode": state["mode"],
+            "trade_eligible": eligible,
+            "removal_epoch": state["removal_epoch"],
+            "admitted_at": self.journal.clock().isoformat(),
+        }
+        if origin_identity:
+            origin = db.execute(
+                "SELECT payload FROM v2_analysis_admission WHERE identity=? AND ticker=?",
+                (origin_identity, ticker),
+            ).fetchone()
+            if origin:
+                value = json.loads(origin[0])
+                if value["removal_epoch"] != state["removal_epoch"]:
+                    raise ControlError("ANALYSIS_REMOVED")
+        db.execute(
+            "INSERT OR IGNORE INTO v2_analysis_admission VALUES(?,?,?)",
+            (identity, ticker, encode(value)),
+        )
 
     def activate_candidate(self, ticker: str, epoch: int, activation_id: str) -> bool:
         with self.journal.transaction() as db:

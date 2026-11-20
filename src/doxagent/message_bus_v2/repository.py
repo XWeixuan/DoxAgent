@@ -41,7 +41,6 @@ from doxagent.message_bus_v2.schema import (
     SchedulerGroupState,
     SourceDefinition,
     StandardMessage,
-    StreamingConfig,
     StreamItem,
     StreamMember,
     TickerMonitoringState,
@@ -2886,6 +2885,30 @@ class MessageBusV2Repository:
                     )
                 )
         return result
+
+    def stream_positions(self, consumer_id, tickers):
+        """Indexed scalar check; an empty ticker never opens Native content."""
+        tickers = list(tickers)
+        if not tickers:
+            return {}
+        with self._connect() as db:
+            rows = db.execute(
+                "WITH requested(ticker) AS (VALUES " + ','.join('(?)' for _ in tickers) + ") "
+                "SELECT r.ticker,coalesce(c.stream_offset,0) cursor,"
+                "(SELECT coalesce(max(i.stream_offset),0) FROM stream_items i WHERE i.ticker=r.ticker) head "
+                "FROM requested r LEFT JOIN consumer_offsets c ON c.ticker=r.ticker AND c.consumer_id=?",
+                [*tickers, consumer_id]).fetchall()
+        return {r['ticker']: (r['cursor'], r['head']) for r in rows}
+
+    def pending_stream_count(self, consumer_id, ticker, *, limit=100, after_offset=None):
+        with self._connect() as db:
+            if after_offset is None:
+                row = db.execute('SELECT stream_offset FROM consumer_offsets WHERE consumer_id=? AND ticker=?',
+                                 (consumer_id, ticker)).fetchone()
+                after_offset = row[0] if row else 0
+            return db.execute('SELECT count(*) FROM (SELECT 1 FROM stream_items WHERE ticker=? '
+                              'AND stream_offset>? ORDER BY stream_offset LIMIT ?)',
+                              (ticker, after_offset, limit)).fetchone()[0]
 
     def _materialized_members(
         self, connection: sqlite3.Connection, stream_item_id: str

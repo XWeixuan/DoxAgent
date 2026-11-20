@@ -135,6 +135,25 @@ class SQLiteRuntimeSchedulerRepository:
             ).fetchall()
         return [_model_from_json(TickerRunState, str(row["payload_json"])) for row in rows]
 
+    def states_for(self, tickers):
+        tickers = list(tickers)
+        if not tickers:
+            return {}
+        with self._connect() as conn:
+            rows = conn.execute('SELECT ticker,payload_json FROM runtime_scheduler_states WHERE ticker IN ('
+                                + ','.join('?' for _ in tickers) + ')', tickers).fetchall()
+        return {r['ticker']: _model_from_json(TickerRunState, r['payload_json']) for r in rows}
+
+    def save_heartbeats(self, changes):
+        if not changes:
+            return
+        # Only the timestamp is changed, with an observed-version comparison.
+        # A concurrent stop/mode/counter update must never be overwritten.
+        with self._connect() as conn:
+            conn.executemany("UPDATE runtime_scheduler_states SET payload_json="
+                "json_set(payload_json,'$.updated_at',?),updated_at=current_timestamp "
+                "WHERE ticker=? AND json_extract(payload_json,'$.updated_at')=?", changes)
+
     def upsert_state(self, state: TickerRunState) -> TickerRunState:
         with self._connect() as conn:
             conn.execute(
@@ -147,10 +166,7 @@ class SQLiteRuntimeSchedulerRepository:
                 """,
                 (state.ticker, canonical_json(state.model_dump(mode="json"))),
             )
-        resolved = self.get_state(state.ticker)
-        if resolved is None:
-            raise RuntimeError(f"scheduler state was not persisted for {state.ticker}.")
-        return resolved
+        return state  # SQL success is the barrier; there are no state-rewriting triggers.
 
     def append_audit_event(self, event: RuntimeAuditEvent) -> RuntimeAuditEvent:
         with self._connect() as conn:

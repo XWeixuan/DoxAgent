@@ -252,10 +252,11 @@ def test_scheduler_entrypoint_enables_lane_diagnostics(tmp_path, monkeypatch):
     logger = logging.getLogger("doxagent.persistent_runtime_v2.service")
     previous_level = logger.level
     calls = []
-    fake_runtime = SimpleNamespace(close=lambda: calls.append("closed"))
+    fake_runtime = SimpleNamespace(close=lambda: calls.append("closed"), coordinator=SimpleNamespace())
     scheduler = SimpleNamespace(
         run_due_once=lambda **kwargs: calls.append("tick"),
         runtime_v2_service=fake_runtime,
+        revision_usable=lambda revision: True,
     )
     monkeypatch.setattr("sys.argv", ["scheduler", "--once"])
     monkeypatch.setattr(v2, "build", lambda settings: scheduler)
@@ -264,9 +265,14 @@ def test_scheduler_entrypoint_enables_lane_diagnostics(tmp_path, monkeypatch):
         "DoxAgentSettings",
         lambda: SimpleNamespace(
             runtime_scheduler_sqlite_path=tmp_path / "scheduler.sqlite",
+            ticker_initialization_control_path=tmp_path / 'initialization.sqlite',
         ),
     )
     monkeypatch.setattr(v2, "WriterLock", lambda path: nullcontext())
+    monkeypatch.setattr('doxagent.ticker_initialization.repository.InitializationRepository',
+                        lambda *a, **k: SimpleNamespace())
+    monkeypatch.setattr('doxagent.ticker_initialization.consumers.consumer_heartbeat',
+                        lambda *a, **k: nullcontext())
     # Do not alter the test process's signal handlers.
     monkeypatch.setattr(v2.signal, "signal", lambda *args: None)
     try:

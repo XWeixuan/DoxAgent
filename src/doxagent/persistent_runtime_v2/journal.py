@@ -37,6 +37,14 @@ class RuntimeStopping(RuntimeError):
     """Admission stopped without a business failure."""
 
 
+class AdmissionClockChanged(RuntimeError):
+    """Recompute day/first-minute ownership outside the writer."""
+
+
+class AdmissionPlanChanged(RuntimeError):
+    """Another consumer completed an older admission plan first."""
+
+
 def retry_write(call, *, seconds=30):
     """Replay a short, rollback-safe SQL transaction, never an external call."""
     from doxagent.control_io import SHORT_WRITE
@@ -312,6 +320,95 @@ class RuntimeJournal:
                 db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
             )
 
+    def stream_admission_plan(self, key):
+        with self.transaction(write=False, expand=False, operation='stream.receipt') as db:
+            rows = db.execute("SELECT namespace,payload FROM runtime_values WHERE key=? "
+                              "AND namespace IN ('stream_admission_receipts','stream_admission_plans')", (key,)).fetchall()
+        values = {r['namespace']: r['payload'] for r in rows}
+        raw = values.get('stream_admission_receipts', values.get('stream_admission_plans'))
+        return (json.loads(self.content.text(raw)) if raw is not None else None,
+                values.get('stream_admission_plans'))
+
+    def register_stream_admission(self, ticker, stream_id, offset, candidates, skips,
+                                  prepared_at, *, legacy_plan_raw=None):
+        """One Runtime commit; Bus cursor remains an independent replayable ACK.
+
+        candidates contain already-encoded inputs. Never open Native files here.
+        Existing tasks retain their original inputs and authorization identity.
+        """
+        from doxagent.semantic_clock import boundary, semantic_day
+        from doxagent.v2_control.repository import ControlRepository
+
+        key = f"{ticker}:{stream_id}"
+        expected = legacy_plan_raw
+        skipped = [(identity, encode(value)) for identity, value in skips]
+        ids = list(dict.fromkeys(c['id'] for c in candidates))
+        receipt = encode(dict(version=2, stream_id=stream_id, stream_offset=offset, tasks=ids))
+
+        def period(at):
+            day = semantic_day(at)
+            return day, at < boundary(day, minute=1)
+
+        with self.transaction(operation="stream.register", expand=False) as db:
+            old = db.execute("SELECT payload FROM runtime_values WHERE namespace="
+                             "'stream_admission_receipts' AND key=?", (key,)).fetchone()
+            if old:
+                saved = json.loads(old[0])
+                if (saved.get('version'), saved.get('stream_id'), saved.get('stream_offset')) != (2, stream_id, offset):
+                    raise ValueError('invalid stream admission receipt')
+                tasks = saved.get('tasks')
+                if not isinstance(tasks, list) or any(not isinstance(i, str) for i in tasks):
+                    raise ValueError('invalid stream admission receipt')
+                if tasks:
+                    found = db.execute('SELECT id,ticker,kind FROM runtime_tasks WHERE id IN ('
+                                       + ','.join('?' for _ in tasks) + ')', tasks).fetchall()
+                    if ({r['id'] for r in found} != set(tasks)
+                        or any(r['ticker'] != ticker or r['kind'] != 'CASE' for r in found)):
+                        raise ValueError('missing original stream task')
+                return tasks
+            legacy = db.execute("SELECT payload FROM runtime_values WHERE namespace="
+                                "'stream_admission_plans' AND key=?", (key,)).fetchone()
+            if legacy and legacy[0] != expected:
+                raise AdmissionPlanChanged(key)
+            if period(self.clock()) != period(prepared_at):
+                raise AdmissionClockChanged(key)
+            control = ControlRepository(self)
+            for candidate in candidates:
+                identity = candidate['id']
+                task = db.execute('SELECT ticker,kind FROM runtime_tasks WHERE id=?', (identity,)).fetchone()
+                if task:
+                    if task['ticker'] != ticker or task['kind'] != 'CASE':
+                        raise ValueError('immutable task identity conflict')
+                    continue
+                if candidate['inputs'] is None:
+                    raise ValueError('missing original stream task')
+                control.admit_in_transaction(db, identity, ticker, candidate['eligibility_at'])
+                # Actual admission is captured after writer/auth admission, not
+                # before queueing for it. prepared_at only selects business mode.
+                now = self.clock()
+                if period(now) != period(prepared_at):
+                    raise AdmissionClockChanged(key)
+                at = now.isoformat()
+                db.execute("INSERT INTO runtime_tasks(id,ticker,kind,status,inputs,receipt,max_failures,"
+                           "due_at,updated_at) VALUES(?,?,'CASE','PENDING',"
+                           "json_set(?,'$.admitted_at',?),'{}',1,?,?)",
+                           (identity, ticker, candidate['inputs'], at, at, at))
+            for identity, payload in skipped:
+                db.execute("INSERT INTO runtime_values VALUES('message_admission_skips',?,?) "
+                           "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload "
+                           "WHERE runtime_values.payload IS NOT excluded.payload", (identity, payload))
+            db.execute("INSERT INTO runtime_values VALUES('stream_admission_receipts',?,?) "
+                       "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload", (key, receipt))
+            self.advance_inbox_in_transaction(db, ticker, offset)
+        return ids
+
+    @staticmethod
+    def advance_inbox_in_transaction(db, ticker, offset):
+        db.execute("INSERT INTO runtime_values VALUES('inbox_highwater',?,?) "
+                   "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload "
+                   "WHERE CAST(runtime_values.payload AS INTEGER)<CAST(excluded.payload AS INTEGER)",
+                   (ticker, str(offset)))
+
     def reconcile_interrupted(self, repository, ticker: str) -> int:
         """Repair only proven control/storage failures with an unfinished original Case."""
         with self.transaction(write=False) as db:
@@ -407,6 +504,17 @@ class RuntimeJournal:
             }
             for r in rows
         ]
+
+    def task_controls_by_id(self, identities):
+        if not identities:
+            return []
+        with self.transaction(write=False, expand=False, operation="task.targeted") as db:
+            rows = db.execute(
+                "SELECT id,ticker,kind,status,due_at,json_extract(inputs,'$.mode') mode "
+                "FROM runtime_tasks WHERE id IN (" + ','.join('?' for _ in identities) + ')',
+                identities).fetchall()
+        by_id = {r['id']: {**dict(r), 'inputs': {'mode': r['mode']}} for r in rows}
+        return [by_id[i] for i in identities if i in by_id]
 
     def task_highwater(self, ticker: str) -> int:
         with self.transaction(write=False) as db:

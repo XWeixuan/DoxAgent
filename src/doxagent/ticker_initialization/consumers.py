@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import json
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from threading import Event, Thread
@@ -161,18 +162,50 @@ def admit_runtime_revisions(
     proofs = getattr(scheduler, "_runtime_admission_proofs", None)
     if proofs is None:
         proofs = scheduler._runtime_admission_proofs = {}
-    for revision in control.active_revisions():
+    from doxagent.runtime_scheduler.repository import SQLiteRuntimeSchedulerRepository
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from doxagent.v2_control.repository import ControlRepository
+    import time
+
+    journal = getattr(getattr(scheduler, "runtime_v2_service", None), "journal", None)
+    batch = None
+    if (isinstance(control, InitializationRepository) and isinstance(journal, RuntimeJournal)
+        and isinstance(scheduler.repository, SQLiteRuntimeSchedulerRepository)):
+        rows = control.runtime_admission_snapshot()
+        revisions = [r[0] for r in rows]
+        tickers = [r['ticker'] for r in revisions]
+        identities = [r['revision_id'] for r in revisions]
+        states = scheduler.repository.states_for(tickers)
+        desired_states = ControlRepository(journal).states_for(tickers)
+        policy_heads, policy_applied = {}, set()
+        if tickers:
+            with journal.transaction(write=False, expand=False, operation='admission.policy_proofs') as db:
+                values = db.execute("SELECT namespace,key,payload FROM runtime_values WHERE "
+                    "(namespace='policy_authorization_head' AND key IN (" + ','.join('?' for _ in tickers) + ")) OR "
+                    "(namespace='policy_authorization_applied' AND key IN (" + ','.join('?' for _ in identities) + '))',
+                    [*tickers, *identities]).fetchall()
+            for v in values:
+                if v['namespace'] == 'policy_authorization_head':
+                    policy_heads[v['key']] = json.loads(v['payload'])
+                else:
+                    policy_applied.add(v['key'])
+        batch = {r[0]['ticker']: (r[1], r[2], bool(r[2] == r[0]['revision_id'] and
+                                               r[3] is not None and r[3] >= time.time()-15)) for r in rows}
+        scheduler._ingress_round = dict(states=states, control=desired_states)
+    else:
+        revisions = control.active_revisions()
+    for revision in revisions:
         ticker, identity = revision["ticker"], revision["revision_id"]
         try:
-            if not control.current_revision_admitted(ticker, identity, "bus"):
+            if not (batch[ticker][0] == identity if batch is not None else control.current_revision_admitted(ticker, identity, "bus")):
                 continue
-            state = scheduler.repository.get_state(ticker)
+            state = states.get(ticker) if batch is not None else scheduler.repository.get_state(ticker)
             from doxagent.persistent_runtime_v2.journal import RuntimeJournal
             from doxagent.v2_control.repository import ControlRepository
 
             journal = getattr(getattr(scheduler, "runtime_v2_service", None), "journal", None)
             desired = (
-                ControlRepository(journal).get(ticker)
+                (desired_states.get(ticker) if batch is not None else ControlRepository(journal).get(ticker))
                 if isinstance(journal, RuntimeJournal)
                 else None
             )
@@ -193,9 +226,11 @@ def admit_runtime_revisions(
                 and state.metadata.get("v2_control_epoch") == proof[1]
                 and state.metadata.get("v2_control_mode") == proof[2]
                 and proofs.get(ticker) == proof
-                and control.current_revision_admitted(ticker, identity, "runtime")
+                and (batch[ticker][1] == identity if batch is not None else control.current_revision_admitted(ticker, identity, "runtime"))
             )
-            if current and isinstance(journal, RuntimeJournal):
+            if current and batch is not None:
+                current = policy_heads.get(ticker) == identity and identity in policy_applied
+            elif current and isinstance(journal, RuntimeJournal):
                 from doxagent.persistent_runtime_v2.policy_consumption import get_value
 
                 with journal.transaction(write=False) as db:
@@ -210,9 +245,12 @@ def admit_runtime_revisions(
             if not current:
                 proofs.pop(ticker, None)
                 scheduler.admit_activation(ticker, identity)
-            if control.revision_acknowledged(
+                if batch is not None:
+                    states[ticker] = scheduler.repository.get_state(ticker)
+                    desired_states[ticker] = ControlRepository(journal).get(ticker)
+            if (batch[ticker][2] if batch is not None else control.revision_acknowledged(
                 ticker, identity, "runtime", max_age=15
-            ) or control.acknowledge_revision(ticker, identity, "runtime"):
+            )) or control.acknowledge_revision(ticker, identity, "runtime"):
                 proofs[ticker] = proof
                 ready.add(ticker)
         except Exception as exc:

@@ -210,6 +210,19 @@ def segment_trace(segment, **identity):
             publish_trace(trace)
 
 
+@contextmanager
+def slow_segment_trace(segment, *, seconds=1, **identity):
+    """Bounded in-memory diagnostics; no per-step persistence or fast-path log."""
+    trace = BoundaryTrace(segment=segment, **identity)
+    with trace.activate():
+        try:
+            yield trace
+        finally:
+            if (time.perf_counter_ns() - trace.started) / 1e9 >= seconds:
+                trace.identity['segment_complete'] = True
+                publish_trace(trace)
+
+
 def save_trace(trace, directory):
     """One bounded receipt per attempt, outside the business transaction."""
     if directory is None:

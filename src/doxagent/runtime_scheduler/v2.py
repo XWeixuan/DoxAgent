@@ -7,6 +7,9 @@ import signal
 import time
 from pathlib import Path
 from threading import Event, Thread
+from datetime import UTC, datetime
+from contextlib import ExitStack
+from concurrent.futures import Future
 
 from doxagent.message_bus_v2.factory import build_message_bus_v2_service
 from doxagent.persistent_runtime_v2.factory import build_persistent_runtime_v2_service
@@ -20,12 +23,44 @@ from .service import UnifiedRuntimeSchedulerService
 class V2Scheduler(UnifiedRuntimeSchedulerService):
     background_runtime_dispatch = True
 
+    def stop_if_idle(self, stop):
+        """Release-only cooperative stop: reject a raced arrival, never kill it.
+
+        Runs between ingress rounds. Existing owner locks close the claim/effect
+        submission gap; a busy request leaves normal admission untouched.
+        """
+        runtime = self.runtime_v2_service
+        coordinator = runtime.coordinator
+        with ExitStack() as held:
+            for lock in (coordinator._dispatch_lock, coordinator._tasks_lock,
+                         runtime._effect_dispatch_lock, runtime._w3_threads_lock):
+                if not lock.acquire(blocking=False):
+                    return False
+                held.callback(lock.release)
+            futures = list(coordinator._futures.values()) + list(coordinator._public_futures.values())
+            futures += list(coordinator._supplement_futures.values())
+            futures += [coordinator._effect_future, coordinator._delivery_future,
+                        coordinator._w3_maintenance_future, coordinator._storage_future]
+            if (coordinator._claims_inflight or any(isinstance(f, Future) and not f.done() for f in futures)
+                or runtime._active_effect_ids or runtime._phase_waiters or runtime._w3_threads):
+                return False
+            coordinator._closed = True
+            runtime._draining = True
+            stop.set()
+            logging.getLogger(__name__).warning('scheduler_release_idle accepted_at=%s',
+                                                datetime.now(UTC).isoformat())
+            return True
+
     def _start_existing_recovery(self):
         previous = getattr(self, "_recovery_thread", None)
         if previous is not None and previous.is_alive():
             return  # One dispatcher, no queue of repeated recovery rounds.
         if getattr(self, "_should_stop", lambda: False)():
             return
+
+        if time.monotonic() < getattr(self, '_recovery_next', 0):
+            return
+        self._recovery_next = time.monotonic() + 1
 
         def recover():
             try:
@@ -111,27 +146,53 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
 
     def _run_admitted_once(self, admitted, *, now, event_limit, include_detail=True):
         from doxagent.v2_control.repository import ControlRepository
+        from doxagent.w3_timing import span
 
         self._admitted_tickers = frozenset(admitted or ())
         control = ControlRepository(self.runtime_v2_service.journal)
+        facts = getattr(self, '_ingress_round', None)
+        self._ingress_round = None  # Per-round facts never become a stale authorization cache.
+        bus = self.message_bus_v2_service
+        with span('ingress.stream_positions'), bus.repository.connection_scope():
+            positions = bus.repository.stream_positions('persistent_runtime_v2', sorted(admitted or ()))
         result = []
-        for ticker in sorted(admitted or ()):
-            if getattr(self, "_should_stop", lambda: False)():
-                break
-            state = control.get(ticker)
-            if not state or not state["analysis_allowed"]:
-                continue
+        polled = 0
+        updates = []
+        self._state_heartbeats = updates
+        try:
+            for ticker in sorted(admitted or ()):
+                if getattr(self, "_should_stop", lambda: False)():
+                    break
+                state = facts['control'].get(ticker) if facts is not None else control.get(ticker)
+                if not state or not state["analysis_allowed"]:
+                    continue
+                try:
+                    detail = self.tick_ticker(
+                        ticker, now=now, event_limit=event_limit, include_detail=include_detail,
+                        state=facts['states'].get(ticker) if facts is not None else None,
+                        control_state=state, stream_position=positions.get(ticker),
+                    )
+                    polled += 1
+                    if detail is not None:
+                        result.append(detail)
+                except Exception:
+                    logging.getLogger(__name__).exception("V2 ticker tick deferred: %s", ticker)
+        finally:
+            self._state_heartbeats = None
             try:
-                detail = self.tick_ticker(
-                    ticker, now=now, event_limit=event_limit, include_detail=include_detail
-                )
-                if detail is not None:
-                    result.append(detail)
+                if updates:
+                    with span('ingress.heartbeats'):
+                        self.repository.save_heartbeats(updates)
             except Exception:
-                logging.getLogger(__name__).exception("V2 ticker tick deferred: %s", ticker)
+                logging.getLogger(__name__).exception('Scheduler idle heartbeat deferred')
         from datetime import UTC, datetime
 
         self.last_successful_tick = datetime.now(UTC).isoformat()
+        if polled and not getattr(self, '_first_poll_logged', False):
+            self._first_poll_logged = True
+            from doxagent.control_io import diagnostic_call
+            diagnostic_call(logging.getLogger('doxagent.w3_timing.receipts').info,
+                'runtime_ingress_first_poll at=%s tickers=%s', self.last_successful_tick, polled)
         return result
 
 
@@ -163,7 +224,7 @@ def build(settings=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--once", action="store_true")
-    parser.add_argument("--interval", type=float, default=1)
+    parser.add_argument("--interval", type=float, default=0.25)
     parser.add_argument("--limit", type=int, default=100)
     args = parser.parse_args()
     if not 0.1 <= args.interval <= 60 or not 1 <= args.limit <= 500:
@@ -175,8 +236,11 @@ def main():
     logging.getLogger("doxagent.persistent_runtime_v2.service").setLevel(logging.INFO)
     logging.getLogger("doxagent.persistent_runtime_v2.w3_execution").setLevel(logging.INFO)
     stop = Event()
+    release_requested = Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())
+    if hasattr(signal, 'SIGUSR1'):
+        signal.signal(signal.SIGUSR1, lambda *_: release_requested.set())
     settings = DoxAgentSettings()
     with WriterLock(Path(str(settings.runtime_scheduler_sqlite_path) + ".v2-scheduler")):
         scheduler = build(settings)
@@ -195,10 +259,15 @@ def main():
                 scheduler.revision_usable,
             ):
                 while not stop.is_set():
+                    if release_requested.is_set():
+                        release_requested.clear()
+                        if scheduler.stop_if_idle(stop):
+                            break
+                    began = time.monotonic()
                     scheduler.run_due_once(event_limit=args.limit, include_detail=False)
                     if args.once:
                         break
-                    stop.wait(args.interval)
+                    stop.wait(max(0, args.interval - (time.monotonic() - began)))
         finally:
             stop.set()
             recovery = getattr(scheduler, "_recovery_thread", None)

@@ -1563,6 +1563,17 @@ class InitializationRepository:
                 )
             ]
 
+    def runtime_admission_snapshot(self):
+        """One short read of current heads and both consumers; never installs."""
+        with self._connection() as db:
+            rows = db.execute(
+                "SELECT r.payload,b.revision_id bus_revision,u.revision_id runtime_revision,u.heartbeat "
+                "FROM activation_revisions r JOIN ticker_active_revision a ON a.revision_id=r.revision_id "
+                "LEFT JOIN activation_worker_ack b ON b.ticker=a.ticker AND b.worker='bus' "
+                "LEFT JOIN activation_worker_ack u ON u.ticker=a.ticker AND u.worker='runtime' ORDER BY a.ticker"
+            ).fetchall()
+        return [(json.loads(r['payload']), r['bus_revision'], r['runtime_revision'], r['heartbeat']) for r in rows]
+
     def revision(self, revision_id: str) -> dict[str, Any]:
         with self._connection() as db:
             row = db.execute(
