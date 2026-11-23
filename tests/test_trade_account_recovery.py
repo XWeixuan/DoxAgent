@@ -67,19 +67,15 @@ def test_transient_exit_recovers_without_new_generation_or_manual_resume(setup):
     assert repo.require("jobs", "trade:A:exit")["generation"] == 0
 
 
-def test_only_transient_overdue_failed_exit_is_recovered(setup):
+def test_terminal_failed_exit_never_automatically_recovers(setup):
     clock, repo, revision, executor, broker = setup
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
     job = repo.require("jobs", "trade:A:exit")
     repo.finish(job, "IBKR_RECONNECT_BACKOFF")
-    assert repo.recover_failed_exits() == 0
     clock.value = datetime.fromisoformat(repo.require("lots", "trade:A")["scheduled_exit"])
-    assert repo.recover_failed_exits() == 1
     assert repo.recover_failed_exits() == 0
-    assert repo.require("jobs", job["id"])["generation"] == job["generation"]
-    repo.finish(repo.require("jobs", job["id"]), "POSITION_ATTRIBUTION_GAP")
-    assert repo.recover_failed_exits() == 0
+    assert repo.require("jobs", job["id"])["state"] == "FAILED"
 
 
 def test_busy_event_is_not_skipped_and_replay_does_not_duplicate_fill(setup, monkeypatch):

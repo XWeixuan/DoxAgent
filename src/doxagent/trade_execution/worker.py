@@ -247,6 +247,8 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
         from .configuration import ExecutionConfiguration
 
         ExecutionConfiguration(executor.journal).apply(executor.repository)
+        from .management import process
+        await process(executor)
 
     async def cycles():
         revisions = await asyncio.to_thread(active_profile_revisions, executor)
@@ -267,7 +269,7 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
         ("connections", connections, 1),
         ("cycles", cycles, 30),
         ("entry_limits", lambda: synchronous(executor.enforce_entry_failure_limits), 10),
-        ("exit_recovery", lambda: synchronous(executor.repository.recover_failed_exits), 60),
+        ("exit_recovery", executor.reconcile_failed_orders, 60),
         ("events", lambda: synchronous(executor.drain_events), 0.2),
         ("acceptance", lambda: tick_suites(executor), 30),
     ]

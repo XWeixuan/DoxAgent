@@ -3372,3 +3372,9 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-23 Deferred catalog acceptance: first production call exposed the outer MCP 15s budget cancelling valid API deferred work. Give only initial source-directory calls 45s and bound internal polling to40s; continuation pages and all other tools retain15s. Regression36 passed, lint passed.
 
 2026-11-23 Production recovery: verified cold archives of5,541 old diagnostic/build-symbol files before remote retirement; restored9 ENOSPC-failed roles using recorded current images. Four projection checked_at values advance and head/checkpoint match each observed round; Runtime17,216 historical gaps retained. Published API/MCP overlays; real catalog85 unique sources/5 pages and unique-URL cold read6.17s accepted.36 tests/lint passed. Root reserve remains2.16GiB and acquisition PENDING395 at final snapshot; no all-backlog or long-term capacity claim. See docs/projection-source-recovery-20261123.md.
+
+## 2026-11-24 动态个人基线与受控策略退出
+
+- 归属校验改为可信快照及自洽策略账本下的P=A-S；归属等待保持非终态，正常检查无新增券商请求，基线不变不写审计。
+- 新增持久FAILED EXIT闩锁、最终提交守卫及仅核对旧单的维护路径；关闭自动FAILED恢复和简单resume重置。组级提前退出与核验恢复走原Executor、真实成交/费用/收益链路，管理回执幂等。
+- Case执行卡明确展示FAILED EXIT及余量；历史COHR SHORT6/SOXL LONG7核查为已正确结清，未重复改账。后端定向132项、额外保护用例17项及前端74项通过；生产源与验收以最终实施报告为准。

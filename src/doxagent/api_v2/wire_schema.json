@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "20cb4d77e32bcc1d611229a920313d80325c1d77697bd689f50df20feaf9fc82",
+  "source_sha256": "dad797b1e3a1326a7033346d6c9876551368bcc82b96315059c3dc5d9a8df0e8",
   "$defs": {
     "Id": {
       "type": "string"
@@ -10094,6 +10094,48 @@
     "ExecutionSummary": {
       "type": "object",
       "properties": {
+        "exit_summary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "job_id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "remaining_quantity": {
+                "$ref": "#/$defs/DecimalString"
+              },
+              "requires_manual_review": {
+                "type": "boolean"
+              },
+              "unresolved_order": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "job_id",
+              "role",
+              "state",
+              "reason",
+              "remaining_quantity",
+              "requires_manual_review",
+              "unresolved_order"
+            ],
+            "additionalProperties": false
+          }
+        },
         "execution_group": {
           "$ref": "#/$defs/ExecutionGroupSummary"
         },
