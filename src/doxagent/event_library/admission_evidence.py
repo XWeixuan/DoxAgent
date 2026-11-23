@@ -89,8 +89,9 @@ def backfill(repository, ticker, *, limit=64):
                 (ticker,state['cursor'],base,ceiling,limit)).fetchall()
             records=[(r['fact_no'],content_key(json.loads(r['payload_json'])),r['library_version']) for r in rows]
     complete=False
-    with repository._write() as db:
+    with closing(repository._connect()) as db,db:
         db.execute('PRAGMA busy_timeout=10')
+        db.execute('BEGIN IMMEDIATE')
         current=db.execute('SELECT value FROM event_storage_progress WHERE key=?',(key,)).fetchone()
         if (current[0] if current else None)!=(row[0] if row else None):return False
         if state['phase']=='clocks':

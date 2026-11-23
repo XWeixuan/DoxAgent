@@ -97,7 +97,22 @@
  
  impl StateRuntime {
      pub async fn insert_log(&self, entry: &LogEntry) -> anyhow::Result<()> {
-@@ -281,11 +281,27 @@
+@@ -36,7 +36,13 @@
+                 .push_bind(entry.estimated_bytes());
+         });
+         builder.build().execute(&mut *tx).await?;
+-        self.prune_logs_after_insert(entries, &mut tx).await?;
++        // Retire at least as many old rows as this batch adds once the ID
++        // window is full. No per-thread SUM/window scan and no new transaction.
++        let newest: i64 = sqlx::query_scalar("SELECT coalesce(max(id),0) FROM logs")
++            .fetch_one(&mut *tx).await?;
++        sqlx::query("DELETE FROM logs WHERE id IN (SELECT id FROM logs WHERE id<=? ORDER BY id LIMIT ?)")
++            .bind(newest.saturating_sub(65_536)).bind(entries.len() as i64)
++            .execute(&mut *tx).await?;
+         tx.commit().await?;
+         Ok(())
+     }
+@@ -281,11 +287,27 @@
      }
  
      pub(crate) async fn delete_logs_before(&self, cutoff_ts: i64) -> anyhow::Result<u64> {

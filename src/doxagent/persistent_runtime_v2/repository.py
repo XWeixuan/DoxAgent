@@ -826,13 +826,15 @@ class SQLitePersistentRuntimeV2Repository:
             }
             if "updated_at" not in columns:
                 connection.execute("ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT")
+            from .resource_refs import migrate as migrate_resource_refs
+            migrate_resource_refs(connection)
 
     @retry_sqlite_write
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
         # v6 R3 commits its immutable extraction independently of W3. Completion
         # and recovery may save an older snapshot; preserve already stored facts
         # in SQL rather than read/merge a second time outside the transaction.
-        payload = self.content.encode(case.model_dump(mode="json"))
+        payload = self.content.encode(case.model_dump(mode="json"), split=("frozen_inputs",))
         with self._lock, self._connect() as connection:
             existing = connection.execute(
                 "SELECT payload_json FROM runtime_v2_cases WHERE source_message_id = ?",
@@ -880,7 +882,7 @@ class SQLitePersistentRuntimeV2Repository:
         effects: list[RuntimeEffect],
         w3_case: W3RouteCase | None = None,
     ) -> RuntimeCase:
-        payload = self.content.encode(case.model_dump(mode="json"))
+        payload = self.content.encode(case.model_dump(mode="json"), split=("frozen_inputs",))
         effect_payloads = {
             e.effect_id: self.content.encode(e.model_dump(mode="json")) for e in effects
         }

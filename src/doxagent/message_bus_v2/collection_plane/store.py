@@ -33,8 +33,10 @@ def _physical_proof(requests, *, accepted):
     proof = []
     for request in requests:
         status = request.get('status_code')
-        if accepted and not request.get('error_type') and (status is None or 200 <= status < 400):
-            request = {key: value for key, value in request.items() if key in _PHYSICAL_PROOF_FIELDS}
+        failure=bool(request.get('error_type') or (status is not None and not 200 <= status < 400))
+        allowed=_PHYSICAL_PROOF_FIELDS | ({'error_type','error_message','failure_phase','retryable'} if failure else set())
+        request={key:(value[:2048] if isinstance(value,str) and key in {'error_message','failure_phase'} else value)
+                 for key,value in request.items() if key in allowed}
         proof.append(request)
     return canonical_json(proof)
 

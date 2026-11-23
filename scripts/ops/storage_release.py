@@ -660,6 +660,14 @@ def deploy(root, state, manifest):
             configuration['services'][component]=new
             atomic(override,configuration)
             try:
+                if component in {'v2-api','v2-projector','v2-maintenance'}:
+                    # Production CLI skips startup mutation; install compatible DDL before readers.
+                    migration = (
+                        "import os;from doxagent.v2_read.repository import ReadStore;"
+                        "s=ReadStore(os.environ['DOXAGENT_V2_READ_SQLITE_PATH']);"
+                        "s.migrate();print('Read schema ready:',s.path)"
+                    )
+                    subprocess.run([*command,'run','--rm','--no-deps','--entrypoint','python',component,'-c',migration],check=True)
                 subprocess.run([*command,'up','-d','--no-deps','--no-build',component],check=True)
                 started=time.monotonic();deadline=started+candidate.get('health_seconds',90)
                 while True:

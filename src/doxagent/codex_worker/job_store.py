@@ -83,9 +83,9 @@ class JobStore:
         request_payload = request.model_dump_json() if request else None
         with closing(self.connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
-            from .local_sessions import observe_external_thread, prepare
+            from .local_sessions import observe_external_thread, prepare, process_job
             observe_external_thread(db, job, request)
-            if job.run_id.startswith('runtime-maintain-'):
+            if process_job(job):
                 prepare(db,job,request)
             if request is not None and request.task_phase in {
                 "trade_decision", "post_decision_operations"
@@ -183,7 +183,10 @@ class JobStore:
         if not path.is_file() or not all(
             isinstance(part, str) and re.fullmatch(r'[A-Za-z0-9_-]+', part)
             for part in (run, attempt, job_id)
-        ) or not run.startswith('runtime-maintain-'):
+        ):
+            return False
+        from doxagent.codex_runtime.schema import CodexD3Node
+        if not run.startswith('runtime-maintain-') and request.get('node') not in {n.value for n in CodexD3Node}:
             return False
         audit = root / run / 'audit' / 'jobs' / (job_id + '.json')
         trace = root / run / 'attempts' / attempt / 'audit' / 'agent_loop.jsonl'

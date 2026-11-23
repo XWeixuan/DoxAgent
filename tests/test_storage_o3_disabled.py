@@ -107,3 +107,18 @@ def test_o3_off_supplement_never_hydrates_parent_or_w3_context(tmp_path,monkeypa
             assert db.execute("SELECT 1 FROM runtime_tasks WHERE id LIKE 'supplement:%'").fetchone()
         assert journal.get('dirty_case',case.case_id) is None
     finally:runtime.close()
+
+
+def test_proven_release_admission_does_not_reparse_policy_body(tmp_path):
+    from doxagent.persistent_runtime_v2.policy_consumption import admit_revision
+    from doxagent.workflows.codex_document3.repository import SQLiteDocument3PolicyRepository
+    runtime,journal,settings,control=maintenance_fixture(tmp_path)
+    try:
+        base=control.active_revision('MU')
+        admit_revision(journal,revision=base,policy_repository=SQLiteDocument3PolicyRepository(settings.codex_runtime_sqlite_path))
+        class Forbidden:
+            def get_version(self,*a):raise AssertionError('reloaded unchanged full PolicySet')
+        newer={**base,'revision_id':'o2-only-fast','base_revision':base['revision_id'],'runtime_metadata':{'o3_outcome':'SKIPPED_BY_CONTROL'}}
+        assert admit_revision(journal,revision=newer,policy_repository=Forbidden())['reused_release']
+        assert admit_revision(journal,revision=newer,policy_repository=Forbidden())['revision_id']=='o2-only-fast'
+    finally:runtime.close()

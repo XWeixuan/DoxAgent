@@ -66,3 +66,25 @@ def test_condition_highwater_survives_bounded_draft_exit(tmp_path):
     while not state.backfill_condition_highwater(limit=2):pass
     with state.connect() as db:db.execute('DELETE FROM codex_document3_v21_draft_ids')
     assert state.maximum_condition('P1')==99
+
+
+def test_history_loses_unreferenced_recovery_without_losing_current_or_case_pins(tmp_path):
+    import pytest
+    from datetime import timedelta
+    from doxagent.workflows.codex_document3.history_exit import collect,register_legacy
+    (tmp_path/'.d3-shared-policy-ready').touch()
+    repo=SQLiteDocument3PolicyRepository(tmp_path/'research.db');state=StateV21(repo.path)
+    now=datetime.now(UTC);old=now-timedelta(days=30)
+    for version in range(1,7):
+        item=PolicySetV3(ticker='MU',policy_set_version=version,as_of=old,published_at=old,publication_state='COMPLETE',policies=[policy()])
+        repo.publish(item,expected_base_version=version-1 or None)
+        state.save_staged_v3(str(version),item,{})
+    while not register_legacy(state):pass
+    result=collect(state,'MU',keep_versions={2},now=now,is_live=lambda run:False)
+    assert result['retired_version']==1
+    with pytest.raises(ValueError,match='HISTORY_RETIRED'):repo.get_version('MU',1)
+    with pytest.raises(ValueError,match='HISTORY_RETIRED'):state.get_staged_v3('MU',1)
+    assert repo.get_version('MU',2).policy_set_version==2
+    assert repo.get_current('MU').policy_set_version==6
+    assert collect(state,'MU',keep_versions={2},now=now,is_live=lambda run:False)['retired_version']==3
+    assert collect(state,'MU',keep_versions={2},now=now,is_live=lambda run:False)['idle']

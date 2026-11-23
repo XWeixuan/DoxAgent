@@ -300,6 +300,8 @@ class SQLiteDocument3PolicyRepository:
             from .policy_storage import install_refs
             install_refs(connection, 'codex_document3_policy_sets', ['policy_set_json'],
                          'json_array(NEW.ticker,NEW.policy_set_version)')
+            from .history_exit import migrate as migrate_history_exit
+            migrate_history_exit(connection)
             # No startup scan/reprojection of every historical PolicySet.
             # Nullable legacy metadata is derived only for the requested row.
 
@@ -330,6 +332,8 @@ class SQLiteDocument3PolicyRepository:
         return int(row[0]) if row else None
 
     def get_version(self, ticker: str, version: int) -> PolicySet | None:
+        with self._connect() as db:
+            if db.execute('SELECT 1 FROM codex_document3_history_retired WHERE ticker=? AND version=?',(ticker.upper(),version)).fetchone():raise ValueError('HISTORY_RETIRED')
         return self._read_one(
             "SELECT policy_set_json FROM codex_document3_policy_sets "
             "WHERE ticker = ? AND policy_set_version = ?",

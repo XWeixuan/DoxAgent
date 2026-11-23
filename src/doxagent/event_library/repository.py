@@ -126,6 +126,8 @@ class EventLibraryRepository:
                 raise EventLibraryError(f"unsupported Event Library schema version {version}")
             from .admission_evidence import migrate as migrate_admissions
             migrate_admissions(connection)
+            from .lifecycle import migrate as migrate_lifecycle
+            migrate_lifecycle(connection)
             connection.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS library_heads (
@@ -324,6 +326,8 @@ class EventLibraryRepository:
                     ON reference_review_schedule (ticker,next_review_at,event_no);
                 """
             )
+            from .lifecycle import migrate_history
+            migrate_history(connection)
             migrate_birth_identities(connection)
             connection.execute(f"PRAGMA user_version={EVENT_LIBRARY_SCHEMA_VERSION}")
 
@@ -381,8 +385,9 @@ class EventLibraryRepository:
 
     @staticmethod
     def _require_native_version(connection, ticker, version):
-        if version and not connection.execute('SELECT 1 FROM library_versions WHERE ticker=? AND version=?',(ticker,version)).fetchone():
-            raise UnknownLibraryObjectError(f'library version {version} is not retained for {ticker}')
+        row=connection.execute('SELECT status FROM library_versions WHERE ticker=? AND version=?',(ticker,version)).fetchone() if version else None
+        if version and (not row or row[0]=='HISTORY_RETIRED'):
+            raise UnknownLibraryObjectError(f'HISTORY_RETIRED: library version {version} is not retained for {ticker}')
 
     def published_version(self, ticker: str) -> int:
         normalized = self._ticker(ticker)
@@ -515,12 +520,14 @@ class EventLibraryRepository:
         ticker = self._ticker(batch.ticker)
         payload = batch.model_dump(mode="json")
         now = _now()
+        encoded = _json(payload)
         with self._write() as connection:
             existing = connection.execute(
                 "SELECT payload_json FROM delta_batches WHERE batch_id=?", (batch.batch_id,)
             ).fetchone()
-            encoded = _json(payload)
             if existing is not None:
+                retired=connection.execute('SELECT input_sha256 FROM event_batch_retirements WHERE batch_id=?',(batch.batch_id,)).fetchone()
+                if retired and retired[0]==hashlib.sha256(encoded.encode()).hexdigest():return False
                 if str(existing["payload_json"]) != encoded:
                     raise EventLibraryError(f"Delta batch {batch.batch_id!r} is immutable")
                 return False
@@ -572,6 +579,8 @@ class EventLibraryRepository:
         if row is None:
             return None
         payload = json.loads(str(row["payload_json"]))
+        if payload.get('process_retired'):
+            raise EventLibraryError('PROCESS_INPUT_RETIRED_NEW_BATCH_REQUIRED')
         payload["status"] = str(row["status"])
         return DeltaBatch.model_validate(payload)
 
@@ -1284,6 +1293,9 @@ class EventLibraryRepository:
                 dropped_delta_count=counts["dropped"],
                 duplicate_delta_count=counts["duplicate"],
             )
+            if not counts['pending']:
+                from .lifecycle import enqueue
+                enqueue(connection,bundle.delta_batch_ids,now=datetime.now(UTC))
             for batch_id in bundle.delta_batch_ids:
                 connection.execute(
                     """

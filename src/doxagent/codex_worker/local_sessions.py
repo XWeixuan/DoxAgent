@@ -28,8 +28,14 @@ def observe_external_thread(db, job, request):
         db.execute('DELETE FROM worker_session_exit WHERE thread_id=?', (request.thread_id,))
 
 
+def process_job(job):
+    from doxagent.codex_runtime.schema import CodexD3Node
+    node=getattr(job,'node',None)
+    return job.run_id.startswith('runtime-maintain-') or getattr(node,'value',node) in {n.value for n in CodexD3Node}
+
+
 def prepare(db, job, request):
-    if not job.run_id.startswith('runtime-maintain-'):
+    if not process_job(job):
         return
     if request is not None:
         if request.thread_id and db.execute("SELECT 1 FROM worker_session_retirements WHERE thread_id=? AND state IN ('DELETING','DELETED')",(request.thread_id,)).fetchone():
@@ -38,7 +44,7 @@ def prepare(db, job, request):
         # ownership. Only a new, no-subagent root can become a local candidate.
         if not db.execute('SELECT 1 FROM jobs WHERE id=?',(job.job_id,)).fetchone():
             db.execute('INSERT OR IGNORE INTO worker_process_threads VALUES(?,?,?,?,?,0)',
-                (job.job_id,job.run_id,job.thread_id,job.status,int(request.thread_id is None and request.max_subagents==0)))
+                (job.job_id,job.run_id,job.thread_id,job.status,int(request.thread_id is None and (not getattr(request,'allow_subagents',False) or request.max_subagents==0))))
     db.execute('UPDATE worker_process_threads SET thread_id=coalesce(?,thread_id),status=? WHERE job_id=? '
                'AND (status<>? OR (? IS NOT NULL AND thread_id IS NOT ?))',
                (job.thread_id,job.status,job.job_id,job.status,job.thread_id,job.thread_id))

@@ -52,6 +52,10 @@ class StateV21:
             CREATE TABLE IF NOT EXISTS codex_document3_storage_meta
               (key TEXT PRIMARY KEY,value TEXT NOT NULL);
             """)
+            from .process_exit import migrate as migrate_process_exit
+            migrate_process_exit(db)
+            from .history_exit import migrate as migrate_history_exit
+            migrate_history_exit(db)
             from doxagent.v2_read.artifact_registry import migrate, native_triggers
             migrate(db)
             if not db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_artifact_codex_document3_v21_runs_INSERT'").fetchone():
@@ -87,7 +91,12 @@ class StateV21:
         if row is None:
             with self.lock, self.connect() as db:
                 inserted=db.execute('INSERT OR IGNORE INTO codex_document3_v21_runs VALUES(?,?,?)',(run_id,key,raw)).rowcount
-            if inserted:return payload
+                if inserted:
+                    from datetime import UTC, datetime
+                    from .process_exit import enqueue_sql
+                    enqueue_sql(db,run_id,datetime.now(UTC).isoformat(),days=30)
+            if inserted:
+                return payload
             with self.connect() as db:
                 row=db.execute('SELECT identity,payload FROM codex_document3_v21_runs WHERE run_id=?',(run_id,)).fetchone()
         if row['identity']!=key:raise ValueError('V21 replay input identity mismatch')
@@ -189,23 +198,31 @@ class StateV21:
                 return
             value['settlement'] = {'at': at or datetime.now(UTC).isoformat(), 'authority': authority}
             db.execute('UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?', (canonical(value), run_id))
+            from .process_exit import enqueue_sql
+            enqueue_sql(db,run_id,value['settlement']['at'],days=1)
 
     def retire(self, run_id, *, now, authority):
         """Owner-proven exit. Prepare outside writer; retire bounded process rows."""
         with self.connect() as db:
             row=db.execute('SELECT payload FROM codex_document3_v21_runs WHERE run_id=?',(run_id,)).fetchone()
             staged=db.execute('SELECT 1 FROM codex_document3_v21_staged_sets WHERE run_id=?',(run_id,)).fetchone()
-        if not row or not staged:return None
+        if not row:return None
+        if not staged and authority!='terminal-unpublished-inputs':return None
         value=json.loads(row[0]);receipt=value.get('resource_retirement')
         if receipt is None:
             removed={}
             for key in ('prepared','base','base_coverage','final','final_candidates','handoff',
                         'shell_discovery_input','open_discovery_input','assets','basis','scan_inputs'):
+                if not staged and key in {'final','final_candidates','handoff'}:continue
                 if key in value:removed[key]=digest(value.pop(key))
             receipt={'at':now.isoformat(),'authority':authority,'resume_allowed':False,
                      'fields_sha256':removed,'before_json_bytes':len(row[0].encode())}
             value['resource_retirement']=receipt
         raw=canonical(value)
+        if receipt and raw==row[0]:
+            with self.connect() as db:
+                pending=bool(staged and any(db.execute('SELECT 1 FROM '+table+' WHERE run_id=? LIMIT 1',(run_id,)).fetchone() for table in ('codex_document3_v21_tasks','codex_document3_v21_draft_ids')))
+            if not pending:return {**receipt,'batch_rows':{},'remaining':False}
         with self.lock,self.connect() as db:
             db.execute('PRAGMA busy_timeout=10');db.execute('BEGIN IMMEDIATE')
             current=db.execute('SELECT payload FROM codex_document3_v21_runs WHERE run_id=?',(run_id,)).fetchone()
@@ -214,6 +231,7 @@ class StateV21:
             if raw!=row[0]:db.execute('UPDATE codex_document3_v21_runs SET payload=? WHERE run_id=?',(raw,run_id))
             counts={}
             for table,column in (('codex_document3_v21_tasks','task_key'),('codex_document3_v21_draft_ids','path')):
+                if not staged:continue
                 rows=db.execute('SELECT rowid,'+column+' FROM '+table+' WHERE run_id=? LIMIT 4',(run_id,)).fetchall()
                 for identity,key in rows:
                     # Draft condition highwaters must outlive their process body.
@@ -224,7 +242,9 @@ class StateV21:
                 counts[table]=len(rows) if not table.endswith('draft_ids') or db.execute("SELECT 1 FROM codex_document3_storage_meta WHERE key='condition_highwater_complete'").fetchone() else 0
             from doxagent.v2_read.source_native_gc import queue_owner_exit
             queue_owner_exit(db,exiting)
-        return {**receipt,'batch_rows':counts}
+        with self.connect() as db:
+            remaining=bool(staged and any(db.execute('SELECT 1 FROM '+table+' WHERE run_id=? LIMIT 1',(run_id,)).fetchone() for table in ('codex_document3_v21_tasks','codex_document3_v21_draft_ids')))
+        return {**receipt,'batch_rows':counts,'remaining':remaining}
 
     def task(self, run_id, key):
         with self.connect() as db:
@@ -489,6 +509,7 @@ class StateV21:
         from .schema_v21 import PolicySetV3
 
         with self.connect() as db:
+            if db.execute('SELECT 1 FROM codex_document3_history_retired WHERE ticker=? AND version=?',(ticker.upper(),version)).fetchone():raise ValueError('HISTORY_RETIRED')
             row = db.execute(
                 "SELECT payload FROM codex_document3_v21_staged_sets WHERE ticker=? AND version=?",
                 (ticker.upper(), version),

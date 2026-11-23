@@ -3,6 +3,7 @@
 import hashlib
 import json
 import platform
+import os
 import re
 import subprocess
 import sys
@@ -41,14 +42,14 @@ def manifest(source, patch, output):
         companions={
             "codex-code-mode-host": {
                 "sha256": digest(output / "codex-code-mode-host"),
-                "source": "same pinned upstream build",
+                "source": os.environ.get("DOX_NATIVE_COMPANION_SOURCE", "same pinned upstream build"),
             }
         },
         symbols_sha256=digest(output / "symbols/codex.debug"),
         packaging="GNU split debug; strip --strip-unneeded; symbols excluded from runtime image",
         architecture=platform.machine(),
         rustc=subprocess.check_output(["rustc", "--version"], text=True).strip(),
-        build_command="cargo build --locked --release -p codex-cli -p codex-code-mode-host --bins",
+        build_command=os.environ.get("DOX_NATIVE_BUILD_COMMAND", "cargo build --locked --release -p codex-cli -p codex-code-mode-host --bins"),
         lock_preparation="upstream local workspace versions only; third-party pins unchanged",
     )
     (output / "manifest.json").write_text(json.dumps(value, indent=2) + "\n")

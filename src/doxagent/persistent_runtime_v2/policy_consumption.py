@@ -243,6 +243,23 @@ def apply_release_authorizations(db, *, ticker, revision_id, requests):
 def admit_revision(journal, *, revision, policy_repository):
     """Only a control-plane activated revision is supplied by admission/maintenance."""
     ref = revision["artifacts"]["document3"]
+    release_key = encode([revision["ticker"], int(ref["version"]), ref.get("run_id")])
+    with journal.transaction(write=False,expand=False) as db:
+        receipt = get_value(db,'policy_authorization_applied',revision['revision_id'])
+        head = get_value(db,'policy_authorization_head',revision['ticker'])
+        if receipt is not None and head==revision['revision_id']:
+            return receipt
+        known = get_value(db,'policy_release_authorization',release_key)
+    if known is not None:
+        # Immutable exact release proof replaces re-reading/reparsing the entire
+        # PolicySet and staged payload for another O2-only Event activation.
+        from .fencing import assert_write_lease
+        with journal.transaction() as db:
+            assert_write_lease(db)
+            receipt=dict(known,revision_id=revision['revision_id'],reused_release=True)
+            put_value(db,'policy_authorization_applied',revision['revision_id'],receipt)
+            put_value(db,'policy_authorization_head',revision['ticker'],revision['revision_id'])
+        return receipt
     policy = policy_repository.get_version(revision["ticker"], int(ref["version"]))
     if policy is None:
         raise ValueError("Activated Policy Set unavailable")

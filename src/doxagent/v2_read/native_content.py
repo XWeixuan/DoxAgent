@@ -39,12 +39,13 @@ class NativeContent:
         self._projection_frozen = OrderedDict()
         self._projection_frozen_bytes = 0
 
-    def encode(self, value, *, keep=()):
+    def encode(self, value, *, keep=(), split=()):
         def pack(item, root=False, path=""):
-            root = root or path in keep
+            root = root or path in keep or path in split
             if not root:
                 raw = json.dumps(item, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
-                if len(raw) >= 16384:
+                threshold = 2048 if path.rsplit('.',1)[0] in split else 16384
+                if len(raw) >= threshold:
                     return {MARKER: self.files.put(raw), "bytes": len(raw)}
             if isinstance(item, dict):
                 if MARKER in item:
@@ -147,6 +148,27 @@ class NativeContent:
         """Serving-only thin immutable input cache; full evidence decoder is unchanged."""
         value = json.loads(raw)
         frozen = value.get('frozen_inputs', {})
+        if isinstance(frozen,dict) and MARKER not in frozen:
+            # Split frozen fields share content across phase updates/Cases.
+            # Serving never reads index/provisional/prompts just to project IDs.
+            projection=frozen.get('projection',{})
+            policy_key=('policy:'+projection[MARKER]) if isinstance(projection,dict) and MARKER in projection else None
+            compact=self._projection_frozen.get(policy_key) if policy_key else None
+            if compact is None:
+                full=self.decode(projection)
+                compact=json.dumps({'policies':[
+                    {'policy_id':p.get('policy_id'),'activation_conditions':[
+                        {k:c.get(k) for k in ('condition_id','decision')} for c in p.get('activation_conditions',[])]}
+                    for p in full.get('policies',[])]},ensure_ascii=False,separators=(',',':'))
+                size=len(compact.encode())
+                if policy_key and size<=1024*1024:
+                    self._projection_frozen[policy_key]=compact;self._projection_frozen_bytes+=size
+                    while len(self._projection_frozen)>64 or self._projection_frozen_bytes>16*1024*1024:
+                        _,old=self._projection_frozen.popitem(last=False);self._projection_frozen_bytes-=len(old.encode())
+            elif policy_key:self._projection_frozen.move_to_end(policy_key)
+            value['frozen_inputs']={k:self.decode(frozen[k]) for k in ('w3_execution_state','policy_watch_followup') if k in frozen}
+            value['frozen_inputs']['projection']=json.loads(compact)
+            return self.decode(value)
         key = frozen.get(MARKER) if isinstance(frozen, dict) else None
         cached = self._projection_frozen.get(key) if key else None
         if cached is None:

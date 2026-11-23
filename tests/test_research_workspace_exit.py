@@ -63,3 +63,55 @@ def test_unpublished_terminal_inputs_exit_without_losing_results_or_resumable_ru
     for run in ('recent-failure','held','active','w3-job'):
         assert (workspaces.root/run/'context/copied.txt').is_file()
     assert not retention.collect(workspaces,jobs,settings,now=now)['runs']
+
+
+def test_scoped_d3_parent_uses_typed_semantics_and_never_reads_foreign_owner(tmp_path,monkeypatch):
+    from doxagent.workflows.codex_document3.state_v21 import StateV21
+    from doxagent.workflows.codex_document3.schema_v21 import PolicySetV3
+    from tests.test_runtime_policy_direction_usage import policy
+    now=datetime.now(UTC);at=(now-timedelta(days=30)).isoformat()
+    source=tmp_path/'research.db';state=StateV21(source)
+    workspaces=LocalWorkspaceStore(tmp_path/'workspaces');store=JobStore(workspaces.root)
+    parent='d3-parent';child=parent+'-research'
+    state.start(parent,{},dict(prepared={'large':'repeat'*1000}))
+    state.save_staged_v3(parent,PolicySetV3(ticker='MU',policy_set_version=1,as_of=now,published_at=now,publication_state='COMPLETE',policies=[policy()]),{'files':{'document3.json':'derived'}})
+    state.settle(parent,at=at,authority='test-publication')
+    for run in (parent,child):
+        workspaces.write_text(run,'context/copied.txt','redundant')
+        workspaces.write_text(run,'context/cited.html','evidence')
+    workspaces.write_text(parent,'artifacts/document3.json','different but regenerable representation')
+    workspaces.write_text(parent,'output/final/document3.json','obsolete export')
+    with sqlite3.connect(source) as db:
+        db.execute('CREATE TABLE codex_runtime_records(record_type,run_id,payload_json)')
+        db.execute('INSERT INTO codex_runtime_records VALUES(?,?,?)',('bundles',parent,json.dumps(dict(status='published',published_at=at,handoff={'policy_set_version':1},artifacts=[dict(relative_path='artifacts/document3.json',sha256='old-byte-digest')]))))
+        db.execute('INSERT INTO codex_runtime_records VALUES(?,?,?)',('citations',parent,json.dumps(dict(relative_path='context/cited.html'))))
+        # Decoding an unrelated/missing Native object would fail this collection.
+        db.execute('INSERT INTO codex_runtime_records VALUES(?,?,?)',('bundles','foreign',json.dumps({'status':'published','unused':{'$doxagent_content_v1':'f'*64}})))
+    with store.connect() as db:
+        db.execute('INSERT INTO jobs(id,status,payload,request) VALUES(?,?,?,?)',(child,'succeeded',json.dumps(dict(run_id=child,finished_at=at)),json.dumps(dict(node='document3'))))
+    monkeypatch.setattr(retention,'run_held',lambda *args:False)
+    monkeypatch.setattr('doxagent.persistent_runtime_v2.resource_gc.opened_below',lambda *args:(_ for _ in ()).throw(AssertionError('global /proc scan')))
+    settings=SimpleNamespace(codex_runtime_sqlite_path=source)
+    first=retention.collect(workspaces,SimpleNamespace(store=store),settings,now=now,limit=1,run_ids=[parent])
+    assert not first['errors'] and first['runs'][0]['run']==parent
+    assert not (workspaces.root/parent/'context/copied.txt').exists()
+    assert (workspaces.root/parent/'context/cited.html').is_file()
+    assert not (workspaces.root/parent/'output/final/document3.json').exists()
+    assert (workspaces.root/parent/'artifacts/document3.json').is_file()
+
+
+def test_d3_exit_never_retires_state_when_workspace_owner_is_held(tmp_path,monkeypatch):
+    from doxagent.workflows.codex_document3.state_v21 import StateV21
+    from doxagent.workflows.codex_document3.process_exit import collect
+    now=datetime.now(UTC)+timedelta(days=40);at=(now-timedelta(days=40)).isoformat()
+    source=tmp_path/'research.db';state=StateV21(source);(tmp_path/'.d3-shared-policy-ready').touch()
+    state.start('held',{},dict(prepared={'secret':'necessary until retirement boundary'}))
+    workspaces=LocalWorkspaceStore(tmp_path/'workspaces');store=JobStore(workspaces.root)
+    workspaces.write_text('held','context/input.txt','not yet eligible')
+    with sqlite3.connect(source) as db:db.execute('CREATE TABLE codex_runtime_records(record_type,run_id,payload_json)')
+    with store.connect() as db:db.execute('INSERT INTO jobs(id,status,payload,request) VALUES(?,?,?,?)',('j','failed',json.dumps(dict(run_id='held',finished_at=at)),json.dumps(dict(node='document3'))))
+    monkeypatch.setattr(retention,'run_held',lambda *args:True)
+    report=collect(SimpleNamespace(codex_runtime_sqlite_path=source,codex_workspace_root=workspaces.root),now=now)
+    assert 'eligible retirement boundary' in report['error']
+    assert 'prepared' in state.run('held')
+    assert (workspaces.root/'held/context/input.txt').is_file()

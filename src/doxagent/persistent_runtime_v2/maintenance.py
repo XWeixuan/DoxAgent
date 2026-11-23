@@ -77,7 +77,11 @@ class RuntimeMaintenance:
     def collect_resources(self, *, should_yield=None):
         from .owner_exit import drain
         self.resource_gc_due=False
-        return drain(self.journal,self.settings)
+        report=drain(self.journal,self.settings)
+        from .history_exit import collect
+        report['history']=collect(self)
+        report['next_seconds']=min(report['history'].get('next_seconds',900),60 if report['processed'] else 900)
+        return report
 
     def _frame(self, task: dict[str, Any]) -> dict[str, Any]:
         current = self.control.active_revision(task["ticker"])
