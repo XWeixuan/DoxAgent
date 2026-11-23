@@ -53,6 +53,8 @@ FACT_TABLES=(('canonical_fact_revisions','fact_no'),('canonical_fact_states','fa
 
 
 def migrate_history(db):
+    db.execute('CREATE TABLE IF NOT EXISTS event_reference_exit(ticker TEXT,version INTEGER,PRIMARY KEY(ticker,version))')
+    db.execute('CREATE INDEX IF NOT EXISTS event_reference_delta_to ON reference_view_deltas(ticker,to_library_version,from_library_version)')
     db.execute('CREATE TABLE IF NOT EXISTS event_history_exit('
         'ticker TEXT,kind TEXT,object_no INTEGER,generation INTEGER NOT NULL DEFAULT 1,'
         "stage INTEGER NOT NULL DEFAULT 0,after_key TEXT NOT NULL DEFAULT '[]',due TEXT NOT NULL,"
@@ -110,7 +112,17 @@ def collect_history(repository,ticker,*,keep_versions=(),now=None,limit=32):
         with closing(repository._connect()) as db,db:
             db.execute('PRAGMA busy_timeout=10');db.execute('BEGIN IMMEDIATE')
             db.executemany("UPDATE library_versions SET status='HISTORY_RETIRED' WHERE ticker=? AND version=? AND version<>(SELECT published_version FROM library_heads WHERE ticker=?)",[(ticker,v,ticker) for v in victims])
+            db.executemany('INSERT OR IGNORE INTO event_reference_exit VALUES(?,?)',[(ticker,v) for v in victims])
         return {'retired_versions':victims,'pending':True}
+    with repository._read() as db:
+        exiting=db.execute('SELECT version FROM event_reference_exit WHERE ticker=? LIMIT 1',(ticker,)).fetchone()
+        pairs=db.execute('SELECT from_library_version,to_library_version FROM reference_view_deltas WHERE ticker=? AND (from_library_version=? OR to_library_version=?) LIMIT 4',(ticker,exiting[0],exiting[0])).fetchall() if exiting else []
+    if exiting:
+        with closing(repository._connect()) as db,db:
+            db.execute('PRAGMA busy_timeout=10');db.execute('BEGIN IMMEDIATE')
+            db.executemany('DELETE FROM reference_view_deltas WHERE ticker=? AND from_library_version=? AND to_library_version=?',[(ticker,*r) for r in pairs])
+            if len(pairs)<4:db.execute('DELETE FROM event_reference_exit WHERE ticker=? AND version=?',(ticker,exiting[0]))
+        return {'retired_reference_views':len(pairs),'pending':True}
     if owner is None:return {'idle':True}
     tables=EVENT_TABLES if owner['kind']=='event' else FACT_TABLES
     table,column=tables[owner['stage']];after=json.loads(owner['after_key']);number=owner['object_no']

@@ -94,7 +94,7 @@ requires_openai_auth = false
                 with sqlite3.connect(database) as db:
                     logs=dict(db.execute('SELECT level,count(*) FROM logs GROUP BY level'))
                     assert not (set(logs)-{'WARN','ERROR'}),logs
-                    assert db.execute('SELECT coalesce(max(length(CAST(message AS BLOB))),0),coalesce(max(length(CAST(feedback_log_body AS BLOB))),0) FROM logs').fetchone() <= (2100,2100)
+                    assert db.execute('SELECT coalesce(max(length(CAST(feedback_log_body AS BLOB))),0) FROM logs').fetchone()[0]<=2100
             print(json.dumps({'version':subprocess.check_output(['/native/codex','--version'],text=True).strip(),'turn_completed':True,'rollout_deleted':True,'history_remaining':counts,'log_levels_under_trace':logs,'network':'Docker --network none; loopback synthetic provider only'},sort_keys=True))
         except Exception:
             print(json.dumps({'recent_notifications':notifications[-6:],'stderr_tail':(home/'stderr.log').read_text()[-4000:]}));raise

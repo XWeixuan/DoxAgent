@@ -88,3 +88,18 @@ def test_history_loses_unreferenced_recovery_without_losing_current_or_case_pins
     assert repo.get_current('MU').policy_set_version==6
     assert collect(state,'MU',keep_versions={2},now=now,is_live=lambda run:False)['retired_version']==3
     assert collect(state,'MU',keep_versions={2},now=now,is_live=lambda run:False)['idle']
+
+
+def test_existing_versions_convert_without_business_change_and_stop_after_cursor(tmp_path):
+    from doxagent.workflows.codex_document3.policy_storage import convert_legacy
+    now=datetime.now(UTC);repo=SQLiteDocument3PolicyRepository(tmp_path/'research.db');state=StateV21(repo.path)
+    item=PolicySetV3(ticker='MU',policy_set_version=1,as_of=now,published_at=now,publication_state='COMPLETE',policies=[policy().model_copy(update={'transmission':'evidence '*3000})])
+    repo.publish(item,expected_base_version=None);state.save_staged_v3('old',item,{})
+    (tmp_path/'.d3-shared-policy-ready').touch()
+    for _ in range(5):result=convert_legacy(state)
+    assert result['complete']
+    assert repo.get_current('MU')==item
+    assert state.get_staged_v3('MU',1)==item
+    with state.connect() as db:
+        assert len(db.execute('SELECT policy_set_json FROM codex_document3_policy_sets').fetchone()[0])<2048
+        assert len(db.execute('SELECT payload FROM codex_document3_v21_staged_sets').fetchone()[0])<2048

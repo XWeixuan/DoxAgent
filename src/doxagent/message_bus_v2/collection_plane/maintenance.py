@@ -40,18 +40,19 @@ def _stage_page(store, window, work, page):
 
 def _retire_hour(store, cutoff, archive_floor, deferred, *, failure_cutoff=None):
     failure_cutoff=failure_cutoff or cutoff
-    eligible="(status='CAPTURED' OR dispatch_at<?)"
     with store.connect() as db:
         deadline = time.monotonic() + .5
         db.set_progress_handler(lambda: time.monotonic() >= deadline, 1000)
-        first = db.execute(
-            "SELECT binding_id,unit,dispatch_at FROM cycles WHERE dispatch_at<? AND " + _TERMINAL +
-            ' AND '+eligible+
-            " AND NOT EXISTS (SELECT 1 FROM json_each(?) d WHERE "
+        not_deferred=(" AND NOT EXISTS (SELECT 1 FROM json_each(?) d WHERE "
             "binding_id=json_extract(d.value,'$[0]') AND unit=json_extract(d.value,'$[1]') "
-            "AND substr(dispatch_at,1,13)=json_extract(d.value,'$[2]')) "
-            "ORDER BY dispatch_at LIMIT 1", (cutoff, failure_cutoff, canonical_json(sorted(deferred))),
-        ).fetchone()
+            "AND substr(dispatch_at,1,13)=json_extract(d.value,'$[2]')) ")
+        firsts=[]
+        # Separate indexed seeks avoid repeatedly scanning young failures.
+        for status,before in [("status='CAPTURED'",cutoff),("status!='CAPTURED'",failure_cutoff)]:
+            first=db.execute('SELECT binding_id,unit,dispatch_at FROM cycles WHERE dispatch_at<? AND '+status+' AND '+_TERMINAL+
+                not_deferred+'ORDER BY dispatch_at LIMIT 1',(before,canonical_json(sorted(deferred)))).fetchone()
+            if first:firsts.append(first)
+        first=min(firsts,key=lambda row:row[2]) if firsts else None
         if not first:
             return None
         binding, unit, at = first

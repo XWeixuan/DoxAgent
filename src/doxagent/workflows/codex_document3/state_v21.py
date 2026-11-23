@@ -32,6 +32,15 @@ class StateV21:
             return
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
+            required=('codex_document3_v21_runs','codex_document3_condition_highwater',
+                'codex_document3_process_exit','codex_document3_history_retired',
+                'v2_artifact_codex_document3_v21_runs_INSERT',
+                'v2_artifact_codex_document3_v21_tasks_INSERT',
+                'v2_artifact_codex_document3_v21_draft_ids_INSERT',
+                'codex_document3_v21_staged_sets_history_owner')
+            ready=db.execute('SELECT count(*) FROM sqlite_master WHERE name IN ('+','.join('?' for _ in required)+')',required).fetchone()[0]==len(required)
+        if ready:return
+        with self.connect() as db:
             db.executescript("""
             CREATE TABLE IF NOT EXISTS codex_document3_v21_runs
               (run_id TEXT PRIMARY KEY, identity TEXT NOT NULL, payload TEXT NOT NULL);

@@ -55,14 +55,16 @@ def collect(settings,*,now=None):
         if not db.execute("SELECT 1 FROM sqlite_master WHERE name='codex_document3_v21_runs'").fetchone():return {'disabled':'no_d3_owners'}
     state=StateV21(source)
     if not shared_ready(state.codec):return {'waiting_for_reader_rollout':True}
+    from .policy_storage import convert_legacy
+    conversion=convert_legacy(state)
     from .history_exit import maintain as maintain_history
     history=maintain_history(state,settings,now=now) if getattr(settings,'persistent_runtime_v2_sqlite_path',None) else {'disabled':'no_runtime_reference_authority'}
     counters=state.backfill_condition_highwater()
     register_legacy(state)
     with state.connect() as db:
         row=db.execute('SELECT run_id FROM codex_document3_process_exit WHERE due<=? ORDER BY due,run_id LIMIT 1',(now.isoformat(),)).fetchone()
-    if row is None:return {'idle':True,'condition_counters_ready':counters,'history':history}
-    run=row[0];report={'run':run,'history':history}
+    if row is None:return {'idle':True,'condition_counters_ready':counters,'history':history,'policy_conversion':conversion}
+    run=row[0];report={'run':run,'history':history,'policy_conversion':conversion}
     class Store:
         path=workspace/'worker-jobs.sqlite3'
         def connect(self):return sqlite3.connect(self.path,timeout=.01)

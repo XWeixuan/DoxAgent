@@ -81,6 +81,7 @@ class AcquisitionStore:
                         binding_version INTEGER,status TEXT,reason TEXT,finished_at TEXT,
                         data_json TEXT NOT NULL);
                     CREATE INDEX IF NOT EXISTS cycles_time ON cycles(dispatch_at,run_id);
+                    CREATE INDEX IF NOT EXISTS cycles_success_exit ON cycles(dispatch_at,run_id) WHERE status='CAPTURED';
                     CREATE INDEX IF NOT EXISTS cycles_ticker_time ON cycles(ticker,dispatch_at);
                     CREATE INDEX IF NOT EXISTS cycles_schedule ON cycles(status,binding_id,unit,dispatch_at);
                     CREATE INDEX IF NOT EXISTS cycles_unfinished ON cycles(status,run_id) WHERE finished_at IS NULL;
