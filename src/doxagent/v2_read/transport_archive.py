@@ -140,7 +140,7 @@ def main():
             with closing(source.connection(write=True)) as db, db:
                 migrate_expiry_index(db)
         return
-    capacity_at=0;d3_exit_at=0
+    capacity_at=0;d3_exit_at=0;runtime_exit_at=0
     while True:
         from doxagent.message_bus_v2.pressure import background_allowed
         constrained = not args.once and not background_allowed()
@@ -191,6 +191,15 @@ def main():
                     result[source.source]['native_exit']=source_native_gc.collect(source,limit=4,queued_only=not legacy_due)
             except (sqlite3.OperationalError,OSError,ValueError) as exc:
                 result[source.source]['native_error']=str(exc)
+        if time.monotonic()>=runtime_exit_at:
+            runtime_exit_at=time.monotonic()+60
+            try:
+                from doxagent.settings import DoxAgentSettings
+                from doxagent.persistent_runtime_v2.storage_maintenance import collect as runtime_exit
+                result['runtime_process_exit']=runtime_exit(DoxAgentSettings())
+                runtime_exit_at=time.monotonic()+result['runtime_process_exit'].get('next_seconds',900)
+            except (OSError,ValueError,sqlite3.Error) as exc:
+                result['runtime_process_exit']={'error':str(exc)[:250]}
         if time.monotonic()>=d3_exit_at:
             d3_exit_at=time.monotonic()+300
             try:

@@ -379,11 +379,10 @@ def _collect(source, *, now, limit, queued_only=False):
     for digest, q in claimed:
         allocated = 0
         try:
-            for child in q.iterdir():
-                if child.is_file():
-                    info = child.stat()
-                    allocated += getattr(info, 'st_blocks', (info.st_size + 511) // 512) * 512
-            shutil.rmtree(q)
+            from .detached_files import unlink_page
+            done,_,allocated=unlink_page(q)
+            report['allocated']+=allocated
+            if not done:continue
         except FileNotFoundError:
             if q.exists():
                 raise
@@ -392,6 +391,5 @@ def _collect(source, *, now, limit, queued_only=False):
             if db.execute("UPDATE artifact SET state='DELETED' WHERE id=? AND state='DELETING'", (digest,)).rowcount:
                 db.execute('DELETE FROM v2_native_exit WHERE id=?', (digest,))
                 report['deleted'] += 1
-                report['allocated'] += allocated
     report['discarded'] += drain(discard)
     return report

@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 import sqlite3
 import re
+import time
+from itertools import chain
 from uuid import uuid4
 
 from doxagent.v2_read.maintenance import atomic_json
@@ -218,10 +220,13 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False,run_ids=No
                         if digest!=artifact['sha256']:raise ValueError('adopted artifact checksum mismatch')
                     artifacts.append(dict(path=artifact['relative_path'],sha256=digest));retained.add(path)
                 if authority_run in published and not artifacts:continue
-                candidates=[];more=False
-                for area in [directory/'context',*directory.glob('attempts/*/input')]:
+                candidates=[];detach_areas=[];more=False
+                for area in chain([directory/'context'],directory.glob('attempts/*/input')):
                     if len(candidates)>=256:more=True;break
                     if not area.is_dir() or area.is_symlink():continue
+                    if typed_release and settlement and run_ids is not None and not any(p.is_relative_to(area.resolve()) for p in retained):
+                        if len(detach_areas)>=4:more=True;break
+                        detach_areas.append(area);continue
                     for path in area.rglob('*'):
                         if len(candidates)>=256:more=True;break
                         if not path.is_file() or path.is_symlink() or path.resolve() in retained:continue
@@ -258,8 +263,25 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False,run_ids=No
                     db.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)',[('workspace_retirement:'+r,now.isoformat()) for r in fenced])
                 atomic_json(marker,receipt)
                 # Submission is fenced by the retirement metadata; unlink outside writer locks.
+                trash=directory/'audit'/'retiring-inputs'
+                if trash.resolve().is_relative_to(directory.resolve()) is False:raise ValueError('linked input exit queue')
+                if detach_areas:trash.mkdir(parents=True,exist_ok=True)
+                for area in detach_areas:
+                    area.rename(trash/(hashlib.sha256(str(area.relative_to(directory)).encode()).hexdigest()+'.'+uuid4().hex))
                 for path in candidates:
-                    info=path.stat();path.unlink();receipt['files']+=1;receipt['allocated']+=getattr(info,'st_blocks',(info.st_size+511)//512)*512
+                    info=path.stat();path.unlink();receipt['files']+=1
+                    if info.st_nlink<=1:receipt['allocated']+=getattr(info,'st_blocks',(info.st_size+511)//512)*512
+                if trash.is_dir():
+                    from doxagent.v2_read.detached_files import unlink_page
+                    entries=0;deadline=time.monotonic()+.05
+                    with os.scandir(trash) as discarded:
+                        for item in discarded:
+                            if entries>=256 or time.monotonic()>=deadline:break
+                            if item.is_symlink() or not item.is_dir(follow_symlinks=False):raise ValueError('invalid detached input')
+                            done,removed,allocated=unlink_page(Path(item.path),max_entries=256-entries,deadline=deadline)
+                            entries+=removed;receipt['allocated']+=allocated
+                    receipt['detached_entries']=entries
+                    with os.scandir(trash) as discarded:more=more or next(discarded,None) is not None
                 if settlement:
                     from doxagent.workflows.codex_document3.state_v21 import StateV21
                     receipt['d3']=StateV21(source).retire(authority_run,now=now,authority='published-candidate')

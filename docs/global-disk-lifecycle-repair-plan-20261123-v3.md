@@ -544,3 +544,7 @@ Event/D3 当前正式内容及活跃业务的精确证据不按天机械删除�
 8. SDK 实测 thread/delete 原实现仍会扫描全部 rollout 头部。新方案仅为从创建起已登记、禁止子线程、无外部复用、全部 owner 终态且 ACK 的新 root，导出已有 DELETING 收据的单次私有 owner proof；Native 核对 root 身份、无 history_base、确切文件路径后走原 per-thread writer/history/rollout 退出，不再做全树引用扫描。不修改公开 SDK 协议，不给任意历史线程 force-delete；缺新 Native 能力时延后，不回退到全树扫描。真实二进制用 inotify 检验不打开无关历史 rollout，删除失败保留 proof 支持精确重试。W3 线程原业务生命周期不改。
 9. 自动成功过程保留 24h 是正常治理窗口；显式存量清理可以对已有 typed release、全部 Worker owner 终态的确切 D3 家族缩短输入副本宽限期。当前正式策略、发布成果、真实引用文件继续保留，不伪造当前时间，也不放宽活跃/不明 owner 的边界。
 10. Weekly Selection 改为 SQLite 先筛 ticker/status/截止时间，再展开真实候选；沿用 namespace/key 稳定顺序及原 hash。trade_intents 复用现有 ticker/day cohort 索引，不再先拉全历史。没有为低频 Selection 在几十 GiB Runtime values 上另建重索引。
+
+11. Runtime 成功 Maintenance 的旧 owner 按现有 kind/status/due 索引做一次小页登记，不能只让新版本创建的 owner 退出。有 Event 子库的 legacy run 保留 artifact 树，仍可以单独退主工作区和 O2 副本；不能因为保留 Event 库就保护所有过程文件。队列必须同时校验 task/run 身份，避免同 Task 重跑后裁掉另一 run 的 frame。
+12. Runtime owner 退出、旧 Case 证据检查和 Event 迁移由已有独立 Transport Maintenance 驱动，Scheduler 不调度 JSON 压缩/历史清理。后台 RuntimeJournal writer 等待上限 10ms，忙锁本轮退出。旧 Case 审查先取主键和真实 trade 引用；非交易历史不因曾读过 Policy 就 pin 整版。只有缺完整冻结策略证据的具体交易版本保留必要 pin。Case 正文每次最多读取 256KiB 的行及至多 8MiB Native 旧对象，页内按时间截止；大唯一交易对象直接记录精确版本，不为核验加载几十 MiB。
+13. 文件退出按实际文件/目录条目和时间预算推进，不能用一个目录算一条后执行无界 rmtree。复用小型 unlink_page，正常一轮最多 256 条目/约 50ms，删除跨轮可续，硬链接只在最后一个链接删除时计预计释放量。已证明无引用的整片 typed D3 输入先锁外 detach，再有界退目录，避免每轮重新遍历大量旧小文件。

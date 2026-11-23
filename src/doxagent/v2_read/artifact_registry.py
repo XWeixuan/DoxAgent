@@ -80,7 +80,8 @@ def retain(db, identity, sha256, size, *, codec, location, owner_type, owner_id,
 def collect_diagnostics(store, *, now, limit=10):
     """Recoverable mark/quarantine/finalize protocol; business/unknown files stay put."""
     import hashlib
-    import shutil
+    import time
+    from .detached_files import unlink_page
     from datetime import timedelta
     from .settings import Limits
     from .repository import instant, encode
@@ -107,7 +108,9 @@ def collect_diagnostics(store, *, now, limit=10):
     with store.connect() as db:
         candidates = db.execute("SELECT id,sha256,location,state,class FROM artifact WHERE class IN ('DIAGNOSTIC','SERVING') AND state IN ('MARKED','QUARANTINED','DELETING') LIMIT ?", (limit,)).fetchall()
     changed = []
+    deadline=time.monotonic()+.05
     for identity, digest, location, stage, classification in candidates:
+        if time.monotonic()>=deadline:break
         source = (root / location).resolve()
         quarantine = root / "quarantine" / digest
         if not source.is_relative_to(root) or source == root or source.is_symlink():
@@ -137,7 +140,9 @@ def collect_diagnostics(store, *, now, limit=10):
                         raise ValueError('quarantine collision')
                     if quarantine.is_symlink() or quarantine.resolve().parent != (root/'quarantine').resolve():
                         raise ValueError('quarantine escaped owned storage')
-                    shutil.rmtree(quarantine) if quarantine.is_dir() else quarantine.unlink()
+                    if quarantine.is_dir():
+                        if not unlink_page(quarantine,deadline=deadline)[0]:continue
+                    else:quarantine.unlink()
                 source.replace(quarantine)
             elif not quarantine.exists():
                 raise ValueError('marked artifact missing from source and quarantine')
@@ -149,7 +154,7 @@ def collect_diagnostics(store, *, now, limit=10):
                 if quarantine.resolve().parent != (root / "quarantine").resolve() or quarantine.is_symlink():
                     raise ValueError("quarantine escaped owned storage")
                 if quarantine.is_dir():
-                    shutil.rmtree(quarantine)
+                    if not unlink_page(quarantine,deadline=deadline)[0]:continue
                 else:
                     quarantine.unlink()
             with store.connect(write=True, timeout=.05) as db:

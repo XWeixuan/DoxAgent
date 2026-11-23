@@ -75,8 +75,9 @@ class RuntimeMaintenance:
             )
 
     def collect_resources(self, *, should_yield=None):
-        from .owner_exit import drain
+        from .owner_exit import drain,register_legacy
         self.resource_gc_due=False
+        register_legacy(self.journal)
         report=drain(self.journal,self.settings)
         from .history_exit import collect
         report['history']=collect(self)

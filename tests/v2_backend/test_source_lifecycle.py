@@ -175,19 +175,20 @@ def test_small_native_codec_and_48h_hot_exit_share_existing_reference_guards(tmp
     assert gc.collect(source, now=now+timedelta(days=9))['quarantined'] == 1
     with closing(source.connection(write=True)) as db, db:
         db.execute('UPDATE v2_native_exit SET not_before=0 WHERE id=?', (digest,))
-    remove = gc.shutil.rmtree
+    from doxagent.v2_read import detached_files
+    remove = detached_files.unlink_page
 
-    def interrupted(path):
+    def interrupted(path,**kwargs):
         with closing(source.connection(write=True)) as db, db:
             db.execute('PRAGMA busy_timeout=0')
             db.execute('BEGIN IMMEDIATE')
             assert db.execute('SELECT state FROM artifact WHERE id=?', (digest,)).fetchone()[0] == 'DELETING'
         raise OSError('interrupted after claim')
 
-    monkeypatch.setattr(gc.shutil, 'rmtree', interrupted)
+    monkeypatch.setattr(detached_files, 'unlink_page', interrupted)
     with pytest.raises(OSError, match='interrupted after claim'):
         gc.collect(source)
-    monkeypatch.setattr(gc.shutil, 'rmtree', remove)
+    monkeypatch.setattr(detached_files, 'unlink_page', remove)
     assert source.content.encode({'value': value}) == encoded
     with pytest.raises(sqlite3.IntegrityError, match='ARTIFACT_RECLAIM_IN_PROGRESS'):
         with closing(source.connection(write=True)) as db, db:

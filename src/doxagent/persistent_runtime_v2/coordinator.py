@@ -428,20 +428,9 @@ class RuntimeCoordinator:
         if ticker not in self._reconciled:
             self.journal.reconcile_interrupted(self.runtime.repository, ticker)
             self._reconciled.add(ticker)
-        cleanup = getattr(self.maintain, "collect_resources", None)
-        if self._storage_future is not None and self._storage_future.done():
-            storage_delay=900
-            try:
-                storage_result=self._storage_future.result()
-                storage_delay=max(60,min(900,(storage_result or {}).get('next_seconds',900)))
-            except Exception as exc:
-                self.journal.gap("runtime-resource-exit", ticker, type(exc).__name__, str(exc)[:1000])
-            self._storage_future = None
-            self._storage_next = perf_counter() + storage_delay
-        if cleanup and self._storage_future is None and perf_counter() >= self._storage_next:
-            # Local terminal-owner work is bounded and cannot wait for global
-            # business idleness. It never scans Cases or rebuilds Event stores.
-            self._storage_future = self._background.submit(cleanup)
+        # Resource owners enqueue in their normal terminal transactions. The
+        # existing separate Transport Maintenance process drives their exits;
+        # no history migration/JSON compaction runs in the realtime interpreter.
         if self.journal.get("pause", ticker):
             return
         self.wake_effects()

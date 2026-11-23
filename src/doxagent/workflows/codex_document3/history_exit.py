@@ -4,6 +4,7 @@ from datetime import datetime,timedelta
 import json
 from pathlib import Path
 import sqlite3
+import time
 
 
 def migrate(db):
@@ -31,11 +32,20 @@ def audit_case_evidence(source, *, limit=1):
         if not db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_resource_ref_meta'").fetchone():return False
         meta=dict(db.execute("SELECT key,value FROM runtime_resource_ref_meta WHERE key LIKE 'history_evidence_%'"))
         if meta.get('history_evidence_complete')=='1':return True
-        rows=db.execute('SELECT case_id,ticker,payload_json FROM runtime_v2_cases WHERE case_id>? ORDER BY case_id LIMIT ?',(meta.get('history_evidence_after',''),limit)).fetchall()
-    codec=NativeContent(source.path);pins=[]
-    for identity,ticker,raw in rows:
-        value=json.loads(raw);version=(value.get('version_pin') or {}).get('policy_set_version')
-        if version is None:continue
+        rows=db.execute("SELECT c.case_id,c.ticker,t.case_id,json_extract(t.payload_json,'$.policy_set_version') FROM runtime_v2_cases c LEFT JOIN runtime_v2_trade_records t USING(case_id) WHERE c.case_id>? ORDER BY c.case_id LIMIT ?",(meta.get('history_evidence_after',''),limit)).fetchall()
+    codec=NativeContent(source.path);pins=[];processed=[];deadline=time.monotonic()+.04
+    for identity,ticker,has_trade,version in rows:
+        if processed and time.monotonic()>=deadline:break
+        processed.append(identity)
+        # Closed non-trade history does not pin an entire PolicySet merely
+        # because a Case once read it. Active owners are protected separately.
+        if not has_trade:continue
+        with closing(source.connection()) as db:
+            raw=db.execute('SELECT CASE WHEN length(payload_json)<=262144 THEN payload_json END FROM runtime_v2_cases WHERE case_id=?',(identity,)).fetchone()[0]
+        if version is None:raise ValueError('TRADE_VERSION_EVIDENCE_MISSING:'+identity)
+        if raw is None:
+            pins.append((identity,ticker,version));continue
+        value=json.loads(raw)
         frozen=value.get('frozen_inputs') or {}
         # A unique oversized legacy object is an explicit evidence pin; do not
         # load it merely to decide whether historical storage may be retired.
@@ -46,16 +56,16 @@ def audit_case_evidence(source, *, limit=1):
         policies=projection.get('policies')
         complete=isinstance(policies,list) and all('transmission' in p and all('criterion' in c for c in p.get('activation_conditions',[])) for p in policies)
         # No model-visible projection and no decision needs no historical D3.
-        needs=bool(projection or value.get('decision') or value.get('adjudication'))
-        if needs and not complete:pins.append((identity,ticker,version))
+        if not complete:pins.append((identity,ticker,version))
     with closing(source.connection(write=True)) as db,db:
         db.execute('PRAGMA busy_timeout=10');db.execute('BEGIN IMMEDIATE')
         db.execute('CREATE TABLE IF NOT EXISTS runtime_history_evidence_pins(case_id TEXT PRIMARY KEY,ticker TEXT,policy_version INTEGER)')
         db.execute('CREATE INDEX IF NOT EXISTS runtime_history_evidence_version ON runtime_history_evidence_pins(ticker,policy_version)')
         db.executemany('INSERT OR IGNORE INTO runtime_history_evidence_pins VALUES(?,?,?)',pins)
-        db.execute("INSERT INTO runtime_resource_ref_meta VALUES('history_evidence_after',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",(rows[-1][0] if rows else meta.get('history_evidence_after',''),))
-        if len(rows)<limit:db.execute("INSERT OR REPLACE INTO runtime_resource_ref_meta VALUES('history_evidence_complete','1')")
-    return len(rows)<limit
+        db.execute("INSERT INTO runtime_resource_ref_meta VALUES('history_evidence_after',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",(processed[-1] if processed else meta.get('history_evidence_after',''),))
+        complete=len(rows)<limit and len(processed)==len(rows)
+        if complete:db.execute("INSERT OR REPLACE INTO runtime_resource_ref_meta VALUES('history_evidence_complete','1')")
+    return complete
 
 
 def register_legacy(state, *, limit=16):

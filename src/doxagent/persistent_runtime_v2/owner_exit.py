@@ -14,33 +14,37 @@ def migrate(db):
                'run_id TEXT PRIMARY KEY,task_id TEXT NOT NULL,state TEXT NOT NULL,'
                'not_before TEXT NOT NULL,retry_at TEXT NOT NULL,error TEXT)')
     db.execute('CREATE INDEX IF NOT EXISTS runtime_resource_exit_due ON runtime_resource_exit(state,retry_at,not_before)')
+    db.execute('CREATE TABLE IF NOT EXISTS runtime_resource_exit_meta(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
 
 
 def enqueue(db, task_id, receipt, now):
     run=(receipt.get('_gc_owner') or {}).get('run_id')
-    if receipt.get('o3_outcome') != 'SKIPPED_BY_CONTROL' or not run:
+    if not run:
         return
     due=(now+timedelta(hours=24)).isoformat()
     db.execute("INSERT OR IGNORE INTO runtime_resource_exit VALUES(?,?,'PENDING',?,? ,NULL)", (run,task_id,due,due))
 
 
+def register_legacy(journal,*,limit=16):
+    """One-time indexed successful Maintenance page, no Case/Context expansion."""
+    with journal.transaction(write=False,expand=False) as db:
+        saved=db.execute("SELECT value FROM runtime_resource_exit_meta WHERE key='legacy_cursor'").fetchone()
+        cursor=json.loads(saved[0]) if saved else ['','']
+        if cursor==['DONE']:return {'registered':0,'complete':True}
+        rows=db.execute("SELECT id,due_at,updated_at,coalesce(json_extract(receipt,'$._gc_owner.run_id'),json_extract(receipt,'$.frame.run_id')) FROM runtime_tasks WHERE kind='MAINTENANCE' AND status='SUCCEEDED' AND (due_at,id)>(?,?) ORDER BY due_at,id LIMIT ?",(*cursor,limit)).fetchall()
+    from datetime import datetime
+    with journal.transaction(expand=False,timeout=.01,operation='owner.exit.legacy') as db:
+        for identity,_,at,run in rows:
+            if run and re.fullmatch(r'runtime-maintain-[0-9a-f]{24}',run):enqueue(db,identity,{'_gc_owner':{'run_id':run}},datetime.fromisoformat(at))
+        cursor=[rows[-1][1],rows[-1][0]] if len(rows)==limit else ['DONE']
+        db.execute("INSERT INTO runtime_resource_exit_meta VALUES('legacy_cursor',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",(json.dumps(cursor),))
+    return {'registered':len(rows),'complete':cursor==['DONE']}
+
+
 def _unlink_page(root, *, deadline, limit=256):
     """Only this fenced owner tree; no global directory or descriptor scan."""
-    count=0
-    def visit(path):
-        nonlocal count
-        with os.scandir(path) as entries:
-            for item in entries:
-                if count >= limit or time.monotonic() >= deadline:
-                    return False
-                if item.is_dir(follow_symlinks=False):
-                    if not visit(Path(item.path)):
-                        return False
-                else:
-                    os.unlink(item.path);count+=1
-        path.rmdir()
-        return True
-    return visit(root) if root.exists() else True
+    from doxagent.v2_read.detached_files import unlink_page
+    return unlink_page(root,max_entries=limit,deadline=deadline)[0]
 
 
 def drain(journal, settings, *, limit=2, seconds=.1):
@@ -56,18 +60,19 @@ def drain(journal, settings, *, limit=2, seconds=.1):
             if not re.fullmatch(r'runtime-maintain-[0-9a-f]{24}',run):
                 raise ValueError('invalid process owner')
             artifact=journal.path.resolve().parent/'runtime_artifacts'/run
-            # Legacy branches are handled by explicit reference migration, not
-            # this new process-owner exit path.
-            if (artifact/'events').exists():
-                raise ValueError('legacy Event branch requires reference migration')
+            # A live/historical Event repository does not own the run's copied
+            # inputs. Keep its entire artifact tree here; retire only process
+            # workspaces and receipts. History migration owns Event files.
+            keep_artifact=(artifact/'events').exists()
             workspace=Path(settings.codex_workspace_root).resolve()
             jobs_path=workspace/'worker-jobs.sqlite3'
             if not jobs_path.is_file():
                 raise ValueError('Worker authority unavailable')
             with journal.transaction(write=False,expand=False) as db:
-                task=db.execute('SELECT status,updated_at FROM runtime_tasks WHERE id=?',(task_id,)).fetchone()
+                task=db.execute("SELECT status,updated_at,coalesce(json_extract(receipt,'$._gc_owner.run_id'),json_extract(receipt,'$.frame.run_id')) FROM runtime_tasks WHERE id=?",(task_id,)).fetchone()
             if not task or task[0]!='SUCCEEDED':
                 raise ValueError('owner no longer terminal')
+            if task[2]!=run:raise ValueError('queued owner differs from current Task; review the legacy owner')
             from .resource_gc import compact_process
             compact_process(journal,{run:{'task':task_id,'status':task[0],'at':task[1]}},set(),now,limit=2,settings=settings)
             prefix='runtime-worker:'+run+':'
@@ -91,15 +96,18 @@ def drain(journal, settings, *, limit=2, seconds=.1):
                     if not task:
                         raise ValueError('owner no longer terminal')
                     value=json.loads(task[0])
+                    current_owner=(value.get('_gc_owner') or {}).get('run_id') or (value.get('frame') or {}).get('run_id')
+                    if current_owner!=run:raise ValueError('Task owner changed during exit')
                     exiting=[r[0] for r in db.execute("SELECT artifact_id FROM artifact_ref WHERE owner_type='runtime_tasks' AND owner_id=json_array(?)",(task_id,))] if db.execute("SELECT 1 FROM sqlite_master WHERE name='artifact_ref'").fetchone() else []
                     value.pop('frame',None)
-                    value.update(process_retired=True,retired_frame={'at':stamp,'authority':'O2_ACTIVATION_ACK','resume_allowed':False})
+                    value.setdefault('_gc_owner',{'run_id':run})
+                    value.update(process_retired=True,retired_frame={'at':stamp,'authority':'TERMINAL_MAINTENANCE_ACK','resume_allowed':False})
                     db.execute('UPDATE runtime_tasks SET receipt=? WHERE id=?',(json.dumps(value,separators=(',',':')),task_id))
                     if exiting:
                         from doxagent.v2_read.source_native_gc import queue_owner_exit
                         queue_owner_exit(db,exiting)
                     db.execute("UPDATE runtime_resource_exit SET state='DELETING',error=NULL WHERE run_id=?",(run,))
-            paths=[artifact,workspace/run,workspace/(run+'-o2')]
+            paths=[*([artifact] if not keep_artifact else []),workspace/run,workspace/(run+'-o2')]
             done=True
             for path in paths:
                 if path.is_symlink() or path.resolve()!=path:
