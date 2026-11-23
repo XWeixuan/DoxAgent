@@ -21,3 +21,17 @@ def test_live_pins_register_in_case_transaction_and_exit_without_context_scan(tm
         with journal.transaction(write=False,expand=False) as db:
             assert not db.execute('SELECT 1 FROM runtime_case_resource_refs').fetchone()
     finally:runtime.close()
+
+
+def test_transport_history_uses_the_real_control_repository(tmp_path):
+    from types import SimpleNamespace
+    from doxagent.persistent_runtime_v2.history_exit import collect
+    from doxagent.ticker_initialization.repository import InitializationRepository
+    runtime,journal=runtime_at(tmp_path,[datetime(2026,9,8,12,tzinfo=UTC)])
+    try:
+        for _ in range(10):
+            if backfill(journal):break
+        control=InitializationRepository(tmp_path/'empty-control.db')
+        owner=SimpleNamespace(journal=journal,control=control,settings=SimpleNamespace())
+        assert collect(owner)=={'next_seconds':900}
+    finally:runtime.close()

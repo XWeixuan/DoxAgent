@@ -13,7 +13,7 @@ def collect(maintenance):
     from doxagent.codex_worker.session_retention import run_held
     journal,settings=maintenance.journal,maintenance.settings
     if not backfill(journal):return {'next_seconds':60,'phase':'live_reference_migration'}
-    with maintenance.control._read() as db:
+    with maintenance.control._connection() as db:
         rows=db.execute("SELECT r.ticker,json_extract(r.payload,'$.artifacts.event_library'),"
             "json_extract(r.payload,'$.artifacts.document3.version') FROM activation_revisions r "
             'JOIN ticker_active_revision a USING(revision_id) ORDER BY r.ticker').fetchall()
