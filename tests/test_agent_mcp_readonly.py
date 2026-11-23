@@ -334,6 +334,7 @@ async def test_twenty_ticker_overview_fits_or_continues_without_omission(backend
                 {"period": "TRADING_DAYS_7", **({"cursor": cursor} if cursor else {})},
             )
             assert len(encoded(result)) <= MAX_RESULT_BYTES
+            assert len(result["data"]["items"]) <= 3
             tickers += [row["overview"]["state"]["ticker"] for row in result["data"]["items"]]
             cursor = result["data"]["next_cursor"]
             if cursor is None:

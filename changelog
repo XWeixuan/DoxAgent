@@ -3394,3 +3394,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-24 Storage production acceptance: fix Event-history maintenance to use the actual InitializationRepository connection API. The previously unexercised live-reference-complete path raised AttributeError and prevented the Transport cycle from reaching D3 exits; pause only that background role, add a real-repository integration regression, and roll only Transport Maintenance. Targeted Event/D3/reference tests9 passed. No Runtime/W3 or O3 enablement change.
 
 2026-11-24 Dots概览超时修复：定位overview/operations聚合24h Bus指标超过旧3秒API期限，初页/续页均被SQLITE_INTERRUPT；精确GET复用原单worker有界延后读取，直接执行一次，MCP仅summary及API续页预算45秒，其余普通查询限制不变。无新索引/数据副本/保留流/后台轮询，55项相关回归通过；见docs/agent-mcp-overview-timeout-repair-20261124.md。
+
+2026-11-24 MCP概览资源补充：真实完整10ticker串读冷样本28.2秒，分段确认高负载24h source读取扩大单页耗时；概览每API页最多3ticker，保留游标与原view/字段，避免单任务垄断有界reader。总读取范围不扩大，20ticker不漏页回归继续通过。
