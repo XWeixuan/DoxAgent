@@ -1,0 +1,79 @@
+{
+  "at": 1795428519.7259772,
+  "free_before": 2478866432,
+  "roles": [
+    {
+      "role": "v2-projector",
+      "before": "exited",
+      "error": "failed to mount : mkdir /var/lib/docker/rootfs/overlayfs/5247b68c37ccf5d22e63e0c7f81e548793b515de440797dd3615090a74337720: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2325976
+    },
+    {
+      "role": "v2-message-bus",
+      "before": "exited",
+      "error": "failed to set up container networking: write /var/lib/docker/containers/62653fd253808dffeea0c3d4f1add4928577b829bc34a359fbbce7106bb6ff01/.tmp-hostconfig.json2404649668: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326084
+    },
+    {
+      "role": "v2-content-enrichment",
+      "before": "exited",
+      "error": "failed to mount : mkdir /var/lib/docker/rootfs/overlayfs/36fa717076764b0ae445933d9c33934dd45c0aa6fba0b55ab681acaa40783694: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326183
+    },
+    {
+      "role": "v2-initialization",
+      "before": "exited",
+      "error": "write /var/lib/docker/containers/4587249063fac7ddd3dcde798fe0ce4296f6a66c9bc8cc593a3b1451231167f3/.tmp-resolv.conf.hash2617883363: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326279
+    },
+    {
+      "role": "v2-cdecr-executor",
+      "before": "exited",
+      "error": "failed to mount : mkdir /var/lib/docker/rootfs/overlayfs/adfd766f66da8cdaba7faeac6dc8841ec6420893d7a290f5e5ebe0d4f85b10eb: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326379
+    },
+    {
+      "role": "v2-control",
+      "before": "exited",
+      "error": "failed to mount : mkdir /var/lib/docker/rootfs/overlayfs/47c53eaf9dfc1ba7082580e3842e86d9d75e0631dba25e4ff7ee16409af8f448: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326473
+    },
+    {
+      "role": "v2-maintenance",
+      "before": "exited",
+      "error": "failed to set up container networking: write /var/lib/docker/containers/8ef881f05f7e592fec6c17ba52bccf629bcdc660b19d4ef1f7457843bff87ac5/.tmp-hostconfig.json3266173252: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326570
+    },
+    {
+      "role": "initialization-guardian",
+      "before": "exited",
+      "error": "write /var/lib/docker/containers/497b789f1ae1c762a952ff2484a6bda575d3f16c2ce92328aff38bc01f4fafa8/.tmp-resolv.conf.hash2582656429: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326663
+    },
+    {
+      "role": "v2-scheduler",
+      "before": "exited",
+      "error": "failed to mount : mkdir /var/lib/docker/rootfs/overlayfs/963febb320364b9cb01a6f9211313b5e2820ed6ddb9eed253a8463841fa56655: no space left on device",
+      "action": "started",
+      "after": "running",
+      "pid": 2326781
+    }
+  ],
+  "free_after": 2477756416
+}

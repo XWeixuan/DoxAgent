@@ -1,0 +1,33 @@
+{
+  "as_of": "2026-11-23T09:56:02.778247Z",
+  "note": "Initial observations transcribed from tool output; before recovery",
+  "catalogue_error": "UPSTREAM_READ_FAILED",
+  "disk_available_observed": "342MiB",
+  "projection": [
+    {
+      "checkpoint": 141338,
+      "checked_at": "2026-11-21T11:29:29.873866Z",
+      "head": 141338,
+      "source": "research"
+    },
+    {
+      "checkpoint": 166258,
+      "checked_at": "2026-11-21T11:29:29.879173Z",
+      "head": 166258,
+      "source": "initialization"
+    },
+    {
+      "checkpoint": 12771624,
+      "checked_at": "2026-11-21T11:29:29.890042Z",
+      "head": 12771624,
+      "source": "bus"
+    },
+    {
+      "historical_gaps": 17216,
+      "checkpoint": 5209326,
+      "checked_at": "2026-11-21T11:29:29.901488Z",
+      "head": 5209326,
+      "source": "runtime"
+    }
+  ]
+}
