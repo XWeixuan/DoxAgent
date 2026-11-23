@@ -228,12 +228,14 @@ def create_app(
                     "headers": {k: v for k, v in request.headers.items() if k in {"if-none-match", "if-match", "idempotency-key", "accept", "content-type", "x-doxagent-projection-clock"}},
                 }
                 catalog_read = request.method == "GET" and path == PREFIX + "/message-bus/source-catalog"
-                deferred = catalog_read or (request.method == "GET" and bool(request.query_params.get("q")) and path.endswith("/metrics"))
+                operations_read = request.method == "GET" and path == PREFIX + "/overview/operations"
+                bounded_aggregate = catalog_read or operations_read
+                deferred = bounded_aggregate or (request.method == "GET" and bool(request.query_params.get("q")) and path.endswith("/metrics"))
                 if deferred:
                     existing = app.state.deferred_queries.existing(job)
                     if existing is not None:
                         return existing
-                if catalog_read:
+                if bounded_aggregate:
                     # Exact 24h reads use the existing isolated read executor once,
                     # not a doomed 5s foreground attempt followed by a full replay.
                     request.state.query_submitted = True
