@@ -124,6 +124,8 @@ class EventLibraryRepository:
             version = int(connection.execute("PRAGMA user_version").fetchone()[0])
             if version > EVENT_LIBRARY_SCHEMA_VERSION:
                 raise EventLibraryError(f"unsupported Event Library schema version {version}")
+            from .admission_evidence import migrate as migrate_admissions
+            migrate_admissions(connection)
             connection.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS library_heads (
@@ -788,6 +790,11 @@ class EventLibraryRepository:
         changing references, review clocks or other metadata is not.
         """
         normalized = self._ticker(ticker)
+        from .admission_evidence import ready, facts
+        with self._read() as db:
+            if ready(db,normalized):
+                self._require_native_version(db,normalized,version)
+                return facts(db,normalized,version,None if fact_ids is None else sorted({_numeric_id(i) for i in fact_ids}))
         if fact_ids is None:
             return self._fact_admission_map(*self._admission_history(normalized, version))
         numbers=sorted({_numeric_id(identity) for identity in fact_ids})
@@ -819,8 +826,14 @@ class EventLibraryRepository:
         from doxagent.semantic_clock import semantic_day
 
         events = self.published_events(ticker, version)
-        history = self._admission_history(self._ticker(ticker), version)
-        versions = history[0]
+        normalized=self._ticker(ticker)
+        from .admission_evidence import ready
+        with self._read() as db:
+            independent=ready(db,normalized)
+            versions={int(r[0]):datetime.fromisoformat(r[1].replace('Z','+00:00')) for r in db.execute(
+                'SELECT version,published_at FROM event_publication_clocks WHERE ticker=? AND published_at IS NOT NULL', (normalized,))} if independent else {}
+        history = None if independent else self._admission_history(normalized, version)
+        if history is not None:versions=history[0]
         ordered_versions = sorted(versions)
 
         def recent(admission, days):
@@ -840,7 +853,7 @@ class EventLibraryRepository:
                 for r in db.execute(
                     "SELECT event_no,created_version FROM canonical_events "
                     "WHERE ticker=? AND created_version<=?", (self._ticker(ticker), version))}
-        facts = self._fact_admission_map(*history)
+        facts = self.fact_admissions(normalized,version) if independent else self._fact_admission_map(*history)
         return [event for event in events if event.include_in_reference_view
                 or (event.event_id in births and recent(births[event.event_id], 14))
                 or any(f.fact_id in facts and recent(facts[f.fact_id], 7) for f in event.facts)]
@@ -1234,6 +1247,10 @@ class EventLibraryRepository:
             )
             if has_library_changes:
                 now = _now()
+                from .admission_evidence import record
+                connection.execute('INSERT OR IGNORE INTO event_publication_clocks VALUES(?,?,?)',(ticker,next_version,now))
+                for row in connection.execute('SELECT fact_no,payload_json FROM canonical_fact_revisions WHERE ticker=? AND library_version=?',(ticker,next_version)):
+                    record(connection,ticker,row['fact_no'],json.loads(row['payload_json']),next_version,now)
                 connection.execute(
                     """
                     UPDATE library_versions SET status=?,published_at=?

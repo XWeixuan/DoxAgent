@@ -35,6 +35,7 @@ def manifest(source, patch, output):
         capability="w3-time-awareness-v1",
         upstream_commit=UPSTREAM,
         patch_sha256=digest(patch),
+        storage_log_patch_sha256=digest(patch.with_name('storage-log-policy-0.159.3.patch')),
         cargo_lock_sha256=digest(source / "codex-rs/Cargo.lock"),
         binary_sha256=digest(output / "codex"),
         companions={

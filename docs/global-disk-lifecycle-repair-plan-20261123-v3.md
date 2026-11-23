@@ -107,11 +107,9 @@ O3 关闭不限制 O2 的 claim、失败恢复、Worker 调用及 Event activati
 | Reference 差异 | 更新最新 O2 版本引用，记录 O3 尚需吸收 | 推进 `last_o3_ack_event_ref` 到本次实际输入版本 |
 | Runtime Task | O2 已完成可以成功结算，receipt 明确 O3 skipped，不能虚报 O3 成功 | 另记 O3 成功/NOOP 与输入覆盖证明 |
 
-为候选表加必要的 `o3_status/o3_generation` 标量或等价的已有 owner ACK，原候选 `daily_status` 继续表示 O2 处理；trade/badcase/gap 的原 daily_status 继续由 O3 确认。新增字段只针对该消费者缺口，不给全部 Case 引入通用生命周期表。记录创建和 O3 待处理变更并入原业务事务；新字段与 SQL 谓词安装明确 partial index。`bounded_inputs`、补充调度、退出与补偿读取同一消费者定义，避免一个 O3 未消费 trade 反复触发完整 O2。
+经代码复核，必须区分两类同名候选：`runtime_v2_candidates` 是 O2 的 ProvisionalFactDetail，原 `daily_status` 确认 O2；`runtime_values(namespace=candidates)` 是交易候选，O3 通过独立 case values 读取。它们不是同一张表的双消费者，不因名称相同新增 O3 状态列。trade/badcase/gap 的原 daily_status 仍只由真正 O3 确认；关闭时保留原记录与每 ticker 待维护标志。
 
-迁移旧记录时依据真实成功 O3 receipt/范围补 ACK，不能仅因旧 candidate 的 daily_status=PROCESSED 就认定 O3 已消费；该值也可能来自提前发布或去重。未确定的遗留义务合入对应 ticker 的待复核范围，一次迁移游标分批确认，禁止给所有历史 Case 重新创建任务。
-
-`maintenance_recovery._covered()` 和补偿 receipt 也按实际阶段验证，不能因候选已被 O2 标 PROCESSED 就宣布 O3 的 trade_candidates 已覆盖。O2-only 完成收据与真正 O3 成功/NOOP 明确区分。
+迁移与补偿依据真实阶段 receipt。O2-only 补偿只证明候选事实阶段已覆盖，同时保留 O3 义务；不得把候选事实 PROCESSED 解释成交易候选的 O3 ACK。关闭 O3 的补充调度只以 Case/source 标量和索引内待处理候选身份判定，不读取完整父 frame、Case frozen Context 或全部 effect。未来恢复须独立核验 O3 基线，本轮不执行。
 
 每 ticker 的 O3 pending 保存少量字段，包括 generation、首次待处理时点、最新 Event 引用、上次 O3 ACK 的 Event 引用及 pending 标志。真实记录仍在原表；marker 不积攒 Case ID/完整 frame/逐日副本。已有标志且内容未变就不写。没有新 O3 输入时不触发检查。
 
@@ -237,6 +235,10 @@ Event、Research、Control 分库，先持久化受验证的候选变化，再�
 
 后续 maintain 通过 Repository 获取旧 PolicySet/coverage/origins，取消“版本可用必须打开旧 Workspace 文件”的前提。未来独立恢复任务只需最新有效 D3 与合并 feed；本轮不实现恢复，不保护所有旧维护 workspace。
 
+实施细化：复用现有 Native CAS 对 Policy 对象按内容共享，每版只存对象引用有序列表和必要元数据；staged/正式/历史共用同一对象。与逆向撤销链相比，这一形式直接复用既有 codec/引用登记，独立恢复某版不依赖保留中间祖先；额外成本只是小引用列表，避免新版本框架、长链恢复和复杂剪枝。未引用低价值版本整行正文/独有对象仍需退出，不能把内容去重当作无限留史。当前 projection 缓存，旧 projection 按 typed PolicySet 生成。
+
+读端全部升级后才登记 `.d3-shared-policy-ready`，再启用新写格式。历史导出采用 `d3-semantic-v1` 业务来源 locator；旧 SHA 是审计元数据，读取返回实际重新生成的字节 SHA。已结算候选的再次获取复用其 handoff，不要求旧 Workspace 的 Markdown/JSON 存在。D3 condition ID 高水位单独保留，分批回填完成后再退出旧 draft 正文，防止 ID 复用。
+
 ### 7.2 projection、派生文件与精确业务证据
 
 当前 projection 在发布校验阶段计算一次并缓存。历史从恢复的策略语义重算，需要旧 schema 的实际解释规则时复用已有转换函数和受测格式版本；不为每个编译器 revision 永久维护一个独立运行环境。真实已执行条件、授权、消费与交易证据作为小型业务事实精确保留，不能仅依赖未来重算。
@@ -355,7 +357,7 @@ INCREMENTAL 的小页参数不代表小锁时，也不能保证压到指定毫�
 SDK 日志、可恢复会话和最终业务证据是三个用途。已采到的 SDK 源码 `log_db::default_filter()` 默认 TRACE，app-server 的 DB layer 使用自己的 filter；只设置 Python WARNING 或 `RUST_LOG=warn` 不足以证明 SQLite 日志减少。该源码为历史取证，实施时按 `deploy/codex-patches/prepare_build.py` 锁定的实际 upstream SHA 重新核验。
 
 1. 优先在已有 SDK 本地补丁入口调整 DB log sink。DB 默认为 WARN，加允许列的 turn 开始/结束、连接错误、usage、重试等小字段；关闭 request/response 全文、工具正文和每个流 chunk 的诊断。保持真实 model timer 与 Usage，异常需要完整追踪时只为确切 thread 开诊断窗口，结束后恢复。
-2. 普通诊断默认 7d，DB 物理预算 512 MiB，超限先退最旧低等级记录。真实故障摘要可留 30d；完整故障样本以单次事故短窗保留。日志退出走 SDK 自身批写/维护事务，不能对活跃 SDK 私库直接按猜测 SQL `DELETE`。
+2. 普通全文诊断不再进入 DB；WARN/ERROR 摘要最多各字段 2 KiB、约 65k 行工作集，目标预算 512 MiB。该预算是活跃行集目标，不等于旧 SQLite 分配页立即变小。真实故障摘要可留 30d；完整故障样本以单次事故短窗保留。日志退出复用 SDK 既有 flush timer，每小时最多两批各 256 行的索引删除，不做全库 SUM/window 或周期 VACUUM；日志退出走 SDK 自身批写/维护事务，不能对活跃 SDK 私库直接按猜测 SQL `DELETE`。
 3. 模型运行中、Trade→Operations 同线程延续、未知结果和有效 repair hold 的恢复流水保留。已成功且被业务消费的会话，最终响应/usage/身份已在 Worker 和业务源落盘后，按前述 24h 过程窗口退出。失败流程 72h，必要 checkpoint 单独 hold。
 4. 替换 `TerminalSessions.owned()/listing()/groups()` 对全库 Job 和全部 SDK 会话的扫描。创建/子线程通知时记录局部 parent/fork/session 关系，终态入队后只读相关 group，复用已有 `thread/read`、`thread/delete`、DELETING fence。已知 W3 分支继续由 `w3_thread_registry` owner 处理，不能用非 W3 退出器猜它的完成状态。
 5. 移除六小时启动等待和全局 `quiet(jobs)` 前置。短会话删除任务使用现有低优先级管理通道，一次一族；新模型请求优先，删除已终态 thread 不触碰活跃共享 parent。SDK thread/delete 是否也退出 history projection 要用实际版本验证；若没有，补 SDK owner 内按已删除 thread 退出 `thread_items` 等，禁止外部手删 DB 文件。

@@ -427,18 +427,18 @@ def run_gc(store, *, once=False, interval=15, budget=2):
         batch = 128
         while True:
             from doxagent.message_bus_v2.pressure import background_allowed
-            if not once and not background_allowed():
-                print(json.dumps({'maintenance':'gc','deferred':'MESSAGE_PIPELINE_RESOURCE_RESERVE'}),flush=True)
-                time.sleep(interval)
-                continue
+            # Busy realtime is a smaller budget, never an indefinite exit pause.
+            constrained = not once and not background_allowed()
+            tick_budget = min(budget,.05) if constrained else budget
+            if constrained:batch=min(batch,32)
             started = time.monotonic()
             total = {}
             errors = []
             result = {}
             import sqlite3
-            while time.monotonic() - started < budget:
+            while time.monotonic() - started < tick_budget:
                 try:
-                    result = collect(store, limit=batch, budget=max(.001, budget-(time.monotonic()-started)),
+                    result = collect(store, limit=batch, budget=max(.001, tick_budget-(time.monotonic()-started)),
                                      time_floor=result.get("time_floor"))
                 except sqlite3.OperationalError as exc:
                     errors.append(str(exc))

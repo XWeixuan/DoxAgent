@@ -398,6 +398,10 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             patch=context/'deploy/codex-patches/w3-time-awareness-0.159.3.patch'
             if hashlib.sha256(patch.read_bytes()).hexdigest()!=native['patch_sha256']:
                 raise ValueError('native runtime patch does not match selected commit')
+            if native.get('storage_log_patch_sha256'):
+                storage_patch=context/'deploy/codex-patches/storage-log-policy-0.159.3.patch'
+                if hashlib.sha256(storage_patch.read_bytes()).hexdigest()!=native['storage_log_patch_sha256']:
+                    raise ValueError('native diagnostic policy does not match selected commit')
             expected={'codex':native['binary_sha256'],
                       'codex-code-mode-host':native['companions']['codex-code-mode-host']['sha256']}
             for name,sha in expected.items():

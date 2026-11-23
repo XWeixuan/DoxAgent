@@ -31,7 +31,7 @@ def attach_material_indexes(files, mapping, metadata, *, task_root, cache, profi
             try:
                 import json
 
-                context = {path: json.loads(files[path])}
+                context = {path: files[path] if profile == 'd3-pointer-v1' else json.loads(files[path])}
             except (ValueError, TypeError):
                 context = {path: files[path]}
             navigation = attach_index(
@@ -39,7 +39,7 @@ def attach_material_indexes(files, mapping, metadata, *, task_root, cache, profi
                 root=f"context/document3/v21/context_index/materials/{identity}",
                 context=context,
                 sources={path: info},
-                detail="full" if profile == "legacy-full" else "source",
+                detail="full" if profile == "legacy-full" else ('pointer' if profile == 'd3-pointer-v1' else "source"),
             )
             cache[identity] = (derived, navigation)
         derived, navigation = cache[identity]

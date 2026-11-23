@@ -6,6 +6,25 @@ import sys
 from doxagent.codex_runtime.context_index import build_index
 
 
+def test_pointer_profile_pages_original_utf8_without_body_copies(tmp_path):
+    root='context/document3/index/material'
+    source='context/document3/references/original.json'
+    body=json.dumps({'evidence':'中文🙂'*18000},ensure_ascii=False)
+    files=build_index({source:body},root=root,sources={source:{'local_path':source}},detail='pointer')
+    assert not any('/assets/' in p or '/pages/' in p or '/records/' in p for p in files)
+    assert sum(len(v.encode()) for v in files.values()) < len(body.encode())/3
+    for path,text in {source:body,**files}.items():
+        target=tmp_path/path;target.parent.mkdir(parents=True,exist_ok=True)
+        target.write_text(text,encoding='utf-8',newline='')
+    entry=json.loads(next(v for p,v in files.items() if '/entries/' in p))
+    chunks=[]
+    for n in range(1,len(entry['pages'])+1):
+        result=subprocess.run([sys.executable,str(tmp_path/root/'read_context.py'),'read','--asset',entry['id'],'--page',str(n)],
+                              check=True,capture_output=True,encoding='utf-8')
+        chunks.append(json.loads(result.stdout)['content'])
+    assert ''.join(chunks)==body
+
+
 def test_utf8_bounded_pages_exact_body_headings_and_standalone_reader(tmp_path):
     report = (
         "# 总览\r\n" + "中文正文🙂\n" * 2500 + "```md\n# 不是标题\n```\n## 次章\n" + "长行🙂" * 5000

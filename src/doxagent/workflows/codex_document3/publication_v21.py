@@ -45,6 +45,14 @@ async def finalize_candidate_v21(
         raise ValueError("V21 candidate requires a completed staged release")
     payload, receipt = staged
     policy = parse_policy_set(payload)
+    prior = state.run(run_id)
+    if prior and prior.get('resource_retirement') and prior.get('candidate_handoff'):
+        # An already settled candidate is a semantic release, independent of its
+        # retired Markdown/JSON representation. Never fabricate a new publish.
+        handoff = Document3Handoff.model_validate(prior['candidate_handoff'])
+        if (handoff.ticker,handoff.policy_set_version)!=(policy.ticker,policy.policy_set_version):
+            raise ValueError('retained candidate identity mismatch')
+        return handoff
     projection_file = await workspace.read_text(run_id, receipt["files"]["runtime_projection.json"])
     projection = parse_runtime_projection(projection_file.content)
     if "projection" in receipt and projection != parse_runtime_projection(receipt["projection"]):
@@ -94,7 +102,15 @@ async def finalize_candidate_v21(
         )
         runtime_repository.save_artifact(artifact)
         location = {"content_text": text}
-        if artifact.size_bytes > 2 * 1024 * 1024:
+        local=getattr(runtime_repository,'local',runtime_repository)
+        from .policy_storage import shared_ready
+        from doxagent.v2_read.native_content import NativeContent
+        from .semantic_exports import locator
+        semantic=bool(getattr(local,'path',None) and shared_ready(NativeContent(local.path)))
+        if semantic:
+            from pathlib import Path
+            location={'storage_path':locator(Path(local.path).name,run_id,name)}
+        elif artifact.size_bytes > 2 * 1024 * 1024:
             from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
 
             if published_storage is None and not isinstance(

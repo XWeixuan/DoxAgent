@@ -255,6 +255,8 @@ class SQLiteDocument3PolicyRepository:
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
+        from doxagent.v2_read.native_content import NativeContent
+        self.codec = NativeContent(self.path, cache_bytes=16*1024*1024)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
         with self._connect() as connection:
@@ -295,24 +297,11 @@ class SQLiteDocument3PolicyRepository:
                     "ALTER TABLE codex_document3_policy_sets "
                     "ADD COLUMN runtime_projection_json TEXT"
                 )
-            rows = connection.execute(
-                "SELECT ticker, policy_set_version, policy_set_json "
-                "FROM codex_document3_policy_sets "
-                "WHERE policy_count IS NULL OR runtime_projection_json IS NULL"
-            ).fetchall()
-            for row in rows:
-                policy_set = parse_policy_set(row["policy_set_json"])
-                connection.execute(
-                    "UPDATE codex_document3_policy_sets "
-                    "SET policy_count = ?, runtime_projection_json = ? "
-                    "WHERE ticker = ? AND policy_set_version = ?",
-                    (
-                        len(policy_set.policies),
-                        _project(policy_set).model_dump_json(),
-                        row["ticker"],
-                        row["policy_set_version"],
-                    ),
-                )
+            from .policy_storage import install_refs
+            install_refs(connection, 'codex_document3_policy_sets', ['policy_set_json'],
+                         'json_array(NEW.ticker,NEW.policy_set_version)')
+            # No startup scan/reprojection of every historical PolicySet.
+            # Nullable legacy metadata is derived only for the requested row.
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path, timeout=30)
@@ -322,7 +311,7 @@ class SQLiteDocument3PolicyRepository:
     def _read_one(self, query: str, args: tuple[Any, ...]) -> PolicySet | None:
         with self._connect() as connection:
             row = connection.execute(query, args).fetchone()
-        return parse_policy_set(row["policy_set_json"]) if row else None
+        return parse_policy_set(self.codec.text(row["policy_set_json"])) if row else None
 
     def get_current(self, ticker: str) -> PolicySet | None:
         return self._read_one(
@@ -350,7 +339,11 @@ class SQLiteDocument3PolicyRepository:
     def _read_projection(self, query: str, args: tuple[Any, ...]) -> RuntimePolicyProjection | None:
         with self._connect() as connection:
             row = connection.execute(query, args).fetchone()
-        return _decode_projection(row[0], row[1]) if row else None
+        if not row:
+            return None
+        if row[1] is None or row[1] == '{}':
+            return _project(parse_policy_set(self.codec.text(row[0])))
+        return _decode_projection(self.codec.text(row[0]), row[1])
 
     def get_current_projection(self, ticker: str) -> RuntimePolicyProjection | None:
         return self._read_projection(
@@ -383,11 +376,16 @@ class SQLiteDocument3PolicyRepository:
         with self._connect() as connection:
             rows = connection.execute(
                 "SELECT ticker, policy_set_version, is_current, publication_state, "
-                "policy_count, published_at FROM codex_document3_policy_sets "
+                "policy_count, published_at,CASE WHEN policy_count IS NULL THEN policy_set_json END AS legacy_policy FROM codex_document3_policy_sets "
                 "WHERE ticker = ? ORDER BY policy_set_version DESC LIMIT ?",
                 (ticker.upper(), bounded_limit),
             ).fetchall()
-        return [PolicySetVersionMetadata.model_validate(dict(row)) for row in rows]
+        result=[]
+        for row in rows:
+            value=dict(row);legacy=value.pop('legacy_policy')
+            if value['policy_count'] is None:value['policy_count']=len(parse_policy_set(self.codec.text(legacy)).policies)
+            result.append(PolicySetVersionMetadata.model_validate(value))
+        return result
 
     def reserve_version(self, ticker: str, run_id: str) -> int:
         with self._lock, self._connect() as connection:
@@ -427,6 +425,18 @@ class SQLiteDocument3PolicyRepository:
         version = self.reserve_version(policy_set.ticker, run_id)
         if version != policy_set.policy_set_version:
             raise ValueError("candidate policy does not match its reserved version")
+        from .policy_storage import pack_policy_set
+        packed = pack_policy_set(self.codec, policy_set.model_dump(mode='json'))
+        projection = _project(policy_set).model_dump_json()
+        with self._connect() as connection:
+            existing = connection.execute(
+                "SELECT policy_set_json FROM codex_document3_policy_sets WHERE ticker=? AND policy_set_version=?",
+                (policy_set.ticker.upper(), version),
+            ).fetchone()
+        if existing:
+            if parse_policy_set(self.codec.text(existing[0])) != policy_set:
+                raise ValueError("immutable candidate Policy Set conflict")
+            return
         with self._lock, self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             existing = connection.execute(
@@ -435,7 +445,7 @@ class SQLiteDocument3PolicyRepository:
                 (policy_set.ticker.upper(), version),
             ).fetchone()
             if existing:
-                if parse_policy_set(existing[0]) != policy_set:
+                if existing[0] != packed:
                     raise ValueError("immutable candidate Policy Set conflict")
                 return
             connection.execute(
@@ -447,14 +457,17 @@ class SQLiteDocument3PolicyRepository:
                     version,
                     getattr(policy_set.publication_state, "value", policy_set.publication_state),
                     len(policy_set.policies),
-                    policy_set.model_dump_json(),
-                    _project(policy_set).model_dump_json(),
+                    packed,
+                    projection,
                     policy_set.published_at.isoformat(),
                 ),
             )
 
     def publish(self, policy_set: PolicySet, *, expected_base_version: int | None) -> None:
         key = policy_set.ticker.upper()
+        from .policy_storage import pack_policy_set
+        packed = pack_policy_set(self.codec, policy_set.model_dump(mode='json'))
+        projection = _project(policy_set).model_dump_json()
         with self._lock, self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             row = connection.execute(
@@ -479,8 +492,10 @@ class SQLiteDocument3PolicyRepository:
                 raise ValueError(
                     f"D3 version must be {expected_version}, got {policy_set.policy_set_version}"
                 )
+            from .policy_storage import shared_ready
             connection.execute(
-                "UPDATE codex_document3_policy_sets SET is_current = 0 "
+                "UPDATE codex_document3_policy_sets SET is_current = 0" +
+                (", runtime_projection_json='{}' " if shared_ready(self.codec) else ' ') +
                 "WHERE ticker = ? AND is_current = 1",
                 (key,),
             )
@@ -494,8 +509,8 @@ class SQLiteDocument3PolicyRepository:
                     policy_set.policy_set_version,
                     getattr(policy_set.publication_state, "value", policy_set.publication_state),
                     len(policy_set.policies),
-                    policy_set.model_dump_json(),
-                    _project(policy_set).model_dump_json(),
+                    packed,
+                    projection,
                     policy_set.published_at.isoformat(),
                 ),
             )

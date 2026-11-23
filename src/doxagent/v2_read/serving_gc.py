@@ -11,8 +11,26 @@ STAGES = ('tokens', 'poll_current', 'object_history', 'contributions_history', '
 
 
 def _meta(db, key, value):
-    db.execute('INSERT INTO read_meta VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+    db.execute('INSERT INTO read_meta VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE value<>excluded.value',
                (key, str(value)))
+
+
+def _has_work(db, name, now, floor):
+    """Indexed preflight; empty maintenance does not acquire a writer per stage."""
+    if name == 'tokens':
+        return any(db.execute('SELECT 1 FROM '+table+' WHERE expires_at<=? LIMIT 1', (now,)).fetchone()
+                   for table in ('views','cursors'))
+    if name == 'poll_current':
+        return False  # Its separate local cursor pass already ran.
+    if name.endswith('_history'):
+        return db.execute('SELECT 1 FROM '+name+' WHERE valid_to<=? LIMIT 1',(floor,)).fetchone()
+    if name == 'changes':
+        return db.execute('SELECT 1 FROM changes WHERE seq<? LIMIT 1',(floor,)).fetchone()
+    if name == 'definitions':
+        return db.execute('SELECT 1 FROM definition_exit LIMIT 1').fetchone()
+    if name == 'search':
+        return db.execute('SELECT 1 FROM content_search LIMIT 1').fetchone()
+    return db.execute('SELECT 1 FROM '+name+' WHERE seq<? LIMIT 1',(floor,)).fetchone()
 
 
 def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
@@ -41,7 +59,15 @@ def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
         try:
             if name == 'poll_current':
                 delta, seen = _poll_current(store, now, min(limit,16), deadline)
-            with store.connect(write=True, timeout=.05) as db:
+            with store.connect() as reader:
+                candidate = _has_work(reader, name, instant(now), floor)
+            if not candidate:
+                for key,value in delta.items():counts[key]=counts.get(key,0)+value
+                scanned += seen
+                completed += 1
+                stage = (stage+1) % len(STAGES)
+                continue
+            with store.connect(write=True, timeout=.01) as db:
                 db.set_progress_handler(lambda: time.monotonic() >= deadline, 1000)
                 # Pins are rechecked under the writer fence for every independent commit.
                 floor = time_floor
@@ -137,12 +163,15 @@ def _poll_current(store, now, limit, deadline):
                 (kind,*after,min(limit,512))).fetchall()
             rows.extend(tuple(r[:4]) for r in page if r[4] and r[4]<cutoff)
             scanned+=len(page)
-            progress.append((key,json.dumps([page[-1][2],page[-1][1]] if page else ['', ''])))
+            value=json.dumps([page[-1][2],page[-1][1]] if page else ['', ''])
+            if value != (prior[0] if prior else json.dumps(['',''])):
+                progress.append((key,value))
     if rows:
         import hashlib
         identity=hashlib.sha256(json.dumps(rows).encode()).hexdigest()
         store.ingest('read-retention',identity,[dict(kind=r[0],ticker=r[1],id=r[2],data=None) for r in rows])
     # Advance only after a successful MVCC commit; retries never skip an exit.
-    with store.connect(write=True,timeout=.05) as db:
-        for key,value in progress:_meta(db,key,value)
+    if progress:
+        with store.connect(write=True,timeout=.01) as db:
+            for key,value in progress:_meta(db,key,value)
     return {'poll_current':len(rows)},scanned

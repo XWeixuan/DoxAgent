@@ -42,7 +42,11 @@ class PublishedArtifacts:
         document = self.record("published_documents", identity, run_id)
         if (document['sha256'], document['size_bytes']) != (artifact['sha256'], artifact['size_bytes']):
             raise ValueError("PUBLISHED_CHECKSUM_MISMATCH")
-        return document, load_published_body(self.path.parent, document).decode('utf-8')
+        body=load_published_body(self.path.parent, document)
+        from doxagent.workflows.codex_document3.semantic_exports import PREFIX
+        if (document.get('storage_path') or '').startswith(PREFIX):
+            document={**document,'sha256':hashlib.sha256(body).hexdigest(),'size_bytes':len(body)}
+        return document, body.decode('utf-8')
 
 
 def resource(value: Any, *, reason: str = "NOT_PRODUCED") -> dict[str, Any]:

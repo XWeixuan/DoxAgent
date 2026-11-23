@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 PAGE_SIZE = 6000
 
@@ -16,14 +16,15 @@ def _json(value):
 
 def pages(text, size=PAGE_SIZE):
     result = []
-    while text:
-        end = min(len(text), size)
+    start = 0
+    while start < len(text):
+        end = min(len(text), start+size)
         if end < len(text):
-            boundary = text.rfind("\n", 0, end)
-            if boundary >= size // 2:
+            boundary = text.rfind("\n", start, end)
+            if boundary >= start+size // 2:
                 end = boundary + 1
-        result.append(text[:end])
-        text = text[end:]
+        result.append(text[start:end])
+        start = end
     return result or [""]
 
 
@@ -52,7 +53,7 @@ def sections(text):
 
 def build_index(context, *, root, sources=None, detail="full"):
     """Return workspace-relative files. Sources optionally provide original ref/role/SHA."""
-    if detail not in {"full", "source"}:
+    if detail not in {"full", "source", "pointer"}:
         raise ValueError("unknown context index detail")
     files, groups = {}, dict(fields=[], reports=[], units=[], records=[])
     emitted = set()
@@ -71,6 +72,29 @@ def build_index(context, *, root, sources=None, detail="full"):
         emitted.add(pointer)
         text = value if isinstance(value, str) else _json(value)
         identity = hashlib.sha256((pointer + "\0" + text).encode("utf-8")).hexdigest()[:20]
+        if detail == 'pointer':
+            source_path = (source or {}).get('local_path')
+            if not source_path or PurePosixPath(source_path).is_absolute() or '..' in PurePosixPath(source_path).parts:
+                raise ValueError('pointer index requires one workspace-contained source')
+            def spans(body, start=0):
+                result=[]
+                for chunk in pages(body):
+                    end=start+len(chunk.encode('utf-8'))
+                    result.append([start,end]);start=end
+                return result
+            heading_index = sections(text)
+            char_offset = byte_offset = 0
+            for h in heading_index:
+                byte_offset += len(text[char_offset:h['start']].encode('utf-8'))
+                char_offset = h['start']
+                h['pages'] = spans(text[h['start']:h['end']], byte_offset)
+            entry = dict(id=identity,pointer=pointer,role=role,type='source',characters=len(text),count=None,
+                         source_path=source_path,pages=spans(text),sections=heading_index,
+                         content_sha256=hashlib.sha256(text.encode('utf-8')).hexdigest(),source=source)
+            files[f'{root}/entries/{identity}.json'] = _json(entry)
+            files[f'{root}/pointers/{hashlib.sha256(pointer.encode()).hexdigest()[:20]}.json'] = _json(entry)
+            groups[group].append({k:entry[k] for k in ('id','pointer','role','type','characters','count')})
+            return
         asset = f"assets/{identity}.txt" if isinstance(value, str) else f"records/{identity}.json"
         files[f"{root}/{asset}"] = text
         chunks = pages(text)
@@ -267,6 +291,8 @@ def build_index(context, *, root, sources=None, detail="full"):
     overview.extend(
         f"- {alias}: same complete material as {original}" for alias, original in aliases.items()
     )
+    if detail == 'pointer':
+        index['workspace_up'] = len(PurePosixPath(root).parts)
     files[f"{root}/index.json"] = _json(index)
     files[f"{root}/overview.md"] = "\n".join(overview)
     files[f"{root}/read_context.py"] = (

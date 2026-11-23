@@ -75,12 +75,9 @@ class RuntimeMaintenance:
             )
 
     def collect_resources(self, *, should_yield=None):
-        from .resource_gc import collect
+        from .owner_exit import drain
         self.resource_gc_due=False
-        from doxagent.message_bus_v2.pressure import background_allowed
-        return collect(self.journal,self.settings.ticker_initialization_control_path,limit=4,
-                       settings=self.settings,owned_only=True,
-                       should_yield=lambda: not background_allowed() or bool(should_yield and should_yield()))
+        return drain(self.journal,self.settings)
 
     def _frame(self, task: dict[str, Any]) -> dict[str, Any]:
         current = self.control.active_revision(task["ticker"])

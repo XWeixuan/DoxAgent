@@ -166,6 +166,13 @@ def main():
             result[source.source] = dict(expired=count,scanned=scanned,error=error)
             if constrained:
                 result[source.source]['native_deferred'] = 'MESSAGE_PIPELINE_RESOURCE_RESERVE'
+                # Exact exits of settled owners do not require global idle.
+                # No inventory/backfill/age scan on this constrained path.
+                try:
+                    from . import source_native_gc
+                    result[source.source]['native_exit']=source_native_gc.collect(source,limit=2,queued_only=True)
+                except (sqlite3.OperationalError,OSError,ValueError) as exc:
+                    result[source.source]['native_error']=str(exc)[:200]
                 continue
             if source.source=='bus' and time.monotonic()>=capacity_at:
                 from .storage_status import capacity
@@ -177,15 +184,18 @@ def main():
                 refs=source_native_gc.reconcile(source)
                 result[source.source]['native_refs']=refs
                 if refs['ready']:
-                    result[source.source]['native_inventory']=source_native_gc.inventory(source)
-                    result[source.source]['native_exit']=source_native_gc.collect(source)
+                    legacy_due=time.monotonic()>=getattr(source,'_native_legacy_at',0)
+                    if legacy_due:
+                        result[source.source]['native_inventory']=source_native_gc.inventory(source)
+                        source._native_legacy_at=time.monotonic()+3600
+                    result[source.source]['native_exit']=source_native_gc.collect(source,limit=4,queued_only=not legacy_due)
             except (sqlite3.OperationalError,OSError,ValueError) as exc:
                 result[source.source]['native_error']=str(exc)
         print(json.dumps(dict(maintenance='transport_expiry', sources=result,
                               elapsed_seconds=time.monotonic() - started)), flush=True)
         if args.once:
             break
-        time.sleep(15)
+        time.sleep(60)
 
 
 if __name__ == '__main__':

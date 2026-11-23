@@ -49,6 +49,11 @@ def activate(store, ticker, active, at):
     prior = store.get("activation", ticker, "active")
     if prior and prior["runtime_activation_id"] == active["runtime_activation_id"]:
         return records, metrics
+    if prior and all(prior.get('policy_set',{}).get(k)==active['policy_set'].get(k)
+                     for k in ('artifact_id','policy_set_version')):
+        # O2-only activation changes Event visibility, not Policy lifecycle or
+        # authorizations. Consumption updates have their own event-local path.
+        return records, metrics
     version = active["policy_set"]["policy_set_version"]
     details = rows(store, "policy_detail", ticker, active["policy_set"]["artifact_id"])
     incoming = {

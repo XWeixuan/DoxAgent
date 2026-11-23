@@ -13,6 +13,7 @@ from .source_lifecycle import migrate as migrate_transport, native_hashes, repla
 def migrate(db):
     db.execute('CREATE TABLE IF NOT EXISTS v2_native_ref_scan(owner TEXT PRIMARY KEY,cursor INTEGER,done INTEGER)')
     db.execute('CREATE TABLE IF NOT EXISTS v2_native_exit(id TEXT PRIMARY KEY,not_before REAL)')
+    db.execute('CREATE INDEX IF NOT EXISTS v2_native_exit_due ON v2_native_exit(not_before,id)')
     db.execute('CREATE TABLE IF NOT EXISTS v2_native_inventory(id INTEGER PRIMARY KEY CHECK(id=1),after_digest TEXT)')
 
 
@@ -244,7 +245,7 @@ def inventory(source, *, limit=64):
     return len(prepared)
 
 
-def collect(source, *, now=None, limit=32):
+def collect(source, *, now=None, limit=32, queued_only=False):
     """Current/immutable/transport/hold refs protect files; unowned puts get 7d."""
     from doxagent.trade_execution.worker import WriterLock
 
@@ -252,14 +253,14 @@ def collect(source, *, now=None, limit=32):
     # Publishers continue to use their ordinary SQLite writer and state guards.
     try:
         with WriterLock(source.path.parent / 'native-collection'):
-            return _collect(source, now=now, limit=limit)
+            return _collect(source, now=now, limit=limit, queued_only=queued_only)
     except RuntimeError as exc:
         if str(exc) != 'EXECUTOR_ALREADY_RUNNING':
             raise
         return dict(quarantined=0, deleted=0, allocated=0, deferred='collector_active')
 
 
-def _collect(source, *, now, limit):
+def _collect(source, *, now, limit, queued_only=False):
     from .detached_files import detach, drain
 
     now=now or datetime.now(UTC);report=dict(quarantined=0,deleted=0,allocated=0)
@@ -268,7 +269,7 @@ def _collect(source, *, now, limit):
     if quarantine.is_symlink():
         raise ValueError('linked Native quarantine')
     discard = quarantine / '.discarded'
-    report['discarded'] = drain(discard)
+    report['discarded'] = drain(discard,limit=1 if queued_only else 4)
     claimed = []
     cutoff = (now - timedelta(days=7)).isoformat()
     with closing(source.connection()) as db:
@@ -282,7 +283,7 @@ def _collect(source, *, now, limit):
             "SELECT 1 FROM sqlite_master WHERE name='v2_transport_gc_state'"
         ).fetchone() else None
         cursor = cursor_row[0][3:] if cursor_row else ""
-        page = db.execute(
+        page = [] if queued_only else db.execute(
             "SELECT id, state, codec, location, created_at FROM artifact "
             "WHERE id>? ORDER BY id LIMIT 256", (cursor,),
         ).fetchall()
@@ -302,7 +303,7 @@ def _collect(source, *, now, limit):
             next_cursor = ""
     if not page and not cursor and not aged:
         with closing(source.connection()) as db:
-            if not db.execute("SELECT 1 FROM v2_native_exit LIMIT 1").fetchone():
+            if not db.execute("SELECT 1 FROM v2_native_exit WHERE not_before<=? LIMIT 1",(time.time(),)).fetchone():
                 return report
     with closing(source.connection(write=True)) as db,db:
         db.execute('BEGIN IMMEDIATE');migrate(db)
@@ -315,7 +316,7 @@ def _collect(source, *, now, limit):
             return report
         if not db.execute('SELECT 1 FROM v2_native_ref_scan LIMIT 1').fetchone() or db.execute('SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1').fetchone():return report
         early=db.execute("SELECT a.id FROM v2_native_exit e JOIN artifact a ON a.id=e.id WHERE e.not_before<0 "
-                         "AND a.state='LIVE' ORDER BY e.id LIMIT ?",(limit,)).fetchall()
+                         "AND a.state='LIVE' ORDER BY e.not_before,e.id LIMIT ?",(limit,)).fetchall()
         candidates=[]
         for row in early:
             if db.execute('SELECT 1 FROM artifact a WHERE a.id=? AND ('+protected+')',row).fetchone():
@@ -358,7 +359,7 @@ def _collect(source, *, now, limit):
             else:
                 db.execute("UPDATE artifact SET state='DELETED' WHERE id=?",(digest,))
                 db.execute('DELETE FROM v2_native_exit WHERE id=?',(digest,))
-        for digest,not_before in db.execute('SELECT id,not_before FROM v2_native_exit LIMIT ?',(limit,)).fetchall():
+        for digest,not_before in db.execute('SELECT id,not_before FROM v2_native_exit WHERE not_before>=0 AND not_before<=? ORDER BY not_before LIMIT ?',(time.time(),limit)).fetchall():
             p=root/'native-files'/digest[:2]/digest;q=quarantine/digest
             if p.is_symlink() or q.is_symlink():raise ValueError('linked native quarantine')
             if db.execute('SELECT 1 FROM artifact a WHERE a.id=? AND ('+protected+')',(digest,)).fetchone():

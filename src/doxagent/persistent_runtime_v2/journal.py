@@ -158,6 +158,8 @@ class RuntimeJournal:
                         julianday(json_extract(payload,'$.recorded_at')),key)
                     WHERE namespace='analysis_trade_decisions';
             """)
+            from .owner_exit import migrate
+            migrate(db)
             row = db.execute("SELECT value FROM orchestration_meta WHERE key='version'").fetchone()
             if row and int(row[0]) != self.VERSION:
                 raise ValueError("unsupported orchestration schema; migration required")
@@ -661,6 +663,9 @@ class RuntimeJournal:
                            (prepared, self.clock().isoformat(), task['id']))
                 if finish:
                     db.execute('UPDATE runtime_gaps SET closed=1 WHERE task_id=?', (task['id'],))
+                    if row['kind'] == 'MAINTENANCE':
+                        from .owner_exit import enqueue
+                        enqueue(db,task['id'],value,self.clock())
             task['receipt'] = value
         retry_write(save)
 

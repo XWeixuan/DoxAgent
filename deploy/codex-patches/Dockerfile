@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM rust:1.95.0-bookworm@sha256:6258907abe69656e41cd992e0b705cdcfabcbbe3db374f92ed2d47121282d4a1 AS build
+FROM rust:1.95.0-bookworm@sha256:6258907abe69656e41cd992e0b705cdcfabcbbe3db374f92ed2d47121282d4a1 AS build-env
 RUN apt-get update && apt-get install -y --no-install-recommends \
     protobuf-compiler clang cmake pkg-config libssl-dev python3 \
     && rm -rf /var/lib/apt/lists/*
@@ -13,6 +13,10 @@ RUN git -C /source apply --check /tmp/w3-time-awareness.patch \
     && git -C /source apply /tmp/w3-time-awareness.patch \
     && python3 /tmp/prepare_build.py normalize /source
 WORKDIR /source/codex-rs
+COPY storage-log-policy-0.159.3.patch /tmp/storage-log-policy-0.159.3.patch
+RUN git -C /source apply --check /tmp/storage-log-policy-0.159.3.patch \
+    && git -C /source apply /tmp/storage-log-policy-0.159.3.patch
+FROM build-env AS build
 ARG CARGO_BUILD_JOBS=2
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN --mount=type=cache,target=/usr/local/cargo/registry \

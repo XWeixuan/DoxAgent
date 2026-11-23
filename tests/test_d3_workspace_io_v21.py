@@ -566,7 +566,7 @@ async def test_each_io_boundary_recovers_without_new_attempt(tmp_path, monkeypat
         result = await runner.turn(**args)
     assert fired and result["status"] == "COMPLETED" and result["attempt_count"] == 1
     assert len(calls) == 1 and list(result["files"]) == ["output/current/a.json"]
-    assert result["index_profile"] == "d3-source-v1"
+    assert result["index_profile"] == "d3-pointer-v1"
     assert state.run("r")["workspace_io_recovery"]["active"] == {}
 
 
@@ -809,50 +809,21 @@ async def test_parallel_owner_recovery_records_merge_without_lost_keys(tmp_path)
 
 
 @pytest.mark.asyncio
-async def test_maintenance_base_read_recovery_belongs_to_new_run_and_resumes_prepare(
-    rig, monkeypatch
-):
-    initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="base")
-    start = len(rig.worker.requests)
-    original = rig.workspace.read_text
-    crashed = False
-
-    async def read(run, path):
-        nonlocal crashed
-        if run == "base" and path.endswith("document3.json") and not crashed:
-            crashed = True
-            raise InfrastructureRecoveryExhausted("base read interrupted")
-        return await original(run, path)
-
-    monkeypatch.setattr(rig.workspace, "read_text", read)
-    args = dict(
-        ticker="MU",
-        base_policy_version=initial.handoff.policy_set_version,
-        as_of=NOW,
-        explicit_maintenance=True,
-        run_id="maintenance-new",
-    )
-    with pytest.raises(InfrastructureRecoveryExhausted):
-        await rig.orchestrator.maintain(**args)
-    assert rig.state.run("maintenance-new")["phase"] == "INPUT_PREPARE"
-    failed = False
-
-    async def transient_read(run, path):
-        nonlocal failed
-        if run == "base" and path.endswith("document3.json") and not failed:
-            failed = True
-            raise transport_failure()
-        return await original(run, path)
-
-    monkeypatch.setattr(rig.workspace, "read_text", transient_read)
-    clock = Clock()
-    io = rig.orchestrator.workspace
-    io.clock, io.sleep = clock, clock.sleep
-    result = await rig.orchestrator.maintain(**args)
-    assert result.status == "DEGRADED"  # worker fixture intentionally has no maintenance patch
-    assert len(rig.worker.requests) == start + 1
-    assert rig.state.run("maintenance-new")["workspace_io_recovery"]["recovered"] == 1
+async def test_maintenance_uses_semantic_base_after_old_workspace_exports_exit(rig,monkeypatch):
+    initial=await rig.orchestrator.initialize(ticker="MU",as_of=NOW,run_id="base")
+    start=len(rig.worker.requests)
+    original=rig.workspace.read_text
+    async def read(run,path):
+        if run=="base" and path.endswith(("document3.json","coverage_map.json")):
+            raise AssertionError("Historical derived Workspace file must not be required")
+        return await original(run,path)
+    monkeypatch.setattr(rig.workspace,"read_text",read)
+    result=await rig.orchestrator.maintain(ticker="MU",base_policy_version=initial.handoff.policy_set_version,
+        as_of=NOW,explicit_maintenance=True,run_id="maintenance-new")
+    assert result.status=="DEGRADED"
+    assert len(rig.worker.requests)==start+1
     assert "workspace_io_recovery" not in rig.state.run("base")
+
 
 
 def test_source_mode_standalone_reader_lists_empty_records_and_reads_sections(tmp_path):

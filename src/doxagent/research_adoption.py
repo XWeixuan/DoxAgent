@@ -60,7 +60,8 @@ def inspect_source(spec):
         ).fetchone()
         if row is None:
             raise ValueError("source staged release missing")
-        payload, receipt = json.loads(row[0]), json.loads(row[1])
+        from doxagent.v2_read.native_content import NativeContent
+        payload, receipt = NativeContent(spec['source_database']).decode(json.loads(row[0])), json.loads(row[1])
         policy = parse_policy_set(payload)
         root = Path(spec["source_workspace"]) / spec["d3_run"]
         for name, path in receipt["files"].items():

@@ -28,24 +28,19 @@ def quiet(jobs):
 
 
 async def run(workspaces,jobs,settings):
-    session_next=time.monotonic()+6*3600
     while True:
-        await asyncio.sleep(300)
         try:
             # Candidate limits do not bound the global reference proof. Keep
             # collect_inputs as an explicit quiet-maintenance entrypoint until
             # its cross-run proof is scoped; never sweep it beside live W3.
             # SDK tree listing remains an infrequent quiet-maintenance operation.
             # The bounded input owners above never wait for global business idleness.
-            if time.monotonic()>=session_next and jobs.session_retention is not None:
-                if await asyncio.to_thread(quiet,jobs):
-                    result=await jobs.session_retention.collect(limit=16)
-                    await asyncio.to_thread(jobs.store.metadata,'session_retention',result)
-                    session_next=time.monotonic()+6*3600
-                else:
-                    await asyncio.to_thread(jobs.store.metadata,'session_retention_deferred',
-                        {'at':datetime.now(UTC).isoformat(),'reason':'active jobs; quiet SDK tree maintenance'})
+            from .local_sessions import collect
+            result=await collect(jobs)
+            if result['deleted'] or result['deferred']:
+                await asyncio.to_thread(jobs.store.metadata,'session_retention',result)
         except asyncio.CancelledError:
             raise
         except Exception:
             log.exception('resource owner maintenance failed')
+        await asyncio.sleep(300)

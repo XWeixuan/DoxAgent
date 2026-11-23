@@ -162,6 +162,8 @@ class InitializationRepository:
                 CREATE INDEX IF NOT EXISTS cdecr_dispatch_claim
                     ON cdecr_dispatches(execution_identity,status,lease_until,created_at);
             """)
+            from .maintenance_control import install
+            install(db)
             columns = {row[1] for row in db.execute("PRAGMA table_info(ticker_operations)")}
             if "execution_lane" not in columns:
                 db.execute(

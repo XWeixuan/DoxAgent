@@ -367,13 +367,8 @@ class PublishedW3ContextProvider:
             if row:
                 receipt = json.loads(row[1])
                 origins = receipt.get("policy_origins", {})
-                bundle = self._runtime.get_bundle(row[0])
-                handoff = getattr(bundle, "handoff", None)
-                artifact = getattr(handoff, "published_artifact", None)
-                if artifact:
-                    published = self._runtime.get_published_document(row[0], artifact.artifact_id)
-                    if published:
-                        original_policy = (await self._read_published(published)).decode("utf-8")
+                # Typed version-pinned PolicySet already contains the complete
+                # business input. Avoid reading another full export for spacing.
         from .journal import digest
 
         prepared = W3PreparedContext(

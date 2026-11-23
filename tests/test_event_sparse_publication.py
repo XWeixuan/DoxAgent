@@ -32,3 +32,18 @@ def test_same_event_keeps_head_and_memberships_but_settles_batch(tmp_path):
     with repo._read() as db:
         assert db.execute('SELECT count(*) FROM event_fact_memberships').fetchone()[0] == before['event_fact_memberships']
         assert db.execute('SELECT count(*) FROM canonical_fact_revisions').fetchone()[0] == before['canonical_fact_revisions']
+
+
+def test_first_knowledge_survives_removal_of_ancestor_history(tmp_path):
+    from doxagent.event_library.admission_evidence import backfill
+    from doxagent.persistent_runtime_v2.event_branch import branch_library
+    source,batch=_foundation(tmp_path/'source')
+    source.publish_bundle(_broad_bundle(batch))
+    branch=branch_library(source.path,tmp_path/'child'/'events.db','MU',1)
+    expected=branch.fact_admissions('MU',1)
+    for _ in range(30):
+        if backfill(branch,'MU',limit=1):break
+    else:raise AssertionError('migration failed to converge')
+    source.path.rename(source.path.with_suffix('.retired'))
+    assert branch.fact_admissions('MU',1)==expected
+    assert branch.runtime_known_events('MU',1,__import__('datetime').date(2026,11,23))
