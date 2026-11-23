@@ -103,3 +103,22 @@ def test_existing_versions_convert_without_business_change_and_stop_after_cursor
     with state.connect() as db:
         assert len(db.execute('SELECT policy_set_json FROM codex_document3_policy_sets').fetchone()[0])<2048
         assert len(db.execute('SELECT payload FROM codex_document3_v21_staged_sets').fetchone()[0])<2048
+
+
+def test_legacy_evidence_audit_pins_real_incomplete_trades_not_all_case_history(tmp_path):
+    import sqlite3
+    from doxagent.workflows.codex_document3.history_exit import audit_case_evidence
+    path=tmp_path/'runtime.db'
+    with sqlite3.connect(path) as db:
+        db.execute('CREATE TABLE runtime_resource_ref_meta(key TEXT PRIMARY KEY,value TEXT)')
+        db.execute('CREATE TABLE runtime_v2_cases(case_id TEXT PRIMARY KEY,ticker TEXT,payload_json TEXT)')
+        db.execute('CREATE TABLE runtime_v2_trade_records(case_id TEXT PRIMARY KEY,payload_json TEXT)')
+        for identity,body,version in [('archive',{'large_unrelated_context':'a'*500000},None),('complete',{'frozen_inputs':{'projection':{'policies':[{'transmission':'business','activation_conditions':[{'criterion':'exact'}]}]}}},5),('legacy',{},7),('oversized',{'old_frozen':'b'*500000},8)]:
+            db.execute('INSERT INTO runtime_v2_cases VALUES(?,?,?)',(identity,'MU',json.dumps(body)))
+            if version:db.execute('INSERT INTO runtime_v2_trade_records VALUES(?,?)',(identity,json.dumps({'policy_set_version':version})))
+    class Source:
+        def connection(self,write=False):return sqlite3.connect(path)
+    source=Source();source.path=path
+    while not audit_case_evidence(source,limit=2):pass
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT case_id,policy_version FROM runtime_history_evidence_pins ORDER BY case_id').fetchall()==[('legacy',7),('oversized',8)]
