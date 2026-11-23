@@ -41,6 +41,18 @@ def fixture_source(tmp_path):
     return s
 
 
+def test_unindexed_expiry_revisits_rows_passed_while_young(tmp_path):
+    s = fixture_source(tmp_path)
+    now = datetime.now(UTC)
+    with closing(s.connection(write=True)) as db, db:
+        db.execute('DROP INDEX IF EXISTS v2_source_outbox_expiry')
+        db.execute('UPDATE v2_source_outbox SET recorded_at=?', (now.isoformat(),))
+    s.acknowledge_exceptions('live', 6, [])
+    assert expire(s, now=now)['expired'] == 0
+    assert expire(s, now=now+timedelta(minutes=1))['scanned'] == 0
+    assert expire(s, now=now+timedelta(days=3))['expired'] == 6
+
+
 def test_expiry_crosses_one_repair_without_losing_its_packet_or_current(tmp_path):
     s=fixture_source(tmp_path);before=s.event(2)
     s.acknowledge('live',6,repair_pin=2)

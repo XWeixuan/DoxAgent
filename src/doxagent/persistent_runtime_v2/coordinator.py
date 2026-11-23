@@ -1218,6 +1218,9 @@ class RuntimeCoordinator:
                     primary and primary["status"] != "SUCCEEDED"
                 ):
                     return
+        if getattr(self.maintain, "o3_enabled", True) is False:
+            case = self.runtime.repository.get_case(case_id)
+            needed = bool(case and has_pending_records(self.runtime.repository, case, include_o3=False))
         if needed:
             identity = "supplement:" + digest([owner, case_id, current])[:32]
             self._schedule(

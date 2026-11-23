@@ -272,13 +272,30 @@ def admit_revision(journal, *, revision, policy_repository):
         from .fencing import assert_write_lease
 
         assert_write_lease(db)
+        release_key = encode([revision["ticker"], int(ref["version"]), ref.get("run_id")])
+        release = get_value(db, "policy_release_authorization", release_key)
+        skipped = revision.get("runtime_metadata", {}).get("o3_outcome") == "SKIPPED_BY_CONTROL"
+        if release is None and skipped and revision.get("base_revision"):
+            # An old activation receipt is proof that this unchanged release
+            # was admitted before the O2-only CAS. No historical-table scan.
+            release = get_value(db, "policy_authorization_applied", revision["base_revision"])
+        if release is not None:
+            receipt = dict(release, revision_id=revision["revision_id"], reused_release=True)
+            put_value(db, "policy_authorization_applied", revision["revision_id"], receipt)
+            put_value(db, "policy_authorization_head", revision["ticker"], revision["revision_id"])
+            put_value(db, "policy_release_authorization", release_key, release)
+            return receipt
+        if skipped and requests:
+            raise ValueError("Unchanged D3 authorization provenance unavailable; reconcile base receipt")
         if policy.schema_version == "document3.v3":
             import_legacy_consumptions(
                 db, ticker=revision["ticker"], policy_ids={p.policy_id for p in policy.policies}
             )
-        return apply_release_authorizations(
+        receipt = apply_release_authorizations(
             db, ticker=revision["ticker"], revision_id=revision["revision_id"], requests=requests
         )
+        put_value(db, "policy_release_authorization", release_key, receipt)
+        return receipt
 
 
 def prepare_output_guard(case, trade, snapshot):

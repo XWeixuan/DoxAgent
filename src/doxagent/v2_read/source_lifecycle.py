@@ -266,7 +266,13 @@ def expire(source, *, now=None, limit=500, hot_only=False):
         floor = min(ack, pin - 1) if pin is not None else ack
         pack_cache = {}
         pages = {}
+        waiting = getattr(source, '_expiry_waiting', {})
+        source._expiry_waiting = waiting
         for table in tables:
+            due = waiting.get(table)
+            if due and due[0] == floor and now < due[1]:
+                pages[table] = []
+                continue
             if table == 'v2_source_outbox' and indexed_hot:
                 cutoff_deadline = time.monotonic() + .05
                 db.set_progress_handler(lambda: time.monotonic() >= cutoff_deadline, 1000)
@@ -287,6 +293,13 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                     "SELECT * FROM " + table + " WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?",
                     (cursors.get(table, 0), floor, limit),
                 ).fetchall()
+                if not rows and cursors.get(table, 0):
+                    # Seq is not an expiry clock: rows passed while young must
+                    # be revisited once they age. Wrap only a bounded page.
+                    rows = db.execute(
+                        "SELECT * FROM " + table + " WHERE seq<=? ORDER BY seq LIMIT ?",
+                        (floor, limit),
+                    ).fetchall()
             candidates = json.dumps([row['seq'] for row in rows])
             pins = {r[0] for r in db.execute('SELECT DISTINCT seq FROM v2_source_exception_pins '
                     'WHERE seq IN (SELECT value FROM json_each(?))', (candidates,))} if has_gc_state else set()
@@ -313,6 +326,11 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                         hashes = set(native_hashes(raw))
                 prepared.append((row, recent, raw_json, hashes, stamp if archived and hint is None else None))
             pages[table] = prepared
+            if prepared and len(prepared) < limit and all(item[1] for item in prepared):
+                waiting[table] = (floor, min(datetime.fromisoformat(item[0]['recorded_at'])
+                    for item in prepared) + (now-before)) if table == 'v2_source_outbox' else (floor, now+timedelta(minutes=15))
+            else:
+                waiting.pop(table, None)
         cleanup_due = not hot_only and has_gc_state and any((
             db.execute("SELECT 1 FROM v2_source_consumers WHERE id LIKE 'snapshot:%' AND julianday(updated_at)<julianday(?) LIMIT 1", ((now-timedelta(hours=24)).isoformat(),)).fetchone(),
             db.execute('SELECT 1 FROM v2_source_exception_receipts e WHERE NOT EXISTS(SELECT 1 FROM v2_source_exception_pins p WHERE p.seq=e.seq) LIMIT 1').fetchone(),
