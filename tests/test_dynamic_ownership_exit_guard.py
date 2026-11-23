@@ -1,9 +1,11 @@
 import asyncio
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 
 from doxagent.trade_execution import management
+from doxagent.trade_execution.capital import CapitalLedger
 from doxagent.trade_execution.exit_guard import locked
 from doxagent.trade_execution.ownership import PositionReconcilePending
 from tests.test_trade_execution import admit, run_job
@@ -98,6 +100,8 @@ def test_latch_survives_zero_then_reopened_lot_and_direct_state_change(setup):
 def test_early_exit_uses_executor_and_is_idempotent(setup):
     clock, repo, executor, broker = opened(setup)
     initial = len(broker.sent)
+    quantity = repo.require("lots", "trade:A")["remaining_qty"]
+    broker.quote_price = 110
     body = request(repo)
     pending = management.submit(repo, body)
     assert management.apply(repo, pending)["status"] == "APPLIED"
@@ -107,6 +111,17 @@ def test_early_exit_uses_executor_and_is_idempotent(setup):
     assert broker.positions[9939] == "50"
     assert repo.require("lots", "trade:A")["remaining_qty"] == 0
     assert repo.fills("trade:A:exit")
+    for job_id in ("trade:A:entry", "trade:A:exit"):
+        for fill in repo.fills(job_id):
+            repo.event(
+                "DU_TEST",
+                "fees",
+                {"exec_id": fill["exec_id"], "currency": "USD", "commission": "1"},
+            )
+    executor.drain_events()
+    book = CapitalLedger(repo).book("DU_TEST")
+    assert book["realized"] == Decimal(quantity) * 10 - 2
+    assert book["provisional"] is False
     # Entry/exit and their fees remain real strategy records, not adjustments.
     with repo.transaction(write=False) as db:
         assert db.execute("SELECT count(*) FROM te_lot_adjustments").fetchone()[0] == 0
