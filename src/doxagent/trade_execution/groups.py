@@ -46,6 +46,9 @@ def job_leg(execution, job):
 
 
 def save_job(db, job):
+    from .exit_guard import locked
+    if job['leg'] == 'EXIT' and locked(db, job['id']) and job['state'] != 'DONE':
+        job['state'] = 'FAILED'
     db.execute(
         "UPDATE te_jobs SET state=?,due_at=?,payload=? WHERE id=?",
         (job["state"], job["due_at"], encode(job), job["id"]),
@@ -236,6 +239,8 @@ def advance(repo, identity, *, db=None):
         execution["group_state"] = "OPEN"
     if any(lot.get("unattributed_qty") for lot in lots):
         execution["group_state"] = "EXIT_BLOCKED"
+    from .exit_guard import summary
+    execution["exit_summary"] = summary(db, identity)
     db.execute("UPDATE te_executions SET payload=? WHERE id=?", (encode(execution), identity))
     from .capital import CapitalLedger
 

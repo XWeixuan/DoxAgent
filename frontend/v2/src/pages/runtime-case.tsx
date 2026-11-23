@@ -1034,6 +1034,7 @@ function Executions({
                 </span>
                 <span>{e.entry_result ?? e.intake_status}</span>
               </header>
+              <ExitFailureStatus exits={e.exit_summary} />
               <dl>
                 {e.execution_group && (
                   <>
@@ -1185,4 +1186,18 @@ export function ExitStrategyStatus({ value }: { value: ExitStrategySummary }) {
       </dd>
     </dl>
   );
+}
+
+export function ExitFailureStatus({ exits }: { exits: ExecutionSummary["exit_summary"] }) {
+  return <>
+    {exits?.map((exit) => exit.requires_manual_review ? (
+                <Notice key={exit.job_id} danger>
+                  FAILED EXIT／退出失败，需人工处理 · {exit.role} · 剩余 {exit.remaining_quantity} 股
+                  {exit.reason ? ` · ${exit.reason}` : ''}
+                  {exit.unresolved_order ? ' · 旧订单状态待核对，请勿重复下单' : ''}
+                </Notice>
+              ) : exit.state === 'RECONCILE_REQUIRED' ? (
+                <p key={exit.job_id}>退出对账中 · {exit.role} · 剩余 {exit.remaining_quantity} 股</p>
+              ) : null)}
+  </>;
 }

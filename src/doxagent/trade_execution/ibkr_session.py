@@ -774,6 +774,7 @@ class IbkrSession:
                     return
                 value = {
                     "order_id": orderId,
+                    "con_id": contract.conId,
                     "order_ref": order.orderRef,
                     "client_id": order.clientId,
                     "perm_id": order.permId,

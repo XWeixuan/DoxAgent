@@ -962,6 +962,15 @@ export interface ExecutionGroupSummary {
  hedge_asset: string | null; hedge_quantity: DecimalString; hedge_result: string | null; hedge_reason: string | null;
 }
 export interface ExecutionSummary {
+  exit_summary?: Array<{
+    job_id: string;
+    role: string;
+    state: string;
+    reason: string | null;
+    remaining_quantity: DecimalString;
+    requires_manual_review: boolean;
+    unresolved_order: boolean;
+  }>;
   execution_group?: ExecutionGroupSummary;
   execution_id: Id; intent_id: Id; case_id: Id;
   environment: Value<"PAPER" | "LIVE">; profile_revision: Value<Id>;

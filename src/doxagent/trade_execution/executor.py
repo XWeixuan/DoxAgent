@@ -15,6 +15,7 @@ from doxagent.semantic_clock import semantic_day
 from . import groups
 from .ibkr_session import IbkrSession
 from .portfolio import account_funds, margin_after
+from .ownership import PositionReconcilePending
 from .recovery import (
     ENTRY_ABANDONED,
     ENTRY_FAILURE_LIMIT,
@@ -192,6 +193,8 @@ class Executor:
                     datetime.fromisoformat(value["time"]), strategy.exit_offset_minutes
                 ).isoformat()
                 self.repository.apply_fill(value, exit_at)
+            elif __import__('re').fullmatch(r'DA-[0-9a-f]{28}', value.get('order_ref', '')):
+                self.journal.set('execution_event_gaps', str(row['id']), dict(event_id=row['id'], account=row['account'], con_id=value.get('con_id'), error='UNKNOWN_STRATEGY_FILL'))
         elif row["kind"] == "fees":
             self.journal.set("execution_fees", row["account"] + ":" + value["exec_id"], value)
             from doxagent.exit_strategy.repository import refresh_books
@@ -271,6 +274,11 @@ class Executor:
         if not job or job["state"] in {"DONE", "FAILED", "WAIT_MAIN"}:
             self._release_watch(job_id)
             return
+        if job['leg'] == 'EXIT':
+            from .exit_guard import locked
+            with repo.transaction(write=False) as db:
+                if locked(db, job['id']):
+                    return
         scope = (job["account"], job.get("traded_ticker", job["ticker"]))
         lock = self.locks.setdefault(scope, asyncio.Lock())
         if lock.locked():
@@ -293,6 +301,9 @@ class Executor:
                             self.recovery.success(account)
                 else:
                     await self._step(job)
+            except PositionReconcilePending as exc:
+                self.sync_cache.clear()
+                repo.update_job(repo.require('jobs', job_id), state='RECONCILE_REQUIRED', delay=5, error=str(exc))
             except RecoveryDeferred:
                 return
             except Exception as exc:
@@ -372,6 +383,22 @@ class Executor:
                 if repo.require("jobs", job_id)["state"] in {"DONE", "FAILED"}:
                     self._release_watch(job_id)
 
+    async def reconcile_failed_orders(self):
+        # Latch remains in force. Advance existing attempts only, never _step.
+        with self.repository.transaction(write=False) as db:
+            rows = db.execute("SELECT a.payload,j.payload FROM te_attempts a JOIN te_jobs j ON j.id=a.job_id JOIN runtime_values v ON v.namespace='execution_exit_locks' AND v.key=j.id WHERE a.state NOT IN ('SETTLED','NOT_SENT') LIMIT 8").fetchall()
+        for row in rows:
+            attempt, job = map(json.loads, row)
+            try:
+                execution = self.repository.require('executions', job['execution_id'])
+                broker = self.broker(execution['profile_revision'])
+                await self._sync(broker, job['account'], force=True)
+                await self._advance_order(job, self.repository.require('attempts', attempt['id']), broker, True, 'FAILED_EXIT_RECONCILE_ONLY')
+            except Exception as exc:
+                if storage_busy(exc):
+                    continue
+                self.journal.set('execution_gaps', 'locked:'+job['id'], dict(job_id=job['id'], error=str(exc)))
+
     async def _sync(self, broker: Any, account: Any, *, force: bool = False) -> Any:
         async with self.sync_locks.setdefault(id(broker), asyncio.Lock()):
             self.recovery.check(account)
@@ -390,7 +417,12 @@ class Executor:
             return value
 
     async def _sync_fresh(self, broker: Any, account: Any) -> Any:
+        with self.repository.transaction(write=False) as db:
+            fill_start = db.execute('SELECT COALESCE(MAX(rowid),0) FROM te_fills').fetchone()[0]
+            adjust_start = db.execute('SELECT COALESCE(MAX(rowid),0) FROM te_lot_adjustments').fetchone()[0]
         value = await asyncio.to_thread(broker.sync)
+        value['ownership_fill_start'] = fill_start
+        value['ownership_adjust_start'] = adjust_start
         with self.repository.transaction(write=False) as db:
             watermark = db.execute("SELECT COALESCE(MAX(id),0) FROM te_events").fetchone()[0]
         while self.journal.get("trade_execution", "event_cursor", 0) < watermark:
@@ -962,36 +994,8 @@ class Executor:
         return True
 
     def _position_check(self, job: Any, contract: Any, sync: Any) -> Any:
-        key = f"{job['account']}:{contract['con_id']}"
-        actual = decimal(
-            sync["positions"].get(
-                contract["con_id"], sync["positions"].get(str(contract["con_id"]), 0)
-            )
-        )
-        with self.repository.transaction(write=False) as db:
-            fills = self.repository._effective_fills(db, job["account"], contract["con_id"])
-            adjustments = [
-                json.loads(row[0])
-                for row in db.execute(
-                    "SELECT payload FROM te_lot_adjustments WHERE account=? AND con_id=?",
-                    (job["account"], contract["con_id"]),
-                )
-            ]
-        owned = sum(
-            (decimal(f["quantity"]) * (1 if f["side"] == "BUY" else -1) for f in fills), Decimal(0)
-        )
-        baseline = self.journal.get("execution_position_baselines", key)
-        owned += sum(
-            (decimal(item["quantity_delta"]) * item["sign"] for item in adjustments), Decimal(0)
-        )
-        if baseline is None:
-            if fills:
-                raise ValueError("POSITION_BASELINE_MISSING")
-            self.journal.set(
-                "execution_position_baselines", key, {"quantity": str(actual), "at": sync["at"]}
-            )
-        elif decimal(baseline["quantity"]) + owned != actual:
-            raise ValueError("POSITION_ATTRIBUTION_GAP")
+        from .ownership import check
+        check(self.repository, job, contract, sync)
 
     async def _advance_order(
         self,

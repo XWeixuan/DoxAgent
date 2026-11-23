@@ -231,14 +231,14 @@ def test_explicit_group_requests_all_legs_and_refreshes_after_fifo(setup):
     assert group["pending_reason"] == "RESIDUAL_GROUP_EXIT"
 
 
-def test_transient_early_exit_recovery_before_scheduled_time(setup):
+def test_terminal_early_exit_is_not_automatically_resumed(setup):
     store, _ = opened(setup)
     clock, repo, _, _, _ = setup
     store.request_exit("trade:A", "TRAILING_PROFIT")
     job = repo.require("jobs", "trade:A:exit")
     assert repo.require("lots", "trade:A")["scheduled_exit"] > clock().isoformat()
     repo.update_job(job, state="FAILED", reason="IBKR_DISCONNECTED")
-    assert repo.recover_failed_exits() == 1
+    assert repo.recover_failed_exits() == 0
     assert repo.require("jobs", job["id"])["generation"] == 0
 
 
@@ -335,7 +335,7 @@ def test_exit_request_transaction_rolls_back_state_if_job_is_missing(setup):
     assert after["phase"] == "TRACKING" and not after.get("exit_requested_at")
 
 
-def test_next_exit_round_only_after_old_attempt_is_settled_and_cooldown(setup):
+def test_terminal_exit_does_not_restart_after_settlement_and_cooldown(setup):
     store, _ = opened(setup)
     clock, repo, _, executor, broker = setup
     store.request_exit("trade:A", "TRAILING_PROFIT")
@@ -352,8 +352,8 @@ def test_next_exit_round_only_after_old_attempt_is_settled_and_cooldown(setup):
     )
     assert repo.recover_failed_exits() == 0
     clock.advance(61)
-    assert repo.recover_failed_exits() == 1
-    assert repo.require("jobs", "trade:A:exit")["generation"] == 1
+    assert repo.recover_failed_exits() == 0
+    assert repo.require("jobs", "trade:A:exit")["generation"] == 0
 
 
 def test_new_opposite_strategy_leaves_main_profit_and_quantity_intact(setup):
