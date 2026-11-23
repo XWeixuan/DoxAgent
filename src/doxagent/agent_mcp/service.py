@@ -67,7 +67,12 @@ class AgentReads:
         self.waiting += 1
         admitted = False
         try:
-            async with asyncio.timeout(15):
+            # The directory uses the API's bounded 30s deferred reader. Its
+            # initial call must outlive that read; cached continuation pages
+            # and the other tools keep their existing short deadline.
+            catalog = (name == "doxagent_get_overview" and args.get("section") == "sources"
+                       and not args.get("cursor"))
+            async with asyncio.timeout(45 if catalog else 15):
                 async with self.capacity:
                     self.waiting -= 1
                     admitted = True

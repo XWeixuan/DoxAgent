@@ -90,7 +90,7 @@ class ApiClient:
 
     async def get(self, path, params=None):
         try:
-            deadline = time.monotonic() + 45
+            deadline = time.monotonic() + 40
             response = await self.client.get(
                 path.lstrip("/"), params={k: v for k, v in (params or {}).items() if v is not None}
             )

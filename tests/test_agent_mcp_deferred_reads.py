@@ -8,10 +8,28 @@ import pytest
 from fastapi.testclient import TestClient
 
 from doxagent.agent_mcp.client import ApiClient, ReadError
+from doxagent.agent_mcp.service import AgentReads
 from doxagent.api_v2.app import PREFIX
 from tests.test_agent_mcp_readonly import TOKEN, backend  # noqa: F401
 
 QUERY = 'a' * 32
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('args,budget', [({'section': 'sources'}, 45),
+                                       ({'section': 'sources', 'cursor': 'page_x'}, 15),
+                                       ({'section': 'summary'}, 15)])
+async def test_catalog_deadline_covers_deferred_reader(monkeypatch, args, budget):
+    deadlines = []
+    timeout = asyncio.timeout
+    def tracked(seconds):
+        deadlines.append(seconds)
+        return timeout(seconds)
+    monkeypatch.setattr(asyncio, 'timeout', tracked)
+    reads = AgentReads(None)
+    reads._dispatch = AsyncMock(return_value={})
+    assert await reads.call('doxagent_get_overview', args) == {}
+    assert deadlines == [budget]
 
 
 @pytest.mark.asyncio

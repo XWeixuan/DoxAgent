@@ -13,8 +13,9 @@ from pathlib import Path
 
 ROOT = Path('/var/lib/doxagent/releases')
 REPO = '/home/ubuntu/doxagent'
-FILES = {'v2-api': 'src/doxagent/api_v2/agent_read_auth.py',
-         'v2-agent-mcp-tunnel': 'src/doxagent/agent_mcp/client.py'}
+FILES = {'v2-api': ['src/doxagent/api_v2/agent_read_auth.py'],
+         'v2-agent-mcp-tunnel': ['src/doxagent/agent_mcp/client.py',
+                                'src/doxagent/agent_mcp/service.py']}
 
 
 def git(commit, path):
@@ -41,24 +42,30 @@ def main():
         directory.mkdir(exist_ok=True)
         manifest = dict(commit=commit, compose_command=state['compose_base_command'], components={})
         receipt = dict(commit=commit, components={})
-        for role, path in FILES.items():
+        for role, paths in FILES.items():
+            if '--tunnel-only' in sys.argv and role != 'v2-agent-mcp-tunnel':
+                continue
             container = 'doxagent-v2-'+role+'-1'
             info = json.loads(subprocess.check_output(['docker', 'inspect', container]))[0]
             assert info['Image'] == state['components'][role]['current']['image']
-            assert actual(container, path) == git(commit+'^', path), 'baseline drift: '+path
             context = directory/role
-            target = context/path
-            target.parent.mkdir(parents=True, exist_ok=True)
-            raw = git(commit, path)
-            target.write_bytes(raw)
-            digest = hashlib.sha256(raw).hexdigest()
-            check = ('import hashlib; assert hashlib.sha256(open('+repr('/app/'+path)+
-                     ',"rb").read()).hexdigest()=='+repr(digest))
+            hashes = {}
+            for path in paths:
+                assert actual(container, path) == git(commit+'^', path), 'baseline drift: '+path
+                target = context/path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                raw = git(commit, path)
+                target.write_bytes(raw)
+                hashes['/app/'+path] = hashlib.sha256(raw).hexdigest()
+            check = ('import hashlib; expected='+repr(hashes)+
+                     '; assert all(hashlib.sha256(open(p,"rb").read()).hexdigest()==h '
+                     'for p,h in expected.items())')
             base = 'doxagent-mcp-recovery:base-'+info['Image'][7:19]
             subprocess.run(['docker', 'tag', info['Image'], base], check=True)
-            recipe = ['FROM '+base, 'USER root',
-                      'COPY --chmod=0644 '+path+' /app/'+path,
-                      'RUN python -m compileall -q --invalidation-mode checked-hash /app/'+path,
+            recipe = ['FROM '+base, 'USER root']
+            recipe += ['COPY --chmod=0644 '+path+' /app/'+path for path in paths]
+            recipe += ['RUN python -m compileall -q --invalidation-mode checked-hash '+
+                       ' '.join('/app/'+path for path in paths),
                       'USER '+(info['Config'].get('User') or 'root'),
                       'RUN python -c '+shlex.quote(check)]
             (context/'Dockerfile').write_text('\n'.join(recipe)+'\n')
@@ -70,8 +77,7 @@ def main():
             candidate.update(image=image, checks=[['docker', 'exec', container, 'python', '-c', check]])
             manifest['components'][role] = candidate
             state.setdefault('owned_images', []).append(image)
-            receipt['components'][role] = dict(baseline=info['Image'], image=image,
-                                                path=path, sha256=digest)
+            receipt['components'][role] = dict(baseline=info['Image'], image=image, hashes=hashes)
         for name in ('state.json', 'compose.current.json'):
             (directory/(name+'.before.private')).write_bytes((ROOT/name).read_bytes())
         release.atomic(ROOT/'state.json', state)
