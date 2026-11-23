@@ -660,6 +660,17 @@ def deploy(root, state, manifest):
             configuration['services'][component]=new
             atomic(override,configuration)
             try:
+                if component=='v2-message-collector' and previous!=new:
+                    # Acquisition-only index migration. Bus/BODY/Runtime keep
+                    # serving; never put its table scan into collector startup.
+                    subprocess.run([*command,'stop',component],check=True)
+                    migration=("import sqlite3;from doxagent.settings import DoxAgentSettings;"
+                        "from doxagent.message_bus_v2.collection_plane.store import path_for;"
+                        "p=path_for(DoxAgentSettings().message_bus_v2_sqlite_path);"
+                        "d=sqlite3.connect(p,timeout=1);"
+                        "d.execute(\"CREATE INDEX IF NOT EXISTS cycles_success_exit ON cycles(dispatch_at,run_id) WHERE status='CAPTURED'\");"
+                        "d.commit();d.close();print('Acquisition success expiry index ready')")
+                    subprocess.run([*command,'run','--rm','--no-deps','--entrypoint','python',component,'-c',migration],check=True)
                 if component in {'v2-api','v2-projector','v2-maintenance'}:
                     # Production CLI skips startup mutation; install compatible DDL before readers.
                     migration = (
