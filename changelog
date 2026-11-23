@@ -3378,3 +3378,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 归属校验改为可信快照及自洽策略账本下的P=A-S；归属等待保持非终态，正常检查无新增券商请求，基线不变不写审计。
 - 新增持久FAILED EXIT闩锁、最终提交守卫及仅核对旧单的维护路径；关闭自动FAILED恢复和简单resume重置。组级提前退出与核验恢复走原Executor、真实成交/费用/收益链路，管理回执幂等。
 - Case执行卡明确展示FAILED EXIT及余量；历史COHR SHORT6/SOXL LONG7核查为已正确结清，未重复改账。后端定向132项、额外保护用例17项及前端74项通过；生产源与验收以最终实施报告为准。
+- 发布前补充：启动只补齐既有FAILED EXIT的展示摘要，不推进任务或发单；失败闩锁种子与摘要初始化保持幂等，保护用例17项复验通过。

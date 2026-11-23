@@ -315,7 +315,18 @@ def test_legacy_failed_latch_backfill_is_idempotent(setup):
     repo.finish(repo.require("jobs", "trade:A:exit"), "POSITION_ATTRIBUTION_GAP")
     with repo.transaction() as db:
         db.execute("DELETE FROM runtime_values WHERE namespace='execution_exit_locks'")
+        import json
+
+        value = json.loads(
+            db.execute("SELECT payload FROM te_executions WHERE id='trade:A'").fetchone()[0]
+        )
+        value.pop("exit_summary", None)
+        db.execute("UPDATE te_executions SET payload=? WHERE id='trade:A'", (json.dumps(value),))
         initialize(db)
+        published = json.loads(
+            db.execute("SELECT payload FROM te_executions WHERE id='trade:A'").fetchone()[0]
+        )
+        assert published["exit_summary"][0]["requires_manual_review"] is True
         version = locked(db, "trade:A:exit")["version"]
         initialize(db)
         assert locked(db, "trade:A:exit")["version"] == version

@@ -24,6 +24,24 @@ def initialize(db):
         SELECT '{NAMESPACE}',id,json_object('job_id',id,'version',lower(hex(randomblob(16))),
         'failed_at',strftime('%Y-%m-%dT%H:%M:%fZ','now'),'reason',json_extract(payload,'$.reason'))
         FROM te_jobs WHERE leg='EXIT' AND state='FAILED'""")
+    # Publish legacy failures once, so an old successful ENTRY projection cannot
+    # hide a failed EXIT until the next trade. Do not advance jobs or lots here.
+    groups = db.execute(
+        "SELECT DISTINCT j.execution_id FROM te_jobs j JOIN runtime_values v "
+        "ON v.namespace=? AND v.key=j.id",
+        (NAMESPACE,),
+    ).fetchall()
+    for (identity,) in groups:
+        row = db.execute("SELECT payload FROM te_executions WHERE id=?", (identity,)).fetchone()
+        if row is None:
+            continue
+        execution = json.loads(row[0])
+        value = summary(db, identity)
+        if execution.get("exit_summary") != value:
+            execution["exit_summary"] = value
+            db.execute(
+                "UPDATE te_executions SET payload=? WHERE id=?", (json.dumps(execution), identity)
+            )
 
 
 def summary(db, identity):
