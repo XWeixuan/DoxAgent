@@ -141,3 +141,111 @@
      }
  
      pub(crate) async fn run_logs_startup_maintenance(&self) -> anyhow::Result<()> {
+--- a/codex-rs/thread-store/src/local/delete_thread.rs
++++ b/codex-rs/thread-store/src/local/delete_thread.rs
+@@ -31,6 +31,7 @@
+     thread_id: codex_protocol::ThreadId,
+     rollout_ids: HashSet<codex_protocol::ThreadId>,
+     paths: Vec<PathBuf>,
++    known_paths: bool,
+ }
+ 
+ impl ThreadRollouts {
+@@ -50,6 +51,7 @@
+             thread_id,
+             rollout_ids,
+             paths,
++            known_paths: false,
+         }
+     }
+ 
+@@ -113,12 +115,24 @@
+         _live_writer_guards.push(store.live_writer_locks.lock(thread_id).await);
+     }
+ 
+-    let reference_index = scan_reference_index(store).await?;
+-    let thread_rollouts = thread_ids
++    // A private Worker exports its already-fenced, consumed, no-fork root
++    // authority. This is not a force-delete parameter or a guess from age.
++    let isolated = if thread_ids.len() == 1 {
++        managed_root_rollouts(store, thread_ids[0]).await?
++    } else {
++        None
++    };
++    let thread_rollouts = if let Some(root) = isolated {
++        vec![root]
++    } else {
++        let reference_index = scan_reference_index(store).await?;
++        let thread_rollouts = thread_ids
+         .iter()
+         .map(|thread_id| ThreadRollouts::from_index(&reference_index, *thread_id))
+         .collect::<Vec<_>>();
+     ensure_no_external_references(&reference_index, thread_rollouts.as_slice())?;
++        thread_rollouts
++    };
+ 
+     let mut writer_guards = store.acquire_writer_locks(&lock_thread_ids).await?;
+     if let Some(cleanup) = &store.thread_data_cleanup {
+@@ -134,6 +148,46 @@
+     // Retain the complete retry graph until every rollout has been removed.
+     delete_state_rows(store, &thread_ids).await?;
+     Ok(())
++}
++
++async fn managed_root_rollouts(
++    store: &LocalThreadStore,
++    thread_id: codex_protocol::ThreadId,
++) -> ThreadStoreResult<Option<ThreadRollouts>> {
++    let proof_path = store.config.codex_home.join(".doxagent-local-exit").join(format!("{thread_id}.json"));
++    let raw = match tokio::fs::read(proof_path).await {
++        Ok(raw) => raw,
++        Err(err) if err.kind() == ErrorKind::NotFound => return Ok(None),
++        Err(err) => return Err(ThreadStoreError::Internal { message: err.to_string() }),
++    };
++    let invalid = || ThreadStoreError::InvalidRequest { message: "invalid consumed isolated-root owner proof".to_string() };
++    let proof: serde_json::Value = serde_json::from_slice(&raw).map_err(|_| invalid())?;
++    if proof["owner"].as_str() != Some("doxagent-consumed-isolated-root-v1")
++        || proof["thread_id"].as_str() != Some(thread_id.to_string().as_str()) {
++        return Err(invalid());
++    }
++    let path = PathBuf::from(proof["path"].as_str().ok_or_else(invalid)?);
++    let scoped = scoped_rollout_path(store.config.codex_home.join(SESSIONS_SUBDIR), &path, "sessions")
++        .or_else(|_| scoped_rollout_path(store.config.codex_home.join(ARCHIVED_SESSIONS_SUBDIR), &path, "archived sessions"));
++    // A missing file is an interrupted exact exit, not permission to discover
++    // every historical rollout again. Its lexical owner boundary still applies.
++    if !path.starts_with(store.config.codex_home.join(SESSIONS_SUBDIR))
++        && !path.starts_with(store.config.codex_home.join(ARCHIVED_SESSIONS_SUBDIR)) {
++        return Err(invalid());
++    }
++    if path.components().any(|part| part == std::path::Component::ParentDir) {
++        return Err(invalid());
++    }
++    if let Ok(meta) = codex_rollout::read_session_meta_line(&path).await {
++        scoped?;
++        if meta.meta.id != thread_id || meta.meta.history_base.is_some()
++            || codex_rollout::rollout_id_from_path(&path) != Some(thread_id) {
++            return Err(invalid());
++        }
++    } else if path.try_exists().unwrap_or(true) {
++        return Err(invalid());
++    }
++    Ok(Some(ThreadRollouts { thread_id, rollout_ids: HashSet::from([thread_id]), paths: vec![path], known_paths: true }))
+ }
+ 
+ async fn delete_state_rows(
+@@ -208,6 +262,7 @@
+     let thread_id = thread_rollouts.thread_id;
+     let thread_id_str = thread_id.to_string();
+     let state_db_ctx = store.state_db().await;
++    if !thread_rollouts.known_paths {
+     match find_thread_path_by_id_str(
+         store.config.codex_home.as_path(),
+         thread_id_str.as_str(),
+@@ -237,6 +292,7 @@
+                 message: format!("failed to locate archived thread id {thread_id}: {err}"),
+             });
+         }
++    }
+     }
+     thread_rollouts.rollout_ids.insert(thread_id);
+     for rollout_id in thread_rollouts.rollout_ids {

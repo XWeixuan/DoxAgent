@@ -33,7 +33,7 @@ class StateV21:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             required=('codex_document3_v21_runs','codex_document3_condition_highwater',
-                'codex_document3_process_exit','codex_document3_history_retired',
+                'codex_document3_process_exit','codex_document3_history_retired','codex_document3_history_exit_v2',
                 'v2_artifact_codex_document3_v21_runs_INSERT',
                 'v2_artifact_codex_document3_v21_tasks_INSERT',
                 'v2_artifact_codex_document3_v21_draft_ids_INSERT',

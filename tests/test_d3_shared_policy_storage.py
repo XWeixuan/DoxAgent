@@ -74,7 +74,7 @@ def test_history_loses_unreferenced_recovery_without_losing_current_or_case_pins
     from doxagent.workflows.codex_document3.history_exit import collect,register_legacy
     (tmp_path/'.d3-shared-policy-ready').touch()
     repo=SQLiteDocument3PolicyRepository(tmp_path/'research.db');state=StateV21(repo.path)
-    now=datetime.now(UTC);old=now-timedelta(days=30)
+    now=datetime.now(UTC);old=now-timedelta(days=1)
     for version in range(1,7):
         item=PolicySetV3(ticker='MU',policy_set_version=version,as_of=old,published_at=old,publication_state='COMPLETE',policies=[policy()])
         repo.publish(item,expected_base_version=version-1 or None)

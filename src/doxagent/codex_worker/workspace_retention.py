@@ -95,7 +95,7 @@ def retire_d3_copies(directory, staged, now):
     return receipt
 
 
-def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False,run_ids=None):
+def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False,run_ids=None,settled_grace=timedelta(days=1)):
     from doxagent.trade_execution.worker import WriterLock
     from doxagent.persistent_runtime_v2.resource_gc import opened_below
     now=now or datetime.now(UTC);report=dict(at=now.isoformat(),runs=[],errors=[])
@@ -190,9 +190,10 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False,run_ids=No
                 with closing(sqlite3.connect(Path(runtime_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
                     row=db.execute('SELECT updated_at FROM runtime_tasks WHERE '+task_run+"=? AND status='SUCCEEDED' LIMIT 1",(family_root(run,set()),)).fetchone()
                     if row:settlement=row[0]
-            days=1 if settlement else (3 if all(s=='cancelled' for s,_,_,_ in owners) else 7 if all(s=='succeeded' for s,_,_,_ in owners) else 14)
+            grace=settled_grace if typed_release and run_ids is not None else timedelta(days=1)
+            days=grace.total_seconds()/86400 if settlement else (3 if all(s=='cancelled' for s,_,_,_ in owners) else 7 if all(s=='succeeded' for s,_,_,_ in owners) else 14)
             if any(now-datetime.fromisoformat(at)<timedelta(days=days) for _,at,_,_ in owners):continue
-            if settlement and now-datetime.fromisoformat(settlement)<timedelta(days=1):continue
+            if settlement and now-datetime.fromisoformat(settlement)<grace:continue
             marker=directory/'audit'/'retained-assets.json'
             revision=hashlib.sha256(json.dumps([owners,authority_run,settlement],sort_keys=True).encode()).hexdigest()
             if marker.is_file():

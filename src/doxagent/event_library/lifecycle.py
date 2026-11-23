@@ -53,6 +53,7 @@ FACT_TABLES=(('canonical_fact_revisions','fact_no'),('canonical_fact_states','fa
 
 
 def migrate_history(db):
+    db.execute("CREATE INDEX IF NOT EXISTS event_published_history ON library_versions(ticker,version) WHERE status='PUBLISHED'")
     db.execute('CREATE TABLE IF NOT EXISTS event_reference_exit(ticker TEXT,version INTEGER,PRIMARY KEY(ticker,version))')
     db.execute('CREATE INDEX IF NOT EXISTS event_reference_delta_to ON reference_view_deltas(ticker,to_library_version,from_library_version)')
     db.execute('CREATE TABLE IF NOT EXISTS event_history_exit('
@@ -104,9 +105,9 @@ def collect_history(repository,ticker,*,keep_versions=(),now=None,limit=32):
         if not ready(db,ticker):return {'pending_admissions':True}
         head=db.execute('SELECT published_version FROM library_heads WHERE ticker=?',(ticker,)).fetchone()[0]
         keep=set(keep_versions)|{head}
-        keep.update(r[0] for r in db.execute("SELECT version FROM library_versions WHERE ticker=? AND status='PUBLISHED' ORDER BY version DESC LIMIT 3",(ticker,)))
+        keep.update(r[0] for r in db.execute("SELECT version FROM library_versions WHERE ticker=? AND status='PUBLISHED' AND coalesce(published_at,created_at)>=? ORDER BY version DESC LIMIT 3",(ticker,cutoff)))
         versions=db.execute("SELECT version,coalesce(published_at,created_at) FROM library_versions WHERE ticker=? AND status='PUBLISHED' AND version<? AND version NOT IN (SELECT value FROM json_each(?)) ORDER BY version LIMIT ?",(ticker,head,json.dumps(sorted(keep)),limit)).fetchall()
-        victims=[r[0] for r in versions if r[1]<cutoff]
+        victims=[r[0] for r in versions]
         owner=db.execute('SELECT * FROM event_history_exit WHERE ticker=? AND due<=? ORDER BY due,ticker,kind,object_no LIMIT 1',(ticker,now.isoformat())).fetchone()
     if victims:
         with closing(repository._connect()) as db,db:

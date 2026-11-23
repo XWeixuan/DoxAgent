@@ -3,7 +3,9 @@ import asyncio
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
 import json
+import os
 from pathlib import Path
+import re
 import sqlite3
 
 
@@ -58,6 +60,27 @@ def consumed(db, job_id, now):
         db.execute('INSERT OR IGNORE INTO worker_session_exit VALUES(?,?,?,NULL)',(row[0],now,now))
 
 
+def export_local_exit_proof(jobs,thread,meta):
+    """Export the exact fenced owner receipt to the private SDK, not a force flag."""
+    if not re.fullmatch(r'[A-Za-z0-9_-]+',thread):raise ValueError('invalid local thread identity')
+    settings=getattr(jobs,'_retention_settings',None)
+    config=getattr(jobs.thread_lifecycle.transport,'config',None)
+    binary=getattr(config,'codex_bin',None) or getattr(settings,'codex_runtime_bin',None)
+    if not binary:raise ValueError('local SDK exit capability is unavailable')
+    manifest=json.loads(Path(binary).with_name('manifest.json').read_text())
+    if manifest.get('storage_local_root_exit') is not True:raise ValueError('SDK exit would scan unrelated rollouts; upgrade its native owner first')
+    home=Path((getattr(config,'env',None) or {}).get('CODEX_HOME') or os.environ['CODEX_HOME']).resolve(strict=True)
+    proof=home/'.doxagent-local-exit'/(thread+'.json')
+    if not meta.get('path'):
+        if proof.is_file():return proof
+        raise ValueError('isolated root path is unknown')
+    path=Path(meta['path']).resolve()
+    if not path.is_relative_to(home):raise ValueError('thread rollout escapes its SDK home')
+    from doxagent.v2_read.maintenance import atomic_json
+    atomic_json(proof,{'owner':'doxagent-consumed-isolated-root-v1','thread_id':thread,'path':str(path)})
+    return proof
+
+
 async def collect(jobs, *, now=None, limit=1):
     now=now or datetime.now(UTC);stamp=now.isoformat()
     def candidates():
@@ -69,6 +92,8 @@ async def collect(jobs, *, now=None, limit=1):
             def claim():
                 with closing(jobs.store.connect()) as db,db:
                     db.execute('PRAGMA busy_timeout=10');db.execute('BEGIN IMMEDIATE')
+                    if not db.execute('SELECT 1 FROM worker_session_exit WHERE thread_id=?',(thread,)).fetchone():return False
+                    if not db.execute('SELECT 1 FROM worker_process_threads WHERE thread_id=? AND creates_root=1 LIMIT 1',(thread,)).fetchone():return False
                     if db.execute("SELECT 1 FROM worker_process_threads WHERE thread_id=? AND (consumed=0 OR status NOT IN ('succeeded','failed','cancelled')) LIMIT 1",(thread,)).fetchone():
                         return False
                     db.execute("INSERT INTO worker_session_retirements VALUES(?,'DELETING',?,?) ON CONFLICT(thread_id) DO UPDATE SET state='DELETING',updated_at=excluded.updated_at",(thread,json.dumps({'owner':'consumed-maintenance-root'}),stamp))
@@ -84,6 +109,7 @@ async def collect(jobs, *, now=None, limit=1):
                 meta={}
             if meta.get('status',{}).get('type')=='active' or meta.get('parentThreadId') or meta.get('forkedFromId'):
                 raise ValueError('thread active or has an undeclared parent')
+            proof=await asyncio.to_thread(export_local_exit_proof,jobs,thread,meta)
             release=getattr(jobs._runtime,'release_thread',None)
             if release:
                 await release(thread)
@@ -99,6 +125,7 @@ async def collect(jobs, *, now=None, limit=1):
                     db.execute("UPDATE worker_session_retirements SET state='DELETED',updated_at=? WHERE thread_id=?",(stamp,thread))
                     db.execute('DELETE FROM worker_session_exit WHERE thread_id=?',(thread,))
             await asyncio.to_thread(finish)
+            await asyncio.to_thread(proof.unlink,missing_ok=True)
             report['deleted'].append(thread)
         except Exception as exc:
             def retry():

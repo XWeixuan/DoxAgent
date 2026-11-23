@@ -37,6 +37,14 @@ class WeekendSelection:
     ) -> None:
         self.settings, self.runtime, self.journal, self.judge = settings, runtime, journal, judge
 
+    def _realtime_outputs(self,ticker,day):
+        import json
+        with self.journal.transaction(write=False) as db:
+            return [json.loads(row[0]) for row in db.execute(
+                "SELECT payload FROM runtime_values INDEXED BY runtime_values_output_cohort "
+                "WHERE namespace='trade_intents' AND json_extract(payload,'$.ticker')=? "
+                "AND json_extract(payload,'$.release_semantic_day')=? ORDER BY key",(ticker,day))]
+
     async def __call__(self, task: dict[str, Any]) -> dict[str, Any]:
         snapshot = self.journal.get("selection_snapshot", task["id"])
         if snapshot is None:
@@ -104,7 +112,7 @@ class WeekendSelection:
                     "fallback": not maintenance or maintenance["status"] != "SUCCEEDED",
                     "realtime_outputs": [
                         item
-                        for item in self.journal.values("trade_intents")
+                        for item in self._realtime_outputs(task['ticker'],day.isoformat())
                         if item["ticker"] == task["ticker"]
                         and item["release_semantic_day"] == day.isoformat()
                         and item["status"]

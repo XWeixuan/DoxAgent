@@ -532,11 +532,15 @@ Event/D3 当前正式内容及活跃业务的精确证据不按天机械删除�
 ## 16. 实施补证与具体落地边界（2026-11-24 更新）
 
 1. Runtime 冻结容器按字段复用既有 Native CAS，而非每次 phase/state 更新重写整个 frozen_inputs。实际消费者得到的完整证据不变；Read 只展开 projection 的 Policy/condition 标识、W3 执行与 watch 状态。真实生产 Case（原输入 1,507,206 bytes）模拟 12 次局部状态更新，Native 新增从 6,441,062 降到 535,481 bytes，减少 91.69%，本地编码耗时 1.233s→0.573s；行 JSON 平均 11,938→14,396 bytes。此为隔离回放，不能冒充日净增长验收。读端先发，Runtime 写端后发。
-2. Event 历史直接复用 revision/state/有效区间，按实际变化对象登记有界退出；不是另建 undo 存储系统。第一获知时间和 publication clocks 是小型独立业务证据，迁移完成后不依赖完整祖先 SQLite。保留当前、精确活跃引用与最近三个实际版本，其余七天后允许明确 HISTORY_RETIRED。未变化对象不入新 revision。Batch 的真实 resolution/映射保留，已采纳 24h 后丢弃重复输入正文，重放身份保留 SHA 收据。
-3. D3 使用每 Policy 对象 CAS 与小型有序版本列表，比新建逆向补丁框架更少兼容责任；历史 projection 按请求重建。formal/staged 共用内容，未引用历史版本七天后直接退出包括恢复能力，保留当前、活跃 Case 和最近三版。旧 Case 是否具有完整冻结策略证据做一次主键游标迁移；仅缺真实证据的具体旧版成为必要 pin，不扩散到全部 lineage。该迁移在独立 Transport Maintenance 进程进行，不能在 W3 启动时展开旧 Case。
+2. Event 历史直接复用 revision/state/有效区间，按实际变化对象登记有界退出；不是另建 undo 存储系统。第一获知时间和 publication clocks 是小型独立业务证据，迁移完成后不依赖完整祖先 SQLite。保留当前、精确活跃引用，以及最近七天内最多三个实际版本；超出数量或时间范围均允许明确 HISTORY_RETIRED。未变化对象不入新 revision。Batch 的真实 resolution/映射保留，已采纳 24h 后丢弃重复输入正文，重放身份保留 SHA 收据。
+3. D3 使用每 Policy 对象 CAS 与小型有序版本列表，比新建逆向补丁框架更少兼容责任；历史 projection 按请求重建。formal/staged 共用内容，未引用历史版本超过七天或不在最近三版时直接退出包括恢复能力，保留当前与活跃 Case 精确证据。旧 Case 是否具有完整冻结策略证据做一次主键游标迁移；仅缺真实证据的具体旧版成为必要 pin，不扩散到全部 lineage。该迁移在独立 Transport Maintenance 进程进行，不能在 W3 启动时展开旧 Case。
 4. D3 过程退出由现有 Transport Maintenance 每五分钟处理一个 owner；原终态事务登记到期小键。Workspace 查询限定该 parent/child 家族，不读取所有 Research bundle，不扫 /proc，不在文件删除时持 Worker writer。每步最多 256 个文件、两个 Job 和四个 Task/draft；文件收据与 Worker 提交 fence 支持中断续跑。被 hold、仍活跃或保留期未到的 owner 跳过时，不得单独删除 State。条件号 highwater 完成后才退 draft。
 5. SDK 本机固定版本构建叠加日志补丁，原 W3 timing patch 保持同一 SHA。DB sink 默认 WARN，message/feedback 各限约 2KiB；批量插入事务按主键范围退掉不多于本批新增数的老记录，取消逐 thread 的 SUM/window 全分区修剪。65,536 行工作集软预算和小时少量过龄退出，不自动 vacuum，也不承诺旧 4GiB 文件立即归还根盘。线程退出必须用真实二进制验证 rollout/history 一并删除，不能仅验证 Python mock。
 6. Acquisition 成功薄证据从 48h 改为 2h，异常薄证据保留 72h；先封存精确小时统计再删除正文，失败行不会阻塞后续成功小时退出，inputs 去重身份仍保持 48h。停止保存异常完整 headers/body，大错误字符串有界。现有七天 unit_hours 有真实消费者；目前无 90 天日报消费者，暂不新建日报存储/生成器，以免为治理增加无业务需求的写入责任；将来真正需要时由小时统计按请求汇总。
 7. Read 新 DDL 必须由发布 owner 在替换读服务前执行兼容迁移。生产 CLI 不会自动 migrate；仅源码/单测通过不足以证明可上线。所有读写角色兼容共享 D3 格式后，才落 .d3-shared-policy-ready；旧镜像回滚必须先执行明确格式回退，不能直接选不认识新格式的旧 reader。
 
 部署记录、尚未完成项及五日验收状态另见实施回执，不以本节设计文字充当已经部署的证据。
+
+8. SDK 实测 thread/delete 原实现仍会扫描全部 rollout 头部。新方案仅为从创建起已登记、禁止子线程、无外部复用、全部 owner 终态且 ACK 的新 root，导出已有 DELETING 收据的单次私有 owner proof；Native 核对 root 身份、无 history_base、确切文件路径后走原 per-thread writer/history/rollout 退出，不再做全树引用扫描。不修改公开 SDK 协议，不给任意历史线程 force-delete；缺新 Native 能力时延后，不回退到全树扫描。真实二进制用 inotify 检验不打开无关历史 rollout，删除失败保留 proof 支持精确重试。W3 线程原业务生命周期不改。
+9. 自动成功过程保留 24h 是正常治理窗口；显式存量清理可以对已有 typed release、全部 Worker owner 终态的确切 D3 家族缩短输入副本宽限期。当前正式策略、发布成果、真实引用文件继续保留，不伪造当前时间，也不放宽活跃/不明 owner 的边界。
+10. Weekly Selection 改为 SQLite 先筛 ticker/status/截止时间，再展开真实候选；沿用 namespace/key 稳定顺序及原 hash。trade_intents 复用现有 ticker/day cohort 索引，不再先拉全历史。没有为低频 Selection 在几十 GiB Runtime values 上另建重索引。

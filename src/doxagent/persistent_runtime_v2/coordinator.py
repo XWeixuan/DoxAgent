@@ -615,14 +615,17 @@ class RuntimeCoordinator:
         if task["due_at"] > self.journal.clock().isoformat():
             return
         if self.journal.get("selection_snapshot", task["id"]) is None:
-            candidates = [
-                item
-                for item in self.journal.values("candidates")
-                if item["ticker"] == task["ticker"]
-                and item["status"] == "PENDING"
-                and item.get("origin_trade_eligible", True)
-                and item["created_at"] <= task["due_at"]
-            ]
+            # This weekly freeze has no recurring full Context hydration. Keep
+            # the existing namespace/key order, filter scalar headers in SQLite
+            # and decode only the actual selected candidates. A new index over
+            # the large shared values table is not justified by this rare path.
+            import json
+            with self.journal.transaction(write=False) as db:
+                candidates=[json.loads(row[0]) for row in db.execute(
+                    "SELECT payload FROM runtime_values WHERE namespace='candidates' "
+                    "AND json_extract(payload,'$.ticker')=? AND json_extract(payload,'$.status')='PENDING' "
+                    "AND (json_type(payload,'$.origin_trade_eligible') IS NULL OR json_extract(payload,'$.origin_trade_eligible')=1) "
+                    "AND json_extract(payload,'$.created_at')<=? ORDER BY key",(task['ticker'],task['due_at']))]
             self.journal.set(
                 "selection_snapshot",
                 task["id"],

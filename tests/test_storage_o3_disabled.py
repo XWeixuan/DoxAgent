@@ -122,3 +122,19 @@ def test_proven_release_admission_does_not_reparse_policy_body(tmp_path):
         assert admit_revision(journal,revision=newer,policy_repository=Forbidden())['reused_release']
         assert admit_revision(journal,revision=newer,policy_repository=Forbidden())['revision_id']=='o2-only-fast'
     finally:runtime.close()
+
+
+def test_selection_freeze_filters_headers_without_expanding_other_candidate_contexts(tmp_path,monkeypatch):
+    from datetime import UTC,datetime,timedelta
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal,digest
+    from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+    now=datetime(2026,11,24,tzinfo=UTC);journal=RuntimeJournal(tmp_path/'r.db',clock=lambda:now)
+    base={'ticker':'MU','status':'PENDING','created_at':now.isoformat()}
+    cases={'a':{},'other':{'ticker':'BE'},'released':{'status':'RELEASED'},'ineligible':{'origin_trade_eligible':False},'null':{'origin_trade_eligible':None},'future':{'created_at':(now+timedelta(seconds=1)).isoformat()}}
+    for key,changes in cases.items():journal.set('candidates',key,{**base,'candidate_id':key,**changes})
+    monkeypatch.setattr(journal,'values',lambda *_:(_ for _ in ()).throw(AssertionError('whole namespace hydration')))
+    coordinator=RuntimeCoordinator.__new__(RuntimeCoordinator);coordinator.journal=journal
+    coordinator._freeze_selection({'id':'s','ticker':'MU','due_at':now.isoformat()})
+    saved=journal.get('selection_snapshot','s')
+    assert saved['candidate_ids']==['a']
+    assert saved['hash']==digest([{**base,'candidate_id':'a'}])

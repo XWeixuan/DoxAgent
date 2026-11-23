@@ -260,7 +260,7 @@ class SQLiteDocument3PolicyRepository:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
         with self._connect() as db:
-            if db.execute("SELECT count(*) FROM sqlite_master WHERE name IN ('codex_document3_policy_sets_history_owner','v2_artifact_codex_document3_policy_sets_INSERT')").fetchone()[0]==2:return
+            if db.execute("SELECT count(*) FROM sqlite_master WHERE name IN ('codex_document3_policy_sets_history_owner','v2_artifact_codex_document3_policy_sets_INSERT','codex_document3_history_exit_v2')").fetchone()[0]==3:return
         with self._connect() as connection:
             connection.executescript(
                 """

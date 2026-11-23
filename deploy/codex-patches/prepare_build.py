@@ -37,6 +37,7 @@ def manifest(source, patch, output):
         upstream_commit=UPSTREAM,
         patch_sha256=digest(patch),
         storage_log_patch_sha256=digest(patch.with_name('storage-log-policy-0.159.3.patch')),
+        storage_local_root_exit=True,
         cargo_lock_sha256=digest(source / "codex-rs/Cargo.lock"),
         binary_sha256=digest(output / "codex"),
         companions={

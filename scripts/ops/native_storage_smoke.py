@@ -1,5 +1,6 @@
 """Offline native lifecycle smoke: local synthetic Responses SSE, no paid calls."""
 import json
+import ctypes
 import os
 from pathlib import Path
 import queue
@@ -79,7 +80,20 @@ requires_openai_auth = false
             assert completed['params']['turn']['status']=='completed',completed
             meta=rpc('thread/read',{'threadId':identity,'includeTurns':False})['thread']
             time.sleep(2)
+            path=Path(meta['path'])
+            unrelated=path.with_name(path.name.replace(identity,'00000000-0000-7000-8000-000000000001'))
+            unrelated.write_text('unrelated historical rollout; must never be read for local exit\n')
+            libc=ctypes.CDLL(None,use_errno=True)
+            watch=libc.inotify_init1(os.O_NONBLOCK)
+            assert watch>=0
+            assert libc.inotify_add_watch(watch,os.fsencode(unrelated),0x20)>=0
+            proof=home/'.doxagent-local-exit'/(identity+'.json');proof.parent.mkdir()
+            proof.write_text(json.dumps({'owner':'doxagent-consumed-isolated-root-v1','thread_id':identity,'path':str(path)}))
             rpc('thread/delete',{'threadId':identity})
+            try:opened=os.read(watch,4096)
+            except BlockingIOError:opened=b''
+            finally:os.close(watch)
+            assert not opened,'local owner exit opened an unrelated historical rollout'
             path=meta.get('path');assert not path or not Path(path).exists(),path
             counts={}
             for database in home.glob('*history*.sqlite'):
@@ -95,7 +109,7 @@ requires_openai_auth = false
                     logs=dict(db.execute('SELECT level,count(*) FROM logs GROUP BY level'))
                     assert not (set(logs)-{'WARN','ERROR'}),logs
                     assert db.execute('SELECT coalesce(max(length(CAST(feedback_log_body AS BLOB))),0) FROM logs').fetchone()[0]<=2100
-            print(json.dumps({'version':subprocess.check_output(['/native/codex','--version'],text=True).strip(),'turn_completed':True,'rollout_deleted':True,'history_remaining':counts,'log_levels_under_trace':logs,'network':'Docker --network none; loopback synthetic provider only'},sort_keys=True))
+            print(json.dumps({'version':subprocess.check_output(['/native/codex','--version'],text=True).strip(),'turn_completed':True,'rollout_deleted':True,'unrelated_rollout_opens':0,'history_remaining':counts,'log_levels_under_trace':logs,'network':'Docker --network none; loopback synthetic provider only'},sort_keys=True))
         except Exception:
             print(json.dumps({'recent_notifications':notifications[-6:],'stderr_tail':(home/'stderr.log').read_text()[-4000:]}));raise
         finally:
