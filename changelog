@@ -3400,3 +3400,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-24 MCP概览最终验收：仅API/MCP更新；真实stdio概览3/3/3/1页覆盖10ticker、全局四模块AVAILABLE、目录85源完整读取；当前ChatGPT插件真实首/续页再次确认10ticker，每页约3.3–6.1秒，API无新QUERY_TIMEOUT。保留首次插件120秒会话级失败、17218历史gap和约8GiB磁盘余量边界，不宣称全面性能/空间问题解决。完整回执见docs/agent-mcp-overview-timeout-repair-20261124.md。
 
 2026-11-25 W3 input bias experiment: add DOXAGENT_W3_HIDE_W2_CONTEXT (default off, production explicitly on). Remove model-visible W2/Policy/alignment and derived labels in both phases/branches, preserving internal decisions, routing, historical audits, tools and output validation. Input and runner24 plus contract26 tests passed. See docs/w3-hide-w2-production-20261125.md.
+
+2026-11-25 W3 hide-W2 production release: c0ef3c576 Scheduler-only exact overlay with explicit flag true; four live hashes and actual Settings/Trade/Operations projection assertions passed. First poll10 tickers, no startup errors observed; Worker unchanged. Model quality improvement remains unevaluated.
