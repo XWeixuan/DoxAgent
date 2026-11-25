@@ -1,0 +1,1 @@
+{"live": {"removed_from": ["coin.blog", "coin.ir", "coin.deribit"], "apply": true, "source_version": 7, "coin_monitoring_exists": true}, "candidate": {"removed_from": ["coin.blog", "coin.ir", "coin.deribit"], "apply": true, "source_version": 7, "coin_monitoring_exists": false}}

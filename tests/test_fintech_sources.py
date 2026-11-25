@@ -272,6 +272,7 @@ def test_fintech_cache_age_is_observation_not_list_failure():
     from doxagent.message_bus_v2.public_listing import cache_evidence, Listing
     capture=Capture(200,'https://www.cftc.gov/PressRoom/PressReleases','valid content',{'age':'86400','x-cache':'STALE'})
     recipe=listing_recipes()['cftc_press_releases'][0]
+    assert all(r.cache_diagnostic_only for rs in listing_recipes().values() for r in rs)
     info=cache_evidence(capture,recipe,now=NOW)
     assert info['diagnostic_only'] and info['observed_age_seconds']==86400
     assert len(info['diagnostic_warnings'])==2
@@ -293,3 +294,22 @@ def test_unchained_uses_exact_observed_category_request_and_native_archive_contr
     rows=parse('unchained_crypto',raw)
     assert len(rows)==1 and rows[0].title=='New crypto rule'
     assert rows[0].publication_time_basis=='DATE'
+
+
+def test_age_gate_withdrawal_preserves_other_ir_channels_bindings_and_is_idempotent(tmp_path):
+    from scripts.ops.withdraw_fintech_cache_gate import withdraw
+    from doxagent.message_bus_v2.schema import UpdateActor
+    repo,bus=_bus(tmp_path/'bus.db')
+    source=repo.get_source('corporate_ir_press_releases')
+    entries=source.default_parameters['endpoints']
+    old=[{**e,'parser_parameters':{**e['parser_parameters'],'max_listing_cache_age_seconds':30}}
+         if e['owner_ticker']=='COIN' else e for e in entries]
+    bus.update_source(source.source_id,{'default_parameters':{'endpoints':old}},actor=UpdateActor.USER)
+    bindings=[b.model_dump() for b in repo.list_bindings()]
+    result=withdraw(repo,True)
+    after=repo.get_source(source.source_id)
+    assert set(result['removed_from'])=={'coin.blog','coin.ir','coin.deribit'}
+    assert [e for e in after.default_parameters['endpoints'] if e['owner_ticker']!='COIN']==[e for e in old if e['owner_ticker']!='COIN']
+    assert all('max_listing_cache_age_seconds' not in e['parser_parameters'] for e in after.default_parameters['endpoints'] if e['owner_ticker']=='COIN')
+    assert [b.model_dump() for b in repo.list_bindings()]==bindings and repo.get_ticker_state('COIN') is None
+    assert withdraw(repo,True)['removed_from']==[] and repo.get_source(source.source_id).version==after.version

@@ -1,0 +1,70 @@
+[
+  {
+    "source": "cftc_press_releases",
+    "index": 0,
+    "browser_at": "2026-11-25T15:55:59.183Z",
+    "http_at": "2026-11-25T15:54:49.360237+00:00",
+    "browser_count": 37,
+    "http_count": 37,
+    "missing": [],
+    "extra": [],
+    "http_age": "4452",
+    "frontend_dynamic_requests": []
+  },
+  {
+    "source": "cftc_trading_rules",
+    "index": 0,
+    "browser_at": "2026-11-25T15:56:01.506Z",
+    "http_at": "2026-11-25T15:54:47.645925+00:00",
+    "browser_count": 50,
+    "http_count": 50,
+    "missing": [],
+    "extra": [],
+    "http_age": "804",
+    "frontend_dynamic_requests": []
+  },
+  {
+    "source": "cftc_trading_rules",
+    "index": 1,
+    "browser_at": "2026-11-25T15:56:03.165Z",
+    "http_at": "2026-11-25T15:54:49.245286+00:00",
+    "browser_count": 50,
+    "http_count": 50,
+    "missing": [],
+    "extra": [],
+    "http_age": "834",
+    "frontend_dynamic_requests": []
+  },
+  {
+    "source": "deribit",
+    "index": null,
+    "browser_at": "2026-11-25T15:56:03.965Z",
+    "http_at": "2026-11-25T15:54:42.765420+00:00",
+    "browser_count": 24,
+    "http_count": 24,
+    "missing": [],
+    "extra": [],
+    "http_age": "2070",
+    "frontend_dynamic_requests": [
+      "https://insights.deribit.com/",
+      "https://insights.deribit.com/exchange-updates/",
+      "https://insights.deribit.com/industry/",
+      "https://insights.deribit.com/education/",
+      "https://insights.deribit.com/industry/__next._tree.txt",
+      "https://insights.deribit.com/education/__next._tree.txt",
+      "https://insights.deribit.com/exchange-updates/__next._tree.txt",
+      "https://insights.deribit.com/__next._tree.txt"
+    ]
+  },
+  {
+    "source": "thedefiant_fintech_regulation",
+    "index": 0,
+    "browser_at": "2026-11-25T15:52:58.204Z",
+    "http_at": "2026-11-25T15:54:46.092474+00:00",
+    "recent_count": 10,
+    "http_count": 10,
+    "latest_title_matches": true,
+    "videos_excluded": 3,
+    "regulation_browser_status": "CHALLENGE_NOT_VERIFIED"
+  }
+]

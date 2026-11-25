@@ -1,6 +1,7 @@
 """Read-only exact production ListingAdapter probe; never inserts messages."""
 import asyncio
 import json
+import argparse
 from types import SimpleNamespace
 
 from doxagent.message_bus_v2.fintech_sources import initial_sources, listing_recipes
@@ -12,6 +13,7 @@ from doxagent.message_bus_v2.technology_sources import TechnologyAdapter, Techno
 
 
 async def main():
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source');args=parser.parse_args()
     http=TechnologyHttp();delegate=TechnologyAdapter(http);adapter=ListingAdapter(delegate,http)
     slots=asyncio.Semaphore(2)
     async def one(source,recipe):
@@ -36,7 +38,7 @@ async def main():
             finally:REQUESTS.reset(token)
     try:
         sources={s.source_id:s for s in initial_sources()}
-        await asyncio.gather(*(one(sources[s],r) for s,recipes in listing_recipes().items() for r in recipes))
+        await asyncio.gather(*(one(sources[s],r) for s,recipes in listing_recipes().items() if not args.source or s==args.source for r in recipes))
     finally:await http.close()
 
 
