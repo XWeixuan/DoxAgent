@@ -18,6 +18,7 @@ FILES = ['src/doxagent/trade_execution/'+name for name in (
     'ibkr_session.py','ownership.py','exit_guard.py','management.py')]
 FILES += ['src/doxagent/exit_strategy/schema.py','src/doxagent/api_v2/wire_schema.json',
           'src/doxagent/v2_read/executions.py']
+COPY_ROOTS = ()  # Optional package copies avoid a separate image layer per module.
 
 
 def run(args):
@@ -74,7 +75,9 @@ def main():
                     for path in FILES:
                         raw=git(commit,path);target=context/path;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
                         hashes[path]=hashlib.sha256(raw).hexdigest()
-                        recipe+=['COPY --chmod=0644 '+path+' /app/'+path]
+                        if not any(path.startswith(root+'/') for root in COPY_ROOTS):
+                            recipe+=['COPY --chmod=0644 '+path+' /app/'+path]
+                    recipe+=['COPY '+root+'/ /app/'+root+'/' for root in COPY_ROOTS]
                     recipe+=['RUN umask 022 && python -m compileall -q --invalidation-mode checked-hash /app/src/doxagent/trade_execution /app/src/doxagent/exit_strategy /app/src/doxagent/v2_read']
                     code='import hashlib; expected='+repr(hashes)+'; assert all(hashlib.sha256(open("/app/"+p,"rb").read()).hexdigest()==h for p,h in expected.items())'
                     recipe+=['RUN python -c '+shlex.quote(code)]

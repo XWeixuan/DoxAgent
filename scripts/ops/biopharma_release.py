@@ -31,4 +31,5 @@ if __name__ == "__main__":
         text=True,
     ).splitlines()
     release.FILES += ["src/doxagent/api_v2/bus.py"]
+    release.COPY_ROOTS=('src/doxagent/message_bus_v2',)
     release.main()
