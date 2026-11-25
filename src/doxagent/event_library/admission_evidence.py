@@ -38,6 +38,21 @@ def ready(db, ticker):
                 and db.execute('SELECT 1 FROM event_storage_progress WHERE key=?', ('admissions-ready:'+ticker,)).fetchone())
 
 
+def inherit(db, ticker, version):
+    """Carry completed first-knowledge evidence across an attached branch copy."""
+    if not db.execute("SELECT 1 FROM origin.sqlite_master WHERE name='event_storage_progress'").fetchone():
+        return False
+    key = 'admissions-ready:' + ticker
+    if not db.execute('SELECT 1 FROM origin.event_storage_progress WHERE key=?', (key,)).fetchone():
+        return False
+    db.execute('INSERT INTO fact_admission_evidence SELECT * FROM origin.fact_admission_evidence '
+               'WHERE ticker=? AND first_version<=?', (ticker, version))
+    db.execute('INSERT INTO event_publication_clocks SELECT * FROM origin.event_publication_clocks '
+               'WHERE ticker=? AND version<=?', (ticker, version))
+    db.execute('INSERT OR REPLACE INTO event_storage_progress VALUES(?,?)', (key, '1'))
+    return True
+
+
 def facts(db, ticker, version, numbers=None):
     clause = '' if numbers is None else ' AND r.fact_no IN (SELECT value FROM json_each(?))'
     args = (ticker,version) if numbers is None else (ticker,version,json.dumps(numbers))
@@ -75,7 +90,15 @@ def backfill(repository, ticker, *, limit=64):
             if not branch:break
             path=Path(branch['source']).resolve();ceiling=min(ceiling,base)
         state={'paths':paths,'index':0,'phase':'clocks','cursor':0}
-    path,base,ceiling=state['paths'][state['index']]
+    # Cold no-change branches contribute no publication in this interval. Their
+    # sidecars already supplied the lineage; match the ordinary history reader
+    # without reopening a database which was legitimately retired. Also handle
+    # checkpoints created by older versions of this migration.
+    while True:
+        path,base,ceiling=state['paths'][state['index']]
+        if base < ceiling or state['index']+1 == len(state['paths']):
+            break
+        state.update(index=state['index']+1, phase='clocks', cursor=0)
     with closing(sqlite3.connect(Path(path).as_uri()+'?mode=ro',uri=True)) as source:
         source.row_factory=sqlite3.Row
         if state['phase']=='clocks':

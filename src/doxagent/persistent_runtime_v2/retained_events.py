@@ -69,6 +69,8 @@ def build(source,target,ticker,versions,should_yield=None):
             columns=','.join(r[1] for r in db.execute('PRAGMA main.table_info('+table+')'))
             db.execute('INSERT INTO main.'+table+'('+columns+') SELECT '+columns+' FROM origin.'+table+' WHERE '+predicate,args)
         copy('library_versions','ticker=? AND version IN (SELECT version FROM selected_versions)',(ticker,))
+        from doxagent.event_library.admission_evidence import inherit
+        inherit(db, ticker, head)
         if db.execute('SELECT count(*) FROM library_versions').fetchone()[0]!=len(versions):raise ValueError('requested historical version not retained')
         copy('library_heads','ticker=?',(ticker,));copy('id_counters','ticker=?',(ticker,))
         for entity,column in (('events','event_no'),('facts','fact_no')):
