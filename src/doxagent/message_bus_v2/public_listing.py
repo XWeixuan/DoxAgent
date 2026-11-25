@@ -56,6 +56,7 @@ class Listing:
     max_age_seconds: int | None = None
     coverage_review: str | None = None
     method: str = "GET"
+    rss_fallback: bool = True
 
 
 RECIPES = {
@@ -255,6 +256,10 @@ RECIPES = {
 }
 
 
+from .fintech_sources import listing_recipes as _fintech_recipes
+RECIPES.update(_fintech_recipes())
+
+
 def enabled(source):
     from .rss_http_race import enabled as race_enabled
 
@@ -342,6 +347,9 @@ def text(node):
 
 
 def parse_listing(recipe, spec, raw, now):
+    if recipe.parser.startswith('fintech_'):
+        from .fintech_parsers import parse_listing as parse_fintech
+        return parse_fintech(recipe, raw, now)
     if recipe.parser.startswith("race_"):
         from .rss_http_race import parse_listing as parse_race
 
@@ -749,12 +757,16 @@ class ListingAdapter:
                     await asyncio.sleep(0.2)
 
     async def poll(self, context):
-        if not enabled(context.source) or context.window_cutoff is not None:
+        from .fintech_sources import SOURCES as fintech_sources
+        if not enabled(context.source) or (context.window_cutoff is not None
+                and context.source.source_id not in fintech_sources):
             return await self.delegate.poll(context)
         return await self._poll(context, shared=False)
 
     async def poll_shared(self, context):
-        if not enabled(context.source) or context.window_cutoff is not None:
+        from .fintech_sources import SOURCES as fintech_sources
+        if not enabled(context.source) or (context.window_cutoff is not None
+                and context.source.source_id not in fintech_sources):
             return await self.delegate.poll_shared(context)
         return await self._poll(context, shared=True)
 
@@ -905,7 +917,15 @@ class ListingAdapter:
                         + "_dox_poll="
                         + str(fresh_query_bucket(context))
                     )
-                if recipe.parser == "frontier_api":
+                if recipe.parser == 'fintech_occ':
+                    from .fintech_sources import OCC_TYPES
+                    capture = await self._fetch(url, spec, headers=headers, method='POST', json_body={
+                        'sId':101516, 'SearchTerm':'', 'Topics':[], 'NewsTypes':list(OCC_TYPES),
+                        'EarliestPublishDateTime':None, 'LatestPublishDateTime':None,
+                        'SortByDate':None, 'StartFrom':0, 'Row':40,
+                    })
+                    captures.append(capture)
+                elif recipe.parser == "frontier_api":
                     headers["x-tenant-key"] = "ebm_datacenterfrontier"
                     capture = await self._fetch(
                         url,
@@ -972,6 +992,8 @@ class ListingAdapter:
                             else None,
                             message.raw_payload.get("updated_at"),
                         ]
+                        + ([message.raw_payload.get("content_hash")]
+                           if source.source_id=='cftc_trading_rules' else [])
                     )
                 )
                 if seen.get(message.url) != signature or getattr(context, "force_refresh", False):
@@ -1028,8 +1050,8 @@ class ListingAdapter:
                 raw_hash=sha256_text(recipe.url),
                 original_payload={"listing_url": recipe.url, "rss_url": recipe.feed},
             )
-            if not fallback:
-                failure.error_code = "HTTP_RACE_LANE_FAILED"
+            if not fallback or not recipe.rss_fallback:
+                failure.error_code = "HTTP_RACE_LANE_FAILED" if not fallback else 'HTTP_LISTING_FAILED'
                 return PollResult(failures=[failure], window_done=False)
             fallback = copy.copy(context)
             fallback.acquisition_unit = "FEED:" + sha256_text(recipe.feed)[:24]

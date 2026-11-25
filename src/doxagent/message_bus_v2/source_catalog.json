@@ -397,8 +397,12 @@
       ]
     },
     "corporate_ir_press_releases": {
-      "description": "各上市公司的官方投资者关系与新闻稿入口；按 Ticker 监测已绑定的公告页面及 RSS，获取一手公司披露。",
-      "entry_points": [],
+      "description": "各上市公司的官方投资者关系与新闻稿入口；按 Ticker 监测已绑定的公告页面及 RSS，获取一手公司披露。 COIN 渠道包含 Coinbase Blog Most Recent、Coinbase IR 与 Deribit Exchange Updates。",
+      "entry_points": [
+        "https://www.coinbase.com/blog/landing",
+        "https://investor.coinbase.com/news/default.aspx",
+        "https://insights.deribit.com/exchange-updates/"
+      ],
       "listing": {
         "primary": [
           "RSS",
@@ -2061,6 +2065,334 @@
       },
       "applicability": "GLOBAL",
       "sector_ids": []
+    },
+    "theblock_crypto": {
+      "description": "The Block 加密行业新闻总列表，监测交易平台、机构业务、DeFi 与监管事件；沿用网站公开新闻页及其结构化数据。",
+      "entry_points": [
+        "https://www.theblock.co/news"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "coindesk_crypto": {
+      "description": "CoinDesk 的 Policy、Finance（官网路径 business）与 Tech 栏目合并监测，不扩展到 Markets 等其他板块。",
+      "entry_points": [
+        "https://www.coindesk.com/policy",
+        "https://www.coindesk.com/business",
+        "https://www.coindesk.com/tech"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "rg_prediction_markets": {
+      "description": "RG.org 的 Prediction Markets 栏目；排除页面中的其他博彩、体育和导流内容。",
+      "entry_points": [
+        "https://rg.org/news/prediction-markets"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "unchained_crypto": {
+      "description": "Unchained 的 Regulation、Business 与 DeFi 栏目；原生列表 HTTP 不可用时保留各栏目 RSS，降级继续显示失败。",
+      "entry_points": [
+        "https://unchainedcrypto.com/category/regulation/",
+        "https://unchainedcrypto.com/category/business/",
+        "https://unchainedcrypto.com/category/defi/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "SOURCE_BODY"
+        ],
+        "fallback": [
+          "HTTP"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "decrypt_crypto": {
+      "description": "Decrypt 的 News、Business、Technology 与 DeFi 四个入口；合并同篇新闻，保留官网发布时刻。",
+      "entry_points": [
+        "https://decrypt.co/news",
+        "https://decrypt.co/news/business",
+        "https://decrypt.co/news/technology",
+        "https://decrypt.co/news/defi"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "cointelegraph_crypto": {
+      "description": "Cointelegraph 的 Regulation、Coinbase 与 Prediction Markets 三个 tag；只提取当前 tag 实际新闻卡片。",
+      "entry_points": [
+        "https://cointelegraph.com/tags/regulation",
+        "https://cointelegraph.com/tags/coinbase",
+        "https://cointelegraph.com/tags/prediction-markets"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "bankingdive_fintech": {
+      "description": "Banking Dive 的 Fintech 专栏，监测数字银行、支付、金融科技与相关监管；不扩大为全站新闻。",
+      "entry_points": [
+        "https://www.bankingdive.com/topic/fintech/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "bleepingcomputer_crypto": {
+      "description": "BleepingComputer 的 Cryptocurrency 专栏，关注加密资产安全事件、交易所诈骗和钱包风险。",
+      "entry_points": [
+        "https://www.bleepingcomputer.com/news/cryptocurrency/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09",
+        "L1-02"
+      ]
+    },
+    "sbcamericas_prediction_markets": {
+      "description": "SBC Americas 的 Prediction Markets 专栏；HTTP 入口待浏览器评估，保留同栏目 RSS 兜底并显示 HTTP 失败。",
+      "entry_points": [
+        "https://sbcamericas.com/category/prediction-markets/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": [
+          "RSS"
+        ]
+      },
+      "body": {
+        "primary": [
+          "SOURCE_BODY"
+        ],
+        "fallback": [
+          "HTTP"
+        ]
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "ledgerinsights_news": {
+      "description": "Ledger Insights 的 News 分类，监测机构数字资产、代币化、稳定币、银行与金融基础设施。",
+      "entry_points": [
+        "https://www.ledgerinsights.com/category/news/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "thedefiant_fintech_regulation": {
+      "description": "The Defiant 的 TradFi & Fintech、Regulation & Politics 栏目；读取 Recent articles，不采旧视频推荐。",
+      "entry_points": [
+        "https://thedefiant.io/news/tradfi-and-fintech",
+        "https://thedefiant.io/news/regulation"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "cftc_trading_rules": {
+      "description": "CFTC 官方交易组织规则申报，仅监测 COIN（Coinbase）和 KEX（Kalshi）；核对组织标识并加载申报全部关联附件。",
+      "entry_points": [
+        "https://www.cftc.gov/IndustryOversight/IndustryFilings/TradingOrganizationRules?Organization=COIN&dir=DESC&col=Date",
+        "https://www.cftc.gov/IndustryOversight/IndustryFilings/TradingOrganizationRules?Organization=KEX&dir=DESC&col=Date"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "cftc_press_releases": {
+      "description": "CFTC 官方 Press Releases，监测金融衍生品、数字资产、预测市场政策及执法披露。",
+      "entry_points": [
+        "https://www.cftc.gov/PressRoom/PressReleases"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "occ_newsroom": {
+      "description": "OCC 官方 Newsroom，限定 NewsRelease、Bulletin、Speech、CongressionalTestimony 与 AdvisoryLetter；不含 Alert。",
+      "entry_points": [
+        "https://www.occ.gov/news-events/newsroom/?q=&nr=NewsRelease,Bulletin,Speech,CongressionalTestimony,AdvisoryLetter&topic=&dte=0"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
     }
   }
 }

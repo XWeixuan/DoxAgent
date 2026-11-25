@@ -44,7 +44,10 @@ def parse_listing(spec: IrEndpointSpec, raw: str, url=None):
     url = url or spec.entry_url
     rows = []
     next_url = None
-    if spec.parser_ref == "rss":
+    if spec.parser_ref in {'coinbase_q4','coinbase_blog','deribit'}:
+        from .coinbase import rows as coinbase_rows
+        rows=coinbase_rows(spec.parser_ref,raw)
+    elif spec.parser_ref == "rss":
         root = ET.fromstring(raw)
         if root.tag != "rss" or root.find("channel") is None:
             raise IrContractError("IR RSS channel missing")

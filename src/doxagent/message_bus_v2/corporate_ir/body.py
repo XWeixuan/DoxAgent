@@ -38,7 +38,7 @@ def inspect_article(raw, url, title):
 
 def exact_publication(raw, endpoint):
     # Date-only publisher templates must not gain synthetic midnight precision.
-    if endpoint.endpoint_id in {"nbis.press", "rklb.updates", "snow.press"}:
+    if endpoint.endpoint_id in {"nbis.press", "rklb.updates", "snow.press", "coin.blog", "coin.deribit"}:
         return None
     doc = html.fromstring(raw)
 

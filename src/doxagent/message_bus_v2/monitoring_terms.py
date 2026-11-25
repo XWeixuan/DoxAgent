@@ -177,6 +177,13 @@ class MonitoringTermsService:
         ))
 
     def apply(self, terms: TickerMonitoringTerms, *, actor: str) -> int:
+        # A requested X binding can be prepared before a candidate ticker has
+        # its first governed terms. Seed once; later explicit clears stay clear.
+        if terms.ticker == 'COIN' and terms.expected_revision == 0 and not terms.x_accounts:
+            from .x_official import ACCOUNTS, SOURCE_ID
+            binding = self.repository.get_binding(terms.ticker+':'+SOURCE_ID)
+            if binding and binding.enabled and terms.ticker in ACCOUNTS:
+                terms = terms.model_copy(update={'x_accounts':[a.lower() for a in ACCOUNTS[terms.ticker]]})
         payload = canonical_json(terms.model_dump(mode="json"))
         if len(payload.encode("utf-8")) > 65536:
             raise ValueError("monitoring terms exceed 64 KiB")

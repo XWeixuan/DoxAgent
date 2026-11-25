@@ -78,6 +78,11 @@ SOURCE_INTERVALS = {'airspaceforces_space': 20,
 
 IR_INTERVALS = {'be.press': 30, 'ceg.press': 20, 'cohr.corporate': 20, 'cohr.financial': 20, 'intc.press': 20, 'mu.ir': 30, 'mu.newsroom': 20, 'nbis.press': 20, 'onds.press': 20, 'rklb.ir': 20, 'rklb.updates': 20, 'snow.press': 20}
 
+# New industry publishers use the current shared HTTP cadence, not the old 60s seed.
+from .fintech_sources import CATALOG as FINTECH_CATALOG
+SOURCE_INTERVALS.update({s.source_id:20 for s in FINTECH_CATALOG})
+IR_INTERVALS.update({'coin.blog':20,'coin.ir':20,'coin.deribit':20})
+
 def unit_interval(source, unit, base):
     if source.source_id == 'bloomberg_massive' and unit.removeprefix('TEST:') == 'WIRE:realtime':
         return min(10, base)
