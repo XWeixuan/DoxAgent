@@ -121,10 +121,11 @@ def main():
             broker_orders=0,
         )
         if args.receipt:
-            args.receipt.parent.mkdir(parents=True, exist_ok=True)
+            args.receipt.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
             if args.receipt.exists():
                 raise ValueError("receipt already exists; use a distinct verification receipt")
             args.receipt.write_text(json.dumps(result, indent=2), encoding="utf-8")
+            args.receipt.chmod(0o600)
         # Private account/lot payloads stay in the local receipt, not console.
         print(
             json.dumps(
