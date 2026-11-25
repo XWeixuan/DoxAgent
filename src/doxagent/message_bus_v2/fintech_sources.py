@@ -70,6 +70,7 @@ def listing_recipes():
                 url=OCC_API;method='POST'
             entries.append(Listing(feed,url,s.parser if s.parser!='rss' else 'fintech_sbc',
                 s.route,s.transport,fresh,max_age_seconds=30,method=method,rss_fallback=fallback,
+                cache_diagnostic_only=True,
                 coverage_review='HTTP listing needs browser review; preserve scoped RSS fallback'
                 if s.source_id in {'unchained_crypto','sbcamericas_prediction_markets'} else None))
         recipes[s.source_id]=tuple(entries)

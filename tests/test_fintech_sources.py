@@ -230,7 +230,7 @@ def test_stdlib_transport_honors_post_payload_and_keeps_pdf_bytes(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_coinbase_cms_native_cutoff_and_listing_cache_guard_are_not_body_policy(monkeypatch):
+async def test_coinbase_cms_native_cutoff_retains_high_age_without_rejecting_listing(monkeypatch):
     from doxagent.message_bus_v2.corporate_ir.catalog import initial_endpoints
     from doxagent.message_bus_v2.corporate_ir.http import PublicHttp
     from doxagent.message_bus_v2.corporate_ir.parsers import parse_listing as parse_ir
@@ -247,8 +247,8 @@ async def test_coinbase_cms_native_cutoff_and_listing_cache_guard_are_not_body_p
         return Capture(200,url,raw,{'age':'900'})
     http=PublicHttp();http.routed_http=SimpleNamespace(fetch=fetch,close=AsyncMock())
     try:
-        with pytest.raises(ValueError,match='cache_age'):await http.fetch(spec)
-        # BODY is not constrained by the discovery list's CDN age threshold.
+        assert (await http.fetch(spec)).status==200
+        # Neither a valid listing nor BODY fails solely because of response Age.
         assert (await http.fetch(spec,url='https://www.coinbase.com/blog/new-product')).status==200
         rows,_=parse_ir(spec,raw)
         assert len(rows)==1 and rows[0].publication_time_basis=='DATE'
@@ -266,3 +266,15 @@ async def test_fintech_ticker_catchup_uses_existing_listing_instead_of_rss_only_
     result=await adapter.poll(SimpleNamespace(source=source,window_cutoff=NOW))
     assert result.window_done and result.window_coverage=='PARTIAL'
     adapter._poll.assert_awaited_once()
+
+
+def test_fintech_cache_age_is_observation_not_list_failure():
+    from doxagent.message_bus_v2.public_listing import cache_evidence, Listing
+    capture=Capture(200,'https://www.cftc.gov/PressRoom/PressReleases','valid content',{'age':'86400','x-cache':'STALE'})
+    recipe=listing_recipes()['cftc_press_releases'][0]
+    info=cache_evidence(capture,recipe,now=NOW)
+    assert info['diagnostic_only'] and info['observed_age_seconds']==86400
+    assert len(info['diagnostic_warnings'])==2
+    # Existing unrelated source policies are outside this scoped rollback.
+    with pytest.raises(ValueError,match='cache_age'):
+        cache_evidence(capture,Listing('feed','url','legacy'),now=NOW)

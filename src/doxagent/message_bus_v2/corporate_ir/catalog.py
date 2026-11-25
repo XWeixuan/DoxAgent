@@ -167,7 +167,7 @@ def initial_endpoints():
     ]
     specs = [s.model_copy(update={'revision': 3}) if s.endpoint_id == 'snow.press' else s for s in specs]
     specs = [s.model_copy(update={'target_interval_seconds':20,'parser_parameters':{
-        **s.parser_parameters, 'max_listing_cache_age_seconds':30,
+        **s.parser_parameters,
         **({'http_route':'us-standard-5'} if s.endpoint_id in {'coin.blog','coin.ir'} else {}),
     }}) if s.owner_ticker=='COIN' else s for s in specs]
     return [s.model_copy(update={

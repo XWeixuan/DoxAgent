@@ -57,6 +57,7 @@ class Listing:
     coverage_review: str | None = None
     method: str = "GET"
     rss_fallback: bool = True
+    cache_diagnostic_only: bool = False
 
 
 RECIPES = {
@@ -301,13 +302,17 @@ def cache_evidence(capture, recipe, *, now=None):
         except (TypeError, ValueError, OverflowError):
             pass
     limit = recipe.max_age_seconds or DEFAULT_MAX_CACHE_AGE_SECONDS
+    warnings=[]
     if age > limit:
-        raise ValueError("public_listing_stale_cache_age:" + str(round(age, 3)))
+        warnings.append("public_listing_stale_cache_age:" + str(round(age, 3)))
     if re.search(r"(?:^|,)\s*11[01]\s", headers.get("warning", "")):
-        raise ValueError("public_listing_stale_cache_warning")
+        warnings.append("public_listing_stale_cache_warning")
     for key in ("x-proxy-cache", "x-cache", "cf-cache-status"):
         if re.search(r"\b(?:STALE|UPDATING)\b", headers.get(key, ""), re.I):
-            raise ValueError("public_listing_stale_cache_status:" + key + "=" + headers[key])
+            warnings.append("public_listing_stale_cache_status:" + key + "=" + headers[key])
+    diagnostic_only=getattr(recipe,'cache_diagnostic_only',False)
+    if warnings and not diagnostic_only:
+        raise ValueError(warnings[0])
     return {
         "observed_age_seconds": round(age, 3),
         "age_basis": (
@@ -320,6 +325,7 @@ def cache_evidence(capture, recipe, *, now=None):
             else "unknown"
         ),
         "max_age_seconds": limit,
+        **({'diagnostic_only':True,'diagnostic_warnings':warnings} if diagnostic_only else {}),
         "headers": {
             k: headers[k]
             for k in (

@@ -191,13 +191,6 @@ class PublicHttp:
             # Query only already-published entries; verify real filter behavior,
             # rather than adding an ignored parameter that only freshens the edge.
             url += '&'+urlencode({'fields.publicationDate[lte]':utc_now().isoformat()})
-        def checked(capture):
-            limit = spec.parser_parameters.get('max_listing_cache_age_seconds') if listing else None
-            if limit and capture.status in {200,304}:
-                from types import SimpleNamespace
-                from ..public_listing import cache_evidence
-                cache_evidence(capture,SimpleNamespace(max_age_seconds=limit))
-            return capture
         route = spec.parser_parameters.get('http_route') or (spec.parser_parameters.get("body_http_route") if not listing else None)
         if route:
             # Q4's feed works directly while its article pages require the
@@ -215,7 +208,7 @@ class PublicHttp:
             token = HTTP_CONTEXT.set("collector" if listing else "body")
             try:
                 result = await self.routed_http.fetch(url,recipe,headers=headers)
-                return checked(Capture(result.status,result.url,result.text,result.headers,len(result.text.encode())))
+                return Capture(result.status,result.url,result.text,result.headers,len(result.text.encode()))
             finally:
                 HTTP_CONTEXT.reset(token)
         async with network_timeout(12):
@@ -233,7 +226,7 @@ class PublicHttp:
 
                             url = urljoin(url, capture.headers["location"])
                             continue
-                        return checked(capture)
+                        return capture
                     from ..schema import utc_now
                     async with self._lease(host) as client, client.stream(
                         "GET", url, headers={**HEADERS, **(headers or {})}
@@ -254,13 +247,13 @@ class PublicHttp:
                         event=response.request.extensions.get('_bus_poll_event')
                         if event is not None:
                             event.update(response_received_at=utc_now().isoformat(),status_code=response.status_code)
-                        return checked(Capture(
+                        return Capture(
                             response.status_code,
                             str(response.url),
                             body,
                             dict(response.headers),
                             len(raw),
-                        ))
+                        )
             raise ValueError("IR redirect limit")
 
     async def close(self):
