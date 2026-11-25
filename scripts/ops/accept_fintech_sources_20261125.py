@@ -17,7 +17,7 @@ from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
 
 
 async def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--all-entries',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--all-entries',action='store_true');parser.add_argument('--ir-only',action='store_true');args=parser.parse_args()
     http=TechnologyHttp(purpose='BODY');ir_http=PublicHttp();slots=asyncio.Semaphore(2)
     definitions={s.source_id:s for s in initial_sources()}
     async def one(source_id,recipe):
@@ -72,7 +72,7 @@ async def main():
             except Exception as e:report['error']=type(e).__name__+':'+str(e)[:250]
             print(json.dumps(report),flush=True)
     try:
-        await asyncio.gather(*(one(s,r) for s,rs in listing_recipes().items() for r in (rs if args.all_entries else rs[:1])),
+        await asyncio.gather(*(one(s,r) for s,rs in listing_recipes().items() for r in (rs if args.all_entries else rs[:1]) if not args.ir_only),
                             *(ir_one(s) for s in initial_endpoints() if s.owner_ticker=='COIN'))
     finally:
         await http.close();await ir_http.close()

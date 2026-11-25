@@ -242,7 +242,8 @@ async def test_coinbase_cms_native_cutoff_and_listing_cache_guard_are_not_body_p
     async def fetch(url,*a,**kw):
         if urlsplit(url).hostname=='contentful.coinbase.com':
             query=parse_qs(urlsplit(url).query)
-            assert 'sys.updatedAt[lte]' in query and query['order']==['-fields.publicationDate']
+            assert 'fields.publicationDate[lte]' in query and 'sys.updatedAt[lte]' not in query
+            assert query['order']==['-fields.publicationDate']
         return Capture(200,url,raw,{'age':'900'})
     http=PublicHttp();http.routed_http=SimpleNamespace(fetch=fetch,close=AsyncMock())
     try:

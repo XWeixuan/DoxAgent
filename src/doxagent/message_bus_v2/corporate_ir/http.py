@@ -187,9 +187,10 @@ class PublicHttp:
         if listing and spec.parser_ref=='coinbase_blog' and urlsplit(url).hostname=='contentful.coinbase.com':
             from urllib.parse import urlencode
             from ..schema import utc_now
-            # A native CMS filter, verified to reach both cache layers. It keeps
-            # all already-published records; the next poll admits later updates.
-            url += '&'+urlencode({'sys.updatedAt[lte]':utc_now().isoformat()})
+            # The proxy honors publicationDate filters, but ignores sys.updatedAt.
+            # Query only already-published entries; verify real filter behavior,
+            # rather than adding an ignored parameter that only freshens the edge.
+            url += '&'+urlencode({'fields.publicationDate[lte]':utc_now().isoformat()})
         def checked(capture):
             limit = spec.parser_parameters.get('max_listing_cache_age_seconds') if listing else None
             if limit and capture.status in {200,304}:

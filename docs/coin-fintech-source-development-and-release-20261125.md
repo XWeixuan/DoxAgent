@@ -41,7 +41,7 @@
 
 POST 只用于网站只读列表或文章读取。实测已证明 POST 不能普遍消除上游缓存，The Defiant 就是反例。也没有把 no-cache 头当作缓存绕过已生效的证明。
 
-Coinbase 原始 landing HTML 多次出现 Cloudflare challenge/地区跳转。前端代码明确使用 `contentful.coinbase.com`，其公开 API 无须认证。裸查询复测 Age 161 秒；前端支持的 `cache-version` 只使外层 MISS，上游仍 HIT，未采用为解决方案。最终使用 API 自身合法的 `sys.updatedAt[lte]=本次请求时间`，按实际已更新记录范围查询；观察到 CDN 与上游同时 MISS，30 条标题/URL 范围保持一致。没有生成随机无业务含义参数，也没有访问 Contentful Preview 或使用私有令牌。
+Coinbase 原始 landing HTML 多次出现 Cloudflare challenge/地区跳转。前端代码明确使用 `contentful.coinbase.com`，其公开 API 无须认证。裸查询复测 Age 161 秒；前端支持的 `cache-version` 只使外层 MISS，上游仍 HIT，未采用为解决方案。首轮 `sys.updatedAt[lte]` 同样只影响外层，使用 1970 年控制查询仍返回 1815 条，确认被代理忽略，已移除。进一步实测有效的 `fields.publicationDate[lte]=1970-01-01` 返回 0 条、`[gte]=2026-11-24` 返回 1 条、不存在的 slug 返回 0 条，三次 CDN/上游均 MISS。最终采用本次时刻作为真实 publicationDate 上界，只读已发布记录；实际当前上界查询也为双层 MISS，返回的近 30 条 ID 及顺序与原始查询完全一致。不使用被忽略的系统字段或随机参数；实际发布时间→首次发现验收仍未通过。没有访问 Contentful Preview 或使用私有令牌。
 
 Unchained：空壳分类页面不能证明发现覆盖；不带有效分类的 AJAX POST 会返回全站五条消息，也未采用。正确原生分类 GET 受限；分类 RSS 实测 Age 322/1112 秒，早期还出现逾一小时缓存。SBC 分类页 HTTP 同样受限。若后续必须提升这两站 HTTP 覆盖，需要用户评估是否采用现有 Chrome。CFTC、Deribit 的核心证据是上游缓存，不能据此保证加浏览器就解决。
 
@@ -66,3 +66,11 @@ RSS `content:encoded` 只在同一文章 URL 且普通完整性校验通过时�
 本轮相关回归 263 passed，1 deselected；新接入专属回归 16 项全部通过，Ruff E9/F 与 diff 检查通过。扩展检查发现四个已有断言失败（Reuters 查询数、Yahoo 既有周期、两项 recheck 领取），在未修改的 origin/main `a647b61a7` 隔离副本上同样复现；未改动无关业务来迁就断言。正式回归仅排除其中所包含的旧 Reuters 断言。
 
 发布与生产配置结果将在实际执行后补入本节。原始 HTML、全文、站点前端配置和诊断包不提交 Git；安全回执仅保留标题、URL、时间精度、条数、缓存头、质量与附件哈希。
+
+首轮生产发布代码 `26435872002e2b4da187a673127ca345c701bde2`，四组件相同镜像 `sha256:6ccaee2bf2be…`，运行中源码哈希与提交工作树一致，四者重启计数均 0；API、Collector 的 Docker health 为 healthy，其余两角色未配置 Docker health。初始化、Scheduler、Site Access 与 Chrome 未更换。
+
+已通过现有 owner API 写入：live 的16个批准绑定全部 enabled；candidate 共25个绑定，含16个本次绑定与9个原有默认绑定；两处 IR 均 v6/16渠道；COIN 均 NOT_STARTED、无统一监测词。当前初始化 `init-coin-0a7ab32b3e9d4b2db5dae780a52dfe03` 未替换。X 已恢复 CONNECTED，实际规则仍为原十 ticker 的十个账户，COIN 两账户仅预设，未提前扩展订阅。
+
+生产 ListingAdapter 实调25入口：16个通过缓存与物理请求证据校验；4个 RSS 兜底入口保留 HTTP_LISTING_FAILED_RSS_FALLBACK；其余5个（The Defiant 两栏目、CFTC 三入口）按实际过旧缓存返回 HTTP_LISTING_FAILED。没有把兜底或旧缓存伪装成健康轮询。COIN 三个 IR 的公开正文样本均 FULL，Deribit 列表继续因 Age 35516 秒失败。OCC 真实官方 PDF 全文6370字符、FULL。
+
+CMS 控制查询修正后，相关回归再次50 passed（与263项有重叠，不相加）。Collector/BODY 的小范围后续发布及最终配置复核见补充回执。
