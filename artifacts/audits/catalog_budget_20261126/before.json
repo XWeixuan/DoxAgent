@@ -1,0 +1,25 @@
+{
+  "kind": "production_reproduction",
+  "mcp": {
+    "content": [],
+    "structuredContent": {
+      "error": {
+        "code": "RESOURCE_TOO_LARGE",
+        "message": "RESOURCE_TOO_LARGE",
+        "retryable": false,
+        "request_id": "9d721a9c27d64d589fcbf41ea8500617"
+      },
+      "error_code": "INVALID_ARGUMENT"
+    },
+    "isError": true
+  },
+  "direct_catalog_probe": {
+    "sources": 108,
+    "catalog_json_bytes": 286048,
+    "seconds": 4.621
+  },
+  "api_list_budget_bytes": 262144,
+  "disk_free_observed": "38 GiB",
+  "api_image": "sha256:acb8277f958f06ecd0d48aea591b4a656e3ef1a32ea74bd98e45ed46e76ead98",
+  "mcp_image": "sha256:a0e7cfa0c66cd7892694a7b974282511c49e68ccb41739d3416c78814f0132d7"
+}
