@@ -787,7 +787,13 @@ class StocktwitsMessagesAdapter(_BaseAdapter):
             data = await self._json(
                 context,
                 url,
-                params={"action": "messages", "symbol": context.ticker, "limit": 199},
+                params={
+                    "action": "messages", "symbol": context.ticker, "limit": 199,
+                    # This provider requires a date, including realtime reads.
+                    # Use the actual requested window so midnight and sweeps
+                    # retain their coverage, rather than hard-coding today.
+                    "start": (context.window_start or context.requested_at - timedelta(minutes=30)).date().isoformat(),
+                },
                 headers={
                     "X-RapidAPI-Key": key,
                     "X-RapidAPI-Host": self.settings.stocktwits_rapidapi_host
