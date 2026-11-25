@@ -241,12 +241,21 @@ class SourceDefinition(BusModel):
     scheduler_constraints: SchedulerConstraints = Field(default_factory=SchedulerConstraints)
     content_enrichment_mode: ContentEnrichmentMode = ContentEnrichmentMode.ENRICH
     enabled: bool = True
-    activation_window: SourceActivationWindow | None = None
     version: int = Field(default=1, ge=1)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
     updated_by: UpdateActor = UpdateActor.USER
     updated_reason: str | None = None
+
+    @property
+    def activation_window(self) -> SourceActivationWindow | None:
+        value=self.default_parameters.get('activation_window')
+        return SourceActivationWindow.model_validate(value) if value is not None else None
+
+    @model_validator(mode='after')
+    def valid_activation_window(self):
+        self.activation_window  # Validate at the existing owner configuration boundary.
+        return self
 
     def active_at(self, instant: datetime) -> bool:
         return self.activation_window is None or self.activation_window.contains(instant)

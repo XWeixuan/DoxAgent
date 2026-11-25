@@ -29,6 +29,7 @@ async def permit():
 async def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--source")
+    p.add_argument("--query", default="Xenon")
     p.add_argument("--list-only", action="store_true")
     args = p.parse_args()
     http = TechnologyHttp()
@@ -55,7 +56,7 @@ async def main():
                     ticker="XENE",
                     acquisition_unit="HEAD",
                     window_cutoff=None,
-                    query_plan={"queries": [{"query": "Xenon"}]},
+                    query_plan={"queries": [{"query": args.query}]},
                 )
                 result = (
                     await adapter.poll(context)

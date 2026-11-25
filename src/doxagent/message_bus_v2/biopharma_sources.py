@@ -138,6 +138,20 @@ WINDOWS = {
 def initial_sources():
     result = []
     for s in CATALOG:
+        parameters = {"discovery_mode": "http_listing"}
+        properties = {"discovery_mode": {"const": "http_listing"}}
+        if s.source_id in WINDOWS:
+            parameters["activation_window"] = SourceActivationWindow(
+                start_date=WINDOWS[s.source_id][0], end_date=WINDOWS[s.source_id][1]
+            ).model_dump(mode="json")
+            properties["activation_window"] = {
+                "type": "object",
+                "required": ["start_date", "end_date", "timezone"],
+                "additionalProperties": False,
+                "properties": {
+                    k: {"type": "string"} for k in ("start_date", "end_date", "timezone")
+                },
+            }
         result.append(
             SourceDefinition(
                 source_id=s.source_id,
@@ -152,22 +166,17 @@ def initial_sources():
                     max_concurrency=2, minimum_request_gap_seconds=0.5
                 ),
                 default_polling_config=PollingConfig(target_interval_seconds=20),
-                default_parameters={"discovery_mode": "http_listing"},
+                default_parameters=parameters,
                 parameter_schema={
                     "type": "object",
                     "additionalProperties": False,
-                    "properties": {"discovery_mode": {"const": "http_listing"}},
+                    "properties": properties,
                 },
                 search_policy=SearchPolicy(mode="or")
                 if s.mode is AcquisitionMode.BY_SEARCH
                 else None,
                 distribution_policy=DistributionPolicy(jev_enabled=True, require_complete_body=True)
                 if s.mode.shared_distribution
-                else None,
-                activation_window=SourceActivationWindow(
-                    start_date=WINDOWS[s.source_id][0], end_date=WINDOWS[s.source_id][1]
-                )
-                if s.source_id in WINDOWS
                 else None,
             )
         )

@@ -23,20 +23,8 @@ def hidden_fields(raw):
 
 async def fetch_listing(adapter, recipe, spec, headers, context):
     if recipe.parser == "bio_fierce":
-        key = getattr(adapter, "_fierce_public_header", None)
-        if key is None or (context.requested_at - key[0]).total_seconds() > 3600:
-            # The anonymous HTML shell is challenged intermittently, while its
-            # public client bundle and native APIs work without that shell.
-            c = await adapter._fetch(
-                "https://www.fiercebiotech.com/modules/custom/quartz_apifirst/compiled/quartz-app.js?v=1795217470",
-                spec,
-            )
-            match = re.search(r'headers\["Quartz-Request-Key"\]="([^"]+)"', c.text)
-            if c.status != 200 or not match:
-                raise ValueError("fierce_public_request_header_missing")
-            key = (context.requested_at, match[1])
-            adapter._fierce_public_header = key
-        native_headers = {**headers, "Quartz-Request-Key": key[1]}
+        public_header = await fierce_headers(adapter, adapter._fetch, spec, context.requested_at)
+        native_headers = {**headers, **public_header}
         c = await adapter._fetch(recipe.url, spec, headers=native_headers)
         if c.status != 200:
             return c
@@ -50,7 +38,7 @@ async def fetch_listing(adapter, recipe, spec, headers, context):
                 result = await adapter._fetch(
                     "https://www.fiercebiotech.com/jsonapi/node/article/" + item["uuid"],
                     spec,
-                    headers={"Quartz-Request-Key": key[1]},
+                    headers=public_header,
                 )
                 if result.status != 200:
                     raise ValueError("fierce_native_node_http_" + str(result.status))
@@ -135,6 +123,21 @@ async def fetch_listing(adapter, recipe, spec, headers, context):
             c.listing_total = json.loads(c.text).get("total")
         return c
     return await adapter._fetch(recipe.url, spec, headers=headers, method=recipe.method)
+
+
+async def fierce_headers(owner, fetch, spec, now):
+    key = getattr(owner, "_fierce_public_header", None)
+    if key is None or (now - key[0]).total_seconds() > 3600:
+        c = await fetch(
+            "https://www.fiercebiotech.com/modules/custom/quartz_apifirst/compiled/quartz-app.js?v=1795217470",
+            spec,
+        )
+        match = re.search(r'headers\["Quartz-Request-Key"\]="([^"]+)"', c.text)
+        if c.status != 200 or not match:
+            raise ValueError("fierce_public_request_header_missing")
+        key = (now, match[1])
+        owner._fierce_public_header = key
+    return {"Quartz-Request-Key": key[1]}
 
 
 async def poll_aes(adapter, context):

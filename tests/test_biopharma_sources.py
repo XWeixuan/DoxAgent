@@ -72,6 +72,7 @@ def test_only_two_sources_have_dates_and_entries_stay_grouped():
     assert len(listing_recipes()["fda_release"]) == 3
     assert len(listing_recipes()["akeso_press_releases"]) == 2
     assert len(listing_recipes()["stat_biotech_trials"]) == 2
+    assert all("activation_window" not in s.model_dump() for s in sources)
 
 
 @pytest.mark.parametrize("ticker", ["XENE", "RGNX", "PRAX", "CGEM"])
@@ -112,6 +113,7 @@ def test_ash_preserves_paper_pid_and_does_not_invent_publication():
     assert all(
         "?pid=" in r.url
         and r.external_id == r.url
+        and r.raw_url == r.url
         and r.publication_time_basis == "UNKNOWN_FIRST_SEEN"
         for r in rows
     )
@@ -140,6 +142,61 @@ def test_fierce_native_node_time_and_sponsored_filter():
     raw["data"][0]["attributes"]["is_sponsored"] = True
     with pytest.raises(ValueError):
         parse_listing(listing_recipes()["fiercebiotech_biotech"][0], json.dumps(raw), NOW)
+
+
+@pytest.mark.asyncio
+async def test_fierce_public_api_body_respects_meter_gate_and_article_identity():
+    from doxagent.message_bus_v2.biopharma_body import fierce_body
+    from doxagent.message_bus_v2.biopharma_sources import SOURCES
+    from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
+
+    raw = json.loads((FIXTURES / "fierce.json").read_text())["data"][0]
+    raw["attributes"]["body"] = {
+        "value": "".join(
+            f"<p>Cohort {i}: Trial results preserved a 12.5% response estimate and safety data. "
+            "The contract specifies the complete milestone payment. "
+            "The next analysis will measure duration of response.</p>"
+            for i in range(6)
+        )
+    }
+    raw["attributes"]["field_enable_meter_gate"] = False
+    m = parse_listing(
+        listing_recipes()["fiercebiotech_biotech"][0], json.dumps({"data": [raw]}), NOW
+    )[0]
+    record = MediaEnrichmentRecord(
+        "test", "test", "fiercebiotech_biotech", "XENE", m.title, "", m.url
+    )
+    fetch = AsyncMock(side_effect=lambda *a, **k: Capture(200, a[0], json.dumps({"data": raw}), {}))
+    reader = SimpleNamespace(
+        http=SimpleNamespace(fetch=fetch), _fierce_public_header=(NOW, "public-client-value")
+    )
+    job = SimpleNamespace(message=m)
+    result = await fierce_body(reader, SOURCES["fiercebiotech_biotech"], job, record)
+    assert result.diagnostics["outcome"] == "FULL" and result.content.count("12.5%") == 6
+    raw["attributes"]["field_enable_meter_gate"] = True
+    result = await fierce_body(reader, SOURCES["fiercebiotech_biotech"], job, record)
+    assert result.diagnostics["outcome"] == "UNAVAILABLE" and result.content is None
+    raw["attributes"]["path"]["alias"] = "/biotech/different-article"
+    with pytest.raises(ValueError, match="identity_mismatch"):
+        await fierce_body(reader, SOURCES["fiercebiotech_biotech"], job, record)
+
+
+def test_aes_uses_normal_query_units_in_real_scheduler():
+    from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
+    from doxagent.message_bus_v2.schema import PollState
+
+    source = next(s for s in initial_sources() if s.source_id == "aes_abstract_search")
+    binding = TickerSourceBinding(
+        binding_id="XENE:" + source.source_id, ticker="XENE", source_id=source.source_id
+    )
+    scheduler = object.__new__(GlobalPollScheduler)
+    scheduler._query_plans = {
+        (source.source_id, "XENE"): {"queries": [{"query_key": "one", "query": "Xenon"}]}
+    }
+    state = PollState(binding_id=binding.binding_id, ticker="XENE", source_id=source.source_id)
+    units = list(scheduler.work_units(source, binding, state, NOW, include_all=True))
+    assert len(units) == 1 and units[0][1]["acquisition_unit"] == "QUERY:one"
+    assert units[0][1]["query_plan_override"]["queries"][0]["query"] == "Xenon"
 
 
 @pytest.mark.asyncio
@@ -266,3 +323,21 @@ def test_massive_preparation_does_not_relax_user_or_running_ticker_terms_guard(t
         bus.configure_binding(
             ticker="XENE", source_id="businesswire_massive", actor=UpdateActor.SYSTEM
         )
+
+
+def test_verified_official_x_account_seed_is_first_revision_only(tmp_path):
+    from tests.test_message_bus_monitoring_terms import _terms
+    from doxagent.message_bus_v2.monitoring_terms import MonitoringTermsService
+    from doxagent.message_bus_v2.schema import UpdateActor
+    from doxagent.message_bus_v2.x_official import ACCOUNTS
+
+    repo, bus = _bus(tmp_path / "bus.db")
+    bus.configure_binding(ticker="XENE", source_id="x_official_posts", actor=UpdateActor.SYSTEM)
+    terms = MonitoringTermsService(repo)
+    terms.apply(_terms().model_copy(update={"ticker": "XENE"}), actor="test")
+    revision, value = terms.get("XENE")
+    assert value.x_accounts == [s.lower() for s in ACCOUNTS["XENE"]]
+    terms.apply(
+        value.model_copy(update={"expected_revision": revision, "x_accounts": []}), actor="test"
+    )
+    assert terms.get("XENE")[1].x_accounts == []

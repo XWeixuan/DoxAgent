@@ -23,6 +23,9 @@ class TechnologyBodyReader:
         await self.http.close()
 
     async def extract(self, job, record):
+        if job.source.source_id=='fiercebiotech_biotech':
+            from .biopharma_body import fierce_body
+            return await fierce_body(self,self.sources[job.source.source_id],job,record)
         if job.source.source_id == 'hkex_akeso' or (job.source.source_id=='fda_release'
                                                    and record.url.lower().endswith('.pdf')):
             from .fintech_body import document_body

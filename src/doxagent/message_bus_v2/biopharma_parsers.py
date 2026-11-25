@@ -3,7 +3,7 @@
 import copy
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import parse_qs, urljoin, urlsplit
 from zoneinfo import ZoneInfo
 
@@ -50,6 +50,7 @@ def parse_listing(recipe, raw, now):
                 m.url = m.external_id = m.source_item_key = (
                     "https://onlineprogram.hematology.org/paper-details.aspx?pid=" + pid[0]
                 )
+                m.raw_url = m.url
             m.metadata.update(
                 provider="biopharma_public",
                 listing_url=recipe.url,
@@ -83,7 +84,12 @@ def parse_listing(recipe, raw, now):
         # Match the normal front-end's newest-meeting-first order. Preserve the
         # complete native index; these dates still are not publication times.
         data.sort(
-            key=lambda r: datetime.strptime(r["field_start_date"][:10], "%m/%d/%Y"), reverse=True
+            key=lambda r: (
+                datetime.strptime(r["field_start_date"][:10], "%m/%d/%Y")
+                if re.match(r"\d{2}/\d{2}/\d{4}", r.get("field_start_date", ""))
+                else datetime.min
+            ),
+            reverse=True,
         )
         for row in data:
             title = html.fromstring("<div>" + row["title"] + "</div>")
@@ -99,7 +105,16 @@ def parse_listing(recipe, raw, now):
                         "field_center",
                     )
                 )
-                add(links[0].get("href"), text(links[0]), summary=summary, meeting_metadata=row)
+                changed = html.fromstring("<div>" + row.get("changed", "") + "</div>").xpath(
+                    ".//time/@datetime"
+                )
+                add(
+                    links[0].get("href"),
+                    text(links[0]),
+                    summary=summary,
+                    meeting_metadata=row,
+                    updated_at=changed[0] if changed else None,
+                )
     elif recipe.parser == "bio_endpoints":
         for card in doc.xpath('//*[contains(concat(" ",@class," ")," epn_item ")]'):
             links = card.xpath(".//h3/a[@href]")
@@ -109,12 +124,16 @@ def parse_listing(recipe, raw, now):
             m = add(links[0].get("href"), links[0].get("title") or text(links[0]))
             if m and times:
                 value = text(times[0])
-                match = re.fullmatch(r"(\d+)\s+(minute|hour|day)s? ago", value, re.I)
-                if match:
-                    m.published_at = now - timedelta(**{match[2].lower() + "s": int(match[1])})
+                from .yahoo_sources import relative_publication
+
+                estimate = relative_publication(value, now)
+                if estimate:
+                    m.published_at, evidence = estimate
                     m.publication_time_basis = "RELATIVE"
                     m.metadata.update(
-                        publication_time_precision=match[2].lower(), time_origin=value
+                        publication_time_precision="relative",
+                        time_origin=value,
+                        listing_time_evidence=evidence,
                     )
     elif recipe.parser == "bio_fierce":
         if doc is None:
@@ -123,7 +142,13 @@ def parse_listing(recipe, raw, now):
                 a = row["attributes"]
                 path = a["path"]["alias"]
                 if path.startswith("/biotech/") and not a.get("is_sponsored") and a.get("status"):
-                    add(path, a["title"], a["field_date_published"], updated_at=a.get("changed"))
+                    add(
+                        path,
+                        a["title"],
+                        a["field_date_published"],
+                        updated_at=a.get("changed"),
+                        publisher_article_uuid=row["id"],
+                    )
             if not rows:
                 raise ValueError("fierce_scoped_api_empty")
             return list(rows.values())
@@ -238,6 +263,7 @@ def parse_listing(recipe, raw, now):
                 link,
                 f["description"],
                 aes_source_date=f.get("doc_date"),
+                updated_at=f.get("doc_date"),
                 presentation_date=f.get("custom_doc_date"),
                 publisher_article_id=row["series_id"],
             )

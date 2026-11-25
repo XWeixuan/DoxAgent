@@ -604,7 +604,7 @@ class GlobalPollScheduler:
         units = [
             ("SHARED" if source.acquisition_mode.shared_distribution else "HEAD", {})
         ]
-        if listing_enabled(source):
+        if listing_enabled(source) and source.acquisition_mode is not AcquisitionMode.BY_SEARCH:
             units = [(unit, {"request_multiplier": 2} if source.default_parameters.get("discovery_mode") == "http_rss_race" else {})
                      for unit in listing_units(source, binding)]
         elif source.adapter_ref == "builtin:newswire_massive@1":
