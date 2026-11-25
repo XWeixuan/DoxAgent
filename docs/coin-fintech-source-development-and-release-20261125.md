@@ -65,7 +65,7 @@ RSS `content:encoded` 只在同一文章 URL 且普通完整性校验通过时�
 
 本轮相关回归 263 passed，1 deselected；新接入专属回归 16 项全部通过，Ruff E9/F 与 diff 检查通过。扩展检查发现四个已有断言失败（Reuters 查询数、Yahoo 既有周期、两项 recheck 领取），在未修改的 origin/main `a647b61a7` 隔离副本上同样复现；未改动无关业务来迁就断言。正式回归仅排除其中所包含的旧 Reuters 断言。
 
-发布与生产配置结果将在实际执行后补入本节。原始 HTML、全文、站点前端配置和诊断包不提交 Git；安全回执仅保留标题、URL、时间精度、条数、缓存头、质量与附件哈希。
+以下为实际生产回执。原始 HTML、全文、站点前端配置和诊断包不提交 Git；安全回执仅保留标题、URL、时间精度、条数、缓存头、质量与附件哈希。
 
 首轮生产发布代码 `26435872002e2b4da187a673127ca345c701bde2`，四组件相同镜像 `sha256:6ccaee2bf2be…`，运行中源码哈希与提交工作树一致，四者重启计数均 0；API、Collector 的 Docker health 为 healthy，其余两角色未配置 Docker health。初始化、Scheduler、Site Access 与 Chrome 未更换。
 
@@ -73,4 +73,8 @@ RSS `content:encoded` 只在同一文章 URL 且普通完整性校验通过时�
 
 生产 ListingAdapter 实调25入口：16个通过缓存与物理请求证据校验；4个 RSS 兜底入口保留 HTTP_LISTING_FAILED_RSS_FALLBACK；其余5个（The Defiant 两栏目、CFTC 三入口）按实际过旧缓存返回 HTTP_LISTING_FAILED。没有把兜底或旧缓存伪装成健康轮询。COIN 三个 IR 的公开正文样本均 FULL，Deribit 列表继续因 Age 35516 秒失败。OCC 真实官方 PDF 全文6370字符、FULL。
 
-CMS 控制查询修正后，相关回归再次50 passed（与263项有重叠，不相加）。Collector/BODY 的小范围后续发布及最终配置复核见补充回执。
+CMS 控制查询修正后，相关回归再次50 passed（与263项有重叠，不相加）。后续代码 `00c493602769332d43039941ccac92691faf7bba` 已仅发布 Collector/BODY，镜像 `sha256:03e271a348fd…`；Bus/API 保持首轮代码。最终四角色运行且重启计数0，Collector/API healthy。再次实测 Coinbase Blog 30条、CDN与上游均MISS、FULL；Q4 30条、FULL；Deribit 24条、FULL正文但列表 Age 36042 秒，依然不通过实时列表门禁。live/candidate 再次核对16个批准绑定及 NOT_STARTED 不变。
+
+安全证据目录：`artifacts/fintech-sources-20261125/`，包括 `production-listings.jsonl`、`fintech-production-ir-final-20261125.jsonl`、`fintech-production-release-final-20261125.json`、`fintech-verification-final-20261125.json`、`production-cms-final.jsonl`、`production-documents.jsonl` 与测试输出。生产保护的配置前快照及 owner receipt 位于 `/data/bus/ops/fintech-sources-20261125/`。
+
+交付状态：代码、分类、生产发布、COIN预配置已完成；真实自然新文章的发布时间→Bus时延验收未完成。Unchained/SBC 的HTTP恢复需要后续浏览器方案评估；The Defiant/CFTC/Deribit 的缓存问题以及付费文章完整访问仍有明确限制，不属于本轮已解决项。
