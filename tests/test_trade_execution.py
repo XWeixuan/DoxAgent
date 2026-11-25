@@ -200,6 +200,7 @@ def setup(tmp_path):
     from doxagent.trade_execution.capital import CapitalLedger
 
     CapitalLedger(repo).allocate("DU_TEST", "20000", "initial", "test")
+    CapitalLedger(repo).set_ticker_limit("DU_TEST", 1, "single-ticker executor fixture")
     brokers = []
 
     def factory(p, **kwargs):
@@ -316,6 +317,8 @@ def test_no_quote_does_not_block_another_job_or_create_orders(setup, monkeypatch
 
 def test_virtual_opposite_and_duplicate_fills_do_not_close_manual_position(setup):
     clock, repo, revision, executor, broker = setup
+    from doxagent.trade_execution.capital import CapitalLedger
+    CapitalLedger(repo).set_ticker_limit("DU_TEST", 2, "two virtual-lot strategies")
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
     admit(repo, revision, "trade:B", "SHORT", ticker="INTC")

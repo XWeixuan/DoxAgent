@@ -11,23 +11,23 @@ from .executions import ExecutionProjector, opaque
 
 def project(store, event, records, *, _offset_reproject=True):
     table = event["table_name"]
-    if table not in {"te_allocations", "te_lots", "te_fills", "te_events"}:
+    if table not in {"te_allocations", "te_lots", "te_fills", "te_events", "te_lot_adjustments"}:
         return [], []
     from .projector import native
 
     value = native(event)
     adapter = ExecutionProjector(store)
     record = records[0]
-    if table == "te_allocations":
+    if table in {"te_allocations", "te_lot_adjustments"}:
         lot_id = value["lot_id"]
         job = adapter.find("te_jobs", lot_id + ":entry")
         execution = adapter.find("te_executions", job["execution_id"])
         ticker = execution["ticker"]
-        record.update(
-            ticker=ticker,
-            parent=lot_id,
-            id=opaque(value["account"], value["fill_id"], lot_id, value["kind"]),
-        )
+        record.update(ticker=ticker, parent=lot_id)
+        if table == "te_allocations":
+            record["id"] = opaque(value["account"], value["fill_id"], lot_id, value["kind"])
+        else:
+            record["id"] = value["id"]
     elif table == "te_lots":
         lot_id = value["id"]
         execution = adapter.find("te_executions", value.get("group_id", lot_id))
@@ -66,9 +66,29 @@ def project(store, event, records, *, _offset_reproject=True):
             fills[pending["id"]] = pending["data"]
         if pending["kind"] == "commission" and pending["data"]:
             fees[pending["id"]] = pending["data"]
-    resolved = []
-    adjusted_basis = any(a["kind"] == "ADJUSTMENT" for a in allocations.values())
+    from doxagent.trade_execution.manual_finance import resolve
+
+    adjustments = {}
     for allocation in allocations.values():
+        if allocation["kind"] == "ADJUSTMENT":
+            adj_id = allocation["fill_id"]
+            adjustment = next(
+                (p["data"] for p in records if p["kind"] == "native:te_lot_adjustments"
+                 and p["id"] == adj_id), None
+            )
+            if adjustment is None:
+                try:
+                    adjustment = adapter.find("te_lot_adjustments", adj_id)
+                except ValueError:
+                    adjustment = {}
+            adjustments[adj_id] = adjustment
+    manual_fills, manual_fees = {}, {}
+    normalized = resolve(allocations.values(), adjustments, manual_fills, manual_fees)
+    fills.update({opaque(*key): fill for key, fill in manual_fills.items()})
+    fees.update({opaque(*key): fee for key, fee in manual_fees.items()})
+    resolved = []
+    adjusted_basis = any(a["kind"] == "ADJUSTMENT" for a in normalized)
+    for allocation in normalized:
         if allocation["kind"] == "ADJUSTMENT":
             # External/manual adjustments have no provable unit cost in this contract.
             continue

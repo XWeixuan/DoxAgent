@@ -57,6 +57,7 @@ def _project(store, event, pending):
         "te_fills",
         "te_allocations",
         "te_lots",
+        "te_lot_adjustments",
         "te_events",
         "te_capital_events",
     }:
@@ -117,7 +118,7 @@ def _project(store, event, pending):
             execution = value
         elif group:
             execution = adapter.find("te_executions", group)
-        elif table in {"te_allocations", "te_lots"}:
+        elif table in {"te_allocations", "te_lots", "te_lot_adjustments"}:
             lot_id = value.get("lot_id", value.get("id"))
             job = adapter.find("te_jobs", lot_id + ":entry")
             execution = adapter.find("te_executions", job["execution_id"])
@@ -204,7 +205,21 @@ def _project(store, event, pending):
                             found = json.loads(fee_row[0]) if fee_row else None
                     if found:
                         fees[key] = found
-                legs.append(fold_leg(lot, allocations, fill_map, fees))
+                adjustments = {}
+                for allocation in allocations:
+                    if allocation["kind"] == "ADJUSTMENT":
+                        adj_id = allocation["fill_id"]
+                        adjustment = next(
+                            (r["data"] for r in pending if r["kind"] == "native:te_lot_adjustments"
+                             and r["id"] == adj_id), None
+                        )
+                        if adjustment is None:
+                            try:
+                                adjustment = adapter.find("te_lot_adjustments", adj_id)
+                            except ValueError:
+                                adjustment = {}
+                        adjustments[adj_id] = adjustment
+                legs.append(fold_leg(lot, allocations, fill_map, fees, adjustments))
         main_cap = execution.get("plan", {}).get("main_cap")
     status = intent.get("status", intent.get("trade_disposition", "UNKNOWN"))
     terminal = status not in {"READY", "UNKNOWN", "SUBMITTED", "DELIVERED", "EXECUTION_ACCEPTED"}

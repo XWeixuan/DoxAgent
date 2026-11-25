@@ -45,7 +45,8 @@ def main():
     with release.lock(ROOT):
         state=json.loads((ROOT/'state.json').read_text())
         if args.action=='build':
-            assert args.web_archive and args.web_archive.is_file()
+            if 'v2-web' in ROLES:
+                assert args.web_archive and args.web_archive.is_file()
             config=json.loads((ROOT/'compose.current.json').read_text())
             manifest=dict(commit=commit,compose_command=state['compose_base_command'],components={},baselines={},hashes={})
             for role in ROLES:

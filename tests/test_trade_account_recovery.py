@@ -14,6 +14,8 @@ setup = _setup_fixture
 
 def test_outage_backoff_shared_by_jobs_and_maintenance_survives_restart(setup, monkeypatch):
     clock, repo, revision, executor, broker = setup
+    from doxagent.trade_execution.capital import CapitalLedger
+    CapitalLedger(repo).set_ticker_limit("DU_TEST", 2, "two recovery jobs")
     intent = admit(repo, revision)
     repo.admit({**intent, "intent_id": "trade:B", "ticker": "BE"})
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
