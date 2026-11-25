@@ -2135,7 +2135,7 @@
       ]
     },
     "unchained_crypto": {
-      "description": "Unchained 的 Regulation、Business 与 DeFi 栏目；原生列表 HTTP 不可用时保留各栏目 RSS，降级继续显示失败。",
+      "description": "Unchained 的 Regulation、Business 与 DeFi 栏目；使用浏览器实际 ALM AJAX 分类参数进行 HTTP 列表采集，故障时保留对应栏目 RSS。",
       "entry_points": [
         "https://unchainedcrypto.com/category/regulation/",
         "https://unchainedcrypto.com/category/business/",
@@ -2151,10 +2151,10 @@
       },
       "body": {
         "primary": [
-          "SOURCE_BODY"
+          "HTTP"
         ],
         "fallback": [
-          "HTTP"
+          "SOURCE_BODY"
         ]
       },
       "applicability": "INDUSTRY",

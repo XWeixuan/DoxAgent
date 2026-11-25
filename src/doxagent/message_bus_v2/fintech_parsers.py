@@ -93,13 +93,17 @@ def parse_listing(recipe, raw, now):
                     add(path,row['title'],row['publishedAt'],row.get('dek'),updated_at=row.get('updatedAt'))
     elif recipe.parser == 'fintech_unchained':
         value=json.loads(raw)
-        doc=html.fromstring('<ul>'+value['html']+'</ul>')
-        for card in doc.xpath('//li'):
+        doc=html.fromstring('<div>'+value['html']+'</div>')
+        for card in doc.xpath('//*[contains(concat(" ",normalize-space(@class)," ")," archive-item ")]'):
             links=card.xpath('.//h2/a|.//h3/a')
             if not links:
                 continue
             dates=card.xpath('.//time/@datetime')
-            add(links[0].get('href'),text(links[0]),stamp(dates[0]) if dates else None)
+            days=card.xpath('.//*[contains(concat(" ",normalize-space(@class)," ")," group-date ")]')
+            # The native archive publishes calendar days only. BODY can later
+            # supply datePublished; do not manufacture a precise midnight.
+            date=stamp(dates[0]) if dates else parse_date(text(days[0])).date().isoformat() if days else None
+            add(links[0].get('href'),text(links[0]),date)
     elif recipe.parser == 'fintech_banking':
         for card in doc.xpath('//li[contains(concat(" ",normalize-space(@class)," ")," row ")]'):
             links=card.xpath('.//h3/a[@href]|.//h2/a[@href]')

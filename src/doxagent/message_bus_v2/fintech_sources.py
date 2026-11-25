@@ -29,6 +29,7 @@ CATALOG = (
 SOURCES = {s.source_id: s for s in CATALOG}
 OCC_API = 'https://apps.occ.gov/Occ.FusionServices.WebApi.Public/api/NewsItems/Search'
 OCC_TYPES = ('NewsRelease', 'Bulletin', 'Speech', 'CongressionalTestimony', 'AdvisoryLetter')
+UNCHAINED_CATEGORIES = {'regulation':8, 'business':2634, 'defi':5}
 
 
 def initial_sources():
@@ -45,7 +46,7 @@ def initial_sources():
 
 
 def listing_recipes():
-    from urllib.parse import urlencode
+    from urllib.parse import urlencode, quote
     from .public_listing import Listing
     recipes = {}
     for s in CATALOG:
@@ -57,10 +58,13 @@ def listing_recipes():
             if s.parser=='fintech_unchained':
                 topic=feed.removesuffix('feed/').rstrip('/').split('/')[-1]
                 url='https://unchainedcrypto.com/wp-admin/admin-ajax.php?'+urlencode(dict(
-                    action='alm_get_posts', query_type='standard', id='', posts_per_page=20, page=0,
-                    offset=0, post_type='post,podcast,choppingblock,review,video,learn,uneasymoney,dex',
-                    theme_repeater='archive.php', taxonomy='category', taxonomy_terms=topic,
-                    taxonomy_operator='IN', order='DESC', orderby='date'))
+                    action='alm_get_posts', query_type='standard', id='', post_id=UNCHAINED_CATEGORIES[topic],
+                    slug=topic, canonical_url='https://unchainedcrypto.com/category/'+topic+'/',
+                    posts_per_page=9, page=0, offset=0, original_offset=0,
+                    post_type='post, podcast, choppingblock, review, video, learn, uneasymoney, dex',
+                    repeater='default', seo_start_page=1, paging='true', theme_repeater='archive.php',
+                    taxonomy='category', taxonomy_terms=topic, taxonomy_operator='IN', order='DESC',
+                    orderby='date', currentPage=1),quote_via=quote,safe=',')
                 fallback=True
             if s.parser=='fintech_banking':
                 fresh=True
@@ -72,6 +76,6 @@ def listing_recipes():
                 s.route,s.transport,fresh,max_age_seconds=30,method=method,rss_fallback=fallback,
                 cache_diagnostic_only=True,
                 coverage_review='HTTP listing needs browser review; preserve scoped RSS fallback'
-                if s.source_id in {'unchained_crypto','sbcamericas_prediction_markets'} else None))
+                if s.source_id=='sbcamericas_prediction_markets' else None))
         recipes[s.source_id]=tuple(entries)
     return recipes

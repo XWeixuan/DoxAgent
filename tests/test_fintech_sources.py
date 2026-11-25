@@ -278,3 +278,18 @@ def test_fintech_cache_age_is_observation_not_list_failure():
     # Existing unrelated source policies are outside this scoped rollback.
     with pytest.raises(ValueError,match='cache_age'):
         cache_evidence(capture,Listing('feed','url','legacy'),now=NOW)
+
+
+def test_unchained_uses_exact_observed_category_request_and_native_archive_contract():
+    from urllib.parse import parse_qs,urlsplit
+    from doxagent.message_bus_v2.fintech_sources import UNCHAINED_CATEGORIES
+    for recipe in listing_recipes()['unchained_crypto']:
+        q=parse_qs(urlsplit(recipe.url).query);topic=q['taxonomy_terms'][0]
+        assert int(q['post_id'][0])==UNCHAINED_CATEGORIES[topic]
+        assert q['slug']==[topic] and q['posts_per_page']==['9'] and q['paging']==['true']
+        assert q['canonical_url']==['https://unchainedcrypto.com/category/'+topic+'/']
+        assert recipe.coverage_review is None and recipe.rss_fallback
+    raw=json.dumps({'html':'<div class="archive-item"><div class="title"><div class="group-date">November 25, 2026</div><h3><a href="https://unchainedcrypto.com/new-crypto-rule/">New crypto rule</a></h3></div></div><aside><h3><a href="https://unchainedcrypto.com/unrelated-widget/">Unrelated widget</a></h3></aside>', 'meta':{}})
+    rows=parse('unchained_crypto',raw)
+    assert len(rows)==1 and rows[0].title=='New crypto rule'
+    assert rows[0].publication_time_basis=='DATE'
