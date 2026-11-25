@@ -23,6 +23,10 @@ class TechnologyBodyReader:
         await self.http.close()
 
     async def extract(self, job, record):
+        if job.source.source_id == 'hkex_akeso' or (job.source.source_id=='fda_release'
+                                                   and record.url.lower().endswith('.pdf')):
+            from .fintech_body import document_body
+            return await document_body(self.http,self.sources[job.source.source_id],record)
         if job.source.adapter_ref == "builtin:thefly_public@1":
             from .thefly_source import TheFlyBodyReader
 
@@ -108,7 +112,8 @@ class TechnologyBodyReader:
                 ]
             },
         )
-        if spec.source_id=='theblock_crypto' and job.message.raw_payload.get('publisher_pro'):
+        if ((spec.source_id=='theblock_crypto' and job.message.raw_payload.get('publisher_pro'))
+                or job.message.raw_payload.get('publisher_subscription')):
             info.subscription_article=True
         # A public session has no paid entitlement; previews retain their access reason.
         if info.subscription_article:

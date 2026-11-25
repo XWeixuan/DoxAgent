@@ -238,7 +238,8 @@ def endpoint_units(source):
 
 def source_specs():
     from .fintech_sources import SOURCES as fintech_sources
-    return {**SOURCES, **fintech_sources}
+    from .biopharma_sources import SOURCES as biopharma_sources
+    return {**SOURCES, **fintech_sources, **biopharma_sources}
 
 
 def initial_sources():

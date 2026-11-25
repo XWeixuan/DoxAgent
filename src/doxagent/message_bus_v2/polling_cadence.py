@@ -81,6 +81,9 @@ IR_INTERVALS = {'be.press': 30, 'ceg.press': 20, 'cohr.corporate': 20, 'cohr.fin
 # New industry publishers use the current shared HTTP cadence, not the old 60s seed.
 from .fintech_sources import CATALOG as FINTECH_CATALOG
 SOURCE_INTERVALS.update({s.source_id:20 for s in FINTECH_CATALOG})
+from .biopharma_sources import CATALOG as BIOPHARMA_CATALOG
+SOURCE_INTERVALS.update({s.source_id:20 for s in BIOPHARMA_CATALOG})
+IR_INTERVALS.update({t.lower()+'.press':20 for t in ('XENE','RGNX','PRAX','CGEM','SMMT')})
 IR_INTERVALS.update({'coin.blog':20,'coin.ir':20,'coin.deribit':20})
 
 def unit_interval(source, unit, base):

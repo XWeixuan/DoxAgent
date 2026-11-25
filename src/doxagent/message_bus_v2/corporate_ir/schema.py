@@ -13,7 +13,7 @@ class IrEndpointSpec(BusModel):
     display_name: str
     entry_url: str
     method: Literal["rss", "json", "html", "browser"]
-    parser_ref: Literal["rss", "micron", "coherent", "nebius", "ceg", "rocketlab", "snowflake", "ionq", "snowflake_json", "coinbase_q4", "coinbase_blog", "deribit"]
+    parser_ref: Literal["rss", "micron", "coherent", "nebius", "ceg", "rocketlab", "snowflake", "ionq", "snowflake_json", "coinbase_q4", "coinbase_blog", "deribit", "nir", "q4"]
     parser_parameters: dict = Field(default_factory=dict)
     allowed_article_hosts: list[str]
     fallback_urls: list[str] = Field(default_factory=list)

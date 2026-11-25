@@ -47,6 +47,10 @@ def parse_listing(spec: IrEndpointSpec, raw: str, url=None):
     if spec.parser_ref in {'coinbase_q4','coinbase_blog','deribit'}:
         from .coinbase import rows as coinbase_rows
         rows=coinbase_rows(spec.parser_ref,raw)
+    elif spec.parser_ref == 'q4':
+        for row in json.loads(raw)['GetPressReleaseListResult']:
+            date=datetime.strptime(row['PressReleaseDate'],'%m/%d/%Y %H:%M:%S').replace(tzinfo=ZoneInfo(spec.date_timezone))
+            rows.append((row['Headline'],urljoin(url,row['LinkToDetailPage']),date.isoformat(),True,'','',str(row['PressReleaseId'])))
     elif spec.parser_ref == "rss":
         root = ET.fromstring(raw)
         if root.tag != "rss" or root.find("channel") is None:
@@ -104,7 +108,18 @@ def parse_listing(spec: IrEndpointSpec, raw: str, url=None):
         title = doc.xpath("string(//title)").strip().casefold()
         if title in {"access denied", "just a moment...", "403 forbidden"}:
             raise IrContractError("IR listing access denied")
-        if spec.parser_ref == "micron":
+        if spec.parser_ref == 'nir':
+            cards=doc.xpath('//article[contains(@class,"node--type-nir-news")]|//div[contains(concat(" ",@class," ")," news-item ")][not(ancestor::article)]')
+            for card in cards:
+                links=card.xpath('.//a[contains(@href,"/news-releases/news-release-details/")]')
+                names=card.xpath('.//*[contains(@class,"nir-widget--news--headline")]')
+                dates=card.xpath('.//*[contains(@class,"nir-widget--news--date-time")]|.//*[contains(concat(" ",@class," ")," label ")]')
+                if links and dates:
+                    name=text(names[0]) if names else next((text(n) for n in links if text(n)), '')
+                    rows.append((name,links[0].get('href'),text(dates[0]),False,'','',None))
+            nexts=doc.xpath('//a[@rel="next"]/@href|//li[contains(@class,"pager__item--next")]/a/@href')
+            next_url=urljoin(url,nexts[0]) if nexts else None
+        elif spec.parser_ref == "micron":
             for card in doc.xpath('//*[contains(concat(" ",@class," ")," cmp-teaser ")]'):
                 links = card.xpath('.//a[contains(normalize-space(.),"Read article")]/@href')
                 names = card.xpath('.//*[contains(@class,"cmp-teaser__title")]')

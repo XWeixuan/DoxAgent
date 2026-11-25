@@ -94,6 +94,7 @@ def initial_sources() -> list[SourceDefinition]:
     from .technology_sources import initial_sources as technology_sources
     from .energy_catalog import initial_sources as energy_sources
     from .fintech_sources import initial_sources as fintech_sources
+    from .biopharma_sources import initial_sources as biopharma_sources
     from .thefly_source import initial_source as initial_fly_source
     from .newswire_sources import initial_sources as massive_sources
 
@@ -112,6 +113,7 @@ def initial_sources() -> list[SourceDefinition]:
         *technology_sources(),
         *energy_sources(),
         *fintech_sources(),
+        *biopharma_sources(),
         initial_fly_source(),
         initial_ir_source(),
         _source(

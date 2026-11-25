@@ -449,7 +449,9 @@ class GlobalPollScheduler:
                 if mark_disabled:
                     self._mark_disabled(binding)
                 continue
-            if not include_inactive_hours and not binding.polling.active_at(instant):
+            if not include_inactive_hours and (
+                not binding.polling.active_at(instant) or not source.active_at(instant)
+            ):
                 continue
             result.append((source, binding))
         return result
@@ -493,7 +495,7 @@ class GlobalPollScheduler:
                 sources = self.repository.list_sources()
                 self._configuration_cache = (signature, roster, sources)
             self._configured_sources = sources
-            eligible = [(s, b) for s, b in roster if b.polling.active_at(now)]
+            eligible = [(s, b) for s, b in roster if b.polling.active_at(now) and s.active_at(now)]
             demand = defaultdict(float)
             for source, binding in eligible:
                 demand[source.scheduler_group] += 1 / binding.polling.target_interval_seconds
@@ -608,7 +610,8 @@ class GlobalPollScheduler:
         elif source.adapter_ref == "builtin:newswire_massive@1":
             from .newswire_sources import endpoint_units
             units = [(unit, {}) for unit in endpoint_units(source)]
-        elif source.adapter_ref == "builtin:technology_public@1":
+        elif (source.adapter_ref == "builtin:technology_public@1"
+              and source.acquisition_mode is not AcquisitionMode.BY_SEARCH):
             from .technology_sources import endpoint_units
 
             units = [(unit, {}) for unit in endpoint_units(source)]

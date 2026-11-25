@@ -259,6 +259,8 @@ RECIPES = {
 
 from .fintech_sources import listing_recipes as _fintech_recipes
 RECIPES.update(_fintech_recipes())
+from .biopharma_sources import listing_recipes as _biopharma_recipes
+RECIPES.update(_biopharma_recipes())
 
 
 def enabled(source):
@@ -353,6 +355,9 @@ def text(node):
 
 
 def parse_listing(recipe, spec, raw, now):
+    if recipe.parser.startswith('bio_'):
+        from .biopharma_parsers import parse_listing as parse_biopharma
+        return parse_biopharma(recipe, raw, now)
     if recipe.parser.startswith('fintech_'):
         from .fintech_parsers import parse_listing as parse_fintech
         return parse_fintech(recipe, raw, now)
@@ -763,16 +768,21 @@ class ListingAdapter:
                     await asyncio.sleep(0.2)
 
     async def poll(self, context):
+        if context.source.source_id == 'aes_abstract_search':
+            from .biopharma_http import poll_aes
+            return await poll_aes(self, context)
         from .fintech_sources import SOURCES as fintech_sources
+        from .biopharma_sources import SOURCES as biopharma_sources
         if not enabled(context.source) or (context.window_cutoff is not None
-                and context.source.source_id not in fintech_sources):
+                and context.source.source_id not in (fintech_sources.keys() | biopharma_sources.keys())):
             return await self.delegate.poll(context)
         return await self._poll(context, shared=False)
 
     async def poll_shared(self, context):
         from .fintech_sources import SOURCES as fintech_sources
+        from .biopharma_sources import SOURCES as biopharma_sources
         if not enabled(context.source) or (context.window_cutoff is not None
-                and context.source.source_id not in fintech_sources):
+                and context.source.source_id not in (fintech_sources.keys() | biopharma_sources.keys())):
             return await self.delegate.poll_shared(context)
         return await self._poll(context, shared=True)
 
@@ -923,7 +933,12 @@ class ListingAdapter:
                         + "_dox_poll="
                         + str(fresh_query_bucket(context))
                     )
-                if recipe.parser == 'fintech_occ':
+                if recipe.parser.startswith('bio_'):
+                    from .biopharma_http import fetch_listing
+                    capture = await fetch_listing(self, recipe, spec, headers, context)
+                    captures.append(capture)
+                    captures.extend(getattr(capture,'listing_captures',[]))
+                elif recipe.parser == 'fintech_occ':
                     from .fintech_sources import OCC_TYPES
                     capture = await self._fetch(url, spec, headers=headers, method='POST', json_body={
                         'sId':101516, 'SearchTerm':'', 'Topics':[], 'NewsTypes':list(OCC_TYPES),
@@ -994,7 +1009,7 @@ class ListingAdapter:
                             message.title,
                             message.summary,
                             message.published_at.isoformat()
-                            if message.publication_time_basis != "UNKNOWN_FIRST_SEEN"
+                            if message.publication_time_basis not in {"UNKNOWN_FIRST_SEEN", "RELATIVE"}
                             else None,
                             message.raw_payload.get("updated_at"),
                         ]
@@ -1035,6 +1050,7 @@ class ListingAdapter:
                     "method": "http_listing",
                     "status": capture.status,
                     "items": len(messages),
+                    **({"listing_total":capture.listing_total} if hasattr(capture,'listing_total') else {}),
                     "cache": caches,
                     "validated_request_ids": [e["physical_request_id"] for e in proven],
                 },

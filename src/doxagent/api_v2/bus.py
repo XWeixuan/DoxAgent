@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi import FastAPI, Request
 
-from doxagent.message_bus_v2.schema import TickerSourceBinding
+from doxagent.message_bus_v2.schema import SourceActivationWindow, TickerSourceBinding
 from doxagent.v2_read.repository import instant
 
 from .dto import available, coverage, missing, validate
@@ -47,9 +47,13 @@ def source_status(store, binding, seq, view, cadences=None, *, live_states=None,
         countdown = "DISABLED"
     elif ticker.get("run_state") != "RUNNING":
         countdown = "PAUSED"
-    elif not native.polling.active_at(now):
+    elif not native.polling.active_at(now) or (
+        source.get("activation_window")
+        and not SourceActivationWindow.model_validate(source["activation_window"]).contains(now)
+    ):
         countdown = "WINDOW_CLOSED"
     elif (native.source_id not in {"corporate_ir_press_releases", "sec_edgar"}
+          and not source.get('activation_window')
           and poll.get('collection_active') is not True
           and (view['wire']['clock']['session']['value']=='CLOSED_SLEEP'
                or view['wire']['clock'].get('is_trading_day',{}).get('value') is False)):

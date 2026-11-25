@@ -397,7 +397,7 @@
       ]
     },
     "corporate_ir_press_releases": {
-      "description": "各上市公司的官方投资者关系与新闻稿入口；按 Ticker 监测已绑定的公告页面及 RSS，获取一手公司披露。 COIN 渠道包含 Coinbase Blog Most Recent、Coinbase IR 与 Deribit Exchange Updates。",
+      "description": "各上市公司的官方投资者关系与新闻稿入口；按 Ticker 监测已绑定的公告页面及 RSS，获取一手公司披露。 COIN 渠道包含 Coinbase Blog Most Recent、Coinbase IR 与 Deribit Exchange Updates。 已纳入 XENE、RGNX、PRAX、CGEM、SMMT 各自官方新闻稿渠道；每个 ticker 仅绑定自己的内部 IR 渠道。",
       "entry_points": [
         "https://www.coinbase.com/blog/landing",
         "https://investor.coinbase.com/news/default.aspx",
@@ -2392,6 +2392,208 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-09"
+      ]
+    },
+    "fda_release": {
+      "description": "FDA 官方医药监管信息，合并监测药品 Notable Approvals、CBER What’s New 和 Advisory Committee Calendar。会议日期与公告发布时间分别记录。医药、生物科技与医疗创新板块通用。",
+      "entry_points": [
+        "https://www.fda.gov/drugs/news-events-human-drugs/notable-approvals-drugs",
+        "https://www.fda.gov/vaccines-blood-biologics/news-events-biologics/whats-new-biologics",
+        "https://www.fda.gov/advisory-committees/advisory-committee-calendar"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "endpoints_biopharma": {
+      "description": "Endpoints News 医药与生物科技新闻，监测 News 栏目；付费全文保留订阅限制，不把预览标为完整正文。医药板块通用。",
+      "entry_points": [
+        "https://endpoints.news/news/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "fiercebiotech_biotech": {
+      "description": "Fierce Biotech 的 Biotech 栏目，HTTP 采集生物科技研发、临床试验与公司动态，排除其他栏目和赞助内容。医药板块通用。",
+      "entry_points": [
+        "https://www.fiercebiotech.com/biotech"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "stat_biotech_trials": {
+      "description": "STAT 的 Biotech 与 Clinical Trials 两栏目合并监测，内部独立轮询；STAT Plus 内容保留订阅限制。医药板块通用。",
+      "entry_points": [
+        "https://www.statnews.com/topic/biotech/",
+        "https://www.statnews.com/topic/clinical-trials/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "hkex_akeso": {
+      "description": "SMMT 专用。香港交易所 HKEXnews：仅监测 09926 AKESO 的 Headline Category = Announcements and Notices，读取公告 PDF；不监测其他公司或公告类别。",
+      "entry_points": [
+        "https://www1.hkexnews.hk/search/titlesearch.xhtml?lang=en"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "akeso_press_releases": {
+      "description": "SMMT 专用。Akeso / 康方生物官方网站 Akeso News 与 Akeso 在 PR Newswire 的发布记录合并监测，内部独立轮询、统一去重。",
+      "entry_points": [
+        "https://akesobio.com/en/media/akeso-news",
+        "https://www.prnewswire.com/news/akeso%2C-inc./"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "taiho_press_releases": {
+      "description": "CGEM 专用。Taiho Oncology 美国官网 Press Releases，监测合作方研发、临床和药品监管公告。",
+      "entry_points": [
+        "https://www.taihooncology.com/us/news/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "ash_cullinan": {
+      "description": "CGEM 专用。2026 ASH 官方在线会议程序，以 Cullinan 检索相关摘要并读取完整摘要。仅于美东时间 2026-12-03 至 2026-12-09（含首尾日）启用；保留用户指定窗口，非会议日程。",
+      "entry_points": [
+        "https://onlineprogram.hematology.org/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
+      ]
+    },
+    "aes_abstract_search": {
+      "description": "XENE 专用。AES 官方 Scientific Abstract Search，使用该 ticker 统一监测词的 L1 搜索概念调用页面原生搜索接口。仅于美东时间 2026-12-07 当日启用；会议展示日期不冒充发布时间。",
+      "entry_points": [
+        "https://aesnet.org/education/annual-meeting/aes-abstract-search"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-06"
       ]
     }
   }

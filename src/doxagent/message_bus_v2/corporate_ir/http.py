@@ -192,7 +192,8 @@ class PublicHttp:
             # rather than adding an ignored parameter that only freshens the edge.
             url += '&'+urlencode({'fields.publicationDate[lte]':utc_now().isoformat()})
         route = spec.parser_parameters.get('http_route') or (spec.parser_parameters.get("body_http_route") if not listing else None)
-        if route:
+        request_method=spec.parser_parameters.get('http_method','GET') if listing else 'GET'
+        if route or request_method != 'GET':
             # Q4's feed works directly while its article pages require the
             # existing curl transport/egress. Keep RSS and BODY budgets separate.
             from ..technology_sources import TechnologyHttp, TechnologySource
@@ -204,10 +205,10 @@ class PublicHttp:
                 self.routed_http = TechnologyHttp(purpose="BODY")
             url = url.replace("http://", "https://", 1)
             recipe = TechnologySource(spec.endpoint_id,spec.display_name,
-                urlsplit(url).hostname.removeprefix("www."),(url,),(),route=route)
+                urlsplit(url).hostname.removeprefix("www."),(url,),(),route=route or 'direct')
             token = HTTP_CONTEXT.set("collector" if listing else "body")
             try:
-                result = await self.routed_http.fetch(url,recipe,headers=headers)
+                result = await self.routed_http.fetch(url,recipe,headers=headers,method=request_method)
                 return Capture(result.status,result.url,result.text,result.headers,len(result.text.encode()))
             finally:
                 HTTP_CONTEXT.reset(token)
