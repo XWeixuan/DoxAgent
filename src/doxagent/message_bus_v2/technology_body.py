@@ -1,6 +1,7 @@
 """Public technology article BODY on its publisher's verified lightweight route."""
 
 import asyncio
+import re
 from datetime import datetime
 from urllib.parse import urlsplit
 
@@ -27,7 +28,8 @@ class TechnologyBodyReader:
             from .biopharma_body import fierce_body
             return await fierce_body(self,self.sources[job.source.source_id],job,record)
         if job.source.source_id == 'hkex_akeso' or (job.source.source_id=='fda_release'
-                                                   and record.url.lower().endswith('.pdf')):
+                                                   and (urlsplit(record.url).path.lower().endswith('.pdf')
+                                                        or re.fullmatch(r'/media/\d+/download',urlsplit(record.url).path))):
             from .fintech_body import document_body
             return await document_body(self.http,self.sources[job.source.source_id],record)
         if job.source.adapter_ref == "builtin:thefly_public@1":
