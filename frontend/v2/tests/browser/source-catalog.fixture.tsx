@@ -152,6 +152,7 @@ const data: SourceCatalog = {
 };
 runtime.api.request = async (name, path) => {
   control.calls.push(path);
+  document.documentElement.dataset.catalogRequests = String(control.calls.length);
   if (name !== "SourceCatalog") throw new Error("Unexpected request: " + name);
   if (control.fail)
     throw new ApiFailure(
