@@ -211,6 +211,7 @@ def build_persistent_runtime_v2_service(
             effort=settings.persistent_runtime_v2_w3_reasoning_effort,
             timeout_seconds=settings.persistent_runtime_v2_w3_timeout_seconds,
             time_awareness_enabled=settings.w3_time_awareness_enabled,
+            hide_w2_context=settings.w3_hide_w2_context,
         )
     input_snapshot_loader = None
     if settings.ticker_initialization_control_path:

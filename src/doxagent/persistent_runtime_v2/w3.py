@@ -533,12 +533,14 @@ class CodexW3AgentRunner:
         journal: Any = None,
         environment: W3ExecutionEnvironment | None = None,
         time_awareness_enabled: bool = False,
+        hide_w2_context: bool = False,
     ) -> None:
         self._worker = worker
         self._case_repository = None
         self.environment = environment or W3ExecutionEnvironment()
         self._journal = journal
         self._time_awareness_enabled = time_awareness_enabled
+        self._hide_w2_context = hide_w2_context
         self._workspace = workspace
         self._context = context_provider
         self._prompt_root = Path(prompt_root)
@@ -1346,10 +1348,13 @@ class CodexW3AgentRunner:
         if is_pin_watch_contract(case.w3_contract_version) and phase != 'w3_template':
             from .w3_v6 import trade_input, operations_input
             if phase == OPERATIONS_PHASE:
-                payload = operations_input(case, payload)
+                payload = operations_input(case, payload, hide_w2=self._hide_w2_context)
             else:
                 recent = self._journal.get('w3_recent_filled_snapshot', case.case_id, {}).get('items', [])
-                payload = trade_input(case, payload, recent)
+                payload = trade_input(case, payload, recent, hide_w2=self._hide_w2_context)
+        if self._hide_w2_context:
+            from .w3_v6 import without_w2
+            payload = without_w2(payload)
         task = dict(phase=phase, input=payload)
         if new_entry:
             task.update(

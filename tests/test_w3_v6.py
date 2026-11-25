@@ -103,7 +103,8 @@ def test_scoped_research_cannot_recover_legacy_policy(tmp_path):
             store.call("read", dict(context_ref=ref, objects=[obj]), "d1-d2.v1")
 
 
-def test_v6_real_runner_injects_operations_only_at_phase(tmp_path):
+@pytest.mark.parametrize("hide_w2", [False, True])
+def test_v6_real_runner_injects_operations_only_at_phase(tmp_path, hide_w2):
     from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner
     from tests.test_persistent_runtime_w3 import _Context, _Workspace
     from tests.test_runtime_policy_direction_usage import fixture_case
@@ -147,6 +148,7 @@ def test_v6_real_runner_injects_operations_only_at_phase(tmp_path):
         prompt_root=tmp_path,
         journal=j,
         timeout_seconds=30,
+        hide_w2_context=hide_w2,
     )
     context = PhaseAgent().prepare_case(case).model_copy(update={"components": {}})
     try:
@@ -159,7 +161,7 @@ def test_v6_real_runner_injects_operations_only_at_phase(tmp_path):
                     message={},
                     w1={},
                     policies=[],
-                    additional_tags=[],
+                    additional_tags=["W2_LOW_CONFIDENCE", "BODY_MISSING"],
                     pins={},
                     watch={},
                     case_type="OLD",
@@ -186,6 +188,10 @@ def test_v6_real_runner_injects_operations_only_at_phase(tmp_path):
             )
             req = w.requests[-1]
             assert req.w3_entry_version == "w3-entry-v6"
+            if hide_w2:
+                assert '"w2"' not in req.prompt and '"policies"' not in req.prompt
+                assert '"policy_targets"' not in req.prompt
+                assert 'W2_LOW_CONFIDENCE' not in req.prompt
             if phase == "trade_decision":
                 assert "OPERATIONS_FROZEN_TEXT" not in req.prompt
                 task = json.loads(req.prompt)

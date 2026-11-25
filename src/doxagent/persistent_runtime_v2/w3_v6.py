@@ -120,14 +120,32 @@ def policy_projection(case, payload):
     )
 
 
-def trade_input(case, payload, recent_trade):
+def without_w2(value):
+    """Model-visible copy only; never rewrite frozen decisions or route inputs.
+
+    Strip structured upstream evidence, including nested historical assessments.
+    Original news, W1, D1/D2 and independent WATCH/PIN text are not text-redacted.
+    """
+    if isinstance(value, dict):
+        return {k: without_w2(v) for k, v in value.items()
+                if not (k.lower().startswith(('w2', 'original_w2', 'policy'))
+                        or k in {'policies', 'alignment', 'case_type'})}
+    if isinstance(value, list):
+        return [without_w2(v) for v in value
+                if not (isinstance(v, str) and v in {'W2_LOW_CONFIDENCE', 'RECENT_TRADE'})]
+    return value
+
+
+def trade_input(case, payload, recent_trade, *, hide_w2=False):
     result = {
         k: payload[k]
         for k in ("ticker", "cutoff_at", "message", "w1", "additional_tags", "pins", "alignment")
         if k in payload
     }
     partial = case.frozen_inputs.get("w3_replay", {}).get("partial_input", False)
-    if partial:
+    if hide_w2:
+        pass  # Do not project or validate hidden upstream Policy material.
+    elif partial:
         w2, policies = project_policy_input(
             payload.get("w2", {}),
             payload.get("policies", []),
@@ -145,7 +163,7 @@ def trade_input(case, payload, recent_trade):
         result["recent_trade"] = (
             payload.get("recent_trade", recent_trade) if partial else recent_trade
         )
-    return result
+    return without_w2(result) if hide_w2 else result
 
 
 def scoped_manifest(manifest):
@@ -169,7 +187,10 @@ def scoped_manifest(manifest):
     return result
 
 
-def operations_input(case, payload):
+def operations_input(case, payload, *, hide_w2=False):
+    if hide_w2:
+        return without_w2({k: payload[k] for k in
+                           ("submitted_decision", "output_disposition", "watch", "pins")})
     projection = case.frozen_inputs["projection"]["policies"]
     names = titles(projection)
     wanted = set(policy_associations(case.w2_final)) | {
