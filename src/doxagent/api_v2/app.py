@@ -353,7 +353,9 @@ def create_app(
             else 65536
             if name == "BindingConfig"
             else 1048576
-            if name.endswith("Detail") or name == "ExpectationUnit"
+            # The global catalog is one complete directory snapshot; MCP pages
+            # it after this hop. Its envelope needs the bounded object budget.
+            if name.endswith("Detail") or name in {"ExpectationUnit", "SourceCatalog"}
             else 262144
         )
         if len(json.dumps(payload, ensure_ascii=False).encode()) > budget:
