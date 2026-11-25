@@ -94,6 +94,9 @@ class TechnologyBodyReader:
                 diagnostics={"outcome": "UNAVAILABLE", "body_source": "technology_http"},
             )
         inspector=inspect_html
+        if spec.source_id=='ash_cullinan':
+            from .biopharma_body import inspect_ash
+            inspector=inspect_ash
         if spec.source_id in {'rg_prediction_markets','ledgerinsights_news'}:
             from functools import partial
             from .fintech_body import inspect_article

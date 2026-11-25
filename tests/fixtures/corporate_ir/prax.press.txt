@@ -2,69 +2,67 @@
   <div class="llf-container-fluid-full">
     <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
 
-    
+
       <div class="llf-col-md-12 llf-px-0 lfg-details ">
 
               <div class="nir-widget--field nir-widget--news--date-time news-date" data-label="Date">
           November 12, 2026
         </div>
-      
+
         <div class="nir-widget--field" data-label="Title">
 
                       <div class="nir-widget--field nir-widget--news--headline">
                                       Praxis Precision Medicines Details Launch Readiness for Relutrigine and Ulixacaltamide and Outlines Expanded Pipeline in Preparation to be the Preeminent CNS Biotech at Investor Day
                             </div>
-          
+
                                       <div class="nir-widget--field nir-widget--news--read-more llf-mt-sm investor-more-link">
                     <a href="/news-releases/news-release-details/praxis-precision-medicines-details-launch-readiness-relutrigine" hreflang="en">Read Full Press Release</a>
                 </div>
-            
+
         </div>
 
-      
-      
-      
 
 
-      
+
+
+
+
       </div>
     </div>
   </div>
 </article>
 
-    
+
 <article class="clearfix node node--nir-news--nir-widget-list node--type-nir-news node--view-mode-nir-widget-list node--promoted nir-widget-article llf-border news-item" data-title="Praxis Precision Medicines Provides Corporate Update and Reports Third Quarter 2026 Financial Results">
   <div class="llf-container-fluid-full">
     <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
 
-    
+
       <div class="llf-col-md-12 llf-px-0 lfg-details ">
 
               <div class="nir-widget--field nir-widget--news--date-time news-date" data-label="Date">
           November 9, 2026
         </div>
-      
+
         <div class="nir-widget--field" data-label="Title">
 
                       <div class="nir-widget--field nir-widget--news--headline">
                                       Praxis Precision Medicines Provides Corporate Update and Reports Third Quarter 2026 Financial Results
                             </div>
-          
+
                                       <div class="nir-widget--field nir-widget--news--read-more llf-mt-sm investor-more-link">
                     <a href="/news-releases/news-release-details/praxis-precision-medicines-provides-corporate-update-and-21" hreflang="en">Read Full Press Release</a>
                 </div>
-            
+
         </div>
 
-      
-      
-      
 
 
-      
+
+
+
+
       </div>
     </div>
   </div>
 </article>
-
-    

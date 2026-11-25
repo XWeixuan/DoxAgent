@@ -80,6 +80,11 @@ def parse_listing(recipe, raw, now):
         data = json.loads(raw)
         if not isinstance(data, list):
             raise ValueError("fda_calendar_json_changed")
+        # Match the normal front-end's newest-meeting-first order. Preserve the
+        # complete native index; these dates still are not publication times.
+        data.sort(
+            key=lambda r: datetime.strptime(r["field_start_date"][:10], "%m/%d/%Y"), reverse=True
+        )
         for row in data:
             title = html.fromstring("<div>" + row["title"] + "</div>")
             links = title.xpath(".//a[@href]")

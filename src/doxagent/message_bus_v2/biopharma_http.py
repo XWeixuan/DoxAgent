@@ -8,7 +8,7 @@ import re
 from dataclasses import replace
 from datetime import timedelta
 from zoneinfo import ZoneInfo
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode
 
 from lxml import html
 
@@ -25,12 +25,12 @@ async def fetch_listing(adapter, recipe, spec, headers, context):
     if recipe.parser == "bio_fierce":
         key = getattr(adapter, "_fierce_public_header", None)
         if key is None or (context.requested_at - key[0]).total_seconds() > 3600:
-            c = await adapter._fetch(recipe.feed, spec)
-            doc = html.fromstring(c.text)
-            scripts = doc.xpath('//script[contains(@src,"/compiled/quartz-app.js")]/@src')
-            if c.status != 200 or not scripts:
-                raise ValueError("fierce_public_app_missing")
-            c = await adapter._fetch(urljoin(recipe.feed, scripts[0]), spec)
+            # The anonymous HTML shell is challenged intermittently, while its
+            # public client bundle and native APIs work without that shell.
+            c = await adapter._fetch(
+                "https://www.fiercebiotech.com/modules/custom/quartz_apifirst/compiled/quartz-app.js?v=1795217470",
+                spec,
+            )
             match = re.search(r'headers\["Quartz-Request-Key"\]="([^"]+)"', c.text)
             if c.status != 200 or not match:
                 raise ValueError("fierce_public_request_header_missing")

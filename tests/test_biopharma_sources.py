@@ -221,3 +221,48 @@ def test_portfolio_survives_initialization_defaults_without_starting_tickers(tmp
     # Existing portfolios are not globally narrowed by this ticker-specific rule.
     bus.materialize_default_bindings("MU")
     assert repo.get_binding("MU:yahoo_finance_news") is not None
+
+
+def test_ash_body_checks_the_requested_pid_before_scoping_abstract():
+    from doxagent.message_bus_v2.biopharma_body import inspect_ash
+    from doxagent.content_enrichment.quality import choose_candidate
+
+    title = "Phase 1b study of a bispecific antibody in autoimmune cytopenias"
+    body = (
+        "Methods: Adults received the study antibody with a planned escalation schedule. "
+        "Results: Responses and safety findings were measured in the prespecified population. "
+        "Conclusions: Additional follow-up will evaluate duration of benefit. "
+    ) * 6
+    raw = f'<form action="./paper-details.aspx?pid=123"><h1>Paper Details</h1><h2 class="session-title">3001 {title}</h2><div id="pnlPaperAbstract">{body}</div></form>'
+    candidate, outcome, _ = choose_candidate(
+        inspect_ash(raw, "https://onlineprogram.hematology.org/paper-details.aspx?pid=123", title),
+        title,
+    )
+    assert (
+        outcome == "FULL"
+        and candidate.method == "ash_abstract_dom"
+        and candidate.text.count("Methods:") == 6
+    )
+    candidate, outcome, _ = choose_candidate(
+        inspect_ash(raw, "https://onlineprogram.hematology.org/paper-details.aspx?pid=999", title),
+        title,
+    )
+    assert candidate is None and outcome == "UNAVAILABLE"
+
+
+def test_massive_preparation_does_not_relax_user_or_running_ticker_terms_guard(tmp_path):
+    from doxagent.message_bus_v2.schema import UpdateActor, TickerMonitoringState
+
+    repo, bus = _bus(tmp_path / "bus.db")
+    bus.update_source(
+        "businesswire_massive", {"delivery_mode": "production"}, actor=UpdateActor.SYSTEM
+    )
+    with pytest.raises(ValueError, match="MASSIVE_TERMS_MISSING"):
+        bus.configure_binding(
+            ticker="XENE", source_id="businesswire_massive", actor=UpdateActor.USER
+        )
+    repo.save_ticker_state(TickerMonitoringState(ticker="XENE", profile_version=1))
+    with pytest.raises(ValueError, match="MASSIVE_TERMS_MISSING"):
+        bus.configure_binding(
+            ticker="XENE", source_id="businesswire_massive", actor=UpdateActor.SYSTEM
+        )

@@ -187,7 +187,7 @@ def listing_recipes():
             if s.source_id == "fda_release":
                 parser = ("bio_fda_approvals", "bio_fda_biologics", "bio_fda_calendar")[i]
                 url = FDA_CALENDAR if i == 2 else u
-                method = "POST"
+                method = "GET" if i == 2 else "POST"
             elif s.source_id == "fiercebiotech_biotech":
                 url = "https://www.fiercebiotech.com/api/v1/fronts/51691?page=1&noHeroArticles=true"
             elif s.source_id in {
