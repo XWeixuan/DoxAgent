@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "uncached_url": true,
+  "seconds": 28.393,
+  "source_count": 99,
+  "meta": {
+    "contract_version": "2.0.0-draft.2",
+    "workflow_generation": "V2",
+    "request_id": "24637d99a9644991b859ef80a0e2c52f",
+    "view_id": null,
+    "scope_key": "0bd2f46060f3b6e249c1823c081e4c19db0ebf0766a43cf074bef6e8342c9fdf",
+    "as_of": "2026-11-25T14:16:06.755742Z",
+    "representation_revision": "df6eea6d86a1c4fcb9d59622a074536500971f29e67a554146c5cf191165f81b",
+    "freshness": "STALE",
+    "refresh_error": null
+  }
+}

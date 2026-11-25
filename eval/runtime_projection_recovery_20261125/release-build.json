@@ -1,0 +1,23 @@
+{
+  "commit": "9fdc39319dbb2a7e7f2e75532e83342bf795d2d8",
+  "roles": {
+    "v2-transport-maintenance": {
+      "image": "sha256:ba67acb7015c76455ec2016861fdbced9d2148bd8d1f2e44afc4d23dac2640dd",
+      "baseline": "sha256:612ef17460a063fc00eb3265e5775fe68df7940d164ea7fd24567d5c4c28e15b",
+      "hashes": {
+        "src/doxagent/event_library/admission_evidence.py": "ff9482092a6833e17096e8898692c3fd229440cbf87246cb1755e7c46e0654ca",
+        "src/doxagent/persistent_runtime_v2/event_branch.py": "e37f1ba4e55fa236ca5ca260e73322d52b14cf326e8daa68d67840b8f6593c5e",
+        "src/doxagent/persistent_runtime_v2/retained_events.py": "3d16c6e2fddf0038f23aae4c542f5c22f0d7dd4f9435818e5b2e41acf9784122"
+      }
+    },
+    "v2-scheduler": {
+      "image": "sha256:e34885d60647e177eeda79023613f9336bbc9bd769f83de4a0ed54f3cb240083",
+      "baseline": "sha256:dec2ad93b5c1b1c4c9460068a3d439aedf0854dc3f3252cc9bb781bc80e610c6",
+      "hashes": {
+        "src/doxagent/event_library/admission_evidence.py": "ff9482092a6833e17096e8898692c3fd229440cbf87246cb1755e7c46e0654ca",
+        "src/doxagent/persistent_runtime_v2/event_branch.py": "e37f1ba4e55fa236ca5ca260e73322d52b14cf326e8daa68d67840b8f6593c5e",
+        "src/doxagent/persistent_runtime_v2/retained_events.py": "3d16c6e2fddf0038f23aae4c542f5c22f0d7dd4f9435818e5b2e41acf9784122"
+      }
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "at": "2026-11-25T14:11:24.872129+00:00",
+  "available_bytes": 37810794496,
+  "libraries": [
+    {
+      "ticker": "BE",
+      "version": 82,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "94dbd65e4cf6a97e81c8a33f94d359794bd05d9c055e007c31b8443605ee47c7"
+    },
+    {
+      "ticker": "CEG",
+      "version": 39,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "75a286cc4465206d0b60e7810b35c3b2e2c4b9a9a89b9add49518f30a09863a0"
+    },
+    {
+      "ticker": "COHR",
+      "version": 40,
+      "exists": true,
+      "admissions_ready": true,
+      "index_sha256": "fdf16ea108176d7d0c19f65049c96b93fd63db7c9c9b1f676d40263efc6464ff"
+    },
+    {
+      "ticker": "COIN",
+      "version": 1,
+      "exists": true,
+      "admissions_ready": true,
+      "index_sha256": "2340087d645fb7c91027169d59917027a67745d052db191b179a96e391efe1c4"
+    },
+    {
+      "ticker": "INTC",
+      "version": 93,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "7eb0211350711845bd44be424ad13fa7f695139f8a5217029f87c811cbd7a2af"
+    },
+    {
+      "ticker": "IONQ",
+      "version": 55,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "bb5bc6d69d4d8e1e3ae410d2f3e42d8a951e340fc5b8b60def5edd3909308aa8"
+    },
+    {
+      "ticker": "MU",
+      "version": 93,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "fbb28781405c2b0cf0f66efed81bc9c9d72d59cdd45c61d756ca92c94cac100c"
+    },
+    {
+      "ticker": "NBIS",
+      "version": 51,
+      "exists": true,
+      "admissions_ready": true,
+      "index_sha256": "15b7519e4e87ef7680e3190c5a5173b32315faac385da4603eb4f392f7e9c19e"
+    },
+    {
+      "ticker": "ONDS",
+      "version": 29,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "c1d273de597116855f4791159f64293ca69678ca2de96a21840bf13a648824d0"
+    },
+    {
+      "ticker": "RKLB",
+      "version": 72,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "551e992076001a43d25f2b79c304f5a023a0d43ea2fba1339fb7bde2d218952f"
+    },
+    {
+      "ticker": "SNOW",
+      "version": 41,
+      "exists": true,
+      "admissions_ready": false,
+      "index_sha256": "6629ac8f402db728164d6f35854649049c2b66705d296123309cbf15d02b50c2"
+    }
+  ],
+  "cases": [
+    [
+      "COHR",
+      "2026-11-25",
+      3,
+      "2026-11-25T14:03:37.069159+00:00"
+    ],
+    [
+      "NBIS",
+      "2026-11-25",
+      6,
+      "2026-11-25T14:10:56.404046+00:00"
+    ]
+  ],
+  "new_missing_ancestor_errors": [],
+  "read_cases": [
+    [
+      "COHR",
+      "2026-11-25",
+      3
+    ],
+    [
+      "NBIS",
+      "2026-11-25",
+      6
+    ]
+  ],
+  "projection": [
+    {
+      "source": "runtime",
+      "head": 5396545,
+      "checkpoint": 5396545,
+      "checked_at": "2026-11-25T14:11:24.535190Z",
+      "error": null
+    },
+    {
+      "source": "research",
+      "head": 143451,
+      "checkpoint": 143451,
+      "checked_at": "2026-11-25T14:11:24.608009Z",
+      "error": null
+    },
+    {
+      "source": "initialization",
+      "head": 195523,
+      "checkpoint": 195523,
+      "checked_at": "2026-11-25T14:11:24.630511Z",
+      "error": null
+    },
+    {
+      "source": "bus",
+      "head": 13284242,
+      "checkpoint": 13284242,
+      "checked_at": "2026-11-25T14:11:24.840125Z",
+      "error": null
+    }
+  ]
+}

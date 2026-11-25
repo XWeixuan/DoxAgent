@@ -1,0 +1,13 @@
+{
+  "w3_mean_seconds": 43.0,
+  "note": "Actual logged-in Chrome page; no frontend fixture used. No historical replay.",
+  "graph_w1": 3,
+  "completed_cases": 3,
+  "graph_source": 3,
+  "hot_path_seconds": 14.85,
+  "url": "https://agent.doxatlas.com/ticker/COHR/runtime?period=CURRENT_TRADING_DAY",
+  "processed_cases": 3,
+  "kind": "observed_browser_accessibility",
+  "graph_w2": 3,
+  "listed_cases": 3
+}
