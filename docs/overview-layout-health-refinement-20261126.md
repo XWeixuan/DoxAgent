@@ -38,3 +38,9 @@
 - 无新增模型请求、测试订单、初始化或运行模式转换。
 
 证据：[角色与产物核验](../artifacts/ui-health-refinement-verified-20261126.json)、[一次性投影刷新](../artifacts/ui-health-refinement-refresh-20261126.json)、[认证 Overview 回读](../artifacts/ui-health-refinement-ceg-api-20261126.json)。回滚镜像及私有有效环境沿用 `/var/lib/doxagent/releases/dynamic-ownership-0135854037c9` 的现有发布记录。没有把临时发布辅助脚本加入产品执行链。
+
+## 后续纠正：隐藏多余的“正常”标签
+
+上一轮保留了生命周期健康为 NORMAL 时的附加标签，导致 CEG 显示一个用户未要求的“正常”。已对所有 ticker 统一隐藏 NORMAL/UNKNOWN 健康标签，只显示运行模式及 DEGRADED/BLOCKED 异常；不针对 CEG 增加特殊分支，也不改后端状态。原组件一处显示条件调整，没有新增标签或组件。
+
+前端 78 项、1262/1559px 浏览器 8 项通过，构建通过；新增断言确认普通/轻量正常行只有运行模式标签，“正常”为 0 个，而初始化阻塞仍可见。日志：`artifacts/overview-normal-label-{build,vitest,browser}-20261126.log`。本次仅发布 Web，发布核验在完成后补充。

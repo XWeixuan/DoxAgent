@@ -88,7 +88,7 @@ export function MonitorRow({
                   : undefined
               }
             />
-            {state.health !== "UNKNOWN" && (
+            {(state.health === "DEGRADED" || state.health === "BLOCKED") && (
               <StatusBadge
                 dimension="health"
                 value={state.health}

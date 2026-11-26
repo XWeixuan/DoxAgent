@@ -24,11 +24,15 @@ for (const width of [1262, 1559]) {
       .getByRole("row")
       .filter({ has: page.getByRole("link", { name: "MU", exact: true }) });
     await expect(lightRow.locator(".status-stack")).toContainText("轻量运行");
+    await expect(lightRow.locator(".status-stack .status-badge")).toHaveCount(1);
     await expect(lightRow.locator(".mode-pending")).toHaveCount(0);
     const fullRow = page
       .getByRole("row")
       .filter({ has: page.getByRole("link", { name: "NVDA", exact: true }) });
     await expect(fullRow.locator(".status-stack")).toContainText("普通运行");
+    await expect(fullRow.locator(".status-stack .status-badge")).toHaveCount(1);
+    await expect(page.locator(".status-stack").getByText("正常", { exact: true })).toHaveCount(0);
+    await expect(page.locator(".status-stack").getByText("阻塞", { exact: true })).toBeVisible();
     await page.getByRole("radio", { name: "轻量运行", exact: true }).click();
     await expect(
       page.getByRole("radio", { name: "轻量运行", exact: true }),
