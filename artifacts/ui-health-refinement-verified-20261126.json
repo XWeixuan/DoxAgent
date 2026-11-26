@@ -1,0 +1,38 @@
+{
+  "commit": "0135854037c96b25cbcdd7be91af922024abc606",
+  "roles": {
+    "v2-projector": {
+      "image": "sha256:e237e7d2174ff201e5b3bb2099bfab91e8335af8380b7768b3afe15ca3c07ee7",
+      "healthy": null,
+      "restart_count": 0,
+      "hashes_verified": 2
+    },
+    "v2-api": {
+      "image": "sha256:a102e3fb25821893e0fd8877b44508cc152bece7ddc769f9d07fb894e2e34f16",
+      "healthy": "healthy",
+      "restart_count": 0,
+      "hashes_verified": 2
+    },
+    "v2-web": {
+      "image": "sha256:04df0ab1052e004a92b52c1d3310b4f542bfe88f4402d194f63d82d3b5fa1d9d",
+      "healthy": "healthy",
+      "restart_count": 0,
+      "hashes_verified": 41
+    }
+  },
+  "unchanged_other_roles": [
+    "v2-control",
+    "v2-initialization",
+    "v2-cdecr-executor",
+    "v2-o4",
+    "v2-maintenance",
+    "v2-delivery",
+    "v2-transport-maintenance",
+    "v2-message-collector",
+    "v2-content-enrichment",
+    "v2-message-bus",
+    "v2-executor",
+    "codex-worker",
+    "v2-scheduler"
+  ]
+}

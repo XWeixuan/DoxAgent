@@ -1,0 +1,17 @@
+{
+  "authenticated_overview": true,
+  "state": {
+    "ticker": "CEG",
+    "requested_mode": "LIVE_TRADING",
+    "effective_mode": {
+      "reason": null,
+      "state": "AVAILABLE",
+      "value": "LIVE_TRADING"
+    },
+    "run_state": "RUNNING",
+    "health": "NORMAL",
+    "health_reasons": []
+  },
+  "freshness": "STALE",
+  "request_id": "b9d8a0b3c2094031af1e53a5f6bf8dae"
+}

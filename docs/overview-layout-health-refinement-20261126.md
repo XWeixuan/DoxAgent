@@ -1,6 +1,6 @@
 # Overview 双列布局与错误降级修订
 
-日期：2026-11-26。状态：本地验证完成，发布结果在下文补充。
+日期：2026-11-26。状态：已发布并完成生产回读验证；产品源码 `0135854037c96b25cbcdd7be91af922024abc606`。
 
 ## 两项修订
 
@@ -23,4 +23,18 @@
 
 ## 发布结果
 
-待补充固定版本、三角色镜像核验和错误派生状态刷新结果。计划使用既有锁定发布 Owner 的小覆盖层，只替换 API/Projector 的上述两个源码文件和 Web 静态产物，不重启 Runtime Scheduler、Worker、交易执行器或采集服务。旧错误健康状态按现行 ACK/Bus 事实一次性重投影，不伪造 NORMAL、不改原始采集台账。
+已使用既有锁定发布 Owner 的小覆盖层，只替换 API/Projector 的上述两个源码文件和 Web 静态产物。
+
+| 角色 | 实际镜像 |
+|---|---|
+| API | `sha256:a102e3fb25821893e0fd8877b44508cc152bece7ddc769f9d07fb894e2e34f16` |
+| Projector | `sha256:e237e7d2174ff201e5b3bb2099bfab91e8335af8380b7768b3afe15ca3c07ee7` |
+| Web | `sha256:04df0ab1052e004a92b52c1d3310b4f542bfe88f4402d194f63d82d3b5fa1d9d` |
+
+- 三角色正常运行、重启数均为 0；API/Web healthy。两后端文件以及 41 个 Web 静态文件全部与构建产物哈希一致，实际镜像与发布台账一致，原有效环境配置保留。
+- 与上次发布收据比对，其余 13 个角色的容器 ID 和镜像均未变化，包括 Runtime Scheduler、Worker、交易执行器及采集角色。
+- 对仍有 SOURCE_POLL_FAILURE 的当前 ticker 只做一次派生投影刷新，实际仅命中 CEG；复用现有 `health.project` 与 `ReadStore.ingest`、现行 ACK/Bus 事实，结果为 **NORMAL，health_reasons=[]**。没有伪造 NORMAL，没有改原始采集状态、启停 ticker 或修改交易配置。
+- 通过已连接 DoxAgent MCP 的正常认证 Overview 回读，CEG 为 RUNNING、LIVE_TRADING、NORMAL，健康原因为空。真实读端仍标记 STALE，未将既有投影新鲜度问题包装为已修复。
+- 无新增模型请求、测试订单、初始化或运行模式转换。
+
+证据：[角色与产物核验](../artifacts/ui-health-refinement-verified-20261126.json)、[一次性投影刷新](../artifacts/ui-health-refinement-refresh-20261126.json)、[认证 Overview 回读](../artifacts/ui-health-refinement-ceg-api-20261126.json)。回滚镜像及私有有效环境沿用 `/var/lib/doxagent/releases/dynamic-ownership-0135854037c9` 的现有发布记录。没有把临时发布辅助脚本加入产品执行链。
