@@ -1239,7 +1239,7 @@ class RuntimeCoordinator:
                        (case_id, encode(dirty)))
 
     def _schedule_case_supplement(self, dirty, parents=None):
-        if getattr(self.maintain, "o3_enabled", True) is False and hasattr(self.runtime.repository, "path"):
+        if (dirty.get("running_mode") == "LIGHTWEIGHT" or getattr(self.maintain, "o3_enabled", True) is False) and hasattr(self.runtime.repository, "path"):
             return self._schedule_o2_supplement(dirty, parents)
         from .bounded_inputs import has_pending_records
         from .journal import encode

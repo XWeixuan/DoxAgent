@@ -77,6 +77,8 @@ const edges: Array<[NodeId, NodeId]> = [
   ["TRADE_INTENT", "TRADE_EXECUTION"],
   ["TRADE_INTENT", "TRADE_NOT_EXECUTED"],
 ];
+const lightweight = new URLSearchParams(location.search).has("lightweight");
+if (lightweight) edges.push(["W1", "W3"], ["W1", "ARCHIVE"]);
 const graph = {
   graph_revision: 1,
   stream_cursor: "cursor",
@@ -126,7 +128,7 @@ function Fixture() {
       <div className={`runtime-flow-layout${node ? " has-node" : ""}`}>
         <FlowGraph
           graph={graph}
-          lightweight={new URLSearchParams(location.search).has("lightweight")}
+          lightweight={lightweight}
           selected={node}
           pathEdges={
             node

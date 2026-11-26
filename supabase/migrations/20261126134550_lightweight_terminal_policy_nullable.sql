@@ -1,4 +1,5 @@
 -- Apply before enabling the first LIGHTWEIGHT ticker. Existing FULL rows remain valid.
+SET LOCAL lock_timeout = '3s';
 ALTER TABLE doxagent.persistent_runtime_v2_terminal_cases
   ALTER COLUMN policy_set_version DROP NOT NULL;
 -- running_mode remains in the existing projection_json; no row rewrite or new index.

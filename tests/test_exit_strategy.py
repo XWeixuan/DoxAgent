@@ -37,6 +37,13 @@ def admit(repo, revision, identity="trade:A", side="LONG"):
 setup = execution_setup
 
 
+@pytest.fixture
+def two_ticker_slots(setup):
+    from doxagent.trade_execution.capital import CapitalLedger
+
+    CapitalLedger(setup[1]).set_ticker_limit("DU_TEST", 2, "two-ticker exit fixture")
+
+
 def observation(state, t, pnl=1000, *, valid=True, atr=10, generation=1):
     return observe(
         state,
@@ -214,7 +221,7 @@ def test_atomic_request_same_exit_job_version_race_and_dedup(setup):
     assert int(broker.positions[9939]) == 50  # manual baseline untouched
 
 
-def test_explicit_group_requests_all_legs_and_refreshes_after_fifo(setup):
+def test_explicit_group_requests_all_legs_and_refreshes_after_fifo(setup, two_ticker_slots):
     clock, repo, revision, executor, broker = setup
     store, _ = opened(setup)
     admit(repo, revision, identity="trade:B")
@@ -399,7 +406,7 @@ def test_strategy_summary_is_valid_wire_and_hot_table_not_captured(setup):
     assert "ts_positions" not in SourceOutbox(repo.journal.path, "runtime").migrate(dry_run=True)
 
 
-def test_one_bad_position_cannot_stop_sibling_updates_or_exits(setup):
+def test_one_bad_position_cannot_stop_sibling_updates_or_exits(setup, two_ticker_slots):
     clock, repo, revision, executor, broker = setup
     store, _ = opened(setup)
     admit(repo, revision, identity="trade:B")
@@ -489,7 +496,7 @@ def test_new_quote_received_during_db_read_is_not_misclassified_future_stale(set
     asyncio.run(check())
 
 
-def test_virtual_opposite_does_not_trigger_legacy_group_exit(setup):
+def test_virtual_opposite_does_not_trigger_legacy_group_exit(setup, two_ticker_slots):
     clock, repo, revision, executor, broker = setup
     store, _ = opened(setup)
     admit(repo, revision, identity="trade:B")

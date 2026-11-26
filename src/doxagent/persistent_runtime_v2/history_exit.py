@@ -37,15 +37,16 @@ def collect(maintenance):
             keep.update(r[0] for r in db.execute('SELECT event_version FROM runtime_case_resource_refs WHERE event_root IS NULL AND ticker=?',(ticker,)) if r[0] is not None)
     # EventLibraryRef in the current typed D3 is a small stable header. Cache by
     # exact release, never read a large old PolicySet on every maintenance pass.
-    release=(ticker,policy_version)
-    headers=getattr(maintenance,'_history_policy_event_headers',{})
-    if release not in headers:
-        with closing(sqlite3.connect(Path(settings.codex_runtime_sqlite_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
-            row=db.execute("SELECT json_extract(policy_set_json,'$.event_library_ref.version') FROM codex_document3_policy_sets WHERE ticker=? AND policy_set_version=?",release).fetchone()
-        headers={key:value for key,value in headers.items() if key[0]!=ticker}
-        headers[release]=row[0] if row else None
-        maintenance._history_policy_event_headers=headers
-    if headers[release] is not None:keep.add(int(headers[release]))
+    if policy_version is not None:
+        release=(ticker,policy_version)
+        headers=getattr(maintenance,'_history_policy_event_headers',{})
+        if release not in headers:
+            with closing(sqlite3.connect(Path(settings.codex_runtime_sqlite_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
+                row=db.execute("SELECT json_extract(policy_set_json,'$.event_library_ref.version') FROM codex_document3_policy_sets WHERE ticker=? AND policy_set_version=?",release).fetchone()
+            headers={key:value for key,value in headers.items() if key[0]!=ticker}
+            headers[release]=row[0] if row else None
+            maintenance._history_policy_event_headers=headers
+        if headers[release] is not None:keep.add(int(headers[release]))
     def is_live(run):
         if not run:return True
         if run_held(settings,run):return True

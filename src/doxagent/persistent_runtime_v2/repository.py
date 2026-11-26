@@ -1302,7 +1302,8 @@ class SQLitePersistentRuntimeV2Repository:
                 from .journal import encode
 
                 row = connection.execute(
-                    "SELECT ticker FROM runtime_v2_cases WHERE case_id=?", (effect.case_id,)
+                    "SELECT ticker,json_extract(payload_json,'$.version_pin.running_mode') "
+                    "FROM runtime_v2_cases WHERE case_id=?", (effect.case_id,)
                 ).fetchone()
                 if row:
                     value = {
@@ -1312,6 +1313,8 @@ class SQLitePersistentRuntimeV2Repository:
                         "attempt": effect.attempt_count,
                         "at": effect.updated_at.isoformat(),
                     }
+                    if row[1] == "LIGHTWEIGHT":
+                        value["running_mode"] = "LIGHTWEIGHT"
                     connection.execute(
                         "INSERT INTO runtime_values VALUES('dirty_case',?,?) "
                         "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",

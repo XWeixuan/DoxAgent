@@ -59,7 +59,7 @@ def test_full_replay_input_matches_live_projection():
     case = runtime_case(raw, Path("a"), {}, execution_profile(raw, extra))
     payload = business_payload(raw, case, extra)
     replay = trade_input(case, payload, [])
-    live = SimpleNamespace(frozen_inputs={}, w2_final=SimpleNamespace(model_dump=lambda **_: w2))
+    live = SimpleNamespace(running_mode="FULL", frozen_inputs={}, w2_final=SimpleNamespace(model_dump=lambda **_: w2))
     assert replay == trade_input(live, payload, [])
     assert replay["message"]["published_at"].startswith("2026-10-27T15:00")
     assert replay["cutoff_at"] == raw["as_of"]

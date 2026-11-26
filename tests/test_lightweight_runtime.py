@@ -385,6 +385,8 @@ def test_light_o2_maintenance_reuses_receipt_and_never_dispatches_o3(tmp_path):
         assert asyncio.run(maintain(task))["reconciled"]
         assert calls == ["o2"]
         assert not journal.values("reference_deliveries")
+        assert active["runtime_metadata"]["o3_outcome"] == "NOT_APPLICABLE"
+        assert journal.get("o3_pending", "MU") is None
     finally:
         service.close()
 
@@ -1075,5 +1077,64 @@ def test_frozen_full_selection_never_queries_model_after_mode_change(tmp_path):
 
         with pytest.raises(ValueError, match="selection running mode changed"):
             asyncio.run(WeekendSelection(None, service, journal, judge=unexpected)(task))
+    finally:
+        service.close()
+
+
+def test_light_completion_uses_o2_only_supplement_even_when_full_o3_enabled(tmp_path):
+    from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+
+    service, journal, _ = light_runtime(tmp_path)
+    try:
+        case = service.execute_message(_source())
+        service.process_pending_effects()
+        dirty = journal.get("dirty_case", case.case_id)
+        assert dirty["running_mode"] == "LIGHTWEIGHT"
+        coordinator = RuntimeCoordinator.__new__(RuntimeCoordinator)
+        coordinator.runtime = service
+        coordinator.maintain = SimpleNamespace(o3_enabled=True)
+        calls = []
+        coordinator._schedule_o2_supplement = lambda *args: calls.append(args)
+        coordinator._schedule_case_supplement(dirty)
+        assert calls == [(dirty, None)]
+    finally:
+        service.close()
+
+
+def test_light_history_exit_never_opens_policy_database(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from doxagent.event_library import admission_evidence, lifecycle
+    from doxagent.persistent_runtime_v2 import history_exit, resource_refs
+    from tests.test_runtime_orchestration_recovery import maintenance_fixture
+
+    service, journal, settings, control = maintenance_fixture(tmp_path)
+    try:
+        with control._write() as db:
+            base = control.active_revision("MU")
+            base["running_mode"] = "LIGHTWEIGHT"
+            base["artifacts"].pop("document2")
+            base["artifacts"].pop("document3")
+            db.execute(
+                "UPDATE activation_revisions SET payload=? WHERE revision_id='base'",
+                (json.dumps(base),),
+            )
+        monkeypatch.setattr(resource_refs, "backfill", lambda journal: True)
+        monkeypatch.setattr(resource_refs, "pins", lambda *args, **kwargs: set())
+        monkeypatch.setattr(admission_evidence, "backfill", lambda *args: True)
+        monkeypatch.setattr(lifecycle, "register_legacy", lambda *args: True)
+        monkeypatch.setattr(lifecycle, "collect_batches", lambda *args, **kwargs: [])
+        monkeypatch.setattr(lifecycle, "collect_history", lambda *args, **kwargs: {})
+        root = base["artifacts"]["event_library"].get("root") or settings.event_library_root
+        owner = SimpleNamespace(
+            journal=journal,
+            control=control,
+            settings=SimpleNamespace(event_library_root=root, codex_runtime_sqlite_path=None),
+            _event_exit_repositories={
+                "MU": SimpleNamespace(path=Path(root) / "US" / "MU" / "event_library.sqlite3")
+            },
+        )
+        assert history_exit.collect(owner)["ticker"] == "MU"
+        assert not hasattr(owner, "_history_policy_event_headers")
     finally:
         service.close()
