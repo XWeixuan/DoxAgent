@@ -97,10 +97,17 @@ class CandidateConfiguration:
 
     def install(self) -> None:
         """Atomically install the ticker portfolio; retain all consumer/poll history."""
+        from doxagent.message_bus_v2.polling_cadence import RETIRED_SOURCES
+
         bindings = self.candidate.list_bindings(ticker=self.ticker)
         semantic_fields = {"kind", "adapter_ref", "parameter_schema", "scheduler_group"}
         valid_bindings = []
         for binding in bindings:
+            if binding.source_id in RETIRED_SOURCES:
+                continue
+            if binding.source_id == "google_news_search_rss":
+                parameters = {"require_relevance": True, **binding.source_parameters}
+                binding = binding.model_copy(update={"source_parameters": parameters})
             source = self.candidate.get_source(binding.source_id)
             existing = self.live.get_source(binding.source_id)
             if (
@@ -225,6 +232,8 @@ class CandidateConfiguration:
 
     def rollback(self) -> bool:
         """Compensate only this installation; never overwrite a subsequent activation."""
+        from doxagent.message_bus_v2.polling_cadence import RETIRED_SOURCES
+
         if not self.installed():
             return False
         with self.live.transaction() as db:
@@ -241,6 +250,8 @@ class CandidateConfiguration:
             db.execute("DELETE FROM ticker_source_bindings WHERE ticker=?", (self.ticker,))
             for payload in json.loads(receipt["previous_bindings"]):
                 binding = TickerSourceBinding.model_validate(payload)
+                if binding.source_id in RETIRED_SOURCES:
+                    continue
                 self.live._save_binding_tx(db, binding)
             if receipt["previous_operation"]:
                 db.execute(
