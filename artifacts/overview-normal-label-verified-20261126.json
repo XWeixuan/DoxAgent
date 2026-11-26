@@ -1,0 +1,29 @@
+{
+  "commit": "abc14080d780ec5ce791e0812d395e92d4af190e",
+  "web_image": "sha256:1c524d1e9d23a128dc2432c34ba9f19e30d5ee458024213214f8ca61d32776db",
+  "healthy": true,
+  "restart_count": 0,
+  "verified_static_files": 41,
+  "unchanged_other_containers": [
+    "/doxagent-v2-v2-api-1",
+    "/doxagent-v2-v2-projector-1",
+    "/doxagent-v2-v2-scheduler-1",
+    "/doxagent-v2-codex-worker-1",
+    "/doxagent-v2-v2-executor-1",
+    "/doxagent-v2-v2-message-bus-1",
+    "/doxagent-v2-v2-content-enrichment-1",
+    "/doxagent-v2-v2-message-collector-1",
+    "/doxagent-v2-v2-transport-maintenance-1",
+    "/doxagent-v2-v2-delivery-1",
+    "/doxagent-v2-v2-maintenance-1",
+    "/doxagent-v2-v2-o4-1",
+    "/doxagent-v2-v2-cdecr-executor-1",
+    "/doxagent-v2-v2-initialization-1",
+    "/doxagent-v2-v2-control-1",
+    "/doxagent-v2-initialization-guardian-1",
+    "/doxagent-v2-v2-agent-mcp-tunnel-1",
+    "/doxagent-v2-v2-site-access-1",
+    "/doxagent-v2-v2-migrate-1",
+    "/doxagent-v2-v2-chrome-supervisor-1"
+  ]
+}

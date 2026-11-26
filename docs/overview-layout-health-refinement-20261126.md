@@ -43,4 +43,6 @@
 
 上一轮保留了生命周期健康为 NORMAL 时的附加标签，导致 CEG 显示一个用户未要求的“正常”。已对所有 ticker 统一隐藏 NORMAL/UNKNOWN 健康标签，只显示运行模式及 DEGRADED/BLOCKED 异常；不针对 CEG 增加特殊分支，也不改后端状态。原组件一处显示条件调整，没有新增标签或组件。
 
-前端 78 项、1262/1559px 浏览器 8 项通过，构建通过；新增断言确认普通/轻量正常行只有运行模式标签，“正常”为 0 个，而初始化阻塞仍可见。日志：`artifacts/overview-normal-label-{build,vitest,browser}-20261126.log`。本次仅发布 Web，发布核验在完成后补充。
+前端 78 项、1262/1559px 浏览器 8 项通过，构建通过；新增断言确认普通/轻量正常行只有运行模式标签，“正常”为 0 个，而初始化阻塞仍可见。日志：`artifacts/overview-normal-label-{build,vitest,browser}-20261126.log`。
+
+已仅发布 Web，产品 `abc14080d780ec5ce791e0812d395e92d4af190e`；镜像 `sha256:1c524d1e9d23a128dc2432c34ba9f19e30d5ee458024213214f8ca61d32776db`。Web healthy、restart=0，41 个静态文件摘要匹配，其余容器 ID/镜像未变，没有修改后端健康数据。见[核验收据](../artifacts/overview-normal-label-verified-20261126.json)。
