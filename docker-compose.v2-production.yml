@@ -215,6 +215,7 @@ services:
   v2-cdecr-executor:
     <<: *backend
     command: [python, -m, doxagent.ticker_initialization.cdecr_executor]
+    secrets: [site_access_worker_token]
     environment:
       <<: *environment
       DOXAGENT_SAFETY_STATE_PATH: /run/doxagent-resources/safety.json

@@ -3547,3 +3547,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-26 Catalog production acceptance: API-only one-file overlay379a0eb65 deployed and source hash verified; healthy/restart0, other20 running container IDs unchanged. Actual connected MCP default first page plus all continuations returned20/20/20/20/20/8 =108 unique sources on one snapshot, maximum67,781 bytes per tool result. Independent unique-URL cold API read returned identical108-source set and286,539 response bytes in6.060s without RESOURCE_TOO_LARGE; preserve reported freshness STALE. See docs/source-catalog-resource-too-large-repair-20261126.md.
 
 2026-11-27 修复轻量初始化历史正文全部不可用仍以空事件库成功、CDECR Dreamer 全部调用失败被缓存成功的问题；初始化复用现有 Shared BODY/Site Access，保留有效空结果与部分成功；选定节点续跑继承 running_mode。按用户授权为 CDECR 增加 Sail Research → ambient/fp4 的同模型受限 fallback。91 项相关回归通过。
+
+2026-11-27 初始化恢复部署补充：为 CDECR Executor 挂载已有 Site Access worker secret，复用现有正文服务；不新增服务、资源池或凭据。修复后继续原失败点。
