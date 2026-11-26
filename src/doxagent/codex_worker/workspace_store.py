@@ -332,7 +332,13 @@ class LocalWorkspaceStore:
                     for source in sources:
                         destination = staging / source.relative_to(run_root / "artifacts")
                         destination.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copyfile(source, destination)
+                        # D3 version release files are host-produced, immutable
+                        # by identity; API rewrites replace the inode atomically.
+                        # Generic mutable/model-produced artifacts keep a copy.
+                        if source.relative_to(run_root).parts[:3] == ('artifacts','document3','releases'):
+                            os.link(source, destination)
+                        else:
+                            shutil.copyfile(source, destination)
                     self._atomic_write(
                         staging / "manifest.json",
                         json.dumps(

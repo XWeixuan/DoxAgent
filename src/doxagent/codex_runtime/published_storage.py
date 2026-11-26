@@ -49,6 +49,11 @@ def read_local_body(path: Path, digest: str) -> bytes:
 
 
 def load_published_body(directory: Path, record: dict) -> bytes:
+    from doxagent.workflows.codex_document3.semantic_exports import PREFIX, render
+    if (record.get('storage_path') or '').startswith(PREFIX):
+        # The original SHA remains audit metadata. Reconstructed display bytes
+        # may change; exact typed identity/time/evidence remain in the release.
+        return render(directory,record)
     digest = record['sha256']
     codec = record.get('local_content_codec')
     if codec is not None and codec != LOCAL_BODY_CODEC:

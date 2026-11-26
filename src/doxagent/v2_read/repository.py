@@ -300,6 +300,9 @@ class ReadStore:
                 CREATE INDEX IF NOT EXISTS metric_buckets_scope ON metric_buckets(ticker,day,metric,valid_from);
                 CREATE INDEX IF NOT EXISTS views_expiry ON views(expires_at,seq);
                 CREATE INDEX IF NOT EXISTS cursors_expiry ON cursors(expires_at);
+                CREATE TABLE IF NOT EXISTS serving_fact_exits (
+                    kind TEXT,ticker TEXT,id TEXT,seq INTEGER NOT NULL,PRIMARY KEY(kind,ticker,id));
+                CREATE INDEX IF NOT EXISTS serving_fact_exits_due ON serving_fact_exits(seq);
                 CREATE TABLE IF NOT EXISTS object_current AS SELECT * FROM objects WHERE 0;
                 CREATE UNIQUE INDEX IF NOT EXISTS current_identity ON object_current(kind,ticker,id);
                 CREATE INDEX IF NOT EXISTS current_page ON object_current(kind,ticker,sort_key,id);
@@ -310,6 +313,11 @@ class ReadStore:
                 CREATE INDEX IF NOT EXISTS history_recent ON objects(kind,ticker,valid_to,valid_from,sort_key,id) WHERE valid_to IS NOT NULL;
                 CREATE INDEX IF NOT EXISTS history_page ON objects(kind,ticker,sort_key,id,valid_from,valid_to) WHERE valid_to IS NOT NULL;
 
+                CREATE TRIGGER IF NOT EXISTS serving_fact_exit AFTER DELETE ON object_current
+                WHEN OLD.kind='policy_hit_set' BEGIN
+                    INSERT INTO serving_fact_exits VALUES(OLD.kind,OLD.ticker,OLD.id,OLD.valid_from)
+                    ON CONFLICT(kind,ticker,id) DO UPDATE SET seq=max(seq,excluded.seq);
+                END;
                 CREATE TRIGGER IF NOT EXISTS current_insert AFTER INSERT ON objects
                 WHEN NEW.valid_to IS NULL BEGIN
                     INSERT OR REPLACE INTO object_current SELECT * FROM objects

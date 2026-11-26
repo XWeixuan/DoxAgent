@@ -116,6 +116,7 @@
 - 消息按 `(stream_published_at DESC, stream_offset DESC, member_index DESC, standard_message_id DESC)`；进入流时间从 StreamItem/Member 获取，不使用 source published 或 normalized time 替代。
   `MessageSummary.stream_offset` 为必填 Count，直接来自原生 StreamItem；REST、分页游标和 SSE 消费端使用同一完整排序键。
 - 首屏摘要/列表每响应不超过 256 KiB（未压缩 JSON）；普通单对象结构化详情不超过 1 MiB；单个文本 chunk 不超过 128 KiB；SSE event 不超过 32 KiB；配置写请求不超过 64 KiB。超长内容按 chunk/分页继续，不截断且宣称完整。
+- 全局 `SourceCatalog` 沿用现有完整目录快照协议，作为上述列表预算的明确例外，未压缩 JSON 上限为 1 MiB；普通列表仍为 256 KiB。前端接收完整目录，MCP 在该次读取后对同一快照分页，每个工具响应仍不超过 128 KiB，续页不重读目录。超过目录独立上限仍显式返回 413，不截断、不伪报完整；未来超过此上限需要端到端分页协议，不继续抬高全局预算。
 - 单个不可再分的结构化对象超过 1 MiB 时返回 413 与其已授权 content_id，可通过 `/contents/{content_id}` 按 chunk 完整读取 JSON，拼接完成后解析；列表给 ContentRef 及明确的 unavailable/size 状态，不删除该对象。
 - 增长型时间线、索引、source 列表、模型/节点筛选选项、attempt、Fill 和历史版本都分页。图的固定节点/边有界；不返回无限 Case 集合。`ALL` 也不解除分页。
 - view 默认有效 15 分钟；所属列表游标不晚于 view 过期，独立 stream cursor 最长 30 分钟；过期仍返回 410。页面在到期前整体更新 view，只重新读取首屏和必要指标，已加载旧页按新 view 按需继续，不逐页重放。指定历史 run/version 的内容不依赖过期 view，可重新按身份取得。详情不得借过期自动改读 current。

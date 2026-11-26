@@ -158,6 +158,8 @@ class RuntimeJournal:
                         julianday(json_extract(payload,'$.recorded_at')),key)
                     WHERE namespace='analysis_trade_decisions';
             """)
+            from .owner_exit import migrate
+            migrate(db)
             row = db.execute("SELECT value FROM orchestration_meta WHERE key='version'").fetchone()
             if row and int(row[0]) != self.VERSION:
                 raise ValueError("unsupported orchestration schema; migration required")
@@ -213,10 +215,10 @@ class RuntimeJournal:
                     db.execute("PRAGMA synchronous=FULL")
                 if write:
                     deadline = started + (self.busy_timeout_seconds if timeout is None else timeout)
-                    db.execute("PRAGMA busy_timeout=" + str(100 if timeout is None else min(100, max(0, int(timeout * 1000)))))
+                    db.execute("PRAGMA busy_timeout=" + str(min(100, max(0, int((self.busy_timeout_seconds if timeout is None else timeout) * 1000)))))
                     while True:
                         with span('journal.gate', operation=operation):
-                            held = gate.acquire(timeout=0.1 if timeout is None else min(0.1, max(0, timeout)))
+                            held = gate.acquire(timeout=min(0.1,max(0,deadline-time.monotonic())))
                         if held:
                             try:
                                 with span('journal.sqlite_begin', operation=operation):
@@ -669,6 +671,9 @@ class RuntimeJournal:
                            (prepared, self.clock().isoformat(), task['id']))
                 if finish:
                     db.execute('UPDATE runtime_gaps SET closed=1 WHERE task_id=?', (task['id'],))
+                    if row['kind'] == 'MAINTENANCE':
+                        from .owner_exit import enqueue
+                        enqueue(db,task['id'],value,self.clock())
             task['receipt'] = value
         retry_write(save)
 

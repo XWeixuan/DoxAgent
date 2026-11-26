@@ -30,7 +30,7 @@ def transient_failure(code: str, detail: str) -> bool:
     )
 
 
-def _covered(journal, before, after):
+def _covered(journal, before, after, *, o2_only=False):
     # A declared compensation is acknowledged only after actual record coverage.
     specs = (
         ("candidates", "runtime_v2_candidates", "candidate_identity"),
@@ -48,6 +48,8 @@ def _covered(journal, before, after):
 
     with journal.transaction(write=False, expand=False) as db:
         for kind, table, key in specs:
+            if o2_only and kind != 'candidates':
+                continue  # The successor explicitly deferred these O3 obligations.
             covered = {identity(kind, item) for item in after.get(kind, [])}
             for item in before.get(kind, []):
                 value = identity(kind, item)
@@ -75,32 +77,37 @@ def _covered(journal, before, after):
 
 
 def acknowledge_compensations(journal, ticker):
+    cursors = getattr(journal, '_compensation_cursors', {})
     with journal.transaction(write=False, expand=False) as db:
+        if not db.execute("SELECT 1 FROM runtime_tasks WHERE ticker=? AND kind='MAINTENANCE' AND status='FAILED' "
+                          "AND json_extract(receipt,'$.compensated_by') IS NULL LIMIT 1", (ticker,)).fetchone():
+            return
         rows = db.execute(
             "SELECT id,json_extract(inputs,'$.compensates') AS compensates FROM runtime_tasks "
-            "WHERE ticker=? AND kind='MAINTENANCE' AND status='SUCCEEDED' "
-            "AND json_array_length(json_extract(inputs,'$.compensates'))>0",
-            (ticker,),
+            "WHERE ticker=? AND kind='MAINTENANCE' AND status='SUCCEEDED' AND id>? "
+            "ORDER BY id LIMIT 32", (ticker,cursors.get(ticker,'')),
         ).fetchall()
-        pending = {
-            r[0]
-            for r in db.execute(
-                "SELECT id FROM runtime_tasks WHERE ticker=? AND status='FAILED' "
-                "AND json_extract(receipt,'$.compensated_by') IS NULL",
-                (ticker,),
-            )
-        }
+        cursors[ticker] = rows[-1]['id'] if len(rows)==32 else ''
+        journal._compensation_cursors = cursors
+        identities = sorted({identity for row in rows for identity in json.loads(row['compensates'] or '[]')})
+        if not identities:return
+        pending = {r[0] for r in db.execute(
+            "SELECT id FROM runtime_tasks WHERE id IN (SELECT value FROM json_each(?)) "
+            "AND status='FAILED' AND json_extract(receipt,'$.compensated_by') IS NULL", (json.dumps(identities),),
+        )}
     for row in rows:
-        ids = pending.intersection(json.loads(row["compensates"]))
+        ids = pending.intersection(json.loads(row["compensates"] or '[]'))
         if not ids:
             continue
         successor = journal.get_task(row["id"])
         for identity in ids:
             prior = journal.get_task(identity)
             before, after = prior["receipt"].get("frame"), successor["receipt"].get("frame")
-            if before is None or after is None or not _covered(journal, before, after):
+            if before is None or after is None or not _covered(journal, before, after, o2_only=successor['receipt'].get('o3_outcome')=='SKIPPED_BY_CONTROL'):
                 continue
             receipt = {**prior["receipt"], "compensated_by": successor["id"]}
+            if successor['receipt'].get('o3_outcome')=='SKIPPED_BY_CONTROL':
+                receipt['o3_obligations_deferred'] = True
             encoded = journal.content.encode(receipt)
             with journal.transaction(operation="maintenance.compensated", expand=False) as db:
                 changed = db.execute(

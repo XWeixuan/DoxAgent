@@ -33,8 +33,10 @@ def _physical_proof(requests, *, accepted):
     proof = []
     for request in requests:
         status = request.get('status_code')
-        if accepted and not request.get('error_type') and (status is None or 200 <= status < 400):
-            request = {key: value for key, value in request.items() if key in _PHYSICAL_PROOF_FIELDS}
+        failure=bool(request.get('error_type') or (status is not None and not 200 <= status < 400))
+        allowed=_PHYSICAL_PROOF_FIELDS | ({'error_type','error_message','failure_phase','retryable'} if failure else set())
+        request={key:(value[:2048] if isinstance(value,str) and key in {'error_message','failure_phase'} else value)
+                 for key,value in request.items() if key in allowed}
         proof.append(request)
     return canonical_json(proof)
 
@@ -79,6 +81,7 @@ class AcquisitionStore:
                         binding_version INTEGER,status TEXT,reason TEXT,finished_at TEXT,
                         data_json TEXT NOT NULL);
                     CREATE INDEX IF NOT EXISTS cycles_time ON cycles(dispatch_at,run_id);
+                    CREATE INDEX IF NOT EXISTS cycles_success_exit ON cycles(dispatch_at,run_id) WHERE status='CAPTURED';
                     CREATE INDEX IF NOT EXISTS cycles_ticker_time ON cycles(ticker,dispatch_at);
                     CREATE INDEX IF NOT EXISTS cycles_schedule ON cycles(status,binding_id,unit,dispatch_at);
                     CREATE INDEX IF NOT EXISTS cycles_unfinished ON cycles(status,run_id) WHERE finished_at IS NULL;

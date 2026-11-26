@@ -1,0 +1,164 @@
+[
+  {
+    "topic": "regulation",
+    "browser_count": 9,
+    "http_count": 9,
+    "missing": [],
+    "extra": [],
+    "messages": [
+      {
+        "title": "Ukraine’s Lawmakers Approve Crypto Market Rules and Taxes, Effective July 2027",
+        "url": "https://unchainedcrypto.com/ukraines-lawmakers-approve-crypto-market-rules-and-taxes-effective-july-2027/",
+        "basis": "DATE"
+      },
+      {
+        "title": "French Senate Rejects Crypto Exit Tax, Stablecoin Swap Tax and Wallet Declaration Rule",
+        "url": "https://unchainedcrypto.com/french-senate-rejects-crypto-exit-tax-stablecoin-swap-tax-and-wallet-declaration-rule/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Raskin Demands Polymarket’s Records in Widening Trump Jr. 1789 Capital Probe",
+        "url": "https://unchainedcrypto.com/raskin-demands-polymarkets-records-in-widening-trump-jr-1789-capital-probe/",
+        "basis": "DATE"
+      },
+      {
+        "title": "New York Pre-K Bill Would Tax Sports Prediction Markets and Declare Them Lawful in the State",
+        "url": "https://unchainedcrypto.com/new-york-pre-k-bill-would-tax-sports-prediction-markets-and-declare-them-lawful-in-the-state/",
+        "basis": "DATE"
+      },
+      {
+        "title": "South Korea Would Allow ICOs Again, With Liability for False Disclosures",
+        "url": "https://unchainedcrypto.com/south-korea-would-allow-icos-again-with-liability-for-false-disclosures/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Utah Asks Court to Toss Kalshi Criminal Case, but the Charges Could Come Back",
+        "url": "https://unchainedcrypto.com/utah-asks-court-to-toss-kalshi-criminal-case-but-the-charges-could-come-back/",
+        "basis": "DATE"
+      },
+      {
+        "title": "South Korea’s Crypto Bill Would Force Bithumb’s Owner to Sell Most of Its Stake",
+        "url": "https://unchainedcrypto.com/south-koreas-crypto-bill-would-force-bithumbs-owner-to-sell-most-of-its-stake/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Crypto Can Fill Up to Half of a Futures Exchange’s Reserve Under New CFTC Staff Advisory",
+        "url": "https://unchainedcrypto.com/crypto-can-fill-up-to-half-of-a-futures-exchanges-reserve-under-new-cftc-staff-advisory/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Prediction Market Exchanges Must Identify Traders Under New CFTC Rule",
+        "url": "https://unchainedcrypto.com/prediction-market-exchanges-must-identify-traders-under-new-cftc-rule/",
+        "basis": "DATE"
+      }
+    ]
+  },
+  {
+    "topic": "business",
+    "browser_count": 9,
+    "http_count": 9,
+    "missing": [],
+    "extra": [],
+    "messages": [
+      {
+        "title": "Kraken’s Krak Moves Into Credit With Two US Cards, One Backed by a USDC Deposit",
+        "url": "https://unchainedcrypto.com/krakens-krak-moves-into-credit-with-two-us-cards-one-backed-by-a-usdc-deposit/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Strive Skips Bitcoin Buying and Stock Sales for a Week, Leaving Treasury at 43,404 BTC",
+        "url": "https://unchainedcrypto.com/strive-skips-bitcoin-buying-and-stock-sales-for-a-week-leaving-treasury-at-43404-btc/",
+        "basis": "DATE"
+      },
+      {
+        "title": "OKX and NYSE Parent ICE Launch Tokenized Stock Venue With 113 Assets Lined Up",
+        "url": "https://unchainedcrypto.com/okx-and-nyse-parent-ice-launch-tokenized-stock-venue-with-113-assets-lined-up/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Why Base Is Close to Calling Itself ‘the Blockchain for Agent Finance’",
+        "url": "https://unchainedcrypto.com/why-base-is-close-to-calling-itself-the-blockchain-for-agent-finance/",
+        "basis": "UNKNOWN_FIRST_SEEN"
+      },
+      {
+        "title": "Jesse Pollak Says Tokenized Stocks on Base Have Crossed $1 Billion in Weekly Volume",
+        "url": "https://unchainedcrypto.com/jesse-pollak-says-tokenized-stocks-on-base-have-crossed-1-billion-in-weekly-volume/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Coinbase Sets Mid-2027 Goal to Write Its Own Event Contracts, Bloomberg Reports",
+        "url": "https://unchainedcrypto.com/coinbase-sets-mid-2027-goal-to-write-its-own-event-contracts-bloomberg-reports/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Ledger CTO Charles Guillemet Sets Year-End Exit, Says He’s Building Something New in Security",
+        "url": "https://unchainedcrypto.com/ledger-cto-charles-guillemet-sets-year-end-exit-says-hes-building-something-new-in-security/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Gemini Will Stop Holding Coins for VanEck’s HODL, ETHV and VSOL in February",
+        "url": "https://unchainedcrypto.com/gemini-will-stop-holding-coins-for-vanecks-hodl-ethv-and-vsol-in-february/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Institutions Holding ETH, SOL or HYPE Can Now Borrow Up to Five Years at a $4 Billion Lender",
+        "url": "https://unchainedcrypto.com/institutions-holding-eth-sol-or-hype-can-now-borrow-up-to-five-years-at-a-4-billion-lender/",
+        "basis": "DATE"
+      }
+    ]
+  },
+  {
+    "topic": "defi",
+    "browser_count": 9,
+    "http_count": 9,
+    "missing": [],
+    "extra": [],
+    "messages": [
+      {
+        "title": "Abraxas Capital Pulls Its Last Funds From Hyperliquid, Stirring Tether Speculation",
+        "url": "https://unchainedcrypto.com/abraxas-capital-pulls-its-last-funds-from-hyperliquid-stirring-tether-speculation/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Securitize’s High-Yield Fund HINC Goes Live as Collateral on Aave Horizon",
+        "url": "https://unchainedcrypto.com/securitizes-high-yield-fund-hinc-goes-live-as-collateral-on-aave-horizon/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Chainflip Raided for Nearly 123 BTC Plus Ether, Then Proposes a 90/10 Split",
+        "url": "https://unchainedcrypto.com/chainflip-raided-for-nearly-123-btc-plus-ether-then-proposes-a-90-10-split/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Uneasy Money: Is Anthropic’s IPO a ‘Must Buy’ or an Existential Gamble?",
+        "url": "https://unchainedcrypto.com/uneasy-money-is-anthropics-ipo-a-must-buy-or-an-existential-gamble/",
+        "basis": "DATE"
+      },
+      {
+        "title": "K3 Capital Pauses sBOLD Contracts, Blockaid Says Attackers Have Drained $3.43M",
+        "url": "https://unchainedcrypto.com/k3-capital-pauses-sbold-contracts-blockaid-says-attackers-have-drained-3-43m/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Lighter Reopens Withdrawals, Hands 5 Million USDC Back to Drained Trader",
+        "url": "https://unchainedcrypto.com/lighter-reopens-withdrawals-hands-5-million-usdc-back-to-drained-trader/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Hacker Drains $6.4 Million From a Multisig Through Permissions Its Owners Set",
+        "url": "https://unchainedcrypto.com/hacker-drains-6-4-million-from-a-multisig-through-permissions-its-owners-set/",
+        "basis": "DATE"
+      },
+      {
+        "title": "Lighter Pins Drain on Trader’s Leaked API Key as Sleuths Say $15M Lost",
+        "url": "https://unchainedcrypto.com/lighter-pins-drain-on-traders-leaked-api-key-says-contracts-were-not-hit/",
+        "basis": "DATE"
+      },
+      {
+        "title": "LlamaRisk Asks Aave to Freeze StakeWise, Lombard and Rocket Pool Tokens on Its V3 Core Market",
+        "url": "https://unchainedcrypto.com/llamarisk-asks-aave-to-freeze-stakewise-lombard-and-rocket-pool-tokens-on-its-v3-core-market/",
+        "basis": "DATE"
+      }
+    ]
+  }
+]

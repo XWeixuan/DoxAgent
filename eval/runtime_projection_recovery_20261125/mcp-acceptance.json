@@ -1,0 +1,242 @@
+{
+  "before": {
+    "today_count": 0,
+    "previous_count": 0
+  },
+  "after": {
+    "data": {
+      "period": {
+        "selected": "CURRENT_TRADING_DAY",
+        "current": {
+          "start_at": "2026-11-25T07:00:00Z",
+          "end_at": "2026-11-26T07:00:00Z",
+          "observed_until": "2026-11-25T14:04:46.217991Z",
+          "trading_days": [
+            "2026-11-25"
+          ],
+          "trading_day_count": 1,
+          "membership": "LISTED_SEMANTIC_DAYS",
+          "coverage": {
+            "state": "UNKNOWN",
+            "reasons": [
+              "WINDOW_INCOMPLETE"
+            ],
+            "known_count": null,
+            "excluded_count": null,
+            "observed_through": "2026-11-25T14:04:46.217991Z"
+          }
+        },
+        "previous": {
+          "start_at": "2026-11-24T07:00:00Z",
+          "end_at": "2026-11-25T07:00:00Z",
+          "observed_until": "2026-11-25T07:00:00Z",
+          "trading_days": [
+            "2026-11-24"
+          ],
+          "trading_day_count": 1,
+          "membership": "LISTED_SEMANTIC_DAYS",
+          "coverage": {
+            "state": "COMPLETE",
+            "reasons": [],
+            "known_count": null,
+            "excluded_count": 0,
+            "observed_through": "2026-11-25T07:00:00Z"
+          }
+        },
+        "comparison_applicable": false,
+        "comparison_reasons": [
+          "WINDOW_INCOMPLETE"
+        ]
+      },
+      "items": [
+        {
+          "case_id": "case_a5a3e098704748a4bd238b35e13e84e1",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "South African gov't floats converting old power stations into data centers"
+          },
+          "source_name": "datacenterdynamics.com",
+          "status": "COMPLETED",
+          "received_at": "2026-11-25T14:03:37.069159Z",
+          "completed_at": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "2026-11-25T14:04:16.872761Z"
+          },
+          "duration_seconds": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": 39.803602
+          },
+          "first_round_tags": [],
+          "w3_decision": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "NO_TRADE"
+          },
+          "w3_operations_status": "PENDING",
+          "result_settled": true,
+          "runtime_tags": [],
+          "w3_model_seconds": 27,
+          "non_model_seconds": 8.589753999999996,
+          "source": {
+            "source_id": "dcd_infrastructure_rss",
+            "name": "Data Center Dynamics / Infrastructure"
+          },
+          "results": [
+            "ARCHIVE"
+          ],
+          "trade": {
+            "state": "NOT_APPLICABLE",
+            "reason_codes": []
+          }
+        },
+        {
+          "case_id": "case_dc8257fd619e480b91bce0d9016657ea",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Canada Data Center Market - Investment Analysis and Growth Opportunities 2026-2031 | AI-Ready Capacity, Cloud Demand, and Sustainable Infrastructure Drive 12.75% CAGR"
+          },
+          "source_name": "globenewswire",
+          "status": "COMPLETED",
+          "received_at": "2026-11-25T14:03:04.645662Z",
+          "completed_at": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "2026-11-25T14:03:39.261027Z"
+          },
+          "duration_seconds": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": 34.615365
+          },
+          "first_round_tags": [],
+          "w3_decision": {
+            "reason": "NOT_RECORDED",
+            "state": "NOT_RECORDED",
+            "value": null
+          },
+          "w3_operations_status": null,
+          "result_settled": true,
+          "runtime_tags": [],
+          "w3_model_seconds": null,
+          "non_model_seconds": null,
+          "source": {
+            "source_id": "globenewswire_massive",
+            "name": "GlobeNewswire"
+          },
+          "results": [
+            "ARCHIVE",
+            "EVENT_DISCOVERY"
+          ],
+          "trade": {
+            "state": "NOT_APPLICABLE",
+            "reason_codes": []
+          }
+        },
+        {
+          "case_id": "case_27411728187e4db78cea643ae762157b",
+          "title": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "Coherent Optical Modules Market To 2035: DCI Demand Supports 15% CAGR Growth - News and Statistics - IndexBox"
+          },
+          "source_name": "news.google.com",
+          "status": "COMPLETED",
+          "received_at": "2026-11-25T14:01:10.897055Z",
+          "completed_at": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "2026-11-25T14:02:26.627688Z"
+          },
+          "duration_seconds": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": 75.730633
+          },
+          "first_round_tags": [
+            "POLICY_RELATED_EVENT"
+          ],
+          "w3_decision": {
+            "reason": null,
+            "state": "AVAILABLE",
+            "value": "NO_TRADE"
+          },
+          "w3_operations_status": "COMMITTED",
+          "result_settled": true,
+          "runtime_tags": [],
+          "w3_model_seconds": 59,
+          "non_model_seconds": 5.344233000000003,
+          "source": {
+            "source_id": "google_news_search_rss",
+            "name": "Google News Search RSS"
+          },
+          "results": [
+            "ARCHIVE",
+            "EVENT_DISCOVERY"
+          ],
+          "trade": {
+            "state": "NOT_APPLICABLE",
+            "reason_codes": []
+          }
+        }
+      ],
+      "limit": 3,
+      "snapshot_id": "75a54e2449a84065a0aee86dac09e353.7055c4fc056d4d729027cd495a9127ac.1795616386",
+      "has_more": false,
+      "next_cursor": null
+    },
+    "meta": {
+      "view_id": "75a54e2449a84065a0aee86dac09e353.7055c4fc056d4d729027cd495a9127ac.1795616386",
+      "as_of": "2026-11-25T14:04:46.217991Z",
+      "freshness": "STALE",
+      "refresh_error": null,
+      "request_id": "0222f76065d64e139310570e7c756bf4",
+      "projection": [
+        {
+          "source": "initialization",
+          "head": 195523,
+          "checkpoint": 195523,
+          "checked_at": "2026-11-25T14:04:45.897072Z",
+          "error": null,
+          "historical_gaps": 0,
+          "source_event_at": "2026-11-25T09:03:20.419000Z",
+          "oldest_pending_at": null
+        },
+        {
+          "source": "bus",
+          "head": 13282545,
+          "checkpoint": 13282545,
+          "checked_at": "2026-11-25T14:04:45.905996Z",
+          "error": null,
+          "historical_gaps": 0,
+          "source_event_at": "2026-11-25T14:04:45.773000Z",
+          "oldest_pending_at": null
+        },
+        {
+          "source": "runtime",
+          "head": 5396030,
+          "checkpoint": 5396030,
+          "checked_at": "2026-11-25T14:04:45.914525Z",
+          "error": null,
+          "historical_gaps": 17218,
+          "source_event_at": "2026-11-25T14:04:45.562000Z",
+          "oldest_pending_at": null
+        }
+      ]
+    }
+  },
+  "catalog": {
+    "ok": true,
+    "first_page_count": 5,
+    "meta": {
+      "view_id": null,
+      "as_of": "2026-11-25T14:03:05.099159Z",
+      "freshness": "STALE",
+      "refresh_error": null,
+      "request_id": "9c112c2841fd48feb5beae328a4c0c51"
+    }
+  }
+}

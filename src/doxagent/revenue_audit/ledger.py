@@ -15,7 +15,11 @@ def stamp(value):
     return datetime.fromisoformat(value).astimezone(UTC).isoformat()
 
 
-def fold_leg(lot, allocations, fills, fees):
+def fold_leg(lot, allocations, fills, fees, adjustments=None):
+    from doxagent.trade_execution.manual_finance import resolve
+
+    fills, fees = dict(fills), dict(fees)
+    allocations = resolve(allocations, adjustments or {}, fills, fees)
     queue, timeline, realized, entry_value, entry_qty = deque(), [], ZERO, ZERO, ZERO
     exit_value, exit_qty, fee_total = ZERO, ZERO, ZERO
     complete, basis_ok = True, True

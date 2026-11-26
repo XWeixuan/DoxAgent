@@ -1358,6 +1358,7 @@ class Document3OrchestratorV21:
             "files": paths,
             "hashes": hashes,
             "policy_origins": origins,
+            "coverage": metadata,
             "release_manifest_path": release_manifest,
         }
         self.state.save_staged_v3(run_id, policy_set, receipt)
@@ -1465,24 +1466,13 @@ class Document3OrchestratorV21:
             )
             base_row = self.state.get_staged_by_run(self._base_run_id(ticker, base_policy_version))
             self.state.update(run_id, base_policy_origins=base_row[1].get("policy_origins", {}))
-            base_file = await self.workspace.read_text(
-                self._base_run_id(ticker, base_policy_version),
-                base_row[1]["files"]["document3.json"],
-            )
-            if (
-                digest(base_file.content) != base_row[1]["hashes"]["document3.json"]
-                or PolicySetV3.model_validate_json(base_file.content) != base
-            ):
-                raise ValueError("base PolicySet snapshot hash mismatch")
-            coverage_file = base_row[1]["files"]["coverage_map.json"]
-            coverage_text = (
-                await self.workspace.read_text(
-                    self._base_run_id(ticker, base_policy_version), coverage_file
-                )
-            ).content
-            if digest(coverage_text) != base_row[1]["hashes"]["coverage_map.json"]:
-                raise ValueError("base coverage hash mismatch")
-            base_coverage = json.loads(coverage_text)
+            # The typed staged PolicySet is authority. Historical JSON/MD
+            # representations are regenerable and need not remain in Workspace.
+            base_coverage = base_row[1].get('coverage')
+            if base_coverage is None:
+                base_coverage = self.state.coverage(self._base_run_id(ticker,base_policy_version))
+            if base_coverage is None:
+                raise ValueError('base PolicySet semantic coverage unavailable')
             if (
                 not feed_has_work(maintenance_feed)
                 and not delta_has_work(delta)

@@ -231,6 +231,8 @@ class ExecutionRepository:
                 (identity, account, intent["ticker"], encode(value)),
             )
             if not old:
+                value["budget_ticker_limit"] = CapitalLedger.ticker_limit(db, value)
+                db.execute("UPDATE te_executions SET payload=? WHERE id=?", (encode(value), identity))
                 for leg in value.get("legs", []):
                     self._put_job(
                         db,
@@ -385,7 +387,13 @@ class ExecutionRepository:
                     "SELECT payload FROM te_profiles WHERE revision=?", (profile_revision,)
                 ).fetchone()
             profile = historical_profile(json.loads(row[0]))
-            equity = CapitalLedger(self).equity(account, profile.account_type, db=db)
+            ledger = CapitalLedger(self)
+            wallet = ledger.book(account, db=db)
+            equity = (
+                wallet["equity"]
+                if profile.account_type == "MARGIN"
+                else ledger.equity(account, profile.account_type, db=db)
+            )
             row = db.execute(
                 "SELECT payload FROM te_account_cycles WHERE account=? AND environment=? AND "
                 "cycle_id=? AND status='ACTIVE'",
@@ -394,12 +402,13 @@ class ExecutionRepository:
             if row:
                 value = json.loads(row[0])
                 # Explicit allocation changes take effect for subsequent grants.
-                principal = CapitalLedger(self).book(account, db=db)["principal"]
-                value["equity"] = str(
-                    decimal(value["equity"]) + principal - decimal(value["principal"])
-                    if "principal" in value
-                    else equity
-                )
+                principal = wallet["principal"]
+                if profile.account_type == "MARGIN" or "principal" not in value:
+                    value["equity"] = str(equity)
+                else:
+                    value["equity"] = str(
+                        decimal(value["equity"]) + principal - decimal(value["principal"])
+                    )
                 value["principal"] = str(principal)
                 db.execute(
                     "UPDATE te_account_cycles SET equity=?,payload=? WHERE account=? AND "
@@ -427,7 +436,7 @@ class ExecutionRepository:
                 environment=environment,
                 cycle_id=cycle_id,
                 equity=str(equity),
-                principal=str(CapitalLedger(self).book(account, db=db)["principal"]),
+                principal=str(wallet["principal"]),
                 min_entry_notional_ratio=str(min_ratio),
                 captured_at=self.journal.clock().isoformat(),
                 broker_snapshot_at=snapshot["at"],
@@ -521,6 +530,7 @@ class ExecutionRepository:
                 )
 
             if not execution.get("budget_usd"):
+                slot_equity = decimal(cycle["equity"]) / CapitalLedger.ticker_limit(db, execution)
                 budget = CapitalLedger(self).capacity(
                     db, execution, profile, decimal(cycle["equity"]), json.loads(snap[0])
                 )
@@ -531,7 +541,7 @@ class ExecutionRepository:
                 if (
                     profile.account_type == "MARGIN"
                     and usable
-                    < decimal(cycle["equity"]) * profile.strategy.min_entry_notional_ratio
+                    < slot_equity * profile.strategy.min_entry_notional_ratio
                 ):
                     return None, "PORTFOLIO_CAPACITY_EXHAUSTED"
                 if hedge:
@@ -568,7 +578,7 @@ class ExecutionRepository:
                 if (
                     profile.account_type == "MARGIN"
                     and effective
-                    < decimal(cycle["equity"]) * profile.strategy.min_entry_notional_ratio
+                    < slot_equity * profile.strategy.min_entry_notional_ratio
                 ):
                     return None, "PORTFOLIO_CAPACITY_EXHAUSTED"
                 if policy_version >= 2:

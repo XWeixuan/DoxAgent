@@ -468,7 +468,7 @@ def test_configuration_preserves_body_binding_semantics_and_is_idempotent(tmp_pa
         )
     before = {s.source_id: s for s in repo.list_sources()}
     report = configure(bus)
-    assert len(report) == 20 and all(s["action"] == "updated" for s in report)
+    assert {s["source_id"] for s in report} == set(RECIPES) and all(s["action"] == "updated" for s in report)
     for sid in RECIPES:
         current = repo.get_source(sid)
         old = before[sid]

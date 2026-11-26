@@ -116,7 +116,58 @@ def test_fifo_offset_realizes_old_lot_and_late_commission(setup, tmp_path):  # n
                 },
             }
         )
-        asyncio.run(run_job(executor, repo, clock, identity + ":entry"))
+        # Historical FIFO records predate virtual lot ownership and today's
+        # per-ticker grants. Replay their recorded fill, not a new trading rule.
+        if identity == "trade:A":
+            asyncio.run(run_job(executor, repo, clock, identity + ":entry"))
+        with repo.transaction() as db:
+            import json
+
+            execution = repo.require("executions", identity)
+            execution["ownership_version"] = 1
+            db.execute(
+                "UPDATE te_executions SET payload=? WHERE id=?", (json.dumps(execution), identity)
+            )
+        if identity != "trade:A":
+            first = repo.fills("trade:A:entry")[0]
+            with repo.transaction() as db:
+                row = dict(db.execute("SELECT * FROM te_attempts LIMIT 1").fetchone())
+                attempt = json.loads(row["payload"])
+                attempt.update(
+                    id="historical-offset",
+                    job_id="trade:B:entry",
+                    side="SELL",
+                    order_id=999,
+                    order_ref="historical-offset",
+                )
+                row.update(
+                    id=attempt["id"],
+                    job_id=attempt["job_id"],
+                    order_id=999,
+                    order_ref="historical-offset",
+                    payload=json.dumps(attempt),
+                )
+                db.execute(
+                    "INSERT INTO te_attempts ("
+                    + ",".join(row)
+                    + ") VALUES ("
+                    + ",".join("?" for _ in row)
+                    + ")",
+                    tuple(row.values()),
+                )
+            repo.apply_fill(
+                {
+                    **first,
+                    "exec_id": "historical-offset.01",
+                    "attempt_id": "historical-offset",
+                    "order_id": 999,
+                    "order_ref": "historical-offset",
+                    "side": "SELL",
+                    "quantity": "202",
+                    "time": clock().isoformat(),
+                },
+                first["exit_at"],
+            )
     assert repo.require("lots", "trade:A")["remaining_qty"] == 0
 
     def project():

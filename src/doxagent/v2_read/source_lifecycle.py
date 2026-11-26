@@ -178,6 +178,9 @@ def sync_business_facts(source, store, *, budget=None):
     started=time.monotonic()
     with store.connect() as read:
         seq=store.highwater(read)
+    if getattr(source, '_business_fact_seq', None) == seq:
+        return True
+    positions = getattr(source, '_fact_positions', {})
     for group,kind in sorted(jobs,key=lambda j:cursors.get(prefix+':'.join(j),0)):
         if budget is not None and time.monotonic()-started>budget:break
         key=prefix+group+':'+kind;previous=cursors.get(key,0)
@@ -190,8 +193,20 @@ def sync_business_facts(source, store, *, budget=None):
             # including multiple objects emitted by the same source event.
             revisions=[r[0] for r in read.execute('SELECT DISTINCT valid_from FROM '+table+' WHERE '+column+'=? AND valid_from>? AND valid_from<=? ORDER BY valid_from LIMIT 16',(kind,previous,seq))]
             boundary=revisions[-1] if len(revisions)==16 else seq
-            for row in read.execute('SELECT * FROM '+table+' WHERE '+column+'=? AND valid_from>? AND valid_from<=?',(kind,previous,boundary)):
+            position = positions.get(key, (previous, 0))
+            page = read.execute('SELECT rowid AS _rowid,* FROM '+table+' WHERE '+column+
+                '=? AND valid_from>? AND valid_from<=? AND (valid_from,rowid)>(?,?) '
+                'ORDER BY valid_from,rowid LIMIT 128', (kind,previous,boundary,*position)).fetchall()
+            last = None
+            used_bytes = 0
+            for row in page:
+                size = len(row['payload'].encode()) if group != 'metric' else len(row['dimensions'].encode())
+                if last is not None and used_bytes + size > 1024*1024:
+                    break
+                used_bytes += size
+                last = (row['valid_from'], row['_rowid'])
                 row=dict(row)
+                row.pop('_rowid')
                 if group=='object':
                     value={k:row[k] for k in ('kind','ticker','id','parent','sort_key','day','source_id','route','search_text')}
                     value['data']=json.loads(row['payload'])
@@ -204,6 +219,11 @@ def sync_business_facts(source, store, *, budget=None):
                     value=json.loads(row['payload'])
                     if 'activated_at' in value:
                         records.append(('field:'+kind,row['ticker'],row['id'],encode({k:value[k] for k in ('activated_at','runtime_activation_id') if k in value})))
+            if last is not None and (len(page) == 128 or last[1] != page[-1]['_rowid']):
+                positions[key] = last
+                boundary = last[0] - 1
+            else:
+                positions.pop(key, None)
         if records:
             with closing(source.connection(write=True)) as db,db:
                 db.execute('BEGIN IMMEDIATE')
@@ -213,15 +233,26 @@ def sync_business_facts(source, store, *, budget=None):
                 db.execute('INSERT INTO v2_transport_gc_state(kind,cursor) VALUES(?,?) ON CONFLICT(kind) DO UPDATE SET cursor=excluded.cursor',(key,boundary))
         cursors[key]=boundary
     source._fact_cursors=cursors
+    source._fact_positions=positions
     complete=all(cursors.get(prefix+':'.join(j),0)>=seq for j in jobs)
     if complete:
+        # Durable exact tombstones, produced by the existing Read mutation.
+        # No full policy-hit identity list or NOT IN(all rows) on every pass.
         with store.connect() as read:
-            hits=[r[0] for r in read.execute("SELECT ticker||':'||id FROM object_current WHERE kind='policy_hit_set'")]
-        hit_ids=frozenset(hits)
-        if hit_ids!=getattr(source,'_business_fact_hits',None):
+            exits = read.execute('SELECT kind,ticker,id,seq FROM serving_fact_exits ORDER BY seq LIMIT 128').fetchall()
+            absent = [tuple(row) for row in exits if not read.execute(
+                'SELECT 1 FROM object_current WHERE kind=? AND ticker=? AND id=?', tuple(row[:3]),
+            ).fetchone()]
+        if exits:
             with closing(source.connection(write=True)) as db,db:
-                db.execute("DELETE FROM v2_serving_business_facts WHERE kind='policy_hit_set' AND ticker||':'||id NOT IN (SELECT value FROM json_each(?))",(json.dumps(hits),))
-            source._business_fact_hits=hit_ids
+                db.execute('BEGIN IMMEDIATE')
+                owner=db.execute('SELECT path FROM v2_serving_fact_owner WHERE id=1').fetchone()
+                if not owner or owner[0]!=str(store.path):return False
+                db.executemany('DELETE FROM v2_serving_business_facts WHERE kind=? AND ticker=? AND id=?', [r[:3] for r in absent])
+            with store.connect(write=True,timeout=.01) as read:
+                read.executemany('DELETE FROM serving_fact_exits WHERE kind=? AND ticker=? AND id=? AND seq=?', [tuple(r) for r in exits])
+        if len(exits)==128:
+            return False
         source._business_fact_seq=seq
     return complete
 
@@ -266,7 +297,13 @@ def expire(source, *, now=None, limit=500, hot_only=False):
         floor = min(ack, pin - 1) if pin is not None else ack
         pack_cache = {}
         pages = {}
+        waiting = getattr(source, '_expiry_waiting', {})
+        source._expiry_waiting = waiting
         for table in tables:
+            due = waiting.get(table)
+            if due and due[0] == floor and now < due[1]:
+                pages[table] = []
+                continue
             if table == 'v2_source_outbox' and indexed_hot:
                 cutoff_deadline = time.monotonic() + .05
                 db.set_progress_handler(lambda: time.monotonic() >= cutoff_deadline, 1000)
@@ -287,6 +324,13 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                     "SELECT * FROM " + table + " WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?",
                     (cursors.get(table, 0), floor, limit),
                 ).fetchall()
+                if not rows and cursors.get(table, 0):
+                    # Seq is not an expiry clock: rows passed while young must
+                    # be revisited once they age. Wrap only a bounded page.
+                    rows = db.execute(
+                        "SELECT * FROM " + table + " WHERE seq<=? ORDER BY seq LIMIT ?",
+                        (floor, limit),
+                    ).fetchall()
             candidates = json.dumps([row['seq'] for row in rows])
             pins = {r[0] for r in db.execute('SELECT DISTINCT seq FROM v2_source_exception_pins '
                     'WHERE seq IN (SELECT value FROM json_each(?))', (candidates,))} if has_gc_state else set()
@@ -313,6 +357,11 @@ def expire(source, *, now=None, limit=500, hot_only=False):
                         hashes = set(native_hashes(raw))
                 prepared.append((row, recent, raw_json, hashes, stamp if archived and hint is None else None))
             pages[table] = prepared
+            if prepared and len(prepared) < limit and all(item[1] for item in prepared):
+                waiting[table] = (floor, min(datetime.fromisoformat(item[0]['recorded_at'])
+                    for item in prepared) + (now-before)) if table == 'v2_source_outbox' else (floor, now+timedelta(minutes=15))
+            else:
+                waiting.pop(table, None)
         cleanup_due = not hot_only and has_gc_state and any((
             db.execute("SELECT 1 FROM v2_source_consumers WHERE id LIKE 'snapshot:%' AND julianday(updated_at)<julianday(?) LIMIT 1", ((now-timedelta(hours=24)).isoformat(),)).fetchone(),
             db.execute('SELECT 1 FROM v2_source_exception_receipts e WHERE NOT EXISTS(SELECT 1 FROM v2_source_exception_pins p WHERE p.seq=e.seq) LIMIT 1').fetchone(),

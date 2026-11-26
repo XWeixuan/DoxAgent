@@ -72,7 +72,7 @@ def test_96h_equivalent_retention_preserves_failures_and_bounds_growth(tmp_path,
                     None,
                     json.dumps({"epoch_at": beginning.isoformat()}),
                 )
-                for i in range(20)
+                for i in range(4)
             ],
         )
         db.execute("INSERT INTO first_seen VALUES('forever','2026-10-01T00:00:00+00:00')")
@@ -103,7 +103,7 @@ def test_96h_equivalent_retention_preserves_failures_and_bounds_growth(tmp_path,
                         at,
                         proof,
                     )
-                    for i in range(20)
+                    for i in range(4)
                 )
         with store.connect(write=True) as db:
             db.executemany("INSERT INTO cycles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
@@ -120,16 +120,41 @@ def test_96h_equivalent_retention_preserves_failures_and_bounds_growth(tmp_path,
             return db.execute("SELECT count(*) FROM cycles WHERE status!='SCHEDULE'").fetchone()[0]
 
     insert_hours(0, 72)
-    assert expire(72) == 48 * 120 * 20
-    initial = store.path.stat().st_size
+    assert expire(72) == 72 * 120 * 4
     insert_hours(72, 96)
-    assert expire(96) == 48 * 120 * 20
+    assert expire(96) == 72 * 120 * 4
     with store.connect() as db:
         assert db.execute("SELECT count(*) FROM first_seen").fetchone()[0] == 1
         hours = [json.loads(r[0]) for r in db.execute("SELECT data_json FROM unit_hours")]
-        assert len(hours) == 48 * 20
-        assert sum(h["expected_cycles"] for h in hours) == 48 * 120 * 20
+        assert len(hours) == 24 * 4
+        assert sum(h["expected_cycles"] for h in hours) == 24 * 120 * 4
         assert all(h["fresh_cycles"] == 0 and h["all_cycle_coverage"] == 0 for h in hours)
-        assert db.execute("SELECT count(*) FROM physical_cycles").fetchone()[0] <= 48 * 120 + 512
-    # SQLite reuses expired pages; bounded hour summaries add a small amount.
-    assert store.path.stat().st_size < initial * 1.3
+        assert db.execute("SELECT count(*) FROM physical_cycles").fetchone()[0] <= 72 * 120 + 512
+    # The first 72h batch has no spare pages yet. After the 96h peak,
+    # a further day must reuse the retired pages instead of growing forever.
+    initial = store.path.stat().st_size
+    insert_hours(96,120)
+    assert expire(120)==72*120*4
+    assert store.path.stat().st_size < initial * 1.1
+
+
+def test_two_hour_success_exit_preserves_three_day_failures_and_hour_counts(tmp_path):
+    from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
+    from doxagent.message_bus_v2.collection_plane.maintenance import _retire_hour
+    store=AcquisitionStore(tmp_path/'a.db',initialize=True)
+    now=datetime(2026,11,24,12,tzinfo=timezone.utc)
+    at=(now-timedelta(hours=4)).isoformat()
+    with store.connect(write=True) as db:
+        db.execute('INSERT INTO cycles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',('schedule','b','s','MU','HEAD',at,at,30,1,1,'SCHEDULE','ENABLED',None,json.dumps({'epoch_at':at})))
+        for offset,(identity,status) in enumerate([('ok','CAPTURED'),('bad','FAILED')]):
+            stamp=(datetime.fromisoformat(at)+timedelta(seconds=offset*30)).isoformat()
+            db.execute('INSERT INTO cycles VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(identity,'b','s','MU','HEAD',stamp,stamp,30,1,1,status,None,stamp,'{}'))
+    def retire(clock):
+        return _retire_hour(store,(clock-timedelta(hours=2)).isoformat(),(clock-timedelta(days=7)).isoformat(),set(),failure_cutoff=(clock-timedelta(hours=72)).isoformat())
+    assert retire(now)['cycles']==1
+    with store.connect() as db:
+        assert db.execute("SELECT run_id FROM cycles WHERE status!='SCHEDULE'").fetchone()[0]=='bad'
+        archive=json.loads(db.execute('SELECT data_json FROM unit_hours').fetchone()[0])
+        assert archive['units'][0]['dispatched_cycles']==2
+    assert retire(now) is None
+    assert retire(now+timedelta(days=3))['cycles']==1

@@ -2,6 +2,7 @@ from ..schema import PollingConfig, SchedulerConstraints, SourceDefinition, Sour
 from . import ADAPTER_REF, SOURCE_ID
 from .schema import IrEndpointSpec
 from .snowflake import LISTING_URL as SNOW_LISTING_URL, HOST as SNOW_API_HOST
+from .coinbase import Q4_URL as COIN_Q4_URL, CMS_URL as COIN_CMS_URL
 
 
 def initial_endpoints():
@@ -124,6 +125,16 @@ def initial_endpoints():
             ["www.ionq.com", "ionq.com"],
         ),
     ]
+    rows.extend([
+        ('xene.press','XENE','Xenon Press Releases','https://investor.xenon-pharma.com/news-events/press-releases','html','nir',['investor.xenon-pharma.com']),
+        ('rgnx.press','RGNX','REGENXBIO Press Releases','https://ir.regenxbio.com/press-releases','html','nir',['ir.regenxbio.com']),
+        ('prax.press','PRAX','Praxis Press Releases','https://investor.praxismedicines.com/press-releases','html','nir',['investor.praxismedicines.com']),
+        ('cgem.press','CGEM','Cullinan Press Releases','https://investors.cullinantherapeutics.com/news-releases/','html','nir',['investors.cullinantherapeutics.com']),
+        ('smmt.press','SMMT','Summit Press Releases','https://smmttx.com/feed/PressRelease.svc/GetPressReleaseList?LanguageId=1&bodyType=0&pressReleaseDateFilter=1&categoryId=00000000-0000-0000-0000-000000000000&year=-1&pageNumber=0&pageSize=30&includeTags=true','json','q4',['smmttx.com']),
+        ('coin.blog','COIN','Coinbase Blog / Most Recent',COIN_CMS_URL,'json','coinbase_blog',['contentful.coinbase.com','www.coinbase.com','coinbase.com']),
+        ('coin.ir','COIN','Coinbase IR / News',COIN_Q4_URL,'json','coinbase_q4',['investor.coinbase.com']),
+        ('coin.deribit','COIN','Deribit / Exchange Updates','https://insights.deribit.com/exchange-updates/','html','deribit',['insights.deribit.com']),
+    ])
     specs = [
         IrEndpointSpec(
             endpoint_id=k,
@@ -160,6 +171,14 @@ def initial_endpoints():
         for s in specs
     ]
     specs = [s.model_copy(update={'revision': 3}) if s.endpoint_id == 'snow.press' else s for s in specs]
+    specs = [s.model_copy(update={'target_interval_seconds':20,'parser_parameters':{
+        **s.parser_parameters,'http_route':'us-standard-5' if s.owner_ticker=='SMMT' else 'direct',
+        **({'http_method':'POST'} if s.parser_ref=='nir' else {}),
+    }}) if s.owner_ticker in {'XENE','RGNX','PRAX','CGEM','SMMT'} else s for s in specs]
+    specs = [s.model_copy(update={'target_interval_seconds':20,'parser_parameters':{
+        **s.parser_parameters,
+        **({'http_route':'us-standard-5'} if s.endpoint_id in {'coin.blog','coin.ir'} else {}),
+    }}) if s.owner_ticker=='COIN' else s for s in specs]
     return [s.model_copy(update={
         'parser_parameters': {**s.parser_parameters, 'http_rss_race': True},
         'revision': max(3, s.revision),

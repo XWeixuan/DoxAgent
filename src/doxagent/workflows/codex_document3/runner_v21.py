@@ -223,7 +223,7 @@ class RunnerV21:
             )
             timing.step("context_index")
             profile = record.setdefault(
-                "index_profile", "legacy-full" if record.get("request") else "d3-source-v1"
+                "index_profile", "legacy-full" if record.get("request") else "d3-pointer-v1"
             )
             record.setdefault("io_phase", "PREPARE")
             self.state.save_task(run_id, key, record)

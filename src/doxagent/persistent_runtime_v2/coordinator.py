@@ -72,7 +72,7 @@ class RuntimeCoordinator:
         self._public_next = {}
         self._public_bundle = {}
         self._storage_future = None
-        self._storage_next = perf_counter() + 900
+        self._storage_next = perf_counter()
         self._maintenance_recovery_next = {}
         self._maintenance_recovery_cursor = {}
         self._supplement_futures = {}
@@ -428,19 +428,9 @@ class RuntimeCoordinator:
         if ticker not in self._reconciled:
             self.journal.reconcile_interrupted(self.runtime.repository, ticker)
             self._reconciled.add(ticker)
-        cleanup = getattr(self.maintain, "collect_resources", None)
-        if self._storage_future is not None and self._storage_future.done():
-            try:
-                self._storage_future.result()
-            except Exception as exc:
-                self.journal.gap("runtime-resource-exit", ticker, type(exc).__name__, str(exc)[:1000])
-            self._storage_future = None
-            self._storage_next = perf_counter() + 900
-        if cleanup and self._storage_future is None and perf_counter() >= self._storage_next:
-            from doxagent.message_bus_v2.pressure import background_allowed
-            if background_allowed():
-                self._storage_future = self._background.submit(
-                    cleanup, should_yield=self.runtime.realtime_w3_active)
+        # Resource owners enqueue in their normal terminal transactions. The
+        # existing separate Transport Maintenance process drives their exits;
+        # no history migration/JSON compaction runs in the realtime interpreter.
         if self.journal.get("pause", ticker):
             return
         self.wake_effects()
@@ -617,14 +607,17 @@ class RuntimeCoordinator:
         if task["due_at"] > self.journal.clock().isoformat():
             return
         if self.journal.get("selection_snapshot", task["id"]) is None:
-            candidates = [
-                item
-                for item in self.journal.values("candidates")
-                if item["ticker"] == task["ticker"]
-                and item["status"] == "PENDING"
-                and item.get("origin_trade_eligible", True)
-                and item["created_at"] <= task["due_at"]
-            ]
+            # This weekly freeze has no recurring full Context hydration. Keep
+            # the existing namespace/key order, filter scalar headers in SQLite
+            # and decode only the actual selected candidates. A new index over
+            # the large shared values table is not justified by this rare path.
+            import json
+            with self.journal.transaction(write=False) as db:
+                candidates=[json.loads(row[0]) for row in db.execute(
+                    "SELECT payload FROM runtime_values WHERE namespace='candidates' "
+                    "AND json_extract(payload,'$.ticker')=? AND json_extract(payload,'$.status')='PENDING' "
+                    "AND (json_type(payload,'$.origin_trade_eligible') IS NULL OR json_extract(payload,'$.origin_trade_eligible')=1) "
+                    "AND json_extract(payload,'$.created_at')<=? ORDER BY key",(task['ticker'],task['due_at']))]
             self.journal.set(
                 "selection_snapshot",
                 task["id"],
@@ -1164,6 +1157,8 @@ class RuntimeCoordinator:
             notifications = self.journal.values("dirty_case")
         parents = {}
         for dirty in notifications:
+            if self._closed:
+                return
             if dirty["ticker"] != ticker:
                 continue
             try:
@@ -1175,7 +1170,77 @@ class RuntimeCoordinator:
                     dirty["case_id"],
                 )
 
+    def _schedule_o2_supplement(self, dirty, parents=None):
+        """O3-off needs only Case identity and pending O2 facts, never W3 Context."""
+        from .journal import encode
+
+        parents = {} if parents is None else parents
+        case_id, ticker = dirty["case_id"], dirty["ticker"]
+
+        def lookup(identity):
+            if identity not in parents:
+                with self.journal.transaction(write=False, expand=False) as db:
+                    row = db.execute(
+                        "SELECT id,status,json_extract(inputs,'$.day') AS day,"
+                        "json_extract(receipt,'$.compensated_by') AS successor "
+                        "FROM runtime_tasks WHERE id=?", (identity,),
+                    ).fetchone()
+                parents[identity] = dict(row) if row else None
+            return parents[identity]
+
+        owner = self.journal.get("case_maintenance_owner", case_id)
+        parent = lookup(owner) if owner else None
+        if parent and parent["successor"]:
+            owner = parent["successor"]
+            parent = lookup(owner)
+        if parent and parent["status"] in {"PENDING", "RUNNING", "FAILED", "HELD"}:
+            return
+        with self.runtime.repository._connect() as db:
+            case = db.execute(
+                "SELECT source_message_id,trading_date,json_extract(payload_json,'$.sweep_id') AS sweep_id "
+                "FROM runtime_v2_cases WHERE case_id=?", (case_id,),
+            ).fetchone()
+            if case is None:
+                return
+            source = case["source_message_id"]
+            excluded = db.execute(
+                "SELECT 1 FROM runtime_v2_admission_exclusions WHERE source_message_id=? "
+                "UNION ALL SELECT 1 FROM runtime_values WHERE namespace='invalid_admissions' "
+                "AND key=? AND payload!='false' LIMIT 1", (source, source),
+            ).fetchone()
+            # Bound the identity batch; one completed batch leaves further facts
+            # on their durable completion notification, without loading bodies.
+            pending = [] if excluded else [r[0] for r in db.execute(
+                "SELECT candidate_identity FROM runtime_v2_candidates "
+                "WHERE source_message_id=? AND daily_status='PENDING' "
+                "ORDER BY candidate_identity LIMIT 128", (source,),
+            )]
+        day = parent["day"] if parent else case["trading_date"]
+        if pending and not parent:
+            sweep = case["sweep_id"]
+            if not sweep and day >= semantic_day(self.journal.clock()).isoformat():
+                return
+            primary = lookup(f"maintain:{sweep}" if sweep else f"daily:{ticker}:{day}")
+            if primary and primary["successor"]:
+                primary = lookup(primary["successor"])
+            if (sweep and primary is None) or (primary and primary["status"] != "SUCCEEDED"):
+                return
+        if pending:
+            identity = "supplement:" + digest([owner, case_id, pending])[:32]
+            self._schedule(identity, ticker, "MAINTENANCE", {
+                "scope": "SUPPLEMENTAL", "day": day,
+                "cutoff": self.journal.clock().isoformat(), "case_ids": [case_id], "parent": owner,
+            })
+            with self.journal.transaction(write=False, expand=False) as db:
+                if not db.execute("SELECT 1 FROM runtime_tasks WHERE id=?", (identity,)).fetchone():
+                    return
+        with self.journal.transaction() as db:
+            db.execute("DELETE FROM runtime_values WHERE namespace='dirty_case' AND key=? AND payload=?",
+                       (case_id, encode(dirty)))
+
     def _schedule_case_supplement(self, dirty, parents=None):
+        if getattr(self.maintain, "o3_enabled", True) is False and hasattr(self.runtime.repository, "path"):
+            return self._schedule_o2_supplement(dirty, parents)
         from .bounded_inputs import has_pending_records
         from .journal import encode
 
@@ -1221,6 +1286,9 @@ class RuntimeCoordinator:
                     primary and primary["status"] != "SUCCEEDED"
                 ):
                     return
+        if getattr(self.maintain, "o3_enabled", True) is False:
+            case = self.runtime.repository.get_case(case_id)
+            needed = bool(case and has_pending_records(self.runtime.repository, case, include_o3=False))
         if needed:
             identity = "supplement:" + digest([owner, case_id, current])[:32]
             self._schedule(

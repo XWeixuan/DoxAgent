@@ -81,6 +81,13 @@ def history_relation(db, base='objects'):
 
 def upgrade(db):
     """Small, explicit V4 DDL addition; no live table rewrite or index build."""
+    db.execute('CREATE TABLE IF NOT EXISTS serving_fact_exits('
+               'kind TEXT,ticker TEXT,id TEXT,seq INTEGER NOT NULL,PRIMARY KEY(kind,ticker,id))')
+    db.execute('CREATE INDEX IF NOT EXISTS serving_fact_exits_due ON serving_fact_exits(seq)')
+    db.execute("CREATE TRIGGER IF NOT EXISTS serving_fact_exit AFTER DELETE ON object_current "
+               "WHEN OLD.kind='policy_hit_set' BEGIN "
+               "INSERT INTO serving_fact_exits VALUES(OLD.kind,OLD.ticker,OLD.id,OLD.valid_from) "
+               "ON CONFLICT(kind,ticker,id) DO UPDATE SET seq=max(seq,excluded.seq); END")
     db.execute('CREATE TABLE IF NOT EXISTS definition_exit(sha256 TEXT PRIMARY KEY)')
     db.execute('CREATE TABLE IF NOT EXISTS serving_content_exit(id TEXT PRIMARY KEY)')
     db.execute('CREATE INDEX IF NOT EXISTS current_native_identity ON object_current(kind,id,ticker)')

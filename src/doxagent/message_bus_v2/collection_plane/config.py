@@ -93,6 +93,8 @@ class Configuration:
     def allowed(self, binding, now, *, control=None):
         current = self.bindings.get(binding.binding_id)
         source = self.sources.get(binding.source_id)
+        if source and not source.active_at(now):
+            return False
         if source and source.delivery_mode == "test":
             return bool(current and current.enabled and source.enabled and current.polling.enabled
                 and current.polling.active_at(now) and current.version == binding.version
@@ -111,6 +113,7 @@ class Configuration:
             and (control['pauses'] if control else self.pauses).get(binding.ticker) != "all"
             and (
                 source.source_id in {"corporate_ir_press_releases", "sec_edgar", "x_official_posts"}
+                or source.activation_window is not None
                 or (
                     self.realtime
                     and (

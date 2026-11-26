@@ -1,0 +1,11 @@
+{
+  "commit": "31021fb82",
+  "images": {
+    "v2-api": "sha256:8a5f4328204d1e698c93fc685163804fb9d9a8208be0e4782c4e2e5eacf42462",
+    "v2-agent-mcp-tunnel": "sha256:a0e7cfa0c66cd7892694a7b974282511c49e68ccb41739d3416c78814f0132d7"
+  },
+  "parents": {
+    "v2-api": "sha256:cb062d7b8a887e3f8a22e37453144d4408d60222ae1e4b1bca2516d53672bee1",
+    "v2-agent-mcp-tunnel": "sha256:c77b7409570be2e03075ecaffe9a16144ec8a66171fc75ea5843baae988c7005"
+  }
+}

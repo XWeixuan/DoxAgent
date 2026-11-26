@@ -26,6 +26,7 @@ class Capture:
     body: str
     headers: dict
     bytes_received: int
+    raw_bytes: bytes | None = None
 
     @property
     def digest(self):
@@ -108,14 +109,14 @@ class PublicHttp:
             raise
 
     @staticmethod
-    def _stdlib_read(url, headers, proxy=None):
+    def _stdlib_read(url, headers, proxy=None, *, method='GET', data=None, binary=False):
         import http.client
         from ..poll_trace import request_started
         events=[]
         class WireSend:
             def send(self,data):
-                if isinstance(data,(bytes,bytearray)) and data.startswith(b'GET ') and not events:
-                    events.append(request_started('GET',url,'stdlib',admitted=True))
+                if isinstance(data,(bytes,bytearray)) and data.startswith((method+' ').encode()) and not events:
+                    events.append(request_started(method,url,'stdlib',admitted=True))
                 return super().send(data)
         class Http(WireSend,http.client.HTTPConnection):pass
         class Https(WireSend,http.client.HTTPSConnection):pass
@@ -138,6 +139,7 @@ class PublicHttp:
                 "Accept-Encoding": "identity",
                 **headers,
             },
+            method=method, data=data,
         )
         from ..schema import utc_now
         from ..collection_override import check_request_allowed
@@ -170,9 +172,10 @@ class PublicHttp:
             return Capture(
                 response.status,
                 response.url,
-                raw.decode(charset, errors="replace"),
+                '' if binary else raw.decode(charset, errors="replace"),
                 {k.lower(): v for k, v in response.headers.items()},
                 len(raw),
+                bytes(raw) if binary else None,
             )
 
     async def fetch(self, spec, *, url=None, headers=None):
@@ -180,8 +183,17 @@ class PublicHttp:
             status, body, final = await self.browser.fetch(spec)
             return Capture(status, final, body, {}, len(body.encode()))
         url = url or spec.entry_url
-        route = spec.parser_parameters.get("body_http_route")
-        if route and url != spec.entry_url:
+        listing = url == spec.entry_url
+        if listing and spec.parser_ref=='coinbase_blog' and urlsplit(url).hostname=='contentful.coinbase.com':
+            from urllib.parse import urlencode
+            from ..schema import utc_now
+            # The proxy honors publicationDate filters, but ignores sys.updatedAt.
+            # Query only already-published entries; verify real filter behavior,
+            # rather than adding an ignored parameter that only freshens the edge.
+            url += '&'+urlencode({'fields.publicationDate[lte]':utc_now().isoformat()})
+        route = spec.parser_parameters.get('http_route') or (spec.parser_parameters.get("body_http_route") if not listing else None)
+        request_method=spec.parser_parameters.get('http_method','GET') if listing else 'GET'
+        if route or request_method != 'GET':
             # Q4's feed works directly while its article pages require the
             # existing curl transport/egress. Keep RSS and BODY budgets separate.
             from ..technology_sources import TechnologyHttp, TechnologySource
@@ -193,10 +205,10 @@ class PublicHttp:
                 self.routed_http = TechnologyHttp(purpose="BODY")
             url = url.replace("http://", "https://", 1)
             recipe = TechnologySource(spec.endpoint_id,spec.display_name,
-                urlsplit(url).hostname.removeprefix("www."),(url,),(),route=route)
-            token = HTTP_CONTEXT.set("body")
+                urlsplit(url).hostname.removeprefix("www."),(url,),(),route=route or 'direct')
+            token = HTTP_CONTEXT.set("collector" if listing else "body")
             try:
-                result = await self.routed_http.fetch(url,recipe,headers=headers)
+                result = await self.routed_http.fetch(url,recipe,headers=headers,method=request_method)
                 return Capture(result.status,result.url,result.text,result.headers,len(result.text.encode()))
             finally:
                 HTTP_CONTEXT.reset(token)

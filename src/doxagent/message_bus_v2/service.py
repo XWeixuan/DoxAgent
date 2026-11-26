@@ -602,7 +602,11 @@ class MessageBusV2Service:
         profile = self.repository.get_default_profile(profile_id)
         if profile is None:
             raise KeyError(f"default profile not found: {profile_id}")
+        from .biopharma_sources import subscription_ids
+        approved=subscription_ids(self.repository.list_sources(),normalized)
         for entry in profile.entries:
+            if approved is not None and entry.source_id not in approved:
+                continue
             if (
                 self.repository.get_binding(
                     f"{normalized}:{entry.source_id}", include_tombstoned=True
@@ -665,7 +669,8 @@ class MessageBusV2Service:
             from .monitoring_terms import MonitoringTermsService
             from .massive_relevance import massive_configured
             found = MonitoringTermsService(self.repository).get(ticker)
-            if not massive_configured(found[1] if found else None, source.content_language or "en"):
+            preparing = actor is UpdateActor.SYSTEM and self.repository.get_ticker_state(ticker.strip().upper()) is None
+            if not massive_configured(found[1] if found else None, source.content_language or "en") and not preparing:
                 raise ValueError("MASSIVE_TERMS_MISSING")
         current = self.repository.get_binding(binding_id, include_tombstoned=True)
         if (

@@ -1,0 +1,20 @@
+{
+  "changed_containers": [
+    "/doxagent-v2-v2-api-1",
+    "/doxagent-v2-v2-agent-mcp-tunnel-1"
+  ],
+  "roles": {
+    "v2-api": {
+      "image": "sha256:c11e51fdcb3b8222f86d88975608ada7193953ac7e9c7eac6396315477ef2b68",
+      "health": "healthy",
+      "restarts": 0
+    },
+    "v2-agent-mcp-tunnel": {
+      "image": "sha256:a0e7cfa0c66cd7892694a7b974282511c49e68ccb41739d3416c78814f0132d7",
+      "health": "healthy",
+      "restarts": 0
+    }
+  },
+  "disk_free_bytes": 8631119872,
+  "query_timeouts_in_current_api_log": 0
+}

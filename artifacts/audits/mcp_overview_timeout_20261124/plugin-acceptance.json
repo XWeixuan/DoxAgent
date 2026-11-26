@@ -1,0 +1,42 @@
+{
+  "calls": [
+    {
+      "seconds": 6.135,
+      "rows": 3
+    },
+    {
+      "seconds": 5.449,
+      "rows": 3
+    },
+    {
+      "seconds": 5.418,
+      "rows": 3
+    },
+    {
+      "seconds": 3.308,
+      "rows": 1
+    }
+  ],
+  "tickers": [
+    "BE",
+    "CEG",
+    "COHR",
+    "INTC",
+    "IONQ",
+    "MU",
+    "NBIS",
+    "ONDS",
+    "RKLB",
+    "SNOW"
+  ],
+  "gateway": {
+    "ib_gateway_live_status": "CONNECTED",
+    "ib_gateway_paper_status": "CONNECTED"
+  },
+  "global_sections": {
+    "status": "AVAILABLE",
+    "metrics": "AVAILABLE",
+    "gateway": "AVAILABLE",
+    "openrouter_balance": "AVAILABLE"
+  }
+}

@@ -2231,6 +2231,33 @@
       ],
       "additionalProperties": false
     },
+    "StartTickerRequest": {
+      "type": "object",
+      "properties": {
+        "running_mode": {
+          "$ref": "#/$defs/RunningMode"
+        },
+        "ticker": {
+          "type": "string"
+        },
+        "monitor_mode": {
+          "$ref": "#/$defs/MonitorMode"
+        },
+        "initialization": {
+          "type": "string",
+          "enum": [
+            "REUSE_ACTIVE",
+            "FORCE_INITIALIZE"
+          ]
+        }
+      },
+      "required": [
+        "ticker",
+        "monitor_mode",
+        "initialization"
+      ],
+      "additionalProperties": false
+    },
     "Operation": {
       "type": "object",
       "properties": {
@@ -30900,33 +30927,6 @@
           }
         }
       ]
-    },
-    "StartTickerRequest": {
-      "type": "object",
-      "properties": {
-        "running_mode": {
-          "$ref": "#/$defs/RunningMode"
-        },
-        "ticker": {
-          "type": "string"
-        },
-        "monitor_mode": {
-          "$ref": "#/$defs/MonitorMode"
-        },
-        "initialization": {
-          "type": "string",
-          "enum": [
-            "REUSE_ACTIVE",
-            "FORCE_INITIALIZE"
-          ]
-        }
-      },
-      "required": [
-        "ticker",
-        "monitor_mode",
-        "initialization"
-      ],
-      "additionalProperties": false
     }
   }
 }

@@ -231,8 +231,8 @@ def test_shared_pool_counts_filled_positions_and_integer_minimum(tmp_path):
     clock, repo, revision, executor, broker = setup_shared(tmp_path)
     admit_ticker(repo, revision, "MU")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
-    assert broker.sent[0]["quantity"] == 198
-    assert broker.previews[0]["quantity"] == 198
+    assert broker.sent[0]["quantity"] == 99
+    assert broker.previews[0]["quantity"] == 99
     admit_ticker(repo, revision, "BE")
     asyncio.run(run_job(executor, repo, clock, "trade:BE:entry"))
     assert broker.sent[1]["quantity"] == 99
@@ -255,9 +255,9 @@ def test_shared_pool_reserves_unfilled_entry_before_second_ticker(tmp_path):
 
     asyncio.run(start_both())
     jobs = [repo.require("jobs", f"trade:{ticker}:entry") for ticker in ("MU", "BE")]
-    assert sum(Decimal(job.get("reserved_open_usd", "0")) for job in jobs) <= 30000
+    assert sum(Decimal(job.get("reserved_open_usd", "0")) for job in jobs) <= 20000
     assert len(broker.sent) == 2
-    assert sorted(attempt["quantity"] for attempt in broker.sent) == [99, 198]
+    assert sorted(attempt["quantity"] for attempt in broker.sent) == [99, 99]
 
 
 def test_same_origin_reverse_cannot_borrow_full_grant_or_net_old_group(tmp_path):
@@ -267,7 +267,7 @@ def test_same_origin_reverse_cannot_borrow_full_grant_or_net_old_group(tmp_path)
     admit_ticker(repo, revision, "MU", direction="SHORT", identity="trade:MU:reverse")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:reverse:entry"))
     assert len(broker.sent) == 1
-    assert repo.require("lots", "trade:MU")["remaining_qty"] == 198
+    assert repo.require("lots", "trade:MU")["remaining_qty"] == 99
     assert (
         repo.require("executions", "trade:MU:reverse")["entry_reason"]
         == "PORTFOLIO_CAPACITY_EXHAUSTED"
@@ -279,7 +279,7 @@ def test_personal_position_notional_does_not_replace_own_budget(tmp_path):
     broker.positions[broker.symbols["OTHER"]] = 240
     admit_ticker(repo, revision, "MU")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
-    assert broker.sent[0]["quantity"] == 198
+    assert broker.sent[0]["quantity"] == 99
     assert broker.positions[broker.symbols["OTHER"]] == 240
 
 
@@ -292,7 +292,7 @@ def test_rounding_and_margin_fail_without_submitting(tmp_path):
     admit_ticker(repo, revision, "MU")
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
     ledger.allocate("DU_TEST", "20000", "decrease", "new grants use reduced allocation")
-    broker.prices["ONDS"] = Decimal("4700")
+    broker.prices["ONDS"] = Decimal("11000")  # Exceeds the new fixed slot ceiling.
     admit_ticker(repo, revision, "ONDS")
     asyncio.run(run_job(executor, repo, clock, "trade:ONDS:entry"))
     assert len(broker.sent) == 1
@@ -323,7 +323,7 @@ def test_loss_reduces_next_cycle_equity_after_confirmed_exit(tmp_path):
     broker.equity = Decimal("18500")
     admit_ticker(repo, revision, "BE")
     asyncio.run(run_job(executor, repo, clock, "trade:BE:entry"))
-    assert broker.sent[-1]["quantity"] == 179
+    assert broker.sent[-1]["quantity"] == 94
     assert repo.require("jobs", "trade:BE:entry")["cycle_id"] == "margin:2026-09-09"
 
 

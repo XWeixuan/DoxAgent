@@ -10,7 +10,7 @@ from doxagent.semantic_clock import boundary
 BATCH = 100
 
 
-def has_pending_records(repository, case):
+def has_pending_records(repository, case, *, include_o3=True):
     """Only notifications without an owner need a fresh, Case-local lookup."""
     if hasattr(repository, "path"):
         with repository._connect() as db:
@@ -27,6 +27,8 @@ def has_pending_records(repository, case):
                 (case.source.source_message_id,),
             ).fetchone():
                 return True
+            if not include_o3:
+                return False
             return any(
                 db.execute(
                     f"SELECT 1 FROM {table} WHERE case_id=? AND daily_status='PENDING' LIMIT 1",
@@ -220,7 +222,7 @@ def unfinished(repository: Any, journal: Any, task: dict[str, Any]) -> bool:
 
 
 def records(
-    repository: Any, selected: list[dict[str, Any]], *, ticker: str
+    repository: Any, selected: list[dict[str, Any]], *, ticker: str, include_o3: bool = True
 ) -> dict[str, list[dict[str, Any]]]:
     from .schema import BadcaseRecord, ProvisionalFactDetail, TradeRecord, W3CoverageGapRecord
 
@@ -231,6 +233,8 @@ def records(
         ("gaps", "runtime_v2_w3_coverage_gaps", "case_id", W3CoverageGapRecord),
     ]
     result: dict[str, list[dict[str, Any]]] = {s[0]: [] for s in specs}
+    if not include_o3:
+        specs = specs[:1]
     if hasattr(repository, "path"):
         for offset in range(0, len(selected), BATCH):
             batch = selected[offset : offset + BATCH]
@@ -273,6 +277,8 @@ def records(
             ("badcases", "list_daily_badcases"),
             ("gaps", "list_daily_w3_coverage_gaps"),
         ]:
+            if not include_o3 and name != "candidates":
+                continue
             for item in getattr(repository, method)(ticker, date.fromisoformat(day)):
                 if (
                     item.source_message_id in sources

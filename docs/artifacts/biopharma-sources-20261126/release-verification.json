@@ -1,0 +1,198 @@
+{
+  "at": "2026-11-25T22:45:19.727219+00:00",
+  "commit": "638b246315447b7e0a7a5f4dd4aff656101e0ddd",
+  "roles": {
+    "v2-api": {
+      "image": "sha256:acb8277f958f06ecd0d48aea591b4a656e3ef1a32ea74bd98e45ed46e76ead98",
+      "baseline": "sha256:f27b38c81e6bd1d835f209bbb0728427706ed96bb6782e8d9d88465e5fe7bfad",
+      "file_count": 108,
+      "all_hashes_match": true,
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "started_at": "2026-11-25T22:42:08.428896131Z"
+    },
+    "v2-message-collector": {
+      "image": "sha256:2668fbc5c3ff67769aee314b7222cd12c9528d6e0e51868ea25052de71bee104",
+      "baseline": "sha256:11656c232be69a2ffb24608f99ab32a7a3aa1f4dcc142cefd4a7fcdcbf9c0e05",
+      "file_count": 108,
+      "all_hashes_match": true,
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "started_at": "2026-11-25T22:42:34.768669586Z"
+    },
+    "v2-message-bus": {
+      "image": "sha256:c9b470118efe297bf4fcff5c81d2b7f41ee47bc1168b4a7b3652e9c5cba24e01",
+      "baseline": "sha256:11656c232be69a2ffb24608f99ab32a7a3aa1f4dcc142cefd4a7fcdcbf9c0e05",
+      "file_count": 108,
+      "all_hashes_match": true,
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-11-25T22:42:48.642276833Z"
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:15848ed2ae2326c976b133328d8dacac0d16dbac4008d47a00f41798ea990e61",
+      "baseline": "sha256:f27b38c81e6bd1d835f209bbb0728427706ed96bb6782e8d9d88465e5fe7bfad",
+      "file_count": 108,
+      "all_hashes_match": true,
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-11-25T22:43:01.450122427Z"
+    },
+    "v2-initialization": {
+      "image": "sha256:3bf2880a9df84c3c1478db2fb134ff254e42b1c006d1863f00983d9614658e0d",
+      "baseline": "sha256:4f2850ac6fc45e28c69027190b1481732b79224ef040b5237bd0bcd4d9f5be89",
+      "file_count": 108,
+      "all_hashes_match": true,
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-11-25T22:43:14.862888207Z"
+    },
+    "v2-o4": {
+      "image": "sha256:7041fc7a77a1523591c08d775460fb0c78ffb08b64be9572c50b06078be4fd19",
+      "baseline": "sha256:cb062d7b8a887e3f8a22e37453144d4408d60222ae1e4b1bca2516d53672bee1",
+      "file_count": 108,
+      "all_hashes_match": true,
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-11-25T22:43:28.376939431Z"
+    }
+  },
+  "preserved_initialization_files": {
+    "repository.py": "614da449958a2aa2710e160af21d72ec198c082bde3d80fea19c6b29ff170b00",
+    "substeps.py": "3bdeb4eb5bddb2f37e871d6e9c000ea857ecd7797546378e2e62ef961eac6ca0"
+  },
+  "containers": [
+    {
+      "name": "doxagent-v2-v2-o4-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-initialization-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-content-enrichment-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-message-bus-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-message-collector-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-api-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-web-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-executor-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-projector-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-scheduler-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-transport-maintenance-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-initialization-guardian-1",
+      "status": "exited",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-control-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-cdecr-executor-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-agent-mcp-tunnel-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-codex-worker-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-maintenance-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-site-access-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-migrate-1",
+      "status": "exited",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-delivery-1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    {
+      "name": "doxagent-v2-v2-chrome-supervisor-1",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    }
+  ]
+}

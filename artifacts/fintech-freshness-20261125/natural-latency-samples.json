@@ -1,0 +1,22 @@
+[
+  {
+    "source": "unchained_crypto",
+    "url": "https://unchainedcrypto.com/ukraines-lawmakers-approve-crypto-market-rules-and-taxes-effective-july-2027/",
+    "published_at": "2026-11-25T15:45:35+00:00",
+    "first_seen_at": "2026-11-25T15:46:16.495350+00:00",
+    "seconds": 41.49535,
+    "path": "PRE_REPAIR_RSS_FALLBACK",
+    "delivery_state": "CONFIG_INCOMPLETE",
+    "delivery_error": "TERMS_MISSING"
+  },
+  {
+    "source": "unchained_crypto",
+    "url": "https://unchainedcrypto.com/french-senate-rejects-crypto-exit-tax-stablecoin-swap-tax-and-wallet-declaration-rule/",
+    "published_at": "2026-11-25T15:30:50+00:00",
+    "first_seen_at": "2026-11-25T15:32:34.389507+00:00",
+    "seconds": 104.389507,
+    "path": "PRE_REPAIR_RSS_FALLBACK",
+    "delivery_state": "CONFIG_INCOMPLETE",
+    "delivery_error": "TERMS_MISSING"
+  }
+]

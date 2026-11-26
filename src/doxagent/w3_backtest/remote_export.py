@@ -245,7 +245,7 @@ if __name__ == "__main__":
             ).fetchone()
             doc = load(row[0])
             text = doc.get("content_text")
-            if text is None and doc.get('local_content_codec') is not None:
+            if text is None and (doc.get('local_content_codec') is not None or str(doc.get('storage_path','')).startswith('d3-semantic-v1:')):
                 from doxagent.codex_runtime.published_storage import load_published_body
 
                 text = load_published_body(ROOT / 'research', doc).decode('utf-8')

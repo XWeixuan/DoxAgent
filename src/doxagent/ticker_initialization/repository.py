@@ -49,6 +49,12 @@ class InitializationRepository:
                 CREATE TABLE IF NOT EXISTS initialization_runs (
                     id TEXT PRIMARY KEY, ticker TEXT NOT NULL, payload TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS maintenance_control (
+                    id INTEGER PRIMARY KEY CHECK(id=1), enabled INTEGER NOT NULL DEFAULT 0,
+                    revision INTEGER NOT NULL DEFAULT 1, reason TEXT NOT NULL
+                );
+                INSERT OR IGNORE INTO maintenance_control(id,enabled,revision,reason)
+                    VALUES(1,0,1,'Storage lifecycle governance: O3 remains disabled');
                 CREATE TABLE IF NOT EXISTS v2_consumer_control (
                     ticker TEXT PRIMARY KEY, epoch INTEGER NOT NULL, payload TEXT NOT NULL
                 );
@@ -157,6 +163,8 @@ class InitializationRepository:
                 CREATE INDEX IF NOT EXISTS cdecr_dispatch_claim
                     ON cdecr_dispatches(execution_identity,status,lease_until,created_at);
             """)
+            from .maintenance_control import install
+            install(db)
             columns = {row[1] for row in db.execute("PRAGMA table_info(ticker_operations)")}
             if "execution_lane" not in columns:
                 db.execute(
@@ -1764,6 +1772,10 @@ class InitializationRepository:
             ).fetchone()
             if prior:
                 return cast(dict[str, Any], json.loads(prior[0]))
+            if metadata.get("o3_outcome") == "APPLIED" and not db.execute(
+                "SELECT enabled FROM maintenance_control WHERE id=1"
+            ).fetchone()[0]:
+                raise InitializationError("O3 maintenance disabled before activation")
             row = db.execute(
                 "SELECT a.payload FROM ticker_active_revision t "
                 "JOIN activation_revisions a ON a.revision_id=t.revision_id "
@@ -1800,6 +1812,12 @@ class InitializationRepository:
                 "UPDATE ticker_active_revision SET revision_id=? WHERE ticker=?", (identity, ticker)
             )
             return value
+
+    def o3_maintenance_enabled(self) -> bool:
+        """Read only at maintenance boundaries, never on a W3 dispatch path."""
+        with self._connection() as db:
+            row = db.execute("SELECT enabled FROM maintenance_control WHERE id=1").fetchone()
+            return bool(row and row[0])
 
     def activate(self, lease: Lease, revision_id: str) -> None:
         with self._write() as db:

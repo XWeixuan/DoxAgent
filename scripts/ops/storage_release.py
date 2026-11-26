@@ -398,6 +398,10 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             patch=context/'deploy/codex-patches/w3-time-awareness-0.159.3.patch'
             if hashlib.sha256(patch.read_bytes()).hexdigest()!=native['patch_sha256']:
                 raise ValueError('native runtime patch does not match selected commit')
+            if native.get('storage_log_patch_sha256'):
+                storage_patch=context/'deploy/codex-patches/storage-log-policy-0.159.3.patch'
+                if hashlib.sha256(storage_patch.read_bytes()).hexdigest()!=native['storage_log_patch_sha256']:
+                    raise ValueError('native diagnostic policy does not match selected commit')
             expected={'codex':native['binary_sha256'],
                       'codex-code-mode-host':native['companions']['codex-code-mode-host']['sha256']}
             for name,sha in expected.items():
@@ -656,6 +660,25 @@ def deploy(root, state, manifest):
             configuration['services'][component]=new
             atomic(override,configuration)
             try:
+                if component=='v2-message-collector' and previous!=new:
+                    # Acquisition-only index migration. Bus/BODY/Runtime keep
+                    # serving; never put its table scan into collector startup.
+                    subprocess.run([*command,'stop',component],check=True)
+                    migration=("import sqlite3;from doxagent.settings import DoxAgentSettings;"
+                        "from doxagent.message_bus_v2.collection_plane.store import path_for;"
+                        "p=path_for(DoxAgentSettings().message_bus_v2_sqlite_path);"
+                        "d=sqlite3.connect(p,timeout=1);"
+                        "d.execute(\"CREATE INDEX IF NOT EXISTS cycles_success_exit ON cycles(dispatch_at,run_id) WHERE status='CAPTURED'\");"
+                        "d.commit();d.close();print('Acquisition success expiry index ready')")
+                    subprocess.run([*command,'run','--rm','--no-deps','--entrypoint','python',component,'-c',migration],check=True)
+                if component in {'v2-api','v2-projector','v2-maintenance'}:
+                    # Production CLI skips startup mutation; install compatible DDL before readers.
+                    migration = (
+                        "import os;from doxagent.v2_read.repository import ReadStore;"
+                        "s=ReadStore(os.environ['DOXAGENT_V2_READ_SQLITE_PATH']);"
+                        "s.migrate();print('Read schema ready:',s.path)"
+                    )
+                    subprocess.run([*command,'run','--rm','--no-deps','--entrypoint','python',component,'-c',migration],check=True)
                 subprocess.run([*command,'up','-d','--no-deps','--no-build',component],check=True)
                 started=time.monotonic();deadline=started+candidate.get('health_seconds',90)
                 while True:

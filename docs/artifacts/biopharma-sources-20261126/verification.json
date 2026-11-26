@@ -1,0 +1,204 @@
+{
+  "at": "2026-11-25T22:44:32.538597+00:00",
+  "tickers": {
+    "XENE": {
+      "sources": [
+        "access_newswire_massive",
+        "aes_abstract_search",
+        "benzinga_news",
+        "businesswire_massive",
+        "corporate_ir_press_releases",
+        "endpoints_biopharma",
+        "fda_release",
+        "fiercebiotech_biotech",
+        "finnhub_company_news",
+        "globenewswire_massive",
+        "google_news_search_rss",
+        "ibkr_news",
+        "prnewswire_massive",
+        "sec_edgar",
+        "stat_biotech_trials",
+        "stocktwits_messages",
+        "thefly_ticker_news",
+        "tmx_newsfile_massive",
+        "x_official_posts"
+      ],
+      "binding_count": 19,
+      "state": "NOT_STARTED",
+      "terms_revision": 0,
+      "ir_seconds": 20,
+      "official_x_default": [
+        "XenonPharma"
+      ]
+    },
+    "RGNX": {
+      "sources": [
+        "access_newswire_massive",
+        "benzinga_news",
+        "businesswire_massive",
+        "corporate_ir_press_releases",
+        "endpoints_biopharma",
+        "fda_release",
+        "fiercebiotech_biotech",
+        "finnhub_company_news",
+        "globenewswire_massive",
+        "google_news_search_rss",
+        "ibkr_news",
+        "prnewswire_massive",
+        "reuters_site_search",
+        "sec_edgar",
+        "stat_biotech_trials",
+        "stocktwits_messages",
+        "thefly_ticker_news",
+        "tmx_newsfile_massive",
+        "x_official_posts"
+      ],
+      "binding_count": 19,
+      "state": "NOT_STARTED",
+      "terms_revision": 0,
+      "ir_seconds": 20,
+      "official_x_default": [
+        "REGENXBIO"
+      ]
+    },
+    "PRAX": {
+      "sources": [
+        "access_newswire_massive",
+        "benzinga_news",
+        "businesswire_massive",
+        "corporate_ir_press_releases",
+        "endpoints_biopharma",
+        "fda_release",
+        "fiercebiotech_biotech",
+        "finnhub_company_news",
+        "globenewswire_massive",
+        "google_news_search_rss",
+        "ibkr_news",
+        "prnewswire_massive",
+        "sec_edgar",
+        "stat_biotech_trials",
+        "stocktwits_messages",
+        "thefly_ticker_news",
+        "tmx_newsfile_massive",
+        "x_official_posts"
+      ],
+      "binding_count": 18,
+      "state": "NOT_STARTED",
+      "terms_revision": 0,
+      "ir_seconds": 20,
+      "official_x_default": [
+        "praxismedicines"
+      ]
+    },
+    "CGEM": {
+      "sources": [
+        "access_newswire_massive",
+        "ash_cullinan",
+        "benzinga_news",
+        "businesswire_massive",
+        "corporate_ir_press_releases",
+        "endpoints_biopharma",
+        "fda_release",
+        "fiercebiotech_biotech",
+        "finnhub_company_news",
+        "globenewswire_massive",
+        "google_news_search_rss",
+        "ibkr_news",
+        "prnewswire_massive",
+        "sec_edgar",
+        "stat_biotech_trials",
+        "stocktwits_messages",
+        "taiho_press_releases",
+        "thefly_ticker_news",
+        "tmx_newsfile_massive",
+        "x_official_posts"
+      ],
+      "binding_count": 20,
+      "state": "NOT_STARTED",
+      "terms_revision": 0,
+      "ir_seconds": 20,
+      "official_x_default": [
+        "CullinanTx"
+      ]
+    },
+    "SMMT": {
+      "sources": [
+        "access_newswire_massive",
+        "akeso_press_releases",
+        "benzinga_news",
+        "businesswire_massive",
+        "corporate_ir_press_releases",
+        "endpoints_biopharma",
+        "fda_release",
+        "fiercebiotech_biotech",
+        "finnhub_company_news",
+        "globenewswire_massive",
+        "google_news_search_rss",
+        "hkex_akeso",
+        "ibkr_news",
+        "prnewswire_massive",
+        "reuters_site_search",
+        "sec_edgar",
+        "stat_biotech_trials",
+        "stocktwits_messages",
+        "thefly_ticker_news",
+        "tmx_newsfile_massive",
+        "x_official_posts"
+      ],
+      "binding_count": 21,
+      "state": "NOT_STARTED",
+      "terms_revision": 0,
+      "ir_seconds": 20,
+      "official_x_default": [
+        "SMMT_TX"
+      ]
+    }
+  },
+  "windows": {
+    "aes_abstract_search": {
+      "start_date": "2026-12-07",
+      "end_date": "2026-12-07",
+      "timezone": "America/New_York",
+      "active_now": false
+    },
+    "ash_cullinan": {
+      "start_date": "2026-12-03",
+      "end_date": "2026-12-09",
+      "timezone": "America/New_York",
+      "active_now": false
+    }
+  },
+  "ir_endpoint_count": 21,
+  "new_ir": [
+    {
+      "id": "xene.press",
+      "ticker": "XENE",
+      "seconds": 20,
+      "parser": "nir"
+    },
+    {
+      "id": "rgnx.press",
+      "ticker": "RGNX",
+      "seconds": 20,
+      "parser": "nir"
+    },
+    {
+      "id": "prax.press",
+      "ticker": "PRAX",
+      "seconds": 20,
+      "parser": "nir"
+    },
+    {
+      "id": "cgem.press",
+      "ticker": "CGEM",
+      "seconds": 20,
+      "parser": "nir"
+    },
+    {
+      "id": "smmt.press",
+      "ticker": "SMMT",
+      "seconds": 20,
+      "parser": "q4"
+    }
+  ]
+}

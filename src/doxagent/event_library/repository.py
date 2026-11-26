@@ -124,6 +124,10 @@ class EventLibraryRepository:
             version = int(connection.execute("PRAGMA user_version").fetchone()[0])
             if version > EVENT_LIBRARY_SCHEMA_VERSION:
                 raise EventLibraryError(f"unsupported Event Library schema version {version}")
+            from .admission_evidence import migrate as migrate_admissions
+            migrate_admissions(connection)
+            from .lifecycle import migrate as migrate_lifecycle
+            migrate_lifecycle(connection)
             connection.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS library_heads (
@@ -322,6 +326,8 @@ class EventLibraryRepository:
                     ON reference_review_schedule (ticker,next_review_at,event_no);
                 """
             )
+            from .lifecycle import migrate_history
+            migrate_history(connection)
             migrate_birth_identities(connection)
             connection.execute(f"PRAGMA user_version={EVENT_LIBRARY_SCHEMA_VERSION}")
 
@@ -379,8 +385,9 @@ class EventLibraryRepository:
 
     @staticmethod
     def _require_native_version(connection, ticker, version):
-        if version and not connection.execute('SELECT 1 FROM library_versions WHERE ticker=? AND version=?',(ticker,version)).fetchone():
-            raise UnknownLibraryObjectError(f'library version {version} is not retained for {ticker}')
+        row=connection.execute('SELECT status FROM library_versions WHERE ticker=? AND version=?',(ticker,version)).fetchone() if version else None
+        if version and (not row or row[0]=='HISTORY_RETIRED'):
+            raise UnknownLibraryObjectError(f'HISTORY_RETIRED: library version {version} is not retained for {ticker}')
 
     def published_version(self, ticker: str) -> int:
         normalized = self._ticker(ticker)
@@ -513,12 +520,14 @@ class EventLibraryRepository:
         ticker = self._ticker(batch.ticker)
         payload = batch.model_dump(mode="json")
         now = _now()
+        encoded = _json(payload)
         with self._write() as connection:
             existing = connection.execute(
                 "SELECT payload_json FROM delta_batches WHERE batch_id=?", (batch.batch_id,)
             ).fetchone()
-            encoded = _json(payload)
             if existing is not None:
+                retired=connection.execute('SELECT input_sha256 FROM event_batch_retirements WHERE batch_id=?',(batch.batch_id,)).fetchone()
+                if retired and retired[0]==hashlib.sha256(encoded.encode()).hexdigest():return False
                 if str(existing["payload_json"]) != encoded:
                     raise EventLibraryError(f"Delta batch {batch.batch_id!r} is immutable")
                 return False
@@ -570,6 +579,8 @@ class EventLibraryRepository:
         if row is None:
             return None
         payload = json.loads(str(row["payload_json"]))
+        if payload.get('process_retired'):
+            raise EventLibraryError('PROCESS_INPUT_RETIRED_NEW_BATCH_REQUIRED')
         payload["status"] = str(row["status"])
         return DeltaBatch.model_validate(payload)
 
@@ -788,6 +799,11 @@ class EventLibraryRepository:
         changing references, review clocks or other metadata is not.
         """
         normalized = self._ticker(ticker)
+        from .admission_evidence import ready, facts
+        with self._read() as db:
+            if ready(db,normalized):
+                self._require_native_version(db,normalized,version)
+                return facts(db,normalized,version,None if fact_ids is None else sorted({_numeric_id(i) for i in fact_ids}))
         if fact_ids is None:
             return self._fact_admission_map(*self._admission_history(normalized, version))
         numbers=sorted({_numeric_id(identity) for identity in fact_ids})
@@ -819,8 +835,14 @@ class EventLibraryRepository:
         from doxagent.semantic_clock import semantic_day
 
         events = self.published_events(ticker, version)
-        history = self._admission_history(self._ticker(ticker), version)
-        versions = history[0]
+        normalized=self._ticker(ticker)
+        from .admission_evidence import ready
+        with self._read() as db:
+            independent=ready(db,normalized)
+            versions={int(r[0]):datetime.fromisoformat(r[1].replace('Z','+00:00')) for r in db.execute(
+                'SELECT version,published_at FROM event_publication_clocks WHERE ticker=? AND published_at IS NOT NULL', (normalized,))} if independent else {}
+        history = None if independent else self._admission_history(normalized, version)
+        if history is not None:versions=history[0]
         ordered_versions = sorted(versions)
 
         def recent(admission, days):
@@ -840,7 +862,7 @@ class EventLibraryRepository:
                 for r in db.execute(
                     "SELECT event_no,created_version FROM canonical_events "
                     "WHERE ticker=? AND created_version<=?", (self._ticker(ticker), version))}
-        facts = self._fact_admission_map(*history)
+        facts = self.fact_admissions(normalized,version) if independent else self._fact_admission_map(*history)
         return [event for event in events if event.include_in_reference_view
                 or (event.event_id in births and recent(births[event.event_id], 14))
                 or any(f.fact_id in facts and recent(facts[f.fact_id], 7) for f in event.facts)]
@@ -1173,7 +1195,21 @@ class EventLibraryRepository:
                 raise EventLibraryError("Delta batch ticker does not match Bundle ticker")
             next_version = head + 1
             event_id_map, fact_id_map = self._allocate_ids(connection, ticker, bundle)
-            has_library_changes = bool(bundle.event_revisions or bundle.event_retirements)
+            changed_revisions = []
+            for revision in bundle.event_revisions:
+                # Temporary identities necessarily introduce new content. For
+                # stable IDs compare only the submitted objects, never a library.
+                if revision.event_id in event_id_map or any(f.fact_id in fact_id_map for f in revision.facts):
+                    changed_revisions.append(revision)
+                    continue
+                prior = self._event_from_connection(connection, ticker, _numeric_id(revision.event_id), head)
+                value = revision.published().model_dump(mode="json")
+                old = prior.model_dump(mode="json")
+                value["facts"] = sorted(value["facts"], key=lambda f: f["fact_id"])
+                old["facts"] = sorted(old["facts"], key=lambda f: f["fact_id"])
+                if value != old:
+                    changed_revisions.append(revision)
+            has_library_changes = bool(changed_revisions or bundle.event_retirements)
             published_version = next_version if has_library_changes else head
             if has_library_changes:
                 connection.execute(
@@ -1195,7 +1231,7 @@ class EventLibraryRepository:
                     connection,
                     ticker,
                     next_version,
-                    bundle.event_revisions,
+                    changed_revisions,
                     event_id_map,
                     fact_id_map,
                 )
@@ -1220,6 +1256,10 @@ class EventLibraryRepository:
             )
             if has_library_changes:
                 now = _now()
+                from .admission_evidence import record
+                connection.execute('INSERT OR IGNORE INTO event_publication_clocks VALUES(?,?,?)',(ticker,next_version,now))
+                for row in connection.execute('SELECT fact_no,payload_json FROM canonical_fact_revisions WHERE ticker=? AND library_version=?',(ticker,next_version)):
+                    record(connection,ticker,row['fact_no'],json.loads(row['payload_json']),next_version,now)
                 connection.execute(
                     """
                     UPDATE library_versions SET status=?,published_at=?
@@ -1248,11 +1288,14 @@ class EventLibraryRepository:
                 batch_status=status,
                 event_id_map=event_id_map,
                 fact_id_map=fact_id_map,
-                applied_event_count=len(bundle.event_revisions),
+                applied_event_count=len(changed_revisions),
                 pending_delta_count=counts["pending"],
                 dropped_delta_count=counts["dropped"],
                 duplicate_delta_count=counts["duplicate"],
             )
+            if not counts['pending']:
+                from .lifecycle import enqueue
+                enqueue(connection,bundle.delta_batch_ids,now=datetime.now(UTC))
             for batch_id in bundle.delta_batch_ids:
                 connection.execute(
                     """
@@ -1546,7 +1589,11 @@ class EventLibraryRepository:
                     "INSERT INTO canonical_events(ticker,event_no,created_version) VALUES (?,?,?)",
                     (ticker, event_no, version),
                 )
-            if revision.status is CanonicalObjectStatus.ACTIVE:
+            prior_state = connection.execute(
+                "SELECT status FROM canonical_event_states WHERE ticker=? AND event_no=? ORDER BY library_version DESC LIMIT 1",
+                (ticker, event_no),
+            ).fetchone()
+            if revision.status is CanonicalObjectStatus.ACTIVE and (prior_state is None or prior_state[0] != "ACTIVE"):
                 connection.execute(
                     """
                     INSERT INTO canonical_event_states(
@@ -1567,24 +1614,21 @@ class EventLibraryRepository:
                 event_payload["supersedes_event_id"] = event_map.get(
                     revision.supersedes_event_id, revision.supersedes_event_id
                 )
-            revision_no = self._next_revision_no(
-                connection, "canonical_event_revisions", "event_no", ticker, event_no
-            )
-            connection.execute(
-                """
-                INSERT INTO canonical_event_revisions(
-                    ticker,event_no,revision_no,library_version,payload_json
-                ) VALUES (?,?,?,?,?)
-                """,
-                (ticker, event_no, revision_no, version, _json(event_payload)),
-            )
-            connection.execute(
-                """
-                UPDATE event_fact_memberships SET valid_to_version=?
-                WHERE ticker=? AND event_no=? AND valid_to_version IS NULL
-                """,
-                (version - 1, ticker, event_no),
-            )
+            prior_payload = connection.execute(
+                "SELECT payload_json FROM canonical_event_revisions WHERE ticker=? AND event_no=? ORDER BY revision_no DESC LIMIT 1",
+                (ticker, event_no),
+            ).fetchone()
+            if prior_payload is None or prior_payload[0] != _json(event_payload):
+                revision_no = self._next_revision_no(connection, "canonical_event_revisions", "event_no", ticker, event_no)
+                connection.execute("INSERT INTO canonical_event_revisions VALUES(?,?,?,?,?)",
+                    (ticker, event_no, revision_no, version, _json(event_payload)))
+            existing_members = {r[0] for r in connection.execute(
+                "SELECT fact_no FROM event_fact_memberships WHERE ticker=? AND event_no=? AND valid_to_version IS NULL",
+                (ticker, event_no))}
+            wanted_members = {_numeric_id(fact_map.get(f.fact_id, f.fact_id)) for f in revision.facts} if revision.status is CanonicalObjectStatus.ACTIVE else set()
+            for fact_no in existing_members - wanted_members:
+                connection.execute("UPDATE event_fact_memberships SET valid_to_version=? WHERE ticker=? AND event_no=? AND fact_no=? AND valid_to_version IS NULL",
+                    (version-1, ticker, event_no, fact_no))
             for fact in revision.facts:
                 stable_fact_id = fact_map.get(fact.fact_id, fact.fact_id)
                 fact_no = _numeric_id(stable_fact_id)
@@ -1628,7 +1672,7 @@ class EventLibraryRepository:
                         """,
                         (ticker, fact_no, fact_revision_no, version, _json(fact_payload)),
                     )
-                if revision.status is CanonicalObjectStatus.ACTIVE:
+                if revision.status is CanonicalObjectStatus.ACTIVE and fact_no not in existing_members:
                     connection.execute(
                         """
                         INSERT INTO event_fact_memberships(
@@ -1661,28 +1705,21 @@ class EventLibraryRepository:
         version: int,
         payload: dict[str, Any],
     ) -> None:
-        connection.execute(
-            """
-            UPDATE event_relations SET valid_to_version=?
-            WHERE ticker=? AND source_event_no=? AND valid_to_version IS NULL
-            """,
-            (version - 1, ticker, event_no),
-        )
         relations: list[tuple[str, str]] = []
         relations.extend(("RELATED", item) for item in payload["related_event_ids"])
         relations.extend(("DERIVED_FROM", item) for item in payload["derived_from_event_ids"])
         if payload.get("supersedes_event_id"):
             relations.append(("SUPERSEDES", str(payload["supersedes_event_id"])))
-        for relation_type, target in relations:
-            connection.execute(
-                """
-                INSERT INTO event_relations(
-                    ticker,source_event_no,relation_type,target_event_no,
-                    valid_from_version,valid_to_version
-                ) VALUES (?,?,?,?,?,NULL)
-                """,
-                (ticker, event_no, relation_type, _numeric_id(target), version),
-            )
+        wanted = {(kind, _numeric_id(target)) for kind, target in relations}
+        existing = {tuple(r) for r in connection.execute(
+            "SELECT relation_type,target_event_no FROM event_relations WHERE ticker=? AND source_event_no=? AND valid_to_version IS NULL",
+            (ticker, event_no))}
+        for kind, target in existing - wanted:
+            connection.execute("UPDATE event_relations SET valid_to_version=? WHERE ticker=? AND source_event_no=? AND relation_type=? AND target_event_no=? AND valid_to_version IS NULL",
+                (version-1, ticker, event_no, kind, target))
+        for kind, target in wanted - existing:
+            connection.execute("INSERT INTO event_relations VALUES(?,?,?,?,?,NULL)",
+                (ticker, event_no, kind, target, version))
 
     @staticmethod
     def _write_retirements(

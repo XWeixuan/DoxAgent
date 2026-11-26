@@ -1,6 +1,7 @@
 """Public technology article BODY on its publisher's verified lightweight route."""
 
 import asyncio
+import re
 from datetime import datetime
 from urllib.parse import urlsplit
 
@@ -11,18 +12,26 @@ from doxagent.content_enrichment.quality import choose_candidate, inspect_html, 
 from doxagent.content_enrichment.transport import REVALIDATION, conditional_headers, retry_after
 from doxagent.monitoring.media_enrichment import FetchAttempt, MediaExtractionResult
 
-from .technology_sources import SOURCES, TechnologyHttp
+from .technology_sources import source_specs, TechnologyHttp
 
 
 class TechnologyBodyReader:
     def __init__(self, http=None, *, sources=None):
         self.http = http or TechnologyHttp(purpose="BODY")
-        self.sources = sources if sources is not None else SOURCES
+        self.sources = sources if sources is not None else source_specs()
 
     async def close(self):
         await self.http.close()
 
     async def extract(self, job, record):
+        if job.source.source_id=='fiercebiotech_biotech':
+            from .biopharma_body import fierce_body
+            return await fierce_body(self,self.sources[job.source.source_id],job,record)
+        if job.source.source_id == 'hkex_akeso' or (job.source.source_id=='fda_release'
+                                                   and (urlsplit(record.url).path.lower().endswith('.pdf')
+                                                        or re.fullmatch(r'/media/\d+/download',urlsplit(record.url).path))):
+            from .fintech_body import document_body
+            return await document_body(self.http,self.sources[job.source.source_id],record)
         if job.source.adapter_ref == "builtin:thefly_public@1":
             from .thefly_source import TheFlyBodyReader
 
@@ -30,7 +39,27 @@ class TechnologyBodyReader:
         spec = self.sources[job.source.source_id]
         if not spec.accepts(record.url):
             raise ValueError("technology_body_host_not_approved")
+        if spec.source_id == 'cftc_trading_rules':
+            from .fintech_body import filing_body
+            return await filing_body(self.http,spec,job,record)
+        if spec.source_id=='occ_newsroom' and urlsplit(record.url).path.lower().endswith('.pdf'):
+            from .fintech_body import document_body
+            return await document_body(self.http,spec,record)
+        if (spec.source_id in {'sbcamericas_prediction_markets','unchained_crypto'}
+            and job.message.raw_payload.get('native_article_url') == record.url
+            and job.message.raw_payload.get('native_html')):
+            from html import escape
+            raw='<article><h1>'+escape(job.message.title)+'</h1>'+job.message.raw_payload['native_html']+'</article>'
+            info=await asyncio.to_thread(inspect_html,raw,record.url,job.message.title)
+            candidate,outcome,_=choose_candidate(info,job.message.title)
+            if candidate and outcome in {'FULL','SHORT_FULL'}:
+                return MediaExtractionResult(record=record,content=candidate.text,final_url=record.url,
+                    extraction_method='fintech_native_rss',diagnostics={'outcome':outcome,
+                    'body_source':'publisher_content_encoded','candidate_summary':[candidate.summary()]})
         capture = await self.http.fetch(record.url, spec, headers=conditional_headers(record.url))
+        if capture.status in {403,429} and spec.source_id=='thedefiant_fintech_regulation':
+            # Read-only article POST; paid-access schema still gates acceptance.
+            capture=await self.http.fetch(record.url,spec,method='POST')
         cached = REVALIDATION.get() or {}
         if (
             capture.status == 304
@@ -69,8 +98,16 @@ class TechnologyBodyReader:
                 ],
                 diagnostics={"outcome": "UNAVAILABLE", "body_source": "technology_http"},
             )
+        inspector=inspect_html
+        if spec.source_id=='ash_cullinan':
+            from .biopharma_body import inspect_ash
+            inspector=inspect_ash
+        if spec.source_id in {'rg_prediction_markets','ledgerinsights_news'}:
+            from functools import partial
+            from .fintech_body import inspect_article
+            inspector=partial(inspect_article,spec)
         info = await asyncio.to_thread(
-            inspect_html,
+            inspector,
             capture.text,
             record.url,
             job.message.title,
@@ -83,6 +120,9 @@ class TechnologyBodyReader:
                 ]
             },
         )
+        if ((spec.source_id=='theblock_crypto' and job.message.raw_payload.get('publisher_pro'))
+                or job.message.raw_payload.get('publisher_subscription')):
+            info.subscription_article=True
         # A public session has no paid entitlement; previews retain their access reason.
         if info.subscription_article:
             info.access_reason = "subscription_required"

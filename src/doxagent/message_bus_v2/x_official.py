@@ -12,7 +12,9 @@ API='https://api.x.com/2'
 TAG='doxagent:official:v1'
 ACCOUNTS={'INTC':['intel'],'MU':['MicronTech'],'BE':['Bloom_Energy'],'COHR':['CoherentCorp'],
  'NBIS':['nebiusai'],'CEG':['ConstellationEG'],'RKLB':['RocketLab'],'SNOW':['Snowflake'],
- 'ONDS':['OndasHoldings'],'IONQ':['IonQ_Inc']}
+ 'ONDS':['OndasHoldings'],'IONQ':['IonQ_Inc'],'COIN':['faryarshirzad','coinbase'],
+ 'XENE':['XenonPharma'],'RGNX':['REGENXBIO'],'PRAX':['praxismedicines'],
+ 'CGEM':['CullinanTx'],'SMMT':['SMMT_TX']}
 
 
 def initial_source():

@@ -877,6 +877,11 @@ class SQLiteCodexRuntimeRepository:
         if row is None:
             return None
         value = json.loads(row['payload_json'])
+        from doxagent.workflows.codex_document3.semantic_exports import PREFIX
+        if (value.get('storage_path') or '').startswith(PREFIX):
+            raw=load_published_body(Path(self.path).parent,value)
+            import hashlib
+            value.update(content_text=raw.decode('utf-8'),storage_path=None,sha256=hashlib.sha256(raw).hexdigest(),size_bytes=len(raw))
         if value.get('local_content_codec') is not None:
             value['content_text'] = load_published_body(Path(self.path).parent, value).decode('utf-8')
             value.pop('local_content_codec')

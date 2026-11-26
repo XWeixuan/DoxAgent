@@ -38,17 +38,21 @@ def _stage_page(store, window, work, page):
         ))
 
 
-def _retire_hour(store, cutoff, archive_floor, deferred):
+def _retire_hour(store, cutoff, archive_floor, deferred, *, failure_cutoff=None):
+    failure_cutoff=failure_cutoff or cutoff
     with store.connect() as db:
         deadline = time.monotonic() + .5
         db.set_progress_handler(lambda: time.monotonic() >= deadline, 1000)
-        first = db.execute(
-            "SELECT binding_id,unit,dispatch_at FROM cycles WHERE dispatch_at<? AND " + _TERMINAL +
-            " AND NOT EXISTS (SELECT 1 FROM json_each(?) d WHERE "
+        not_deferred=(" AND NOT EXISTS (SELECT 1 FROM json_each(?) d WHERE "
             "binding_id=json_extract(d.value,'$[0]') AND unit=json_extract(d.value,'$[1]') "
-            "AND substr(dispatch_at,1,13)=json_extract(d.value,'$[2]')) "
-            "ORDER BY dispatch_at LIMIT 1", (cutoff, canonical_json(sorted(deferred))),
-        ).fetchone()
+            "AND substr(dispatch_at,1,13)=json_extract(d.value,'$[2]')) ")
+        firsts=[]
+        # Separate indexed seeks avoid repeatedly scanning young failures.
+        for status,before in [("status='CAPTURED'",cutoff),("status!='CAPTURED'",failure_cutoff)]:
+            first=db.execute('SELECT binding_id,unit,dispatch_at FROM cycles WHERE dispatch_at<? AND '+status+' AND '+_TERMINAL+
+                not_deferred+'ORDER BY dispatch_at LIMIT 1',(before,canonical_json(sorted(deferred)))).fetchone()
+            if first:firsts.append(first)
+        first=min(firsts,key=lambda row:row[2]) if firsts else None
         if not first:
             return None
         binding, unit, at = first
@@ -66,7 +70,7 @@ def _retire_hour(store, cutoff, archive_floor, deferred):
         archive = None
         if end.isoformat() <= archive_floor:
             # Past the summary window, raw terminal proof needs no new rollup.
-            rows = _exit_rows(db, window)
+            rows = _exit_rows(db, window, failure_cutoff=failure_cutoff)
         elif known := db.execute(
             'SELECT data_json FROM unit_hours WHERE binding_id=? AND unit=? AND hour=?',
             window[:3],
@@ -74,7 +78,7 @@ def _retire_hour(store, cutoff, archive_floor, deferred):
             seal = json.loads(known[0]).get('_archive_seal')
             if seal is None:
                 return defer('legacy_archive')
-            rows = _exit_rows(db, window, seal=seal)
+            rows = _exit_rows(db, window, seal=seal, failure_cutoff=failure_cutoff)
             if not rows:
                 return defer('late_finish')
         elif _inflight(db, window):
@@ -104,7 +108,8 @@ def _retire_hour(store, cutoff, archive_floor, deferred):
             if not samples:
                 return defer('source_changed')
             archive, seal = _hour_stats(db, window, start, end, samples)
-            rows = [(r['run_id'], r['archive_rowid'], r['finished_at']) for r in samples[:512]]
+            rows = [(r['run_id'], r['archive_rowid'], r['finished_at']) for r in samples
+                    if r['status']=='CAPTURED' or r['dispatch_at']<failure_cutoff][:512]
 
     with store.connect(write=True) as db:
         if archive is not None:
@@ -126,11 +131,12 @@ def _retire_hour(store, cutoff, archive_floor, deferred):
     return {**report, 'cycles': deleted}
 
 
-def _exit_rows(db, window, *, seal=None):
+def _exit_rows(db, window, *, seal=None, failure_cutoff=None):
     age = " AND rowid<=? AND coalesce(finished_at,'')<=?" if seal is not None else ''
     return db.execute(
         'SELECT run_id,rowid,finished_at FROM cycles WHERE ' + _WINDOW + ' AND ' + _TERMINAL +
-        age + ' LIMIT 512', (*window, *seal[1:]) if seal is not None else window,
+        age + (" AND (status='CAPTURED' OR dispatch_at<?)" if failure_cutoff else '') + ' LIMIT 512',
+        (*( (*window,*seal[1:]) if seal is not None else window),*([failure_cutoff] if failure_cutoff else [])),
     ).fetchall()
 
 
@@ -223,7 +229,7 @@ def _small(store, now, cutoff):
             ('captures', "DELETE FROM captures WHERE capture_id IN (SELECT capture_id FROM captures "
              "WHERE observed_at<? AND status='ACCEPTED' ORDER BY observed_at LIMIT 128)", (cutoff,)),
             ('inputs', 'DELETE FROM inputs WHERE input_key IN (SELECT input_key FROM inputs '
-             'WHERE observed_at<? ORDER BY observed_at LIMIT 512)', (cutoff,)),
+             'WHERE observed_at<? ORDER BY observed_at LIMIT 512)', ((now-timedelta(hours=48)).isoformat(),)),
             ('unit_hours', 'DELETE FROM unit_hours WHERE rowid IN (SELECT rowid FROM unit_hours '
              'WHERE hour<? ORDER BY hour LIMIT 64)', ((now-timedelta(days=7)).isoformat(),)),
         ):
@@ -272,7 +278,8 @@ def _checkpoints(store):
 
 def maintain(store, *, budget=2, hours=128):
     now = utc_now()
-    cutoff = (now-timedelta(hours=48)).replace(minute=0, second=0, microsecond=0).isoformat()
+    cutoff = (now-timedelta(hours=2)).replace(minute=0, second=0, microsecond=0).isoformat()
+    failure_cutoff=(now-timedelta(hours=72)).replace(minute=0,second=0,microsecond=0).isoformat()
     archive_floor = (now-timedelta(days=7)).isoformat()
     deadline = time.monotonic()+budget
     report = {'at': now.isoformat(), 'hours': [], 'errors': [], 'stages': {}}
@@ -281,7 +288,7 @@ def maintain(store, *, budget=2, hours=128):
         for _ in range(hours):
             if time.monotonic() >= deadline:
                 break
-            result = _retire_hour(store, cutoff, archive_floor, deferred)
+            result = _retire_hour(store, cutoff, archive_floor, deferred,failure_cutoff=failure_cutoff)
             if result is None:
                 break
             report['hours'].append(result)

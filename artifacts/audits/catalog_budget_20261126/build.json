@@ -1,0 +1,8 @@
+{
+  "commit": "379a0eb65",
+  "role": "v2-api",
+  "baseline": "sha256:acb8277f958f06ecd0d48aea591b4a656e3ef1a32ea74bd98e45ed46e76ead98",
+  "image": "sha256:1e10473f02792d538d241633355a7f23dadff82d9304af5b31a224486caff277",
+  "source": "src/doxagent/api_v2/app.py",
+  "sha256": "930a81d88f93780fd1536b55e4f59550a46413e7e2a244b7f091a6591f6f9bef"
+}

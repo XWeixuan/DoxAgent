@@ -31,6 +31,8 @@ class JobStore:
                     PRIMARY KEY(job_id, sequence));
                 CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT);
             """)
+            from .local_sessions import migrate
+            migrate(db)
             if db.execute("SELECT 1 FROM metadata WHERE key='legacy_imported'").fetchone() is None:
                 # One record at a time, never retain all historical telemetry in RAM.
                 for path in root.glob("*/audit/jobs/*.json"):
@@ -81,6 +83,10 @@ class JobStore:
         request_payload = request.model_dump_json() if request else None
         with closing(self.connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
+            from .local_sessions import observe_external_thread, prepare, process_job
+            observe_external_thread(db, job, request)
+            if process_job(job):
+                prepare(db,job,request)
             if request is not None and request.task_phase in {
                 "trade_decision", "post_decision_operations"
             } and db.execute(
@@ -177,7 +183,10 @@ class JobStore:
         if not path.is_file() or not all(
             isinstance(part, str) and re.fullmatch(r'[A-Za-z0-9_-]+', part)
             for part in (run, attempt, job_id)
-        ) or not run.startswith('runtime-maintain-'):
+        ):
+            return False
+        from doxagent.codex_runtime.schema import CodexD3Node
+        if not run.startswith('runtime-maintain-') and request.get('node') not in {n.value for n in CodexD3Node}:
             return False
         audit = root / run / 'audit' / 'jobs' / (job_id + '.json')
         trace = root / run / 'attempts' / attempt / 'audit' / 'agent_loop.jsonl'
@@ -209,6 +218,10 @@ class JobStore:
             if payload != row[1] or compact != row[2]:
                 db.execute('UPDATE jobs SET payload=?,request=? WHERE id=?', (payload, compact, job_id))
             db.execute('DELETE FROM events WHERE job_id=?', (job_id,))
+            from .local_sessions import consumed
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='worker_process_threads'").fetchone():
+                from datetime import UTC, datetime
+                consumed(db,job_id,datetime.now(UTC).isoformat())
         if audit.is_file() and audit.read_bytes() != payload.encode():
             from doxagent.v2_read.maintenance import atomic_json
 

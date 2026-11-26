@@ -1,0 +1,62 @@
+<article class="clearfix node node--nir-news--nir-widget-list node--type-nir-news node--view-mode-nir-widget-list node--promoted nir-widget-article llf-border" data-title="New Drug Application Submission Completed for Zipalertinib Plus Chemotherapy in First-Line EGFR Exon 20 Insertion Mutation Non-Small Cell Lung Cancer">
+  <div class="llf-container-fluid-full">
+    <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
+
+
+      <div class="llf-col-md-12 llf-px-0 lfg-details ">
+
+              <div class="nir-widget--field nir-widget--news--date-time" data-label="Date">
+          November 12, 2026
+        </div>
+
+        <div class="nir-widget--field" data-label="Title">
+
+                      <div class="nir-widget--field nir-widget--news--headline">
+                                                        <a href="/news-releases/news-release-details/new-drug-application-submission-completed-zipalertinib-plus" hreflang="en">New Drug Application Submission Completed for Zipalertinib Plus Chemotherapy in First-Line EGFR Exon 20 Insertion Mutation Non-Small Cell Lung Cancer</a>
+                                              </div>
+
+
+        </div>
+
+
+
+
+
+
+
+      </div>
+    </div>
+  </div>
+</article>
+
+
+<article class="clearfix node node--nir-news--nir-widget-list node--type-nir-news node--view-mode-nir-widget-list node--promoted nir-widget-article llf-border" data-title="Cullinan Therapeutics Provides Corporate Update and Reports Third Quarter 2026 Financial Results">
+  <div class="llf-container-fluid-full">
+    <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
+
+
+      <div class="llf-col-md-12 llf-px-0 lfg-details ">
+
+              <div class="nir-widget--field nir-widget--news--date-time" data-label="Date">
+          November 10, 2026
+        </div>
+
+        <div class="nir-widget--field" data-label="Title">
+
+                      <div class="nir-widget--field nir-widget--news--headline">
+                                                        <a href="/news-releases/news-release-details/cullinan-therapeutics-provides-corporate-update-and-reports-9" hreflang="en">Cullinan Therapeutics Provides Corporate Update and Reports Third Quarter 2026 Financial Results</a>
+                                              </div>
+
+
+        </div>
+
+
+
+
+
+
+
+      </div>
+    </div>
+  </div>
+</article>

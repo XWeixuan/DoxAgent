@@ -18,6 +18,7 @@ import {
   Timer,
   Users,
   ArrowDown,
+  Download,
 } from "lucide-react";
 import type {
   GlobalSourceCard,
@@ -93,6 +94,243 @@ const seconds = (v: number | null) =>
     ? "—"
     : `${v.toLocaleString("zh-CN", { maximumFractionDigits: 2 })}s`;
 const sampleNote = "滚动24h全量有效样本 · 同源文章去重";
+const statusOptions: [string, string][] = [
+  ["ALL", "全部状态"],
+  ["NORMAL", "正常"],
+  ["FAILED", "失败"],
+];
+
+export function catalogCardStatus(s: GlobalSourceCard) {
+  if (!s.enabled) return "已停用";
+  if (!s.subscriptions.length) return "未订阅";
+  const pc = s.poll_counts;
+  if (!pc || !(pc.succeeded + pc.partial + pc.failed)) return "暂无记录";
+  if (pc.partial || (pc.succeeded && (pc.failed || pc.unknown)))
+    return "部分成功";
+  return pc.succeeded ? "成功" : "失败";
+}
+
+function catalogStateSummary(counts: GlobalSourceCard["state_counts"]) {
+  return [
+    ["运行", counts.running],
+    ["休眠", counts.sleeping],
+    ["异常", counts.abnormal],
+    ["禁用", counts.disabled],
+    ["未知", counts.unknown],
+  ]
+    .filter(([, n]) => Number(n) > 0)
+    .map(([name, n]) => `${name}${n}`)
+    .join(" ");
+}
+
+function catalogInterval(intervals: number[]) {
+  return intervals.length > 1
+    ? `${intervals[0]}–${intervals.at(-1)}s`
+    : intervals.length
+      ? `${intervals[0]}s`
+      : "—";
+}
+
+function catalogIndustryNames(
+  s: GlobalSourceCard,
+  sectors: SourceCatalog["sectors"],
+) {
+  return (
+    s.classification?.sector_ids.map(
+      (id) => sectors.find((v) => v.id === id)?.name ?? id,
+    ) ?? []
+  );
+}
+
+function catalogHistoricalNotes(m: GlobalSourceCard["metrics"]) {
+  return [
+    !m.e2e_samples && m.last_historical
+      ? `最近历史发布：${seconds(m.last_historical.e2e_seconds)} · ${formatInstant(m.last_historical.at)}`
+      : null,
+    !m.body_total && m.last_historical_body
+      ? `历史正文：${m.last_historical_body.full ? "完整" : "未完整"} · ${formatInstant(m.last_historical_body.at)}`
+      : null,
+    !m.first_body_samples && m.last_historical_first_body
+      ? `历史首次BODY：${seconds(m.last_historical_first_body.seconds)} · ${formatInstant(m.last_historical_first_body.at)}`
+      : null,
+  ].filter((note): note is string => note !== null);
+}
+
+// Project the same card presentation used below, rather than exporting the API
+// payload (which also contains internal IDs and non-displayed evidence).
+export function catalogExport(
+  data: SourceCatalog,
+  groups: { name: string; sources: GlobalSourceCard[] }[],
+  p: URLSearchParams,
+) {
+  const methods = (value: SourceMethods | undefined) =>
+    value
+      ? {
+          primary: value.primary.map((m) => methodNames[m]),
+          fallback: value.fallback.map((m) => methodNames[m]),
+        }
+      : "未标注";
+  return {
+    snapshot_at: data.snapshot_at,
+    displayed_source_count: groups.reduce((n, g) => n + g.sources.length, 0),
+    total_source_count: data.sources.length,
+    filters: {
+      search: p.get("q") ?? "",
+      status: statusOptions.find(
+        ([v]) => v === (p.get("status") ?? "ALL"),
+      )?.[1],
+      stage:
+        p.get("stage") === "listing"
+          ? "列表抓取"
+          : p.get("stage") === "body"
+            ? "正文补全"
+            : "任一阶段",
+      methods: p.getAll("method").map((m) => methodNames[m as SourceMethod]),
+      distribution: p.getAll("distribution").map(modeName),
+      sectors: p
+        .getAll("sector")
+        .map((id) => data.sectors.find((s) => s.id === id)?.name ?? id),
+      scope:
+        p.get("scope") === "GLOBAL"
+          ? "全局通用"
+          : p.get("scope") === "INDUSTRY"
+            ? "行业专用"
+            : "全部适用属性",
+      include_fallback: p.get("fallback") === "1",
+    },
+    groups: groups.map((g) => ({
+      name: g.name,
+      sources: g.sources.map((s) => ({
+        name: s.name,
+        ...(s.short_name && s.short_name !== s.name
+          ? { short_name: s.short_name }
+          : {}),
+        description: s.description,
+        status: catalogCardStatus(s),
+        target_interval: catalogInterval(s.configured_intervals_seconds),
+        target_intervals_seconds: s.configured_intervals_seconds,
+        subscription_status: catalogStateSummary(s.state_counts),
+        entry_points: s.entry_points.map(({ label, url, ticker }) => ({
+          label,
+          url,
+          ...(ticker ? { ticker } : {}),
+        })),
+        listing: methods(s.classification?.listing),
+        body: methods(s.classification?.body),
+        subscriptions: s.subscriptions.map(({ ticker, enabled }) => ({
+          ticker,
+          enabled,
+        })),
+        metrics: catalogMetrics(s.metrics).map(([name, value, note]) => ({
+          name,
+          value,
+          note,
+        })),
+        historical_notes: catalogHistoricalNotes(s.metrics),
+        distribution: modeName(s.acquisition_mode),
+        applicability:
+          s.classification?.applicability === "GLOBAL"
+            ? "GLOBAL · 全局通用"
+            : catalogIndustryNames(s, data.sectors).join(" / ") || "未标注",
+        errors: s.errors.map(({ ticker, code, message }) => ({
+          ticker,
+          code,
+          message,
+        })),
+      })),
+    })),
+  };
+}
+
+function downloadCatalog(result: ReturnType<typeof catalogExport>) {
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(result, null, 2) + "\n"], {
+      type: "application/json;charset=utf-8",
+    }),
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `doxagent-source-catalog-${result.snapshot_at.replace(/[:.]/g, "-")}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function catalogMetrics(m: GlobalSourceCard["metrics"]) {
+  return [
+    [
+      "最近成功",
+      valueText(m.last_success_at, formatInstant),
+      "最近任一订阅成功，不代表全部订阅正常",
+    ],
+    [
+      "当天新增",
+      valueText(m.published_today),
+      "全部Ticker正式发布条目，同一文章分发多个Ticker分别计数",
+    ],
+    [
+      "实时首发端到端",
+      m.mean_e2e_seconds == null
+        ? "暂无近期数据"
+        : `${seconds(m.mean_e2e_seconds)} · ${m.e2e_samples}篇`,
+      `${sampleNote} · ${m.e2e_samples}篇${m.last_historical && !m.e2e_samples ? `；历史 ${seconds(m.last_historical.e2e_seconds)} · ${formatInstant(m.last_historical.at)}` : ""}`,
+    ],
+    [
+      "真实抓取延时",
+      m.mean_capture_seconds == null
+        ? "暂无近期数据"
+        : seconds(m.mean_capture_seconds),
+      `原文发布时间至Bus发布 · ${m.capture_samples}条有效消息`,
+    ],
+    [
+      "实时首发P95",
+      m.p95_e2e_seconds == null ? "暂无近期数据" : seconds(m.p95_e2e_seconds),
+      `${m.e2e_samples}条消息的P95`,
+    ],
+    [
+      "实际刷新间隔",
+      m.refresh_seconds == null ? "暂无近期数据" : seconds(m.refresh_seconds),
+      `滚动24h逻辑轮次 · ${m.refresh_samples}个间隔`,
+    ],
+    [
+      "首次BODY耗时",
+      m.mean_first_body_seconds == null
+        ? "暂无近期数据 · 0篇"
+        : `${seconds(m.mean_first_body_seconds)} · ${m.first_body_samples ?? 0}篇`,
+      `滚动24h首次完成 · ${m.first_body_samples ?? 0}篇`,
+    ],
+    [
+      "轮询成功率",
+      m.poll_expected
+        ? `${(((m.poll_succeeded ?? 0) / m.poll_expected) * 100).toFixed(1)}%`
+        : "暂无近期数据",
+      `${m.poll_succeeded ?? 0} / ${m.poll_expected ?? 0}轮 · 滚动24h`,
+    ],
+    [
+      "正文补全成功率",
+      !m.body_applicable
+        ? "不适用"
+        : m.body_ratio == null
+          ? "暂无近期数据"
+          : `${(m.body_ratio * 100).toFixed(1)}% · ${m.body_full}/${m.body_total}篇`,
+      `滚动24h全量 · 同源文章去重 · 完整 ${m.body_full} / ${m.body_total}篇`,
+    ],
+    ...(
+      [
+        ["content_update", "内容更新首发"],
+        ["capability_resume", "能力恢复首发"],
+        ["legacy_recovery", "旧恢复/更新未分类"],
+      ] as const
+    )
+      .filter(([key]) => (m.publication_classes?.[key]?.samples ?? 0) > 0)
+      .map(([key, label]) => [
+        label,
+        `${seconds(m.publication_classes?.[key]?.mean_seconds ?? null)} · ${m.publication_classes?.[key]?.samples ?? 0}篇`,
+        "独立统计，不混入实时首发均值",
+      ]),
+  ];
+}
 
 function MultiFilter({
   label,
@@ -182,6 +420,11 @@ export function catalogMatches(source: GlobalSourceCard, p: URLSearchParams) {
   const c = source.classification,
     scope = p.get("scope"),
     q = (p.get("q") ?? "").trim().toLocaleLowerCase();
+  const status = p.get("status"),
+    cardStatus = catalogCardStatus(source);
+  if (status === "NORMAL" && cardStatus !== "成功") return false;
+  if (status === "FAILED" && cardStatus !== "失败" && cardStatus !== "部分成功")
+    return false;
   if (scope && scope !== "ALL" && c?.applicability !== scope) return false;
   const sectors = p.getAll("sector"),
     distribution = p.getAll("distribution"),
@@ -231,7 +474,11 @@ export default function SourceCatalogPage() {
   const query = useQuery({
     queryKey: [scope, "source-catalog"],
     queryFn: ({ signal }) =>
-      api.request("SourceCatalog", `/message-bus/source-catalog?refresh=${Date.now()}`, { signal }),
+      api.request(
+        "SourceCatalog",
+        `/message-bus/source-catalog?refresh=${Date.now()}`,
+        { signal },
+      ),
     gcTime: 0,
     staleTime: Infinity,
     retry: false,
@@ -337,6 +584,17 @@ export function CatalogView({
             <RefreshCw data-icon="inline-start" />
             {busy ? "读取中…" : "刷新"}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy || !data || groups.length === 0}
+            onClick={() =>
+              data && downloadCatalog(catalogExport(data, groups, p))
+            }
+          >
+            <Download data-icon="inline-start" />
+            导出
+          </Button>
         </div>
       </div>
       {from?.startsWith("/ticker/") && (
@@ -358,6 +616,12 @@ export function CatalogView({
             onChange={(e) => set("q", e.target.value ? [e.target.value] : [])}
           />
         </Field>
+        <SingleFilter
+          label="状态"
+          value={p.get("status") ?? "ALL"}
+          options={statusOptions}
+          change={(v) => set("status", v === "ALL" ? [] : [v])}
+        />
         <SingleFilter
           label="抓取阶段"
           value={p.get("stage") ?? "ALL"}
@@ -516,94 +780,19 @@ function DirectoryCard({
 }) {
   const [allSubscriptions, setAllSubscriptions] = useState(false);
   const c = s.classification,
-    m = s.metrics,
-    counts = s.state_counts;
-  const pc = s.poll_counts;
-  const outcome =
-    !pc || !(pc.succeeded + pc.partial + pc.failed)
-      ? "暂无记录"
-      : pc.partial || (pc.succeeded && (pc.failed || pc.unknown))
-        ? "部分成功"
-        : pc.succeeded
-          ? "成功"
-          : "失败";
-  const state = !s.enabled
-    ? "已停用"
-    : !s.subscriptions.length
-      ? "未订阅"
-      : outcome;
-  const stateSummary = [
-    ["运行", counts.running],
-    ["休眠", counts.sleeping],
-    ["异常", counts.abnormal],
-    ["禁用", counts.disabled],
-    ["未知", counts.unknown],
-  ]
-    .filter(([, n]) => Number(n) > 0)
-    .map(([name, n]) => `${name}${n}`)
-    .join(" ");
+    m = s.metrics;
+  const state = catalogCardStatus(s);
+  const stateSummary = catalogStateSummary(s.state_counts);
   const intervals = s.configured_intervals_seconds;
-  const intervalText =
-    intervals.length > 1
-      ? `${intervals[0]}–${intervals.at(-1)}s`
-      : intervals.length
-        ? `${intervals[0]}s`
-        : "—";
+  const intervalText = catalogInterval(intervals);
   const StatusIcon =
     state === "成功"
       ? CheckCircle2
       : state === "失败" || state === "部分成功"
         ? CircleAlert
         : CircleDashed;
-  const industryNames =
-    c?.sector_ids.map((id) => sectors.find((v) => v.id === id)?.name ?? id) ??
-    [];
-  const metrics = [
-    [
-      "最近成功",
-      valueText(m.last_success_at, formatInstant),
-      "最近任一订阅成功，不代表全部订阅正常",
-    ],
-    [
-      "当天新增",
-      valueText(m.published_today),
-      "全部Ticker正式发布条目，同一文章分发多个Ticker分别计数",
-    ],
-    [
-      "实时首发端到端",
-      m.mean_e2e_seconds == null ? "暂无近期数据" : `${seconds(m.mean_e2e_seconds)} · ${m.e2e_samples}篇`,
-      `${sampleNote} · ${m.e2e_samples}篇${m.last_historical && !m.e2e_samples ? `；历史 ${seconds(m.last_historical.e2e_seconds)} · ${formatInstant(m.last_historical.at)}` : ""}`,
-    ],
-    [
-      "真实抓取延时",
-      m.mean_capture_seconds == null ? "暂无近期数据" : seconds(m.mean_capture_seconds),
-      `原文发布时间至Bus发布 · ${m.capture_samples}条有效消息`,
-    ],
-    [
-      "实时首发P95",
-      m.p95_e2e_seconds == null ? "暂无近期数据" : seconds(m.p95_e2e_seconds),
-      `${m.e2e_samples}条消息的P95`,
-    ],
-    [
-      "实际刷新间隔",
-      m.refresh_seconds == null ? "暂无近期数据" : seconds(m.refresh_seconds),
-      `滚动24h逻辑轮次 · ${m.refresh_samples}个间隔`,
-    ],
-    ["首次BODY耗时", m.mean_first_body_seconds == null ? "暂无近期数据 · 0篇" : `${seconds(m.mean_first_body_seconds)} · ${m.first_body_samples ?? 0}篇`, `滚动24h首次完成 · ${m.first_body_samples ?? 0}篇`],
-    ["轮询成功率", m.poll_expected ? `${(((m.poll_succeeded ?? 0) / m.poll_expected) * 100).toFixed(1)}%` : "暂无近期数据", `${m.poll_succeeded ?? 0} / ${m.poll_expected ?? 0}轮 · 滚动24h`],
-    [
-      "正文补全成功率",
-      !m.body_applicable
-        ? "不适用"
-        : m.body_ratio == null
-          ? "暂无近期数据"
-          : `${(m.body_ratio * 100).toFixed(1)}% · ${m.body_full}/${m.body_total}篇`,
-      `滚动24h全量 · 同源文章去重 · 完整 ${m.body_full} / ${m.body_total}篇`,
-    ],
-    ...([['content_update','内容更新首发'],['capability_resume','能力恢复首发'],['legacy_recovery','旧恢复/更新未分类']] as const)
-      .filter(([key]) => (m.publication_classes?.[key]?.samples ?? 0) > 0)
-      .map(([key,label]) => [label, `${seconds(m.publication_classes?.[key]?.mean_seconds ?? null)} · ${m.publication_classes?.[key]?.samples ?? 0}篇`, '独立统计，不混入实时首发均值']),
-  ];
+  const industryNames = catalogIndustryNames(s, sectors);
+  const metrics = catalogMetrics(m);
   const entry = (e: GlobalSourceCard["entry_points"][number], i: number) => (
     <span key={`${e.url}-${i}`}>
       {e.ticker && <b>{e.ticker} </b>}
@@ -731,9 +920,11 @@ function DirectoryCard({
             </div>
           ))}
         </dl>
-        {!m.e2e_samples && m.last_historical && <p className="text-muted-foreground">最近历史发布：{seconds(m.last_historical.e2e_seconds)} · {formatInstant(m.last_historical.at)}</p>}
-        {!m.body_total && m.last_historical_body && <p className="text-muted-foreground">历史正文：{m.last_historical_body.full ? '完整' : '未完整'} · {formatInstant(m.last_historical_body.at)}</p>}
-        {!m.first_body_samples && m.last_historical_first_body && <p className="text-muted-foreground">历史首次BODY：{seconds(m.last_historical_first_body.seconds)} · {formatInstant(m.last_historical_first_body.at)}</p>}
+        {catalogHistoricalNotes(m).map((note) => (
+          <p key={note} className="text-muted-foreground">
+            {note}
+          </p>
+        ))}
         <div className="catalog-classification">
           <div>
             <Network aria-hidden="true" />

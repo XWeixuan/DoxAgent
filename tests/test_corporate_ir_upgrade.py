@@ -26,7 +26,7 @@ def test_upgrade_preserves_every_existing_cadence_and_is_idempotent(tmp_path):
     live.repository.install()
     before = {b.binding_id: b.polling for b in repo.list_bindings(source_id=SOURCE_ID)}
     result = upgrade(bus)
-    assert result['endpoint_count'] == 13 and len(result['bindings']) == 10
+    assert result['endpoint_count'] == len(endpoints) + 1 and len(result['bindings']) == 10
     assert repo.get_binding('IONQ:'+SOURCE_ID).polling.target_interval_seconds == 20
     assert all(repo.get_binding(k).polling == v for k,v in before.items())
     version = repo.get_source(SOURCE_ID).version

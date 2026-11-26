@@ -49,6 +49,10 @@ def maintenance_fixture(tmp_path):
     from tests.fixtures.codex_document3 import _policy_set
     SQLiteDocument3PolicyRepository(settings.codex_runtime_sqlite_path).publish(_policy_set(), expected_base_version=None)
     control = InitializationRepository(settings.ticker_initialization_control_path)
+    # This legacy fixture exercises actual O3 failure/recovery. Production and
+    # new governance tests keep the default OFF.
+    with control._write() as db:
+        db.execute("UPDATE maintenance_control SET enabled=1 WHERE id=1")
     control.submit("MU", now[0], [NodeSpec(key="activation", block="ACTIVATION")])
     lease = control.claim("test")
     control.stage_revision(

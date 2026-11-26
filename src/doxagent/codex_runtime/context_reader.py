@@ -57,7 +57,19 @@ def main():
             paths = next(h["pages"] for h in entry["sections"] if h["id"] == args.section)
     if not 1 <= args.page <= len(paths):
         raise ValueError(f"Page must be between 1 and {len(paths)}")
-    content = read(paths[args.page - 1])
+    if args.command == 'read' and entry.get('source_path'):
+        workspace = base
+        for _ in range(index['workspace_up']):
+            workspace = workspace.parent
+        target = (workspace / entry['source_path']).resolve()
+        if not target.is_relative_to(workspace):
+            raise ValueError('Source escapes workspace')
+        start, end = paths[args.page - 1]
+        with target.open('rb') as stream:
+            stream.seek(start)
+            content = stream.read(end-start).decode('utf-8')
+    else:
+        content = read(paths[args.page - 1])
     if args.command == "list":
         value = json.loads(content)
     else:

@@ -41,6 +41,18 @@ def fixture_source(tmp_path):
     return s
 
 
+def test_unindexed_expiry_revisits_rows_passed_while_young(tmp_path):
+    s = fixture_source(tmp_path)
+    now = datetime.now(UTC)
+    with closing(s.connection(write=True)) as db, db:
+        db.execute('DROP INDEX IF EXISTS v2_source_outbox_expiry')
+        db.execute('UPDATE v2_source_outbox SET recorded_at=?', (now.isoformat(),))
+    s.acknowledge_exceptions('live', 6, [])
+    assert expire(s, now=now)['expired'] == 0
+    assert expire(s, now=now+timedelta(minutes=1))['scanned'] == 0
+    assert expire(s, now=now+timedelta(days=3))['expired'] == 6
+
+
 def test_expiry_crosses_one_repair_without_losing_its_packet_or_current(tmp_path):
     s=fixture_source(tmp_path);before=s.event(2)
     s.acknowledge('live',6,repair_pin=2)
@@ -163,19 +175,20 @@ def test_small_native_codec_and_48h_hot_exit_share_existing_reference_guards(tmp
     assert gc.collect(source, now=now+timedelta(days=9))['quarantined'] == 1
     with closing(source.connection(write=True)) as db, db:
         db.execute('UPDATE v2_native_exit SET not_before=0 WHERE id=?', (digest,))
-    remove = gc.shutil.rmtree
+    from doxagent.v2_read import detached_files
+    remove = detached_files.unlink_page
 
-    def interrupted(path):
+    def interrupted(path,**kwargs):
         with closing(source.connection(write=True)) as db, db:
             db.execute('PRAGMA busy_timeout=0')
             db.execute('BEGIN IMMEDIATE')
             assert db.execute('SELECT state FROM artifact WHERE id=?', (digest,)).fetchone()[0] == 'DELETING'
         raise OSError('interrupted after claim')
 
-    monkeypatch.setattr(gc.shutil, 'rmtree', interrupted)
+    monkeypatch.setattr(detached_files, 'unlink_page', interrupted)
     with pytest.raises(OSError, match='interrupted after claim'):
         gc.collect(source)
-    monkeypatch.setattr(gc.shutil, 'rmtree', remove)
+    monkeypatch.setattr(detached_files, 'unlink_page', remove)
     assert source.content.encode({'value': value}) == encoded
     with pytest.raises(sqlite3.IntegrityError, match='ARTIFACT_RECLAIM_IN_PROGRESS'):
         with closing(source.connection(write=True)) as db, db:

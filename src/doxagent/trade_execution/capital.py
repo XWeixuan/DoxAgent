@@ -185,6 +185,9 @@ class CapitalLedger:
         queues = {}
         realized, cash, cash_debits = ZERO, principal + offset, ZERO
         fills = self.repo._effective_fills(db, account)
+        from .manual_finance import closes
+
+        fills += list(closes(db, account))
         attempts = {
             r["id"]: json.loads(r["payload"])
             for r in db.execute("SELECT id,payload FROM te_attempts WHERE account=?", (account,))
@@ -203,6 +206,10 @@ class CapitalLedger:
         }
         attempt_totals = {}
         for fill in fills:
+            if fill.get("manual_financial"):
+                fees[account + ":" + fill["exec_id"]] = dict(
+                    commission=fill["commission"], currency="USD"
+                )
             attempt_totals[fill["attempt_id"]] = attempt_totals.get(
                 fill["attempt_id"], ZERO
             ) + decimal(fill["quantity"])
@@ -213,8 +220,12 @@ class CapitalLedger:
             qty, price = decimal(fill["quantity"]), decimal(fill["price"])
             if not qty:
                 continue
-            job = jobs[attempts[fill["attempt_id"]]["job_id"]]
-            leg = job.get("leg_id", job["execution_id"])
+            job = (
+                dict(leg_id=fill["lot_id"], leg="EXIT")
+                if fill.get("manual_financial")
+                else jobs[attempts[fill["attempt_id"]]["job_id"]]
+            )
+            leg = job["leg_id"] if "leg_id" in job else job["execution_id"]
             queue = queues.setdefault(leg, deque())
             sign = 1 if fill["side"] == "BUY" else -1
             live = fill["time"] >= inception
@@ -336,14 +347,15 @@ class CapitalLedger:
         groups = self.groups(db, account, execution["id"])
         locked = sum((decimal(g["budget_usd"]) for g in groups), ZERO)
         own = sum((decimal(g["budget_usd"]) for g in groups if g["ticker"] == ticker), ZERO)
-        limit = get(db, "execution_account_limits", account, {}).get("max_concurrent_tickers")
-        if limit is None and profile.account_type == "CASH":
-            limit = 2  # Compatibility for already-pinned CASH profiles.
+        limit = self.ticker_limit(db, execution)
         active = {g["ticker"] for g in groups}
-        if limit is not None and ticker not in active and len(active) >= limit:
+        if ticker not in active and len(active) >= limit:
             return ZERO
         if profile.account_type == "MARGIN":
-            return max(ZERO, min(equity - own, equity * Decimal("1.5") - locked))
+            # Quote/WhatIf can straddle a capital change or fee receipt. Reuse
+            # our book inside this atomic grant, never a second broker request.
+            equity = min(equity, self.equity(account, "MARGIN", db=db))
+            return max(ZERO, min(equity / limit - own, equity - locked))
         ticker_budget = equity / limit
         self.release_slots(db, account)
         for slot in range(limit):
@@ -401,6 +413,12 @@ class CapitalLedger:
             ZERO,
             min(ticker_budget - own, equity - locked, wallet["cash"] - unspent, balance - unspent),
         )
+
+    @staticmethod
+    def ticker_limit(db, execution):
+        return execution.get("budget_ticker_limit") or get(
+            db, "execution_account_limits", execution["account"], {}
+        ).get("max_concurrent_tickers", 2)
 
     def release_slots(self, db, account):
         active = {g["ticker"] for g in self.groups(db, account)}

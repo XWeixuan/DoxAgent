@@ -240,149 +240,153 @@ class FormalProjectors(DomainProjectors):
         if bundle["ticker"] != ticker or bundle["status"] != "published":
             raise ValueError("PINNED_ARTIFACT_MISSING")
         artifact_id = bundle["handoff"]["published_artifact"]["artifact_id"]
-        document, body = self.artifacts.source.body(run_id, artifact_id)
-        policies = parse_policy_set(body)
-        if policies.ticker != ticker or policies.policy_set_version != refs["document3"]["version"]:
-            raise ValueError("POLICY_VERSION_MISMATCH")
-        ref = {
-            **self.artifacts.document(document, schema=policies.schema_version),
-            "policy_set_version": policies.policy_set_version,
-        }
-        source_document = None
-        if policies.document2_ref:
-            source_run = policies.document2_ref.run_id
-            source_records = document_records.get(source_run)
-            if source_records is None:
-                source_records = self.artifacts.ensure(source_run, ticker, lineage=identity)
-            source_document = next(r["data"] for r in source_records if r["kind"] == "document_ref")
-            if source_document["artifact_id"] != policies.document2_ref.artifact_id or (
-                source_document["content_sha256"] != policies.document2_ref.sha256
-            ):
-                raise ValueError("POLICY_SOURCE_DOCUMENT_MISMATCH")
-            records.extend(
-                r
-                for r in source_records
-                if r["id"] not in {x["id"] for x in records if x["kind"] == r["kind"]}
-            )
-        from .policy_origins import memberships, published_origins
+        existing_policy = self.store.get('policy_set',ticker,artifact_id)
+        if existing_policy and existing_policy['reference'].get('policy_set_version') == refs['document3']['version']:
+            ref = existing_policy['reference']
+        else:
+            document, body = self.artifacts.source.body(run_id, artifact_id)
+            policies = parse_policy_set(body)
+            if policies.ticker != ticker or policies.policy_set_version != refs["document3"]["version"]:
+                raise ValueError("POLICY_VERSION_MISMATCH")
+            ref = {
+                **self.artifacts.document(document, schema=policies.schema_version),
+                "policy_set_version": policies.policy_set_version,
+            }
+            source_document = None
+            if policies.document2_ref:
+                source_run = policies.document2_ref.run_id
+                source_records = document_records.get(source_run)
+                if source_records is None:
+                    source_records = self.artifacts.ensure(source_run, ticker, lineage=identity)
+                source_document = next(r["data"] for r in source_records if r["kind"] == "document_ref")
+                if source_document["artifact_id"] != policies.document2_ref.artifact_id or (
+                    source_document["content_sha256"] != policies.document2_ref.sha256
+                ):
+                    raise ValueError("POLICY_SOURCE_DOCUMENT_MISMATCH")
+                records.extend(
+                    r
+                    for r in source_records
+                    if r["id"] not in {x["id"] for x in records if x["kind"] == r["kind"]}
+                )
+            from .policy_origins import memberships, published_origins
 
-        origins = published_origins(self.artifacts.source, bundle, self.store, source_document)
-        shell_views = [
-            r["data"] for r in records
-            if r["kind"] == "shell" and r.get("parent") == documents["document2"]["run_id"]
-        ]
-        if not shell_views:
-            # Reused documents omit immutable page records, but policy membership
-            # still needs the pinned document's shell summaries.
-            from .lifecycle import rows
-            shell_views = list(rows(self.store, "shell", ticker, documents["document2"]["run_id"]).values())
-        shells = {shell["shell_id"] for shell in shell_views}
-        for policy in policies.policies:
-            modern = policies.schema_version == "document3.v3"
-            ar = None if modern else policy_activation_revision(policy)
-            policy_revision = hashlib.sha256(
-                encode([artifact_id, policy.policy_id, policy.model_dump(mode="json")]).encode()
-            ).hexdigest()
-            shell_ids, unresolved_shells = memberships(
-                origins.get(policy.policy_id, []), shell_views
-            ) if modern else (
-                list(dict.fromkeys(item.shell_id for item in policy.source_refs)), []
-            )
-            if modern:
-                directions = sorted({c.decision for c in policy.activation_conditions})
-                summary = validate(
-                    "PolicySummaryV3",
-                    dict(
-                        schema_version="document3.policy-summary.v3",
-                        policy_id=policy.policy_id,
-                        policy_revision_id=policy_revision,
-                        policy_set_version=policies.policy_set_version,
-                        title=policy.title,
-                        directions=directions,
-                        executable_directions=directions,
-                        consumed_directions=[],
-                        shell_ids=shell_ids,
-                        unresolved_shell_ids=unresolved_shells,
-                        lifecycle="ACTIVE",
-                        consumed=missing(),
-                        consumed_at=missing(),
-                        effective=missing(),
-                        matched_filters=["ACTIVE"],
-                    ),
+            origins = published_origins(self.artifacts.source, bundle, self.store, source_document)
+            shell_views = [
+                r["data"] for r in records
+                if r["kind"] == "shell" and r.get("parent") == documents["document2"]["run_id"]
+            ]
+            if not shell_views:
+                # Reused documents omit immutable page records, but policy membership
+                # still needs the pinned document's shell summaries.
+                from .lifecycle import rows
+                shell_views = list(rows(self.store, "shell", ticker, documents["document2"]["run_id"]).values())
+            shells = {shell["shell_id"] for shell in shell_views}
+            for policy in policies.policies:
+                modern = policies.schema_version == "document3.v3"
+                ar = None if modern else policy_activation_revision(policy)
+                policy_revision = hashlib.sha256(
+                    encode([artifact_id, policy.policy_id, policy.model_dump(mode="json")]).encode()
+                ).hexdigest()
+                shell_ids, unresolved_shells = memberships(
+                    origins.get(policy.policy_id, []), shell_views
+                ) if modern else (
+                    list(dict.fromkeys(item.shell_id for item in policy.source_refs)), []
                 )
-                detail = validate(
-                    "PolicyDetailV3",
-                    dict(
-                        summary=summary,
-                        source_document2=source_document,
-                        activation_semantics="OR",
-                        policy=policy.model_dump(mode="json"),
-                        policy_usage=[],
-                    ),
-                )
-            else:
-                summary = validate(
-                    "PolicySummary",
-                    {
-                        "policy_id": policy.policy_id,
-                        "policy_revision_id": policy_revision,
-                        "policy_activation_revision": ar,
-                        "policy_set_version": policies.policy_set_version,
-                        "title": policy.title,
-                        "decision": policy.decision.value,
-                        "shell_ids": shell_ids,
-                        "unresolved_shell_ids": [
-                            shell for shell in shell_ids if shell not in shells
-                        ],
-                        "lifecycle": "ACTIVE",
-                        "consumed": missing(),
-                        "consumed_at": missing(),
-                        "effective": missing(),
-                        "matched_filters": ["ACTIVE"],
-                    },
-                )
-                detail = validate(
-                    "PolicyDetail",
-                    {
-                        "summary": summary,
-                        "source_document2": source_document,
-                        "activation_semantics": "OR",
-                        "policy": policy.model_dump(mode="json"),
-                    },
-                )
-            records.append(
-                {
-                    "kind": "policy_detail",
-                    "ticker": ticker,
-                    "id": policy_revision,
-                    "parent": artifact_id,
-                    "data": detail,
-                }
-            )
-            for shell in shell_ids:
+                if modern:
+                    directions = sorted({c.decision for c in policy.activation_conditions})
+                    summary = validate(
+                        "PolicySummaryV3",
+                        dict(
+                            schema_version="document3.policy-summary.v3",
+                            policy_id=policy.policy_id,
+                            policy_revision_id=policy_revision,
+                            policy_set_version=policies.policy_set_version,
+                            title=policy.title,
+                            directions=directions,
+                            executable_directions=directions,
+                            consumed_directions=[],
+                            shell_ids=shell_ids,
+                            unresolved_shell_ids=unresolved_shells,
+                            lifecycle="ACTIVE",
+                            consumed=missing(),
+                            consumed_at=missing(),
+                            effective=missing(),
+                            matched_filters=["ACTIVE"],
+                        ),
+                    )
+                    detail = validate(
+                        "PolicyDetailV3",
+                        dict(
+                            summary=summary,
+                            source_document2=source_document,
+                            activation_semantics="OR",
+                            policy=policy.model_dump(mode="json"),
+                            policy_usage=[],
+                        ),
+                    )
+                else:
+                    summary = validate(
+                        "PolicySummary",
+                        {
+                            "policy_id": policy.policy_id,
+                            "policy_revision_id": policy_revision,
+                            "policy_activation_revision": ar,
+                            "policy_set_version": policies.policy_set_version,
+                            "title": policy.title,
+                            "decision": policy.decision.value,
+                            "shell_ids": shell_ids,
+                            "unresolved_shell_ids": [
+                                shell for shell in shell_ids if shell not in shells
+                            ],
+                            "lifecycle": "ACTIVE",
+                            "consumed": missing(),
+                            "consumed_at": missing(),
+                            "effective": missing(),
+                            "matched_filters": ["ACTIVE"],
+                        },
+                    )
+                    detail = validate(
+                        "PolicyDetail",
+                        {
+                            "summary": summary,
+                            "source_document2": source_document,
+                            "activation_semantics": "OR",
+                            "policy": policy.model_dump(mode="json"),
+                        },
+                    )
                 records.append(
                     {
-                        "kind": "policy",
+                        "kind": "policy_detail",
                         "ticker": ticker,
-                        "id": policy_revision + ":" + shell,
-                        "parent": artifact_id + ":" + shell,
-                        "data": summary,
+                        "id": policy_revision,
+                        "parent": artifact_id,
+                        "data": detail,
                     }
                 )
-        original = self.store.put_content(ticker, body, "application/json")
-        records.append(
-            {
-                "kind": "policy_set",
-                "ticker": ticker,
-                "id": artifact_id,
-                "data": {
-                    "reference": ref,
-                    "source_document2": source_document,
-                    "content": original,
-                    "policy_origins": origins,
-                },
-            }
-        )
+                for shell in shell_ids:
+                    records.append(
+                        {
+                            "kind": "policy",
+                            "ticker": ticker,
+                            "id": policy_revision + ":" + shell,
+                            "parent": artifact_id + ":" + shell,
+                            "data": summary,
+                        }
+                    )
+            original = self.store.put_content(ticker, body, "application/json")
+            records.append(
+                {
+                    "kind": "policy_set",
+                    "ticker": ticker,
+                    "id": artifact_id,
+                    "data": {
+                        "reference": ref,
+                        "source_document2": source_document,
+                        "content": original,
+                        "policy_origins": origins,
+                    },
+                }
+            )
         base = self.store.get("activation_revision", ticker, revision.get("base_revision") or "")
         prior_policy = (base or {}).get("policy_set")
         prior_library = (base or {}).get("event_library")

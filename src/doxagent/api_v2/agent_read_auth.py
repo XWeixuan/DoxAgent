@@ -26,6 +26,7 @@ GLOBAL = {
 TICKER_READ = re.compile(
     r"/tickers/[^/]+/(?:policies/metrics|runtime/cases(?:/[^/]+(?:/(?:attempts|messages|candidates|executions))?)?|contents/[^/]+)"
 )
+QUERY_READ = re.compile(r"/queries/[0-9a-f]{32}")
 
 
 class AgentReadAuth:
@@ -56,7 +57,8 @@ def require_read_scope(request):
         return
     path = request.url.path.removeprefix("/api/doxagent/v2")
     args = request.query_params
-    if request.method != "GET" or not (path in GLOBAL or TICKER_READ.fullmatch(path)):
+    if request.method != "GET" or not (path in GLOBAL or TICKER_READ.fullmatch(path)
+                                      or QUERY_READ.fullmatch(path)):
         raise ApiFailure("FORBIDDEN", 403)
     if path == "/read-context" and (
         args.get("page") not in PAGES or args.get("refresh", "OPEN") != "OPEN"

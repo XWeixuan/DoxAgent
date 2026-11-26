@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 from .publisher_http import network_timeout, source_http_scope, HTTP_SOURCE
-import time
 from dataclasses import dataclass, replace
 from datetime import timedelta
 from html import unescape
@@ -234,7 +233,13 @@ SOURCES = {spec.source_id: spec for spec in (*LEGACY_CATALOG, *CATALOG)}
 
 def endpoint_units(source):
     """Internal units share the external source and the publisher's HTTP pool."""
-    return {"FEED:" + sha256_text(url)[:24]: url for url in SOURCES[source.source_id].urls}
+    return {"FEED:" + sha256_text(url)[:24]: url for url in source_specs()[source.source_id].urls}
+
+
+def source_specs():
+    from .fintech_sources import SOURCES as fintech_sources
+    from .biopharma_sources import SOURCES as biopharma_sources
+    return {**SOURCES, **fintech_sources, **biopharma_sources}
 
 
 def initial_sources():
@@ -265,6 +270,7 @@ class Capture:
     url: str
     text: str
     headers: dict
+    raw_bytes: bytes | None = None
 
 
 class TechnologyHttp:
@@ -300,7 +306,7 @@ class TechnologyHttp:
         return Capture(result.status_code or 200, result.final_url or url,
                        result.body, result.headers)
 
-    async def fetch(self, url, spec, *, headers=None, method="GET", json_body=None, form_body=None):
+    async def fetch(self, url, spec, *, headers=None, method="GET", json_body=None, form_body=None, binary=False):
         if form_body is not None and spec.transport != "curl":
             raise ValueError("technology_form_requires_curl_transport")
         if spec.transport == "browser":
@@ -315,13 +321,21 @@ class TechnologyHttp:
                 if not spec.accepts(url):
                     raise ValueError("technology_redirect_host_not_approved")
                 if spec.transport == "urllib":
+                    import json
+                    from urllib.parse import urlencode
                     from .corporate_ir.http import PublicHttp
                     from .publisher_http import joint_permits
                     async with joint_permits(self.stdlib_slots, http_budget("collector"),source=HTTP_SOURCE.get()):
+                        extra_headers = {'Content-Type':'application/json'} if json_body is not None else {'Content-Type':'application/x-www-form-urlencoded'} if form_body is not None else {}
+                        data = json.dumps(json_body).encode() if json_body is not None else urlencode(form_body).encode() if form_body is not None else None
+                        options = {**({'method':method} if method != 'GET' else {}),
+                                   **({'data':data} if data is not None else {}),
+                                   **({'binary':True} if binary else {})}
                         result = await StorageLane._execute(PublicHttp._stdlib_read,
-                            (url, {"User-Agent": "Mozilla/5.0", **(headers or {})},
-                             HTTP_EGRESSES[spec.route]), {})
-                    capture = Capture(result.status, result.url, result.body, result.headers)
+                            (url, {"User-Agent": "Mozilla/5.0", **extra_headers, **(headers or {})},
+                             HTTP_EGRESSES[spec.route]), options)
+                    capture = Capture(result.status, result.url, result.body, result.headers,
+                                      getattr(result,'raw_bytes',None))
                 else:
                     data, oversized = bytearray(), False
                     def receive(chunk):
@@ -345,8 +359,9 @@ class TechnologyHttp:
                     if oversized:
                         raise ValueError("technology_response_exceeds_4mib")
                     capture = Capture(response.status_code, url,
-                        bytes(data).decode("utf-8", errors="replace"),
-                        {k.lower(): v for k, v in response.headers.items()})
+                        '' if binary else bytes(data).decode("utf-8", errors="replace"),
+                        {k.lower(): v for k, v in response.headers.items()},
+                        bytes(data) if binary else None)
                     event = getattr(response, "bus_request_event", None)
                     if event is not None:
                         event.update(response_received_at=utc_now().isoformat(),
@@ -391,7 +406,7 @@ def article(spec, url, title, date, now, *, summary=None, payload=None):
 
 def parse_listing(spec, raw, url, now):
     rows = {}
-    if spec.parser == "rss":
+    if spec.parser == "rss" or spec.source_id == 'unchained_crypto':
         doc = ET.fromstring(raw)
         if doc.tag.rsplit("}", 1)[-1] not in {"rss", "feed", "RDF"}:
             raise ValueError("technology_not_a_feed")
@@ -416,6 +431,8 @@ def parse_listing(spec, raw, url, now):
                 },
             )
             if message:
+                if spec.source_id in {'sbcamericas_prediction_markets','unchained_crypto'} and content:
+                    message.raw_payload.update(native_html=content, native_article_url=message.url)
                 rows[message.url] = message
     else:
         doc = html.fromstring(raw)
@@ -446,7 +463,7 @@ def parse_listing(spec, raw, url, now):
 class TechnologyAdapter:
     def __init__(self, http=None, *, sources=None, parser=None):
         self.http = http or TechnologyHttp()
-        self.sources = sources if sources is not None else SOURCES
+        self.sources = sources if sources is not None else source_specs()
         self.parse_listing = parser or parse_listing
 
     async def close(self):

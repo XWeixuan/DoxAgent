@@ -12,7 +12,7 @@ import json
 import re
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
-from datetime import UTC, datetime, time
+from datetime import UTC, date, datetime, time
 from enum import StrEnum
 from typing import Any, Literal, Protocol, runtime_checkable
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -199,6 +199,27 @@ class StreamingConfig(BusModel):
     buffer: BufferConfig = Field(default_factory=BufferConfig)
 
 
+class SourceActivationWindow(BusModel):
+    """Inclusive local calendar dates; absent on ordinary, always-eligible sources."""
+
+    start_date: date
+    end_date: date
+    timezone: str = "America/New_York"
+
+    @model_validator(mode="after")
+    def valid_window(self):
+        try:
+            ZoneInfo(self.timezone)
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError('Unknown activation timezone: '+self.timezone) from exc
+        if self.end_date < self.start_date:
+            raise ValueError("activation end_date precedes start_date")
+        return self
+
+    def contains(self, instant: datetime) -> bool:
+        return self.start_date <= instant.astimezone(ZoneInfo(self.timezone)).date() <= self.end_date
+
+
 class SourceDefinition(BusModel):
     source_id: str
     display_name: str
@@ -225,6 +246,19 @@ class SourceDefinition(BusModel):
     updated_at: datetime = Field(default_factory=utc_now)
     updated_by: UpdateActor = UpdateActor.USER
     updated_reason: str | None = None
+
+    @property
+    def activation_window(self) -> SourceActivationWindow | None:
+        value=self.default_parameters.get('activation_window')
+        return SourceActivationWindow.model_validate(value) if value is not None else None
+
+    @model_validator(mode='after')
+    def valid_activation_window(self):
+        self.activation_window  # Validate at the existing owner configuration boundary.
+        return self
+
+    def active_at(self, instant: datetime) -> bool:
+        return self.activation_window is None or self.activation_window.contains(instant)
 
     @model_validator(mode="before")
     @classmethod

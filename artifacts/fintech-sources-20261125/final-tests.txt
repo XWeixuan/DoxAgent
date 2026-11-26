@@ -1,0 +1,11 @@
+........................................................................ [ 27%]
+........................................................................ [ 54%]
+........................................................................ [ 82%]
+...............................................                          [100%]
+============================== warnings summary ===============================
+tests/test_public_listing.py::test_fallback_capture_is_failed_in_cycles_unit_and_ui_even_with_old_success[HTTP_LISTING_FAILED_RSS_FALLBACK]
+  D:\DoxFintechSources\src\doxagent\message_bus_v2\yahoo_sources.py:50: DeprecationWarning: invalid escape sequence '\/'
+    """els => els.flatMap(e => {
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+263 passed, 1 deselected, 1 warning in 133.43s (0:02:13)

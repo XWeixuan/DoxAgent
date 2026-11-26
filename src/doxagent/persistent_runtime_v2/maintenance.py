@@ -48,6 +48,7 @@ class RuntimeMaintenance:
         self.settings, self.runtime, self.journal = settings, runtime, journal
         assert settings.ticker_initialization_control_path
         self.control = InitializationRepository(settings.ticker_initialization_control_path)
+        self.o3_enabled = self.control.o3_maintenance_enabled()
         self.worker_factory = worker_factory
         self.o2_factory, self.o3_factory = o2_factory, o3_factory
         self.resource_gc_due = False
@@ -76,12 +77,14 @@ class RuntimeMaintenance:
             )
 
     def collect_resources(self, *, should_yield=None):
-        from .resource_gc import collect
+        from .owner_exit import drain,register_legacy
         self.resource_gc_due=False
-        from doxagent.message_bus_v2.pressure import background_allowed
-        return collect(self.journal,self.settings.ticker_initialization_control_path,limit=4,
-                       settings=self.settings,owned_only=True,
-                       should_yield=lambda: not background_allowed() or bool(should_yield and should_yield()))
+        register_legacy(self.journal)
+        report=drain(self.journal,self.settings)
+        from .history_exit import collect
+        report['history']=collect(self)
+        report['next_seconds']=min(report['history'].get('next_seconds',900),60 if report['processed'] else 900)
+        return report
 
     def _frame(self, task: dict[str, Any]) -> dict[str, Any]:
         current = self.control.active_revision(task["ticker"])
@@ -110,12 +113,12 @@ class RuntimeMaintenance:
         inputs = (
             {key: prior[key] for key in ("candidates", "trades", "badcases", "gaps")}
             if prior
-            else records(self.runtime.repository, membership, ticker=task["ticker"])
+            else records(self.runtime.repository, membership, ticker=task["ticker"], include_o3=mode is RunningMode.FULL and getattr(self, "o3_enabled", True))
         )
         from .policy_consumption import consumption_feed
 
         with self.journal.transaction(write=False) as db:
-            policy_consumption = [] if mode == "LIGHTWEIGHT" else consumption_feed(db, task["ticker"])
+            policy_consumption = consumption_feed(db, task["ticker"]) if mode is RunningMode.FULL and getattr(self, "o3_enabled", True) else []
         frame = {
             "policy_consumption": policy_consumption,
             "base": current,
@@ -156,11 +159,14 @@ class RuntimeMaintenance:
                 pass
         if existing and existing.get("runtime_metadata", {}).get("maintenance_id") == task["id"]:
             self._admit(existing)
-            self._consume(task, task["receipt"]["frame"])
+            self._consume(task, task["receipt"]["frame"], include_o3=existing.get("runtime_metadata", {}).get("o3_outcome") != "SKIPPED_BY_CONTROL")
             return {"revision_id": existing["revision_id"], "reconciled": True}
+        o3_enabled = self.control.o3_maintenance_enabled()
+        self.o3_enabled = o3_enabled
         frame = self._frame(task)
         run_id, base = frame["run_id"], frame["base"]
         light = base.get("running_mode", "FULL") == "LIGHTWEIGHT"
+        o3_enabled = o3_enabled and not light
         frozen_model = frame["models"]["model"]
         override = self.settings.persistent_runtime_v2_maintenance_execution_model_override
         execution_model = override if frozen_model == "gpt-6-luna" and override else frozen_model
@@ -178,17 +184,23 @@ class RuntimeMaintenance:
             / task["ticker"]
             / "event_library.sqlite3"
         )
-        repository = branch_library(
-            source_root / relative,
-            candidate_root / relative,
-            task["ticker"],
-            int(event_ref["version"]),
-        )
-        self.journal.set(
-            "w3_library_lineage",
-            str(candidate_root),
-            self.journal.get("w3_library_lineage", str(source_root), str(source_root)),
-        )
+        if not o3_enabled:
+            # A maintenance lease already serializes a ticker. Readers use an
+            # explicit activation version, so append only changed revisions to
+            # its existing repository instead of cloning the selected database.
+            from doxagent.event_library.repository import EventLibraryRepository
+
+            candidate_root = source_root
+            repository = EventLibraryRepository(source_root / relative)
+        else:
+            repository = branch_library(
+                source_root / relative, candidate_root / relative,
+                task["ticker"], int(event_ref["version"]),
+            )
+            self.journal.set(
+                "w3_library_lineage", str(candidate_root),
+                self.journal.get("w3_library_lineage", str(source_root), str(source_root)),
+            )
         worker = (
             self.worker_factory()
             if self.worker_factory
@@ -210,6 +222,7 @@ class RuntimeMaintenance:
         durable.on_update = lambda job: self._retain_infrastructure_failure(durable, job)
         reference_task = {**task, "id": run_id}
         # Freeze O2/O3 assets before dispatch and materialize only immutable snapshots.
+        components = ("event_library", "document3", "open_event_atlas") if o3_enabled else ("event_library",)
         assets = self.journal.get("maintenance_assets", run_id)
         if assets is None:
             execution = frame.get("execution_bundle_id")
@@ -222,9 +235,9 @@ class RuntimeMaintenance:
             assets = {
                 key: value
                 for key, value in published_assets.items()
-                if key.startswith(("event_library/",) if light else ("event_library/", "document3/", "open_event_atlas/"))
+                if key.startswith(tuple(c + "/" for c in components))
             }
-            for component in (("event_library",) if light else ("event_library", "document3", "open_event_atlas")):
+            for component in components:
                 if execution_bundle.get("orchestration_revision", 1) >= 3:
                     if not any(key.startswith(component + "/") for key in assets):
                         raise ValueError(f"frozen maintenance assets missing: {component}")
@@ -241,6 +254,8 @@ class RuntimeMaintenance:
             self.journal.set("maintenance_assets", run_id, assets)
         prompt_root = root / run_id / "prompts"
         for name, content in assets.items():
+            if name.split("/", 1)[0] not in components:
+                continue
             target = prompt_root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             if target.exists() and target.read_text(encoding="utf-8") != content:
@@ -250,7 +265,7 @@ class RuntimeMaintenance:
         try:
             from .reference_capture import freeze_before
 
-            if not light:
+            if o3_enabled:
                 freeze_before(
                     self.journal,
                     reference_task,
@@ -362,7 +377,7 @@ class RuntimeMaintenance:
                 )
             published = task["receipt"]["o2"]
 
-            if not light:
+            if o3_enabled:
                 # Case threads no longer follow Event associations.
                 compiler = EventLibraryViewCompiler(repository)
                 from .reference_capture import actual_delta
@@ -470,6 +485,17 @@ class RuntimeMaintenance:
                     if str(result.status) != "NOOP":
                         policy_ref["run_id"] = run_id + "-o3"
                     self.journal.checkpoint(task, o3=policy_ref)
+            elif not light:
+                # Keep the exact accepted D3 release. Deferred is not O3 success.
+                self.journal.checkpoint(task, o3_outcome="SKIPPED_BY_CONTROL")
+                pending = self.journal.get("o3_pending", task["ticker"])
+                if pending is None:
+                    self.journal.set("o3_pending", task["ticker"], {
+                        "since": self.journal.clock().isoformat(),
+                        "base_event": base["artifacts"]["event_library"],
+                        "base_policy": base["artifacts"]["document3"],
+                        "pending": True,
+                    })
             operation = "runtime-publish"
             current_visibility = self.journal.get("visibility", task["ticker"], {}) or {}
             visibility_day = max(
@@ -478,6 +504,7 @@ class RuntimeMaintenance:
                 (base.get("runtime_metadata") or {}).get("visibility_day") or "",
             )
             metadata = {
+                "o3_outcome": "NOT_APPLICABLE" if light else "APPLIED" if o3_enabled else "SKIPPED_BY_CONTROL",
                 "maintenance_id": task["id"],
                 "control_epoch": task["inputs"].get("control_epoch"),
                 "visibility_day": visibility_day,
@@ -490,14 +517,14 @@ class RuntimeMaintenance:
                 identity=run_id + "-activation",
                 base=base,
                 event_ref=published,
-                policy_ref=task["receipt"].get("o3") if not light else None,
+                policy_ref=None if light else task["receipt"]["o3"] if o3_enabled else base["artifacts"]["document3"],
                 metadata=metadata,
             )
             self._admit(revision)
             if self.runtime.coordinator is not None:
                 self.runtime.coordinator._public_next[task["ticker"]] = 0
             self.journal.set("visibility", task["ticker"], {"day": metadata["visibility_day"]})
-            self._consume(task, frame)
+            self._consume(task, frame, include_o3=o3_enabled)
             return {"revision_id": revision["revision_id"]}
         except Exception as exc:
             if isinstance(exc, (LeaseLost, ControlError)):
@@ -573,7 +600,7 @@ class RuntimeMaintenance:
         if prepare:
             prepare(revision["ticker"])
 
-    def _consume(self, task: dict[str, Any], frame: dict[str, Any]) -> None:
+    def _consume(self, task: dict[str, Any], frame: dict[str, Any], *, include_o3=True) -> None:
         self.runtime.repository.mark_daily_records_processed(
             candidate_keys=[
                 f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
@@ -581,7 +608,7 @@ class RuntimeMaintenance:
                 if f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
                 in task["receipt"].get("resolved_candidates", [])
             ],
-            trade_record_ids=[item["trade_record_id"] for item in frame["trades"]],
-            badcase_ids=[item["badcase_id"] for item in frame["badcases"]],
-            w3_coverage_gap_ids=[item["coverage_gap_id"] for item in frame["gaps"]],
+            trade_record_ids=[item["trade_record_id"] for item in frame["trades"]] if include_o3 else [],
+            badcase_ids=[item["badcase_id"] for item in frame["badcases"]] if include_o3 else [],
+            w3_coverage_gap_ids=[item["coverage_gap_id"] for item in frame["gaps"]] if include_o3 else [],
         )

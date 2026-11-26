@@ -1,0 +1,278 @@
+{
+  "at": "2026-11-25T16:10:20.188440+00:00",
+  "units": [
+    {
+      "source": "cftc_press_releases",
+      "unit": "FEED:c35a0a455e177d334799b37d",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:13.665758+00:00",
+      "finished_at": "2026-11-25T16:10:19.688817+00:00"
+    },
+    {
+      "source": "cftc_trading_rules",
+      "unit": "FEED:eda4753432c47520704c828b",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:11.914072+00:00",
+      "finished_at": "2026-11-25T16:10:18.648222+00:00"
+    },
+    {
+      "source": "cftc_trading_rules",
+      "unit": "FEED:bcf2433029e7478ea8756969",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:01.887052+00:00",
+      "finished_at": "2026-11-25T16:10:10.080821+00:00"
+    },
+    {
+      "source": "corporate_ir_press_releases",
+      "unit": "IR:coin.blog",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:08.769830+00:00",
+      "finished_at": "2026-11-25T16:10:13.519754+00:00"
+    },
+    {
+      "source": "corporate_ir_press_releases",
+      "unit": "IR:coin.ir",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:10.284519+00:00",
+      "finished_at": "2026-11-25T16:10:15.426063+00:00"
+    },
+    {
+      "source": "corporate_ir_press_releases",
+      "unit": "IR:coin.deribit",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:14.574248+00:00",
+      "finished_at": "2026-11-25T16:10:19.618716+00:00"
+    },
+    {
+      "source": "thedefiant_fintech_regulation",
+      "unit": "FEED:8ad60888772c17eadc58dad1",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:00.512645+00:00",
+      "finished_at": "2026-11-25T16:10:08.751561+00:00"
+    },
+    {
+      "source": "thedefiant_fintech_regulation",
+      "unit": "FEED:2b634acd5832c3d7067c5b7d",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:10.587011+00:00",
+      "finished_at": "2026-11-25T16:10:15.829136+00:00"
+    },
+    {
+      "source": "unchained_crypto",
+      "unit": "FEED:b8b643f559a9671e8cd1a105",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:13.666059+00:00",
+      "finished_at": "2026-11-25T16:10:18.889655+00:00"
+    },
+    {
+      "source": "unchained_crypto",
+      "unit": "FEED:5eba37153e07e0361bd45aa4",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:07.030997+00:00",
+      "finished_at": "2026-11-25T16:10:12.217779+00:00"
+    },
+    {
+      "source": "unchained_crypto",
+      "unit": "FEED:61a7bc62f6df9fd0cdad0c45",
+      "status": "CAPTURED",
+      "reason": null,
+      "dispatch_at": "2026-11-25T16:10:00.513750+00:00",
+      "finished_at": "2026-11-25T16:10:08.486413+00:00"
+    }
+  ],
+  "articles": [
+    {
+      "source": "unchained_crypto",
+      "title": "Why Base Is Close to Calling Itself ‘the Blockchain for Agent Finance’",
+      "url": "https://unchainedcrypto.com/why-base-is-close-to-calling-itself-the-blockchain-for-agent-finance/",
+      "first_seen_at": "2026-11-25T16:09:26.494849+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": [
+        "CONFIG_INCOMPLETE",
+        "TERMS_MISSING",
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:5eba37153e07e0361bd45aa4",
+          "2026-11-25T16:09:26.494849+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "unchained_crypto",
+      "title": "Securitize’s High-Yield Fund HINC Goes Live as Collateral on Aave Horizon",
+      "url": "https://unchainedcrypto.com/securitizes-high-yield-fund-hinc-goes-live-as-collateral-on-aave-horizon/",
+      "first_seen_at": "2026-11-25T16:09:19.605419+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": [
+        "CONFIG_INCOMPLETE",
+        "TERMS_MISSING",
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:61a7bc62f6df9fd0cdad0c45",
+          "2026-11-25T16:09:19.605419+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "unchained_crypto",
+      "title": "Prediction Market Exchanges Must Identify Traders Under New CFTC Rule",
+      "url": "https://unchainedcrypto.com/prediction-market-exchanges-must-identify-traders-under-new-cftc-rule/",
+      "first_seen_at": "2026-11-25T16:09:05.253957+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": [
+        "CONFIG_INCOMPLETE",
+        "TERMS_MISSING",
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:b8b643f559a9671e8cd1a105",
+          "2026-11-25T16:09:05.253957+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "unchained_crypto",
+      "title": "South Korea’s Crypto Bill Would Force Bithumb’s Owner to Sell Most of Its Stake",
+      "url": "https://unchainedcrypto.com/south-koreas-crypto-bill-would-force-bithumbs-owner-to-sell-most-of-its-stake/",
+      "first_seen_at": "2026-11-25T16:09:05.253957+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": [
+        "CONFIG_INCOMPLETE",
+        "TERMS_MISSING",
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:b8b643f559a9671e8cd1a105",
+          "2026-11-25T16:09:05.253957+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "unchained_crypto",
+      "title": "Crypto Can Fill Up to Half of a Futures Exchange’s Reserve Under New CFTC Staff Advisory",
+      "url": "https://unchainedcrypto.com/crypto-can-fill-up-to-half-of-a-futures-exchanges-reserve-under-new-cftc-staff-advisory/",
+      "first_seen_at": "2026-11-25T16:09:05.253957+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": [
+        "CONFIG_INCOMPLETE",
+        "TERMS_MISSING",
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:b8b643f559a9671e8cd1a105",
+          "2026-11-25T16:09:05.253957+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "unchained_crypto",
+      "title": "Ukraine’s Lawmakers Approve Crypto Market Rules and Taxes, Effective July 2027",
+      "url": "https://unchainedcrypto.com/ukraines-lawmakers-approve-crypto-market-rules-and-taxes-effective-july-2027/",
+      "first_seen_at": "2026-11-25T15:46:16.495350+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": [
+        "CONFIG_INCOMPLETE",
+        "TERMS_MISSING",
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:b8b643f559a9671e8cd1a105",
+          "2026-11-25T15:46:16.495350+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "unchained_crypto",
+      "title": "French Senate Rejects Crypto Exit Tax, Stablecoin Swap Tax and Wallet Declaration Rule",
+      "url": "https://unchainedcrypto.com/french-senate-rejects-crypto-exit-tax-stablecoin-swap-tax-and-wallet-declaration-rule/",
+      "first_seen_at": "2026-11-25T15:32:34.389507+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": [
+        "CONFIG_INCOMPLETE",
+        "TERMS_MISSING",
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:b8b643f559a9671e8cd1a105",
+          "2026-11-25T15:32:34.389507+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "thedefiant_fintech_regulation",
+      "title": "Coinbase Wallet Adds USDC Paycheck Deposits on Base",
+      "url": "https://thedefiant.io/converge/tradfi-and-fintech/coinbase-wallet-adds-usdc-paycheck-deposits-on-base",
+      "first_seen_at": "2026-11-25T15:23:02.204040+00:00",
+      "outcome": "UNAVAILABLE",
+      "error": "subscription_required",
+      "delivery": [
+        "NO_PUBLIC_BODY",
+        null,
+        null,
+        0,
+        0
+      ],
+      "source_origins": [
+        [
+          "FEED:8ad60888772c17eadc58dad1",
+          "2026-11-25T15:23:02.204040+00:00"
+        ]
+      ]
+    },
+    {
+      "source": "corporate_ir_press_releases",
+      "title": "Bloom Energy Joins Nashville Firefighters to Support Local Students and Families Ahead of Tennessee-Vanderbilt Matchup",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Joins-Nashville-Firefighters-to-Support-Local-Students-and-Families-Ahead-of-Tennessee-Vanderbilt-Matchup/default.aspx",
+      "first_seen_at": "2026-11-25T15:12:23.279720+00:00",
+      "outcome": "FULL",
+      "error": null,
+      "delivery": null,
+      "source_origins": [
+        [
+          "IR:be.press",
+          "2026-11-25T15:12:23.279720+00:00"
+        ]
+      ]
+    }
+  ]
+}

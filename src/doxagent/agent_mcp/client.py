@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import re
 import time
 from collections import OrderedDict
 from uuid import uuid4
@@ -88,9 +90,24 @@ class ApiClient:
 
     async def get(self, path, params=None):
         try:
+            deadline = time.monotonic() + 40
             response = await self.client.get(
                 path.lstrip("/"), params={k: v for k, v in (params or {}).items() if v is not None}
             )
+            while response.status_code == 202:
+                pending = response.json()
+                identity = pending.get("query_id", "")
+                if (not isinstance(identity, str) or not re.fullmatch(r"[0-9a-f]{32}", identity)
+                        or pending.get("result_path") != "/queries/" + identity):
+                    raise ReadError("UPSTREAM_READ_FAILED", "Invalid deferred read response.")
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise ReadError("QUERY_TIMEOUT", "DoxAgent read timed out.", retryable=True)
+                await asyncio.sleep(min(2, remaining))
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise ReadError("QUERY_TIMEOUT", "DoxAgent read timed out.", retryable=True)
+                response = await self.client.get("queries/" + identity, timeout=min(12, remaining))
             if response.status_code != 200:
                 try:
                     error = response.json().get("error", {})

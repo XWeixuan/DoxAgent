@@ -17,6 +17,7 @@ from .overview import select_overview_tickers, ticker_overview_data
 from .runtime import prime_runtime_metrics, runtime_metrics_data
 
 PAGE_BYTES = 220000  # Leave room for the existing API's Resource/meta envelope (256 KiB).
+SUMMARY_TICKERS_PER_PAGE = 3  # Bound one deferred task's exact 24h source reads.
 
 
 def row_bytes(row):
@@ -79,10 +80,11 @@ def install(app):
             last = items[-1]["source"]["binding_id"] if items else after
             schema = "SourceStatusPage"
         else:
-            selected = select_overview_tickers(store, view, after, limit + 1)
+            page_limit = min(limit, SUMMARY_TICKERS_PER_PAGE)
+            selected = select_overview_tickers(store, view, after, page_limit + 1)
             runtime_service = (
                 prime_runtime_metrics(
-                    store, views.derive(view, "RUNTIME", selected[0]), selected[:limit]
+                    store, views.derive(view, "RUNTIME", selected[0]), selected[:page_limit]
                 )
                 if selected
                 else None
@@ -91,7 +93,7 @@ def install(app):
             from doxagent.v2_read.query_budget import deadline
 
             until = deadline.get()
-            for row in ticker_overview_data(store, view, selected[:limit]):
+            for row in ticker_overview_data(store, view, selected[:page_limit]):
                 # Leave time to serialize and pin the continuation. A slow SQL query
                 # still obeys the existing worker deadline; no background fallback.
                 if items and until is not None and time.monotonic() + 0.6 >= until:
