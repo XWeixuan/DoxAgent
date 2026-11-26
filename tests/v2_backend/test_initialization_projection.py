@@ -16,7 +16,9 @@ from doxagent.v2_read.repository import ReadStore
 
 
 @pytest.mark.parametrize('legacy_native',[False,True])
-def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, monkeypatch,legacy_native):
+def test_progress_reads_used_fields_without_hydrating_worker_receipts(
+    tmp_path, monkeypatch, legacy_native,
+):
     from doxagent.v2_read.content_files import ContentFiles, ContentUnavailable
     from doxagent.v2_read.initialization import progress
 
@@ -49,6 +51,7 @@ def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, 
             "SELECT payload FROM objects WHERE kind='native:initialization_nodes'"
         ).fetchone()[0])
     original = ContentFiles.read
+    original_all = ContentFiles.read_all
     if legacy_native:
         result = raw["result"]["$doxagent_content_v1"]
         blocked = {raw["receipt"]["$doxagent_content_v1"]}
@@ -62,6 +65,14 @@ def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, 
         return original(self, identity, *args, **kwargs)
 
     monkeypatch.setattr(ContentFiles, "read", checked)
+    # NativeContent also uses the verified whole-body reader. Block both entry
+    # points so this availability/integrity assertion covers the current codec.
+    def checked_all(self, identity):
+        if blocked is None or identity in blocked:
+            raise ContentUnavailable("unavailable test content")
+        return original_all(self, identity)
+
+    monkeypatch.setattr(ContentFiles, "read_all", checked_all)
     value = progress(store, run, dict(kind="native:initialization_runs"))["data"]
     stage = next(s for s in value["steps"] if s["step_key"] == "POLICIES")
     assert stage["status"] == "SUCCEEDED"
@@ -198,3 +209,24 @@ def test_existing_repair_rounds_backfill_incident_before_round(tmp_path):
     assert Metrics(store).value(
         "nonroutine_repairs", ["MU"], _highwater(store), days=[day]
     ) == 1
+
+
+def test_progress_tick_cache_matches_uncached_after_updates(tmp_path):
+    from doxagent.v2_read.initialization import progress
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    run = dict(ticker="MU", initialization_id="init-mu", status="RUNNING", state_seq=1,
+               manual_resume_required=False, error=None)
+    base = dict(kind="native:initialization_nodes", ticker="MU", id="d3", parent="init-mu",
+                data=dict(key="d3", block="D3", status="RUNNING", result=None))
+    store.ingest("test", "seed", [base])
+    with ProjectionWorker(store, [], DomainProjectors(store))._progress_session():
+        progress(store, run, dict(kind="native:initialization_runs"))
+        done = {**base, "data": {**base["data"], "status": "SUCCEEDED",
+                                "result": {"quality_annotations": ["PARTIAL"]}}}
+        cached = progress(store, run, done)
+        store.ingest("test", "done", [done])
+        assert len(store._initialization_progress_cache) == 1
+    assert store._initialization_progress_cache is None
+    assert cached == progress(store, run, dict(kind="native:initialization_runs"))

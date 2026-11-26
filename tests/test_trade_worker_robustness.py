@@ -114,7 +114,7 @@ def test_due_exit_advances_even_when_maintenance_lane_fails(setup, monkeypatch, 
         "heartbeat": ("doxagent.trade_execution.worker.scheduler_health", None),
         "connections": ("doxagent.trade_execution.worker.maintain_connections", None),
         "entry_limits": (executor, "enforce_entry_failure_limits"),
-        "exit_recovery": (repo, "recover_failed_exits"),
+        "exit_recovery": (executor, "reconcile_failed_orders"),
         "events": (executor, "drain_events"),
         "cycles": (executor, "capture_ready_cycles"),
     }

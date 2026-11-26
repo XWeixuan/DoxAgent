@@ -303,6 +303,10 @@ class RuntimeJournal:
                 ):
                     raise ValueError("immutable task identity conflict")
                 return self._task(old)
+            from doxagent.v2_control.running_mode_switch import active_switch
+            from doxagent.v2_control.repository import ControlError
+            if active_switch(db, ticker):
+                raise ControlError("MODE_SWITCH_IN_PROGRESS")
             db.execute(
                 "INSERT INTO runtime_tasks(id,ticker,kind,status,inputs,receipt,max_failures,"
                 "due_at,updated_at) VALUES(?,?,?,'PENDING',?,'{}',?,?,?)",
@@ -536,6 +540,10 @@ class RuntimeJournal:
         with self.transaction(operation="task.claim", expand=False) as db:
             row = db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
             if not row or row["status"] in {"SUCCEEDED", "FAILED", "HELD"}:
+                return None
+            from doxagent.v2_control.running_mode_switch import active_switch
+
+            if active_switch(db, row["ticker"]):
                 return None
             if row["due_at"] > now.isoformat():
                 return None

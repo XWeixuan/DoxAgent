@@ -41,6 +41,7 @@ from doxagent.workflows.codex_document3.repository import Document3PolicyReposit
 from doxagent.workflows.codex_document3.schema import PolicySet
 from doxagent.workflows.codex_document3.schema_v21 import PolicySetV3
 
+from doxagent.running_mode import RunningMode
 from . import policy_consumption
 from .schema import (
     RuntimeCase,
@@ -66,6 +67,15 @@ def research_pin_key(case):
     from .journal import digest
 
     p = case.version_pin
+    if getattr(p, "running_mode", RunningMode.FULL) is RunningMode.LIGHTWEIGHT:
+        return digest(
+            [
+                "lightweight-d1.v1",
+                case.ticker,
+                p.document1_run_id,
+                case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version", ENTRY),
+            ]
+        )
     return digest(
         [
             case.ticker,
@@ -117,7 +127,7 @@ class W3PreparedContext(BaseModel):
 
     version_pin: W3ContextVersionPin
     document1: str = Field(min_length=1)
-    document2: Document2DocumentV21 | Document2Document
+    document2: Document2DocumentV21 | Document2Document | None = None
     policy_set: PolicySetV3 | PolicySet | None = None
     reference_view: str | None = Field(default=None, min_length=1)
     document2_publication_state: str
@@ -223,6 +233,35 @@ class PublishedW3ContextProvider:
         return view
 
     async def _load(self, case: RuntimeCase) -> W3PreparedContext:
+        if case.version_pin.running_mode is RunningMode.LIGHTWEIGHT:
+            if not is_pin_watch_contract(case.w3_contract_version):
+                raise W3Error("lightweight_contract_required", "Lightweight requires W3 v6")
+            pin = case.version_pin
+            key = ("lightweight-d1", case.ticker, pin.document1_run_id)
+            cached = self._cached_context(key)
+            if cached is not None:
+                return cached
+            bundle = await read_io(self._runtime.get_bundle, pin.document1_run_id)
+            if not isinstance(bundle, GlobalResearchBundle) or bundle.ticker.upper() != case.ticker or bundle.handoff is None:
+                raise W3Error("w3_document1_unavailable", "Pinned D1 unavailable")
+            published = await read_io(self._published_metadata, bundle.run_id, bundle.handoff.document_artifact_id)
+            if published is None:
+                raise W3Error("w3_document1_unavailable", "Pinned D1 body unavailable")
+            body = (await self._read_published(published)).decode("utf-8")
+            from .journal import digest
+            prepared = W3PreparedContext(
+                version_pin=W3ContextVersionPin(
+                    running_mode=RunningMode.LIGHTWEIGHT,
+                    document1_run_id=bundle.run_id,
+                    event_library_version=pin.event_library_version,
+                ),
+                document1=body,
+                document2_publication_state="NOT_APPLICABLE",
+                context_cutoffs={"D1": None},
+                research_identity=digest(["lightweight-d1", bundle.run_id, published.sha256]),
+            )
+            self._cache_context(key, prepared)
+            return prepared
         if is_pin_watch_contract(case.w3_contract_version) and case.version_pin.document1_run_id and case.version_pin.document2_run_id:
             cached = self._cached_context((case.ticker, case.version_pin.document2_run_id,
                                            case.version_pin.document1_run_id + ":", 0, 0, True))
@@ -605,8 +644,9 @@ class CodexW3AgentRunner:
                 if saved is not None:
                     return saved
             def component_texts():
-                components = dict(d1=context.document1,
-                                  d2=context.original_document2 or compact(context.document2.model_dump(mode="json")))
+                components = dict(d1=context.document1)
+                if context.document2 is not None:
+                    components["d2"] = context.original_document2 or compact(context.document2.model_dump(mode="json"))
                 if not is_pin_watch_contract(case.w3_contract_version):
                     components.update(policy=context.original_policy_set or compact(context.policy_set.model_dump(mode="json")),
                                       reference=context.reference_view)
@@ -661,6 +701,17 @@ class CodexW3AgentRunner:
             self._ready_configuration(case, template, active_public=active_public)
         ))
 
+    def _optional_replay_skill(self, case, assets):
+        skill = "skills/skill.md"
+        key = "w3/" + skill
+        if (
+            key not in assets
+            and self.environment.mode == "OFFLINE_REPLAY"
+            and is_pin_watch_contract(case.w3_contract_version)
+        ):
+            return {}
+        return {skill: assets[key]}
+
     def _ready_configuration(self, case, template, *, active_public=True):
         profile = execution_profile(
             case,
@@ -678,7 +729,7 @@ class CodexW3AgentRunner:
             web_search_mode=self.environment.web_search_mode,
             instructions={
                 "AGENTS.md": assets["w3/AGENTS.md"],
-                "skills/skill.md": assets["w3/skills/skill.md"],
+                **self._optional_replay_skill(case, assets),
             },
         )
 
@@ -890,9 +941,10 @@ class CodexW3AgentRunner:
                         context.reference_view,
                     ]
                 )
-                await self._workspace.ensure_research_pack(
-                    reference, {"reference_view.md": context.reference_view}
-                )
+                if context.reference_view is not None:
+                    await self._workspace.ensure_research_pack(
+                        reference, {"reference_view.md": context.reference_view}
+                    )
 
         return self._wait_v4(prepare())
 
@@ -941,10 +993,15 @@ class CodexW3AgentRunner:
                     )
                     for p in policies
                 ]
+                context_pin = W3ContextVersionPin.model_validate(saved["version_pin"])
+                if case.version_pin.running_mode is RunningMode.LIGHTWEIGHT:
+                    context_pin = context_pin.model_copy(
+                        update={"event_library_version": case.version_pin.event_library_version}
+                    )
                 context = SimpleNamespace(
                     components=saved["components"],
-                    version_pin=W3ContextVersionPin.model_validate(saved["version_pin"]),
-                    policy_set=SimpleNamespace(policies=wrapped),
+                    version_pin=context_pin,
+                    policy_set=None if case.version_pin.running_mode is RunningMode.LIGHTWEIGHT else SimpleNamespace(policies=wrapped),
                     context_cutoffs=saved["context_cutoffs"],
                     reference_view="",
                     policy_origins={},
@@ -1263,10 +1320,11 @@ class CodexW3AgentRunner:
 
         single_skill = "w3/AGENTS.md" in assets
         skill_path = "skills/skill.md" if single_skill else "skills/w3.md"
-        instructions = {
-            "AGENTS.md": assets["w3/AGENTS.md" if single_skill else "w3/agent.md"],
-            skill_path: assets["w3/" + skill_path],
-        }
+        instructions = {"AGENTS.md": assets["w3/AGENTS.md" if single_skill else "w3/agent.md"]}
+        if single_skill:
+            instructions.update(self._optional_replay_skill(case, assets))
+        else:
+            instructions[skill_path] = assets["w3/" + skill_path]
         replay_instructions = (
             assets.get("w3/backtest.md")
             if self.environment.mode == "OFFLINE_REPLAY"
@@ -1547,8 +1605,9 @@ class CodexW3AgentRunner:
                     'Return {"ready": true} under output_schema.'
                 )
         if replay_instructions and phase == "w3_template":
+            business_files = "AGENTS.md、唯一 Skill" if skill_path in instructions else "AGENTS.md"
             task["instruction"] = (
-                '初始化 AGENTS.md、唯一 Skill 与 backtest.md；不处理消息或开展研究。'
+                f'初始化 {business_files} 与 backtest.md；不处理消息或开展研究。'
                 '返回 {"ready": true}。'
             )
         task_text = await read_io(json.dumps, task, ensure_ascii=False)
@@ -1581,7 +1640,7 @@ class CodexW3AgentRunner:
             # Load the only business skill once in the mother thread; case turns
             # inherit it and carry only phase-specific data and artifact pointers.
             prompt = (
-                assets["w3/skills/skill.md"] + "\n\n"
+                ((instructions[skill_path] + "\n\n") if skill_path in instructions else "")
                 + ((replay_instructions + "\n\n") if replay_instructions else "")
                 if phase == "w3_template"
                 else ""
@@ -1611,7 +1670,7 @@ class CodexW3AgentRunner:
                         "case_id": case.case_id,
                         "ticker": case.ticker,
                         "phase": phase,
-                        "context_version_pin": context.version_pin.model_dump(mode="json")
+                        "context_version_pin": context.version_pin.model_dump(mode="json", exclude={"running_mode"})
                         if context
                         else None,
                     },
@@ -1957,7 +2016,7 @@ class CodexW3AgentRunner:
             "initial_route_reason": w3_case.route_reason,
             "policy_usage": case.frozen_inputs.get("policy_usage", []),
             "policy_watch_followup": case.frozen_inputs.get("policy_watch_followup", []),
-            "context_version_pin": context.version_pin.model_dump(mode="json"),
+            "context_version_pin": context.version_pin.model_dump(mode="json", exclude={"running_mode"}),
             "document2_publication_state": context.document2_publication_state,
         }
         case_root = f"cases/{w3_case.w3_case_id}"

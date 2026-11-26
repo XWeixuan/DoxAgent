@@ -6,7 +6,7 @@ import json
 import re
 import subprocess
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 _IDENTITY = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
@@ -32,6 +32,8 @@ class ContainerSpec:
     memory: str | None = None
     memory_swap: str | None = None
     pids_limit: int | None = None
+    seccomp_profile: str | None = None
+    apparmor_profile: str | None = None
 
 
 @dataclass(frozen=True)
@@ -136,6 +138,17 @@ class DockerRuntime:
         if spec.pids_limit is not None:
             expected["PidsLimit"] = spec.pids_limit
             actual["PidsLimit"] = int(host.get("PidsLimit") or 0)
+        security = host.get("SecurityOpt") or []
+        if spec.apparmor_profile:
+            expected["AppArmor"] = "apparmor=" + spec.apparmor_profile
+            actual["AppArmor"] = next((item for item in security if item.startswith("apparmor=")), None)
+        if spec.seccomp_profile:
+            expected["Seccomp"] = json.loads(Path(spec.seccomp_profile).read_text())
+            configured = next((item[8:] for item in security if item.startswith("seccomp=")), None)
+            try:
+                actual["Seccomp"] = json.loads(configured) if configured else None
+            except (ValueError, TypeError):
+                actual["Seccomp"] = None
         mismatches = [key for key, value in expected.items() if actual.get(key) != value]
         if mismatches:
             details = ", ".join(
@@ -179,6 +192,13 @@ class DockerRuntime:
             if spec.pids_limit < 1:
                 raise ValueError("pids limit must be positive")
             args.extend(["--pids-limit", str(spec.pids_limit)])
+        if spec.seccomp_profile:
+            if not PurePosixPath(spec.seccomp_profile).is_absolute() or "\x00" in spec.seccomp_profile:
+                raise ValueError("seccomp profile must be an absolute host path")
+            args.extend(["--security-opt", "seccomp=" + spec.seccomp_profile])
+        if spec.apparmor_profile:
+            self._validate_identity(spec.apparmor_profile, "AppArmor profile")
+            args.extend(["--security-opt", "apparmor=" + spec.apparmor_profile])
         for key, value in sorted(spec.labels.items()):
             args.extend(["--label", f"{key}={value}"])
         for key, value in sorted(spec.environment.items()):

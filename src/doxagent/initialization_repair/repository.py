@@ -14,6 +14,7 @@ from doxagent.ticker_initialization.schema import (
     RunStatus,
     utc_now,
 )
+from doxagent.ticker_initialization.targets import historical_failed_node_keys
 
 from .schema import (
     IncidentPhase,
@@ -135,11 +136,20 @@ class RepairRepository:
 
     def failed_targets(self, initialization_id: str) -> list[str]:
         nodes = self.initialization.nodes(initialization_id)
-        failed = [node for node in nodes if node.status == "FAILED"]
+        historical = historical_failed_node_keys(nodes)
+        failed = [node for node in nodes if node.status == "FAILED" and node.key not in historical]
         parents_with_failed_children = {
             str(node.inputs["managed_by"]) for node in failed if node.inputs.get("managed_by")
         }
         return [node.key for node in failed if node.key not in parents_with_failed_children]
+
+    def execution_targets(self, repair_round: RepairRound) -> list[str]:
+        """Filter legacy rounds without rewriting their original target evidence."""
+        incident = self.get(repair_round.incident_id)
+        historical = historical_failed_node_keys(
+            self.initialization.nodes(incident.initialization_id)
+        )
+        return [key for key in repair_round.target_nodes if key not in historical]
 
     def start_round(
         self,
@@ -177,7 +187,10 @@ class RepairRepository:
                     (run.initialization_id,),
                 )
             ]
-            failed = [node for node in nodes if node.status == "FAILED"]
+            historical = historical_failed_node_keys(nodes)
+            failed = [
+                node for node in nodes if node.status == "FAILED" and node.key not in historical
+            ]
             parent_keys = {
                 str(node.inputs["managed_by"]) for node in failed if node.inputs.get("managed_by")
             }
@@ -372,9 +385,18 @@ class RepairRepository:
                     )
                 )
             }
+            historical = historical_failed_node_keys(nodes.values())
+            effective_targets = [key for key in repair_round.target_nodes if key not in historical]
+            excluded = [key for key in repair_round.target_nodes if key in historical]
+            if excluded:
+                repair_round.payload["excluded_historical_targets"] = excluded
+                repair_round.payload["historical_target_disposition"] = (
+                    "Retained FAILED diagnostics under succeeded managers; "
+                    "not rerun, not marked crossed, and excluded from exhaustion."
+                )
             crossed = [
                 key
-                for key in repair_round.target_nodes
+                for key in effective_targets
                 if key in nodes and nodes[key].status == "SUCCEEDED"
             ]
             for key in crossed:
@@ -393,7 +415,7 @@ class RepairRepository:
                             "WHERE incident_id=? AND node_key=?",
                             (budget.model_dump_json(), incident.incident_id, key),
                         )
-            unresolved = [key for key in repair_round.target_nodes if key not in crossed]
+            unresolved = [key for key in effective_targets if key not in crossed]
             exhausted = []
             for key in unresolved:
                 budget_row = db.execute(

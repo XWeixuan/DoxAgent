@@ -16,11 +16,20 @@ def submit_activation(
     reason: str,
     cutoff: datetime,
     operation: str = "ACTIVATE",
+    running_mode: str | None = None,
+    control_epoch: int | None = None,
+    control_operation_id: str | None = None,
     expected_base_revision: str | None = None,
     preserve_monitoring_configuration: bool = False,
 ) -> RunRecord:
     if not reason.strip():
         raise ValueError("operator reason required")
+    active = repository.active_revision(ticker)
+    mode = running_mode or (active or {}).get("running_mode", "FULL")
+    if active and active.get("running_mode", "FULL") == "LIGHTWEIGHT" and mode != "LIGHTWEIGHT":
+        raise InitializationError("reverse mode conversion is unsupported")
+    if mode == "LIGHTWEIGHT" and {"document2", "document3"}.intersection(artifacts):
+        raise InitializationError("LIGHTWEIGHT activation forbids D2/Policy references")
     plan = [
         node
         for node in default_plan()
@@ -38,6 +47,9 @@ def submit_activation(
         plan,
         reinitialize=True,
         operation_kind=operation,
+        running_mode=mode,
+        control_epoch=control_epoch,
+        control_operation_id=control_operation_id,
         expected_base_revision=expected_base_revision,
     )
 
@@ -61,6 +73,8 @@ def replace_artifact(
     active = repository.active_revision(ticker)
     if active is None:
         raise InitializationError("ticker has no active revision to replace")
+    if active.get("running_mode", "FULL") == "LIGHTWEIGHT" and role in {"document2", "document3"}:
+        raise InitializationError("LIGHTWEIGHT does not accept D2/Policy replacements")
     artifacts = {**active["artifacts"], role: reference}
     return submit_activation(
         repository,

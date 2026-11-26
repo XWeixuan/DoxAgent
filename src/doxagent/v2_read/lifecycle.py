@@ -42,6 +42,16 @@ def changed_paths(before, after, prefix=""):
 
 
 def activate(store, ticker, active, at):
+    if active.get("running_mode", "FULL") == "LIGHTWEIGHT":
+        prior = store.get("activation", ticker, "active")
+        if not prior or prior.get("running_mode", "FULL") == "LIGHTWEIGHT":
+            return [], []
+        return [
+            {"kind": "policy_catalog", "ticker": ticker, "id": key,
+             "data": {**value, "lifecycle": "RETIRED", "matched_filters": ["RETIRED"], "effective": available(False)}}
+            for key, value in rows(store, "policy_catalog", ticker).items()
+            if value["lifecycle"] == "ACTIVE"
+        ], []
     admitted_at = at
     # Definition lifecycle belongs to formal publication, not import/admission wall time.
     at = active["policy_set"]["published_at"]

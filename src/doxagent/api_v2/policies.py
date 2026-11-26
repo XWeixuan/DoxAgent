@@ -26,6 +26,8 @@ def install(app):
         activation = view["wire"]["activation"]["data"]
         if not activation:
             raise ApiFailure("NO_ACTIVE_REVISION", 404)
+        if activation.get("running_mode", "FULL") == "LIGHTWEIGHT":
+            raise ApiFailure("NOT_APPLICABLE", 404)
         shell = args.get("shell_id")
         if not shell or (
             shell != "ALL"

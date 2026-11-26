@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+from doxagent.running_mode import RunningMode
+
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -126,6 +128,10 @@ def trade_input(case, payload, recent_trade):
         for k in ("ticker", "cutoff_at", "message", "w1", "additional_tags", "pins", "alignment")
         if k in payload
     }
+    if case.running_mode is RunningMode.LIGHTWEIGHT:
+        result["contexts"] = [c for c in payload.get("contexts", []) if c["name"] == "D1"]
+        result["recent_trade"] = recent_trade
+        return result
     partial = case.frozen_inputs.get("w3_replay", {}).get("partial_input", False)
     if partial:
         w2, policies = project_policy_input(
@@ -170,6 +176,8 @@ def scoped_manifest(manifest):
 
 
 def operations_input(case, payload):
+    if case.running_mode is RunningMode.LIGHTWEIGHT:
+        return {k: payload[k] for k in ("submitted_decision", "output_disposition", "pins")}
     projection = case.frozen_inputs["projection"]["policies"]
     names = titles(projection)
     wanted = set(policy_associations(case.w2_final)) | {

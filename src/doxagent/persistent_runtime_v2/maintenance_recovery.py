@@ -112,7 +112,7 @@ def acknowledge_compensations(journal, ticker):
             pending.discard(identity)
 
 
-def recover_failed(journal, ticker, *, limit=20, after=""):
+def recover_failed(journal, ticker, *, limit=20, after="", running_mode=None):
     acknowledge_compensations(journal, ticker)
     with journal.transaction(write=False, expand=False) as db:
         rows = db.execute(
@@ -135,6 +135,12 @@ def recover_failed(journal, ticker, *, limit=20, after=""):
         if not transient and not compatibility:
             continue
         task = journal.get_task(row["id"])
+        base = task.get("receipt", {}).get("frame", {}).get("base")
+        if task["kind"] == "SWEEP":
+            base = (journal.get("sweep_bundle", task["id"]) or {}).get("inputs")
+        frozen_mode = base.get("running_mode", "FULL") if base else None
+        if running_mode is not None and frozen_mode is not None and frozen_mode != running_mode:
+            continue
         receipt = dict(task["receipt"])
         if compatibility:
             receipt["compatibility_recovery_revision"] = COMPATIBILITY_REVISION

@@ -53,6 +53,8 @@ export function StartForm({
     staleTime: 10_000,
   });
   const [mode, setMode] = useState<MonitorMode>("PAPER_TRADING");
+  const [runningMode, setRunningMode] =
+    useState<StartTickerRequest["running_mode"]>("FULL");
   const [initialization, setInitialization] =
     useState<StartTickerRequest["initialization"]>("FORCE_INITIALIZE");
   const [error, setError] = useState("");
@@ -84,7 +86,7 @@ export function StartForm({
       return;
     }
     if (!enabled) {
-      setError("当前运行模式暂不可用，请检查该标的的执行配置。");
+      setError("当前交易模式暂不可用，请检查该标的的执行配置。");
       return;
     }
     setError("");
@@ -93,7 +95,14 @@ export function StartForm({
     void operationsFor(runtime).submit({
       ticker: normalized,
       kind: "START",
-      body: { ticker: normalized, monitor_mode: mode, initialization },
+      body: {
+        ticker: normalized,
+        monitor_mode: mode,
+        initialization,
+        ...(initialization === "FORCE_INITIALIZE"
+          ? { running_mode: runningMode }
+          : {}),
+      },
     });
   }
   return (
@@ -130,11 +139,11 @@ export function StartForm({
             )}
           </Field>
           <FieldSet disabled={!!busy}>
-            <FieldLegend variant="label">运行模式</FieldLegend>
+            <FieldLegend variant="label">交易模式</FieldLegend>
             <RadioGroup
               value={mode}
               onValueChange={(value) => setMode(value as MonitorMode)}
-              aria-label="运行模式"
+              aria-label="交易模式"
               className="mode-options"
             >
               {(Object.entries(modes) as [MonitorMode, string][]).map(
@@ -155,6 +164,34 @@ export function StartForm({
                   </Field>
                 ),
               )}
+            </RadioGroup>
+          </FieldSet>
+          <FieldSet disabled={!!busy || initialization === "REUSE_ACTIVE"}>
+            <FieldLegend variant="label">运行模式</FieldLegend>
+            <RadioGroup
+              value={runningMode}
+              onValueChange={(value) =>
+                setRunningMode(value as StartTickerRequest["running_mode"])
+              }
+              aria-label="运行模式"
+              className="mode-options"
+            >
+              {(
+                [
+                  ["FULL", "普通运行"],
+                  ["LIGHTWEIGHT", "轻量运行"],
+                ] as const
+              ).map(([value, label]) => (
+                <Field
+                  key={value}
+                  orientation="horizontal"
+                  className="mode-option"
+                  data-selected={runningMode === value}
+                >
+                  <RadioGroupItem id={`running-${value}`} value={value} />
+                  <FieldLabel htmlFor={`running-${value}`}>{label}</FieldLabel>
+                </Field>
+              ))}
             </RadioGroup>
           </FieldSet>
           <FieldSet disabled={!!busy}>

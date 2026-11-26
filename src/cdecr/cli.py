@@ -261,6 +261,9 @@ def _structured_client(
         ModelTier.M3: settings.model_m3_provider,
         ModelTier.M4: settings.model_m4_provider,
     }[scheduler_lane]
+    if provider == "openrouter":
+        from cdecr.openrouter import OpenRouterStructuredModelClient
+        return OpenRouterStructuredModelClient(settings=settings, tier=profile)
     if provider == "deepseek":
         return DeepSeekStructuredModelClient(
             tier=profile,
@@ -321,6 +324,9 @@ def _package_v3_client(
 ) -> DashScopeStructuredModelClient | DeepSeekStructuredModelClient:
     """Keep Package transport isolated while honoring its configured provider."""
 
+    if settings.package_v3_provider == "openrouter":
+        from cdecr.openrouter import OpenRouterStructuredModelClient
+        return OpenRouterStructuredModelClient(settings=settings, tier=ModelTier.M3, package=True)
     if settings.package_v3_provider == "deepseek":
         return DeepSeekStructuredModelClient(
             tier=ModelTier.M3,

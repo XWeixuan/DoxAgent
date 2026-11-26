@@ -77,7 +77,17 @@ export function MonitorRow({
         </TableCell>
         <TableCell>
           <div className="status-stack">
-            <StatusBadge dimension="run" value={state.run_state} />
+            <StatusBadge
+              dimension="run"
+              value={state.run_state}
+              label={
+                state.run_state === "RUNNING"
+                  ? row.running_mode === "LIGHTWEIGHT"
+                    ? "轻量运行"
+                    : "普通运行"
+                  : undefined
+              }
+            />
             {state.health !== "UNKNOWN" && (
               <StatusBadge
                 dimension="health"
@@ -140,7 +150,10 @@ export function MonitorRow({
         </TableCell>
         <TableCell data-row-control>
           <div className="row-actions">
-            <TradingConfigButton ticker={state.ticker} disabled={busy || !canOperate} />
+            <TradingConfigButton
+              ticker={state.ticker}
+              disabled={busy || !canOperate}
+            />
             {(
               [
                 { kind: "PAUSE", action: "pause", label: "暂停", icon: Pause },

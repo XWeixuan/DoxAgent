@@ -75,6 +75,11 @@
   background: #f5f2f5;
   color: var(--foreground);
 }
+.ticker-workspace .ticker-navigation nav a[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
 .ticker-workspace .ticker-navigation nav a.active {
   background: #f7ecf2;
   color: var(--primary);

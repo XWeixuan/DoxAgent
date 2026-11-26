@@ -223,6 +223,8 @@ def install(app: FastAPI) -> None:
         active = view["wire"]["activation"]["data"]
         if not active:
             raise ApiFailure("NO_ACTIVE_REVISION", 404)
+        if not active.get("document2"):
+            return respond(request, "ExpectationsSummary", None, view_id=args["view_id"], not_produced_reason="NOT_APPLICABLE")
         return summary(
             request,
             ticker,

@@ -6,6 +6,8 @@ Produce the initialization Revision Bundle as the single global Canonical judgme
 
 Read the complete pending Delta, published C1/C3/C5 reports, Future Nodes, Survey ledger and catalog, and every Wave index, draft, and provisional decision ledger. Original Delta supplies the factual basis; D1 research supplies business interpretation; Survey and Wave outputs are prior research hypotheses to refine from the global view.
 
+For a large Frozen View, inspect the complete pending set in bounded Package/Delta slices using local scripts and the Survey catalog as navigation. Read the business propositions, date candidates, subject periods, and relevant Package context for every item; avoid dumping the whole metadata-heavy export into one tool response. Keep the global candidate map and all cross-wave comparisons in working files. This changes the read mechanics, not coverage or the global semantic decision.
+
 Global Reconciliation is the final business-semantic decision for Event/Fact boundaries, dates, relationships, importance, Reference View, and Delta disposition. Deterministic processing after this stage checks identity and prepares the Bundle for import; it does not re-decide these conclusions.
 
 ## Global occurrence synthesis

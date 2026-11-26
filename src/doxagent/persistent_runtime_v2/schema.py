@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from doxagent.running_mode import RunningMode
+
 from datetime import UTC, date, datetime
 from enum import StrEnum
 from typing import Annotated, Any, ClassVar, Final, Literal
@@ -17,6 +19,7 @@ from pydantic import (
     StrictBool,
     field_validator,
     model_validator,
+    model_serializer,
 )
 
 from doxagent.event_library.contracts import (
@@ -235,14 +238,29 @@ class SourceMessageEnvelope(RuntimeV2Model):
 
 
 class RuntimeVersionPin(RuntimeV2Model):
+    running_mode: RunningMode = RunningMode.FULL
     event_library_root: str | None = None
     activation_revision_id: str | None = None
     document1_run_id: str | None = None
     document2_run_id: str | None = None
     event_library_version: int = Field(ge=1)
     provisional_snapshot_version: int = Field(ge=0)
-    policy_set_version: int = Field(ge=1)
-    runtime_projection_version: int = Field(ge=1)
+    policy_set_version: int | None = Field(default=None, ge=1)
+    runtime_projection_version: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def mode_assets(self):
+        if self.running_mode is RunningMode.FULL:
+            if self.policy_set_version is None or self.runtime_projection_version is None:
+                raise ValueError("FULL requires Policy/Projection versions")
+        elif (
+            self.document2_run_id is not None
+            or self.policy_set_version is not None
+            or self.runtime_projection_version is not None
+            or not self.document1_run_id
+        ):
+            raise ValueError("LIGHTWEIGHT requires D1 and forbids D2/Policy/Projection")
+        return self
 
 
 class W1Round1Result(RuntimeV2Model):
@@ -548,6 +566,10 @@ class RuntimeEffect(RuntimeV2Model):
 
 
 class RuntimeCase(RuntimeV2Model):
+    @property
+    def running_mode(self):
+        return self.version_pin.running_mode
+
     w3_contract_version: str | None = None
     w3_trade_decision: JsonObject | None = None
     w3_consensus: JsonObject | None = None
@@ -613,6 +635,20 @@ class RuntimeCase(RuntimeV2Model):
                 }
         return payload
 
+    @model_validator(mode="after")
+    def mode_results(self):
+        if self.running_mode is RunningMode.LIGHTWEIGHT and (
+            self.w2_final is not None
+            or self.w2_round1 is not None
+            or self.w2_alignment is not None
+            or self.w2_contract_version is not None
+            or self.w2_skipped
+            or self.first_round_tags
+            or self.frozen_inputs.get("projection") is not None
+        ):
+            raise ValueError("LIGHTWEIGHT Case forbids W2/Policy results and tags")
+        return self
+
     @property
     def ticker(self) -> str:
         return self.source.snapshot.ticker
@@ -641,6 +677,7 @@ class PolicyActivationRecord(RuntimeV2Model):
 
 
 class TradeRecord(RuntimeV2Model):
+    running_mode: RunningMode = RunningMode.FULL
     w3_trade_decision: JsonObject | None = None
     executed_condition_id: str | None = None
     executed_condition_revision: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
@@ -656,19 +693,23 @@ class TradeRecord(RuntimeV2Model):
     matched_condition_ids: list[str] = Field(default_factory=list)
     w3_case_id: str | None = None
     candidate_policy_ids: list[str] = Field(default_factory=list)
-    policy_set_version: int = Field(ge=1)
+    policy_set_version: int | None = Field(default=None, ge=1)
     decision: PolicyDecision
     w1_result: W1NoveltyResult
     w2_result: Annotated[
-        W2PolicyAssessmentResultV2 | W2PolicyAssessmentResult,
+        W2PolicyAssessmentResultV2 | W2PolicyAssessmentResult | None,
         BeforeValidator(normalize_w2_result),
-    ]
+    ] = None
     w3_result: W3CaseResultV3 | W3CaseResult | None = None
     daily_status: DailyRecordStatus = DailyRecordStatus.PENDING
     created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def origin_reference_is_consistent(self) -> TradeRecord:
+        if self.running_mode is RunningMode.FULL and (self.w2_result is None or self.policy_set_version is None):
+            raise ValueError("FULL trade requires W2 and Policy version")
+        if self.running_mode is RunningMode.LIGHTWEIGHT and (self.w2_result is not None or self.policy_set_version is not None or self.decision_origin is not TradeDecisionOrigin.W3 or self.candidate_policy_ids or self.executed_policy_id):
+            raise ValueError("LIGHTWEIGHT trade forbids W2 and Policy")
         if self.decision_origin is TradeDecisionOrigin.POLICY:
             if not self.executed_policy_id or self.w3_case_id is not None:
                 raise ValueError("POLICY trade requires policy_id and forbids w3_case_id")
@@ -704,6 +745,17 @@ class O3MaintenanceFeed(RuntimeV2Model):
     trade_records: list[TradeRecord] = Field(default_factory=list)
     badcase_records: list[BadcaseRecord] = Field(default_factory=list)
     w3_coverage_gaps: list[W3CoverageGapRecord] = Field(default_factory=list)
+
+
+    @model_serializer(mode="wrap")
+    def model_input(self, handler):
+        # Mode is durable runtime metadata, never a new research instruction.
+        payload = handler(self)
+        for trade in payload.get("trade_records", []):
+            trade.pop("running_mode", None)
+        for candidate in payload.get("trade_candidates", []):
+            candidate.get("trade", {}).pop("running_mode", None)
+        return payload
 
 
 class O3MaintenanceFeedV2(O3MaintenanceFeed):
@@ -892,10 +944,23 @@ def parse_w3_result(value, *, revision):
 
 
 class W3ContextVersionPin(RuntimeV2Model):
+    running_mode: RunningMode = RunningMode.FULL
     document1_run_id: str
-    document2_run_id: str
+    document2_run_id: str | None = None
     event_library_version: int = Field(ge=1)
-    policy_set_version: int = Field(ge=1)
+    policy_set_version: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def mode_assets(self):
+        if self.running_mode is RunningMode.FULL and (
+            self.document2_run_id is None or self.policy_set_version is None
+        ):
+            raise ValueError("FULL research requires D2 and Policy pin")
+        if self.running_mode is RunningMode.LIGHTWEIGHT and (
+            self.document2_run_id is not None or self.policy_set_version is not None
+        ):
+            raise ValueError("LIGHTWEIGHT research forbids D2 and Policy pin")
+        return self
 
 
 class W3ThreadSlot(RuntimeV2Model):
@@ -907,6 +972,7 @@ class W3ThreadSlot(RuntimeV2Model):
 
 
 class W3RouteCase(RuntimeV2Model):
+    running_mode: RunningMode = RunningMode.FULL
     trade_decision: JsonObject | None = None
     operations_result: JsonObject | None = None
     operations_status: str | None = None
@@ -922,11 +988,11 @@ class W3RouteCase(RuntimeV2Model):
     source: SourceMessageEnvelope
     w1_final: W1NoveltyResult
     w2_final: Annotated[
-        W2PolicyAssessmentResultV2 | W2PolicyAssessmentResult,
+        W2PolicyAssessmentResultV2 | W2PolicyAssessmentResult | None,
         BeforeValidator(normalize_w2_result),
-    ]
+    ] = None
     event_library_version: int = Field(ge=1)
-    policy_set_version: int = Field(ge=1)
+    policy_set_version: int | None = Field(default=None, ge=1)
     route_reason: str
     mode: W3Mode
     status: W3CaseStatus = W3CaseStatus.PENDING
@@ -940,6 +1006,15 @@ class W3RouteCase(RuntimeV2Model):
     error_message: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
+
+
+    @model_validator(mode="after")
+    def mode_assets(self):
+        if self.running_mode is RunningMode.FULL and (self.w2_final is None or self.policy_set_version is None):
+            raise ValueError("FULL W3 route requires W2 and Policy")
+        if self.running_mode is RunningMode.LIGHTWEIGHT and (self.w2_final is not None or self.w2_alignment is not None or self.w2_contract_version is not None or self.policy_set_version is not None):
+            raise ValueError("LIGHTWEIGHT W3 route forbids W2 and Policy")
+        return self
 
 
 class W3CoverageGapRecord(RuntimeV2Model):

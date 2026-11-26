@@ -44,7 +44,7 @@ for (const [name, definition] of Object.entries(schema.definitions)) {
     ];
 }
 Object.assign(schema.definitions.InitializationProgress.properties.steps, {
-  minItems: 6,
+  minItems: 4,
   maxItems: 6,
 });
 const contract = readFileSync(
@@ -81,7 +81,7 @@ if (existsSync(backendPath)) {
     walk(definitions[name]);
   };
   for (const name of [
-    "ReadContext",
+    "ReadContext", "Activation", "InitializationProgress", "StartTickerRequest", "TickerOverview",
     "AgentOperationsPage", "OperationsOverviewPage", "OperationsOverview",
     "RevenueSnapshot", "RevenueEvaluation", "RevenueReport", "RevenueDetail", "RevenueRecord", "RevenueLeg", "RevenueHypothesis", "RevenueOrder",
     "TradingConfiguration",

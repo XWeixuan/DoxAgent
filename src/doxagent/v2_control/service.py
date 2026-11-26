@@ -153,6 +153,21 @@ class ControlService:
             self.repository.settle(op["id"], initialization_id=identity)
             return True
         active = self.initialization.active_revision(ticker)
+        requested_mode = op["body"].get("running_mode", (active or {}).get("running_mode", "FULL"))
+        if active and active.get("running_mode", "FULL") == "LIGHTWEIGHT" and requested_mode != "LIGHTWEIGHT":
+            raise ControlError("REVERSE_MODE_UNSUPPORTED")
+        switch_run = (self.initialization.by_control_operation(op["id"])
+                      if op["kind"] == "RESTART" and requested_mode == "LIGHTWEIGHT" else None)
+        if active and requested_mode == "LIGHTWEIGHT" and active.get("running_mode", "FULL") == "FULL" and op["kind"] != "RESTART":
+            raise ControlError("MODE_SWITCH_REQUIRES_RESTART")
+        if op["kind"] == "RESTART" and op["body"].get("running_mode") == "LIGHTWEIGHT" and active and (
+            active.get("running_mode", "FULL") == "FULL" or
+            switch_run and switch_run.operation_kind == "SWITCH_RUNNING_MODE"
+        ):
+            if state["requested_mode"] != state["mode"]:
+                raise ControlError("MODE_SWITCH_PRESERVES_MONITOR_MODE")
+            from .running_mode_switch import drive_switch
+            return drive_switch(self, op, state, active)
         if not active and op["body"].get("initialization") == "REUSE_ACTIVE":
             raise ControlError("NO_ACTIVE_REVISION")
         if op["body"].get("initialization") == "FORCE_INITIALIZE" or not active:
@@ -188,6 +203,7 @@ class ControlService:
                         else self.repository.journal.clock()
                     ),
                     default_plan(
+                        running_mode=requested_mode,
                         cdecr_prebuilt_ref=(
                             reference.model_dump(mode="json") if reference is not None else None
                         ),
@@ -196,6 +212,7 @@ class ControlService:
                         ),
                     ),
                     reinitialize=bool(active),
+                    running_mode=requested_mode,
                     control_operation_id=op["id"],
                     control_epoch=state["epoch"],
                 )

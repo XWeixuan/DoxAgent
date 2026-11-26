@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "20cb4d77e32bcc1d611229a920313d80325c1d77697bd689f50df20feaf9fc82",
+  "source_sha256": "af623566e21e565f075e6a14d843303a524dde9d157f90c8229496c48fd1d85d",
   "$defs": {
     "Id": {
       "type": "string"
@@ -1148,6 +1148,9 @@
     "Activation": {
       "type": "object",
       "properties": {
+        "running_mode": {
+          "$ref": "#/$defs/RunningMode"
+        },
         "maintenance": {
           "anyOf": [
             {
@@ -1162,16 +1165,30 @@
           "$ref": "#/$defs/Id"
         },
         "activated_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "document1": {
           "$ref": "#/$defs/DocumentRef"
         },
         "document2": {
-          "$ref": "#/$defs/DocumentRef"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DocumentRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "policy_set": {
-          "$ref": "#/$defs/PolicySetRef"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PolicySetRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "event_library": {
           "$ref": "#/$defs/LibraryRef"
@@ -1876,11 +1893,14 @@
     "TickerOverview": {
       "type": "object",
       "properties": {
+        "running_mode": {
+          "$ref": "#/$defs/RunningMode"
+        },
         "state": {
           "$ref": "#/$defs/TickerState"
         },
         "last_standard_message_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "source_counts": {
           "$ref": "#/$defs/SourceCounts"
@@ -1916,7 +1936,7 @@
         "initialization": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Resource__c643f1ffd164"
+              "$ref": "#/$defs/Resource%3CInitializationProgress%3E"
             },
             {
               "type": "null"
@@ -1936,6 +1956,9 @@
     "InitializationProgress": {
       "type": "object",
       "properties": {
+        "running_mode": {
+          "$ref": "#/$defs/RunningMode"
+        },
         "initialization_id": {
           "$ref": "#/$defs/Id"
         },
@@ -1964,7 +1987,9 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/InitializationStep"
-          }
+          },
+          "minItems": 4,
+          "maxItems": 6
         },
         "quality_annotations": {
           "type": "array",
@@ -2203,33 +2228,6 @@
         "data",
         "reason",
         "coverage"
-      ],
-      "additionalProperties": false
-    },
-    "StartTickerRequest": {
-      "type": "object",
-      "properties": {
-        "ticker": {
-          "type": "string"
-        },
-        "monitor_mode": {
-          "$ref": "#/$defs/MonitorMode"
-        },
-        "initialization": {
-          "anyOf": [
-            {
-              "const": "REUSE_ACTIVE"
-            },
-            {
-              "const": "FORCE_INITIALIZE"
-            }
-          ]
-        }
-      },
-      "required": [
-        "ticker",
-        "monitor_mode",
-        "initialization"
       ],
       "additionalProperties": false
     },
@@ -7795,6 +7793,9 @@
     "CaseSummary": {
       "type": "object",
       "properties": {
+        "running_mode": {
+          "$ref": "#/$defs/RunningMode"
+        },
         "runtime_tags": {
           "type": "array",
           "items": {
@@ -9701,7 +9702,14 @@
           "$ref": "#/$defs/LibraryRef"
         },
         "policy_set": {
-          "$ref": "#/$defs/PolicySetRef"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PolicySetRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "provisional_snapshot_version": {
           "$ref": "#/$defs/Count"
@@ -10094,6 +10102,48 @@
     "ExecutionSummary": {
       "type": "object",
       "properties": {
+        "exit_summary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "job_id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "remaining_quantity": {
+                "$ref": "#/$defs/DecimalString"
+              },
+              "requires_manual_review": {
+                "type": "boolean"
+              },
+              "unresolved_order": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "job_id",
+              "role",
+              "state",
+              "reason",
+              "remaining_quantity",
+              "requires_manual_review",
+              "unresolved_order"
+            ],
+            "additionalProperties": false
+          }
+        },
         "execution_group": {
           "$ref": "#/$defs/ExecutionGroupSummary"
         },
@@ -30749,6 +30799,132 @@
       },
       "required": [
         "configuration"
+      ],
+      "additionalProperties": false
+    },
+    "RunningMode": {
+      "type": "string",
+      "enum": [
+        "FULL",
+        "LIGHTWEIGHT"
+      ]
+    },
+    "Resource<InitializationProgress>": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "EMPTY",
+            "PARTIAL",
+            "NOT_PRODUCED",
+            "UNAVAILABLE",
+            "FORBIDDEN",
+            "ERROR"
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InitializationProgress"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "state",
+        "data",
+        "reason",
+        "coverage"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "AVAILABLE",
+                  "EMPTY",
+                  "PARTIAL"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "NOT_PRODUCED",
+                  "UNAVAILABLE",
+                  "FORBIDDEN",
+                  "ERROR"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "StartTickerRequest": {
+      "type": "object",
+      "properties": {
+        "running_mode": {
+          "$ref": "#/$defs/RunningMode"
+        },
+        "ticker": {
+          "type": "string"
+        },
+        "monitor_mode": {
+          "$ref": "#/$defs/MonitorMode"
+        },
+        "initialization": {
+          "type": "string",
+          "enum": [
+            "REUSE_ACTIVE",
+            "FORCE_INITIALIZE"
+          ]
+        }
+      },
+      "required": [
+        "ticker",
+        "monitor_mode",
+        "initialization"
       ],
       "additionalProperties": false
     }

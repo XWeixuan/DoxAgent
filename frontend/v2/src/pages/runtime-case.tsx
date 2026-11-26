@@ -45,8 +45,14 @@ export default function CaseDetails({
       {(d) => (
         <div className="case-details">
           <h2>{valueText(d.summary.title)}</h2>
-          {(d.summary.runtime_tags ?? []).map(tag => <span className="domain-tag" key={tag}>长研判耗时</span>)}
-          {d.summary.w3_model_seconds != null && <span>交易研判 {d.summary.w3_model_seconds.toFixed(0)}s</span>}
+          {(d.summary.runtime_tags ?? []).map((tag) => (
+            <span className="domain-tag" key={tag}>
+              长研判耗时
+            </span>
+          ))}
+          {d.summary.w3_model_seconds != null && (
+            <span>交易研判 {d.summary.w3_model_seconds.toFixed(0)}s</span>
+          )}
           <div className="case-results">
             {(d.summary.first_round_tags ?? []).map((tag) => (
               <span className="domain-tag" key={tag}>
@@ -148,7 +154,8 @@ export default function CaseDetails({
               <p>尚未形成 W1 判定</p>
             )}
           </section>
-          {d.policy_watch &&
+          {d.summary.running_mode !== "LIGHTWEIGHT" &&
+            d.policy_watch &&
             (d.policy_watch.followup.length > 0 ||
               d.policy_watch.actions.length > 0) && (
               <section>
@@ -179,139 +186,141 @@ export default function CaseDetails({
                 </details>
               </section>
             )}
-          <section>
-            <h3>W2 · Policy 判定</h3>
-            {d.w2.data ? (
-              <>
-                <div className="verdict">
-                  <strong>
-                    {d.w2.data.skipped
-                      ? "已跳过"
-                      : valueText(d.w2.data.policy_hit, (v) =>
-                          v ? "命中" : "未命中",
-                        )}
-                  </strong>
-                  <span>
-                    Policy 相关{" "}
-                    {valueText(d.w2.data.policy_related, (v) =>
-                      v ? "TRUE" : "FALSE",
-                    )}
-                  </span>
-                  <span>置信度 {valueText(d.w2.data.confidence)}</span>
-                  {d.w2.data.policies.map((p) => (
-                    <span key={p.policy_id}>
-                      策略 {p.policy_id} ·{" "}
-                      {p.condition_ids.length
-                        ? "命中条件 " + p.condition_ids.join("、")
-                        : "命中条件未提供"}
-                    </span>
-                  ))}
-                </div>
-                <PolicyEvidence
-                  ticker={ticker}
-                  label="相关 Policy"
-                  conditionLabel="相关条件"
-                  activationId={
-                    d.runtime_activation_id.state === "AVAILABLE"
-                      ? d.runtime_activation_id.value
-                      : undefined
-                  }
-                  policies={d.w2.data.related_policies}
-                  unresolved={d.w2.data.unresolved_related_policy_ids}
-                />
-                {d.w2.data.novel_fact_alignment && (
-                  <section>
-                    <h4>W2 · R3 新事实对齐</h4>
-                    <p>
-                      Policy 依据新旧：
-                      {valueText(
-                        d.w2.data.novel_fact_alignment.policy_fact_novelty,
+          {d.w2.reason !== "NOT_APPLICABLE" && (
+            <section>
+              <h3>W2 · Policy 判定</h3>
+              {d.w2.data ? (
+                <>
+                  <div className="verdict">
+                    <strong>
+                      {d.w2.data.skipped
+                        ? "已跳过"
+                        : valueText(d.w2.data.policy_hit, (v) =>
+                            v ? "命中" : "未命中",
+                          )}
+                    </strong>
+                    <span>
+                      Policy 相关{" "}
+                      {valueText(d.w2.data.policy_related, (v) =>
+                        v ? "TRUE" : "FALSE",
                       )}
-                    </p>
-                    <p>
-                      {
+                    </span>
+                    <span>置信度 {valueText(d.w2.data.confidence)}</span>
+                    {d.w2.data.policies.map((p) => (
+                      <span key={p.policy_id}>
+                        策略 {p.policy_id} ·{" "}
+                        {p.condition_ids.length
+                          ? "命中条件 " + p.condition_ids.join("、")
+                          : "命中条件未提供"}
+                      </span>
+                    ))}
+                  </div>
+                  <PolicyEvidence
+                    ticker={ticker}
+                    label="相关 Policy"
+                    conditionLabel="相关条件"
+                    activationId={
+                      d.runtime_activation_id.state === "AVAILABLE"
+                        ? d.runtime_activation_id.value
+                        : undefined
+                    }
+                    policies={d.w2.data.related_policies}
+                    unresolved={d.w2.data.unresolved_related_policy_ids}
+                  />
+                  {d.w2.data.novel_fact_alignment && (
+                    <section>
+                      <h4>W2 · R3 新事实对齐</h4>
+                      <p>
+                        Policy 依据新旧：
+                        {valueText(
+                          d.w2.data.novel_fact_alignment.policy_fact_novelty,
+                        )}
+                      </p>
+                      <p>
                         {
-                          PENDING: "待执行",
-                          RUNNING: "执行中",
-                          SUCCEEDED: "已完成",
-                          FAILED: "失败",
-                          UNAVAILABLE: "对齐不可用，已交由 W3 研判",
-                          NOT_EXECUTED: "未执行",
-                          NOT_RECORDED: "历史未记录",
-                        }[d.w2.data.novel_fact_alignment.status]
-                      }
-                    </p>
-                    {d.w2.data.novel_fact_alignment.condition_results.map(
-                      (r, i) => (
-                        <p key={i}>
-                          {r.condition_ids.join("、")} ·{" "}
-                          {r.is_new ? "TRUE" : "FALSE"}
-                        </p>
-                      ),
-                    )}
-                    {d.w2.data.novel_fact_alignment.related_policy_results?.map(
-                      (r) => (
-                        <p key={r.policy_id}>
-                          {r.policy_id} · {r.is_new ? "TRUE" : "FALSE"}
-                        </p>
-                      ),
-                    )}
-                    {d.w2.data.novel_fact_alignment.error && (
-                      <p>{d.w2.data.novel_fact_alignment.error}</p>
-                    )}
-                  </section>
-                )}
-                <Attempts
-                  ticker={ticker}
-                  caseId={caseId}
-                  node="W2"
-                  view={view}
-                  rounds={d.w2.data.rounds}
-                  first={d.w2.data.attempts}
-                />
-                {d.w2.data.unresolved_policy_ids?.length ? (
-                  <Notice>
-                    命中策略（快照详情未解析）：
-                    {d.w2.data.unresolved_policy_ids.join("、")}
-                  </Notice>
-                ) : null}
-                {d.w2.data.policy_hit.state === "AVAILABLE" &&
-                  d.w2.data.policy_hit.value &&
-                  !d.w2.data.policies.length &&
-                  !d.w2.data.unresolved_policy_ids?.length && (
-                    <Notice>该命中判定未提供策略归因。</Notice>
+                          {
+                            PENDING: "待执行",
+                            RUNNING: "执行中",
+                            SUCCEEDED: "已完成",
+                            FAILED: "失败",
+                            UNAVAILABLE: "对齐不可用，已交由 W3 研判",
+                            NOT_EXECUTED: "未执行",
+                            NOT_RECORDED: "历史未记录",
+                          }[d.w2.data.novel_fact_alignment.status]
+                        }
+                      </p>
+                      {d.w2.data.novel_fact_alignment.condition_results.map(
+                        (r, i) => (
+                          <p key={i}>
+                            {r.condition_ids.join("、")} ·{" "}
+                            {r.is_new ? "TRUE" : "FALSE"}
+                          </p>
+                        ),
+                      )}
+                      {d.w2.data.novel_fact_alignment.related_policy_results?.map(
+                        (r) => (
+                          <p key={r.policy_id}>
+                            {r.policy_id} · {r.is_new ? "TRUE" : "FALSE"}
+                          </p>
+                        ),
+                      )}
+                      {d.w2.data.novel_fact_alignment.error && (
+                        <p>{d.w2.data.novel_fact_alignment.error}</p>
+                      )}
+                    </section>
                   )}
-                <Reason ticker={ticker} content={d.w2.data.reasoning}>
-                  <PolicyEvidence
+                  <Attempts
                     ticker={ticker}
-                    activationId={
-                      d.runtime_activation_id.state === "AVAILABLE"
-                        ? d.runtime_activation_id.value
-                        : undefined
-                    }
-                    label="R1 召回候选 Policy"
-                    policies={d.w2.data.candidate_policies}
-                    unresolved={d.w2.data.unresolved_candidate_policy_ids}
+                    caseId={caseId}
+                    node="W2"
+                    view={view}
+                    rounds={d.w2.data.rounds}
+                    first={d.w2.data.attempts}
                   />
-                  <PolicyEvidence
-                    ticker={ticker}
-                    activationId={
-                      d.runtime_activation_id.state === "AVAILABLE"
-                        ? d.runtime_activation_id.value
-                        : undefined
-                    }
-                    label="最终命中 Policy"
-                    filter="HIT"
-                    policies={d.w2.data.policies}
-                    unresolved={d.w2.data.unresolved_policy_ids}
-                    recorded={d.w2.data.policy_hit.state === "AVAILABLE"}
-                  />
-                </Reason>
-              </>
-            ) : (
-              <p>尚未形成 W2 判定</p>
-            )}
-          </section>
+                  {d.w2.data.unresolved_policy_ids?.length ? (
+                    <Notice>
+                      命中策略（快照详情未解析）：
+                      {d.w2.data.unresolved_policy_ids.join("、")}
+                    </Notice>
+                  ) : null}
+                  {d.w2.data.policy_hit.state === "AVAILABLE" &&
+                    d.w2.data.policy_hit.value &&
+                    !d.w2.data.policies.length &&
+                    !d.w2.data.unresolved_policy_ids?.length && (
+                      <Notice>该命中判定未提供策略归因。</Notice>
+                    )}
+                  <Reason ticker={ticker} content={d.w2.data.reasoning}>
+                    <PolicyEvidence
+                      ticker={ticker}
+                      activationId={
+                        d.runtime_activation_id.state === "AVAILABLE"
+                          ? d.runtime_activation_id.value
+                          : undefined
+                      }
+                      label="R1 召回候选 Policy"
+                      policies={d.w2.data.candidate_policies}
+                      unresolved={d.w2.data.unresolved_candidate_policy_ids}
+                    />
+                    <PolicyEvidence
+                      ticker={ticker}
+                      activationId={
+                        d.runtime_activation_id.state === "AVAILABLE"
+                          ? d.runtime_activation_id.value
+                          : undefined
+                      }
+                      label="最终命中 Policy"
+                      filter="HIT"
+                      policies={d.w2.data.policies}
+                      unresolved={d.w2.data.unresolved_policy_ids}
+                      recorded={d.w2.data.policy_hit.state === "AVAILABLE"}
+                    />
+                  </Reason>
+                </>
+              ) : (
+                <p>尚未形成 W2 判定</p>
+              )}
+            </section>
+          )}
           {d.w3.data && (
             <section>
               <h3>W3 · {d.w3.data.decision ? "交易与后置研判" : "二轮研判"}</h3>
@@ -1034,6 +1043,7 @@ function Executions({
                 </span>
                 <span>{e.entry_result ?? e.intake_status}</span>
               </header>
+              <ExitFailureStatus exits={e.exit_summary} />
               <dl>
                 {e.execution_group && (
                   <>
@@ -1184,5 +1194,29 @@ export function ExitStrategyStatus({ value }: { value: ExitStrategySummary }) {
           "—"}
       </dd>
     </dl>
+  );
+}
+
+export function ExitFailureStatus({
+  exits,
+}: {
+  exits: ExecutionSummary["exit_summary"];
+}) {
+  return (
+    <>
+      {exits?.map((exit) =>
+        exit.requires_manual_review ? (
+          <Notice key={exit.job_id} danger>
+            FAILED EXIT／退出失败，需人工处理 · {exit.role} · 剩余{" "}
+            {exit.remaining_quantity} 股{exit.reason ? ` · ${exit.reason}` : ""}
+            {exit.unresolved_order ? " · 旧订单状态待核对，请勿重复下单" : ""}
+          </Notice>
+        ) : exit.state === "RECONCILE_REQUIRED" ? (
+          <p key={exit.job_id}>
+            退出对账中 · {exit.role} · 剩余 {exit.remaining_quantity} 股
+          </p>
+        ) : null,
+      )}
+    </>
   );
 }

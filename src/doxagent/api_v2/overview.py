@@ -100,6 +100,7 @@ def ticker_overview_data(store, view, selected):
     states = store.batch_get([("ticker",ticker,ticker) for ticker in selected],view["seq"])
     initializations = store.batch_get([("initialization",ticker,states[("ticker",ticker,ticker)]["initialization_id"]) for ticker in selected if states[("ticker",ticker,ticker)]["initialization_id"]],view["seq"])
     latest_by_ticker = store.latest_messages_at(selected, view["seq"])
+    activations = store.batch_get([("activation", ticker, "active") for ticker in selected], view["seq"])
     items = []
     for ticker in selected:
         state = states[("ticker",ticker,ticker)]
@@ -109,9 +110,11 @@ def ticker_overview_data(store, view, selected):
             if state["initialization_id"]
             else None
         )
+        running_mode = (activations.get(("activation", ticker, "active")) or initialization or {}).get("running_mode", "FULL")
         items.append(
             {
                 "state": state,
+                **({"running_mode": "LIGHTWEIGHT"} if running_mode == "LIGHTWEIGHT" else {}),
                 "last_standard_message_at": available(latest)
                 if latest
                 else missing(),

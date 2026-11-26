@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import time
 from typing import Any
+from doxagent.running_mode import RunningMode, required_artifact_roles
 
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.settings import DoxAgentSettings
@@ -67,49 +68,54 @@ class ActivationAdapter:
                     "initialization_id": context.run.initialization_id,
                     "database": str(path),
                 }
-            policies = SQLiteDocument3PolicyRepository(self.settings.codex_runtime_sqlite_path)
-            policy = policies.get_projection(context.run.ticker, refs["document3"]["version"])
-            reader = PublishedEventLibraryReader(
-                refs["event_library"].get("root") or self.settings.event_library_root or "",
-                market="US",
-            )
-            index = reader.known_index(context.run.ticker, version=refs["event_library"]["version"])
-            if policy is None or index is None:
-                raise ValueError("activation has no usable Index/Projection")
-            canonical = policies.get_version(context.run.ticker, refs["document3"]["version"])
-            if (
-                canonical is None
-                or canonical.ticker != context.run.ticker
-                or policy.ticker != context.run.ticker
-            ):
-                raise ValueError("activation Policy identity mismatch")
-            from doxagent.workflows.codex_document3.repository import _project
+            if getattr(context.run, "running_mode", RunningMode.FULL) is RunningMode.FULL:
+                policies = SQLiteDocument3PolicyRepository(self.settings.codex_runtime_sqlite_path)
+                policy = policies.get_projection(context.run.ticker, refs["document3"]["version"])
+                reader = PublishedEventLibraryReader(
+                    refs["event_library"].get("root") or self.settings.event_library_root or "",
+                    market="US",
+                )
+                index = reader.known_index(context.run.ticker, version=refs["event_library"]["version"])
+                if policy is None or index is None:
+                    raise ValueError("activation has no usable Index/Projection")
+                canonical = policies.get_version(context.run.ticker, refs["document3"]["version"])
+                if (
+                    canonical is None
+                    or canonical.ticker != context.run.ticker
+                    or policy.ticker != context.run.ticker
+                ):
+                    raise ValueError("activation Policy identity mismatch")
+                from doxagent.workflows.codex_document3.repository import _project
 
-            if _project(canonical) != policy:
-                raise ValueError("activation canonical Policy/Projection mismatch")
-            if (
-                canonical.document2_ref
-                and canonical.document2_ref.run_id != refs["document2"]["run_id"]
-            ):
-                raise ValueError("activation Policy source D2 pin mismatch")
+                if _project(canonical) != policy:
+                    raise ValueError("activation canonical Policy/Projection mismatch")
+                if (
+                    canonical.document2_ref
+                    and canonical.document2_ref.run_id != refs["document2"]["run_id"]
+                ):
+                    raise ValueError("activation Policy source D2 pin mismatch")
+            else:
+                reader = PublishedEventLibraryReader(refs["event_library"].get("root") or self.settings.event_library_root or "", market="US")
+                if reader.known_index(context.run.ticker, version=refs["event_library"]["version"]) is None:
+                    raise ValueError("activation Event Index unavailable")
             self._documents_available(context.run.ticker, refs)
             await self._wait_w3(context)
             # Only references enter the revision; bodies remain in local artifact storage.
             selected = {
                 key: refs[key]
-                for key in (
-                    "document1",
-                    "document2",
-                    "event_library",
-                    "document3",
-                    "monitoring_configuration",
-                )
+                for key in required_artifact_roles(getattr(context.run, "running_mode", RunningMode.FULL))
             }
             revision = context.repository.stage_revision(context.lease, identity, selected)
             return NodeResult(artifacts={"activation_revision": revision})
         revision = context.dependency("activation.prepare").artifacts["activation_revision"]
         identity = revision["revision_id"]
         if context.node.key == "activation.commit":
+            if context.run.operation_kind == "SWITCH_RUNNING_MODE":
+                from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+                from doxagent.v2_control.running_mode_switch import assert_quiet, require_closed_weekend
+                journal = RuntimeJournal(self.settings.persistent_runtime_v2_sqlite_path)
+                require_closed_weekend(journal)
+                assert_quiet(journal, context.run.ticker)
             context.repository.activate(context.lease, identity)
             return NodeResult(artifacts={"revision_id": identity})
         worker = {"bus.ready": "bus", "runtime.ready": "runtime"}.get(context.node.key)
@@ -190,6 +196,8 @@ class ActivationAdapter:
             ("document1", "document_artifact_id"),
             ("document2", "document2_artifact_id"),
         ):
+            if role not in refs:
+                continue
             run_id = refs[role]["run_id"]
             bundle = repository.get_bundle(run_id)
             handoff = getattr(bundle, "handoff", None)

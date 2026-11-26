@@ -6,7 +6,7 @@ import json
 import re
 import sqlite3
 import time
-from contextlib import ExitStack, nullcontext
+from contextlib import ExitStack, nullcontext, contextmanager
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -31,10 +31,19 @@ class ProjectionWorker:
         self.store.projection_timings = self.timings
         self._slow_window = (0.0, 0)
 
+    @contextmanager
+    def _progress_session(self):
+        # Compact metadata is reused only by this sequential projection tick.
+        self.store._initialization_progress_cache = {}
+        try:
+            yield
+        finally:
+            self.store._initialization_progress_cache = None
+
     def tick(self, *, limit: int = 100) -> int:
         session = self.store.projection_session() if hasattr(self.store, "projection_session") else nullcontext()
         started, cpu = time.monotonic(), time.process_time()
-        with session, ExitStack() as readers:
+        with self._progress_session(), session, ExitStack() as readers:
             for source in self.sources:
                 if isinstance(source, SourceOutbox):
                     readers.enter_context(source.projection_session())
@@ -229,14 +238,17 @@ class ProjectionWorker:
                     self._slow_window=(window,n)
                 skipped = None
             except sqlite3.IntegrityError as exc:
+                self._clear_progress_cache()
                 if str(exc) != 'ARTIFACT_RECLAIM_IN_PROGRESS':
                     raise
                 # The business owner/receipt still owns the bytes. Retry this
                 # coordinate and rematerialize after local GC finishes; never BODY.
                 break
             except (OSError, sqlite3.OperationalError):
+                self._clear_progress_cache()
                 raise  # Infrastructure failure is never a successfully skipped receipt.
             except (ValueError, KeyError, TypeError) as exc:
+                self._clear_progress_cache()
                 self._pins_dirty.add(source.source)
                 self.store.ingest(
                     source.source,
@@ -272,7 +284,13 @@ class ProjectionWorker:
         self.store.ingest("capture_coverage", f"policy-proof-v1:{source}:{uuid4().hex}", records)
         self._coverage_keys[source] = key
 
+    def _clear_progress_cache(self):
+        cache = getattr(self.store, "_initialization_progress_cache", None)
+        if cache is not None:
+            cache.clear()
+
     def repair(self, *, limit: int = 20, budget: float = 1) -> int:
+        self._clear_progress_cache()
         now = datetime.now(UTC)
         with self.store.connect() as db:
             gaps = db.execute(
@@ -291,6 +309,7 @@ class ProjectionWorker:
                 source = sources.get(gap[0])
                 if source is None or not gap[1].isdigit():
                     continue
+                self._clear_progress_cache()
                 # Only attempted items accrue attempts; preserve every gap/pin.
                 delay = min(21600, 2 ** min(gap[2] + 1, 15))
                 try:

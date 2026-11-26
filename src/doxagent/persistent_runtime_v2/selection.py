@@ -19,6 +19,7 @@ from doxagent.codex_worker.schema import WorkerRunRequest
 from doxagent.semantic_clock import semantic_day
 
 from .journal import RuntimeJournal, digest, encode
+from doxagent.running_mode import RunningMode
 from .schema import RuntimeVersionPin, TradeRecord, strict_json_schema
 from .trade_output import TradeOutputService
 from .worker_receipts import ReceiptWorker
@@ -55,6 +56,10 @@ class WeekendSelection:
                 candidate["status"] = "RELEASED"
                 self.journal.set("candidates", prior["candidate_id"], candidate)
                 return dict(prior)
+        if candidates and self.runtime.input_snapshot_loader:
+            current = self.runtime.input_snapshot_loader(task["ticker"])
+            if current and any(c.get("trade", {}).get("running_mode", "FULL") != current.running_mode for c in candidates):
+                raise ValueError("selection running mode changed")
         day = date.fromisoformat(task["inputs"]["day"])
         expired = semantic_day(self.journal.clock()) != day
         result = task["receipt"].get("selection_result")
@@ -67,43 +72,44 @@ class WeekendSelection:
             if payload is None:
                 loader = self.runtime.input_snapshot_loader
                 active = loader(task["ticker"])
-                if active is None or active.index is None or active.projection is None:
+                if active is None or active.index is None or (active.running_mode is RunningMode.FULL and active.projection is None):
                     raise ValueError("no usable bundle for final selection")
                 case = self.runtime.repository.get_case(candidates[0]["case_id"])
                 current_case = case.model_copy(
                     update={
                         "version_pin": RuntimeVersionPin(
+                            running_mode=active.running_mode,
                             activation_revision_id=active.activation_revision_id,
                             document1_run_id=active.document1_run_id,
                             document2_run_id=active.document2_run_id,
                             event_library_root=active.event_library_root,
                             event_library_version=active.index.version,
-                            policy_set_version=active.projection.policy_set_version,
-                            runtime_projection_version=active.projection.policy_set_version,
+                            policy_set_version=active.projection.policy_set_version if active.projection else None,
+                            runtime_projection_version=active.projection.policy_set_version if active.projection else None,
                             provisional_snapshot_version=0,
                         )
                     }
                 )
                 if self.judge:
-                    context = {"projection": active.projection.model_dump(mode="json")}
+                    context = {"projection": active.projection.model_dump(mode="json") if active.projection else None}
                 else:
                     prepared = await self.runtime._w3_agent._context.load(current_case)
                     context = {
                         "document1": prepared.document1,
-                        "document2": prepared.document2.model_dump(mode="json"),
-                        "policy_set": prepared.policy_set.model_dump(mode="json"),
+                        "document2": prepared.document2.model_dump(mode="json") if prepared.document2 else None,
+                        "policy_set": prepared.policy_set.model_dump(mode="json") if prepared.policy_set else None,
                         "reference_view": prepared.reference_view,
                     }
                 maintenance = self.journal.get_task(f"maintain:{task['inputs']['sweep_id']}")
                 payload = {
                     "selection_id": task["id"],
-                    "candidates": candidates,
+                    "candidates": [{**c, "trade": {k: v for k, v in c["trade"].items() if k != "running_mode"}} for c in candidates],
                     "context": context,
                     "active_revision": active.activation_revision_id,
-                    "projection": active.projection.model_dump(mode="json"),
+                    "projection": active.projection.model_dump(mode="json") if active.projection else None,
                     "fallback": not maintenance or maintenance["status"] != "SUCCEEDED",
                     "realtime_outputs": [
-                        item
+                        {**item, "trade": {k: v for k, v in item["trade"].items() if k != "running_mode"}}
                         for item in self.journal.values("trade_intents")
                         if item["ticker"] == task["ticker"]
                         and item["release_semantic_day"] == day.isoformat()
@@ -121,6 +127,10 @@ class WeekendSelection:
                         }
                     ],
                 }
+                if active.running_mode is RunningMode.LIGHTWEIGHT:
+                    payload.pop("projection", None)
+                    payload["context"] = {"document1": prepared.document1, "reference_view": self.runtime._known_for_case(current_case).reader.reference_view(task["ticker"], version=active.index.version).reference_view} if not self.judge else {}
+                    payload["candidates"] = [{k: v for k, v in c.items() if k != "trade"} | {"trade": {k: v for k, v in c["trade"].items() if k in {"decision", "source", "w1_result", "w3_trade_decision", "created_at"}}} for c in candidates]
                 self.journal.checkpoint(task, judgment_inputs=payload)
             if self.judge:
                 result = (await self.judge(payload)).model_dump()
@@ -156,7 +166,7 @@ class WeekendSelection:
             case = self.runtime.repository.get_case(candidate["case_id"])
             trade = TradeRecord.model_validate(candidate["trade"])
             active = self.runtime.input_snapshot_loader(task["ticker"])
-            valid = active and active.projection
+            valid = active and active.running_mode is trade.running_mode and active.index and (active.projection or (not trade.executed_policy_id and active.running_mode is RunningMode.LIGHTWEIGHT))
             if trade.executed_condition_id and valid:
                 from .policy_consumption import prepare_output_guard
 

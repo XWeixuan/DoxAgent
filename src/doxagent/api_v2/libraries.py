@@ -52,6 +52,8 @@ def install(app: FastAPI) -> None:
     def policy_shells(
         request: Request, ticker: str, args: dict[str, str], view: dict, activation: dict
     ) -> dict:
+        if not activation.get("document2"):
+            raise ApiFailure("NOT_APPLICABLE", 404)
         value = page(request, ticker, "shell", activation["document2"]["run_id"], args, view)
         value["items"] = [
             {
@@ -70,6 +72,8 @@ def install(app: FastAPI) -> None:
     async def context(ticker: str, request: Request) -> Any:
         args = query(request, {"view_id", "limit"})
         view, activation = active(request, ticker, args, "POLICIES")
+        if activation.get("running_mode", "FULL") == "LIGHTWEIGHT":
+            return respond(request, "PolicyContext", None, view_id=args["view_id"], not_produced_reason="NOT_APPLICABLE")
         policies = store.get(
             "policy_set", ticker, activation["policy_set"]["artifact_id"], view["seq"]
         )
@@ -200,7 +204,7 @@ def install(app: FastAPI) -> None:
         import json
         args = query(request, {"runtime_activation_id"})
         activation = store.get("activation_revision", ticker, args.get("runtime_activation_id", ""))
-        if not activation or activation["policy_set"]["policy_set_version"] != policy_set_version:
+        if not activation or not activation.get("policy_set") or activation["policy_set"]["policy_set_version"] != policy_set_version:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
         ref = activation["policy_set"]
         policy_set = store.get("policy_set", ticker, ref["artifact_id"])
@@ -225,7 +229,7 @@ def install(app: FastAPI) -> None:
     async def policy_download(ticker: str, policy_set_version: int, request: Request) -> Any:
         args = query(request, {"runtime_activation_id"})
         activation = store.get("activation_revision", ticker, args.get("runtime_activation_id", ""))
-        if not activation or activation["policy_set"]["policy_set_version"] != policy_set_version:
+        if not activation or not activation.get("policy_set") or activation["policy_set"]["policy_set_version"] != policy_set_version:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
         value = store.get("policy_set", ticker, activation["policy_set"]["artifact_id"])
         if value is None:

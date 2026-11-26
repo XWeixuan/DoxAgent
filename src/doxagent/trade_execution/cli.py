@@ -80,6 +80,16 @@ def parser() -> Any:
     cmd.add_argument("--execution", required=True)
     cmd = sub.add_parser("reconcile")
     cmd.add_argument("--execution", required=True)
+    for name in ('group-exit', 'group-resume-exit', 'group-exit-status'):
+        management = sub.add_parser(name)
+        management.add_argument('--execution', required=True)
+        if name == 'group-exit-status':
+            management.add_argument('--request-id')
+        if name != 'group-exit-status':
+            for option in ('account', 'request-id', 'actor', 'reason'):
+                management.add_argument('--'+option, required=True)
+        if name == 'group-resume-exit':
+            management.add_argument('--verification', required=True, help='Explicit operator-reviewed historical fills/manual-operation evidence JSON')
     cmd = sub.add_parser("resume-exit")
     cmd.add_argument("--lot", required=True)
     cmd.add_argument("--reason", required=True)
@@ -321,6 +331,17 @@ def main() -> Any:
                 "attempts": [{**a, "metrics": attempt_metrics(a, fills)} for a in attempts],
                 "fills": fills,
             }
+    elif args.command in {'group-exit', 'group-resume-exit', 'group-exit-status'}:
+        from .management import submit, view
+        if args.command == 'group-exit-status':
+            output = view(repo, args.execution, args.request_id)
+        else:
+            request = dict(action='EARLY_EXIT' if args.command=='group-exit' else 'RESUME_FAILED_EXIT',
+                execution_id=args.execution, account=args.account, request_id=args.request_id,
+                actor=args.actor, reason=args.reason)
+            if args.command=='group-resume-exit':
+                request['verification'] = json.loads(Path(args.verification).read_text(encoding='utf-8'))
+            output = submit(repo, request)
     elif args.command == "resume-exit":
         output = repo.resume_exit(args.lot, args.reason)
     elif args.command == "validate-paper":

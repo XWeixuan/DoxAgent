@@ -112,3 +112,40 @@ def test_existing_container_resource_boundary_mismatch_is_rejected():
                 pids_limit=64,
             )
         )
+
+
+def test_repair_agent_can_select_namespace_seccomp_profile():
+
+    class CaptureRuntime(DockerRuntime):
+        def inspect(self, name):
+            return None
+
+        def _run(self, args, **kwargs):
+            self.args = args
+            raise ContainerError("captured create")
+
+    runtime = CaptureRuntime()
+    with pytest.raises(ContainerError, match="captured create"):
+        runtime.ensure_started(ContainerSpec(
+            name="repair-agent", image="agent", command=["true"], labels={},
+            seccomp_profile="/etc/doxagent/repair-seccomp.json",
+            apparmor_profile="doxagent-initialization-repair"))
+    assert runtime.args[runtime.args.index("--security-opt") + 1] == (
+        "seccomp=/etc/doxagent/repair-seccomp.json")
+    assert "apparmor=doxagent-initialization-repair" in runtime.args
+    assert "--privileged" not in runtime.args
+
+
+def test_existing_agent_with_different_sandbox_policy_is_rejected(tmp_path):
+    import json
+    profile = tmp_path / "seccomp.json"
+    profile.write_text(json.dumps({"defaultAction": "SCMP_ACT_ERRNO", "syscalls": []}))
+    runtime = InspectRuntime({
+        "Id": "container", "Config": {"Labels": {}},
+        "HostConfig": {"CgroupParent": "doxagent-app.slice", "SecurityOpt": []},
+        "State": {"Status": "running", "Running": True},
+    })
+    with pytest.raises(ContainerError, match="AppArmor=.*expected"):
+        runtime.ensure_started(ContainerSpec(
+            name="repair-agent", image="agent", command=["true"], labels={},
+            apparmor_profile="doxagent-initialization-repair", seccomp_profile=str(profile)))

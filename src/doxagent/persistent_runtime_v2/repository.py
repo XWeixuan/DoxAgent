@@ -1105,11 +1105,14 @@ class SQLitePersistentRuntimeV2Repository:
                         "FROM runtime_v2_cases c WHERE c.case_id=runtime_v2_effects.case_id),'REALTIME')!='CLOSED')")
             exclusions += ' AND ' + (realtime if lane == 'realtime_w3' else 'NOT ' + realtime)
         def select_due(db):
+            switch_filter = ""
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_operations'").fetchone():
+                switch_filter = " AND NOT EXISTS (SELECT 1 FROM v2_operations o JOIN runtime_v2_cases c ON c.ticker=o.ticker WHERE c.case_id=runtime_v2_effects.case_id AND o.state IN ('ACCEPTED','RUNNING') AND json_extract(o.payload,'$.kind')='RESTART' AND json_extract(o.payload,'$.body.running_mode')='LIGHTWEIGHT')"
             pending = db.execute(
                 "SELECT effect_id,available_at,rowid AS sequence FROM runtime_v2_effects "
                 "INDEXED BY idx_runtime_v2_effects_pending "
                 "WHERE status IN ('PENDING','PENDING_RETRY') AND available_at<=? "
-                + exclusions + " ORDER BY available_at,rowid LIMIT ?",
+                + exclusions + switch_filter + " ORDER BY available_at,rowid LIMIT ?",
                 (now.isoformat(), *exclude_ids, limit),
             ).fetchall()
             expired = db.execute(
@@ -1117,7 +1120,7 @@ class SQLitePersistentRuntimeV2Repository:
                 "INDEXED BY idx_runtime_v2_effects_running "
                 "WHERE status='RUNNING' AND (json_extract(payload_json,'$.lease_until')<=? "
                 "OR (json_extract(payload_json,'$.lease_until') IS NULL AND updated_at<=?)) "
-                + exclusions + " ORDER BY available_at,rowid LIMIT ?",
+                + exclusions + switch_filter + " ORDER BY available_at,rowid LIMIT ?",
                 (
                     now.isoformat(),
                     (now - timedelta(seconds=120)).isoformat(),

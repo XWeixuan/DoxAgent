@@ -1,0 +1,14 @@
+#include <tunables/global>
+profile doxagent-initialization-repair flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  network,
+  capability,
+  file,
+  mount,
+  umount,
+  pivot_root,
+  signal,
+  ptrace (trace,read) peer=doxagent-initialization-repair,
+  unix,
+  userns,
+}

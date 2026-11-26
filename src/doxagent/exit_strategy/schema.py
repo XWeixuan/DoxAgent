@@ -25,6 +25,8 @@ class ExitPolicy(BaseModel):
 
 
 EXIT_REASONS = {
+    "MANUAL_EARLY_EXIT",
+    "VERIFIED_FAILED_EXIT_RESUME",
     "TRAILING_PROFIT",
     "SESSION_CUTOFF",
     "HARD_RISK",

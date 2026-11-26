@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from doxagent.running_mode import RunningMode
+
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
@@ -46,6 +48,7 @@ class NodeResult(Model):
 
 
 class RunRecord(Model):
+    running_mode: RunningMode = RunningMode.FULL
     document2_schema_version: str = "document2.v2"
     document3_orchestration_version: str = "v2"
     schema_version: str = "ticker-initialization-v2"

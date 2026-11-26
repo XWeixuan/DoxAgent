@@ -156,6 +156,8 @@ def neutral_upstream(original):
 def prepare_curated(root, *, catalog=CATALOG, previous=None, host="doxagent-sg"):
     root = Path(root)
     marker = root / "manifest.json"
+    if marker.exists() and read_json(marker).get('catalog_version'):
+        raise ValueError('reviewed catalogs cannot be overwritten by legacy prepare-curated; use a new dataset directory')
     if marker.exists() and read_json(marker).get("schema_version") != SCHEMA:
         raise ValueError("use a new curated dataset directory; legacy datasets remain immutable")
     catalog = Path(catalog)
@@ -280,6 +282,13 @@ def prepare_curated(root, *, catalog=CATALOG, previous=None, host="doxagent-sg")
 def build_curated(root):
     root = Path(root)
     manifest = read_json(root / "manifest.json")
+    if manifest.get('catalog_version'):
+        from .catalog import load_catalog
+        rows = load_catalog(root)
+        if {r['case_key'] for r in rows} != {r['case_key'] for r in manifest['cases']}:
+            raise ValueError('Catalog and input manifest Case identities differ')
+        manifest['collections'] = {s+'/'+p: [r['case_id'] for r in rows if r['suite']==s and r['split']==p]
+                                   for s in ('decision','timeliness') for p in ('dev','validation')}
     ready = []
     incomplete = []
     for entry in manifest["cases"]:
@@ -349,13 +358,15 @@ def build_curated(root):
 def construction_tasks(root, keys=None, batch_size=4):
     root = Path(root).resolve()
     manifest = read_json(root / "manifest.json")
+    model = manifest.get('construction_model', CONSTRUCTION_MODEL)
+    effort = manifest.get('construction_effort', CONSTRUCTION_EFFORT)
     selected = [e["case_key"] for e in manifest["cases"] if not keys or e["case_key"] in keys]
     tasks = []
     for n in range(0, len(selected), batch_size):
         batch = selected[n : n + batch_size]
         task = dict(
-            model=CONSTRUCTION_MODEL,
-            reasoning_effort=CONSTRUCTION_EFFORT,
+            model=model,
+            reasoning_effort=effort,
             case_keys=batch,
             manual=str(MANUAL.resolve()),
             dataset=str(root),
@@ -384,9 +395,17 @@ def construction_tasks(root, keys=None, batch_size=4):
                 "ase报告来源数量、覆盖面、DATE补时证据及实际困难。"
             ),
         )
+        if manifest.get('catalog_version'):
+            task['instructions'] = (
+                '仅授权模拟Web Search证据构造，不得处理框架、Catalog、Gold、价格或更改输入时钟。'
+                '只读本批中性Case、历史D1/D2与构造手册，不读原W3结果、评估底稿或标签。'
+                '原发或近似原发自然纳入来源，覆盖Prior、条款/技术/监管、经济量级、传导、替代与反证等相关问题。'
+                '忠实交付充分事实；不虚构原文、URL、时间，不按篇数填同稿转载。'
+                '只写本批evidence来源、索引及独立preparation搜索审计，不把采集困难或交易结论注入来源。'
+            )
         path = root / "preparation/construction_tasks" / f"batch_{n // batch_size + 1:02}.json"
         write_json(path, task)
         tasks.append(str(path))
     return dict(
-        tasks=tasks, cases=len(selected), model=CONSTRUCTION_MODEL, effort=CONSTRUCTION_EFFORT
+        tasks=tasks, cases=len(selected), model=model, effort=effort
     )

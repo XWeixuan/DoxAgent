@@ -101,9 +101,12 @@ class DecisionReplayRunner:
         self.trade_mode=trade_mode
         self.service_tier = service_tier
         prompts = Path(prompt_root)
+        prompt_files = ["AGENTS.md", "backtest.md", "contract.json"]
+        if (prompts / "skills/skill.md").is_file():
+            prompt_files.append("skills/skill.md")
         self.assets = {
             "w3/" + name: (prompts / name).read_text(encoding="utf-8-sig")
-            for name in ("AGENTS.md", "skills/skill.md", "backtest.md", "contract.json")
+            for name in prompt_files
         }
         contract = json.loads(self.assets["w3/contract.json"])["w3_contract_version"]
         if contract != "persistent-runtime.w3.v6":
@@ -396,6 +399,7 @@ class DecisionReplayRunner:
         decision = result.model_dump(mode="json") if hasattr(result, "model_dump") else result
         receipt = dict(
             case_key=case_key,
+            case_id=raw.get('case_id', raw.get('original_case_id')),
             ticker=case.ticker,
             original_case_id=raw.get("original_case_id"),
             replay_case_id=case.case_id,

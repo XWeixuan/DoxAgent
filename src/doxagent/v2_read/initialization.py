@@ -35,8 +35,12 @@ BLOCKS = {
 
 def progress(store: ReadStore, run: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
     ticker, identity = run["ticker"], run["initialization_id"]
-    groups: dict[str, dict[str, Any]] = {}
+    cache = getattr(store, "_initialization_progress_cache", None)
+    cache_key = (ticker, identity)
+    groups: dict[str, dict[str, Any]] = cache.get(cache_key, {}) if cache is not None else {}
     for kind in ("native:initialization_nodes", "native:initialization_events"):
+        if kind in groups:
+            continue
         # Progress needs stage metadata, not historical prompts/worker receipts.
         # Keep externalized result/event payload refs so their used fields still
         # pass through the native-content integrity check.
@@ -62,13 +66,21 @@ def progress(store: ReadStore, run: dict[str, Any], incoming: dict[str, Any]) ->
                 (kind, ticker, identity),
             )
             groups[kind] = {r[0]: json.loads(r[1]) for r in rows}
+    if cache is not None:
+        cache[cache_key] = groups
     if incoming["kind"] in groups:
-        groups[incoming["kind"]][incoming["id"]] = incoming["data"]
+        from .serving_fields import select
+
+        selected = select(incoming["kind"], incoming["id"], incoming["data"])
+        if selected is not None:
+            groups[incoming["kind"]][incoming["id"]] = selected
     nodes = list(groups["native:initialization_nodes"].values())
     events = list(groups["native:initialization_events"].values())
     steps = []
     all_quality = set()
     for step in STEPS:
+        if run.get("running_mode", "FULL") == "LIGHTWEIGHT" and step in {"EXPECTATIONS", "POLICIES"}:
+            continue
         selected = [n for n in nodes if BLOCKS.get(n["block"]) == step]
         states = {n["status"] for n in selected}
         status = (
@@ -117,6 +129,7 @@ def progress(store: ReadStore, run: dict[str, Any], incoming: dict[str, Any]) ->
     control = store.get("ticker", ticker, ticker)
     value = {
         "initialization_id": identity,
+        **({"running_mode": "LIGHTWEIGHT"} if run.get("running_mode", "FULL") == "LIGHTWEIGHT" else {}),
         "ticker": ticker,
         "status": run["status"],
         "state_seq": run["state_seq"],

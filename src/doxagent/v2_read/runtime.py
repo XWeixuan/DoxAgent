@@ -19,7 +19,8 @@ def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
     """R1/R2 plus W2 R3 determine wall time; W1 extraction runs outside this interval."""
     ticker, identity = case["source"]["snapshot"]["ticker"], case["case_id"]
     value = None
-    if case["runtime_mode"] == "REALTIME" and case.get("w1_final") and case.get("w2_final"):
+    light = case.get("version_pin", {}).get("running_mode", "FULL") == "LIGHTWEIGHT"
+    if case["runtime_mode"] == "REALTIME" and case.get("w1_final") and (light or case.get("w2_final")):
         with store.connect() as db:
             turns = [
                 json.loads(row[0])
@@ -36,7 +37,7 @@ def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
         ]
         if (
             turns
-            and {turn["node_id"] for turn in turns} == {"W1", "W2"}
+            and {turn["node_id"] for turn in turns} == ({"W1"} if light else {"W1", "W2"})
             and all(
                 turn["timing"]["first_started_at"]["value"]
                 and turn["timing"]["completed_at"]["value"]

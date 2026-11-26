@@ -269,6 +269,15 @@ class ControlRepository:
                 (ticker,),
             ).fetchone():
                 raise ControlError("OPERATION_IN_PROGRESS")
+            if "running_mode" in body:
+                from doxagent.running_mode import RunningMode
+                try:
+                    RunningMode(body["running_mode"])
+                except ValueError:
+                    raise ControlError("VALIDATION_FAILED", 422)
+                if kind == "RESTART" and body["running_mode"] == "LIGHTWEIGHT":
+                    if not state or state["status"] != "PAUSED":
+                        raise ControlError("MODE_SWITCH_REQUIRES_PAUSE")
             mode = body.get("monitor_mode", (state or {}).get("mode", "MESSAGE_MONITORING"))
             if mode not in MODES:
                 raise ControlError("VALIDATION_FAILED", 422)
@@ -445,7 +454,7 @@ class ControlRepository:
                     activation_id=activation_id or state["activation_id"],
                 )
                 state["new_intent_allowed"] = state["mode"] != "MESSAGE_MONITORING"
-                if previous_mode == "MESSAGE_MONITORING" or not state.get("mode_effective_at"):
+                if not op["steps"].get("running_mode_switch") and (previous_mode == "MESSAGE_MONITORING" or not state.get("mode_effective_at")):
                     state["mode_effective_at"] = now
                 op["outcome"] = "RUNNING"
             elif initialization_id:
@@ -482,6 +491,10 @@ class ControlRepository:
             state = control_in(db, op["ticker"])
             if state and state["epoch"] == op["epoch"]:
                 state["requested_mode"] = state["mode"]
+                if op["kind"] == "RESTART" and op["body"].get("running_mode") == "LIGHTWEIGHT":
+                    # A failed conversion keeps the operator's pause authoritative.
+                    state["admission_allowed"] = False
+                    state["initialization_allowed"] = False
                 state["control_error"] = code
                 state["revision"] += 1
                 self._save(db, state, "operation.failed")
@@ -509,6 +522,10 @@ class ControlRepository:
         state = control_in(db, ticker)
         if state is None:
             return
+        from .running_mode_switch import active_switch
+
+        if active_switch(db, ticker):
+            raise ControlError("MODE_SWITCH_IN_PROGRESS")
         if not state["analysis_allowed"]:
             raise ControlError("ANALYSIS_PAUSED")
         eligible = state["mode"] != "MESSAGE_MONITORING"

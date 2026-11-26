@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
 from doxagent.ticker_initialization.repository import InitializationRepository
 from doxagent.ticker_initialization.schema import InitializationError, RunStatus
+from doxagent.ticker_initialization.targets import historical_failed_node_keys
 from doxagent.v2_control.repository import ControlError, ControlRepository
 
 from .containers import ContainerSpec, DockerRuntime
@@ -258,6 +260,12 @@ class Guardian:
                     memory="15g",
                     memory_swap="16g",
                     pids_limit=4096,
+                    seccomp_profile=os.environ.get(
+                        "DOXAGENT_INITIALIZATION_REPAIR_AGENT_SECCOMP_PROFILE"
+                    ),
+                    apparmor_profile=os.environ.get(
+                        "DOXAGENT_INITIALIZATION_REPAIR_AGENT_APPARMOR_PROFILE"
+                    ),
                 )
             )
         except Exception:
@@ -659,7 +667,7 @@ class Guardian:
         cdecr_state = None
         if any(
             key == "cdecr" or key.startswith("cdecr.") or ".native:" in key
-            for key in repair_round.target_nodes
+            for key in self.repairs.execution_targets(repair_round)
         ):
             cdecr_name = f"doxagent-repair-cdecr-{repair_round.round_id}"
             cdecr_state = self.docker.ensure_started(
@@ -779,13 +787,19 @@ class Guardian:
             )
             return
         nodes = {node.key: node for node in self.initialization.nodes(run.initialization_id)}
+        historical = historical_failed_node_keys(nodes.values())
         crossed = [
             key
-            for key in repair_round.target_nodes
+            for key in self.repairs.execution_targets(repair_round)
             if key in nodes and nodes[key].status == "SUCCEEDED"
         ]
-        failed = [key for key, node in nodes.items() if node.status == "FAILED"]
-        result = f"run={run.status}; crossed={crossed}; failed={failed}"
+        failed = [
+            key for key, node in nodes.items() if node.status == "FAILED" and key not in historical
+        ]
+        result = (
+            f"run={run.status}; crossed={crossed}; failed={failed}; "
+            f"historical_failed={sorted(historical)}"
+        )
         self.repairs.finish_round(repair_round.round_id, result=result, exit_code=state.exit_code)
         record_execution(
             self.repairs,
@@ -798,6 +812,7 @@ class Guardian:
                 "execution_result": result,
                 "crossed_nodes": crossed,
                 "failed_nodes": failed,
+                "historical_failed_nodes": sorted(historical),
                 "exit_code": state.exit_code,
                 "remaining_items": failed or [],
             },

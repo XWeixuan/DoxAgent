@@ -126,6 +126,7 @@ function Fixture() {
       <div className={`runtime-flow-layout${node ? " has-node" : ""}`}>
         <FlowGraph
           graph={graph}
+          lightweight={new URLSearchParams(location.search).has("lightweight")}
           selected={node}
           pathEdges={
             node

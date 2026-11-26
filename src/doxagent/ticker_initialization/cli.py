@@ -23,6 +23,7 @@ def parser() -> argparse.ArgumentParser:
     for name in ("submit", "reinitialize"):
         command = commands.add_parser(name)
         command.add_argument("--ticker", required=True)
+        command.add_argument("--running-mode", choices=["FULL", "LIGHTWEIGHT"], default=None)
         command.add_argument("--research-cutoff-at", required=True)
         command.add_argument(
             "--plan",
@@ -282,6 +283,7 @@ def main(argv: list[str] | None = None) -> int:
                 ]
                 if args.plan
                 else default_plan(
+                    running_mode=args.running_mode or (repo.active_revision(args.ticker) or {}).get("running_mode", "FULL"),
                     o4_delivery_enabled=settings.ticker_initialization_o4_delivery_enabled
                 )
             )
@@ -290,6 +292,7 @@ def main(argv: list[str] | None = None) -> int:
                 datetime.fromisoformat(args.research_cutoff_at),
                 plan,
                 reinitialize=args.command == "reinitialize",
+                running_mode=args.running_mode or (repo.active_revision(args.ticker) or {}).get("running_mode", "FULL"),
             )
             print(run.model_dump_json(indent=2))
         elif args.command == "resume":

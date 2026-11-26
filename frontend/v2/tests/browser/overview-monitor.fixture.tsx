@@ -11,6 +11,8 @@ import "../../src/refinement.css";
 
 const runtime = createRuntime(createTestAuth());
 const items = wire.rows();
+const lightFixture = new URLSearchParams(location.search).has("lightweight");
+if (lightFixture) items[0].running_mode = "LIGHTWEIGHT";
 items[0].metrics.api_token_cost.current_coverage.state = "UNKNOWN";
 items[0].metrics.policy_hits.current_coverage.state = "UNKNOWN";
 items[1].metrics.policy_hits.current = {
@@ -57,7 +59,7 @@ runtime.api.request = (async (name: string, path: string) => {
       }),
     };
   if (name === "Capabilities") return { data: wire.capabilities };
-  if (name === "Principal") return { data: { can_operate: false } };
+  if (name === "Principal") return { data: { can_operate: lightFixture } };
   throw new Error(`Unexpected fixture request: ${name}`);
 }) as typeof runtime.api.request;
 createRoot(document.getElementById("root")!).render(

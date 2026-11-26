@@ -49,10 +49,12 @@ export function StatusBadge({
   dimension,
   value,
   title,
+  label: customLabel,
 }: {
   dimension: "run" | "health" | "step";
   value: string;
   title?: string;
+  label?: string;
 }) {
   const mapping: Record<string, [string, Tone, typeof Circle]> =
     dimension === "run" ? lifecycle : dimension === "health" ? health : step;
@@ -64,7 +66,7 @@ export function StatusBadge({
       title={title}
     >
       <Icon aria-hidden="true" />
-      {label}
+      {customLabel ?? label}
     </Badge>
   );
 }

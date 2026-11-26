@@ -5,6 +5,7 @@
 1. Read `task.json` first to obtain the current stage, `content_input_order`, assigned Delta, access scope, prior work paths, output paths, and the Date Resolution and Reference View Decision Ledger paths.
 2. Read `AGENTS.md`, `agent.md`, the combined `skill.md`, `context.json`, and `output_schema.json` in `content_input_order`. `skill.md` is the immutable snapshot of the Shared Canonical Foundation plus the Current Stage Workflow.
    For `LOCAL_RECONSTRUCTION`, immediately read the task's immutable `wave_runtime_context_path` after these five control files and verify its SHA-256 before using its Package → Atomic projection.
+   For bounded `SURVEY` passes, follow `metadata.survey`: verify the supplied immutable runtime projection for `PART`, or read every completed pass's navigation and date ledgers for `SYNTHESIS`. Full Frozen Delta remains available for focused factual lookups; complete global comparison before reconstruction.
 3. Read the Frozen View manifest and the business files required by the current stage: the complete Known Event Index, assigned Atomic Delta, Runtime Package index, permitted Event Details, reference-review candidates, prior-attempt work, upstream context, and the ledger schemas referenced by the manifest when the stage writes those artifacts.
 
 Known Event Index rows contain exactly `event_id | occurred_at | known_event_summary`. The title is not included; the summary is always present, including when it repeats the Event Detail title.

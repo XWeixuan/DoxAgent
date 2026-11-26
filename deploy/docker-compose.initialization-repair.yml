@@ -10,7 +10,8 @@ services:
       dockerfile: deploy/Dockerfile.initialization-guardian
       args:
         DOXAGENT_BASE_IMAGE: ${DOXAGENT_BACKEND_DEPS_IMAGE:-doxagent-deps:backend}
-    restart: unless-stopped
+    restart: "no"
+    profiles: ["manual-initialization-guardian"]
     logging:
       driver: json-file
       options: {max-size: "20m", max-file: "3"}
@@ -18,6 +19,8 @@ services:
     env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
     environment:
       DOXAGENT_INITIALIZATION_REPAIR_ENABLED: "true"
+      DOXAGENT_INITIALIZATION_REPAIR_AGENT_APPARMOR_PROFILE: ${DOXAGENT_INITIALIZATION_REPAIR_AGENT_APPARMOR_PROFILE:-doxagent-initialization-repair}
+      DOXAGENT_INITIALIZATION_REPAIR_AGENT_SECCOMP_PROFILE: ${DOXAGENT_INITIALIZATION_REPAIR_AGENT_SECCOMP_PROFILE:-/etc/doxagent/initialization-repair-seccomp.json}
       DOXAGENT_INITIALIZATION_REPAIR_ROOT: /var/lib/doxagent/initialization-repair
       DOXAGENT_INITIALIZATION_REPAIR_SOURCE_REPOSITORY: /repair-source
       DOXAGENT_INITIALIZATION_REPAIR_PRODUCTION_CONTAINER: ${DOXAGENT_INITIALIZATION_REPAIR_PRODUCTION_CONTAINER:?set the exact v2-initialization container name}

@@ -277,15 +277,11 @@ class FakeO2Worker:
                 delta_coverage={"total": 2, "resolved": 2, "pending": 0},
             )
         else:
-            stage = (
-                EventLibraryRunStage.SURVEY
-                if request.attempt_id == "o2-survey"
-                else EventLibraryRunStage.LOCAL_RECONSTRUCTION
-            )
             task_response = await self.workspace.read_text(
                 request.run_id, f"attempts/{request.attempt_id}/input/task.json"
             )
             task = json.loads(task_response.content or "{}")
+            stage = EventLibraryRunStage(task["stage"])
             if stage is EventLibraryRunStage.SURVEY:
                 await self.workspace.write_text(
                     request.run_id,
@@ -294,6 +290,19 @@ class FakeO2Worker:
                         {item: "product-announcement" for item in task["assigned_delta_ids"]}
                     )
                     + "\n",
+                )
+                await self.workspace.write_text(
+                    request.run_id,
+                    f"{task['work_path']}/occurrence_ledger.md",
+                    "AMD product announcement: " + ", ".join(task["assigned_delta_ids"]),
+                )
+                await self.workspace.write_text(
+                    request.run_id, task["date_resolution_ledger_path"],
+                    "\n".join(json.dumps({
+                        "delta_id": delta_id,
+                        "semantic_role": "EVENT_OCCURRENCE",
+                        "status": "UNRESOLVED",
+                    }) for delta_id in task["assigned_delta_ids"]) + "\n",
                 )
             else:
                 await self.workspace.write_text(
@@ -389,8 +398,23 @@ async def test_wave_initialization_reuses_thread_publishes_and_resumes_without_m
     assert outcome is not None and outcome.publishable
     assert len(repository.published_events("AMD")) == 1
     assert len(repository.published_events("AMD")[0].facts) == 2
-    assert {request.thread_id for request in worker.requests[1:]} == {"o2-thread-1"}
-    assert len(worker.requests) == 4
+    assert [r.attempt_id for r in worker.requests[:3]] == [
+        "o2-survey-part-001", "o2-survey-part-002", "o2-survey",
+    ]
+    assert all(r.thread_id is None for r in worker.requests[:3])
+    assert {r.thread_id for r in worker.requests[3:]} == {"o2-thread-1"}
+    assert len(worker.requests) == 6
+    for request in worker.requests[3:5]:
+        task = json.loads(workspace.store.read_text(
+            request.run_id, f"attempts/{request.attempt_id}/input/task.json"
+        ).content)
+        manifest = json.loads(workspace.store.read_text(
+            request.run_id, task["frozen_view_manifest"]
+        ).content)
+        prefix = task["frozen_view_manifest"].removesuffix("manifest.json")
+        assert prefix + manifest["pending_atomics_path"] not in task["required_frozen_paths"]
+        assert prefix + manifest["runtime_packages_path"] not in task["required_frozen_paths"]
+        assert task["wave_runtime_context_path"]
     assert all((r.model, r.effort) == ("gpt-6-luna", "max") for r in worker.requests)
     assert all(path.exists() for path in exports.values())
     for request in worker.requests:
@@ -408,4 +432,4 @@ async def test_wave_initialization_reuses_thread_publishes_and_resumes_without_m
         export_dir=tmp_path / "exports-repeat",
     )
     assert repeated is not None and repeated.published_library_version == 1
-    assert len(worker.requests) == 4
+    assert len(worker.requests) == 6

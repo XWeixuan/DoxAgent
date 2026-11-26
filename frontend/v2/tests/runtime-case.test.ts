@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
+  ExitFailureStatus,
   RoundRows,
   EventEvidence,
   PolicyEvidence,
@@ -125,5 +126,19 @@ describe("Runtime Case presentation", () => {
       "policy=pol-1&amp;policy_set_version=3&amp;activation=run-17",
     );
     expect(html).not.toContain("period=ALL");
+  });
+});
+
+describe("EXIT failure boundary", () => {
+  it("shows failed exit separately from entry success", () => {
+    const text = renderToStaticMarkup(createElement(ExitFailureStatus, { exits: [{ job_id: "g:exit", role: "MAIN", state: "FAILED", reason: "BROKER_REJECTED", remaining_quantity: "6", requires_manual_review: true, unresolved_order: true }] }));
+    expect(text).toContain("FAILED EXIT");
+    expect(text).toContain("BROKER_REJECTED");
+    expect(text).toContain("6");
+  });
+  it("does not require manual recovery for ordinary reconciliation", () => {
+    const text = renderToStaticMarkup(createElement(ExitFailureStatus, { exits: [{ job_id: "g:exit", role: "MAIN", state: "RECONCILE_REQUIRED", reason: null, remaining_quantity: "6", requires_manual_review: false, unresolved_order: true }] }));
+    expect(text).not.toContain("FAILED EXIT");
+    expect(text).toContain("MAIN");
   });
 });

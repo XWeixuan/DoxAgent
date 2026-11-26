@@ -15,6 +15,9 @@ from .journal import RuntimeJournal, digest
 
 
 def add_commands(sub: Any) -> None:
+    switch = sub.add_parser("switch-to-lightweight")
+    for name in ("ticker", "expected-control-revision", "idempotency-key", "reason"):
+        switch.add_argument("--" + name, required=True)
     mode = sub.add_parser('w3-trade-mode')
     mode.add_argument('action', choices=['show','set'])
     mode.add_argument('--mode', choices=['single','dual_consensus'])
@@ -109,6 +112,12 @@ def run_command(args: argparse.Namespace, settings: DoxAgentSettings) -> Any:
     if args.command == "migrate":
         return migrate(path, dry_run=args.dry_run, backup=args.backup)
     journal = RuntimeJournal(path)
+    if args.command == "switch-to-lightweight":
+        if not args.reason.strip():
+            raise ValueError("operator reason required")
+        from doxagent.v2_control.repository import ControlRepository
+        return ControlRepository(journal).submit(args.ticker, "RESTART", actor="operator", key=args.idempotency_key,
+            expected=args.expected_control_revision, body={"initialization":"REUSE_ACTIVE", "running_mode":"LIGHTWEIGHT", "reason":args.reason})
     if args.command == 'w3-trade-mode':
         if args.action == 'set':
             if not args.mode:
@@ -158,8 +167,16 @@ def run_command(args: argparse.Namespace, settings: DoxAgentSettings) -> Any:
         )
     if args.command == "resume-node":
         task = journal.get_task(args.execution)
+        from doxagent.ticker_initialization.repository import InitializationRepository
+        activation = InitializationRepository(_control_path(settings), initialize=False)
         if task is None:
-            return resume_effect(journal, args.execution, args.reason)
+            return resume_effect(journal, args.execution, args.reason, activation=activation)
+        active = activation.active_revision(task["ticker"])
+        frozen = task["receipt"].get("frame", {}).get("base")
+        if task["kind"] == "SWEEP":
+            frozen = (journal.get("sweep_bundle", task["id"]) or {}).get("inputs")
+        if frozen and active and frozen.get("running_mode", "FULL") != active.get("running_mode", "FULL"):
+            raise ValueError("MODE_CHANGED: original-mode execution cannot be resumed")
         if task["status"] != "FAILED" or not args.reason.strip():
             raise ValueError("only failed executions with a reason can be resumed")
         if task and task["kind"] == "CASE":
@@ -169,6 +186,8 @@ def run_command(args: argparse.Namespace, settings: DoxAgentSettings) -> Any:
             repository = SQLitePersistentRuntimeV2Repository(path)
             case = repository.get_case_by_source(task["inputs"]["source"]["source_message_id"])
             if case:
+                if active and case.running_mode != active.get("running_mode", "FULL"):
+                    raise ValueError("MODE_CHANGED: original-mode Case cannot be resumed")
                 if not case.frozen_inputs:
                     raise ValueError(
                         "legacy Case lacks immutable inputs; cannot safely invent recovery"
@@ -217,6 +236,9 @@ def run_command(args: argparse.Namespace, settings: DoxAgentSettings) -> Any:
         policy = PolicySet.model_validate_json(args.file.read_text(encoding="utf-8"))
         if policy.ticker != ticker or not args.reason.strip():
             raise ValueError("ticker and operator reason required")
+        active = InitializationRepository(_control_path(settings)).active_revision(ticker)
+        if active and active.get("running_mode", "FULL") == "LIGHTWEIGHT":
+            raise ValueError("LIGHTWEIGHT does not accept Policy imports")
         policy_repository = SQLiteDocument3PolicyRepository(settings.codex_runtime_sqlite_path)
         identity = "manual-policy-" + digest([policy.model_dump(mode="json"), args.reason])[:24]
         version = policy_repository.reserve_version(ticker, identity)
@@ -325,7 +347,7 @@ def _control_path(settings: DoxAgentSettings) -> str:
     return settings.ticker_initialization_control_path
 
 
-def resume_effect(journal: RuntimeJournal, identity: str, reason: str) -> dict[str, Any]:
+def resume_effect(journal: RuntimeJournal, identity: str, reason: str, *, activation=None) -> dict[str, Any]:
     from .journal import encode
     from .schema import RuntimeEffect, RuntimeEffectStatus
 
@@ -338,6 +360,13 @@ def resume_effect(journal: RuntimeJournal, identity: str, reason: str) -> dict[s
         if row is None:
             raise ValueError("unknown execution/effect")
         effect = RuntimeEffect.model_validate_json(row[0])
+        if activation is not None:
+            case = db.execute("SELECT ticker,coalesce(json_extract(payload_json,"
+                              "'$.version_pin.running_mode'),'FULL') FROM runtime_v2_cases "
+                              "WHERE case_id=?", (effect.case_id,)).fetchone()
+            active = activation.active_revision(case[0]) if case else None
+            if active and case[1] != active.get("running_mode", "FULL"):
+                raise ValueError("MODE_CHANGED: original-mode effect cannot be resumed")
         if effect.status is not RuntimeEffectStatus.FAILED:
             raise ValueError("only failed effects may be resumed")
         generation_row = db.execute(

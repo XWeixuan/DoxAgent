@@ -420,6 +420,9 @@ function RuntimeBody({
           {(g) => (
             <FlowGraph
               graph={g}
+              lightweight={
+                context.data.activation.data?.running_mode === "LIGHTWEIGHT"
+              }
               selected={node}
               pathEdges={detail.data?.data.data?.path_edges ?? []}
               select={setNode}
@@ -700,15 +703,29 @@ export function FlowGraph({
   selected,
   pathEdges,
   select,
+  lightweight = false,
 }: {
   graph: GraphBaseline;
+  lightweight?: boolean;
   selected?: NodeId;
   pathEdges: GraphEdge[];
   select: (n?: NodeId) => void;
 }) {
+  const hidden = new Set<NodeId>(
+    lightweight ? ["W2", "FIRST_ROUND_TRADE", "POLICY_RELATED_EVENT"] : [],
+  );
+  const edges = graph.edges.filter(
+    (e) => !hidden.has(e.from) && !hidden.has(e.to),
+  );
+  const visiblePathEdges = pathEdges.filter(
+    (e) => !hidden.has(e.from) && !hidden.has(e.to),
+  );
+  const layout: typeof positions = lightweight
+    ? { ...positions, W1: [234, 172] }
+    : positions;
   const keep = new Set<NodeId>(selected ? [selected] : []);
-  const paths = new Map(pathEdges.map((e) => [e.edge_id, e]));
-  pathEdges.forEach((e) => {
+  const paths = new Map(visiblePathEdges.map((e) => [e.edge_id, e]));
+  visiblePathEdges.forEach((e) => {
     keep.add(e.from);
     keep.add(e.to);
   });
@@ -758,7 +775,7 @@ export function FlowGraph({
               接收
             </text>
             <text x="234" y="16">
-              一轮并行判定
+              {lightweight ? "W1 新旧判定" : "一轮并行判定"}
             </text>
             <text x="464" y="16">
               二轮研判
@@ -770,13 +787,13 @@ export function FlowGraph({
               交易执行
             </text>
           </g>
-          {graph.edges.map((e) => {
-            const [ax, ay] = positions[e.from],
-              [bx, by] = positions[e.to];
+          {edges.map((e) => {
+            const [ax, ay] = layout[e.from],
+              [bx, by] = layout[e.to];
             const sx = ax + 156,
               sy = ay + 27,
               ty = by + 27;
-            const bypass = bx === positions.TRADE_INTENT[0] && e.from !== "W3";
+            const bypass = bx === layout.TRADE_INTENT[0] && e.from !== "W3";
             let d: string, lx: number, ly: number;
             if (ax === bx) {
               const start = ay + (ay < by ? 54 : 0);
@@ -791,11 +808,11 @@ export function FlowGraph({
               const junction = sx + 22,
                 arrival = 666;
               d = `M${sx} ${sy} H${junction - 8} Q${junction} ${sy} ${junction} ${sy + (upper ? -8 : 8)} V${lane + (upper ? 8 : -8)} Q${junction} ${lane} ${junction + 8} ${lane} H${arrival - 8} Q${arrival} ${lane} ${arrival} ${lane + (upper ? 8 : -8)} V${ty + (upper ? -8 : 8)} Q${arrival} ${ty} ${arrival + 8} ${ty} H${bx}`;
-              const peers = graph.edges.filter(
+              const peers = edges.filter(
                 (edge) =>
-                  positions[edge.to][0] === positions.TRADE_INTENT[0] &&
+                  layout[edge.to][0] === layout.TRADE_INTENT[0] &&
                   edge.from !== "W3" &&
-                  positions[edge.to][1] < 172 === upper,
+                  layout[edge.to][1] < 172 === upper,
               );
               lx =
                 430 +
@@ -835,51 +852,58 @@ export function FlowGraph({
               </g>
             );
           })}
-          {graph.nodes.map((n) => {
-            const [x, y] = positions[n.node_id];
-            const color = nodeColors[n.node_id];
-            return (
-              <g
-                key={n.node_id}
-                className="graph-node"
-                role="button"
-                tabIndex={0}
-                aria-label={nodeNames[n.node_id]}
-                aria-pressed={selected === n.node_id}
-                transform={`translate(${x},${y})`}
-                opacity={!selected || keep.has(n.node_id) ? 1 : 0.25}
-                style={{ "--node-color": color } as React.CSSProperties}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  select(n.node_id);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
+          {graph.nodes
+            .filter((n) => !hidden.has(n.node_id))
+            .map((n) => {
+              const [x, y] = layout[n.node_id];
+              const color = nodeColors[n.node_id];
+              return (
+                <g
+                  key={n.node_id}
+                  className="graph-node"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={nodeNames[n.node_id]}
+                  aria-pressed={selected === n.node_id}
+                  transform={`translate(${x},${y})`}
+                  opacity={!selected || keep.has(n.node_id) ? 1 : 0.25}
+                  style={{ "--node-color": color } as React.CSSProperties}
+                  onClick={(e) => {
+                    e.stopPropagation();
                     select(n.node_id);
-                  }
-                }}
-              >
-                <rect className="node-surface" width="156" height="54" rx="7" />
-                <rect
-                  className="node-accent"
-                  width="3"
-                  height="30"
-                  y="12"
-                  rx="1.5"
-                />
-                <text className="node-title" x="15" y="21">
-                  {nodeNames[n.node_id]}
-                </text>
-                <text className="node-count" x="15" y="45">
-                  {n.case_count}
-                </text>
-                <text className="node-open" x="132" y="43">
-                  ↗
-                </text>
-              </g>
-            );
-          })}
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      select(n.node_id);
+                    }
+                  }}
+                >
+                  <rect
+                    className="node-surface"
+                    width="156"
+                    height="54"
+                    rx="7"
+                  />
+                  <rect
+                    className="node-accent"
+                    width="3"
+                    height="30"
+                    y="12"
+                    rx="1.5"
+                  />
+                  <text className="node-title" x="15" y="21">
+                    {nodeNames[n.node_id]}
+                  </text>
+                  <text className="node-count" x="15" y="45">
+                    {n.case_count}
+                  </text>
+                  <text className="node-open" x="132" y="43">
+                    ↗
+                  </text>
+                </g>
+              );
+            })}
         </svg>
       </div>
     </section>

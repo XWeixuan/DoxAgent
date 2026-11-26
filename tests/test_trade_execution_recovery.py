@@ -176,7 +176,7 @@ def test_fill_correction_rebuilds_lot_and_is_idempotent(setup):
     assert repo.require("executions", "trade:A")["filled_qty"] == 190
 
 
-def test_exit_failure_keeps_lot_and_explicit_resume_has_new_budget(setup):
+def test_exit_failure_keeps_lot_and_rejects_unverified_resume(setup):
     clock, repo, revision, executor, broker = setup
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
@@ -189,11 +189,12 @@ def test_exit_failure_keeps_lot_and_explicit_resume_has_new_budget(setup):
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
     assert repo.require("jobs", "trade:A:exit")["state"] == "FAILED"
     assert repo.require("lots", "trade:A")["remaining_qty"] == 198
-    repo.resume_exit("trade:A", "quotes restored")
+    with pytest.raises(ValueError, match="VERIFIED_GROUP"):
+        repo.resume_exit("trade:A", "quotes restored")
     broker.quote = original_quote
     broker.mode = "fill"
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
-    assert repo.require("lots", "trade:A")["remaining_qty"] == 0
+    assert repo.require("lots", "trade:A")["remaining_qty"] == 198
 
 
 def test_active_entry_gets_serviced_before_due_exit(setup):

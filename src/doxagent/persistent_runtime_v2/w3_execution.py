@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import time
+from doxagent.running_mode import RunningMode
+
 from datetime import UTC, datetime
 
 from doxagent.codex_worker.schema import ThreadForkRequest
@@ -90,12 +92,13 @@ class W3Execution:
         else:
             snapshot = self.service.input_snapshot_loader(ticker)
             pin = RuntimeVersionPin(
+                running_mode=snapshot.running_mode,
                 event_library_root=snapshot.event_library_root,
                 document1_run_id=snapshot.document1_run_id,
                 document2_run_id=snapshot.document2_run_id,
                 event_library_version=snapshot.index.version,
-                policy_set_version=snapshot.projection.policy_set_version,
-                runtime_projection_version=snapshot.projection.policy_set_version,
+                policy_set_version=snapshot.projection.policy_set_version if snapshot.projection else None,
+                runtime_projection_version=snapshot.projection.policy_set_version if snapshot.projection else None,
                 provisional_snapshot_version=0,
             )
         identity = digest([active, pin.model_dump(mode="json"), "instructions-only-v1"])
@@ -387,6 +390,13 @@ class W3Execution:
         )
         return registered if template else (registered[0], None, registered[2])
 
+    def _switch_dispatch_guard(self, case):
+        from doxagent.v2_control.running_mode_switch import active_switch
+        from doxagent.v2_control.repository import ControlError
+        with self.journal.transaction(write=False) as db:
+            if active_switch(db, case.ticker):
+                raise ControlError("MODE_SWITCH_BUSY")
+
     @observed("case.trade")
     def trade(self, case):
         bundle = self._register_entry(case) if (is_pin_watch_contract(case.w3_contract_version)
@@ -432,6 +442,7 @@ class W3Execution:
                         db, case.ticker, self.journal.clock()
                     )
                 self.journal.set("w3_global_input", case.case_id, saved_state)
+            self._switch_dispatch_guard(case)
             context = self.agent.prepare_case(case)
             new_entry = getattr(self.agent, "entry_enabled", lambda c: False)(case)
             research = None if new_entry else research_assets(context, self.journal)
@@ -786,6 +797,10 @@ class W3Execution:
 
     def _v6_records(self, case, decision):
         records = []
+        if case.running_mode is RunningMode.LIGHTWEIGHT:
+            if decision.decision == "NO_TRADE":
+                records.append(("runtime_v2_archives", ArchiveRecord(case_id=case.case_id, ticker=case.ticker, source_message_id=case.source.source_message_id, reason=decision.reason)))
+            return records
         w1, w2 = case.w1_final, case.w2_final
         if decision.decision == "NO_TRADE":
             records.append(
@@ -850,6 +865,7 @@ class W3Execution:
         if decision.decision == "NO_TRADE":
             return None, None
         common = dict(
+            running_mode=case.running_mode,
             case_id=case.case_id,
             ticker=case.ticker,
             trading_date=case.trading_date,
@@ -953,6 +969,7 @@ class W3Execution:
                 ) or global_snapshot(db, case.ticker, self.journal.clock())
                 policy_consumption.put_value(db, "w3_operations_input", case.case_id, state)
         if stage["result_json"] is None:
+            self._switch_dispatch_guard(case)
             context = self.agent.prepare_case(case)
             candidate = self.journal.get("candidates", "candidate:" + case.case_id)
             phase_arguments = dict(
@@ -1195,9 +1212,13 @@ class W3Execution:
                 if policy_consumption.get_value(db, "w3_operations_applied", case.case_id) is None:
                     for provisional in provisionals:
                         repo.allocate_provisional_in_transaction(db, provisional)
-                    watch = apply_v4_actions(
-                        db, case=case, result=result, frozen=state, now=self.journal.clock()
-                    )
+                    if case.running_mode is RunningMode.LIGHTWEIGHT:
+                        watch = [dict(policy_id=a.policy_id, action=a.action,
+                                      status="IGNORED_LIGHTWEIGHT") for a in result.watch_actions]
+                    else:
+                        watch = apply_v4_actions(
+                            db, case=case, result=result, frozen=state, now=self.journal.clock()
+                        )
                     pins = apply_pin_actions(
                         db,
                         case=case,

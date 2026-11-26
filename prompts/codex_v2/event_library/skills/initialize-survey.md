@@ -6,7 +6,13 @@ Build a global occurrence map before the Delta is divided into local reconstruct
 
 Use the published C1, C3, and C5 reports and Future Nodes to understand the ticker's business, external actors, market context, and known forward matters. Use them to interpret relevance and possible occurrence boundaries; assigned Atomic Delta remains the factual basis for Canonical Facts.
 
-Read every assigned Delta with the Runtime Package index and package context. Package membership, hints, and entities reveal possible connections but do not determine Canonical boundaries.
+For a single-pass Survey, read every assigned Delta with the Runtime Package index and package context. For bounded research and synthesis, follow the mode-specific read scope below. Package membership, hints, and entities reveal possible connections but do not determine Canonical boundaries.
+
+### Bounded research passes and global synthesis
+
+When `task.metadata.survey.mode` is `PART`, this Turn is one bounded research pass of the original Survey. Read `runtime_context_path` from that metadata and verify its SHA-256 against `runtime_context_sha256`. It is an immutable projection of the Frozen Delta and Package context, using the same joined format as reconstruction waves. Read every assigned Atomic in its `package_groups` and `ungrouped_atomics`; use the complete Package index for navigation and focused Frozen lookups when necessary. Do not reread all unassigned Atomics. Produce the artifacts below for exactly the assigned IDs. Candidate keys are local hypotheses; Package and pass boundaries are not occurrence boundaries. Preserve dates, subject periods, actors, propositions, consequential qualifiers, and possible links to out-of-pass members in the occurrence ledger so the global pass can compare them.
+
+When `task.metadata.survey.mode` is `SYNTHESIS`, read every catalog, occurrence ledger, and date ledger in `part_paths`. Compare candidates across the complete set before writing the single global Survey catalog and ledgers for all assigned IDs. Use original Frozen Delta and Package lookups to resolve gaps or conflicting hypotheses; prior research is navigation, never a replacement factual authority. Merge and split local candidates by the global survey method below, irrespective of pass or Package boundaries. Preserve every assigned ID exactly once, including unresolved material. Complete global synthesis before any Canonical reconstruction wave begins. Do not create Event drafts or a Revision Bundle in either mode.
 
 ## Global survey method
 

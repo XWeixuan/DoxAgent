@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import logging
 import json
+from doxagent.running_mode import RunningMode
+
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from threading import Event, Thread
@@ -147,7 +149,11 @@ def _admit_bus(
             and state.status is not TickerMonitoringStatus.RUNNING
         )
     ):
-        state = bus.start_ticker(revision["ticker"])
+        if state is not None and head == refs["initialization_id"] and revision.get("running_mode", "FULL") == "LIGHTWEIGHT":
+            from doxagent.message_bus_v2.schema import UpdateActor
+            state = bus.set_ticker_status(revision["ticker"], TickerMonitoringStatus.RUNNING, actor=UpdateActor.SYSTEM)
+        else:
+            state = bus.start_ticker(revision["ticker"])
     if state.status is TickerMonitoringStatus.RUNNING and not control.revision_acknowledged(
         revision["ticker"], revision["revision_id"], "bus", max_age=15
     ):
@@ -228,7 +234,9 @@ def admit_runtime_revisions(
                 and proofs.get(ticker) == proof
                 and (batch[ticker][1] == identity if batch is not None else control.current_revision_admitted(ticker, identity, "runtime"))
             )
-            if current and batch is not None:
+            if revision.get("running_mode", "FULL") == "LIGHTWEIGHT":
+                pass
+            elif current and batch is not None:
                 current = policy_heads.get(ticker) == identity and identity in policy_applied
             elif current and isinstance(journal, RuntimeJournal):
                 from doxagent.persistent_runtime_v2.policy_consumption import get_value

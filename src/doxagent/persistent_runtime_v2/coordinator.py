@@ -451,10 +451,13 @@ class RuntimeCoordinator:
 
             self._maintenance_recovery_next[ticker] = perf_counter() + 60
             try:
+                control = getattr(self.maintain, "control", None)
+                active = control.active_revision(ticker) if control else None
                 self._maintenance_recovery_cursor[ticker] = recover_failed(
                     self.journal,
                     ticker,
                     after=self._maintenance_recovery_cursor.get(ticker, ""),
+                    running_mode=active.get("running_mode", "FULL") if active else None,
                 )
             except Exception:
                 logging.getLogger(__name__).exception(
@@ -725,7 +728,7 @@ class RuntimeCoordinator:
 
                 data = dict(frozen["inputs"])
                 data["index"] = KnownEventIndexSnapshot.model_validate(data["index"])
-                data["projection"] = parse_runtime_projection(data["projection"])
+                data["projection"] = parse_runtime_projection(data["projection"]) if data.get("projection") else None
                 snapshot = RuntimeInputSnapshot(**data)
                 bundle_id = frozen["execution"]
         result = self.runtime.execute_message(
@@ -775,11 +778,11 @@ class RuntimeCoordinator:
             loader = self.runtime.input_snapshot_loader
             if loader:
                 inputs = loader(task["ticker"])
-                if inputs is None or inputs.index is None or inputs.projection is None:
+                if inputs is None or inputs.index is None or (str(inputs.running_mode) == "FULL" and inputs.projection is None):
                     raise ValueError("sweep active inputs unavailable")
                 payload = asdict(inputs)
                 payload["index"] = inputs.index.model_dump(mode="json")
-                payload["projection"] = inputs.projection.model_dump(mode="json")
+                payload["projection"] = inputs.projection.model_dump(mode="json") if inputs.projection else None
                 self.journal.set(
                     "sweep_bundle",
                     task["id"],

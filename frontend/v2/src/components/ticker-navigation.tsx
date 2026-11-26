@@ -138,16 +138,34 @@ const pageIcons = [
   Activity,
   ChartNoAxesCombined,
 ];
-export function TickerNavigation({ ticker }: { ticker: string; page: string }) {
+export function TickerNavigation({
+  ticker,
+  lightweight = false,
+}: {
+  ticker: string;
+  page: string;
+  lightweight?: boolean;
+}) {
   return (
     <div className="ticker-navigation">
       <nav aria-label="标的页面">
         {Object.entries(tickerPages).map(([path, label], index) => {
           const Icon = pageIcons[index];
+          if (lightweight && (path === "expectations" || path === "strategy"))
+            return (
+              <a key={path} role="link" aria-disabled="true">
+                <Icon aria-hidden="true" />
+                <span>{label}</span>
+              </a>
+            );
           return (
             <NavLink
               key={path}
-              to={path === "audit" ? "/audit/cost" : `/ticker/${encodeURIComponent(ticker)}/${path}`}
+              to={
+                path === "audit"
+                  ? "/audit/cost"
+                  : `/ticker/${encodeURIComponent(ticker)}/${path}`
+              }
             >
               <Icon aria-hidden="true" />
               <span>{label}</span>

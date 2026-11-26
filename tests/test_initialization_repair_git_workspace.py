@@ -33,6 +33,7 @@ def test_incident_worktree_and_branch_do_not_mutate_source_checkout(tmp_path):
     source_hash = manager.revision_sha256(revision)
     assert manager.source_sha256(workspace) == source_hash
     (workspace.path / "tracked.txt").write_text("fixed\n", encoding="utf-8")
+    assert manager.changed_files(workspace) == ["tracked.txt"]
     commit = manager.commit(workspace, "fix test")
     assert commit != revision
     assert manager.source_sha256(workspace) != source_hash

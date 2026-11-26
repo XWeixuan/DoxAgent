@@ -294,8 +294,12 @@ def create_app(
         read_seq: int | None = None,
         headers: dict[str, str] | None = None,
         resource_coverage: dict[str, Any] | None = None,
+        not_produced_reason: str | None = None,
     ) -> Response:
-        validate(name, value)
+        if not_produced_reason is None:
+            validate(name, value)
+        elif value is not None or request.method != "GET":
+            raise ValueError("NOT_PRODUCED requires an absent read resource")
         view = views.get(request.state.principal.user_id, view_id) if view_id else None
         if read_seq is not None and (not view or read_seq != view["seq"]):
             with store.connect() as db:
@@ -326,9 +330,9 @@ def create_app(
             resource_coverage = resource_coverage or coverage(complete=True)
             empty = isinstance(value, dict) and "items" in value and not value["items"]
             wire_value = {
-                "state": "EMPTY" if empty else "AVAILABLE",
+                "state": "NOT_PRODUCED" if not_produced_reason else "EMPTY" if empty else "AVAILABLE",
                 "data": value,
-                "reason": None,
+                "reason": not_produced_reason,
                 "coverage": resource_coverage,
             }
         payload = {

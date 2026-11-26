@@ -52,7 +52,7 @@ def select(kind,identity,value):
     if table=='runtime_v2_turns':
         return {k:v for k,v in value.items() if k in {'turn_id','case_id','output'}}
     if table=='runtime_v2_w3_cases':
-        return {k:v for k,v in value.items() if k in {'case_id','mode','status','ticker'}}
+        return {k:v for k,v in value.items() if k in {'case_id','mode','status','ticker','running_mode'}}
     if table=='runtime_v2_candidates':
         return {k:v for k,v in value.items() if k in {'case_id','candidate','provisional_event_id','trading_date','snapshot_version'}}
     if table=='runtime_tasks':
@@ -64,9 +64,9 @@ def select(kind,identity,value):
             return {k:v for k,v in value.items() if k in {'watch','pins'}}
         return value
     if table=='activation_revisions':
-        return {k:v for k,v in value.items() if k in {'revision_id','ticker','base_revision'}}
+        return {k:v for k,v in value.items() if k in {'revision_id','ticker','base_revision','running_mode'}}
     if table=='initialization_runs':
-        return {k:v for k,v in value.items() if k in {'initialization_id','ticker','status','state_seq','manual_resume_required','error','control_operation_id'}}
+        return {k:v for k,v in value.items() if k in {'initialization_id','ticker','running_mode','status','state_seq','manual_resume_required','error','control_operation_id'}}
     if table=='initialization_nodes':
         return {**{k:v for k,v in value.items() if k in {'key','block','status'}},
                 'result':{'quality_annotations':(value.get('result') or {}).get('quality_annotations',[])}}

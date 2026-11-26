@@ -57,8 +57,8 @@ def natural_chapters(text):
 @observed("research.derive")
 def derive_research_assets(context, *, policy_origins=None):
     """Return immutable file content and a compact index, without summaries."""
-    d2 = context.document2.model_dump(mode="json")
-    d3 = context.policy_set.model_dump(mode="json")
+    d2 = context.document2.model_dump(mode="json") if context.document2 else {}
+    d3 = context.policy_set.model_dump(mode="json") if context.policy_set else {}
     original_d2 = getattr(context, "original_document2", None) or _json(d2)
     original_d3 = getattr(context, "original_policy_set", None) or _json(d3)
     key = digest(
@@ -70,8 +70,8 @@ def derive_research_assets(context, *, policy_origins=None):
             return _cache[key]
     files = {
         "originals/document1.md": context.document1,
-        "originals/document2.json": original_d2,
-        "originals/policy_set.json": original_d3,
+        **({"originals/document2.json": original_d2} if context.document2 else {}),
+        **({"originals/policy_set.json": original_d3} if context.policy_set else {}),
     }
     index = dict(document1=[], document2=[], document3=[], shells=[])
     for n, (title, body) in enumerate(natural_chapters(context.document1), 1):

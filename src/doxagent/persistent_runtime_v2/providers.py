@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from doxagent.running_mode import RunningMode
+
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -31,6 +33,14 @@ class RuntimeInputSnapshot:
     document2_run_id: str | None = None
     event_library_root: str | None = None
     visibility_day: str | None = None
+    running_mode: RunningMode = RunningMode.FULL
+
+    def __post_init__(self):
+        object.__setattr__(self, "running_mode", RunningMode(self.running_mode))
+        if self.running_mode is RunningMode.LIGHTWEIGHT and (
+            self.projection is not None or self.document2_run_id is not None or not self.document1_run_id
+        ):
+            raise ValueError("LIGHTWEIGHT snapshot requires D1 and forbids D2/Projection")
 
 
 class RuntimeKnownEventProvider(Protocol):

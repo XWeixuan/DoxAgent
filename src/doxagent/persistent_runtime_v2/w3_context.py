@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from doxagent.running_mode import RunningMode
+
 from datetime import UTC, datetime, timedelta
 
 from doxagent.w3_timing import observed
@@ -93,6 +95,13 @@ def actual_policy_hits(value):
 
 
 def case_labels(case, *, history_matches, watch_followup, event_keys=None):
+    if case.running_mode is RunningMode.LIGHTWEIGHT:
+        tags = []
+        if case.w1_final.confidence.value == "low": tags.append("W1_LOW_CONFIDENCE")
+        if not (case.source.snapshot.body or "").strip(): tags.append("BODY_MISSING")
+        events = set(event_keys if event_keys is not None else event_matches(case.model_dump(mode="json")))
+        if any(events.intersection(m["events"]) for m in history_matches): tags.append("RECENT_TRADE")
+        return dict(case_type="OPEN_EVENT_EVALUATION", additional_tags=tags)
     w2 = case.w2_final
     main = (
         "POLICY_HIT_REVIEW"
@@ -397,6 +406,13 @@ def base_trade_input(source, w1, w2, *, events=None, cutoff_at=None):
 
 
 def build_case_payload(case, context, *, events, history, labels, state, journal=None):
+    if case.running_mode is RunningMode.LIGHTWEIGHT:
+        assessment = case.w1_final.model_dump(mode="json")
+        for key in ("reference_ids", "fact_attributions"): assessment.pop(key, None)
+        assessment["events"] = events
+        return dict(ticker=case.ticker, cutoff_at=case.source.message_bus_event_time.isoformat(),
+                    message=message_content(case.source), w1=assessment, **labels, pins=state["pins"],
+                    recent_trade_intents=history, contexts=[dict(name="D1", cutoff_at=context.context_cutoffs.get("D1"))])
     wanted = set(policy_associations(case.w2_final))
     new_entry = case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version") in {"w3-entry-v5", "w3-entry-v6"}
     if new_entry:

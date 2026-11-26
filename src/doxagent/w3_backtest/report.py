@@ -54,10 +54,17 @@ def score(result: dict, gold: dict, normalized: str | None) -> dict:
     return dict(score=False, category="WRONG_DIRECTION")
 
 
-def render_report(run_root: Path, dataset: Path | None = None) -> dict:
+def render_report(run_root: Path, dataset: Path | None = None, *, suite=None, split=None) -> dict:
     manifest = json.loads((run_root / "run_manifest.json").read_text(encoding="utf-8"))
     dataset = dataset or Path(manifest["dataset_path"])
-    gold = {g["case_key"]: g for g in read_jsonl(dataset / "gold.jsonl")}
+    from .catalog import scoring_gold
+    gold = {g["case_key"]: g for g in scoring_gold(dataset)}
+    if suite or split:
+        from .catalog import load_catalog
+        catalog = load_catalog(dataset)
+        if not catalog:
+            raise ValueError('suite/split filters require a reviewed Catalog')
+        gold = {k:v for k,v in gold.items() if (not suite or v['suite']==suite) and (not split or v['split']==split)}
     dataset_marker = dataset / "manifest.json"
     dataset_meta = (
         json.loads(dataset_marker.read_text(encoding="utf-8")) if dataset_marker.exists() else {}
@@ -72,12 +79,14 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
     for path in sorted((run_root / "cases").glob("*/result.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
         key = result["case_key"]
+        if (suite or split) and key not in gold:
+            continue
         if active_keys is not None and key not in active_keys:
             excluded.append(key)
             continue
         case = json.loads((dataset / "inputs" / key / "case.json").read_text(encoding="utf-8"))
         normalized = normalize_decision(result, case, dataset)
-        item = {**result, "normalized_decision": normalized, "gold": gold.get(key, {})}
+        item = {**result, "case_id": result.get('case_id') or case.get('case_id') or case.get('original_case_id'), "normalized_decision": normalized, "gold": gold.get(key, {})}
         item.update(score(result, item["gold"], normalized))
         item["group"] = case.get("group")
         item["tags"] = item["gold"].get("tags", [])
@@ -146,9 +155,9 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
         summary["operations_succeeded"] = None
         summary["groups"] = {}
         for name, group in (
-            ("core", [r for r in rows if "边缘案例" not in r["tags"]]),
-            ("edge", [r for r in rows if "边缘案例" in r["tags"]]),
-            ("timeliness", [r for r in rows if "时效性" in r["tags"]]),
+            ("core", [r for r in rows if not ({'边缘案例','edge_case'} & set(r['tags']))]),
+            ("edge", [r for r in rows if {'边缘案例','edge_case'} & set(r['tags'])]),
+            ("timeliness", [r for r in rows if '时效性' in r['tags'] or r['gold'].get('suite')=='timeliness']),
         ):
             evaluated = [r for r in group if r["score"] is not None]
             summary["groups"][name] = dict(
@@ -159,6 +168,17 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
                 if evaluated
                 else None,
             )
+    if any(r['gold'].get('suite') for r in rows):
+        summary['collections'] = {}
+        for suite_name in ('decision','timeliness'):
+            for split_name in ('dev','validation'):
+                group=[r for r in rows if r['gold'].get('suite')==suite_name and r['gold'].get('split')==split_name]
+                eligible=[r for r in group if r['score'] is not None]
+                correct = sum(r['score'] is True for r in eligible)
+                summary['collections'][suite_name+'/'+split_name] = dict(cases=len(group),scored=len(eligible),correct=correct,
+                    accuracy=correct/len(eligible) if eligible else None,
+                    wrong_trades=sum(r['category']=='WRONG_TRADE' for r in group),
+                    missed_opportunities=sum(r['category']=='MISSED_OPPORTUNITY' for r in group))
     summary["wrong_trade_rate"] = (
         summary["wrong_trades"] / summary["labelled_no_trade_denominator"]
         if summary["labelled_no_trade_denominator"]
@@ -169,6 +189,12 @@ def render_report(run_root: Path, dataset: Path | None = None) -> dict:
         if summary["labelled_trade_denominator"]
         else None
     )
+    if len({r['gold'].get('suite') for r in rows if r['gold'].get('suite')}) > 1:
+        # Decision quality and expiry rejection have different denominators.
+        # Keep operational totals, but never publish a pooled performance score.
+        summary.update(accuracy=None, correct=None, wrong_trade_rate=None,
+                       missed_opportunity_rate=None, scoring_scope='SEPARATE_COLLECTIONS')
+        summary.pop('groups', None)
     (run_root / "results.jsonl").write_text(
         "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8"
     )

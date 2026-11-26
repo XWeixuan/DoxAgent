@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+from doxagent.running_mode import RunningMode
+
 from contextlib import nullcontext
 from collections.abc import Iterable
 from datetime import UTC, datetime, time
@@ -109,11 +111,16 @@ class UnifiedRuntimeSchedulerService:
         )
         if snapshot is None or snapshot.activation_revision_id != revision_id:
             raise ValueError("Runtime has not loaded the requested activation revision")
-        if snapshot.index is None or snapshot.projection is None:
+        if snapshot.index is None or (snapshot.running_mode is RunningMode.FULL and snapshot.projection is None):
             raise ValueError("Activated Runtime Index/Projection is unavailable")
+        if snapshot.running_mode is RunningMode.LIGHTWEIGHT and isinstance(runtime.journal, RuntimeJournal):
+            from doxagent.persistent_runtime_v2.w3_contracts import is_pin_watch_contract
+            execution = runtime.journal.get("execution", "active")
+            if not execution or not runtime.execution_bundles or not is_pin_watch_contract(runtime.execution_bundles.get(execution).get("contracts", {}).get("w3_contract_version")):
+                raise ValueError("LIGHTWEIGHT requires the shared W3 v6 execution bundle")
         if bus.repository.get_ticker_state(normalized) is None:
             raise ValueError("Message Bus must admit the ticker before Runtime")
-        if isinstance(runtime.journal, RuntimeJournal) and isinstance(
+        if snapshot.running_mode is RunningMode.FULL and isinstance(runtime.journal, RuntimeJournal) and isinstance(
             loader, ActivatedRuntimeInputs
         ):
             from doxagent.persistent_runtime_v2.policy_consumption import admit_revision

@@ -402,6 +402,16 @@ if (mode === "v5" || mode === "v5-failed") {
     },
   } as never);
 }
+if (mode === "lightweight") {
+  details.summary.running_mode = "LIGHTWEIGHT";
+  details.summary.first_round_shape = "W1_ONLY";
+  details.summary.first_round_tags = [];
+  details.summary.final_policy_source = null;
+  details.policy_set = null;
+  details.document2 = { state: "NOT_RECORDED", value: null, reason: "NOT_APPLICABLE" };
+  details.w2 = { ...noReason, reason: "NOT_APPLICABLE" };
+  details.policy_watch = undefined;
+}
 runtime.api.request = async (name) =>
   ({
     data:

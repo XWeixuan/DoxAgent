@@ -123,6 +123,8 @@ def execute_run(
     time_awareness_enabled=False,
     service_tier=None,
     trade_mode="single",
+    suite=None,
+    split=None,
 ) -> dict:
     from .dataset import input_fingerprint, load_cases, read_json, write_json
     from .report import render_report
@@ -134,16 +136,16 @@ def execute_run(
     if not 1 <= concurrency <= 16:
         raise ValueError("concurrency must be between 1 and 16")
     cases = load_cases(dataset)
-    available = {c["case_key"] for c in cases}
-    if keys and set(keys) - available:
-        raise ValueError(f"unknown case keys: {sorted(set(keys) - available)}")
-    selected = [c for c in cases if not keys or c["case_key"] in keys]
+    from .catalog import select_cases
+    selected = select_cases(dataset, cases, keys=keys, suite=suite, split=split)
     curated = read_json(dataset / "manifest.json").get("schema_version") == "w3-backtest.dataset.v2"
     if not curated:
         raise ValueError(
             "new replay runs require a v2 dataset and v6 prompt pack; "
             "historical reports remain readable"
         )
+    if not selected:
+        raise ValueError('selected collection is empty; no model calls were made')
     if time_awareness_enabled and not curated:
         raise ValueError("--time-awareness requires a curated decision-only dataset")
     runtime_identity = None
@@ -158,7 +160,9 @@ def execute_run(
     contract = read_json(prompts / "contract.json").get("w3_contract_version")
     if contract != "persistent-runtime.w3.v6":
         raise ValueError("only v6 Trade-only prompt packs are supported")
-    prompt_files = ["AGENTS.md", "skills/skill.md"]
+    prompt_files = ["AGENTS.md"]
+    if not curated or (prompts / "skills/skill.md").is_file():
+        prompt_files.append("skills/skill.md")
     if curated:
         prompt_files.append("backtest.md")
         if (prompts / "provenance.json").exists():
@@ -257,6 +261,10 @@ def execute_run(
         )
     if (dataset / "gold.jsonl").exists() and not (root / "gold_snapshot.jsonl").exists():
         (root / "gold_snapshot.jsonl").write_bytes((dataset / "gold.jsonl").read_bytes())
+    if (dataset / "manifest.json").exists() and read_json(dataset / "manifest.json").get("catalog_version"):
+        snapshot = root / 'catalog_snapshot.jsonl'
+        if not snapshot.exists():
+            snapshot.write_bytes((dataset / 'catalog.jsonl').read_bytes())
     frozen_prompts = root / "prompt_snapshot"
     for name, expected in prompt_hashes.items():
         content = (prompts / name).read_bytes()
@@ -369,7 +377,7 @@ def parser() -> argparse.ArgumentParser:
             "--dataset",
             default="w3_history_20261014"
             if name in {"prepare-cases", "prepare-nasa"}
-            else "w3_curated_20261030",
+            else "w3_curated_20261030" if name == 'prepare-curated' else "w3_reviewed_20261121",
         )
         command.add_argument("--case", action="append", dest="case_keys")
         if name in {"prepare-context", "prepare-curated", "prepare-cases", "prepare-prices"}:
@@ -380,6 +388,8 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--workers", type=int, default=4)
         if name == "run":
             command.add_argument("--run-id", required=True)
+            command.add_argument("--suite", choices=("decision", "timeliness"))
+            command.add_argument("--split", choices=("dev", "validation"))
             command.add_argument("--concurrency", type=int, default=4)
             command.add_argument("--prompt-root")
             command.add_argument("--timeout-seconds", type=int, default=1800)
@@ -391,6 +401,9 @@ def parser() -> argparse.ArgumentParser:
     for name in ("resume", "report"):
         command = commands.add_parser(name)
         command.add_argument("--run-id", required=True)
+        if name == 'report':
+            command.add_argument('--suite', choices=('decision','timeliness'))
+            command.add_argument('--split', choices=('dev','validation'))
     compare = commands.add_parser("compare")
     compare.add_argument("--before", required=True)
     compare.add_argument("--after", required=True)
@@ -465,6 +478,8 @@ def main(argv=None):
             dataset,
             run_path(args.run_id),
             keys=args.case_keys,
+            suite=args.suite,
+            split=args.split,
             concurrency=args.concurrency,
             prompt_root=args.prompt_root,
             timeout_seconds=args.timeout_seconds,
@@ -493,7 +508,7 @@ def main(argv=None):
     elif args.command == "report":
         from .report import render_report
 
-        result = render_report(run_path(args.run_id))
+        result = render_report(run_path(args.run_id), suite=args.suite, split=args.split)
     else:
         from .report import compare_runs
 

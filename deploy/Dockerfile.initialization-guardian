@@ -17,3 +17,6 @@ COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY README.md /app/README.md
 RUN uv pip install --no-deps --python /app/.venv/bin/python -e /app
+
+# Docker CLI reads the profile before sending container creation to the daemon.
+COPY deploy/initialization-repair-seccomp.json /etc/doxagent/initialization-repair-seccomp.json

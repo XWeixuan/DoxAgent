@@ -39,7 +39,7 @@ class GitWorkspaceManager:
         if completed.returncode:
             detail = (completed.stderr or completed.stdout).strip()[-4000:]
             raise GitWorkspaceError(f"git command failed ({completed.returncode}): {detail}")
-        return completed.stdout.strip()
+        return completed.stdout.rstrip("\r\n")
 
     def ensure_mirror(self) -> None:
         self.root.mkdir(parents=True, exist_ok=True)

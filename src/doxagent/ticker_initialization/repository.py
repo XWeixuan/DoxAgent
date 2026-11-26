@@ -28,6 +28,7 @@ from .schema import (
     semantic_day,
     utc_now,
 )
+from .targets import historical_failed_node_keys
 
 
 class InitializationRepository:
@@ -204,6 +205,7 @@ class InitializationRepository:
         plan: list[NodeSpec],
         *,
         reinitialize: bool = False,
+        running_mode="FULL",
         operation_kind: str | None = None,
         expected_base_revision: str | None = None,
         control_operation_id: str | None = None,
@@ -233,6 +235,12 @@ class InitializationRepository:
                 active is None or active[0] != expected_base_revision
             ):
                 raise InitializationError("active revision changed before operator submission")
+            if active:
+                prior_revision = json.loads(db.execute("SELECT payload FROM activation_revisions WHERE revision_id=?", (active[0],)).fetchone()[0])
+                if prior_revision.get("running_mode", "FULL") == "FULL" and running_mode == "LIGHTWEIGHT" and operation_kind != "SWITCH_RUNNING_MODE":
+                    raise InitializationError("MODE_SWITCH_REQUIRES_CONTROL_OPERATION")
+                if prior_revision.get("running_mode", "FULL") == "LIGHTWEIGHT" and running_mode != "LIGHTWEIGHT":
+                    raise InitializationError("REVERSE_MODE_UNSUPPORTED")
             previous = [
                 RunRecord.model_validate_json(row[0])
                 for row in db.execute(
@@ -249,6 +257,7 @@ class InitializationRepository:
             ):
                 raise InitializationError("ALREADY_INITIALIZED")
             run = RunRecord(
+                running_mode=running_mode,
                 document2_schema_version="document2.v2.1",
                 document3_orchestration_version="v2.1",
                 initialization_id=f"init-{ticker.lower()}-{uuid4().hex}",
@@ -1255,15 +1264,21 @@ class InitializationRepository:
                 "SELECT payload FROM initialization_nodes WHERE run_id=?", (run_id,)
             )
         ]
+        historical = historical_failed_node_keys(nodes)
         targets = [
-            n for n in nodes if n.status == "FAILED" and (node_key is None or n.key == node_key)
+            n for n in nodes
+            if n.status == "FAILED" and n.key not in historical
+            and (node_key is None or n.key == node_key)
         ]
         if not targets:
             raise InitializationError("no selected failed node")
         if any(n.inputs.get("_invalidated") for n in targets):
             raise InitializationError("invalidated handoffs require adopt or isolated rerun")
         parents = {n.inputs.get("managed_by") for n in targets}
-        targets.extend(n for n in nodes if n.key in parents and n not in targets)
+        targets.extend(
+            n for n in nodes
+            if n.key in parents and n.status != "SUCCEEDED" and n not in targets
+        )
         commit = next((n for n in nodes if n.key == "activation.commit"), None)
         active = db.execute(
             "SELECT revision_id FROM ticker_active_revision WHERE ticker=?", (run.ticker,)
@@ -1698,19 +1713,26 @@ class InitializationRepository:
         with self._write() as db:
             self._fence(db, lease)
             run = self._run(db, lease.initialization_id)
+            if run.running_mode == "LIGHTWEIGHT" and {"document2", "document3"}.intersection(artifacts):
+                raise InitializationError("LIGHTWEIGHT revision forbids D2/Policy references")
             payload = {
                 "revision_id": revision_id,
                 "ticker": run.ticker,
                 "base_revision": run.base_revision,
                 "research_cutoff_at": run.research_cutoff_at.isoformat(),
                 "artifacts": artifacts,
+                "running_mode": run.running_mode,
             }
             encoded = json.dumps(payload, sort_keys=True)
             old = db.execute(
                 "SELECT payload FROM activation_revisions WHERE revision_id=?", (revision_id,)
             ).fetchone()
-            if old and old[0] != encoded:
-                raise InitializationError("immutable revision conflict")
+            if old:
+                original = json.loads(old[0])
+                if {**original, "running_mode": original.get("running_mode", "FULL")} != payload:
+                    raise InitializationError("immutable revision conflict")
+                return original  # Preserve the exact legacy FULL revision, including missing mode.
+
             db.execute(
                 "INSERT OR IGNORE INTO activation_revisions VALUES(?,?,?,?)",
                 (
@@ -1729,7 +1751,7 @@ class InitializationRepository:
         identity: str,
         base: dict[str, Any],
         event_ref: dict[str, Any],
-        policy_ref: dict[str, Any],
+        policy_ref: dict[str, Any] | None,
         metadata: dict[str, Any],
     ) -> dict[str, Any]:
         """Short dependency CAS. Runtime never acquires an initialization-wide lease."""
@@ -1751,7 +1773,12 @@ class InitializationRepository:
             if row is None:
                 raise InitializationError("runtime activation requires initialized ticker")
             current = json.loads(row[0])
-            for role in ("document1", "document2", "event_library", "document3"):
+            if current.get("running_mode", "FULL") != base.get("running_mode", "FULL"):
+                raise InitializationError("runtime maintenance mode changed")
+            light = current.get("running_mode", "FULL") == "LIGHTWEIGHT"
+            if (policy_ref is None) != light:
+                raise InitializationError("Policy reference incompatible with running mode")
+            for role in (("document1", "event_library") if light else ("document1", "document2", "event_library", "document3")):
                 if current["artifacts"][role] != base["artifacts"][role]:
                     raise InitializationError("runtime maintenance superseded by activation")
             value = {
@@ -1761,7 +1788,7 @@ class InitializationRepository:
                 "artifacts": {
                     **current["artifacts"],
                     "event_library": event_ref,
-                    "document3": policy_ref,
+                    **({"document3": policy_ref} if not light else {}),
                 },
                 "runtime_metadata": metadata,
             }
@@ -1794,6 +1821,13 @@ class InitializationRepository:
                 return
             if current_id != revision["base_revision"]:
                 raise InitializationError("active revision changed")
+            target_mode = json.loads(revision["payload"]).get("running_mode", "FULL")
+            if target_mode != run.running_mode:
+                raise InitializationError("activation mode differs from frozen run")
+            if current_id:
+                previous = json.loads(db.execute("SELECT payload FROM activation_revisions WHERE revision_id=?", (current_id,)).fetchone()[0])
+                if previous.get("running_mode", "FULL") == "LIGHTWEIGHT" and target_mode != "LIGHTWEIGHT":
+                    raise InitializationError("REVERSE_MODE_UNSUPPORTED")
             db.execute(
                 """INSERT INTO ticker_active_revision VALUES(?,?)
                 ON CONFLICT(ticker) DO UPDATE SET revision_id=excluded.revision_id""",

@@ -1,6 +1,7 @@
 """Frozen ticker initialization V2 topology and production adapter dispatch."""
 
 from typing import Any
+from doxagent.running_mode import RunningMode
 
 from doxagent.settings import DoxAgentSettings
 
@@ -13,6 +14,7 @@ from .service import NodeAdapter
 
 def default_plan(
     *,
+    running_mode: RunningMode = RunningMode.FULL,
     cdecr_prebuilt_ref: dict[str, Any] | None = None,
     o4_delivery_enabled: bool = False,
 ) -> list[NodeSpec]:
@@ -54,11 +56,18 @@ def default_plan(
             ),
         ]
     )
+    if RunningMode(running_mode) is RunningMode.LIGHTWEIGHT:
+        plan = [n for n in plan if n.key in {"d1", "cdecr", "o2", "activation.prepare", "activation.commit", "bus.ready", "runtime.ready"}]
+        plan.insert(0, NodeSpec(key="monitoring.prepare", block="REGISTER"))
+        next(n for n in plan if n.key == "activation.prepare").dependencies = ["d1", "o2", "monitoring.prepare"]
     return plan
 
 
 def adapter_factory(node: NodeRecord) -> NodeAdapter:
     settings = DoxAgentSettings()
+    if node.key == "monitoring.prepare":
+        from .monitoring_adapter import MonitoringConfigurationAdapter
+        return MonitoringConfigurationAdapter(settings)
     if node.key == "internal.rerun":
         from .internal_adapter import InternalNodeAdapter
 

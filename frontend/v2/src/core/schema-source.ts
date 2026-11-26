@@ -93,3 +93,5 @@ export type WireTradingConfigurationWrite = W.Response<W.TradingConfiguration>;
 export type WireTradingCapital = W.Response<W.Resource<W.TradingCapital>>;
 export type WireTradingCapitalWrite = W.Response<W.TradingCapital>;
 export type { MonitoringTermsRequest } from "@contract";
+
+export type WireStartTickerRequest = W.StartTickerRequest;

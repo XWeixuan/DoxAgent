@@ -25,6 +25,7 @@ from doxagent.event_library.bundle_io import RevisionBundleIO, TolerantBundleLoa
 from doxagent.event_library.contracts import (
     REFERENCE_REVIEW_POLICY_VERSION,
     CandidateMap,
+    DateResolutionLedgerEntry,
     DeltaBatch,
     FrozenRuntimeSnapshot,
     FrozenViewManifest,
@@ -55,6 +56,7 @@ class _O2Phase(TypedDict):
     delta_ids: list[str]
     prior_attempt_paths: list[str]
     wave_plan: NotRequired[WavePlan]
+    survey_plan: NotRequired[WavePlan]
 
 
 @dataclass(frozen=True)
@@ -580,6 +582,47 @@ class RemoteEventLibraryInitializer:
         expected_final: bool,
         batch: DeltaBatch,
     ) -> tuple[O2RunResult, str | None]:
+        survey_metadata: dict[str, Any] | None = None
+        if phase["stage"] is EventLibraryRunStage.SURVEY:
+            plans = self._plan_waves(batch)
+            if (survey_plan := phase.get("survey_plan")) is not None:
+                projection = self._wave_runtime_context(
+                    batch=batch, manifest=manifest, plan=survey_plan, plans=plans
+                )
+                relative = f"attempts/{phase['attempt_id']}/input/survey_runtime_context.json"
+                content = _json_text(projection)
+                await self._write_immutable(run_id, relative, content)
+                survey_metadata = {
+                    "mode": "PART",
+                    "runtime_context_path": relative,
+                    "runtime_context_sha256": hashlib.sha256(content.encode()).hexdigest(),
+                }
+            elif len(plans) > 1:
+                # Keep the original durable survey as the global semantic unit.
+                # Its bounded research passes have independent durable receipts;
+                # replay never changes the frozen batch or skips global synthesis.
+                part_paths = []
+                for index, plan in enumerate(plans, start=1):
+                    part_id = f"{_base_attempt_id(phase['attempt_id'])}-part-{index:03d}"
+                    part: _O2Phase = {
+                        "attempt_id": part_id,
+                        "stage": EventLibraryRunStage.SURVEY,
+                        "skill_asset": phase["skill_asset"],
+                        "delta_ids": list(plan.delta_ids),
+                        "prior_attempt_paths": [],
+                        "survey_plan": plan,
+                    }
+                    await self._execute_phase(
+                        run_id=run_id, phase=part, manifest=manifest, cutoff_at=cutoff_at,
+                        thread_id=None, mode=mode, frozen_root=frozen_root,
+                        allowed_detail_ids=[], review_candidates=[], expected_final=False,
+                        batch=batch,
+                    )
+                    part_paths.append(f"attempts/{part_id}/output/work")
+                phase = {**phase, "prior_attempt_paths": [
+                    *phase["prior_attempt_paths"], *part_paths,
+                ]}
+                survey_metadata = {"mode": "SYNTHESIS", "part_paths": part_paths}
         wave_runtime_context = None
         if (wave_plan := phase.get("wave_plan")) is not None:
             wave_runtime_context = self._wave_runtime_context(
@@ -601,6 +644,7 @@ class RemoteEventLibraryInitializer:
             allowed_event_detail_ids=allowed_detail_ids,
             review_candidates=review_candidates,
             wave_runtime_context=wave_runtime_context,
+            survey_metadata=survey_metadata,
         )
         request = self._worker_request(
             run_id=run_id,
@@ -608,6 +652,7 @@ class RemoteEventLibraryInitializer:
             attempt_id=phase["attempt_id"],
             cutoff_at=cutoff_at,
             thread_id=thread_id,
+            work_item_count=len(phase["delta_ids"]),
         )
         job = await self.worker.run(request)
         if job.status != "succeeded":
@@ -642,7 +687,91 @@ class RemoteEventLibraryInitializer:
             expected_final=expected_final,
         )
         await self._validate_phase_artifacts(run_id=run_id, phase=phase)
+        if survey_metadata is not None:
+            await self._validate_survey_catalog(run_id=run_id, phase=phase)
         return result, job.thread_id or thread_id
+
+    async def _recover_completed_survey(self, arguments, receipt):
+        """Revalidate an exact succeeded dispatch without repeating its research."""
+        phase = arguments["phase"]
+        if phase.get("survey_plan") is None or not receipt.get("worker_request"):
+            return None
+        lookup = getattr(self.worker.worker, "lookup_job", None)
+        if lookup is None:
+            return None
+        request = WorkerRunRequest.model_validate(receipt["worker_request"])
+        if (request.run_id != arguments["run_id"]
+                or request.attempt_id != phase["attempt_id"]
+                or request.cutoff_at != arguments["cutoff_at"]):
+            raise ValueError("survey recovery dispatch identity mismatch")
+        job = await lookup(request)  # Authenticated lookup also verifies request SHA and Job ID.
+        if job is None or job.status != "succeeded":
+            return None
+        expected = _json_text(self._wave_runtime_context(
+            batch=arguments["batch"], manifest=arguments["manifest"],
+            plan=phase["survey_plan"], plans=self._plan_waves(arguments["batch"]),
+        ))
+        frozen = await self.workspace.read_text(
+            request.run_id, f"attempts/{request.attempt_id}/input/survey_runtime_context.json"
+        )
+        if frozen.content != expected:
+            raise ValueError("survey recovery frozen projection mismatch")
+        await self._validate_survey_catalog(run_id=request.run_id, phase=phase)
+        from doxagent.codex_runtime.recovery import json_value
+        from .schema import DeltaCoverageSummary
+
+        try:
+            raw = json_value(job.final_response or "")
+        except ValueError:
+            raw = {}
+        if isinstance(raw, dict) and raw.get(
+            "base_library_version", arguments["manifest"].base_library_version
+        ) != arguments["manifest"].base_library_version:
+            raise ValueError("base_library_version does not match Frozen View")
+        result = O2RunResult(
+            status="PENDING", base_library_version=arguments["manifest"].base_library_version,
+            delta_coverage=DeltaCoverageSummary(total=0, resolved=0, pending=0),
+        )
+        self._validate_phase_result(
+            result=result, phase=phase, manifest=arguments["manifest"], expected_final=False
+        )
+        return result, job.thread_id or arguments["thread_id"]
+
+    async def _validate_survey_catalog(self, *, run_id: str, phase: _O2Phase) -> None:
+        """A synthesis must receive complete navigation from every bounded pass."""
+        prefix = f"attempts/{phase['attempt_id']}/output/work"
+        response = await self.workspace.read_text(run_id, f"{prefix}/delta_catalog.json")
+        catalog = json.loads(response.content or "null")
+        if (
+            not isinstance(catalog, dict)
+            or set(catalog) != set(phase["delta_ids"])
+            or any(not isinstance(value, str) or not value.strip() for value in catalog.values())
+        ):
+            raise ValueError("survey catalog must cover exactly the assigned Delta IDs")
+        ledger = await self.workspace.read_text(run_id, f"{prefix}/occurrence_ledger.md")
+        if not (ledger.content or "").strip():
+            raise ValueError("survey occurrence ledger is empty")
+        dates = await self.workspace.read_text(run_id, f"{prefix}/date_resolution_ledger.jsonl")
+        # Survey rows are Delta-level hypotheses; Event/Fact IDs are assigned
+        # during reconstruction. Validate their field types and date semantics,
+        # leaving the formal identity validators to final bundle import.
+        from jsonschema import Draft202012Validator, FormatChecker
+
+        validator = Draft202012Validator(
+            DateResolutionLedgerEntry.model_json_schema(), format_checker=FormatChecker()
+        )
+        rows = [json.loads(line) for line in (dates.content or "").splitlines() if line.strip()]
+        for row in rows:
+            error = next(validator.iter_errors(row), None)
+            if error:
+                raise ValueError("invalid survey date ledger entry: " + error.message)
+            if row["status"] == "RESOLVED" and not row.get("selected_date"):
+                raise ValueError("resolved survey date requires selected_date")
+            if (row["status"] == "GENUINELY_PERIOD_WIDE"
+                    and row["semantic_role"] != "EVENT_OCCURRENCE"):
+                raise ValueError("only Event occurrence may be genuinely period-wide")
+        if {row.get("delta_id") for row in rows} != set(phase["delta_ids"]):
+            raise ValueError("survey date ledger must cover exactly the assigned Delta IDs")
 
     async def _seed_attempt(
         self,
@@ -660,6 +789,7 @@ class RemoteEventLibraryInitializer:
         allowed_event_detail_ids: list[str] | None = None,
         review_candidates: list[ReferenceReviewCandidate] | None = None,
         wave_runtime_context: dict[str, Any] | None = None,
+        survey_metadata: dict[str, Any] | None = None,
     ) -> None:
         prefix = f"attempts/{attempt_id}/input"
         allowed = sorted(set(allowed_event_detail_ids or []))
@@ -700,6 +830,19 @@ class RemoteEventLibraryInitializer:
                 stage is EventLibraryRunStage.REFERENCE_REVIEW and not assigned_delta_ids
             ),
         }
+        if survey_metadata is not None:
+            task_metadata["survey"] = survey_metadata
+        if survey_metadata is not None or wave_runtime_context is not None:
+            # The bounded projection contains the original propositions and date
+            # candidates. Full frozen files remain available for focused lookups.
+            prefix_frozen = f"context/event_library/{manifest.frozen_view_id}/"
+            raw_paths = {
+                prefix_frozen + manifest.pending_atomics_path,
+                prefix_frozen + manifest.runtime_packages_path,
+            }
+            task_metadata["required_frozen_paths"] = [
+                path for path in task_metadata["required_frozen_paths"] if path not in raw_paths
+            ]
         if stage is EventLibraryRunStage.REFERENCE_REVIEW and not assigned_delta_ids:
             task_metadata["required_bundle_identity"] = {
                 "run_id": manifest.run_id,
@@ -925,6 +1068,7 @@ class RemoteEventLibraryInitializer:
         schema_by_stage = {
             EventLibraryRunStage.SURVEY: [
                 "schemas/survey_delta_catalog.schema.json",
+                "schemas/date_resolution_ledger.schema.json",
             ],
             EventLibraryRunStage.LOCAL_RECONSTRUCTION: [
                 "schemas/canonical_event_revision.schema.json",
@@ -1110,6 +1254,7 @@ class RemoteEventLibraryInitializer:
         attempt_id: str,
         cutoff_at: datetime,
         thread_id: str | None,
+        work_item_count: int = 0,
     ) -> WorkerRunRequest:
         return WorkerRunRequest(
             workflow_version=CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
@@ -1132,7 +1277,12 @@ class RemoteEventLibraryInitializer:
             model=self.model,
             model_provider=self.model_provider,
             effort=self.effort,
-            timeout_seconds=self.timeout_seconds,
+            # Global synthesis and final editing still inspect the whole batch.
+            # Give those indivisible units a workload-sized budget, retaining
+            # the Worker contract's two-hour ceiling and the configured minimum.
+            timeout_seconds=min(7200, self.timeout_seconds * max(
+                1, (work_item_count + self.wave_size - 1) // self.wave_size
+            )),
             allow_subagents=False,
             max_subagents=0,
         )
@@ -1237,6 +1387,7 @@ class RemoteEventLibraryInitializer:
                 attempt_id=attempt_id,
                 cutoff_at=cutoff_at,
                 thread_id=thread_id,
+                work_item_count=manifest.pending_delta_count,
             )
         )
         if job.thread_id:

@@ -401,3 +401,66 @@
 
 原始指标与具体坏例：`eval/ionq_massive_regex_20261113/IONQ`。
 <!-- /relevance-debug:IONQ-MASSIVE-20261113-01 -->
+
+<!-- relevance-debug:MICRO-BE-20261126 -->
+## MICRO-BE-20261126 · BE
+
+本次最多两轮，第一轮与第二轮冻结候选及两集指标成对保留；取舍和未达标项见 `eval/relevance_microtune_20261126/report.md`。最终经验合并如下：
+
+词义修复应处理语言自身的词尾与复合形式，不能机械套用英文边界。真实语料不足时分别报告小样本结果与自拟语法检查。历史报告的源级开关必须重新回读，不把现有行为冒充新增收益。
+
+<!-- /relevance-debug:MICRO-BE-20261126 -->
+
+<!-- relevance-debug:MICRO-MU-20261126 -->
+## MICRO-MU-20261126 · MU
+
+本次最多两轮，第一轮与第二轮冻结候选及两集指标成对保留；取舍和未达标项见 `eval/relevance_microtune_20261126/report.md`。最终经验合并如下：
+
+对一个歧义构词作局部限制，比全文体裁排除更能保留混题中的独立事实。先证明新增条件是原规则的收窄，再检查被剔除对象的完整证据；其他业务范围不跟随收紧。
+
+<!-- /relevance-debug:MICRO-MU-20261126 -->
+
+<!-- relevance-debug:MICRO-INTC-20261126 -->
+## MICRO-INTC-20261126 · INTC
+
+本次最多两轮，第一轮与第二轮冻结候选及两集指标成对保留；取舍和未达标项见 `eval/relevance_microtune_20261126/report.md`。最终经验合并如下：
+
+一条规则错误命中不等于整篇与目标无关；正文可能另有独立事实。定义增加排除文字可造成大幅漏召，微调应保留基线，发现该代价时撤回，而不是继续解释性加码。
+
+<!-- /relevance-debug:MICRO-INTC-20261126 -->
+
+<!-- relevance-debug:MICRO-COHR-20261126 -->
+## MICRO-COHR-20261126 · COHR
+
+本次最多两轮，第一轮与第二轮冻结候选及两集指标成对保留；取舍和未达标项见 `eval/relevance_microtune_20261126/report.md`。最终经验合并如下：
+
+普通财务词的局部收紧也可能误伤真实产业投资；指代关系的一句内澄清比长篇排除更适合微调。保留并分别报告正则、模型和实际开关下并集成绩，改善有限也如实记录。
+
+<!-- /relevance-debug:MICRO-COHR-20261126 -->
+
+<!-- relevance-debug:MICRO-NBIS-20261126 -->
+## MICRO-NBIS-20261126 · NBIS
+
+本次最多两轮，第一轮与第二轮冻结候选及两集指标成对保留；取舍和未达标项见 `eval/relevance_microtune_20261126/report.md`。最终经验合并如下：
+
+表述范围更明确不代表必然改善所有样本；只有成对输入、分数与标签的对照才能支持选择。模型较低的误放和无新增漏召只是小样本支持，不能外推为稳定生产准召。
+
+<!-- /relevance-debug:MICRO-NBIS-20261126 -->
+
+<!-- relevance-debug:MICRO-SNOW-20261126 -->
+## MICRO-SNOW-20261126 · SNOW
+
+本次最多两轮，第一轮与第二轮冻结候选及两集指标成对保留；取舍和未达标项见 `eval/relevance_microtune_20261126/report.md`。最终经验合并如下：
+
+启动语义复核后，裸公司名仍可能通过正则绕过语义判断。保留强品牌信号，仅让歧义名称具备基本业务语境，并区分历史直通与当前复核基线。
+
+<!-- /relevance-debug:MICRO-SNOW-20261126 -->
+
+<!-- relevance-debug:MICRO-ONDS-20261126 -->
+## MICRO-ONDS-20261126 · ONDS
+
+本次最多两轮，第一轮与第二轮冻结候选及两集指标成对保留；取舍和未达标项见 `eval/relevance_microtune_20261126/report.md`。最终经验合并如下：
+
+已有语义规则已解决的负例不能计作新词库收益。公司名消歧可以作为局部确定性边界修正，但不能通过改成很少使用的搜索短语而牺牲搜索覆盖。
+
+<!-- /relevance-debug:MICRO-ONDS-20261126 -->

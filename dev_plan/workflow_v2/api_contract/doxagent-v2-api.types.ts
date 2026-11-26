@@ -128,13 +128,15 @@ export interface MaintenanceDisposition {
   from_policy_version: Count | null; to_policy_version: Count;
   from_library_version: Count | null; to_library_version: Count;
 }
+export type RunningMode = "FULL" | "LIGHTWEIGHT";
 export interface Activation {
+  running_mode?: RunningMode;
   maintenance?: MaintenanceDisposition | null;
   runtime_activation_id: Id;
   activated_at: Value<Instant>;
   document1: DocumentRef;
-  document2: DocumentRef;
-  policy_set: PolicySetRef;
+  document2: DocumentRef | null;
+  policy_set: PolicySetRef | null;
   event_library: LibraryRef;
   monitoring_configuration_id: Id;
 }
@@ -223,6 +225,7 @@ export interface OverviewMetrics {
   live_realized_net_pnl: Metric;
 }
 export interface TickerOverview {
+  running_mode?: RunningMode;
   state: TickerState;
   last_standard_message_at: Value<Instant>;
   source_counts: SourceCounts;
@@ -250,6 +253,7 @@ export interface InitializationStep {
   quality_annotations: string[];
 }
 export interface InitializationProgress {
+  running_mode?: RunningMode;
   initialization_id: Id;
   ticker: string;
   status: ParentStatus;
@@ -257,11 +261,12 @@ export interface InitializationProgress {
   control_etag: string;
   manual_resume_allowed: boolean;
   failed_node_keys: string[];
-  steps: InitializationStep[]; // exactly six, StepKey order
+  steps: InitializationStep[]; // four LIGHTWEIGHT / six FULL, StepKey order
   quality_annotations: string[];
   failure: ApiError | null;
 }
 export interface StartTickerRequest {
+  running_mode?: RunningMode;
   ticker: string;
   monitor_mode: MonitorMode;
   initialization: "REUSE_ACTIVE" | "FORCE_INITIALIZE";
@@ -792,6 +797,7 @@ export interface RuntimeMetrics {
 }
 export type FirstRoundTag = "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "SUSPECTED_DUPLICATE_HIT";
 export interface CaseSummary {
+  running_mode?: RunningMode;
   runtime_tags?: ("LONG_W3_DECISION")[];
   w3_model_seconds?: number | null; non_model_seconds?: number | null;
   w3_decision?: Value<"LONG" | "SHORT" | "NO_TRADE">;
@@ -939,7 +945,7 @@ export interface CaseDetail {
   summary: CaseSummary;
   runtime_activation_id: Value<Id>;
   document1: Value<DocumentRef>; document2: Value<DocumentRef>;
-  library: LibraryRef; policy_set: PolicySetRef; provisional_snapshot_version: Count;
+  library: LibraryRef; policy_set: PolicySetRef | null; provisional_snapshot_version: Count;
   hot_path: Timing; w1: Resource<W1Detail>; w2: Resource<W2Detail>; w3: Resource<W3Detail>;
   messages: Page<MessageSummary>;
   failures: { failure_id: Id; stage: string; status: string; error: ApiError; occurred_at: Instant }[];
@@ -962,6 +968,15 @@ export interface ExecutionGroupSummary {
  hedge_asset: string | null; hedge_quantity: DecimalString; hedge_result: string | null; hedge_reason: string | null;
 }
 export interface ExecutionSummary {
+  exit_summary?: Array<{
+    job_id: string;
+    role: string;
+    state: string;
+    reason: string | null;
+    remaining_quantity: DecimalString;
+    requires_manual_review: boolean;
+    unresolved_order: boolean;
+  }>;
   execution_group?: ExecutionGroupSummary;
   execution_id: Id; intent_id: Id; case_id: Id;
   environment: Value<"PAPER" | "LIVE">; profile_revision: Value<Id>;

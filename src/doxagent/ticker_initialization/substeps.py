@@ -270,6 +270,26 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
                         )
                     except (ValueError, TypeError, KeyError) as exc:
                         repo.reject_receipt(lease, key, f"RECEIPT_UNREADABLE: {type(exc).__name__}")
+                if kind == "o2" and arguments["phase"].get("survey_plan") is not None:
+                    recover = getattr(arguments["self"], "_recover_completed_survey", None)
+                    recovered = await recover(arguments, previous.receipt) if recover else None
+                    if recovered is not None:
+                        repo.begin(lease, key, parent.node.execution_version)
+                        repo.receipt(lease, key, {
+                            **{name: previous.receipt[name] for name in (
+                                "invocation", "snapshot", "worker_request", "dispatch_provenance",
+                                "worker_invocations",
+                            ) if name in previous.receipt},
+                            "artifact_recovery": {
+                                "reason": "SUCCEEDED_DISPATCH_REVALIDATED",
+                                "previous_execution_id": previous.execution_id,
+                                "previous_generation": previous.generation,
+                            },
+                        })
+                        repo.complete(lease, key, NodeResult(artifacts={
+                            "return": codec.dump_python(recovered, mode="json"), "codec_version": 1,
+                        }))
+                        return cast(T, recovered)
                 record = repo.begin(lease, key, parent.node.execution_version)
                 child = NodeContext(repo, lease, record)
                 token = _step.set(child)

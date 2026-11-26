@@ -144,7 +144,8 @@ def test_explicit_empty_and_missing_remain_different():
     assert "events" not in missing["w1"] and empty["w1"]["events"] == []
 
 
-def test_real_phase_runner_accepts_minimal_offline_case(tmp_path, monkeypatch):
+@pytest.mark.parametrize("with_skill", [True, False])
+def test_real_phase_runner_accepts_minimal_offline_case(tmp_path, monkeypatch, with_skill):
     """Use the real phase serializer/validator; replace only the model transport."""
     from doxagent.codex_worker.schema import WorkerJob
     from doxagent.w3_backtest import decision_runner
@@ -197,9 +198,12 @@ def test_real_phase_runner_accepts_minimal_offline_case(tmp_path, monkeypatch):
     folder = dataset / "inputs/A"
     folder.mkdir(parents=True)
     (folder / "case.json").write_text(json.dumps(raw), encoding="utf-8")
-    (prompts / "skills").mkdir(parents=True)
-    for name in ("AGENTS.md", "skills/skill.md", "backtest.md"):
+    prompts.mkdir()
+    for name in ("AGENTS.md", "backtest.md"):
         (prompts / name).write_text("frozen rules", encoding="utf-8")
+    if with_skill:
+        (prompts / "skills").mkdir()
+        (prompts / "skills/skill.md").write_text("separate skill text", encoding="utf-8")
     (prompts / "contract.json").write_text(
         '{"w3_contract_version":"persistent-runtime.w3.v6"}',
         encoding="utf-8",
@@ -216,6 +220,8 @@ def test_real_phase_runner_accepts_minimal_offline_case(tmp_path, monkeypatch):
         result = runner.run_case(dataset, "A", tmp_path / "run")
         assert result["status"] == "SUCCEEDED", result["error"]
         assert [r.task_phase for r in worker.requests] == ["w3_template", "trade_decision"]
+        assert ("separate skill text" in worker.requests[0].prompt) is with_skill
+        assert ("w3/skills/skill.md" in runner.assets) is with_skill
         task = json.loads(worker.requests[-1].prompt)
         assert task["input"]["cutoff_at"] == raw["as_of"]
         assert not {"as_of", "policies", "pins", "recent_trade"} & task["input"].keys()

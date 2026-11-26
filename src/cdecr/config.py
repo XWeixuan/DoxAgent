@@ -19,6 +19,11 @@ class CDECRSettings(BaseSettings):
         case_sensitive=True,
     )
 
+    openrouter_api_key: SecretStr | None = Field(default=None, alias="OPENROUTER_API_KEY")
+    openrouter_base_url: str = Field(
+        default="https://openrouter.ai/api/v1", alias="CDECR_OPENROUTER_BASE_URL"
+    )
+
     supabase_url: str | None = Field(default=None, alias="CDECR_SUPABASE_URL")
     supabase_publishable_key: SecretStr | None = Field(
         default=None, alias="CDECR_SUPABASE_PUBLISHABLE_KEY"
@@ -40,13 +45,13 @@ class CDECRSettings(BaseSettings):
         default="https://api.deepseek.com",
         alias="CDECR_DEEPSEEK_BASE_URL",
     )
-    model_m2_provider: Literal["dashscope", "deepseek"] = Field(
+    model_m2_provider: Literal["dashscope", "deepseek", "openrouter"] = Field(
         default="dashscope", alias="CDECR_M2_PROVIDER"
     )
-    model_m3_provider: Literal["dashscope", "deepseek"] = Field(
+    model_m3_provider: Literal["dashscope", "deepseek", "openrouter"] = Field(
         default="dashscope", alias="CDECR_M3_PROVIDER"
     )
-    model_m4_provider: Literal["dashscope", "deepseek"] = Field(
+    model_m4_provider: Literal["dashscope", "deepseek", "openrouter"] = Field(
         default="dashscope", alias="CDECR_M4_PROVIDER"
     )
     model_m2_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
@@ -92,12 +97,8 @@ class CDECRSettings(BaseSettings):
     grounder_primary_normalization: Literal["off", "shadow"] = Field(
         default="shadow", alias="CDECR_GROUNDER_PRIMARY_NORMALIZATION"
     )
-    n9_overlap_batch_packing: bool = Field(
-        default=False, alias="CDECR_N9_OVERLAP_BATCH_PACKING"
-    )
-    parent_compact_wire_dto: bool = Field(
-        default=True, alias="CDECR_PARENT_COMPACT_WIRE_DTO"
-    )
+    n9_overlap_batch_packing: bool = Field(default=False, alias="CDECR_N9_OVERLAP_BATCH_PACKING")
+    parent_compact_wire_dto: bool = Field(default=True, alias="CDECR_PARENT_COMPACT_WIRE_DTO")
     grounder_issue_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
         default="legacy",
         alias="CDECR_GROUNDER_ISSUE_PROTOCOL",
@@ -207,15 +208,11 @@ class CDECRSettings(BaseSettings):
     package_v3_batch_size: int = Field(
         default=100, ge=1, le=200, alias="CDECR_PACKAGE_V3_BATCH_SIZE"
     )
-    package_v3_strict_output: bool = Field(
-        default=True, alias="CDECR_PACKAGE_V3_STRICT_OUTPUT"
-    )
-    package_v3_provider: Literal["dashscope", "deepseek"] = Field(
+    package_v3_strict_output: bool = Field(default=True, alias="CDECR_PACKAGE_V3_STRICT_OUTPUT")
+    package_v3_provider: Literal["dashscope", "deepseek", "openrouter"] = Field(
         default="dashscope", alias="CDECR_PACKAGE_V3_PROVIDER"
     )
-    package_v3_model: Literal["qwen3.8-flash"] = Field(
-        default="qwen3.8-flash", alias="CDECR_PACKAGE_V3_MODEL"
-    )
+    package_v3_model: str = Field(default="qwen3.8-flash", alias="CDECR_PACKAGE_V3_MODEL")
     package_v3_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
         default="low", alias="CDECR_PACKAGE_V3_REASONING_EFFORT"
     )
@@ -286,9 +283,7 @@ class CDECRSettings(BaseSettings):
     stage_read_snapshot: bool = Field(default=True, alias="CDECR_STAGE_READ_SNAPSHOT")
     chunked_stage_apply: bool = Field(default=True, alias="CDECR_CHUNKED_STAGE_APPLY")
     batch_task_ledger: bool = Field(default=True, alias="CDECR_BATCH_TASK_LEDGER")
-    embedding_batch_executor: bool = Field(
-        default=True, alias="CDECR_EMBEDDING_BATCH_EXECUTOR"
-    )
+    embedding_batch_executor: bool = Field(default=True, alias="CDECR_EMBEDDING_BATCH_EXECUTOR")
     atomic_late_convergence: bool = Field(default=True, alias="CDECR_ATOMIC_LATE_CONVERGENCE")
     atomic_late_task_cap: int = Field(default=48, ge=0, le=128, alias="CDECR_ATOMIC_LATE_TASK_CAP")
 

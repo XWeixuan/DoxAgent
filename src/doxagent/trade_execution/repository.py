@@ -72,6 +72,10 @@ class ExecutionRepository:
             """)
             if version and version[0] == "1":
                 db.execute("UPDATE te_meta SET value='2' WHERE key='version'")
+            from .exit_guard import initialize as initialize_exit_guard
+
+            initialize_exit_guard(db)
+            db.execute("CREATE INDEX IF NOT EXISTS te_attempts_contract ON te_attempts(account,json_extract(payload,'$.contract.con_id'))")
             from doxagent.exit_strategy.repository import initialize
 
             initialize(db)
@@ -282,6 +286,7 @@ class ExecutionRepository:
             rows = db.execute(
                 "SELECT payload FROM te_jobs WHERE state IN "
                 "('READY','WAIT_SESSION','WAIT_QUOTE','ACTIVE','RECONCILE_REQUIRED') "
+                "AND NOT EXISTS (SELECT 1 FROM runtime_values v WHERE v.namespace='execution_exit_locks' AND v.key=te_jobs.id) "
                 "AND due_at<=? ORDER BY CASE WHEN state IN ('ACTIVE','RECONCILE_REQUIRED') "
                 "THEN 0 ELSE 1 END,CASE leg WHEN 'EXIT' THEN 0 ELSE 1 END,due_at,id",
                 (self.journal.clock().isoformat(),),
@@ -295,6 +300,9 @@ class ExecutionRepository:
             "due_at": (self.journal.clock() + timedelta(seconds=delay)).isoformat(),
         }
         with self.transaction() as db:
+            from .exit_guard import locked
+            if job['leg'] == 'EXIT' and locked(db, job['id']) and job['state'] != 'DONE':
+                job['state'] = 'FAILED'
             db.execute(
                 "UPDATE te_jobs SET state=?,due_at=?,payload=? WHERE id=?",
                 (job["state"], job["due_at"], encode(job), job["id"]),
@@ -762,6 +770,9 @@ class ExecutionRepository:
             if competing:
                 return None
             if job["leg"] == "EXIT":
+                from .exit_guard import locked
+                if locked(db, job["id"]):
+                    return None
                 row = db.execute(
                     "SELECT payload FROM te_lots WHERE id=?",
                     (job.get("leg_id", job["execution_id"]),),
@@ -1253,6 +1264,11 @@ class ExecutionRepository:
             row = db.execute("SELECT payload FROM te_jobs WHERE id=?", (identity,)).fetchone()
             if row:
                 job = json.loads(row[0])
+                from .exit_guard import locked
+                if locked(db, identity):
+                    job["state"] = "FAILED"
+                    groups.save_job(db, job)
+                    continue
                 # An active exit must reconcile its live order even if a correction reduced the lot.
                 if job["state"] in {"ACTIVE", "RECONCILE_REQUIRED"}:
                     job["due_at"] = self.journal.clock().isoformat()
@@ -1403,102 +1419,12 @@ class ExecutionRepository:
         )
 
     def resume_exit(self, identity: str, reason: str) -> Any:
-        job = self.get("jobs", identity + ":exit")
-        if not reason.strip() or not job or job["state"] != "FAILED":
-            raise ValueError("only failed exit with explicit reason may resume")
-        return self.update_job(
-            job,
-            state="READY",
-            generation=job.get("generation", 0) + 1,
-            failures=0,
-            resume_reason=reason,
-        )
+        raise ValueError("FAILED_EXIT_REQUIRES_VERIFIED_GROUP_REQUEST")
 
     def recover_failed_exits(self) -> int:
-        """Resume transient/remaining exit obligations without idle writer ownership."""
-        from .recovery import transient
+        # Terminal failures require a verified group request. Never restart trades here.
+        return 0
 
-        with self.transaction(write=False) as db:
-            identities = [
-                r[0]
-                for r in db.execute("SELECT id FROM te_jobs WHERE leg='EXIT' AND state='FAILED'")
-            ]
-        recovered = 0
-        for identity in identities:
-            with self.transaction() as db:
-                row = db.execute(
-                    "SELECT j.payload,l.payload FROM te_jobs j JOIN te_lots l ON "
-                    "l.id=COALESCE(json_extract(j.payload,'$.leg_id'),j.execution_id) WHERE "
-                    "j.id=? AND j.state='FAILED'",
-                    (identity,),
-                ).fetchone()
-                if row is None:
-                    continue
-                job, lot = map(json.loads, row)
-                if not (
-                    decimal(lot["remaining_qty"]) > 0
-                    and (
-                        job.get("exit_requested_at")
-                        or datetime.fromisoformat(lot["scheduled_exit"]) <= self.journal.clock()
-                    )
-                ):
-                    continue
-                is_transient = transient(RuntimeError(job.get("reason", "")))
-                hedge_rejection = (
-                    job.get("role") == "HEDGE" and job.get("reason") == "BROKER_REJECTED"
-                )
-                retry_remaining = job.get("reason") == "RETRY_BUDGET_EXHAUSTED" or hedge_rejection
-                if not is_transient and not retry_remaining:
-                    continue
-                if retry_remaining:
-                    attempts = [
-                        json.loads(r[0])
-                        for r in db.execute(
-                            "SELECT payload FROM te_attempts WHERE job_id=?", (job["id"],)
-                        )
-                    ]
-                    if any(a["state"] not in {"SETTLED", "NOT_SENT"} for a in attempts):
-                        continue
-                    rejections = [a["rejection"] for a in attempts if a.get("rejection")]
-                    permanent = any(
-                        word in json.dumps(rejections).lower()
-                        for word in (
-                            "permission",
-                            "not allowed",
-                            "account mismatch",
-                            "invalid contract",
-                            "insufficient",
-                            "margin",
-                            "precaution",
-                        )
-                    )
-                    if rejections and (not hedge_rejection or permanent):
-                        continue
-                    latest = max(
-                        (
-                            datetime.fromisoformat(a["settled_at"])
-                            for a in attempts
-                            if a.get("settled_at")
-                        ),
-                        default=self.journal.clock(),
-                    )
-                    if (self.journal.clock() - latest).total_seconds() < 60:
-                        continue
-                    job["generation"] = job.get("generation", 0) + 1
-                job.update(
-                    state="READY" if retry_remaining else "RECONCILE_REQUIRED",
-                    due_at=self.journal.clock().isoformat(),
-                    recovery_reason="REMAINING_EXIT_NEXT_ROUND"
-                    if retry_remaining
-                    else "TRANSIENT_EXIT_AUTO_RECOVERY",
-                    recovered_at=self.journal.clock().isoformat(),
-                )
-                db.execute(
-                    "UPDATE te_jobs SET state=?,due_at=?,payload=? WHERE id=?",
-                    (job["state"], job["due_at"], encode(job), job["id"]),
-                )
-                recovered += 1
-        return recovered
 
     def allocate_order_id(self, account: Any, client_id: Any, suggested: Any) -> Any:
         key = f"{account}:{client_id}"

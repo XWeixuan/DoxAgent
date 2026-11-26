@@ -9,7 +9,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
+from doxagent.running_mode import RunningMode
 
 from doxagent.postgres import connect_postgres
 
@@ -17,6 +18,7 @@ from .schema import DailyCloseRun, RuntimeCase, RuntimeV2Model
 
 
 class RuntimeTerminalProjection(RuntimeV2Model):
+    running_mode: RunningMode = RunningMode.FULL
     projection_version: Literal["persistent-runtime-terminal.v1"] = (
         "persistent-runtime-terminal.v1"
     )
@@ -30,14 +32,21 @@ class RuntimeTerminalProjection(RuntimeV2Model):
     resolved_route: str | None = None
     w3_resolved: bool = False
     event_library_version: int = Field(ge=1)
-    policy_set_version: int = Field(ge=1)
+    policy_set_version: int | None = Field(default=None, ge=1)
     hot_path_latency_ms: int | None = Field(default=None, ge=0)
     model_turn_count: int = Field(ge=0)
     updated_at: datetime
 
+    @model_validator(mode="after")
+    def mode_assets(self):
+        if (self.policy_set_version is None) != (self.running_mode is RunningMode.LIGHTWEIGHT):
+            raise ValueError("terminal Policy pin must match running mode")
+        return self
+
     @classmethod
     def from_case(cls, case: RuntimeCase, *, model_turn_count: int) -> RuntimeTerminalProjection:
         return cls(
+            running_mode=case.running_mode,
             case_id=case.case_id,
             ticker=case.ticker,
             trading_date=case.trading_date,

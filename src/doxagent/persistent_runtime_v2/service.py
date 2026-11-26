@@ -268,6 +268,9 @@ def _retry_correction_context(error: Exception) -> str:
     return "\n".join(lines)
 
 
+from doxagent.running_mode import RunningMode
+
+
 class PersistentRuntimeV2Service:
     def __init__(
         self,
@@ -552,12 +555,14 @@ class PersistentRuntimeV2Service:
                 "event_library_unavailable",
                 "Published Known Event Index is unavailable",
             )
-        if projection is None:
+        light = snapshot is not None and snapshot.running_mode is RunningMode.LIGHTWEIGHT
+        if projection is None and not light:
             raise RuntimeInputUnavailable(
                 "policy_projection_unavailable",
                 "Published Runtime Policy Projection is unavailable",
             )
-        assert_runtime_projection_compatible(projection)
+        if not light:
+            assert_runtime_projection_compatible(projection)
         from .daily_index import freeze_index, retain_new_library_facts, frozen_fact_contents
         selected_execution = execution_bundle_id or (self.journal.get("execution", "active") if self.journal else None)
         index_prompts = self.prompts
@@ -592,14 +597,15 @@ class PersistentRuntimeV2Service:
             trading_date=trading_date,
             source=source,
             version_pin=RuntimeVersionPin(
+                running_mode=snapshot.running_mode if snapshot else RunningMode.FULL,
                 event_library_root=snapshot.event_library_root if snapshot else None,
                 activation_revision_id=snapshot.activation_revision_id if snapshot else None,
                 document1_run_id=snapshot.document1_run_id if snapshot else None,
                 document2_run_id=snapshot.document2_run_id if snapshot else None,
                 event_library_version=current_index.version,
                 provisional_snapshot_version=provisional_version,
-                policy_set_version=projection.policy_set_version,
-                runtime_projection_version=projection.policy_set_version,
+                policy_set_version=projection.policy_set_version if projection else None,
+                runtime_projection_version=projection.policy_set_version if projection else None,
             ),
             status=RuntimeCaseStatus.RUNNING,
         )
@@ -612,7 +618,7 @@ class PersistentRuntimeV2Service:
         case.frozen_inputs = {
             "index": index.model_dump(mode="json"),
             "w1_daily_index": w1_daily_pin,
-            "projection": projection.model_dump(mode="json"),
+            **({"projection": projection.model_dump(mode="json")} if projection else {}),
             "provisional": [item.model_dump(mode="json") for item in provisional],
             "prompts": asdict(self.prompts),
         }
@@ -632,6 +638,10 @@ class PersistentRuntimeV2Service:
                 if self.journal
                 else None
             )
+            if light:
+                # Light has no Policy context for an older per-ticker entry. Freeze
+                # the current shared execution bundle; FULL keeps its rollout path.
+                w3_bundle_id = selected_execution
             w3_bundle = self.execution_bundles.get(w3_bundle_id) if w3_bundle_id else bundle
             case.frozen_inputs["w3_execution_bundle_id"] = w3_bundle_id or case.execution_bundle_id
             case.frozen_inputs["w3_assets"] = w3_bundle["assets"]
@@ -648,7 +658,7 @@ class PersistentRuntimeV2Service:
                     )
                 }
                 case.frozen_inputs["w3_contracts"] = w3_bundle["contracts"]
-            if not isinstance(projection, RuntimePolicyProjectionV5):
+            if not light and not isinstance(projection, RuntimePolicyProjectionV5):
                 case.orchestration_revision = min(case.orchestration_revision, 2)
         else:
             case.orchestration_revision = (
@@ -656,7 +666,8 @@ class PersistentRuntimeV2Service:
             )
         # The frozen W3 contract decides whether historical usage constrains recall.
         if (
-            mode != "CLOSED"
+            not light
+            and mode != "CLOSED"
             and not isinstance(projection, RuntimePolicyProjectionV5)
             and not is_unified_contract(case.w3_contract_version)
         ):
@@ -746,6 +757,12 @@ class PersistentRuntimeV2Service:
             # Existing bundles/previously frozen Cases retain their old format.
             case.frozen_inputs["models"].setdefault("w1_r1_input_view", "provisional-md-v1")
             case.frozen_inputs["models"].setdefault("w1_r2_input_view", "w1-r2-fact-view-v1")
+        if light:
+            if not is_pin_watch_contract(case.w3_contract_version):
+                raise RuntimeInputUnavailable("lightweight_contract_required", "Lightweight requires W3 v6")
+            case.orchestration_revision = 3
+            case.w2_contract_version = None
+            case.frozen_inputs.pop("w2_contracts", None)
         if self.journal:
             ControlRepository(self.journal).admit(
                 case.case_id,
@@ -809,6 +826,8 @@ class PersistentRuntimeV2Service:
                 ),
             )
         index = KnownEventIndexSnapshot.model_validate(case.frozen_inputs["index"])
+        if case.running_mode is RunningMode.LIGHTWEIGHT:
+            return self._resume_lightweight(case, index, phase=phase)
         projection = parse_runtime_projection(case.frozen_inputs["projection"])
 
         started = perf_counter()
@@ -924,6 +943,34 @@ class PersistentRuntimeV2Service:
         if self._dispatch_effects:
             self._wake_effects()
         return adjudicated
+
+    def _resume_lightweight(self, case, index, *, phase):
+        started = perf_counter()
+        try:
+            r1, final, response = self._run_w1_hot(case, index)
+        except (ControlError, LeaseLost, CancelledError, RuntimeStopping):
+            raise
+        except Exception as exc:
+            if is_sqlite_contention(exc):
+                raise
+            return self._fail_case(case, exc)
+        case.w1_round1, case.w1_final = r1, final
+        if phase == "W1":
+            return self.repository.save_case(case)
+        new = final.result is W1NoveltyVerdict.NEW
+        case.route = RuntimeRouteDecision(
+            primary_route=RuntimePrimaryRoute.W3 if new else RuntimePrimaryRoute.ARCHIVE,
+            side_effects=[
+                RuntimeSideEffect.ROUTE_TO_W3 if new else RuntimeSideEffect.ARCHIVE_MESSAGE
+            ],
+            reason=f"w1={final.result.value}/{final.confidence.value}",
+        )
+        case.status = RuntimeCaseStatus.PENDING_W3 if new else RuntimeCaseStatus.ADJUDICATED
+        case.hot_path_latency_ms = round((perf_counter() - started) * 1000)
+        self._enqueue_route_effects(case, response)
+        if self._dispatch_effects:
+            self._wake_effects()
+        return case
 
     def _run_w1_hot(
         self,
@@ -1853,6 +1900,7 @@ class PersistentRuntimeV2Service:
                 ticker=case.ticker,
                 source=case.source,
                 w1_final=case.w1_final,  # type: ignore[arg-type]
+                running_mode=case.running_mode,
                 w2_final=case.w2_final,  # type: ignore[arg-type]
                 event_library_version=case.version_pin.event_library_version,
                 policy_set_version=case.version_pin.policy_set_version,
@@ -2327,7 +2375,7 @@ class PersistentRuntimeV2Service:
 
     def _execute_effect(self, effect: RuntimeEffect) -> None:
         case = self.repository.get_case(effect.case_id)
-        if case is None or case.w1_final is None or case.w2_final is None or case.route is None:
+        if case is None or case.w1_final is None or (case.running_mode is RunningMode.FULL and case.w2_final is None) or case.route is None:
             raise RuntimeInputUnavailable("case_unavailable", "Routed Runtime Case is unavailable")
         if self.journal and self.journal.get("invalid_admissions", case.source.source_message_id):
             raise RuntimeInputUnavailable(
@@ -2421,6 +2469,7 @@ class PersistentRuntimeV2Service:
         existing = self.repository.get_w3_case(case.case_id)
         mode = self._w3_mode(case)
         w3_case = existing or W3RouteCase(
+            running_mode=case.running_mode,
             case_id=case.case_id,
             ticker=case.ticker,
             source=case.source,

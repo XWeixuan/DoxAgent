@@ -6,14 +6,16 @@ from doxagent.w3_backtest.cli import execute_run
 
 
 @pytest.mark.parametrize("model", [None, "gpt-6.1-sol"])
+@pytest.mark.parametrize("with_skill", [True, False])
 def test_prompt_snapshot_preserves_contract_and_rejects_changed_marker(
-    tmp_path, monkeypatch, model
+    tmp_path, monkeypatch, model, with_skill
 ):
     from doxagent.w3_backtest import dataset, report, runner, decision_runner
 
     prompts = tmp_path / "prompts"
     (prompts / "skills").mkdir(parents=True)
-    for name in ("AGENTS.md", "skills/skill.md", "backtest.md"):
+    business_files = ("AGENTS.md", "skills/skill.md") if with_skill else ("AGENTS.md",)
+    for name in (*business_files, "backtest.md"):
         (prompts / name).write_text("fixture", encoding="utf-8")
     marker = prompts / "contract.json"
     marker.write_text('{"w3_contract_version":"persistent-runtime.w3.v6"}', encoding="utf-8")
@@ -54,7 +56,10 @@ def test_prompt_snapshot_preserves_contract_and_rejects_changed_marker(
         effort="medium" if model else None,
     )
     assert (run / "prompt_snapshot/contract.json").read_bytes() == marker.read_bytes()
-    assert "contract.json" in json.loads((run / "run_manifest.json").read_text())["prompt_hashes"]
+    hashes = json.loads((run / "run_manifest.json").read_text())["prompt_hashes"]
+    assert "contract.json" in hashes
+    assert ("skills/skill.md" in hashes) is with_skill
+    assert (run / "prompt_snapshot/skills/skill.md").exists() is with_skill
     with pytest.raises(ValueError, match="new --run-id|only v6"):
         execute_run(
             tmp_path / "dataset", run, prompt_root=prompts, model="gpt-6-luna", effort="max"

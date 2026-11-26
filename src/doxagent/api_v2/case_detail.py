@@ -134,7 +134,7 @@ def install(app: FastAPI) -> None:
         activation = store.get(
             "activation_revision", ticker, pin.get("activation_revision_id", ""), view["seq"]
         )
-        if not activation or activation["policy_set"]["policy_set_version"] != pin.get(
+        if not activation or not activation.get("policy_set") or activation["policy_set"]["policy_set_version"] != pin.get(
             "policy_set_version"
         ):
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
@@ -224,10 +224,12 @@ def install(app: FastAPI) -> None:
         activation = store.get(
             "activation_revision", ticker, pin.get("activation_revision_id") or "", seq
         )
+        light = pin.get("running_mode", "FULL") == "LIGHTWEIGHT"
         if (
             not activation
             or activation["event_library"]["library_version"] != pin["event_library_version"]
-            or activation["policy_set"]["policy_set_version"] != pin["policy_set_version"]
+            or activation.get("running_mode", "FULL") != pin.get("running_mode", "FULL")
+            or (not light and activation["policy_set"]["policy_set_version"] != pin["policy_set_version"])
         ):
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
         library = activation["event_library"]
@@ -732,14 +734,14 @@ def install(app: FastAPI) -> None:
             "summary": summary,
             "runtime_activation_id": available(pin["activation_revision_id"]),
             "document1": available(activation["document1"]),
-            "document2": available(activation["document2"]),
+            "document2": available(activation["document2"]) if activation.get("document2") else missing(),
             "library": library,
             "policy_set": activation["policy_set"],
             "provisional_snapshot_version": pin["provisional_snapshot_version"],
             "hot_path": interval(None),
             "lifecycle_timing": lifecycle_timing(evidence, case, summary, view["as_of"]),
             "w1": partial(first, w1),
-            "w2": partial(
+            "w2": resource(None, "NOT_APPLICABLE") if light else partial(
                 second,
                 policy_result=w2,
                 candidate_result=candidates_result,

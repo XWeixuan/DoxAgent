@@ -22,6 +22,8 @@ def effective_novelty(case):
 
 
 def effective_policy(case):
+    if case.get("version_pin", {}).get("running_mode", case.get("running_mode", "FULL")) == "LIGHTWEIGHT":
+        return None, None
     if not is_unified_contract(case.get("w3_contract_version")):
         operations = case.get("w3_operations_result") or case.get("w3_result") or {}
         if operations.get("policy"):

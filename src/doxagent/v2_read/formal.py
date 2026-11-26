@@ -175,7 +175,7 @@ class FormalProjectors(DomainProjectors):
         for ticker, active in active_records.items():
             prior = self.store.get("activation", ticker, "active")
             for kind, role in (("research_run", "document1"), ("expectations_run", "document2")):
-                for identity in {active[role]["run_id"], (prior or active)[role]["run_id"]}:
+                for identity in {r[role]["run_id"] for r in (active, prior or active) if r.get(role)}:
                     if not any(
                         r["kind"] == kind and r["ticker"] == ticker and r["id"] == identity
                         for r in records
@@ -203,7 +203,7 @@ class FormalProjectors(DomainProjectors):
             )
             role = "document1" if record["kind"].startswith("research") else "document2"
             run = record["data"].get("run", record["data"])
-            run["is_active"] = bool(active and active[role]["run_id"] == run["run_id"])
+            run["is_active"] = bool(active and active.get(role) and active[role]["run_id"] == run["run_id"])
         return records, metrics
 
     def activation(self, revision: dict[str, Any]) -> list[dict[str, Any]]:
@@ -214,7 +214,8 @@ class FormalProjectors(DomainProjectors):
         records = []
         documents = {}
         document_records = {}
-        for role in ("document1", "document2"):
+        light = revision.get("running_mode", "FULL") == "LIGHTWEIGHT"
+        for role in (("document1",) if light else ("document1", "document2")):
             run_id = refs[role]["run_id"]
             indexed = self.artifacts.ensure(run_id, ticker, lineage=identity)
             document_records[run_id] = indexed
@@ -225,6 +226,15 @@ class FormalProjectors(DomainProjectors):
             raise ValueError("formal event source is not configured")
         library, indexed = LibraryIndexer(root).ensure(self.store, ticker, refs["event_library"]["version"])
         records.extend(indexed)
+        if light:
+            active = validate("Activation", {
+                "running_mode": "LIGHTWEIGHT", "runtime_activation_id": identity,
+                "activated_at": missing(), **documents, "document2": None,
+                "policy_set": None, "event_library": library,
+                "monitoring_configuration_id": refs["monitoring_configuration"]["initialization_id"],
+            })
+            records.append({"kind": "activation_revision", "ticker": ticker, "id": identity, "data": active})
+            return records
         run_id = self._policy_run_id(revision)
         bundle = self.artifacts.source.record("bundles", run_id, run_id)
         if bundle["ticker"] != ticker or bundle["status"] != "published":

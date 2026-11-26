@@ -750,6 +750,7 @@ class DomainProjectors:
         completed = value.get("completed_at")
         created = value["created_at"]
         summary = {
+            **({"running_mode": "LIGHTWEIGHT"} if value.get("version_pin", {}).get("running_mode", "FULL") == "LIGHTWEIGHT" else {}),
             "case_id": value["case_id"],
             "first_round_tags": value.get("first_round_tags", []),
             "w3_decision": available(decision_direction(decision, policies=value.get("frozen_inputs", {}).get("projection", {}).get("policies", []))) if decision_direction(decision, policies=value.get("frozen_inputs", {}).get("projection", {}).get("policies", [])) else missing(),
@@ -759,6 +760,7 @@ class DomainProjectors:
             "semantic_day": value["trading_date"],
             "runtime_mode": value["runtime_mode"],
             "first_round_shape": (
+                "W1_ONLY" if value.get("version_pin", {}).get("running_mode", "FULL") == "LIGHTWEIGHT" else
                 "PARALLEL"
                 if value["runtime_mode"] == "REALTIME"
                 else "W1_ONLY"
