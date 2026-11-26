@@ -26,4 +26,25 @@
 
 生产配置脚本默认只预览；正式应用时保存权限 0600 的控制面备份，在一个短事务中调用既有服务完成变更。解除订阅前确认缓冲为零，不新增订阅、不清理历史消息。
 
-生产发布回执在部署完成后补充。当前交易日历处于 CLOSED_SLEEP，因此只读网络/BODY 探测与配置生效，和下个采集窗口的自然发布数量应分别验收。
+## 生产发布回执
+
+北京时间 2026-11-27 05:19 完成生产配置应用，运行代码为 `6cf859aceda1f49ed23ca8b97bbd2843d4df252a`（包含前序 `6513d0fd7`）。五角色实际镜像及全部十个覆盖文件 SHA-256 均匹配发布清单。API、Collector 的 Docker 健康检查通过；Bus、BODY、O4 没有配置 Docker Healthcheck，已验证运行及启动后日志无 ERROR/Traceback。
+
+| 角色 | 运行镜像 SHA-256 前缀 |
+| --- | --- |
+| API | df4edc07b190 |
+| Collector | ac633fab2eed |
+| Bus | 8cbf034b4d14 |
+| BODY | 0b8a0e956a6a |
+| O4 | 8f12ef925a2a |
+
+- DCD 行业源：`BE, NBIS`；DCD 能源公司源：`BE`。共解除五条 DCD 订阅。
+- Google：`BE, CEG, CGEM, COHR, COIN, IONQ, NBIS, ONDS, PRAX, RGNX, RKLB, SMMT, SNOW, XENE`，14 个绑定均显式为 true，源默认值也为 true。INTC 已解除，MU 维持无订阅。其余自定义搜索参数保留。
+- Reuters：ONDS 已解除，其余 12 个订阅保留。
+- 三个退役源及其 15 条旧订阅已通过正式 hard-delete 删除，Read 投影的三个当前源记录均为零；配置复核脚本再次预览时无待删除源或待解除订阅。
+- Quantum Zeitgeist：IONQ 唯一订阅；实际部署代码的五栏目只读采集均成功，每次一条有效物理请求证明。BODY 首轮四个 FULL，一个 429；对该文章进行一次有限复核后为 HTTP 200/FULL、4997 字符。所有五栏最新文章均有完整正文成功证据；不承诺源端永不限流。
+- Initialization 镜像与进程保持原样；Worker、Scheduler 的启动时间均早于本次切换，未重启。候选安装的防复活规则由本次新 Bus 执行。
+- 私有配置备份保存在生产 `/data/bus/message-efficiency-20261127.before.private.json`，权限 0600。镜像发布/回退记录由 `/var/lib/doxagent/releases/dynamic-ownership-6cf859aceda1/` 现有发布 owner 持有。
+- 初始化配置补充回归通过：候选/激活/迁移 18 项，以及加入 Google 默认值后的候选配置 12 项；退役回滚新增用例也已单独复核通过。
+
+当前交易日历为 CLOSED_SLEEP：旧全站采集单元已标记退役，五栏目计划已生成，新的持久采集单元将在正常窗口调度时落地。上述成功是部署、配置及真实网络/正文验收，不代表已经测得下个采集窗口的自然发布量或当日成本下降。
