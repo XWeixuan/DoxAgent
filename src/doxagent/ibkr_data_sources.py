@@ -11,6 +11,10 @@ from functools import wraps
 ACTIVE_DATA_SOURCE = ContextVar("ibkr_data_source", default=None)
 
 
+class DataSourceUnavailable(RuntimeError):
+    pass
+
+
 class DataSourceRouter:
     def __init__(self, sources, *, clock=time.monotonic, cooldown=60):
         if not sources or len({s["name"] for s in sources}) != len(sources):
@@ -47,7 +51,7 @@ class DataSourceRouter:
                 self.failed_until[capability, source["name"]] = self.clock() + self.cooldown
         if last is not None:
             return last
-        raise RuntimeError("IBKR_DATA_SOURCE_UNAVAILABLE") from failure
+        raise DataSourceUnavailable("IBKR_DATA_SOURCE_UNAVAILABLE") from failure
 
 
 _ROUTERS = {}
@@ -86,16 +90,24 @@ def routed_tool(capability):
                 finally:
                     ACTIVE_DATA_SOURCE.reset(token)
 
-            return router(self.settings).run(
-                capability,
-                invoke,
-                succeeded=lambda result: (
-                    result.succeeded
-                    or not result.error
-                    or result.error.code
-                    not in {"ibkr_gateway_unavailable", "market_data_unavailable"}
-                ),
-            )
+            try:
+                return router(self.settings).run(
+                    capability,
+                    invoke,
+                    succeeded=lambda result: (
+                        result.succeeded
+                        or not result.error
+                        or result.error.code
+                        not in {"ibkr_gateway_unavailable", "market_data_unavailable"}
+                    ),
+                )
+            except DataSourceUnavailable:
+                return self._failure(
+                    request,
+                    code="ibkr_gateway_unavailable",
+                    message="IBKR data sources are unavailable or cooling down.",
+                    retryable=True,
+                )
 
         return wrapped
 
