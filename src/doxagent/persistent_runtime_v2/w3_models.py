@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 
-def freeze_case_profile(case, *, provider=None):
+def freeze_case_profile(case, *, provider=None, fast_source_ids=()):
     saved = case.frozen_inputs.get("w3_execution_profile")
     if saved is None:
-        saved = dict(model="gpt-6-luna", effort="max", provider=provider)
+        fast = case.source.source_id in fast_source_ids
+        saved = dict(model="gpt-6.2-sol" if fast else "gpt-6-luna",
+                     effort="high" if fast else "max", provider=provider)
+        if fast:
+            case.frozen_inputs["w3_model_route"] = dict(route="source_fast", source_id=case.source.source_id)
         case.frozen_inputs["w3_execution_profile"] = saved
     return dict(saved)
 
@@ -25,3 +29,11 @@ def execution_profile(case, *, model="gpt-6-luna", effort="max", provider=None, 
         effort=models.get("w3_effort", effort),
         provider=provider,
     )
+
+
+def preparation_profile(case, **kwargs):
+    """A source-routed turn consumes the existing Luna template/private READY."""
+    profile = execution_profile(case, **kwargs)
+    if case.frozen_inputs.get("w3_model_route", {}).get("route") == "source_fast":
+        return dict(model="gpt-6-luna", effort="max", provider=profile.get("provider"))
+    return profile

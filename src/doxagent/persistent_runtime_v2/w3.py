@@ -573,6 +573,8 @@ class CodexW3AgentRunner:
         environment: W3ExecutionEnvironment | None = None,
         time_awareness_enabled: bool = False,
         hide_w2_context: bool = False,
+        fast_source_ids: str = "",
+        market_enabled: bool = False,
     ) -> None:
         self._worker = worker
         self._case_repository = None
@@ -580,6 +582,8 @@ class CodexW3AgentRunner:
         self._journal = journal
         self._time_awareness_enabled = time_awareness_enabled
         self._hide_w2_context = hide_w2_context
+        self._fast_source_ids = frozenset(s.strip() for s in fast_source_ids.split(",") if s.strip())
+        self._market_enabled = market_enabled
         self._workspace = workspace
         self._context = context_provider
         self._prompt_root = Path(prompt_root)
@@ -710,7 +714,8 @@ class CodexW3AgentRunner:
         return {skill: assets[key]}
 
     def _ready_configuration(self, case, template, *, active_public=True):
-        profile = execution_profile(
+        from .w3_models import preparation_profile
+        profile = preparation_profile(
             case,
             model=self._model,
             effort=self._effort,
@@ -739,6 +744,8 @@ class CodexW3AgentRunner:
 
     @observed("thread.ready_claim")
     async def _claim_ready(self, case, record, profile):
+        from .w3_models import preparation_profile
+        profile = preparation_profile(case, provider=profile.get("provider"))
         request = dict(
             case_id=case.case_id,
             record_id=record["record_id"],
@@ -779,6 +786,8 @@ class CodexW3AgentRunner:
         return self._wait_v4(self._worker.release_unused_case(case_id, record_id))
 
     def start_market(self, case):
+        if not self._market_enabled:
+            return
         from datetime import timedelta
 
         if self.entry_enabled(case):
@@ -797,6 +806,8 @@ class CodexW3AgentRunner:
             )
 
     def queue_market(self, case):
+        if not self._market_enabled:
+            return
         if not self.entry_enabled(case):
             return
         from datetime import UTC, timedelta
@@ -1494,7 +1505,7 @@ class CodexW3AgentRunner:
                             manifest["deadline_at"] = (
                                 datetime.now(UTC) + timedelta(seconds=self._timeout_seconds + 60)
                             ).isoformat()
-                        if self.environment.mode == "OFFLINE_REPLAY":
+                        if self._market_enabled and self.environment.mode == "OFFLINE_REPLAY":
                             from doxagent.codex_worker.w3_market import offline_market_view
 
                             manifest["market_view"] = offline_market_view(
@@ -1542,7 +1553,7 @@ class CodexW3AgentRunner:
             if replay_instructions:
                 task["instruction"] = (
                     "继承 AGENTS.md、唯一 Skill 与 backtest.md；按 input.cutoff_at 冻结时点，"
-                    "只完成本轮决策。通过 w3_research 读取本 Case 已提供的历史资料及行情。"
+                    "只完成本轮决策。通过 w3_research 读取本 Case 已提供的历史资料。"
                 )
             if phase != "w3_template":
                 replay = case.frozen_inputs.get("w3_replay", {})
@@ -1661,7 +1672,10 @@ class CodexW3AgentRunner:
             provider=self._model_provider,
             override=self._execution_model_override,
         )
-        if phase == OPERATIONS_PHASE:
+        if phase == "w3_template":
+            from .w3_models import preparation_profile
+            profile = preparation_profile(case, provider=self._model_provider)
+        elif phase == OPERATIONS_PHASE:
             profile = execution_profile(case, phase=phase, provider=self._model_provider)
         if batch:
             if phase != "w3_template":

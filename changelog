@@ -3557,3 +3557,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-27 消息源精简与修复：Quantum Zeitgeist 改为 IONQ 五栏目独立 RSS/只读 POST，移除故障全站 API 与全站回退，沿用去重/正文/时效准入并限速；DCD 仅保留 NBIS/BE（能源入口仅 BE），Google 移除 INTC/MU 并为现有及未来订阅默认开启相关性；退役并删除 Stocktwits、可观测性官方发布、Newswire RSS，Reuters 移除 ONDS。193+5 项相关测试通过，六项旧失败在 HEAD 基线复现；使用既有逐角色发布 owner，保留历史消息及其他在役修复。详见 docs/message-efficiency-source-release-20261127.md。
 
 2026-11-27 消息源发布防复活补充：候选初始化配置的安装/回滚跳过退役源，Google 候选绑定缺省相关性开启；生产只切换 API/Collector/Bus/BODY/O4，保留正在执行四项研究的 Initialization 进程，live 安装由新 Bus 负责。新增快照及回滚回归。
+
+2026-11-27 W3 configurable source fast lane: SEC EDGAR/corporate IR Trade uses gpt-6.2-sol high fast; Operations remains Luna max default. Freeze per-Case choice and retain existing Luna Template/READY identity, reuse resident across per-turn model/effort/tier switches without extra Resume or Sol stock. Preserve live market guards when merging exact deployed source. Core48 plus updated11 overlapping tests passed. See docs/w3-source-fast-lane-20261127.md.

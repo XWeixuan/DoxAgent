@@ -51,6 +51,7 @@ class ModelWorker:
         ("HIT", "gpt-6-luna", "max"),
         ("RELATED", "gpt-6-luna", "max"),
         ("OPEN", "gpt-6-luna", "max"),
+        ("SOURCE", "gpt-6.2-sol", "high"),
     ],
 )
 def test_all_worker_phases_use_the_frozen_case_profile(tmp_path, kind, model, effort):
@@ -69,7 +70,7 @@ def test_all_worker_phases_use_the_frozen_case_profile(tmp_path, kind, model, ef
         "w3/template.md": "{payload}",
         "w3/task.md": "{payload}",
     }
-    freeze_case_profile(case)
+    freeze_case_profile(case, fast_source_ids=[case.source.source_id] if kind == "SOURCE" else ())
     context = PhaseAgent().prepare_case(case)
     worker = ModelWorker()
     runner = CodexW3AgentRunner(
@@ -94,7 +95,7 @@ def test_all_worker_phases_use_the_frozen_case_profile(tmp_path, kind, model, ef
                 payload={},
                 context=context,
             )
-        assert [(r.model, r.effort) for r in worker.requests] == [(model, effort)] * 2 + [('gpt-6-luna', 'max')]
+        assert [(r.model, r.effort) for r in worker.requests] == [("gpt-6-luna", "max"), (model, effort), ("gpt-6-luna", "max")]
         # Later policy reassessment does not switch the second phase's model.
         case.w2_final = case.w2_final.model_copy(update={"policy_hit": kind != "HIT"})
         assert freeze_case_profile(case)["model"] == model

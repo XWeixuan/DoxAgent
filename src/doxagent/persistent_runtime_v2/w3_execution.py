@@ -51,7 +51,7 @@ from .w3_contracts import (
     is_unified_contract,
     is_pin_watch_contract,
 )
-from .w3_models import execution_profile
+from .w3_models import preparation_profile
 from .w3_research_store import ENTRY
 from .w3_threads import W3ThreadRegistry
 
@@ -253,7 +253,7 @@ class W3Execution:
         return template
 
     def _thread_signature(self, case):
-        profile = execution_profile(
+        profile = preparation_profile(
             case,
             model=getattr(self.agent, "_model", "gpt-6-luna"),
             effort=getattr(self.agent, "_effort", "max"),

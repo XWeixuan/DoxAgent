@@ -449,13 +449,13 @@ class OpenAICodexRuntime:
         turn_service_tier = None
         if request.node == CodexPersistentRuntimeNode.W3:
             # Operations is standard-tier even when resuming a Fast Trade thread.
-            luna_fast = execution_model == "gpt-6-luna" and request.task_phase != "post_decision_operations"
+            luna_fast = execution_model in {"gpt-6-luna", "gpt-6.2-sol"} and request.task_phase != "post_decision_operations"
             if self._w3_service_tier is not None and request.task_phase != "post_decision_operations":
                 luna_fast = self._w3_service_tier == "fast"
-            if luna_fast and execution_model != "gpt-6-luna":
-                raise ValueError("W3 Fast replay requires gpt-6-luna")
+            if luna_fast and execution_model not in {"gpt-6-luna", "gpt-6.2-sol"}:
+                raise ValueError("W3 Fast requires a supported Luna/Sol model")
             tier = "fast" if luna_fast else "default"
-            if request.w3_entry_version == "w3-entry-v6" and execution_model == "gpt-6-luna":
+            if request.w3_entry_version == "w3-entry-v6" and execution_model in {"gpt-6-luna", "gpt-6.2-sol"}:
                 # Retain one resident configuration. The server applies the
                 # actual speed to each newly started turn independently.
                 turn_service_tier = tier
@@ -704,21 +704,21 @@ class OpenAICodexRuntime:
                         "catalog",
                         "search",
                         "read",
-                        "market_view",
-                    ],
+                    ] + (["market_view"] if self._settings.w3_market_enabled else []),
                     "tool_output_token_limit": 8192,
                 }
             )
-            for tool in ("catalog", "search", "read", "market_view"):
+            for tool in (["catalog", "search", "read"] + (["market_view"] if self._settings.w3_market_enabled else [])):
                 sdk_config[f"mcp_servers.w3_research.tools.{tool}.approval_mode"] = "approve"
                 sdk_config[f"mcp_servers.w3_research.tools.{tool}.output_token_limit"] = 8192
+        shared_w3_turn = request.w3_entry_version == "w3-entry-v6" and execution_model in {"gpt-6-luna", "gpt-6.2-sol"}
         scope = (
             str(cwd),
             None if request.w3_entry_version else request.attempt_id,
             None if request.w3_entry_version else request.cutoff_at.isoformat(),
-            request.model,
+            "gpt-6-luna" if shared_w3_turn else request.model,
             request.model_provider,
-            request.effort,
+            "max" if shared_w3_turn else request.effort,
             request.data_mcp_enabled,
             request.web_search_mode,
             request.research_assets_mcp_enabled,

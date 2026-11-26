@@ -194,7 +194,8 @@ def test_native_schema_cache_invalidates_on_ddl(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_v6_turn_tiers_use_same_resident_and_explicit_fast_default(tmp_path, monkeypatch):
+@pytest.mark.parametrize("trade_model", ["gpt-6-luna", "gpt-6.2-sol"])
+async def test_v6_turn_tiers_use_same_resident_and_explicit_fast_default(tmp_path, monkeypatch, trade_model):
     from datetime import UTC, datetime
     from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime
     from doxagent.codex_worker.schema import WorkerRunRequest
@@ -218,8 +219,17 @@ async def test_v6_turn_tiers_use_same_resident_and_explicit_fast_default(tmp_pat
     await runtime.start(request, tmp_path)
     assert sdk.thread.turn_kwargs["turn_service_tier"] == "fast"
     await runtime.start(request.model_copy(update={
+        "attempt_id":"sol-trade", "thread_id":sdk.thread.id,
+        "model":trade_model, "effort":"high" if trade_model == "gpt-6.2-sol" else "max",
+    }), tmp_path)
+    assert sdk.thread.turn_kwargs["model"] == trade_model
+    assert sdk.thread.turn_kwargs["effort"].value == ("high" if trade_model == "gpt-6.2-sol" else "max")
+    assert sdk.thread.turn_kwargs["turn_service_tier"] == "fast"
+    assert sdk.thread_resume_kwargs is None
+    await runtime.start(request.model_copy(update={
         "attempt_id": "ops", "thread_id": sdk.thread.id,
         "task_phase": "post_decision_operations",
     }), tmp_path)
     assert sdk.thread.turn_kwargs["turn_service_tier"] == "default"
     assert sdk.thread_resume_kwargs is None
+
