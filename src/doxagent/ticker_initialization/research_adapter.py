@@ -65,6 +65,7 @@ class ResearchInitializationAdapter:
         )
         self.repository = SQLiteCodexRuntimeRepository(settings.codex_runtime_sqlite_path)
         self._providers: list[HistoricalNewsProvider] = []
+        self._historical_extractor = None
 
     async def reconcile(self, context: NodeContext) -> NodeResult | None:
         if context.node.receipt.get("child_run_id"):
@@ -117,6 +118,8 @@ class ResearchInitializationAdapter:
             raise ValueError(f"unsupported research node: {context.node.key}")
         finally:
             await worker.aclose()
+            if self._historical_extractor is not None:
+                await self._historical_extractor.close()
             for provider in self._providers:
                 close = getattr(provider, "close", None)
                 if close is not None:
@@ -198,6 +201,33 @@ class ResearchInitializationAdapter:
             providers.append(BenzingaHistoricalNewsProvider(settings))
         from .cdecr_process import execute_cdecr
 
+        body_extractor = None
+        if context.node.key == "cdecr" and settings.site_access_enabled:
+            from doxagent.content_enrichment.extractor import SharedContentExtractor
+            from doxagent.site_strategy.client import SiteAccessClient
+            from doxagent.site_strategy.tokens import read_token
+
+            token = read_token(
+                settings.site_access_worker_token, settings.site_access_worker_token_file
+            )
+            if not token:
+                raise ValueError("historical full text requires the configured Site Access token")
+            self._historical_extractor = SharedContentExtractor(
+                concurrency=settings.content_enrichment_max_concurrency,
+                pipeline_enabled=settings.content_enrichment_pipeline_enabled,
+                proxy_url=settings.crawler_egress_proxy_url,
+                trusted_proxy_dns=settings.content_enrichment_trusted_proxy_dns,
+                disabled_hosts={
+                    h.strip() for h in settings.content_enrichment_disabled_hosts.split(",")
+                    if h.strip()
+                },
+                site_access_client=SiteAccessClient(settings.site_access_url, token=token),
+                close_site_access_client=True,
+            )
+
+            async def body_extractor(record):
+                return await self._historical_extractor.extract_version(record, "body_v2.2")
+
         coordinator = TickerCDECRPipelineCoordinator(
             registry_root=(
                 Path(pipeline.job.registry_path).parents[2] if pipeline else root / "registry"
@@ -206,6 +236,7 @@ class ResearchInitializationAdapter:
             run_namespace=source_id + "-",
             event_library_root=settings.event_library_root or "",
             providers=providers,
+            historical_body_extractor=body_extractor,
             runtime_factory=build_cdecr_workflow_runner,
             cdecr_executor=lambda binding, messages, cutoff: execute_cdecr(
                 context, binding, messages, cutoff

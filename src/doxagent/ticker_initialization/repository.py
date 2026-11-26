@@ -1457,6 +1457,7 @@ class InitializationRepository:
                 ],
                 reinitialize=True,
                 operation_kind="RERUN_NODE",
+                running_mode=source.running_mode,
             )
         selected = [n for n in selected if not n.inputs.get("managed_by")]
         if not selected:
@@ -1492,6 +1493,7 @@ class InitializationRepository:
             plan,
             reinitialize=True,
             operation_kind="RERUN_NODE" if node_key else "RERUN_BLOCK",
+            running_mode=source.running_mode,
         )
 
     def expand(self, lease: Lease, plan: list[NodeSpec]) -> None:

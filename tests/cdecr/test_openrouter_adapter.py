@@ -1,6 +1,6 @@
 from cdecr.config import CDECRSettings
 from cdecr.models import ModelTier
-from cdecr.openrouter import ENDPOINT, OpenRouterStructuredModelClient
+from cdecr.openrouter import ENDPOINT, FALLBACK_ENDPOINT, OpenRouterStructuredModelClient
 from cdecr.ports import ResponsesModelRequest, StructuredModelRequest
 
 
@@ -14,8 +14,9 @@ def test_provider_pin_and_node_reasoning():
     r = StructuredModelRequest(system_prompt="s", user_prompt="u", json_schema={"type": "object"})
     k = c._kwargs(r)
     assert k["extra_body"]["provider"] == {
-        "only": [ENDPOINT],
-        "allow_fallbacks": False,
+        "order": [ENDPOINT, FALLBACK_ENDPOINT],
+        "only": [ENDPOINT, FALLBACK_ENDPOINT],
+        "allow_fallbacks": True,
         "require_parameters": True,
     }
     assert k["extra_body"]["reasoning"] == {"effort": "none"}

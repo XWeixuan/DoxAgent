@@ -1,4 +1,4 @@
-"""CDECR OpenRouter adapter, pinned to Sail with no provider fallback."""
+"""CDECR OpenRouter adapter with an ordered, restricted provider fallback."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from cdecr.ports import ResponsesModelRequest, StructuredModelRequest
 
 MODEL = "deepseek/deepseek-v4.1-flash-1017"
 ENDPOINT = "sail-research/fp4"
+FALLBACK_ENDPOINT = "ambient/fp4"
 
 
 class OpenRouterStructuredModelClient:
@@ -81,8 +82,9 @@ class OpenRouterStructuredModelClient:
             response_format={"type": "json_object"},
             extra_body={
                 "provider": {
-                    "only": [ENDPOINT],
-                    "allow_fallbacks": False,
+                    "order": [ENDPOINT, FALLBACK_ENDPOINT],
+                    "only": [ENDPOINT, FALLBACK_ENDPOINT],
+                    "allow_fallbacks": True,
                     "require_parameters": True,
                 },
                 "reasoning": {"effort": effort},

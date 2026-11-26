@@ -1138,3 +1138,22 @@ def test_light_history_exit_never_opens_policy_database(tmp_path, monkeypatch):
         assert not hasattr(owner, "_history_policy_event_headers")
     finally:
         service.close()
+
+
+def test_selected_light_research_rerun_retains_running_mode(tmp_path):
+    from datetime import UTC, datetime
+
+    from doxagent.ticker_initialization import InitializationRepository, NodeResult, NodeSpec
+
+    repo = InitializationRepository(tmp_path / "init.db")
+    original = repo.submit(
+        "XENE", datetime.now(UTC), [NodeSpec(key="o2", block="O2")], running_mode="LIGHTWEIGHT"
+    )
+    lease = repo.claim("test")
+    repo.begin(lease, "o2", {})
+    repo.complete(lease, "o2", NodeResult(artifacts={"event_library": {"version": 1}}))
+    repo.finish(lease)
+    rerun = repo.rerun(original.initialization_id, node_key="o2", reason="repair empty library")
+    assert rerun.running_mode == "LIGHTWEIGHT"
+    assert rerun.research_cutoff_at == original.research_cutoff_at
+    assert [n.key for n in repo.nodes(rerun.initialization_id)] == ["o2"]

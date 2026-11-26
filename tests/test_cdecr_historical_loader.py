@@ -33,6 +33,62 @@ class FakeHistoricalProvider:
         return list(self.rows)
 
 
+@pytest.mark.asyncio
+async def test_historical_loader_uses_shared_body_reader_without_legacy_fetch(
+    tmp_path, monkeypatch
+):
+    from doxagent.monitoring.media_enrichment import MediaExtractionResult
+
+    at = datetime(2026, 11, 26, 12, tzinfo=UTC)
+    item = _row(1, as_of=at)
+    item = item.model_copy(update={"raw_payload": {**item.raw_payload, "body": "Summary only."}})
+    calls = []
+
+    async def legacy(*args, **kwargs):
+        pytest.fail("configured shared BODY must own the fetch")
+
+    async def shared(record):
+        calls.append(record.fetch_url)
+        return MediaExtractionResult(record=record, content=_body(1), final_url=record.fetch_url)
+
+    monkeypatch.setattr("doxagent.cdecr_integration.historical_loader.enrich_media_records", legacy)
+    loader = HistoricalNewsLoader(
+        staging=HistoricalStagingRepository(tmp_path / "staging.db"),
+        providers=[FakeHistoricalProvider([item])],
+        body_extractor=shared,
+    )
+    sources, report = await loader.load(market="US", ticker="AMD", as_of=at)
+    assert len(sources) == report.selected_count == len(calls) == 1
+    assert sources[0].text == _body(1).strip()
+
+
+@pytest.mark.asyncio
+async def test_all_unavailable_bodies_are_failure_not_empty_success(tmp_path):
+    from doxagent.monitoring.media_enrichment import MediaExtractionResult
+
+    at = datetime(2026, 11, 26, 12, tzinfo=UTC)
+    item = _row(1, as_of=at)
+    item = item.model_copy(update={"raw_payload": {**item.raw_payload, "body": "Summary only."}})
+
+    async def unavailable(record):
+        return MediaExtractionResult(record=record, reason="http_429")
+
+    loader = HistoricalNewsLoader(
+        staging=HistoricalStagingRepository(tmp_path / "staging.db"),
+        providers=[FakeHistoricalProvider([item])],
+        body_extractor=unavailable,
+    )
+    with pytest.raises(RuntimeError, match="HISTORICAL_BODY_UNAVAILABLE"):
+        await loader.load(market="US", ticker="AMD", as_of=at)
+    empty = HistoricalNewsLoader(
+        staging=HistoricalStagingRepository(tmp_path / "empty.db"),
+        providers=[FakeHistoricalProvider([])],
+        body_extractor=unavailable,
+    )
+    sources, report = await empty.load(market="US", ticker="AMD", as_of=at)
+    assert sources == [] and report.staged_count == 0
+
+
 def _body(index: int) -> str:
     sentence = (
         f"Company update {index} describes a concrete business development with enough detail "

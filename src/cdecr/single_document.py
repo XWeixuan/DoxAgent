@@ -1771,7 +1771,7 @@ class SingleDocumentProcessor:
 
         def process_block(
             block: DocumentBlock, *, zero_recovery: bool = False
-        ) -> DreamerModelOutput:
+        ) -> tuple[DreamerModelOutput, bool]:
             request = dreamer_block_request(
                 source=source,
                 document=document,
@@ -1804,6 +1804,7 @@ class SingleDocumentProcessor:
                 )
 
             response_id: str | None = None
+            succeeded = True
             try:
                 call_stage = "dreamer_zero_recovery" if zero_recovery else "dreamer"
                 call_client = (
@@ -1829,6 +1830,7 @@ class SingleDocumentProcessor:
                 output = invocation.output
                 response_id = invocation.response_id
             except SingleDocumentPipelineError as exc:
+                succeeded = False
                 output = DreamerModelOutput(candidates=[])
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
@@ -1867,18 +1869,22 @@ class SingleDocumentProcessor:
                 run_id=run_id,
                 summaries=summaries,
                 attempt="zero-recovery" if zero_recovery else "initial",
-            )
+            ), succeeded
 
-        outputs = list(
+        attempts = list(
             self._document_block_executor.map(process_block, document.document_blocks)
         )
+        any_success = any(ok for _, ok in attempts)
+        outputs = [output for output, _ in attempts]
         if not any(output.candidates for output in outputs):
-            outputs = list(
+            attempts = list(
                 self._document_block_executor.map(
                     lambda block: process_block(block, zero_recovery=True),
                     document.document_blocks,
                 )
             )
+            any_success = any_success or any(ok for _, ok in attempts)
+            outputs = [output for output, _ in attempts]
             self.registry.append_decision_audit(
                 DecisionAuditRecord(
                     audit_id=f"dreamer-zero-recovery:{run_id}",
@@ -1892,6 +1898,8 @@ class SingleDocumentProcessor:
                     },
                 )
             )
+        if not any_success:
+            raise SingleDocumentPipelineError("dreamer", "all_dreamer_blocks_failed")
         unique: dict[str, DreamCandidate] = {}
         for output in outputs:
             for candidate in output.candidates:

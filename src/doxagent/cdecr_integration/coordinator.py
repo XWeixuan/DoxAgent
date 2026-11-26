@@ -52,6 +52,7 @@ async def stage_historical_sources(
     as_of: datetime,
     sample_seed: int = 20260824,
     max_sources: int = 500,
+    body_extractor=None,
 ) -> tuple[list[str], HistoricalLoadReport]:
     """Use one source-selection path for normal initialization and prebuilt builds."""
 
@@ -60,6 +61,7 @@ async def stage_historical_sources(
         providers=providers,
         sample_seed=sample_seed,
         max_sources=max_sources,
+        body_extractor=body_extractor,
     )
     sources, report = await loader.load(
         market=binding.market,
@@ -91,6 +93,7 @@ class TickerCDECRPipelineCoordinator:
         sample_seed: int = 20260824,
         max_sources: int = 500,
         run_namespace: str = "",
+        historical_body_extractor=None,
         cdecr_executor: Callable[
             [RuntimeRegistryBinding, list[str], datetime], Awaitable[CDECRWorkflowResult]
         ]
@@ -108,6 +111,7 @@ class TickerCDECRPipelineCoordinator:
         self.sample_seed = sample_seed
         self.max_sources = max_sources
         self.run_namespace = run_namespace
+        self.historical_body_extractor = historical_body_extractor
         self.cdecr_executor = cdecr_executor
 
     def _frozen_snapshot_path(self, job_id: str) -> Path:
@@ -202,6 +206,7 @@ class TickerCDECRPipelineCoordinator:
                     as_of=as_of,
                     sample_seed=self.sample_seed,
                     max_sources=self.max_sources,
+                    body_extractor=self.historical_body_extractor,
                 )
                 state = self._advance(
                     state,

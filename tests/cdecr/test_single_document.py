@@ -765,6 +765,37 @@ def test_no_event_document_skips_grounder_and_persists_empty_result(
     assert m3.calls == []
 
 
+def test_all_dreamer_calls_unavailable_are_failed_and_can_resume(registry):
+    class UnavailableDreamer(FakeStructured):
+        unavailable = True
+
+        def complete(self, request):
+            if self.unavailable:
+                self.calls.append(request)
+                raise ModelAdapterError(
+                    tier=ModelTier.M2, code="provider_http_error", status_code=429
+                )
+            return super().complete(request)
+
+    save_source(registry, source())
+    dreamer = UnavailableDreamer(model="deepseek-v4-flash")
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=dreamer,
+        m3_client=FakeStructured(model="qwen3.7-plus"),
+        m4_client=FakeStructured(model="qwen3.7-max"),
+        relevance_filter_mode="off",
+    )
+    failed = service.process("MSG-1")
+    assert failed.status is ProcessingStatus.FAILED
+    assert failed.failures[0].error_code == "all_dreamer_blocks_failed"
+    assert registry.get_completed_document_result(failed.processing_key) is None
+    dreamer.unavailable = False
+    recovered = service.process("MSG-1")
+    assert recovered.status is ProcessingStatus.SUCCEEDED and recovered.mentions
+
+
 def test_zero_candidate_dreamer_gets_one_narrow_recovery_pass(
     registry: SQLiteCDECRRegistry,
 ) -> None:

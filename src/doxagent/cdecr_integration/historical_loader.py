@@ -9,7 +9,7 @@ import re
 import sqlite3
 import time
 from collections import Counter, defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from datetime import UTC, date, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from functools import partial
@@ -26,6 +26,7 @@ from cdecr.single_document_contracts import PreprocessedDocument
 from doxagent.cdecr_integration.contracts import HistoricalLoadReport
 from doxagent.monitoring.media_enrichment import (
     MediaEnrichmentRecord,
+    MediaExtractionResult,
     assess_media_body,
     enrich_media_records,
 )
@@ -448,6 +449,9 @@ class HistoricalNewsLoader:
         sample_seed: int = 20260824,
         max_sources: int = MAX_HISTORICAL_SOURCES,
         enrichment_concurrency: int = 8,
+        body_extractor: Callable[
+            [MediaEnrichmentRecord], Awaitable[MediaExtractionResult]
+        ] | None = None,
     ) -> None:
         if max_sources < 1 or max_sources > MAX_HISTORICAL_SOURCES:
             raise ValueError("max_sources must be between 1 and 500")
@@ -456,6 +460,7 @@ class HistoricalNewsLoader:
         self.sample_seed = sample_seed
         self.max_sources = max_sources
         self.enrichment_concurrency = enrichment_concurrency
+        self.body_extractor = body_extractor
 
     async def load(
         self, *, market: str, ticker: str, as_of: datetime
@@ -515,11 +520,23 @@ class HistoricalNewsLoader:
                         source_name=_source_name(standard.metadata, standard.url),
                     )
                 )
-        _, enrichment_results = await enrich_media_records(
-            enrichment_records,
-            concurrency=self.enrichment_concurrency,
-            reader_fallback=True,
-        )
+        if self.body_extractor is None:
+            _, enrichment_results = await enrich_media_records(
+                enrichment_records,
+                concurrency=self.enrichment_concurrency,
+                reader_fallback=True,
+            )
+        else:
+            slots = asyncio.Semaphore(self.enrichment_concurrency)
+
+            async def extract(record):
+                async with slots:
+                    try:
+                        return await self.body_extractor(record)
+                    except Exception as exc:
+                        return MediaExtractionResult(record=record, reason=type(exc).__name__)
+
+            enrichment_results = await asyncio.gather(*(extract(r) for r in enrichment_records))
         enrichment_by_standard = {
             item.record.standard_message_id: item for item in enrichment_results
         }
@@ -669,6 +686,11 @@ class HistoricalNewsLoader:
             rejected_counts=dict(rejected),
             selected_message_ids=[item.message_id for item in selected],
         )
+        if not selected and rejected.get("body_not_complete_like"):
+            raise RuntimeError(
+                "HISTORICAL_BODY_UNAVAILABLE: no usable full text; "
+                f"rejected_bodies={rejected['body_not_complete_like']}"
+            )
         return selected, report
 
 
