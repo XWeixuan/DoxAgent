@@ -14,6 +14,13 @@ from .schema import PollResult, RawMessageInput, canonical_json, sha256_text
 GOOGLE_NEWS_SOURCE_ID = "google_news_search_rss"
 
 
+def google_requires_relevance(source, binding) -> bool:
+    return (
+        source.source_id == GOOGLE_NEWS_SOURCE_ID
+        and binding.source_parameters.get("require_relevance", True) is True
+    )
+
+
 def google_narrow_query(ticker: str, first_term: str) -> str:
     """Search only the first literal term; ticker is retained for caller compatibility."""
     value = first_term.strip()

@@ -546,10 +546,8 @@ class LiveDeliveryWorker:
         if _complete_body_required(source) and not _complete_body_verified(message):
             await self._decision(decisions, row, "NO_PUBLIC_BODY")
             return
-        relevance_required = source.acquisition_mode.shared_distribution or (
-            source.source_id == "google_news_search_rss"
-            and binding.source_parameters.get("require_relevance") is True
-        )
+        from .google_news_rules import google_requires_relevance
+        relevance_required = source.acquisition_mode.shared_distribution or google_requires_relevance(source, binding)
         from .massive_relevance import uses_massive_rules
         massive = uses_massive_rules(source)
         language = ((message.metadata.get("language") if massive or source.delivery_mode == "test" else None) or source.content_language or "en")
@@ -588,8 +586,7 @@ class LiveDeliveryWorker:
             await self._decision(decisions, row, 'IRRELEVANT',
                                         regex=False, error='DECISION_MODEL_EXPIRED')
         elif source.acquisition_mode is not AcquisitionMode.MASSIVE_DISTRIBUTION and ((source.distribution_policy and source.distribution_policy.jev_enabled) or (
-            source.source_id == "google_news_search_rss"
-            and binding.source_parameters.get("require_relevance") is True
+            google_requires_relevance(source, binding)
         )):
             await self._decision(decisions, row, "L2_DUE", regex=False)
         else:

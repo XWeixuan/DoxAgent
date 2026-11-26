@@ -3553,3 +3553,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-27 PRAX/XENE 初始化恢复交接：PRAX 原 run 经 CAS/幂等 Control 续跑；XENE 4 篇全文成功、40 条提及、CDECR Epoch FINALIZED，O2 Survey 已运行。经正常租约交接显式追加原激活/Bus/Runtime ACK DAG，后续无需聊天手工激活；原成功节点、XENE 19 个绑定和监测词配置保持一致。按用户允许在业务任务继续自动执行时结束，尚不宣称 O2 发布及终态成功。报告 docs/lightweight-initialization-recovery-20261127.md。
 
 2026-11-27 修复 CGEM D1 被 IBKR 冷却期未捕获异常中断：路由器使用具名不可用异常，工具装饰器按既有契约返回 retryable ibkr_gateway_unavailable；不伪造行情，不改交易执行。新增冷却期回归。
+
+2026-11-27 消息源精简与修复：Quantum Zeitgeist 改为 IONQ 五栏目独立 RSS/只读 POST，移除故障全站 API 与全站回退，沿用去重/正文/时效准入并限速；DCD 仅保留 NBIS/BE（能源入口仅 BE），Google 移除 INTC/MU 并为现有及未来订阅默认开启相关性；退役并删除 Stocktwits、可观测性官方发布、Newswire RSS，Reuters 移除 ONDS。193+5 项相关测试通过，六项旧失败在 HEAD 基线复现；使用既有逐角色发布 owner，保留历史消息及其他在役修复。详见 docs/message-efficiency-source-release-20261127.md。

@@ -1099,24 +1099,6 @@
       ],
       "short_name": "NBIS 生态 / 官方发布"
     },
-    "newswire_rss": {
-      "description": "通用企业新闻稿 RSS 接入源；按已配置订阅地址读取公告，当前启用和订阅状态单独展示。",
-      "entry_points": [],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "PUBLISHER_ROUTED"
-        ],
-        "fallback": []
-      },
-      "applicability": "GLOBAL",
-      "sector_ids": []
-    },
     "nist_news": {
       "description": "NIST 是美国国家标准与技术研究院；采集官方新闻，关注量子、计算、制造与技术标准进展。",
       "entry_points": [
@@ -1234,27 +1216,6 @@
         "L1-06",
         "L1-08"
       ]
-    },
-    "observability_vendors_official_rss": {
-      "description": "可观测性软件厂商的官方消息合集；监测配置中的产品能力、客户合作与业务发布。",
-      "entry_points": [],
-      "listing": {
-        "primary": [
-          "RSS"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "HTTP"
-        ],
-        "fallback": []
-      },
-      "applicability": "INDUSTRY",
-      "sector_ids": [
-        "L1-02"
-      ],
-      "short_name": "可观测性 / 官方发布"
     },
     "optical_systems_official_rss": {
       "description": "光系统与光通信设备厂商的官方发布合集；监测配置中的产品、产能与合作公告。",
@@ -1418,18 +1379,19 @@
       "short_name": "The Quantum Insider"
     },
     "quantum_zeitgeist": {
-      "description": "Quantum Zeitgeist 关注量子计算产业；采集新闻列表中的技术、公司与商业应用报道。",
+      "description": "Quantum Zeitgeist 量子行业媒体；仅监测量子计算新闻、商业、企业、融资与政策五个栏目。",
       "entry_points": [
-        "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
-        "https://quantumzeitgeist.com/feed/"
+        "https://quantumzeitgeist.com/category/quantum-computing-news/feed/",
+        "https://quantumzeitgeist.com/category/quantum-computing-business-news/feed/",
+        "https://quantumzeitgeist.com/category/quantum-companies/feed/",
+        "https://quantumzeitgeist.com/category/quantum-funding/feed/",
+        "https://quantumzeitgeist.com/category/quantum-policy/feed/"
       ],
       "listing": {
         "primary": [
-          "HTTP"
-        ],
-        "fallback": [
           "RSS"
-        ]
+        ],
+        "fallback": []
       },
       "body": {
         "primary": [
@@ -1681,26 +1643,6 @@
       "sector_ids": [
         "L1-05"
       ]
-    },
-    "stocktwits_messages": {
-      "description": "Stocktwits 是股票投资者社区；按配置标的获取原生短消息，正文补全不适用。",
-      "entry_points": [
-        "https://stocktwits.com/symbol/{ticker}"
-      ],
-      "listing": {
-        "primary": [
-          "API"
-        ],
-        "fallback": []
-      },
-      "body": {
-        "primary": [
-          "NOT_APPLICABLE"
-        ],
-        "fallback": []
-      },
-      "applicability": "GLOBAL",
-      "sector_ids": []
     },
     "technews_hardware": {
       "description": "科技新报是台湾科技产业媒体；合并监测半导体与 AI 栏目，跟踪芯片、硬件和供应链动态。",

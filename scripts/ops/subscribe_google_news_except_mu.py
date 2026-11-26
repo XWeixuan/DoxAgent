@@ -1,4 +1,4 @@
-"""Idempotently bind the existing Google source to current tickers except MU."""
+"""Idempotently bind Google to current tickers except the approved MU/INTC exclusions."""
 
 import argparse
 import json
@@ -18,7 +18,7 @@ def configure(service, *, apply=False):
     source = service.require_source(SOURCE)
     terms = MonitoringTermsService(repo)
     prepared = []
-    for ticker in sorted(s.ticker for s in repo.list_ticker_states() if s.ticker != "MU"):
+    for ticker in sorted(s.ticker for s in repo.list_ticker_states() if s.ticker not in {"MU", "INTC"}):
         found = terms.get(ticker)
         if not found:
             raise ValueError(ticker + ": unified search terms are missing")
@@ -47,7 +47,7 @@ def configure(service, *, apply=False):
                     ticker=ticker,
                     source_id=SOURCE,
                     actor=UpdateActor.USER,
-                    reason="Google RSS body optimization accepted; current tickers except MU",
+                    reason="Requested Google RSS coverage excluding MU and INTC",
                 )
             elif apply and action == "enable":
                 binding = service.update_binding(
@@ -65,7 +65,7 @@ def configure(service, *, apply=False):
                     "enabled": bool(binding and binding.enabled and binding.polling.enabled),
                 }
             )
-    return {"applied": apply, "excluded": ["MU"], "bindings": rows}
+    return {"applied": apply, "excluded": ["INTC", "MU"], "bindings": rows}
 
 
 if __name__ == "__main__":

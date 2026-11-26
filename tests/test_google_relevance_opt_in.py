@@ -31,7 +31,7 @@ async def test_context_is_anded_with_company_in_the_actual_google_request(tmp_pa
     assert requests[0].url.params["q"] == 'Intel ("chip" OR "Intel Corporation") when:1d'
 
 
-@pytest.mark.parametrize("enabled,company", [(False, False), (True, False), (True, True)])
+@pytest.mark.parametrize("enabled,company", [(False, False), (True, False), (True, True), (None, False), (None, True)])
 async def test_google_default_publish_vs_opt_in_regex_and_semantic_routing(enabled, company):
     source = next(s for s in initial_sources() if s.source_id == "google_news_search_rss")
     terms = TickerMonitoringTerms.model_validate({
@@ -40,7 +40,7 @@ async def test_google_default_publish_vs_opt_in_regex_and_semantic_routing(enabl
         "l2": {"en": {"groups": [{"id": "cpu", "any": [{"literal": "Xeon"}]}]}},
         "definition": {"relevant": "Intel CPU news", "irrelevant": "Sports intelligence"},
     })
-    binding = SimpleNamespace(enabled=True, source_parameters={"require_relevance": enabled})
+    binding = SimpleNamespace(enabled=True, source_parameters={} if enabled is None else {"require_relevance": enabled})
     row = {"terms_revision": 1, "ticker": "INTC", "body_digest": "body"}
     message = RawMessageInput(url="https://publisher.test/article", raw_payload={},
                               title="Intel Xeon launch" if company else "Football recruiting intel")
@@ -49,11 +49,23 @@ async def test_google_default_publish_vs_opt_in_regex_and_semantic_routing(enabl
     worker.repository = SimpleNamespace(decision=object())
     worker.publish = AsyncMock()
     await worker.process(row, (message, source, binding, (1, terms)))
-    if enabled and not company:
+    if enabled is not False and not company:
         worker.publish.assert_not_awaited()
         assert worker.bus.storage.call.await_args.args[2] == "L2_DUE"
     else:
         worker.publish.assert_awaited_once()
+
+
+@pytest.mark.parametrize("parameters", [None, {}, {"search_terms": ["Intel"]}])
+def test_new_google_subscription_keeps_relevance_default_with_custom_parameters(tmp_path, parameters):
+    from tests.test_message_bus_v2_news_sources import _context
+
+    context, repo = _context(tmp_path, "google_news_search_rss", parameters)
+    try:
+        assert context.source.default_parameters["require_relevance"] is True
+        assert context.binding.source_parameters["require_relevance"] is True
+    finally:
+        repo.close()
 
 
 async def test_negative_decision_keeps_opted_in_google_article_out_of_bus():

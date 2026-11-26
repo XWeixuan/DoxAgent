@@ -29,6 +29,13 @@ from .schema import (
 COMMON = ("SNOW", "INTC", "MU", "COHR", "NBIS")
 HARDWARE = ("INTC", "MU", "COHR", "NBIS", "BE")
 REGISTER = "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query="
+QUANTUM_ZEITGEIST_FEEDS = tuple(
+    "https://quantumzeitgeist.com/category/" + category + "/feed/"
+    for category in (
+        "quantum-computing-news", "quantum-computing-business-news",
+        "quantum-companies", "quantum-funding", "quantum-policy",
+    )
+)
 
 
 @dataclass(frozen=True)
@@ -78,7 +85,7 @@ FAMILIES = (
         "quantum_zeitgeist",
         "Quantum Zeitgeist",
         "quantumzeitgeist.com",
-        ("https://quantumzeitgeist.com/feed/",),
+        QUANTUM_ZEITGEIST_FEEDS,
         ("IONQ",),
         transport="urllib",
     ),
@@ -222,7 +229,7 @@ LEGACY_CATALOG = tuple(
     )
     for spec in FAMILIES
     for url, (identity, label) in zip(
-        spec.urls,
+        spec.urls if spec.source_id in _COLUMNS else spec.urls[:1],
         _COLUMNS.get(spec.source_id, ((spec.source_id, spec.name.split(" / ")[-1]),)),
         strict=True,
     )
@@ -254,11 +261,16 @@ def initial_sources():
             entry_url=spec.urls[0],
             scheduler_group="technology." + spec.domain,
             scheduler_constraints=SchedulerConstraints(
-                max_concurrency=2, minimum_request_gap_seconds=0.5
+                max_concurrency=1 if spec.source_id == "quantum_zeitgeist" else 2,
+                minimum_request_gap_seconds=2 if spec.source_id == "quantum_zeitgeist" else 0.5,
             ),
             default_polling_config=PollingConfig(target_interval_seconds=60, active_windows=[]),
             distribution_policy=DistributionPolicy(jev_enabled=True, require_complete_body=True),
-            parameter_schema={"type": "object", "additionalProperties": False, "properties": {}},
+            parameter_schema={"type": "object", "additionalProperties": False, "properties": {
+                **({"discovery_mode": {"type": "string", "enum": ["http_listing", "rss"]}}
+                   if spec.source_id == "quantum_zeitgeist" else {}),
+            }},
+            default_parameters={"discovery_mode": "http_listing"} if spec.source_id == "quantum_zeitgeist" else {},
         )
         for spec in CATALOG
     ]

@@ -81,11 +81,11 @@ def test_catalog_shares_publisher_schedule_and_has_no_browser_or_global_subscrip
         assert (
             len({s.scheduler_group for s in sources if SOURCES[s.source_id].domain == domain}) == 1
         )
-    assert sum(len(spec.urls) for spec in CATALOG) == 26
+    assert sum(len(spec.urls) for spec in CATALOG) == 30
     assert len(SOURCES["siliconangle_software"].urls) == 3
     assert len(SOURCES["siliconangle_ai"].urls) == 1
     assert all(s.distribution_policy.require_complete_body for s in sources)
-    assert all(s.scheduler_constraints.max_concurrency == 2 for s in sources)
+    assert all(s.scheduler_constraints.max_concurrency == (1 if s.source_id == "quantum_zeitgeist" else 2) for s in sources)
     assert all(s.default_polling_config.target_interval_seconds == 60 for s in sources)
     assert all(s.site_id is None for s in sources)
     assert SOURCES["quantum_zeitgeist"].transport == "urllib"

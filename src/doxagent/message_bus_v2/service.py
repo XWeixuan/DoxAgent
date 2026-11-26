@@ -127,7 +127,9 @@ class MessageBusV2Service:
             or "http_routes" in source.parameter_schema.get("properties", {})
         ):
             return
-        desired = next(s for s in initial_sources() if s.source_id == source.source_id)
+        desired = next((s for s in initial_sources() if s.source_id == source.source_id), None)
+        if desired is None:  # Retired source awaiting explicit control-plane deletion.
+            return
         self.update_source(
             source.source_id,
             {
@@ -695,6 +697,8 @@ class MessageBusV2Service:
         parameters = dict(
             source.default_parameters if source_parameters is None else source_parameters
         )
+        if source.source_id == "google_news_search_rss":
+            parameters.setdefault("require_relevance", True)
         validate_parameter_schema(source.parameter_schema, parameters)
         if source.source_id == "corporate_ir_press_releases":
             from .corporate_ir.schema import endpoints

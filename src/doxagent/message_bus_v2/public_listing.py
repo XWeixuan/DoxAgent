@@ -18,7 +18,7 @@ from zoneinfo import ZoneInfo
 from lxml import html
 
 from .schema import AcquisitionFailure, PollResult, sha256_text
-from .technology_sources import TechnologySource, article
+from .technology_sources import TechnologySource, article, QUANTUM_ZEITGEIST_FEEDS
 
 PRIMARY_TIMEOUT_SECONDS = 12
 DEFAULT_MAX_CACHE_AGE_SECONDS = 120
@@ -163,13 +163,12 @@ RECIPES = {
             "etnews",
         ),
     ),
-    "quantum_zeitgeist": (
+    "quantum_zeitgeist": tuple(
         Listing(
-            "https://quantumzeitgeist.com/feed/",
-            "https://public-api.wordpress.com/rest/v1.1/sites/quantumzeitgeist.com/posts/?number=100&fields=ID,URL,title,date,excerpt,modified",
-            "wordpress",
-            "us-standard-5",
-        ),
+            feed, feed, "rss", transport="urllib", method="POST", rss_fallback=False,
+        )
+        # Read-only POST avoids the category feed GET's day-long cache.
+        for feed in QUANTUM_ZEITGEIST_FEEDS
     ),
     "huggingnews_rss": (
         Listing(
@@ -355,6 +354,13 @@ def text(node):
 
 
 def parse_listing(recipe, spec, raw, now):
+    if recipe.parser == "rss":
+        from .technology_sources import parse_listing as parse_rss
+
+        messages = parse_rss(replace(spec, parser="rss"), raw, recipe.feed, now)
+        for message in messages:
+            message.metadata.update(discovery_method="http_listing", listing_url=recipe.url)
+        return messages
     if recipe.parser.startswith('bio_'):
         from .biopharma_parsers import parse_listing as parse_biopharma
         return parse_biopharma(recipe, raw, now)

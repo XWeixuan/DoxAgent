@@ -4,6 +4,7 @@ from .retired_sources import REPLACEMENTS
 
 RETIRED_SOURCES = frozenset({
     "tikhub_x_search", "tikhub_x_user_posts", "globenewswire_semiconductors_rss",
+    "stocktwits_messages", "observability_vendors_official_rss", "newswire_rss",
     *REPLACEMENTS,
 })
 

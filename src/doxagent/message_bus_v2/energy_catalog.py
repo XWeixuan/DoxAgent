@@ -110,7 +110,7 @@ CATALOG = (
         "Data Center Dynamics / Energy Companies",
         "datacenterdynamics.com",
         (DCD_CEG, DCD_BE),
-        ENERGY,
+        ("BE",),
         parser="dcd",
         route="us-standard-5",
         mode=AcquisitionMode.BY_TICKER,
@@ -195,7 +195,7 @@ CATALOG = (
         "Data Center Dynamics / Infrastructure",
         "datacenterdynamics.com",
         ("https://www.datacenterdynamics.com/en/rss/",),
-        COMMON,
+        ("NBIS", "BE"),
         route="us-standard-5",
     ),
     EnergySource(

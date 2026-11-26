@@ -94,7 +94,8 @@ def test_catalog_matches_external_granularity_and_internal_subscriptions():
     )
     assert len(SOURCES["doe_energy_news"].urls_for("CEG")) == 4
     assert len(SOURCES["doe_energy_news"].urls_for("BE")) == 3
-    assert SOURCES["dcd_infrastructure_rss"].tickers == ("CEG", "BE", "INTC", "MU", "COHR", "NBIS")
+    assert SOURCES["dcd_infrastructure_rss"].tickers == ("NBIS", "BE")
+    assert SOURCES["dcd_energy_ticker"].tickers == ("BE",)
     assert not any("SNOW" in spec.tickers for spec in CATALOG)
     assert all(
         source.site_id is None
@@ -115,7 +116,7 @@ def test_configuration_reserves_unregistered_ionq_and_preserves_existing_terms(t
         for ticker in ("BE", "MU", "INTC", "COHR", "NBIS")
     }
     first = configure(bus)
-    assert len(first["bindings"]) == 28 and len(first["reserved"]) == 4
+    assert len(first["bindings"]) == 23 and len(first["reserved"]) == 4
     assert first["initial_terms"] == [{"ticker": "CEG", "revision": 1}]
     assert repo.get_ticker_state("IONQ") is None
     assert all(row["action"] == "unchanged" for row in configure(bus)["bindings"])
@@ -123,7 +124,7 @@ def test_configuration_reserves_unregistered_ionq_and_preserves_existing_terms(t
     assert {ticker: MonitoringTermsService(repo).get(ticker)[0] for ticker in before} == before
     bus.start_ticker("IONQ")
     next_run = configure(bus)
-    assert len(next_run["bindings"]) == 32 and not next_run["reserved"]
+    assert len(next_run["bindings"]) == 27 and not next_run["reserved"]
     assert next_run["initial_terms"] == [{"ticker": "IONQ", "revision": 1}]
     repo.close()
 

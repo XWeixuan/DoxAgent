@@ -78,7 +78,9 @@ def main():
                         if not any(path.startswith(root+'/') for root in COPY_ROOTS):
                             recipe+=['COPY --chmod=0644 '+path+' /app/'+path]
                     recipe+=['COPY '+root+'/ /app/'+root+'/' for root in COPY_ROOTS]
-                    recipe+=['RUN umask 022 && python -m compileall -q --invalidation-mode checked-hash /app/src/doxagent/trade_execution /app/src/doxagent/exit_strategy /app/src/doxagent/v2_read']
+                    compile_paths = sorted({str(Path('/app') / Path(path).parent) for path in FILES if path.endswith('.py')})
+                    if compile_paths:
+                        recipe+=['RUN umask 022 && python -m compileall -q --invalidation-mode checked-hash '+ ' '.join(shlex.quote(p) for p in compile_paths)]
                     code='import hashlib; expected='+repr(hashes)+'; assert all(hashlib.sha256(open("/app/"+p,"rb").read()).hexdigest()==h for p,h in expected.items())'
                     recipe+=['RUN python -c '+shlex.quote(code)]
                     check=['docker','exec',container,'python','-c',code]

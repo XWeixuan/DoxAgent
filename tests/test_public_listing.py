@@ -80,7 +80,7 @@ def rows(sid, index=0):
     return parse_listing(
         recipe,
         spec_for(sid, recipe),
-        (FIXTURES / f"{sid}-{index}.html").read_text(encoding="utf8"),
+        (FIXTURES / ("quantum_zeitgeist-0-rss.xml" if sid == "quantum_zeitgeist" else f"{sid}-{index}.html")).read_text(encoding="utf8"),
         NOW,
     )
 
@@ -297,7 +297,7 @@ def capture(sid="quantum_computing_report", index=0, status=200, headers=None):
     return Capture(
         status,
         recipe.url,
-        (FIXTURES / f"{sid}-{index}.html").read_text(encoding="utf8") if status == 200 else "",
+        (FIXTURES / ("quantum_zeitgeist-0-rss.xml" if sid == "quantum_zeitgeist" else f"{sid}-{index}.html")).read_text(encoding="utf8") if status == 200 else "",
         headers or {},
     )
 
@@ -629,16 +629,13 @@ async def test_old_http_success_and_conditional_response_are_failed_not_fresh(st
     assert not result.next_checkpoint["listings"]
 
 
-async def test_quantum_second_page_cache_is_also_validated():
-    first = capture("quantum_zeitgeist")
-    second = capture("quantum_zeitgeist", headers={"age": "600"})
+async def test_quantum_failed_category_never_falls_back_to_all_site_feed():
     delegate = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult()))
-    result = await ListingAdapter(delegate, Http(first, second)).poll_shared(
-        context("quantum_zeitgeist")
-    )
-    assert not result.failures and result.window_coverage == 'PARTIAL'
-    state = result.next_checkpoint['listings'][RECIPES['quantum_zeitgeist'][0].url]
-    assert state['supplement_pending'] and 'stale_cache_age' in state['supplement_error']
+    http = Http(capture("quantum_zeitgeist", status=503))
+    result = await ListingAdapter(delegate, http).poll_shared(context("quantum_zeitgeist"))
+    assert result.failures and not result.messages
+    assert len(http.calls) == 1
+    delegate.poll_shared.assert_not_awaited()
 
 
 async def test_cache_evidence_is_bound_to_physical_request_receipt():
@@ -857,24 +854,32 @@ def test_enterprise_internal_feed_opt_out_is_preserved():
     assert all(r.feed == salesforce.feed for r in selected)
 
 
-async def test_quantum_two_pages_preserve_200_item_window_and_both_transport_proofs():
-    first = capture("quantum_zeitgeist")
-    data = json.loads(first.text)
-    data["posts"] = [{**row, "URL": row["URL"].rstrip("/") + "-page2/"} for row in data["posts"]]
-    second = Capture(200, first.url + "&offset=100", json.dumps(data), {})
-    http = Http(first, second)
-    events = []
-    token = REQUESTS.set(events)
-    try:
-        result = await ListingAdapter(SimpleNamespace(), http).poll_shared(
-            context("quantum_zeitgeist")
-        )
-        assert not result.failures and len(result.messages) == 4
-        assert len(result.acquisition_metadata["validated_request_ids"]) == 2
-        assert "offset=100" in http.calls[1][0]
-        assert all(call[1].route == "us-standard-5" for call in http.calls)
-    finally:
-        REQUESTS.reset(token)
+async def test_quantum_five_independent_category_posts_preserve_identity_and_delta():
+    source = definition("quantum_zeitgeist")
+    units = endpoint_units(source)
+    assert len(units) == 5
+    keys = []
+    for index, recipe in enumerate(RECIPES[source.source_id]):
+        http = Http(capture(source.source_id))
+        events = []
+        token = REQUESTS.set(events)
+        try:
+            adapter = ListingAdapter(SimpleNamespace(), http)
+            ctx = context(source.source_id, index=index)
+            result = await adapter.poll_shared(ctx)
+            assert not result.failures and result.messages
+            assert all(m.publication_time_basis == "EXACT" for m in result.messages)
+            assert len(result.acquisition_metadata["validated_request_ids"]) == 1
+            keys.append({article_key(m, source.source_id) for m in result.messages})
+            ctx.checkpoint = result.next_checkpoint
+            repeated = await adapter.poll_shared(ctx)
+            assert not repeated.messages and not repeated.failures
+            assert all(c[0] == recipe.feed and c[2]["method"] == "POST" for c in http.calls)
+            assert all(c[1].transport == "urllib" and c[1].route == "direct" for c in http.calls)
+            assert all("If-None-Match" not in c[2]["headers"] for c in http.calls)
+        finally:
+            REQUESTS.reset(token)
+    assert all(k == keys[0] for k in keys)  # Cross-category overlap retains article identity.
 
 
 async def test_api_body_only_modification_is_a_material_update_without_repeating_unchanged_rows():
