@@ -1,0 +1,245 @@
+{
+  "commit": "f429dd4f1c96364b3baa03fbc5ab85501b3230f2",
+  "roles": {
+    "v2-api": {
+      "container": "2782ed9af528a7294770ce3d6b0f527999952d004fe3a1e98d743c7c2c59110a",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": "healthy",
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-projector": {
+      "container": "4003e8fc3d6b15442f4c4a9b0d47e892c83f0cf3357e0298a8db00ae705f002a",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-control": {
+      "container": "59ce6829f0117cf650d517024051a74c92beacd0b26196bcb500dfe149007ec6",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-initialization": {
+      "container": "867163352d149b38d6ca56570de0c4292b006fac366ba885747197f78cbbeb5d",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-cdecr-executor": {
+      "container": "cdb25cec22e50ca89a43bdd887f1992273e0512796c0bbcbedce4af229ce1e10",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": "healthy",
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-o4": {
+      "container": "53e1497e40484c0519203aae88e4340ef5a450c0b6cabeb86ac6663b568927b5",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-maintenance": {
+      "container": "190963931e1104865d94e6a4c8fa30a3e26be1f4b62255cd793ec09f8e95bdf1",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-delivery": {
+      "container": "aeaf76df5b7c4f048e224e2daa39124ddbccfa2c4f7cf80e50b5be6348656ccb",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-transport-maintenance": {
+      "container": "1c027f18abea82db492660192fde7347fe3361df7367ce8b22ea03fafdc0a729",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-message-collector": {
+      "container": "9f346681bdd599090f3a9ebb0bfbcc5db023f98bb36b61273e439ecac702db71",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": "healthy",
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-content-enrichment": {
+      "container": "df260a21d17a51f3e3227b4e3358a102c43ae5b4dce192b8440e9283943d14d2",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-message-bus": {
+      "container": "d721f1b5387e845cfd2dab39199e8f112c2b8b91c32da2bfdc83b89ed0ee7352",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-executor": {
+      "container": "ef25d1fa458e439faea1d9c505da676657cde2a1a03fe2d22500a0ffa4624ca6",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-web": {
+      "container": "32a266925c40a28e9853768f4e9b1130b16d8062676da51fa1ef19ae887c2479",
+      "image": "sha256:72c0a91ac61e666d83d68b717bf66bf982d2daae36051e6ac641a51f8433c050",
+      "health": "healthy",
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "codex-worker": {
+      "container": "10475d19a1867a6e75784ce37b78af861b8a23caf4ca2e36b3a80d31a2ee724f",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": "healthy",
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    },
+    "v2-scheduler": {
+      "container": "cbb81e30c94e28972f1da0c2b66be04902912e003f64d247aba4c7450f6122f0",
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "health": null,
+      "restart_count": 0,
+      "source_check": true,
+      "replaced": true
+    }
+  },
+  "settings_preserved": true,
+  "active_tickers": [
+    {
+      "ticker": "BE",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "CEG",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "COHR",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "COIN",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "INTC",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "IONQ",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "MU",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "NBIS",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "ONDS",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "RKLB",
+      "running_mode": "FULL"
+    },
+    {
+      "ticker": "SNOW",
+      "running_mode": "FULL"
+    }
+  ],
+  "control_states": [
+    {
+      "ticker": "BE",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "CEG",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "COHR",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "COIN",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "INTC",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "IONQ",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "MU",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "NBIS",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "ONDS",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "RKLB",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    },
+    {
+      "ticker": "SNOW",
+      "requested_mode": "LIVE_TRADING",
+      "run_state": null
+    }
+  ],
+  "unsettled_strategy_orders": 0,
+  "guardian_running": false,
+  "http": {
+    "/healthz": 200,
+    "/": 200,
+    "/api/doxagent/v2/auth/config": 200,
+    "/api/doxagent/v2/auth/me": 401
+  }
+}

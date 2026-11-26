@@ -1,0 +1,43 @@
+{
+  "authenticated_read": true,
+  "case_list": true,
+  "case_detail": true,
+  "case_id": "case_2ec0a9f61cad411fb57977de56535a9b",
+  "requests": [
+    "c7ff41c48f6744619829b1a3c24f862d",
+    "539b657ca4c94eb39d6dda4b43b23dc7"
+  ],
+  "freshness": "STALE",
+  "projection": [
+    {
+      "source": "initialization",
+      "head": 197059,
+      "checkpoint": 197059,
+      "checked_at": "2026-11-26T13:58:10.103560Z",
+      "error": null,
+      "historical_gaps": 0,
+      "source_event_at": "2026-11-26T09:09:12.643000Z",
+      "oldest_pending_at": null
+    },
+    {
+      "source": "bus",
+      "head": 13441995,
+      "checkpoint": 13441995,
+      "checked_at": "2026-11-26T13:58:10.112124Z",
+      "error": null,
+      "historical_gaps": 0,
+      "source_event_at": "2026-11-26T13:58:07.292000Z",
+      "oldest_pending_at": null
+    },
+    {
+      "source": "runtime",
+      "head": 5445375,
+      "checkpoint": 5445375,
+      "checked_at": "2026-11-26T13:58:10.120966Z",
+      "error": null,
+      "historical_gaps": 17218,
+      "source_event_at": "2026-11-26T13:55:44.307000Z",
+      "oldest_pending_at": null
+    }
+  ]
+}

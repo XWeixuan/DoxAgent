@@ -5,7 +5,7 @@ from doxagent.settings import DoxAgentSettings
 
 
 def test_clean_projection_does_not_mutate_business_or_validate_hidden_policies():
-    case = SimpleNamespace(frozen_inputs={}, w2_final=None)
+    case = SimpleNamespace(running_mode="FULL", frozen_inputs={}, w2_final=None)
     payload = dict(ticker="MU", message={"title":"original Policy news"}, w1={"reason":"W1"},
         w2={"reason":"UPSTREAM_SECRET", "policy_hit":True},
         policies=[{"title":"SECRET_POLICY"}], alignment={"error":"SECRET"},
