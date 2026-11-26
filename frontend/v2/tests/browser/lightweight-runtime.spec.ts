@@ -12,6 +12,11 @@ for (const width of [1262, 1559]) {
     await expect(
       page.getByRole("radiogroup", { name: "交易模式", exact: true }),
     ).toBeVisible();
+    for (const name of ["交易模式", "运行模式"]) {
+      const columns = await page.getByRole("radiogroup", { name, exact: true })
+        .evaluate(e => getComputedStyle(e).gridTemplateColumns.split(" ").length);
+      expect(columns).toBe(2);
+    }
     await expect(
       page.getByRole("radio", { name: "普通运行", exact: true }),
     ).toBeChecked();

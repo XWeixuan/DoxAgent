@@ -30,7 +30,7 @@ def counted_connections(store, monkeypatch):
     return calls
 
 
-def test_health_one_snapshot_and_incoming_poll_and_binding_deletions(tmp_path, monkeypatch):
+def test_ticker_health_ignores_source_polls_and_reads_only_lifecycle(tmp_path, monkeypatch):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()
     def row(kind, identity, data, ticker="MU"):
@@ -51,11 +51,21 @@ def test_health_one_snapshot_and_incoming_poll_and_binding_deletions(tmp_path, m
         initialization_incomplete=False, removed=False))
     calls = counted_connections(store, monkeypatch)
     monkeypatch.setattr(store, "get", lambda *a, **kw: pytest.fail("per-object health read"))
+    for incoming in [
+        [row("poll_states", "MU:s", dict(status="failed"))],
+        [row("poll_states", "MU:s", dict(status="partial"))],
+        [row("ticker_source_bindings", "MU:s", None)],
+        [row("source_definitions", "s", dict(enabled=False), ticker="")],
+    ]:
+        calls.clear()
+        health.project(store, "MU", incoming)
+        assert not calls
+        assert not any(r["kind"] == "ticker" for r in incoming)
     for incoming, expected in [
-        ([row("poll_states", "MU:s", dict(status="failed"))], "DEGRADED"),
-        ([row("poll_states", "MU:s", dict(status="succeeded"))], "NORMAL"),
-        ([row("ticker_source_bindings", "MU:s", None)], "NORMAL"),
-        ([row("source_definitions", "s", dict(enabled=False), ticker="")], "NORMAL"),
+        ([row("v2_control_ack", "1:runtime", dict(epoch=1))], "NORMAL"),
+        ([row("v2_control_ack", "1:runtime", None)], "UNKNOWN"),
+        ([row("v2_ticker_control", "MU", dict(analysis_allowed=False, activation_id=None,
+             initialization_failed=True, epoch=1))], "BLOCKED"),
     ]:
         calls.clear()
         health.project(store, "MU", incoming)

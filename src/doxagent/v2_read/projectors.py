@@ -704,7 +704,6 @@ class DomainProjectors:
             "v2_ticker_control",
             "v2_control_ack",
             "ticker_monitoring_states",
-            "poll_states",
         }:
             from .health import project as health
 
