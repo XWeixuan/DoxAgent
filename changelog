@@ -3549,3 +3549,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-27 修复轻量初始化历史正文全部不可用仍以空事件库成功、CDECR Dreamer 全部调用失败被缓存成功的问题；初始化复用现有 Shared BODY/Site Access，保留有效空结果与部分成功；选定节点续跑继承 running_mode。按用户授权为 CDECR 增加 Sail Research → ambient/fp4 的同模型受限 fallback。91 项相关回归通过。
 
 2026-11-27 初始化恢复部署补充：为 CDECR Executor 挂载已有 Site Access worker secret，复用现有正文服务；不新增服务、资源池或凭据。修复后继续原失败点。
+
+2026-11-27 PRAX/XENE 初始化恢复交接：PRAX 原 run 经 CAS/幂等 Control 续跑；XENE 4 篇全文成功、40 条提及、CDECR Epoch FINALIZED，O2 Survey 已运行。经正常租约交接显式追加原激活/Bus/Runtime ACK DAG，后续无需聊天手工激活；原成功节点、XENE 19 个绑定和监测词配置保持一致。按用户允许在业务任务继续自动执行时结束，尚不宣称 O2 发布及终态成功。报告 docs/lightweight-initialization-recovery-20261127.md。
