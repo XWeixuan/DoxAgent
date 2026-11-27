@@ -357,16 +357,27 @@ def verify_dependency_image(tag, kind, manifests):
         return False
     if shutil.disk_usage('/').free < info.get('Size',0)+512*1024**2:
         raise OSError('recovering dependency image needs space for its first runtime unpack')
-    code=("import hashlib,importlib.metadata as m,json,pathlib,subprocess;"
+    code=("import hashlib,importlib.metadata as m,json,pathlib,subprocess,tomllib;"
           "root=pathlib.Path('/app');assert not (root/'src/doxagent').exists();"
-          "assert m.version('openai-codex')=='0.159.3';"
-          "assert m.version('openai-codex-cli-bin')=='0.159.3';"
+          "pin=next(d.split('==')[1] for d in tomllib.loads((root/'pyproject.toml').read_text())['project']['dependencies'] if d.startswith('openai-codex=='));"
+          "assert m.version('openai-codex')==pin;"
+          "assert m.version('openai-codex-cli-bin')==pin;"
           "assert m.version('playwright')=='1.63.0';"
           "assert m.version('protobuf')=='5.29.5';import ibapi;"
           "print(json.dumps({n:hashlib.sha256((root/n).read_bytes()).hexdigest() "
           "for n in ('pyproject.toml','uv.lock')}))")
     observed=json.loads(run(['docker','run','--rm','--network','none','--entrypoint','python',tag,'-c',code]))
     return observed=={k:manifests[k] for k in ('pyproject.toml','uv.lock')}
+
+
+def native_sdk_version(context, native):
+    import tomllib
+    dependencies=tomllib.loads((context/'pyproject.toml').read_text())['project']['dependencies']
+    sdk=next(d.split('==')[1] for d in dependencies if d.startswith('openai-codex=='))
+    version=native.get('upstream_version','0.159.3')
+    if version!=sdk:
+        raise ValueError('Native artifact version does not match the pinned Codex SDK')
+    return version
 
 
 def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
@@ -395,11 +406,12 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
         runtime=repo/'deploy/codex-runtime'
         if 'backend' in kinds and (runtime/'manifest.json').is_file():
             native=json.loads((runtime/'manifest.json').read_text())
-            patch=context/'deploy/codex-patches/w3-time-awareness-0.159.3.patch'
+            version=native_sdk_version(context,native)
+            patch=context/f'deploy/codex-patches/w3-time-awareness-{version}.patch'
             if hashlib.sha256(patch.read_bytes()).hexdigest()!=native['patch_sha256']:
                 raise ValueError('native runtime patch does not match selected commit')
             if native.get('storage_log_patch_sha256'):
-                storage_patch=context/'deploy/codex-patches/storage-log-policy-0.159.3.patch'
+                storage_patch=context/f'deploy/codex-patches/storage-log-policy-{version}.patch'
                 if hashlib.sha256(storage_patch.read_bytes()).hexdigest()!=native['storage_log_patch_sha256']:
                     raise ValueError('native diagnostic policy does not match selected commit')
             expected={'codex':native['binary_sha256'],

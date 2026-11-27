@@ -12,6 +12,18 @@ spec=importlib.util.spec_from_file_location('storage_release',Path(__file__).par
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 
+@pytest.mark.parametrize('sdk,native,valid',[
+    ('0.159.3',{},True),
+    ('0.172.0',{'upstream_version':'0.172.0'},True),
+    ('0.172.0',{},False),
+])
+def test_native_artifact_must_match_pinned_sdk(tmp_path,sdk,native,valid):
+    (tmp_path/'pyproject.toml').write_text('[project]\ndependencies=["openai-codex=='+sdk+'"]\n')
+    if valid:assert release.native_sdk_version(tmp_path,native)==sdk
+    else:
+        with pytest.raises(ValueError,match='does not match'):release.native_sdk_version(tmp_path,native)
+
+
 def test_owner_capacity_uses_active_read_generation_and_keeps_gc_receipt(tmp_path):
     from doxagent.v2_read.repository import ReadStore
     path=tmp_path/'read/serving/v2.sqlite3';path.parent.mkdir(parents=True)

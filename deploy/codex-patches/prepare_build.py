@@ -10,7 +10,6 @@ import sys
 import tomllib
 from pathlib import Path
 
-UPSTREAM = "01fc69f4026735edfdf6789820549727a4867b11"
 
 
 def normalize_release_lock(source):
@@ -31,12 +30,14 @@ def manifest(source, patch, output):
         with path.open("rb") as file:
             return hashlib.file_digest(file, "sha256").hexdigest()
 
+    version = tomllib.loads((source / "codex-rs/Cargo.toml").read_text())["workspace"]["package"]["version"]
     value = dict(
         schema_version=1,
         capability="w3-time-awareness-v1",
-        upstream_commit=UPSTREAM,
+        upstream_version=version,
+        upstream_commit=subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip(),
         patch_sha256=digest(patch),
-        storage_log_patch_sha256=digest(patch.with_name('storage-log-policy-0.159.3.patch')),
+        storage_log_patch_sha256=digest(patch.with_name(f'storage-log-policy-{version}.patch')),
         storage_local_root_exit=True,
         cargo_lock_sha256=digest(source / "codex-rs/Cargo.lock"),
         binary_sha256=digest(output / "codex"),

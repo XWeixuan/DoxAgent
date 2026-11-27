@@ -1,0 +1,276 @@
+diff --git a/codex-rs/state/src/log_db.rs b/codex-rs/state/src/log_db.rs
+index ef03ad85..27195f34 100644
+--- a/codex-rs/state/src/log_db.rs
++++ b/codex-rs/state/src/log_db.rs
+@@ -60,33 +60,44 @@ const SQLX_LOG_TARGETS: [&str; 3] = ["sqlx", "sqlx_core", "sqlx_sqlite"];
+ 
+ pub fn default_filter() -> Targets {
+     Targets::new()
+-        .with_default(LevelFilter::TRACE)
++        .with_default(LevelFilter::WARN)
+         .with_target("h2", LevelFilter::WARN)
+         .with_target("hyper_util", LevelFilter::WARN)
+         .with_target("log", LevelFilter::OFF)
+         // Avoid constructing backend diagnostics when no other layer needs them.
+         .with_targets(SQLX_LOG_TARGETS.map(|target| (format!("{target}::"), LevelFilter::OFF)))
+-        .with_target("codex_rmcp_client", LevelFilter::INFO)
++        .with_target("codex_rmcp_client", LevelFilter::WARN)
+         .with_target("opentelemetry-otlp", LevelFilter::OFF)
+         .with_target("opentelemetry-http", LevelFilter::OFF)
+         .with_target("tonic::transport", LevelFilter::WARN)
+         .with_target("tower::buffer", LevelFilter::WARN)
+         .with_target("codex_otel.log_only", LevelFilter::OFF)
+         .with_target("codex_otel.trace_safe", LevelFilter::OFF)
+-        .with_target("rmcp", LevelFilter::INFO)
+-        .with_target("tokio::", LevelFilter::INFO)
+-        .with_target("runtime::", LevelFilter::INFO)
+-        .with_target("tokio_graceful::guard", LevelFilter::DEBUG)
+-        .with_target("tokio_graceful::trigger", LevelFilter::DEBUG)
++        .with_target("rmcp", LevelFilter::WARN)
++        .with_target("tokio::", LevelFilter::WARN)
++        .with_target("runtime::", LevelFilter::WARN)
++        .with_target("tokio_graceful::guard", LevelFilter::WARN)
++        .with_target("tokio_graceful::trigger", LevelFilter::WARN)
+         .with_target("codex_api::responses_websocket_timing", LevelFilter::OFF)
+         .with_target("codex_core::post_sampling_token_estimate", LevelFilter::OFF)
+         // Full model request bodies and streamed response payloads overwhelm the
+         // SQLite log database, but remain available to explicit TRACE subscribers.
+-        .with_target("codex_http_client::transport", LevelFilter::DEBUG)
+-        .with_target("codex_api::sse", LevelFilter::DEBUG)
++        .with_target("codex_http_client::transport", LevelFilter::WARN)
++        .with_target("codex_api::sse", LevelFilter::WARN)
+         // Per-chunk streaming traces otherwise flood the bounded SQLite log queue.
+-        .with_target("codex_tui::streaming::controller", LevelFilter::DEBUG)
+-        .with_target("codex_tui::streaming::table_holdback", LevelFilter::DEBUG)
++        .with_target("codex_tui::streaming::controller", LevelFilter::WARN)
++        .with_target("codex_tui::streaming::table_holdback", LevelFilter::WARN)
++}
++
++fn bounded_storage_log(mut value: String) -> String {
++    const MAX_BYTES: usize = 2048;
++    if value.len() > MAX_BYTES {
++        let mut end = MAX_BYTES;
++        while !value.is_char_boundary(end) { end -= 1; }
++        value.truncate(end);
++        value.push_str(" [diagnostic truncated]");
++    }
++    value
+ }
+ 
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+@@ -335,7 +346,7 @@ where
+             .thread_id
+             .clone()
+             .or_else(|| event_thread_id(event, &ctx));
+-        let feedback_log_body = format_feedback_log_body(event, &ctx);
++        let feedback_log_body = bounded_storage_log(format_feedback_log_body(event, &ctx));
+ 
+         let now = SystemTime::now()
+             .duration_since(UNIX_EPOCH)
+@@ -345,7 +356,7 @@ where
+             ts_nanos: now.subsec_nanos() as i64,
+             level: metadata.level().as_str().to_string(),
+             target: metadata.target().to_string(),
+-            message: visitor.message,
++            message: visitor.message.map(bounded_storage_log),
+             feedback_log_body: Some(feedback_log_body),
+             thread_id,
+             process_uuid: Some(self.process_uuid.clone()),
+@@ -508,6 +519,7 @@ async fn run_inserter(
+     has_write_failure: Arc<AtomicBool>,
+ ) {
+     let mut buffer = Vec::with_capacity(config.batch_size);
++    let mut storage_prune_at = Instant::now();
+     let mut ticker = tokio::time::interval(config.flush_interval);
+     // Consume the immediate startup tick so entries flush after the interval.
+     ticker.tick().await;
+@@ -533,6 +545,12 @@ async fn run_inserter(
+             }
+             _ = ticker.tick() => {
+                 flush(&state_db, &mut buffer, failure_reporter.as_ref(), &has_write_failure).await;
++                if storage_prune_at.elapsed() >= Duration::from_secs(3600) {
++                    storage_prune_at = Instant::now();
++                    if let Err(error) = state_db.prune_storage_logs().await {
++                        eprintln!("diagnostic log retirement deferred: {error}");
++                    }
++                }
+             }
+         }
+     }
+diff --git a/codex-rs/state/src/runtime/logs.rs b/codex-rs/state/src/runtime/logs.rs
+index e4e1eeb5..33e5499c 100644
+--- a/codex-rs/state/src/runtime/logs.rs
++++ b/codex-rs/state/src/runtime/logs.rs
+@@ -1,6 +1,20 @@
+ use super::*;
+ 
+ impl StateRuntime {
++    /// Bounded diagnostic retirement outside model execution and lifecycle transactions.
++    pub async fn prune_storage_logs(&self) -> anyhow::Result<()> {
++        let mut tx = self.diagnostic_logs_pool()?.begin().await?;
++        let newest: i64 = sqlx::query_scalar("SELECT coalesce(max(id),0) FROM logs")
++            .fetch_one(&mut *tx).await?;
++        sqlx::query("DELETE FROM logs WHERE id IN (SELECT id FROM logs WHERE id<=? ORDER BY id LIMIT 256)")
++            .bind(newest.saturating_sub(65_536)).execute(&mut *tx).await?;
++        let cutoff = chrono::Utc::now() - chrono::Duration::days(30);
++        sqlx::query("DELETE FROM logs WHERE id IN (SELECT id FROM logs WHERE ts<? ORDER BY ts,ts_nanos,id LIMIT 256)")
++            .bind(cutoff.timestamp()).execute(&mut *tx).await?;
++        tx.commit().await?;
++        Ok(())
++    }
++
+     pub async fn insert_log(&self, entry: &LogEntry) -> anyhow::Result<()> {
+         self.insert_logs(std::slice::from_ref(entry)).await
+     }
+@@ -34,7 +48,11 @@ impl StateRuntime {
+                 .push_bind(entry.estimated_bytes());
+         });
+         builder.build().execute(&mut *tx).await?;
+-        self.prune_logs_after_insert(entries, &mut tx).await?;
++        let newest: i64 = sqlx::query_scalar("SELECT coalesce(max(id),0) FROM logs")
++            .fetch_one(&mut *tx).await?;
++        sqlx::query("DELETE FROM logs WHERE id IN (SELECT id FROM logs WHERE id<=? ORDER BY id LIMIT ?)")
++            .bind(newest.saturating_sub(65_536)).bind(entries.len() as i64)
++            .execute(&mut *tx).await?;
+         tx.commit().await?;
+         Ok(())
+     }
+diff --git a/codex-rs/thread-store/src/local/delete_thread.rs b/codex-rs/thread-store/src/local/delete_thread.rs
+index cc2cb664..bf8ffcdd 100644
+--- a/codex-rs/thread-store/src/local/delete_thread.rs
++++ b/codex-rs/thread-store/src/local/delete_thread.rs
+@@ -33,6 +33,7 @@ struct ThreadRollouts {
+     thread_id: codex_protocol::ThreadId,
+     rollout_ids: HashSet<codex_protocol::ThreadId>,
+     paths: Vec<PathBuf>,
++    known_paths: bool,
+ }
+ 
+ impl LocalThreadStore {
+@@ -43,6 +44,9 @@ impl LocalThreadStore {
+         thread_ids: &[ThreadId],
+     ) -> ThreadStoreResult<()> {
+         ensure_diagnostic_logs_available(self)?;
++        if thread_ids.len() == 1 && managed_root_rollouts(self, thread_ids[0]).await?.is_some() {
++            return Ok(());
++        }
+         let reference_index = scan_reference_index(self).await?;
+         check_attached_children(&reference_index, thread_ids)
+     }
+@@ -92,6 +96,7 @@ impl ThreadRollouts {
+             thread_id,
+             rollout_ids,
+             paths,
++            known_paths: false,
+         }
+     }
+ 
+@@ -114,10 +119,15 @@ pub(super) async fn delete_thread(
+     let _lifecycle_guard = store.live_writer_locks.lock_lifecycle(thread_id).await;
+     let _live_writer_guard = store.live_writer_locks.lock(thread_id).await;
+     let mut writer_guards = store.acquire_writer_locks(&[thread_id]).await?;
+-    let reference_index = scan_reference_index(store).await?;
+-    let thread_rollouts = ThreadRollouts::from_index(&reference_index, thread_id);
+-    check_attached_children(&reference_index, &[thread_id])?;
+-    ensure_no_external_references(&reference_index, std::slice::from_ref(&thread_rollouts))?;
++    let thread_rollouts = if let Some(root) = managed_root_rollouts(store, thread_id).await? {
++        root
++    } else {
++        let reference_index = scan_reference_index(store).await?;
++        let root = ThreadRollouts::from_index(&reference_index, thread_id);
++        check_attached_children(&reference_index, &[thread_id])?;
++        ensure_no_external_references(&reference_index, std::slice::from_ref(&root))?;
++        root
++    };
+     if let Some(cleanup) = &store.thread_data_cleanup {
+         cleanup(vec![thread_id]).await?;
+     }
+@@ -159,13 +169,18 @@ pub(super) async fn delete_threads(
+     }
+ 
+     let mut writer_guards = store.acquire_writer_locks(&lock_thread_ids).await?;
+-    let reference_index = scan_reference_index(store).await?;
+-    let thread_rollouts = thread_ids
+-        .iter()
+-        .map(|thread_id| ThreadRollouts::from_index(&reference_index, *thread_id))
+-        .collect::<Vec<_>>();
+-    check_attached_children(&reference_index, &lock_thread_ids)?;
+-    ensure_no_external_references(&reference_index, thread_rollouts.as_slice())?;
++    let isolated = if thread_ids.len() == 1 {
++        managed_root_rollouts(store, thread_ids[0]).await?
++    } else { None };
++    let thread_rollouts = if let Some(root) = isolated {
++        vec![root]
++    } else {
++        let reference_index = scan_reference_index(store).await?;
++        let roots = thread_ids.iter().map(|id| ThreadRollouts::from_index(&reference_index, *id)).collect::<Vec<_>>();
++        check_attached_children(&reference_index, &lock_thread_ids)?;
++        ensure_no_external_references(&reference_index, roots.as_slice())?;
++        roots
++    };
+     if let Some(cleanup) = &store.thread_data_cleanup {
+         cleanup(thread_ids.clone()).await?;
+     }
+@@ -181,6 +196,46 @@ pub(super) async fn delete_threads(
+     Ok(())
+ }
+ 
++async fn managed_root_rollouts(
++    store: &LocalThreadStore,
++    thread_id: codex_protocol::ThreadId,
++) -> ThreadStoreResult<Option<ThreadRollouts>> {
++    let proof_path = store.config.codex_home.join(".doxagent-local-exit").join(format!("{thread_id}.json"));
++    let raw = match tokio::fs::read(proof_path).await {
++        Ok(raw) => raw,
++        Err(err) if err.kind() == ErrorKind::NotFound => return Ok(None),
++        Err(err) => return Err(ThreadStoreError::Internal { message: err.to_string() }),
++    };
++    let invalid = || ThreadStoreError::InvalidRequest { message: "invalid consumed isolated-root owner proof".to_string() };
++    let proof: serde_json::Value = serde_json::from_slice(&raw).map_err(|_| invalid())?;
++    if proof["owner"].as_str() != Some("doxagent-consumed-isolated-root-v1")
++        || proof["thread_id"].as_str() != Some(thread_id.to_string().as_str()) {
++        return Err(invalid());
++    }
++    let path = PathBuf::from(proof["path"].as_str().ok_or_else(invalid)?);
++    let scoped = scoped_rollout_path(store.config.codex_home.join(SESSIONS_SUBDIR), &path, "sessions")
++        .or_else(|_| scoped_rollout_path(store.config.codex_home.join(ARCHIVED_SESSIONS_SUBDIR), &path, "archived sessions"));
++    // A missing file is an interrupted exact exit, not permission to discover
++    // every historical rollout again. Its lexical owner boundary still applies.
++    if !path.starts_with(store.config.codex_home.join(SESSIONS_SUBDIR))
++        && !path.starts_with(store.config.codex_home.join(ARCHIVED_SESSIONS_SUBDIR)) {
++        return Err(invalid());
++    }
++    if path.components().any(|part| part == std::path::Component::ParentDir) {
++        return Err(invalid());
++    }
++    if let Ok(meta) = codex_rollout::read_session_meta_line(&path).await {
++        scoped?;
++        if meta.meta.id != thread_id || meta.meta.history_base.is_some()
++            || codex_rollout::rollout_id_from_path(&path) != Some(thread_id) {
++            return Err(invalid());
++        }
++    } else if path.try_exists().unwrap_or(true) {
++        return Err(invalid());
++    }
++    Ok(Some(ThreadRollouts { thread_id, rollout_ids: HashSet::from([thread_id]), paths: vec![path], known_paths: true }))
++}
++
+ pub(super) async fn delete_state_rows(
+     store: &LocalThreadStore,
+     thread_ids: &[codex_protocol::ThreadId],
+@@ -253,6 +308,7 @@ async fn delete_thread_after_reference_check(
+     let thread_id = thread_rollouts.thread_id;
+     let thread_id_str = thread_id.to_string();
+     let state_db_ctx = store.state_db().await;
++    if !thread_rollouts.known_paths {
+     match find_thread_path_by_id_str(
+         store.config.codex_home.as_path(),
+         thread_id_str.as_str(),
+@@ -283,6 +339,7 @@ async fn delete_thread_after_reference_check(
+             });
+         }
+     }
++    }
+     thread_rollouts.rollout_ids.insert(thread_id);
+     for rollout_id in thread_rollouts.rollout_ids {
+         super::thread_history::delete_thread(store, rollout_id).await?;

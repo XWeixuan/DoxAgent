@@ -1,7 +1,7 @@
 # Upgrade only Codex and project metadata on an existing backend/repair image.
 ARG DOXAGENT_BASE_IMAGE=doxagent-v2:server
 FROM ${DOXAGENT_BASE_IMAGE}
-ARG CODEX_SDK_VERSION=0.159.3
+ARG CODEX_SDK_VERSION=0.172.0
 USER root
 COPY pyproject.toml uv.lock /app/
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -9,3 +9,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
         "openai-codex==${CODEX_SDK_VERSION}" \
         "openai-codex-cli-bin==${CODEX_SDK_VERSION}" -e /app \
     && uv pip check --python /app/.venv/bin/python
+COPY --chmod=0755 deploy/codex-runtime/codex deploy/codex-runtime/codex-code-mode-host /opt/doxagent/codex-runtime/
+COPY --chmod=0644 deploy/codex-runtime/manifest.json deploy/codex-runtime/LICENSE.codex /opt/doxagent/codex-runtime/
+ENV DOXAGENT_CODEX_RUNTIME_BIN=/opt/doxagent/codex-runtime/codex
+RUN python -c 'import hashlib,importlib.metadata as m,json,pathlib,subprocess; r=pathlib.Path("/opt/doxagent/codex-runtime"); v=json.loads((r/"manifest.json").read_bytes()); assert v["upstream_version"]==m.version("openai-codex")==m.version("openai-codex-cli-bin"); assert hashlib.sha256((r/"codex").read_bytes()).hexdigest()==v["binary_sha256"]; assert hashlib.sha256((r/"codex-code-mode-host").read_bytes()).hexdigest()==v["companions"]["codex-code-mode-host"]["sha256"]; assert v["storage_local_root_exit"] is True; print(subprocess.check_output([str(r/"codex"),"--version"],text=True).strip())'

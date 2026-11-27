@@ -1,21 +1,21 @@
 # syntax=docker/dockerfile:1.7
-FROM rust:1.95.0-bookworm@sha256:6258907abe69656e41cd992e0b705cdcfabcbbe3db374f92ed2d47121282d4a1 AS build-env
+FROM rust:1.99.1-bookworm@sha256:e6f2cff35d0f309acf8433b4f05878ed77092602c5065cc81801177da0bb3a9c AS build-env
 RUN apt-get update && apt-get install -y --no-install-recommends \
     protobuf-compiler clang cmake pkg-config libssl-dev python3 \
     && rm -rf /var/lib/apt/lists/*
 RUN git init /source \
     && git -C /source remote add origin https://github.com/openai/codex.git \
-    && git -C /source fetch --depth 1 origin 01fc69f4026735edfdf6789820549727a4867b11 \
-    && git -C /source checkout --detach 01fc69f4026735edfdf6789820549727a4867b11
-COPY w3-time-awareness-0.159.3.patch /tmp/w3-time-awareness.patch
+    && git -C /source fetch --depth 1 origin 3d86e43b075adeba2193ec5c22ac92f55afd82e6 \
+    && git -C /source checkout --detach 3d86e43b075adeba2193ec5c22ac92f55afd82e6
+COPY w3-time-awareness-0.172.0.patch /tmp/w3-time-awareness.patch
 COPY prepare_build.py /tmp/prepare_build.py
 RUN git -C /source apply --check /tmp/w3-time-awareness.patch \
     && git -C /source apply /tmp/w3-time-awareness.patch \
     && python3 /tmp/prepare_build.py normalize /source
 WORKDIR /source/codex-rs
-COPY storage-log-policy-0.159.3.patch /tmp/storage-log-policy-0.159.3.patch
-RUN git -C /source apply --check /tmp/storage-log-policy-0.159.3.patch \
-    && git -C /source apply /tmp/storage-log-policy-0.159.3.patch
+COPY storage-log-policy-0.172.0.patch /tmp/storage-log-policy-0.172.0.patch
+RUN git -C /source apply --check /tmp/storage-log-policy-0.172.0.patch \
+    && git -C /source apply /tmp/storage-log-policy-0.172.0.patch
 FROM build-env AS build
 ARG CARGO_BUILD_JOBS=2
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true

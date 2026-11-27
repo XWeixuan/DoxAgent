@@ -51,7 +51,7 @@ def test_public_prepare_reconfigures_but_does_not_rewrite_unchanged_markers(tmp_
                   contracts={'w3_entry_version':ENTRY})
     service = SimpleNamespace(journal=journal,_w3_agent=agent,coordinator=None,
         execution_bundles=SimpleNamespace(get=lambda key:bundle),
-        input_snapshot_loader=lambda ticker:SimpleNamespace(event_library_root='library',
+        input_snapshot_loader=lambda ticker:SimpleNamespace(running_mode='FULL',event_library_root='library',
             document1_run_id=None,document2_run_id=None,index=SimpleNamespace(version=1),
             projection=SimpleNamespace(policy_set_version=1)))
     journal.set('execution','active','bundle')

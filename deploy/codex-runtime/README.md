@@ -6,7 +6,7 @@ Build from the repository root:
 uv run python scripts/build_w3_codex_runtime.py
 ```
 
-The fixed Codex 0.159.3 patch is built in Linux and exported here with its manifest
+The fixed Codex 0.172.0 patch is built in Linux and exported here with its manifest
 and upstream license. Debug symbols are archived under `symbols/` and excluded
 from the runtime Docker build context. Generated binaries are not committed. `Dockerfile.v2` copies
 this directory to `/opt/doxagent/codex-runtime`; without a generated artifact the
@@ -33,3 +33,5 @@ For rollback, disable the feature and keep the patched binary's history filter.
 Do not switch existing Threads containing reminder records back to an unpatched
 binary: that binary cannot exclude the records from Operations input. Retire those
 Threads through the existing lifecycle before reverting the binary itself.
+
+The 0.159.3 Dockerfile and patches remain available for rollback builds; never combine a new SDK with an old custom Native artifact. The manifest now records the upstream version, used to select and verify the corresponding patch pair.

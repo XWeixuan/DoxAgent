@@ -136,6 +136,9 @@ def native(tmp_path, request):
             "features.multi_agent=false",
             "features.memories=false",
             "features.apps=false",
+            "features.plugins=false",
+            "features.remote_plugin=false",
+            "features.recommended_plugins=false",
         ),
     )
     try:
