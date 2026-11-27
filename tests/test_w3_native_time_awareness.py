@@ -75,7 +75,7 @@ def native(tmp_path, request):
             elif action == "mcp":
                 events.append({"type":"response.output_item.done","item":{
                     "type":"function_call","id":f"item-{number}","call_id":f"call-{number}",
-                    "name":"mcp__native_smoke__echo","arguments":'{"value":"synthetic MCP works"}'}})
+                    "namespace":"mcp__native_smoke","name":"echo","arguments":'{"value":"synthetic MCP works"}'}})
             elif action == "tool":
                 events.append(
                     {
@@ -172,6 +172,9 @@ def native(tmp_path, request):
                 for index, body in enumerate(state.requests)
             ]
             (folder / f"{request.node.name}.json").write_text(json.dumps(rows, indent=2))
+            if state.requests:
+                (folder / f"{request.node.name}.tools.json").write_text(
+                    json.dumps(state.requests[0].get('tools',[]),indent=2))
 
 
 def enable(native, seconds, case_id="case-1"):
@@ -317,7 +320,7 @@ for line in sys.stdin:
  if method=='initialize':
   out={'protocolVersion':r['params']['protocolVersion'],'capabilities':{'tools':{}},'serverInfo':{'name':'native-smoke','version':'1'}}
  elif method=='tools/list':
-  out={'tools':[{'name':'echo','description':'Local deployment fixture only','inputSchema':{'type':'object','properties':{'value':{'type':'string'}},'required':['value']}}]}
+  out={'tools':[{'name':'echo','description':'Local deployment fixture only','annotations':{'readOnlyHint':True,'destructiveHint':False},'inputSchema':{'type':'object','properties':{'value':{'type':'string'}},'required':['value']}}]}
  elif method=='tools/call':
   out={'content':[{'type':'text','text':r['params']['arguments']['value']}],'isError':False}
  else:out={}

@@ -29,10 +29,11 @@ ENV RUSTY_V8_SRC_BINDING_PATH=/opt/v8-prebuilt/binding.rs
 FROM build-env AS build
 ARG CARGO_BUILD_JOBS=2
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
+ENV DOX_NATIVE_BUILD_COMMAND="cargo build --locked --release -p codex-cli -p codex-code-mode-host --bin codex --bin codex-code-mode-host"
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/source/codex-rs/target \
-    cargo build --locked --release -p codex-cli -p codex-code-mode-host --bins \
+    cargo build --locked --release -p codex-cli -p codex-code-mode-host --bin codex --bin codex-code-mode-host \
     && mkdir -p /output/symbols && cp target/release/codex /output/codex \
     && objcopy --only-keep-debug /output/codex /output/symbols/codex.debug \
     && strip --strip-unneeded /output/codex \

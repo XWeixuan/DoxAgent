@@ -3594,3 +3594,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-28 W3 SDK续接：Python SDK/Native配对迁移到0.172.0，移植Elapsed跨阶段过滤、诊断日志减量、受证明孤立根定向退出，保留0.159.3回退构建。正式构建校验SDK与Native同版，精确基于实际Worker/Scheduler镜像构建且冻结源码摘要；仅Scheduler配置启用SEC/IR来源，普通双任务及Operations配置不变。Native编译/机制与真实canary验收后发布。
 
 2026-11-28 Native构建补齐：固定Codex3d86e43的V8依赖启用ptrcomp+sandbox，默认Deno产物地址404；改用该提交MODULE.bazel指定的OpenAI同版静态库/绑定及SHA256，不改依赖版本或关闭沙箱。构建使用独立本地缓存，保留原优化参数并以单构建并行降低链接峰值内存。
+
+2026-11-28 Native机制补证：官方0.172隔离镜像code-mode-host和本地MCP往返2项通过（禁网、无生产挂载/模型调用）。按实际MCP命名空间更新合成SSE夹具；构建仅选择交付的codex及同版Host，省略不交付的logs_client链接，保持release优化不变。
