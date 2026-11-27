@@ -13,6 +13,7 @@ release.FILES = ["src/doxagent/" + path for path in (
     "message_bus_v2/live_repository.py", "message_bus_v2/distribution.py",
     "message_bus_v2/relevance.py", "message_bus_v2/extra_relevance.py",
     "ticker_initialization/configuration.py",
+    "message_bus_v2/biopharma_parsers.py",
 )]
 release.COPY_ROOTS = ("src/doxagent",)
 
@@ -34,7 +35,9 @@ if __name__ == "__main__":
         if role == "v2-web":
             continue
         actual = json.loads(release.run(["docker", "exec", "doxagent-v2-"+role+"-1", "python", "-c", code]))
-        differences = [p for p in release.FILES if actual[p] not in {expected[p], selected[p]}]
+        reviewed = {p:hashlib.sha256(release.git("7856e0d41",p)).hexdigest()
+                    for p in release.FILES if p.endswith(("/live.py", "/biopharma_parsers.py"))}
+        differences = [p for p in release.FILES if actual[p] not in {expected[p], selected[p], reviewed.get(p)}]
         if differences:
             raise RuntimeError("live baseline changed: " + role + " " + repr(differences))
     release.main()

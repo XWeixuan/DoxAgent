@@ -72,4 +72,6 @@ Tom’s Hardware不按“评测/促销”体裁整体过滤。CPU、RAM、SSD本
 
 选定规则SHA256：`594574d28da867b6dc40fe2e6cd6d70f8e86d1b8bdb4e330d0892e4acfeb31ed`。原始快照SHA与全部回放见下列证据。远端发布回执、实际配置核对与自然消息记录将在发布完成后追加到本节；此处的离线数字不代表上线后的实测减量。
 
+发布预检发现Collector/Bus已并发上线 `7856e0d41` 的FDA旧日历准入和分批配置修复。发布被预检主动阻止，随后保留完全相同的live.py改动及其解析器依赖；不覆盖这项修复，不重置远端工作区。
+
 证据目录：`eval/binding_extra_regex_retune_20261127/`。核心文件为 `rules-selected.json`、`all-history-results.csv`、`blocked-review.csv`、`business-controls.csv`、`prior-audit-overlap.json`、`manifest.json`。完整原始正文与探索卡片本地保留，不重复提交全文。

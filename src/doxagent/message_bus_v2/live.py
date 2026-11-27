@@ -455,6 +455,7 @@ class LiveDeliveryWorker:
         self.decisions = set()
         self.active_articles = set()
         self.configuration_revision = None
+        self.configuration_repair_pending = False
         self.configuration_checked_at = 0
         self.work_metrics = Counter()
         self.slow_reported_at = 0
@@ -553,6 +554,15 @@ class LiveDeliveryWorker:
         if not source or not binding or not binding.enabled:
             await self._decision(decisions, row, "CANCELLED")
             return
+        if source.source_id == "fda_release" and not row.get("raw_id"):
+            from .biopharma_parsers import calendar_entry_current
+
+            meeting = message.raw_payload.get("meeting_metadata")
+            if meeting and not calendar_entry_current(meeting, utc_now()):
+                await self._decision(
+                    decisions, row, "ADMISSION_REJECTED", error="ARCHIVED_FDA_CALENDAR"
+                )
+                return
         from .distribution_repository import _complete_body_required, _complete_body_verified
 
         if _complete_body_required(source) and not _complete_body_verified(message):
@@ -706,12 +716,15 @@ class LiveDeliveryWorker:
             self.advanced_reported_at = started
         if time.monotonic() - self.configuration_checked_at >= 1:
             revision = await self.bus.storage.read(self._configuration_revision)
-            if revision != self.configuration_revision:
-                await self.bus.storage.call(
+            if revision != self.configuration_revision or self.configuration_repair_pending:
+                resumed = await self.bus.storage.call(
                     self.repository.refresh_decisions,
                     restarted=self.configuration_revision is None,
                     _lane_priority=1,
                 )
+                # The owner deliberately caps each repair at 2048 rows. Finish
+                # its remaining batches on later ticks, even without another edit.
+                self.configuration_repair_pending = resumed >= 2048
                 sources = await self.bus.storage.read(self.bus.repository.list_sources)
                 self.bus.repository.advanced_dedup.configure(sources)
                 self.configuration_revision = revision
