@@ -1,0 +1,53 @@
+{
+  "at": "2026-11-27T21:46:15.065882+00:00",
+  "since": "2026-11-27T21:41:30+00:00",
+  "sources": {
+    "sec_crypto_newsroom": {
+      "completed": 26,
+      "statuses": {
+        "CAPTURED": 26
+      },
+      "dispatch_to_finish_mean_seconds": 10.586,
+      "dispatch_to_finish_max_seconds": 13.557,
+      "dispatch_gap_min_seconds": 19.921,
+      "dispatch_gap_max_seconds": 20.08
+    },
+    "sifma_advocacy_press": {
+      "completed": 26,
+      "statuses": {
+        "CAPTURED": 26
+      },
+      "dispatch_to_finish_mean_seconds": 11.869,
+      "dispatch_to_finish_max_seconds": 14.779,
+      "dispatch_gap_min_seconds": 19.934,
+      "dispatch_gap_max_seconds": 20.07
+    },
+    "marketsmedia_exchanges": {
+      "completed": 26,
+      "statuses": {
+        "CAPTURED": 26
+      },
+      "dispatch_to_finish_mean_seconds": 11.694,
+      "dispatch_to_finish_max_seconds": 14.998,
+      "dispatch_gap_min_seconds": 19.804,
+      "dispatch_gap_max_seconds": 20.213
+    }
+  },
+  "timing_example": {
+    "source": "sifma_advocacy_press",
+    "dispatch_at": "2026-11-27T21:45:51.874942+00:00",
+    "finished_at": "2026-11-27T21:46:05.362022+00:00",
+    "requests": [
+      {
+        "list_validated": true,
+        "physical_request_id": "95daaac5f41b490a92742a7c26503225",
+        "proof_basis": "TRANSPORT_SEND",
+        "request_started_at": "2026-11-27T21:46:03.652678+00:00",
+        "response_received_at": "2026-11-27T21:46:05.345145+00:00",
+        "role": "listing",
+        "status_code": 200,
+        "transport": "publisher_curl"
+      }
+    ]
+  }
+}

@@ -47,7 +47,7 @@ SECZ 另订阅全部已启用 GLOBAL 源，以及用户指定的 The Block、Coi
 
 ## 测试、发布与验收状态
 
-新增 13 项测试与固定路由回归 14 项通过；Ruff E9/F 与 diff 检查通过。较大回归中的历史 newswire_rss 用例依赖已退役源，单独排除；旧调度测试还存在 Yahoo SUPPLEMENT 10/20 秒和 recheck claim 预期失配，相关代码本轮未修改，未把这些历史断言算作通过。最终直接相关回归及生产回执在下方补齐。
+新增 13 项测试与固定路由回归 14 项通过；Ruff E9/F 与 diff 检查通过。较大回归中的历史 newswire_rss 用例依赖已退役源，单独排除；旧调度测试还存在 Yahoo SUPPLEMENT 10/20 秒和 recheck claim 预期失配，相关代码本轮未修改，未把这些历史断言算作通过。最终直接相关回归：159 passed、1 deselected（依赖退役源）、1 warning。先前固定路由断言已随已验收生产路由更新并独立通过。
 
 发布采用实际运行镜像上的 12 文件有限覆盖，范围仅 API、Collector、Message Bus、BODY、O4；不重启正在运行的 Initialization、Chrome、Scheduler 或交易服务。已只读对比全部将覆盖的既有模块：生产相对 origin/main 的三个差异（Quantum Zeitgeist 固定日本出口两处、SBC RSS 卡片）全部保留，其他文件一致。
 
@@ -56,3 +56,21 @@ SECZ 另订阅全部已启用 GLOBAL 源，以及用户指定的 The Block、Coi
 验收核心仍是官方 publish → 首次发现 → Bus，而非 HTTP 200、请求耗时或 Cache Age。本轮不引入 Age 超阈值即失败的生产机制，不盲目加随机参数。采集端没有本地列表缓存；配置缓存仅 DTCC 公开前端 client key。
 
 目前多数最新稿件为 11 月 24/25 日或更早，且 SECZ 尚在初始化，没有可用于统计的自然新稿发布到 Bus 样本。因此真实发现延迟和长期稳定性尚未通过业务验收；DATE 来源也不能伪造精确秒级延迟。既有全局源的订阅或凭据阻塞不在本轮修复范围。
+
+
+## 生产发布结果
+
+- 代码提交 `e3ef88c8060c83861950806464faa3a709a26a29` 已推送 origin/main，远端正式发布。API、Collector、Bus、BODY、O4 五角色均 Running/Healthy，逐角色 12 项覆盖文件摘要一致。Initialization 镜像及 StartedAt 均保持原值。回执：[部署校验](artifacts/secz-sources-20261128/deployment.json)。
+- SECZ 正式库和正在执行的 `init-secz-0a2ef6878974464f8d03d8158e8c9ad8` 候选库均为 **28 项已启用绑定**，没有其他行业源。ticker 仍 NOT_STARTED、监测词 revision 0，保持初始化流程负责正式激活；这不是 SECZ 已开始交付消息。COIN 保持 running、监测词 revision 2，绑定从 33 增至 36。回执：[配置](artifacts/secz-sources-20261128/configuration.json)、[范围校验](artifacts/secz-sources-20261128/verification.json)。
+- 正式镜像十入口再次读取成功，十篇正文抽样仍全部 FULL：[生产 canary](artifacts/secz-sources-20261128/production-canary.jsonl)。专属 ICE/DTCC、tZERO 和 Securitize IR 当前仅完成真实入口与正文验收；SECZ 未正式启动，不能把它们算作持续自然运行验收。
+- 北京时间 11 月 28 日 **05:41:30–05:46:15**，COIN 的三个新增源、六个内部入口完成 **78 次自然采集，78 CAPTURED、0 失败**。各入口实际派发间隔约 19.8–20.2 秒。没有通过提高并发预算或占用新浏览器来换取这一结果。
+
+| 新源 | 自然完成次数 | 派发至完成均值 | 最大值 |
+|---|---:|---:|---:|
+| SEC Crypto/Newsroom | 26 | 10.586 秒 | 13.557 秒 |
+| SIFMA | 26 | 11.869 秒 | 14.779 秒 |
+| Markets Media | 26 | 11.694 秒 | 14.998 秒 |
+
+上述耗时包含既有共享采集资源等待，不是新闻 publish→Bus 延迟。SIFMA 实际分段样本：05:45:51.875 派发，05:46:03.653 发出请求（约 11.78 秒），05:46:05.345 收到响应（约 1.69 秒），05:46:05.362 完成记录；没有逐篇 BODY 阻塞新列表。共享资源等待是当前实测延迟预算的一部分，未声称已经消除。回执：[自然轮询汇总与请求时间](artifacts/secz-sources-20261128/polling-summary.json)、[初段台账](artifacts/secz-sources-20261128/natural-cycles.json)。
+
+本轮已完成代码接入、生产发布、精确订阅预配置、真实列表和正文验证。**真实新稿 publish→首次发现→Bus 和长期稳定性仍待自然样本验收**，尤其 DTCC 索引更新时间与部分 DATE 来源的精确发布时间，不能由上述轮询完成耗时推导。

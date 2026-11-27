@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-27T21:44:03.619351+00:00",
+  "secz_sources": [
+    "access_newswire_massive",
+    "barrons_ticker_news",
+    "benzinga_news",
+    "bloomberg_massive",
+    "businesswire_massive",
+    "coindesk_crypto",
+    "corporate_ir_press_releases",
+    "exchange_infrastructure_press",
+    "finnhub_company_news",
+    "globenewswire_massive",
+    "google_news_search_rss",
+    "ibkr_news",
+    "investing_ticker_news",
+    "investorshub_ticker_news",
+    "ledgerinsights_news",
+    "marketsmedia_exchanges",
+    "prnewswire_massive",
+    "reuters_site_search",
+    "sec_crypto_newsroom",
+    "sec_edgar",
+    "sifma_advocacy_press",
+    "theblock_crypto",
+    "thefly_ticker_news",
+    "tmx_newsfile_massive",
+    "tzero_press_releases",
+    "unchained_crypto",
+    "x_official_posts",
+    "yahoo_finance_news"
+  ],
+  "secz_binding_count": 28,
+  "new_sources": [
+    "sec_crypto_newsroom",
+    "marketsmedia_exchanges",
+    "sifma_advocacy_press",
+    "exchange_infrastructure_press",
+    "tzero_press_releases"
+  ],
+  "new_source_cadence_seconds": 20,
+  "ir_endpoint": "secz.press",
+  "coin_additions": [
+    "sec_crypto_newsroom",
+    "marketsmedia_exchanges",
+    "sifma_advocacy_press"
+  ],
+  "disabled_secz_bindings": [],
+  "SECZ": {
+    "state": "NOT_STARTED",
+    "terms_revision": 0
+  },
+  "COIN": {
+    "state": "running",
+    "terms_revision": 2
+  }
+}

@@ -3600,3 +3600,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-28 W3 SDK/Native0.172正式发布完成：Worker b5d728aa、Scheduler26191e30，origin/main636d56e73；最终定制Native六项禁网机制测试通过。真实Luna READY命中42ms，同Thread Sol/high/fast3.020s→Luna/max/default2.220s，逐轮参数由持久回执核验；SEC/IR单任务来源已开启，普通自然样本保持Luna双任务。原初始化付费Job自然成功、临时暂停已恢复；56份Operations和953个补充任务收敛状态保留。业务质量/完整P95不以最小canary代替。详见docs/w3-fast-single-sdk172-production-release-20261128.md。
 
 2026-11-28 SECZ行业源：新增SEC Crypto/Newsroom、Markets Media、SIFMA、ICE/DTCC、tZERO五个统一HTTP源，20秒轮询；Securitize加入现有IR聚合。保留日期精度、原生栏目过滤与完整附件/公开CMS正文；按用户范围预配置SECZ全部GLOBAL及指定行业源、COIN三个新增行业源，沿用初始化激活，不生成监测词。
+
+2026-11-28 SECZ消息源发布验收：e3ef88c80已发布五个相关角色，12文件摘要逐角色一致；SECZ正式/初始化候选均28项绑定（仍待初始化与监测词），COIN增至36项。159项相关回归通过，生产10入口正文抽样全FULL；COIN六内部入口约5分钟78次采集全成功、20秒派发。真实新稿publish到Bus和长期时效仍待样本，未以HTTP耗时替代验收。详见docs/secz-securities-sources-development-and-release-20261128.md。

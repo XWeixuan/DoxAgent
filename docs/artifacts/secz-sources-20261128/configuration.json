@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-27T21:41:36.701157+00:00",
+  "live": {
+    "SECZ": {
+      "approved": [
+        "access_newswire_massive",
+        "barrons_ticker_news",
+        "benzinga_news",
+        "bloomberg_massive",
+        "businesswire_massive",
+        "coindesk_crypto",
+        "corporate_ir_press_releases",
+        "exchange_infrastructure_press",
+        "finnhub_company_news",
+        "globenewswire_massive",
+        "google_news_search_rss",
+        "ibkr_news",
+        "investing_ticker_news",
+        "investorshub_ticker_news",
+        "ledgerinsights_news",
+        "marketsmedia_exchanges",
+        "prnewswire_massive",
+        "reuters_site_search",
+        "sec_crypto_newsroom",
+        "sec_edgar",
+        "sifma_advocacy_press",
+        "theblock_crypto",
+        "thefly_ticker_news",
+        "tmx_newsfile_massive",
+        "tzero_press_releases",
+        "unchained_crypto",
+        "x_official_posts",
+        "yahoo_finance_news"
+      ],
+      "binding_count": 28,
+      "deferred_missing_massive_terms": [],
+      "state": "NOT_STARTED",
+      "terms_revision": 0
+    },
+    "COIN": {
+      "approved": [
+        "marketsmedia_exchanges",
+        "sec_crypto_newsroom",
+        "sifma_advocacy_press"
+      ],
+      "binding_count": 36,
+      "deferred_missing_massive_terms": [],
+      "state": "running",
+      "terms_revision": 2
+    }
+  },
+  "candidates": {
+    "init-secz-0a2ef6878974464f8d03d8158e8c9ad8": {
+      "SECZ": {
+        "approved": [
+          "access_newswire_massive",
+          "barrons_ticker_news",
+          "benzinga_news",
+          "bloomberg_massive",
+          "businesswire_massive",
+          "coindesk_crypto",
+          "corporate_ir_press_releases",
+          "exchange_infrastructure_press",
+          "finnhub_company_news",
+          "globenewswire_massive",
+          "google_news_search_rss",
+          "ibkr_news",
+          "investing_ticker_news",
+          "investorshub_ticker_news",
+          "ledgerinsights_news",
+          "marketsmedia_exchanges",
+          "prnewswire_massive",
+          "reuters_site_search",
+          "sec_crypto_newsroom",
+          "sec_edgar",
+          "sifma_advocacy_press",
+          "theblock_crypto",
+          "thefly_ticker_news",
+          "tmx_newsfile_massive",
+          "tzero_press_releases",
+          "unchained_crypto",
+          "x_official_posts",
+          "yahoo_finance_news"
+        ],
+        "binding_count": 28,
+        "deferred_missing_massive_terms": [],
+        "state": "NOT_STARTED",
+        "terms_revision": 0
+      }
+    }
+  }
+}

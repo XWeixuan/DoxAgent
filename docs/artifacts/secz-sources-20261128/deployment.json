@@ -1,0 +1,50 @@
+{
+  "commit": "e3ef88c8060c83861950806464faa3a709a26a29",
+  "roles": {
+    "v2-api": {
+      "image": "sha256:afaff0b611dece558b549ecb6946b94a6ae78b9b916063e20624612cd28d1bec",
+      "health": "healthy",
+      "running": true,
+      "hashes_match": true,
+      "file_count": 12,
+      "started_at": "2026-11-27T21:40:15.752709371Z"
+    },
+    "v2-message-collector": {
+      "image": "sha256:433b7024aece9bfc56b31fda5e2a506d6e3bd7d1c092a19dc01d2d3c81d2615b",
+      "health": "healthy",
+      "running": true,
+      "hashes_match": true,
+      "file_count": 12,
+      "started_at": "2026-11-27T21:40:49.803282737Z"
+    },
+    "v2-message-bus": {
+      "image": "sha256:7957c07a26d84efd3b8230a14b98f57d83c812a511ca55340d55daa5205a30d2",
+      "health": null,
+      "running": true,
+      "hashes_match": true,
+      "file_count": 12,
+      "started_at": "2026-11-27T21:41:07.712019321Z"
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:7c48a6363a14721dd6748ee071b537a8a95bdb6d0cbdc7d539780dfcced8267b",
+      "health": null,
+      "running": true,
+      "hashes_match": true,
+      "file_count": 12,
+      "started_at": "2026-11-27T21:41:26.166879013Z"
+    },
+    "v2-o4": {
+      "image": "sha256:dd73144ec1302578dc068e54eb79508e1c5315a1fcb373f7e6c305e652795a5c",
+      "health": null,
+      "running": true,
+      "hashes_match": true,
+      "file_count": 12,
+      "started_at": "2026-11-27T21:41:44.386072767Z"
+    }
+  },
+  "initialization": {
+    "image": "sha256:91a9280fced498ba92bae91fbf5bacb52cb1c6f8fd77bb8b2168d7729752ae57",
+    "started_at": "2026-11-26T20:50:44.837713276Z",
+    "unchanged": true
+  }
+}
