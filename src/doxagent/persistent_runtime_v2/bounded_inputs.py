@@ -147,7 +147,7 @@ def members(
     return selected
 
 
-def unfinished(repository: Any, journal: Any, task: dict[str, Any]) -> bool:
+def unfinished(repository: Any, journal: Any, task: dict[str, Any], *, facts_only=False) -> bool:
     i, ticker = task["inputs"], task["ticker"]
     if hasattr(repository, "path"):
         where, args = predicate(ticker, i)
@@ -156,8 +156,8 @@ def unfinished(repository: Any, journal: Any, task: dict[str, Any]) -> bool:
                 "SELECT 1 FROM runtime_v2_cases c WHERE "
                 + where
                 + " AND EXISTS (SELECT 1 FROM runtime_v2_effects e WHERE e.case_id=c.case_id "
-                "AND e.effect_type!='w3_post_decision' "
-                "AND e.status NOT IN ('COMPLETED','FAILED')) LIMIT 1",
+                + ("AND e.effect_type='emit_delta' " if facts_only else "AND e.effect_type!='w3_post_decision' ")
+                + "AND e.status NOT IN ('COMPLETED','FAILED')) LIMIT 1",
                 args,
             ).fetchone():
                 return True

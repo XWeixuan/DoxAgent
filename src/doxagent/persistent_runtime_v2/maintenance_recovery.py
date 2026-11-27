@@ -129,6 +129,8 @@ def recover_failed(journal, ticker, *, limit=20, after="", running_mode=None):
             "LEFT JOIN runtime_gaps g ON g.task_id=t.id AND g.id=t.id "
             "WHERE t.ticker=? AND t.kind IN ('MAINTENANCE','SWEEP') AND t.status='FAILED' "
             "AND json_extract(t.receipt,'$.maintenance_retired') IS NULL "
+            "AND coalesce(json_extract(t.inputs,'$.scope'),'')!='SUPPLEMENTAL' "
+            "AND t.id NOT LIKE 'maintain:drain:%' AND t.id NOT LIKE 'maintain:supplemental:%' "
             "AND json_extract(t.receipt,'$.compensated_by') IS NULL "
             "AND t.due_at<=? AND t.id>? ORDER BY t.id LIMIT ?",
             (ticker, journal.clock().isoformat(), after, limit),
@@ -172,6 +174,8 @@ def health(journal):
         failed = db.execute(
             "SELECT count(*) FROM runtime_tasks WHERE kind='MAINTENANCE' AND status='FAILED' "
             "AND json_extract(receipt,'$.maintenance_retired') IS NULL "
+            "AND coalesce(json_extract(inputs,'$.scope'),'')!='SUPPLEMENTAL' "
+            "AND id NOT LIKE 'maintain:drain:%' AND id NOT LIKE 'maintain:supplemental:%' "
             "AND json_extract(receipt,'$.compensated_by') IS NULL",
         ).fetchone()[0]
         oldest = db.execute(

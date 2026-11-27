@@ -58,7 +58,7 @@ def visible_library_bridges(values, frozen_contents):
     # Preserve raw records and historical frozen Case inputs. Only future Case
     # snapshots drop bridge content that was already in the frozen Library.
     return [value for value in values
-            if not value.source_message_id.startswith("library-bridge:")
+            if not (value.source_message_id.startswith("library-bridge:") or value.origin_trading_date)
             or fact_content(value.candidate) not in frozen_contents]
 
 
@@ -76,6 +76,7 @@ def freeze_index(repository, provider, index, ticker, day, root, at, instruction
             raise ValueError("Daily Known Event Index source version unavailable")
         frozen = repository.daily_known_index(ticker, day, {
             "index": selected.model_dump(mode="json"), "event_library_root": root,
+            "event_library_version": selected.version,
             "frozen_at": at.isoformat(), "instructions": instructions, "selection": "reference-or-birth14-or-fact7.v1",
         })
     return KnownEventIndexSnapshot.model_validate(frozen["index"]), frozen["event_library_root"], frozen["instructions"]

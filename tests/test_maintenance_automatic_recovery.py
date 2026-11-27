@@ -213,13 +213,10 @@ def test_unowned_late_case_creates_one_successor_on_its_original_day(tmp_path):
         j.set("dirty_case", case.case_id, dirty)
         co._schedule_supplements("MU")
         tasks = j.tasks(ticker="MU", kind="MAINTENANCE")
-        assert len(tasks) == 1
-        assert tasks[0]["inputs"]["day"] == str(case.trading_date)
-        assert tasks[0]["inputs"]["case_ids"] == [case.case_id]
-        assert j.get("dirty_case", case.case_id) is None
-        j.set("dirty_case", case.case_id, dirty)
-        co._schedule_supplements("MU")
-        assert len(j.tasks(ticker="MU", kind="MAINTENANCE")) == 1
+        assert not tasks
+        assert j.get('dirty_case',case.case_id)==dirty
+        co._schedule_supplements('MU')
+        assert not j.tasks(kind='MAINTENANCE')
     finally:
         co.close()
         runtime.close()
@@ -278,8 +275,8 @@ def test_unowned_case_waits_for_its_primary_window_and_batch(tmp_path, sweep):
         assert j.get("dirty_case", case.case_id) == dirty
         j.finish(j.claim(primary))
         co._schedule_supplements("MU")
-        assert len(j.tasks(kind="MAINTENANCE")) == 2
-        assert j.get("dirty_case", case.case_id) is None
+        assert len(j.tasks(kind="MAINTENANCE")) == 1
+        assert j.get("dirty_case", case.case_id) == dirty
     finally:
         co.close()
         runtime.close()
@@ -339,7 +336,7 @@ def test_shared_failed_primary_is_hydrated_once_per_notification_pass(tmp_path):
 
         j.get_task = count
         co._schedule_supplements("MU")
-        assert reads.count("shared-primary") == 1
+        assert reads.count("shared-primary") == 0
         assert len(j.values("dirty_case")) == 2
     finally:
         co.close()

@@ -104,8 +104,8 @@ def test_o3_off_supplement_never_hydrates_parent_or_w3_context(tmp_path,monkeypa
         monkeypatch.setattr(journal,'get_task',forbidden)
         coordinator._schedule_case_supplement(dirty)
         with journal.transaction(write=False,expand=False) as db:
-            assert db.execute("SELECT 1 FROM runtime_tasks WHERE id LIKE 'supplement:%'").fetchone()
-        assert journal.get('dirty_case',case.case_id) is None
+            assert not db.execute("SELECT 1 FROM runtime_tasks WHERE id LIKE 'supplement:%'").fetchone()
+        assert journal.get('dirty_case',case.case_id) == dirty  # legacy inert notification
     finally:runtime.close()
 
 

@@ -479,6 +479,8 @@ class FirstRoundTag(StrEnum):
 
 
 class ProvisionalFactDetail(RuntimeV2Model):
+    origin_trading_date: date | None = None
+    boundary_ref: str | None = None
     case_id: str | None = None
     originating_node: Literal["W1_R3", "W3"] | None = None
     provisional_event_id: str = Field(pattern=r"^E[1-9][0-9]*$")

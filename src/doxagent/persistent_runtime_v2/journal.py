@@ -660,7 +660,11 @@ class RuntimeJournal:
                 ref = ((frame.get('base') or {}).get('artifacts') or {}).get('event_library') or {}
                 value['_gc_owner'] = dict(run_id=frame.get('run_id'),
                                          event_library_root=ref.get('root'),
-                                         event_library_version=ref.get('version'))
+                                         event_library_version=ref.get('version'),
+                                         event_versions=sorted({int(v) for v in (
+                                             ref.get('version'),
+                                             (value.get('o2_page_input') or {}).get('base_version'),
+                                             (value.get('o2') or {}).get('version')) if v is not None}))
             prepared = self.content.encode(value)
             with self.transaction(expand=False) as db:
                 row = self.fence(db, task)
@@ -787,7 +791,11 @@ class RuntimeJournal:
             ).fetchone()
         return json.loads(self.content.text(row[0])) if row else default
 
-    def set(self, namespace: str, key: str, value: Any) -> None:
+    def set(self, namespace: str, key: str, value: Any, *, release_event_body=False) -> None:
+        if namespace == 'sweep_bundle' and value.get('inputs'):
+            inputs = value['inputs']
+            value = {**value, 'event_body_ref': dict(root=inputs.get('event_library_root'),
+                version=(inputs.get('index') or {}).get('version'))}
         keep = {'reference_deliveries': ('before', 'after'),
                 'w3_citation_scope': ('events',)}.get(namespace, ())
         payload = (
@@ -815,6 +823,12 @@ class RuntimeJournal:
                     "DO UPDATE SET payload=excluded.payload WHERE runtime_values.payload IS NOT excluded.payload",
                     (namespace, key, payload),
                 )
+                if release_event_body and namespace == 'round_inputs' and key.endswith(':W1:R2'):
+                    field = 'event_version'
+                    db.execute(f'UPDATE runtime_case_resource_refs SET {field}=NULL WHERE case_id=? AND EXISTS ('
+                               "SELECT 1 FROM runtime_v2_cases WHERE case_id=runtime_case_resource_refs.case_id "
+                               "AND json_extract(payload_json,'$.w3_contract_version')='persistent-runtime.w3.v6')",
+                               (key[:-len(':W1:R2')],))
 
         retry_write(save, seconds=self.busy_timeout_seconds)
 

@@ -3576,3 +3576,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-27 额外过滤发布预检发现 Collector/Bus 并发上线7856e0d41：合入完全相同的FDA旧日历准入与分批配置修复续跑改动及解析器依赖，保留其他来源生产修复；发布校验仅额外允许这两个已审阅文件的已知版本。
 
 2026-11-27 额外过滤生产发布完成：35b67b534逐角色切换API/Collector/Bus/BODY/O4/Web，12:42:02Z原生CAS启用四源16绑定；配置脚本以实际监测词revision表的revision/hash核对未变。旧Worker/Scheduler/Initialization实际读取445启用绑定通过，镜像/启动时间未变；生产只读79控制回放全通过，发布后有界日志无新增配置错误。12:44:31Z尚无目标源新增投递，不宣称自然减量已验收。回执与兼容检查详见重调报告。
+
+2026-11-27 O2 正常窗口及 HISTORY_RETIRED 修复：取消按 Case SUPPLEMENTAL 与动态 Sweep 的 O2 派生/复活，正常窗口按 ticker 冻结 PENDING（真实 F、高水位、全局去重、128 项有限分页及原页恢复）；Provisional 首次持久化仅允许边界顺延一次，W1 仍严格单日读取；实际日基线/W1 正文/Sweep/正常 O2 精确引用替代 v6 Operations 宽泛正文依赖，W1R2 重试复用冻结详情，Event 历史编号水位与正文退休解耦并冻结为内部标量。增加旧补充任务行政收敛和原保存 Operations 结果 CAS 补提交工具，保留 paid receipt、租约、幂等、原模型/Prompt/W3 输出 Schema/交易规则及无引用七天内最多三版；不恢复逐 Run Clone。同步移除发布空闲判断对已删除补充执行器的依赖。发布/真实验收另行记录。

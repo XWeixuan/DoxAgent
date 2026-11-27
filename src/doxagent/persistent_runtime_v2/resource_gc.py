@@ -76,9 +76,9 @@ def referenced(journal,control_path,*,now=None,only_root=None):
     with journal.transaction(write=False, expand=False) as db:
         names={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         cases=[]
-        if 'runtime_v2_cases' in names:
+        if 'runtime_v2_cases' in names and 'runtime_case_resource_refs' not in names:
             cases=db.execute("SELECT ticker,json_extract(payload_json,'$.version_pin.event_library_version'),status FROM runtime_v2_cases INDEXED BY runtime_case_library_owner WHERE json_extract(payload_json,'$.version_pin.event_library_root')=?",(only_root,)).fetchall()
-        tasks=db.execute('SELECT id,ticker,status,'+TASK_RUN+','+TASK_ROOT+','+TASK_VERSION+",json_extract(receipt,'$.frame.\"$doxagent_content_v1\"'),updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION') AND status IN ('PENDING','RUNNING','HELD','FAILED') AND ("+TASK_ROOT+'=? OR '+TASK_ROOT+' IS NULL)',(only_root,)).fetchall()
+        tasks=db.execute('SELECT id,ticker,status,'+TASK_RUN+','+TASK_ROOT+','+TASK_VERSION+",json_extract(receipt,'$.frame.\"$doxagent_content_v1\"'),updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION') AND status IN ('PENDING','RUNNING','HELD','FAILED') AND json_extract(receipt,'$.maintenance_retired') IS NULL AND ("+TASK_ROOT+'=? OR '+TASK_ROOT+' IS NULL)',(only_root,)).fetchall()
         indexed=' INDEXED BY runtime_reference_owner'
         deliveries=[]
         for prefix in ('['+json.dumps(only_root,ensure_ascii=False)+',',
@@ -87,12 +87,30 @@ def referenced(journal,control_path,*,now=None,only_root=None):
             deliveries.extend(r[0] for r in db.execute('SELECT '+REFERENCE_OWNER_SQL+' AS owner_json FROM runtime_values'+indexed+
                 " WHERE namespace='reference_deliveries' AND "+REFERENCE_OWNER_SQL+'>=? AND '+REFERENCE_OWNER_SQL+'<?',
                 (prefix,prefix+'\uffff')))
-        if 'runtime_v2_w3_stages' in names:
-            retained=db.execute("SELECT 1 FROM runtime_v2_cases c INDEXED BY runtime_case_library_owner JOIN runtime_v2_w3_stages s USING(case_id) WHERE json_extract(c.payload_json,'$.version_pin.event_library_root')=? AND s.status IN ('PENDING','RUNNING','RESULT_SAVED') AND s.accepted_at>? LIMIT 1",(only_root,(now-timedelta(days=7)).isoformat())).fetchone()
-            if retained:protected.add(only_root)
-    for ticker,version,status in cases:
-        add(only_root,ticker,version)
-        if status not in {'COMPLETED','FAILED','UNAVAILABLE'}:protected.add(only_root)
+        if 'runtime_case_resource_refs' in names:
+            readers=db.execute('SELECT ticker,event_version FROM runtime_case_resource_refs '
+                'WHERE event_root=? AND event_version IS NOT NULL',(only_root,)).fetchall()
+            for ticker,version in readers:
+                add(only_root,ticker,version);protected.add(only_root)
+            from doxagent.semantic_clock import semantic_day
+            baselines=db.execute("SELECT ticker,json_extract(payload_json,'$.event_library_version') "
+                "FROM runtime_v2_w1_daily_indexes WHERE semantic_day>=? "
+                "AND json_extract(payload_json,'$.event_library_root')=?",
+                (str(semantic_day(now)),only_root)).fetchall()
+            for ticker,version in baselines:
+                if version is not None:add(only_root,ticker,version)
+                protected.add(only_root)
+            sweeps=db.execute("SELECT t.ticker,json_extract(v.payload,'$.event_body_ref.version') "
+                "FROM runtime_tasks t JOIN runtime_values v ON v.namespace='sweep_bundle' AND v.key=t.id "
+                "WHERE t.kind='SWEEP' AND t.status IN ('PENDING','RUNNING','HELD') "
+                "AND json_extract(v.payload,'$.event_body_ref.root')=?",(only_root,)).fetchall()
+            for ticker,version in sweeps:
+                if version is not None:add(only_root,ticker,version)
+                protected.add(only_root)
+        else:
+            for ticker,version,status in cases:
+                add(only_root,ticker,version)
+                if status not in {'COMPLETED','FAILED','UNAVAILABLE'}:protected.add(only_root)
     for identity,ticker,status,run,root,version,opaque,at in tasks:
         if status=='FAILED' and (now-datetime.fromisoformat(at)).total_seconds()>=7*86400:continue
         add(root,ticker,version)

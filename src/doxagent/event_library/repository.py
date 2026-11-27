@@ -440,7 +440,12 @@ class EventLibraryRepository:
         if selected == 0:
             return 0
         with self._read() as connection:
-            self._require_native_version(connection,normalized,selected)
+            header = connection.execute(
+                "SELECT status,published_at FROM library_versions WHERE ticker=? AND version=?",
+                (normalized, selected),
+            ).fetchone()
+            if not header or header['status'] not in ('PUBLISHED', 'HISTORY_RETIRED') or not header['published_at']:
+                raise UnknownLibraryObjectError(f"library version {selected} was not Published for {normalized}")
             row = connection.execute(
                 "SELECT MAX(event_no) AS max_event_no FROM canonical_events "
                 "WHERE ticker=? AND created_version<=?",

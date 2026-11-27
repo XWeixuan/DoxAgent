@@ -1007,7 +1007,11 @@ class W3Execution:
             result = contract_models(case.w3_contract_version)[1].model_validate(
                 stage["result_json"]
             )
-        return self._commit_operations(case, record, result, trade_stage, state)
+        try:
+            return self._commit_operations(case, record, result, trade_stage, state)
+        except Exception as exc:
+            exc.w3_step = 'COMMIT'
+            raise
 
     def _commit_operations(self, case, record, result, trade_stage, state):
         if is_pin_watch_contract(case.w3_contract_version):
@@ -1017,9 +1021,10 @@ class W3Execution:
         provisionals = []
         keys = []
         if getattr(result, 'delta_candidates', []):
-            maximum = self.service._known_for_case(case).max_event_numeric_id(
-                case.ticker, case.version_pin.event_library_version
-            )
+            maximum = case.frozen_inputs.get('event_id_watermark')
+            if maximum is None:
+                maximum = self.service._known_for_case(case).max_event_numeric_id(
+                    case.ticker, case.version_pin.event_library_version)
             if maximum is None:
                 raise W3Error(
                     "event_library_max_id_unavailable", "Published Event maximum is unavailable"
@@ -1180,9 +1185,10 @@ class W3Execution:
         # an empty result); fresh W3 Cases never dispatch that sibling effect.
         if (result.delta_candidates and not has_legacy_pin_watch_schema(case)
                 and not self.service._w1_compilation_recorded(case)):
-            maximum = self.service._known_for_case(case).max_event_numeric_id(
-                case.ticker, case.version_pin.event_library_version
-            )
+            maximum = case.frozen_inputs.get('event_id_watermark')
+            if maximum is None:
+                maximum = self.service._known_for_case(case).max_event_numeric_id(
+                    case.ticker, case.version_pin.event_library_version)
             if maximum is None:
                 raise W3Error("event_library_max_id_unavailable", "Published Event maximum is unavailable")
             for index, candidate in enumerate(result.delta_candidates):

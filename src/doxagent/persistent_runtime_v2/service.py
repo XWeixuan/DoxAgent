@@ -618,6 +618,7 @@ class PersistentRuntimeV2Service:
         case.frozen_inputs = {
             "index": index.model_dump(mode="json"),
             "w1_daily_index": w1_daily_pin,
+            "event_id_watermark": self._known_for_case(case).max_event_numeric_id(case.ticker, current_index.version),
             **({"projection": projection.model_dump(mode="json")} if projection else {}),
             "provisional": [item.model_dump(mode="json") for item in provisional],
             "prompts": asdict(self.prompts),
@@ -1007,11 +1008,21 @@ class PersistentRuntimeV2Service:
         provisional_ids = {item.provisional_event_id for item in provisional}
         requested_provisional = [item for item in selected_ids if item in provisional_ids]
         requested_canonical = [item for item in selected_ids if item not in provisional_ids]
-        details = self._w1_known_for_case(case).details(
-            case.ticker,
-            index.version,
-            requested_canonical,
-        )
+        saved_r2 = (self.journal.get('round_inputs', f'{case.case_id}:W1:R2') if self.journal
+                    else case.frozen_inputs.get('round_inputs', {}).get('W1:R2'))
+        saved_details = ((saved_r2 or {}).get('reference_context', {}).get('event_details')
+                         or (saved_r2 or {}).get('payload', {}).get('event_details'))
+        if saved_details is not None:
+            from types import SimpleNamespace
+            details = SimpleNamespace(events=[SimpleNamespace(event_id=e['event_id'],
+                facts=[SimpleNamespace(fact_id=f['fact_id']) for f in e['facts']])
+                for e in saved_details['canonical_events']], missing_event_ids=[])
+        else:
+            details = self._w1_known_for_case(case).details(
+                case.ticker,
+                index.version,
+                requested_canonical,
+            )
         if details is None:
             raise RuntimeInputUnavailable(
                 "event_detail_unavailable",
@@ -1058,7 +1069,7 @@ class PersistentRuntimeV2Service:
                     "W1 R2 returned a reference ID that was not loaded"
                 )
 
-        event_details = {
+        event_details = saved_details if saved_details is not None else {
             "canonical_events": [_w1_canonical_event_business_payload(e) for e in details.events],
             "provisional_events": [
                 _w1_provisional_business_payload(p) for p in provisional_details
@@ -1443,7 +1454,7 @@ class PersistentRuntimeV2Service:
                     "reference_context": reference_context or {},
                     "model_settings": model_settings,
                 }
-                self.journal.set("round_inputs", round_key, frozen)
+                self.journal.set("round_inputs", round_key, frozen, release_event_body=(lane == "W1" and round_name == "R2"))
             schema = output_model.model_json_schema()
             compatible_hashes = {digest(schema)}
             if output_model is W1FactExtractionResult:
@@ -2986,10 +2997,10 @@ class PersistentRuntimeV2Service:
             cache_context_keys=() if case.orchestration_revision >= 2 else ("source_message",),
             previous_response_id=str(effect.payload.get("previous_response_id") or "") or None,
         )
-        maximum = self._known_for_case(case).max_event_numeric_id(
-            case.ticker,
-            case.version_pin.event_library_version,
-        ) if extraction.candidates else None
+        maximum = case.frozen_inputs.get('event_id_watermark')
+        if extraction.candidates and maximum is None:
+            maximum = self._known_for_case(case).max_event_numeric_id(
+                case.ticker, case.version_pin.event_library_version)
         if extraction.candidates and maximum is None:
             raise RuntimeInputUnavailable(
                 "event_library_max_id_unavailable",

@@ -50,7 +50,7 @@ def test_template_query_uses_existing_partial_index(tmp_path):
    plan=' '.join(r[3] for r in db.execute('EXPLAIN QUERY PLAN '+query,('key',)))
    assert 'USING INDEX w3_template_key' in plan
 
-def test_dirty_page_rotates_past_busy_notifications(tmp_path,monkeypatch):
+def test_dirty_notifications_do_not_scan_or_spawn_supplements(tmp_path,monkeypatch):
  from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
  j=RuntimeJournal(tmp_path/'j.db')
  with j.transaction() as db:
@@ -61,8 +61,8 @@ def test_dirty_page_rotates_past_busy_notifications(tmp_path,monkeypatch):
  c=RuntimeCoordinator(SimpleNamespace(repository=SimpleNamespace(path=j.path)),j);seen=[]
  monkeypatch.setattr(c,'_schedule_case_supplement',lambda dirty,parents:seen.append(dirty['case_id']))
  try:
-  c._schedule_supplements('MU');assert len(seen)==32
-  c._schedule_supplements('MU');assert len(set(seen))==40
+  c._schedule_supplements('MU');assert seen==[]
+  c._schedule_supplements('MU');assert seen==[]
  finally:c.close()
 
 @pytest.mark.asyncio

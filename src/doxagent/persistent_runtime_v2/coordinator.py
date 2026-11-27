@@ -75,8 +75,6 @@ class RuntimeCoordinator:
         self._storage_next = perf_counter()
         self._maintenance_recovery_next = {}
         self._maintenance_recovery_cursor = {}
-        self._supplement_futures = {}
-        self._supplement_cursors = {}
 
     def mode(self, ticker: str, now: datetime | None = None) -> tuple[str, str | None]:
         at = now or self.journal.clock()
@@ -567,16 +565,6 @@ class RuntimeCoordinator:
             )
             self._submit_task(task,pool)
 
-        if not existing_only:
-            previous = self._supplement_futures.get(ticker)
-            if previous is None or previous.done():
-                if previous is not None:
-                    try:
-                        previous.result()
-                    except Exception:
-                        logging.getLogger(__name__).exception("supplement page deferred ticker=%s", ticker)
-                self._supplement_futures[ticker] = self._background.submit(self._schedule_supplements, ticker)
-
     def _orphan_closed_recovery(self, task) -> bool:
         if not task["receipt"].get("infrastructure_recovery"):
             return False
@@ -585,6 +573,9 @@ class RuntimeCoordinator:
         return bool(parent and parent["status"] == "SUCCEEDED")
 
     def _waiting_cases(self, task: dict[str, Any]) -> bool:
+        from .normal_o2 import supplemental
+        if supplemental(task):
+            return False  # only original accepted work can reconcile; never await parent
         if task["inputs"].get("repair_id"):
             parent = self.journal.get_task(task["inputs"].get("sweep_id", ""))
             if parent and parent["status"] not in {"SUCCEEDED", "FAILED"}:
@@ -592,14 +583,14 @@ class RuntimeCoordinator:
         cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
         from .bounded_inputs import unfinished as scope_unfinished
 
-        unfinished = scope_unfinished(self.runtime.repository, self.journal, task)
+        unfinished = scope_unfinished(self.runtime.repository, self.journal, task, facts_only=not getattr(self.maintain, "o3_enabled", True))
         waiting = unfinished and self.journal.clock() < cutoff + timedelta(hours=1)
         if unfinished and not waiting:
             self.journal.gap(
                 "cutoff:" + task["id"],
                 task["ticker"],
                 "MAINTENANCE_INPUT_GAP",
-                "Bounded input wait exhausted; late successes use supplemental maintenance",
+                "Bounded fact input wait exhausted; late facts remain for the next normal window",
             )
         return waiting
 
@@ -676,6 +667,14 @@ class RuntimeCoordinator:
         except (ControlError, RuntimeStopping):
             ControlRepository(self.journal).defer(task)
         except Exception as exc:
+            from .normal_o2 import SupplementalRetired, retire_owned
+            if isinstance(exc, SupplementalRetired):
+                retire_owned(self.journal, task)
+                return
+            from .normal_o2 import supplemental
+            if supplemental(task) and getattr(exc, 'code', None) == 'w3_dispatch_unknown':
+                ControlRepository(self.journal).defer(task)
+                return
             if is_sqlite_contention(exc):
                 ControlRepository(self.journal).defer(task)
                 return
@@ -941,19 +940,21 @@ class RuntimeCoordinator:
             )
         self.journal.set("w3_batch", task["id"], {"members": members, "ready": True})
         self.runtime.dispatch_pending_effects(limit=max(20, len(members) * 3))
-        identity = f"maintain:{task['id']}"
-        self._schedule(
-            identity,
-            task["ticker"],
-            "MAINTENANCE",
-            {
-                "scope": "SWEEP",
-                "sweep_id": task["id"],
-                "day": task["inputs"]["day"],
-                "cutoff": task["inputs"]["cutoff"],
-                "members": members,
-            },
-        )
+        from .normal_o2 import scheduled_sweep
+        if scheduled_sweep(task):
+            identity = f"maintain:{task['id']}"
+            self._schedule(
+                identity,
+                task["ticker"],
+                "MAINTENANCE",
+                {
+                    "scope": "SWEEP",
+                    "sweep_id": task["id"],
+                    "day": task["inputs"]["day"],
+                    "cutoff": task["inputs"]["cutoff"],
+                    "members": members,
+                },
+            )
         self.journal.finish(
             task,
             members=members,
@@ -1131,185 +1132,14 @@ class RuntimeCoordinator:
         asyncio.run(TradeOutputService(self.journal).deliver(ExecutionIntake(self.journal)))
 
     def _schedule_supplements(self, ticker: str) -> None:
-        # A durable completion notification is acknowledged only after its successor exists.
-        if hasattr(self.runtime.repository, "path"):
-            import json
-
-            # Current realtime notifications wait cheaply for the daily boundary;
-            # do not hydrate every Case/effect on every scheduler tick.
-            with self.journal.transaction(write=False, expand=False) as db:
-                notifications = [
-                    (r[0], json.loads(r[1]) if r[1] else None)
-                    for r in db.execute(
-                        "SELECT d.key,CASE WHEN c.case_id IS NOT NULL THEN d.payload END "
-                        "FROM (SELECT key,payload FROM runtime_values WHERE namespace='dirty_case' "
-                        "AND key>? ORDER BY key LIMIT 32) d "
-                        "LEFT JOIN runtime_v2_cases c ON c.case_id=d.key AND c.ticker=? AND (c.trading_date<? "
-                        "OR json_extract(c.payload_json,'$.sweep_id') IS NOT NULL "
-                        "OR EXISTS(SELECT 1 FROM runtime_values o "
-                        "WHERE o.namespace='case_maintenance_owner' AND o.key=c.case_id)) ORDER BY d.key",
-                        (self._supplement_cursors.get(ticker, ""), ticker, semantic_day(self.journal.clock()).isoformat()),
-                    )
-                ]
-            self._supplement_cursors[ticker] = notifications[-1][0] if len(notifications) == 32 else ""
-            notifications = [value for _, value in notifications if value is not None]
-        else:
-            notifications = self.journal.values("dirty_case")
-        parents = {}
-        for dirty in notifications:
-            if self._closed:
-                return
-            if dirty["ticker"] != ticker:
-                continue
-            try:
-                self._schedule_case_supplement(dirty, parents)
-            except Exception:
-                logging.getLogger(__name__).exception(
-                    "supplement deferred ticker=%s case=%s",
-                    ticker,
-                    dirty["case_id"],
-                )
-
-    def _schedule_o2_supplement(self, dirty, parents=None):
-        """O3-off needs only Case identity and pending O2 facts, never W3 Context."""
-        from .journal import encode
-
-        parents = {} if parents is None else parents
-        case_id, ticker = dirty["case_id"], dirty["ticker"]
-
-        def lookup(identity):
-            if identity not in parents:
-                with self.journal.transaction(write=False, expand=False) as db:
-                    row = db.execute(
-                        "SELECT id,status,json_extract(inputs,'$.day') AS day,"
-                        "json_extract(receipt,'$.compensated_by') AS successor "
-                        "FROM runtime_tasks WHERE id=?", (identity,),
-                    ).fetchone()
-                parents[identity] = dict(row) if row else None
-            return parents[identity]
-
-        owner = self.journal.get("case_maintenance_owner", case_id)
-        parent = lookup(owner) if owner else None
-        if parent and parent["successor"]:
-            owner = parent["successor"]
-            parent = lookup(owner)
-        if parent and parent["status"] in {"PENDING", "RUNNING", "FAILED", "HELD"}:
-            return
-        with self.runtime.repository._connect() as db:
-            case = db.execute(
-                "SELECT source_message_id,trading_date,json_extract(payload_json,'$.sweep_id') AS sweep_id "
-                "FROM runtime_v2_cases WHERE case_id=?", (case_id,),
-            ).fetchone()
-            if case is None:
-                return
-            source = case["source_message_id"]
-            excluded = db.execute(
-                "SELECT 1 FROM runtime_v2_admission_exclusions WHERE source_message_id=? "
-                "UNION ALL SELECT 1 FROM runtime_values WHERE namespace='invalid_admissions' "
-                "AND key=? AND payload!='false' LIMIT 1", (source, source),
-            ).fetchone()
-            # Bound the identity batch; one completed batch leaves further facts
-            # on their durable completion notification, without loading bodies.
-            pending = [] if excluded else [r[0] for r in db.execute(
-                "SELECT candidate_identity FROM runtime_v2_candidates "
-                "WHERE source_message_id=? AND daily_status='PENDING' "
-                "ORDER BY candidate_identity LIMIT 128", (source,),
-            )]
-        day = parent["day"] if parent else case["trading_date"]
-        if pending and not parent:
-            sweep = case["sweep_id"]
-            if not sweep and day >= semantic_day(self.journal.clock()).isoformat():
-                return
-            primary = lookup(f"maintain:{sweep}" if sweep else f"daily:{ticker}:{day}")
-            if primary and primary["successor"]:
-                primary = lookup(primary["successor"])
-            if (sweep and primary is None) or (primary and primary["status"] != "SUCCEEDED"):
-                return
-        if pending:
-            identity = "supplement:" + digest([owner, case_id, pending])[:32]
-            self._schedule(identity, ticker, "MAINTENANCE", {
-                "scope": "SUPPLEMENTAL", "day": day,
-                "cutoff": self.journal.clock().isoformat(), "case_ids": [case_id], "parent": owner,
-            })
-            with self.journal.transaction(write=False, expand=False) as db:
-                if not db.execute("SELECT 1 FROM runtime_tasks WHERE id=?", (identity,)).fetchone():
-                    return
-        with self.journal.transaction() as db:
-            db.execute("DELETE FROM runtime_values WHERE namespace='dirty_case' AND key=? AND payload=?",
-                       (case_id, encode(dirty)))
+        # Historical callers may still notify; normal windows own all pending facts.
+        return None
 
     def _schedule_case_supplement(self, dirty, parents=None):
-        if (dirty.get("running_mode") == "LIGHTWEIGHT" or getattr(self.maintain, "o3_enabled", True) is False) and hasattr(self.runtime.repository, "path"):
-            return self._schedule_o2_supplement(dirty, parents)
-        from .bounded_inputs import has_pending_records
-        from .journal import encode
+        return None
 
-        parents = {} if parents is None else parents
-
-        def lookup(identity):
-            if identity not in parents:
-                parents[identity] = self.journal.get_task(identity)
-            return parents[identity]
-
-        case_id, ticker = dirty["case_id"], dirty["ticker"]
-        owner = self.journal.get("case_maintenance_owner", case_id)
-        parent = lookup(owner) if owner else None
-        if parent and parent["receipt"].get("compensated_by"):
-            owner = parent["receipt"]["compensated_by"]
-            parent = lookup(owner)
-        if parent and parent["status"] in {"PENDING", "RUNNING", "FAILED", "HELD"}:
-            return
-        current = [
-            [effect.effect_id, effect.attempt_count, effect.status.value]
-            for effect in self.runtime.repository.list_effects(case_id)
-        ]
-        if parent:
-            frozen = parent["receipt"].get("frame", {}).get("effect_versions", {}).get(case_id)
-            day, needed = parent["inputs"]["day"], current != frozen
-        else:
-            case = self.runtime.repository.get_case(case_id)
-            if case is None:
-                return  # Keep the notification until its native Case is available.
-            day, needed = str(case.trading_date), has_pending_records(self.runtime.repository, case)
-            if needed:
-                # Ordinary Cases belong to the still-open day's primary batch.
-                # A Sweep's late Cases wait for that Sweep's primary maintenance.
-                if not case.sweep_id and case.trading_date >= semantic_day(self.journal.clock()):
-                    return
-                primary_id = (
-                    f"maintain:{case.sweep_id}" if case.sweep_id else f"daily:{ticker}:{day}"
-                )
-                primary = lookup(primary_id)
-                if primary and primary["receipt"].get("compensated_by"):
-                    primary = lookup(primary["receipt"]["compensated_by"])
-                if (case.sweep_id and primary is None) or (
-                    primary and primary["status"] != "SUCCEEDED"
-                ):
-                    return
-        if getattr(self.maintain, "o3_enabled", True) is False:
-            case = self.runtime.repository.get_case(case_id)
-            needed = bool(case and has_pending_records(self.runtime.repository, case, include_o3=False))
-        if needed:
-            identity = "supplement:" + digest([owner, case_id, current])[:32]
-            self._schedule(
-                identity,
-                ticker,
-                "MAINTENANCE",
-                {
-                    "scope": "SUPPLEMENTAL",
-                    "day": day,
-                    "cutoff": self.journal.clock().isoformat(),
-                    "case_ids": [case_id],
-                    "parent": owner,
-                },
-            )
-            if self.journal.get_task(identity) is None:
-                return
-        with self.journal.transaction() as db:
-            db.execute(
-                "DELETE FROM runtime_values WHERE namespace='dirty_case' AND key=? AND payload=?",
-                (case_id, encode(dirty)),
-            )
+    def _schedule_o2_supplement(self, dirty, parents=None):
+        return None
 
     def close(self) -> None:
         with self._dispatch_lock:

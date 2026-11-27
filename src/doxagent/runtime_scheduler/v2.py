@@ -38,7 +38,6 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
                     return False
                 held.callback(lock.release)
             futures = list(coordinator._futures.values()) + list(coordinator._public_futures.values())
-            futures += list(coordinator._supplement_futures.values())
             futures += [coordinator._effect_future, coordinator._delivery_future,
                         coordinator._w3_maintenance_future, coordinator._storage_future]
             if (coordinator._claims_inflight or any(isinstance(f, Future) and not f.done() for f in futures)

@@ -22,7 +22,7 @@ from doxagent.workflows.codex_event_library.remote_runner import RemoteEventLibr
 from .bounded_inputs import case_values
 from .daily import RuntimeDeltaBatchAdapter
 from .event_branch import branch_library
-from .journal import LeaseLost, MaintenancePhaseFailure, RuntimeJournal, digest
+from .journal import LeaseLost, MaintenancePhaseFailure, RuntimeJournal, RuntimeStopping, digest
 from .schema import (
     BadcaseRecord,
     O3MaintenanceFeedV2,
@@ -91,6 +91,9 @@ class RuntimeMaintenance:
         if current is None:
             raise ValueError("maintenance requires active inputs")
         prior = task["receipt"].get("frame")
+        from .normal_o2 import supplemental, SupplementalRetired
+        if supplemental(task) and prior:
+            return dict(prior)  # reconcile accepted work before applying the original Control CAS
         mode = RunningMode(current.get("running_mode", "FULL"))
         if prior and RunningMode(prior["base"].get("running_mode", "FULL")) is not mode:
             raise ValueError("maintenance running mode changed")
@@ -108,13 +111,17 @@ class RuntimeMaintenance:
             )
         from .bounded_inputs import members, records
 
-        membership = members(self.runtime.repository, self.journal, task)
+        include_o3 = mode is RunningMode.FULL and getattr(self, "o3_enabled", True)
+        membership = members(self.runtime.repository, self.journal, task) if include_o3 else []
         selected = {item["case_id"] for item in membership}
         inputs = (
             {key: prior[key] for key in ("candidates", "trades", "badcases", "gaps")}
             if prior
             else records(self.runtime.repository, membership, ticker=task["ticker"], include_o3=mode is RunningMode.FULL and getattr(self, "o3_enabled", True))
         )
+        if not prior:
+            from .normal_o2 import freeze_candidates
+            inputs['candidates'] = freeze_candidates(self.runtime.repository, self.journal, task, current)
         from .policy_consumption import consumption_feed
 
         with self.journal.transaction(write=False) as db:
@@ -144,10 +151,13 @@ class RuntimeMaintenance:
                 frame[key] = prior[key]
         for identity in frame["case_ids"]:
             self.journal.set("case_maintenance_owner", identity, task["id"])
-        self.journal.checkpoint(task, frame=frame, o2=None, o3=None)
+        self.journal.checkpoint(task, frame=frame, o2=None, o3=None, o2_pages=[], o2_page_input=None)
         return frame
 
     async def __call__(self, task: dict[str, Any]) -> dict[str, Any]:
+        from .normal_o2 import SupplementalRetired, supplemental
+        if supplemental(task) and not task.get('receipt', {}).get('frame'):
+            raise SupplementalRetired(task['id'])
         if task.get('receipt',{}).get('process_retired'):
             raise ValueError('TERMINAL_MAINTENANCE_INPUTS_RETIRED_NEW_RUN_REQUIRED')
         prior_frame = task["receipt"].get("frame")
@@ -170,7 +180,7 @@ class RuntimeMaintenance:
         frozen_model = frame["models"]["model"]
         override = self.settings.persistent_runtime_v2_maintenance_execution_model_override
         execution_model = override if frozen_model == "gpt-6-luna" and override else frozen_model
-        cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
+        cutoff = datetime.fromisoformat(task["receipt"].get("o2_freeze", {}).get("at", task["inputs"]["cutoff"]))
         day = date.fromisoformat(task["inputs"]["day"])
         root = (
             Path(self.settings.persistent_runtime_v2_sqlite_path).resolve().parent
@@ -219,6 +229,8 @@ class RuntimeMaintenance:
             recover_timeouts=True,
             recover_artifacts=True,
         )
+        from .normal_o2 import supplemental
+        durable.allow_new_dispatch = not supplemental(task)
         durable.on_update = lambda job: self._retain_infrastructure_failure(durable, job)
         reference_task = {**task, "id": run_id}
         # Freeze O2/O3 assets before dispatch and materialize only immutable snapshots.
@@ -288,13 +300,12 @@ class RuntimeMaintenance:
                         timeout_seconds=self.settings.codex_node_timeout_seconds,
                     )
                 )
-                candidates = [
-                    ProvisionalFactDetail.model_validate(item) for item in frame["candidates"]
-                ]
-                snapshot = RuntimeDeltaBatchAdapter(self.runtime.repository).freeze(
-                    ticker=task["ticker"], trading_date=day, candidates=candidates, as_of=cutoff
-                )
-                snapshot = snapshot.model_copy(update={"snapshot_id": run_id, "epoch_id": run_id})
+                unique = {}
+                for item in frame['candidates']:
+                    unique.setdefault(item['runtime_signature'], item)
+                candidates = [ProvisionalFactDetail.model_validate(item) for item in unique.values()]
+                pages = ([candidates[i:i + 128] for i in range(0, len(candidates), 128)] or [[]]) if task['receipt'].get('o2_freeze') else [candidates]
+                page_receipts = list(task['receipt'].get('o2_pages', []))
                 upstream = None
                 if self.o2_factory is None:
                     from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
@@ -321,60 +332,73 @@ class RuntimeMaintenance:
                         "unified_as_of": cutoff.isoformat(),
                         "ticker": task["ticker"],
                     }
-                _, publication, validation, _ = await o2.run(
-                    snapshot=snapshot,
-                    run_id=run_id + "-o2",
-                    cutoff_at=cutoff,
-                    export_dir=root / run_id / "export",
-                    mode="INCREMENTAL",
-                    upstream_context_manifest=upstream,
-                )
-                if validation is not None and str(getattr(validation, "status", "")) == "FAIL":
-                    raise ValueError("O2 produced no usable publication")
-                operation = "o2-settlement"
-                version = (
-                    publication.published_library_version
-                    if publication
-                    else int(event_ref["version"])
-                )
-                with repository._read() as db:
-                    resolved = [
-                        row[0]
-                        for row in db.execute(
-                            "SELECT i.runtime_atomic_id FROM delta_items i "
-                            "JOIN delta_batches b ON b.batch_id=i.batch_id "
-                            "WHERE b.source_snapshot_id=? AND i.status='RESOLVED'",
-                            (snapshot.snapshot_id,),
-                        )
-                    ]
-                resolved_signatures = {
-                    item["runtime_signature"]
-                    for item in frame["candidates"]
-                    if f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
-                    in resolved
-                }
-                resolved.extend(
-                    f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
-                    for item in frame["candidates"]
-                    if item["runtime_signature"] in resolved_signatures
-                )
-                unresolved = [
-                    item.runtime_atomic_id
-                    for item in snapshot.atomics
-                    if item.runtime_atomic_id not in resolved
-                ]
-                if unresolved:
-                    self.journal.gap(
-                        "o2-pending:" + task["id"],
-                        task["ticker"],
-                        "O2_UNRESOLVED_ATOMICS",
-                        str(unresolved),
+                for page_index, page in enumerate(pages):
+                    if page_index < len(page_receipts):
+                        continue
+                    page_id = run_id if len(pages) == 1 else f'{run_id}-page-{page_index:04d}'
+                    page_input = task['receipt'].get('o2_page_input')
+                    if not page_input or page_input['index'] != page_index:
+                        page_input = dict(index=page_index, run_id=page_id,
+                                          base_version=repository.published_version(task['ticker']))
+                        self.journal.checkpoint(task, o2_page_input=page_input)
+                    page_base = page_input['base_version']
+                    snapshot = RuntimeDeltaBatchAdapter(self.runtime.repository).freeze(
+                        ticker=task['ticker'], trading_date=day, candidates=page, as_of=cutoff)
+                    snapshot = snapshot.model_copy(update={'snapshot_id': page_id, 'epoch_id': page_id})
+                    _, publication, validation, _ = await o2.run(
+                        snapshot=snapshot,
+                        run_id=page_id + "-o2",
+                        cutoff_at=cutoff,
+                        export_dir=root / page_id / "export",
+                        mode="INCREMENTAL",
+                        upstream_context_manifest=upstream,
                     )
-                self.journal.checkpoint(
-                    task,
-                    resolved_candidates=resolved,
-                    o2={"version": version, "root": str(candidate_root)},
-                )
+                    if validation is not None and str(getattr(validation, "status", "")) == "FAIL":
+                        raise ValueError("O2 produced no usable publication")
+                    operation = "o2-settlement"
+                    version = (
+                        publication.published_library_version
+                        if publication
+                        else int(page_base)
+                    )
+                    with repository._read() as db:
+                        resolved = [
+                            row[0]
+                            for row in db.execute(
+                                "SELECT i.runtime_atomic_id FROM delta_items i "
+                                "JOIN delta_batches b ON b.batch_id=i.batch_id "
+                                "WHERE b.source_snapshot_id=? AND i.status='RESOLVED'",
+                                (snapshot.snapshot_id,),
+                            )
+                        ]
+                    resolved_signatures = {
+                        item["runtime_signature"]
+                        for item in frame["candidates"]
+                        if f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
+                        in resolved
+                    }
+                    resolved.extend(
+                        f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
+                        for item in frame["candidates"]
+                        if item["runtime_signature"] in resolved_signatures
+                    )
+                    unresolved = [
+                        item.runtime_atomic_id
+                        for item in snapshot.atomics
+                        if item.runtime_atomic_id not in resolved
+                    ]
+                    if unresolved:
+                        self.journal.gap(
+                            "o2-pending:" + task["id"] + ":" + str(page_index),
+                            task["ticker"],
+                            "O2_UNRESOLVED_ATOMICS",
+                            str(unresolved),
+                        )
+                    page_receipts.append(dict(version=version, resolved=sorted(set(resolved)), snapshot_id=page_id))
+                    self.journal.checkpoint(task, o2_pages=page_receipts)
+                self.journal.checkpoint(task,
+                    resolved_candidates=sorted({identity for page in page_receipts for identity in page['resolved']}),
+                    o2={'version': page_receipts[-1]['version'], 'root': str(candidate_root)})
             published = task["receipt"]["o2"]
 
             if o3_enabled:
@@ -527,7 +551,10 @@ class RuntimeMaintenance:
             self._consume(task, frame, include_o3=o3_enabled)
             return {"revision_id": revision["revision_id"]}
         except Exception as exc:
-            if isinstance(exc, (LeaseLost, ControlError)):
+            from doxagent.ticker_initialization.repository import InitializationError
+            if supplemental(task) and isinstance(exc, InitializationError) and str(exc) == 'runtime maintenance superseded by activation':
+                raise SupplementalRetired(task['id']) from exc
+            if isinstance(exc, (LeaseLost, ControlError, RuntimeStopping, SupplementalRetired)) or (supplemental(task) and getattr(exc,'code',None)=='w3_dispatch_unknown'):
                 raise
             from .reference_capture import settle
 

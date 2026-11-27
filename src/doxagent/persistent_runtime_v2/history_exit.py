@@ -32,6 +32,24 @@ def collect(maintenance):
     if not admissions(repository,ticker):return {'next_seconds':60,'ticker':ticker,'phase':'first_knowledge_migration'}
     seeded=register_legacy(repository,ticker)
     keep=pins(journal,ticker,event_root=str(root))|{int(event['version'])}
+    from .resource_refs import daily_pins
+    keep.update(daily_pins(journal, ticker, str(root)))
+    if Path(root)==Path(settings.event_library_root):keep.update(daily_pins(journal,ticker,None))
+    with journal.transaction(write=False,expand=False) as db:
+        normal=db.execute("SELECT json_extract(receipt,'$._gc_owner'),json_extract(receipt,'$.o2_freeze.base') "
+            "FROM runtime_tasks WHERE ticker=? AND kind='MAINTENANCE' "
+            "AND status IN ('RUNNING','PENDING','HELD','FAILED') "
+            "AND json_extract(receipt,'$.maintenance_retired') IS NULL "
+            "AND coalesce(json_extract(inputs,'$.scope'),'')!='SUPPLEMENTAL' "
+            "AND (json_extract(receipt,'$._gc_owner.event_library_root')=? OR json_extract(receipt,'$._gc_owner.event_library_root') IS NULL)", (ticker,str(root))).fetchall()
+    for raw,freeze in normal:
+        owner=json.loads(raw) if raw else {}
+        frozen=json.loads(freeze) if freeze else {}
+        owner_root=owner.get('event_library_root') or frozen.get('root') or settings.event_library_root
+        if Path(owner_root)!=Path(root):continue
+        keep.update(int(v) for v in owner.get('event_versions',[]))
+        for version in (owner.get('event_library_version'),frozen.get('version')):
+            if version is not None:keep.add(int(version))
     if Path(root)==Path(settings.event_library_root):
         with journal.transaction(write=False,expand=False) as db:
             keep.update(r[0] for r in db.execute('SELECT event_version FROM runtime_case_resource_refs WHERE event_root IS NULL AND ticker=?',(ticker,)) if r[0] is not None)
@@ -47,6 +65,14 @@ def collect(maintenance):
             headers[release]=row[0] if row else None
             maintenance._history_policy_event_headers=headers
         if headers[release] is not None:keep.add(int(headers[release]))
+    with journal.transaction(write=False, expand=False) as db:
+        sweeps=db.execute("SELECT json_extract(v.payload,'$.event_body_ref.version') FROM runtime_tasks t "
+            "JOIN runtime_values v ON v.namespace='sweep_bundle' AND v.key=t.id "
+            "WHERE t.ticker=? AND t.kind='SWEEP' AND t.status IN ('PENDING','RUNNING','HELD') "
+            "AND (json_extract(v.payload,'$.event_body_ref.root')=? "
+            "OR (json_extract(v.payload,'$.event_body_ref.root') IS NULL AND ?=1))",
+            (ticker,str(root),int(Path(root)==Path(settings.event_library_root)))).fetchall()
+    keep.update(r[0] for r in sweeps if r[0] is not None)
     def is_live(run):
         if not run:return True
         if run_held(settings,run):return True

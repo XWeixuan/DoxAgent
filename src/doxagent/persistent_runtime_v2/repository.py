@@ -828,6 +828,9 @@ class SQLitePersistentRuntimeV2Repository:
                 connection.execute("ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT")
             from .resource_refs import migrate as migrate_resource_refs
             migrate_resource_refs(connection)
+            connection.execute("CREATE INDEX IF NOT EXISTS runtime_v2_candidates_pending_order "
+                               "ON runtime_v2_candidates(ticker,created_at,candidate_identity) "
+                               "WHERE daily_status='PENDING'")
 
     @retry_sqlite_write
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
@@ -873,6 +876,8 @@ class SQLitePersistentRuntimeV2Repository:
                     case.updated_at.isoformat(),
                 ),
             )
+            from .resource_refs import save_reader
+            save_reader(connection, case)
         return case
 
     @retry_sqlite_write
@@ -957,6 +962,8 @@ class SQLitePersistentRuntimeV2Repository:
                         w3_case.updated_at.isoformat(),
                     ),
                 )
+            from .resource_refs import save_reader
+            save_reader(connection, case)
         return case
 
     @observed('case.read')
@@ -1293,33 +1300,6 @@ class SQLitePersistentRuntimeV2Repository:
                     effect.effect_id,
                 ),
             )
-            if (
-                effect.status in {RuntimeEffectStatus.COMPLETED, RuntimeEffectStatus.FAILED}
-                and connection.execute(
-                    "SELECT 1 FROM sqlite_master WHERE name='runtime_values'"
-                ).fetchone()
-            ):
-                from .journal import encode
-
-                row = connection.execute(
-                    "SELECT ticker,json_extract(payload_json,'$.version_pin.running_mode') "
-                    "FROM runtime_v2_cases WHERE case_id=?", (effect.case_id,)
-                ).fetchone()
-                if row:
-                    value = {
-                        "case_id": effect.case_id,
-                        "ticker": row[0],
-                        "effect_id": effect.effect_id,
-                        "attempt": effect.attempt_count,
-                        "at": effect.updated_at.isoformat(),
-                    }
-                    if row[1] == "LIGHTWEIGHT":
-                        value["running_mode"] = "LIGHTWEIGHT"
-                    connection.execute(
-                        "INSERT INTO runtime_values VALUES('dirty_case',?,?) "
-                        "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
-                        (effect.case_id, encode(value)),
-                    )
             if effect.status is RuntimeEffectStatus.COMPLETED and effect.effect_type in {
                 RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION
             }:
@@ -1433,6 +1413,12 @@ class SQLitePersistentRuntimeV2Repository:
         ).fetchone()
         if existing is not None:
             return json.loads(existing[0])
+        from .normal_o2 import provisional_day
+        inserted_at = utc_now()
+        day, boundary_ref = provisional_day(connection, payload, prepared, inserted_at)
+        if boundary_ref:
+            payload.update(origin_trading_date=payload['trading_date'], boundary_ref=boundary_ref,
+                           trading_date=day)
         counter = connection.execute(
             "SELECT next_numeric_id,snapshot_version FROM runtime_v2_provisional_counters "
             "WHERE ticker=? AND trading_date=?", (key, day),
@@ -1451,7 +1437,7 @@ class SQLitePersistentRuntimeV2Repository:
                 "WHERE ticker=? AND trading_date=?", (number + 1, version, key, day),
             )
         payload.update(provisional_event_id=f'E{number}', snapshot_version=version,
-                       created_at=utc_now().isoformat())
+                       created_at=inserted_at.isoformat())
         connection.execute(
             "INSERT INTO runtime_v2_candidates "
             "(candidate_identity,provisional_event_id,ticker,trading_date,source_message_id,"

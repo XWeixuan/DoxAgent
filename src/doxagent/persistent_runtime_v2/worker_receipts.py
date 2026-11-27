@@ -33,6 +33,7 @@ class ReceiptWorker:
         on_recovery=None,
     ) -> None:
         self.worker, self.journal, self.scope = worker, journal, scope
+        self.allow_new_dispatch = True
         self.case_id = case_id
         self.source_case_id = source_case_id
         self.control_epoch = control_epoch
@@ -123,6 +124,11 @@ class ReceiptWorker:
             await read_io(self._rate_wait, job if receipt is not None else None)
             if receipt is None:
                 existing_job = await self._lookup(WorkerRunRequest.model_validate(frozen))
+        if not self.allow_new_dispatch:
+            from .normal_o2 import SupplementalRetired
+            existing_job = await self._lookup(WorkerRunRequest.model_validate(frozen))
+            if existing_job is None or str(existing_job.status) in {'failed', 'cancelled'} or rejected:
+                raise SupplementalRetired(self.scope)
         if rejected or (receipt is not None and str(job.status) in {"failed", "cancelled"}):
             # Only a confirmed terminal failure may mint a new remote dispatch key.
             generation = (await read_io(self.journal.get, "worker_generation", identity, 0)) + 1
