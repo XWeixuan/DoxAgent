@@ -269,3 +269,15 @@ def test_global_fact_acknowledgements_release_writer_between_small_pages():
     assert [len(c['candidate_keys']) for c in calls]==[100,100,50]
     assert all(not c['trade_record_ids'] for c in calls)
     assert 'runtime-v2-msg:original:250' not in {k for c in calls for k in c['candidate_keys']}
+
+
+def test_standalone_repository_keeps_normal_current_day_without_journal(tmp_path):
+    from doxagent.persistent_runtime_v2.repository import SQLitePersistentRuntimeV2Repository
+    from doxagent.persistent_runtime_v2.schema import utc_now
+    from doxagent.semantic_clock import semantic_day
+    repo=SQLitePersistentRuntimeV2Repository(tmp_path/'runtime.db')
+    day=semantic_day(utc_now())
+    fact=repo.allocate_provisional(ticker='MU',trading_date=day,case_id='original-case',
+        source_message_id='original-message',candidate_index=0,published_max_event_numeric_id=0,
+        candidate=RuntimeFactCandidate(assertion_state='ACTUAL',proposition='a fact'))
+    assert fact.trading_date==day and fact.origin_trading_date is None

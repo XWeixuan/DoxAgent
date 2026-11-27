@@ -828,6 +828,11 @@ class SQLitePersistentRuntimeV2Repository:
                 connection.execute("ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT")
             from .resource_refs import migrate as migrate_resource_refs
             migrate_resource_refs(connection)
+            # The standalone/offline repository also allocates Case facts.
+            # It shares the existing journal namespace for closing markers.
+            connection.execute("CREATE TABLE IF NOT EXISTS runtime_values("
+                               "namespace TEXT NOT NULL,key TEXT NOT NULL,payload TEXT NOT NULL,"
+                               "PRIMARY KEY(namespace,key))")
             connection.execute("CREATE INDEX IF NOT EXISTS runtime_v2_candidates_pending_order "
                                "ON runtime_v2_candidates(ticker,created_at,candidate_identity) "
                                "WHERE daily_status='PENDING'")
