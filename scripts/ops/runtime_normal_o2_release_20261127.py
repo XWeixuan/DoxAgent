@@ -60,10 +60,11 @@ def main():
                 context = directory/role
                 hashes = {}
                 role_files = FILES if role == 'v2-scheduler' else TRANSPORT_FILES
+                baseline_commit = args.baseline_commit or state['components'][role]['current']['commit']
                 for path in role_files:
-                    exists = subprocess.run(['sudo','-u','ubuntu','git','-C',REPO,'cat-file','-e',(args.baseline_commit or args.commit+'^')+':'+path],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0
+                    exists = subprocess.run(['sudo','-u','ubuntu','git','-C',REPO,'cat-file','-e',baseline_commit+':'+path],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0
                     if exists:
-                        assert actual(container, path) == git(args.baseline_commit or args.commit+'^', path), path+' drift'
+                        assert actual(container, path) == git(baseline_commit, path), path+' drift'
                     else:
                         assert subprocess.check_output(['docker','exec',container,'python','-c',
                             'import os;print(os.path.isfile('+repr('/app/'+path)+'))'],text=True).strip() == 'False'

@@ -36,15 +36,22 @@ def collect(maintenance):
     keep.update(daily_pins(journal, ticker, str(root)))
     if Path(root)==Path(settings.event_library_root):keep.update(daily_pins(journal,ticker,None))
     with journal.transaction(write=False,expand=False) as db:
-        normal=db.execute("SELECT json_extract(receipt,'$._gc_owner'),json_extract(receipt,'$.o2_freeze.base') "
+        normal=db.execute("SELECT json_extract(receipt,'$._gc_owner'),json_extract(receipt,'$.o2_freeze.base'),status "
             "FROM runtime_tasks WHERE ticker=? AND kind='MAINTENANCE' "
             "AND status IN ('RUNNING','PENDING','HELD','FAILED') "
             "AND json_extract(receipt,'$.maintenance_retired') IS NULL "
             "AND coalesce(json_extract(inputs,'$.scope'),'')!='SUPPLEMENTAL' "
             "AND (json_extract(receipt,'$._gc_owner.event_library_root')=? OR json_extract(receipt,'$._gc_owner.event_library_root') IS NULL)", (ticker,str(root))).fetchall()
-    for raw,freeze in normal:
+    def is_live(run):
+        if not run:return True
+        if run_held(settings,run):return True
+        jobs=Path(settings.codex_workspace_root)/'worker-jobs.sqlite3'
+        with closing(sqlite3.connect(jobs.resolve().as_uri()+'?mode=ro',uri=True,timeout=.01)) as db:
+            return bool(db.execute("SELECT 1 FROM jobs INDEXED BY jobs_run_owner WHERE json_extract(payload,'$.run_id')>=? AND json_extract(payload,'$.run_id')<? AND status IN ('queued','running') LIMIT 1",(run,run+'\uffff')).fetchone())
+    for raw,freeze,status in normal:
         owner=json.loads(raw) if raw else {}
         frozen=json.loads(freeze) if freeze else {}
+        if status=='FAILED' and not is_live(owner.get('run_id')):continue
         owner_root=owner.get('event_library_root') or frozen.get('root') or settings.event_library_root
         if Path(owner_root)!=Path(root):continue
         keep.update(int(v) for v in owner.get('event_versions',[]))
@@ -73,12 +80,10 @@ def collect(maintenance):
             "OR (json_extract(v.payload,'$.event_body_ref.root') IS NULL AND ?=1))",
             (ticker,str(root),int(Path(root)==Path(settings.event_library_root)))).fetchall()
     keep.update(r[0] for r in sweeps if r[0] is not None)
-    def is_live(run):
-        if not run:return True
-        if run_held(settings,run):return True
-        jobs=Path(settings.codex_workspace_root)/'worker-jobs.sqlite3'
-        with closing(sqlite3.connect(jobs.resolve().as_uri()+'?mode=ro',uri=True,timeout=.01)) as db:
-            return bool(db.execute("SELECT 1 FROM jobs INDEXED BY jobs_run_owner WHERE json_extract(payload,'$.run_id')>=? AND json_extract(payload,'$.run_id')<? AND status IN ('queued','running') LIMIT 1",(run,run+'\uffff')).fetchone())
+    from .resource_refs import legacy_effect_refs
+    with journal.transaction(write=False,expand=False) as db:
+        for _,legacy_root,version,_ in legacy_effect_refs(db,ticker):
+            if version is not None and Path(legacy_root or settings.event_library_root)==Path(root):keep.add(version)
     batches=collect_batches(repository,now=journal.clock(),is_live=is_live,limit=2)
     history=collect_history(repository,ticker,keep_versions=keep,now=journal.clock())
     return {'ticker':ticker,'batches':batches,'history':history,

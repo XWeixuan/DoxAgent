@@ -281,3 +281,46 @@ def test_standalone_repository_keeps_normal_current_day_without_journal(tmp_path
         source_message_id='original-message',candidate_index=0,published_max_event_numeric_id=0,
         candidate=RuntimeFactCandidate(assertion_state='ACTUAL',proposition='a fact'))
     assert fact.trading_date==day and fact.origin_trading_date is None
+
+
+def test_failed_original_task_is_not_a_live_body_reader_despite_stale_case_status(tmp_path):
+    from doxagent.persistent_runtime_v2.resource_refs import backfill
+    from doxagent.persistent_runtime_v2.schema import RuntimeEffectStatus,RuntimeCaseStatus
+    runtime,journal,_,_=maintenance_fixture(tmp_path)
+    try:
+        case=runtime.execute_message(_source())
+        for effect in runtime.repository.list_effects(case.case_id):
+            runtime.repository.save_effect(effect.model_copy(update={'status':RuntimeEffectStatus.FAILED}))
+        case.w1_final=case.w2_final=None
+        case.status=RuntimeCaseStatus.RUNNING
+        runtime.repository.save_case(case)
+        identity='inbox:'+case.ticker+':'+case.source.source_message_id
+        journal.put_task(identity,case.ticker,'CASE',{})
+        journal.fail(journal.claim(identity),ValueError('old terminal failure'),retryable=False)
+        for _ in range(20):
+            if backfill(journal):break
+        with journal.transaction(write=False) as db:
+            row=db.execute('SELECT event_version,policy_version FROM runtime_case_resource_refs WHERE case_id=?',(case.case_id,)).fetchone()
+            assert tuple(row)==(None,None)
+        assert runtime.repository.get_case(case.case_id).status==RuntimeCaseStatus.RUNNING
+    finally:runtime.close()
+
+
+def test_completed_legacy_case_keeps_only_its_genuinely_active_ops_consumer(tmp_path):
+    from doxagent.persistent_runtime_v2.resource_refs import legacy_effect_refs
+    from doxagent.persistent_runtime_v2.schema import RuntimeEffect,RuntimeEffectStatus,RuntimeCaseStatus
+    runtime,journal,_,_=maintenance_fixture(tmp_path)
+    try:
+        case=runtime.execute_message(_source())
+        case.w3_contract_version='persistent-runtime.w3.v5'
+        for effect in runtime.repository.list_effects(case.case_id):
+            runtime.repository.save_effect(effect.model_copy(update={'status':RuntimeEffectStatus.COMPLETED}))
+        case.status=RuntimeCaseStatus.COMPLETED
+        runtime.repository.save_case(case)
+        ops=RuntimeEffect(case_id=case.case_id,effect_type='w3_post_decision',idempotency_key='original-ops')
+        runtime.repository.enqueue_effect(ops)
+        with journal.transaction(write=False,expand=False) as db:
+            assert legacy_effect_refs(db,'MU')==[('MU',None,7,3)]
+        runtime.repository.save_effect(ops.model_copy(update={'status':RuntimeEffectStatus.COMPLETED}))
+        with journal.transaction(write=False,expand=False) as db:assert not legacy_effect_refs(db,'MU')
+    finally:runtime.close()

@@ -13,10 +13,10 @@ def migrate(db):
     db.execute('CREATE INDEX IF NOT EXISTS runtime_resource_policy_ref ON runtime_case_resource_refs(ticker,policy_version)')
     db.execute('CREATE TABLE IF NOT EXISTS runtime_resource_ref_meta(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
     rule = db.execute("SELECT value FROM runtime_resource_ref_meta WHERE key='rule'").fetchone()
-    changed = not rule or rule[0] != 'reader-v2'
+    changed = not rule or rule[0] != 'reader-v3'
     if changed:
         db.execute('DELETE FROM runtime_resource_ref_meta')
-        db.execute("INSERT INTO runtime_resource_ref_meta VALUES('rule','reader-v2')")
+        db.execute("INSERT INTO runtime_resource_ref_meta VALUES('rule','reader-v3')")
     statuses=','.join("'"+s+"'" for s in ACTIVE)
     insert=("INSERT OR IGNORE INTO runtime_case_resource_refs SELECT NEW.case_id,NEW.ticker,"
             "json_extract(NEW.payload_json,'$.version_pin.event_library_root'),"
@@ -74,8 +74,11 @@ def backfill(journal, *, limit=32):
     prepared=[]
     for row in rows:
         case=RuntimeCase.model_validate(journal.content.decode(json.loads(row[2])))
-        ref=list(reader_ref(case))
         with journal.transaction(write=False,expand=False) as db:
+            task=db.execute('SELECT status FROM runtime_tasks WHERE id=?',
+                ('inbox:'+case.ticker+':'+case.source.source_message_id,)).fetchone()
+            ref=list(reader_ref(case,legacy_w3=legacy_reader(db,case),
+                                hot_terminal=bool(task and task[0] in ('FAILED','SUCCEEDED'))))
             for lane, index in [('W1',3)]:
                 if case.w3_contract_version == 'persistent-runtime.w3.v6' and db.execute("SELECT 1 FROM runtime_values WHERE namespace='round_inputs' AND key=?",
                               (case.case_id+':'+lane+':R2',)).fetchone():ref[index]=None
@@ -98,19 +101,19 @@ def pins(journal, ticker, *, event_root=None):
         if not db.execute("SELECT 1 FROM runtime_resource_ref_meta WHERE key='complete' AND value='1'").fetchone():
             raise ValueError('RESOURCE_REFERENCE_BACKFILL_PENDING')
         if event_root is None:
-            return {r[0] for r in db.execute('SELECT DISTINCT policy_version FROM runtime_case_resource_refs WHERE ticker=?',(ticker,)) if r[0] is not None}
+            return {r[0] for r in db.execute('SELECT DISTINCT policy_version FROM runtime_case_resource_refs WHERE ticker=?',(ticker,)) if r[0] is not None} | {r[3] for r in legacy_effect_refs(db,ticker) if r[3] is not None}
         return {r[0] for r in db.execute('SELECT DISTINCT event_version FROM runtime_case_resource_refs WHERE event_root=? AND ticker=?',(event_root,ticker)) if r[0] is not None}
 
 
-def reader_ref(case):
+def reader_ref(case, *, legacy_w3=False, hot_terminal=False):
     pin = case.frozen_inputs.get('w1_daily_index') or {}
-    if case.w3_contract_version != 'persistent-runtime.w3.v6':
-        return (case.case_id, case.ticker, pin.get('event_library_root', case.version_pin.event_library_root),
-                pin.get('event_library_version', case.version_pin.event_library_version), case.version_pin.policy_set_version)
     frozen = case.frozen_inputs.get('round_input_refs', {}) | case.frozen_inputs.get('round_inputs', {})
-    event = None if case.w1_final is not None or 'W1:R2' in frozen else pin.get(
+    event = None if hot_terminal or case.w1_final is not None or 'W1:R2' in frozen else pin.get(
         'event_library_version', case.version_pin.event_library_version)
-    policy = None if case.w2_final is not None else case.version_pin.policy_set_version
+    policy = None if hot_terminal or case.w2_final is not None else case.version_pin.policy_set_version
+    if legacy_w3:
+        return (case.case_id,case.ticker,case.version_pin.event_library_root,
+                case.version_pin.event_library_version,case.version_pin.policy_set_version)
     return (case.case_id, case.ticker, pin.get('event_library_root', case.version_pin.event_library_root), event, policy)
 
 
@@ -119,7 +122,7 @@ def save_reader(db, case):
     if case.status.value not in ACTIVE:
         db.execute('DELETE FROM runtime_case_resource_refs WHERE case_id=?', (case.case_id,))
         return
-    values = reader_ref(case)
+    values = reader_ref(case,legacy_w3=legacy_reader(db,case))
     db.execute('INSERT INTO runtime_case_resource_refs VALUES(?,?,?,?,?) '
                'ON CONFLICT(case_id) DO UPDATE SET event_root=excluded.event_root,'
                'event_version=excluded.event_version,policy_version=excluded.policy_version '
@@ -136,3 +139,30 @@ def daily_pins(journal, ticker, root):
             "json_extract(payload_json,'$.index.version')) FROM runtime_v2_w1_daily_indexes "
             "WHERE ticker=? AND semantic_day>=? AND json_extract(payload_json,'$.event_library_root') IS ?",
             (ticker, str(semantic_day(journal.clock())), root)) if row[0] is not None}
+
+
+def legacy_reader(db, case):
+    if case.w3_contract_version == 'persistent-runtime.w3.v6':return False
+    return bool(db.execute("SELECT 1 FROM runtime_v2_effects WHERE case_id=? "
+        "AND effect_type IN ('route_to_w3','w3_post_decision') "
+        "AND status IN ('PENDING','PENDING_RETRY','RUNNING') LIMIT 1",(case.case_id,)).fetchone())
+
+
+def legacy_effect_refs(db, ticker=None):
+    """Active legacy W3 consumers only, including Operations after Trade completion.
+
+    Start at the two existing live-Effect indexes, never scan historical Cases.
+    Current v6 frozen-input Operations do not acquire body dependencies here.
+    """
+    refs=[]
+    for index,where in [('idx_runtime_v2_effects_pending',"e.status IN ('PENDING','PENDING_RETRY')"),
+                        ('idx_runtime_v2_effects_running',"e.status='RUNNING'")]:
+        refs.extend(tuple(r) for r in db.execute(
+            "SELECT c.ticker,json_extract(c.payload_json,'$.version_pin.event_library_root'),"
+            "json_extract(c.payload_json,'$.version_pin.event_library_version'),"
+            "json_extract(c.payload_json,'$.version_pin.policy_set_version') "
+            "FROM runtime_v2_effects e INDEXED BY "+index+" JOIN runtime_v2_cases c USING(case_id) "
+            "WHERE "+where+" AND e.effect_type IN ('route_to_w3','w3_post_decision') "
+            "AND coalesce(json_extract(c.payload_json,'$.w3_contract_version'),'')!='persistent-runtime.w3.v6' "
+            +("AND c.ticker=?" if ticker else ''),(ticker,) if ticker else ()))
+    return refs

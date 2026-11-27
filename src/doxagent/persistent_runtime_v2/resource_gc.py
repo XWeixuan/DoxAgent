@@ -107,6 +107,11 @@ def referenced(journal,control_path,*,now=None,only_root=None):
             for ticker,version in sweeps:
                 if version is not None:add(only_root,ticker,version)
                 protected.add(only_root)
+
+            from .resource_refs import legacy_effect_refs
+            for ticker,root,version,_ in legacy_effect_refs(db):
+                if root==only_root:
+                    add(root,ticker,version);protected.add(root)
         else:
             for ticker,version,status in cases:
                 add(only_root,ticker,version)

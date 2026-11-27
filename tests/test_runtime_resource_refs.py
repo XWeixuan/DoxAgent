@@ -15,6 +15,10 @@ def test_live_pins_register_in_case_transaction_and_exit_without_context_scan(tm
             if backfill(journal,limit=1):break
         else:raise AssertionError('pin migration did not converge')
         assert case.version_pin.policy_set_version in pins(journal,case.ticker)
+        # A Case flag alone cannot release a still-pending legacy consumer.
+        from doxagent.persistent_runtime_v2.schema import RuntimeEffectStatus
+        for effect in runtime.repository.list_effects(case.case_id):
+            runtime.repository.save_effect(effect.model_copy(update={'status':RuntimeEffectStatus.COMPLETED}))
         case.status=RuntimeCaseStatus.COMPLETED
         runtime.repository.save_case(case)
         assert not pins(journal,case.ticker)
