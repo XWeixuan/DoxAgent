@@ -72,6 +72,10 @@ def native(tmp_path, request):
                         },
                     }
                 )
+            elif action == "mcp":
+                events.append({"type":"response.output_item.done","item":{
+                    "type":"function_call","id":f"item-{number}","call_id":f"call-{number}",
+                    "name":"mcp__native_smoke__echo","arguments":'{"value":"synthetic MCP works"}'}})
             elif action == "tool":
                 events.append(
                     {
@@ -150,7 +154,7 @@ def native(tmp_path, request):
                 approval_mode=ApprovalMode.deny_all,
                 base_instructions="Return the synthetic result.",
             )
-            state.client, state.thread, state.control = client, thread, control
+            state.client, state.thread, state.control, state.config = client, thread, control, config
             yield state
     finally:
         server.shutdown()
@@ -298,3 +302,59 @@ def test_native_bad_control_does_not_block_and_next_turn_recovers(native):
     assert native.thread.run('Next Trade Decision').final_response == 'Synthetic result.'
     assert len(reminders(native.requests[-1])) == 1
     assert '停止新增调查' in reminders(native.requests[-1])[0]
+
+
+def test_native_mcp_transport_consumes_tool_result(native):
+    """Exercise the new Rust MCP client with a local protocol-only server."""
+    from dataclasses import replace
+    import sys
+    script=native.control.parent/'mcp-smoke.py'
+    script.write_text('''import json,sys
+for line in sys.stdin:
+ r=json.loads(line)
+ if 'id' not in r:continue
+ method=r['method']
+ if method=='initialize':
+  out={'protocolVersion':r['params']['protocolVersion'],'capabilities':{'tools':{}},'serverInfo':{'name':'native-smoke','version':'1'}}
+ elif method=='tools/list':
+  out={'tools':[{'name':'echo','description':'Local deployment fixture only','inputSchema':{'type':'object','properties':{'value':{'type':'string'}},'required':['value']}}]}
+ elif method=='tools/call':
+  out={'content':[{'type':'text','text':r['params']['arguments']['value']}],'isError':False}
+ else:out={}
+ print(json.dumps({'jsonrpc':'2.0','id':r['id'],'result':out}),flush=True)
+''',encoding='utf-8')
+    override='mcp_servers.native_smoke={command='+json.dumps(sys.executable)+',args='+json.dumps([str(script)])+'}'
+    config=replace(native.config,config_overrides=(*native.config.config_overrides,override))
+    native.actions.extend(['mcp','final'])
+    with Codex(config) as client:
+        thread=client.thread_start(cwd=str(script.parent),model='test-model',sandbox=Sandbox.full_access,
+            approval_mode=ApprovalMode.deny_all,base_instructions='Use only the local fixture.')
+        assert thread.run('Read the fixture.').final_response=='Synthetic result.'
+    assert len(native.requests)==2
+    outputs=[i.get('output') for i in native.requests[-1]['input'] if i.get('type')=='function_call_output']
+    assert any('synthetic MCP works' in str(value) for value in outputs),outputs
+
+
+def test_native_consumed_root_exit_checks_exact_owner_proof(native):
+    from pydantic import BaseModel,ConfigDict
+    class Reply(BaseModel):
+        model_config=ConfigDict(extra='allow')
+    with Codex(native.config) as owner:
+        thread=owner.thread_start(cwd=str(native.control.parent),model='test-model',
+            sandbox=Sandbox.full_access,approval_mode=ApprovalMode.deny_all,
+            base_instructions='Local storage fixture.')
+        thread.run('Write the fixture result.')
+        identifier=thread.id
+        path=Path(thread.read().thread.path)
+    assert path.is_file()
+    proof=Path(native.config.env['CODEX_HOME'])/'.doxagent-local-exit'/(identifier+'.json')
+    proof.parent.mkdir(exist_ok=True)
+    receipt=dict(owner='doxagent-consumed-isolated-root-v1',thread_id=identifier,path=str(path))
+    proof.write_text(json.dumps({**receipt,'path':str(native.control.parent/'outside.jsonl')}))
+    with Codex(native.config) as cleaner:
+        with pytest.raises(Exception,match='invalid consumed isolated-root owner proof'):
+            cleaner._client.request('thread/delete',{'threadId':identifier},response_model=Reply)
+        assert path.is_file()
+        proof.write_text(json.dumps(receipt))
+        cleaner._client.request('thread/delete',{'threadId':identifier},response_model=Reply)
+    assert not path.exists()
