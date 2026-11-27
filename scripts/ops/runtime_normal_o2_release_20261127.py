@@ -34,6 +34,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['build', 'deploy-scheduler','deploy-transport'])
     parser.add_argument('commit')
+    parser.add_argument('--baseline-commit')
     args = parser.parse_args()
     os.umask(0o077)
     # Freeze the reviewed canonical owner from this commit. The host's old
@@ -60,9 +61,9 @@ def main():
                 hashes = {}
                 role_files = FILES if role == 'v2-scheduler' else TRANSPORT_FILES
                 for path in role_files:
-                    exists = subprocess.run(['sudo','-u','ubuntu','git','-C',REPO,'cat-file','-e',args.commit+'^:'+path],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0
+                    exists = subprocess.run(['sudo','-u','ubuntu','git','-C',REPO,'cat-file','-e',(args.baseline_commit or args.commit+'^')+':'+path],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0
                     if exists:
-                        assert actual(container, path) == git(args.commit+'^', path), path+' drift'
+                        assert actual(container, path) == git(args.baseline_commit or args.commit+'^', path), path+' drift'
                     else:
                         assert subprocess.check_output(['docker','exec',container,'python','-c',
                             'import os;print(os.path.isfile('+repr('/app/'+path)+'))'],text=True).strip() == 'False'

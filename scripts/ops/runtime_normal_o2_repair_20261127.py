@@ -54,7 +54,7 @@ def run(settings, *, apply=False):
                         job=jobs.execute('SELECT status FROM jobs WHERE id=?',(identity,)).fetchone()
                         # Authority lookup: unknown storage errors abort; only
                         # actual live/paid-success Jobs need original-run replay.
-                        if job and job[0] in ('queued','running','succeeded'):
+                        if job and (job[0] in ('queued','running') or (job[0]=='succeeded' and request['attempt_id'].startswith(('o2-reference-review','o2-global-reconciliation','o2-repair-')))):
                             resumable=True
             if resumable and frame and not receipt.get('process_retired'):
                 report['reconcile'].append(row['id'])
@@ -74,7 +74,7 @@ def run(settings, *, apply=False):
                         (journal.clock().isoformat(),row['id'],row['status'],row['token'],row['receipt']))
         after=rows[-1]['id']
     with journal.transaction(write=False,expand=False) as db:
-        cases=db.execute("SELECT s.case_id,s.result_json,s.thread_id,s.error,e.effect_id,e.status,e.payload_json "
+        cases=db.execute("SELECT s.case_id,s.result_json,s.thread_id,s.worker_job_id,s.error,e.effect_id,e.status,e.payload_json "
             "FROM runtime_v2_w3_stages s JOIN runtime_v2_effects e USING(case_id) "
             "JOIN runtime_v2_w3_stages t ON t.case_id=s.case_id AND t.phase='trade_decision' "
             "WHERE s.phase='post_decision_operations' AND s.status='FAILED' AND s.result_json IS NOT NULL "
@@ -85,14 +85,20 @@ def run(settings, *, apply=False):
             # A successful paid invocation on this exact private Thread is
             # required, and is retained as the audit authority.
             with journal.transaction(write=False,expand=False) as db:
-                proof=db.execute("SELECT key,payload FROM runtime_values INDEXED BY w3_legacy_invocation_thread "
-                    "WHERE namespace='worker_invocations' AND json_extract(payload,'$.node')='persistent_runtime_w3' "
-                    "AND json_extract(payload,'$.job.thread_id')=?",(row['thread_id'],)).fetchall()
+                proof=db.execute("SELECT key,payload FROM runtime_values "
+                    "WHERE namespace='worker_invocations' AND key=?",(row['worker_job_id'],)).fetchall()
                 raw=db.execute('SELECT payload_json FROM runtime_v2_cases WHERE case_id=?',(row['case_id'],)).fetchone()
             case=json.loads(journal.content.text(raw[0]))
-            successful=[key for key,payload in proof if (lambda x:
-                x.get('task_phase')=='post_decision_operations' and x.get('job',{}).get('status')=='succeeded')(
-                    json.loads(journal.content.text(payload)))]
+            successful=[]
+            for key,payload in proof:
+                value=json.loads(journal.content.text(payload))
+                job=value.get('job',{})
+                if (value.get('task_phase')=='post_decision_operations'
+                    and value.get('case_id')==row['case_id']
+                    and job.get('job_id')==row['worker_job_id']
+                    and job.get('thread_id')==row['thread_id']
+                    and job.get('status')=='succeeded'):
+                    successful.append(key)
             if not successful:raise ValueError('SUCCESSFUL_ORIGINAL_OPERATIONS_RECEIPT_MISSING')
             result=json.loads(journal.content.text(row['result_json']))
             parse_w3_operations(result,version=case['w3_contract_version'],allow_legacy_pin_watch=True)
