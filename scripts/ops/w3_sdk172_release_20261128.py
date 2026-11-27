@@ -88,7 +88,9 @@ def main():
                 subprocess.run(['docker','tag',info['Image'],base],check=True)
                 tag='doxagent-sdk172:'+a.commit[:12]+'-'+role
                 subprocess.run(['docker','build','-f',str(context/'deploy/Dockerfile.codex-sdk-upgrade'),
-                    '--build-arg','DOXAGENT_BASE_IMAGE='+base,'-t',tag,str(context)],check=True)
+                    '--build-arg','DOXAGENT_BASE_IMAGE='+base,
+                    '--build-arg','DOXAGENT_RUNTIME_USER='+(info['Config'].get('User') or 'root'),
+                    '-t',tag,str(context)],check=True)
                 image=subprocess.check_output(['docker','image','inspect','--format','{{.Id}}',tag],text=True).strip()
                 subprocess.run(['docker','run','--rm','--network','none','--memory','768m','--cpus','1',
                     '--entrypoint','python',image,'-c',check],check=True)
