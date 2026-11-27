@@ -1,0 +1,56 @@
+[
+  {
+    "source": "fiercebiotech_biotech",
+    "sample": "after_restart",
+    "dispatch_at": "2026-11-27T11:46:29.661862+00:00",
+    "request_started_at": "2026-11-27T11:46:42.071766+00:00",
+    "response_at": "2026-11-27T11:46:42.301355+00:00",
+    "pre_transport_seconds": 12.41,
+    "network_seconds": 0.23
+  },
+  {
+    "source": "fiercebiotech_biotech",
+    "sample": "latest",
+    "dispatch_at": "2026-11-27T11:52:49.812459+00:00",
+    "request_started_at": "2026-11-27T11:52:49.881383+00:00",
+    "response_at": "2026-11-27T11:52:50.108456+00:00",
+    "pre_transport_seconds": 0.069,
+    "network_seconds": 0.227
+  },
+  {
+    "source": "fda_release",
+    "sample": "after_restart",
+    "dispatch_at": "2026-11-27T11:46:08.077626+00:00",
+    "request_started_at": "2026-11-27T11:46:25.312875+00:00",
+    "response_at": "2026-11-27T11:46:25.836959+00:00",
+    "pre_transport_seconds": 17.235,
+    "network_seconds": 0.524
+  },
+  {
+    "source": "fda_release",
+    "sample": "latest",
+    "dispatch_at": "2026-11-27T11:52:54.747743+00:00",
+    "request_started_at": "2026-11-27T11:52:55.524472+00:00",
+    "response_at": "2026-11-27T11:52:56.047226+00:00",
+    "pre_transport_seconds": 0.777,
+    "network_seconds": 0.523
+  },
+  {
+    "source": "corporate_ir_press_releases",
+    "sample": "after_restart",
+    "dispatch_at": "2026-11-27T11:46:23.758688+00:00",
+    "request_started_at": "2026-11-27T11:46:36.628332+00:00",
+    "response_at": "2026-11-27T11:46:37.281121+00:00",
+    "pre_transport_seconds": 12.87,
+    "network_seconds": 0.653
+  },
+  {
+    "source": "corporate_ir_press_releases",
+    "sample": "latest",
+    "dispatch_at": "2026-11-27T11:52:43.752550+00:00",
+    "request_started_at": "2026-11-27T11:52:43.758426+00:00",
+    "response_at": "2026-11-27T11:52:44.421639+00:00",
+    "pre_transport_seconds": 0.006,
+    "network_seconds": 0.663
+  }
+]

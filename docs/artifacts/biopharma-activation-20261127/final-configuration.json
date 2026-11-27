@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-27T11:53:34.389699+00:00",
+  "tickers": {
+    "CGEM": {
+      "terms_revision": 1,
+      "semantic_equal": true,
+      "bindings": 19,
+      "running": true
+    },
+    "RGNX": {
+      "terms_revision": 1,
+      "semantic_equal": true,
+      "bindings": 18,
+      "running": true
+    },
+    "PRAX": {
+      "terms_revision": 1,
+      "semantic_equal": true,
+      "bindings": 17,
+      "running": true
+    },
+    "XENE": {
+      "terms_revision": 1,
+      "semantic_equal": true,
+      "bindings": 18,
+      "running": true
+    },
+    "SMMT": {
+      "terms_revision": 1,
+      "semantic_equal": true,
+      "bindings": 20,
+      "running": true
+    }
+  },
+  "historical_config_incomplete": 0,
+  "pending_decisions": 0,
+  "fda_calendar": {
+    "native_rows": 201,
+    "current_scope": 1,
+    "titles": [
+      "January 21, 2027: Tobacco Products Scientific Advisory Committee Meeting - 01/21/2027"
+    ]
+  },
+  "windows": {
+    "aes_abstract_search": {
+      "window": {
+        "start_date": "2026-12-07",
+        "end_date": "2026-12-07",
+        "timezone": "America/New_York"
+      },
+      "active": false
+    },
+    "ash_cullinan": {
+      "window": {
+        "start_date": "2026-12-03",
+        "end_date": "2026-12-09",
+        "timezone": "America/New_York"
+      },
+      "active": false
+    }
+  }
+}

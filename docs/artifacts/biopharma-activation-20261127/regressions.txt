@@ -1,0 +1,5 @@
+Source commit: 7856e0d418c0adcfbf9bf63ba4163f335ec21251
+Focused cohort: 74 passed, 1 deselected, 1 warning in 196.96s
+Biopharma-only verification: 24 passed, 1 warning in 17.70s (overlapping cohort)
+Deselected: test_newswire_urls_are_independent_and_html_is_not_empty_rss_success requires retired newswire_rss template
+Syntax, Ruff E9/F and git diff checks passed.

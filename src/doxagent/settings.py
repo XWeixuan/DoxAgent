@@ -27,7 +27,9 @@ class DoxAgentSettings(BaseSettings):
     codex_runtime_bin: str | None = Field(
         default=None, validation_alias="DOXAGENT_CODEX_RUNTIME_BIN"
     )
+    w3_market_enabled: bool = Field(default=False, validation_alias="DOXAGENT_W3_MARKET_ENABLED")
     w3_market_refresh_seconds: float = Field(default=30, ge=15, validation_alias="DOXAGENT_W3_MARKET_REFRESH_SECONDS")
+    w3_fast_source_ids: str = Field(default="sec_edgar,corporate_ir_press_releases", validation_alias="DOXAGENT_W3_FAST_SOURCE_IDS")
     w3_hide_w2_context: bool = Field(default=False, validation_alias="DOXAGENT_W3_HIDE_W2_CONTEXT")
     w3_ready_luna: int = Field(default=6, ge=0, le=16, validation_alias="DOXAGENT_W3_READY_LUNA")
     w3_boot_timeout_seconds: int = Field(
