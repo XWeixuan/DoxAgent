@@ -119,6 +119,42 @@ def test_retired_body_still_has_precise_published_id_watermark(tmp_path):
     with pytest.raises(Exception):repo.max_published_event_numeric_id('MU',3)
 
 
+def test_normal_task_acknowledges_exact_inherited_resolution_only(tmp_path, monkeypatch):
+    from doxagent.event_library.delta_compiler import runtime_atomic_signature
+    runtime,journal,settings,control=maintenance_fixture(tmp_path)
+    monkeypatch.setattr('doxagent.persistent_runtime_v2.repository.utc_now',journal.clock)
+    with control._write() as db:db.execute('UPDATE maintenance_control SET enabled=0 WHERE id=1')
+    try:
+        case=runtime.execute_message(_source())
+        for i in range(4):
+            runtime.repository.allocate_provisional(ticker='MU',trading_date=date(2026,9,1),
+                source_message_id=case.source.source_message_id,candidate_index=i,
+                candidate=RuntimeFactCandidate(assertion_state='ACTUAL',proposition=f'old fact {i}'),
+                published_max_event_numeric_id=0,case_id=case.case_id)
+        class O2:
+            async def run(self, **kw):
+                # A compact Native branch may have only the prior publication's
+                # identity map, with no old Delta rows/source snapshot payload.
+                with self.repo._write() as db:
+                    for i,atomic in enumerate(kw['snapshot'].atomics):
+                        db.execute('INSERT INTO runtime_atomic_mappings VALUES(?,?,?,?,?,?,?,?,?)',
+                            (kw['snapshot'].runtime_scope,atomic.runtime_atomic_id,
+                             atomic.version if i!=2 else atomic.version+1,
+                             runtime_atomic_signature(atomic) if i!=3 else 'other-content',
+                             'KEEP_PENDING' if i==1 else 'DROP_INVALID',None,None,'old-batch','2026-09-01'))
+                return None,None,None,{}
+        def factory(repo,_):
+            result=O2();result.repo=repo;return result
+        task=journal.claim('maintain')
+        asyncio.run(RuntimeMaintenance(settings,runtime,journal,
+            worker_factory=lambda:SimpleNamespace(),o2_factory=factory)(task))
+        assert len(task['receipt']['resolved_candidates'])==1
+        with runtime.repository._connect() as db:
+            assert db.execute("SELECT count(*) FROM runtime_v2_candidates WHERE daily_status='PROCESSED'").fetchone()[0]==1
+            assert db.execute("SELECT count(*) FROM runtime_v2_candidates WHERE daily_status='PENDING'").fetchone()[0]==3
+    finally:runtime.close()
+
+
 def test_actual_w1_pin_is_not_activation_pin_and_freeze_releases_body(tmp_path):
     runtime,journal,_,_=maintenance_fixture(tmp_path)
     try:

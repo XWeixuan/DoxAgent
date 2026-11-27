@@ -3582,3 +3582,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-28 发布前补证：Native 外置 Job 需按 Stage.worker_job_id 精确核验原回执，禁止依赖内层 thread_id 的旧 JSON 索引。补充维护仅收尾在途/可本地完成成果，部署窗口可保留原 Task 为 HELD。全 ticker 有限分页复用原 Native 冻结引用，签名覆盖/结算使用集合与分组，最终确认每 100 项释放 writer，避免大积压重复编码和长事务。新增压缩回执幂等、跨页重复签名部分结算、不可变帧零重读和分批确认回归。
 
 2026-11-28 生产引用验收补齐：确认223条旧 Case 状态滞留产生虚假活跃引用，15个原 W1/W2任务已 FAILED、旧 W3 Effect全部终态；引用迁移改按实际原任务/Effect判定，保留真正活跃旧 Operations 的正文/Policy依赖，查询从既有活跃Effect索引出发。终态正常维护仅在原Job仍活跃/明确保留时继续 pin，不无差别延长失败历史；不修改历史Case状态、模型或业务结果。新增终态Task/活跃旧Ops边界回归30项通过。
+
+2026-11-28 O2 精确结算补证：正常窗口同时识别 Native 当前分支继承的原子结算映射，严格匹配 scope、原身份、版本、完整签名及已结算 disposition；不确认 KEEP_PENDING 或异内容映射。31 项边界/引用生命周期回归通过。

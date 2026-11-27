@@ -374,6 +374,23 @@ class RuntimeMaintenance:
                                 (snapshot.snapshot_id,),
                             )
                         ]
+                        # Minimal branches retain committed identity mappings,
+                        # not every old Delta payload. The compiler correctly
+                        # skips these exact atomics in a later snapshot; still
+                        # ACK their original Runtime obligations. A mapping is
+                        # written by Native publication, and must match both
+                        # the atomic version and full Native business signature.
+                        from doxagent.event_library.delta_compiler import runtime_atomic_signature
+                        for atomic in snapshot.atomics:
+                            if db.execute(
+                                "SELECT 1 FROM runtime_atomic_mappings "
+                                "WHERE runtime_scope=? AND runtime_atomic_id=? "
+                                "AND runtime_atomic_version=? AND runtime_signature=? "
+                                "AND disposition IN ('PUBLISHED_FACT','DUPLICATE_FACT','DROP_INVALID')",
+                                (snapshot.runtime_scope, atomic.runtime_atomic_id,
+                                 atomic.version, runtime_atomic_signature(atomic)),
+                            ).fetchone():
+                                resolved.append(atomic.runtime_atomic_id)
                     resolved = set(resolved)
                     resolved_signatures = {
                         item.runtime_signature for item in page
