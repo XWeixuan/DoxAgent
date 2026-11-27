@@ -3586,3 +3586,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-28 O2 精确结算补证：正常窗口同时识别 Native 当前分支继承的原子结算映射，严格匹配 scope、原身份、版本、完整签名及已结算 disposition；不确认 KEEP_PENDING 或异内容映射。31 项边界/引用生命周期回归通过。
 
 2026-11-28 旧补充 O2 收尾：已保存结果明确结构无效时行政退役，保留 PENDING 业务义务，不反复恢复同一无效回执或增加失败预算；正常维护和未知受理恢复不变。
+
+2026-11-28 O2/HISTORY_RETIRED 发布验收：主体228b1b485已发布 Scheduler/Transport，56份原Operations本地提交且保留原Job、953个旧补充任务管理退役、13个日基线可读；最终be4500fef候选已构建，正式空闲保护（含180秒观察）仍拒绝切换，最后两项补丁尚未生产生效，等待受控Scheduler重启许可。回执：docs/runtime_normal_o2_history_retention_implementation_release_20261128.md。
