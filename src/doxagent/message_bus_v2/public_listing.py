@@ -165,7 +165,7 @@ RECIPES = {
     ),
     "quantum_zeitgeist": tuple(
         Listing(
-            feed, feed, "rss", transport="urllib", method="POST", rss_fallback=False,
+            feed, feed, "rss", route="jp-standard-6", transport="urllib", method="POST", rss_fallback=False,
         )
         # Read-only POST avoids the category feed GET's day-long cache.
         for feed in QUANTUM_ZEITGEIST_FEEDS
@@ -260,6 +260,8 @@ from .fintech_sources import listing_recipes as _fintech_recipes
 RECIPES.update(_fintech_recipes())
 from .biopharma_sources import listing_recipes as _biopharma_recipes
 RECIPES.update(_biopharma_recipes())
+from .securities_sources import listing_recipes as _securities_recipes
+RECIPES.update(_securities_recipes())
 
 
 def enabled(source):
@@ -354,6 +356,9 @@ def text(node):
 
 
 def parse_listing(recipe, spec, raw, now):
+    if recipe.parser.startswith('securities_'):
+        from .securities_parsers import parse_listing as parse_securities
+        return parse_securities(recipe, raw, now)
     if recipe.parser == "rss":
         from .technology_sources import parse_listing as parse_rss
 
@@ -779,16 +784,18 @@ class ListingAdapter:
             return await poll_aes(self, context)
         from .fintech_sources import SOURCES as fintech_sources
         from .biopharma_sources import SOURCES as biopharma_sources
+        from .securities_sources import SOURCES as securities_sources
         if not enabled(context.source) or (context.window_cutoff is not None
-                and context.source.source_id not in (fintech_sources.keys() | biopharma_sources.keys())):
+                and context.source.source_id not in (fintech_sources.keys() | biopharma_sources.keys() | securities_sources.keys())):
             return await self.delegate.poll(context)
         return await self._poll(context, shared=False)
 
     async def poll_shared(self, context):
         from .fintech_sources import SOURCES as fintech_sources
         from .biopharma_sources import SOURCES as biopharma_sources
+        from .securities_sources import SOURCES as securities_sources
         if not enabled(context.source) or (context.window_cutoff is not None
-                and context.source.source_id not in (fintech_sources.keys() | biopharma_sources.keys())):
+                and context.source.source_id not in (fintech_sources.keys() | biopharma_sources.keys() | securities_sources.keys())):
             return await self.delegate.poll_shared(context)
         return await self._poll(context, shared=True)
 
@@ -939,7 +946,11 @@ class ListingAdapter:
                         + "_dox_poll="
                         + str(fresh_query_bucket(context))
                     )
-                if recipe.parser.startswith('bio_'):
+                if recipe.parser.startswith('securities_'):
+                    from .securities_http import fetch_listing
+                    capture = await fetch_listing(self, recipe, spec, headers, context)
+                    captures.append(capture)
+                elif recipe.parser.startswith('bio_'):
                     from .biopharma_http import fetch_listing
                     capture = await fetch_listing(self, recipe, spec, headers, context)
                     captures.append(capture)

@@ -87,6 +87,7 @@ FAMILIES = (
         "quantumzeitgeist.com",
         QUANTUM_ZEITGEIST_FEEDS,
         ("IONQ",),
+        route="jp-standard-6",
         transport="urllib",
     ),
     TechnologySource(
@@ -246,7 +247,8 @@ def endpoint_units(source):
 def source_specs():
     from .fintech_sources import SOURCES as fintech_sources
     from .biopharma_sources import SOURCES as biopharma_sources
-    return {**SOURCES, **fintech_sources, **biopharma_sources}
+    from .securities_sources import SOURCES as securities_sources
+    return {**SOURCES, **fintech_sources, **biopharma_sources, **securities_sources}
 
 
 def initial_sources():

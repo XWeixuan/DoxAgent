@@ -1,0 +1,28 @@
+{
+  "results": [
+    {
+      "title": "DTCC Tokenization Service to Connect with Solana | DTCC",
+      "uri": "https://www.dtcc.com/press-releases/2026/dtcc-tokenization-service-to-connect-with-solana",
+      "raw": {
+        "news_full_name": "DTCC Tokenization Service to Connect with Solana, Advancing Multi-Chain Strategy and Expanding Access to Leading Blockchain Networks",
+        "news_short_name": "DTCC Tokenization Service to Connect with Solana",
+        "news_content_type": [
+          "Press Releases"
+        ],
+        "news_date": 1794459600000
+      }
+    },
+    {
+      "title": "DTCC Launches EU-MiFID ARM, Expanding Global Regulatory Reporting Access | DTCC",
+      "uri": "https://www.dtcc.com/press-releases/2026/dtcc-launches-eu-mifid-arm-expanding-global-regulatory-reporting-access",
+      "raw": {
+        "news_full_name": "DTCC Launches EU-MiFID ARM, Expanding Global Regulatory Reporting Access",
+        "news_short_name": "DTCC Launches EU-MiFID ARM, Expanding Global Regulatory Reporting Access",
+        "news_content_type": [
+          "Press Releases"
+        ],
+        "news_date": 1794315600000
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "GetPressReleaseListResult": [
+    {
+      "Headline": "Securitize Serves as Tokenization Provider for OKXICE's Newly Launched 24/7 Securities Trading Venue",
+      "LinkToDetailPage": "/news/news-details/2026/Securitize-Serves-as-Tokenization-Provider-for-OKXICEs-Newly-Launched-247-Securities-Trading-Venue/default.aspx",
+      "PressReleaseId": 1836,
+      "PressReleaseDate": "11/23/2026 12:00:00"
+    },
+    {
+      "Headline": "Securitize Tokenizes Anthropic Stock Onchain on First Day of Public Trading",
+      "LinkToDetailPage": "/news/news-details/2026/Securitize-Tokenizes-Anthropic-Stock-Onchain-on-First-Day-of-Public-Trading/default.aspx",
+      "PressReleaseId": 1835,
+      "PressReleaseDate": "11/19/2026 12:53:00"
+    }
+  ]
+}

@@ -24,10 +24,17 @@ class TechnologyBodyReader:
         await self.http.close()
 
     async def extract(self, job, record):
+        if job.source.source_id=='tzero_press_releases':
+            from .securities_body import tzero_body
+            return await tzero_body(self.http,self.sources[job.source.source_id],job,record)
+        if (job.source.source_id=='sifma_advocacy_press' and '/advocacy/letters/' in urlsplit(record.url).path) or (
+            job.source.source_id=='sec_crypto_newsroom' and ('/no-action-' in urlsplit(record.url).path or job.message.raw_payload.get('attachment_urls'))):
+            from .securities_body import documents_body
+            return await documents_body(self.http,self.sources[job.source.source_id],job,record)
         if job.source.source_id=='fiercebiotech_biotech':
             from .biopharma_body import fierce_body
             return await fierce_body(self,self.sources[job.source.source_id],job,record)
-        if job.source.source_id == 'hkex_akeso' or (job.source.source_id=='fda_release'
+        if (job.source.source_id in {'sec_crypto_newsroom','sifma_advocacy_press'} and urlsplit(record.url).path.lower().endswith('.pdf')) or job.source.source_id == 'hkex_akeso' or (job.source.source_id=='fda_release'
                                                    and (urlsplit(record.url).path.lower().endswith('.pdf')
                                                         or re.fullmatch(r'/media/\d+/download',urlsplit(record.url).path))):
             from .fintech_body import document_body
@@ -37,6 +44,9 @@ class TechnologyBodyReader:
 
             return await TheFlyBodyReader(self.http).extract(job, record)
         spec = self.sources[job.source.source_id]
+        if spec.source_id=='exchange_infrastructure_press' and urlsplit(record.url).hostname=='ir.theice.com':
+            from dataclasses import replace
+            spec=replace(spec,route='us-standard-5')
         if not spec.accepts(record.url):
             raise ValueError("technology_body_host_not_approved")
         if spec.source_id == 'cftc_trading_rules':

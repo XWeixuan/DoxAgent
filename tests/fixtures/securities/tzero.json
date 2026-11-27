@@ -1,0 +1,26 @@
+{
+  "result": [
+    {
+      "_id": "48eecc13-3f0b-4a77-b3f7-7efcb16de10f",
+      "_type": "news",
+      "publishedAt": "2026-11-23T14:00:00.000Z",
+      "slug": {
+        "_type": "slug",
+        "current": "tzero-and-fg-imperii-acquisition-corp-announce-confidential-submission-of-draft-registration"
+      },
+      "summary": "tZERO Group, Inc., a financial technology company powering tokenized financial markets through regulated Infrastructure-as-a-Service (IaaS) solutions, and FG Imperii Acquisition Corp. (Nasdaq: FGII), a publicly traded special purpose acquisition company, today announced the confidential submission of a draft registration statement on Form S-4 to the U.S. Securities and Exchange Commission.",
+      "title": "tZERO and FG Imperii Acquisition Corp. Announce Confidential Submission of Draft Registration Statement on Form S-4 in Connection with Proposed Business Combination"
+    },
+    {
+      "_id": "41ccdd64-6f0a-48b1-b164-d00a1c04a611",
+      "_type": "news",
+      "publishedAt": "2026-11-17T14:00:00.000Z",
+      "slug": {
+        "_type": "slug",
+        "current": "navra-and-tzero-partner-to-bring-real-time-collateral-mobility-to-qualified-custody"
+      },
+      "summary": "tZERO’s qualified custody technology will support regulated assets held by institutional investors using NAVRA, with compliance rules governing the approval and release of every transfer in near real time.",
+      "title": "NAVRA and tZERO Partner to Bring Real-Time Collateral Mobility to Qualified Custody"
+    }
+  ]
+}

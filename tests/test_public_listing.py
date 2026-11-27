@@ -875,7 +875,7 @@ async def test_quantum_five_independent_category_posts_preserve_identity_and_del
             repeated = await adapter.poll_shared(ctx)
             assert not repeated.messages and not repeated.failures
             assert all(c[0] == recipe.feed and c[2]["method"] == "POST" for c in http.calls)
-            assert all(c[1].transport == "urllib" and c[1].route == "direct" for c in http.calls)
+            assert all(c[1].transport == "urllib" and c[1].route == "jp-standard-6" for c in http.calls)
             assert all("If-None-Match" not in c[2]["headers"] for c in http.calls)
         finally:
             REQUESTS.reset(token)

@@ -1,0 +1,41 @@
+{
+  "data": {
+    "newsTypes": {
+      "nodes": [
+        {
+          "name": "Press Releases",
+          "slug": "press-releases",
+          "news": {
+            "nodes": [
+              {
+                "databaseId": 946982,
+                "title": "Wall Street Wants a 23-hour Trading Day, Is the Back Office Ready?",
+                "uri": "/news/press-releases/wall-street-wants-a-23-hour-trading-day-is-the-back-office-ready/",
+                "dateGmt": "2026-11-24T12:47:07",
+                "modifiedGmt": "2026-11-24T12:47:07"
+              },
+              {
+                "databaseId": 946992,
+                "title": "SIFMA Statement on SEC Proposal to Restructure the Consolidated Audit Trail",
+                "uri": "/news/press-releases/sifma-statement-on-sec-proposal-to-restructure-the-consolidated-audit-trail/",
+                "dateGmt": "2026-11-23T16:46:08",
+                "modifiedGmt": "2026-11-23T16:46:08"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "debug": [
+      {
+        "type": "DEBUG_LOGS_INACTIVE",
+        "message": "GraphQL Debug logging is not active. To see debug logs, GRAPHQL_DEBUG must be enabled."
+      }
+    ],
+    "graphqlSmartCache": {
+      "graphqlObjectCache": []
+    }
+  }
+}

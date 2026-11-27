@@ -397,7 +397,7 @@
       ]
     },
     "corporate_ir_press_releases": {
-      "description": "各上市公司的官方投资者关系与新闻稿入口；按 Ticker 监测已绑定的公告页面及 RSS，获取一手公司披露。 COIN 渠道包含 Coinbase Blog Most Recent、Coinbase IR 与 Deribit Exchange Updates。 已纳入 XENE、RGNX、PRAX、CGEM、SMMT 各自官方新闻稿渠道；每个 ticker 仅绑定自己的内部 IR 渠道。",
+      "description": "各上市公司的官方投资者关系与新闻稿入口；按 Ticker 监测已绑定的公告页面及 RSS，获取一手公司披露。 COIN 渠道包含 Coinbase Blog Most Recent、Coinbase IR 与 Deribit Exchange Updates。 已纳入 XENE、RGNX、PRAX、CGEM、SMMT 各自官方新闻稿渠道；每个 ticker 仅绑定自己的内部 IR 渠道。 新增 SECZ（Securitize）专属 IR News 频道，归属隔离、20秒 HTTP 轮询。",
       "entry_points": [
         "https://www.coinbase.com/blog/landing",
         "https://investor.coinbase.com/news/default.aspx",
@@ -2199,17 +2199,15 @@
       ]
     },
     "sbcamericas_prediction_markets": {
-      "description": "SBC Americas 的 Prediction Markets 专栏；HTTP 入口待浏览器评估，保留同栏目 RSS 兜底并显示 HTTP 失败。",
+      "description": "SBC Americas 的 Prediction Markets 专栏；直接采集同栏目 RSS，保留精确发布时间和源内正文。",
       "entry_points": [
-        "https://sbcamericas.com/category/prediction-markets/"
+        "https://sbcamericas.com/category/prediction-markets/feed/"
       ],
       "listing": {
         "primary": [
-          "HTTP"
-        ],
-        "fallback": [
           "RSS"
-        ]
+        ],
+        "fallback": []
       },
       "body": {
         "primary": [
@@ -2536,6 +2534,120 @@
       "applicability": "INDUSTRY",
       "sector_ids": [
         "L1-06"
+      ]
+    },
+    "sec_crypto_newsroom": {
+      "description": "SEC 官方 Crypto@SEC 与 Newsroom 新闻稿，面向 SECZ、COIN；保留表格日期及原生发布时间，读取公开主文与关联经济文件。",
+      "entry_points": [
+        "https://www.sec.gov/featured-topics/crypto-task-force/cryptosec",
+        "https://www.sec.gov/newsroom/press-releases"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "marketsmedia_exchanges": {
+      "description": "Markets Media 的 Exchanges 与 From The Markets 两栏目统一监测，面向 SECZ、COIN；独立入口调度、合并去重，按统一监测词分发。",
+      "entry_points": [
+        "https://www.marketsmedia.com/category/exchanges-sectors/",
+        "https://www.marketsmedia.com/category/from-the-markets/"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "sifma_advocacy_press": {
+      "description": "SIFMA 官方 Advocacy Letters 与 Press Releases，面向 SECZ、COIN；直查官网使用的 WordPress GraphQL，以 POST 按 Letters / Press Releases 原生分类查询，读取完整公开附件。",
+      "entry_points": [
+        "https://www.sifma.org/advocacy/letters",
+        "https://www.sifma.org/news/press-releases"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "exchange_infrastructure_press": {
+      "description": "SECZ 专用。统一监测 NYSE 母公司 ICE Corporate News Releases 与 DTCC Press Releases；两入口独立调度，使用 Q4 和官方前端的限定新闻稿搜索 API。",
+      "entry_points": [
+        "https://ir.theice.com/press/press-releases/default.aspx",
+        "https://www.dtcc.com/press-releases"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
+      ]
+    },
+    "tzero_press_releases": {
+      "description": "SECZ 专用。监测 tZERO 官方 News / Press Releases；仅公开 News 类型，排除 Media、Insights、Podcast、Learn 与草稿，采用原生 Sanity HTTP 数据接口。",
+      "entry_points": [
+        "https://www.tzero.com/news"
+      ],
+      "listing": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "body": {
+        "primary": [
+          "HTTP"
+        ],
+        "fallback": []
+      },
+      "applicability": "INDUSTRY",
+      "sector_ids": [
+        "L1-09"
       ]
     }
   }

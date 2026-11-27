@@ -83,6 +83,9 @@ IR_INTERVALS = {'be.press': 30, 'ceg.press': 20, 'cohr.corporate': 20, 'cohr.fin
 from .fintech_sources import CATALOG as FINTECH_CATALOG
 SOURCE_INTERVALS.update({s.source_id:20 for s in FINTECH_CATALOG})
 from .biopharma_sources import CATALOG as BIOPHARMA_CATALOG
+from .securities_sources import CATALOG as SECURITIES_CATALOG
+SOURCE_INTERVALS.update({s.source_id:20 for s in SECURITIES_CATALOG})
+IR_INTERVALS['secz.press'] = 20
 SOURCE_INTERVALS.update({s.source_id:20 for s in BIOPHARMA_CATALOG})
 IR_INTERVALS.update({t.lower()+'.press':20 for t in ('XENE','RGNX','PRAX','CGEM','SMMT')})
 IR_INTERVALS.update({'coin.blog':20,'coin.ir':20,'coin.deribit':20})

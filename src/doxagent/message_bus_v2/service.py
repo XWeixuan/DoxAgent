@@ -609,6 +609,9 @@ class MessageBusV2Service:
             raise KeyError(f"default profile not found: {profile_id}")
         from .biopharma_sources import subscription_ids
         approved=subscription_ids(self.repository.list_sources(),normalized)
+        if normalized == 'SECZ':
+            from .securities_sources import subscription_ids as securities_subscriptions
+            approved = securities_subscriptions(self.repository.list_sources(), normalized)
         for entry in profile.entries:
             if approved is not None and entry.source_id not in approved:
                 continue

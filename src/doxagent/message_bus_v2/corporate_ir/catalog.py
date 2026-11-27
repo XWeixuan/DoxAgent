@@ -3,6 +3,7 @@ from . import ADAPTER_REF, SOURCE_ID
 from .schema import IrEndpointSpec
 from .snowflake import LISTING_URL as SNOW_LISTING_URL, HOST as SNOW_API_HOST
 from .coinbase import Q4_URL as COIN_Q4_URL, CMS_URL as COIN_CMS_URL
+from ..securities_sources import SECZ_IR
 
 
 def initial_endpoints():
@@ -134,6 +135,7 @@ def initial_endpoints():
         ('coin.blog','COIN','Coinbase Blog / Most Recent',COIN_CMS_URL,'json','coinbase_blog',['contentful.coinbase.com','www.coinbase.com','coinbase.com']),
         ('coin.ir','COIN','Coinbase IR / News',COIN_Q4_URL,'json','coinbase_q4',['investor.coinbase.com']),
         ('coin.deribit','COIN','Deribit / Exchange Updates','https://insights.deribit.com/exchange-updates/','html','deribit',['insights.deribit.com']),
+          ('secz.press','SECZ','Securitize IR / News',SECZ_IR,'json','q4',['investors.securitize.io']),
     ])
     specs = [
         IrEndpointSpec(
@@ -179,6 +181,9 @@ def initial_endpoints():
         **s.parser_parameters,
         **({'http_route':'us-standard-5'} if s.endpoint_id in {'coin.blog','coin.ir'} else {}),
     }}) if s.owner_ticker=='COIN' else s for s in specs]
+    specs = [s.model_copy(update={'target_interval_seconds':20,'parser_parameters':{
+        **s.parser_parameters,'http_route':'us-standard-5',
+    }}) if s.owner_ticker=='SECZ' else s for s in specs]
     return [s.model_copy(update={
         'parser_parameters': {**s.parser_parameters, 'http_rss_race': True},
         'revision': max(3, s.revision),

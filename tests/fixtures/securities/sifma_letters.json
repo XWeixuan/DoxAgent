@@ -1,0 +1,41 @@
+{
+  "data": {
+    "filingTypes": {
+      "nodes": [
+        {
+          "name": "Letters",
+          "slug": "letters",
+          "advocacies": {
+            "nodes": [
+              {
+                "databaseId": 946846,
+                "title": "Political Contributions by Certain Investment Advisers (SIFMA AMG)",
+                "uri": "/advocacy/letters/political-contributions-by-certain-investment-advisers-sifma-amg/",
+                "dateGmt": "2026-11-09T20:57:35",
+                "modifiedGmt": "2026-11-09T20:57:35"
+              },
+              {
+                "databaseId": 946842,
+                "title": "Political Contributions by Certain Investment Advisers",
+                "uri": "/advocacy/letters/political-contributions-by-certain-investment-advisers/",
+                "dateGmt": "2026-11-09T19:40:26",
+                "modifiedGmt": "2026-11-09T19:40:26"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "debug": [
+      {
+        "type": "DEBUG_LOGS_INACTIVE",
+        "message": "GraphQL Debug logging is not active. To see debug logs, GRAPHQL_DEBUG must be enabled."
+      }
+    ],
+    "graphqlSmartCache": {
+      "graphqlObjectCache": []
+    }
+  }
+}
