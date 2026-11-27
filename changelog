@@ -3559,3 +3559,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-27 消息源发布防复活补充：候选初始化配置的安装/回滚跳过退役源，Google 候选绑定缺省相关性开启；生产只切换 API/Collector/Bus/BODY/O4，保留正在执行四项研究的 Initialization 进程，live 安装由新 Bus 负责。新增快照及回滚回归。
 
 2026-11-27 W3 configurable source fast lane: SEC EDGAR/corporate IR Trade uses gpt-6.2-sol high fast; Operations remains Luna max default. Freeze per-Case choice and retain existing Luna Template/READY identity, reuse resident across per-turn model/effort/tier switches without extra Resume or Sol stock. Preserve live market guards when merging exact deployed source. Core48 plus updated11 overlapping tests passed. See docs/w3-source-fast-lane-20261127.md.
+
+2026-11-27 10:10 初始化观测完成：CGEM/RGNX/PRAX/XENE/SMMT 均 SUCCEEDED 并激活，Bus/Runtime ACK 有效，Control RUNNING，当前无 RUNNING/QUEUED 初始化。每45分钟休眠后检查，休眠期间未轮询，未创建后台自动化。记录 docs/initialization-watch-completion-20261127.md。
