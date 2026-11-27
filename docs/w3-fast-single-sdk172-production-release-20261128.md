@@ -60,7 +60,7 @@ Python测试明确使用隔离树源码及临时安装的0.172 SDK，主开发�
 
 - 实际Scheduler配置仅开启 `sec_edgar,corporate_ir_press_releases`；hide_w2仍为true，全局仍dual_consensus。隔离内存journal验证四来源矩阵及冻结后重入：SEC/IR为Sol/high/single，IBKR/Yahoo为Luna/max/dual；准备和Operations均为Luna/max。测试没有写生产Case。
 - 新Worker恢复后真实库存补齐为6份Luna READY，没有Sol库存；初始化服务已恢复。没有为本次发布降低实时并发或新增长驻服务。
-- 发布后自然普通来源样本：INTC `case_e05cc370b1264fc5a73c4019e6fd932b`、MU `case_3b73b3911bf845998ebffcbb58526c0f` 已完成Trade提交。实际A/B回执均为Luna/max/fast，证明普通双任务继续运行；抽查时Operations尚在继续，其他新Case也仍在途，不将其算作已完成。
+- 发布后四个自然普通来源样本均已完成Trade和Operations提交：INTC `case_e05cc370b1264fc5a73c4019e6fd932b`、MU `case_3b73b3911bf845998ebffcbb58526c0f`、COHR `case_737139d115884b19ba77005a509bc213`、NBIS `case_2507eb8b7f7f43b79cba623a0eb1d0d2`。实际A/B回执均为Luna/max/fast，各Case只有一次Luna/max/default Operations。由16个真实付费Job的持久参数和两阶段提交状态确认普通通道未被改变，不将其当成SEC/IR质量样本。
 - 前轮HISTORY恢复的56份Operations仍全部COMMITTED，原Job身份及applied标记56/56；953个SUPPLEMENTAL仍收敛、无剩余补充任务。复核窗口未发现新HISTORY_RETIRED；未改变未处理Fact义务、语义日边界或正常维护机制。
 
 本次没有等到新的SEC/IR自然研判样本，不能把最小canary等同于真实快通道业务速度、质量或完整Runtime P95达标。固定来源矩阵、真实暖线程调用、实际逐轮Tier已验证；后续质量与时效应按自然快来源Case另行评估。
