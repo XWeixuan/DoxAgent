@@ -84,4 +84,6 @@ Tom’s Hardware不按“评测/促销”体裁整体过滤。CPU、RAM、SSD本
 
 发布回执见 `release-receipt.json`，实际镜像/启动时间、445绑定兼容检查、79项生产离线控制及日志检查见 `production-verification.json`。保留第一版记录以解释差异，线上只使用本版16组规则。
 
+代码与回执已合入远端main；集成时核对上述12个后端发布文件及全部前端文件与已部署提交逐字节一致，主线其他并行修改保持原样。共享经验文件按6个ticker各合并留存一条复盘。Web实际HTTP返回新index，加载的消息总线资源含额外过滤标记。
+
 证据目录：`eval/binding_extra_regex_retune_20261127/`。核心文件为 `rules-selected.json`、`all-history-results.csv`、`blocked-review.csv`、`business-controls.csv`、`prior-audit-overlap.json`、`manifest.json`。完整原始正文与探索卡片本地保留，不重复提交全文。
