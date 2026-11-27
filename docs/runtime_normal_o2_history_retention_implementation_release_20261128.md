@@ -36,7 +36,7 @@
 
 ## 4. 生产发布与恢复结果
 
-主体修复 `228b1b485` 已发布 Scheduler 与 Transport Maintenance。最终两个结算/收尾补丁也已提交 origin/main（最终代码 `be4500fef`）并完成候选镜像构建，**最终 Scheduler 候选尚未切换，不把本轮写成全部发布完成**。
+主体修复 `228b1b485` 已发布 Scheduler 与 Transport Maintenance。最终两个结算/收尾补丁也已提交 origin/main（最终代码 `be4500fef`），并于北京时间11月28日01:30完成Scheduler切换；本轮产品代码已全部应用。
 
 采用当前已验收镜像的逐角色精确源码覆盖、文件 hash 核验和冻结的正式发布 owner；仅替换 Scheduler／Transport Maintenance。Worker、原 Job、Thread、模型与 Prompt 保留。旧治理组件在必要引用迁移和恢复核验之前保持停止。
 
@@ -72,21 +72,25 @@ Transport Maintenance 于北京时间00:53恢复，新镜像 `sha256:ccc7f6f084d
 
 远端 `/data/runtime/history-retired-repair-20261127/` 保存：`reference-verification-v3.json`、`pending-compatibility.json`、`final-retirement.json`、`final-business-acceptance.json`。恢复逐 Case 原错误及 Job 证明位于 Runtime 原 `history_retired_saved_result_recovery` 审计命名空间；交易决策及原 Thread 不重建。
 
-### 4.4 最终发布阻塞与准确版本
+### 4.4 最终发布完成与准确版本
 
 | 组件/代码 | 当前状态 |
 | --- | --- |
 | origin/main 源码 | 最终产品代码 be4500fef；另有本回执文档提交 |
-| Scheduler 正在运行 | 228b1b485，镜像 sha256:603b6d20ea5b…，北京时间00:46:46启动，restart_count=0 |
+| Scheduler 正在运行 | be4500fef，镜像 sha256:f5065bbc0f7c…，北京时间01:30:09启动，restart_count=0；全部覆盖源码hash核验通过 |
 | Transport Maintenance 正在运行 | 228b1b485，镜像 sha256:ccc7f6f084d6…，北京时间00:53:26启动，restart_count=0 |
-| 最终 Scheduler 候选 | be4500fef，镜像 sha256:f5065bbc0f7c…，源码hash/编译已验证，尚未生效 |
-| Worker | 仍为原 sha256:543c6014d830…，北京时间19:12启动，容器/启动时间未变，restart_count=0 |
+| 最终 Scheduler 候选 | 已正式生效，18个覆盖文件与be4500fef构建清单逐文件hash一致 |
+| Worker | 仍为原 sha256:543c6014d830…，11月27日北京时间19:12启动，容器/启动时间未变，restart_count=0 |
 
-最后待生效的是7111904d8的“继承精确 Native 已结算映射确认”和be4500fef的“无效旧补充回执行政退役”。最后一例存量旧补充已用修复工具做完行政收敛，故存量未收敛数为0，但不能以此冒充对应协调器分支已经发布。
+7111904d8的“继承精确 Native 已结算映射确认”和be4500fef的“无效旧补充回执行政退役”现已生效。最后一例存量旧补充已管理收敛，最终版本也具备阻止重复恢复的协调器分支。
 
 正式发布入口数次执行原有 `stop_idle_scheduler`，最后一次把观察窗口延长到180秒，仍因实际在途 owner/Future 而拒绝切换，旧服务保持运行。自动审批拒绝了快照/重排全部RUNNING Task/Effect的强制切换脚本，原因是范围可能涉及W3，超出单纯O2受控操作；该次被拒操作没有执行，也没有以修改 guard 或间接方式绕过。
 
-已向用户请求本次仅受控重启Scheduler、保留Worker及原Job/Thread/冻结输入并按原身份续接的明确许可，当前尚未收到回复。后续获准后按已构建候选完成正式切换、重新核验源码hash与56个原结果状态；不修改在途请求身份，不将网络不确定性当未受理。若选择继续等待空闲，则保留当前主体版本服务，正常O2窗口前需完成最后候选切换。
+用户随后明确授权“重启，以后不要问了”。据此受控重启Scheduler，旧进程收到TERM后在首个观察间隔内退出；停止后的最终RUNNING Task/Effect均为0，未实际改写任何在途任务状态或租约。Worker、原Job/Thread/冻结输入保持不变，正式发布入口完成镜像替换；以后同类已授权发布所需的受控重启直接执行。
+
+01:30:46复验：56/56历史Operations仍COMMITTED、原Job匹配56/56、业务提交标记56/56；旧补充管理退役953个、未收敛0；13个当日基线均PUBLISHED。自首轮发布起自然流量累计52个主Trade/各52个双分支结果和54个Operations完成，同一窗口新Stage无HISTORY_RETIRED；这些累计量包含此前主体版本的运行，不冒充最终镜像独有样本。最终角色核验和重启回执位于 `/var/lib/doxagent/releases/normal-o2-be4500fef/`。
+
+启动日志确认Scheduler已恢复16个ticker的Bus轮询，无启动异常。启动恢复的 `journal.reconcile_interrupted` 有最高8.56秒的只读扫描，未见SQLite错误；这是独立的启动历史扫描观测，本轮未修改该路径，也不据此宣称非模型P95已达标。重启后瞬时Scheduler约223MiB、Worker约1.61GiB，无内存异常上涨。
 
 ## 5. 验收边界及本地工作区
 
