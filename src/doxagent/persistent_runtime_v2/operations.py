@@ -123,7 +123,7 @@ def run_command(args: argparse.Namespace, settings: DoxAgentSettings) -> Any:
             if not args.mode:
                 raise ValueError('--mode required')
             journal.set('w3_trade_config','mode',args.mode)
-        return dict(mode=journal.get('w3_trade_config','mode','single'), applies_to='new W3 Effects only')
+        return dict(mode=journal.get('w3_trade_config','mode','single'), applies_to='new ordinary W3 Effects only; source_fast always single; frozen Cases unchanged')
     ticker = getattr(args, "ticker", "").upper()
     if args.command in {"pause", "resume"}:
         journal.set("pause", ticker, args.scope if args.command == "pause" else None)

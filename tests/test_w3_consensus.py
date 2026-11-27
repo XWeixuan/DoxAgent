@@ -120,7 +120,8 @@ def test_pair_commits_once_and_one_operations(tmp_path, a, b):
                 "SELECT json_extract(payload_json,'$.frozen_inputs') FROM runtime_v2_cases WHERE case_id=?",
                 (case.case_id,),
             ).fetchone()[0]
-        assert set(json.loads(frozen_raw)) == {"$doxagent_content_v1", "bytes"}
+        assert isinstance(json.loads(frozen_raw), dict)
+        assert saved.frozen_inputs["large_frozen_regression"] == "x" * 30000
         assert saved.w3_trade_decision["decision"] == (a if a == b else "NO_TRADE")
         assert calls == ["A", "B"] and agent.forks == 2
         from doxagent.persistent_runtime_v2.w3_execution import W3Execution

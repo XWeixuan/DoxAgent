@@ -1868,9 +1868,9 @@ class PersistentRuntimeV2Service:
             from .w3_models import freeze_case_profile
 
             from .w3_consensus import freeze_mode
-            freeze_mode(case, self.journal)
             freeze_case_profile(case, provider=getattr(self._w3_agent, "_model_provider", None),
                                 fast_source_ids=getattr(self._w3_agent, "_fast_source_ids", ()))
+            freeze_mode(case, self.journal)
         effects: list[RuntimeEffect] = []
         for effect_type in case.route.side_effects:
             if (case.route.primary_route.value == "W3" and effect_type is RuntimeSideEffect.EMIT_DELTA

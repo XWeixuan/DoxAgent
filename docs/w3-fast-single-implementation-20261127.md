@@ -1,0 +1,13 @@
+# W3快速单任务与普通双任务实施
+
+依据：w3_source_fast_single_and_normal_dual_adjustment_plan_20261127.md。
+
+仅调整首次W3配置冻结。service先freeze_case_profile，再freeze_mode；freeze_mode读取同一份冻结source_fast标记选single，其余仍读取原全局single/dual_consensus配置。已冻结值、历史路由/契约保护不变。来源名单仍只有DOXAGENT_W3_FAST_SOURCE_IDS，生产目标为sec_edgar,corporate_ir_press_releases；全局仍dual_consensus。
+
+快速Trade=gpt-6.2-sol/high/fast，一个真实Job及Case Thread；普通Trade=两个Luna/max/fast；Operations均一次Luna/max/default，复用Trade自己的/代表Thread。沿用上轮Luna Template、READY和SDK逐轮配置，不新建Sol池，不新增队列、同步数据库读写或模式状态表。原提交原子性、付费回执、恢复、ACK、资源生命周期及Schema/Prompt均不改。
+
+原三项共识测试改为验证存储JSON可读及完整30000字符可恢复，不强迫物理外置表示；原决策、A/B调用、重入不重派、Operations和意图数量断言保留。核心77项通过；补充同ticker快单/普通双混跑及阶段绑定后10项通过（重叠）。覆盖真实首次登记顺序、来源矩阵、全局切换不改历史、历史模型不重分类、快单无A/B Stage、普通有两票、Operations同线程一次；SDK Luna→Sol→Operations无额外Resume的原测试继续通过。
+
+上轮源码尚未生产发布，因此本次需要连同上轮Worker SDK和Scheduler一并发布，不能直接使用旧Scheduler候选。以实际镜像为基底做精确文件增量，保留生产已有行情开关，不带入其他会话未提交文件。Worker已受理任务检查仍保留，不通过先停Scheduler再等待付费任务制造长消费空窗。
+
+发布和生产验收记录待完成后追加；无真实自然样本时不得宣布业务时效和准确率收益已验收。

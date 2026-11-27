@@ -47,7 +47,9 @@ def freeze_mode(case, journal):
         if journal is None:
             case.frozen_inputs["w3_trade_mode"] = "single"
             return "single"
-        existing = journal.get("w3_trade_config", "mode", "single") if journal else "single"
+        # Use the once-frozen source route; never re-read the source list here.
+        fast = case.frozen_inputs.get("w3_model_route", {}).get("route") == "source_fast"
+        existing = "single" if fast else journal.get("w3_trade_config", "mode", "single")
         if existing not in {"single", "dual_consensus"}:
             raise ValueError("invalid W3 trade mode")
         # An old routed Effect must never gain a second model call on recovery.
