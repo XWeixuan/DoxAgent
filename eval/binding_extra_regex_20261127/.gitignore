@@ -1,0 +1,15 @@
+*
+!.gitignore
+!README.md
+!replay.py
+!export.py
+!review_notes.py
+!rules-selected.json
+!summary-selected.json
+!manifest.json
+!all-history-results.csv
+!blocked-review.csv
+!blocked-review.jsonl
+!protected-controls.csv
+!prior-audit-overlap.json
+!evidence-sha256.txt

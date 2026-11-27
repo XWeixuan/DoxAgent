@@ -451,6 +451,22 @@ class DistributionWorker:
         jev_attempts: int,
         error_code: str | None,
     ) -> None:
+        if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION and (
+            regex_hit or (jev_result or 0) >= 0.5
+        ):
+            from .extra_relevance import extra_allows
+
+            binding = await self._read(
+                self.bus.repository.get_binding, row['ticker'] + ':' + source.source_id
+            )
+            if binding and not extra_allows(binding, message):
+                await self.bus.storage.call(
+                    self.repository.finish_delivery, row['delivery_id'], row['claim_token'],
+                    "NOT_RELEVANT", {"reason": "EXTRA_REGEX_FILTERED",
+                                   "binding_version": binding.version,
+                                   "regex_hit": regex_hit, "jev_result": jev_result},
+                )
+                return
         message = message.model_copy(update={'metadata':{
             **message.metadata, 'pipeline_trace':{
                 **message.metadata.get('pipeline_trace',{}),

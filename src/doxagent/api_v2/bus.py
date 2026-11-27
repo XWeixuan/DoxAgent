@@ -65,6 +65,7 @@ def source_status(store, binding, seq, view, cadences=None, *, live_states=None,
     return validate(
         "SourceStatus",
         {
+            "extra_relevance_configured": native.extra_relevance is not None,
             **({'collection_observed_at':instant(datetime.fromisoformat(poll['collection_observed_at'])),
                 'collection_state_source':'ACQUISITION_LEDGER'} if poll.get('collection_observed_at') else {}),
             **({"cadence":cadences.get(native.binding_id)} if cadences and native.binding_id in cadences else {}),

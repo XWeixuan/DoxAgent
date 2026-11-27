@@ -335,6 +335,18 @@ class DefaultMonitoringProfile(BusModel):
 
 
 class TickerSourceBinding(BusModel):
+    extra_relevance: JsonObject | None = None
+
+    @field_validator("extra_relevance")
+    @classmethod
+    def _extra_relevance(cls, value):
+        if value is None:
+            return None
+        # Lazy import: monitoring_terms uses this binding model too.
+        from .extra_relevance import validate_extra
+
+        return validate_extra(value)
+
     binding_id: str
     ticker: str
     source_id: str

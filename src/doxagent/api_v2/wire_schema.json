@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "af623566e21e565f075e6a14d843303a524dde9d157f90c8229496c48fd1d85d",
+  "source_sha256": "2aaab4bc92e62307e46990e43ea0c714f5125b03c315e3ef41ee66857d6cc261",
   "$defs": {
     "Id": {
       "type": "string"
@@ -6656,6 +6656,9 @@
     "SourceStatus": {
       "type": "object",
       "properties": {
+        "extra_relevance_configured": {
+          "type": "boolean"
+        },
         "recent": {
           "$ref": "#/$defs/BusSourceMetrics"
         },
@@ -7025,6 +7028,16 @@
         },
         "streaming": {
           "$ref": "#/$defs/Streaming"
+        },
+        "extra_relevance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MonitoringL2Language"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -7644,6 +7657,16 @@
           },
           "required": [],
           "additionalProperties": false
+        },
+        "extra_relevance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MonitoringL2Language"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [],

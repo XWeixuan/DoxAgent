@@ -520,6 +520,18 @@ class LiveDeliveryWorker:
         return prepared
 
     async def publish(self, row, source, binding, message):
+        from .extra_relevance import extra_allows
+
+        if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION and not extra_allows(binding, message):
+            await self._decision(
+                None, row, "IRRELEVANT",
+                regex=bool(row.get("_positive_regex") or row.get("regex_result")),
+                score=row.get("_extra_model_score", row.get("jev_result")),
+                error="EXTRA_REGEX_FILTERED",
+            )
+            return
+        if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+            row['_extra_relevance_checked'] = binding.extra_relevance
         for _ in range(2):
             prepared = await self.bus.storage.prepare(
                 self.repository.prepare_publication, self.bus, row, source, binding, message)
@@ -633,6 +645,7 @@ class LiveDeliveryWorker:
                         if await self.bus.storage.call(
                             self.repository.decision, row, "PENDING", regex=False, score=score
                         ):
+                            row["_extra_model_score"] = score
                             await self.publish(row, source, binding, msg)
 
             scores, attempts, errors = await self.classifier._jev(

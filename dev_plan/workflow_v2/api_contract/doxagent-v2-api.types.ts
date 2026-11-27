@@ -650,6 +650,7 @@ export interface BusStatus {
   timeliness?: PollTimeliness;
 }
 export interface SourceStatus {
+  extra_relevance_configured?: boolean;
   recent?: BusSourceMetrics;
   collection_observed_at?: Instant;
   collection_state_source?: "ACQUISITION_LEDGER";
@@ -730,7 +731,7 @@ export interface Streaming {
   publication_mode: "immediate" | "buffered";
   buffer: { max_items: Count; max_wait_seconds: Count; max_compiled_body_chars: Count };
 }
-export interface BindingEditable { enabled: boolean; source_parameters: JsonObject; polling: Polling; streaming: Streaming }
+export interface BindingEditable { extra_relevance?: MonitoringL2Language | null; enabled: boolean; source_parameters: JsonObject; polling: Polling; streaming: Streaming }
 export interface BindingConfig {
   binding_id: Id; ticker: string; source: SourceLabel;
   binding_version: Count; source_version: Count; control_etag: string;
@@ -780,6 +781,7 @@ export interface MonitoringTermsValidation {
   search_previews: MonitoringTermsConsumer[];
 }
 export interface BindingPatch {
+  extra_relevance?: MonitoringL2Language | null;
   enabled?: boolean;
   source_parameters?: JsonObject;
   polling?: Partial<Polling>;

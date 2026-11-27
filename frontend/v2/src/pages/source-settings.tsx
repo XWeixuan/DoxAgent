@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 import Ajv from "ajv";
+import { Filter } from "lucide-react";
+import { parseRulesJson } from "@/core/monitoring-terms";
 import { toast } from "sonner";
 import type {
   SourceStatus,
@@ -61,7 +63,7 @@ export default function BindingSettings({
                     aria-pressed={s === current}
                     onClick={() => setSelected(s.source.binding_id)}
                   >
-                    <strong>{s.source.name}</strong>
+                    <strong>{s.source.name}{s.extra_relevance_configured && <Filter className="ml-1 inline size-3.5 align-text-bottom text-muted-foreground" aria-label="已配置额外相关性过滤" />}</strong>
                     <span>
                       {s.source.kind === "api" ? "API" : "爬虫"} ·{" "}
                       {s.target_interval_seconds}s / 次
@@ -260,6 +262,7 @@ function Editor({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [saved, setSaved] = useState(false);
+  const [extraText, setExtraText] = useState(original.extra_relevance ? JSON.stringify(original.extra_relevance, null, 2) : "");
   const schema = config?.parameter_schema ?? candidate!.parameter_schema;
   const hasParameters =
     Object.keys((schema.properties ?? {}) as object).length > 0 ||
@@ -300,14 +303,19 @@ function Editor({
       const seconds = Number(interval);
       if (!Number.isInteger(seconds) || seconds < 1)
         throw new Error("轮询间隔必须为正整数秒");
+      const extra = extraText.trim()
+        ? parseRulesJson(JSON.stringify({ binding: JSON.parse(extraText) })).binding
+        : null;
       const effective: BindingEditable = {
         ...original,
+        extra_relevance: extra,
         enabled,
         source_parameters: parameters,
         polling: { ...original.polling, target_interval_seconds: seconds },
       };
       const body = config
         ? {
+            extra_relevance: extra,
             enabled,
             source_parameters: parameters,
             polling: { target_interval_seconds: seconds },
@@ -378,6 +386,30 @@ function Editor({
     >
       <FieldGroup>
         <h3>运行设置</h3>
+        {config?.monitoring_terms_usage.acquisition_mode ===
+          "by_distribution" && (
+          <details>
+            <summary>
+              额外相关性过滤
+              {original.extra_relevance && (
+                <Filter
+                  className="ml-1 inline size-3.5 align-text-bottom text-muted-foreground"
+                  aria-label="已配置"
+                />
+              )}
+            </summary>
+            <Field>
+              <FieldLabel>绑定专用正则（JSON，留空关闭）</FieldLabel>
+              <textarea
+                aria-label="额外相关性过滤 JSON"
+                rows={8}
+                value={extraText}
+                onChange={(e) => setExtraText(e.target.value)}
+              />
+              <small>统一判定放行后再执行，仅影响当前绑定。</small>
+            </Field>
+          </details>
+        )}
         <Field orientation="horizontal">
           <input
             id={"enable-" + (config?.binding_id ?? candidate!.source_id)}

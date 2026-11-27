@@ -10,6 +10,7 @@ import {
   Search,
   ChevronDown,
   Clock3,
+  Filter as ExtraFilterIcon,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -504,7 +505,15 @@ export function SourceCard({
     <article className="source-status">
       <header>
         <div>
-          <h3>{s.source.name}</h3>{" "}
+          <h3>
+            {s.source.name}
+            {s.extra_relevance_configured && (
+              <ExtraFilterIcon
+                className="ml-1 inline size-3.5 align-text-bottom text-muted-foreground"
+                aria-label="已配置额外相关性过滤"
+              />
+            )}
+          </h3>{" "}
           <div className="source-kind">
             <span>{s.source.kind === "api" ? "API" : "爬虫"}</span>
             <span>
@@ -565,7 +574,9 @@ export function SourceCard({
           <dd>{today ? valueText(today) : "未记录"}</dd>
           <dt>实时首发端到端 · 24h</dt>
           <dd title={`滚动24h全量 · ${s.recent?.e2e_samples ?? 0}篇`}>
-            {s.recent?.mean_e2e_seconds == null ? "暂无近期数据" : seconds(s.recent.mean_e2e_seconds)}
+            {s.recent?.mean_e2e_seconds == null
+              ? "暂无近期数据"
+              : seconds(s.recent.mean_e2e_seconds)}
           </dd>
           <dt>真实抓取延时</dt>
           <dd>{seconds(s.recent?.mean_capture_seconds)}</dd>

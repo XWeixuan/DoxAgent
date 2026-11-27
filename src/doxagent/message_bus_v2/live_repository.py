@@ -1597,6 +1597,14 @@ class LiveRepository:
                     (key, ticker),
                 )
                 return
+            if ('_extra_relevance_checked' in row and
+                    active[0] != prepared['binding_version']):
+                latest = db.execute(
+                    "SELECT data_json FROM ticker_source_bindings WHERE binding_id=?",
+                    (row['binding_id'],),
+                ).fetchone()
+                if json.loads(latest[0]).get('extra_relevance') != row['_extra_relevance_checked']:
+                    raise RuntimeError('live_publication_extra_relevance_changed')
             if (control["epoch"] if control else None) != prepared["origin_epoch"]:
                 raise RuntimeError("live_publication_configuration_changed")
             if prepared.get("unchanged"):

@@ -17,7 +17,7 @@ def _normalize(value: str | None) -> str:
     return " ".join(unicodedata.normalize("NFC", value or "").split())
 
 
-def _match(term: L2Term, message: RawMessageInput) -> bool:
+def _match(term: L2Term, message: RawMessageInput, *, strict: bool = False) -> bool:
     parts = {
         "title": _normalize(message.title),
         "summary": _normalize(message.summary),
@@ -34,6 +34,8 @@ def _match(term: L2Term, message: RawMessageInput) -> bool:
     try:
         return regex.search(pattern, text, flags=flags, timeout=0.02) is not None
     except (regex.error, TimeoutError) as exc:
+        if strict:
+            raise
         logger.warning("invalid or timed-out L2 rule: %s", type(exc).__name__)
         return False
 

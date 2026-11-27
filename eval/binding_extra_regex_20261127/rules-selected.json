@@ -1,0 +1,1708 @@
+{
+  "MU:huggingnews_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial|DRAM|NAND|HBM\\d*|DDR[3-6]|LPDDR|CXL|memory chips?|memory prices?|memory architecture)\\b|美光|記憶體|메모리(?!\\s*폼)|디램|낸드",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial)\\b|美光|마이크론",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bdata[ -]?cent(?:er|re)s?\\b[^.!?\\n]{0,100}\\b(?:construction|restrictions?|permits?|ban|moratorium|capacity|loans?|financing|funding|buildouts?|expansion)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial|DRAM|NAND|HBM\\d*|DDR[3-6]|LPDDR|CXL|memory chips?|memory prices?|memory architecture)\\b|美光|記憶體|메모리(?!\\s*폼)|디램|낸드|\\b(?:RAM|VRAM|memory bandwidth|memory capacity|SSDs?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)|\\b(?:hardware|Ascend|GB[23]\\d\\d|Blackwell|local (?:execution|hardware)|on.device|quantization|scale compute|virtual machines?|compute to scale)\\b|\\b(?:DRAM|RAM|NAND|memory)\\b[^.!?\\n]{0,80}\\b(?:bandwidth|required|requirements|one.tenth|price|shortage)|晶片.{0,20}(?:禁令|管制|限制)|(?:禁令|管制|限制).{0,20}晶片|記憶體.{0,15}(?:短缺|供應|成本|資源)|AI.{0,8}基礎設施.{0,15}(?:成本|支出|投資)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "MU:tomshardware_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial|DRAM|NAND|HBM\\d*|DDR[3-6]|LPDDR|CXL|memory chips?|memory prices?|memory architecture)\\b|美光|記憶體|메모리(?!\\s*폼)|디램|낸드",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial)\\b|美光|마이크론",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:DRAM|RAM|NAND|memory)\\b[^.!?\\n]{0,100}\\b(?:prices? (?:have|increas|ris|sur|sky)|shortage|supply (?:pressure|short)|price increases)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "INTC:huggingnews_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|CPUs?|Ryzen|EPYC|x86|Core Ultra|foundry|wafer|lithography|chiplets?|advanced packaging|TSMC|AMD)\\b|英特爾|處理器|晶圓|인텔|프로세서",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|Core Ultra)\\b|英特爾|인텔",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bdata[ -]?cent(?:er|re)s?\\b[^.!?\\n]{0,100}\\b(?:construction|restrictions?|permits?|ban|moratorium|capacity|loans?|financing|funding|buildouts?|expansion)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|CPUs?|Ryzen|EPYC|x86|Core Ultra|foundry|wafer|lithography|chiplets?|advanced packaging|TSMC|AMD)\\b|英特爾|處理器|晶圓|인텔|프로세서|\\b(?:GPUs?|processors?|chip (?:design|manufactur)|semiconductors?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)|\\b(?:hardware|Ascend|GB[23]\\d\\d|Blackwell|local (?:execution|hardware)|on.device|quantization|scale compute|virtual machines?|compute to scale)\\b|\\b(?:DRAM|RAM|NAND|memory)\\b[^.!?\\n]{0,80}\\b(?:bandwidth|required|requirements|one.tenth|price|shortage)|晶片.{0,20}(?:禁令|管制|限制)|(?:禁令|管制|限制).{0,20}晶片|記憶體.{0,15}(?:短缺|供應|成本|資源)|AI.{0,8}基礎設施.{0,15}(?:成本|支出|投資)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "INTC:tomshardware_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|CPUs?|Ryzen|EPYC|x86|Core Ultra|foundry|wafer|lithography|chiplets?|advanced packaging|TSMC|AMD)\\b|英特爾|處理器|晶圓|인텔|프로세서",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|Core Ultra)\\b|英特爾|인텔",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "BE:huggingnews_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:IPO|initial public offering|valuation|AI.{0,30}(?:raises?|funding)|(?:raises?|funding).{0,50}AI|AI.{0,25}revenue|billionaires?)\\b",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Bloom Energy|SOFC|SOEC|fuel cells?|power plants?|power demand|electricity|power supply|grid|data[ -]?cent(?:er|re)s?)\\b|燃料電池|供電|發電|電網|블룸|연료전지",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bBloom Energy\\b|布魯姆|블룸\\s*에너지",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bdata[ -]?cent(?:er|re)s?\\b[^.!?\\n]{0,100}\\b(?:construction|restrictions?|permits?|ban|moratorium|capacity|loans?|financing|funding|buildouts?|expansion)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Bloom Energy|SOFC|SOEC|fuel cells?|power plants?|power demand|electricity|power supply|grid|data[ -]?cent(?:er|re)s?)\\b|燃料電池|供電|發電|電網|블룸|연료전지",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:capital expenditur\\w*|capex|purchase and lease commitments|artificial intelligence infrastructure)\\b|\\b(?:launch|open|build|construct)\\w*[^.!?]{0,90}\\b(?:facilit\\w*|plants?|factor\\w*)\\b|\\b(?:compute|computing|GPUs?|AI infrastructure|AI chips?|AI servers?|neocloud|server (?:orders|shipments))\\b|(?:投入|投資|資本支出)[^。！？\\n]{0,70}(?:廠|產線|產能)|(?:雲端服務供應商|CSP)[^。！？\\n]{0,45}(?:訂單|採購)|(?:新建|興建|擴建|擴廠|建置|改建)[^。！？\\n]{0,45}(?:晶圓廠|產線|生產設施)|(?:晶圓廠|產線|生產設施)[^。！？\\n]{0,45}(?:興建|擴建|擴廠|建置)|(?:半導體|記憶體)[^。！？\\n]{0,35}資本支出|資本支出[^。！？\\n]{0,35}(?:擴充|建廠)|(?:雲端|CSP)[^。！？\\n]{0,45}(?:資本支出|伺服器|網通)|(?:擴大|擴張)[^。！？\\n]{0,15}基礎設施|\\b(?:supercomput\\w*|HPC)\\b|\\d+(?:\\.\\d+)?\\s*(?:MW|GW)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "BE:tomshardware_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:CPUs?|Ryzen|Core Ultra|DRAM|NAND|HBM\\d*|DDR[3-6]|SSDs?|graphics cards?|GeForce)\\b|處理器|記憶體|快閃記憶體|儲存晶片|顯示卡",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Bloom Energy|SOFC|SOEC|fuel cells?|power plants?|power demand|electricity|power supply|grid|data[ -]?cent(?:er|re)s?)\\b|燃料電池|供電|發電|電網|블룸|연료전지",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bBloom Energy\\b|布魯姆|블룸\\s*에너지",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:capital expenditur\\w*|capex|purchase and lease commitments|artificial intelligence infrastructure)\\b|\\b(?:launch|open|build|construct)\\w*[^.!?]{0,90}\\b(?:facilit\\w*|plants?|factor\\w*)\\b|\\b(?:compute|computing|GPUs?|AI infrastructure|AI chips?|AI servers?|neocloud|server (?:orders|shipments))\\b|(?:投入|投資|資本支出)[^。！？\\n]{0,70}(?:廠|產線|產能)|(?:雲端服務供應商|CSP)[^。！？\\n]{0,45}(?:訂單|採購)|(?:新建|興建|擴建|擴廠|建置|改建)[^。！？\\n]{0,45}(?:晶圓廠|產線|生產設施)|(?:晶圓廠|產線|生產設施)[^。！？\\n]{0,45}(?:興建|擴建|擴廠|建置)|(?:半導體|記憶體)[^。！？\\n]{0,35}資本支出|資本支出[^。！？\\n]{0,35}(?:擴充|建廠)|(?:雲端|CSP)[^。！？\\n]{0,45}(?:資本支出|伺服器|網通)|(?:擴大|擴張)[^。！？\\n]{0,15}基礎設施|\\b(?:supercomput\\w*|HPC)\\b|\\d+(?:\\.\\d+)?\\s*(?:MW|GW)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:data[ -]?cent(?:er|re)s?|power plants?|electricity|grid|gigawatts?|megawatts?|optical interconnects?|transceivers?|silicon photonics)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "NBIS:huggingnews_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|AI models?)\\b.{0,80}\\b(?:breach\\w*|bypass\\w*|steal|leak\\w*|fraud|probe\\w*|hack\\w*|lie|self.replicat\\w*)\\b|AI.{0,12}(?:代理|模型).{0,30}(?:資安|越權|詐騙|竊取|入侵)|(?:資安|偷金鑰|攻擊循環).{0,35}AI.{0,8}(?:代理|模型)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI)\\b|AI.{0,12}代理",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS|GPU cloud|GPU rentals?|hosted inference|inference API|GPUaaS|compute capacity|neocloud|data[ -]?cent(?:er|re)s?|CoreWeave|Nscale)\\b|算力租賃|托管推理|資料中心|네비우스",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS)\\b|네비우스",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bdata[ -]?cent(?:er|re)s?\\b[^.!?\\n]{0,100}\\b(?:construction|restrictions?|permits?|ban|moratorium|capacity|loans?|financing|funding|buildouts?|expansion)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS|GPU cloud|GPU rentals?|hosted inference|inference API|GPUaaS|compute capacity|neocloud|data[ -]?cent(?:er|re)s?|CoreWeave|Nscale)\\b|算力租賃|托管推理|資料中心|네비우스|\\b(?:token pric|hosted models?|inference services?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:GPUs?|inference engines?|inference throughput|megakernels?|GPU kernels?|cloud computers?|cloud.based system|cost.efficient|cost.{0,20}per task|input tokens?|output tokens?|per (?:million|1M)|hosted (?:by|on)|inference providers?|available (?:on|through) OpenRouter)\\b|每百萬|每百萬個|推論服務|推理服務|模型託管|推論引擎",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bvirtual machines?\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "NBIS:tomshardware_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS|GPU cloud|GPU rentals?|hosted inference|inference API|GPUaaS|compute capacity|neocloud|data[ -]?cent(?:er|re)s?|CoreWeave|Nscale)\\b|算力租賃|托管推理|資料中心|네비우스",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS)\\b|네비우스",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "COHR:huggingnews_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:IPO|initial public offering|valuation|AI.{0,30}(?:raises?|funding)|(?:raises?|funding).{0,50}AI|AI.{0,25}revenue|billionaires?)\\b",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR|Lumentum|AAOI|optical|photonics?|lasers?|transceivers?|CPO|SiC substrates?)\\b|矽光子|光通訊|光模組|高意",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR)\\b|高意|科希倫",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bdata[ -]?cent(?:er|re)s?\\b[^.!?\\n]{0,100}\\b(?:construction|restrictions?|permits?|ban|moratorium|capacity|loans?|financing|funding|buildouts?|expansion)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR|Lumentum|AAOI|optical|photonics?|lasers?|transceivers?|CPO|SiC substrates?)\\b|矽光子|光通訊|光模組|高意|\\bdata[ -]?cent(?:er|re)s?\\b|\\b(?:neocloud|compute capacity|supercomputers?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:capital expenditur\\w*|capex|purchase and lease commitments|artificial intelligence infrastructure)\\b|\\b(?:launch|open|build|construct)\\w*[^.!?]{0,90}\\b(?:facilit\\w*|plants?|factor\\w*)\\b|\\b(?:compute|computing|GPUs?|AI infrastructure|AI chips?|AI servers?|neocloud|server (?:orders|shipments))\\b|(?:投入|投資|資本支出)[^。！？\\n]{0,70}(?:廠|產線|產能)|(?:雲端服務供應商|CSP)[^。！？\\n]{0,45}(?:訂單|採購)|(?:新建|興建|擴建|擴廠|建置|改建)[^。！？\\n]{0,45}(?:晶圓廠|產線|生產設施)|(?:晶圓廠|產線|生產設施)[^。！？\\n]{0,45}(?:興建|擴建|擴廠|建置)|(?:半導體|記憶體)[^。！？\\n]{0,35}資本支出|資本支出[^。！？\\n]{0,35}(?:擴充|建廠)|(?:雲端|CSP)[^。！？\\n]{0,45}(?:資本支出|伺服器|網通)|(?:擴大|擴張)[^。！？\\n]{0,15}基礎設施|\\b(?:supercomput\\w*|HPC)\\b|\\d+(?:\\.\\d+)?\\s*(?:MW|GW)\\b|\\b(?:lithography|EUV)\\b|高速網通",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "COHR:tomshardware_rss": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:CPUs?|Ryzen|Core Ultra|DRAM|NAND|HBM\\d*|DDR[3-6]|SSDs?|graphics cards?|GeForce)\\b|處理器|記憶體|快閃記憶體|儲存晶片|顯示卡",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR|Lumentum|AAOI|optical|photonics?|lasers?|transceivers?|CPO|SiC substrates?)\\b|矽光子|光通訊|光模組|高意",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR)\\b|高意|科希倫",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:capital expenditur\\w*|capex|purchase and lease commitments|artificial intelligence infrastructure)\\b|\\b(?:launch|open|build|construct)\\w*[^.!?]{0,90}\\b(?:facilit\\w*|plants?|factor\\w*)\\b|\\b(?:compute|computing|GPUs?|AI infrastructure|AI chips?|AI servers?|neocloud|server (?:orders|shipments))\\b|(?:投入|投資|資本支出)[^。！？\\n]{0,70}(?:廠|產線|產能)|(?:雲端服務供應商|CSP)[^。！？\\n]{0,45}(?:訂單|採購)|(?:新建|興建|擴建|擴廠|建置|改建)[^。！？\\n]{0,45}(?:晶圓廠|產線|生產設施)|(?:晶圓廠|產線|生產設施)[^。！？\\n]{0,45}(?:興建|擴建|擴廠|建置)|(?:半導體|記憶體)[^。！？\\n]{0,35}資本支出|資本支出[^。！？\\n]{0,35}(?:擴充|建廠)|(?:雲端|CSP)[^。！？\\n]{0,45}(?:資本支出|伺服器|網通)|(?:擴大|擴張)[^。！？\\n]{0,15}基礎設施|\\b(?:supercomput\\w*|HPC)\\b|\\d+(?:\\.\\d+)?\\s*(?:MW|GW)\\b|\\b(?:lithography|EUV)\\b|高速網通",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:data[ -]?cent(?:er|re)s?|power plants?|electricity|grid|gigawatts?|megawatts?|optical interconnects?|transceivers?|silicon photonics)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "INTC:technews_hardware": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|CPUs?|Ryzen|EPYC|x86|Core Ultra|foundry|wafer|lithography|chiplets?|advanced packaging|TSMC|AMD)\\b|英特爾|處理器|晶圓|인텔|프로세서",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|Core Ultra)\\b|英特爾|인텔",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Intel|INTC|Xeon|CPUs?|Ryzen|EPYC|x86|Core Ultra|foundry|wafer|lithography|chiplets?|advanced packaging|TSMC|AMD)\\b|英特爾|處理器|晶圓|인텔|프로세서|\\b(?:GPUs?|processors?|chip (?:design|manufactur)|semiconductors?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)|\\b(?:hardware|Ascend|GB[23]\\d\\d|Blackwell|local (?:execution|hardware)|on.device|quantization|scale compute|virtual machines?|compute to scale)\\b|\\b(?:DRAM|RAM|NAND|memory)\\b[^.!?\\n]{0,80}\\b(?:bandwidth|required|requirements|one.tenth|price|shortage)|晶片.{0,20}(?:禁令|管制|限制)|(?:禁令|管制|限制).{0,20}晶片|記憶體.{0,15}(?:短缺|供應|成本|資源)|AI.{0,8}基礎設施.{0,15}(?:成本|支出|投資)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "MU:technews_hardware": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial|DRAM|NAND|HBM\\d*|DDR[3-6]|LPDDR|CXL|memory chips?|memory prices?|memory architecture)\\b|美光|記憶體|메모리(?!\\s*폼)|디램|낸드",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial)\\b|美光|마이크론",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Micron|Crucial|DRAM|NAND|HBM\\d*|DDR[3-6]|LPDDR|CXL|memory chips?|memory prices?|memory architecture)\\b|美光|記憶體|메모리(?!\\s*폼)|디램|낸드|\\b(?:RAM|VRAM|memory bandwidth|memory capacity|SSDs?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)|\\b(?:hardware|Ascend|GB[23]\\d\\d|Blackwell|local (?:execution|hardware)|on.device|quantization|scale compute|virtual machines?|compute to scale)\\b|\\b(?:DRAM|RAM|NAND|memory)\\b[^.!?\\n]{0,80}\\b(?:bandwidth|required|requirements|one.tenth|price|shortage)|晶片.{0,20}(?:禁令|管制|限制)|(?:禁令|管制|限制).{0,20}晶片|記憶體.{0,15}(?:短缺|供應|成本|資源)|AI.{0,8}基礎設施.{0,15}(?:成本|支出|投資)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "COHR:technews_hardware": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:CPUs?|Ryzen|Core Ultra|DRAM|NAND|HBM\\d*|DDR[3-6]|SSDs?|graphics cards?|GeForce)\\b|處理器|記憶體|快閃記憶體|儲存晶片|顯示卡",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR|Lumentum|AAOI|optical|photonics?|lasers?|transceivers?|CPO|SiC substrates?)\\b|矽光子|光通訊|光模組|高意",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR)\\b|高意|科希倫",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Coherent|COHR|Lumentum|AAOI|optical|photonics?|lasers?|transceivers?|CPO|SiC substrates?)\\b|矽光子|光通訊|光模組|高意|\\bdata[ -]?cent(?:er|re)s?\\b|\\b(?:neocloud|compute capacity|supercomputers?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:capital expenditur\\w*|capex|purchase and lease commitments|artificial intelligence infrastructure)\\b|\\b(?:launch|open|build|construct)\\w*[^.!?]{0,90}\\b(?:facilit\\w*|plants?|factor\\w*)\\b|\\b(?:compute|computing|GPUs?|AI infrastructure|AI chips?|AI servers?|neocloud|server (?:orders|shipments))\\b|(?:投入|投資|資本支出)[^。！？\\n]{0,70}(?:廠|產線|產能)|(?:雲端服務供應商|CSP)[^。！？\\n]{0,45}(?:訂單|採購)|(?:新建|興建|擴建|擴廠|建置|改建)[^。！？\\n]{0,45}(?:晶圓廠|產線|生產設施)|(?:晶圓廠|產線|生產設施)[^。！？\\n]{0,45}(?:興建|擴建|擴廠|建置)|(?:半導體|記憶體)[^。！？\\n]{0,35}資本支出|資本支出[^。！？\\n]{0,35}(?:擴充|建廠)|(?:雲端|CSP)[^。！？\\n]{0,45}(?:資本支出|伺服器|網通)|(?:擴大|擴張)[^。！？\\n]{0,15}基礎設施|\\b(?:supercomput\\w*|HPC)\\b|\\d+(?:\\.\\d+)?\\s*(?:MW|GW)\\b|\\b(?:lithography|EUV)\\b|高速網通",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "NBIS:technews_hardware": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|AI models?)\\b.{0,80}\\b(?:breach\\w*|bypass\\w*|steal|leak\\w*|fraud|probe\\w*|hack\\w*|lie|self.replicat\\w*)\\b|AI.{0,12}(?:代理|模型).{0,30}(?:資安|越權|詐騙|竊取|入侵)|(?:資安|偷金鑰|攻擊循環).{0,35}AI.{0,8}(?:代理|模型)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI)\\b|AI.{0,12}代理",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS|GPU cloud|GPU rentals?|hosted inference|inference API|GPUaaS|compute capacity|neocloud|data[ -]?cent(?:er|re)s?|CoreWeave|Nscale)\\b|算力租賃|托管推理|資料中心|네비우스",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS)\\b|네비우스",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Nebius|NBIS|GPU cloud|GPU rentals?|hosted inference|inference API|GPUaaS|compute capacity|neocloud|data[ -]?cent(?:er|re)s?|CoreWeave|Nscale)\\b|算力租賃|托管推理|資料中心|네비우스|\\b(?:token pric|hosted models?|inference services?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:GPUs?|inference engines?|inference throughput|megakernels?|GPU kernels?|cloud computers?|cloud.based system|cost.efficient|cost.{0,20}per task|input tokens?|output tokens?|per (?:million|1M)|hosted (?:by|on)|inference providers?|available (?:on|through) OpenRouter)\\b|每百萬|每百萬個|推論服務|推理服務|模型託管|推論引擎",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bvirtual machines?\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "BE:technews_hardware": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:AI agents?|agentic AI|AI (?:models?|safety|security|chatbots?)|LLMs?)\\b|AI.{0,12}(?:代理|模型|醫療|社群|辦公)",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:personal AI assistant|AI.{0,12}voice agents?|AI.{0,12}drug discovery|medical AI|Customized Enterprise AI Software|Documents Queryable for AI|AI.{0,12}frontline workers|AI.{0,15}Protein Designs)\\b|AI.{0,8}(?:醫療|招募|招聘|語音詐騙)|網購.{0,20}AI|社交.{0,12}AI",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:CPUs?|Ryzen|Core Ultra|DRAM|NAND|HBM\\d*|DDR[3-6]|SSDs?|graphics cards?|GeForce)\\b|處理器|記憶體|快閃記憶體|儲存晶片|顯示卡",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Bloom Energy|SOFC|SOEC|fuel cells?|power plants?|power demand|electricity|power supply|grid|data[ -]?cent(?:er|re)s?)\\b|燃料電池|供電|發電|電網|블룸|연료전지",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\bBloom Energy\\b|布魯姆|블룸\\s*에너지",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Bloom Energy|SOFC|SOEC|fuel cells?|power plants?|power demand|electricity|power supply|grid|data[ -]?cent(?:er|re)s?)\\b|燃料電池|供電|發電|電網|블룸|연료전지",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:supercompute\\w*|AI cloud|cloud hosting|cloud computing|Apple Silicon|(?:compute|computing) (?:capacity|hub|campus|facilit\\w*|budget|spending)|\\d+[ -]?(?:GW|MW))\\b",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:freeze|suspend\\w*|halt\\w*)\\b[^.!?]{0,65}\\b(?:training|inference)\\b|\\b(?:training|inference)\\b[^.!?]{0,65}\\b(?:freeze|suspend\\w*|halt\\w*)\\b|\\b(?:computing clusters?|computing power|(?:total|their|its) compute|(?:in|to) compute|compute (?:agreement|contract)|capacity of[^.!?]{0,40}clusters?|trillion(?: AI)? tokens|quadrillion tokens|(?:multi-)?gigawatt)\\b|資料中心|\\bdata[ -]?cent(?:er|re)s?\\b|(?:佈建|建置).{0,15}伺服器|伺服器.{0,15}(?:佈建|建置)",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:capital expenditur\\w*|capex|purchase and lease commitments|artificial intelligence infrastructure)\\b|\\b(?:launch|open|build|construct)\\w*[^.!?]{0,90}\\b(?:facilit\\w*|plants?|factor\\w*)\\b|\\b(?:compute|computing|GPUs?|AI infrastructure|AI chips?|AI servers?|neocloud|server (?:orders|shipments))\\b|(?:投入|投資|資本支出)[^。！？\\n]{0,70}(?:廠|產線|產能)|(?:雲端服務供應商|CSP)[^。！？\\n]{0,45}(?:訂單|採購)|(?:新建|興建|擴建|擴廠|建置|改建)[^。！？\\n]{0,45}(?:晶圓廠|產線|生產設施)|(?:晶圓廠|產線|生產設施)[^。！？\\n]{0,45}(?:興建|擴建|擴廠|建置)|(?:半導體|記憶體)[^。！？\\n]{0,35}資本支出|資本支出[^。！？\\n]{0,35}(?:擴充|建廠)|(?:雲端|CSP)[^。！？\\n]{0,45}(?:資本支出|伺服器|網通)|(?:擴大|擴張)[^。！？\\n]{0,15}基礎設施|\\b(?:supercomput\\w*|HPC)\\b|\\d+(?:\\.\\d+)?\\s*(?:MW|GW)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  },
+  "IONQ:quantum_zeitgeist": {
+    "groups": [
+      {
+        "id": "exclude_off_topic_subjects",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": ".",
+            "field": "all",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:Quantum[- ]Si|protein sequencing|ACME Renewal|dark energy|dark matter|cosmolog\\w*|black holes?|Great Books|Anthropic Mathematician)\\b",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:Riemann Hypothesis|school lessons|AI.{0,20}classrooms|human.{0,20}(?:unemploy|lifespan)|AI toys|AI-Generated Music)\\b|黎曼猜想|課堂|教室|平均壽命|語音詐騙|每題成本|助理.{0,12}排班",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      },
+      {
+        "id": "protect_business_facts",
+        "any": [
+          {
+            "literal": null,
+            "regex": "\\b(?:IonQ|qubits?|quantum (?:comput(?:ing|ers?)|algorithms?|circuits?|sensing|sensors?|networks?|communications?|cryptography|key distribution|error correction)|QKD|PQC|quantum-safe|clock|trapped ions?)\\b",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:IonQ|ID Quantique|Oxford Ionics|Vector Atomic)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          },
+          {
+            "literal": null,
+            "regex": "\\b(?:IonQ|qubits?|quantum (?:comput(?:ing|ers?)|algorithms?|circuits?|sensing|sensors?|networks?|communications?|cryptography|key distribution|error correction)|QKD|PQC|quantum-safe|clock|trapped ions?)\\b",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "all": [],
+        "none": []
+      },
+      {
+        "id": "missing_body_protection",
+        "any": [],
+        "all": [
+          {
+            "literal": null,
+            "regex": "^$",
+            "field": "body",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ],
+        "none": [
+          {
+            "literal": null,
+            "regex": "\\b(?:gaming chairs?|headphone hanger|gaming headsets?|gaming mouse|gaming mice|gaming keyboard|cordless duster|OLED (?:gaming )?monitor|gaming monitor|3D printer deals|VPN deals)\\b|매트리스|메모리\\s*폼|晶圓電鍋|耳機掛架",
+            "field": "title",
+            "case_sensitive": false,
+            "whole_word": false
+          }
+        ]
+      }
+    ]
+  }
+}

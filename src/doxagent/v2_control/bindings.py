@@ -177,6 +177,7 @@ def configuration(source, binding, *, terms_present: bool = False):
             "source_version": source.version,
             "control_etag": f'"binding:{binding.version}:source:{source.version}"',
             "effective": {
+                "extra_relevance": binding.extra_relevance,
                 "enabled": binding.enabled,
                 "source_parameters": parameters,
                 "polling": binding.polling.model_dump(mode="json"),

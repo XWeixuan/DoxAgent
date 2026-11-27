@@ -59,6 +59,9 @@ from doxagent.message_bus_v2.schema import (
 from .admission import AdmissionContext, evaluate_admission
 
 
+_UNSET_EXTRA_RELEVANCE = object()
+
+
 class MessageBusV2Service:
     """One control/data-plane service used by worker, dashboard and agent tools."""
 
@@ -662,8 +665,12 @@ class MessageBusV2Service:
         reason: str | None = None,
         source_version: int | None = None,
         legacy_default_profile: bool = False,
+        extra_relevance: Mapping[str, object] | None | object = _UNSET_EXTRA_RELEVANCE,
     ) -> TickerSourceBinding:
         source = self.require_source(source_id)
+        if (extra_relevance is not _UNSET_EXTRA_RELEVANCE and extra_relevance is not None
+                and source.acquisition_mode is not AcquisitionMode.BY_DISTRIBUTION):
+            raise ValueError("extra relevance requires by_distribution")
         binding_id = binding_id_for(ticker, source.source_id)
         if source.delivery_mode == "test":
             raise ValueError("test source targets are configured on the source, not ticker subscriptions")
@@ -707,6 +714,10 @@ class MessageBusV2Service:
                      source_id=source.source_id, source_parameters=parameters))
         data = {
             "binding_id": binding_id,
+            "extra_relevance": (
+                (current.extra_relevance if current else None)
+                if extra_relevance is _UNSET_EXTRA_RELEVANCE else extra_relevance
+            ),
             "ticker": ticker,
             "source_id": source.source_id,
             "source_parameters": parameters,
@@ -752,6 +763,8 @@ class MessageBusV2Service:
                 raise ValueError("distribution entry parameters belong to SourceDefinition")
             if updated.polling.target_interval_seconds != current.polling.target_interval_seconds:
                 raise ValueError("distribution polling interval belongs to SourceDefinition")
+        if updated.extra_relevance is not None and source.acquisition_mode is not AcquisitionMode.BY_DISTRIBUTION:
+            raise ValueError("extra relevance requires by_distribution")
         validate_parameter_schema(source.parameter_schema, updated.source_parameters)
         if source.source_id == "corporate_ir_press_releases":
             from .corporate_ir.schema import endpoints

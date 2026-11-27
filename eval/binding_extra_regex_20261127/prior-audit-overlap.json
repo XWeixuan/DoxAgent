@@ -1,0 +1,14 @@
+{
+  "NOT_FLAGGED_TITLE_ONLY": {
+    "total": 1673,
+    "blocked": 3
+  },
+  "LOW_RELEVANCE": {
+    "total": 745,
+    "blocked": 18
+  },
+  "CLEAR_OFF_TOPIC": {
+    "total": 405,
+    "blocked": 51
+  }
+}
