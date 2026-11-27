@@ -7,7 +7,6 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import tarfile
 import tomllib
 
 ROOT=Path('/var/lib/doxagent/releases')
