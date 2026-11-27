@@ -19,11 +19,14 @@ from doxagent.persistent_runtime_v2.resource_refs import backfill
 from doxagent.persistent_runtime_v2.w3_contracts import parse_w3_operations
 
 
-def run(settings, *, apply=False):
-    repo=SQLitePersistentRuntimeV2Repository(settings.persistent_runtime_v2_sqlite_path) if apply else None
+def run(settings, *, apply=False, stage_supplements=False):
+    repo=SQLitePersistentRuntimeV2Repository(settings.persistent_runtime_v2_sqlite_path) if apply and not stage_supplements else None
     journal=RuntimeJournal(settings.persistent_runtime_v2_sqlite_path,initialize=False)
     report=dict(at=datetime.now(UTC).isoformat(),apply=apply,retired=[],reconcile=[],recovered=[],blocked=[])
     # Each page is outside the writer; Native expansion/validation never holds it.
+    from doxagent.ticker_initialization.repository import InitializationRepository
+    control=InitializationRepository(settings.ticker_initialization_control_path,initialize=False)
+    active={}
     after=''
     while True:
         with journal.transaction(write=False,expand=False) as db:
@@ -40,7 +43,16 @@ def run(settings, *, apply=False):
             # A frozen frame can contain accepted/unknown Jobs or local publish
             # work. Resume its original identity under the no-new-dispatch guard.
             frame=receipt.get('frame') or {}
-            resumable=bool(receipt.get('o2'))
+            ticker=frame.get('base',{}).get('ticker')
+            # Old Control revisions store ticker explicitly; task inputs may not.
+            if ticker is None:
+                with journal.transaction(write=False,expand=False) as db:
+                    ticker=db.execute('SELECT ticker FROM runtime_tasks WHERE id=?',(row['id'],)).fetchone()[0]
+            if ticker not in active:active[ticker]=control.active_revision(ticker)
+            current=active[ticker] or {}
+            compatible=bool(frame and frame['base']['revision_id']==current.get('revision_id'))
+            activated=current.get('runtime_metadata',{}).get('maintenance_id')==row['id']
+            resumable=bool(receipt.get('o2') and (compatible or activated))
             if frame and not receipt.get('process_retired'):
                 prefix='runtime-worker:'+frame['run_id']+':'
                 with journal.transaction(write=False,expand=False) as db:
@@ -54,16 +66,16 @@ def run(settings, *, apply=False):
                         job=jobs.execute('SELECT status FROM jobs WHERE id=?',(identity,)).fetchone()
                         # Authority lookup: unknown storage errors abort; only
                         # actual live/paid-success Jobs need original-run replay.
-                        if job and (job[0] in ('queued','running') or (job[0]=='succeeded' and request['attempt_id'].startswith(('o2-reference-review','o2-global-reconciliation','o2-repair-')))):
+                        if job and (job[0] in ('queued','running') or (compatible and job[0]=='succeeded' and request['attempt_id'].startswith(('o2-reference-review','o2-global-reconciliation','o2-repair-')))):
                             resumable=True
             if resumable and frame and not receipt.get('process_retired'):
                 report['reconcile'].append(row['id'])
                 if apply:
                     with journal.transaction(expand=False,operation='repair.o2.reconcile') as db:
-                        db.execute("UPDATE runtime_tasks SET status='PENDING',owner=NULL,lease_until=NULL,"
+                        db.execute("UPDATE runtime_tasks SET status=?,owner=NULL,lease_until=NULL,"
                             "generation=generation+1,due_at=?,receipt=json_set(receipt,'$.normal_window_retirement_pending',1) "
                             "WHERE id=? AND status=? AND token=? AND receipt=?",
-                            (journal.clock().isoformat(),row['id'],row['status'],row['token'],row['receipt']))
+                            ('HELD' if stage_supplements else 'PENDING',journal.clock().isoformat(),row['id'],row['status'],row['token'],row['receipt']))
                 continue
             report['retired'].append(row['id'])
             if apply:
@@ -73,6 +85,8 @@ def run(settings, *, apply=False):
                         "WHERE id=? AND status=? AND token=? AND receipt=?",
                         (journal.clock().isoformat(),row['id'],row['status'],row['token'],row['receipt']))
         after=rows[-1]['id']
+    if stage_supplements:
+        return report
     with journal.transaction(write=False,expand=False) as db:
         cases=db.execute("SELECT s.case_id,s.result_json,s.thread_id,s.worker_job_id,s.error,e.effect_id,e.status,e.payload_json "
             "FROM runtime_v2_w3_stages s JOIN runtime_v2_effects e USING(case_id) "
@@ -134,9 +148,10 @@ def run(settings, *, apply=False):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apply',action='store_true')
+    parser.add_argument('--stage-supplements',action='store_true',help='Before cutover: hold original reconcilable tasks, retire others; do not recover Ops or migrate refs')
     parser.add_argument('--report',type=Path,required=True)
     args=parser.parse_args()
-    result=run(DoxAgentSettings(),apply=args.apply)
+    result=run(DoxAgentSettings(),apply=args.apply,stage_supplements=args.stage_supplements)
     args.report.parent.mkdir(parents=True,exist_ok=True)
     args.report.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps({k:(len(v) if isinstance(v,list) else v) for k,v in result.items()}))

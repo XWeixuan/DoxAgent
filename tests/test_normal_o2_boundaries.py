@@ -74,22 +74,37 @@ def test_normal_task_pages_resume_without_replaying_completed_page(tmp_path, mon
                 source_message_id=case.source.source_message_id,candidate_index=i,
                 candidate=RuntimeFactCandidate(assertion_state='ACTUAL',proposition=f'fact {i}'),
                 published_max_event_numeric_id=0,case_id=case.case_id)
+        runtime.repository.allocate_provisional(ticker='MU',trading_date=date(2026,9,2),
+            source_message_id=case.source.source_message_id,candidate_index=130,
+            candidate=RuntimeFactCandidate(assertion_state='ACTUAL',proposition='fact 0'),
+            published_max_event_numeric_id=0,case_id=case.case_id)
         class O2:
             async def run(self, **kw):
                 calls.append((kw['run_id'],len(kw['snapshot'].atomics)))
                 if len(calls)==2 and fail[0]:
                     fail[0]=False
                     raise RuntimeError('second-page transport interruption')
+                from doxagent.event_library.service import EventLibraryService
+                repo=self.repo
+                batch=EventLibraryService(repo).delta_compiler.compile(kw['snapshot'])
+                with repo._write() as db:
+                    db.execute("UPDATE delta_items SET status='RESOLVED' WHERE batch_id=? AND runtime_atomic_id=?",
+                        (batch.batch_id,kw['snapshot'].atomics[0].runtime_atomic_id))
                 return None,None,None,{}
+        def factory(repo,_):
+            worker=O2();worker.repo=repo
+            return worker
         m=RuntimeMaintenance(settings,runtime,journal,worker_factory=lambda:SimpleNamespace(),
-                             o2_factory=lambda *_:O2())
+                             o2_factory=factory)
         task=journal.claim('maintain')
         with pytest.raises(Exception,match='second-page'):asyncio.run(m(task))
         assert len(task['receipt']['o2_pages'])==1
         asyncio.run(m(task))
         assert [n for _,n in calls]==[128,2,2]
         assert calls[1][0]==calls[2][0] and calls[0][0]!=calls[1][0]
-        assert not task['receipt']['resolved_candidates']  # never blanket-consume a page
+        assert len(task['receipt']['resolved_candidates'])==3  # two representatives plus one duplicate
+        with runtime.repository._connect() as db:
+            assert db.execute("SELECT count(*) FROM runtime_v2_candidates WHERE daily_status='PROCESSED'").fetchone()[0]==3
     finally:runtime.close()
 
 
@@ -188,3 +203,69 @@ def test_w1_retry_never_reopens_frozen_event_body(tmp_path,monkeypatch):
         r1,r2,_=runtime._run_w1_hot(case,index)
         assert r1==case.w1_round1 and r2==case.w1_final
     finally:runtime.close()
+
+
+def test_saved_ops_repair_follows_paid_job_through_native_file_and_is_idempotent(tmp_path):
+    from scripts.ops.runtime_normal_o2_repair_20261127 import run
+    from doxagent.persistent_runtime_v2.w3_threads import W3ThreadRegistry
+    from doxagent.persistent_runtime_v2.schema import RuntimeEffect
+    runtime,journal,settings,_=maintenance_fixture(tmp_path)
+    try:
+        case=runtime.execute_message(_source())
+        case.w3_contract_version='persistent-runtime.w3.v6'
+        runtime.repository.save_case(case)
+        registry=W3ThreadRegistry(journal)
+        for phase in ('trade_decision','post_decision_operations'):
+            registry.begin_stage(case.case_id,phase)
+        result={'delta_candidates':[],'pin_actions':[],'watch_actions':[]}
+        registry.save_result(case.case_id,'post_decision_operations',result,thread_id='private-thread',worker_job_id='paid-job')
+        effect=RuntimeEffect(case_id=case.case_id,effect_type='w3_post_decision',idempotency_key='original',status='FAILED',attempt_count=3)
+        runtime.repository.enqueue_effect(effect)
+        with journal.transaction() as db:
+            db.execute("UPDATE runtime_v2_w3_stages SET thread_id='private-thread',status='COMMITTED' WHERE phase='trade_decision'")
+            db.execute("UPDATE runtime_v2_w3_stages SET status='FAILED',error='DISPATCH: HISTORY_RETIRED' WHERE phase='post_decision_operations'")
+        journal.set('worker_invocations','paid-job',dict(case_id=case.case_id,task_phase='post_decision_operations',
+            job=dict(job_id='paid-job',thread_id='private-thread',status='succeeded',large_result='x'*20000)))
+        assert run(settings)['recovered'][0]['effect_id']==effect.effect_id
+        repaired=run(settings,apply=True)
+        assert len(repaired['recovered'])==1
+        with journal.transaction(write=False) as db:
+            row=db.execute('SELECT status,attempt_count FROM runtime_v2_effects WHERE effect_id=?',(effect.effect_id,)).fetchone()
+            assert tuple(row)==('PENDING_RETRY',3)
+        assert not run(settings,apply=True)['recovered']
+    finally:runtime.close()
+
+
+def test_page_checkpoint_reuses_immutable_native_frame_without_loading_it(tmp_path,monkeypatch):
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    import json
+    journal=RuntimeJournal(tmp_path/'runtime.db')
+    journal.put_task('normal','MU','MAINTENANCE',{})
+    task=journal.claim('normal')
+    frame=dict(run_id='original',base={'artifacts':{'event_library':{'root':'/original','version':3}}},candidates=['large fact '*10000])
+    journal.checkpoint(task,frame=frame)
+    with journal.transaction(write=False,expand=False) as db:
+        before=json.loads(db.execute('SELECT receipt FROM runtime_tasks WHERE id=?',(task['id'],)).fetchone()[0])
+    assert '$doxagent_content_v1' in before['frame']
+    def forbidden(*a,**kw):raise AssertionError('immutable frame was expanded or republished')
+    monkeypatch.setattr(journal.content,'text',forbidden)
+    monkeypatch.setattr(journal.content.files,'put',forbidden)
+    journal.checkpoint(task,o2_pages=[{'version':4,'resolved':[]}],o2_page_input={'base_version':4})
+    with journal.transaction(write=False,expand=False) as db:
+        after=json.loads(db.execute('SELECT receipt FROM runtime_tasks WHERE id=?',(task['id'],)).fetchone()[0])
+    assert before['frame']==after['frame']
+    assert task['receipt']['frame']==frame
+    assert after['_gc_owner']['event_versions']==[3,4]
+
+
+def test_global_fact_acknowledgements_release_writer_between_small_pages():
+    calls=[]
+    m=object.__new__(RuntimeMaintenance)
+    m.runtime=SimpleNamespace(repository=SimpleNamespace(mark_daily_records_processed=lambda **kw:calls.append(kw)))
+    frame=dict(candidates=[dict(source_message_id='original',candidate_index=i) for i in range(251)],
+               trades=[],badcases=[],gaps=[])
+    resolved=[f'runtime-v2-msg:original:{i}' for i in range(250)]
+    m._consume(dict(receipt={'resolved_candidates':resolved}),frame,include_o3=False)
+    assert [len(c['candidate_keys']) for c in calls]==[100,100,50]
+    assert all(not c['trade_record_ids'] for c in calls)
+    assert 'runtime-v2-msg:original:250' not in {k for c in calls for k in c['candidate_keys']}

@@ -300,9 +300,12 @@ class RuntimeMaintenance:
                         timeout_seconds=self.settings.codex_node_timeout_seconds,
                     )
                 )
-                unique = {}
+                unique, signature_members = {}, {}
                 for item in frame['candidates']:
-                    unique.setdefault(item['runtime_signature'], item)
+                    signature = item['runtime_signature']
+                    unique.setdefault(signature, item)
+                    signature_members.setdefault(signature, []).append(
+                        f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}")
                 candidates = [ProvisionalFactDetail.model_validate(item) for item in unique.values()]
                 pages = ([candidates[i:i + 128] for i in range(0, len(candidates), 128)] or [[]]) if task['receipt'].get('o2_freeze') else [candidates]
                 page_receipts = list(task['receipt'].get('o2_pages', []))
@@ -371,17 +374,12 @@ class RuntimeMaintenance:
                                 (snapshot.snapshot_id,),
                             )
                         ]
+                    resolved = set(resolved)
                     resolved_signatures = {
-                        item["runtime_signature"]
-                        for item in frame["candidates"]
-                        if f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
-                        in resolved
-                    }
-                    resolved.extend(
-                        f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
-                        for item in frame["candidates"]
-                        if item["runtime_signature"] in resolved_signatures
-                    )
+                        item.runtime_signature for item in page
+                        if f'runtime-v2-msg:{item.source_message_id}:{item.candidate_index}' in resolved}
+                    resolved.update(identity for signature in resolved_signatures
+                                    for identity in signature_members[signature])
                     unresolved = [
                         item.runtime_atomic_id
                         for item in snapshot.atomics
@@ -628,14 +626,22 @@ class RuntimeMaintenance:
             prepare(revision["ticker"])
 
     def _consume(self, task: dict[str, Any], frame: dict[str, Any], *, include_o3=True) -> None:
-        self.runtime.repository.mark_daily_records_processed(
+        resolved = set(task['receipt'].get('resolved_candidates', []))
+        groups = dict(
             candidate_keys=[
                 f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
                 for item in frame["candidates"]
                 if f"runtime-v2-msg:{item['source_message_id']}:{item['candidate_index']}"
-                in task["receipt"].get("resolved_candidates", [])
+                in resolved
             ],
             trade_record_ids=[item["trade_record_id"] for item in frame["trades"]] if include_o3 else [],
             badcase_ids=[item["badcase_id"] for item in frame["badcases"]] if include_o3 else [],
             w3_coverage_gap_ids=[item["coverage_gap_id"] for item in frame["gaps"]] if include_o3 else [],
         )
+
+        # Activation is the authority; fact acknowledgements are idempotent.
+        # Release the shared writer between small pages, including on recovery.
+        maximum = max(map(len, groups.values()), default=0)
+        for offset in range(0, maximum, 100):
+            self.runtime.repository.mark_daily_records_processed(
+                **{key:values[offset:offset + 100] for key,values in groups.items()})

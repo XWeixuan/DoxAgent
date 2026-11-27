@@ -654,18 +654,26 @@ class RuntimeJournal:
         def save():
             with self.transaction(write=False, expand=False) as db:
                 raw = db.execute('SELECT receipt FROM runtime_tasks WHERE id=?', (task['id'],)).fetchone()[0]
-            value = {**json.loads(self.content.text(raw)), **receipt}
-            frame = value.get('frame')
+            # Preserve unchanged Native references verbatim. A ticker-wide O2
+            # frame can be large; page/heartbeat progress must not expand and
+            # republish its entire immutable candidate set.
+            base = json.loads(raw)
+            value = {**task['receipt'], **receipt}
+            owner = dict(base.get('_gc_owner') or {})
+            frame = receipt.get('frame')
             if isinstance(frame, dict):
                 ref = ((frame.get('base') or {}).get('artifacts') or {}).get('event_library') or {}
-                value['_gc_owner'] = dict(run_id=frame.get('run_id'),
-                                         event_library_root=ref.get('root'),
-                                         event_library_version=ref.get('version'),
-                                         event_versions=sorted({int(v) for v in (
-                                             ref.get('version'),
-                                             (value.get('o2_page_input') or {}).get('base_version'),
-                                             (value.get('o2') or {}).get('version')) if v is not None}))
-            prepared = self.content.encode(value)
+                owner = dict(run_id=frame.get('run_id'), event_library_root=ref.get('root'),
+                             event_library_version=ref.get('version'))
+            patch = dict(receipt)
+            if owner:
+                owner['event_versions'] = sorted({int(v) for v in (
+                    owner.get('event_library_version'),
+                    (value.get('o2_page_input') or {}).get('base_version'),
+                    (value.get('o2') or {}).get('version')) if v is not None})
+                patch['_gc_owner'] = value['_gc_owner'] = owner
+            encoded_patch = json.loads(self.content.encode(patch))
+            prepared = encode({**base, **encoded_patch})
             with self.transaction(expand=False) as db:
                 row = self.fence(db, task)
                 if row['receipt'] != raw:
