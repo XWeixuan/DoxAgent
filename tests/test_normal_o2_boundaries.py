@@ -200,6 +200,24 @@ def test_retired_supplement_cannot_dispatch_new_phase_or_consume_budget(tmp_path
     finally:runtime.close()
 
 
+def test_invalid_saved_supplement_is_retired_without_another_failure(tmp_path):
+    from doxagent.codex_runtime.errors import StructuredOutputInvalid
+    from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+    runtime,journal,_,_=maintenance_fixture(tmp_path)
+    try:
+        journal.put_task('supplement:invalid','MU','MAINTENANCE',{'scope':'SUPPLEMENTAL'})
+        task=journal.claim('supplement:invalid')
+        owner=object.__new__(RuntimeCoordinator)
+        owner.journal=journal
+        def unusable(task):raise StructuredOutputInvalid('original paid response is not usable')
+        owner.maintain=unusable
+        owner._execute_owned(task)
+        saved=journal.get_task(task['id'])
+        assert saved['status']=='FAILED' and saved['failures']==0
+        assert saved['receipt']['maintenance_retired']
+    finally:runtime.close()
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize('outcome',['absent','unknown','saved'])
 async def test_supplement_reuses_receipt_but_never_new_dispatch(tmp_path,outcome):

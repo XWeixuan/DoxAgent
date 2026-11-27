@@ -3584,3 +3584,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-28 生产引用验收补齐：确认223条旧 Case 状态滞留产生虚假活跃引用，15个原 W1/W2任务已 FAILED、旧 W3 Effect全部终态；引用迁移改按实际原任务/Effect判定，保留真正活跃旧 Operations 的正文/Policy依赖，查询从既有活跃Effect索引出发。终态正常维护仅在原Job仍活跃/明确保留时继续 pin，不无差别延长失败历史；不修改历史Case状态、模型或业务结果。新增终态Task/活跃旧Ops边界回归30项通过。
 
 2026-11-28 O2 精确结算补证：正常窗口同时识别 Native 当前分支继承的原子结算映射，严格匹配 scope、原身份、版本、完整签名及已结算 disposition；不确认 KEEP_PENDING 或异内容映射。31 项边界/引用生命周期回归通过。
+
+2026-11-28 旧补充 O2 收尾：已保存结果明确结构无效时行政退役，保留 PENDING 业务义务，不反复恢复同一无效回执或增加失败预算；正常维护和未知受理恢复不变。

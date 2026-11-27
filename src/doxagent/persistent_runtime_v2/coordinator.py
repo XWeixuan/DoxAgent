@@ -672,6 +672,13 @@ class RuntimeCoordinator:
                 retire_owned(self.journal, task)
                 return
             from .normal_o2 import supplemental
+            from doxagent.codex_runtime.errors import StructuredOutputInvalid
+            if supplemental(task) and isinstance(exc, StructuredOutputInvalid):
+                # An unusable original paid result would require a new repair
+                # model call. Supplemental recovery is local-only; preserve the
+                # candidates for the next normal O2 instead of retrying it.
+                retire_owned(self.journal, task)
+                return
             if supplemental(task) and getattr(exc, 'code', None) == 'w3_dispatch_unknown':
                 ControlRepository(self.journal).defer(task)
                 return

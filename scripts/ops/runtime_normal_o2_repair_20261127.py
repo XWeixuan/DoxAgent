@@ -66,7 +66,9 @@ def run(settings, *, apply=False, stage_supplements=False):
                         job=jobs.execute('SELECT status FROM jobs WHERE id=?',(identity,)).fetchone()
                         # Authority lookup: unknown storage errors abort; only
                         # actual live/paid-success Jobs need original-run replay.
-                        if job and (job[0] in ('queued','running') or (compatible and job[0]=='succeeded' and request['attempt_id'].startswith(('o2-reference-review','o2-global-reconciliation','o2-repair-')))):
+                        invalid_saved=receipt.get('last_phase_failure',{}).get('code') in (
+                            'StructuredOutputInvalid','STRUCTURED_OUTPUT_INVALID')
+                        if job and (job[0] in ('queued','running') or (compatible and not invalid_saved and job[0]=='succeeded' and request['attempt_id'].startswith(('o2-reference-review','o2-global-reconciliation','o2-repair-')))):
                             resumable=True
             if resumable and frame and not receipt.get('process_retired'):
                 report['reconcile'].append(row['id'])
