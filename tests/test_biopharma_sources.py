@@ -127,6 +127,67 @@ def test_aes_and_calendar_do_not_use_future_meeting_dates_as_publication():
     assert aes[0].raw_payload["presentation_date"] != aes[0].published_at.isoformat()
 
 
+def test_calendar_archive_is_not_new_news_but_recent_amendments_survive():
+    from doxagent.message_bus_v2.biopharma_parsers import calendar_entry_current
+
+    raw = json.loads((FIXTURES / "fda-calendar.json").read_text())
+    archived, upcoming = raw
+    assert not calendar_entry_current(archived, NOW)
+    assert calendar_entry_current(upcoming, NOW)
+    amended = {**archived, "changed": '<time datetime="2026-11-25T12:00:00-05:00">Updated</time>'}
+    assert calendar_entry_current(amended, NOW)
+    rows = parse_listing(listing_recipes()["fda_release"][2], json.dumps([archived]), NOW)
+    assert rows == []  # Valid empty current scope, not a failed HTTP list.
+    assert len(parse_listing(listing_recipes()["fda_release"][2], json.dumps([amended]), NOW)) == 1
+    # An undated fresh notice is retained; a known-old undated archive is excluded.
+    assert calendar_entry_current({"changed": amended["changed"]}, NOW)
+    assert not calendar_entry_current({"changed": archived["changed"]}, NOW)
+
+
+async def test_old_calendar_backlog_is_rejected_before_model_or_publication(monkeypatch):
+    from doxagent.message_bus_v2.live import LiveDeliveryWorker
+
+    raw = (FIXTURES / "fda-calendar.json").read_text()
+    earlier = datetime(2026, 10, 1, tzinfo=UTC)
+    message = next(
+        m
+        for m in parse_listing(listing_recipes()["fda_release"][2], raw, earlier)
+        if "October 30" in m.title
+    )
+    worker = LiveDeliveryWorker.__new__(LiveDeliveryWorker)
+    worker._decision = AsyncMock()
+    monkeypatch.setattr("doxagent.message_bus_v2.live.utc_now", lambda: NOW)
+    source = SimpleNamespace(source_id="fda_release")
+    binding = SimpleNamespace(enabled=True)
+    row = {"terms_revision": 1}
+    await worker.process(row, (message, source, binding, None))
+    worker._decision.assert_awaited_once_with(
+        None, row, "ADMISSION_REJECTED", error="ARCHIVED_FDA_CALENDAR"
+    )
+
+
+async def test_configuration_repair_finishes_batched_tail_without_another_edit(tmp_path):
+    import time
+    from doxagent.message_bus_v2.live import LiveQueue, LiveDeliveryWorker
+
+    repo, bus = _bus(tmp_path / "bus.db")
+    bus.live_queue = LiveQueue(bus)
+    worker = LiveDeliveryWorker(bus)
+    worker.advanced_reported_at = time.monotonic()
+
+    async def read(operation, *args, **kwargs):
+        return 7 if operation.__name__ == "_configuration_revision" else []
+
+    bus.storage.read = read
+    bus.storage.call = AsyncMock(side_effect=[2048, 1])
+    for _ in range(3):
+        worker.configuration_checked_at = 0
+        await worker.run_available()
+    assert bus.storage.call.await_count == 2
+    assert worker.configuration_revision == 7 and not worker.configuration_repair_pending
+    repo.close()
+
+
 def test_akeso_two_publishers_and_stat_paid_flags():
     assert len(parse("akeso_press_releases", "akeso.html")) == 2
     assert len(parse("akeso_press_releases", "akeso-pr.html", 1)) == 2
@@ -168,7 +229,8 @@ async def test_fierce_public_api_body_respects_meter_gate_and_article_identity()
     )
     fetch = AsyncMock(side_effect=lambda *a, **k: Capture(200, a[0], json.dumps({"data": raw}), {}))
     reader = SimpleNamespace(
-        http=SimpleNamespace(fetch=fetch), _fierce_public_header=(NOW, "public-client-value")
+        http=SimpleNamespace(fetch=fetch),
+        _fierce_public_header=(datetime.now(UTC), "public-client-value"),
     )
     job = SimpleNamespace(message=m)
     result = await fierce_body(reader, SOURCES["fiercebiotech_biotech"], job, record)
@@ -255,11 +317,11 @@ def test_portfolio_survives_initialization_defaults_without_starting_tickers(tmp
         bus.update_source(sid, {"delivery_mode": "production"}, actor=UpdateActor.SYSTEM)
     first = configure(bus)
     assert {t: r["binding_count"] for t, r in first.items()} == {
-        "XENE": 19,
-        "RGNX": 19,
-        "PRAX": 18,
-        "CGEM": 20,
-        "SMMT": 21,
+        "XENE": 18,
+        "RGNX": 18,
+        "PRAX": 17,
+        "CGEM": 19,
+        "SMMT": 20,
     }
     for ticker in TICKERS:
         bus.materialize_default_bindings(ticker)

@@ -3,7 +3,7 @@
 import copy
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import parse_qs, urljoin, urlsplit
 from zoneinfo import ZoneInfo
 
@@ -20,6 +20,37 @@ def text(node):
 
 def day(value):
     return parse_date(value).date().isoformat()
+
+
+def calendar_entry_current(row, now):
+    """Exclude the historical calendar archive, preserving recent amendments.
+
+    Event dates define scope only. They never become publication timestamps.
+    A recent official modification retains even an already-ended meeting.
+    """
+    cutoff = now.astimezone(ZoneInfo("America/New_York")).date() - timedelta(days=1)
+    end = row.get("field_end_date") or row.get("field_start_date") or ""
+    meeting_day = (
+        datetime.strptime(end[:10], "%m/%d/%Y").date()
+        if re.match(r"\d{2}/\d{2}/\d{4}", end)
+        else None
+    )
+    dates = html.fromstring("<div>" + (row.get("changed") or "") + "</div>").xpath(
+        ".//time/@datetime"
+    )
+    changed_day = None
+    if dates:
+        try:
+            changed = parse_date(dates[0])
+            if changed.tzinfo:
+                changed_day = changed.astimezone(ZoneInfo("America/New_York")).date()
+        except (ValueError, OverflowError):
+            pass
+    if changed_day and changed_day >= cutoff:
+        return True
+    if meeting_day:
+        return meeting_day >= cutoff
+    return changed_day is None
 
 
 def parse_listing(recipe, raw, now):
@@ -81,8 +112,8 @@ def parse_listing(recipe, raw, now):
         data = json.loads(raw)
         if not isinstance(data, list):
             raise ValueError("fda_calendar_json_changed")
-        # Match the normal front-end's newest-meeting-first order. Preserve the
-        # complete native index; these dates still are not publication times.
+        # This JSON includes years of archived meetings, not just new notices.
+        # Keep current meetings and recent amendments without inventing pubDate.
         data.sort(
             key=lambda r: (
                 datetime.strptime(r["field_start_date"][:10], "%m/%d/%Y")
@@ -92,6 +123,8 @@ def parse_listing(recipe, raw, now):
             reverse=True,
         )
         for row in data:
+            if not calendar_entry_current(row, now):
+                continue
             title = html.fromstring("<div>" + row["title"] + "</div>")
             links = title.xpath(".//a[@href]")
             if links:
@@ -115,6 +148,7 @@ def parse_listing(recipe, raw, now):
                     meeting_metadata=row,
                     updated_at=changed[0] if changed else None,
                 )
+        return list(rows.values())  # A valid index may contain only archived meetings.
     elif recipe.parser == "bio_endpoints":
         for card in doc.xpath('//*[contains(concat(" ",@class," ")," epn_item ")]'):
             links = card.xpath(".//h3/a[@href]")
