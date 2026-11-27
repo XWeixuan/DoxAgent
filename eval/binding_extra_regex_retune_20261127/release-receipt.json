@@ -1,0 +1,127 @@
+{
+  "rules_sha256": "5bbd58c49f41b24e5efd78d8d050a80b54c09328a17c85790b2b3f6968a7636a",
+  "bindings": 16,
+  "tickers": [
+    "BE",
+    "COHR",
+    "INTC",
+    "IONQ",
+    "MU",
+    "NBIS"
+  ],
+  "pending": 16,
+  "applied": true,
+  "applied_at": "2026-11-27T12:42:02.936041+00:00",
+  "effective": [
+    {
+      "binding_id": "BE:huggingnews_rss",
+      "binding_version": 8,
+      "source_version": 6,
+      "rules_digest": "12e977d209c2dc07428ddceed373d4baeb2e3bef5a7850a64ba4bbc545cee920"
+    },
+    {
+      "binding_id": "BE:technews_hardware",
+      "binding_version": 5,
+      "source_version": 4,
+      "rules_digest": "12e977d209c2dc07428ddceed373d4baeb2e3bef5a7850a64ba4bbc545cee920"
+    },
+    {
+      "binding_id": "BE:tomshardware_rss",
+      "binding_version": 8,
+      "source_version": 6,
+      "rules_digest": "12e977d209c2dc07428ddceed373d4baeb2e3bef5a7850a64ba4bbc545cee920"
+    },
+    {
+      "binding_id": "COHR:huggingnews_rss",
+      "binding_version": 5,
+      "source_version": 6,
+      "rules_digest": "8bce7bd77005ef7aaa99305b9768489574dd8bd906ee989945681f0b376e3eb0"
+    },
+    {
+      "binding_id": "COHR:technews_hardware",
+      "binding_version": 5,
+      "source_version": 4,
+      "rules_digest": "8bce7bd77005ef7aaa99305b9768489574dd8bd906ee989945681f0b376e3eb0"
+    },
+    {
+      "binding_id": "COHR:tomshardware_rss",
+      "binding_version": 6,
+      "source_version": 6,
+      "rules_digest": "8bce7bd77005ef7aaa99305b9768489574dd8bd906ee989945681f0b376e3eb0"
+    },
+    {
+      "binding_id": "INTC:huggingnews_rss",
+      "binding_version": 8,
+      "source_version": 6,
+      "rules_digest": "9502b6997c8cc066fdb826f7b4127f570b5dff4642fdd83a5177a9ab6c251454"
+    },
+    {
+      "binding_id": "INTC:technews_hardware",
+      "binding_version": 5,
+      "source_version": 4,
+      "rules_digest": "9502b6997c8cc066fdb826f7b4127f570b5dff4642fdd83a5177a9ab6c251454"
+    },
+    {
+      "binding_id": "INTC:tomshardware_rss",
+      "binding_version": 8,
+      "source_version": 6,
+      "rules_digest": "9502b6997c8cc066fdb826f7b4127f570b5dff4642fdd83a5177a9ab6c251454"
+    },
+    {
+      "binding_id": "IONQ:quantum_zeitgeist",
+      "binding_version": 5,
+      "source_version": 4,
+      "rules_digest": "7c054c280f348fb8d5f47330917761ca3495ebd7b1991eabc5cb10f5a003021b"
+    },
+    {
+      "binding_id": "MU:huggingnews_rss",
+      "binding_version": 8,
+      "source_version": 6,
+      "rules_digest": "e225eac6493a70696c28205d108ce4f4b50d65d44ff6382e6ba34e1adc14d1fd"
+    },
+    {
+      "binding_id": "MU:technews_hardware",
+      "binding_version": 5,
+      "source_version": 4,
+      "rules_digest": "e225eac6493a70696c28205d108ce4f4b50d65d44ff6382e6ba34e1adc14d1fd"
+    },
+    {
+      "binding_id": "MU:tomshardware_rss",
+      "binding_version": 8,
+      "source_version": 6,
+      "rules_digest": "e225eac6493a70696c28205d108ce4f4b50d65d44ff6382e6ba34e1adc14d1fd"
+    },
+    {
+      "binding_id": "NBIS:huggingnews_rss",
+      "binding_version": 5,
+      "source_version": 6,
+      "rules_digest": "2640fabe177e8c79caeb552d5ad8589749e94719278cec97d0411f951a98647e"
+    },
+    {
+      "binding_id": "NBIS:technews_hardware",
+      "binding_version": 5,
+      "source_version": 4,
+      "rules_digest": "2640fabe177e8c79caeb552d5ad8589749e94719278cec97d0411f951a98647e"
+    },
+    {
+      "binding_id": "NBIS:tomshardware_rss",
+      "binding_version": 6,
+      "source_version": 6,
+      "rules_digest": "2640fabe177e8c79caeb552d5ad8589749e94719278cec97d0411f951a98647e"
+    }
+  ],
+  "unified_terms_unchanged": true,
+  "polling_and_subscriptions_unchanged": true,
+  "backup": "/data/bus/binding-extra-20261127.before.private.json",
+  "deployment": {
+    "commit": "35b67b534d60cad6c44a56a1170664ce25fd8a87",
+    "roles": {
+      "v2-api": "sha256:be6ac9f432e20cc4ce4f25b415e99161d0c0afc63877c752d8b941de6bd2c4ec",
+      "v2-message-collector": "sha256:c65d4bfc1f27d30150360ce3f2fdad31bb7b640a4e92453705e075d721c73de5",
+      "v2-message-bus": "sha256:8b825385773a450e80d1cf44cb4176bfb88b259a24afefdaccb5b8ebd77d0f73",
+      "v2-content-enrichment": "sha256:95a565433e5f82ef17a07f85b33fb275cd3dc2dbb21969df7478be882acd0407",
+      "v2-o4": "sha256:08baade178e249551df5035ed0c4a6f5aeb5cc512816344bc48b8cb781055996",
+      "v2-web": "sha256:60c1e203afb3a2ca978cbf5ed32a20a766da23f55ed6c2bd74335190b2e87192"
+    }
+  }
+}

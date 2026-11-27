@@ -9,5 +9,7 @@
   "published_at_min": "2026-09-24T15:24:49Z",
   "published_at_max": "2026-11-26T06:50:25Z",
   "denominator": "retained formal messages already accepted by the original layer",
-  "cleanup": "doxagent.content_enrichment.publisher_cleanup.clean_text"
+  "cleanup": "doxagent.content_enrichment.publisher_cleanup.clean_text",
+  "rules_git_lf_sha256": "5bbd58c49f41b24e5efd78d8d050a80b54c09328a17c85790b2b3f6968a7636a",
+  "rules_canonical_json_sha256": "8546589a49ff56dc32f06baaf24b53d1c1de0799d346ba114583985418286f45"
 }

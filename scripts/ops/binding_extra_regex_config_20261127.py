@@ -36,9 +36,11 @@ def main():
     stable = lambda b: b.model_dump(include={"ticker","source_id","enabled","polling","streaming","source_parameters"})
     before = {k:stable(v) for k,v in roster.items()}
     tickers = sorted({b.ticker for b in roster.values()})
-    terms_sql = "SELECT ticker,data_json FROM ticker_monitoring_terms WHERE ticker IN ("+",".join("?" for _ in tickers)+")"
+    terms_sql = ("SELECT t.ticker,t.current_revision,r.config_hash FROM ticker_monitoring_terms t "
+        "JOIN ticker_monitoring_term_revisions r ON r.ticker=t.ticker AND r.revision=t.current_revision "
+        "WHERE t.ticker IN ("+",".join("?" for _ in tickers)+")")
     with repo._connect() as db:
-        terms_before = {r[0]:r[1] for r in db.execute(terms_sql, tickers)}
+        terms_before = {r[0]:tuple(r[1:]) for r in db.execute(terms_sql, tickers)}
     receipt = {"rules_sha256":hashlib.sha256(args.rules.read_bytes()).hexdigest(),
         "bindings":len(roster), "tickers":sorted({b.ticker for b in roster.values()}),
         "pending":sum(roster[k].extra_relevance!=v for k,v in normalized.items()),"applied":False}
@@ -81,7 +83,7 @@ def main():
     after = {k:repo.get_binding(k) for k in roster}
     assert {k:stable(v) for k,v in after.items()} == before
     with repo._connect() as db:
-        assert terms_before == {r[0]:r[1] for r in db.execute(terms_sql, tickers)}
+        assert terms_before == {r[0]:tuple(r[1:]) for r in db.execute(terms_sql, tickers)}
     receipt.update(applied=True, applied_at=datetime.now(UTC).isoformat(), effective=receipts,
         unified_terms_unchanged=True, polling_and_subscriptions_unchanged=True, backup=str(backup))
     print(json.dumps(receipt))

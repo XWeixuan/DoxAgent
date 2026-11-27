@@ -1,0 +1,243 @@
+{
+  "v2-api": {
+    "image": "sha256:be6ac9f432e20cc4ce4f25b415e99161d0c0afc63877c752d8b941de6bd2c4ec",
+    "started": "2026-11-27T12:39:15.710080665Z",
+    "running": true,
+    "health": "healthy",
+    "restarts": 0
+  },
+  "v2-message-collector": {
+    "image": "sha256:c65d4bfc1f27d30150360ce3f2fdad31bb7b640a4e92453705e075d721c73de5",
+    "started": "2026-11-27T12:39:53.006382077Z",
+    "running": true,
+    "health": "healthy",
+    "restarts": 0
+  },
+  "v2-message-bus": {
+    "image": "sha256:8b825385773a450e80d1cf44cb4176bfb88b259a24afefdaccb5b8ebd77d0f73",
+    "started": "2026-11-27T12:40:08.592909582Z",
+    "running": true,
+    "health": null,
+    "restarts": 0
+  },
+  "v2-content-enrichment": {
+    "image": "sha256:95a565433e5f82ef17a07f85b33fb275cd3dc2dbb21969df7478be882acd0407",
+    "started": "2026-11-27T12:40:24.397649588Z",
+    "running": true,
+    "health": null,
+    "restarts": 0
+  },
+  "v2-o4": {
+    "image": "sha256:08baade178e249551df5035ed0c4a6f5aeb5cc512816344bc48b8cb781055996",
+    "started": "2026-11-27T12:40:39.489072673Z",
+    "running": true,
+    "health": null,
+    "restarts": 0
+  },
+  "v2-web": {
+    "image": "sha256:60c1e203afb3a2ca978cbf5ed32a20a766da23f55ed6c2bd74335190b2e87192",
+    "started": "2026-11-27T12:40:54.826079124Z",
+    "running": true,
+    "health": "healthy",
+    "restarts": 0
+  },
+  "codex-worker": {
+    "image": "sha256:543c6014d8302bbc2e1deb1ff99426c36a6a37f396a39120fba156da260e0a17",
+    "started": "2026-11-27T11:12:00.130359447Z",
+    "running": true,
+    "health": "healthy",
+    "restarts": 0,
+    "old_reader": {
+      "active_bindings_readable": 445,
+      "packed_extensions_visible_to_old_reader": 16
+    }
+  },
+  "v2-scheduler": {
+    "image": "sha256:9dd39deb702cccc115d194ef9e58e4ef0126d14ededa504ec02cb4f30781e721",
+    "started": "2026-11-27T11:27:38.863678201Z",
+    "running": true,
+    "health": null,
+    "restarts": 0,
+    "old_reader": {
+      "active_bindings_readable": 445,
+      "packed_extensions_visible_to_old_reader": 16
+    }
+  },
+  "v2-initialization": {
+    "image": "sha256:91a9280fced498ba92bae91fbf5bacb52cb1c6f8fd77bb8b2168d7729752ae57",
+    "started": "2026-11-26T20:50:44.837713276Z",
+    "running": true,
+    "health": null,
+    "restarts": 0,
+    "old_reader": {
+      "active_bindings_readable": 445,
+      "packed_extensions_visible_to_old_reader": 16
+    }
+  },
+  "v2-projector": {
+    "image": "sha256:e237e7d2174ff201e5b3bb2099bfab91e8335af8380b7768b3afe15ca3c07ee7",
+    "started": "2026-11-26T14:22:19.233803662Z",
+    "running": true,
+    "health": null,
+    "restarts": 0
+  },
+  "effective": {
+    "configured": [
+      {
+        "binding_id": "BE:huggingnews_rss",
+        "version": 8,
+        "source_version": 6,
+        "rules_digest": "12e977d209c2dc07428ddceed373d4baeb2e3bef5a7850a64ba4bbc545cee920",
+        "public_extra": true
+      },
+      {
+        "binding_id": "BE:technews_hardware",
+        "version": 5,
+        "source_version": 4,
+        "rules_digest": "12e977d209c2dc07428ddceed373d4baeb2e3bef5a7850a64ba4bbc545cee920",
+        "public_extra": true
+      },
+      {
+        "binding_id": "BE:tomshardware_rss",
+        "version": 8,
+        "source_version": 6,
+        "rules_digest": "12e977d209c2dc07428ddceed373d4baeb2e3bef5a7850a64ba4bbc545cee920",
+        "public_extra": true
+      },
+      {
+        "binding_id": "COHR:huggingnews_rss",
+        "version": 5,
+        "source_version": 6,
+        "rules_digest": "8bce7bd77005ef7aaa99305b9768489574dd8bd906ee989945681f0b376e3eb0",
+        "public_extra": true
+      },
+      {
+        "binding_id": "COHR:technews_hardware",
+        "version": 5,
+        "source_version": 4,
+        "rules_digest": "8bce7bd77005ef7aaa99305b9768489574dd8bd906ee989945681f0b376e3eb0",
+        "public_extra": true
+      },
+      {
+        "binding_id": "COHR:tomshardware_rss",
+        "version": 6,
+        "source_version": 6,
+        "rules_digest": "8bce7bd77005ef7aaa99305b9768489574dd8bd906ee989945681f0b376e3eb0",
+        "public_extra": true
+      },
+      {
+        "binding_id": "INTC:huggingnews_rss",
+        "version": 8,
+        "source_version": 6,
+        "rules_digest": "9502b6997c8cc066fdb826f7b4127f570b5dff4642fdd83a5177a9ab6c251454",
+        "public_extra": true
+      },
+      {
+        "binding_id": "INTC:technews_hardware",
+        "version": 5,
+        "source_version": 4,
+        "rules_digest": "9502b6997c8cc066fdb826f7b4127f570b5dff4642fdd83a5177a9ab6c251454",
+        "public_extra": true
+      },
+      {
+        "binding_id": "INTC:tomshardware_rss",
+        "version": 8,
+        "source_version": 6,
+        "rules_digest": "9502b6997c8cc066fdb826f7b4127f570b5dff4642fdd83a5177a9ab6c251454",
+        "public_extra": true
+      },
+      {
+        "binding_id": "IONQ:quantum_zeitgeist",
+        "version": 5,
+        "source_version": 4,
+        "rules_digest": "7c054c280f348fb8d5f47330917761ca3495ebd7b1991eabc5cb10f5a003021b",
+        "public_extra": true
+      },
+      {
+        "binding_id": "MU:huggingnews_rss",
+        "version": 8,
+        "source_version": 6,
+        "rules_digest": "e225eac6493a70696c28205d108ce4f4b50d65d44ff6382e6ba34e1adc14d1fd",
+        "public_extra": true
+      },
+      {
+        "binding_id": "MU:technews_hardware",
+        "version": 5,
+        "source_version": 4,
+        "rules_digest": "e225eac6493a70696c28205d108ce4f4b50d65d44ff6382e6ba34e1adc14d1fd",
+        "public_extra": true
+      },
+      {
+        "binding_id": "MU:tomshardware_rss",
+        "version": 8,
+        "source_version": 6,
+        "rules_digest": "e225eac6493a70696c28205d108ce4f4b50d65d44ff6382e6ba34e1adc14d1fd",
+        "public_extra": true
+      },
+      {
+        "binding_id": "NBIS:huggingnews_rss",
+        "version": 5,
+        "source_version": 6,
+        "rules_digest": "2640fabe177e8c79caeb552d5ad8589749e94719278cec97d0411f951a98647e",
+        "public_extra": true
+      },
+      {
+        "binding_id": "NBIS:technews_hardware",
+        "version": 5,
+        "source_version": 4,
+        "rules_digest": "2640fabe177e8c79caeb552d5ad8589749e94719278cec97d0411f951a98647e",
+        "public_extra": true
+      },
+      {
+        "binding_id": "NBIS:tomshardware_rss",
+        "version": 6,
+        "source_version": 6,
+        "rules_digest": "2640fabe177e8c79caeb552d5ad8589749e94719278cec97d0411f951a98647e",
+        "public_extra": true
+      }
+    ],
+    "natural_extra_filtered_count": 0,
+    "natural_examples": []
+  },
+  "production_control_replay": {
+    "production_offline_controls": 79,
+    "passed": 79,
+    "failed": [],
+    "post_activation_natural_states": [],
+    "natural_extra_filtered": 0
+  },
+  "bounded_log_check": {
+    "checked_at": "2026-11-27T12:44:31.028486+00:00",
+    "logs": {
+      "v2-api": {
+        "traceback_markers": 0,
+        "extra_rule_failure_markers": 0,
+        "log_lines_inspected": 0
+      },
+      "v2-message-collector": {
+        "traceback_markers": 0,
+        "extra_rule_failure_markers": 0,
+        "log_lines_inspected": 252
+      },
+      "v2-message-bus": {
+        "traceback_markers": 0,
+        "extra_rule_failure_markers": 0,
+        "log_lines_inspected": 13
+      },
+      "v2-content-enrichment": {
+        "traceback_markers": 0,
+        "extra_rule_failure_markers": 0,
+        "log_lines_inspected": 4
+      },
+      "v2-o4": {
+        "traceback_markers": 0,
+        "extra_rule_failure_markers": 0,
+        "log_lines_inspected": 0
+      }
+    }
+  },
+  "web_served_index_and_marker": [
+    "b0d64cdda64d79cf4847ecb510ba88bf0d39f37da6dd405d98764c3f4aa3242c  /usr/share/nginx/html/index.html",
+    "/usr/share/nginx/html/assets/message-bus-DIYWKwbJ.js"
+  ]
+}

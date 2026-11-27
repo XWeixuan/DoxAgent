@@ -70,8 +70,18 @@ Tom’s Hardware不按“评测/促销”体裁整体过滤。CPU、RAM、SSD本
 
 ## 发布记录
 
-选定规则SHA256：`594574d28da867b6dc40fe2e6cd6d70f8e86d1b8bdb4e330d0892e4acfeb31ed`。原始快照SHA与全部回放见下列证据。远端发布回执、实际配置核对与自然消息记录将在发布完成后追加到本节；此处的离线数字不代表上线后的实测减量。
+**已发布远端并启用全部16个绑定。** 代码镜像提交 `35b67b534d60cad6c44a56a1170664ce25fd8a87`，逐角色发布API、Collector、Bus、BODY、O4、Web。2026-11-27 12:42:02 UTC（北京时间20:42:02）完成规则写入。上线文件SHA256为 `5bbd58c49f41b24e5efd78d8d050a80b54c09328a17c85790b2b3f6968a7636a`；Windows回放文件原SHA为 `594574d28da867b6dc40fe2e6cd6d70f8e86d1b8bdb4e330d0892e4acfeb31ed`，差异仅为Git的LF行尾规范化，已验证JSON逐值相等。manifest同时保存两种字节SHA及规范化JSON的SHA。
 
 发布预检发现Collector/Bus已并发上线 `7856e0d41` 的FDA旧日历准入和分批配置修复。发布被预检主动阻止，随后保留完全相同的live.py改动及其解析器依赖；不覆盖这项修复，不重置远端工作区。
+
+上线后核对结果：
+
+- 16组实际规则与选定版本一致，统一监测词的当前revision/hash、轮询参数及订阅关系未变；通过既有Control CAS/幂等/审计写入。原配置以0600权限备份在远端 `/data/bus/binding-extra-20261127.before.private.json`，不导出其内容。
+- 六个发布角色均运行且重启计数0；有Docker healthcheck的API、Collector、Web为healthy，其余角色以运行状态和文件哈希检查验证。Worker、Scheduler、Initialization、Projector的镜像及启动时间未变。
+- 在真实旧Worker、Scheduler、Initialization代码中读取全部445个启用绑定并执行参数schema验证，均通过；16个内部扩展可被旧读者保留，新API读者正确解包为独立配置，普通参数不泄露内部键。
+- 在生产API容器内，用实际生效的Binding和原生匹配器，对同一79项业务控制作只读离线回放，79/79通过；不创建消息、不调用模型。
+- 12:44:31 UTC检查的发布后有界日志没有Traceback、配置校验或额外规则错误。该时点四个目标来源尚无启用后新增投递，`EXTRA_REGEX_FILTERED`自然记录为0；因此只确认机制、配置及生产离线执行，**不声称已有自然消息减量验收或长期准召结论**，也没有为取得回执而强制抓取、补发历史或发布合成消息。
+
+发布回执见 `release-receipt.json`，实际镜像/启动时间、445绑定兼容检查、79项生产离线控制及日志检查见 `production-verification.json`。保留第一版记录以解释差异，线上只使用本版16组规则。
 
 证据目录：`eval/binding_extra_regex_retune_20261127/`。核心文件为 `rules-selected.json`、`all-history-results.csv`、`blocked-review.csv`、`business-controls.csv`、`prior-audit-overlap.json`、`manifest.json`。完整原始正文与探索卡片本地保留，不重复提交全文。
