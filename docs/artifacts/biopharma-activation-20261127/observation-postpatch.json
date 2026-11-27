@@ -1,0 +1,2807 @@
+{
+  "at": "2026-11-27T11:51:36.113847+00:00",
+  "since": "2026-11-27T11:46:00+00:00",
+  "elapsed_seconds": 336.113847,
+  "tickers": {
+    "CGEM": {
+      "terms_revision": 1,
+      "state": "running",
+      "bindings": 19,
+      "disabled_bindings": [],
+      "sources": {
+        "globenewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 22
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all",
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 22,
+            "mean": 0.064,
+            "p95": 0.106,
+            "max": 0.207
+          },
+          "dispatch_to_list_seconds": {
+            "n": 22,
+            "mean": 8.814,
+            "p95": 13.282,
+            "max": 21.323
+          },
+          "successful_list_gap_seconds": {
+            "n": 20,
+            "mean": 28.691,
+            "p95": 33.595,
+            "max": 33.595
+          }
+        },
+        "prnewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.074,
+            "p95": 0.146,
+            "max": 0.146
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.639,
+            "p95": 19.26,
+            "max": 19.26
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.407,
+            "p95": 34.755,
+            "max": 34.755
+          }
+        },
+        "tmx_newsfile_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.05,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.797,
+            "p95": 19.208,
+            "max": 19.208
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.494,
+            "p95": 34.706,
+            "max": 34.706
+          }
+        },
+        "thefly_ticker_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.058,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.856,
+            "p95": 19.199,
+            "max": 19.199
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.454,
+            "p95": 34.41,
+            "max": 34.41
+          }
+        },
+        "fda_release": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 48,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:10b0817966a3ea62ddf1afd5",
+            "FEED:40b088fc722bef9d6951596a",
+            "FEED:5033b942e061b9c4f6a4bc70"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 49,
+            "mean": 0.076,
+            "p95": 0.282,
+            "max": 0.343
+          },
+          "dispatch_to_list_seconds": {
+            "n": 48,
+            "mean": 9.028,
+            "p95": 13.795,
+            "max": 17.759
+          },
+          "successful_list_gap_seconds": {
+            "n": 45,
+            "mean": 19.249,
+            "p95": 21.683,
+            "max": 23.845
+          }
+        },
+        "sec_edgar": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 33
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 33,
+            "mean": 0.079,
+            "p95": 0.216,
+            "max": 0.23
+          },
+          "dispatch_to_list_seconds": {
+            "n": 33,
+            "mean": 0.125,
+            "p95": 0.42,
+            "max": 0.532
+          },
+          "successful_list_gap_seconds": {
+            "n": 32,
+            "mean": 9.992,
+            "p95": 10.371,
+            "max": 10.541
+          }
+        },
+        "finnhub_company_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 11,
+            "mean": 0.086,
+            "p95": 0.288,
+            "max": 0.288
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.217,
+            "p95": 23.626,
+            "max": 23.626
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 27.927,
+            "p95": 35.002,
+            "max": 35.002
+          }
+        },
+        "stat_biotech_trials": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 32
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:bb27b609a4e254d89514e856",
+            "FEED:f2acaa004b15f5cd04dff7f5"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 32,
+            "mean": 0.086,
+            "p95": 0.292,
+            "max": 0.376
+          },
+          "dispatch_to_list_seconds": {
+            "n": 32,
+            "mean": 8.978,
+            "p95": 13.886,
+            "max": 17.409
+          },
+          "successful_list_gap_seconds": {
+            "n": 30,
+            "mean": 19.218,
+            "p95": 22.386,
+            "max": 23.543
+          }
+        },
+        "taiho_press_releases": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:f6616886c02e0e0040996aec"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 17,
+            "mean": 0.057,
+            "p95": 0.089,
+            "max": 0.089
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 10.059,
+            "p95": 16.693,
+            "max": 16.693
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.22,
+            "p95": 23.296,
+            "max": 23.296
+          }
+        },
+        "corporate_ir_press_releases": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "IR:cgem.press"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.071,
+            "p95": 0.209,
+            "max": 0.209
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.391,
+            "p95": 13.522,
+            "max": 13.522
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.329,
+            "p95": 21.868,
+            "max": 21.868
+          }
+        },
+        "endpoints_biopharma": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:8a6ff030dfbb61222aeaa47b"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.085,
+            "p95": 0.223,
+            "max": 0.223
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.658,
+            "p95": 13.754,
+            "max": 13.754
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.339,
+            "p95": 21.994,
+            "max": 21.994
+          }
+        },
+        "ibkr_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.067,
+            "p95": 0.101,
+            "max": 0.101
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 0.369,
+            "p95": 2.066,
+            "max": 2.066
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.874,
+            "p95": 20.071,
+            "max": 20.071
+          }
+        },
+        "google_news_search_rss": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 15,
+            "FAILED": 1
+          },
+          "reasons": {
+            "HTTPStatusError": 1
+          },
+          "errors": [
+            "HTTPStatusError:Client error '429 Too Many Requests' for url 'https://news.google.com/rss/search?q=%22Cullinan+Therapeutics%22+when%3A1d&hl=en-US&gl=US&ceid=US%3Aen'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+          ],
+          "units": [
+            "QUERY:19ed6105de2cbba0f5d2c2cc"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.058,
+            "p95": 0.139,
+            "max": 0.139
+          },
+          "dispatch_to_list_seconds": {
+            "n": 15,
+            "mean": 7.713,
+            "p95": 13.433,
+            "max": 13.433
+          },
+          "successful_list_gap_seconds": {
+            "n": 14,
+            "mean": 20.656,
+            "p95": 38.246,
+            "max": 38.246
+          }
+        },
+        "fiercebiotech_biotech": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:ca2e47468d866ead4f589583"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.064,
+            "p95": 0.099,
+            "max": 0.099
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 7.338,
+            "p95": 12.639,
+            "max": 12.639
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.282,
+            "p95": 23.481,
+            "max": 23.481
+          }
+        },
+        "benzinga_news": {
+          "new_source": false,
+          "statuses": {
+            "FAILED": 16
+          },
+          "reasons": {
+            "HTTPStatusError": 16
+          },
+          "errors": [
+            "HTTPStatusError:Client error '401 Unauthorized' for url 'https://api.benzinga.com/api/v2/news?token=[REDACTED]&pageSize=100&displayOutput=full&sort=created%3Adesc&topics=CGEM&dateFrom=2026-10-28&dateTo=2026-11-27'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP"
+          ],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.056,
+            "p95": 0.151,
+            "max": 0.151
+          },
+          "dispatch_to_list_seconds": {
+            "n": 0
+          },
+          "successful_list_gap_seconds": {
+            "n": 0
+          }
+        },
+        "businesswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.053,
+            "p95": 0.174,
+            "max": 0.174
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.246,
+            "p95": 13.09,
+            "max": 13.09
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 28.957,
+            "p95": 34.364,
+            "max": 34.364
+          }
+        },
+        "access_newswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.066,
+            "p95": 0.119,
+            "max": 0.119
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.355,
+            "p95": 12.141,
+            "max": 12.141
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 29.071,
+            "p95": 32.885,
+            "max": 32.885
+          }
+        }
+      }
+    },
+    "RGNX": {
+      "terms_revision": 1,
+      "state": "running",
+      "bindings": 18,
+      "disabled_bindings": [],
+      "sources": {
+        "sec_edgar": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 34
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 34,
+            "mean": 0.062,
+            "p95": 0.107,
+            "max": 0.161
+          },
+          "dispatch_to_list_seconds": {
+            "n": 34,
+            "mean": 0.178,
+            "p95": 0.427,
+            "max": 1.279
+          },
+          "successful_list_gap_seconds": {
+            "n": 33,
+            "mean": 9.961,
+            "p95": 10.323,
+            "max": 10.364
+          }
+        },
+        "globenewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 22
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all",
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 22,
+            "mean": 0.064,
+            "p95": 0.106,
+            "max": 0.207
+          },
+          "dispatch_to_list_seconds": {
+            "n": 22,
+            "mean": 8.814,
+            "p95": 13.282,
+            "max": 21.323
+          },
+          "successful_list_gap_seconds": {
+            "n": 20,
+            "mean": 28.691,
+            "p95": 33.595,
+            "max": 33.595
+          }
+        },
+        "prnewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.074,
+            "p95": 0.146,
+            "max": 0.146
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.639,
+            "p95": 19.26,
+            "max": 19.26
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.407,
+            "p95": 34.755,
+            "max": 34.755
+          }
+        },
+        "tmx_newsfile_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.05,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.797,
+            "p95": 19.208,
+            "max": 19.208
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.494,
+            "p95": 34.706,
+            "max": 34.706
+          }
+        },
+        "finnhub_company_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.043,
+            "p95": 0.099,
+            "max": 0.099
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 10.507,
+            "p95": 25.22,
+            "max": 25.22
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 27.918,
+            "p95": 33.945,
+            "max": 33.945
+          }
+        },
+        "fda_release": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 48,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:10b0817966a3ea62ddf1afd5",
+            "FEED:40b088fc722bef9d6951596a",
+            "FEED:5033b942e061b9c4f6a4bc70"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 49,
+            "mean": 0.076,
+            "p95": 0.282,
+            "max": 0.343
+          },
+          "dispatch_to_list_seconds": {
+            "n": 48,
+            "mean": 9.028,
+            "p95": 13.795,
+            "max": 17.759
+          },
+          "successful_list_gap_seconds": {
+            "n": 45,
+            "mean": 19.249,
+            "p95": 21.683,
+            "max": 23.845
+          }
+        },
+        "stat_biotech_trials": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 32
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:bb27b609a4e254d89514e856",
+            "FEED:f2acaa004b15f5cd04dff7f5"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 32,
+            "mean": 0.086,
+            "p95": 0.292,
+            "max": 0.376
+          },
+          "dispatch_to_list_seconds": {
+            "n": 32,
+            "mean": 8.978,
+            "p95": 13.886,
+            "max": 17.409
+          },
+          "successful_list_gap_seconds": {
+            "n": 30,
+            "mean": 19.218,
+            "p95": 22.386,
+            "max": 23.543
+          }
+        },
+        "corporate_ir_press_releases": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "IR:rgnx.press"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.063,
+            "p95": 0.132,
+            "max": 0.132
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.788,
+            "p95": 13.827,
+            "max": 13.827
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.346,
+            "p95": 21.744,
+            "max": 21.744
+          }
+        },
+        "google_news_search_rss": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "QUERY:3f245693fd7e9c4634f786c6"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.043,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.138,
+            "p95": 12.823,
+            "max": 12.823
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.371,
+            "p95": 21.504,
+            "max": 21.504
+          }
+        },
+        "reuters_site_search": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 6
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "QUERY:6edd44007d27b25a9c689b3c"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 6,
+            "mean": 0.039,
+            "p95": 0.056,
+            "max": 0.056
+          },
+          "dispatch_to_list_seconds": {
+            "n": 6,
+            "mean": 0.493,
+            "p95": 0.773,
+            "max": 0.773
+          },
+          "successful_list_gap_seconds": {
+            "n": 5,
+            "mean": 59.951,
+            "p95": 60.405,
+            "max": 60.405
+          }
+        },
+        "endpoints_biopharma": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:8a6ff030dfbb61222aeaa47b"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.085,
+            "p95": 0.223,
+            "max": 0.223
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.658,
+            "p95": 13.754,
+            "max": 13.754
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.339,
+            "p95": 21.994,
+            "max": 21.994
+          }
+        },
+        "ibkr_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.062,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 0.413,
+            "p95": 2.131,
+            "max": 2.131
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.875,
+            "p95": 20.088,
+            "max": 20.088
+          }
+        },
+        "thefly_ticker_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 11,
+            "mean": 0.065,
+            "p95": 0.101,
+            "max": 0.101
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.894,
+            "p95": 17.164,
+            "max": 17.164
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.947,
+            "p95": 37.96,
+            "max": 37.96
+          }
+        },
+        "benzinga_news": {
+          "new_source": false,
+          "statuses": {
+            "FAILED": 16,
+            "DISPATCHED": 1
+          },
+          "reasons": {
+            "HTTPStatusError": 16
+          },
+          "errors": [
+            "HTTPStatusError:Client error '401 Unauthorized' for url 'https://api.benzinga.com/api/v2/news?token=[REDACTED]&pageSize=100&displayOutput=full&sort=created%3Adesc&topics=RGNX&dateFrom=2026-10-28&dateTo=2026-11-27'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP"
+          ],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 17,
+            "mean": 0.045,
+            "p95": 0.103,
+            "max": 0.103
+          },
+          "dispatch_to_list_seconds": {
+            "n": 0
+          },
+          "successful_list_gap_seconds": {
+            "n": 0
+          }
+        },
+        "fiercebiotech_biotech": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:ca2e47468d866ead4f589583"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.064,
+            "p95": 0.099,
+            "max": 0.099
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 7.338,
+            "p95": 12.639,
+            "max": 12.639
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.282,
+            "p95": 23.481,
+            "max": 23.481
+          }
+        },
+        "businesswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.053,
+            "p95": 0.174,
+            "max": 0.174
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.246,
+            "p95": 13.09,
+            "max": 13.09
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 28.957,
+            "p95": 34.364,
+            "max": 34.364
+          }
+        },
+        "access_newswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.066,
+            "p95": 0.119,
+            "max": 0.119
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.355,
+            "p95": 12.141,
+            "max": 12.141
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 29.071,
+            "p95": 32.885,
+            "max": 32.885
+          }
+        }
+      }
+    },
+    "PRAX": {
+      "terms_revision": 1,
+      "state": "running",
+      "bindings": 17,
+      "disabled_bindings": [],
+      "sources": {
+        "globenewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 22
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all",
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 22,
+            "mean": 0.064,
+            "p95": 0.106,
+            "max": 0.207
+          },
+          "dispatch_to_list_seconds": {
+            "n": 22,
+            "mean": 8.814,
+            "p95": 13.282,
+            "max": 21.323
+          },
+          "successful_list_gap_seconds": {
+            "n": 20,
+            "mean": 28.691,
+            "p95": 33.595,
+            "max": 33.595
+          }
+        },
+        "sec_edgar": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 34
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 34,
+            "mean": 0.1,
+            "p95": 0.268,
+            "max": 0.331
+          },
+          "dispatch_to_list_seconds": {
+            "n": 34,
+            "mean": 0.172,
+            "p95": 0.584,
+            "max": 0.647
+          },
+          "successful_list_gap_seconds": {
+            "n": 33,
+            "mean": 9.986,
+            "p95": 10.346,
+            "max": 10.358
+          }
+        },
+        "prnewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.074,
+            "p95": 0.146,
+            "max": 0.146
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.639,
+            "p95": 19.26,
+            "max": 19.26
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.407,
+            "p95": 34.755,
+            "max": 34.755
+          }
+        },
+        "google_news_search_rss": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 17
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "QUERY:c299ef3d710b291f2af7b117"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 17,
+            "mean": 0.062,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 17,
+            "mean": 8.458,
+            "p95": 18.565,
+            "max": 18.565
+          },
+          "successful_list_gap_seconds": {
+            "n": 16,
+            "mean": 19.007,
+            "p95": 23.044,
+            "max": 23.044
+          }
+        },
+        "tmx_newsfile_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.05,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.797,
+            "p95": 19.208,
+            "max": 19.208
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.494,
+            "p95": 34.706,
+            "max": 34.706
+          }
+        },
+        "fda_release": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 48,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:10b0817966a3ea62ddf1afd5",
+            "FEED:40b088fc722bef9d6951596a",
+            "FEED:5033b942e061b9c4f6a4bc70"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 49,
+            "mean": 0.076,
+            "p95": 0.282,
+            "max": 0.343
+          },
+          "dispatch_to_list_seconds": {
+            "n": 48,
+            "mean": 9.028,
+            "p95": 13.795,
+            "max": 17.759
+          },
+          "successful_list_gap_seconds": {
+            "n": 45,
+            "mean": 19.249,
+            "p95": 21.683,
+            "max": 23.845
+          }
+        },
+        "stat_biotech_trials": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 32
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:bb27b609a4e254d89514e856",
+            "FEED:f2acaa004b15f5cd04dff7f5"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 32,
+            "mean": 0.086,
+            "p95": 0.292,
+            "max": 0.376
+          },
+          "dispatch_to_list_seconds": {
+            "n": 32,
+            "mean": 8.978,
+            "p95": 13.886,
+            "max": 17.409
+          },
+          "successful_list_gap_seconds": {
+            "n": 30,
+            "mean": 19.218,
+            "p95": 22.386,
+            "max": 23.543
+          }
+        },
+        "ibkr_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 17
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 17,
+            "mean": 0.055,
+            "p95": 0.1,
+            "max": 0.1
+          },
+          "dispatch_to_list_seconds": {
+            "n": 17,
+            "mean": 0.927,
+            "p95": 8.831,
+            "max": 8.831
+          },
+          "successful_list_gap_seconds": {
+            "n": 16,
+            "mean": 19.464,
+            "p95": 20.063,
+            "max": 20.063
+          }
+        },
+        "endpoints_biopharma": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:8a6ff030dfbb61222aeaa47b"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.085,
+            "p95": 0.223,
+            "max": 0.223
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.658,
+            "p95": 13.754,
+            "max": 13.754
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.339,
+            "p95": 21.994,
+            "max": 21.994
+          }
+        },
+        "benzinga_news": {
+          "new_source": false,
+          "statuses": {
+            "FAILED": 16,
+            "DISPATCHED": 1
+          },
+          "reasons": {
+            "HTTPStatusError": 16
+          },
+          "errors": [
+            "HTTPStatusError:Client error '401 Unauthorized' for url 'https://api.benzinga.com/api/v2/news?token=[REDACTED]&pageSize=100&displayOutput=full&sort=created%3Adesc&topics=PRAX&dateFrom=2026-10-28&dateTo=2026-11-27'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP"
+          ],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 17,
+            "mean": 0.049,
+            "p95": 0.093,
+            "max": 0.093
+          },
+          "dispatch_to_list_seconds": {
+            "n": 0
+          },
+          "successful_list_gap_seconds": {
+            "n": 0
+          }
+        },
+        "fiercebiotech_biotech": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:ca2e47468d866ead4f589583"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.064,
+            "p95": 0.099,
+            "max": 0.099
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 7.338,
+            "p95": 12.639,
+            "max": 12.639
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.282,
+            "p95": 23.481,
+            "max": 23.481
+          }
+        },
+        "thefly_ticker_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 11,
+            "mean": 0.064,
+            "p95": 0.1,
+            "max": 0.1
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 8.389,
+            "p95": 13.146,
+            "max": 13.146
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.908,
+            "p95": 34.679,
+            "max": 34.679
+          }
+        },
+        "corporate_ir_press_releases": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 15
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "IR:prax.press"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 15,
+            "mean": 0.071,
+            "p95": 0.164,
+            "max": 0.164
+          },
+          "dispatch_to_list_seconds": {
+            "n": 15,
+            "mean": 9.051,
+            "p95": 13.524,
+            "max": 13.524
+          },
+          "successful_list_gap_seconds": {
+            "n": 14,
+            "mean": 19.371,
+            "p95": 22.759,
+            "max": 22.759
+          }
+        },
+        "businesswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.053,
+            "p95": 0.174,
+            "max": 0.174
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.246,
+            "p95": 13.09,
+            "max": 13.09
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 28.957,
+            "p95": 34.364,
+            "max": 34.364
+          }
+        },
+        "access_newswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.066,
+            "p95": 0.119,
+            "max": 0.119
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.355,
+            "p95": 12.141,
+            "max": 12.141
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 29.071,
+            "p95": 32.885,
+            "max": 32.885
+          }
+        },
+        "finnhub_company_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.081,
+            "p95": 0.172,
+            "max": 0.172
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 7.99,
+            "p95": 11.561,
+            "max": 11.561
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 29.1,
+            "p95": 31.698,
+            "max": 31.698
+          }
+        }
+      }
+    },
+    "XENE": {
+      "terms_revision": 1,
+      "state": "running",
+      "bindings": 18,
+      "disabled_bindings": [],
+      "sources": {
+        "benzinga_news": {
+          "new_source": false,
+          "statuses": {
+            "FAILED": 17,
+            "DISPATCHED": 1
+          },
+          "reasons": {
+            "HTTPStatusError": 17
+          },
+          "errors": [
+            "HTTPStatusError:Client error '401 Unauthorized' for url 'https://api.benzinga.com/api/v2/news?token=[REDACTED]&pageSize=100&displayOutput=full&sort=created%3Adesc&topics=XENE&dateFrom=2026-10-28&dateTo=2026-11-27'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP"
+          ],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 18,
+            "mean": 0.067,
+            "p95": 0.306,
+            "max": 0.306
+          },
+          "dispatch_to_list_seconds": {
+            "n": 0
+          },
+          "successful_list_gap_seconds": {
+            "n": 0
+          }
+        },
+        "sec_edgar": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 34
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 34,
+            "mean": 0.061,
+            "p95": 0.102,
+            "max": 0.245
+          },
+          "dispatch_to_list_seconds": {
+            "n": 34,
+            "mean": 0.19,
+            "p95": 0.493,
+            "max": 0.921
+          },
+          "successful_list_gap_seconds": {
+            "n": 33,
+            "mean": 9.993,
+            "p95": 10.385,
+            "max": 10.504
+          }
+        },
+        "globenewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 22
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all",
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 22,
+            "mean": 0.064,
+            "p95": 0.106,
+            "max": 0.207
+          },
+          "dispatch_to_list_seconds": {
+            "n": 22,
+            "mean": 8.814,
+            "p95": 13.282,
+            "max": 21.323
+          },
+          "successful_list_gap_seconds": {
+            "n": 20,
+            "mean": 28.691,
+            "p95": 33.595,
+            "max": 33.595
+          }
+        },
+        "prnewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.074,
+            "p95": 0.146,
+            "max": 0.146
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.639,
+            "p95": 19.26,
+            "max": 19.26
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.407,
+            "p95": 34.755,
+            "max": 34.755
+          }
+        },
+        "tmx_newsfile_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.05,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.797,
+            "p95": 19.208,
+            "max": 19.208
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.494,
+            "p95": 34.706,
+            "max": 34.706
+          }
+        },
+        "fda_release": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 48,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:10b0817966a3ea62ddf1afd5",
+            "FEED:40b088fc722bef9d6951596a",
+            "FEED:5033b942e061b9c4f6a4bc70"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 49,
+            "mean": 0.076,
+            "p95": 0.282,
+            "max": 0.343
+          },
+          "dispatch_to_list_seconds": {
+            "n": 48,
+            "mean": 9.028,
+            "p95": 13.795,
+            "max": 17.759
+          },
+          "successful_list_gap_seconds": {
+            "n": 45,
+            "mean": 19.249,
+            "p95": 21.683,
+            "max": 23.845
+          }
+        },
+        "stat_biotech_trials": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 32
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:bb27b609a4e254d89514e856",
+            "FEED:f2acaa004b15f5cd04dff7f5"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 32,
+            "mean": 0.086,
+            "p95": 0.292,
+            "max": 0.376
+          },
+          "dispatch_to_list_seconds": {
+            "n": 32,
+            "mean": 8.978,
+            "p95": 13.886,
+            "max": 17.409
+          },
+          "successful_list_gap_seconds": {
+            "n": 30,
+            "mean": 19.218,
+            "p95": 22.386,
+            "max": 23.543
+          }
+        },
+        "thefly_ticker_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 11,
+            "mean": 0.075,
+            "p95": 0.139,
+            "max": 0.139
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.389,
+            "p95": 16.895,
+            "max": 16.895
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 29.039,
+            "p95": 38.406,
+            "max": 38.406
+          }
+        },
+        "endpoints_biopharma": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:8a6ff030dfbb61222aeaa47b"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.085,
+            "p95": 0.223,
+            "max": 0.223
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.658,
+            "p95": 13.754,
+            "max": 13.754
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.339,
+            "p95": 21.994,
+            "max": 21.994
+          }
+        },
+        "fiercebiotech_biotech": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:ca2e47468d866ead4f589583"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.064,
+            "p95": 0.099,
+            "max": 0.099
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 7.338,
+            "p95": 12.639,
+            "max": 12.639
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.282,
+            "p95": 23.481,
+            "max": 23.481
+          }
+        },
+        "corporate_ir_press_releases": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "IR:xene.press"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.1,
+            "p95": 0.296,
+            "max": 0.296
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 7.913,
+            "p95": 13.722,
+            "max": 13.722
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.247,
+            "p95": 23.537,
+            "max": 23.537
+          }
+        },
+        "google_news_search_rss": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 15,
+            "FAILED": 1
+          },
+          "reasons": {
+            "HTTPStatusError": 1
+          },
+          "errors": [
+            "HTTPStatusError:Client error '429 Too Many Requests' for url 'https://news.google.com/rss/search?q=azetukalner+when%3A1d&hl=en-US&gl=US&ceid=US%3Aen'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+          ],
+          "units": [
+            "QUERY:61d80295373295360dd5d7c5"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.075,
+            "p95": 0.189,
+            "max": 0.189
+          },
+          "dispatch_to_list_seconds": {
+            "n": 15,
+            "mean": 7.887,
+            "p95": 13.094,
+            "max": 13.094
+          },
+          "successful_list_gap_seconds": {
+            "n": 14,
+            "mean": 20.644,
+            "p95": 37.808,
+            "max": 37.808
+          }
+        },
+        "ibkr_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 15
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 15,
+            "mean": 0.047,
+            "p95": 0.095,
+            "max": 0.095
+          },
+          "dispatch_to_list_seconds": {
+            "n": 15,
+            "mean": 0.459,
+            "p95": 3.199,
+            "max": 3.199
+          },
+          "successful_list_gap_seconds": {
+            "n": 14,
+            "mean": 19.791,
+            "p95": 20.087,
+            "max": 20.087
+          }
+        },
+        "businesswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.053,
+            "p95": 0.174,
+            "max": 0.174
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.246,
+            "p95": 13.09,
+            "max": 13.09
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 28.957,
+            "p95": 34.364,
+            "max": 34.364
+          }
+        },
+        "finnhub_company_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.058,
+            "p95": 0.137,
+            "max": 0.137
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.215,
+            "p95": 12.966,
+            "max": 12.966
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 28.949,
+            "p95": 34.093,
+            "max": 34.093
+          }
+        },
+        "access_newswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.066,
+            "p95": 0.119,
+            "max": 0.119
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.355,
+            "p95": 12.141,
+            "max": 12.141
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 29.071,
+            "p95": 32.885,
+            "max": 32.885
+          }
+        }
+      }
+    },
+    "SMMT": {
+      "terms_revision": 1,
+      "state": "running",
+      "bindings": 20,
+      "disabled_bindings": [],
+      "sources": {
+        "globenewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 22
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all",
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 22,
+            "mean": 0.064,
+            "p95": 0.106,
+            "max": 0.207
+          },
+          "dispatch_to_list_seconds": {
+            "n": 22,
+            "mean": 8.814,
+            "p95": 13.282,
+            "max": 21.323
+          },
+          "successful_list_gap_seconds": {
+            "n": 20,
+            "mean": 28.691,
+            "p95": 33.595,
+            "max": 33.595
+          }
+        },
+        "prnewswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.074,
+            "p95": 0.146,
+            "max": 0.146
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.639,
+            "p95": 19.26,
+            "max": 19.26
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.407,
+            "p95": 34.755,
+            "max": 34.755
+          }
+        },
+        "benzinga_news": {
+          "new_source": false,
+          "statuses": {
+            "FAILED": 17,
+            "DISPATCHED": 1
+          },
+          "reasons": {
+            "HTTPStatusError": 17
+          },
+          "errors": [
+            "HTTPStatusError:Client error '401 Unauthorized' for url 'https://api.benzinga.com/api/v2/news?token=[REDACTED]&pageSize=100&displayOutput=full&sort=created%3Adesc&topics=SMMT&dateFrom=2026-10-28&dateTo=2026-11-27'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP"
+          ],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 18,
+            "mean": 0.071,
+            "p95": 0.27,
+            "max": 0.27
+          },
+          "dispatch_to_list_seconds": {
+            "n": 0
+          },
+          "successful_list_gap_seconds": {
+            "n": 0
+          }
+        },
+        "sec_edgar": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 34
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 34,
+            "mean": 0.059,
+            "p95": 0.098,
+            "max": 0.099
+          },
+          "dispatch_to_list_seconds": {
+            "n": 34,
+            "mean": 0.139,
+            "p95": 0.351,
+            "max": 0.608
+          },
+          "successful_list_gap_seconds": {
+            "n": 33,
+            "mean": 9.997,
+            "p95": 10.326,
+            "max": 10.514
+          }
+        },
+        "tmx_newsfile_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:all"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 12,
+            "mean": 0.05,
+            "p95": 0.102,
+            "max": 0.102
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.797,
+            "p95": 19.208,
+            "max": 19.208
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.494,
+            "p95": 34.706,
+            "max": 34.706
+          }
+        },
+        "thefly_ticker_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 11
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 11,
+            "mean": 0.056,
+            "p95": 0.133,
+            "max": 0.133
+          },
+          "dispatch_to_list_seconds": {
+            "n": 11,
+            "mean": 9.492,
+            "p95": 17.672,
+            "max": 17.672
+          },
+          "successful_list_gap_seconds": {
+            "n": 10,
+            "mean": 28.6,
+            "p95": 35.205,
+            "max": 35.205
+          }
+        },
+        "fda_release": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 48,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:10b0817966a3ea62ddf1afd5",
+            "FEED:40b088fc722bef9d6951596a",
+            "FEED:5033b942e061b9c4f6a4bc70"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 49,
+            "mean": 0.076,
+            "p95": 0.282,
+            "max": 0.343
+          },
+          "dispatch_to_list_seconds": {
+            "n": 48,
+            "mean": 9.028,
+            "p95": 13.795,
+            "max": 17.759
+          },
+          "successful_list_gap_seconds": {
+            "n": 45,
+            "mean": 19.249,
+            "p95": 21.683,
+            "max": 23.845
+          }
+        },
+        "stat_biotech_trials": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 32
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:bb27b609a4e254d89514e856",
+            "FEED:f2acaa004b15f5cd04dff7f5"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 32,
+            "mean": 0.086,
+            "p95": 0.292,
+            "max": 0.376
+          },
+          "dispatch_to_list_seconds": {
+            "n": 32,
+            "mean": 8.978,
+            "p95": 13.886,
+            "max": 17.409
+          },
+          "successful_list_gap_seconds": {
+            "n": 30,
+            "mean": 19.218,
+            "p95": 22.386,
+            "max": 23.543
+          }
+        },
+        "akeso_press_releases": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 32
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:03cef800b887cd78e5a8d8e5",
+            "FEED:6e333c55f3b0b800ce2e63bd"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 32,
+            "mean": 0.061,
+            "p95": 0.097,
+            "max": 0.159
+          },
+          "dispatch_to_list_seconds": {
+            "n": 32,
+            "mean": 8.484,
+            "p95": 13.196,
+            "max": 14.801
+          },
+          "successful_list_gap_seconds": {
+            "n": 30,
+            "mean": 19.319,
+            "p95": 23.297,
+            "max": 23.705
+          }
+        },
+        "google_news_search_rss": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "QUERY:35781e5cae26450b7ad20ba7"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.053,
+            "p95": 0.111,
+            "max": 0.111
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.809,
+            "p95": 13.494,
+            "max": 13.494
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.371,
+            "p95": 21.708,
+            "max": 21.708
+          }
+        },
+        "ibkr_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.077,
+            "p95": 0.325,
+            "max": 0.325
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 1.081,
+            "p95": 9.023,
+            "max": 9.023
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.428,
+            "p95": 20.079,
+            "max": 20.079
+          }
+        },
+        "endpoints_biopharma": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:8a6ff030dfbb61222aeaa47b"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.085,
+            "p95": 0.223,
+            "max": 0.223
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 8.658,
+            "p95": 13.754,
+            "max": 13.754
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.339,
+            "p95": 21.994,
+            "max": 21.994
+          }
+        },
+        "hkex_akeso": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:228cdb17977bd9fead1d743f"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.059,
+            "p95": 0.1,
+            "max": 0.1
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 10.024,
+            "p95": 15.724,
+            "max": 15.724
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.213,
+            "p95": 22.85,
+            "max": 22.85
+          }
+        },
+        "fiercebiotech_biotech": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 16
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "FEED:ca2e47468d866ead4f589583"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.064,
+            "p95": 0.099,
+            "max": 0.099
+          },
+          "dispatch_to_list_seconds": {
+            "n": 16,
+            "mean": 7.338,
+            "p95": 12.639,
+            "max": 12.639
+          },
+          "successful_list_gap_seconds": {
+            "n": 15,
+            "mean": 19.282,
+            "p95": 23.481,
+            "max": 23.481
+          }
+        },
+        "corporate_ir_press_releases": {
+          "new_source": true,
+          "statuses": {
+            "CAPTURED": 15,
+            "DISPATCHED": 1
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "IR:smmt.press"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 16,
+            "mean": 0.051,
+            "p95": 0.128,
+            "max": 0.128
+          },
+          "dispatch_to_list_seconds": {
+            "n": 15,
+            "mean": 9.275,
+            "p95": 14.283,
+            "max": 14.283
+          },
+          "successful_list_gap_seconds": {
+            "n": 14,
+            "mean": 19.285,
+            "p95": 23.688,
+            "max": 23.688
+          }
+        },
+        "reuters_site_search": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 5
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "QUERY:91219c335191ac5c7d1188f6"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 5,
+            "mean": 0.047,
+            "p95": 0.074,
+            "max": 0.074
+          },
+          "dispatch_to_list_seconds": {
+            "n": 5,
+            "mean": 0.329,
+            "p95": 0.672,
+            "max": 0.672
+          },
+          "successful_list_gap_seconds": {
+            "n": 4,
+            "mean": 60.057,
+            "p95": 60.6,
+            "max": 60.6
+          }
+        },
+        "businesswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.053,
+            "p95": 0.174,
+            "max": 0.174
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.246,
+            "p95": 13.09,
+            "max": 13.09
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 28.957,
+            "p95": 34.364,
+            "max": 34.364
+          }
+        },
+        "finnhub_company_news": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "HEAD"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.078,
+            "p95": 0.218,
+            "max": 0.218
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.215,
+            "p95": 12.172,
+            "max": 12.172
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 29.111,
+            "p95": 32.443,
+            "max": 32.443
+          }
+        },
+        "access_newswire_massive": {
+          "new_source": false,
+          "statuses": {
+            "CAPTURED": 10
+          },
+          "reasons": {},
+          "errors": [],
+          "units": [
+            "WIRE:listing"
+          ],
+          "dispatch_wait_seconds": {
+            "n": 10,
+            "mean": 0.066,
+            "p95": 0.119,
+            "max": 0.119
+          },
+          "dispatch_to_list_seconds": {
+            "n": 10,
+            "mean": 8.355,
+            "p95": 12.141,
+            "max": 12.141
+          },
+          "successful_list_gap_seconds": {
+            "n": 9,
+            "mean": 29.071,
+            "p95": 32.885,
+            "max": 32.885
+          }
+        }
+      }
+    }
+  },
+  "x_stream": {
+    "accounts": [
+      "base",
+      "bloom_energy",
+      "brian_armstrong",
+      "cbfutures",
+      "coherentcorp",
+      "coinbase",
+      "coinbaseinsto",
+      "coinbaseintexch",
+      "coinbasenews",
+      "constellationeg",
+      "cullinantx",
+      "faryarshirzad",
+      "iampaulgrewal",
+      "intel",
+      "ionq_inc",
+      "microntech",
+      "nebiusai",
+      "ondasholdings",
+      "praxismedicines",
+      "regenxbio",
+      "rocketlab",
+      "smmt_tx",
+      "snowflake",
+      "xenonpharma"
+    ],
+    "at": "2026-11-27T11:51:23.864024+00:00",
+    "connected_at": "2026-11-27T11:46:03.679573+00:00",
+    "error": null,
+    "http_status": 200,
+    "last_post_at": "2026-11-27T11:47:50.906662+00:00",
+    "received": 1,
+    "state": "CONNECTED"
+  },
+  "captures": [
+    {
+      "source_id": "globenewswire_massive",
+      "status": "ACCEPTED",
+      "n": 1
+    },
+    {
+      "source_id": "ibkr_news",
+      "status": "ACCEPTED",
+      "n": 23
+    },
+    {
+      "source_id": "prnewswire_massive",
+      "status": "ACCEPTED",
+      "n": 1
+    },
+    {
+      "source_id": "tmx_newsfile_massive",
+      "status": "ACCEPTED",
+      "n": 1
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "status": "ACCEPTED",
+      "n": 1
+    },
+    {
+      "source_id": "x_official_posts",
+      "status": "ACCEPTED",
+      "n": 1
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "status": "ACCEPTED",
+      "n": 1
+    }
+  ],
+  "new_deliveries": [
+    {
+      "ticker": "CGEM",
+      "source_id": "globenewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "CGEM",
+      "source_id": "prnewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "CGEM",
+      "source_id": "tmx_newsfile_massive",
+      "state": "NO_PUBLIC_BODY",
+      "last_error": null,
+      "outcome": "UNAVAILABLE",
+      "n": 1
+    },
+    {
+      "ticker": "PRAX",
+      "source_id": "globenewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "PRAX",
+      "source_id": "prnewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "PRAX",
+      "source_id": "tmx_newsfile_massive",
+      "state": "NO_PUBLIC_BODY",
+      "last_error": null,
+      "outcome": "UNAVAILABLE",
+      "n": 1
+    },
+    {
+      "ticker": "RGNX",
+      "source_id": "globenewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "RGNX",
+      "source_id": "prnewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "RGNX",
+      "source_id": "tmx_newsfile_massive",
+      "state": "NO_PUBLIC_BODY",
+      "last_error": null,
+      "outcome": "UNAVAILABLE",
+      "n": 1
+    },
+    {
+      "ticker": "SMMT",
+      "source_id": "globenewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "SMMT",
+      "source_id": "prnewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "SMMT",
+      "source_id": "tmx_newsfile_massive",
+      "state": "NO_PUBLIC_BODY",
+      "last_error": null,
+      "outcome": "UNAVAILABLE",
+      "n": 1
+    },
+    {
+      "ticker": "XENE",
+      "source_id": "globenewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "XENE",
+      "source_id": "prnewswire_massive",
+      "state": "IRRELEVANT",
+      "last_error": null,
+      "outcome": "FULL",
+      "n": 1
+    },
+    {
+      "ticker": "XENE",
+      "source_id": "tmx_newsfile_massive",
+      "state": "NO_PUBLIC_BODY",
+      "last_error": null,
+      "outcome": "UNAVAILABLE",
+      "n": 1
+    }
+  ],
+  "new_article_samples": [
+    {
+      "title": "Kaplan Fox & Kilsheimer LLP is Investigating LKQ Corporation (LKQ) for Possible Securities Law Violations",
+      "url": "https://www.newsfilecorp.com/release/326091/Kaplan-Fox-Kilsheimer-LLP-is-Investigating-LKQ-Corporation-LKQ-for-Possible-Securities-Law-Violations",
+      "source_id": "tmx_newsfile_massive",
+      "first_seen_at": "2026-11-27T11:50:12.278171+00:00",
+      "first_fetch_at": "2026-11-27T11:50:12.463249+00:00",
+      "acquired_at": null,
+      "state": "READY",
+      "outcome": "UNAVAILABLE",
+      "last_error": "deadline_exceeded",
+      "fetch_total": 2,
+      "full_total": 0,
+      "input_ref": "{\"$doxagent_content_v1\":\"6bb319cf501e60ebcc1b733109f28f5165b144235d6a6dad9b50c6f4a3982475\",\"bytes\":2343}"
+    },
+    {
+      "title": "Dimensional Fund Advisors Ltd. : Form 8.3 - RHI MAGNESITA NV - Ordinary Shares",
+      "url": "https://www.globenewswire.com/news-release/2026/11/27/3411157/0/en/dimensional-fund-advisors-ltd-form-8-3-rhi-magnesita-nv-ordinary-shares.html",
+      "source_id": "globenewswire_massive",
+      "first_seen_at": "2026-11-27T11:50:09.623244+00:00",
+      "first_fetch_at": "2026-11-27T11:50:10.557409+00:00",
+      "acquired_at": "2026-11-27T11:50:11.934037+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "last_error": null,
+      "fetch_total": 1,
+      "full_total": 1,
+      "input_ref": "{\"$doxagent_content_v1\":\"cd25a9dc34ed8b8902094db68e6d61a8920f50441cb55a77773add32efa783b3\",\"bytes\":1874}"
+    },
+    {
+      "title": "Fire Prevention Materials Market worth $2.61 billion by 2031 - Exclusive Report by MarketsandMarkets™",
+      "url": "https://www.prnewswire.com/news-releases/fire-prevention-materials-market-worth-2-61-billion-by-2031---exclusive-report-by-marketsandmarkets-302951599.html",
+      "source_id": "prnewswire_massive",
+      "first_seen_at": "2026-11-27T11:46:23.908410+00:00",
+      "first_fetch_at": "2026-11-27T11:46:24.675787+00:00",
+      "acquired_at": "2026-11-27T11:46:25.295044+00:00",
+      "state": "READY",
+      "outcome": "FULL",
+      "last_error": null,
+      "fetch_total": 1,
+      "full_total": 1,
+      "input_ref": "{\"$doxagent_content_v1\":\"dab5e367d7f64c66caba68243ee25fd06cf7f73d6b843c0a068638f6c096a154\",\"bytes\":1947}"
+    }
+  ],
+  "publications": [],
+  "windows": {
+    "aes_abstract_search": {
+      "start_date": "2026-12-07",
+      "end_date": "2026-12-07",
+      "timezone": "America/New_York"
+    },
+    "ash_cullinan": {
+      "start_date": "2026-12-03",
+      "end_date": "2026-12-09",
+      "timezone": "America/New_York"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-27T11:46:36.025081+00:00",
+  "commit": "7856e0d418c0adcfbf9bf63ba4163f335ec21251",
+  "roles": {
+    "v2-message-collector": {
+      "image": "sha256:4641abefa9248fffaf84841d14761a5154ad19608ec9f420c0b873e82a267873",
+      "baseline": "sha256:d76869b303d6c56e3feed44a3d77190b957acdb2bb3d1ced5916f9813e21c3f5",
+      "file_hashes": {
+        "src/doxagent/message_bus_v2/biopharma_parsers.py": "4c13240e1440535d52a109214cfd982a5687f2aee50e2604c287436415230fd1",
+        "src/doxagent/message_bus_v2/live.py": "fd0b64f3634e34f4194f4cfde146f7e5838a318b1ec72d36047c486d4f46ce2d"
+      },
+      "all_hashes_match": true,
+      "health": "healthy",
+      "restarts": 0,
+      "started_at": "2026-11-27T11:45:36.066807817Z"
+    },
+    "v2-message-bus": {
+      "image": "sha256:55b0a8a8bd0291579bc568c63a8cfd1b5a48885f9a4356f0b6bb004a1ccccfbe",
+      "baseline": "sha256:02286261b12bb51175013aaef219ac29be66d05e813b5ed581584767230ac744",
+      "file_hashes": {
+        "src/doxagent/message_bus_v2/biopharma_parsers.py": "4c13240e1440535d52a109214cfd982a5687f2aee50e2604c287436415230fd1",
+        "src/doxagent/message_bus_v2/live.py": "fd0b64f3634e34f4194f4cfde146f7e5838a318b1ec72d36047c486d4f46ce2d"
+      },
+      "all_hashes_match": true,
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-11-27T11:45:51.926974455Z"
+    }
+  },
+  "other_roles": {
+    "v2-api": {
+      "image": "sha256:df4edc07b1904af6fcf77c88fe50dfd0aca6640a94bebd65f21cad3ed2bf75f8",
+      "started_at": "2026-11-26T21:17:39.918019336Z",
+      "running": true
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:cfa4109c12ad904ea3a6cd9bede8bb656f1c06bde91af8e32a725b75fe7f3305",
+      "started_at": "2026-11-26T21:46:44.191663006Z",
+      "running": true
+    },
+    "v2-initialization": {
+      "image": "sha256:91a9280fced498ba92bae91fbf5bacb52cb1c6f8fd77bb8b2168d7729752ae57",
+      "started_at": "2026-11-26T20:50:44.837713276Z",
+      "running": true
+    },
+    "v2-o4": {
+      "image": "sha256:8f12ef925a2aa23abecc8bbf4b4bbf7b1bb83757b7e44080c82ac43c75f247f9",
+      "started_at": "2026-11-26T21:18:34.200836118Z",
+      "running": true
+    },
+    "v2-scheduler": {
+      "image": "sha256:9dd39deb702cccc115d194ef9e58e4ef0126d14ededa504ec02cb4f30781e721",
+      "started_at": "2026-11-27T11:27:38.863678201Z",
+      "running": true
+    },
+    "v2-executor": {
+      "image": "sha256:32245f577e6812ec6393b96ab50a361092ec669432e28caa9b674e8ac802cccd",
+      "started_at": "2026-11-26T13:55:42.633883149Z",
+      "running": true
+    }
+  }
+}
