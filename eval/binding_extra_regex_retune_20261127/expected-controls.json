@@ -1,0 +1,476 @@
+[
+  {
+    "ticker": "MU",
+    "id": "std_9d8f6ad7bb1544539b0b4bfc052c95be",
+    "expected_allowed": "False",
+    "reason": "普通模型安全测试暂停，没有物理内存、存储部署或设施变化；旧保护过宽，改为低相关排除"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_fefb38112c5013c067a5ba9c5f6ae207",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_3fc245cc73c622a5096811dfc6ef1572",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_362fbe5b0cd9943ada28da659430bb8e",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_3ede0aa89456dbe6ca0aae57aa7a92d1",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_f5a573475152f8f73f9c4f265089fff5",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_8a78d5606c5d410e9d0a93e45ab10eb0",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_90cebe31ff2649dd9a7ce6b3c41306ac",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_a494f388aafda428a98a4d8a72fc09d8",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_e6d7363b491e793748382a8a2f18d992",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_15f97e26e6b693cc433200518ae293d6",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_87a13b91f608054482f7e58bfddda564",
+    "expected_allowed": "True",
+    "reason": "正文有迷你 PC 的 CPU/RAM/SSD 产品规格"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_8cbc1491d9a00303470eefe773a62eea",
+    "expected_allowed": "True",
+    "reason": "正文有 DRAM/NAND 价格与供应事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_3eb05567616a493b950f79c1edbdd202",
+    "expected_allowed": "True",
+    "reason": "明确 70 亿美元算力承诺及 Nebius 合同"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_87816968526a43218fc5eae343002099",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_df2ce899ee7a40769330104f4dfd7827",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_02fe043fe8fb41d9ad2ed02e6771a237",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_d90a71b82499163dd53553acd9884a47",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_dcc0257434aae0faa2048ba5eff57a9f",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_238a429b7fa7289cebbb75fcb0a61710",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_7a5f4e46b708492ad979ab083c920965",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_06a5101dccf311c57e6bd2721e7743e9",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_b78e41c55d833d65b7569696a87bfa79",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_2d86897691acce6f0df0ebbf71aa266a",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_943ae9173435cc14c676307fb17ade09",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_376ab89e9a9c4e03ac77c9cda9191a7a",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_d47f04c1fb65a9b842a1289abc8708ea",
+    "expected_allowed": "True",
+    "reason": "正文有实际 Ryzen 整机产品"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_446fb015564d6983a5a3b16a33bef19d",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "BE",
+    "id": "std_6f1dda3129b7442ea2cd4390f636d368",
+    "expected_allowed": "True",
+    "reason": "实际多 GW 扩张与 CPU 上线"
+  },
+  {
+    "ticker": "BE",
+    "id": "std_live_615cf1ab17ab87131bd9ede1876d0974",
+    "expected_allowed": "True",
+    "reason": "实际 13 万平方英尺新生产设施"
+  },
+  {
+    "ticker": "BE",
+    "id": "std_live_a349c86ee0f854fe4140e088bbba9c6b",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "BE",
+    "id": "std_live_720f40ae8e19a089b651de8d6bb05bf0",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_51fef7aadcd94792982d00fc9cb7549b",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_b35d52b7e490450ab739f828d1c634ad",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_3180844866f162c9e3cc96b6c84e95c4",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_0ee4fc4385c25eb8785315d3daa7a85c",
+    "expected_allowed": "True",
+    "reason": "虚拟机状态快照和计算资源伸缩"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_5c9182516a9e7730c0ede4b073bb6743",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_41a3e93438406f31190b824fae66ec9f",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_faa1a25aa2a358823eb365d9740c8d50",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_126503197bd724f0e03b1cffacf3bd8a",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_9608ab3aabb480540d41cdfb310d22f2",
+    "expected_allowed": "True",
+    "reason": "分布式推理框架、GPU 部署和内核吞吐"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_c2bbcb04e631b414a85de1ed326aa731",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_a225d36a2a87776ea8f1387e6539d38e",
+    "expected_allowed": "True",
+    "reason": "B200 GPU 上的推理内核吞吐变化"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_5e564b85d0dbc4f460667471e536f689",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_9d328bdfbe948b3700ad1787583f135f",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_66df88d4f4a2fa16b7bf361706352069",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_116e3a50d2d9fd790c801f3df78af23f",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_622145803120bdbe4f76a4db85808969",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_aeeac084534cbbc46240f3f784e2755f",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_e4ab79d7bc64d352f0f064d3c90d94b9",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_eff60701d049a9f872ffe55a2a1639b0",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_4dee9133bc3d69a9c9063839b9f45581",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_7c22513ab2a34747aef30b8b8329119b",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_4f0671249ff00d9ba46a98a666e19179",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_8dbfd14ddb59498d83042d7e4948c417",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_07ef1fd06b48b2ea12e54201217e0b0d",
+    "expected_allowed": "True",
+    "reason": "正文有 AI 基础设施季度资本开支 773 亿美元"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_ec1d2edd3ad87bee029bc64173e36db6",
+    "expected_allowed": "True",
+    "reason": "硬件集群容量与 Huawei 部署路线"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_4c5125850793281f8d5dd1eb14cf967a",
+    "expected_allowed": "True",
+    "reason": "明确基础设施债务融资"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_2b211a577bb9376499f18c44d525e042",
+    "expected_allowed": "True",
+    "reason": "SpaceX 算力合同到期/取消安排"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_170d32434d1067389b362424fb1270e5",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_212440a25cab8ff6ea2a1afbc3c1b427",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_b1a02670568ba8b8ed49d4342b66d587",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_5538833750ed454473366e751f40531e",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_25b7820d4061373685658d7a28708098",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_4c400204e7719dc34ed60a8397497221",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_e165f6f2d658b169f86ce7b6c705144c",
+    "expected_allowed": "True",
+    "reason": "标题已有明确供电/设施/硬件融资部署/算力服务事实，正文缺失不应抹去这些事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_d0e48df9d46f266a09bccfeb3752e3fc",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "INTC",
+    "id": "std_live_b1ea54ead075d3cf25609146485e4895",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_913c9f11464ac184aedbba06c115a1e3",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_c7251978a9964f83bdcf2183fe379103",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "MU",
+    "id": "std_live_29d038f8fc4df59870cc5541df20ad9d",
+    "expected_allowed": "True",
+    "reason": "GMI 融资、5 亿美元数据中心及 3456 张 GB300"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_26e9107700444f93e04ba316706cc9b5",
+    "expected_allowed": "True",
+    "reason": "服务器、高速网络需求与资本支出"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_e3f42eda688709f5bc62019788c87a88",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "COHR",
+    "id": "std_live_3c1ff3a7ab8a11bfbd5e2ae2109c7d0d",
+    "expected_allowed": "True",
+    "reason": "数据中心融资信用与具体项目"
+  },
+  {
+    "ticker": "NBIS",
+    "id": "std_live_5e5e8fa2289ff53298d2e91bbeebc141",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  },
+  {
+    "ticker": "BE",
+    "id": "std_live_70717c82457c56090c73b584e43f0e52",
+    "expected_allowed": "True",
+    "reason": "明确工厂收购/改建与新产线计划"
+  },
+  {
+    "ticker": "BE",
+    "id": "std_live_6707c2376f7ab69bc29b5f156444169d",
+    "expected_allowed": "True",
+    "reason": "明确十座新厂建设"
+  },
+  {
+    "ticker": "IONQ",
+    "id": "std_live_80a1ea840c62c437831313b83836c69e",
+    "expected_allowed": "True",
+    "reason": "正文含量子纠错形式验证和量子加速独立事实"
+  },
+  {
+    "ticker": "IONQ",
+    "id": "std_live_dc44d8b428029d8b0d698ea8217a7633",
+    "expected_allowed": "True",
+    "reason": "正文已有可核实的本公司/同类市场或具体资源、部署、供给、服务事实"
+  }
+]

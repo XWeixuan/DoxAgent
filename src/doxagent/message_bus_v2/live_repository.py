@@ -1603,7 +1603,8 @@ class LiveRepository:
                     "SELECT data_json FROM ticker_source_bindings WHERE binding_id=?",
                     (row['binding_id'],),
                 ).fetchone()
-                if json.loads(latest[0]).get('extra_relevance') != row['_extra_relevance_checked']:
+                from .schema import TickerSourceBinding
+                if TickerSourceBinding.model_validate_json(latest[0]).extra_relevance != row['_extra_relevance_checked']:
                     raise RuntimeError('live_publication_extra_relevance_changed')
             if (control["epoch"] if control else None) != prepared["origin_epoch"]:
                 raise RuntimeError("live_publication_configuration_changed")

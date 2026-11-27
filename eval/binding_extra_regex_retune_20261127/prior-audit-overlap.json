@@ -1,0 +1,23 @@
+{
+  "comparable_cases": 2823,
+  "title_warning_labels": {
+    "NOT_FLAGGED_TITLE_ONLY": 1673,
+    "LOW_RELEVANCE": 745,
+    "CLEAR_OFF_TOPIC": 405
+  },
+  "old_blocked": {
+    "CLEAR_OFF_TOPIC": 51,
+    "LOW_RELEVANCE": 18,
+    "NOT_FLAGGED_TITLE_ONLY": 3
+  },
+  "new_blocked": {
+    "LOW_RELEVANCE": 208,
+    "CLEAR_OFF_TOPIC": 249,
+    "NOT_FLAGGED_TITLE_ONLY": 75
+  },
+  "old_total_blocked": 184,
+  "new_total_blocked": 1824,
+  "new_exclusions": 1643,
+  "old_exclusions_now_retained": 3,
+  "caveat": "Title warnings are diagnostic candidates, not independent full-body GOLD or precision/recall."
+}

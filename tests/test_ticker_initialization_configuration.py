@@ -46,6 +46,16 @@ def test_first_start_does_not_overwrite_o4_configuration(tmp_path: Path) -> None
     assert config.live.get_binding(binding.binding_id).enabled is False
 
 
+def test_unified_term_snapshot_preserves_independent_live_source_filter(tmp_path):
+    config = CandidateConfiguration(tmp_path / "bus.db", "older-terms", "MU")
+    config.prepare()
+    old = config.candidate.list_bindings(ticker="MU")[0]
+    rules = {"groups":[{"id":"topic", "any":[{"regex":"DRAM", "field":"title"}]}]}
+    config.live.save_binding(old.model_copy(update={"extra_relevance": rules}))
+    config.install()
+    assert config.live.get_binding(old.binding_id).extra_relevance["groups"][0]["id"] == "topic"
+
+
 def test_retired_source_in_old_candidate_and_rollback_never_returns(tmp_path):
     from doxagent.message_bus_v2.schema import SourceDefinition, TickerSourceBinding
 

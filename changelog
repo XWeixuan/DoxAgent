@@ -3559,3 +3559,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-11-27 消息源发布防复活补充：候选初始化配置的安装/回滚跳过退役源，Google 候选绑定缺省相关性开启；生产只切换 API/Collector/Bus/BODY/O4，保留正在执行四项研究的 Initialization 进程，live 安装由新 Bus 负责。新增快照及回滚回归。
 
 2026-11-27 By Distribution 绑定级可选额外正则门禁：复用原生 L2 语义及 Binding CAS/幂等/审计，统一正则或模型正常放行后再过滤；未配置直接沿用原路径。覆盖 Live/legacy、模型与正则阳性，记录 EXTRA_REGEX_FILTERED 并围栏并发规则变更；不增加模型调用、不修改统一监测词。配置页/来源卡片显示简洁 Filter 图标并支持 JSON 编辑与 null 关闭。四源16绑定8707条留存正式历史回放，最终184条拦截全部复核、20条正面控制保留；14组建议启用、2组零可靠增益暂不启用。新增19项过滤测试、36项跨源/Massive回归通过（另1项外部语料跳过），前端类型/14项单测/两宽度浏览器/正式构建通过。代码与规则仅在隔离分支准备，未部署生产；报告 docs/by-distribution-binding-extra-regex-20261127.md。
+
+2026-11-27 额外正则重调：四源16实际绑定同一8707条历史排除1824条（20.95%），可比近期标题预警排除由69增至457；79项业务控制通过。仅额外层裁去推荐/旧版故事页尾，保护直接业务事实；JSON兼容扩展保留旧严格读者、初始化安装保留独立规则，并修正并发配置围栏读取。相关57项回归与Massive14项通过（1跳过）。通过现有不可变逐角色发布与原生配置CAS上线，回执另追加；不改统一词、模型或历史消息。见 docs/by-distribution-binding-extra-regex-retune-20261127.md。

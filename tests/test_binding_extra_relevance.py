@@ -43,6 +43,47 @@ def test_optional_filter_exclusion_rescue_and_isolation():
     assert binding().extra_relevance["groups"][0]["none"][0]["field"] == "title"
 
 
+def test_persisted_extension_is_readable_by_old_strict_binding_model(tmp_path):
+    import json
+    from pydantic import ConfigDict, create_model
+    from tests.fixtures.message_bus_v2 import _bus
+
+    repo, _ = _bus(tmp_path / "bus.db")
+    original = binding().model_copy(update={"source_parameters": {"feed_proxy_url": "http://feed"}})
+    raw = json.loads(repo._json(original))
+    assert "extra_relevance" not in raw
+    previous = create_model(
+        "PreviousBinding", __config__=ConfigDict(extra="forbid"),
+        **{name: (field.annotation, ...) for name, field in TickerSourceBinding.model_fields.items()
+           if name != "extra_relevance"},
+    )
+    assert previous.model_validate(raw).source_parameters["_binding_extra_relevance_v1"]
+    current = TickerSourceBinding.model_validate(raw)
+    assert current.extra_relevance == original.extra_relevance
+    assert current.source_parameters == original.source_parameters
+    assert "_binding_extra_relevance_v1" not in current.model_dump()["source_parameters"]
+    assert "extra_relevance" not in current.model_dump(mode="json")
+    assert current.model_dump()["extra_relevance"] == current.extra_relevance
+    assert not extra_allows(current, message("gaming chair"))
+    assert "_binding_extra_relevance_v1" not in json.loads(repo._json(binding(None)))["source_parameters"]
+
+
+def test_reject_conflicting_persisted_and_public_extra_rules():
+    with pytest.raises(ValidationError, match="conflicting"):
+        TickerSourceBinding.model_validate({**binding().model_dump(),
+            "source_parameters": {"_binding_extra_relevance_v1": None}})
+
+
+def test_source_tails_are_only_trimmed_for_optional_gate_without_mutating_input():
+    rules = {"groups":[{"id":"core", "any":[{"regex":"DRAM", "field":"body"}]}]}
+    configured = binding(rules).model_copy(update={"source_id":"technews_hardware"})
+    raw = message("Application news", "Main software story. 延伸閱讀： DRAM prices rise")
+    assert not extra_allows(configured, raw)
+    assert raw.body.endswith("DRAM prices rise")
+    assert extra_allows(configured.model_copy(update={"extra_relevance":None}), raw)
+    assert extra_allows(configured, message("Industry news", "DRAM demand grows. 延伸閱讀： Other news"))
+
+
 @pytest.mark.parametrize(
     "rules",
     [

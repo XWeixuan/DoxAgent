@@ -1,0 +1,98 @@
+[
+  {
+    "binding_id": "MU:huggingnews_rss",
+    "total": 764,
+    "blocked": 212,
+    "retained": 552
+  },
+  {
+    "binding_id": "MU:tomshardware_rss",
+    "total": 545,
+    "blocked": 146,
+    "retained": 399
+  },
+  {
+    "binding_id": "INTC:huggingnews_rss",
+    "total": 1488,
+    "blocked": 361,
+    "retained": 1127
+  },
+  {
+    "binding_id": "INTC:tomshardware_rss",
+    "total": 619,
+    "blocked": 125,
+    "retained": 494
+  },
+  {
+    "binding_id": "BE:huggingnews_rss",
+    "total": 369,
+    "blocked": 95,
+    "retained": 274
+  },
+  {
+    "binding_id": "BE:tomshardware_rss",
+    "total": 166,
+    "blocked": 55,
+    "retained": 111
+  },
+  {
+    "binding_id": "NBIS:huggingnews_rss",
+    "total": 1026,
+    "blocked": 168,
+    "retained": 858
+  },
+  {
+    "binding_id": "NBIS:tomshardware_rss",
+    "total": 271,
+    "blocked": 60,
+    "retained": 211
+  },
+  {
+    "binding_id": "COHR:huggingnews_rss",
+    "total": 746,
+    "blocked": 236,
+    "retained": 510
+  },
+  {
+    "binding_id": "COHR:tomshardware_rss",
+    "total": 128,
+    "blocked": 29,
+    "retained": 99
+  },
+  {
+    "binding_id": "INTC:technews_hardware",
+    "total": 536,
+    "blocked": 86,
+    "retained": 450
+  },
+  {
+    "binding_id": "MU:technews_hardware",
+    "total": 359,
+    "blocked": 79,
+    "retained": 280
+  },
+  {
+    "binding_id": "COHR:technews_hardware",
+    "total": 201,
+    "blocked": 24,
+    "retained": 177
+  },
+  {
+    "binding_id": "NBIS:technews_hardware",
+    "total": 395,
+    "blocked": 46,
+    "retained": 349
+  },
+  {
+    "binding_id": "BE:technews_hardware",
+    "total": 165,
+    "blocked": 34,
+    "retained": 131
+  },
+  {
+    "binding_id": "IONQ:quantum_zeitgeist",
+    "total": 929,
+    "blocked": 68,
+    "retained": 861
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "cases_sha256": "1545754d5f8a47cf564af20ed9cdb62dd398386f2bac1f9dd29ea4cdb942ab5c",
+  "rules_sha256": "594574d28da867b6dc40fe2e6cd6d70f8e86d1b8bdb4e330d0892e4acfeb31ed",
+  "bindings": 16,
+  "cases": 8707,
+  "blocked": 1824,
+  "retained": 6883,
+  "unique_blocked_bodies": 1336,
+  "published_at_min": "2026-09-24T15:24:49Z",
+  "published_at_max": "2026-11-26T06:50:25Z",
+  "denominator": "retained formal messages already accepted by the original layer",
+  "cleanup": "doxagent.content_enrichment.publisher_cleanup.clean_text"
+}

@@ -105,6 +105,10 @@ class CandidateConfiguration:
         for binding in bindings:
             if binding.source_id in RETIRED_SOURCES:
                 continue
+            # Independent source-noise rules survive an older unified-term snapshot.
+            prior = self.live.get_binding(binding.binding_id)
+            if prior and prior.extra_relevance is not None:
+                binding = binding.model_copy(update={"extra_relevance": prior.extra_relevance})
             if binding.source_id == "google_news_search_rss":
                 parameters = {"require_relevance": True, **binding.source_parameters}
                 binding = binding.model_copy(update={"source_parameters": parameters})

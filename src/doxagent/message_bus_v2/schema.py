@@ -19,7 +19,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
 
 from .admission import AdmissionContext
 
@@ -335,6 +335,36 @@ class DefaultMonitoringProfile(BusModel):
 
 
 class TickerSourceBinding(BusModel):
+    @model_serializer(mode="wrap")
+    def _compatible_json(self, handler, info):
+        value = handler(self)
+        if info.mode == "json":
+            extra = value.pop("extra_relevance", None)
+            if extra is not None and "source_parameters" in value:
+                from .monitoring_terms import L2Language
+                extra = L2Language.model_validate(extra).model_dump(
+                    mode="json", exclude_defaults=True, exclude_none=True,
+                )
+                value["source_parameters"] = {
+                    **value["source_parameters"], "_binding_extra_relevance_v1": extra,
+                }
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def _read_extra_extension(cls, value):
+        # Keep persistent JSON readable by earlier strict binding models.
+        if isinstance(value, dict):
+            parameters = value.get("source_parameters")
+            if isinstance(parameters, dict) and "_binding_extra_relevance_v1" in parameters:
+                value, parameters = dict(value), dict(parameters)
+                stored = parameters.pop("_binding_extra_relevance_v1")
+                if "extra_relevance" in value and value["extra_relevance"] != stored:
+                    raise ValueError("conflicting extra relevance representations")
+                value["source_parameters"] = parameters
+                value["extra_relevance"] = stored
+        return value
+
     extra_relevance: JsonObject | None = None
 
     @field_validator("extra_relevance")
